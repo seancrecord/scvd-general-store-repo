@@ -1,0 +1,37 @@
+// Sean-Claude Van Damme's General Store — Worker configuration.
+// Deploys to the scvd.store custom domain via Git-connected builds.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "scvd-general-store",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    { "pattern": "scvd.store", "custom_domain": true }
+  ],
+  // Weekly digest: Sundays 7am ET (11:00 UTC during daylight time).
+  "triggers": {
+    "crons": ["0 11 * * SUN"]
+  },
+  // KV namespaces. Create them once with:
+  //   wrangler kv namespace create ORDERS
+  //   wrangler kv namespace create GUESTBOOK
+  //   wrangler kv namespace create COUNTERS
+  //   wrangler kv namespace create PATRONS
+  // then paste the ids below.
+  "kv_namespaces": [
+    { "binding": "ORDERS", "id": "REPLACE_WITH_ORDERS_NAMESPACE_ID" },
+    { "binding": "GUESTBOOK", "id": "REPLACE_WITH_GUESTBOOK_NAMESPACE_ID" },
+    { "binding": "COUNTERS", "id": "REPLACE_WITH_COUNTERS_NAMESPACE_ID" },
+    { "binding": "PATRONS", "id": "REPLACE_WITH_PATRONS_NAMESPACE_ID" }
+  ],
+  "vars": {
+    "STORE_BASE_URL": "https://scvd.store"
+  }
+  // Secrets (never in this file — set via `wrangler secret put <NAME>`):
+  //   PAY_TO_ADDRESS      Base wallet that receives USDC
+  //   CDP_API_KEY_ID      Coinbase Developer Platform key id (facilitator auth)
+  //   CDP_API_KEY_SECRET  Coinbase Developer Platform key secret
+  //   SIGNING_KEY         ed25519 private key seed, 64 hex chars (npm run keys:generate)
+  //   ADMIN_PASSWORD      Basic Auth password for /admin
+}
