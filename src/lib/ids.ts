@@ -1,0 +1,30 @@
+/**
+ * Short, human-copyable ids. An order number should fit on a paper receipt.
+ */
+
+const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
+
+function randomToken(length: number): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
+  let token = "";
+  for (const byte of bytes) {
+    token += ALPHABET[byte % ALPHABET.length];
+  }
+  return token;
+}
+
+export function newOrderId(): string {
+  return `ord_${randomToken(10)}`;
+}
+
+export function newCertId(): string {
+  return `cert_${randomToken(10)}`;
+}
+
+export function newEntryId(): string {
+  return randomToken(8);
+}
+
+export function newRequestId(): string {
+  return `req_${randomToken(10)}`;
+}
