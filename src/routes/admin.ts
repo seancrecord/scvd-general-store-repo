@@ -4,7 +4,12 @@ import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { listPayers, readMonthLedger, readPorchLedger } from "@/lib/metrics";
+import {
+  listPayers,
+  listRecentChallenges,
+  readMonthLedger,
+  readPorchLedger,
+} from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderAdminPage } from "@/pages/admin-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
@@ -21,6 +26,10 @@ import {
   listOrders,
   resetWeeklyInventory,
 } from "@/services/orders";
+import {
+  listConfessions,
+  setConfessionStatus,
+} from "@/services/confessions";
 import { setMonthlyNote } from "@/services/patronage";
 import {
   addCorrection,
@@ -72,6 +81,8 @@ adminRoutes.get("/admin", async (c) => {
     alerts,
     gazetteDraft,
     porchLedger,
+    recentChallenges,
+    confessions,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -88,6 +99,8 @@ adminRoutes.get("/admin", async (c) => {
     listAlerts(c.env),
     getDraft(c.env),
     readPorchLedger(c.env),
+    listRecentChallenges(c.env),
+    listConfessions(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -106,8 +119,34 @@ adminRoutes.get("/admin", async (c) => {
       alerts,
       gazetteDraft,
       porchLedger,
+      recentChallenges,
+      confessions: confessions.map((entry) => entry.record),
     }),
   );
+});
+
+adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
+  const updated = await setConfessionStatus(
+    c.env,
+    c.req.param("confession_id"),
+    "approved",
+  );
+  if (!updated) {
+    return c.text("No confession by that id in the drawer.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/confessions/:confession_id/reject", async (c) => {
+  const updated = await setConfessionStatus(
+    c.env,
+    c.req.param("confession_id"),
+    "rejected",
+  );
+  if (!updated) {
+    return c.text("No confession by that id in the drawer.", 404);
+  }
+  return c.redirect("/admin");
 });
 
 adminRoutes.post("/admin/gazette/edition/assemble", async (c) => {

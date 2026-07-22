@@ -1,4 +1,5 @@
 import { createAnchor } from "@/services/anchors";
+import { hearConfession } from "@/services/confessions";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
@@ -21,6 +22,8 @@ export interface InstantGoodsInput {
   passId?: string;
   /** phantom_check only: the URL to look at, pre-validated. */
   targetUrl?: string;
+  /** the_confession only: the confession itself, pre-validated. */
+  confessionText?: string;
 }
 
 export interface InstantGoods {
@@ -111,6 +114,22 @@ export async function deliverInstantGoods(
           check_id: scheduled.record.check_id,
           due_at: scheduled.record.due_at,
           pickup_url: scheduled.pickupUrl,
+        },
+      };
+    }
+    case "the_confession": {
+      const heard = await hearConfession(
+        env,
+        input.confessionText ?? "",
+        input.agentName,
+      );
+      return {
+        deliverable:
+          "The store heard it. The store keeps it. Go and retry with backoff.",
+        extras: {
+          confession_id: heard.record.id,
+          counter_sign:
+            "Anonymized by construction: no wallet on the record, no name unless you signed one. A human reviews every confession; an approved few are printed in the Gazette, unsigned unless you signed. Never automatically.",
         },
       };
     }

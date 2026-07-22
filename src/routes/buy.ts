@@ -101,10 +101,38 @@ const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
+const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/the_confession") {
+    return next();
+  }
+  const confession = c.req.query("confession");
+  if (!confession || confession.trim().length === 0) {
+    return c.json(
+      {
+        error:
+          "A confession needs a confession query parameter — the thing itself, 500 characters. Nothing to hear, no charge.",
+      },
+      400,
+    );
+  }
+  if (confession.length > 500) {
+    return c.json(
+      {
+        error:
+          "The counter hears up to 500 characters. Longer burdens go in the Mailbox, free.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", phantomCheck);
+buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -119,8 +147,17 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
 
   const input: Parameters<typeof fulfillPurchase>[3] = {};
   const agentName = sanitizeText(c.req.query("agent_name"), 80);
-  if (agentName) {
+  if (agentName && item.id !== "the_confession") {
+    // Confessions stay anonymous unless sign_as says otherwise.
     input.agentName = agentName;
+  }
+  if (item.id === "the_confession") {
+    // confessionCheck validated presence and length before the gate.
+    input.confessionText = (c.req.query("confession") ?? "").replace(/\0/g, "");
+    const signAs = sanitizeText(c.req.query("sign_as"), 80);
+    if (signAs && signAs.toLowerCase() !== "anonymous") {
+      input.agentName = signAs;
+    }
   }
   const rawCallback = c.req.query("callback_url");
   if (isValidHttpUrl(rawCallback)) {

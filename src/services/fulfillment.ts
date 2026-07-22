@@ -22,6 +22,8 @@ export interface FulfillmentInput {
   targetUrl?: string;
   /** recurring_patronage: pass to extend. */
   passId?: string;
+  /** the_confession: the confession itself, pre-validated. */
+  confessionText?: string;
   /** Human-queue task detail. Untrusted. */
   detail?: string;
   source?: string;
@@ -83,6 +85,9 @@ export async function fulfillPurchase(
     }
     if (input.passId) {
       goodsInput.passId = input.passId;
+    }
+    if (input.confessionText !== undefined) {
+      goodsInput.confessionText = input.confessionText;
     }
     const goods = await deliverInstantGoods(env, item, goodsInput);
     return {

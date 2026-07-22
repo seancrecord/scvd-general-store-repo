@@ -32,6 +32,9 @@ export const KV_KEYS = {
   retiredWord: (invertedTs: string): string => `retired_word:${invertedTs}`,
   retiredWordPrefix: "retired_word:",
   gazetteDraft: "gazette_draft",
+  confession: (invertedTs: string, id: string): string =>
+    `confession:${invertedTs}:${id}`,
+  confessionPrefix: "confession:",
   phantomCheck: (checkId: string): string => `phantom:${checkId}`,
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>

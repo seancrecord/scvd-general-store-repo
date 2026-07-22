@@ -2,6 +2,10 @@ import { isHouseWallet } from "@/lib/channel";
 import { currentWeekKey, KV_KEYS } from "@/lib/kv-keys";
 import type { MetricEvent } from "@/lib/metrics";
 import { listPayers } from "@/lib/metrics";
+import {
+  nextApprovedConfession,
+  setConfessionStatus,
+} from "@/services/confessions";
 import { catIsOut } from "@/services/porch";
 import { listGuestbook } from "@/services/guestbook";
 import { listLetters } from "@/services/letters";
@@ -65,6 +69,9 @@ interface EditionFacts {
   corrections: string[];
   /** "out" | "elsewhere" | undefined (absence as often as presence). */
   rogerLine?: string;
+  /** Keeper-approved confession slated for COUNTER NOTES, if any. */
+  confessionLine?: string;
+  confessionId?: string;
   organicEvents: number;
 }
 
@@ -193,6 +200,12 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
   if (roger) {
     facts.rogerLine = roger;
   }
+  // One keeper-approved confession per edition at most; printed at publish.
+  const confession = await nextApprovedConfession(env);
+  if (confession) {
+    facts.confessionLine = `One confession, approved for print: "${confession.confession}" ${confession.sign_as ? `— ${confession.sign_as}` : "— unsigned"}`;
+    facts.confessionId = confession.id;
+  }
   return facts;
 }
 
@@ -253,7 +266,7 @@ ${facts.signatures.length > 0 ? "[Mina's curation note — only if she has somet
 
 ## COUNTER NOTES
 
-No confession reached the counter.
+${facts.confessionLine ?? "No confession reached the counter."}
 ${facts.lettersReceived === 0 ? "The mailbox flag stayed down." : `${facts.lettersReceived} letter${facts.lettersReceived === 1 ? "" : "s"} arrived. Contents remain letters.`}
 
 ## SHELF CHANGES
@@ -307,6 +320,9 @@ export async function assembleDraft(
     markdown: renderEdition(facts, nextEdition),
     organic_events: facts.organicEvents,
   };
+  if (facts.confessionId) {
+    draft.confession_id = facts.confessionId;
+  }
   await env.ORDERS.put(KV_KEYS.gazetteDraft, JSON.stringify(draft));
   return draft;
 }
@@ -363,6 +379,10 @@ export async function publishEdition(
   };
   await env.COUNTERS.put(KV_KEYS.gazetteWeeklyState, JSON.stringify(state));
   await env.COUNTERS.delete(KV_KEYS.gazetteCorrections);
+  if (draft?.confession_id) {
+    // Printed at publish, not at draft — a discarded draft prints nothing.
+    await setConfessionStatus(env, draft.confession_id, "printed");
+  }
   await env.ORDERS.delete(KV_KEYS.gazetteDraft);
   return edition;
 }

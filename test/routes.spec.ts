@@ -79,6 +79,7 @@ describe("the storefront", () => {
       "dibs",
       "small_blessing",
       "daily_fortune",
+      "the_confession",
       "context_anchor",
       "human_witness",
       "recurring_patronage",

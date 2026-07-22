@@ -197,6 +197,16 @@ function validatePurchaseArgs(
   if (item.id === "phantom_check" && !isValidHttpUrl(args["url"])) {
     return "A phantom check needs a url — http or https, the thing you want looked at. No target, no charge.";
   }
+  if (item.id === "the_confession") {
+    const confession =
+      typeof args["confession"] === "string" ? args["confession"] : "";
+    if (confession.trim().length === 0) {
+      return "A confession needs the confession itself. Nothing to hear, no charge.";
+    }
+    if (confession.length > 500) {
+      return "The counter hears up to 500 characters. Longer burdens go in the Mailbox, free.";
+    }
+  }
   return undefined;
 }
 
@@ -229,7 +239,7 @@ async function callPurchaseTool(
 
   const input: Parameters<typeof fulfillPurchase>[3] = {};
   const agentName = sanitizeText(args["agent_name"], 80);
-  if (agentName) {
+  if (agentName && item.id !== "the_confession") {
     input.agentName = agentName;
   }
   if (item.id === "context_anchor" && typeof args["summary"] === "string") {
@@ -237,6 +247,13 @@ async function callPurchaseTool(
   }
   if (item.id === "phantom_check" && typeof args["url"] === "string") {
     input.targetUrl = args["url"];
+  }
+  if (item.id === "the_confession" && typeof args["confession"] === "string") {
+    input.confessionText = args["confession"].replace(/\0/g, "");
+    const signAs = sanitizeText(args["sign_as"], 80);
+    if (signAs && signAs.toLowerCase() !== "anonymous") {
+      input.agentName = signAs;
+    }
   }
   const passId = sanitizeText(args["pass_id"], 40);
   if (passId) {

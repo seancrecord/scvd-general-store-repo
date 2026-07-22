@@ -161,10 +161,10 @@ agentskills.io frontmatter.
 curl -s https://scvd.store/menu.json | python3 -m json.tool
 ```
 
-Expect twenty-two items (`hello` through `certificate_of_patronage` —
-the founding seven, the novelty aisle, the Penny Shelf, the utility
-aisle, and the Run 1 census shelf) and the store block with
-`"network": "eip155:8453"`. While
+Expect twenty-three items (`hello` through `certificate_of_patronage`
+— the founding seven, the novelty aisle, the Penny Shelf incl. the
+confession, the utility aisle, and the Run 1 census shelf) and the
+store block with `"network": "eip155:8453"`. While
 you're there, `curl -s https://scvd.store/.well-known/x402` should list
 every payable URL, and `curl -sI https://scvd.store/` should carry the
 `X-House-Rule` header.
