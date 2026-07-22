@@ -38,3 +38,24 @@ export {
   addRetiredWord,
   listRetiredWords,
 } from "@/services/retired-words";
+export { drawBlessing, dailyFortune } from "@/services/penny-shelf";
+export {
+  createAnchor,
+  getAnchor,
+  verifyAnchorSignature,
+  canonicalizeAnchor,
+  ANCHOR_SUMMARY_CAP,
+} from "@/services/anchors";
+export {
+  createOrRenewPass,
+  getPass,
+  passIsCurrent,
+  signedMonthlyNote,
+  setMonthlyNote,
+} from "@/services/patronage";
+export { deliverInstantGoods } from "@/services/instant-goods";
+export {
+  renderMenuMarkdown,
+  renderItemMarkdown,
+  wantsMarkdown,
+} from "@/services/menu-markdown";

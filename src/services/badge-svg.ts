@@ -24,6 +24,10 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   const nameLine = options.name
     ? `<text x="200" y="208" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="15" fill="${INK}">bestowed upon ${escapeHtml(options.name)}</text>`
     : "";
+  const sevenMark =
+    options.patronNumber % 7 === 0
+      ? `<text x="371" y="277" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="${ACCENT}">7</text>`
+      : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Patron badge no. ${options.patronNumber}">
   <rect width="400" height="300" fill="${PAPER}" rx="10"/>
   <rect x="10" y="10" width="380" height="280" fill="none" stroke="${INK}" stroke-width="3" rx="6"/>
@@ -40,6 +44,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   <a xlink:href="${escapeHtml(options.verifyUrl)}" href="${escapeHtml(options.verifyUrl)}">
     <text x="200" y="268" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="${FADED}" text-decoration="underline">verify this badge: ${escapeHtml(options.verifyUrl)}</text>
   </a>
+  ${sevenMark}
 </svg>`;
 }
 

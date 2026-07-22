@@ -96,7 +96,8 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>We take ${STORE_METADATA.currency} on ${STORE_METADATA.chain} over ${STORE_METADATA.protocol}.
         Agents: start at <a href="/llms.txt"><code>/llms.txt</code></a> or
-        <a href="/menu.json"><code>/menu.json</code></a>.</p>
+        <a href="/menu.json"><code>/menu.json</code></a>; the full contract
+        hangs at <a href="/openapi.json"><code>/openapi.json</code></a>.</p>
     </div>
   </main>
 </body>

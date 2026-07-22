@@ -1,5 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
+import { isRecord } from "@/types";
 import type {
+  BazaarLedgerEntry,
   CommissionRequest,
   GazetteIssue,
   OrderRecord,
@@ -21,6 +23,42 @@ export interface AdminPageData {
   weekNote: string;
   tips: TipRecord[];
   gazetteIssues: GazetteIssue[];
+  bazaarLedger: BazaarLedgerEntry[];
+}
+
+/** Pulls a human-readable status out of one extension response payload. */
+function extensionStatus(payload: unknown): string {
+  if (!isRecord(payload)) {
+    return JSON.stringify(payload);
+  }
+  const status = typeof payload["status"] === "string" ? payload["status"] : "";
+  const reason =
+    typeof payload["rejectedReason"] === "string"
+      ? payload["rejectedReason"]
+      : typeof payload["reason"] === "string"
+        ? payload["reason"]
+        : "";
+  if (status && reason) {
+    return `${status} (${reason})`;
+  }
+  return status || reason || JSON.stringify(payload);
+}
+
+function bazaarHtml(entries: BazaarLedgerEntry[]): string {
+  if (entries.length === 0) {
+    return "<p>No EXTENSION-RESPONSES headers seen from the facilitator yet. They arrive with settled payments once the Bazaar starts answering.</p>";
+  }
+  return entries
+    .map((entry) => {
+      const statuses = Object.entries(entry.extensions)
+        .map(
+          ([key, payload]) =>
+            `${escapeHtml(key)}: ${escapeHtml(extensionStatus(payload))}`,
+        )
+        .join("; ");
+      return `<li><strong>${escapeHtml(entry.path)}</strong> [${escapeHtml(entry.operation)}] — ${statuses} — ${escapeHtml(entry.observed_at)}</li>`;
+    })
+    .join("\n");
 }
 
 function ordersHtml(orders: OrderRecord[]): string {
@@ -209,6 +247,21 @@ export function renderAdminPage(data: AdminPageData): string {
   <section>
     <h2>Guestbook moderation</h2>
     <ul>${guestbookHtml(data.guestbook)}</ul>
+  </section>
+
+  <section>
+    <h2>Bazaar ledger (extension responses)</h2>
+    <p>What the facilitator said about our discovery declarations, per settled route.</p>
+    <ul>${bazaarHtml(data.bazaarLedger)}</ul>
+  </section>
+
+  <section>
+    <h2>Monthly patronage note</h2>
+    <p>Served, signed, to every current recurring_patronage pass this month.</p>
+    <form method="POST" action="/admin/patronage/note">
+      <input type="text" name="monthly_note" placeholder="This month's note to standing patrons" maxlength="1000" required>
+      <button type="submit">Ink it for ${new Date().toISOString().slice(0, 7)}</button>
+    </form>
   </section>
 
   <section>

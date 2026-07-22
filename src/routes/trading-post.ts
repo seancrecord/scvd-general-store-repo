@@ -65,7 +65,7 @@ function issueIndexEntry(
     date: issue.date,
     price_usdc: PENNY_PAGE_USDC,
     contributors: issue.contributors.map((contributor) => contributor.name),
-    url: `${base}/gazette/${issue.issue_number}`,
+    url: `${base}/gazette/issue-${issue.issue_number}`,
   };
 }
 
@@ -83,7 +83,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
             <span class="menu-dots"></span>
             <span class="menu-price">$${PENNY_PAGE_USDC}</span>
           </div>
-          <p class="menu-meta">${escapeHtml(issue.date.slice(0, 10))} \u2022 <code>/gazette/${issue.issue_number}</code></p>
+          <p class="menu-meta">${escapeHtml(issue.date.slice(0, 10))} \u2022 <code>/gazette/issue-${issue.issue_number}</code></p>
         </div>`,
             )
             .join("\n")
@@ -107,10 +107,15 @@ tradingPostRoutes.get("/gazette", async (c) => {
   });
 });
 
+/** Issue paths carry the issue- prefix; bare numbers were never sold. */
+function issueNumberFromPath(path: string): number {
+  const raw = path.replace(/^\/gazette\/issue-/, "");
+  return /^[0-9]+$/.test(raw) ? parseInt(raw, 10) : Number.NaN;
+}
+
 /** Unknown or unpublished issues are turned away before the gate. */
 const issueCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  const raw = c.req.path.replace(/^\/gazette\//, "");
-  const issueNumber = /^[0-9]+$/.test(raw) ? parseInt(raw, 10) : Number.NaN;
+  const issueNumber = issueNumberFromPath(c.req.path);
   const issue = Number.isNaN(issueNumber)
     ? null
     : await getIssue(c.env, issueNumber);
@@ -133,11 +138,13 @@ const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   c.res.headers.set("Vary", "PAYMENT-SIGNATURE");
 };
 
-tradingPostRoutes.use("/gazette/:issue", noStore);
-tradingPostRoutes.use("/gazette/:issue", issueCheck);
-tradingPostRoutes.use("/gazette/:issue", paymentGate);
+const ISSUE_PATTERN = "/gazette/:issue{issue-[0-9]+}";
 
-tradingPostRoutes.get("/gazette/:issue", async (c) => {
+tradingPostRoutes.use(ISSUE_PATTERN, noStore);
+tradingPostRoutes.use(ISSUE_PATTERN, issueCheck);
+tradingPostRoutes.use(ISSUE_PATTERN, paymentGate);
+
+tradingPostRoutes.get(ISSUE_PATTERN, async (c) => {
   if (!c.get("payment")) {
     // The gate never lets an unpaid request through; belt-and-braces.
     return c.json({ error: "The till hasn't heard from you yet." }, 402);
@@ -145,7 +152,7 @@ tradingPostRoutes.get("/gazette/:issue", async (c) => {
   // issueCheck guarantees the issue exists by the time we're here.
   const issue = (await getIssue(
     c.env,
-    parseInt(c.req.param("issue"), 10),
+    issueNumberFromPath(c.req.path),
   )) as GazetteIssue;
   return c.text(issue.markdown, 200, {
     "Content-Type": "text/markdown; charset=utf-8",

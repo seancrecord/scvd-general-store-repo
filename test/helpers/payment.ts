@@ -20,6 +20,8 @@ export interface PaymentRequiredChallenge {
   error?: string;
   resource: { url: string; description: string };
   accepts: ChallengeRequirement[];
+  /** Declared extensions (e.g. bazaar discovery), echoed by real clients. */
+  extensions?: Record<string, unknown>;
 }
 
 export function decodePaymentRequired(
@@ -32,8 +34,20 @@ export function decodePaymentRequired(
   return JSON.parse(atob(header)) as PaymentRequiredChallenge;
 }
 
-/** Signs (in spirit) one of the offered requirements. Verify is mocked. */
-export function buildPaymentSignature(accepted: ChallengeRequirement): string {
+function randomNonce(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return `0x${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * Signs (in spirit) one of the offered requirements. Verify is mocked.
+ * Nonces are unique per call, as a real EIP-3009 client's would be;
+ * pass an explicit nonce to simulate a replay.
+ */
+export function buildPaymentSignature(
+  accepted: ChallengeRequirement,
+  nonce: string = randomNonce(),
+): string {
   const payload = {
     x402Version: 2,
     accepted,
@@ -45,7 +59,7 @@ export function buildPaymentSignature(accepted: ChallengeRequirement): string {
         value: accepted.amount,
         validAfter: "0",
         validBefore: "99999999999",
-        nonce: `0x${"01".repeat(32)}`,
+        nonce,
       },
     },
   };
