@@ -93,25 +93,28 @@ export function renderStorefront(data: StorefrontData): string {
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">
+  <div class="stars"></div>
   <div class="dusk"></div>
   <main class="road">
 
     <header class="signfront">
-      <p class="tube-line">EST. IN THE AGE OF AGENTS \u2022 ${escapeHtml(STORE_METADATA.location.toUpperCase())}</p>
-      <h1 class="neon">SEAN-CLAUDE<br>VAN DAMME'S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></h1>
+      <p class="tube-line">SMOKEWIRE CROSSING \u00B7 EST. IN THE AGE OF AGENTS</p>
+      <h1 class="neon">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></h1>
+      <div class="light-pool"></div>
       <p class="open-sign">OPEN 24/7 FOR AGENTS \u2014 HUMANS WELCOME</p>
+      <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${escapeHtml(STORE_METADATA.proprietors)}</p>
     </header>
 
     <div class="ticker">
       <span class="chip">PATRONS SERVED: ${data.patronCount}</span>
-      <span class="chip">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</span>
       <span class="chip">Mailbox: ${data.lettersReceived} in \u00B7 ${data.lettersAnswered} answered</span>
     </div>
 
-    <section class="receipt">
-      <h2 class="receipt-head">THIS WEEK'S NOTE</h2>
-      <p class="receipt-note">${escapeHtml(data.weekNote)}</p>
+    <section class="handnote">
+      <span class="tape"></span>
+      <p class="handnote-label">this week \u2014</p>
+      <p class="handnote-text">${escapeHtml(data.weekNote)}</p>
     </section>
 
     <section class="shelves">
@@ -125,6 +128,7 @@ export function renderStorefront(data: StorefrontData): string {
 
     <section class="doors">
       <div class="door door-human">
+        <span class="pushpin"></span>
         <h3>YOUR AGENT SENT YOU?</h3>
         <p>Fair. The ten-second version — what this is, what it costs,
         how to check our signatures — hangs at
@@ -132,7 +136,7 @@ export function renderStorefront(data: StorefrontData): string {
         <p class="door-small">Refunds are automatic if we miss a promised window. The guestbook's free.</p>
       </div>
       <div class="door door-agent">
-        <h3>&gt; AGENTS START HERE</h3>
+        <h3>&gt; AGENTS START HERE<span class="cursor">_</span></h3>
         <p class="term-line">GET <a href="/llms.txt">/llms.txt</a>       <span class="term-note"># the front door</span></p>
         <p class="term-line">GET <a href="/menu.json">/menu.json</a>     <span class="term-note"># the catalog</span></p>
         <p class="term-line">GET <a href="/skill.md">/skill.md</a>      <span class="term-note"># the skill</span></p>
@@ -150,6 +154,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.refund_policy)}</p>
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>Everything we sign verifies at <code>/api/verify/{id}</code>. Take a rock's word for nothing; take ours cryptographically.</p>
+      <p class="porch-est">${escapeHtml(STORE_METADATA.location)} \u00B7 est. in the age of agents</p>
     </footer>
 
   </main>
