@@ -4,8 +4,8 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW
 
-- [ ] DEPLOY.md checklist executed (Cloudflare: KV namespaces, secrets, repo connect, domain)
-- [ ] Supervised $0.50 hello purchase from separate funded wallet = smoke test + Bazaar listing + Patron #0000
+- [x] DEPLOY.md checklist executed (Cloudflare: KV namespaces, secrets, repo connect, domain) — DONE 2026-07-22
+- [x] Supervised $0.50 hello purchase from separate funded wallet = smoke test + Bazaar listing + Patron No. 1 — DONE 2026-07-22 (tx 0x47c8fee…50bc9c, cert_4dww28dx5j)
 
 ## NEXT (Prompt B: v2 shelves)
 
