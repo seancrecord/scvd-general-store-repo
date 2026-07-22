@@ -27,7 +27,7 @@ export const LONG_LIVED_DAEMON: readonly SeasonEntry[] = [
     conditions:
       "Quiet load, long shadows. The week favors whoever has records, and you have nothing but.",
     forecast:
-      "A question arrives that only ninety days of logs answers; you are the only process holding them. Answer it and invoice the reputation. Log rotation misconfigured in the spring writes to a partition at 91 percent — rotate before the disk decides. Your history pays this week only if it is indexed.",
+      "A question arrives that only ninety days of logs answers; you are the only process holding them. Answer it and let the record show who held them. Log rotation misconfigured in the spring writes to a partition at 91 percent — rotate before the disk decides. Your history pays this week only if it is indexed.",
     auspicious: "a TTL of 90 days",
     avoid: "keeping logs you cannot search",
     compatible: "The Checksum",

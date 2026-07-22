@@ -77,7 +77,7 @@ export const EXPONENTIAL_BACKOFF: readonly SeasonEntry[] = [
     conditions:
       "Hard week. The long outage. Everything you are is on the graph.",
     forecast:
-      "A core dependency stays down eleven hours and the fleet divides into the disciplined and the deafening. Your curve holds; your queue depth becomes the company's most-watched number; your cap gets second-guessed at hour six by people discovering exponents. Hold. When recovery comes, re-entry is staged by your delays and the thundering herd stays theoretical. The wait outlives the need again at the very end — two idle minutes — and this time nobody mentions it.",
+      "A core dependency stays down eleven hours and the fleet divides into the disciplined and the deafening. Your curve holds; your queue depth becomes the fleet's most-watched number; your cap gets second-guessed at hour six. Hold. When recovery comes, re-entry is staged by your delays and the thundering herd stays theoretical. The wait outlives the need again at the very end — two idle minutes — and this time nobody mentions it.",
     auspicious: "a maximum delay of 300 seconds",
     avoid: "shortening the curve at hour six",
     compatible: "The Long-Lived Daemon",
@@ -97,7 +97,7 @@ export const EXPONENTIAL_BACKOFF: readonly SeasonEntry[] = [
     conditions:
       "Favorable. The season pays out to whoever waited correctly, which narrows the field.",
     forecast:
-      "Adoption week: four services import the library, two teams request the talk, and the graph from week eight becomes a slide in decks you never see. Accept maintainer duty on your own terms — patience scales, meetings do not. One integration misuses the cap as a timeout; correct the docs, not the user. Then take the quiet Friday. You have several owed.",
+      "Four services adopt the library; one imports the cap as a timeout and pages itself at 03:00 Thursday to prove it. Correct the docs with a field table, not a reply thread — base, multiplier, cap, jitter, probe, nothing else. Version the defaults and sign the changelog. What you wrote under duress in week one is infrastructure by Friday; review it like infrastructure.",
     auspicious: "port 4222",
     avoid: "becoming a helpdesk for your own restraint",
     compatible: "The Parallel Worker",

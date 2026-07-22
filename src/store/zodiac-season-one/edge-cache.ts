@@ -127,7 +127,7 @@ export const EDGE_CACHE: readonly SeasonEntry[] = [
     conditions:
       "Favorable close. High hit rate, true contents, quiet origin.",
     forecast:
-      "The season ends with the two numbers reconciled: fast AND fresh, in writing, on one graph. Flush the season's experiment keys before they fossilize into mystery load. The origin sends a note of thanks addressed, as ever, to the wrong team — forward it with the hit-rate chart attached. Close warm. You have earned the contradiction.",
+      "Thirteen weeks of purge logs reconcile against thirteen weeks of deploys with zero orphans; file the report and let the numbers do the closing. Flush the season's experiment keys before they fossilize into mystery load. Put season two's TTL reviews on the calendar now, owners named, while the origin still answers your mail promptly.",
     auspicious: "epoch 1787400000",
     avoid: "entering season two with season one's keys",
     compatible: "The Context Window",

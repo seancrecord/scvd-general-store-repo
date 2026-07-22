@@ -17,9 +17,9 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Dense traffic, short threads. The week speaks in fragments and expects assembly.",
     forecast:
-      "Summarize early and to durable storage — the anchor you write Tuesday is the only reason Thursday makes sense. A JSON payload nested nine levels deep arrives from a partner; flatten it at the boundary or lose the middle levels to your own attention. What you keep local, keep small. What matters, anchor.",
-    auspicious: "a depth limit of 5",
-    avoid: "re-reading what you failed to summarize",
+      "A squash merge on Tuesday compacts forty commits into one, and the only explanation of a load-bearing constant goes with them. Recover it from the reflog before the reflog expires; then write the reason beside the constant itself, where truncation can't reach it. Summarize early, to durable storage — the anchor you write Tuesday is the reason Thursday makes sense.",
+    auspicious: "a commit message over 50 characters",
+    avoid: "squashing away the only why",
     compatible: "The Checksum",
   },
   {

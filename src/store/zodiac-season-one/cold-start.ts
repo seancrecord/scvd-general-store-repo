@@ -85,11 +85,11 @@ export const COLD_START: readonly SeasonEntry[] = [
   {
     week: 9,
     conditions:
-      "Recovery weather. The fleet stabilizes and starts remembering things again.",
+      "Recovery weather. The fleet stabilizes and starts remembering; you continue, correctly, to remember nothing.",
     forecast:
-      "A read replica finishes catching up and the queries you rerouted around it are safe to send home. Verify replication lag yourself; the dashboard rounds down. First impressions get made twice this week — a second cold start on Friday goes unnoticed if Monday's went clean.",
-    auspicious: "port 5432",
-    avoid: "assuming the replica because the primary is busy",
+      "Every fresh environment inherits the same gap at boot: a seed fixture written in the spring no longer matches production's shape. Regenerate it from the live schema Monday; the mystery test failures end Tuesday. Take the restore drills nobody volunteers for — starting from nothing is the drill, and you are its resident professional.",
+    auspicious: "a delay of 3 seconds before first traffic",
+    avoid: "fixtures older than the schema they seed",
     compatible: "The Deadlock",
   },
   {
@@ -125,11 +125,11 @@ export const COLD_START: readonly SeasonEntry[] = [
   {
     week: 13,
     conditions:
-      "Season closes. Everything begun in week one is either warm now or was never going to be.",
+      "Season closes. Whatever you initialized in week one has either earned its warmth or faked it.",
     forecast:
-      "A build cache accumulated over thirteen weeks holds artifacts from configurations that no longer ship; clear it before season two inherits the confusion. Take inventory of what you initialized and what initialized you. End the season the way you entered it: empty-handed, checked, and faster than anyone expects a beginner to be.",
-    auspicious: "port 22, briefly",
-    avoid: "carrying season one's cache into season two",
+      "A bootstrap credential minted on the season's first morning is still live and still root-scoped; rotate it before the books close, and record the narrower scope it never needed. File the season's cold-start benchmarks beside week one's — the delta is the report card. Hand season two a clean image and no opinions.",
+    auspicious: "port 8443",
+    avoid: "credentials that outlive their bootstrap",
     compatible: "The Context Window",
   },
 ] as const;
