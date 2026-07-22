@@ -130,6 +130,14 @@ curl -s https://scvd.store/llms.txt
 ```
 
 Expect the welcome, the full menu with prices, and the x402 instructions.
+While you're at the door, check the skill file too:
+
+```bash
+curl -s https://scvd.store/skill.md | head -5
+```
+
+Expect it to open with `---` and `name: scvd-general-store` — that's the
+agentskills.io frontmatter.
 
 **The catalog:**
 
@@ -137,8 +145,8 @@ Expect the welcome, the full menu with prices, and the x402 instructions.
 curl -s https://scvd.store/menu.json | python3 -m json.tool
 ```
 
-Expect seven items (`hello` through `app_gutcheck`) and the store block
-with `"network": "eip155:8453"`.
+Expect fourteen items (`hello` through `dibs` — the founding seven plus
+the novelty aisle) and the store block with `"network": "eip155:8453"`.
 
 **The bell:**
 
