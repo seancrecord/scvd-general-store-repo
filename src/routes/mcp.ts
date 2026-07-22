@@ -3,7 +3,7 @@ import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import type { EventSignals } from "@/lib/metrics";
-import { recordVerifyCall } from "@/lib/metrics";
+import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
@@ -263,6 +263,12 @@ async function handleRpc(
   request: JsonRpcRequest,
 ): Promise<Response> {
   const id = request.id ?? null;
+  if (request.method === "initialize" || request.method === "tools/list") {
+    // Front-porch log for the MCP door's free surfaces.
+    await recordPorchVisit(c.env, `mcp:${request.method}`, mcpSignals(c)).catch(
+      () => undefined,
+    );
+  }
   switch (request.method) {
     case "initialize": {
       const requested = isRecord(request.params)

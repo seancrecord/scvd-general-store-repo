@@ -28,8 +28,18 @@ export interface Env {
   ALERT_EMAIL?: string;
 }
 
-/** Where a request came from, per the 90-day falsification instrument. */
-export type Channel = "mcp" | "bazaar" | "skill" | "direct" | "unknown";
+/**
+ * Where a request came from, per the 90-day falsification instrument.
+ * infrastructure = known crawlers/scanners: the noise floor made
+ * visible, separate from organic AND house.
+ */
+export type Channel =
+  | "mcp"
+  | "bazaar"
+  | "skill"
+  | "direct"
+  | "infrastructure"
+  | "unknown";
 
 /** Set by the payment gate once money has actually settled. */
 export interface SettledPaymentVariables {

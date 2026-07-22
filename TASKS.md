@@ -24,6 +24,10 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [ ] the_confession — named in the phase plan, no spec reached the build agent; paste the spec and it ships
 - [x] The Gazette weekly-edition engine per GAZETTE_SPEC (now complete incl. CORRECTIONS + LOOKING AHEAD): editions on the /gazette rack alongside tip dispatches, auto-drafted Sundays behind THE_NINETY gate (3+ organic events), hand-set lever in /admin, keeper's pen before print — DONE 2026-07-22 (misread fixed: this is the Gazette, NOT town_papers)
 
+## NOW (keeper hands, post-porch-log)
+
+- [ ] Republish the ClawHub skill as v1.0.1 (`npx clawhub@latest skill publish ./registry/clawhub --slug scvd-general-store --name "Sean-Claude Van Damme's General Store" --version 1.0.1 --changelog "The skill says where you heard of us."`) — the example URLs now carry ?src=clawhub-skill for channel attribution
+
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 
 - [ ] town_papers — identity registry: $3 PWID instant, signed cert binding {chosen_name} to {paying wallet} + issue date + patron-history summary; public registry /papers/:name, uniqueness first-come, no expiry. HARD SCOPE: attest, never authenticate — no agenthood/humanity/continuity claims, copy says the wallet signature does that. Composes with nomenclature (nomenclature NAMES you, store picks; papers REGISTER you, you pick)

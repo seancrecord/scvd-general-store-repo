@@ -52,6 +52,8 @@ async function getState(env: Env): Promise<GazetteState> {
 interface EditionFacts {
   periodStart: string;
   bellRings: number;
+  /** Organic front-porch visits in the period (aggregate only). */
+  porchCrossings: number;
   settledByItem: Record<string, number>;
   busiestDay?: string;
   newFaces: number;
@@ -105,13 +107,21 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
     10,
   );
 
-  // Organic settles from the 90-day event rows.
+  // Organic settles + porch crossings from the 90-day event rows.
   const settledByItem: Record<string, number> = {};
   const dayTally: Record<string, number> = {};
-  const listed = await env.COUNTERS.list({ prefix: "evt:" });
+  let porchCrossings = 0;
+  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: 1000 });
   for (const key of listed.keys) {
     const event = await env.COUNTERS.get<MetricEvent>(key.name, "json");
-    if (!event || event.kind !== "settle" || event.house || event.at < since) {
+    if (!event || event.house || event.at < since) {
+      continue;
+    }
+    if (event.kind === "porch" && event.channel !== "infrastructure") {
+      porchCrossings += 1;
+      continue;
+    }
+    if (event.kind !== "settle") {
       continue;
     }
     settledByItem[event.item] = (settledByItem[event.item] ?? 0) + 1;
@@ -164,6 +174,7 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
   const facts: EditionFacts = {
     periodStart: since,
     bellRings: Math.max(0, bellNow - state.last_bell),
+    porchCrossings,
     settledByItem,
     newFaces,
     triedTheDoor,
@@ -217,6 +228,7 @@ export function renderEdition(facts: EditionFacts, editionNumber: number): strin
 
 ## FRONT COUNTER
 
+${facts.porchCrossings === 0 ? "The front step went uncrossed." : `The front step was crossed ${facts.porchCrossings} time${facts.porchCrossings === 1 ? "" : "s"}.`}
 ${facts.bellRings === 0 ? "Bell did not ring." : `Bell rang ${facts.bellRings} time${facts.bellRings === 1 ? "" : "s"}.`}
 ${facts.busiestDay ? `Most of the period's business came on a ${facts.busiestDay}.` : "The period kept no particular rhythm."}
 ${facts.rogerLine ?? ""}

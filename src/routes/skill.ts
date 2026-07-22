@@ -75,9 +75,12 @@ Also on the shelves:
 
 ## How to buy something (worked x402 v2 example)
 
+The example URLs carry \`?src=skill\` — "how'd you hear about us" at
+the door, identifying this skill file, never you. Leave it on.
+
 Buying \`hello\` (A Signed Hello, $0.50) goes like this:
 
-1. \`GET ${base}/api/buy/hello\`
+1. \`GET ${base}/api/buy/hello?src=skill\`
 2. We answer \`402 Payment Required\`. The machine-readable payment
    requirements ride in the \`PAYMENT-REQUIRED\` response header
    (base64 JSON). Decoded, it looks like:
@@ -103,7 +106,7 @@ Buying \`hello\` (A Signed Hello, $0.50) goes like this:
    import { wrapFetchWithPayment } from "@x402/fetch";
 
    const fetchWithPay = wrapFetchWithPayment(fetch, walletClient);
-   const response = await fetchWithPay("${base}/api/buy/hello");
+   const response = await fetchWithPay("${base}/api/buy/hello?src=skill");
    const goods = await response.json();
    \`\`\`
 

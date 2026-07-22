@@ -29,6 +29,8 @@ import {
   zodiacRoutes,
 } from "@/routes";
 import { sendAlert } from "@/lib/alerts";
+import type { EventSignals } from "@/lib/metrics";
+import { recordPorchVisit } from "@/lib/metrics";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
@@ -46,6 +48,76 @@ const app = new Hono<HonoEnv>();
 app.use("*", async (c, next) => {
   await next();
   c.res.headers.set("X-House-Rule", "Argue properly. --7");
+});
+
+/**
+ * The front-porch log: free-tier attribution. Paths and headers only;
+ * no bodies, no cookies, nothing client-side, nothing in responses.
+ * /mcp initialize+tools/list log inside the handler (needs the method).
+ */
+const PORCH_EXACT = new Map<string, string>([
+  ["/", "storefront"],
+  ["/what", "what"],
+  ["/llms.txt", "llms.txt"],
+  ["/menu.json", "menu.json"],
+  ["/skill.md", "skill.md"],
+  ["/gazette", "gazette"],
+]);
+
+function porchSurface(path: string, method: string): string | undefined {
+  const exact = PORCH_EXACT.get(path);
+  if (exact) {
+    return exact;
+  }
+  if (path.startsWith("/.well-known/")) {
+    return "well-known";
+  }
+  if (path === "/zodiac" || path.startsWith("/zodiac/")) {
+    return "zodiac";
+  }
+  if (path === "/api/bell" && method === "POST") {
+    return "bell";
+  }
+  if (path === "/api/guestbook") {
+    return method === "POST" ? "guestbook:write" : "guestbook:read";
+  }
+  return undefined;
+}
+
+app.use("*", async (c, next) => {
+  const surface = porchSurface(c.req.path, c.req.method);
+  if (surface) {
+    const signals: EventSignals = {};
+    const userAgent = c.req.header("User-Agent");
+    if (userAgent) {
+      signals.userAgent = userAgent;
+    }
+    const referrer = c.req.header("Referer");
+    if (referrer) {
+      signals.referrer = referrer;
+    }
+    const declared = c.req.query("src") ?? c.req.query("source");
+    if (declared) {
+      signals.declaredSource = declared;
+    }
+    const houseHeader = c.req.header("X-House");
+    if (houseHeader) {
+      signals.houseHeader = houseHeader;
+    }
+    const houseParam = c.req.query("house");
+    if (houseParam) {
+      signals.houseParam = houseParam;
+    }
+    const logged = recordPorchVisit(c.env, surface, signals).catch(() => {
+      // The log is a courtesy; the door never waits on it.
+    });
+    try {
+      c.executionCtx.waitUntil(logged);
+    } catch {
+      await logged;
+    }
+  }
+  await next();
 });
 
 app.route("/", storefrontRoutes);

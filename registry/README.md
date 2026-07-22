@@ -30,6 +30,12 @@ enumerated in it — it points agents at /menu.json as the source of
 truth, so the skill stays honest as shelves change. If the store's
 endpoints or promises change, republish a new version.
 
+v1.0.1 (2026-07-22): example URLs now carry ?src=clawhub-skill — the
+skill's self-identification at the door, feeding channel attribution.
+Query param chosen over a custom header because it survives copy-paste
+and minimal HTTP clients that can't set headers. KEEPER: republish
+with --version 1.0.1 --changelog "The skill says where you heard of us."
+
 ## awesome-x402 (`awesome-x402-submission.md`)
 
 The one-line entry, the PR title, and the filled template, with a
