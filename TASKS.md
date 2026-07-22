@@ -28,7 +28,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW (Phase 2 — keeper hands; agents drafted, keeper submits)
 
-- [ ] Review registry/clawhub/SKILL.md end to end, then publish via `npx clawhub skill publish` (commands in registry/README.md)
+- [x] Review registry/clawhub/SKILL.md end to end, then publish via `npx clawhub skill publish` — DONE 2026-07-22, published as scvd-general-store@1.0.0 by the keeper's hand
 - [ ] Review registry/awesome-x402-submission.md, pick a mirror (brooks091 or amarodeabreu had the activity), fork, one-line PR with the prepared title/body
 - [ ] Execute every live product manually once; fix anything that surprises a first buyer (22 items — the human-queue seven can be bought and self-fulfilled from /admin)
 - [ ] WAIT: Agentic.market listing request until mcp + bazaar channels show in the ledger
