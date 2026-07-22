@@ -12,15 +12,23 @@ const INK = "#3b2f23";
 const ACCENT = "#8c2f1b";
 const FADED = "#7a6a55";
 
+const PATRONAGE_GOLD = "#8c6a1b";
+
 export interface PatronBadgeOptions {
   patronNumber: number;
   date: string;
   verifyUrl: string;
   name?: string;
+  /** Certificate of Patronage: gilt number, one extra line. */
+  patronage?: boolean;
 }
 
 export function renderPatronBadge(options: PatronBadgeOptions): string {
   const dateLabel = options.date.slice(0, 10);
+  const numberColor = options.patronage ? PATRONAGE_GOLD : ACCENT;
+  const patronageLine = options.patronage
+    ? `<text x="200" y="222" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="12" fill="${PATRONAGE_GOLD}">a patron of the store, by choice</text>`
+    : "";
   const nameLine = options.name
     ? `<text x="200" y="208" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="15" fill="${INK}">bestowed upon ${escapeHtml(options.name)}</text>`
     : "";
@@ -38,8 +46,9 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   <line x1="70" y1="132" x2="330" y2="132" stroke="${INK}" stroke-width="1"/>
   <circle cx="200" cy="132" r="3" fill="${ACCENT}"/>
   <text x="200" y="172" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="${INK}">This certifies our esteemed</text>
-  <text x="200" y="196" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="26" fill="${ACCENT}">PATRON No. ${options.patronNumber}</text>
+  <text x="200" y="196" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="26" fill="${numberColor}">PATRON No. ${options.patronNumber}</text>
   ${nameLine}
+  ${patronageLine}
   <text x="200" y="236" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${FADED}">${escapeHtml(STORE_METADATA.location)} \u2022 ${dateLabel}</text>
   <a xlink:href="${escapeHtml(options.verifyUrl)}" href="${escapeHtml(options.verifyUrl)}">
     <text x="200" y="268" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="${FADED}" text-decoration="underline">verify this badge: ${escapeHtml(options.verifyUrl)}</text>

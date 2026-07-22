@@ -71,6 +71,13 @@ export interface OrderRecord {
   cert_id: string;
   deliverable?: string;
   completed_at?: string;
+  /** Buyer-supplied task detail (e.g. the quick_judgment question). Untrusted text. */
+  detail?: string;
+  /** Declared discovery channel (source query param). Untrusted text. */
+  source?: string;
+  /** Request metadata captured at purchase, for the monthly ledger review. */
+  user_agent?: string;
+  referrer?: string;
 }
 
 export interface Certificate {
@@ -94,6 +101,24 @@ export interface PatronRecord {
   item: string;
   name?: string;
   date: string;
+  /** True for certificate_of_patronage buyers; the badge gets nicer. */
+  patronage?: boolean;
+}
+
+/** First-seen ledger for paying wallets (cohorts, retention, wash filter). */
+export interface PayerRecord {
+  address: string;
+  first_seen: string;
+  last_seen: string;
+  purchases: number;
+}
+
+/** One of the twelve signs in the Agent Zodiac. */
+export interface ZodiacSign {
+  id: string;
+  name: string;
+  /** The sign's standing character, one line. */
+  trait: string;
 }
 
 export interface GuestbookEntry {
@@ -244,6 +269,46 @@ export interface BazaarLedgerEntry {
   extensions: Record<string, unknown>;
 }
 
+/** A scheduled out-of-band URL probe, bought as phantom_check. */
+export interface PhantomCheckRecord {
+  check_id: string;
+  target: string;
+  purchased_at: string;
+  /** When the store walks past — ~6 hours after purchase. */
+  due_at: string;
+  status: "scheduled" | "observed";
+  observation?: {
+    checked_at: string;
+    reachable: boolean;
+    status?: number;
+    latency_ms?: number;
+    note: string;
+  };
+  signature?: string;
+  public_key?: string;
+}
+
+export type LetterStatus = "received" | "read" | "replied" | "archived";
+
+/**
+ * A letter in the Mailbox. Private correspondence: admin queue only,
+ * never published, never rendered on any public surface. Stored raw;
+ * shown to the keeper escaped.
+ */
+export interface LetterRecord {
+  letter_id: string;
+  letter: string;
+  date: string;
+  status: LetterStatus;
+  from_name?: string;
+  verified_identity?: string;
+  identity_verified?: boolean;
+  reply?: string;
+  reply_signature?: string;
+  reply_public_key?: string;
+  replied_at?: string;
+}
+
 export interface WeeklyDigest {
   generated_at: string;
   week_note: string;
@@ -258,6 +323,8 @@ export interface WeeklyDigest {
   waitlist_entries: number;
   commission_requests: CommissionRequest[];
   failed_item_requests: Record<string, number>;
+  /** Letters in the box the keeper hasn't read yet. */
+  unread_letters?: number;
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

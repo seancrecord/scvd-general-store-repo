@@ -55,6 +55,27 @@ export {
 } from "@/services/patronage";
 export { deliverInstantGoods } from "@/services/instant-goods";
 export {
+  schedulePhantomCheck,
+  observePhantomCheck,
+  getPhantomCheck,
+  sweepPhantomChecks,
+} from "@/services/phantom";
+export {
+  submitLetter,
+  getLetter,
+  listLetters,
+  setLetterStatus,
+  replyToLetter,
+  letterCounts,
+  unreadLetterCount,
+  LETTER_CAP,
+} from "@/services/letters";
+export {
+  signForAddress,
+  weeklyHoroscope,
+  isWalletAddress,
+} from "@/services/zodiac";
+export {
   renderMenuMarkdown,
   renderItemMarkdown,
   wantsMarkdown,

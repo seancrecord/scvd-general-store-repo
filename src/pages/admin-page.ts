@@ -4,10 +4,13 @@ import type {
   BazaarLedgerEntry,
   CommissionRequest,
   GazetteIssue,
+  LetterRecord,
   OrderRecord,
+  PayerRecord,
   TipRecord,
   WaitlistEntry,
 } from "@/types";
+import type { MonthLedger } from "@/lib/metrics";
 import type { ListedEntry } from "@/services/guestbook";
 
 /**
@@ -24,6 +27,86 @@ export interface AdminPageData {
   tips: TipRecord[];
   gazetteIssues: GazetteIssue[];
   bazaarLedger: BazaarLedgerEntry[];
+  monthLedger: MonthLedger;
+  payers: PayerRecord[];
+  letters: LetterRecord[];
+}
+
+/**
+ * The letter queue. Private correspondence: this back room is the only
+ * place a letter is ever rendered, and it renders escaped.
+ */
+function lettersHtml(letters: LetterRecord[]): string {
+  const active = letters.filter((letter) => letter.status !== "archived");
+  if (active.length === 0) {
+    return "<p>The box is empty. Somebody will write.</p>";
+  }
+  return active
+    .map((letter) => {
+      const actions =
+        letter.status === "replied"
+          ? `<p><em>Replied ${escapeHtml(letter.replied_at ?? "")}:</em> ${escapeHtml(letter.reply ?? "")}</p>`
+          : `${
+              letter.status === "received"
+                ? `<form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/read" style="display:inline"><button type="submit">Mark read</button></form>`
+                : ""
+            }
+            <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/reply">
+              <textarea name="reply" rows="2" cols="50" placeholder="The keeper's reply (signed on send)" required></textarea>
+              <button type="submit">Reply, signed</button>
+            </form>`;
+      return `<li>
+      <strong>${escapeHtml(letter.letter_id)}</strong> [${letter.status}]
+      ${letter.from_name ? `— from ${escapeHtml(letter.from_name)}` : "— unsigned"}
+      ${letter.verified_identity ? `— claimed identity (unverified): ${escapeHtml(letter.verified_identity)}` : ""}
+      — ${escapeHtml(letter.date)}
+      <p><em>Letter (visitor-written, private):</em> ${escapeHtml(letter.letter)}</p>
+      ${actions}
+      <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/archive" style="display:inline"><button type="submit">Archive</button></form>
+    </li>`;
+    })
+    .join("\n");
+}
+
+/** The Run 1 instrumentation review: 402s vs settles, tiers, channels, wallets. */
+function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
+  const items = Object.entries(ledger.items);
+  const rows =
+    items.length === 0
+      ? "<tr><td colspan=\"5\">No 402s issued this month yet.</td></tr>"
+      : items
+          .map(([item, row]) => {
+            const conversion =
+              row.challenges > 0
+                ? `${Math.round((row.settled / row.challenges) * 100)}%`
+                : "—";
+            const tiers = Object.entries(row.tiers)
+              .map(([tier, count]) => `${tier}:${count}`)
+              .join(" ");
+            return `<tr><td>${escapeHtml(item)}</td><td>${row.challenges}</td><td>${row.settled}</td><td>${conversion}</td><td>${escapeHtml(tiers || "—")}</td></tr>`;
+          })
+          .join("\n");
+  const sources = Object.entries(ledger.sources)
+    .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
+    .join(" · ");
+  const payerLines =
+    payers.length === 0
+      ? "<li>No paying wallets on the books yet.</li>"
+      : payers
+          .slice(0, 15)
+          .map(
+            (payer) =>
+              `<li>${escapeHtml(payer.address)} — first seen ${escapeHtml(payer.first_seen.slice(0, 10))}, ${payer.purchases} purchase${payer.purchases === 1 ? "" : "s"}</li>`,
+          )
+          .join("\n");
+  return `
+    <table border="1" cellpadding="4">
+      <tr><th>item</th><th>402s issued</th><th>settled</th><th>conversion</th><th>tiers</th></tr>
+      ${rows}
+    </table>
+    <p>Channels (settled): ${sources || "none yet"}</p>
+    <p>Paying wallets (${payers.length} on file, newest first):</p>
+    <ul>${payerLines}</ul>`;
 }
 
 /** Pulls a human-readable status out of one extension response payload. */
@@ -80,6 +163,8 @@ function ordersHtml(orders: OrderRecord[]): string {
       patron #${order.patron_number} — ${escapeHtml(order.created_at)}
       ${order.agent_name ? `— agent: ${escapeHtml(order.agent_name)}` : ""}
       ${order.callback_url ? `— webhook on completion` : ""}
+      ${order.source ? `— source (their words): ${escapeHtml(order.source)}` : ""}
+      ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${escapeHtml(order.detail)}</p>` : ""}
       ${completeForm}
     </li>`;
     })
@@ -198,6 +283,12 @@ export function renderAdminPage(data: AdminPageData): string {
   </section>
 
   <section>
+    <h2>The ledger's answers — ${escapeHtml(data.monthLedger.month)}</h2>
+    <p>402s issued vs settled per item (a widening gap = price over budget caps), tier picks, channels, wallets. Reviewed monthly against Run 1; the ledger outranks research.</p>
+    ${ledgerAnswersHtml(data.monthLedger, data.payers)}
+  </section>
+
+  <section>
     <h2>Orders (${data.orders.length})</h2>
     <ul>${ordersHtml(data.orders)}</ul>
   </section>
@@ -215,6 +306,12 @@ export function renderAdminPage(data: AdminPageData): string {
   <section>
     <h2>Failed-item ledger</h2>
     <ul>${failedItemsHtml(data.failedItems)}</ul>
+  </section>
+
+  <section>
+    <h2>The Mailbox (${data.letters.filter((letter) => letter.status !== "archived").length} in the box)</h2>
+    <p>Private correspondence. Read here, replied here, published nowhere. The public sees only the counter.</p>
+    <ul>${lettersHtml(data.letters)}</ul>
   </section>
 
   <section>

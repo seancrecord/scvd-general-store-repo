@@ -10,8 +10,9 @@
     { "pattern": "scvd.store", "custom_domain": true }
   ],
   // Weekly digest: Sundays 7am ET (11:00 UTC during daylight time).
+  // Hourly: the phantom-check walk (due out-of-band probes).
   "triggers": {
-    "crons": ["0 11 * * SUN"]
+    "crons": ["0 11 * * SUN", "30 * * * *"]
   },
   // KV namespaces. Create them once with:
   //   wrangler kv namespace create ORDERS

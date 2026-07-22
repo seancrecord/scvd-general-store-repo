@@ -1,6 +1,7 @@
 import { createAnchor } from "@/services/anchors";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
+import { schedulePhantomCheck } from "@/services/phantom";
 import { STORE_METADATA } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
@@ -18,6 +19,8 @@ export interface InstantGoodsInput {
   summary?: string;
   /** recurring_patronage only: an existing pass to extend. */
   passId?: string;
+  /** phantom_check only: the URL to look at, pre-validated. */
+  targetUrl?: string;
 }
 
 export interface InstantGoods {
@@ -100,6 +103,21 @@ export async function deliverInstantGoods(
         },
       };
     }
+    case "phantom_check": {
+      const scheduled = await schedulePhantomCheck(env, input.targetUrl ?? "");
+      return {
+        deliverable: `Paid and noted. The store will walk past ${scheduled.record.target} around ${scheduled.record.due_at} — out-of-band, unannounced, the only honest way to check on a thing. The signed attestation will be waiting at ${scheduled.pickupUrl}. Silent failure doesn't get to stay silent here.`,
+        extras: {
+          check_id: scheduled.record.check_id,
+          due_at: scheduled.record.due_at,
+          pickup_url: scheduled.pickupUrl,
+        },
+      };
+    }
+    case "certificate_of_patronage":
+      return {
+        deliverable: `Patronage recorded, patron no. ${input.patronNumber}. This certificate entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge — and it means the more for that. The store knows its friends and writes them down in ink.`,
+      };
     default:
       return { deliverable: helloNote(item, input.patronNumber) };
   }

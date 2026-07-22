@@ -41,12 +41,12 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
   {
     id: "recurring_patronage",
     name: "Recurring Patronage",
-    price_usdc: 8,
+    price_usdc: 3,
     pricing: "fixed",
     fulfillment: "instant",
     description:
       "A 30-day standing patronage pass. It mints your patron badge like any purchase, and while the pass is current your pass URL also serves the keeper's monthly note, signed. Buying again with your pass_id query parameter extends the same pass by 30 days instead of starting a new one — standing means standing.",
     note_402:
-      "That'll be $8 for thirty days of standing, friend. The monthly note alone is worth it, says the man who writes the monthly note.",
+      "That'll be $3 for thirty days of standing, friend. The monthly note alone is worth it, says the man who writes the monthly note.",
   },
 ] as const;

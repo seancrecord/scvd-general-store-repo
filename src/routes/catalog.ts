@@ -48,6 +48,8 @@ catalogRoutes.get("/menu.json", (c) => {
       x402_discovery: `${base}/.well-known/x402.json`,
       signing_key: `${base}/.well-known/scvd-signing-key`,
       item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
+      operator_glance: `${base}/what (for the human whose agent is here)`,
+      zodiac: `${base}/zodiac`,
     },
     items,
     reading_room: {
@@ -88,6 +90,10 @@ catalogRoutes.get("/menu.json", (c) => {
       trading_post: {
         url: `${base}/api/tip`,
         note: "POST a tip for the Gazette. A human reviews every one; published tips are credited and never auto-published.",
+      },
+      mailbox: {
+        url: `${base}/api/letter`,
+        note: "POST a private letter — free, one a day. The keeper reads Sundays and replies when he has something to say, which is not always. Never published.",
       },
     },
   });

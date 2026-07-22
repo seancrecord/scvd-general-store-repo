@@ -50,3 +50,11 @@ export {
   isNonceSpent,
   recordSpentNonce,
 } from "@/lib/replay-guard";
+export {
+  recordChallengeIssued,
+  recordSettlement,
+  readMonthLedger,
+  listPayers,
+  metricsMonth,
+  itemKeyFromPath,
+} from "@/lib/metrics";

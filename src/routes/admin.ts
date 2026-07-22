@@ -3,11 +3,17 @@ import { basicAuth } from "hono/basic-auth";
 import type { MiddlewareHandler } from "hono";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { listPayers, readMonthLedger } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderAdminPage } from "@/pages/admin-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { listIssues, publishIssue } from "@/services/gazette";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
+import {
+  listLetters,
+  replyToLetter,
+  setLetterStatus,
+} from "@/services/letters";
 import {
   completeOrder,
   listOrders,
@@ -52,6 +58,9 @@ adminRoutes.get("/admin", async (c) => {
     tips,
     gazetteIssues,
     bazaarLedger,
+    monthLedger,
+    payers,
+    letters,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -62,6 +71,9 @@ adminRoutes.get("/admin", async (c) => {
     listTips(c.env),
     listIssues(c.env),
     listBazaarLedger(c.env),
+    readMonthLedger(c.env),
+    listPayers(c.env),
+    listLetters(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -74,8 +86,44 @@ adminRoutes.get("/admin", async (c) => {
       tips: tips.map((tip) => tip.record),
       gazetteIssues,
       bazaarLedger,
+      monthLedger,
+      payers,
+      letters: letters.map((entry) => entry.record),
     }),
   );
+});
+
+adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {
+  const updated = await setLetterStatus(c.env, c.req.param("letter_id"), "read");
+  if (!updated) {
+    return c.text("No letter by that id in the box.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/letters/:letter_id/reply", async (c) => {
+  const form = await c.req.parseBody();
+  const reply = sanitizeText(form["reply"], 5000);
+  if (!reply) {
+    return c.text("A reply needs words in it.", 400);
+  }
+  const updated = await replyToLetter(c.env, c.req.param("letter_id"), reply);
+  if (!updated) {
+    return c.text("No letter by that id in the box.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/letters/:letter_id/archive", async (c) => {
+  const updated = await setLetterStatus(
+    c.env,
+    c.req.param("letter_id"),
+    "archived",
+  );
+  if (!updated) {
+    return c.text("No letter by that id in the box.", 404);
+  }
+  return c.redirect("/admin");
 });
 
 adminRoutes.post("/admin/patronage/note", async (c) => {

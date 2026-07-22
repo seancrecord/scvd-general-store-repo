@@ -90,9 +90,27 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/** phantom_check needs a real URL BEFORE money moves: no target, no charge. */
+const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/phantom_check") {
+    return next();
+  }
+  if (!isValidHttpUrl(c.req.query("url"))) {
+    return c.json(
+      {
+        error:
+          "A phantom check needs a url query parameter — http or https, the thing you want looked at. No target, no charge.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
+buyRoutes.use("/api/buy/*", phantomCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -117,6 +135,9 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (payment.tipUsdc > 0) {
     mintOptions.tipUsdc = payment.tipUsdc;
   }
+  if (item.id === "certificate_of_patronage") {
+    mintOptions.patronage = true;
+  }
   const minted = await mintCertificate(c.env, mintOptions);
 
   const patronBlock = {
@@ -137,6 +158,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     if (item.id === "context_anchor") {
       // anchorCheck validated presence and length before the gate.
       goodsInput.summary = (c.req.query("summary") ?? "").replace(/\0/g, "");
+    }
+    if (item.id === "phantom_check") {
+      // phantomCheck validated the URL before the gate.
+      goodsInput.targetUrl = c.req.query("url") ?? "";
     }
     if (item.id === "recurring_patronage") {
       const passId = sanitizeText(c.req.query("pass_id"), 40);
@@ -171,6 +196,23 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (callbackUrl) {
     orderOptions.callbackUrl = callbackUrl;
+  }
+  // Ledger instrumentation: what the buyer asked, where they came from.
+  const detail = sanitizeText(c.req.query("detail"), 600);
+  if (detail) {
+    orderOptions.detail = detail;
+  }
+  const source = sanitizeText(c.req.query("source"), 40);
+  if (source) {
+    orderOptions.source = source;
+  }
+  const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
+  if (userAgent) {
+    orderOptions.userAgent = userAgent;
+  }
+  const referrer = sanitizeText(c.req.header("Referer"), 200);
+  if (referrer) {
+    orderOptions.referrer = referrer;
   }
   const order = await createOrder(c.env, orderOptions);
   await recordInventorySale(c.env, item);

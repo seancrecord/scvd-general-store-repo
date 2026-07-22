@@ -44,3 +44,11 @@ export function newAnchorId(): string {
 export function newPassId(): string {
   return `pass_${randomToken(10)}`;
 }
+
+export function newCheckId(): string {
+  return `check_${randomToken(10)}`;
+}
+
+export function newLetterId(): string {
+  return `letter_${randomToken(12)}`;
+}

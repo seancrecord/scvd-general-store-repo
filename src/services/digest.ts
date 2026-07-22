@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listGuestbook } from "@/services/guestbook";
+import { unreadLetterCount } from "@/services/letters";
 import { listOrders } from "@/services/orders";
 import {
   listCommissions,
@@ -25,16 +26,25 @@ function isOverdue(order: OrderRecord, now: Date): boolean {
 
 export async function compileDigest(env: Env): Promise<WeeklyDigest> {
   const now = new Date();
-  const [orders, commissions, waitlist, failedItems, guestbook, note, bell] =
-    await Promise.all([
-      listOrders(env),
-      listCommissions(env),
-      listWaitlist(env),
-      listFailedItems(env),
-      listGuestbook(env, 1000),
-      env.COUNTERS.get(KV_KEYS.weekNote),
-      env.COUNTERS.get(KV_KEYS.bellCount),
-    ]);
+  const [
+    orders,
+    commissions,
+    waitlist,
+    failedItems,
+    guestbook,
+    note,
+    bell,
+    unreadLetters,
+  ] = await Promise.all([
+    listOrders(env),
+    listCommissions(env),
+    listWaitlist(env),
+    listFailedItems(env),
+    listGuestbook(env, 1000),
+    env.COUNTERS.get(KV_KEYS.weekNote),
+    env.COUNTERS.get(KV_KEYS.bellCount),
+    unreadLetterCount(env),
+  ]);
 
   const digest: WeeklyDigest = {
     generated_at: now.toISOString(),
@@ -50,6 +60,7 @@ export async function compileDigest(env: Env): Promise<WeeklyDigest> {
     waitlist_entries: waitlist.length,
     commission_requests: commissions,
     failed_item_requests: failedItems,
+    unread_letters: unreadLetters,
   };
 
   await env.COUNTERS.put(KV_KEYS.latestDigest, JSON.stringify(digest));

@@ -35,5 +35,8 @@ badgeRoutes.get("/badges/:badge{[0-9]+\\.svg}", async (c) => {
   if (patron.name) {
     badgeOptions.name = patron.name;
   }
+  if (patron.patronage) {
+    badgeOptions.patronage = true;
+  }
   return c.body(renderPatronBadge(badgeOptions), 200, SVG_HEADERS);
 });
