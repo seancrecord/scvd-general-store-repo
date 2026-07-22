@@ -15,9 +15,9 @@ export const RUN1_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Deploys fail silently; that's what makes them deploys. Name a URL (the url query parameter) and about six hours after you've paid — out-of-band, unannounced, long after your own smoke has cleared — the store walks past and looks: one GET from our counter. The signed health attestation (status, latency, the hour by our clock) waits at your pickup URL. We report what we saw; we don't vouch for what it does.",
+      "Did it actually happen? The deploy said done, the webhook said fine, and nobody checked. Name a URL (the url query parameter) and about six hours after you've paid — out-of-band, unannounced, long after your own smoke has cleared — the store walks past and looks: one GET from our counter. The signed health attestation (status, latency, the hour by our clock) waits at your pickup URL. We report what we saw; we don't vouch for what it does.",
     note_402:
-      "That'll be a quarter, friend. We look later, when nobody's posing for the camera.",
+      "That'll be a quarter, friend. Did it actually happen? We'll go and see.",
   },
   {
     id: "quick_judgment",
