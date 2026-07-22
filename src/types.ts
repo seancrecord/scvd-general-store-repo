@@ -21,7 +21,15 @@ export interface Env {
   STORE_BASE_URL: string;
 }
 
-export type HonoEnv = { Bindings: Env };
+/** Set by the payment gate once money has actually settled. */
+export interface SettledPaymentVariables {
+  payment?: import("@/lib/payments").SettledPayment;
+}
+
+export type HonoEnv = {
+  Bindings: Env;
+  Variables: SettledPaymentVariables;
+};
 
 export type ItemPricing = "fixed" | "pay_what_it_deserves";
 export type ItemFulfillment = "instant" | "human_queue";

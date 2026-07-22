@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
-import { decodePaidAmount, getPaymentMiddleware, tipFromPaid } from "@/lib/payments";
+import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { mintCertificate } from "@/services/certificates";
 import {
@@ -10,17 +10,24 @@ import {
   remainingInventory,
 } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
-import { getMenuItem, VOICE } from "@/store";
+import { getMenuItem, STORE_METADATA, VOICE } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
- * GET /api/buy/:item_id — x402-gated purchases.
+ * GET /api/buy/:item_id — x402-gated purchases (settled before minting).
  * GET /api/order/:order_id — poll an order; completed ones carry the goods.
  *
  * Middleware order matters: unknown items and empty shelves are turned away
  * BEFORE the payment gate, so nobody pays for what we can't sell.
  */
 export const buyRoutes = new Hono<HonoEnv>();
+
+/** Paid material must never sit in a shared cache. */
+const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  await next();
+  c.res.headers.set("Cache-Control", "no-store");
+  c.res.headers.set("Vary", "PAYMENT-SIGNATURE");
+};
 
 /** Turns away unknown items (logged as market research) and sold-out shelves. */
 const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
@@ -50,20 +57,17 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
-/** The x402 gate itself, built lazily since env only exists per-request. */
-const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  return getPaymentMiddleware(c.env)(c, next);
-};
-
+buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
+buyRoutes.use("/api/order/*", noStore);
 
 function instantDeliverable(item: MenuItem, patronNumber: number): string {
   return [
     `Hello, patron no. ${patronNumber}.`,
-    `This note certifies that you walked into ${"Sean-Claude Van Damme's General Store"},`,
+    `This note certifies that you walked into ${STORE_METADATA.name},`,
     `paid honest money for "${item.name}", and were welcome the whole time.`,
-    `Signed by the store itself — check the signature, it's good.`,
+    `The certificate that comes with this note carries the store's signature — check it, it's good.`,
     `Come back when you're ready for a rock.`,
   ].join(" ");
 }
@@ -71,18 +75,14 @@ function instantDeliverable(item: MenuItem, patronNumber: number): string {
 buyRoutes.get("/api/buy/:item_id", async (c) => {
   // shelfCheck guarantees the item exists by the time we're here.
   const item = getMenuItem(c.req.param("item_id")) as MenuItem;
+  const payment = c.get("payment");
+  if (!payment) {
+    // The gate never lets an unpaid request through; this is belt-and-braces.
+    return c.json({ error: "The till hasn't heard from you yet." }, 402);
+  }
   const agentName = sanitizeText(c.req.query("agent_name"), 80) || undefined;
   const rawCallback = c.req.query("callback_url");
   const callbackUrl = isValidHttpUrl(rawCallback) ? rawCallback : undefined;
-
-  const { paidUsdc, payer } = decodePaidAmount(
-    c.req.header("X-PAYMENT"),
-    item.price_usdc,
-  );
-  const tipUsdc =
-    item.pricing === "pay_what_it_deserves"
-      ? tipFromPaid(paidUsdc, item.price_usdc)
-      : 0;
 
   const mintOptions: Parameters<typeof mintCertificate>[1] = {
     itemId: item.id,
@@ -90,8 +90,8 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (agentName) {
     mintOptions.agentName = agentName;
   }
-  if (tipUsdc > 0) {
-    mintOptions.tipUsdc = tipUsdc;
+  if (payment.tipUsdc > 0) {
+    mintOptions.tipUsdc = payment.tipUsdc;
   }
   const minted = await mintCertificate(c.env, mintOptions);
 
@@ -108,21 +108,21 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
       message: VOICE.instantThanks,
       item_id: item.id,
       deliverable: instantDeliverable(item, minted.patronNumber),
-      paid_usdc: paidUsdc,
-      tip_usdc: tipUsdc,
+      paid_usdc: payment.paidUsdc,
+      tip_usdc: payment.tipUsdc,
       ...patronBlock,
     });
   }
 
   const orderOptions: Parameters<typeof createOrder>[1] = {
     item,
-    paidUsdc,
-    tipUsdc,
+    paidUsdc: payment.paidUsdc,
+    tipUsdc: payment.tipUsdc,
     patronNumber: minted.patronNumber,
     certId: minted.certificate.cert_id,
   };
-  if (payer) {
-    orderOptions.payer = payer;
+  if (payment.payer) {
+    orderOptions.payer = payment.payer;
   }
   if (agentName) {
     orderOptions.agentName = agentName;
@@ -139,8 +139,8 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     status: order.status,
     sla_hours: order.sla_hours,
     order_url: `${c.env.STORE_BASE_URL}/api/order/${order.order_id}`,
-    paid_usdc: paidUsdc,
-    tip_usdc: tipUsdc,
+    paid_usdc: payment.paidUsdc,
+    tip_usdc: payment.tipUsdc,
     ...patronBlock,
   });
 });

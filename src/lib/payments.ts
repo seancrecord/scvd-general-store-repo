@@ -1,95 +1,145 @@
-import { paymentMiddleware } from "x402-hono";
-import { exact } from "x402/schemes";
-import type { FacilitatorConfig, RoutesConfig } from "x402/types";
-import { createCdpAuthHeaders } from "@coinbase/x402";
+import { createFacilitatorConfig } from "@coinbase/x402";
+import {
+  HTTPFacilitatorClient,
+  x402HTTPResourceServer,
+  x402ResourceServer,
+} from "@x402/core/server";
+import type {
+  PaymentOption,
+  RouteConfig,
+  RoutesConfig,
+} from "@x402/core/http";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { MENU_ITEMS } from "@/store";
-import type { Env } from "@/types";
+import type { Env, MenuItem } from "@/types";
 
 /**
- * x402 payment plumbing. USDC on Base, CDP as facilitator.
- * Each menu item gates GET /api/buy/<item_id> at its minimum price;
- * anything paid above the minimum is recorded as a tip.
+ * x402 v2 payment plumbing. USDC on Base (eip155:8453), CDP facilitator.
+ *
+ * Pay-what-it-deserves items are offered as multiple exact-scheme tiers in
+ * the 402 challenge (v2 requires the authorized value to exactly equal one
+ * offered amount); paying a tier above the minimum is recorded as a tip.
  */
 
+export const BASE_NETWORK = "eip155:8453";
 const USDC_DECIMALS = 6;
-const CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 
-type PaymentMiddleware = ReturnType<typeof paymentMiddleware>;
+/** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
+const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
 
-function buildRoutesConfig(env: Env): RoutesConfig {
-  const routes: RoutesConfig = {};
-  for (const item of MENU_ITEMS) {
-    routes[`GET /api/buy/${item.id}`] = {
-      price: `$${item.price_usdc}`,
-      network: "base",
-      config: {
-        description: `${item.name} — ${item.note_402}`,
-        mimeType: "application/json",
-        resource: `${env.STORE_BASE_URL}/api/buy/${item.id}` as `${string}://${string}`,
-        errorMessages: {
-          paymentRequired: item.note_402,
-        },
-      },
-    };
+export function priceTiersUsdc(item: MenuItem): number[] {
+  if (item.pricing !== "pay_what_it_deserves") {
+    return [item.price_usdc];
   }
-  return routes;
+  return PWID_TIER_MULTIPLIERS.map(
+    (multiplier) => Math.round(item.price_usdc * multiplier * 100) / 100,
+  );
 }
 
-function buildFacilitatorConfig(env: Env): FacilitatorConfig {
+export function usdcToAtomic(usdc: number): string {
+  return String(Math.round(usdc * 10 ** USDC_DECIMALS));
+}
+
+export function atomicToUsdc(atomic: string): number {
+  return Number(BigInt(atomic)) / 10 ** USDC_DECIMALS;
+}
+
+/**
+ * Shown when a human wanders into a buy URL with a browser. We don't run a
+ * wallet paywall; humans get pointed back to the front porch.
+ */
+function browserPaywallHtml(item: MenuItem, env: Env): string {
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>That shelf is for agents</title></head>
+<body style="font-family: Georgia, serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem;">
+<h1>That shelf is for agents, friend.</h1>
+<p>&ldquo;${item.name}&rdquo; is bought over the x402 protocol &mdash; your agent
+will know what to do with the 402 this page came with.</p>
+<p>You're welcome to browse the <a href="${env.STORE_BASE_URL}/">front of the store</a>
+like a regular person. The guestbook's free.</p>
+</body></html>`;
+}
+
+function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
+  const payTo = env.PAY_TO_ADDRESS;
+  const accepts: PaymentOption[] = priceTiersUsdc(item).map((tierUsdc) => ({
+    scheme: "exact",
+    network: BASE_NETWORK,
+    price: `$${tierUsdc}`,
+    payTo,
+  }));
+  const tierNote =
+    item.pricing === "pay_what_it_deserves"
+      ? " Higher offers in the accepts list are welcome; the difference is recorded as a tip and the keeper notices tips."
+      : "";
   return {
-    url: CDP_FACILITATOR_URL,
-    createAuthHeaders: createCdpAuthHeaders(
-      env.CDP_API_KEY_ID,
-      env.CDP_API_KEY_SECRET,
-    ),
+    accepts,
+    description: `${item.name} — ${item.description}${tierNote}`,
+    mimeType: "application/json",
+    resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
+    customPaywallHtml: browserPaywallHtml(item, env),
+    unpaidResponseBody: async () => ({
+      contentType: "application/json",
+      body: {
+        error: item.note_402,
+        note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign one of the accepts and retry with the PAYMENT-SIGNATURE header.",
+        item_id: item.id,
+        min_price_usdc: item.price_usdc,
+        pricing: item.pricing,
+      },
+    }),
+    settlementFailedResponseBody: async () => ({
+      contentType: "application/json",
+      body: {
+        error:
+          "The payment didn't clear, so nothing left the shelf. No charge, no order. Try again when the coast is clear.",
+      },
+    }),
   };
 }
 
-let cachedMiddleware: PaymentMiddleware | undefined;
-
-/** Built lazily because env bindings only exist at request time. */
-export function getPaymentMiddleware(env: Env): PaymentMiddleware {
-  if (!cachedMiddleware) {
-    cachedMiddleware = paymentMiddleware(
-      env.PAY_TO_ADDRESS as `0x${string}`,
-      buildRoutesConfig(env),
-      buildFacilitatorConfig(env),
-    );
-  }
-  return cachedMiddleware;
+export interface PaymentStack {
+  httpServer: x402HTTPResourceServer;
+  initialized: Promise<void>;
 }
 
-export interface PaidAmount {
-  paidUsdc: number;
-  payer?: string;
-}
+let cachedStack: PaymentStack | undefined;
 
 /**
- * Reads how much the visitor actually put on the counter, so overpayment
- * above the minimum can be recorded as a tip. Returns the minimum if the
- * header can't be decoded — the middleware already verified payment.
+ * Built lazily (env bindings only exist at request time) and cached per
+ * isolate. initialize() fetches the facilitator's supported kinds once.
  */
-export function decodePaidAmount(
-  paymentHeader: string | undefined,
-  minimumUsdc: number,
-): PaidAmount {
-  if (!paymentHeader) {
-    return { paidUsdc: minimumUsdc };
-  }
-  try {
-    const payload = exact.evm.decodePayment(paymentHeader);
-    if (!("authorization" in payload.payload)) {
-      return { paidUsdc: minimumUsdc };
+export function getPaymentStack(env: Env): PaymentStack {
+  if (!cachedStack) {
+    const facilitator = new HTTPFacilitatorClient(
+      createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET),
+    );
+    const resourceServer = new x402ResourceServer(facilitator).register(
+      BASE_NETWORK,
+      new ExactEvmScheme(),
+    );
+    const routes: RoutesConfig = {};
+    for (const item of MENU_ITEMS) {
+      routes[`GET /api/buy/${item.id}`] = buyRouteConfig(item, env);
     }
-    const atomic = BigInt(payload.payload.authorization.value);
-    const paidUsdc = Number(atomic) / 10 ** USDC_DECIMALS;
-    return {
-      paidUsdc: Math.max(paidUsdc, minimumUsdc),
-      payer: payload.payload.authorization.from,
-    };
-  } catch {
-    return { paidUsdc: minimumUsdc };
+    const httpServer = new x402HTTPResourceServer(resourceServer, routes);
+    cachedStack = { httpServer, initialized: httpServer.initialize() };
+    // A failed first sync shouldn't poison the isolate forever.
+    cachedStack.initialized.catch(() => {
+      cachedStack = undefined;
+    });
   }
+  return cachedStack;
+}
+
+/** What the payment gate hands to the buy handler once money has settled. */
+export interface SettledPayment {
+  paidUsdc: number;
+  tipUsdc: number;
+  payer?: string;
+  transaction: string;
+  /** PAYMENT-RESPONSE header to attach to the final response. */
+  settleHeaders: Record<string, string>;
 }
 
 export function tipFromPaid(paidUsdc: number, minimumUsdc: number): number {

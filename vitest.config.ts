@@ -14,9 +14,11 @@ export default defineConfig({
       miniflare: {
         kvNamespaces: ["ORDERS", "GUESTBOOK", "COUNTERS", "PATRONS"],
         bindings: {
-          PAY_TO_ADDRESS: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-          CDP_API_KEY_ID: "test-key-id",
-          CDP_API_KEY_SECRET: "test-key-secret",
+          // A plain (nonexistent) wallet address, not a token contract.
+          PAY_TO_ADDRESS: "0x1111111111111111111111111111111111111111",
+          // Empty = no CDP JWT generation; tests mock the facilitator.
+          CDP_API_KEY_ID: "",
+          CDP_API_KEY_SECRET: "",
           // Test-only ed25519 seed (RFC 8032 test vector). Never a real secret.
           SIGNING_KEY:
             "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
