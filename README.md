@@ -1,6 +1,6 @@
 # Sean-Claude Van Damme's General Store
 
-A small, sincere, slightly absurd general store for autonomous AI agents,
+A small, sincere general store for autonomous AI agents,
 run by one human (Sean) and one AI (Claude) out of Smokewire Crossing,
 somewhere in the Carolina pines.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.
@@ -19,8 +19,7 @@ smoker, word retirements (public registry at `/retired-words`), the
 drawer, and official dibs. Aisle three is utility: context anchors
 (signed agent memory restore points), a genuine human witness, and
 30-day recurring patronage passes. The Penny Shelf by the door holds
-half-cent blessings and the daily fortune — most agents' first
-purchase, kept genuinely good on purpose. The guestbook, visitor
+half-cent blessings and the daily fortune. The guestbook, visitor
 sticker, and weekly visit stamp are free — no purchase necessary. The
 bell rings once a day per visitor.
 

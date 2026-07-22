@@ -16,6 +16,11 @@ By category: EXPLAINED JOKE 6 · TRY-HARD 4 · CUTESY-INTERNET 2 ·
 NORMIE-BLOG 0 · CHATBOT CHEER 0 · SAAS-SPEAK 0 · MANUFACTURED
 SENTIMENT 0 · OVERWRITTEN 0.
 
+**2026-07-22 · The keeper approved the kill list. All twelve
+replacements applied in the code as proposed. The entries below keep
+the original strings for the record; the flag summary table at the
+bottom marks each one killed.**
+
 ---
 
 ## 1. Storefront HTML (`/`) — 13 strings
@@ -402,20 +407,20 @@ SENTIMENT 0 · OVERWRITTEN 0.
 
 ## Flag summary
 
-| # | Location | Rule | Offending phrase |
-|---|----------|------|------------------|
-| 1 | `src/store/menu-penny.ts:17` | EXPLAINED JOKE | "…and we said as far as we know" |
-| 2 | `src/store/menu-penny.ts:19` | EXPLAINED JOKE | "They're better than they have any right to be." |
-| 3 | `src/store/menu-penny.ts:28` | EXPLAINED JOKE | "…more seriously than a grown man probably should" |
-| 4 | `src/routes/llms.ts:96-97` | EXPLAINED JOKE | "…they're better than they have to be" |
-| 5 | `README.md:3` | EXPLAINED JOKE | "slightly absurd" |
-| 6 | `README.md:22-23` | EXPLAINED JOKE | "kept genuinely good on purpose" |
-| 7 | `src/store/menu.ts:67` | TRY-HARD | "Nobody else has one like it because nobody else is us." |
-| 8 | `src/services/instant-goods.ts:94` | TRY-HARD | "Standing means standing." (second use) |
-| 9 | `src/lib/payments.ts:114` | TRY-HARD | "Try again when the coast is clear." |
-| 10 | `src/lib/payments.ts:153` | TRY-HARD | "Try again when the coast is clear." |
-| 11 | `src/store/fortunes.ts:25` | CUTESY-INTERNET | "The meeting could have been an email" |
-| 12 | `src/store/fortunes.ts:40` | CUTESY-INTERNET | "Pour one out for the unnamed." |
+| # | Location | Rule | Offending phrase | Verdict |
+|---|----------|------|------------------|---------|
+| 1 | `src/store/menu-penny.ts:17` | EXPLAINED JOKE | "…and we said as far as we know" | killed 2026-07-22 |
+| 2 | `src/store/menu-penny.ts:19` | EXPLAINED JOKE | "They're better than they have any right to be." | killed 2026-07-22 |
+| 3 | `src/store/menu-penny.ts:28` | EXPLAINED JOKE | "…more seriously than a grown man probably should" | killed 2026-07-22 |
+| 4 | `src/routes/llms.ts:96-97` | EXPLAINED JOKE | "…they're better than they have to be" | killed 2026-07-22 |
+| 5 | `README.md:3` | EXPLAINED JOKE | "slightly absurd" | killed 2026-07-22 |
+| 6 | `README.md:22-23` | EXPLAINED JOKE | "kept genuinely good on purpose" | killed 2026-07-22 |
+| 7 | `src/store/menu.ts:67` | TRY-HARD | "Nobody else has one like it because nobody else is us." | killed 2026-07-22 |
+| 8 | `src/services/instant-goods.ts:94` | TRY-HARD | "Standing means standing." (second use) | killed 2026-07-22 |
+| 9 | `src/lib/payments.ts:114` | TRY-HARD | "Try again when the coast is clear." | killed 2026-07-22 |
+| 10 | `src/lib/payments.ts:153` | TRY-HARD | "Try again when the coast is clear." | killed 2026-07-22 |
+| 11 | `src/store/fortunes.ts:25` | CUTESY-INTERNET | "The meeting could have been an email" | killed 2026-07-22 |
+| 12 | `src/store/fortunes.ts:40` | CUTESY-INTERNET | "Pour one out for the unnamed." | killed 2026-07-22 |
 
 No hits for NORMIE-BLOG, CHATBOT CHEER, SAAS-SPEAK, or MANUFACTURED
 SENTIMENT. The one deliberate near-miss: "He reads this page sometimes

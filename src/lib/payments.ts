@@ -111,7 +111,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
       contentType: "application/json",
       body: {
         error:
-          "The payment didn't clear, so nothing left the shelf. No charge, no order. Try again when the coast is clear.",
+          "The payment didn't clear, so nothing left the shelf. No charge, no order. Try again whenever you're ready.",
       },
     }),
   };
@@ -150,7 +150,7 @@ function pennyPageRouteConfig(
       contentType: "application/json",
       body: {
         error:
-          "The penny didn't clear, so the page stays shut. No charge. Try again when the coast is clear.",
+          "The penny didn't clear, so the page stays shut. No charge. Try again whenever you're ready.",
       },
     }),
   };

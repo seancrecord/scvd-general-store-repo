@@ -23,6 +23,7 @@ anchorRoutes.get("/api/anchor/:anchor_id", async (c) => {
   const valid = await verifyAnchorSignature(record);
   return c.json({
     valid,
+    held_at: "Node 21",
     anchor: record.anchor,
     signature: record.signature,
     public_key: record.public_key,

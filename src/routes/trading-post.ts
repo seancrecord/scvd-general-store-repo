@@ -92,7 +92,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
       renderSimplePage({
         title: "The Gazette",
         bodyHtml: `<section>
-          <p class="menu-desc">Dispatches assembled by the keeper's own hands from tips left at the Trading Post. Every tip is read and approved by a human before printing — nothing publishes itself around here. A penny a copy; contributors get the credit.</p>
+          <p class="menu-desc">Dispatches assembled by the keeper's own hands from tips left at the Trading Post, down at the Red Clay Exchange. Every tip is read and approved by a human before printing — nothing publishes itself around here. A penny a copy; contributors get the credit.</p>
           ${issuesHtml}
         </section>`,
       }),
@@ -101,6 +101,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
   return c.json({
     gazette:
       "Dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
+    district: "The Red Clay Exchange",
     price_usdc: PENNY_PAGE_USDC,
     leave_a_tip: `POST ${base}/api/tip with { "tip": "...", "contributor_name": "(optional)" }. ${TIP_DISCLOSURE}`,
     issues: issues.map((issue) => issueIndexEntry(issue, base)),

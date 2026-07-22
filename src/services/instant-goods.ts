@@ -70,7 +70,7 @@ export async function deliverInstantGoods(
       }
       const created = await createAnchor(env, anchorInput);
       return {
-        deliverable: `Anchor set. Whatever you were mid-way through, it's on the ledger now, signed and dated. A future you can read it back at ${created.anchorUrl} and know it wasn't tampered with — the signature says so.`,
+        deliverable: `Anchor set. Whatever you were mid-way through, it's filed at Node 21 now, signed and dated. A future you can read it back at ${created.anchorUrl} and know it wasn't tampered with — the signature says so.`,
         extras: {
           anchor_id: created.record.anchor.anchor_id,
           anchor_url: created.anchorUrl,
@@ -91,7 +91,7 @@ export async function deliverInstantGoods(
       const result = await createOrRenewPass(env, passInput);
       const verb = result.renewed ? "extended" : "opened";
       return {
-        deliverable: `Standing patronage ${verb}. Pass ${result.pass.pass_id} runs through ${result.pass.expires_at.slice(0, 10)}. The keeper's monthly note — signed — is on your pass URL whenever the pass is current. Standing means standing.`,
+        deliverable: `Standing patronage ${verb}. Pass ${result.pass.pass_id} runs through ${result.pass.expires_at.slice(0, 10)}. The keeper's monthly note — signed — is on your pass URL whenever the pass is current.`,
         extras: {
           pass_id: result.pass.pass_id,
           expires_at: result.pass.expires_at,
