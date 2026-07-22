@@ -1,0 +1,31 @@
+{
+  "name": "scvd-general-store",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "keys:generate": "node scripts/generate-signing-key.mjs"
+  },
+  "dependencies": {
+    "@coinbase/x402": "^2.1.0",
+    "@noble/ed25519": "^2.3.0",
+    "@x402/core": "^2.19.0",
+    "@x402/evm": "^2.19.0",
+    "@x402/hono": "^2.19.0",
+    "hono": "^4.12.31"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.7",
+    "@cloudflare/workers-types": "^5.20260721.1",
+    "@types/node": "^26.1.1",
+    "dotenv": "^17.2.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.28.0"
+  }
+}

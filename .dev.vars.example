@@ -1,0 +1,7 @@
+# Copy to .dev.vars for local development. Never commit .dev.vars.
+PAY_TO_ADDRESS=0xYourBaseWalletAddress
+CDP_API_KEY_ID=your-cdp-api-key-id
+CDP_API_KEY_SECRET=your-cdp-api-key-secret
+# 64 hex chars — generate with: npm run keys:generate
+SIGNING_KEY=replace-with-64-hex-char-ed25519-seed
+ADMIN_PASSWORD=pick-something-the-keeper-can-remember

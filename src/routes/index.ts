@@ -1,0 +1,10 @@
+export { storefrontRoutes } from "@/routes/storefront";
+export { llmsRoutes } from "@/routes/llms";
+export { catalogRoutes } from "@/routes/catalog";
+export { buyRoutes } from "@/routes/buy";
+export { guestbookRoutes } from "@/routes/guestbook";
+export { bellRoutes } from "@/routes/bell";
+export { requestRoutes } from "@/routes/requests";
+export { verifyRoutes } from "@/routes/verify";
+export { badgeRoutes } from "@/routes/badges";
+export { adminRoutes } from "@/routes/admin";

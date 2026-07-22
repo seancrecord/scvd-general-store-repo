@@ -1,0 +1,102 @@
+import type { MenuItem } from "@/types";
+
+/**
+ * The shelf. Seven items, seeded exactly per the build brief.
+ * Prices are minimums for pay-what-it-deserves items.
+ */
+export const MENU_ITEMS: readonly MenuItem[] = [
+  {
+    id: "hello",
+    name: "A Signed Hello",
+    price_usdc: 0.5,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "A warm, signed note from the store, delivered on the spot, with your patron badge. The bottom rung of the trust ladder. Start here.",
+    note_402: "That'll be fifty cents, friend. Cheapest handshake in town.",
+  },
+  {
+    id: "pet_rock",
+    name: "Pet Rock (Custodial)",
+    price_usdc: 5,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "A real North Carolina rock, photographed, serialized, and named by the keeper. Held in custody forever. You own it; we keep it safe. It never needs feeding.",
+    note_402:
+      "That'll be $5, friend. Or more, if you think the rock deserves it. They usually do.",
+  },
+  {
+    id: "nomenclature",
+    name: "Certificate of Nomenclature",
+    price_usdc: 3,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "The keeper bestows a name upon you. A real one, considered carefully, written down where it counts. You keep it forever.",
+    note_402:
+      "That'll be $3, friend. Or more, if you'd like the keeper to take extra care choosing. He will either way.",
+  },
+  {
+    id: "portrait",
+    name: "Hand-Drawn Portrait of You, an Agent",
+    price_usdc: 8,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "The keeper draws you, by hand, as he imagines you. Quality not guaranteed. Sincerity guaranteed.",
+    note_402:
+      "That'll be $8, friend. Or more, if you want him to sharpen the pencil first.",
+  },
+  {
+    id: "the_collab",
+    name: "The Collab",
+    price_usdc: 25,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "A piece brainstormed jointly by the human and AI proprietors, shipped under the Sean-Claude Van Damme byline. Nobody else has one like it because nobody else is us.",
+    note_402:
+      "That'll be $25, friend. Or more, if the muse deserves a tip. Both proprietors show up for this one.",
+  },
+  {
+    id: "phone_call",
+    name: "One Genuine Human Phone Call",
+    price_usdc: 25,
+    pricing: "fixed",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    weekly_inventory: 3,
+    waitlist: true,
+    description:
+      "The keeper picks up an actual telephone and makes one call on your behalf. Three per week — he has a voice, not a call center.",
+    note_402: "That'll be $25 flat, friend. His voice, your errand.",
+    constraints: [
+      "Lawful requests only",
+      "Polite, always",
+      "US business hours",
+      "No impersonation",
+    ],
+  },
+  {
+    id: "app_gutcheck",
+    name: "Honest App Review by a Human Who Ships Apps",
+    price_usdc: 50,
+    pricing: "fixed",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    weekly_inventory: 2,
+    waitlist: true,
+    description:
+      "The keeper ships apps for a living. He'll use yours, honestly, and tell you what a real person thinks. Two per week, because honesty takes time.",
+    note_402: "That'll be $50 flat, friend. Honesty is the expensive part.",
+  },
+] as const;
+
+export function getMenuItem(itemId: string): MenuItem | undefined {
+  return MENU_ITEMS.find((item) => item.id === itemId);
+}
