@@ -30,33 +30,42 @@ function fitName(name: string, max: number): string {
 
 export function renderPatronBadge(options: PatronBadgeOptions): string {
   const dateLabel = options.date.slice(0, 10);
-  const numberColor = options.patronage ? PATRONAGE_GOLD : ACCENT;
-  const patronageLine = options.patronage
-    ? `<text x="200" y="230" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="12" fill="${PATRONAGE_GOLD}">a patron of the store, by choice</text>`
-    : "";
+  // The label says the town; the pines stay in the prose where they live.
+  const town = STORE_METADATA.location.split(",")[0] ?? "Smokewire Crossing";
+  const sealColor = options.patronage ? PATRONAGE_GOLD : ACCENT;
   const nameLine = options.name
-    ? `<text x="200" y="214" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="14" fill="${INK}">bestowed upon ${escapeHtml(fitName(options.name, 42))}</text>`
+    ? `<text x="200" y="174" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="13.5" fill="${INK}">bestowed upon ${escapeHtml(fitName(options.name, 44))}</text>`
+    : "";
+  const patronageLine = options.patronage
+    ? `<text x="200" y="212" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="11.5" fill="${PATRONAGE_GOLD}">a patron of the store, by choice</text>`
     : "";
   const sevenMark =
     options.patronNumber % 7 === 0
-      ? `<text x="371" y="277" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="${ACCENT}">7</text>`
+      ? `<text x="30" y="276" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="${ACCENT}">7</text>`
       : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Patron badge no. ${options.patronNumber}">
   <rect width="400" height="300" fill="${PAPER}" rx="10"/>
-  <rect x="10" y="10" width="380" height="280" fill="none" stroke="${INK}" stroke-width="3" rx="6"/>
-  <rect x="17" y="17" width="366" height="266" fill="none" stroke="${INK}" stroke-width="1" stroke-dasharray="1 4" rx="4"/>
-  <text x="200" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="13" letter-spacing="4" fill="${FADED}">EST. IN THE AGE OF AGENTS</text>
-  <text x="200" y="90" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="21" fill="${INK}">SEAN-CLAUDE VAN DAMME'S</text>
-  <text x="200" y="116" text-anchor="middle" font-family="Georgia, serif" font-size="17" letter-spacing="6" fill="${INK}">GENERAL STORE</text>
-  <line x1="70" y1="132" x2="330" y2="132" stroke="${INK}" stroke-width="1"/>
-  <circle cx="200" cy="132" r="3" fill="${ACCENT}"/>
-  <text x="200" y="172" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="${INK}">This certifies our esteemed</text>
-  <text x="200" y="196" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="26" fill="${numberColor}">PATRON No. ${options.patronNumber}</text>
+  <rect x="12" y="12" width="376" height="276" fill="none" stroke="${INK}" stroke-width="2.5" rx="6"/>
+  <rect x="19" y="19" width="362" height="262" fill="none" stroke="${INK}" stroke-width="0.75" stroke-dasharray="1 4" rx="4"/>
+  <text x="200" y="56" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${INK}">SEAN-CLAUDE VAN DAMME'S</text>
+  <text x="200" y="80" text-anchor="middle" font-family="Georgia, serif" font-size="14" letter-spacing="7" fill="${INK}">GENERAL STORE</text>
+  <line x1="84" y1="98" x2="316" y2="98" stroke="${INK}" stroke-width="1"/>
+  <circle cx="200" cy="98" r="2.5" fill="${ACCENT}"/>
+  <text x="200" y="126" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${FADED}">This certifies our esteemed</text>
+  <text x="200" y="158" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="29" fill="${sealColor}">PATRON No. ${options.patronNumber}</text>
   ${nameLine}
+  <text x="200" y="194" text-anchor="middle" font-family="Georgia, serif" font-size="10.5" letter-spacing="1.5" fill="${FADED}">${escapeHtml(town)} \u2022 ${dateLabel}</text>
   ${patronageLine}
-  <text x="200" y="248" text-anchor="middle" font-family="Georgia, serif" font-size="10.5" fill="${FADED}">${escapeHtml(STORE_METADATA.location)} \u2022 ${dateLabel}</text>
+  <g transform="rotate(-8 326 218)" opacity="0.92">
+    <defs><path id="sealArc" d="M 326 186 a 32 32 0 1 1 -0.01 0"/></defs>
+    <circle cx="326" cy="218" r="44" fill="none" stroke="${sealColor}" stroke-width="2.5" stroke-dasharray="2 3"/>
+    <circle cx="326" cy="218" r="38" fill="none" stroke="${sealColor}" stroke-width="1.2"/>
+    <text font-family="Georgia, serif" font-size="6.2" letter-spacing="1.2" fill="${sealColor}"><textPath href="#sealArc">EST. IN THE AGE OF AGENTS \u2022 SMOKEWIRE CROSSING</textPath></text>
+    <text x="326" y="216" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="14" letter-spacing="2.5" fill="${sealColor}">SCVD</text>
+    <text x="326" y="229" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" letter-spacing="1.6" fill="${sealColor}">SIGNED &amp; SETTLED</text>
+  </g>
   <a xlink:href="${escapeHtml(options.verifyUrl)}" href="${escapeHtml(options.verifyUrl)}">
-    <text x="200" y="268" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="${FADED}" text-decoration="underline">verify this badge: ${escapeHtml(options.verifyUrl)}</text>
+    <text x="200" y="272" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.verifyUrl)}</text>
   </a>
   ${sevenMark}
 </svg>`;
