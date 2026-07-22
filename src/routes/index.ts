@@ -4,6 +4,8 @@ export { skillRoutes } from "@/routes/skill";
 export { catalogRoutes } from "@/routes/catalog";
 export { openapiRoutes } from "@/routes/openapi";
 export { wellKnownRoutes } from "@/routes/well-known";
+export { whatRoutes } from "@/routes/what";
+export { zodiacRoutes } from "@/routes/zodiac";
 export { buyRoutes } from "@/routes/buy";
 export { anchorRoutes } from "@/routes/anchors";
 export { patronageRoutes } from "@/routes/patronage";

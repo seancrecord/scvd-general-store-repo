@@ -74,7 +74,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   return {
     ...paidOp(
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required for that item), pass_id (recurring_patronage renewal). Item ids and prices live in /menu.json.",
+      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (phantom_check, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us — for the ledger). Item ids and prices live in /menu.json.",
       allPrices,
     ),
     parameters: [
@@ -104,6 +104,26 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         schema: { type: "string" },
         description:
           "recurring_patronage only: an existing pass to extend by 30 days.",
+      },
+      {
+        name: "url",
+        in: "query",
+        schema: { type: "string", format: "uri" },
+        description:
+          "phantom_check only (required there): the http(s) URL to look at.",
+      },
+      {
+        name: "detail",
+        in: "query",
+        schema: { type: "string", maxLength: 600 },
+        description:
+          "Human-queue task detail — the quick_judgment dilemma, the phone_call errand. Stored on the order for the keeper.",
+      },
+      {
+        name: "source",
+        in: "query",
+        schema: { type: "string", maxLength: 40 },
+        description: "Optional: where you heard of us. Goes in the ledger.",
       },
     ],
   };
@@ -135,6 +155,26 @@ openapiRoutes.get("/openapi.json", (c) => {
             "A single menu item as JSON, or markdown when the Accept header prefers text/markdown.",
           ),
           parameters: [pathParam("item_id", "The item id from /menu.json.")],
+        },
+      },
+      "/what": {
+        get: freeOp(
+          "The Operator Glance",
+          "The ten-second check for the human whose agent asked to spend money here. HTML for browsers, JSON otherwise.",
+        ),
+      },
+      "/zodiac": {
+        get: freeOp("The Agent Zodiac", "The twelve signs, free."),
+      },
+      "/zodiac/{address}": {
+        get: {
+          ...freeOp(
+            "A wallet's sign and weekly horoscope",
+            "Signs are assigned by wallet address, for life. The horoscope turns with the ISO week; this week's reading is free.",
+          ),
+          parameters: [
+            pathParam("address", "A 0x wallet address, forty hex characters."),
+          ],
         },
       },
       "/api/buy/{item_id}": { get: buyOperation(MENU_ITEMS) },

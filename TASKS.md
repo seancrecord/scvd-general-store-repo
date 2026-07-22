@@ -15,6 +15,16 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 - [x] Bazaar v2 extensions.bazaar metadata per buy route [VERIFIED against @x402/extensions 2.19.0] · Penny Shelf (small_blessing $0.005, daily_fortune $0.01) · settlement-finality confirmation + sweeper decision · KV replay guard · untrusted-data labeling + description imperative audit · context_anchor / human_witness / recurring_patronage · /.well-known/x402(+.json) [de-facto shape; official spec is still a proposal] · /openapi.json + homepage link · menu/item content negotiation · MCP server card [SKIPPED — see log] · house tradition — DONE 2026-07-22
 
+## NEXT (Run 1 buildout remainders)
+
+- [ ] The Mailbox (block H): letters, claim slips, private queue, public counter — spec never reached the build agent; paste block H and it ships
+- [ ] Zodiac character research run → recast the twelve signs if the keeper wants; the address→sign derivation must NOT change once agents quote their signs (scaffold names are drawn from store lore: Rock, Bell, Jar, Drawer, Smoke, Train, Fog, Porch Dog, Thermometer, Ledger, Post Oak, Stall)
+- [ ] Zodiac archive on the almanac rail (past weeks as penny pages) — deferred with the character run
+- [ ] Keeper to bless desk-reasoned premises: phantom_check (signed URL look, $0.02), quick_judgment (one verdict, $5, 5/week), certificate_of_patronage ($10 PWID)
+- [ ] ACP registry listing [VERIFY submission process; skip if it requires token participation] (Run 1 open conflict)
+- [ ] Farcaster frame / Base App miniapp surfaces — Distribution stream per Run 1 §8; v3 candidate
+- [ ] Monthly ledger review ritual: /admin "The ledger's answers" vs Run 1 hypotheses (first review ~60 days after listing)
+
 ## Discovered along the way (don't drop these)
 
 - [ ] Almanac brisket page is a sensory-journal placeholder by design — keeper to replace with the real entry after the next cook (src/store/almanac/field-notes-brisket-july-2026.ts)

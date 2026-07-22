@@ -15,6 +15,12 @@ export interface CreateOrderOptions {
   callbackUrl?: string;
   patronNumber: number;
   certId: string;
+  /** Buyer-supplied task detail (quick_judgment's question). Untrusted. */
+  detail?: string;
+  /** Declared discovery channel. Untrusted. */
+  source?: string;
+  userAgent?: string;
+  referrer?: string;
 }
 
 export async function createOrder(
@@ -41,6 +47,18 @@ export async function createOrder(
   }
   if (options.callbackUrl) {
     order.callback_url = options.callbackUrl;
+  }
+  if (options.detail) {
+    order.detail = options.detail;
+  }
+  if (options.source) {
+    order.source = options.source;
+  }
+  if (options.userAgent) {
+    order.user_agent = options.userAgent;
+  }
+  if (options.referrer) {
+    order.referrer = options.referrer;
   }
   await env.ORDERS.put(KV_KEYS.order(order.order_id), JSON.stringify(order));
   return order;

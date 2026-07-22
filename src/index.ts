@@ -21,6 +21,8 @@ import {
   tradingPostRoutes,
   verifyRoutes,
   wellKnownRoutes,
+  whatRoutes,
+  zodiacRoutes,
 } from "@/routes";
 import { compileDigest } from "@/services/digest";
 import type { Env, HonoEnv } from "@/types";
@@ -39,6 +41,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/", storefrontRoutes);
+app.route("/", whatRoutes);
 app.route("/", llmsRoutes);
 app.route("/", skillRoutes);
 app.route("/", catalogRoutes);
@@ -48,6 +51,7 @@ app.route("/", buyRoutes);
 app.route("/", anchorRoutes);
 app.route("/", patronageRoutes);
 app.route("/", almanacRoutes);
+app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
 app.route("/", retiredWordsRoutes);
 app.route("/", guestbookRoutes);

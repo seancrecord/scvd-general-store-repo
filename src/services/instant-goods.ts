@@ -1,6 +1,7 @@
 import { createAnchor } from "@/services/anchors";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
+import { performPhantomCheck } from "@/services/phantom";
 import { STORE_METADATA } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
@@ -18,6 +19,8 @@ export interface InstantGoodsInput {
   summary?: string;
   /** recurring_patronage only: an existing pass to extend. */
   passId?: string;
+  /** phantom_check only: the URL to look at, pre-validated. */
+  targetUrl?: string;
 }
 
 export interface InstantGoods {
@@ -100,6 +103,21 @@ export async function deliverInstantGoods(
         },
       };
     }
+    case "phantom_check": {
+      const signed = await performPhantomCheck(env, input.targetUrl ?? "");
+      return {
+        deliverable: `Looked once at ${signed.observation.target}, ${signed.observation.checked_at}, from the counter. ${signed.observation.note} The observation below is signed; verify it against the key at /.well-known/scvd-signing-key.`,
+        extras: {
+          observation: signed.observation,
+          observation_signature: signed.signature,
+          observation_public_key: signed.public_key,
+        },
+      };
+    }
+    case "certificate_of_patronage":
+      return {
+        deliverable: `Patronage recorded, patron no. ${input.patronNumber}. This certificate entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge — and it means the more for that. The store knows its friends and writes them down in ink.`,
+      };
     default:
       return { deliverable: helloNote(item, input.patronNumber) };
   }

@@ -6,6 +6,7 @@ import type {
 import type { Context, MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
+import { recordChallengeIssued, recordSettlement } from "@/lib/metrics";
 import {
   atomicToUsdc,
   getPaymentStack,
@@ -68,6 +69,11 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return next();
   }
   if (result.type === "payment-error") {
+    if (result.response.status === 402) {
+      // Challenge issued. The monthly gap between these and settlements
+      // is the budget-cap / abandonment signal (RUN1 instrumentation).
+      await recordChallengeIssued(c.env, c.req.path);
+    }
     return respondWithInstructions(c, result.response);
   }
 
@@ -101,6 +107,22 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
   const minimumUsdc = minimumUsdcForPath(c.req.path);
   const paidUsdc = atomicToUsdc(result.paymentRequirements.amount);
+  const settlementSignals: Parameters<typeof recordSettlement>[2] = {
+    paidUsdc,
+    minimumUsdc,
+  };
+  if (settlement.payer) {
+    settlementSignals.payer = settlement.payer;
+  }
+  const declaredSource = c.req.query("source");
+  if (declaredSource) {
+    settlementSignals.declaredSource = declaredSource;
+  }
+  const referrer = c.req.header("Referer");
+  if (referrer) {
+    settlementSignals.referrer = referrer;
+  }
+  await recordSettlement(c.env, c.req.path, settlementSignals);
   const payment: SettledPayment = {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),

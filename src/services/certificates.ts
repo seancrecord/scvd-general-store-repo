@@ -74,6 +74,8 @@ export interface MintOptions {
   itemId: string;
   agentName?: string;
   tipUsdc?: number;
+  /** certificate_of_patronage: the badge gets nicer. */
+  patronage?: boolean;
 }
 
 export async function mintCertificate(
@@ -88,6 +90,7 @@ export async function mintCertificate(
     item: options.itemId,
     date,
     ...(options.agentName ? { name: options.agentName } : {}),
+    ...(options.patronage ? { patronage: true } : {}),
   };
   const patronNumber = await claimPatronNumber(env, patronStub);
 

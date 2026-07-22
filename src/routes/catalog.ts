@@ -48,6 +48,8 @@ catalogRoutes.get("/menu.json", (c) => {
       x402_discovery: `${base}/.well-known/x402.json`,
       signing_key: `${base}/.well-known/scvd-signing-key`,
       item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
+      operator_glance: `${base}/what (for the human whose agent is here)`,
+      zodiac: `${base}/zodiac`,
     },
     items,
     reading_room: {

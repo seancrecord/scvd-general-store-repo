@@ -3,6 +3,7 @@ import { basicAuth } from "hono/basic-auth";
 import type { MiddlewareHandler } from "hono";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { listPayers, readMonthLedger } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderAdminPage } from "@/pages/admin-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
@@ -52,6 +53,8 @@ adminRoutes.get("/admin", async (c) => {
     tips,
     gazetteIssues,
     bazaarLedger,
+    monthLedger,
+    payers,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -62,6 +65,8 @@ adminRoutes.get("/admin", async (c) => {
     listTips(c.env),
     listIssues(c.env),
     listBazaarLedger(c.env),
+    readMonthLedger(c.env),
+    listPayers(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -74,6 +79,8 @@ adminRoutes.get("/admin", async (c) => {
       tips: tips.map((tip) => tip.record),
       gazetteIssues,
       bazaarLedger,
+      monthLedger,
+      payers,
     }),
   );
 });

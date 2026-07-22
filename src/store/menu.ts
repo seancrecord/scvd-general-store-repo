@@ -1,5 +1,6 @@
 import { NOVELTY_ITEMS } from "@/store/menu-novelties";
 import { PENNY_SHELF_ITEMS } from "@/store/menu-penny";
+import { RUN1_ITEMS } from "@/store/menu-run1";
 import { UTILITY_ITEMS } from "@/store/menu-utility";
 import type { MenuItem } from "@/types";
 
@@ -107,6 +108,7 @@ export const MENU_ITEMS: readonly MenuItem[] = [
   ...NOVELTY_ITEMS,
   ...PENNY_SHELF_ITEMS,
   ...UTILITY_ITEMS,
+  ...RUN1_ITEMS,
 ] as const;
 
 export function getMenuItem(itemId: string): MenuItem | undefined {

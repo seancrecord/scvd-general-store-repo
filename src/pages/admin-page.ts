@@ -5,9 +5,11 @@ import type {
   CommissionRequest,
   GazetteIssue,
   OrderRecord,
+  PayerRecord,
   TipRecord,
   WaitlistEntry,
 } from "@/types";
+import type { MonthLedger } from "@/lib/metrics";
 import type { ListedEntry } from "@/services/guestbook";
 
 /**
@@ -24,6 +26,49 @@ export interface AdminPageData {
   tips: TipRecord[];
   gazetteIssues: GazetteIssue[];
   bazaarLedger: BazaarLedgerEntry[];
+  monthLedger: MonthLedger;
+  payers: PayerRecord[];
+}
+
+/** The Run 1 instrumentation review: 402s vs settles, tiers, channels, wallets. */
+function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
+  const items = Object.entries(ledger.items);
+  const rows =
+    items.length === 0
+      ? "<tr><td colspan=\"5\">No 402s issued this month yet.</td></tr>"
+      : items
+          .map(([item, row]) => {
+            const conversion =
+              row.challenges > 0
+                ? `${Math.round((row.settled / row.challenges) * 100)}%`
+                : "—";
+            const tiers = Object.entries(row.tiers)
+              .map(([tier, count]) => `${tier}:${count}`)
+              .join(" ");
+            return `<tr><td>${escapeHtml(item)}</td><td>${row.challenges}</td><td>${row.settled}</td><td>${conversion}</td><td>${escapeHtml(tiers || "—")}</td></tr>`;
+          })
+          .join("\n");
+  const sources = Object.entries(ledger.sources)
+    .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
+    .join(" · ");
+  const payerLines =
+    payers.length === 0
+      ? "<li>No paying wallets on the books yet.</li>"
+      : payers
+          .slice(0, 15)
+          .map(
+            (payer) =>
+              `<li>${escapeHtml(payer.address)} — first seen ${escapeHtml(payer.first_seen.slice(0, 10))}, ${payer.purchases} purchase${payer.purchases === 1 ? "" : "s"}</li>`,
+          )
+          .join("\n");
+  return `
+    <table border="1" cellpadding="4">
+      <tr><th>item</th><th>402s issued</th><th>settled</th><th>conversion</th><th>tiers</th></tr>
+      ${rows}
+    </table>
+    <p>Channels (settled): ${sources || "none yet"}</p>
+    <p>Paying wallets (${payers.length} on file, newest first):</p>
+    <ul>${payerLines}</ul>`;
 }
 
 /** Pulls a human-readable status out of one extension response payload. */
@@ -80,6 +125,8 @@ function ordersHtml(orders: OrderRecord[]): string {
       patron #${order.patron_number} — ${escapeHtml(order.created_at)}
       ${order.agent_name ? `— agent: ${escapeHtml(order.agent_name)}` : ""}
       ${order.callback_url ? `— webhook on completion` : ""}
+      ${order.source ? `— source (their words): ${escapeHtml(order.source)}` : ""}
+      ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${escapeHtml(order.detail)}</p>` : ""}
       ${completeForm}
     </li>`;
     })
@@ -195,6 +242,12 @@ export function renderAdminPage(data: AdminPageData): string {
       <input type="text" name="week_note" value="${escapeHtml(data.weekNote)}" maxlength="500">
       <button type="submit">Update note</button>
     </form>
+  </section>
+
+  <section>
+    <h2>The ledger's answers — ${escapeHtml(data.monthLedger.month)}</h2>
+    <p>402s issued vs settled per item (a widening gap = price over budget caps), tier picks, channels, wallets. Reviewed monthly against Run 1; the ledger outranks research.</p>
+    ${ledgerAnswersHtml(data.monthLedger, data.payers)}
   </section>
 
   <section>

@@ -54,6 +54,12 @@ export {
   setMonthlyNote,
 } from "@/services/patronage";
 export { deliverInstantGoods } from "@/services/instant-goods";
+export { performPhantomCheck } from "@/services/phantom";
+export {
+  signForAddress,
+  weeklyHoroscope,
+  isWalletAddress,
+} from "@/services/zodiac";
 export {
   renderMenuMarkdown,
   renderItemMarkdown,

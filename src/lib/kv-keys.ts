@@ -9,7 +9,8 @@
  *            inventory:<item>:<week>, failed_item:<item>, week_note,
  *            digest:latest, gazette_issue_count, blessing_last,
  *            payment_nonce:<nonce> (TTL), bazaar_ext:<invertedTs> (TTL),
- *            patronage_note:<YYYY-MM>
+ *            patronage_note:<YYYY-MM>, metric:<YYYY-MM>:<kind>:<rest>,
+ *            payer:<address>
  * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>
  */
 export const KV_KEYS = {
@@ -49,6 +50,11 @@ export const KV_KEYS = {
   bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,
   bazaarLedgerPrefix: "bazaar_ext:",
   patronageNote: (month: string): string => `patronage_note:${month}`,
+  metric: (month: string, kind: string, rest: string): string =>
+    `metric:${month}:${kind}:${rest}`,
+  metricMonthPrefix: (month: string): string => `metric:${month}:`,
+  payer: (address: string): string => `payer:${address.toLowerCase()}`,
+  payerPrefix: "payer:",
 
   patron: (patronNumber: number): string => `patron:${patronNumber}`,
   cert: (certId: string): string => `cert:${certId}`,

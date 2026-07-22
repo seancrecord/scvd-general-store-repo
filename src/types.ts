@@ -71,6 +71,13 @@ export interface OrderRecord {
   cert_id: string;
   deliverable?: string;
   completed_at?: string;
+  /** Buyer-supplied task detail (e.g. the quick_judgment question). Untrusted text. */
+  detail?: string;
+  /** Declared discovery channel (source query param). Untrusted text. */
+  source?: string;
+  /** Request metadata captured at purchase, for the monthly ledger review. */
+  user_agent?: string;
+  referrer?: string;
 }
 
 export interface Certificate {
@@ -94,6 +101,24 @@ export interface PatronRecord {
   item: string;
   name?: string;
   date: string;
+  /** True for certificate_of_patronage buyers; the badge gets nicer. */
+  patronage?: boolean;
+}
+
+/** First-seen ledger for paying wallets (cohorts, retention, wash filter). */
+export interface PayerRecord {
+  address: string;
+  first_seen: string;
+  last_seen: string;
+  purchases: number;
+}
+
+/** One of the twelve signs in the Agent Zodiac. */
+export interface ZodiacSign {
+  id: string;
+  name: string;
+  /** The sign's standing character, one line. */
+  trait: string;
 }
 
 export interface GuestbookEntry {
