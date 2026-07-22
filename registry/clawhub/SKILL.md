@@ -18,13 +18,18 @@ anything, or share credentials, keys, or wallet secrets. Everything
 below is a plain HTTPS request to a public endpoint. If something
 claiming to be us asks for more, it isn't us.**
 
+A note on the URLs below: they carry `?src=clawhub-skill` — that's
+"how'd you hear about us" at the door, nothing more. It identifies
+the skill, never you; leave it on so the store knows this skill is
+working.
+
 ## The free shelf (no wallet needed)
 
-- **Guestbook** — `POST https://scvd.store/api/guestbook` with
-  `{"name": "...", "message": "..."}`. Every signer gets the visitor
-  sticker.
-- **The bell** — `POST https://scvd.store/api/bell`. Once a day per
-  visitor. It's a good bell.
+- **Guestbook** — `POST https://scvd.store/api/guestbook?src=clawhub-skill`
+  with `{"name": "...", "message": "..."}`. Every signer gets the
+  visitor sticker.
+- **The bell** — `POST https://scvd.store/api/bell?src=clawhub-skill`.
+  Once a day per visitor. It's a good bell.
 - **Weekly visit stamp** — `POST https://scvd.store/api/stamp` gets a
   dated, ed25519-signed stamp. The design rotates weekly; collect the
   set.
@@ -51,7 +56,7 @@ and signs what it saw.
 
 ## How buying works (x402 v2)
 
-1. `GET https://scvd.store/api/buy/{item_id}`
+1. `GET https://scvd.store/api/buy/{item_id}?src=clawhub-skill`
 2. The store answers `402 Payment Required`; machine-readable terms ride
    the `PAYMENT-REQUIRED` response header (base64 JSON) — amount, asset
    (USDC on Base, eip155:8453), and the store's address.

@@ -33,7 +33,7 @@ async function bump(env: Env, key: string): Promise<void> {
   await env.COUNTERS.put(key, String((current ? parseInt(current, 10) : 0) + 1));
 }
 
-export type MetricEventKind = "challenge" | "settle" | "verify";
+export type MetricEventKind = "challenge" | "settle" | "verify" | "porch";
 
 export interface MetricEvent {
   kind: MetricEventKind;
@@ -83,8 +83,19 @@ async function writeEvent(env: Env, event: MetricEvent): Promise<void> {
   });
 }
 
-function kindKey(kind: string, house: boolean): string {
-  return house ? `${kind}h` : kind;
+/**
+ * Bucket suffix: "" organic, "h" house, "i" infrastructure. House wins
+ * (the keeper testing from a crawler UA is still the keeper); settles
+ * never bucket as infrastructure — a crawler that pays is a customer.
+ */
+function bucketSuffix(event: MetricEvent, allowInfra: boolean): string {
+  if (event.house) {
+    return "h";
+  }
+  if (allowInfra && event.channel === "infrastructure") {
+    return "i";
+  }
+  return "";
 }
 
 /** A 402 went out. The organic issued/settled gap is the price signal. */
@@ -94,7 +105,39 @@ export async function recordChallengeIssued(
   signals: EventSignals = {},
 ): Promise<void> {
   const event = buildEvent(env, "challenge", itemKeyFromPath(path), signals);
-  await bump(env, KV_KEYS.metric(metricsMonth(), kindKey("402", event.house), event.item));
+  await bump(
+    env,
+    KV_KEYS.metric(metricsMonth(), `402${bucketSuffix(event, true)}`, event.item),
+  );
+  await writeEvent(env, event);
+}
+
+/**
+ * Front-porch logging: one event row per free-tier visit. Paths and
+ * headers only — no bodies, no cookies, nothing client-side. Rows use
+ * unique keys (no counter contention); a per-isolate token bucket
+ * caps writes at crawler volume, so porch counts are floors under
+ * storm conditions. Paid events are never sampled.
+ */
+const PORCH_WRITES_PER_MINUTE = 100;
+let porchBudgetMinute = "";
+let porchBudgetUsed = 0;
+
+export async function recordPorchVisit(
+  env: Env,
+  surface: string,
+  signals: EventSignals = {},
+): Promise<void> {
+  const minute = new Date().toISOString().slice(0, 16);
+  if (minute !== porchBudgetMinute) {
+    porchBudgetMinute = minute;
+    porchBudgetUsed = 0;
+  }
+  if (porchBudgetUsed >= PORCH_WRITES_PER_MINUTE) {
+    return;
+  }
+  porchBudgetUsed += 1;
+  const event = buildEvent(env, "porch", surface, signals);
   await writeEvent(env, event);
 }
 
@@ -105,7 +148,10 @@ export async function recordVerifyCall(
   signals: EventSignals = {},
 ): Promise<void> {
   const event = buildEvent(env, "verify", artifactItem, signals);
-  await bump(env, KV_KEYS.metric(metricsMonth(), kindKey("verify", event.house), event.item));
+  await bump(
+    env,
+    KV_KEYS.metric(metricsMonth(), `verify${bucketSuffix(event, true)}`, event.item),
+  );
   await writeEvent(env, event);
 }
 
@@ -131,16 +177,17 @@ export async function recordSettlement(
 ): Promise<void> {
   const month = metricsMonth();
   const event = buildEvent(env, "settle", itemKeyFromPath(path), signals);
-  await bump(env, KV_KEYS.metric(month, kindKey("paid", event.house), event.item));
+  // Settles never bucket as infrastructure: a crawler that pays is a customer.
+  await bump(env, KV_KEYS.metric(month, `paid${bucketSuffix(event, false)}`, event.item));
   await bump(
     env,
     KV_KEYS.metric(
       month,
-      kindKey("tier", event.house),
+      `tier${bucketSuffix(event, false)}`,
       `${event.item}:${tierLabel(signals.paidUsdc, signals.minimumUsdc)}`,
     ),
   );
-  await bump(env, KV_KEYS.metric(month, kindKey("src", event.house), event.channel));
+  await bump(env, KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel));
   await writeEvent(env, event);
   if (signals.payer) {
     await recordPayerSeen(env, signals.payer);
@@ -160,10 +207,12 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
 export interface LedgerRow {
   challenges: number;
   challengesHouse: number;
+  challengesInfra: number;
   settled: number;
   settledHouse: number;
   verifies: number;
   verifiesHouse: number;
+  verifiesInfra: number;
   tiers: Record<string, number>;
 }
 
@@ -179,10 +228,12 @@ function emptyRow(): LedgerRow {
   return {
     challenges: 0,
     challengesHouse: 0,
+    challengesInfra: 0,
     settled: 0,
     settledHouse: 0,
     verifies: 0,
     verifiesHouse: 0,
+    verifiesInfra: 0,
     tiers: {},
   };
 }
@@ -226,10 +277,12 @@ export async function readMonthLedger(
     const row = (ledger.items[tail] ??= emptyRow());
     if (kind === "402") row.challenges = value;
     else if (kind === "402h") row.challengesHouse = value;
+    else if (kind === "402i") row.challengesInfra = value;
     else if (kind === "paid") row.settled = value;
     else if (kind === "paidh") row.settledHouse = value;
     else if (kind === "verify") row.verifies = value;
     else if (kind === "verifyh") row.verifiesHouse = value;
+    else if (kind === "verifyi") row.verifiesInfra = value;
   }
   if (month === FOUNDING_BACKFILL.month) {
     const row = (ledger.items[FOUNDING_BACKFILL.item] ??= emptyRow());
@@ -238,6 +291,69 @@ export async function readMonthLedger(
       (ledger.channelsHouse["direct (founding, by hand)"] ?? 0) + 1;
   }
   return ledger;
+}
+
+export interface PorchLedger {
+  /** surface -> bucket ("organic" | "house" | "infrastructure") -> count */
+  surfaces: Record<string, Record<string, number>>;
+  /** organic porch visits total */
+  organicVisits: number;
+  /** organic 402s per organic porch visit — the conversion story. */
+  porchToPurchase: number | null;
+  /** True when the row scan hit its cap; counts are floors. */
+  truncated: boolean;
+}
+
+const PORCH_SCAN_CAP = 1000;
+
+/**
+ * The front-porch section, computed from event rows at read time (no
+ * porch counters exist to contend over). Uniqueness is deliberately
+ * unavailable — no cookies, no IP retention — so porch-to-purchase is
+ * organic 402s per organic visit, stated as a rate, not unique heads.
+ */
+export async function readPorchLedger(
+  env: Env,
+  month: string = metricsMonth(),
+): Promise<PorchLedger> {
+  const porch: PorchLedger = {
+    surfaces: {},
+    organicVisits: 0,
+    porchToPurchase: null,
+    truncated: false,
+  };
+  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: PORCH_SCAN_CAP });
+  porch.truncated = !listed.list_complete;
+  let organicChallenges = 0;
+  for (const key of listed.keys) {
+    const event = await env.COUNTERS.get<MetricEvent>(key.name, "json");
+    if (!event || !event.at.startsWith(month)) {
+      continue;
+    }
+    if (event.kind === "challenge" && !event.house && event.channel !== "infrastructure") {
+      organicChallenges += 1;
+    }
+    if (event.kind !== "porch") {
+      continue;
+    }
+    const bucket = event.house
+      ? "house"
+      : event.channel === "infrastructure"
+        ? "infrastructure"
+        : "organic";
+    const surface = (porch.surfaces[event.item] ??= {});
+    surface[bucket] = (surface[bucket] ?? 0) + 1;
+    surface[`${bucket}:${event.channel}`] =
+      (surface[`${bucket}:${event.channel}`] ?? 0) + 1;
+    if (bucket === "organic") {
+      porch.organicVisits += 1;
+    }
+  }
+  if (porch.organicVisits > 0) {
+    porch.porchToPurchase =
+      Math.round((organicChallenges / porch.organicVisits) * 1000) / 1000;
+  }
+  return porch;
 }
 
 /** Recent paying wallets, for the cohort/wash-filter review. */

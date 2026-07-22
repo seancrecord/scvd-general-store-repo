@@ -4,7 +4,7 @@ import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { listPayers, readMonthLedger } from "@/lib/metrics";
+import { listPayers, readMonthLedger, readPorchLedger } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderAdminPage } from "@/pages/admin-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
@@ -71,6 +71,7 @@ adminRoutes.get("/admin", async (c) => {
     letters,
     alerts,
     gazetteDraft,
+    porchLedger,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -86,6 +87,7 @@ adminRoutes.get("/admin", async (c) => {
     listLetters(c.env),
     listAlerts(c.env),
     getDraft(c.env),
+    readPorchLedger(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -103,6 +105,7 @@ adminRoutes.get("/admin", async (c) => {
       letters: letters.map((entry) => entry.record),
       alerts,
       gazetteDraft,
+      porchLedger,
     }),
   );
 });

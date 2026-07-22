@@ -11,7 +11,7 @@ import type {
   TipRecord,
   WaitlistEntry,
 } from "@/types";
-import type { MonthLedger } from "@/lib/metrics";
+import type { MonthLedger, PorchLedger } from "@/lib/metrics";
 import type { ListedEntry } from "@/services/guestbook";
 
 /**
@@ -33,6 +33,34 @@ export interface AdminPageData {
   letters: LetterRecord[];
   alerts: Array<{ condition: string; detail: string; at: string }>;
   gazetteDraft: GazetteDraft | null;
+  porchLedger: PorchLedger;
+}
+
+/** The front porch: visits by surface, organic/house/infrastructure apart. */
+function porchHtml(porch: PorchLedger): string {
+  const surfaces = Object.entries(porch.surfaces);
+  const rows =
+    surfaces.length === 0
+      ? '<tr><td colspan="4">Nobody on the porch yet this month.</td></tr>'
+      : surfaces
+          .sort((a, b) => (b[1]["organic"] ?? 0) - (a[1]["organic"] ?? 0))
+          .map(([surface, buckets]) => {
+            const channels = Object.entries(buckets)
+              .filter(([key]) => key.startsWith("organic:"))
+              .map(([key, count]) => `${escapeHtml(key.slice(8))}: ${count}`)
+              .join(" · ");
+            return `<tr><td>${escapeHtml(surface)}</td>
+              <td>${buckets["organic"] ?? 0}${channels ? ` <small>(${channels})</small>` : ""}</td>
+              <td>${buckets["house"] ?? 0}</td>
+              <td>${buckets["infrastructure"] ?? 0}</td></tr>`;
+          })
+          .join("\n");
+  return `
+    <table border="1" cellpadding="4">
+      <tr><th>surface</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
+      ${rows}
+    </table>
+    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? "—" : porch.porchToPurchase}</strong> — organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate.${porch.truncated ? " Row scan hit its cap; counts are floors." : ""}</p>`;
 }
 
 /** The press room: the draft under the keeper's pen. Publishing is a gate. */
@@ -120,10 +148,10 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
               .map(([tier, count]) => `${tier}:${count}`)
               .join(" ");
             return `<tr><td>${escapeHtml(item)}</td>
-              <td>${row.challenges}${row.challengesHouse ? ` <small>(+${row.challengesHouse}h)</small>` : ""}</td>
+              <td>${row.challenges}${row.challengesHouse ? ` <small>(+${row.challengesHouse}h)</small>` : ""}${row.challengesInfra ? ` <small>(+${row.challengesInfra}i)</small>` : ""}</td>
               <td>${row.settled}${row.settledHouse ? ` <small>(+${row.settledHouse}h)</small>` : ""}</td>
               <td>${conversion}</td>
-              <td>${row.verifies}${row.verifiesHouse ? ` <small>(+${row.verifiesHouse}h)</small>` : ""}</td>
+              <td>${row.verifies}${row.verifiesHouse ? ` <small>(+${row.verifiesHouse}h)</small>` : ""}${row.verifiesInfra ? ` <small>(+${row.verifiesInfra}i)</small>` : ""}</td>
               <td>${escapeHtml(tiers || "—")}</td></tr>`;
           })
           .join("\n");
@@ -338,6 +366,12 @@ export function renderAdminPage(data: AdminPageData): string {
     <form method="POST" action="/admin/alerts/test">
       <button type="submit">Fire a test alert (confirms email delivery once)</button>
     </form>
+  </section>
+
+  <section>
+    <h2>The front porch — ${escapeHtml(data.monthLedger.month)}</h2>
+    <p>Free-tier visits by surface. Infrastructure (known crawlers/scanners) is the noise floor made visible — never counted as organic, never counted as house.</p>
+    ${porchHtml(data.porchLedger)}
   </section>
 
   <section>

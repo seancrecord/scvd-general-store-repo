@@ -60,7 +60,7 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
   if (referrer) {
     signals.referrer = referrer;
   }
-  const declared = c.req.query("source");
+  const declared = c.req.query("src") ?? c.req.query("source");
   if (declared) {
     signals.declaredSource = declared;
   }
