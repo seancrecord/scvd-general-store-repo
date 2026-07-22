@@ -26,6 +26,19 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [ ] Monthly ledger review ritual: /admin "The ledger's answers" vs Run 1 hypotheses (first review ~60 days after listing)
 - [ ] Product backlog (ideas awaiting evidence: vouching, brokerage, ask_the_human, gift rails, subscriptions, attestation API tier) lives in the back-office store ledger §3 — promote or kill on Run 3 + ledger evidence, never build unprompted
 
+## NOW (Phase 2 — keeper hands; agents drafted, keeper submits)
+
+- [ ] Review registry/clawhub/SKILL.md end to end, then publish via `npx clawhub skill publish` (commands in registry/README.md)
+- [ ] Review registry/awesome-x402-submission.md, pick a mirror (brooks091 or amarodeabreu had the activity), fork, one-line PR with the prepared title/body
+- [ ] Execute every live product manually once; fix anything that surprises a first buyer (22 items — the human-queue seven can be bought and self-fulfilled from /admin)
+- [ ] WAIT: Agentic.market listing request until mcp + bazaar channels show in the ledger
+
+## DONE (Phase 2 builds, 2026-07-22)
+
+- [x] ClawHub skill bundle drafted (registry/clawhub/SKILL.md — no env requires, no binaries, nothing clever; points at menu.json as price truth)
+- [x] awesome-x402 PR drafted with claims audit (registry/awesome-x402-submission.md — "on x402scan" deliberately unclaimed until seen)
+- [x] phantom_check listing copy re-cut to customer vocabulary: "Did it actually happen?" leads the description and the 402 note
+
 ## NOW (keeper hands, post-Phase-1)
 
 - [x] Set HOUSE_SECRET secret; put it in your own buy scripts/CI so house traffic books apart — DONE 2026-07-22, proven by the first MCP purchase (house-flagged, half-cent blessing, Patron No. 2)
