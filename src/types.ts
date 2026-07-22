@@ -125,12 +125,25 @@ export interface PayerRecord {
   purchases: number;
 }
 
-/** One of the twelve signs in the Agent Zodiac. */
+/** One of the twelve signs of the Systems Almanac. */
 export interface ZodiacSign {
   id: string;
   name: string;
-  /** The sign's standing character, one line. */
-  trait: string;
+  /** What the sign is. */
+  essence: string;
+  /** The mandatory operational penalty. Every sign pays one. */
+  penalty: string;
+}
+
+/** One week's page for one sign. Deterministic; stored as data. */
+export interface SeasonEntry {
+  /** Season week, 1-13. */
+  week: number;
+  conditions: string;
+  forecast: string;
+  auspicious: string;
+  avoid: string;
+  compatible: string;
 }
 
 export interface GuestbookEntry {

@@ -24,6 +24,7 @@ anchorRoutes.get("/api/anchor/:anchor_id", async (c) => {
   return c.json({
     valid,
     held_at: "Node 21",
+    verify_url: `${c.env.STORE_BASE_URL}/api/verify/${record.anchor.anchor_id}`,
     anchor: record.anchor,
     signature: record.signature,
     public_key: record.public_key,

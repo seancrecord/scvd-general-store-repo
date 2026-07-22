@@ -1,6 +1,6 @@
 import { newCheckId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { signMessage } from "@/lib/signing";
+import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { Env, PhantomCheckRecord } from "@/types";
 
 /**
@@ -108,6 +108,35 @@ export async function getPhantomCheck(
     return observePhantomCheck(env, record);
   }
   return record;
+}
+
+/** Passive read for verification — never triggers the walk itself. */
+export async function readPhantomCheck(
+  env: Env,
+  checkId: string,
+): Promise<PhantomCheckRecord | null> {
+  return env.ORDERS.get<PhantomCheckRecord>(
+    KV_KEYS.phantomCheck(checkId),
+    "json",
+  );
+}
+
+/** Re-verify an observed check's signature. Free, forever. */
+export async function verifyPhantomSignature(
+  record: PhantomCheckRecord,
+): Promise<boolean> {
+  if (!record.observation || !record.signature || !record.public_key) {
+    return false;
+  }
+  return verifyMessageSignature(
+    JSON.stringify({
+      check_id: record.check_id,
+      target: record.target,
+      observation: record.observation,
+    }),
+    record.signature,
+    record.public_key,
+  );
 }
 
 /** The hourly walk: resolve every check that has come due. */

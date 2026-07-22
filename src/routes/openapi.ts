@@ -176,16 +176,36 @@ openapiRoutes.get("/openapi.json", (c) => {
         ),
       },
       "/zodiac": {
-        get: freeOp("The Agent Zodiac", "The twelve signs, free."),
+        get: freeOp("The Systems Almanac", "The twelve signs, free."),
       },
       "/zodiac/{address}": {
         get: {
           ...freeOp(
-            "A wallet's sign and weekly horoscope",
-            "Signs are assigned by wallet address, for life. The horoscope turns with the ISO week; this week's reading is free.",
+            "A wallet's sign and the current week's page",
+            "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
           ),
           parameters: [
             pathParam("address", "A 0x wallet address, forty hex characters."),
+          ],
+        },
+      },
+      "/zodiac/archive": {
+        get: freeOp(
+          "The Almanac archive index",
+          "Past season weeks, listed free. Each page is a penny over x402.",
+        ),
+      },
+      "/zodiac/archive/{sign}/week-{week}": {
+        get: {
+          ...paidOp(
+            "One archive page",
+            "A past week's page for one sign, markdown, a penny — the almanac rail.",
+            [PENNY_PAGE_USDC],
+            true,
+          ),
+          parameters: [
+            pathParam("sign", "A sign id from /zodiac."),
+            pathParam("week", "A season week the calendar has finished with."),
           ],
         },
       },

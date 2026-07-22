@@ -5,6 +5,10 @@ import type { EventSignals } from "@/lib/metrics";
 import { getPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import {
+  readPhantomCheck,
+  verifyPhantomSignature,
+} from "@/services/phantom";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { VOICE } from "@/store";
 import type { HonoEnv } from "@/types";
@@ -93,6 +97,31 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       note: valid
         ? "Genuine anchor. Signed by the store when it says it was."
         : "Signature doesn't match. Treat this anchor as compromised.",
+    });
+  }
+
+  const phantomRecord = await readPhantomCheck(c.env, id);
+  if (phantomRecord) {
+    await noteVerify(c, "phantom_check");
+    if (phantomRecord.status === "scheduled") {
+      return c.json({
+        valid: false,
+        kind: "phantom_check",
+        status: "scheduled",
+        note: "Nothing signed yet — the store hasn't walked past. Come back after the hour on the slip.",
+      });
+    }
+    const valid = await verifyPhantomSignature(phantomRecord);
+    return c.json({
+      valid,
+      kind: "phantom_check",
+      observation: phantomRecord.observation,
+      signature: phantomRecord.signature,
+      public_key: phantomRecord.public_key,
+      algorithm: "ed25519",
+      note: valid
+        ? "Genuine observation. Signed at the moment of looking."
+        : "Signature doesn't match. Treat this attestation as compromised.",
     });
   }
 
