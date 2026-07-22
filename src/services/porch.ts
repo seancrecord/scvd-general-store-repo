@@ -43,3 +43,67 @@ export async function takeSeat(env: Env, date: Date = new Date()): Promise<numbe
   await env.COUNTERS.put(key, String(seat), { expirationTtl: 2 * 86400 });
   return seat;
 }
+
+/**
+ * The treat rail. Anyone can leave Roger Sterling a treat, free.
+ * Nothing about the treat is stored — only that one was left. His
+ * reaction runs on the same hour clock as the rest of the porch:
+ * everyone leaving one in the same hour gets the same Roger.
+ */
+const TREAT_REACTIONS_OUT: readonly string[] = [
+  "Roger Sterling inspected it from a distance of one full plank, then looked back at the road.",
+  "Roger Sterling accepted it with the dignity of a toll collector.",
+  "Roger Sterling sniffed it once and sat down beside it, which is as close as he comes to thanks.",
+  "Roger Sterling watched you set it down. He'll get to it on his own schedule.",
+  "Roger Sterling blinked slowly. Around here that's a receipt.",
+] as const;
+
+const TREAT_REACTION_ELSEWHERE =
+  "Roger Sterling is elsewhere. The treat stays on the rail. These things are always gone by morning.";
+
+export function treatReaction(date: Date = new Date()): string {
+  if (!catIsOut(date)) {
+    return TREAT_REACTION_ELSEWHERE;
+  }
+  return (
+    TREAT_REACTIONS_OUT[
+      fnv1a(`treat:${hourKey(date)}`) % TREAT_REACTIONS_OUT.length
+    ] ?? TREAT_REACTIONS_OUT[0]!
+  );
+}
+
+export interface LeftTreat {
+  reaction: string;
+  treatsToday: number;
+}
+
+export async function leaveTreat(
+  env: Env,
+  date: Date = new Date(),
+): Promise<LeftTreat> {
+  const key = KV_KEYS.porchTreats(date.toISOString().slice(0, 10));
+  const current = await env.COUNTERS.get(key);
+  const treatsToday = (current ? parseInt(current, 10) : 0) + 1;
+  // Nine days so the Gazette's weekly count can still see the rail.
+  await env.COUNTERS.put(key, String(treatsToday), {
+    expirationTtl: 9 * 86400,
+  });
+  return { reaction: treatReaction(date), treatsToday };
+}
+
+/** Treats left over the trailing week, for the Gazette's aggregate line. */
+export async function treatsThisWeek(
+  env: Env,
+  date: Date = new Date(),
+): Promise<number> {
+  let total = 0;
+  for (let daysBack = 0; daysBack < 7; daysBack += 1) {
+    const day = new Date(date);
+    day.setUTCDate(day.getUTCDate() - daysBack);
+    const count = await env.COUNTERS.get(
+      KV_KEYS.porchTreats(day.toISOString().slice(0, 10)),
+    );
+    total += count ? parseInt(count, 10) : 0;
+  }
+  return total;
+}

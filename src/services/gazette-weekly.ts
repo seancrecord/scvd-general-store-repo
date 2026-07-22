@@ -6,7 +6,7 @@ import {
   nextApprovedConfession,
   setConfessionStatus,
 } from "@/services/confessions";
-import { catIsOut } from "@/services/porch";
+import { catIsOut, treatsThisWeek } from "@/services/porch";
 import { listGuestbook } from "@/services/guestbook";
 import { listLetters } from "@/services/letters";
 import { listFailedItems } from "@/services/requests";
@@ -69,6 +69,8 @@ interface EditionFacts {
   corrections: string[];
   /** "out" | "elsewhere" | undefined (absence as often as presence). */
   rogerLine?: string;
+  /** Treats left on the porch rail this week. Aggregate only. */
+  treatsLeft: number;
   /** Keeper-approved confession slated for COUNTER NOTES, if any. */
   confessionLine?: string;
   confessionId?: string;
@@ -190,6 +192,7 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
     shelvesAdded,
     shelvesRetired,
     corrections,
+    treatsLeft: await treatsThisWeek(env),
     organicEvents:
       settleCount + signatures.length + lettersReceived + tipsReceived,
   };
@@ -244,6 +247,7 @@ export function renderEdition(facts: EditionFacts, editionNumber: number): strin
 ${facts.porchCrossings === 0 ? "The front step went uncrossed." : `The front step was crossed ${facts.porchCrossings} time${facts.porchCrossings === 1 ? "" : "s"}.`}
 ${facts.bellRings === 0 ? "Bell did not ring." : `Bell rang ${facts.bellRings} time${facts.bellRings === 1 ? "" : "s"}.`}
 ${facts.busiestDay ? `Most of the period's business came on a ${facts.busiestDay}.` : "The period kept no particular rhythm."}
+${facts.treatsLeft > 0 ? `${facts.treatsLeft} treat${facts.treatsLeft === 1 ? " was" : "s were"} left on the porch rail. All were gone by morning.` : ""}
 ${facts.rogerLine ?? ""}
 [Weather line — keeper's, one at most. Delete if none.]
 
