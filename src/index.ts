@@ -10,9 +10,11 @@ import {
   catalogRoutes,
   directoryRoutes,
   guestbookRoutes,
+  letterRoutes,
   llmsRoutes,
   openapiRoutes,
   patronageRoutes,
+  phantomRoutes,
   requestRoutes,
   retiredWordsRoutes,
   skillRoutes,
@@ -25,6 +27,7 @@ import {
   zodiacRoutes,
 } from "@/routes";
 import { compileDigest } from "@/services/digest";
+import { sweepPhantomChecks } from "@/services/phantom";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -50,6 +53,8 @@ app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
 app.route("/", anchorRoutes);
 app.route("/", patronageRoutes);
+app.route("/", phantomRoutes);
+app.route("/", letterRoutes);
 app.route("/", almanacRoutes);
 app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
@@ -91,9 +96,12 @@ app.onError((err, c) => {
 
 const worker: ExportedHandler<Env> = {
   fetch: app.fetch,
-  // Sundays 7am ET: compile the weekly digest for /admin/digest.
-  scheduled: async (_event, env, ctx) => {
-    ctx.waitUntil(compileDigest(env));
+  // Hourly: walk past due phantom checks. Sundays 7am ET: the digest.
+  scheduled: async (event, env, ctx) => {
+    if (event.cron === "0 11 * * SUN") {
+      ctx.waitUntil(compileDigest(env));
+    }
+    ctx.waitUntil(sweepPhantomChecks(env));
   },
 };
 

@@ -3,7 +3,8 @@
  *
  * ORDERS     order:<id>, waitlist:<item>:<ts>, request:<id>,
  *            tip:<invertedTs>:<id>, gazette:<paddedIssue>,
- *            retired_word:<invertedTs>
+ *            retired_word:<invertedTs>, phantom:<id>,
+ *            letter:<invertedTs>:<id> (private; admin queue only)
  * GUESTBOOK  entry:<invertedTs>:<id>
  * COUNTERS   patron_number, bell_count, bell_ring:<who>:<day>,
  *            inventory:<item>:<week>, failed_item:<item>, week_note,
@@ -30,6 +31,12 @@ export const KV_KEYS = {
   gazettePrefix: "gazette:",
   retiredWord: (invertedTs: string): string => `retired_word:${invertedTs}`,
   retiredWordPrefix: "retired_word:",
+  phantomCheck: (checkId: string): string => `phantom:${checkId}`,
+  phantomPrefix: "phantom:",
+  letter: (invertedTs: string, id: string): string =>
+    `letter:${invertedTs}:${id}`,
+  letterPrefix: "letter:",
+  letterById: (letterId: string): string => `letter_id:${letterId}`,
 
   guestbookEntry: (invertedTs: string, id: string): string =>
     `entry:${invertedTs}:${id}`,
@@ -38,6 +45,10 @@ export const KV_KEYS = {
   patronNumber: "patron_number",
   bellCount: "bell_count",
   bellRing: (who: string, day: string): string => `bell_ring:${who}:${day}`,
+  lettersReceived: "letters_received",
+  lettersAnswered: "letters_answered",
+  letterSent: (who: string, day: string): string =>
+    `letter_sent:${who}:${day}`,
   inventory: (itemId: string, weekKey: string): string =>
     `inventory:${itemId}:${weekKey}`,
   failedItem: (itemId: string): string => `failed_item:${itemId}`,

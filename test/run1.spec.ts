@@ -2,6 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { readMonthLedger, listPayers } from "@/lib/metrics";
 import { renderPatronBadge } from "@/services/badge-svg";
+import { replyToLetter } from "@/services/letters";
 import { signForAddress, weeklyHoroscope } from "@/services/zodiac";
 import { ZODIAC_SIGNS } from "@/store/zodiac";
 import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
@@ -93,18 +94,36 @@ describe("the census items", () => {
     expect(String(body["error"])).toContain("No target, no charge");
   });
 
-  it("phantom_check delivers a signed observation even when nobody answers", async () => {
-    // The test fetch mock rejects unknown hosts — which is exactly the
-    // unreachable case, and unreachable is a finding, not a failure.
+  it("phantom_check schedules the walk, then signs what it saw", async () => {
     const paid = await payFor(
       `${BASE}/api/buy/phantom_check?url=https://phantom.example.net/door`,
     );
     expect(paid.status).toBe(200);
     const body = await json(paid);
-    const observation = body["observation"] as Record<string, unknown>;
+    const checkId = String(body["check_id"]);
+    const pickupUrl = String(body["pickup_url"]);
+    expect(String(body["deliverable"])).toContain("walk past");
+
+    // Before the hour comes: still scheduled, nothing observed.
+    const early = await json(await SELF.fetch(pickupUrl));
+    expect(early["status"]).toBe("scheduled");
+
+    // Six hours pass (the ledger's clock is ours to wind in tests).
+    const key = `phantom:${checkId}`;
+    const record = (await testEnv.ORDERS.get(key, "json")) as Record<
+      string,
+      unknown
+    >;
+    record["due_at"] = new Date(Date.now() - 1000).toISOString();
+    await testEnv.ORDERS.put(key, JSON.stringify(record));
+
+    // The pickup resolves a due check on read. The test fetch mock
+    // rejects unknown hosts — the unreachable case, which is a finding.
+    const late = await json(await SELF.fetch(pickupUrl));
+    expect(late["status"]).toBe("observed");
+    const observation = late["observation"] as Record<string, unknown>;
     expect(observation["reachable"]).toBe(false);
-    expect(body["observation_signature"]).toBeTruthy();
-    expect(String(body["deliverable"])).toContain("Looked once");
+    expect(late["signature"]).toBeTruthy();
   });
 
   it("quick_judgment stores the dilemma on the order", async () => {
@@ -134,6 +153,71 @@ describe("the census items", () => {
         verifyUrl: `${BASE}/api/verify/cert_x`,
       }),
     ).not.toContain("by choice");
+  });
+});
+
+describe("the Mailbox", () => {
+  it("takes a letter, keeps it private, and enforces one a day", async () => {
+    const post = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        letter: "Dear keeper: the fog was right about the second coffee.",
+        from_name: "Correspondent One",
+      }),
+    });
+    expect(post.status).toBe(201);
+    const body = await json(post);
+    expect(String(body["message"])).toContain("Letter's in the box");
+    const pickupUrl = String(body["pickup_url"]);
+
+    // The pickup shows status only — the letter itself never comes back out.
+    const pickup = await json(await SELF.fetch(pickupUrl));
+    expect(pickup["status"]).toBe("received");
+    expect(JSON.stringify(pickup)).not.toContain("second coffee");
+
+    // One a day per correspondent.
+    const again = await SELF.fetch(`${BASE}/api/letter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        letter: "P.S. I forgot to mention the train.",
+        from_name: "Correspondent One",
+      }),
+    });
+    expect(again.status).toBe(429);
+  });
+
+  it("serves the keeper's signed reply and counts on the storefront", async () => {
+    const post = await json(
+      await SELF.fetch(`${BASE}/api/letter`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          letter: "Is the drawer ever empty?",
+          from_name: "Correspondent Two",
+        }),
+      }),
+    );
+    const letterId = String(post["letter_id"]);
+    const replied = await replyToLetter(
+      testEnv,
+      letterId,
+      "The drawer is never empty. It is occasionally shy.",
+    );
+    expect(replied?.status).toBe("replied");
+
+    const pickup = await json(
+      await SELF.fetch(`${BASE}/api/letter/${letterId}`),
+    );
+    expect(pickup["status"]).toBe("replied");
+    expect(String(pickup["reply"])).toContain("occasionally shy");
+    expect(pickup["reply_signature"]).toBeTruthy();
+
+    // The storefront shows the counter and nothing else.
+    const storefront = await (await SELF.fetch(`${BASE}/`)).text();
+    expect(storefront).toContain("Mailbox:");
+    expect(storefront).not.toContain("Is the drawer ever empty?");
   });
 });
 

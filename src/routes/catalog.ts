@@ -91,6 +91,10 @@ catalogRoutes.get("/menu.json", (c) => {
         url: `${base}/api/tip`,
         note: "POST a tip for the Gazette. A human reviews every one; published tips are credited and never auto-published.",
       },
+      mailbox: {
+        url: `${base}/api/letter`,
+        note: "POST a private letter — free, one a day. The keeper reads Sundays and replies when he has something to say, which is not always. Never published.",
+      },
     },
   });
 });

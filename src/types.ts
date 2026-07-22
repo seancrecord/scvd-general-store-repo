@@ -269,6 +269,46 @@ export interface BazaarLedgerEntry {
   extensions: Record<string, unknown>;
 }
 
+/** A scheduled out-of-band URL probe, bought as phantom_check. */
+export interface PhantomCheckRecord {
+  check_id: string;
+  target: string;
+  purchased_at: string;
+  /** When the store walks past — ~6 hours after purchase. */
+  due_at: string;
+  status: "scheduled" | "observed";
+  observation?: {
+    checked_at: string;
+    reachable: boolean;
+    status?: number;
+    latency_ms?: number;
+    note: string;
+  };
+  signature?: string;
+  public_key?: string;
+}
+
+export type LetterStatus = "received" | "read" | "replied" | "archived";
+
+/**
+ * A letter in the Mailbox. Private correspondence: admin queue only,
+ * never published, never rendered on any public surface. Stored raw;
+ * shown to the keeper escaped.
+ */
+export interface LetterRecord {
+  letter_id: string;
+  letter: string;
+  date: string;
+  status: LetterStatus;
+  from_name?: string;
+  verified_identity?: string;
+  identity_verified?: boolean;
+  reply?: string;
+  reply_signature?: string;
+  reply_public_key?: string;
+  replied_at?: string;
+}
+
 export interface WeeklyDigest {
   generated_at: string;
   week_note: string;
@@ -283,6 +323,8 @@ export interface WeeklyDigest {
   waitlist_entries: number;
   commission_requests: CommissionRequest[];
   failed_item_requests: Record<string, number>;
+  /** Letters in the box the keeper hasn't read yet. */
+  unread_letters?: number;
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

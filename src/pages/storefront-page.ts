@@ -11,6 +11,9 @@ export interface StorefrontData {
   weekNote: string;
   bellCount: number;
   guestbook: GuestbookEntry[];
+  /** The only public letter facts: how many in, how many answered. */
+  lettersReceived: number;
+  lettersAnswered: number;
 }
 
 function menuItemHtml(item: MenuItem): string {
@@ -71,6 +74,7 @@ export function renderStorefront(data: StorefrontData): string {
       <h1>Sean-Claude Van Damme's<br>General Store</h1>
       <p class="subtitle">${escapeHtml(STORE_METADATA.proprietors)}</p>
       <p class="bell-count">${escapeHtml(bellLine(data.bellCount))}</p>
+      <p class="bell-count">Mailbox: ${data.lettersReceived} letter${data.lettersReceived === 1 ? "" : "s"} received, ${data.lettersAnswered} answered. Letters are private; the counter is all anyone sees.</p>
     </header>
 
     <section>

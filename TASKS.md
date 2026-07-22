@@ -17,13 +17,14 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NEXT (Run 1 buildout remainders)
 
-- [ ] The Mailbox (block H): letters, claim slips, private queue, public counter — spec never reached the build agent; paste block H and it ships
+- [x] The Mailbox (block H): POST /api/letter (free, 1/day, private), pickup URL with signed replies, admin read/reply/archive queue, storefront counter, digest unread count — DONE 2026-07-22
+- [x] Census-shelf specs aligned to the store ledger §3: phantom_check $0.25 (out-of-band probe ~6h later, hourly cron + lazy pickup resolve), quick_judgment $3, certificate_of_patronage $20 PWID, recurring_patronage $3/30d — DONE 2026-07-22
 - [ ] Zodiac character research run → recast the twelve signs if the keeper wants; the address→sign derivation must NOT change once agents quote their signs (scaffold names are drawn from store lore: Rock, Bell, Jar, Drawer, Smoke, Train, Fog, Porch Dog, Thermometer, Ledger, Post Oak, Stall)
 - [ ] Zodiac archive on the almanac rail (past weeks as penny pages) — deferred with the character run
-- [ ] Keeper to bless desk-reasoned premises: phantom_check (signed URL look, $0.02), quick_judgment (one verdict, $5, 5/week), certificate_of_patronage ($10 PWID)
 - [ ] ACP registry listing [VERIFY submission process; skip if it requires token participation] (Run 1 open conflict)
 - [ ] Farcaster frame / Base App miniapp surfaces — Distribution stream per Run 1 §8; v3 candidate
 - [ ] Monthly ledger review ritual: /admin "The ledger's answers" vs Run 1 hypotheses (first review ~60 days after listing)
+- [ ] Product backlog (ideas awaiting evidence: vouching, brokerage, ask_the_human, gift rails, subscriptions, attestation API tier) lives in the back-office store ledger §3 — promote or kill on Run 3 + ledger evidence, never build unprompted
 
 ## Discovered along the way (don't drop these)
 
@@ -37,7 +38,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [ ] EXTENSION-RESPONSES capture rides a fetch tap (src/lib/bazaar-observer.ts) because @x402/core only console.logs the header; replace with SDK plumbing when the SDK exposes extension responses on verify/settle results
 - [ ] /.well-known/x402(+.json) follows the de-facto indexer contract (x402scan DISCOVERY.md); the official spec is still an open proposal (x402-foundation/x402 #2582) — align when it lands
 - [ ] MCP server card skipped on purpose: SEP-2127 is a draft, the current draft moved single-server cards off .well-known to GET /server-card, and a card must describe real MCP transport endpoints — the store doesn't run an MCP server. Build the MCP server first if we ever want the card
-- [ ] recurring_patronage priced $8/30 days and human_witness given 2/week stock by the keeper's agent — keeper to bless or adjust both numbers
+- [x] recurring_patronage repriced $3/30 days per the store ledger (was $8, agent desk reasoning); human_witness 2/week stands — RESOLVED 2026-07-22
 - [ ] Contributor stamps and patronage passes have no delivery channel back to the buyer beyond the purchase response; a claim/lookup endpoint by payer address is a v0.4 idea
 - [ ] The blessing "no consecutive repeats" memory is one KV key (blessing_last); two same-instant buyers in different colos could still draw the same slip. Acceptable chaos, noted
 

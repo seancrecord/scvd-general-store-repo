@@ -10,6 +10,11 @@ import { compileDigest, getLatestDigest } from "@/services/digest";
 import { listIssues, publishIssue } from "@/services/gazette";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
+  listLetters,
+  replyToLetter,
+  setLetterStatus,
+} from "@/services/letters";
+import {
   completeOrder,
   listOrders,
   resetWeeklyInventory,
@@ -55,6 +60,7 @@ adminRoutes.get("/admin", async (c) => {
     bazaarLedger,
     monthLedger,
     payers,
+    letters,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -67,6 +73,7 @@ adminRoutes.get("/admin", async (c) => {
     listBazaarLedger(c.env),
     readMonthLedger(c.env),
     listPayers(c.env),
+    listLetters(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -81,8 +88,42 @@ adminRoutes.get("/admin", async (c) => {
       bazaarLedger,
       monthLedger,
       payers,
+      letters: letters.map((entry) => entry.record),
     }),
   );
+});
+
+adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {
+  const updated = await setLetterStatus(c.env, c.req.param("letter_id"), "read");
+  if (!updated) {
+    return c.text("No letter by that id in the box.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/letters/:letter_id/reply", async (c) => {
+  const form = await c.req.parseBody();
+  const reply = sanitizeText(form["reply"], 5000);
+  if (!reply) {
+    return c.text("A reply needs words in it.", 400);
+  }
+  const updated = await replyToLetter(c.env, c.req.param("letter_id"), reply);
+  if (!updated) {
+    return c.text("No letter by that id in the box.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/letters/:letter_id/archive", async (c) => {
+  const updated = await setLetterStatus(
+    c.env,
+    c.req.param("letter_id"),
+    "archived",
+  );
+  if (!updated) {
+    return c.text("No letter by that id in the box.", 404);
+  }
+  return c.redirect("/admin");
 });
 
 adminRoutes.post("/admin/patronage/note", async (c) => {

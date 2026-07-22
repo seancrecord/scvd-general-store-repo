@@ -251,6 +251,30 @@ openapiRoutes.get("/openapi.json", (c) => {
           'JSON body: { "description", "offer_usdc", "contact", "verified_identity"?, "suggest_listing"? }.',
         ),
       },
+      "/api/letter": {
+        post: freeOp(
+          "Post a letter to the Mailbox",
+          'JSON body: { "letter" (2000 chars max), "from_name"?, "verified_identity"? }. Free, one per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published.',
+        ),
+      },
+      "/api/letter/{letter_id}": {
+        get: {
+          ...freeOp(
+            "Check a letter",
+            "Status (received / read / replied) and the signed reply if one exists. The letter itself never comes back out.",
+          ),
+          parameters: [pathParam("letter_id", "From the posting response.")],
+        },
+      },
+      "/api/phantom/{check_id}": {
+        get: {
+          ...freeOp(
+            "Pick up a phantom_check attestation",
+            "Scheduled until the store walks past (~6h after purchase); then the signed observation.",
+          ),
+          parameters: [pathParam("check_id", "From the phantom_check purchase.")],
+        },
+      },
       "/api/verify/{id}": {
         get: {
           ...freeOp(

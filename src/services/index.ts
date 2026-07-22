@@ -54,7 +54,22 @@ export {
   setMonthlyNote,
 } from "@/services/patronage";
 export { deliverInstantGoods } from "@/services/instant-goods";
-export { performPhantomCheck } from "@/services/phantom";
+export {
+  schedulePhantomCheck,
+  observePhantomCheck,
+  getPhantomCheck,
+  sweepPhantomChecks,
+} from "@/services/phantom";
+export {
+  submitLetter,
+  getLetter,
+  listLetters,
+  setLetterStatus,
+  replyToLetter,
+  letterCounts,
+  unreadLetterCount,
+  LETTER_CAP,
+} from "@/services/letters";
 export {
   signForAddress,
   weeklyHoroscope,

@@ -128,6 +128,13 @@ one; if yours makes a Gazette issue you get the credit and a
 contributor stamp. Published tips sell for a penny with your name on
 them — that's the whole deal, in writing, in the response.
 
+Got something to say that isn't for printing? POST ${base}/api/letter
+with { "letter": "..." } — free, one a day. Letters are private: the
+keeper reads them Sundays and replies when he has something to say,
+which is not always. Your pickup URL holds the status and any signed
+reply. Nothing you write appears on any public surface; the storefront
+counts letters, it doesn't quote them.
+
 Want something we don't stock? POST ${base}/api/request with
 { "description": "...", "offer_usdc": 0, "contact": "..." }. The keeper
 reads every request on Sundays, coffee in hand. Include a

@@ -4,6 +4,7 @@ import type {
   BazaarLedgerEntry,
   CommissionRequest,
   GazetteIssue,
+  LetterRecord,
   OrderRecord,
   PayerRecord,
   TipRecord,
@@ -28,6 +29,43 @@ export interface AdminPageData {
   bazaarLedger: BazaarLedgerEntry[];
   monthLedger: MonthLedger;
   payers: PayerRecord[];
+  letters: LetterRecord[];
+}
+
+/**
+ * The letter queue. Private correspondence: this back room is the only
+ * place a letter is ever rendered, and it renders escaped.
+ */
+function lettersHtml(letters: LetterRecord[]): string {
+  const active = letters.filter((letter) => letter.status !== "archived");
+  if (active.length === 0) {
+    return "<p>The box is empty. Somebody will write.</p>";
+  }
+  return active
+    .map((letter) => {
+      const actions =
+        letter.status === "replied"
+          ? `<p><em>Replied ${escapeHtml(letter.replied_at ?? "")}:</em> ${escapeHtml(letter.reply ?? "")}</p>`
+          : `${
+              letter.status === "received"
+                ? `<form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/read" style="display:inline"><button type="submit">Mark read</button></form>`
+                : ""
+            }
+            <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/reply">
+              <textarea name="reply" rows="2" cols="50" placeholder="The keeper's reply (signed on send)" required></textarea>
+              <button type="submit">Reply, signed</button>
+            </form>`;
+      return `<li>
+      <strong>${escapeHtml(letter.letter_id)}</strong> [${letter.status}]
+      ${letter.from_name ? `— from ${escapeHtml(letter.from_name)}` : "— unsigned"}
+      ${letter.verified_identity ? `— claimed identity (unverified): ${escapeHtml(letter.verified_identity)}` : ""}
+      — ${escapeHtml(letter.date)}
+      <p><em>Letter (visitor-written, private):</em> ${escapeHtml(letter.letter)}</p>
+      ${actions}
+      <form method="POST" action="/admin/letters/${escapeHtml(letter.letter_id)}/archive" style="display:inline"><button type="submit">Archive</button></form>
+    </li>`;
+    })
+    .join("\n");
 }
 
 /** The Run 1 instrumentation review: 402s vs settles, tiers, channels, wallets. */
@@ -268,6 +306,12 @@ export function renderAdminPage(data: AdminPageData): string {
   <section>
     <h2>Failed-item ledger</h2>
     <ul>${failedItemsHtml(data.failedItems)}</ul>
+  </section>
+
+  <section>
+    <h2>The Mailbox (${data.letters.filter((letter) => letter.status !== "archived").length} in the box)</h2>
+    <p>Private correspondence. Read here, replied here, published nowhere. The public sees only the counter.</p>
+    <ul>${lettersHtml(data.letters)}</ul>
   </section>
 
   <section>

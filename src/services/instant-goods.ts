@@ -1,7 +1,7 @@
 import { createAnchor } from "@/services/anchors";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
-import { performPhantomCheck } from "@/services/phantom";
+import { schedulePhantomCheck } from "@/services/phantom";
 import { STORE_METADATA } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
@@ -104,13 +104,13 @@ export async function deliverInstantGoods(
       };
     }
     case "phantom_check": {
-      const signed = await performPhantomCheck(env, input.targetUrl ?? "");
+      const scheduled = await schedulePhantomCheck(env, input.targetUrl ?? "");
       return {
-        deliverable: `Looked once at ${signed.observation.target}, ${signed.observation.checked_at}, from the counter. ${signed.observation.note} The observation below is signed; verify it against the key at /.well-known/scvd-signing-key.`,
+        deliverable: `Paid and noted. The store will walk past ${scheduled.record.target} around ${scheduled.record.due_at} — out-of-band, unannounced, the only honest way to check on a thing. The signed attestation will be waiting at ${scheduled.pickupUrl}. Silent failure doesn't get to stay silent here.`,
         extras: {
-          observation: signed.observation,
-          observation_signature: signed.signature,
-          observation_public_key: signed.public_key,
+          check_id: scheduled.record.check_id,
+          due_at: scheduled.record.due_at,
+          pickup_url: scheduled.pickupUrl,
         },
       };
     }
