@@ -46,9 +46,17 @@ export async function signCertificate(
   cert: Certificate,
   signingKeyHex: string,
 ): Promise<{ signature: string; publicKey: string }> {
+  return signMessage(canonicalizeCertificate(cert), signingKeyHex);
+}
+
+/** Sign any canonical string (stamps use this; certificates go through it). */
+export async function signMessage(
+  message: string,
+  signingKeyHex: string,
+): Promise<{ signature: string; publicKey: string }> {
   const seed = hexToBytes(signingKeyHex);
-  const message = new TextEncoder().encode(canonicalizeCertificate(cert));
-  const signature = await ed25519.signAsync(message, seed);
+  const bytes = new TextEncoder().encode(message);
+  const signature = await ed25519.signAsync(bytes, seed);
   const publicKey = await ed25519.getPublicKeyAsync(seed);
   return {
     signature: bytesToHex(signature),
@@ -56,23 +64,35 @@ export async function signCertificate(
   };
 }
 
-export async function verifyCertificateSignature(
-  cert: Certificate,
+export async function verifyMessageSignature(
+  message: string,
   signatureHex: string,
   publicKeyHex: string,
 ): Promise<boolean> {
   try {
-    const message = new TextEncoder().encode(canonicalizeCertificate(cert));
+    const bytes = new TextEncoder().encode(message);
     const signature = Uint8Array.from(
       (signatureHex.match(/.{2}/g) ?? []).map((byte) => parseInt(byte, 16)),
     );
     const publicKey = Uint8Array.from(
       (publicKeyHex.match(/.{2}/g) ?? []).map((byte) => parseInt(byte, 16)),
     );
-    return await ed25519.verifyAsync(signature, message, publicKey);
+    return await ed25519.verifyAsync(signature, bytes, publicKey);
   } catch {
     return false;
   }
+}
+
+export async function verifyCertificateSignature(
+  cert: Certificate,
+  signatureHex: string,
+  publicKeyHex: string,
+): Promise<boolean> {
+  return verifyMessageSignature(
+    canonicalizeCertificate(cert),
+    signatureHex,
+    publicKeyHex,
+  );
 }
 
 export async function getPublicKeyHex(signingKeyHex: string): Promise<string> {

@@ -28,3 +28,11 @@ export function newEntryId(): string {
 export function newRequestId(): string {
   return `req_${randomToken(10)}`;
 }
+
+export function newStampId(): string {
+  return `stamp_${randomToken(10)}`;
+}
+
+export function newTipId(): string {
+  return `tip_${randomToken(10)}`;
+}

@@ -20,6 +20,7 @@ export async function signGuestbook(
   env: Env,
   rawName: unknown,
   rawMessage: unknown,
+  verifiedIdentity?: string,
 ): Promise<SignResult | null> {
   const name = sanitizeText(rawName, NAME_CAP);
   const message = sanitizeText(rawMessage, GUESTBOOK_MESSAGE_CAP);
@@ -32,6 +33,11 @@ export async function signGuestbook(
     message,
     date: new Date().toISOString(),
   };
+  if (verifiedIdentity) {
+    // Stored as claimed; nobody here has checked it. Honest labeling.
+    entry.verified_identity = verifiedIdentity;
+    entry.identity_verified = false;
+  }
   const key = KV_KEYS.guestbookEntry(invertedTimestamp(Date.now()), entry.id);
   await env.GUESTBOOK.put(key, JSON.stringify(entry));
   return { entry, key };

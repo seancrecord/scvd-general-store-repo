@@ -1,7 +1,9 @@
 import { escapeHtml } from "@/lib/sanitize";
 import type {
   CommissionRequest,
+  GazetteIssue,
   OrderRecord,
+  TipRecord,
   WaitlistEntry,
 } from "@/types";
 import type { ListedEntry } from "@/services/guestbook";
@@ -17,6 +19,8 @@ export interface AdminPageData {
   failedItems: Record<string, number>;
   guestbook: ListedEntry[];
   weekNote: string;
+  tips: TipRecord[];
+  gazetteIssues: GazetteIssue[];
 }
 
 function ordersHtml(orders: OrderRecord[]): string {
@@ -63,7 +67,41 @@ function commissionsHtml(requests: CommissionRequest[]): string {
   return requests
     .map(
       (request) =>
-        `<li><strong>$${request.offer_usdc}</strong> — ${escapeHtml(request.description)} — contact: ${escapeHtml(request.contact)} — ${escapeHtml(request.date)}</li>`,
+        `<li><strong>$${request.offer_usdc}</strong> — ${escapeHtml(request.description)} — contact: ${escapeHtml(request.contact)} — ${escapeHtml(request.date)}${request.suggest_listing ? ` — <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? ` — claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}</li>`,
+    )
+    .join("\n");
+}
+
+function tipsHtml(tips: TipRecord[]): string {
+  if (tips.length === 0) {
+    return "<p>The tip jar is empty.</p>";
+  }
+  return tips
+    .map((tip) => {
+      const reviewForms =
+        tip.status === "pending_review"
+          ? `<form method="POST" action="/admin/tips/${escapeHtml(tip.id)}/approve" style="display:inline"><button type="submit">Approve</button></form>
+             <form method="POST" action="/admin/tips/${escapeHtml(tip.id)}/reject" style="display:inline"><button type="submit">Reject</button></form>`
+          : "";
+      return `<li>
+      <strong>${escapeHtml(tip.id)}</strong> [${tip.status}] — ${escapeHtml(tip.tip)}
+      ${tip.contributor_name ? `— by ${escapeHtml(tip.contributor_name)}` : "— unsigned"}
+      ${tip.verified_identity ? `— claimed identity (unverified): ${escapeHtml(tip.verified_identity)}` : ""}
+      — ${escapeHtml(tip.date)}
+      ${reviewForms}
+    </li>`;
+    })
+    .join("\n");
+}
+
+function gazetteHtml(issues: GazetteIssue[]): string {
+  if (issues.length === 0) {
+    return "<p>No issues off the press yet.</p>";
+  }
+  return issues
+    .map(
+      (issue) =>
+        `<li>Issue no. ${issue.issue_number} — ${escapeHtml(issue.title)} — ${escapeHtml(issue.date)} — contributors: ${issue.contributors.length > 0 ? issue.contributors.map((contributor) => escapeHtml(contributor.name)).join(", ") : "none named"}</li>`,
     )
     .join("\n");
 }
@@ -139,6 +177,33 @@ export function renderAdminPage(data: AdminPageData): string {
   <section>
     <h2>Failed-item ledger</h2>
     <ul>${failedItemsHtml(data.failedItems)}</ul>
+  </section>
+
+  <section>
+    <h2>Trading Post tips (${data.tips.length})</h2>
+    <p>A human reads every tip. Nothing publishes itself.</p>
+    <ul>${tipsHtml(data.tips)}</ul>
+  </section>
+
+  <section>
+    <h2>The Gazette (${data.gazetteIssues.length} issues)</h2>
+    <ul>${gazetteHtml(data.gazetteIssues)}</ul>
+    <form method="POST" action="/admin/gazette/publish">
+      <input type="text" name="title" placeholder="Issue title" maxlength="200" required>
+      <input type="text" name="tip_ids" placeholder="Approved tip ids, comma-separated" required>
+      <button type="submit">Publish issue (credits contributors, mints their stamps)</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Retire a word</h2>
+    <p>For fulfilling retired_word orders. Goes straight on the public registry.</p>
+    <form method="POST" action="/admin/retired-words/add">
+      <input type="text" name="word" placeholder="The word" maxlength="60" required>
+      <input type="text" name="epitaph" placeholder="Its epitaph" maxlength="300" required>
+      <input type="text" name="patron_number" placeholder="Patron number (optional)">
+      <button type="submit">Retire it</button>
+    </form>
   </section>
 
   <section>

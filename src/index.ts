@@ -2,14 +2,20 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import {
   adminRoutes,
+  almanacRoutes,
   badgeRoutes,
   bellRoutes,
   buyRoutes,
   catalogRoutes,
+  directoryRoutes,
   guestbookRoutes,
   llmsRoutes,
   requestRoutes,
+  retiredWordsRoutes,
+  skillRoutes,
+  stampRoutes,
   storefrontRoutes,
+  tradingPostRoutes,
   verifyRoutes,
 } from "@/routes";
 import { compileDigest } from "@/services/digest";
@@ -24,10 +30,16 @@ const app = new Hono<HonoEnv>();
 
 app.route("/", storefrontRoutes);
 app.route("/", llmsRoutes);
+app.route("/", skillRoutes);
 app.route("/", catalogRoutes);
 app.route("/", buyRoutes);
+app.route("/", almanacRoutes);
+app.route("/", directoryRoutes);
+app.route("/", retiredWordsRoutes);
 app.route("/", guestbookRoutes);
 app.route("/", bellRoutes);
+app.route("/", stampRoutes);
+app.route("/", tradingPostRoutes);
 app.route("/", requestRoutes);
 app.route("/", verifyRoutes);
 app.route("/", badgeRoutes);

@@ -5,9 +5,13 @@ import type {
 } from "@x402/core/server";
 import type { Context, MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { atomicToUsdc, getPaymentStack, tipFromPaid } from "@/lib/payments";
+import {
+  atomicToUsdc,
+  getPaymentStack,
+  minimumUsdcForPath,
+  tipFromPaid,
+} from "@/lib/payments";
 import type { SettledPayment } from "@/lib/payments";
-import { getMenuItem } from "@/store";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -68,8 +72,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return respondWithInstructions(c, settlement.response);
   }
 
-  const itemId = c.req.path.replace(/^\/api\/buy\//, "");
-  const minimumUsdc = getMenuItem(itemId)?.price_usdc ?? 0;
+  const minimumUsdc = minimumUsdcForPath(c.req.path);
   const paidUsdc = atomicToUsdc(result.paymentRequirements.amount);
   const payment: SettledPayment = {
     paidUsdc,

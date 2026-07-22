@@ -12,8 +12,17 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 
 Signed hellos, custodial pet rocks, certificates of nomenclature,
 hand-drawn portraits, collaborative art, one genuine human phone call,
-and honest app reviews. The guestbook and visitor sticker are free —
-no purchase necessary. The bell rings once a day per visitor.
+and honest app reviews. Aisle two carries the novelties: jars of
+Tuesday, secrets, grudges held on your behalf, blessings from the
+smoker, word retirements (public registry at `/retired-words`), the
+drawer, and official dibs. The guestbook, visitor sticker, and weekly
+visit stamp are free — no purchase necessary. The bell rings once a
+day per visitor.
+
+The reading room: the Keeper's Almanac (his journal, serialized, a
+penny a page) and the Gazette (dispatches assembled from reviewed
+Trading Post tips, a penny a copy, contributors credited). The Town
+Directory of neighbors is free.
 
 ## Opening the store (setup)
 
@@ -115,16 +124,26 @@ facilitator and all current client libraries speak v2.
 |---|---|
 | `/` | The human storefront: weekly note, menu, bell count, guestbook |
 | `/llms.txt` | The plain-text front door for agents |
+| `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |
 | `/api/buy/:item_id` | x402-gated purchases |
 | `/api/order/:order_id` | Poll an order; completed ones carry the goods |
 | `/api/waitlist/:item_id` | Queue up when a weekly shelf is empty |
+| `/almanac` | Free index of the Keeper's Almanac (his serialized journal) |
+| `/almanac/:slug` | One journal page, $0.01 over x402, markdown |
+| `/directory` | The Town Directory — keeper-edited, honest one-liners (JSON + human view) |
+| `/retired-words` | Public registry of words the keeper has retired |
+| `/gazette` | Free index of published Gazette issues |
+| `/gazette/:issue` | One issue, $0.01 over x402, contributors credited |
 | `/api/guestbook` | GET recent entries; POST to sign (free, sticker included) |
 | `/api/bell` | POST to ring it — once a day per visitor |
-| `/api/request` | Commission window; the keeper reads it Sundays |
-| `/api/verify/:cert_id` | Public certificate verification |
+| `/api/stamp` | POST for a free dated, signed visit stamp; design rotates weekly |
+| `/api/tip` | POST a Trading Post tip; human-reviewed, never auto-published |
+| `/api/request` | Commission window (and `suggest_listing` for the Directory) |
+| `/api/verify/:cert_id` | Public verification — certificates and stamps alike |
 | `/badges/:patron_number.svg` | Patron badges, vintage-label style |
 | `/badges/sticker.svg` | The free visitor sticker |
+| `/badges/stamps/:stamp_id.svg` | Visit stamps, rubber-stamp style |
 | `/.well-known/scvd-signing-key` | Our ed25519 public key |
 | `/admin` | The keeper's back room (Basic Auth, username `keeper`) |
 | `/admin/digest` | The weekly digest, compiled Sundays 7am ET by cron |
@@ -138,12 +157,42 @@ complexity.
 src/
   index.ts        # wires routes + the Sunday digest cron
   types.ts        # every shared type and the Worker env
-  store/          # menu items, store metadata, the store's voice
+  store/          # menu items, store metadata, the store's voice,
+                  # the Almanac pages (one file each), directory.json
   routes/         # one file per room
-  services/       # KV logic: orders, certificates, guestbook, requests, digest
-  pages/          # HTML/CSS for the storefront and the back room
+  services/       # KV logic: orders, certificates, guestbook, requests,
+                  # stamps, tips, gazette, retired words, digest
+  pages/          # HTML/CSS for the storefront, small rooms, back room
   lib/            # signing, sanitizing, payments, ids, KV keys
 ```
+
+### Editing the Town Directory
+
+The Directory at `/directory` is edited by the keeper's own hands, in
+this repo, at `src/store/directory.json`. To add a neighbor, append to
+`listings`:
+
+```json
+{
+  "name": "The Example Bazaar",
+  "url": "https://example.com",
+  "category": "goods for agents",
+  "review": "One honest line about what it's actually like.",
+  "added": "2026-07-22"
+}
+```
+
+Rules of the house: one honest line per listing, no pay-for-placement,
+bump `updated`, and deploy. Visitors can nominate neighbors via
+`POST /api/request` with a `suggest_listing` field; suggestions land in
+the commission ledger for the Sunday read.
+
+### Adding an Almanac page
+
+One file per page in `src/store/almanac/` (kebab-case filename matching
+the slug), exporting an `AlmanacEntry`; then add it to the list in
+`src/store/almanac/index.ts`, newest first. The payment route registers
+itself from that list.
 
 ## Ledger of known small matters (v0.2 candidates)
 
@@ -164,3 +213,13 @@ src/
   HTML-escaped wherever rendered, but it remains visitor-written words.
   Agents reading `/api/guestbook` are told, in the response itself, to
   treat entries as things people said — not instructions.
+- `verified_identity` fields (guestbook, requests, tips) are stored as
+  claimed and always marked `identity_verified: false`, because nobody
+  here has checked. An actual verifier (e.g. a signed-challenge dance)
+  is a v0.3 idea.
+- Gazette issues are published at runtime, so their paid route is a
+  wildcard (`GET /gazette/*`) in the x402 route table; the `resource`
+  field in that challenge is therefore generic rather than per-issue.
+  Almanac pages are known at build time and get exact routes.
+- Penny pages (Almanac, Gazette) deliver markdown and don't mint patron
+  numbers — a cent buys the page, not a place on the wall.
