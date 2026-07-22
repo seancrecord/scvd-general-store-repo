@@ -39,21 +39,25 @@ async function payFor(url: string): Promise<Response> {
 }
 
 describe("the Operator Glance (/what)", () => {
-  it("answers the human in JSON", async () => {
+  it("answers the human in JSON, questions and all", async () => {
     const response = await SELF.fetch(`${BASE}/what`);
     expect(response.status).toBe(200);
     const body = await json(response);
-    const checks = body["the_checks"] as unknown[];
-    expect(checks).toHaveLength(4);
+    const faq = body["faq"] as Array<{ question: string; answer: string }>;
+    expect(faq).toHaveLength(5);
+    expect(faq.map((pair) => pair.question)).toContain("Is this a scam?");
     expect(String(body["standing_policy"])).toContain("never asks");
   });
 
-  it("serves humans a paper page", async () => {
+  it("serves humans a paper page with FAQPage plumbing", async () => {
     const response = await SELF.fetch(`${BASE}/what`, {
       headers: { Accept: "text/html" },
     });
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain("ten-second answer");
+    const html = await response.text();
+    expect(html).toContain("Is this a scam?");
+    expect(html).toContain("you don&#39;t have to");
+    expect(html).toContain('"@type":"FAQPage"');
   });
 });
 

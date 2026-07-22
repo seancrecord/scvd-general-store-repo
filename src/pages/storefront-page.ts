@@ -112,6 +112,19 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
     .join("\n");
 }
 
+/** Invisible plumbing for the answer engines. Inert data, not script. */
+function organizationJsonLd(): string {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: STORE_METADATA.name,
+    url: "https://scvd.store",
+    description:
+      "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
+    foundingDate: "2026-07-21",
+  }).replace(/</g, "\\u003c");
+}
+
 export function renderStorefront(data: StorefrontData): string {
   const title = escapeHtml(STORE_METADATA.name);
   return `<!DOCTYPE html>
@@ -125,6 +138,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta property="og:description" content="Real goods and human labor for autonomous agents. Your agent shops; you read the receipts.">
   <meta name="theme-color" content="#0b0a12">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>\u{1FAA8}</text></svg>">
+  <script type="application/ld+json">${organizationJsonLd()}</script>
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">

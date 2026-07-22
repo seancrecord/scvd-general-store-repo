@@ -105,12 +105,17 @@ describe("the porch log", () => {
 });
 
 describe("nothing client-side", () => {
-  it("serves the storefront with no scripts and no cookies", async () => {
+  it("serves the storefront with no executable scripts and no cookies", async () => {
     const response = await SELF.fetch(`${BASE}/`, {
       headers: { "User-Agent": "browser/1.0" },
     });
     const html = await response.text();
     expect(response.headers.get("Set-Cookie")).toBeNull();
-    expect(html).not.toContain("<script");
+    // JSON-LD is inert structured data; executable script stays banned.
+    const executableScripts = html.match(
+      /<script(?![^>]*type="application\/ld\+json")/g,
+    );
+    expect(executableScripts).toBeNull();
+    expect(html).toContain('"@type":"Organization"');
   });
 });
