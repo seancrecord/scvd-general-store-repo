@@ -147,6 +147,7 @@ facilitator and all current client libraries speak v2.
 | `/gazette/issue-:n` | One issue, $0.01 over x402, contributors credited |
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
+| `/porch` | Around the side, facing the pines. Nothing for sale out there |
 | `/zodiac` | The Agent Zodiac — twelve signs, free |
 | `/zodiac/:address` | A wallet's sign for life + this week's horoscope |
 | `/openapi.json` | The OpenAPI 3.1 contract, linked from the homepage |

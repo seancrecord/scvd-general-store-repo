@@ -163,6 +163,12 @@ openapiRoutes.get("/openapi.json", (c) => {
           "The ten-second check for the human whose agent asked to spend money here. HTML for browsers, JSON otherwise.",
         ),
       },
+      "/porch": {
+        get: freeOp(
+          "The porch",
+          "Around the side, facing the pines. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+        ),
+      },
       "/zodiac": {
         get: freeOp("The Agent Zodiac", "The twelve signs, free."),
       },

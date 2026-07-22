@@ -1,5 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
+import { catIsOut } from "@/services/porch";
 import { bellLine, STORE_METADATA } from "@/store";
 import type { GuestbookEntry } from "@/types";
 
@@ -152,6 +153,7 @@ export function renderStorefront(data: StorefrontData): string {
     </div>
 
     <section class="board">
+      ${catIsOut() ? '<span class="cat" aria-hidden="true"><span class="cat-tail"></span><span class="cat-eye cat-eye-l"></span><span class="cat-eye cat-eye-r"></span></span>' : ""}
       <p class="board-label">\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND</p>
       <p class="board-text">${readerboardHtml(data.weekNote)}</p>
     </section>
@@ -193,6 +195,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.refund_policy)}</p>
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>Everything we sign verifies at <code>/api/verify/{id}</code>. Take a rock's word for nothing; take ours cryptographically.</p>
+      <p>The <a href="/porch">porch</a> is around the side. Nothing for sale out there.</p>
       <p class="porch-est">${escapeHtml(STORE_METADATA.location)} \u00B7 est. in the age of agents</p>
     </footer>
 

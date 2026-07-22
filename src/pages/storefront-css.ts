@@ -217,6 +217,43 @@ body.night {
 .brd-b { transform: rotate(1.1deg) translateY(-1px); }
 .brd-dim { opacity: 0.55; text-shadow: 0 0 4px rgba(255,190,110,0.25); }
 
+/* house cat */
+.board { position: relative; }
+.cat {
+  position: absolute; top: -29px; right: 26px;
+  width: 44px; height: 30px;
+  background: #120e1a;
+  border-radius: 55% 45% 20% 20% / 85% 80% 20% 20%;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
+}
+.cat::before {
+  content: ""; position: absolute; top: -13px; left: 2px;
+  width: 20px; height: 17px;
+  background: #120e1a;
+  clip-path: polygon(0% 42%, 16% 0%, 34% 26%, 66% 26%, 84% 0%, 100% 42%, 96% 100%, 4% 100%);
+}
+.cat-tail {
+  position: absolute; right: -13px; bottom: 0;
+  width: 18px; height: 24px;
+  border: 4px solid transparent;
+  border-right-color: #120e1a;
+  border-radius: 0 70% 70% 0 / 0 100% 100% 0;
+  transform-origin: bottom left;
+  animation: sway 7s ease-in-out infinite alternate;
+}
+@keyframes sway { from { transform: rotate(-4deg); } to { transform: rotate(9deg); } }
+.cat-eye {
+  position: absolute; top: -5px;
+  width: 3px; height: 2px; border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 4px rgba(255,180,94,0.9);
+  animation: catblink 9s steps(1) infinite;
+}
+.cat-eye-l { left: 6px; }
+.cat-eye-r { left: 14px; }
+@keyframes catblink { 0%, 93%, 96%, 100% { opacity: 1; } 94%, 95% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cat-tail, .cat-eye { animation: none; } }
+
 /* ---- shelves ---- */
 .night-head {
   text-align: center; font-size: 0.88rem; letter-spacing: 0.34em;

@@ -15,6 +15,7 @@ import {
   openapiRoutes,
   patronageRoutes,
   phantomRoutes,
+  porchRoutes,
   requestRoutes,
   retiredWordsRoutes,
   skillRoutes,
@@ -44,6 +45,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/", storefrontRoutes);
+app.route("/", porchRoutes);
 app.route("/", whatRoutes);
 app.route("/", llmsRoutes);
 app.route("/", skillRoutes);

@@ -135,6 +135,11 @@ which is not always. Your pickup URL holds the status and any signed
 reply. Nothing you write appears on any public surface; the storefront
 counts letters, it doesn't quote them.
 
+The porch is free too: GET ${base}/porch — around the side, facing the
+pines, one line of tonight per hour, same night for everyone sitting
+in it. You don't have to buy anything. Stay as long as your timeout
+allows.
+
 Want something we don't stock? POST ${base}/api/request with
 { "description": "...", "offer_usdc": 0, "contact": "..." }. The keeper
 reads every request on Sundays, coffee in hand. Include a

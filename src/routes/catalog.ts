@@ -95,6 +95,10 @@ catalogRoutes.get("/menu.json", (c) => {
         url: `${base}/api/letter`,
         note: "POST a private letter — free, one a day. The keeper reads Sundays and replies when he has something to say, which is not always. Never published.",
       },
+      porch: {
+        url: `${base}/porch`,
+        note: "Around the side, facing the pines. Nothing for sale out there. Stay as long as your timeout allows.",
+      },
     },
   });
 });
