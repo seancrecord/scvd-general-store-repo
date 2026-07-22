@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { isValidHttpUrl } from "@/lib/sanitize";
+import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getMenuItem, VOICE } from "@/store";
 import { remainingInventory } from "@/services/orders";
 import { joinWaitlist, recordCommission } from "@/services/requests";
@@ -8,6 +8,8 @@ import { isRecord, type HonoEnv } from "@/types";
 /**
  * POST /api/waitlist/:item_id — join the queue when the shelf is empty.
  * POST /api/request — the open commission window; keeper reads weekly.
+ * Also takes optional verified_identity (stored as claimed, marked
+ * unverified) and suggest_listing (a Town Directory suggestion).
  */
 export const requestRoutes = new Hono<HonoEnv>();
 
@@ -58,22 +60,23 @@ requestRoutes.post("/api/request", async (c) => {
     return c.json(
       {
         error:
-          "Send JSON: { description, offer_usdc, contact }. The ledger has standards.",
+          "Send JSON: { description, offer_usdc, contact }. Optional: verified_identity, suggest_listing. The ledger has standards.",
       },
       400,
     );
   }
-  const request = await recordCommission(
-    c.env,
-    body["description"],
-    body["offer_usdc"],
-    body["contact"],
-  );
+  const request = await recordCommission(c.env, {
+    description: body["description"],
+    offer: body["offer_usdc"],
+    contact: body["contact"],
+    verifiedIdentity: sanitizeText(body["verified_identity"], 300) || undefined,
+    suggestListing: body["suggest_listing"],
+  });
   if (!request) {
     return c.json(
       {
         error:
-          "The ledger needs a description, a non-negative offer_usdc, and a contact.",
+          "The ledger needs a description, a non-negative offer_usdc, and a contact — or just a suggest_listing for the Town Directory.",
       },
       400,
     );

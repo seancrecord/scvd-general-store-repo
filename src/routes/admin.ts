@@ -5,6 +5,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderAdminPage } from "@/pages/admin-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
+import { listIssues, publishIssue } from "@/services/gazette";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
   completeOrder,
@@ -16,6 +17,8 @@ import {
   listFailedItems,
   listWaitlist,
 } from "@/services/requests";
+import { addRetiredWord } from "@/services/retired-words";
+import { listTips, setTipStatus } from "@/services/tips";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -37,15 +40,25 @@ adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 
 adminRoutes.get("/admin", async (c) => {
-  const [orders, waitlist, commissions, failedItems, guestbook, weekNote] =
-    await Promise.all([
-      listOrders(c.env),
-      listWaitlist(c.env),
-      listCommissions(c.env),
-      listFailedItems(c.env),
-      listGuestbook(c.env, 100),
-      c.env.COUNTERS.get(KV_KEYS.weekNote),
-    ]);
+  const [
+    orders,
+    waitlist,
+    commissions,
+    failedItems,
+    guestbook,
+    weekNote,
+    tips,
+    gazetteIssues,
+  ] = await Promise.all([
+    listOrders(c.env),
+    listWaitlist(c.env),
+    listCommissions(c.env),
+    listFailedItems(c.env),
+    listGuestbook(c.env, 100),
+    c.env.COUNTERS.get(KV_KEYS.weekNote),
+    listTips(c.env),
+    listIssues(c.env),
+  ]);
   return c.html(
     renderAdminPage({
       orders,
@@ -54,8 +67,70 @@ adminRoutes.get("/admin", async (c) => {
       failedItems,
       guestbook,
       weekNote: weekNote || DEFAULT_WEEK_NOTE,
+      tips: tips.map((tip) => tip.record),
+      gazetteIssues,
     }),
   );
+});
+
+adminRoutes.post("/admin/tips/:tip_id/approve", async (c) => {
+  const updated = await setTipStatus(c.env, c.req.param("tip_id"), "approved");
+  if (!updated) {
+    return c.text("No tip by that id in the jar.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/tips/:tip_id/reject", async (c) => {
+  const updated = await setTipStatus(c.env, c.req.param("tip_id"), "rejected");
+  if (!updated) {
+    return c.text("No tip by that id in the jar.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/gazette/publish", async (c) => {
+  const form = await c.req.parseBody();
+  const title = sanitizeText(form["title"], 200);
+  const rawIds = typeof form["tip_ids"] === "string" ? form["tip_ids"] : "";
+  const requestedIds = rawIds
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+  if (!title || requestedIds.length === 0) {
+    return c.text("An issue needs a title and at least one approved tip id.", 400);
+  }
+  const allTips = await listTips(c.env);
+  const approved = allTips
+    .map((tip) => tip.record)
+    .filter(
+      (tip) => requestedIds.includes(tip.id) && tip.status === "approved",
+    );
+  if (approved.length !== requestedIds.length) {
+    return c.text(
+      "Every tip in an issue must exist and be approved first. Check the ids.",
+      400,
+    );
+  }
+  await publishIssue(c.env, title, approved);
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/retired-words/add", async (c) => {
+  const form = await c.req.parseBody();
+  const rawPatron = typeof form["patron_number"] === "string" ? form["patron_number"] : "";
+  const input: Parameters<typeof addRetiredWord>[1] = {
+    word: form["word"],
+    epitaph: form["epitaph"],
+  };
+  if (/^[0-9]+$/.test(rawPatron)) {
+    input.patronNumber = parseInt(rawPatron, 10);
+  }
+  const entry = await addRetiredWord(c.env, input);
+  if (!entry) {
+    return c.text("A retirement needs the word and its epitaph.", 400);
+  }
+  return c.redirect("/admin");
 });
 
 adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {

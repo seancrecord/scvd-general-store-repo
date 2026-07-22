@@ -8,18 +8,33 @@ import type { CommissionRequest, Env, WaitlistEntry } from "@/types";
  * tally (every 404'd /api/buy/:unknown is free market research).
  */
 
+export interface CommissionInput {
+  description: unknown;
+  offer: unknown;
+  contact: unknown;
+  verifiedIdentity: string | undefined;
+  suggestListing: unknown;
+}
+
 export async function recordCommission(
   env: Env,
-  rawDescription: unknown,
-  rawOffer: unknown,
-  rawContact: unknown,
+  input: CommissionInput,
 ): Promise<CommissionRequest | null> {
-  const description = sanitizeText(rawDescription, 1000);
-  const contact = sanitizeText(rawContact, 200);
+  const suggestListing = sanitizeText(input.suggestListing, 300);
+  const description =
+    sanitizeText(input.description, 1000) ||
+    (suggestListing ? "Directory listing suggestion" : "");
+  const contact =
+    sanitizeText(input.contact, 200) ||
+    (suggestListing ? "none given" : "");
   const offer =
-    typeof rawOffer === "number" && Number.isFinite(rawOffer) && rawOffer >= 0
-      ? rawOffer
-      : Number.NaN;
+    typeof input.offer === "number" &&
+    Number.isFinite(input.offer) &&
+    input.offer >= 0
+      ? input.offer
+      : suggestListing
+        ? 0
+        : Number.NaN;
   if (!description || !contact || Number.isNaN(offer)) {
     return null;
   }
@@ -30,6 +45,14 @@ export async function recordCommission(
     contact,
     date: new Date().toISOString(),
   };
+  if (input.verifiedIdentity) {
+    // Stored as claimed; nobody here has checked it. Honest labeling.
+    request.verified_identity = input.verifiedIdentity;
+    request.identity_verified = false;
+  }
+  if (suggestListing) {
+    request.suggest_listing = suggestListing;
+  }
   await env.ORDERS.put(
     KV_KEYS.commissionRequest(request.id),
     JSON.stringify(request),

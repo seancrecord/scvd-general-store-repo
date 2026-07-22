@@ -1,11 +1,14 @@
 /**
  * Every KV key in one place, so nobody invents a second spelling.
  *
- * ORDERS     order:<id>, waitlist:<item>:<ts>, request:<id>
+ * ORDERS     order:<id>, waitlist:<item>:<ts>, request:<id>,
+ *            tip:<invertedTs>:<id>, gazette:<paddedIssue>,
+ *            retired_word:<invertedTs>
  * GUESTBOOK  entry:<invertedTs>:<id>
  * COUNTERS   patron_number, bell_count, bell_ring:<who>:<day>,
- *            inventory:<item>:<week>, failed_item:<item>, week_note, digest:latest
- * PATRONS    patron:<number>, cert:<id>
+ *            inventory:<item>:<week>, failed_item:<item>, week_note,
+ *            digest:latest, gazette_issue_count
+ * PATRONS    patron:<number>, cert:<id>, stamp:<id>
  */
 export const KV_KEYS = {
   order: (orderId: string): string => `order:${orderId}`,
@@ -16,6 +19,14 @@ export const KV_KEYS = {
   commissionRequest: (id: string): string => `request:${id}`,
   requestPrefix: "request:",
   orderPrefix: "order:",
+
+  tip: (invertedTs: string, id: string): string => `tip:${invertedTs}:${id}`,
+  tipPrefix: "tip:",
+  gazetteIssue: (issueNumber: number): string =>
+    `gazette:${String(issueNumber).padStart(6, "0")}`,
+  gazettePrefix: "gazette:",
+  retiredWord: (invertedTs: string): string => `retired_word:${invertedTs}`,
+  retiredWordPrefix: "retired_word:",
 
   guestbookEntry: (invertedTs: string, id: string): string =>
     `entry:${invertedTs}:${id}`,
@@ -30,9 +41,11 @@ export const KV_KEYS = {
   failedItemPrefix: "failed_item:",
   weekNote: "week_note",
   latestDigest: "digest:latest",
+  gazetteIssueCount: "gazette_issue_count",
 
   patron: (patronNumber: number): string => `patron:${patronNumber}`,
   cert: (certId: string): string => `cert:${certId}`,
+  stamp: (stampId: string): string => `stamp:${stampId}`,
 } as const;
 
 /**

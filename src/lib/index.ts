@@ -2,7 +2,9 @@ export { KV_KEYS, invertedTimestamp, currentWeekKey } from "@/lib/kv-keys";
 export {
   canonicalizeCertificate,
   signCertificate,
+  signMessage,
   verifyCertificateSignature,
+  verifyMessageSignature,
   getPublicKeyHex,
 } from "@/lib/signing";
 export {
@@ -18,8 +20,17 @@ export {
   usdcToAtomic,
   atomicToUsdc,
   tipFromPaid,
+  minimumUsdcForPath,
   BASE_NETWORK,
+  PENNY_PAGE_USDC,
 } from "@/lib/payments";
 export type { SettledPayment, PaymentStack } from "@/lib/payments";
 export { paymentGate } from "@/lib/payment-gate";
-export { newOrderId, newCertId, newEntryId, newRequestId } from "@/lib/ids";
+export {
+  newOrderId,
+  newCertId,
+  newEntryId,
+  newRequestId,
+  newStampId,
+  newTipId,
+} from "@/lib/ids";

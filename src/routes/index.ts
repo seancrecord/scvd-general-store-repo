@@ -1,9 +1,15 @@
 export { storefrontRoutes } from "@/routes/storefront";
 export { llmsRoutes } from "@/routes/llms";
+export { skillRoutes } from "@/routes/skill";
 export { catalogRoutes } from "@/routes/catalog";
 export { buyRoutes } from "@/routes/buy";
+export { almanacRoutes } from "@/routes/almanac";
+export { directoryRoutes } from "@/routes/directory";
+export { retiredWordsRoutes } from "@/routes/retired-words";
 export { guestbookRoutes } from "@/routes/guestbook";
 export { bellRoutes } from "@/routes/bell";
+export { stampRoutes } from "@/routes/stamps";
+export { tradingPostRoutes } from "@/routes/trading-post";
 export { requestRoutes } from "@/routes/requests";
 export { verifyRoutes } from "@/routes/verify";
 export { badgeRoutes } from "@/routes/badges";

@@ -10,7 +10,8 @@ import type {
   RoutesConfig,
 } from "@x402/core/http";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
-import { MENU_ITEMS } from "@/store";
+import { getMenuItem, MENU_ITEMS } from "@/store";
+import { ALMANAC_ENTRIES } from "@/store/almanac";
 import type { Env, MenuItem } from "@/types";
 
 /**
@@ -19,9 +20,15 @@ import type { Env, MenuItem } from "@/types";
  * Pay-what-it-deserves items are offered as multiple exact-scheme tiers in
  * the 402 challenge (v2 requires the authorized value to exactly equal one
  * offered amount); paying a tier above the minimum is recorded as a tip.
+ *
+ * Penny pages (Almanac entries, Gazette issues) are flat $0.01 markdown
+ * routes. Almanac slugs are known at build time and registered exactly;
+ * Gazette issues are published from the back room at runtime, so those
+ * ride a wildcard pattern.
  */
 
 export const BASE_NETWORK = "eip155:8453";
+export const PENNY_PAGE_USDC = 0.01;
 const USDC_DECIMALS = 6;
 
 /** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
@@ -98,6 +105,61 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
   };
 }
 
+/** A flat one-cent markdown page (Almanac page or Gazette issue). */
+function pennyPageRouteConfig(
+  env: Env,
+  description: string,
+  note402: string,
+  resource?: string,
+): RouteConfig {
+  const config: RouteConfig = {
+    accepts: [
+      {
+        scheme: "exact",
+        network: BASE_NETWORK,
+        price: `$${PENNY_PAGE_USDC}`,
+        payTo: env.PAY_TO_ADDRESS,
+      },
+    ],
+    description,
+    mimeType: "text/markdown",
+    unpaidResponseBody: async () => ({
+      contentType: "application/json",
+      body: {
+        error: note402,
+        note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
+        price_usdc: PENNY_PAGE_USDC,
+        pricing: "fixed",
+      },
+    }),
+    settlementFailedResponseBody: async () => ({
+      contentType: "application/json",
+      body: {
+        error:
+          "The penny didn't clear, so the page stays shut. No charge. Try again when the coast is clear.",
+      },
+    }),
+  };
+  if (resource) {
+    config.resource = resource;
+  }
+  return config;
+}
+
+/**
+ * The minimum owed for a gated path, so overpayment can be recorded as a
+ * tip. Menu purchases look up the item; penny pages are a flat cent.
+ */
+export function minimumUsdcForPath(path: string): number {
+  if (path.startsWith("/api/buy/")) {
+    return getMenuItem(path.replace(/^\/api\/buy\//, ""))?.price_usdc ?? 0;
+  }
+  if (path.startsWith("/almanac/") || path.startsWith("/gazette/")) {
+    return PENNY_PAGE_USDC;
+  }
+  return 0;
+}
+
 export interface PaymentStack {
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
@@ -122,6 +184,21 @@ export function getPaymentStack(env: Env): PaymentStack {
     for (const item of MENU_ITEMS) {
       routes[`GET /api/buy/${item.id}`] = buyRouteConfig(item, env);
     }
+    for (const entry of ALMANAC_ENTRIES) {
+      routes[`GET /almanac/${entry.slug}`] = pennyPageRouteConfig(
+        env,
+        `Keeper's Almanac — "${entry.title}" (${entry.date}). One journal page, one penny.`,
+        "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
+        `${env.STORE_BASE_URL}/almanac/${entry.slug}`,
+      );
+    }
+    // Gazette issues are published from the back room after deploy, so the
+    // paid route is a wildcard; the free index at /gazette lists real URLs.
+    routes["GET /gazette/*"] = pennyPageRouteConfig(
+      env,
+      "The Gazette — dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
+      "The Gazette is a penny a copy, friend. The contributors get the credit; the press gets the cent.",
+    );
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };
     // A failed first sync shouldn't poison the isolate forever.

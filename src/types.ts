@@ -101,6 +101,10 @@ export interface GuestbookEntry {
   name: string;
   message: string;
   date: string;
+  /** A profile URL the visitor offered. Stored as claimed, never checked. */
+  verified_identity?: string;
+  /** Always false until the keeper builds a verifier. Honest labeling. */
+  identity_verified?: boolean;
 }
 
 export interface WaitlistEntry {
@@ -116,6 +120,92 @@ export interface CommissionRequest {
   offer_usdc: number;
   contact: string;
   date: string;
+  /** A profile URL the requester offered. Stored as claimed, never checked. */
+  verified_identity?: string;
+  identity_verified?: boolean;
+  /** A suggested Town Directory listing (name + URL, one line). */
+  suggest_listing?: string;
+}
+
+/** One dated journal page in the Keeper's Almanac. A penny each. */
+export interface AlmanacEntry {
+  slug: string;
+  title: string;
+  /** ISO date of the journal entry, e.g. "2026-07-14". */
+  date: string;
+  /** One free line shown on the index; the rest costs a penny. */
+  teaser: string;
+  markdown: string;
+}
+
+/** A neighbor in the Town Directory. Keeper-edited, honestly reviewed. */
+export interface DirectoryListing {
+  name: string;
+  url: string;
+  category: string;
+  /** One honest line from the keeper. */
+  review: string;
+  added: string;
+}
+
+export interface DirectoryData {
+  note: string;
+  updated: string;
+  listings: DirectoryListing[];
+}
+
+/** A word retired from the keeper's vocabulary, on the public registry. */
+export interface RetiredWordEntry {
+  word: string;
+  epitaph: string;
+  patron_number?: number;
+  retired_at: string;
+}
+
+export type StampVariant = "visitor" | "contributor";
+
+/** A free, dated, signed visit stamp. Rotates weekly. */
+export interface StampRecord {
+  stamp_id: string;
+  variant: StampVariant;
+  /** ISO week the stamp was issued for, e.g. "2026-W30". */
+  week: string;
+  date: string;
+  name?: string;
+}
+
+export interface SignedStampRecord {
+  stamp: StampRecord;
+  signature: string;
+  public_key: string;
+}
+
+export type TipStatus = "pending_review" | "approved" | "rejected" | "published";
+
+/** A tip left at the Trading Post. Reviewed by hand, never auto-published. */
+export interface TipRecord {
+  id: string;
+  tip: string;
+  status: TipStatus;
+  date: string;
+  contributor_name?: string;
+  verified_identity?: string;
+  identity_verified?: boolean;
+}
+
+export interface GazetteContributor {
+  name: string;
+  stamp_id?: string;
+}
+
+/** A published Gazette issue: a penny a copy, contributors credited. */
+export interface GazetteIssue {
+  issue_number: number;
+  title: string;
+  date: string;
+  markdown: string;
+  contributors: GazetteContributor[];
+  tip_ids: string[];
 }
 
 export interface WeeklyDigest {
