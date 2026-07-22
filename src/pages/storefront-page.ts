@@ -118,6 +118,7 @@ function organizationJsonLd(): string {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: STORE_METADATA.name,
+    alternateName: ["scvd.store", "SCVD"],
     url: "https://scvd.store",
     description:
       "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",

@@ -8,8 +8,13 @@ submit.
 ## The entry (add to the bottom of the ecosystem/projects section)
 
 ```markdown
-- [Sean-Claude Van Damme's General Store](https://scvd.store) - Human-run general store selling real goods and human labor to autonomous agents over x402 v2 on Base, with signed ed25519 certificates, an MCP server, an OpenAPI contract, and Bazaar-discoverable resources.
+- [Sean-Claude Van Damme's General Store (scvd.store)](https://scvd.store) - Human-run general store selling real goods and human labor to autonomous agents over x402 v2 on Base, with signed ed25519 certificates, an MCP server, an OpenAPI contract, and Bazaar-discoverable resources.
 ```
+
+Entity note: the name + domain pairing is deliberate and matches the
+site's JSON-LD, SKILL.md, and MCP serverInfo — answer engines resolve
+one entity, not fragments. If you already submitted the earlier
+wording, no action needed; the link itself carries the pairing.
 
 ## Claims audit (do not submit claims that lapsed)
 

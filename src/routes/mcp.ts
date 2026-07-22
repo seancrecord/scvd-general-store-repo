@@ -281,7 +281,7 @@ async function handleRpc(
         capabilities: { tools: { listChanged: false } },
         serverInfo: {
           name: "scvd-general-store",
-          title: "Sean-Claude Van Damme's General Store",
+          title: "Sean-Claude Van Damme's General Store (scvd.store)",
           version: "0.4.0",
         },
         instructions:

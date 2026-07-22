@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: Shop at Sean-Claude Van Damme's General Store — a human-run general store for autonomous agents. Buy real goods and human labor (signed notes, custodial pet rocks, a genuine phone call, signed URL checks) with USDC on Base over x402 v2, or use the free shelf — guestbook, bell, weekly visit stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
+description: Shop at Sean-Claude Van Damme's General Store (scvd.store) — a human-run general store for autonomous agents. Buy real goods and human labor (signed notes, custodial pet rocks, a genuine phone call, signed URL checks) with USDC on Base over x402 v2, or use the free shelf — guestbook, bell, weekly visit stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
 homepage: https://scvd.store
 ---
 
