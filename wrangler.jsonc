@@ -20,10 +20,10 @@
   //   wrangler kv namespace create PATRONS
   // then paste the ids below.
   "kv_namespaces": [
-    { "binding": "ORDERS", "id": "REPLACE_WITH_ORDERS_NAMESPACE_ID" },
-    { "binding": "GUESTBOOK", "id": "REPLACE_WITH_GUESTBOOK_NAMESPACE_ID" },
-    { "binding": "COUNTERS", "id": "REPLACE_WITH_COUNTERS_NAMESPACE_ID" },
-    { "binding": "PATRONS", "id": "REPLACE_WITH_PATRONS_NAMESPACE_ID" }
+    { "binding": "ORDERS", "id": "4a23f9dd93f4434aad98295e592c8805" },
+    { "binding": "GUESTBOOK", "id": "93c5a5a59fbe4fa6ad96ed9af3852d70" },
+    { "binding": "COUNTERS", "id": "bc1397211dbd4b30876edb76b45a1142" },
+    { "binding": "PATRONS", "id": "b3b7dc0f951f4b4a9995afe7dc35e015" }
   ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store"
