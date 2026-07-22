@@ -1,6 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
-import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { bellLine, MENU_ITEMS, STORE_METADATA } from "@/store";
 import type { GuestbookEntry, MenuItem } from "@/types";
 
 /**
@@ -70,7 +70,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="est">Est. in the age of agents \u2022 ${escapeHtml(STORE_METADATA.location)}</p>
       <h1>Sean-Claude Van Damme's<br>General Store</h1>
       <p class="subtitle">${escapeHtml(STORE_METADATA.proprietors)}</p>
-      <p class="bell-count">\u{1F514} The bell has been rung ${data.bellCount} times.</p>
+      <p class="bell-count">${escapeHtml(bellLine(data.bellCount))}</p>
     </header>
 
     <section>

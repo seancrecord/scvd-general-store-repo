@@ -14,7 +14,8 @@ export const VOICE = {
     "We don't stock that one. Wrote it down though — the keeper reads the request ledger every Sunday.",
   orderNotFound:
     "No order by that number. Check the receipt — the keeper's handwriting is better than his filing.",
-  certNotFound: "No certificate by that name on the wall. Might check the id.",
+  certNotFound:
+    "No certificate by that name on the wall. Check the spelling on your receipt.",
   soldOut:
     "Shelf's empty this week. The waitlist is right there — leave your callback and we'll ring the bell when a slot opens.",
   bellRungAlready:
@@ -25,5 +26,8 @@ export const VOICE = {
 } as const;
 
 export function bellLine(count: number): string {
+  if (count === 1) {
+    return "\u{1F514} The bell has been rung once. Somebody had to be first.";
+  }
   return `\u{1F514} The bell has been rung ${count} times.`;
 }

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -9,6 +10,8 @@ import type { HonoEnv, MenuItem } from "@/types";
 
 interface CatalogItem extends MenuItem {
   buy_url: string;
+  /** Amounts offered in the 402 challenge; above-minimum = tip. */
+  price_tiers_usdc: number[];
 }
 
 export const catalogRoutes = new Hono<HonoEnv>();
@@ -18,10 +21,13 @@ catalogRoutes.get("/menu.json", (c) => {
   const items: CatalogItem[] = MENU_ITEMS.map((item) => ({
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
+    price_tiers_usdc: priceTiersUsdc(item),
   }));
   return c.json({
     store: {
       ...STORE_METADATA,
+      network: BASE_NETWORK,
+      x402_version: 2,
       url: base,
       llms_txt: `${base}/llms.txt`,
       signing_key: `${base}/.well-known/scvd-signing-key`,

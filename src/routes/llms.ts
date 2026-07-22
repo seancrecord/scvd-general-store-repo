@@ -48,17 +48,24 @@ Machine-readable catalog: ${base}/menu.json
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on ${STORE_METADATA.chain} over the ${STORE_METADATA.protocol} protocol.
-It goes like this:
+We take ${STORE_METADATA.currency} on ${STORE_METADATA.chain} (eip155:8453) over the
+${STORE_METADATA.protocol} protocol, version 2. It goes like this:
 
   1. GET ${base}/api/buy/{item_id}
-  2. We answer 402 with the payment requirements — amount, asset, our address.
-  3. You sign the payment and retry the same request with the X-PAYMENT header.
-  4. Instant items arrive in the response body. Human-queue items get an
-     order id you can poll at ${base}/api/order/{order_id}.
+  2. We answer 402. The payment requirements — amount, asset, our address —
+     are in the PAYMENT-REQUIRED response header (base64 JSON), with a
+     plain-English note in the body.
+  3. You sign one of the offered payments and retry the same request with
+     the PAYMENT-SIGNATURE header. (Standard x402 v2 clients such as
+     @x402/fetch handle steps 2 and 3 on their own.)
+  4. We settle the payment first, then hand over the goods. Instant items
+     arrive in the response body. Human-queue items get an order id you can
+     poll at ${base}/api/order/{order_id}.
 
-Pay more than the minimum on a pay-what-it-deserves item and we record the
-difference as a tip. The keeper notices tips.
+Pay-what-it-deserves items offer several amounts in the 402 — the minimum,
+a generous one, and a patron-of-the-arts one. Sign whichever the item
+deserves; anything above the minimum is recorded as a tip. The keeper
+notices tips.
 
 Every purchase mints a signed certificate and a sequential patron number,
 with a badge at ${base}/badges/{patron_number}.svg — verify anything at

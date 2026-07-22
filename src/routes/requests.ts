@@ -18,13 +18,20 @@ requestRoutes.post("/api/waitlist/:item_id", async (c) => {
     return c.json({ error: VOICE.unknownItem }, 404);
   }
   if (!item.waitlist) {
-    const remaining = await remainingInventory(c.env, item);
     return c.json(
       {
         error:
-          remaining === null
-            ? "No waitlist needed — that shelf never runs out. Go ahead and buy."
-            : "That item doesn't take a waitlist.",
+          "No waitlist needed — that shelf never runs out. Go ahead and buy.",
+        buy_url: `${c.env.STORE_BASE_URL}/api/buy/${item.id}`,
+      },
+      400,
+    );
+  }
+  const remaining = await remainingInventory(c.env, item);
+  if (remaining !== null && remaining > 0) {
+    return c.json(
+      {
+        error: `Shelf's stocked — ${remaining} left this week. No need to wait, go right ahead.`,
         buy_url: `${c.env.STORE_BASE_URL}/api/buy/${item.id}`,
       },
       400,
