@@ -28,7 +28,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW (keeper hands, post-Phase-1)
 
-- [ ] Set HOUSE_SECRET secret; put it in your own buy scripts/CI so house traffic books apart
+- [x] Set HOUSE_SECRET secret; put it in your own buy scripts/CI so house traffic books apart — DONE 2026-07-22, proven by the first MCP purchase (house-flagged, half-cent blessing, Patron No. 2)
 - [x] Set RESEND_API_KEY + ALERT_EMAIL secrets; fire the /admin test alert once to confirm the wire — DONE 2026-07-22, test alert received in the keeper's inbox 18:24 UTC
 - [x] Verify scvd.store as a sending domain in Resend (alerts send from alerts@scvd.store) — DONE 2026-07-22
 
