@@ -151,8 +151,11 @@ describe("the Gazette press (tip -> review -> publish -> penny copy)", () => {
     expect(issues[0]?.["title"]).toBe("On Bells and Gratitude");
     expect(issues[0]?.["contributors"]).toEqual(["Bell Scholar"]);
 
+    // The index points at the prefixed path — never a bare id.
+    expect(issues[0]?.["url"]).toBe(`${BASE}/gazette/issue-1`);
+
     // A copy costs a penny and carries the credit.
-    const copy = await payFor(`${BASE}/gazette/1`);
+    const copy = await payFor(`${BASE}/gazette/issue-1`);
     expect(copy.status).toBe(200);
     const markdown = await copy.text();
     expect(markdown).toContain("On Bells and Gratitude");

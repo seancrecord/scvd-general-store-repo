@@ -1,10 +1,16 @@
 import { Hono } from "hono";
 import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
-import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import {
+  renderItemMarkdown,
+  renderMenuMarkdown,
+  wantsMarkdown,
+} from "@/services/menu-markdown";
+import { getMenuItem, MENU_ITEMS, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
- * GET /menu.json — the machine-readable catalog.
+ * GET /menu.json — the machine-readable catalog (markdown on request).
+ * GET /menu/:item_id — one item up close, JSON or markdown per Accept.
  * Renders at / for humans; this is the same shelf for agents.
  */
 
@@ -16,8 +22,15 @@ interface CatalogItem extends MenuItem {
 
 export const catalogRoutes = new Hono<HonoEnv>();
 
+const MARKDOWN_HEADERS = {
+  "Content-Type": "text/markdown; charset=utf-8",
+} as const;
+
 catalogRoutes.get("/menu.json", (c) => {
   const base = c.env.STORE_BASE_URL;
+  if (wantsMarkdown(c.req.header("Accept"))) {
+    return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
+  }
   const items: CatalogItem[] = MENU_ITEMS.map((item) => ({
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
@@ -31,7 +44,10 @@ catalogRoutes.get("/menu.json", (c) => {
       url: base,
       llms_txt: `${base}/llms.txt`,
       skill_md: `${base}/skill.md`,
+      openapi: `${base}/openapi.json`,
+      x402_discovery: `${base}/.well-known/x402.json`,
       signing_key: `${base}/.well-known/scvd-signing-key`,
+      item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
     },
     items,
     reading_room: {
@@ -74,5 +90,29 @@ catalogRoutes.get("/menu.json", (c) => {
         note: "POST a tip for the Gazette. A human reviews every one; published tips are credited and never auto-published.",
       },
     },
+  });
+});
+
+catalogRoutes.get("/menu/:item_id", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const item = getMenuItem(c.req.param("item_id"));
+  if (!item) {
+    return c.json(
+      {
+        error: "No item by that id on the shelf. The whole menu is one page:",
+        menu_url: `${base}/menu.json`,
+      },
+      404,
+    );
+  }
+  if (wantsMarkdown(c.req.header("Accept"))) {
+    return c.text(renderItemMarkdown(item, base), 200, MARKDOWN_HEADERS);
+  }
+  return c.json({
+    ...item,
+    buy_url: `${base}/api/buy/${item.id}`,
+    price_tiers_usdc: priceTiersUsdc(item),
+    markdown_note:
+      "This same URL serves markdown when the Accept header prefers text/markdown.",
   });
 });

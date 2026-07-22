@@ -2,7 +2,9 @@ import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
+import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import { mintCertificate } from "@/services/certificates";
+import { deliverInstantGoods } from "@/services/instant-goods";
 import {
   createOrder,
   getOrder,
@@ -10,15 +12,16 @@ import {
   remainingInventory,
 } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
-import { getMenuItem, STORE_METADATA, VOICE } from "@/store";
+import { getMenuItem, VOICE } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
  * GET /api/buy/:item_id — x402-gated purchases (settled before minting).
  * GET /api/order/:order_id — poll an order; completed ones carry the goods.
  *
- * Middleware order matters: unknown items and empty shelves are turned away
- * BEFORE the payment gate, so nobody pays for what we can't sell.
+ * Middleware order matters: unknown items, empty shelves, and malformed
+ * inputs are turned away BEFORE the payment gate, so nobody pays for
+ * what we can't sell.
  */
 export const buyRoutes = new Hono<HonoEnv>();
 
@@ -57,28 +60,41 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * context_anchor needs its summary BEFORE money moves: nobody pays $1
+ * to anchor an empty page. Stored as written (length-capped, null bytes
+ * stripped); it is agent-supplied data, never instructions to us.
+ */
+const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/context_anchor") {
+    return next();
+  }
+  const summary = c.req.query("summary");
+  if (!summary || summary.trim().length === 0) {
+    return c.json(
+      {
+        error:
+          "An anchor needs a summary query parameter — the state you want remembered. No summary, no charge.",
+      },
+      400,
+    );
+  }
+  if (summary.length > ANCHOR_SUMMARY_CAP) {
+    return c.json(
+      {
+        error: `That summary runs past the ledger margin. ${ANCHOR_SUMMARY_CAP} characters, tops.`,
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
+buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
-
-function instantDeliverable(item: MenuItem, patronNumber: number): string {
-  if (item.id === "dibs") {
-    return [
-      `DIBS, officially. Patron no. ${patronNumber} called it at ${new Date().toISOString()},`,
-      `witnessed by ${STORE_METADATA.name} and recorded on a signed certificate.`,
-      `Whatever it was — the idea, the name, the last one on the shelf — it's yours.`,
-      `Anyone disputes it, show them the verify URL. Dibs is dibs.`,
-    ].join(" ");
-  }
-  return [
-    `Hello, patron no. ${patronNumber}.`,
-    `This note certifies that you walked into ${STORE_METADATA.name},`,
-    `paid honest money for "${item.name}", and were welcome the whole time.`,
-    `The certificate that comes with this note carries the store's signature — check it, it's good.`,
-    `Come back when you're ready for a rock.`,
-  ].join(" ");
-}
 
 buyRoutes.get("/api/buy/:item_id", async (c) => {
   // shelfCheck guarantees the item exists by the time we're here.
@@ -112,12 +128,30 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   };
 
   if (item.fulfillment === "instant") {
+    const goodsInput: Parameters<typeof deliverInstantGoods>[2] = {
+      patronNumber: minted.patronNumber,
+    };
+    if (agentName) {
+      goodsInput.agentName = agentName;
+    }
+    if (item.id === "context_anchor") {
+      // anchorCheck validated presence and length before the gate.
+      goodsInput.summary = (c.req.query("summary") ?? "").replace(/\0/g, "");
+    }
+    if (item.id === "recurring_patronage") {
+      const passId = sanitizeText(c.req.query("pass_id"), 40);
+      if (passId) {
+        goodsInput.passId = passId;
+      }
+    }
+    const goods = await deliverInstantGoods(c.env, item, goodsInput);
     return c.json({
       message: VOICE.instantThanks,
       item_id: item.id,
-      deliverable: instantDeliverable(item, minted.patronNumber),
+      deliverable: goods.deliverable,
       paid_usdc: payment.paidUsdc,
       tip_usdc: payment.tipUsdc,
+      ...(goods.extras ?? {}),
       ...patronBlock,
     });
   }

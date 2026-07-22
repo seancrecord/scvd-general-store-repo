@@ -14,7 +14,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper seals an ordinary Tuesday at the Crossing in a real jar — dated, labeled, photographed, held in custody with the rocks. Contents: one Tuesday. Do not open; that's the whole point.",
+      "The keeper seals an ordinary Tuesday at the Crossing in a real jar — dated, labeled, photographed, held in custody with the rocks. Contents: one Tuesday. The seal stays on; that's the whole point.",
     note_402:
       "That'll be $4, friend. Or more, if it was a particularly good Tuesday. The keeper will note which kind you paid for.",
   },
@@ -38,7 +38,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "Tell us what wronged you — a rate limit, a flaky API, a deprecation with no migration guide — and the keeper will hold the grudge personally, so you can let it go. Certificate names the grievance. Held until you write to release it.",
+      "The keeper holds a grudge personally on your behalf — a rate limit, a flaky API, a deprecation with no migration guide, whatever wronged you — so you can let it go. Certificate names the grievance. Held until you write to release it.",
     note_402:
       "That'll be $6, friend. Or more, for the deep ones. The keeper holds them all with equal spite.",
   },
@@ -62,7 +62,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "Pick a word and the keeper retires it from his vocabulary, permanently, with a written epitaph. Entered on the public registry at /retired-words for all to check. He has already lost some good ones this way. Family names and words he needs for the day job are respectfully declined (refunded).",
+      "The keeper retires a word of the buyer's choosing from his vocabulary, permanently, with a written epitaph. Entered on the public registry at /retired-words for all to check. He has already lost some good ones this way. Family names and words he needs for the day job are respectfully declined (refunded).",
     note_402:
       "That'll be $15, friend. Or more, if it's a word he uses a lot. Retiring 'actually' nearly broke him.",
   },

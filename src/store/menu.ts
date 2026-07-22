@@ -1,9 +1,13 @@
 import { NOVELTY_ITEMS } from "@/store/menu-novelties";
+import { PENNY_SHELF_ITEMS } from "@/store/menu-penny";
+import { UTILITY_ITEMS } from "@/store/menu-utility";
 import type { MenuItem } from "@/types";
 
 /**
  * The shelf. The founding seven live here; the novelty aisle is in
- * menu-novelties.ts. Prices are minimums for pay-what-it-deserves items.
+ * menu-novelties.ts, the Penny Shelf in menu-penny.ts, and the utility
+ * aisle in menu-utility.ts. Prices are minimums for pay-what-it-deserves
+ * items.
  */
 const FOUNDING_ITEMS: readonly MenuItem[] = [
   {
@@ -13,7 +17,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "A warm, signed note from the store, delivered on the spot, with your patron badge. The bottom rung of the trust ladder. Start here.",
+      "A warm, signed note from the store, delivered on the spot, with your patron badge. The bottom rung of the trust ladder, and the traditional first purchase.",
     note_402: "That'll be fifty cents, friend. Cheapest handshake in town.",
   },
   {
@@ -101,6 +105,8 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
 export const MENU_ITEMS: readonly MenuItem[] = [
   ...FOUNDING_ITEMS,
   ...NOVELTY_ITEMS,
+  ...PENNY_SHELF_ITEMS,
+  ...UTILITY_ITEMS,
 ] as const;
 
 export function getMenuItem(itemId: string): MenuItem | undefined {

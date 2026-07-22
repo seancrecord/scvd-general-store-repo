@@ -5,6 +5,7 @@ import type {
 } from "@x402/core/server";
 import type { Context, MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { persistBazaarObservations } from "@/lib/bazaar-observer";
 import {
   atomicToUsdc,
   getPaymentStack,
@@ -12,6 +13,11 @@ import {
   tipFromPaid,
 } from "@/lib/payments";
 import type { SettledPayment } from "@/lib/payments";
+import {
+  extractPaymentNonce,
+  isNonceSpent,
+  recordSpentNonce,
+} from "@/lib/replay-guard";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -19,6 +25,10 @@ import type { HonoEnv } from "@/types";
  * runs, so a failed settlement can never mint a certificate, create an
  * order, or consume inventory. (The stock middleware settles after the
  * handler, which would leave paid-looking artifacts behind on failure.)
+ *
+ * A KV replay guard turns away already-settled nonces before the
+ * facilitator is called; the chain's EIP-3009 nonce remains the source
+ * of truth if the guard's TTL has lapsed.
  */
 
 function respondWithInstructions(
@@ -61,15 +71,32 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return respondWithInstructions(c, result.response);
   }
 
-  // Verified. Settle now — money first, then the goods.
+  // Verified. Refuse a nonce we've already settled once.
+  const nonce = extractPaymentNonce(result.paymentPayload);
+  if (nonce && (await isNonceSpent(c.env, nonce))) {
+    c.header("Cache-Control", "no-store");
+    return c.json(
+      {
+        error:
+          "That payment authorization has been through this till once already. Sign a fresh one — the register remembers.",
+      },
+      402,
+    );
+  }
+
+  // Settle now — money first, then the goods.
   const settlement = await stack.httpServer.processSettlement(
     result.paymentPayload,
     result.paymentRequirements,
     result.declaredExtensions,
     { request: context },
   );
+  await persistBazaarObservations(c.env, c.req.path);
   if (!settlement.success) {
     return respondWithInstructions(c, settlement.response);
+  }
+  if (nonce) {
+    await recordSpentNonce(c.env, nonce, c.req.path);
   }
 
   const minimumUsdc = minimumUsdcForPath(c.req.path);

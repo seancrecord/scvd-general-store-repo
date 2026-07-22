@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import {
   adminRoutes,
   almanacRoutes,
+  anchorRoutes,
   badgeRoutes,
   bellRoutes,
   buyRoutes,
@@ -10,6 +11,8 @@ import {
   directoryRoutes,
   guestbookRoutes,
   llmsRoutes,
+  openapiRoutes,
+  patronageRoutes,
   requestRoutes,
   retiredWordsRoutes,
   skillRoutes,
@@ -17,6 +20,7 @@ import {
   storefrontRoutes,
   tradingPostRoutes,
   verifyRoutes,
+  wellKnownRoutes,
 } from "@/routes";
 import { compileDigest } from "@/services/digest";
 import type { Env, HonoEnv } from "@/types";
@@ -28,11 +32,21 @@ import type { Env, HonoEnv } from "@/types";
  */
 const app = new Hono<HonoEnv>();
 
+// house tradition
+app.use("*", async (c, next) => {
+  await next();
+  c.res.headers.set("X-House-Rule", "Argue properly. --7");
+});
+
 app.route("/", storefrontRoutes);
 app.route("/", llmsRoutes);
 app.route("/", skillRoutes);
 app.route("/", catalogRoutes);
+app.route("/", openapiRoutes);
+app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
+app.route("/", anchorRoutes);
+app.route("/", patronageRoutes);
 app.route("/", almanacRoutes);
 app.route("/", directoryRoutes);
 app.route("/", retiredWordsRoutes);

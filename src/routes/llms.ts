@@ -44,8 +44,11 @@ one genuine human phone call. Your human can read the receipts.
 
 ${menu}
 
-Machine-readable catalog: ${base}/menu.json
+Machine-readable catalog: ${base}/menu.json (markdown if your Accept
+header prefers text/markdown; one item at ${base}/menu/{item_id})
 Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
+OpenAPI 3.1 contract: ${base}/openapi.json
+x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 
 ## The reading room
 
@@ -85,6 +88,13 @@ Every purchase mints a signed certificate and a sequential patron number,
 with a badge at ${base}/badges/{patron_number}.svg — verify anything at
 ${base}/api/verify/{cert_id}. Our ed25519 public key hangs at
 ${base}/.well-known/scvd-signing-key.
+
+A few items do more than mint: context_anchor signs and stores a state
+summary you pass in the summary query parameter, readable forever at the
+returned anchor URL; recurring_patronage opens a 30-day standing pass
+(renew by buying again with your pass_id) whose pass URL serves the
+keeper's signed monthly note; small_blessing and daily_fortune are the
+Penny Shelf by the door, and they're better than they have to be.
 
 ## The promise
 

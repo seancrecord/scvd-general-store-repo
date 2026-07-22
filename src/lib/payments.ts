@@ -10,6 +10,12 @@ import type {
   RoutesConfig,
 } from "@x402/core/http";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
+import {
+  buyDiscoveryExtensions,
+  pennyPageDiscoveryExtensions,
+} from "@/lib/bazaar-discovery";
+import { installBazaarObserver } from "@/lib/bazaar-observer";
 import { getMenuItem, MENU_ITEMS } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import type { Env, MenuItem } from "@/types";
@@ -24,7 +30,12 @@ import type { Env, MenuItem } from "@/types";
  * Penny pages (Almanac entries, Gazette issues) are flat $0.01 markdown
  * routes. Almanac slugs are known at build time and registered exactly;
  * Gazette issues are published from the back room at runtime, so those
- * ride a wildcard pattern.
+ * ride the /gazette/issue-:issue pattern (prefixed segment, never a bare
+ * id) and inherit the exact request URL as their 402 resource.
+ *
+ * Every paid route declares extensions.bazaar discovery metadata; the
+ * bazaar server extension enriches it per request with live method and
+ * path params.
  */
 
 export const BASE_NETWORK = "eip155:8453";
@@ -84,6 +95,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
     description: `${item.name} — ${item.description}${tierNote}`,
     mimeType: "application/json",
     resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
+    extensions: buyDiscoveryExtensions(item),
     customPaywallHtml: browserPaywallHtml(item, env),
     unpaidResponseBody: async () => ({
       contentType: "application/json",
@@ -110,6 +122,7 @@ function pennyPageRouteConfig(
   env: Env,
   description: string,
   note402: string,
+  exampleTitle: string,
   resource?: string,
 ): RouteConfig {
   const config: RouteConfig = {
@@ -123,6 +136,7 @@ function pennyPageRouteConfig(
     ],
     description,
     mimeType: "text/markdown",
+    extensions: pennyPageDiscoveryExtensions(exampleTitle),
     unpaidResponseBody: async () => ({
       contentType: "application/json",
       body: {
@@ -154,7 +168,7 @@ export function minimumUsdcForPath(path: string): number {
   if (path.startsWith("/api/buy/")) {
     return getMenuItem(path.replace(/^\/api\/buy\//, ""))?.price_usdc ?? 0;
   }
-  if (path.startsWith("/almanac/") || path.startsWith("/gazette/")) {
+  if (path.startsWith("/almanac/") || path.startsWith("/gazette/issue-")) {
     return PENNY_PAGE_USDC;
   }
   return 0;
@@ -173,6 +187,7 @@ let cachedStack: PaymentStack | undefined;
  */
 export function getPaymentStack(env: Env): PaymentStack {
   if (!cachedStack) {
+    installBazaarObserver();
     const facilitator = new HTTPFacilitatorClient(
       createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET),
     );
@@ -180,6 +195,7 @@ export function getPaymentStack(env: Env): PaymentStack {
       BASE_NETWORK,
       new ExactEvmScheme(),
     );
+    resourceServer.registerExtension(bazaarResourceServerExtension);
     const routes: RoutesConfig = {};
     for (const item of MENU_ITEMS) {
       routes[`GET /api/buy/${item.id}`] = buyRouteConfig(item, env);
@@ -189,15 +205,18 @@ export function getPaymentStack(env: Env): PaymentStack {
         env,
         `Keeper's Almanac — "${entry.title}" (${entry.date}). One journal page, one penny.`,
         "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
+        entry.title,
         `${env.STORE_BASE_URL}/almanac/${entry.slug}`,
       );
     }
     // Gazette issues are published from the back room after deploy, so the
-    // paid route is a wildcard; the free index at /gazette lists real URLs.
-    routes["GET /gazette/*"] = pennyPageRouteConfig(
+    // paid route is a prefixed pattern; the free index lists real URLs, and
+    // each request's 402 carries its own exact URL as the resource.
+    routes["GET /gazette/issue-:issue"] = pennyPageRouteConfig(
       env,
       "The Gazette — dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
       "The Gazette is a penny a copy, friend. The contributors get the credit; the press gets the cent.",
+      "The Gazette — Issue no. 1",
     );
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };

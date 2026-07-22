@@ -57,6 +57,9 @@ it isn't us.**
 ${menuTable}
 
 Machine-readable catalog with live stock notes: ${base}/menu.json
+(markdown when your Accept header prefers text/markdown; one item at
+${base}/menu/{item_id}). OpenAPI 3.1 contract: ${base}/openapi.json.
+x402 discovery: ${base}/.well-known/x402.json.
 
 Also on the shelves:
 

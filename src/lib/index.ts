@@ -33,4 +33,20 @@ export {
   newRequestId,
   newStampId,
   newTipId,
+  newAnchorId,
+  newPassId,
 } from "@/lib/ids";
+export {
+  buyDiscoveryExtensions,
+  pennyPageDiscoveryExtensions,
+} from "@/lib/bazaar-discovery";
+export {
+  installBazaarObserver,
+  persistBazaarObservations,
+  listBazaarLedger,
+} from "@/lib/bazaar-observer";
+export {
+  extractPaymentNonce,
+  isNonceSpent,
+  recordSpentNonce,
+} from "@/lib/replay-guard";

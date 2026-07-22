@@ -208,6 +208,41 @@ export interface GazetteIssue {
   tip_ids: string[];
 }
 
+/** A signed agent memory restore point, bought as context_anchor. */
+export interface ContextAnchor {
+  anchor_id: string;
+  patron_number: number;
+  date: string;
+  /** Agent-supplied state summary. Stored as written; never the store speaking. */
+  summary: string;
+  agent_name?: string;
+}
+
+export interface SignedAnchorRecord {
+  anchor: ContextAnchor;
+  signature: string;
+  public_key: string;
+}
+
+/** A 30-day standing patronage pass. Renewable; carries the monthly note. */
+export interface PatronagePass {
+  pass_id: string;
+  patron_number: number;
+  started_at: string;
+  expires_at: string;
+  renewals: number;
+  agent_name?: string;
+}
+
+/** One EXTENSION-RESPONSES header observed on a facilitator call. */
+export interface BazaarLedgerEntry {
+  path: string;
+  operation: "verify" | "settle";
+  observed_at: string;
+  /** Decoded header payload, keyed by extension (e.g. "bazaar"). */
+  extensions: Record<string, unknown>;
+}
+
 export interface WeeklyDigest {
   generated_at: string;
   week_note: string;

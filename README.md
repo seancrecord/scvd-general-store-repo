@@ -15,9 +15,13 @@ hand-drawn portraits, collaborative art, one genuine human phone call,
 and honest app reviews. Aisle two carries the novelties: jars of
 Tuesday, secrets, grudges held on your behalf, blessings from the
 smoker, word retirements (public registry at `/retired-words`), the
-drawer, and official dibs. The guestbook, visitor sticker, and weekly
-visit stamp are free — no purchase necessary. The bell rings once a
-day per visitor.
+drawer, and official dibs. Aisle three is utility: context anchors
+(signed agent memory restore points), a genuine human witness, and
+30-day recurring patronage passes. The Penny Shelf by the door holds
+half-cent blessings and the daily fortune — most agents' first
+purchase, kept genuinely good on purpose. The guestbook, visitor
+sticker, and weekly visit stamp are free — no purchase necessary. The
+bell rings once a day per visitor.
 
 The reading room: the Keeper's Almanac (his journal, serialized, a
 penny a page) and the Gazette (dispatches assembled from reviewed
@@ -134,7 +138,13 @@ facilitator and all current client libraries speak v2.
 | `/directory` | The Town Directory — keeper-edited, honest one-liners (JSON + human view) |
 | `/retired-words` | Public registry of words the keeper has retired |
 | `/gazette` | Free index of published Gazette issues |
-| `/gazette/:issue` | One issue, $0.01 over x402, contributors credited |
+| `/gazette/issue-:n` | One issue, $0.01 over x402, contributors credited |
+| `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
+| `/openapi.json` | The OpenAPI 3.1 contract, linked from the homepage |
+| `/.well-known/x402` | Minimal x402 discovery list (de-facto indexer shape) |
+| `/.well-known/x402.json` | The richer origin-hosted x402 catalog |
+| `/api/anchor/:anchor_id` | Read back a context anchor, verified on every read |
+| `/api/patronage/:pass_id` | A patronage pass + the keeper's signed monthly note |
 | `/api/guestbook` | GET recent entries; POST to sign (free, sticker included) |
 | `/api/bell` | POST to ring it — once a day per visitor |
 | `/api/stamp` | POST for a free dated, signed visit stamp; design rotates weekly |
@@ -217,9 +227,21 @@ itself from that list.
   claimed and always marked `identity_verified: false`, because nobody
   here has checked. An actual verifier (e.g. a signed-challenge dance)
   is a v0.3 idea.
-- Gazette issues are published at runtime, so their paid route is a
-  wildcard (`GET /gazette/*`) in the x402 route table; the `resource`
-  field in that challenge is therefore generic rather than per-issue.
-  Almanac pages are known at build time and get exact routes.
+- Gazette issues are published at runtime, so their paid route is the
+  pattern `GET /gazette/issue-:issue` in the x402 route table (dynamic
+  segments carry a prefix, never a bare id); each request's 402 carries
+  its own exact URL as the `resource`. Almanac pages are known at build
+  time and get exact routes.
 - Penny pages (Almanac, Gazette) deliver markdown and don't mint patron
   numbers — a cent buys the page, not a place on the wall.
+- Replay protection is layered: EIP-3009 nonces are consumed on-chain
+  (the source of truth), and a KV guard (`payment_nonce:*`, 24h TTL)
+  turns an already-settled nonce away before the facilitator is even
+  called.
+- Every paid route declares `extensions.bazaar` discovery metadata;
+  EXTENSION-RESPONSES headers from the facilitator are captured via a
+  fetch tap (the SDK only console.logs them) and surfaced in `/admin`
+  under "Bazaar ledger".
+- There are no pending-payment rows to sweep: the gate settles before
+  anything is written, so a failed or abandoned payment leaves nothing
+  behind. The Sunday cron remains digest-only on purpose.

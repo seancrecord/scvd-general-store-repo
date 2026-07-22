@@ -71,12 +71,20 @@ export function installFacilitatorMock(): FacilitatorMockState {
           payer: TEST_PAYER,
         });
       }
-      return Response.json({
-        success: true,
-        transaction: TEST_TRANSACTION,
-        network: "eip155:8453",
-        payer: TEST_PAYER,
-      });
+      // The CDP facilitator reports extension outcomes (e.g. Bazaar
+      // discovery) in this header; the store's observer captures it.
+      const extensionResponses = btoa(
+        JSON.stringify({ bazaar: { status: "accepted" } }),
+      );
+      return Response.json(
+        {
+          success: true,
+          transaction: TEST_TRANSACTION,
+          network: "eip155:8453",
+          payer: TEST_PAYER,
+        },
+        { headers: { "EXTENSION-RESPONSES": extensionResponses } },
+      );
     }
     if (url.startsWith(WEBHOOK_HOST)) {
       const rawBody = typeof init?.body === "string" ? init.body : null;
