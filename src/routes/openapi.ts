@@ -239,6 +239,23 @@ openapiRoutes.get("/openapi.json", (c) => {
       "/gazette": {
         get: freeOp("Gazette index", "Free index of published issues."),
       },
+      "/paper": {
+        get: freeOp(
+          "The Town Gazette index",
+          "The store's paper of record, free index. Editions are a penny.",
+        ),
+      },
+      "/paper/edition-{edition_number}": {
+        get: {
+          ...paidOp(
+            "One Town Gazette edition",
+            "The paper of record for one period, markdown, a penny a copy.",
+            [PENNY_PAGE_USDC],
+            true,
+          ),
+          parameters: [pathParam("edition_number", "From the /paper index.")],
+        },
+      },
       "/gazette/issue-{issue_number}": {
         get: {
           ...paidOp(

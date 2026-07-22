@@ -14,6 +14,7 @@ import {
   llmsRoutes,
   mcpRoutes,
   openapiRoutes,
+  paperRoutes,
   patronageRoutes,
   phantomRoutes,
   porchRoutes,
@@ -32,6 +33,7 @@ import { sendAlert } from "@/lib/alerts";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
+import { assembleDraft } from "@/services/town-paper";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -62,6 +64,7 @@ app.route("/", patronageRoutes);
 app.route("/", phantomRoutes);
 app.route("/", letterRoutes);
 app.route("/", almanacRoutes);
+app.route("/", paperRoutes);
 app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
 app.route("/", retiredWordsRoutes);
@@ -106,6 +109,9 @@ const worker: ExportedHandler<Env> = {
   scheduled: async (event, env, ctx) => {
     if (event.cron === "0 11 * * SUN") {
       ctx.waitUntil(compileDigest(env));
+      // The paper drafts itself when the week earned an edition (3+
+      // organic events); the keeper's pen decides whether it prints.
+      ctx.waitUntil(assembleDraft(env).then(() => undefined));
     }
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>

@@ -171,7 +171,8 @@ export function minimumUsdcForPath(path: string): number {
   if (
     path.startsWith("/almanac/") ||
     path.startsWith("/gazette/issue-") ||
-    path.startsWith("/zodiac/archive/")
+    path.startsWith("/zodiac/archive/") ||
+    path.startsWith("/paper/edition-")
   ) {
     return PENNY_PAGE_USDC;
   }
@@ -229,6 +230,13 @@ export function getPaymentStack(env: Env): PaymentStack {
       "The Systems Almanac archive — one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
       "That page of the Almanac has turned, friend. A penny opens the archive.",
       "The Systems Almanac — The Checksum, Season One, Week 1",
+    );
+    // The Town Gazette prints when a week earns it; editions are runtime.
+    routes["GET /paper/edition-:edition"] = pennyPageRouteConfig(
+      env,
+      "The Town Gazette of Smokewire Crossing — the store's paper of record, assembled from its own logged facts. A penny a copy.",
+      "The paper is a penny a copy, friend. Same price as every paper worth reading.",
+      "The Town Gazette of Smokewire Crossing — Edition No. 1",
     );
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };

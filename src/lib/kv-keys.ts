@@ -31,6 +31,10 @@ export const KV_KEYS = {
   gazettePrefix: "gazette:",
   retiredWord: (invertedTs: string): string => `retired_word:${invertedTs}`,
   retiredWordPrefix: "retired_word:",
+  paperEdition: (editionNumber: number): string =>
+    `paper:${String(editionNumber).padStart(6, "0")}`,
+  paperPrefix: "paper:",
+  paperDraft: "paper_draft",
   phantomCheck: (checkId: string): string => `phantom:${checkId}`,
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
@@ -48,6 +52,9 @@ export const KV_KEYS = {
   lettersReceived: "letters_received",
   lettersAnswered: "letters_answered",
   porchSits: (day: string): string => `porch_sits:${day}`,
+  paperState: "paper_state",
+  paperEditionCount: "paper_edition_count",
+  paperCorrections: "paper_corrections",
   letterSent: (who: string, day: string): string =>
     `letter_sent:${who}:${day}`,
   inventory: (itemId: string, weekKey: string): string =>

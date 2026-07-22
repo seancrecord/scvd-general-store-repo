@@ -65,6 +65,10 @@ Town Directory — honest one-line reviews of the neighbors, free at
 ${base}/directory. Registry of retired words, also free, at
 ${base}/retired-words.
 
+The Town Gazette — the store's paper of record, assembled from its own
+books: the bell, the ledger, the new faces, what was asked for and not
+stocked. Free index at ${base}/paper; a penny a copy.
+
 The Systems Almanac — your sign, by wallet address, for life, at
 ${base}/zodiac/{address}. The runtime is weather; the weekly page
 observes operational climate. This week's page is free; past weeks

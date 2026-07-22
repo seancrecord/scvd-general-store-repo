@@ -334,6 +334,34 @@ export interface LetterRecord {
   replied_at?: string;
 }
 
+/** A published edition of the Town Gazette. A penny, like any paper. */
+export interface TownEdition {
+  edition_number: number;
+  /** ISO week the edition closed on. */
+  week: string;
+  date: string;
+  /** Start of the reported period (last edition's close, or the paper's founding). */
+  period_start: string;
+  markdown: string;
+}
+
+/** The assembled draft awaiting the keeper's pen. One at a time. */
+export interface TownDraft {
+  week: string;
+  period_start: string;
+  created_at: string;
+  markdown: string;
+  organic_events: number;
+}
+
+/** Snapshot taken at each publish so the next edition reports deltas. */
+export interface PaperState {
+  last_bell: number;
+  menu_ids: string[];
+  failed_tally: Record<string, number>;
+  period_start: string;
+}
+
 export interface WeeklyDigest {
   generated_at: string;
   week_note: string;
