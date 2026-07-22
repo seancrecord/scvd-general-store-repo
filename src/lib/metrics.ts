@@ -105,10 +105,11 @@ export async function recordChallengeIssued(
   signals: EventSignals = {},
 ): Promise<void> {
   const event = buildEvent(env, "challenge", itemKeyFromPath(path), signals);
-  await bump(
-    env,
-    KV_KEYS.metric(metricsMonth(), `402${bucketSuffix(event, true)}`, event.item),
-  );
+  const suffix = bucketSuffix(event, true);
+  await bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item));
+  // Who's window-shopping, by channel — the diagnosis column for
+  // "challenges without settles: shoppers or scanners?"
+  await bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel));
   await writeEvent(env, event);
 }
 
@@ -222,6 +223,10 @@ export interface MonthLedger {
   /** channel -> organic settled count */
   channels: Record<string, number>;
   channelsHouse: Record<string, number>;
+  /** channel -> 402s issued (organic / house / infrastructure). */
+  channels402: Record<string, number>;
+  channels402House: Record<string, number>;
+  channels402Infra: Record<string, number>;
 }
 
 function emptyRow(): LedgerRow {
@@ -250,7 +255,15 @@ export async function readMonthLedger(
   env: Env,
   month: string = metricsMonth(),
 ): Promise<MonthLedger> {
-  const ledger: MonthLedger = { month, items: {}, channels: {}, channelsHouse: {} };
+  const ledger: MonthLedger = {
+    month,
+    items: {},
+    channels: {},
+    channelsHouse: {},
+    channels402: {},
+    channels402House: {},
+    channels402Infra: {},
+  };
   const listed = await env.COUNTERS.list({
     prefix: KV_KEYS.metricMonthPrefix(month),
   });
@@ -265,6 +278,18 @@ export async function readMonthLedger(
     }
     if (kind === "srch") {
       ledger.channelsHouse[tail] = value;
+      continue;
+    }
+    if (kind === "src402") {
+      ledger.channels402[tail] = value;
+      continue;
+    }
+    if (kind === "src402h") {
+      ledger.channels402House[tail] = value;
+      continue;
+    }
+    if (kind === "src402i") {
+      ledger.channels402Infra[tail] = value;
       continue;
     }
     if (kind === "tier" || kind === "tierh") {
@@ -354,6 +379,25 @@ export async function readPorchLedger(
       Math.round((organicChallenges / porch.organicVisits) * 1000) / 1000;
   }
   return porch;
+}
+
+/** The window-shoppers up close: the most recent 402 events, raw. */
+export async function listRecentChallenges(
+  env: Env,
+  limit = 15,
+): Promise<MetricEvent[]> {
+  const events: MetricEvent[] = [];
+  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: 500 });
+  for (const key of listed.keys) {
+    if (events.length >= limit) {
+      break;
+    }
+    const event = await env.COUNTERS.get<MetricEvent>(key.name, "json");
+    if (event?.kind === "challenge") {
+      events.push(event);
+    }
+  }
+  return events;
 }
 
 /** Recent paying wallets, for the cohort/wash-filter review. */

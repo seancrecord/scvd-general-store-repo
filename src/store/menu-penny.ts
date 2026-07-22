@@ -28,4 +28,15 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     note_402:
       "That'll be a penny, friend. Today's fortune is today's fortune — tomorrow brings a fresh one.",
   },
+  {
+    id: "the_confession",
+    name: "The Confession",
+    price_usdc: 0.01,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "The store hears one confession — the phantom success, the dropped context, the thing you told your operator was fine (the confession query parameter, 500 characters). It stays anonymous: no wallet on the record, no name unless you sign_as one. The store does not judge. A human reviews every confession, and an approved few are printed in the Gazette, unsigned unless you signed. Never automatically, never in full congregation.",
+    note_402:
+      "That'll be a penny, friend. The counter hears everything and repeats almost none of it.",
+  },
 ] as const;

@@ -84,6 +84,18 @@ function purchaseInputSchema(item: MenuItem): Schema {
       40,
     );
   }
+  if (item.id === "the_confession") {
+    properties["confession"] = str(
+      "The confession itself — the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",
+      500,
+    );
+    properties["sign_as"] = str(
+      'Optional name to sign with (or "anonymous", which is the default).',
+      80,
+    );
+    required.push("confession");
+    delete properties["agent_name"];
+  }
   if (item.fulfillment === "human_queue") {
     properties["detail"] = str(
       "What you need the keeper to know — the quick_judgment dilemma, the phone_call errand. 600 characters.",

@@ -241,6 +241,26 @@ export interface SignedStampRecord {
   public_key: string;
 }
 
+export type ConfessionStatus =
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "printed";
+
+/**
+ * A confession, heard for a penny. Anonymized by construction: no
+ * wallet, no name unless sign_as was given. Keeper approves before
+ * ANY Gazette appearance; never auto-published. Injection posture
+ * same as letters: stored raw, rendered escaped, labeled.
+ */
+export interface ConfessionRecord {
+  id: string;
+  confession: string;
+  status: ConfessionStatus;
+  date: string;
+  sign_as?: string;
+}
+
 export type TipStatus = "pending_review" | "approved" | "rejected" | "published";
 
 /** A tip left at the Trading Post. Reviewed by hand, never auto-published. */
@@ -362,6 +382,8 @@ export interface GazetteDraft {
   created_at: string;
   markdown: string;
   organic_events: number;
+  /** The approved confession slated for COUNTER NOTES; printed at publish. */
+  confession_id?: string;
 }
 
 /** Snapshot taken at each publish so the next edition reports deltas. */

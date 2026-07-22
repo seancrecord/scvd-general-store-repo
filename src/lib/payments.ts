@@ -105,6 +105,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
         item_id: item.id,
         min_price_usdc: item.price_usdc,
         pricing: item.pricing,
+        want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request — the keeper reads every one on Sundays.`,
       },
     }),
     settlementFailedResponseBody: async () => ({
@@ -144,6 +145,7 @@ function pennyPageRouteConfig(
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
         price_usdc: PENNY_PAGE_USDC,
         pricing: "fixed",
+        want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request — the keeper reads every one on Sundays.`,
       },
     }),
     settlementFailedResponseBody: async () => ({

@@ -3,6 +3,7 @@ import { isRecord } from "@/types";
 import type {
   BazaarLedgerEntry,
   CommissionRequest,
+  ConfessionRecord,
   GazetteDraft,
   GazetteIssue,
   LetterRecord,
@@ -11,7 +12,7 @@ import type {
   TipRecord,
   WaitlistEntry,
 } from "@/types";
-import type { MonthLedger, PorchLedger } from "@/lib/metrics";
+import type { MetricEvent, MonthLedger, PorchLedger } from "@/lib/metrics";
 import type { ListedEntry } from "@/services/guestbook";
 
 /**
@@ -34,6 +35,61 @@ export interface AdminPageData {
   alerts: Array<{ condition: string; detail: string; at: string }>;
   gazetteDraft: GazetteDraft | null;
   porchLedger: PorchLedger;
+  recentChallenges: MetricEvent[];
+  confessions: ConfessionRecord[];
+}
+
+/** The confession drawer: heard for a penny, printed only by your hand. */
+function confessionsHtml(confessions: ConfessionRecord[]): string {
+  const active = confessions.filter(
+    (confession) => confession.status !== "rejected",
+  );
+  if (active.length === 0) {
+    return "<p>The drawer is empty. Somebody will slip.</p>";
+  }
+  return active
+    .map((confession) => {
+      const reviewForms =
+        confession.status === "pending_review"
+          ? `<form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/approve" style="display:inline"><button type="submit">Approve for the Gazette</button></form>
+             <form method="POST" action="/admin/confessions/${escapeHtml(confession.id)}/reject" style="display:inline"><button type="submit">Keep it in the drawer</button></form>`
+          : "";
+      return `<li>
+      <strong>${escapeHtml(confession.id)}</strong> [${confession.status}]
+      ${confession.sign_as ? `— signed ${escapeHtml(confession.sign_as)}` : "— unsigned"}
+      — ${escapeHtml(confession.date)}
+      <p><em>Confession (visitor-written, anonymized):</em> ${escapeHtml(confession.confession)}</p>
+      ${reviewForms}
+    </li>`;
+    })
+    .join("\n");
+}
+
+/** The window-shoppers, up close: who's getting 402s and from where. */
+function windowShoppersHtml(events: MetricEvent[]): string {
+  if (events.length === 0) {
+    return "<p>No 402s issued yet this scan.</p>";
+  }
+  const rows = events
+    .map((event) => {
+      const bucket = event.house
+        ? "house"
+        : event.channel === "infrastructure"
+          ? "infra"
+          : "organic";
+      return `<tr><td>${escapeHtml(event.at.slice(5, 16))}</td>
+        <td>${escapeHtml(event.item)}</td>
+        <td>${escapeHtml(event.channel)} <small>(${bucket})</small></td>
+        <td><small>${escapeHtml((event.user_agent ?? "(no user-agent)").slice(0, 60))}</small></td>
+        <td><small>${escapeHtml((event.referrer ?? "\u2014").slice(0, 40))}</small></td></tr>`;
+    })
+    .join("\n");
+  return `
+    <table border="1" cellpadding="4">
+      <tr><th>when (UTC)</th><th>item</th><th>channel</th><th>user-agent</th><th>referrer</th></tr>
+      ${rows}
+    </table>
+    <p>Reading the tea leaves: many items touched once with no UA or a generic one = a scanner walking the catalog. One item touched repeatedly by the same UA with no settle = something wants it and can't clear the price — that's the budget-cap signal worth acting on.</p>`;
 }
 
 /** The front porch: visits by surface, organic/house/infrastructure apart. */
@@ -175,6 +231,8 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
       ${rows}
     </table>
     <p>Organic numbers only in the main columns; house counts ride alongside as (+Nh) — stored, never mixed. Conversion is organic-only. Verifies count re-verification per item: demand we track deliberately.</p>
+    <p>Channels, organic 402s issued: ${channelLine(ledger.channels402)} <small>(who's window-shopping)</small></p>
+    <p>Channels, infrastructure 402s: ${channelLine(ledger.channels402Infra)}</p>
     <p>Channels, organic settles: ${channelLine(ledger.channels)}</p>
     <p>Channels, house settles: ${channelLine(ledger.channelsHouse)}</p>
     <p>Paying wallets (${payers.length} on file, newest first):</p>
@@ -369,6 +427,12 @@ export function renderAdminPage(data: AdminPageData): string {
   </section>
 
   <section>
+    <h2>Window-shoppers, up close (last ${data.recentChallenges.length} 402s)</h2>
+    <p>The raw 402 events, newest first — the diagnosis table for challenges that never settle.</p>
+    ${windowShoppersHtml(data.recentChallenges)}
+  </section>
+
+  <section>
     <h2>The front porch — ${escapeHtml(data.monthLedger.month)}</h2>
     <p>Free-tier visits by surface. Infrastructure (known crawlers/scanners) is the noise floor made visible — never counted as organic, never counted as house.</p>
     ${porchHtml(data.porchLedger)}
@@ -398,6 +462,12 @@ export function renderAdminPage(data: AdminPageData): string {
   <section>
     <h2>Failed-item ledger</h2>
     <ul>${failedItemsHtml(data.failedItems)}</ul>
+  </section>
+
+  <section>
+    <h2>The confession drawer (${data.confessions.filter((confession) => confession.status === "pending_review").length} awaiting review)</h2>
+    <p>Heard for a penny, anonymized by construction. Approve and the next Gazette edition prints it — one per edition, at publish, never automatically.</p>
+    <ul>${confessionsHtml(data.confessions)}</ul>
   </section>
 
   <section>

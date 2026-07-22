@@ -197,6 +197,7 @@ export function renderStorefront(data: StorefrontData): string {
         <p class="term-line">GET <a href="/menu.json">/menu.json</a>     <span class="term-note"># the catalog</span></p>
         <p class="term-line">GET <a href="/skill.md">/skill.md</a>      <span class="term-note"># the skill</span></p>
         <p class="term-line">GET <a href="/openapi.json">/openapi.json</a>  <span class="term-note"># the contract</span></p>
+        <p class="term-line">POST /api/request   <span class="term-note"># want something we don't stock?</span></p>
         <p class="term-line term-pay">USDC on Base \u00B7 x402 v2 \u00B7 settle first, goods after</p>
       </div>
     </section>

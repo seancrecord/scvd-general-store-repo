@@ -52,3 +52,7 @@ export function newCheckId(): string {
 export function newLetterId(): string {
   return `letter_${randomToken(12)}`;
 }
+
+export function newConfessionId(): string {
+  return `conf_${randomToken(10)}`;
+}
