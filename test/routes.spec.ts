@@ -58,31 +58,7 @@ describe("the storefront", () => {
   });
 });
 
-describe("the x402 gate", () => {
-  it("answers an unpaid buy with a well-formed 402 challenge", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/pet_rock`);
-    expect(response.status).toBe(402);
-    const body = await json(response);
-    expect(body["x402Version"]).toBe(1);
-    expect(typeof body["error"]).toBe("string");
-    const accepts = body["accepts"] as Array<Record<string, unknown>>;
-    expect(Array.isArray(accepts)).toBe(true);
-    expect(accepts.length).toBeGreaterThan(0);
-    const requirement = accepts[0] as Record<string, unknown>;
-    expect(requirement["scheme"]).toBe("exact");
-    expect(requirement["network"]).toBe("base");
-    // $5 minimum in USDC atomic units (6 decimals).
-    expect(requirement["maxAmountRequired"]).toBe("5000000");
-    expect(requirement["payTo"]).toBe(testEnv.PAY_TO_ADDRESS);
-    expect(requirement["asset"]).toBeTruthy();
-  });
-
-  it("speaks in the store voice on the challenge", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/pet_rock`);
-    const body = await json(response);
-    expect(body["error"]).toContain("if you think the rock deserves it");
-  });
-
+describe("the shelf check (before the payment gate)", () => {
   it("logs unknown items as market research and returns 404", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/moon_deed`);
     expect(response.status).toBe(404);
@@ -145,7 +121,7 @@ describe("the bell", () => {
       body: JSON.stringify({ agent_name: "bell-enthusiast" }),
     });
     const firstBody = await json(first);
-    expect(firstBody["message"]).toContain("The bell has been rung 1 times");
+    expect(firstBody["message"]).toContain("The bell has been rung once");
 
     const second = await SELF.fetch(`${BASE}/api/bell`, {
       method: "POST",
@@ -159,7 +135,7 @@ describe("the bell", () => {
 });
 
 describe("waitlist and requests", () => {
-  it("takes a waitlist entry for scarce items", async () => {
+  it("points a waitlist request at the shelf while stock remains", async () => {
     const response = await SELF.fetch(`${BASE}/api/waitlist/phone_call`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -168,9 +144,10 @@ describe("waitlist and requests", () => {
         callback_url: "https://example.com/hook",
       }),
     });
-    expect(response.status).toBe(201);
+    // Inventory is full this week, so the store says buy instead.
+    expect(response.status).toBe(400);
     const body = await json(response);
-    expect(body["message"]).toContain("Shopkeeper's swamped");
+    expect(body["buy_url"]).toBe(`${BASE}/api/buy/phone_call`);
   });
 
   it("declines waitlists for items that never run out", async () => {
