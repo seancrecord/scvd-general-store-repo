@@ -291,12 +291,13 @@ describe("the house tradition", () => {
       date: "2026-07-22T00:00:00.000Z",
       verifyUrl: `${BASE}/api/verify/cert_test`,
     });
-    expect(marked).toContain('x="371"');
+    // The seven moved to the lower-left corner when the seal took the right.
+    expect(marked).toContain('x="30" y="276"');
     const plain = renderPatronBadge({
       patronNumber: 22,
       date: "2026-07-22T00:00:00.000Z",
       verifyUrl: `${BASE}/api/verify/cert_test`,
     });
-    expect(plain).not.toContain('x="371"');
+    expect(plain).not.toContain('x="30" y="276"');
   });
 });
