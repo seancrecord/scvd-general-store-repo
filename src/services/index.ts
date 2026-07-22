@@ -2,7 +2,6 @@ export {
   mintCertificate,
   getCertificate,
   getPatron,
-  nextPatronNumber,
 } from "@/services/certificates";
 export {
   createOrder,

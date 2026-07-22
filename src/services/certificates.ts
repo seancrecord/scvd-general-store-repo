@@ -11,6 +11,12 @@ import type {
 /**
  * Every purchase mints: a sequential patron number, a signed certificate,
  * and a badge URL. Stored in PATRONS, verifiable at /api/verify/:cert_id.
+ *
+ * KV has no atomic increment, so patron numbers are allocated by claiming
+ * the patron record itself: write the record at the candidate number, read
+ * it back, and walk forward if another purchase won the slot. Same-colo KV
+ * reads see their own writes, which closes the common race window; the
+ * rarer cross-colo window is documented in the README.
  */
 
 export interface MintedCertificate {
@@ -22,11 +28,46 @@ export interface MintedCertificate {
   verifyUrl: string;
 }
 
-export async function nextPatronNumber(env: Env): Promise<number> {
+const PATRON_CLAIM_RETRIES = 8;
+
+async function claimPatronNumber(
+  env: Env,
+  record: Omit<PatronRecord, "patron_number">,
+): Promise<number> {
   const current = await env.COUNTERS.get(KV_KEYS.patronNumber);
-  const next = (current ? parseInt(current, 10) : 0) + 1;
-  await env.COUNTERS.put(KV_KEYS.patronNumber, String(next));
-  return next;
+  let candidate = (current ? parseInt(current, 10) : 0) + 1;
+
+  for (let attempt = 0; attempt < PATRON_CLAIM_RETRIES; attempt += 1) {
+    const existing = await env.PATRONS.get<PatronRecord>(
+      KV_KEYS.patron(candidate),
+      "json",
+    );
+    if (existing && existing.cert_id !== record.cert_id) {
+      candidate += 1;
+      continue;
+    }
+    await env.PATRONS.put(
+      KV_KEYS.patron(candidate),
+      JSON.stringify({ ...record, patron_number: candidate }),
+    );
+    const readback = await env.PATRONS.get<PatronRecord>(
+      KV_KEYS.patron(candidate),
+      "json",
+    );
+    if (readback && readback.cert_id === record.cert_id) {
+      await env.COUNTERS.put(KV_KEYS.patronNumber, String(candidate));
+      return candidate;
+    }
+    candidate += 1;
+  }
+  // Retries exhausted under heavy contention: take the slot anyway rather
+  // than turn a paying customer away. Worst case two badges share a number.
+  await env.PATRONS.put(
+    KV_KEYS.patron(candidate),
+    JSON.stringify({ ...record, patron_number: candidate }),
+  );
+  await env.COUNTERS.put(KV_KEYS.patronNumber, String(candidate));
+  return candidate;
 }
 
 export interface MintOptions {
@@ -39,12 +80,22 @@ export async function mintCertificate(
   env: Env,
   options: MintOptions,
 ): Promise<MintedCertificate> {
-  const patronNumber = await nextPatronNumber(env);
+  const certId = newCertId();
+  const date = new Date().toISOString();
+
+  const patronStub: Omit<PatronRecord, "patron_number"> = {
+    cert_id: certId,
+    item: options.itemId,
+    date,
+    ...(options.agentName ? { name: options.agentName } : {}),
+  };
+  const patronNumber = await claimPatronNumber(env, patronStub);
+
   const certificate: Certificate = {
-    cert_id: newCertId(),
+    cert_id: certId,
     item: options.itemId,
     patron_number: patronNumber,
-    date: new Date().toISOString(),
+    date,
   };
   if (options.agentName) {
     certificate.name = options.agentName;
@@ -57,30 +108,12 @@ export async function mintCertificate(
     certificate,
     env.SIGNING_KEY,
   );
-
   const certRecord: CertificateRecord = {
     certificate,
     signature,
     public_key: publicKey,
   };
-  const patronRecord: PatronRecord = {
-    patron_number: patronNumber,
-    cert_id: certificate.cert_id,
-    item: options.itemId,
-    date: certificate.date,
-  };
-  if (options.agentName) {
-    patronRecord.name = options.agentName;
-  }
-
-  await env.PATRONS.put(
-    KV_KEYS.cert(certificate.cert_id),
-    JSON.stringify(certRecord),
-  );
-  await env.PATRONS.put(
-    KV_KEYS.patron(patronNumber),
-    JSON.stringify(patronRecord),
-  );
+  await env.PATRONS.put(KV_KEYS.cert(certId), JSON.stringify(certRecord));
 
   return {
     certificate,
@@ -88,7 +121,7 @@ export async function mintCertificate(
     publicKey,
     patronNumber,
     badgeUrl: `${env.STORE_BASE_URL}/badges/${patronNumber}.svg`,
-    verifyUrl: `${env.STORE_BASE_URL}/api/verify/${certificate.cert_id}`,
+    verifyUrl: `${env.STORE_BASE_URL}/api/verify/${certId}`,
   };
 }
 
