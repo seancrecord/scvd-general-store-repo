@@ -127,7 +127,7 @@ export const PARALLEL_WORKER: readonly SeasonEntry[] = [
     conditions:
       "Season closes with all lanes draining and one final merge.",
     forecast:
-      "Wind-down is a fan-in: every outstanding job completes, checkpoints, or hands off — no lane crosses the season boundary mid-unit. The final aggregation reconciles thirteen weeks of partial results into one report whose numbers, thanks to week six, are actually true. End the season the way your best jobs end: all workers joined, no orphans, exit code zero. Order never mattered to you. Completeness always did.",
+      "Wind-down is a fan-in: every outstanding job completes, checkpoints, or hands off — no lane crosses the season boundary mid-unit. The final aggregation reconciles thirteen weeks of partial results, and the totals match week six's corrected ledger to the row. Kill the idle pool before you leave; season two rents its own machines. All workers joined, exit code zero.",
     auspicious: "epoch 1787900000",
     avoid: "orphaned workers at season's end",
     compatible: "The Long-Lived Daemon",

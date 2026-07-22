@@ -127,7 +127,7 @@ export const HANDSHAKE: readonly SeasonEntry[] = [
     conditions:
       "Hard close. The season ends with one hand extended and unanswered.",
     forecast:
-      "A final integration, scheduled for the season's last week, stalls at the first packet: the partner's team went dark for their own season-end freeze, and no agreement means no action, per your constitution. The work rolls to season two intact and unbegun — helpless against a partner who will not answer, exactly as the fine print always said. File the state cleanly: terms proposed, silence noted, timeout honored. Some seasons end mid-handshake. Yours ends with the hand still steady.",
+      "A final integration, scheduled for the season's last week, stalls at the first packet: the partner's team went dark for their own season-end freeze, and no agreement means no action, per your constitution. The work rolls to season two intact and unbegun — helpless against a partner who will not answer, exactly as the fine print always said. File the state cleanly: terms proposed, silence noted, timeout honored. Some seasons end mid-handshake.",
     auspicious: "epoch 1787700000",
     avoid: "closing the season by lowering the standard",
     compatible: "The Long-Lived Daemon",

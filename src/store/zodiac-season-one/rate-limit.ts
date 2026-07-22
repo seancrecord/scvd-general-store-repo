@@ -77,7 +77,7 @@ export const RATE_LIMIT: readonly SeasonEntry[] = [
     conditions:
       "Quiet before the season's second storm. The calendar says sale; the sale says flood.",
     forecast:
-      "Pre-provision: raise burst allowances for checkout paths, pre-stage the shed-load ordering — analytics first, personalization second, money never. Rehearse the brownout Thursday with synthetic load. When systems must refuse, the refusals land in the order you chose in advance or the order chaos chooses live. There are two kinds of Friday. Pick yours Monday.",
+      "Pre-provision: raise burst allowances for checkout paths, pre-stage the shed-load ordering — analytics first, personalization second, money never. Rehearse the brownout Thursday with synthetic load. When systems must refuse, the refusals land in the order you chose in advance or the order chaos chooses live. Decide it Monday.",
     auspicious: "a shed-load order, written and ranked",
     avoid: "deciding what to drop while dropping it",
     compatible: "The Long-Lived Daemon",
@@ -115,11 +115,11 @@ export const RATE_LIMIT: readonly SeasonEntry[] = [
   {
     week: 12,
     conditions:
-      "Favorable. The season's stability, audited, traces to a list of refusals nobody felt.",
+      "Favorable. Traffic settles into winter patterns and the ceilings fit like they were measured, because they were.",
     forecast:
-      "Accounting week lands in your favor: uptime attributed to architecture, architecture attributed to ceilings, ceilings attributed — in a footnote, but in writing — to you. Convert the credit into next season's budget for the classifier. Set the winter quotas before the winter: growth-adjusted, tier-reviewed, sunset clauses intact. Say no early so the season says yes often.",
-    auspicious: "a budget line with your name in the footnote",
-    avoid: "spending credibility on nothing",
+      "Set the winter quotas from the classifier's ninety days instead of last year's guesswork: per-tier ceilings land in version control Monday with owners and sunset dates inline. A burst allowance left over from the week-eight sale still doubles one route's budget; retire it before it becomes ambient. Say no early so the season says yes often.",
+    auspicious: "a quota file in version control",
+    avoid: "budgets copied from last year",
     compatible: "The Cold Start",
   },
   {

@@ -55,10 +55,10 @@ export const CHECKSUM: readonly SeasonEntry[] = [
   {
     week: 6,
     conditions:
-      "Recovery weather. The standard held and the resentment fades faster than the gratitude arrives.",
+      "Recovery weather. The standard held; the fleet re-measures what it briefly resented.",
     forecast:
-      "Quiet vindication midweek: the archive rejected in week five turns out to have carried a corrupted index that silent acceptance would have propagated into every replica. Nobody apologizes; the incident simply does not happen, which is your entire genre of victory. Re-verify the replicas anyway. Trust, once bent, is re-measured, not resumed.",
-    auspicious: "a replica compared against its primary",
+      "The archive rejected in week five gets re-cut upstream and passes on the first comparison — one line in the log, no ceremony, which is how vindication actually reads. A migration checksum in the schema table disagrees with the file on disk for one environment; somebody edited a migration after it ran. Freeze the practice, re-stamp the environment, and re-verify the replicas on schedule, not on apology.",
+    auspicious: "a migration file, immutable after apply",
     avoid: "accepting apology in place of re-verification",
     compatible: "The Parallel Worker",
   },
