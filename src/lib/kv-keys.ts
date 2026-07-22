@@ -12,7 +12,9 @@
  *            payment_nonce:<nonce> (TTL), bazaar_ext:<invertedTs> (TTL),
  *            patronage_note:<YYYY-MM>, metric:<YYYY-MM>:<kind>:<rest>,
  *            payer:<address>
- * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>
+ * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>,
+ *            stamp_card:<nameSlug> (append-only visit-week log)
+ * COUNTERS   stamp_condition:<week> (write-once, same week only)
  */
 export const KV_KEYS = {
   order: (orderId: string): string => `order:${orderId}`,
@@ -77,6 +79,8 @@ export const KV_KEYS = {
   patron: (patronNumber: number): string => `patron:${patronNumber}`,
   cert: (certId: string): string => `cert:${certId}`,
   stamp: (stampId: string): string => `stamp:${stampId}`,
+  stampCard: (nameSlug: string): string => `stamp_card:${nameSlug}`,
+  stampCondition: (weekKey: string): string => `stamp_condition:${weekKey}`,
   anchor: (anchorId: string): string => `anchor:${anchorId}`,
   patronagePass: (passId: string): string => `pass:${passId}`,
 } as const;
@@ -87,6 +91,28 @@ export const KV_KEYS = {
  */
 export function invertedTimestamp(now: number): string {
   return String(9999999999999 - now).padStart(13, "0");
+}
+
+/** The Monday a given ISO week key starts on, as a UTC date. */
+export function weekKeyMonday(weekKey: string): Date {
+  const [yearPart, weekPart] = weekKey.split("-W");
+  const year = parseInt(yearPart ?? "0", 10);
+  const week = parseInt(weekPart ?? "0", 10);
+  // Jan 4 is always in ISO week 1; walk back to that week's Monday.
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+  const week1Monday = new Date(jan4);
+  week1Monday.setUTCDate(jan4.getUTCDate() - (jan4Day - 1));
+  const monday = new Date(week1Monday);
+  monday.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
+  return monday;
+}
+
+/** The ISO week key immediately before the given one, across years. */
+export function previousWeekKey(weekKey: string): string {
+  const monday = weekKeyMonday(weekKey);
+  monday.setUTCDate(monday.getUTCDate() - 7);
+  return currentWeekKey(monday);
 }
 
 /** ISO week key like "2026-W29" so inventory resets weekly on its own. */

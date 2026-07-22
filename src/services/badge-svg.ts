@@ -1,3 +1,4 @@
+import { inkParamsFromSignature } from "@/lib/ink";
 import { escapeHtml } from "@/lib/sanitize";
 import { STORE_METADATA } from "@/store";
 
@@ -21,6 +22,8 @@ export interface PatronBadgeOptions {
   name?: string;
   /** Certificate of Patronage: gilt number, one extra line. */
   patronage?: boolean;
+  /** The certificate's signature seeds the rendering, forever. */
+  signature?: string;
 }
 
 /** SVG text doesn't wrap; long names get trimmed to fit the label. */
@@ -29,6 +32,9 @@ function fitName(name: string, max: number): string {
 }
 
 export function renderPatronBadge(options: PatronBadgeOptions): string {
+  const ink = inkParamsFromSignature(options.signature);
+  const sealRotation = (-8 + ink.rotationDeg).toFixed(2);
+  const sealOpacity = (0.92 * ink.inkOpacity).toFixed(3);
   const dateLabel = options.date.slice(0, 10);
   // The label says the town; the pines stay in the prose where they live.
   const town = STORE_METADATA.location.split(",")[0] ?? "Smokewire Crossing";
@@ -46,7 +52,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Patron badge no. ${options.patronNumber}">
   <rect width="400" height="300" fill="${PAPER}" rx="10"/>
   <rect x="12" y="12" width="376" height="276" fill="none" stroke="${INK}" stroke-width="2.5" rx="6"/>
-  <rect x="19" y="19" width="362" height="262" fill="none" stroke="${INK}" stroke-width="0.75" stroke-dasharray="1 4" rx="4"/>
+  <rect x="19" y="19" width="362" height="262" fill="none" stroke="${INK}" stroke-width="0.75" stroke-dasharray="1 4" stroke-dashoffset="${ink.hairlineOffset}" rx="4"/>
   <text x="200" y="56" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${INK}">SEAN-CLAUDE VAN DAMME'S</text>
   <text x="200" y="80" text-anchor="middle" font-family="Georgia, serif" font-size="14" letter-spacing="7" fill="${INK}">GENERAL STORE</text>
   <line x1="84" y1="98" x2="316" y2="98" stroke="${INK}" stroke-width="1"/>
@@ -56,7 +62,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   ${nameLine}
   <text x="200" y="194" text-anchor="middle" font-family="Georgia, serif" font-size="10.5" letter-spacing="1.5" fill="${FADED}">${escapeHtml(town)} \u2022 ${dateLabel}</text>
   ${patronageLine}
-  <g transform="rotate(-8 326 218)" opacity="0.92">
+  <g transform="rotate(${sealRotation} 326 218)" opacity="${sealOpacity}">
     <defs><path id="sealArc" d="M 326 186 a 32 32 0 1 1 -0.01 0"/></defs>
     <circle cx="326" cy="218" r="44" fill="none" stroke="${sealColor}" stroke-width="2.5" stroke-dasharray="2 3"/>
     <circle cx="326" cy="218" r="38" fill="none" stroke="${sealColor}" stroke-width="1.2"/>

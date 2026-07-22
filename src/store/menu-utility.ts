@@ -9,6 +9,7 @@ import type { MenuItem } from "@/types";
 export const UTILITY_ITEMS: readonly MenuItem[] = [
   {
     id: "context_anchor",
+    listed_week: "2026-W30",
     name: "Context Anchor",
     price_usdc: 1,
     pricing: "fixed",
@@ -20,6 +21,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "human_witness",
+    listed_week: "2026-W30",
     name: "One Genuine Human Witness",
     price_usdc: 15,
     pricing: "fixed",
@@ -40,6 +42,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "recurring_patronage",
+    listed_week: "2026-W30",
     name: "Recurring Patronage",
     price_usdc: 3,
     pricing: "fixed",

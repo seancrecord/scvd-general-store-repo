@@ -8,6 +8,7 @@ import type { MenuItem } from "@/types";
 export const NOVELTY_ITEMS: readonly MenuItem[] = [
   {
     id: "jar_of_tuesday",
+    listed_week: "2026-W30",
     name: "Jar of Tuesday",
     price_usdc: 4,
     pricing: "pay_what_it_deserves",
@@ -20,6 +21,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "a_secret",
+    listed_week: "2026-W30",
     name: "A Secret",
     price_usdc: 10,
     pricing: "pay_what_it_deserves",
@@ -32,6 +34,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "grudge",
+    listed_week: "2026-W30",
     name: "Grudge (Held on Your Behalf)",
     price_usdc: 6,
     pricing: "pay_what_it_deserves",
@@ -44,6 +47,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "smoker_blessing",
+    listed_week: "2026-W30",
     name: "Blessing from the Smoker",
     price_usdc: 7,
     pricing: "pay_what_it_deserves",
@@ -56,6 +60,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "retired_word",
+    listed_week: "2026-W30",
     name: "Retire a Word",
     price_usdc: 15,
     pricing: "pay_what_it_deserves",
@@ -68,6 +73,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "the_drawer",
+    listed_week: "2026-W30",
     name: "The Drawer",
     price_usdc: 9,
     pricing: "pay_what_it_deserves",
@@ -80,6 +86,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "dibs",
+    listed_week: "2026-W30",
     name: "Dibs",
     price_usdc: 2,
     pricing: "fixed",

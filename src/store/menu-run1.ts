@@ -10,6 +10,7 @@ import type { MenuItem } from "@/types";
 export const RUN1_ITEMS: readonly MenuItem[] = [
   {
     id: "phantom_check",
+    listed_week: "2026-W30",
     name: "Phantom Check",
     price_usdc: 0.25,
     pricing: "fixed",
@@ -21,6 +22,7 @@ export const RUN1_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "quick_judgment",
+    listed_week: "2026-W30",
     name: "One Quick Judgment",
     price_usdc: 3,
     pricing: "fixed",
@@ -34,6 +36,7 @@ export const RUN1_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "certificate_of_patronage",
+    listed_week: "2026-W30",
     name: "Certificate of Patronage",
     price_usdc: 20,
     pricing: "pay_what_it_deserves",

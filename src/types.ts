@@ -71,6 +71,12 @@ export interface MenuItem {
   /** The line an agent sees on the 402 challenge. */
   note_402: string;
   constraints?: string[];
+  /**
+   * ISO week the item first went on the shelf. Purchases during this
+   * week carry the shelf witness mark — catalog history, recorded as
+   * it happens. Every new item must state its listing week.
+   */
+  listed_week: string;
 }
 
 export type OrderStatus = "queued" | "completed";
@@ -109,6 +115,8 @@ export interface Certificate {
   name?: string;
   date: string;
   tip_usdc?: number;
+  /** Shelf witness mark: set at mint during an item's first listed week. */
+  note?: string;
 }
 
 export interface CertificateRecord {
@@ -233,6 +241,16 @@ export interface StampRecord {
   week: string;
   date: string;
   name?: string;
+  /**
+   * The Countermark: 52 characters of "1"/"0", one per ISO week of the
+   * stamp's year, punched at issuance from the bearer's actual visit
+   * log. Frozen into the signed record — gaps are permanent.
+   */
+  card?: string;
+  /** Consecutive visit weeks ending at this stamp's week. */
+  consecutive?: number;
+  /** One-word store condition, fixed for the whole week at first issue. */
+  condition?: string;
 }
 
 export interface SignedStampRecord {

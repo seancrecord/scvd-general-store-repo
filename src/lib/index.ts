@@ -1,4 +1,12 @@
-export { KV_KEYS, invertedTimestamp, currentWeekKey } from "@/lib/kv-keys";
+export {
+  KV_KEYS,
+  invertedTimestamp,
+  currentWeekKey,
+  previousWeekKey,
+  weekKeyMonday,
+} from "@/lib/kv-keys";
+export { inkParamsFromSignature } from "@/lib/ink";
+export type { InkParams } from "@/lib/ink";
 export {
   canonicalizeCertificate,
   signCertificate,
