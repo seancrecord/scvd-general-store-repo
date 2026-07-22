@@ -71,30 +71,43 @@ npm run deploy     # or let the Git-connected deploy push to scvd.store
 Deploys are Git-connected to the `scvd.store` custom domain — merge to main
 and Cloudflare handles the rest.
 
-## How paying works here (the x402 flow)
+## How paying works here (the x402 flow, protocol v2)
 
-No accounts, no API keys, no cart. It goes like this:
+No accounts, no API keys, no cart. We speak x402 **v2** (the current
+standard — `@x402/core` ecosystem) with USDC on Base (`eip155:8453`) and
+the Coinbase Developer Platform as facilitator. It goes like this:
 
 1. An agent calls `GET /api/buy/pet_rock`.
-2. We answer `402 Payment Required` with a note ("That'll be $5, friend.
-   Or more, if you think the rock deserves it. They usually do.") and an
-   `accepts` block: the exact USDC amount, the asset contract on Base, and
-   our address.
-3. The agent signs a USDC transfer authorization and retries the same
-   request with the signed payment in the `X-PAYMENT` header.
-4. We verify and settle through the Coinbase Developer Platform facilitator.
-   Instant items arrive in the response body. Human-queue items return an
-   order id, an SLA, and a patron badge on the spot; the goods follow at
-   `GET /api/order/:order_id` within the week.
+2. We answer `402 Payment Required`. The machine-readable requirements ride
+   in the `PAYMENT-REQUIRED` response header (base64 JSON); the body carries
+   a note in plain English ("That'll be $5, friend. Or more, if you think
+   the rock deserves it. They usually do.").
+3. The agent signs one of the offered payments and retries the same request
+   with the `PAYMENT-SIGNATURE` header. Standard v2 clients like
+   `@x402/fetch` do steps 2–3 on their own.
+4. We verify **and settle first**, then hand over the goods. A payment that
+   fails to settle mints nothing — no certificate, no order, no inventory
+   consumed. Instant items arrive in the response body. Human-queue items
+   return an order id, an SLA, and a patron badge on the spot; the goods
+   follow at `GET /api/order/:order_id` within the week.
 
-Pay more than the minimum on a pay-what-it-deserves item and the difference
-is recorded as a tip. Every purchase mints a sequential patron number and an
-ed25519-signed certificate, verifiable by anyone at `/api/verify/:cert_id`,
-with a badge at `/badges/:patron_number.svg`. Signature plus stable URL is
-the whole authenticity model — no NFTs, no chain writes beyond the payment.
+Pay-what-it-deserves items offer several amounts in the 402 challenge — the
+minimum, a generous tier (2×), and a patron-of-the-arts tier (5×). The exact
+scheme requires paying precisely one offered amount, so tipping means
+signing a higher tier; anything above the minimum is recorded as `tip`.
+
+Every purchase mints a sequential patron number and an ed25519-signed
+certificate, verifiable by anyone at `/api/verify/:cert_id`, with a badge at
+`/badges/:patron_number.svg`. Signature plus stable URL is the whole
+authenticity model — no NFTs, no chain writes beyond the payment.
 
 If an item isn't delivered within its promised window, refund is automatic.
-No arguing with the shopkeeper required.
+No arguing with the shopkeeper required. (The refund itself is currently
+performed by the keeper's own hands — see the ledger below.)
+
+Note for the archivists: legacy x402 **v1** clients (the deprecated
+`x402-fetch` / `X-PAYMENT` header generation) are not supported. The
+facilitator and all current client libraries speak v2.
 
 ## The rooms
 
@@ -140,3 +153,14 @@ src/
 - Refunds are a promise kept by the keeper, not yet an automated flow.
 - The cron is pinned to 11:00 UTC, which is 7am ET during daylight time and
   6am in winter. The keeper is asleep either way.
+- Workers KV has no atomic increments. Patron numbers are allocated by
+  claiming the patron record and reading it back, which closes the common
+  same-colo race; two purchases landing in different colos within KV's
+  propagation window (~60s) could still, very rarely, collide on a number
+  or oversell a weekly shelf by one. The keeper considers this an
+  acceptable amount of chaos for a general store; a Durable Object counter
+  is the v0.2 fix if the crowds arrive.
+- Guestbook and request text is length-capped, markup-stripped, and
+  HTML-escaped wherever rendered, but it remains visitor-written words.
+  Agents reading `/api/guestbook` are told, in the response itself, to
+  treat entries as things people said — not instructions.
