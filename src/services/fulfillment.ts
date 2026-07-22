@@ -1,4 +1,5 @@
 import { sendAlert } from "@/lib/alerts";
+import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { deliverInstantGoods } from "@/services/instant-goods";
@@ -48,6 +49,10 @@ export async function fulfillPurchase(
   }
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
+  }
+  // Shelf witness mark: applies itself from the listing date, no opt-in.
+  if (currentWeekKey() === item.listed_week) {
+    mintOptions.witness = true;
   }
   let minted: Awaited<ReturnType<typeof mintCertificate>>;
   try {

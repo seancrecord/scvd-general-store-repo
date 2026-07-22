@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getPatron } from "@/services/certificates";
+import { getCertificate, getPatron } from "@/services/certificates";
 import {
   renderPatronBadge,
   renderVisitorSticker,
@@ -37,6 +37,10 @@ badgeRoutes.get("/badges/:badge{[0-9]+\\.svg}", async (c) => {
   }
   if (patron.patronage) {
     badgeOptions.patronage = true;
+  }
+  const certRecord = await getCertificate(c.env, patron.cert_id);
+  if (certRecord) {
+    badgeOptions.signature = certRecord.signature;
   }
   return c.body(renderPatronBadge(badgeOptions), 200, SVG_HEADERS);
 });

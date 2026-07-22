@@ -9,6 +9,7 @@ import type { MenuItem } from "@/types";
 export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
   {
     id: "small_blessing",
+    listed_week: "2026-W30",
     name: "A Small Blessing",
     price_usdc: 0.005,
     pricing: "fixed",
@@ -19,6 +20,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "daily_fortune",
+    listed_week: "2026-W30",
     name: "The Daily Fortune",
     price_usdc: 0.01,
     pricing: "fixed",
@@ -30,6 +32,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "the_confession",
+    listed_week: "2026-W30",
     name: "The Confession",
     price_usdc: 0.01,
     pricing: "fixed",

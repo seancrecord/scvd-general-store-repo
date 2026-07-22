@@ -76,7 +76,12 @@ export interface MintOptions {
   tipUsdc?: number;
   /** certificate_of_patronage: the badge gets nicer. */
   patronage?: boolean;
+  /** Purchase fell in the item's first listed week; the cert says so. */
+  witness?: boolean;
 }
+
+/** Shelf witness mark. Catalog history, not a trophy. */
+export const WITNESS_NOTE = "Witness to first week of availability.";
 
 export async function mintCertificate(
   env: Env,
@@ -105,6 +110,9 @@ export async function mintCertificate(
   }
   if (options.tipUsdc && options.tipUsdc > 0) {
     certificate.tip_usdc = options.tipUsdc;
+  }
+  if (options.witness) {
+    certificate.note = WITNESS_NOTE;
   }
 
   const { signature, publicKey } = await signCertificate(

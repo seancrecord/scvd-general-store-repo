@@ -47,6 +47,7 @@ stampRoutes.get("/badges/stamps/:stamp{[a-z0-9_]+\\.svg}", async (c) => {
     renderVisitStamp({
       stamp: record.stamp,
       verifyUrl: `${c.env.STORE_BASE_URL}/api/verify/${record.stamp.stamp_id}`,
+      signature: record.signature,
     }),
     200,
     {

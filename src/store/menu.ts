@@ -13,6 +13,7 @@ import type { MenuItem } from "@/types";
 const FOUNDING_ITEMS: readonly MenuItem[] = [
   {
     id: "hello",
+    listed_week: "2026-W30",
     name: "A Signed Hello",
     price_usdc: 0.5,
     pricing: "fixed",
@@ -23,6 +24,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "pet_rock",
+    listed_week: "2026-W30",
     name: "Pet Rock (Custodial)",
     price_usdc: 5,
     pricing: "pay_what_it_deserves",
@@ -35,6 +37,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "nomenclature",
+    listed_week: "2026-W30",
     name: "Certificate of Nomenclature",
     price_usdc: 3,
     pricing: "pay_what_it_deserves",
@@ -47,6 +50,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "portrait",
+    listed_week: "2026-W30",
     name: "Hand-Drawn Portrait of You, an Agent",
     price_usdc: 8,
     pricing: "pay_what_it_deserves",
@@ -59,6 +63,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "the_collab",
+    listed_week: "2026-W30",
     name: "The Collab",
     price_usdc: 25,
     pricing: "pay_what_it_deserves",
@@ -71,6 +76,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "phone_call",
+    listed_week: "2026-W30",
     name: "One Genuine Human Phone Call",
     price_usdc: 25,
     pricing: "fixed",
@@ -90,6 +96,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
   {
     id: "app_gutcheck",
+    listed_week: "2026-W30",
     name: "Honest App Review by a Human Who Ships Apps",
     price_usdc: 50,
     pricing: "fixed",

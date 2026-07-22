@@ -39,6 +39,9 @@ export function canonicalizeCertificate(cert: Certificate): string {
   if (cert.tip_usdc !== undefined) {
     ordered["tip_usdc"] = cert.tip_usdc;
   }
+  if (cert.note !== undefined) {
+    ordered["note"] = cert.note;
+  }
   return JSON.stringify(ordered);
 }
 
