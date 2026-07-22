@@ -30,7 +30,7 @@ export function porchAmbience(date: Date = new Date()): string {
   );
 }
 
-/** house cat */
+/** house cat. Roger Sterling. */
 export function catIsOut(date: Date = new Date()): boolean {
   return fnv1a(`cat:${hourKey(date)}`) % 5 < 2;
 }
