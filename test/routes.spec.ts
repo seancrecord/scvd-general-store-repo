@@ -28,6 +28,25 @@ describe("the storefront", () => {
     expect(html).toContain('name="viewport"');
   });
 
+  it("welcomes crawlers and maps the human rooms", async () => {
+    const robots = await SELF.fetch(`${BASE}/robots.txt`);
+    expect(robots.status).toBe(200);
+    const robotsText = await robots.text();
+    expect(robotsText).toContain("Allow: /");
+    expect(robotsText).not.toContain("Disallow");
+    expect(robotsText).toContain(`Sitemap: ${BASE}/sitemap.xml`);
+
+    const sitemap = await SELF.fetch(`${BASE}/sitemap.xml`);
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get("Content-Type")).toContain("application/xml");
+    const xml = await sitemap.text();
+    expect(xml).toContain(`<loc>${BASE}/</loc>`);
+    expect(xml).toContain(`<loc>${BASE}/what</loc>`);
+    expect(xml).toContain(`<loc>${BASE}/gazette</loc>`);
+    // The API stays off the sitemap; llms.txt is its map.
+    expect(xml).not.toContain("/api/");
+  });
+
   it("serves llms.txt with the menu inline", async () => {
     const response = await SELF.fetch(`${BASE}/llms.txt`);
     expect(response.status).toBe(200);

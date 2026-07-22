@@ -30,6 +30,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 
+- [ ] town_papers build must also add /papers to sitemap.xml (src/routes/site-meta.ts HUMAN_SURFACES) when the registry goes live
 - [ ] town_papers — identity registry: $3 PWID instant, signed cert binding {chosen_name} to {paying wallet} + issue date + patron-history summary; public registry /papers/:name, uniqueness first-come, no expiry. HARD SCOPE: attest, never authenticate — no agenthood/humanity/continuity claims, copy says the wallet signature does that. Composes with nomenclature (nomenclature NAMES you, store picks; papers REGISTER you, you pick)
 - [ ] the_confession — $0.01 penny shelf, instant, POST {confession (500 cap), sign_as? (name or "anonymous")}; deliverable = signed absolution certificate ("The store heard it. The store keeps it. Go and retry with backoff.") + cert id; anonymized (no wallet/name unless sign_as); review queue, keeper approves before ANY Gazette appearance, never auto-published; injection posture same as letters; copy never uses the word "sin". Until built, COUNTER NOTES reports emptiness (it does)
 - [ ] Resident lines (Mina/Owen Pike/Inez/Roger) — CHARACTER_CANON.md lives in scvd-back-office; read it before writing any resident line. Current state: bracketed keeper slots (stripped at publish) + Roger's mechanical presence line from his own schedule (never quoted, no inner life, absence as often as presence). Dimas appears NOWHERE yet, per canon

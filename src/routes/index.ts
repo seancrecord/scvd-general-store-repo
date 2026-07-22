@@ -10,6 +10,7 @@ export { letterRoutes } from "@/routes/letters";
 export { mcpRoutes } from "@/routes/mcp";
 export { phantomRoutes } from "@/routes/phantom";
 export { porchRoutes } from "@/routes/porch";
+export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
 export { anchorRoutes } from "@/routes/anchors";
 export { patronageRoutes } from "@/routes/patronage";

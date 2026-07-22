@@ -19,6 +19,7 @@ import {
   porchRoutes,
   requestRoutes,
   retiredWordsRoutes,
+  siteMetaRoutes,
   skillRoutes,
   stampRoutes,
   storefrontRoutes,
@@ -121,6 +122,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/", storefrontRoutes);
+app.route("/", siteMetaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
