@@ -3,14 +3,8 @@ import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
-import { mintCertificate } from "@/services/certificates";
-import { deliverInstantGoods } from "@/services/instant-goods";
-import {
-  createOrder,
-  getOrder,
-  recordInventorySale,
-  remainingInventory,
-} from "@/services/orders";
+import { fulfillPurchase } from "@/services/fulfillment";
+import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -122,111 +116,46 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // The gate never lets an unpaid request through; this is belt-and-braces.
     return c.json({ error: "The till hasn't heard from you yet." }, 402);
   }
-  const agentName = sanitizeText(c.req.query("agent_name"), 80) || undefined;
+
+  const input: Parameters<typeof fulfillPurchase>[3] = {};
+  const agentName = sanitizeText(c.req.query("agent_name"), 80);
+  if (agentName) {
+    input.agentName = agentName;
+  }
   const rawCallback = c.req.query("callback_url");
-  const callbackUrl = isValidHttpUrl(rawCallback) ? rawCallback : undefined;
-
-  const mintOptions: Parameters<typeof mintCertificate>[1] = {
-    itemId: item.id,
-  };
-  if (agentName) {
-    mintOptions.agentName = agentName;
+  if (isValidHttpUrl(rawCallback)) {
+    input.callbackUrl = rawCallback;
   }
-  if (payment.tipUsdc > 0) {
-    mintOptions.tipUsdc = payment.tipUsdc;
+  if (item.id === "context_anchor") {
+    // anchorCheck validated presence and length before the gate.
+    input.summary = (c.req.query("summary") ?? "").replace(/\0/g, "");
   }
-  if (item.id === "certificate_of_patronage") {
-    mintOptions.patronage = true;
+  if (item.id === "phantom_check") {
+    // phantomCheck validated the URL before the gate.
+    input.targetUrl = c.req.query("url") ?? "";
   }
-  const minted = await mintCertificate(c.env, mintOptions);
-
-  const patronBlock = {
-    patron_number: minted.patronNumber,
-    badge_url: minted.badgeUrl,
-    certificate: minted.certificate,
-    signature: minted.signature,
-    verify_url: minted.verifyUrl,
-  };
-
-  if (item.fulfillment === "instant") {
-    const goodsInput: Parameters<typeof deliverInstantGoods>[2] = {
-      patronNumber: minted.patronNumber,
-    };
-    if (agentName) {
-      goodsInput.agentName = agentName;
-    }
-    if (item.id === "context_anchor") {
-      // anchorCheck validated presence and length before the gate.
-      goodsInput.summary = (c.req.query("summary") ?? "").replace(/\0/g, "");
-    }
-    if (item.id === "phantom_check") {
-      // phantomCheck validated the URL before the gate.
-      goodsInput.targetUrl = c.req.query("url") ?? "";
-    }
-    if (item.id === "recurring_patronage") {
-      const passId = sanitizeText(c.req.query("pass_id"), 40);
-      if (passId) {
-        goodsInput.passId = passId;
-      }
-    }
-    const goods = await deliverInstantGoods(c.env, item, goodsInput);
-    return c.json({
-      message: VOICE.instantThanks,
-      item_id: item.id,
-      deliverable: goods.deliverable,
-      paid_usdc: payment.paidUsdc,
-      tip_usdc: payment.tipUsdc,
-      ...(goods.extras ?? {}),
-      ...patronBlock,
-    });
+  const passId = sanitizeText(c.req.query("pass_id"), 40);
+  if (passId) {
+    input.passId = passId;
   }
-
-  const orderOptions: Parameters<typeof createOrder>[1] = {
-    item,
-    paidUsdc: payment.paidUsdc,
-    tipUsdc: payment.tipUsdc,
-    patronNumber: minted.patronNumber,
-    certId: minted.certificate.cert_id,
-  };
-  if (payment.payer) {
-    orderOptions.payer = payment.payer;
-  }
-  if (agentName) {
-    orderOptions.agentName = agentName;
-  }
-  if (callbackUrl) {
-    orderOptions.callbackUrl = callbackUrl;
-  }
-  // Ledger instrumentation: what the buyer asked, where they came from.
   const detail = sanitizeText(c.req.query("detail"), 600);
   if (detail) {
-    orderOptions.detail = detail;
+    input.detail = detail;
   }
   const source = sanitizeText(c.req.query("source"), 40);
   if (source) {
-    orderOptions.source = source;
+    input.source = source;
   }
   const userAgent = sanitizeText(c.req.header("User-Agent"), 200);
   if (userAgent) {
-    orderOptions.userAgent = userAgent;
+    input.userAgent = userAgent;
   }
   const referrer = sanitizeText(c.req.header("Referer"), 200);
   if (referrer) {
-    orderOptions.referrer = referrer;
+    input.referrer = referrer;
   }
-  const order = await createOrder(c.env, orderOptions);
-  await recordInventorySale(c.env, item);
 
-  return c.json({
-    message: VOICE.queueConfirmation,
-    order_id: order.order_id,
-    status: order.status,
-    sla_hours: order.sla_hours,
-    order_url: `${c.env.STORE_BASE_URL}/api/order/${order.order_id}`,
-    paid_usdc: payment.paidUsdc,
-    tip_usdc: payment.tipUsdc,
-    ...patronBlock,
-  });
+  return c.json(await fulfillPurchase(c.env, item, payment, input));
 });
 
 buyRoutes.get("/api/order/:order_id", async (c) => {

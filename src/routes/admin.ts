@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import type { MiddlewareHandler } from "hono";
+import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listPayers, readMonthLedger } from "@/lib/metrics";
@@ -15,6 +16,7 @@ import {
   setLetterStatus,
 } from "@/services/letters";
 import {
+  acknowledgeOrder,
   completeOrder,
   listOrders,
   resetWeeklyInventory,
@@ -61,6 +63,7 @@ adminRoutes.get("/admin", async (c) => {
     monthLedger,
     payers,
     letters,
+    alerts,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -74,6 +77,7 @@ adminRoutes.get("/admin", async (c) => {
     readMonthLedger(c.env),
     listPayers(c.env),
     listLetters(c.env),
+    listAlerts(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -89,6 +93,7 @@ adminRoutes.get("/admin", async (c) => {
       monthLedger,
       payers,
       letters: letters.map((entry) => entry.record),
+      alerts,
     }),
   );
 });
@@ -193,6 +198,24 @@ adminRoutes.post("/admin/retired-words/add", async (c) => {
   if (!entry) {
     return c.text("A retirement needs the word and its epitaph.", 400);
   }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
+  const order = await acknowledgeOrder(c.env, c.req.param("order_id"));
+  if (!order) {
+    return c.text("No order by that number.", 404);
+  }
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/alerts/test", async (c) => {
+  await sendAlert(c.env, {
+    condition: "worker_health",
+    detail:
+      "Dummy alert — the keeper pulled the test lever. If you're reading this in your inbox, the wire works.",
+    key: `test-${Date.now()}`,
+  });
   return c.redirect("/admin");
 });
 

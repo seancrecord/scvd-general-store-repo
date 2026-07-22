@@ -134,6 +134,7 @@ facilitator and all current client libraries speak v2.
 |---|---|
 | `/` | The human storefront: weekly note, menu, bell count, guestbook |
 | `/llms.txt` | The plain-text front door for agents |
+| `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools x402-paid in-band |
 | `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |
 | `/api/buy/:item_id` | x402-gated purchases |

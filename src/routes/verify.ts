@@ -1,4 +1,7 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
+import { recordVerifyCall } from "@/lib/metrics";
+import type { EventSignals } from "@/lib/metrics";
 import { getPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
@@ -13,11 +16,35 @@ import type { HonoEnv } from "@/types";
  */
 export const verifyRoutes = new Hono<HonoEnv>();
 
+/** Re-verification is a demand signal; the ledger counts it per item. */
+async function noteVerify(c: Context<HonoEnv>, item: string): Promise<void> {
+  const signals: EventSignals = {};
+  const userAgent = c.req.header("User-Agent");
+  if (userAgent) {
+    signals.userAgent = userAgent;
+  }
+  const referrer = c.req.header("Referer");
+  if (referrer) {
+    signals.referrer = referrer;
+  }
+  const houseHeader = c.req.header("X-House");
+  if (houseHeader) {
+    signals.houseHeader = houseHeader;
+  }
+  if (c.req.header("X-SCVD-Channel") === "mcp") {
+    signals.viaMcp = true;
+  }
+  await recordVerifyCall(c.env, item, signals).catch(() => {
+    // The count is a courtesy; verification itself never waits on it.
+  });
+}
+
 verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   const id = c.req.param("cert_id");
 
   const record = await getCertificate(c.env, id);
   if (record) {
+    await noteVerify(c, record.certificate.item);
     const valid = await verifyCertificateSignature(
       record.certificate,
       record.signature,
@@ -37,6 +64,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 
   const stampRecord = await getStamp(c.env, id);
   if (stampRecord) {
+    await noteVerify(c, `stamp:${stampRecord.stamp.variant}`);
     const valid = await verifyStampSignature(stampRecord);
     return c.json({
       valid,
@@ -52,6 +80,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 
   const anchorRecord = await getAnchor(c.env, id);
   if (anchorRecord) {
+    await noteVerify(c, "context_anchor");
     const valid = await verifyAnchorSignature(anchorRecord);
     return c.json({
       valid,

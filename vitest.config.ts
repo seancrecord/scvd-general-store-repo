@@ -24,6 +24,7 @@ export default defineConfig({
             "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
           ADMIN_PASSWORD: "test-admin-password",
           STORE_BASE_URL: "https://scvd.store",
+          HOUSE_SECRET: "test-house-secret",
         },
       },
     }),

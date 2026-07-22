@@ -30,6 +30,21 @@ export interface AdminPageData {
   monthLedger: MonthLedger;
   payers: PayerRecord[];
   letters: LetterRecord[];
+  alerts: Array<{ condition: string; detail: string; at: string }>;
+}
+
+function alertsHtml(
+  alerts: Array<{ condition: string; detail: string; at: string }>,
+): string {
+  if (alerts.length === 0) {
+    return "<p>Quiet. The four alarms have had nothing to say.</p>";
+  }
+  return alerts
+    .map(
+      (alert) =>
+        `<li><strong>${escapeHtml(alert.condition)}</strong> — ${escapeHtml(alert.detail)} — ${escapeHtml(alert.at)}</li>`,
+    )
+    .join("\n");
 }
 
 /**
@@ -68,12 +83,12 @@ function lettersHtml(letters: LetterRecord[]): string {
     .join("\n");
 }
 
-/** The Run 1 instrumentation review: 402s vs settles, tiers, channels, wallets. */
+/** The monthly answers: organic and house apart, verifies counted, channels named. */
 function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
   const items = Object.entries(ledger.items);
   const rows =
     items.length === 0
-      ? "<tr><td colspan=\"5\">No 402s issued this month yet.</td></tr>"
+      ? "<tr><td colspan=\"6\">No 402s issued this month yet.</td></tr>"
       : items
           .map(([item, row]) => {
             const conversion =
@@ -83,12 +98,18 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
             const tiers = Object.entries(row.tiers)
               .map(([tier, count]) => `${tier}:${count}`)
               .join(" ");
-            return `<tr><td>${escapeHtml(item)}</td><td>${row.challenges}</td><td>${row.settled}</td><td>${conversion}</td><td>${escapeHtml(tiers || "—")}</td></tr>`;
+            return `<tr><td>${escapeHtml(item)}</td>
+              <td>${row.challenges}${row.challengesHouse ? ` <small>(+${row.challengesHouse}h)</small>` : ""}</td>
+              <td>${row.settled}${row.settledHouse ? ` <small>(+${row.settledHouse}h)</small>` : ""}</td>
+              <td>${conversion}</td>
+              <td>${row.verifies}${row.verifiesHouse ? ` <small>(+${row.verifiesHouse}h)</small>` : ""}</td>
+              <td>${escapeHtml(tiers || "—")}</td></tr>`;
           })
           .join("\n");
-  const sources = Object.entries(ledger.sources)
-    .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
-    .join(" · ");
+  const channelLine = (record: Record<string, number>): string =>
+    Object.entries(record)
+      .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
+      .join(" · ") || "none yet";
   const payerLines =
     payers.length === 0
       ? "<li>No paying wallets on the books yet.</li>"
@@ -101,10 +122,12 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
           .join("\n");
   return `
     <table border="1" cellpadding="4">
-      <tr><th>item</th><th>402s issued</th><th>settled</th><th>conversion</th><th>tiers</th></tr>
+      <tr><th>item</th><th>402s organic</th><th>settled organic</th><th>conversion</th><th>verifies</th><th>tiers</th></tr>
       ${rows}
     </table>
-    <p>Channels (settled): ${sources || "none yet"}</p>
+    <p>Organic numbers only in the main columns; house counts ride alongside as (+Nh) — stored, never mixed. Conversion is organic-only. Verifies count re-verification per item: demand we track deliberately.</p>
+    <p>Channels, organic settles: ${channelLine(ledger.channels)}</p>
+    <p>Channels, house settles: ${channelLine(ledger.channelsHouse)}</p>
     <p>Paying wallets (${payers.length} on file, newest first):</p>
     <ul>${payerLines}</ul>`;
 }
@@ -152,7 +175,12 @@ function ordersHtml(orders: OrderRecord[]): string {
     .map((order) => {
       const completeForm =
         order.status === "queued"
-          ? `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
+          ? `${
+              order.acknowledged_at
+                ? `<p><em>Acknowledged ${escapeHtml(order.acknowledged_at)}</em></p>`
+                : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/ack" style="display:inline"><button type="submit">Acknowledge (stands down the 24h page)</button></form>`
+            }
+        <form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
           <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
           <button type="submit">Mark complete</button>
         </form>`
@@ -279,6 +307,15 @@ export function renderAdminPage(data: AdminPageData): string {
     <form method="POST" action="/admin/note">
       <input type="text" name="week_note" value="${escapeHtml(data.weekNote)}" maxlength="500">
       <button type="submit">Update note</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>The four alarms</h2>
+    <p>Settlement failure, signing failure, worker health, 24h unacknowledged orders. Nothing else pages.</p>
+    <ul>${alertsHtml(data.alerts)}</ul>
+    <form method="POST" action="/admin/alerts/test">
+      <button type="submit">Fire a test alert (confirms email delivery once)</button>
     </form>
   </section>
 

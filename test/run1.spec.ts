@@ -234,7 +234,8 @@ describe("the instrumentation ledger", () => {
     expect(hello!.challenges).toBeGreaterThanOrEqual(2);
     expect(hello!.settled).toBeGreaterThanOrEqual(1);
     expect(hello!.tiers["1x"]).toBeGreaterThanOrEqual(1);
-    expect(ledger.sources["declared:run1-spec"]).toBeGreaterThanOrEqual(1);
+    // Test-suite traffic carries no referrer or UA, so it lands unknown.
+    expect(ledger.channels["unknown"]).toBeGreaterThanOrEqual(1);
 
     const payers = await listPayers(testEnv);
     const payer = payers.find(

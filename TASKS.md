@@ -26,7 +26,18 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [ ] Monthly ledger review ritual: /admin "The ledger's answers" vs Run 1 hypotheses (first review ~60 days after listing)
 - [ ] Product backlog (ideas awaiting evidence: vouching, brokerage, ask_the_human, gift rails, subscriptions, attestation API tier) lives in the back-office store ledger §3 — promote or kill on Run 3 + ledger evidence, never build unprompted
 
+## NOW (keeper hands, post-Phase-1)
+
+- [ ] Set HOUSE_SECRET secret; put it in your own buy scripts/CI so house traffic books apart
+- [ ] Set RESEND_API_KEY + ALERT_EMAIL secrets; fire the /admin test alert once to confirm the wire
+- [ ] Verify scvd.store as a sending domain in Resend (alerts send from alerts@scvd.store)
+
 ## Discovered along the way (don't drop these)
+
+- [ ] MCP paid tools use the x402-MCP convention (payment in tools/call _meta["x402/payment"], 402 as JSON-RPC error with terms in error.data) — align if MCP standardizes payments natively
+- [ ] MCP transport is stateless streamable HTTP (single JSON responses, no SSE, no sessions) per spec rev 2025-06-18 — revisit if clients demand streaming or sessions
+- [ ] Channel heuristics (lib/channel.ts) are conservative: bazaar/skill matched on referrer+UA hints, mcp definitive, else direct/unknown — tune against real 90-day event rows
+- [ ] Alert email address alerts@scvd.store assumed; adjust in lib/alerts.ts if the keeper prefers another sender
 
 - [ ] Almanac brisket page is a sensory-journal placeholder by design — keeper to replace with the real entry after the next cook (src/store/almanac/field-notes-brisket-july-2026.ts)
 - [ ] Gazette paid route is a wildcard (`GET /gazette/*`) because issues publish at runtime; the 402 `resource` field is generic rather than per-issue. Fine for v0.2; per-issue route registration (rebuild stack on publish, or Durable Object route table) is the cleaner fix if strict clients complain
