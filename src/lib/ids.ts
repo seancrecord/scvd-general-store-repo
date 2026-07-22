@@ -36,3 +36,11 @@ export function newStampId(): string {
 export function newTipId(): string {
   return `tip_${randomToken(10)}`;
 }
+
+export function newAnchorId(): string {
+  return `anchor_${randomToken(10)}`;
+}
+
+export function newPassId(): string {
+  return `pass_${randomToken(10)}`;
+}

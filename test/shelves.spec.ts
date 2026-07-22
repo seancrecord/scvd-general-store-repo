@@ -242,7 +242,7 @@ describe("the Trading Post", () => {
   });
 
   it("404s an issue that hasn't been published", async () => {
-    const response = await SELF.fetch(`${BASE}/gazette/99`);
+    const response = await SELF.fetch(`${BASE}/gazette/issue-99`);
     expect(response.status).toBe(404);
   });
 });

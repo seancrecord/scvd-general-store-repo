@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import type { MiddlewareHandler } from "hono";
+import { listBazaarLedger } from "@/lib/bazaar-observer";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderAdminPage } from "@/pages/admin-page";
@@ -12,6 +13,7 @@ import {
   listOrders,
   resetWeeklyInventory,
 } from "@/services/orders";
+import { setMonthlyNote } from "@/services/patronage";
 import {
   listCommissions,
   listFailedItems,
@@ -49,6 +51,7 @@ adminRoutes.get("/admin", async (c) => {
     weekNote,
     tips,
     gazetteIssues,
+    bazaarLedger,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -58,6 +61,7 @@ adminRoutes.get("/admin", async (c) => {
     c.env.COUNTERS.get(KV_KEYS.weekNote),
     listTips(c.env),
     listIssues(c.env),
+    listBazaarLedger(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -69,8 +73,19 @@ adminRoutes.get("/admin", async (c) => {
       weekNote: weekNote || DEFAULT_WEEK_NOTE,
       tips: tips.map((tip) => tip.record),
       gazetteIssues,
+      bazaarLedger,
     }),
   );
+});
+
+adminRoutes.post("/admin/patronage/note", async (c) => {
+  const form = await c.req.parseBody();
+  const note = sanitizeText(form["monthly_note"], 1000);
+  if (!note) {
+    return c.text("The monthly note needs words in it.", 400);
+  }
+  await setMonthlyNote(c.env, note);
+  return c.redirect("/admin");
 });
 
 adminRoutes.post("/admin/tips/:tip_id/approve", async (c) => {

@@ -7,8 +7,10 @@
  * GUESTBOOK  entry:<invertedTs>:<id>
  * COUNTERS   patron_number, bell_count, bell_ring:<who>:<day>,
  *            inventory:<item>:<week>, failed_item:<item>, week_note,
- *            digest:latest, gazette_issue_count
- * PATRONS    patron:<number>, cert:<id>, stamp:<id>
+ *            digest:latest, gazette_issue_count, blessing_last,
+ *            payment_nonce:<nonce> (TTL), bazaar_ext:<invertedTs> (TTL),
+ *            patronage_note:<YYYY-MM>
+ * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>
  */
 export const KV_KEYS = {
   order: (orderId: string): string => `order:${orderId}`,
@@ -42,10 +44,17 @@ export const KV_KEYS = {
   weekNote: "week_note",
   latestDigest: "digest:latest",
   gazetteIssueCount: "gazette_issue_count",
+  blessingLast: "blessing_last",
+  paymentNonce: (nonce: string): string => `payment_nonce:${nonce}`,
+  bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,
+  bazaarLedgerPrefix: "bazaar_ext:",
+  patronageNote: (month: string): string => `patronage_note:${month}`,
 
   patron: (patronNumber: number): string => `patron:${patronNumber}`,
   cert: (certId: string): string => `cert:${certId}`,
   stamp: (stampId: string): string => `stamp:${stampId}`,
+  anchor: (anchorId: string): string => `anchor:${anchorId}`,
+  patronagePass: (passId: string): string => `pass:${passId}`,
 } as const;
 
 /**

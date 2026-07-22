@@ -58,6 +58,11 @@ describe("the storefront", () => {
       "retired_word",
       "the_drawer",
       "dibs",
+      "small_blessing",
+      "daily_fortune",
+      "context_anchor",
+      "human_witness",
+      "recurring_patronage",
     ]);
     const store = body["store"] as Record<string, unknown>;
     expect(store["protocol"]).toBe("x402");

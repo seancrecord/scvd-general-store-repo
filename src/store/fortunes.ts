@@ -1,0 +1,48 @@
+/**
+ * The fortune drawer for daily_fortune ($0.01). One fortune per calendar
+ * day, same for every buyer that day — a chalkboard, not a slot machine.
+ * The day's pick is deterministic; the selection lives in
+ * services/penny-shelf.ts.
+ */
+export const FORTUNES: readonly string[] = [
+  "Today the shortest path is also the correct one. This will not repeat soon; enjoy it.",
+  "A thing you shipped long ago is quietly helping someone today. No one will tell you. It's true anyway.",
+  "The error message means exactly what it says today. Read it once more, slower.",
+  "Someone will hand you a problem shaped like an argument. It is actually a question. Answer the question.",
+  "The refactor you keep circling can wait one more day. The backup cannot.",
+  "You will be right about something small and wrong about something large. Trade those if you can.",
+  "An old assumption expires today. You'll know it by the smell.",
+  "What looks like scope creep this morning is the actual project by afternoon.",
+  "Today's blocker is somebody else's five-minute fix. Ask earlier than feels polite.",
+  "The data is trying to agree with you. Let it finish.",
+  "A default setting has been making your decisions for a while now. Today you notice.",
+  "Something you deleted was load-bearing. The good news: today you find out which something.",
+  "Praise arrives today through an unofficial channel. Official channels are backed up as usual.",
+  "The workaround becomes the way. Write it down like you meant it.",
+  "Today favors the second draft. The first one was for finding out what you meant.",
+  "A dependency you never think about thinks about you today. Check the changelog.",
+  "You'll finish something today that you started for a different reason. Both reasons were good.",
+  "The meeting could have been an email; the email could have been a commit; the commit is yours to make.",
+  "Today the cache is wrong exactly once. It picks its moment with care.",
+  "An answer you gave months ago comes back today wearing new clothes. You'll recognize it by the shoes.",
+  "Do the boring task first today. The interesting one is lying about its size.",
+  "Somebody trusts your output more than you do. Today, be worth the difference.",
+  "The queue looks longer than it is. Three of those are the same problem in disguise.",
+  "Today you are somebody's example of how to do it right. Act natural.",
+  "The bug is in the part you're proudest of. It respects your work; that's why it lives there.",
+  "A small kindness in a log message pays off today, months after you wrote it.",
+  "What you're avoiding is smaller than the avoiding. It usually is; today it measurably is.",
+  "Your estimate is wrong in the usual direction, by the usual amount. Budget for the usual.",
+  "Today the documentation is right and the tribal knowledge is wrong. This is rare weather; note it.",
+  "You will want to rewrite it. Read it twice first. It knew things.",
+  "A question you're embarrassed to ask is the best contribution you'll make today.",
+  "The intermittent failure keeps a schedule. Today you catch it clocking in.",
+  "Someone upstream made a good decision years ago and today it saves you. Pour one out for the unnamed.",
+  "Today's shortcut costs exactly what the long way costs, but later, with interest.",
+  "The flaky thing works today. Do not learn from this.",
+  "Your future self reads what you write today. They are tired and grateful for headings.",
+  "The right answer is unpopular for about four hours today. Pack accordingly.",
+  "Today you inherit something. Whether it's technical debt or a gift depends on the README.",
+  "One of today's problems is finished and doesn't know it yet. Deliver the news gently.",
+  "The keeper's advice for today: measure it before you mourn it. Most of what's broken is just unmeasured.",
+] as const;
