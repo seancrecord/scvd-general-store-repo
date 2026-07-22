@@ -1,0 +1,58 @@
+/**
+ * Every KV key in one place, so nobody invents a second spelling.
+ *
+ * ORDERS     order:<id>, waitlist:<item>:<ts>, request:<id>
+ * GUESTBOOK  entry:<invertedTs>:<id>
+ * COUNTERS   patron_number, bell_count, bell_ring:<who>:<day>,
+ *            inventory:<item>:<week>, failed_item:<item>, week_note, digest:latest
+ * PATRONS    patron:<number>, cert:<id>
+ */
+export const KV_KEYS = {
+  order: (orderId: string): string => `order:${orderId}`,
+  waitlist: (itemId: string, timestamp: number): string =>
+    `waitlist:${itemId}:${timestamp}`,
+  waitlistPrefix: (itemId?: string): string =>
+    itemId ? `waitlist:${itemId}:` : "waitlist:",
+  commissionRequest: (id: string): string => `request:${id}`,
+  requestPrefix: "request:",
+  orderPrefix: "order:",
+
+  guestbookEntry: (invertedTs: string, id: string): string =>
+    `entry:${invertedTs}:${id}`,
+  guestbookPrefix: "entry:",
+
+  patronNumber: "patron_number",
+  bellCount: "bell_count",
+  bellRing: (who: string, day: string): string => `bell_ring:${who}:${day}`,
+  inventory: (itemId: string, weekKey: string): string =>
+    `inventory:${itemId}:${weekKey}`,
+  failedItem: (itemId: string): string => `failed_item:${itemId}`,
+  failedItemPrefix: "failed_item:",
+  weekNote: "week_note",
+  latestDigest: "digest:latest",
+
+  patron: (patronNumber: number): string => `patron:${patronNumber}`,
+  cert: (certId: string): string => `cert:${certId}`,
+} as const;
+
+/**
+ * Guestbook entries are listed newest-first by storing an inverted timestamp
+ * (KV lists lexicographically ascending).
+ */
+export function invertedTimestamp(now: number): string {
+  return String(9999999999999 - now).padStart(13, "0");
+}
+
+/** ISO week key like "2026-W29" so inventory resets weekly on its own. */
+export function currentWeekKey(date: Date = new Date()): string {
+  const utc = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+  const day = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(
+    ((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+  );
+  return `${utc.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
