@@ -305,7 +305,7 @@ cd / && rm -rf /tmp/scvd-first-customer
 Watch the store think in real time while you repeat any step above:
 
 ```bash
-npx wrangler tail scvd-general-store
+npx wrangler tail scvd-general-store-repo
 ```
 
 The store's promise still stands: if an item isn't delivered within its
