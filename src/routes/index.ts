@@ -7,6 +7,7 @@ export { wellKnownRoutes } from "@/routes/well-known";
 export { whatRoutes } from "@/routes/what";
 export { zodiacRoutes } from "@/routes/zodiac";
 export { letterRoutes } from "@/routes/letters";
+export { mcpRoutes } from "@/routes/mcp";
 export { phantomRoutes } from "@/routes/phantom";
 export { porchRoutes } from "@/routes/porch";
 export { buyRoutes } from "@/routes/buy";

@@ -12,6 +12,7 @@ import {
   guestbookRoutes,
   letterRoutes,
   llmsRoutes,
+  mcpRoutes,
   openapiRoutes,
   patronageRoutes,
   phantomRoutes,
@@ -27,7 +28,9 @@ import {
   whatRoutes,
   zodiacRoutes,
 } from "@/routes";
+import { sendAlert } from "@/lib/alerts";
 import { compileDigest } from "@/services/digest";
+import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
 import type { Env, HonoEnv } from "@/types";
 
@@ -45,6 +48,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/", storefrontRoutes);
+app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
 app.route("/", llmsRoutes);
@@ -98,12 +102,20 @@ app.onError((err, c) => {
 
 const worker: ExportedHandler<Env> = {
   fetch: app.fetch,
-  // Hourly: walk past due phantom checks. Sundays 7am ET: the digest.
+  // Hourly: phantom walk + the health rounds. Sundays 7am ET: the digest.
   scheduled: async (event, env, ctx) => {
     if (event.cron === "0 11 * * SUN") {
       ctx.waitUntil(compileDigest(env));
     }
-    ctx.waitUntil(sweepPhantomChecks(env));
+    ctx.waitUntil(
+      sweepPhantomChecks(env).catch((error) =>
+        sendAlert(env, {
+          condition: "worker_health",
+          detail: `Phantom sweep failed: ${String(error)}`,
+        }),
+      ),
+    );
+    ctx.waitUntil(runHealthChecks(env));
   },
 };
 

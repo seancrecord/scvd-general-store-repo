@@ -5,8 +5,10 @@ import type {
 } from "@x402/core/server";
 import type { Context, MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { sendAlert } from "@/lib/alerts";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
 import { recordChallengeIssued, recordSettlement } from "@/lib/metrics";
+import type { EventSignals } from "@/lib/metrics";
 import {
   atomicToUsdc,
   getPaymentStack,
@@ -47,6 +49,37 @@ function respondWithInstructions(
   return c.json(instructions.body ?? {}, status);
 }
 
+/** Attribution signals for a Hono-carried request (heuristics in lib/channel.ts). */
+function gateSignals(c: Context<HonoEnv>): EventSignals {
+  const signals: EventSignals = {};
+  const userAgent = c.req.header("User-Agent");
+  if (userAgent) {
+    signals.userAgent = userAgent;
+  }
+  const referrer = c.req.header("Referer");
+  if (referrer) {
+    signals.referrer = referrer;
+  }
+  const declared = c.req.query("source");
+  if (declared) {
+    signals.declaredSource = declared;
+  }
+  const houseHeader = c.req.header("X-House");
+  if (houseHeader) {
+    signals.houseHeader = houseHeader;
+  }
+  const houseParam = c.req.query("house");
+  if (houseParam) {
+    signals.houseParam = houseParam;
+  }
+  if (c.req.header("X-SCVD-Channel") === "mcp") {
+    // Set only by our own MCP handler on internal dispatch; stripped
+    // from anything a visitor could spoof by being definitive-only here.
+    signals.viaMcp = true;
+  }
+  return signals;
+}
+
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new HonoAdapter(c);
@@ -63,7 +96,17 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // First facilitator sync happens on the first paid request per isolate.
   await stack.initialized;
 
-  const result = await stack.httpServer.processHTTPRequest(context);
+  let result: Awaited<ReturnType<typeof stack.httpServer.processHTTPRequest>>;
+  try {
+    result = await stack.httpServer.processHTTPRequest(context);
+  } catch (error) {
+    // P1: the facilitator conversation itself broke (not a mere decline).
+    await sendAlert(c.env, {
+      condition: "settlement_failure",
+      detail: `processHTTPRequest threw on ${c.req.path}: ${String(error)}`,
+    });
+    throw error;
+  }
 
   if (result.type === "no-payment-required") {
     return next();
@@ -72,7 +115,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (result.response.status === 402) {
       // Challenge issued. The monthly gap between these and settlements
       // is the budget-cap / abandonment signal (RUN1 instrumentation).
-      await recordChallengeIssued(c.env, c.req.path);
+      await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
     }
     return respondWithInstructions(c, result.response);
   }
@@ -91,12 +134,22 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
 
   // Settle now — money first, then the goods.
-  const settlement = await stack.httpServer.processSettlement(
-    result.paymentPayload,
-    result.paymentRequirements,
-    result.declaredExtensions,
-    { request: context },
-  );
+  let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
+  try {
+    settlement = await stack.httpServer.processSettlement(
+      result.paymentPayload,
+      result.paymentRequirements,
+      result.declaredExtensions,
+      { request: context },
+    );
+  } catch (error) {
+    // P1: the settle call errored outright.
+    await sendAlert(c.env, {
+      condition: "settlement_failure",
+      detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
+    });
+    throw error;
+  }
   await persistBazaarObservations(c.env, c.req.path);
   if (!settlement.success) {
     return respondWithInstructions(c, settlement.response);
@@ -108,19 +161,12 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const minimumUsdc = minimumUsdcForPath(c.req.path);
   const paidUsdc = atomicToUsdc(result.paymentRequirements.amount);
   const settlementSignals: Parameters<typeof recordSettlement>[2] = {
+    ...gateSignals(c),
     paidUsdc,
     minimumUsdc,
   };
   if (settlement.payer) {
     settlementSignals.payer = settlement.payer;
-  }
-  const declaredSource = c.req.query("source");
-  if (declaredSource) {
-    settlementSignals.declaredSource = declaredSource;
-  }
-  const referrer = c.req.header("Referer");
-  if (referrer) {
-    settlementSignals.referrer = referrer;
   }
   await recordSettlement(c.env, c.req.path, settlementSignals);
   const payment: SettledPayment = {

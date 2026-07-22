@@ -1,14 +1,20 @@
-import { KV_KEYS } from "@/lib/kv-keys";
-import type { Env, PayerRecord } from "@/types";
+import { inferChannel, isHouseTraffic } from "@/lib/channel";
+import type { ChannelSignals, HouseSignals } from "@/lib/channel";
+import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
+import type { Channel, Env, PayerRecord } from "@/types";
 
 /**
- * Day-one instrumentation, per RUN1_SYNTHESIS §instrumentation: the
- * ledger must answer what research cannot. Counters live in COUNTERS
- * under metric:<YYYY-MM>:<kind>:<rest>; paying wallets get a first-seen
- * record under payer:<address>. Counters are read-modify-write — a lost
- * increment under heavy contention is acceptable chaos for a store this
- * size. Reviewed monthly from /admin; the ledger outranks research.
+ * The instrumentation ledger (RUN1_SYNTHESIS §instrumentation, plus the
+ * Phase 1 attribution pass). Aggregate counters live in COUNTERS under
+ * metric:<YYYY-MM>:<kind>:<rest> — kinds carry an "h" suffix for house
+ * traffic so organic counts stay clean. Every 402, settle, and verify
+ * also writes one event row (evt:*) with channel/ua/referrer/item,
+ * kept 90 days: the falsification instrument. Counters are
+ * read-modify-write; a lost increment under contention is acceptable
+ * chaos at this counter's line speed.
  */
+
+const EVENT_TTL_SECONDS = 90 * 86400;
 
 export function metricsMonth(date: Date = new Date()): string {
   return date.toISOString().slice(0, 7);
@@ -27,12 +33,80 @@ async function bump(env: Env, key: string): Promise<void> {
   await env.COUNTERS.put(key, String((current ? parseInt(current, 10) : 0) + 1));
 }
 
-/** A 402 challenge went out. The gap between these and settlements is the price signal. */
+export type MetricEventKind = "challenge" | "settle" | "verify";
+
+export interface MetricEvent {
+  kind: MetricEventKind;
+  item: string;
+  channel: Channel;
+  house: boolean;
+  at: string;
+  user_agent?: string;
+  referrer?: string;
+  /** Declared ?source= value, recorded verbatim as a claim. */
+  declared_source?: string;
+}
+
+export interface EventSignals extends ChannelSignals, HouseSignals {
+  declaredSource?: string;
+}
+
+function buildEvent(
+  env: Env,
+  kind: MetricEventKind,
+  item: string,
+  signals: EventSignals,
+): MetricEvent {
+  const event: MetricEvent = {
+    kind,
+    item,
+    channel: inferChannel(signals),
+    house: isHouseTraffic(env, signals),
+    at: new Date().toISOString(),
+  };
+  if (signals.userAgent) {
+    event.user_agent = signals.userAgent.slice(0, 200);
+  }
+  if (signals.referrer) {
+    event.referrer = signals.referrer.slice(0, 200);
+  }
+  if (signals.declaredSource) {
+    event.declared_source = signals.declaredSource.slice(0, 40);
+  }
+  return event;
+}
+
+async function writeEvent(env: Env, event: MetricEvent): Promise<void> {
+  const key = `evt:${invertedTimestamp(Date.now())}:${Math.random().toString(36).slice(2, 8)}`;
+  await env.COUNTERS.put(key, JSON.stringify(event), {
+    expirationTtl: EVENT_TTL_SECONDS,
+  });
+}
+
+function kindKey(kind: string, house: boolean): string {
+  return house ? `${kind}h` : kind;
+}
+
+/** A 402 went out. The organic issued/settled gap is the price signal. */
 export async function recordChallengeIssued(
   env: Env,
   path: string,
+  signals: EventSignals = {},
 ): Promise<void> {
-  await bump(env, KV_KEYS.metric(metricsMonth(), "402", itemKeyFromPath(path)));
+  const event = buildEvent(env, "challenge", itemKeyFromPath(path), signals);
+  await bump(env, KV_KEYS.metric(metricsMonth(), kindKey("402", event.house), event.item));
+  await writeEvent(env, event);
+}
+
+/** Somebody re-checked one of our signatures. Re-verification is demand. */
+export async function recordVerifyCall(
+  env: Env,
+  artifactItem: string,
+  signals: EventSignals = {},
+): Promise<void> {
+  const event = buildEvent(env, "verify", artifactItem, signals);
+  await bump(env, KV_KEYS.metric(metricsMonth(), kindKey("verify", event.house), event.item));
+  await writeEvent(env, event);
 }
 
 /** Which PWID tier the buyer chose; elasticity signal. */
@@ -44,30 +118,9 @@ function tierLabel(paidUsdc: number, minimumUsdc: number): string {
   return ratio >= 5 ? "5x" : ratio >= 2 ? "2x" : "1x";
 }
 
-/** Rough discovery-channel classification for the settle counter. */
-function channelLabel(
-  declaredSource: string | undefined,
-  referrer: string | undefined,
-): string {
-  if (declaredSource) {
-    return `declared:${declaredSource.slice(0, 24)}`;
-  }
-  if (referrer) {
-    try {
-      return `ref:${new URL(referrer).hostname.slice(0, 40)}`;
-    } catch {
-      return "ref:unparsable";
-    }
-  }
-  return "direct";
-}
-
-export interface SettlementSignals {
+export interface SettlementSignals extends EventSignals {
   paidUsdc: number;
   minimumUsdc: number;
-  payer?: string;
-  declaredSource?: string;
-  referrer?: string;
 }
 
 /** Money settled: count it, tier it, attribute it, remember the wallet. */
@@ -77,16 +130,18 @@ export async function recordSettlement(
   signals: SettlementSignals,
 ): Promise<void> {
   const month = metricsMonth();
-  const item = itemKeyFromPath(path);
-  await bump(env, KV_KEYS.metric(month, "paid", item));
+  const event = buildEvent(env, "settle", itemKeyFromPath(path), signals);
+  await bump(env, KV_KEYS.metric(month, kindKey("paid", event.house), event.item));
   await bump(
     env,
-    KV_KEYS.metric(month, "tier", `${item}:${tierLabel(signals.paidUsdc, signals.minimumUsdc)}`),
+    KV_KEYS.metric(
+      month,
+      kindKey("tier", event.house),
+      `${event.item}:${tierLabel(signals.paidUsdc, signals.minimumUsdc)}`,
+    ),
   );
-  await bump(
-    env,
-    KV_KEYS.metric(month, "src", channelLabel(signals.declaredSource, signals.referrer)),
-  );
+  await bump(env, KV_KEYS.metric(month, kindKey("src", event.house), event.channel));
+  await writeEvent(env, event);
   if (signals.payer) {
     await recordPayerSeen(env, signals.payer);
   }
@@ -102,23 +157,49 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
   await env.COUNTERS.put(key, JSON.stringify(record));
 }
 
-export interface MonthLedger {
-  month: string;
-  /** item -> { challenges, settled, tiers } */
-  items: Record<
-    string,
-    { challenges: number; settled: number; tiers: Record<string, number> }
-  >;
-  /** discovery channel -> settled count */
-  sources: Record<string, number>;
+export interface LedgerRow {
+  challenges: number;
+  challengesHouse: number;
+  settled: number;
+  settledHouse: number;
+  verifies: number;
+  verifiesHouse: number;
+  tiers: Record<string, number>;
 }
 
-/** Everything the month's counters know, assembled for the back room. */
+export interface MonthLedger {
+  month: string;
+  items: Record<string, LedgerRow>;
+  /** channel -> organic settled count */
+  channels: Record<string, number>;
+  channelsHouse: Record<string, number>;
+}
+
+function emptyRow(): LedgerRow {
+  return {
+    challenges: 0,
+    challengesHouse: 0,
+    settled: 0,
+    settledHouse: 0,
+    verifies: 0,
+    verifiesHouse: 0,
+    tiers: {},
+  };
+}
+
+/**
+ * The founding $0.50 hello settle (2026-07-22, tx 0x47c8fee…50bc9c)
+ * predates this instrumentation. Entered by hand as house/founding so
+ * the books open complete.
+ */
+const FOUNDING_BACKFILL = { month: "2026-07", item: "hello" } as const;
+
+/** Everything the month's counters know, organic and house apart. */
 export async function readMonthLedger(
   env: Env,
   month: string = metricsMonth(),
 ): Promise<MonthLedger> {
-  const ledger: MonthLedger = { month, items: {}, sources: {} };
+  const ledger: MonthLedger = { month, items: {}, channels: {}, channelsHouse: {} };
   const listed = await env.COUNTERS.list({
     prefix: KV_KEYS.metricMonthPrefix(month),
   });
@@ -128,23 +209,33 @@ export async function readMonthLedger(
     const [kind, ...parts] = rest.split(":");
     const tail = parts.join(":");
     if (kind === "src") {
-      ledger.sources[tail] = value;
+      ledger.channels[tail] = value;
       continue;
     }
-    if (kind === "tier") {
+    if (kind === "srch") {
+      ledger.channelsHouse[tail] = value;
+      continue;
+    }
+    if (kind === "tier" || kind === "tierh") {
       const splitAt = tail.lastIndexOf(":");
-      const item = tail.slice(0, splitAt);
-      const tier = tail.slice(splitAt + 1);
-      const row = (ledger.items[item] ??= { challenges: 0, settled: 0, tiers: {} });
+      const row = (ledger.items[tail.slice(0, splitAt)] ??= emptyRow());
+      const tier = tail.slice(splitAt + 1) + (kind === "tierh" ? " (house)" : "");
       row.tiers[tier] = value;
       continue;
     }
-    const row = (ledger.items[tail] ??= { challenges: 0, settled: 0, tiers: {} });
-    if (kind === "402") {
-      row.challenges = value;
-    } else if (kind === "paid") {
-      row.settled = value;
-    }
+    const row = (ledger.items[tail] ??= emptyRow());
+    if (kind === "402") row.challenges = value;
+    else if (kind === "402h") row.challengesHouse = value;
+    else if (kind === "paid") row.settled = value;
+    else if (kind === "paidh") row.settledHouse = value;
+    else if (kind === "verify") row.verifies = value;
+    else if (kind === "verifyh") row.verifiesHouse = value;
+  }
+  if (month === FOUNDING_BACKFILL.month) {
+    const row = (ledger.items[FOUNDING_BACKFILL.item] ??= emptyRow());
+    row.settledHouse += 1;
+    ledger.channelsHouse["direct (founding, by hand)"] =
+      (ledger.channelsHouse["direct (founding, by hand)"] ?? 0) + 1;
   }
   return ledger;
 }

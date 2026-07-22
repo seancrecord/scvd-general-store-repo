@@ -50,6 +50,7 @@ catalogRoutes.get("/menu.json", (c) => {
       item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
       operator_glance: `${base}/what (for the human whose agent is here)`,
       zodiac: `${base}/zodiac`,
+      mcp: `${base}/mcp (streamable HTTP; tools/list free, buy_* tools x402-paid in-band)`,
     },
     items,
     reading_room: {

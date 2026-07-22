@@ -75,5 +75,10 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     openapi: `${base}/openapi.json`,
     catalog: `${base}/menu.json`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
+    mcp: {
+      endpoint: `${base}/mcp`,
+      transport: "streamable-http",
+      note: "tools/list is free; buy_* tools settle x402 in-band via _meta['x402/payment'].",
+    },
   });
 });

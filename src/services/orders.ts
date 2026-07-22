@@ -84,6 +84,20 @@ export async function listOrders(env: Env): Promise<OrderRecord[]> {
   return orders;
 }
 
+/** The keeper saw it; the 24h SLA-guard page stands down. */
+export async function acknowledgeOrder(
+  env: Env,
+  orderId: string,
+): Promise<OrderRecord | null> {
+  const order = await getOrder(env, orderId);
+  if (!order) {
+    return null;
+  }
+  order.acknowledged_at = new Date().toISOString();
+  await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
+  return order;
+}
+
 export async function completeOrder(
   env: Env,
   orderId: string,

@@ -19,7 +19,17 @@ export interface Env {
   ADMIN_PASSWORD: string;
   /** Public base URL, e.g. https://scvd.store */
   STORE_BASE_URL: string;
+  /** House-traffic flag secret (X-House header / house query param). Optional. */
+  HOUSE_SECRET?: string;
+  /** Comma-separated house wallet addresses beyond the founding burner. Optional. */
+  HOUSE_WALLETS?: string;
+  /** P1 alert email plumbing (Resend). Optional; alerts degrade to logs. */
+  RESEND_API_KEY?: string;
+  ALERT_EMAIL?: string;
 }
+
+/** Where a request came from, per the 90-day falsification instrument. */
+export type Channel = "mcp" | "bazaar" | "skill" | "direct" | "unknown";
 
 /** Set by the payment gate once money has actually settled. */
 export interface SettledPaymentVariables {
@@ -71,6 +81,8 @@ export interface OrderRecord {
   cert_id: string;
   deliverable?: string;
   completed_at?: string;
+  /** Keeper saw it; stops the 24h SLA-guard page. */
+  acknowledged_at?: string;
   /** Buyer-supplied task detail (e.g. the quick_judgment question). Untrusted text. */
   detail?: string;
   /** Declared discovery channel (source query param). Untrusted text. */

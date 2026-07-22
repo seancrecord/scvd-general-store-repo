@@ -169,6 +169,12 @@ openapiRoutes.get("/openapi.json", (c) => {
           "Around the side, facing the pines. One line of tonight per hour, the seat count, and nothing for sale. Free.",
         ),
       },
+      "/mcp": {
+        post: freeOp(
+          "The MCP door",
+          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0, spec 2025-06-18). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band via _meta['x402/payment'].",
+        ),
+      },
       "/zodiac": {
         get: freeOp("The Agent Zodiac", "The twelve signs, free."),
       },

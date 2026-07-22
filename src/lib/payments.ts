@@ -92,7 +92,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
       : "";
   return {
     accepts,
-    description: `${item.name} — ${item.description}${tierNote}`,
+    description: `${item.name} — ${item.description}${tierNote} Also served over MCP: tool buy_${item.id} at ${env.STORE_BASE_URL}/mcp.`,
     mimeType: "application/json",
     resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
     extensions: buyDiscoveryExtensions(item),

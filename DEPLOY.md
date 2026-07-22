@@ -81,6 +81,22 @@ npx wrangler secret put ADMIN_PASSWORD
 # paste: the back-room password (username is always "keeper")
 ```
 
+Three more, optional but recommended once the store is live:
+
+```bash
+npx wrangler secret put HOUSE_SECRET
+# paste: any long random string. Requests carrying X-House: <it> (or
+# ?house=<it>) are booked as house traffic, kept out of organic counts.
+
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put ALERT_EMAIL
+# the P1 alert wire (four conditions page; everything else waits for
+# Sunday). Without these, alerts still log to the back room.
+```
+
+After setting them, open /admin and press "Fire a test alert" once to
+confirm the email arrives.
+
 If `wrangler secret put` complains the Worker doesn't exist yet, run
 `npx wrangler deploy` once first, then set the secrets — secrets attach to
 a deployed Worker.
