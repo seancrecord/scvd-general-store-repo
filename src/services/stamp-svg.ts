@@ -45,8 +45,12 @@ export interface StampSvgOptions {
 export function renderVisitStamp(options: StampSvgOptions): string {
   const { stamp, verifyUrl } = options;
   const look = lookForStamp(stamp);
-  const nameLine = stamp.name
-    ? `<text x="150" y="196" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="13" fill="${INK}">${escapeHtml(stamp.name)}</text>`
+  const displayName =
+    stamp.name && stamp.name.length > 30
+      ? `${stamp.name.slice(0, 29)}\u2026`
+      : stamp.name;
+  const nameLine = displayName
+    ? `<text x="150" y="196" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="13" fill="${INK}">${escapeHtml(displayName)}</text>`
     : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="Visit stamp ${escapeHtml(stamp.week)}">
   <rect width="300" height="300" fill="${PAPER}" rx="8"/>

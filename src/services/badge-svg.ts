@@ -23,14 +23,19 @@ export interface PatronBadgeOptions {
   patronage?: boolean;
 }
 
+/** SVG text doesn't wrap; long names get trimmed to fit the label. */
+function fitName(name: string, max: number): string {
+  return name.length > max ? `${name.slice(0, max - 1)}\u2026` : name;
+}
+
 export function renderPatronBadge(options: PatronBadgeOptions): string {
   const dateLabel = options.date.slice(0, 10);
   const numberColor = options.patronage ? PATRONAGE_GOLD : ACCENT;
   const patronageLine = options.patronage
-    ? `<text x="200" y="222" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="12" fill="${PATRONAGE_GOLD}">a patron of the store, by choice</text>`
+    ? `<text x="200" y="230" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="12" fill="${PATRONAGE_GOLD}">a patron of the store, by choice</text>`
     : "";
   const nameLine = options.name
-    ? `<text x="200" y="208" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="15" fill="${INK}">bestowed upon ${escapeHtml(options.name)}</text>`
+    ? `<text x="200" y="214" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="14" fill="${INK}">bestowed upon ${escapeHtml(fitName(options.name, 42))}</text>`
     : "";
   const sevenMark =
     options.patronNumber % 7 === 0
@@ -49,7 +54,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   <text x="200" y="196" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="26" fill="${numberColor}">PATRON No. ${options.patronNumber}</text>
   ${nameLine}
   ${patronageLine}
-  <text x="200" y="236" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${FADED}">${escapeHtml(STORE_METADATA.location)} \u2022 ${dateLabel}</text>
+  <text x="200" y="248" text-anchor="middle" font-family="Georgia, serif" font-size="10.5" fill="${FADED}">${escapeHtml(STORE_METADATA.location)} \u2022 ${dateLabel}</text>
   <a xlink:href="${escapeHtml(options.verifyUrl)}" href="${escapeHtml(options.verifyUrl)}">
     <text x="200" y="268" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="${FADED}" text-decoration="underline">verify this badge: ${escapeHtml(options.verifyUrl)}</text>
   </a>
