@@ -2,7 +2,7 @@
 // Deploys to the scvd.store custom domain via Git-connected builds.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "scvd-general-store",
+  "name": "scvd-general-store-repo",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
