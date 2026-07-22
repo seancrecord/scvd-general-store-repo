@@ -101,8 +101,7 @@ describe("the Almanac (free index)", () => {
     const entries = body["entries"] as Array<Record<string, unknown>>;
     expect(entries.map((entry) => entry["slug"])).toEqual([
       "field-notes-brisket-july-2026",
-      "what-shipping-three-ios-apps-taught-me",
-      "notes-from-a-tuesday-in-apex",
+      "notes-from-a-tuesday-at-the-crossing",
     ]);
     const dates = entries.map((entry) => entry["date"] as string);
     expect([...dates].sort().reverse()).toEqual(dates);

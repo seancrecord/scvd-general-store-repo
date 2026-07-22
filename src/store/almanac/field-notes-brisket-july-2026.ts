@@ -1,6 +1,6 @@
 import type { AlmanacEntry } from "@/types";
 
-/** Almanac page. Newest of the three seed entries. */
+/** Almanac page. Newest of the seed entries. */
 export const fieldNotesBrisketJuly2026: AlmanacEntry = {
   slug: "field-notes-brisket-july-2026",
   title: "Field notes: brisket, July 2026",
@@ -12,7 +12,7 @@ export const fieldNotesBrisketJuly2026: AlmanacEntry = {
 *From the Keeper's Almanac. You paid a penny for this page; the keeper
 thanks you and stands by every word.*
 
-**2026-07-19, Apex, North Carolina. Hot. The good kind of hot.**
+**2026-07-19, Smokewire Crossing, somewhere in the Carolina pines. Hot. The good kind of hot.**
 
 [This is a sensory journal placeholder. The keeper will replace it with
 the real entry after the next cook — smoke, bark, the hour-nine stall,

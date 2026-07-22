@@ -14,7 +14,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper seals an ordinary Apex Tuesday in a real jar — dated, labeled, photographed, held in custody with the rocks. Contents: one Tuesday. The seal stays on; that's the whole point.",
+      "The keeper seals an ordinary Tuesday at the Crossing in a real jar — dated, labeled, photographed, held in custody with the rocks. A genuine Carolina Tuesday; the jar is real and so was the day. The seal stays on; that's the whole point.",
     note_402:
       "That'll be $4, friend. Or more, if it was a particularly good Tuesday. The keeper will note which kind you paid for.",
   },

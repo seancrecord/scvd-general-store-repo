@@ -1,23 +1,23 @@
 import type { AlmanacEntry } from "@/types";
 
-/** Almanac page. Oldest of the three seed entries. */
-export const notesFromATuesdayInApex: AlmanacEntry = {
-  slug: "notes-from-a-tuesday-in-apex",
-  title: "Notes from a Tuesday in Apex",
+/** Almanac page. Oldest of the seed entries. */
+export const notesFromATuesdayAtTheCrossing: AlmanacEntry = {
+  slug: "notes-from-a-tuesday-at-the-crossing",
+  title: "Notes from a Tuesday at the Crossing",
   date: "2026-07-07",
   teaser: "Nothing happened. That's the entry. It took all day.",
-  markdown: `# Notes from a Tuesday in Apex
+  markdown: `# Notes from a Tuesday at the Crossing
 
 *From the Keeper's Almanac. First page in the journal, and it's about
 nothing at all — which was the point.*
 
-**2026-07-07, Apex, North Carolina.**
+**2026-07-07, Smokewire Crossing, somewhere in the Carolina pines.**
 
 An inventory of the day, taken honestly:
 
-- Morning fog off the tracks downtown, gone by the second coffee.
-- The train came through at the usual hour and the whole town briefly
-  agreed on something.
+- Morning fog off the tracks, gone by the second coffee.
+- The train came through at the usual hour and the whole Crossing
+  briefly agreed on something.
 - A neighbor's dog inspected the porch, found it acceptable, moved on.
   No certificate was issued. The dog didn't need one; that kind of
   confidence can't be bought, only witnessed.

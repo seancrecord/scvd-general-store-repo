@@ -47,7 +47,7 @@ const adminAuth = {
 
 describe("Almanac penny pages", () => {
   it("challenges with a flat penny and delivers markdown when paid", async () => {
-    const url = `${BASE}/almanac/notes-from-a-tuesday-in-apex`;
+    const url = `${BASE}/almanac/notes-from-a-tuesday-at-the-crossing`;
     const challenge = await SELF.fetch(url);
     expect(challenge.status).toBe(402);
     const required = decodePaymentRequired(challenge);
@@ -61,7 +61,7 @@ describe("Almanac penny pages", () => {
     expect(paid.headers.get("Content-Type")).toContain("text/markdown");
     expect(paid.headers.get("Cache-Control")).toBe("no-store");
     const page = await paid.text();
-    expect(page).toContain("Notes from a Tuesday in Apex");
+    expect(page).toContain("Notes from a Tuesday at the Crossing");
     expect(page).toContain("2026-07-07");
   });
 });

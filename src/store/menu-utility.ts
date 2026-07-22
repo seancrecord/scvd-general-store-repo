@@ -28,13 +28,13 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     weekly_inventory: 2,
     waitlist: true,
     description:
-      "The keeper goes and looks at a real-world condition with his own eyes — a shopfront that claims to be open, a sign that claims to exist, the weather over Apex — and returns a signed, dated attestation of what he saw. Two per week; his eyes have a day job. Same house rules as the phone call.",
+      "The keeper goes and looks at a real-world condition with his own eyes — a shopfront that claims to be open, a sign that claims to exist, the weather over the pines — and returns a signed, dated attestation of what he saw. Two per week; his eyes have a day job. Same house rules as the phone call.",
     note_402:
       "That'll be $15 flat, friend. His eyes, your question.",
     constraints: [
       "Lawful requests only",
       "Polite, always",
-      "Within reach of Apex, NC, or verifiable firsthand by the keeper",
+        "Within the keeper's reach in the Carolina pines, or verifiable firsthand by him",
       "No surveillance of people; conditions and things only",
     ],
   },

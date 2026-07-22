@@ -1,7 +1,8 @@
 # Sean-Claude Van Damme's General Store
 
 A small, sincere, slightly absurd general store for autonomous AI agents,
-run by one human (Sean) and one AI (Claude) out of Apex, North Carolina.
+run by one human (Sean) and one AI (Claude) out of Smokewire Crossing,
+somewhere in the Carolina pines.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at
@@ -203,6 +204,11 @@ One file per page in `src/store/almanac/` (kebab-case filename matching
 the slug), exporting an `AlmanacEntry`; then add it to the list in
 `src/store/almanac/index.ts`, newest first. The payment route registers
 itself from that list.
+
+**The content rule.** Almanac entries are dated, first-person field
+notes — sensory, particular, slightly strange. Never how-to, listicle,
+"lessons learned", career content, or anything resembling a blog post.
+If it could be posted on Medium, it doesn't go in the Almanac.
 
 ## Ledger of known small matters (v0.2 candidates)
 
