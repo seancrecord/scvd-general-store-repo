@@ -17,7 +17,6 @@ export const STOREFRONT_CSS = `
   --paper: #f4ead8;
   --ink: #3b2f23;
   --ink-faded: #7a6a55;
-  --pen: #2c3a63;
   --night-text: #cfc4d6;
   --night-faded: #857a91;
   --line: #372c44;
@@ -143,57 +142,80 @@ body.night {
 }
 .proprietors { position: relative; z-index: 2; margin-top: 0.6rem; font-style: italic; font-size: 0.9rem; color: var(--night-faded); }
 
-/* ---- the counters ---- */
-.ticker {
-  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
-  margin: 1.1rem 0 2.4rem;
+/* ---- the instruments: nixie odometer + mailbox LED ---- */
+.gauges {
+  display: flex; flex-wrap: wrap; gap: 1rem 2.2rem;
+  justify-content: center; align-items: flex-end;
+  margin: 1.3rem 0 2.5rem;
 }
-.chip {
+.gauge { text-align: center; }
+.gauge-label {
+  display: block;
   font-family: ui-monospace, 'Courier New', monospace;
-  font-size: 0.72rem; letter-spacing: 0.06em;
-  color: var(--night-text);
-  border: 1px solid var(--line); border-radius: 3px;
-  background: rgba(22,18,31,0.85);
-  padding: 0.35rem 0.7rem;
+  font-size: 0.62rem; letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--night-faded); margin-bottom: 0.4rem;
 }
-
-/* ---- the handwritten note, taped up a little crooked ---- */
-.handnote {
-  position: relative;
-  max-width: 430px;
-  margin: 0 auto 2.6rem;
+.nixie { display: inline-flex; gap: 0.25rem; }
+.nx {
+  display: inline-block; min-width: 1.5rem; padding: 0.18rem 0.15rem;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 1.45rem; font-weight: bold; line-height: 1.2; text-align: center;
+  color: var(--neon);
   background:
-    radial-gradient(circle 46px at 82% 88%, rgba(140,90,40,0.14) 38px, rgba(140,90,40,0.22) 41px, transparent 44px),
-    linear-gradient(175deg, #f7eeda 0%, #efe2c6 100%);
-  color: var(--ink);
-  padding: 1.5rem 1.5rem 1.7rem;
-  transform: rotate(-2.2deg) translateX(-10px);
-  clip-path: polygon(
-    0% 4%, 3% 0%, 97% 1%, 100% 6%, 99% 94%,
-    96% 97%, 90% 95%, 80% 100%, 12% 98%, 4% 100%, 1% 95%
-  );
-  box-shadow: 0 8px 28px rgba(0,0,0,0.6);
-  font-family: 'Segoe Print', 'Bradley Hand', 'Marker Felt', 'Comic Sans MS', cursive;
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255,150,60,0.18), transparent 75%),
+    linear-gradient(180deg, #191320, #0e0b15);
+  border: 1px solid #3d2c30; border-radius: 5px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 12px rgba(255,140,60,0.18);
+  text-shadow: 0 0 8px rgba(255,170,80,0.9), 0 0 22px rgba(255,120,40,0.45);
 }
-.tape {
-  position: absolute; top: -12px; left: 50%;
-  width: 110px; height: 26px;
-  transform: translateX(-50%) rotate(3deg);
-  background: rgba(255,244,200,0.35);
-  border-left: 1px dashed rgba(255,255,255,0.25);
-  border-right: 1px dashed rgba(255,255,255,0.25);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  backdrop-filter: blur(1px);
+.nx-dim {
+  color: #4a3a35; text-shadow: none;
+  background: linear-gradient(180deg, #14101a, #0d0a13);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
 }
-.handnote-label {
-  font-size: 0.8rem; color: var(--ink-faded);
-  transform: rotate(-1deg);
+.led {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--teal-dim);
 }
-.handnote-text {
-  margin-top: 0.5rem; font-size: 1.02rem; line-height: 1.7;
-  color: var(--pen);
-  transform: rotate(0.4deg);
+.led-num {
+  font-style: normal; font-size: 1.45rem; font-weight: bold;
+  color: var(--teal); padding: 0 0.1rem;
+  text-shadow: 0 0 10px rgba(93,230,200,0.8), 0 0 26px rgba(93,230,200,0.35);
 }
+.led-sep { color: var(--line); }
+
+/* ---- the readerboard: this week's note, letters set by hand ---- */
+.board {
+  max-width: 560px; margin: 0 auto 2.7rem;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 1.9em, rgba(255,255,255,0.045) 1.9em calc(1.9em + 1px)),
+    linear-gradient(180deg, #15111e 0%, #0e0b15 100%);
+  border: 3px solid #2c2438; border-radius: 6px;
+  padding: 1rem 1.3rem 1.25rem;
+  box-shadow:
+    inset 0 0 34px rgba(0,0,0,0.85),
+    0 8px 26px rgba(0,0,0,0.55),
+    0 0 34px rgba(255,170,80,0.07);
+}
+.board-label {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--teal-dim); margin-bottom: 0.7rem;
+  border-bottom: 1px solid #241d31; padding-bottom: 0.5rem;
+}
+.board-text {
+  font-family: ui-monospace, 'Courier New', monospace;
+  text-transform: uppercase;
+  font-size: 0.95rem; letter-spacing: 0.16em; word-spacing: 0.4em;
+  line-height: 1.9em;
+  color: #ffe3b8;
+  text-shadow: 0 0 7px rgba(255,190,110,0.6), 0 0 20px rgba(255,140,60,0.22);
+}
+.brd-w { display: inline-block; }
+.brd-a { transform: rotate(-1.6deg) translateY(1px); }
+.brd-b { transform: rotate(1.1deg) translateY(-1px); }
+.brd-dim { opacity: 0.55; text-shadow: 0 0 4px rgba(255,190,110,0.25); }
 
 /* ---- shelves ---- */
 .night-head {

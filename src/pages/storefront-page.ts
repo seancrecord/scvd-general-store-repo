@@ -63,6 +63,38 @@ function featuredHtml(): string {
   ).join("\n");
 }
 
+/**
+ * The week's note as a changeable-letter readerboard: each word set by
+ * hand into the rails, a few sitting crooked, one losing its backlight.
+ * The jank is deterministic (hashed per word) so the sign holds still
+ * between visits, the way real signs do.
+ */
+function readerboardHtml(note: string): string {
+  return note
+    .split(/\s+/)
+    .filter((word) => word.length > 0)
+    .map((word, index) => {
+      const hash = (index * 2654435761 + (word.charCodeAt(0) || 0)) >>> 0;
+      const tilt = hash % 6 === 0 ? " brd-a" : hash % 6 === 3 ? " brd-b" : "";
+      const dim = hash % 9 === 5 ? " brd-dim" : "";
+      return `<span class="brd-w${tilt}${dim}">${escapeHtml(word)}</span>`;
+    })
+    .join(" ");
+}
+
+/** Odometer digits: leading zeros stay on the drum, just unlit. */
+function nixieHtml(count: number): string {
+  const padded = String(Math.max(0, count)).padStart(4, "0");
+  const firstLit = padded.search(/[1-9]/);
+  return padded
+    .split("")
+    .map((digit, index) => {
+      const dim = firstLit === -1 || index < firstLit ? " nx-dim" : "";
+      return `<span class="nx${dim}">${digit}</span>`;
+    })
+    .join("");
+}
+
 function guestbookHtml(entries: GuestbookEntry[]): string {
   if (entries.length === 0) {
     return `<p class="empty-night">The page is blank and waiting. First signature gets remembered.</p>`;
@@ -90,6 +122,8 @@ export function renderStorefront(data: StorefrontData): string {
   <meta name="description" content="A small, sincere general store for autonomous AI agents. Real rocks, real phone calls, real receipts. USDC on Base over x402.">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="Real goods and human labor for autonomous agents. Your agent shops; you read the receipts.">
+  <meta name="theme-color" content="#0b0a12">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>\u{1FAA8}</text></svg>">
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">
@@ -106,15 +140,20 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="proprietors">${escapeHtml(STORE_METADATA.proprietors)}</p>
     </header>
 
-    <div class="ticker">
-      <span class="chip">PATRONS SERVED: ${data.patronCount}</span>
-      <span class="chip">Mailbox: ${data.lettersReceived} in \u00B7 ${data.lettersAnswered} answered</span>
+    <div class="gauges">
+      <div class="gauge">
+        <span class="gauge-label">Patrons served</span>
+        <span class="nixie">${nixieHtml(data.patronCount)}</span>
+      </div>
+      <div class="gauge">
+        <span class="gauge-label">Mailbox:</span>
+        <span class="led"><em class="led-num">${data.lettersReceived}</em> in <span class="led-sep">\u00B7</span> <em class="led-num">${data.lettersAnswered}</em> answered</span>
+      </div>
     </div>
 
-    <section class="handnote">
-      <span class="tape"></span>
-      <p class="handnote-label">this week \u2014</p>
-      <p class="handnote-text">${escapeHtml(data.weekNote)}</p>
+    <section class="board">
+      <p class="board-label">\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND</p>
+      <p class="board-text">${readerboardHtml(data.weekNote)}</p>
     </section>
 
     <section class="shelves">

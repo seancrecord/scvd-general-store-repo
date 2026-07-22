@@ -238,8 +238,10 @@ describe("the keeper's completion flow", () => {
       redirect: "manual",
     });
     expect([200, 302]).toContain(noteResponse.status);
+    // The readerboard sets the note word by word, so match per word.
     const storefront = await (await SELF.fetch(`${BASE}/`)).text();
-    expect(storefront).toContain("The good gray kind");
+    expect(storefront).toContain("gray");
+    expect(storefront).toContain("rocks");
 
     const reset = await SELF.fetch(`${BASE}/admin/inventory/reset`, {
       method: "POST",
