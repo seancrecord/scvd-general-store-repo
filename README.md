@@ -144,10 +144,8 @@ facilitator and all current client libraries speak v2.
 | `/almanac/:slug` | One journal page, $0.01 over x402, markdown |
 | `/directory` | The Town Directory — keeper-edited, honest one-liners (JSON + human view) |
 | `/retired-words` | Public registry of words the keeper has retired |
-| `/gazette` | Free index of published Gazette issues |
-| `/gazette/issue-:n` | One issue, $0.01 over x402, contributors credited |
-| `/paper` | The Town Gazette — the store's paper of record, free index |
-| `/paper/edition-:n` | One edition, $0.01 over x402, markdown |
+| `/gazette` | The Gazette — free index: weekly editions + tip dispatches |
+| `/gazette/issue-:n` | One issue, $0.01 over x402, markdown |
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
 | `/porch` | Around the side, facing the pines. Nothing for sale out there |

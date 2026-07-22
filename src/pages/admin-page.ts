@@ -3,13 +3,12 @@ import { isRecord } from "@/types";
 import type {
   BazaarLedgerEntry,
   CommissionRequest,
+  GazetteDraft,
   GazetteIssue,
   LetterRecord,
   OrderRecord,
   PayerRecord,
   TipRecord,
-  TownDraft,
-  TownEdition,
   WaitlistEntry,
 } from "@/types";
 import type { MonthLedger } from "@/lib/metrics";
@@ -33,38 +32,26 @@ export interface AdminPageData {
   payers: PayerRecord[];
   letters: LetterRecord[];
   alerts: Array<{ condition: string; detail: string; at: string }>;
-  paperDraft: TownDraft | null;
-  paperEditions: TownEdition[];
+  gazetteDraft: GazetteDraft | null;
 }
 
-/** The press room: the draft under the keeper's pen, the editions behind glass. */
-function paperHtml(draft: TownDraft | null, editions: TownEdition[]): string {
+/** The press room: the draft under the keeper's pen. Publishing is a gate. */
+function editionPressHtml(draft: GazetteDraft | null): string {
   const draftHtml = draft
-    ? `<p>Draft assembled ${escapeHtml(draft.created_at)} — ${draft.organic_events} organic event${draft.organic_events === 1 ? "" : "s"} in the period. Bracketed lines are your slots; anything left in brackets is stripped at publish.</p>
-      <form method="POST" action="/admin/paper/publish">
+    ? `<p>Draft assembled ${escapeHtml(draft.created_at)} — ${draft.organic_events} organic event${draft.organic_events === 1 ? "" : "s"} in the period. Bracketed lines are resident/keeper slots; anything left in brackets is stripped at publish.</p>
+      <form method="POST" action="/admin/gazette/edition/publish">
         <textarea name="markdown" rows="24" cols="80">${escapeHtml(draft.markdown)}</textarea>
-        <br><button type="submit">Publish this edition (a penny a copy)</button>
+        <br><button type="submit">Publish this edition (a penny a copy, on the rack)</button>
       </form>`
-    : `<p>No draft on the desk. The Sunday press drafts one when the week clears ${3} organic events, or pull the lever yourself:</p>`;
-  const editionsHtml =
-    editions.length === 0
-      ? "<li>No editions off the press yet.</li>"
-      : editions
-          .map(
-            (edition) =>
-              `<li>Edition No. ${edition.edition_number} — ${escapeHtml(edition.week)} — ${escapeHtml(edition.date.slice(0, 10))}</li>`,
-          )
-          .join("\n");
+    : `<p>No draft on the desk. The Sunday press drafts one when the week clears 3 organic events (THE_NINETY gate), or hand-set one yourself:</p>`;
   return `${draftHtml}
-    <form method="POST" action="/admin/paper/assemble">
-      <button type="submit">Assemble a draft now (ignores the threshold)</button>
+    <form method="POST" action="/admin/gazette/edition/assemble">
+      <button type="submit">Hand-set a draft now (ignores the gate)</button>
     </form>
-    <form method="POST" action="/admin/paper/correction">
+    <form method="POST" action="/admin/gazette/correction">
       <input type="text" name="correction" placeholder="A correction for the next edition, sober and specific" maxlength="500" required>
       <button type="submit">File the correction</button>
-    </form>
-    <p>Editions on record:</p>
-    <ul>${editionsHtml}</ul>`;
+    </form>`;
 }
 
 function alertsHtml(
@@ -392,13 +379,13 @@ export function renderAdminPage(data: AdminPageData): string {
   </section>
 
   <section>
-    <h2>The Town Gazette (the paper of record)</h2>
-    <p>Assembled from the store's own books. Nothing invented, house never reported, your pen before print.</p>
-    ${paperHtml(data.paperDraft, data.paperEditions)}
+    <h2>The Gazette — weekly edition press</h2>
+    <p>The paper of record, set from the store's own books. Nothing invented, house never reported, your pen before print. Editions land on the same rack as the tip dispatches.</p>
+    ${editionPressHtml(data.gazetteDraft)}
   </section>
 
   <section>
-    <h2>The Gazette (${data.gazetteIssues.length} issues)</h2>
+    <h2>The Gazette rack (${data.gazetteIssues.length} issues) + tip dispatches</h2>
     <ul>${gazetteHtml(data.gazetteIssues)}</ul>
     <form method="POST" action="/admin/gazette/publish">
       <input type="text" name="title" placeholder="Issue title" maxlength="200" required>

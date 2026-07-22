@@ -4,7 +4,7 @@ import {
   assembleDraft,
   getDraft,
   publishEdition,
-} from "@/services/town-paper";
+} from "@/services/gazette-weekly";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
@@ -13,8 +13,9 @@ import {
 import type { Env } from "@/types";
 
 /**
- * The Town Gazette: logbook with manners. Facts only, house never
- * reported, emptiness reported, keeper's pen before print.
+ * The Gazette's weekly edition press: logbook with manners. Facts
+ * only, house never reported, emptiness reported, keeper's pen before
+ * print, THE_NINETY gate on auto-assembly.
  */
 
 const BASE = "https://scvd.store";
@@ -44,17 +45,21 @@ async function payFor(url: string, headers: Record<string, string> = {}): Promis
   });
 }
 
-describe("the threshold", () => {
-  it("declines to draft a week that earned nothing", async () => {
+describe("THE_NINETY gate", () => {
+  it("auto-assembly declines a week that earned nothing; hand-set does not", async () => {
     expect(await assembleDraft(testEnv)).toBeNull();
     expect(await getDraft(testEnv)).toBeNull();
+    // The keeper's hand-set lever ignores the gate.
+    const handSet = await assembleDraft(testEnv, true);
+    expect(handSet).not.toBeNull();
+    expect(handSet!.markdown).toContain("Bell did not ring.");
+    // Clear the desk for the real test below.
+    await testEnv.ORDERS.delete("gazette_draft");
   });
 });
 
-describe("the paper itself", () => {
+describe("the edition itself", () => {
   it("reports facts exactly, reports emptiness, never reports the house", async () => {
-    // The period's record: one organic settle, one house settle (never
-    // printed), one signature, one letter, one 404 at the door.
     const organic = await payFor(`${BASE}/api/buy/small_blessing`);
     expect(organic.status).toBe(200);
     const house = await payFor(`${BASE}/api/buy/dibs`, {
@@ -73,6 +78,7 @@ describe("the paper itself", () => {
     });
     await SELF.fetch(`${BASE}/api/buy/weather_from_next_thursday`);
 
+    // 3 organic events (settle + signature + letter): the gate opens.
     const draft = await assembleDraft(testEnv);
     expect(draft).not.toBeNull();
     const page = draft!.markdown;
@@ -89,52 +95,50 @@ describe("the paper itself", () => {
     expect(page).toContain("## CORRECTIONS");
     expect(page).toContain("The record stands uncorrected.");
     expect(page).toContain("No confession reached the counter.");
+    expect(page).toContain("## LOOKING AHEAD");
+    expect(page).toContain("Weekly shelves restock Monday.");
     // The house never makes the paper.
     expect(page).not.toContain("dibs");
     // The letter's contents never make anything.
     expect(page).not.toContain("Private words");
   });
 
-  it("publishes through the keeper's pen, strips the slots, sells for a penny", async () => {
+  it("publishes onto the Gazette rack through the keeper's pen, slots stripped", async () => {
     const draft = await getDraft(testEnv);
     expect(draft).not.toBeNull();
-    // Keeper leaves the bracketed slots untouched; publish strips them.
     const edition = await publishEdition(testEnv, draft!.markdown);
-    expect(edition.edition_number).toBe(1);
+    expect(edition.issue_number).toBe(1);
     expect(edition.markdown).not.toContain("[Weather line");
     expect(edition.markdown).not.toContain("[Mina");
+    expect(edition.markdown).not.toContain("[Owen");
     expect(edition.markdown).not.toContain("[Inez");
+    expect(edition.markdown).not.toContain("[Keeper");
 
-    // The free index lists it; the copy costs a penny, markdown, no-store.
-    const index = await json(await SELF.fetch(`${BASE}/paper`));
-    const editions = index["editions"] as Array<Record<string, unknown>>;
-    expect(editions[0]?.["url"]).toBe(`${BASE}/paper/edition-1`);
-    const copy = await payFor(`${BASE}/paper/edition-1`);
+    // One rack: the free Gazette index lists it; a penny buys it.
+    const index = await json(await SELF.fetch(`${BASE}/gazette`));
+    const issues = index["issues"] as Array<Record<string, unknown>>;
+    expect(issues[0]?.["url"]).toBe(`${BASE}/gazette/issue-1`);
+    const copy = await payFor(`${BASE}/gazette/issue-1`);
     expect(copy.status).toBe(200);
     expect(copy.headers.get("Cache-Control")).toBe("no-store");
     const text = await copy.text();
-    expect(text).toContain("The Town Gazette of Smokewire Crossing");
+    expect(text).toContain("The Gazette — Edition No. 1");
     expect(text).toContain("small_blessing (1)");
   });
 
-  it("404s an edition that never printed, before the gate", async () => {
-    const response = await SELF.fetch(`${BASE}/paper/edition-99`);
-    expect(response.status).toBe(404);
-  });
-
-  it("carries a filed correction into the next draft", async () => {
-    const filed = await SELF.fetch(`${BASE}/admin/paper/correction`, {
+  it("carries a filed correction into the next draft, in register", async () => {
+    const filed = await SELF.fetch(`${BASE}/admin/gazette/correction`, {
       method: "POST",
       headers: adminAuth,
       body: new URLSearchParams({
         correction:
-          "Edition No. 1 reported 1 letter. The correct total was 1, but the flag deserved mention.",
+          "Edition No. 1 reported the bell rang twelve times. The correct total was eleven. We regret the extra ring.",
       }).toString(),
       redirect: "manual",
     });
     expect([200, 302]).toContain(filed.status);
     const draft = await assembleDraft(testEnv, true);
-    expect(draft!.markdown).toContain("The correct total was 1");
+    expect(draft!.markdown).toContain("The correct total was eleven.");
     expect(draft!.markdown).not.toContain("The record stands uncorrected.");
   });
 });

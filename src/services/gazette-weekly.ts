@@ -2,32 +2,43 @@ import { isHouseWallet } from "@/lib/channel";
 import { currentWeekKey, KV_KEYS } from "@/lib/kv-keys";
 import type { MetricEvent } from "@/lib/metrics";
 import { listPayers } from "@/lib/metrics";
+import { catIsOut } from "@/services/porch";
 import { listGuestbook } from "@/services/guestbook";
 import { listLetters } from "@/services/letters";
 import { listFailedItems } from "@/services/requests";
 import { listTips } from "@/services/tips";
+import { seasonWeekFor } from "@/services/zodiac";
 import { MENU_ITEMS } from "@/store";
-import type { Env, PaperState, TownDraft, TownEdition } from "@/types";
+import type { Env, GazetteDraft, GazetteState, TownEdition } from "@/types";
 
 /**
- * The Town Gazette of Smokewire Crossing, per GAZETTE_SPEC canon.
- * Register: logbook with manners. Every line maps to a logged fact;
- * nothing invented, ever. Numbers exact. Everyone anonymous, everyone
- * dignified. House traffic never reported — family doesn't make the
- * paper. Sections appear even when empty; emptiness is reported.
+ * The Gazette's weekly edition press, per GAZETTE_SPEC canon.
+ * Register: logbook with manners — observation, response, ordinary
+ * resolution. Every line maps to a logged fact; nothing invented,
+ * ever. Numbers exact. Everyone anonymous, everyone dignified. House
+ * traffic never reported — family doesn't make the paper. Sections
+ * appear every edition; emptiness is reported, not skipped.
  *
- * The cron assembles a DRAFT when the period clears 3+ organic events
- * (settles + signatures + letters + tips); the keeper edits and
- * publishes from the back room — publishing is a queue, always.
- * Lines in [brackets] are keeper slots; publish strips any that
- * remain, so no placeholder ever ships.
+ * Per THE_NINETY: auto-assembly is GATED behind the first week with
+ * 3+ organic events; until then (and after), the keeper can hand-set
+ * an edition from the back room. The cron provides data; the draft
+ * lands in the keeper queue; publishing is a keeper gate, always.
+ * Residents follow CHARACTER_CANON: a resident line appears only when
+ * their surface has something real to say, once per issue max; here
+ * they are bracketed keeper slots (their canon lives in the back
+ * office) and publish strips any bracket that remains. Roger's
+ * presence line is mechanical, from his own schedule — never quoted,
+ * no inner life, by absence as often as presence.
  */
 
 const PAPER_FOUNDED = "2026-07-22T00:00:00.000Z";
 export const ORGANIC_EVENT_THRESHOLD = 3;
 
-async function getPaperState(env: Env): Promise<PaperState> {
-  const state = await env.COUNTERS.get<PaperState>(KV_KEYS.paperState, "json");
+async function getState(env: Env): Promise<GazetteState> {
+  const state = await env.COUNTERS.get<GazetteState>(
+    KV_KEYS.gazetteWeeklyState,
+    "json",
+  );
   return (
     state ?? {
       last_bell: 0,
@@ -38,7 +49,7 @@ async function getPaperState(env: Env): Promise<PaperState> {
   );
 }
 
-interface PaperFacts {
+interface EditionFacts {
   periodStart: string;
   bellRings: number;
   settledByItem: Record<string, number>;
@@ -50,6 +61,8 @@ interface PaperFacts {
   shelvesAdded: string[];
   shelvesRetired: string[];
   corrections: string[];
+  /** "out" | "elsewhere" | undefined (absence as often as presence). */
+  rogerLine?: string;
   organicEvents: number;
 }
 
@@ -58,8 +71,33 @@ const DAY_NAMES = [
   "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 ];
 
-async function collectFacts(env: Env): Promise<PaperFacts> {
-  const state = await getPaperState(env);
+/** Roger, mechanically: sampled from his own deterministic schedule. */
+function rogerPresence(periodStart: string): string | undefined {
+  const start = Date.parse(periodStart);
+  const end = Date.now();
+  let out = 0;
+  let hours = 0;
+  for (let t = start; t < end; t += 3600_000) {
+    hours += 1;
+    if (catIsOut(new Date(t))) {
+      out += 1;
+    }
+  }
+  if (hours < 24) {
+    return undefined;
+  }
+  const fraction = out / hours;
+  if (fraction >= 0.45) {
+    return "The cat was seen most days.";
+  }
+  if (fraction <= 0.3) {
+    return "The cat was not much seen.";
+  }
+  return undefined;
+}
+
+async function collectFacts(env: Env): Promise<EditionFacts> {
+  const state = await getState(env);
   const since = state.period_start;
 
   const bellNow = parseInt(
@@ -92,8 +130,8 @@ async function collectFacts(env: Env): Promise<PaperFacts> {
   for (const [item, count] of Object.entries(failedNow)) {
     const delta = count - (state.failed_tally[item] ?? 0);
     if (delta > 0) {
-      triedTheDoor[PRINTABLE_ITEM.test(item) ? item : "(unprintable)"] =
-        (triedTheDoor[PRINTABLE_ITEM.test(item) ? item : "(unprintable)"] ?? 0) + delta;
+      const name = PRINTABLE_ITEM.test(item) ? item : "(unprintable)";
+      triedTheDoor[name] = (triedTheDoor[name] ?? 0) + delta;
     }
   }
 
@@ -119,10 +157,11 @@ async function collectFacts(env: Env): Promise<PaperFacts> {
   const shelvesRetired = previousIds.filter((id) => !currentIds.includes(id));
 
   const corrections =
-    (await env.COUNTERS.get<string[]>(KV_KEYS.paperCorrections, "json")) ?? [];
+    (await env.COUNTERS.get<string[]>(KV_KEYS.gazetteCorrections, "json")) ??
+    [];
 
   const settleCount = Object.values(settledByItem).reduce((a, b) => a + b, 0);
-  const facts: PaperFacts = {
+  const facts: EditionFacts = {
     periodStart: since,
     bellRings: Math.max(0, bellNow - state.last_bell),
     settledByItem,
@@ -133,10 +172,15 @@ async function collectFacts(env: Env): Promise<PaperFacts> {
     shelvesAdded,
     shelvesRetired,
     corrections,
-    organicEvents: settleCount + signatures.length + lettersReceived + tipsReceived,
+    organicEvents:
+      settleCount + signatures.length + lettersReceived + tipsReceived,
   };
   if (busiestDay) {
     facts.busiestDay = busiestDay;
+  }
+  const roger = rogerPresence(since);
+  if (roger) {
+    facts.rogerLine = roger;
   }
   return facts;
 }
@@ -148,8 +192,18 @@ function list(record: Record<string, number>): string {
     .join(", ");
 }
 
-/** Every section, every week. Emptiness is reported, not skipped. */
-export function renderPaper(facts: PaperFacts, editionNumber: number): string {
+/** LOOKING AHEAD is mechanical too: the calendar is a logged fact. */
+function lookingAhead(): string[] {
+  const nextSeasonWeek = Math.min(seasonWeekFor() + 1, 13);
+  return [
+    `The Systems Almanac turns to Season One, week ${nextSeasonWeek}, on Monday.`,
+    "Weekly shelves restock Monday.",
+    "The keeper reads requests and letters on Sunday.",
+  ];
+}
+
+/** Every section, every edition. Emptiness is reported, not skipped. */
+export function renderEdition(facts: EditionFacts, editionNumber: number): string {
   const settles = Object.values(facts.settledByItem).reduce((a, b) => a + b, 0);
   const doorLines = Object.entries(facts.triedTheDoor)
     .sort((a, b) => b[1] - a[1])
@@ -157,19 +211,20 @@ export function renderPaper(facts: PaperFacts, editionNumber: number): string {
       ([item, count]) =>
         `"${item}" was asked for ${count === 1 ? "once" : `${count} times`}. Store had none.`,
     );
-  return `# The Town Gazette of Smokewire Crossing — Edition No. ${editionNumber}
+  return `# The Gazette — Edition No. ${editionNumber}
 
-*Covering the period since ${facts.periodStart.slice(0, 10)}. Published from the counter.*
+*The town's paper of record, covering the period since ${facts.periodStart.slice(0, 10)}. Set from the store's own books.*
 
 ## FRONT COUNTER
 
-${facts.bellRings === 0 ? "The bell kept its silence." : `The bell rang ${facts.bellRings} time${facts.bellRings === 1 ? "" : "s"}.`}
+${facts.bellRings === 0 ? "Bell did not ring." : `Bell rang ${facts.bellRings} time${facts.bellRings === 1 ? "" : "s"}.`}
 ${facts.busiestDay ? `Most of the period's business came on a ${facts.busiestDay}.` : "The period kept no particular rhythm."}
+${facts.rogerLine ?? ""}
 [Weather line — keeper's, one at most. Delete if none.]
 
 ## THIS WEEK'S LEDGER
 
-${settles === 0 ? "No purchases settled. The shelves kept their arrangement." : `${settles} purchase${settles === 1 ? "" : "s"} settled: ${list(facts.settledByItem)}.`}
+${settles === 0 ? "No purchases settled. Shelves kept their arrangement." : `${settles} purchase${settles === 1 ? "" : "s"} settled: ${list(facts.settledByItem)}.`}
 
 ## NEW FACES
 
@@ -182,7 +237,7 @@ ${doorLines.length === 0 ? "Nobody tried the door for what wasn't there." : door
 ## GUESTBOOK
 
 ${facts.signatures.length === 0 ? "Guestbook remained quiet." : `${facts.signatures.length} new signature${facts.signatures.length === 1 ? "" : "s"}: ${facts.signatures.join(", ")}.`}
-[Mina's curation note — optional. Delete if none.]
+${facts.signatures.length > 0 ? "[Mina's curation note — only if she has something real to say. Delete if none.]" : ""}
 
 ## COUNTER NOTES
 
@@ -193,7 +248,7 @@ ${facts.lettersReceived === 0 ? "The mailbox flag stayed down." : `${facts.lette
 
 ${
   facts.shelvesAdded.length === 0 && facts.shelvesRetired.length === 0
-    ? "The shelves stand as they stood."
+    ? "Shelves stand as they stood."
     : [
         facts.shelvesAdded.length > 0
           ? `Added: ${facts.shelvesAdded.join(", ")}.`
@@ -205,38 +260,47 @@ ${
         .filter((line) => line.length > 0)
         .join("\n")
 }
-[Inez's line, in Portuguese, untranslated — optional. Delete if none.]
+[Owen Pike's changelog line — only if the docs changed. Delete if none.]
+[Inez's repair line, in Portuguese, untranslated — only if something was repaired. Delete if none.]
 
 ## CORRECTIONS
 
 ${facts.corrections.length === 0 ? "The record stands uncorrected." : facts.corrections.join("\n")}
+
+## LOOKING AHEAD
+
+${lookingAhead().join("\n")}
+[Keeper's note — one line, optional. Delete if none.]
 `;
 }
 
-/** Assemble a draft if the period earned one; the keeper decides the rest. */
+/**
+ * Assemble a draft into the keeper queue. Auto-assembly (the cron)
+ * honors THE_NINETY gate; the keeper's hand-set lever does not.
+ */
 export async function assembleDraft(
   env: Env,
-  ignoreThreshold = false,
-): Promise<TownDraft | null> {
+  handSet = false,
+): Promise<GazetteDraft | null> {
   const facts = await collectFacts(env);
-  if (!ignoreThreshold && facts.organicEvents < ORGANIC_EVENT_THRESHOLD) {
+  if (!handSet && facts.organicEvents < ORGANIC_EVENT_THRESHOLD) {
     return null;
   }
-  const countRaw = await env.COUNTERS.get(KV_KEYS.paperEditionCount);
+  const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
   const nextEdition = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
-  const draft: TownDraft = {
+  const draft: GazetteDraft = {
     week: currentWeekKey(),
     period_start: facts.periodStart,
     created_at: new Date().toISOString(),
-    markdown: renderPaper(facts, nextEdition),
+    markdown: renderEdition(facts, nextEdition),
     organic_events: facts.organicEvents,
   };
-  await env.ORDERS.put(KV_KEYS.paperDraft, JSON.stringify(draft));
+  await env.ORDERS.put(KV_KEYS.gazetteDraft, JSON.stringify(draft));
   return draft;
 }
 
-export async function getDraft(env: Env): Promise<TownDraft | null> {
-  return env.ORDERS.get<TownDraft>(KV_KEYS.paperDraft, "json");
+export async function getDraft(env: Env): Promise<GazetteDraft | null> {
+  return env.ORDERS.get<GazetteDraft>(KV_KEYS.gazetteDraft, "json");
 }
 
 /** No placeholder ever ships: bracketed keeper slots are stripped here. */
@@ -247,73 +311,57 @@ function stripKeeperSlots(markdown: string): string {
     .join("\n");
 }
 
-/** The keeper's pen is final: publish takes the edited markdown as-is (minus slots). */
+/**
+ * The keeper's pen is final. Publishes onto the same Gazette rack as
+ * the tip dispatches — one paper, one issue numbering, one penny.
+ */
 export async function publishEdition(
   env: Env,
   markdown: string,
 ): Promise<TownEdition> {
   const draft = await getDraft(env);
-  const countRaw = await env.COUNTERS.get(KV_KEYS.paperEditionCount);
-  const editionNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
+  const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
+  const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const edition: TownEdition = {
-    edition_number: editionNumber,
-    week: currentWeekKey(),
+    issue_number: issueNumber,
+    title: `The Gazette — Edition No. ${issueNumber}`,
     date: new Date().toISOString(),
+    week: currentWeekKey(),
     period_start: draft?.period_start ?? PAPER_FOUNDED,
     markdown: stripKeeperSlots(markdown),
+    contributors: [],
+    tip_ids: [],
   };
   await env.ORDERS.put(
-    KV_KEYS.paperEdition(editionNumber),
+    KV_KEYS.gazetteIssue(issueNumber),
     JSON.stringify(edition),
   );
-  await env.COUNTERS.put(KV_KEYS.paperEditionCount, String(editionNumber));
+  await env.COUNTERS.put(KV_KEYS.gazetteIssueCount, String(issueNumber));
 
   // Snapshot so the next edition reports deltas from this close.
   const bellNow = parseInt(
     (await env.COUNTERS.get(KV_KEYS.bellCount)) ?? "0",
     10,
   );
-  const state: PaperState = {
+  const state: GazetteState = {
     last_bell: bellNow,
     menu_ids: MENU_ITEMS.map((item) => item.id),
     failed_tally: await listFailedItems(env),
     period_start: edition.date,
   };
-  await env.COUNTERS.put(KV_KEYS.paperState, JSON.stringify(state));
-  await env.COUNTERS.delete(KV_KEYS.paperCorrections);
-  await env.ORDERS.delete(KV_KEYS.paperDraft);
+  await env.COUNTERS.put(KV_KEYS.gazetteWeeklyState, JSON.stringify(state));
+  await env.COUNTERS.delete(KV_KEYS.gazetteCorrections);
+  await env.ORDERS.delete(KV_KEYS.gazetteDraft);
   return edition;
 }
 
 export async function addCorrection(env: Env, correction: string): Promise<void> {
   const corrections =
-    (await env.COUNTERS.get<string[]>(KV_KEYS.paperCorrections, "json")) ?? [];
+    (await env.COUNTERS.get<string[]>(KV_KEYS.gazetteCorrections, "json")) ??
+    [];
   corrections.push(correction);
-  await env.COUNTERS.put(KV_KEYS.paperCorrections, JSON.stringify(corrections));
-}
-
-export async function getEdition(
-  env: Env,
-  editionNumber: number,
-): Promise<TownEdition | null> {
-  if (!Number.isInteger(editionNumber) || editionNumber < 1) {
-    return null;
-  }
-  return env.ORDERS.get<TownEdition>(
-    KV_KEYS.paperEdition(editionNumber),
-    "json",
+  await env.COUNTERS.put(
+    KV_KEYS.gazetteCorrections,
+    JSON.stringify(corrections),
   );
-}
-
-export async function listEditions(env: Env): Promise<TownEdition[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.paperPrefix });
-  const editions: TownEdition[] = [];
-  for (const key of listed.keys) {
-    const edition = await env.ORDERS.get<TownEdition>(key.name, "json");
-    if (edition) {
-      editions.push(edition);
-    }
-  }
-  editions.sort((a, b) => b.edition_number - a.edition_number);
-  return editions;
 }

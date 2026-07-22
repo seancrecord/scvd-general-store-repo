@@ -8,7 +8,6 @@ export { whatRoutes } from "@/routes/what";
 export { zodiacRoutes } from "@/routes/zodiac";
 export { letterRoutes } from "@/routes/letters";
 export { mcpRoutes } from "@/routes/mcp";
-export { paperRoutes } from "@/routes/paper";
 export { phantomRoutes } from "@/routes/phantom";
 export { porchRoutes } from "@/routes/porch";
 export { buyRoutes } from "@/routes/buy";
