@@ -26,7 +26,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW (keeper hands, post-porch-log)
 
-- [ ] Republish the ClawHub skill as v1.0.1 (`npx clawhub@latest skill publish ./registry/clawhub --slug scvd-general-store --name "Sean-Claude Van Damme's General Store" --version 1.0.1 --changelog "The skill says where you heard of us."`) — the example URLs now carry ?src=clawhub-skill for channel attribution
+- [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
 
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 
