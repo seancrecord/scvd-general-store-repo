@@ -222,21 +222,21 @@ body.night {
 .cat {
   position: absolute; top: -29px; right: 26px;
   width: 44px; height: 30px;
-  background: #120e1a;
+  background: linear-gradient(175deg, #f4f1f7 30%, #d9d4e0 100%);
   border-radius: 55% 45% 20% 20% / 85% 80% 20% 20%;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 0 6px rgba(255,200,130,0.15));
 }
 .cat::before {
   content: ""; position: absolute; top: -13px; left: 2px;
   width: 20px; height: 17px;
-  background: #120e1a;
+  background: #f4f1f7;
   clip-path: polygon(0% 42%, 16% 0%, 34% 26%, 66% 26%, 84% 0%, 100% 42%, 96% 100%, 4% 100%);
 }
 .cat-tail {
   position: absolute; right: -13px; bottom: 0;
   width: 18px; height: 24px;
   border: 4px solid transparent;
-  border-right-color: #120e1a;
+  border-right-color: #ece8f1;
   border-radius: 0 70% 70% 0 / 0 100% 100% 0;
   transform-origin: bottom left;
   animation: sway 7s ease-in-out infinite alternate;
