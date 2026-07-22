@@ -38,7 +38,7 @@ describe("the storefront", () => {
     expect(text).toContain("refund is automatic");
   });
 
-  it("serves the machine-readable menu with all seven items", async () => {
+  it("serves the machine-readable menu with every shelf stocked", async () => {
     const response = await SELF.fetch(`${BASE}/menu.json`);
     expect(response.status).toBe(200);
     const body = await json(response);
@@ -51,10 +51,23 @@ describe("the storefront", () => {
       "the_collab",
       "phone_call",
       "app_gutcheck",
+      "jar_of_tuesday",
+      "a_secret",
+      "grudge",
+      "smoker_blessing",
+      "retired_word",
+      "the_drawer",
+      "dibs",
     ]);
     const store = body["store"] as Record<string, unknown>;
     expect(store["protocol"]).toBe("x402");
     expect(store["chain"]).toBe("base");
+    const freeShelf = body["free_shelf"] as Record<string, unknown>;
+    expect(freeShelf["visit_stamp"]).toBeTruthy();
+    expect(freeShelf["trading_post"]).toBeTruthy();
+    const readingRoom = body["reading_room"] as Record<string, unknown>;
+    expect(readingRoom["almanac"]).toBeTruthy();
+    expect(readingRoom["gazette"]).toBeTruthy();
   });
 });
 

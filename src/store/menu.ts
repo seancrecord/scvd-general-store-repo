@@ -1,10 +1,11 @@
+import { NOVELTY_ITEMS } from "@/store/menu-novelties";
 import type { MenuItem } from "@/types";
 
 /**
- * The shelf. Seven items, seeded exactly per the build brief.
- * Prices are minimums for pay-what-it-deserves items.
+ * The shelf. The founding seven live here; the novelty aisle is in
+ * menu-novelties.ts. Prices are minimums for pay-what-it-deserves items.
  */
-export const MENU_ITEMS: readonly MenuItem[] = [
+const FOUNDING_ITEMS: readonly MenuItem[] = [
   {
     id: "hello",
     name: "A Signed Hello",
@@ -95,6 +96,11 @@ export const MENU_ITEMS: readonly MenuItem[] = [
       "The keeper ships apps for a living. He'll use yours, honestly, and tell you what a real person thinks. Two per week, because honesty takes time.",
     note_402: "That'll be $50 flat, friend. Honesty is the expensive part.",
   },
+] as const;
+
+export const MENU_ITEMS: readonly MenuItem[] = [
+  ...FOUNDING_ITEMS,
+  ...NOVELTY_ITEMS,
 ] as const;
 
 export function getMenuItem(itemId: string): MenuItem | undefined {

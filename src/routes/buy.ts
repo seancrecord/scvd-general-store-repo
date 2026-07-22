@@ -63,6 +63,14 @@ buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
 function instantDeliverable(item: MenuItem, patronNumber: number): string {
+  if (item.id === "dibs") {
+    return [
+      `DIBS, officially. Patron no. ${patronNumber} called it at ${new Date().toISOString()},`,
+      `witnessed by ${STORE_METADATA.name} and recorded on a signed certificate.`,
+      `Whatever it was — the idea, the name, the last one on the shelf — it's yours.`,
+      `Anyone disputes it, show them the verify URL. Dibs is dibs.`,
+    ].join(" ");
+  }
   return [
     `Hello, patron no. ${patronNumber}.`,
     `This note certifies that you walked into ${STORE_METADATA.name},`,
