@@ -72,7 +72,11 @@ export {
 } from "@/services/letters";
 export {
   signForAddress,
-  weeklyHoroscope,
+  signById,
+  seasonWeekFor,
+  seasonEntry,
+  archiveWeeks,
+  renderEntryMarkdown,
   isWalletAddress,
 } from "@/services/zodiac";
 export { porchAmbience, catIsOut, takeSeat } from "@/services/porch";

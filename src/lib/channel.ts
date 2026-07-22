@@ -73,6 +73,11 @@ export interface HouseSignals {
   houseParam?: string;
 }
 
+/** Family doesn't make the paper: true when a wallet is the house's own. */
+export function isHouseWallet(env: Env, address: string): boolean {
+  return houseWallets(env).includes(address.toLowerCase());
+}
+
 export function isHouseTraffic(env: Env, signals: HouseSignals): boolean {
   if (signals.payer && houseWallets(env).includes(signals.payer.toLowerCase())) {
     return true;

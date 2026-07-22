@@ -23,6 +23,12 @@ import {
 } from "@/services/orders";
 import { setMonthlyNote } from "@/services/patronage";
 import {
+  addCorrection,
+  assembleDraft,
+  getDraft,
+  publishEdition,
+} from "@/services/gazette-weekly";
+import {
   listCommissions,
   listFailedItems,
   listWaitlist,
@@ -64,6 +70,7 @@ adminRoutes.get("/admin", async (c) => {
     payers,
     letters,
     alerts,
+    gazetteDraft,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -78,6 +85,7 @@ adminRoutes.get("/admin", async (c) => {
     listPayers(c.env),
     listLetters(c.env),
     listAlerts(c.env),
+    getDraft(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -94,8 +102,36 @@ adminRoutes.get("/admin", async (c) => {
       payers,
       letters: letters.map((entry) => entry.record),
       alerts,
+      gazetteDraft,
     }),
   );
+});
+
+adminRoutes.post("/admin/gazette/edition/assemble", async (c) => {
+  // The keeper's hand-set lever ignores THE_NINETY gate.
+  await assembleDraft(c.env, true);
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/gazette/edition/publish", async (c) => {
+  const form = await c.req.parseBody();
+  const markdown =
+    typeof form["markdown"] === "string" ? form["markdown"].trim() : "";
+  if (!markdown) {
+    return c.text("An edition needs its pages.", 400);
+  }
+  await publishEdition(c.env, markdown);
+  return c.redirect("/admin");
+});
+
+adminRoutes.post("/admin/gazette/correction", async (c) => {
+  const form = await c.req.parseBody();
+  const correction = sanitizeText(form["correction"], 500);
+  if (!correction) {
+    return c.text("A correction needs words in it.", 400);
+  }
+  await addCorrection(c.env, correction);
+  return c.redirect("/admin");
 });
 
 adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {

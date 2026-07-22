@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { readMonthLedger, listPayers } from "@/lib/metrics";
 import { renderPatronBadge } from "@/services/badge-svg";
 import { replyToLetter } from "@/services/letters";
-import { signForAddress, weeklyHoroscope } from "@/services/zodiac";
+import { seasonEntry, signForAddress } from "@/services/zodiac";
 import { ZODIAC_SIGNS } from "@/store/zodiac";
 import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
 import {
@@ -64,19 +64,17 @@ describe("the Agent Zodiac", () => {
     expect((body["signs"] as unknown[]).length).toBe(12);
   });
 
-  it("assigns a sign for life and a horoscope for the week", async () => {
+  it("assigns a sign for life and a page for the week", async () => {
     const address = "0x137aE5e3c7ed176744226F67223de50CA3A19e5A";
     const first = await json(await SELF.fetch(`${BASE}/zodiac/${address}`));
     const second = await json(await SELF.fetch(`${BASE}/zodiac/${address}`));
     expect(first["sign"]).toBe(second["sign"]);
-    expect(first["horoscope"]).toBe(second["horoscope"]);
+    expect(first["forecast"]).toBe(second["forecast"]);
     // Case-insensitive: the address is the identity, not its spelling.
     const sign = signForAddress(address);
     expect(signForAddress(address.toLowerCase()).id).toBe(sign.id);
-    // Different weeks, same sign, deterministic readings.
-    expect(weeklyHoroscope(sign, "2026-W30")).toEqual(
-      weeklyHoroscope(sign, "2026-W30"),
-    );
+    // The page is a pure (sign, week) lookup.
+    expect(seasonEntry(sign.id, 1)).toEqual(seasonEntry(sign.id, 1));
     expect(ZODIAC_SIGNS.map((s) => s.id)).toContain(sign.id);
   });
 

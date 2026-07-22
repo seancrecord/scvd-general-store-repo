@@ -168,7 +168,11 @@ export function minimumUsdcForPath(path: string): number {
   if (path.startsWith("/api/buy/")) {
     return getMenuItem(path.replace(/^\/api\/buy\//, ""))?.price_usdc ?? 0;
   }
-  if (path.startsWith("/almanac/") || path.startsWith("/gazette/issue-")) {
+  if (
+    path.startsWith("/almanac/") ||
+    path.startsWith("/gazette/issue-") ||
+    path.startsWith("/zodiac/archive/")
+  ) {
     return PENNY_PAGE_USDC;
   }
   return 0;
@@ -217,6 +221,14 @@ export function getPaymentStack(env: Env): PaymentStack {
       "The Gazette — dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
       "The Gazette is a penny a copy, friend. The contributors get the credit; the press gets the cent.",
       "The Gazette — Issue no. 1",
+    );
+    // The Systems Almanac archive: past weeks turn into penny pages as
+    // the season advances, so the paid route is a pattern too.
+    routes["GET /zodiac/archive/:sign/week-:week"] = pennyPageRouteConfig(
+      env,
+      "The Systems Almanac archive — one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
+      "That page of the Almanac has turned, friend. A penny opens the archive.",
+      "The Systems Almanac — The Checksum, Season One, Week 1",
     );
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };

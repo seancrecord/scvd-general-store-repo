@@ -32,6 +32,7 @@ import { sendAlert } from "@/lib/alerts";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
+import { assembleDraft } from "@/services/gazette-weekly";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -106,6 +107,10 @@ const worker: ExportedHandler<Env> = {
   scheduled: async (event, env, ctx) => {
     if (event.cron === "0 11 * * SUN") {
       ctx.waitUntil(compileDigest(env));
+      // THE_NINETY gate: the Gazette drafts itself only when the week
+      // earned an edition (3+ organic events); the keeper's pen
+      // decides whether it prints. Hand-set issues bypass via /admin.
+      ctx.waitUntil(assembleDraft(env).then(() => undefined));
     }
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>

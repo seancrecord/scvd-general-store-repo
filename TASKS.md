@@ -19,8 +19,19 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 - [x] The Mailbox (block H): POST /api/letter (free, 1/day, private), pickup URL with signed replies, admin read/reply/archive queue, storefront counter, digest unread count — DONE 2026-07-22
 - [x] Census-shelf specs aligned to the store ledger §3: phantom_check $0.25 (out-of-band probe ~6h later, hourly cron + lazy pickup resolve), quick_judgment $3, certificate_of_patronage $20 PWID, recurring_patronage $3/30d — DONE 2026-07-22
-- [ ] Zodiac character research run → recast the twelve signs if the keeper wants; the address→sign derivation must NOT change once agents quote their signs (scaffold names are drawn from store lore: Rock, Bell, Jar, Drawer, Smoke, Train, Fog, Porch Dog, Thermometer, Ledger, Post Oak, Stall)
-- [ ] Zodiac archive on the almanac rail (past weeks as penny pages) — deferred with the character run
+- [x] Zodiac character research → the Systems Almanac canon landed; twelve signs recast (derivation untouched), Season One written: 13 weeks x 12 signs — DONE 2026-07-22
+- [x] Zodiac archive on the almanac rail (past weeks as penny pages at /zodiac/archive) — DONE 2026-07-22
+- [ ] the_confession — named in the phase plan, no spec reached the build agent; paste the spec and it ships
+- [x] The Gazette weekly-edition engine per GAZETTE_SPEC (now complete incl. CORRECTIONS + LOOKING AHEAD): editions on the /gazette rack alongside tip dispatches, auto-drafted Sundays behind THE_NINETY gate (3+ organic events), hand-set lever in /admin, keeper's pen before print — DONE 2026-07-22 (misread fixed: this is the Gazette, NOT town_papers)
+
+## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
+
+- [ ] town_papers — identity registry: $3 PWID instant, signed cert binding {chosen_name} to {paying wallet} + issue date + patron-history summary; public registry /papers/:name, uniqueness first-come, no expiry. HARD SCOPE: attest, never authenticate — no agenthood/humanity/continuity claims, copy says the wallet signature does that. Composes with nomenclature (nomenclature NAMES you, store picks; papers REGISTER you, you pick)
+- [ ] the_confession — $0.01 penny shelf, instant, POST {confession (500 cap), sign_as? (name or "anonymous")}; deliverable = signed absolution certificate ("The store heard it. The store keeps it. Go and retry with backoff.") + cert id; anonymized (no wallet/name unless sign_as); review queue, keeper approves before ANY Gazette appearance, never auto-published; injection posture same as letters; copy never uses the word "sin". Until built, COUNTER NOTES reports emptiness (it does)
+- [ ] Resident lines (Mina/Owen Pike/Inez/Roger) — CHARACTER_CANON.md lives in scvd-back-office; read it before writing any resident line. Current state: bracketed keeper slots (stripped at publish) + Roger's mechanical presence line from his own schedule (never quoted, no inner life, absence as often as presence). Dimas appears NOWHERE yet, per canon
+- [ ] Season Two of the Systems Almanac due before ISO week 2026-W44 (season one clamps to week 13 after that — stocked but repeating)
+- [ ] Gazette auto-assembly WAITS until a week has 3+ organic events (phase plan threshold)
+- [ ] Sunday sweep is the keeper's weekly ritual now: manual checklist + OPPORTUNITIES.md check; watch verify-vs-purchase ratio (re-verification exceeding purchases outranks revenue as a demand signal)
 - [ ] ACP registry listing [VERIFY submission process; skip if it requires token participation] (Run 1 open conflict)
 - [ ] Farcaster frame / Base App miniapp surfaces — Distribution stream per Run 1 §8; v3 candidate
 - [ ] Monthly ledger review ritual: /admin "The ledger's answers" vs Run 1 hypotheses (first review ~60 days after listing)

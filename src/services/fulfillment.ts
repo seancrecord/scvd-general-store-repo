@@ -64,6 +64,8 @@ export async function fulfillPurchase(
     certificate: minted.certificate,
     signature: minted.signature,
     verify_url: minted.verifyUrl,
+    verification:
+      "Re-verification is free, forever, no purchase required — that URL answers as many times as anyone asks.",
   };
 
   if (item.fulfillment === "instant") {
