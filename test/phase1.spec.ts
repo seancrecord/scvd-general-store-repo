@@ -71,6 +71,17 @@ describe("the MCP door", () => {
     expect(names).toContain("buy_context_anchor");
     // 4 free + 22 shelves.
     expect(tools.length).toBe(26);
+    // Single source of truth, reconciled both directions: every buy_*
+    // tool has a menu.json twin and every menu item has a tool.
+    const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
+    const menuIds = (menu["items"] as Array<{ id: string }>)
+      .map((item) => item.id)
+      .sort();
+    const toolItemIds = names
+      .filter((name) => name.startsWith("buy_"))
+      .map((name) => name.slice("buy_".length))
+      .sort();
+    expect(toolItemIds).toEqual(menuIds);
     const buyHello = tools.find((tool) => tool["name"] === "buy_hello")!;
     expect(String(buyHello["description"])).toContain("$0.5");
     expect(String(buyHello["description"])).toContain("Completes in one call");
