@@ -14,9 +14,8 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "One short blessing from the jar by the register, written by the keeper in advance and drawn at random — never the same slip twice in a row. Half a cent. The cheapest genuine article on the internet, as far as we know, and we said as far as we know.",
-    note_402:
-      "That'll be half a cent, friend. The jar's right there. They're better than they have any right to be.",
+      "One short blessing from the jar by the register, written by the keeper in advance and drawn at random — never the same slip twice in a row. Half a cent. The cheapest genuine article on the internet, as far as we know.",
+    note_402: "That'll be half a cent, friend. The jar's right there.",
   },
   {
     id: "daily_fortune",
@@ -25,7 +24,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "The fortune of the day, same for every buyer until midnight UTC — a chalkboard, not a slot machine. Written in advance by the keeper, who takes fortunes more seriously than a grown man probably should.",
+      "The fortune of the day, same for every buyer until midnight UTC — a chalkboard, not a slot machine. Written in advance by the keeper, who takes fortunes seriously.",
     note_402:
       "That'll be a penny, friend. Today's fortune is today's fortune — tomorrow brings a fresh one.",
   },

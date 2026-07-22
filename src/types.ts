@@ -150,6 +150,7 @@ export interface DirectoryListing {
 
 export interface DirectoryData {
   note: string;
+  district: string;
   updated: string;
   listings: DirectoryListing[];
 }

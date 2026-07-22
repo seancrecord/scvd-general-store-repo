@@ -1,6 +1,6 @@
 import type { AlmanacEntry } from "@/types";
 
-/** Almanac page. Newest of the three seed entries. */
+/** Almanac page. Newest of the seed entries. */
 export const fieldNotesBrisketJuly2026: AlmanacEntry = {
   slug: "field-notes-brisket-july-2026",
   title: "Field notes: brisket, July 2026",
