@@ -13,6 +13,7 @@ Running log of decisions, prompts run, and status. Agents: read this first. Newe
 
 ## Decisions (do not relitigate without the keeper)
 
+- Standing rules live in HOUSE_RULES.md; read before proposing anything clever.
 - Architecture: CF Workers + TS + Hono + KV + x402 v2 (@x402/core + @x402/evm + @x402/hono) + CDP facilitator via createFacilitatorConfig(). Custom payment gate in src/lib/payment-gate.ts: verify → settle → only then mint. Single Worker, no React.
 - Patron counter: KV claim-with-readback; ~60s cross-colo window accepted for v0.1; Durable Object counter is the named v0.2 fix.
 - Tips: three-tier 402 challenge (min, 2x, 5x); above-minimum recorded as tip.
