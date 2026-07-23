@@ -280,7 +280,7 @@ describe("orders", () => {
   });
 });
 
-describe("the back room", () => {
+describe("keep's office", () => {
   it("is locked without the keeper's password", async () => {
     const response = await SELF.fetch(`${BASE}/admin`);
     expect(response.status).toBe(401);
@@ -294,7 +294,7 @@ describe("the back room", () => {
     });
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain("The Back Room");
+    expect(html).toContain("Keep's Office");
   });
 
   it("compiles a digest on demand", async () => {

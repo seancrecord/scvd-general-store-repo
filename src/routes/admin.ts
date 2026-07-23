@@ -11,8 +11,8 @@ import {
   readPorchLedger,
 } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
-import { renderBooksPage } from "@/pages/admin/books-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
+import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { listIssues, publishIssue } from "@/services/gazette";
@@ -80,7 +80,7 @@ function shelf<T>(
   return fallback;
 }
 
-adminRoutes.get("/admin", async (c) => {
+adminRoutes.get("/admin/counter", async (c) => {
   const notes: string[] = [];
   const [
     orders,
@@ -132,17 +132,35 @@ adminRoutes.get("/admin", async (c) => {
   );
 });
 
-adminRoutes.get("/admin/books", async (c) => {
+adminRoutes.get("/admin", async (c) => {
   const notes: string[] = [];
-  const [monthLedger, porchLedger, payers, recentChallenges, bazaarLedger, gazetteIssues] =
-    await Promise.allSettled([
-      readMonthLedger(c.env),
-      readPorchLedger(c.env),
-      listPayers(c.env),
-      listRecentChallenges(c.env),
-      listBazaarLedger(c.env),
-      listIssues(c.env),
-    ]);
+  const [
+    monthLedger,
+    porchLedger,
+    payers,
+    recentChallenges,
+    bazaarLedger,
+    gazetteIssues,
+    orders,
+    letters,
+    tips,
+    confessions,
+    refunds,
+    alerts,
+  ] = await Promise.allSettled([
+    readMonthLedger(c.env),
+    readPorchLedger(c.env),
+    listPayers(c.env),
+    listRecentChallenges(c.env),
+    listBazaarLedger(c.env),
+    listIssues(c.env),
+    listOrders(c.env),
+    listLetters(c.env),
+    listTips(c.env),
+    listConfessions(c.env),
+    listRefunds(c.env),
+    listAlerts(c.env, 5),
+  ]);
   const emptyLedger = {
     month: new Date().toISOString().slice(0, 7),
     items: {},
@@ -151,9 +169,23 @@ adminRoutes.get("/admin/books", async (c) => {
     channels402: {},
     channels402House: {},
     channels402Infra: {},
+    days: {},
+    venues: {},
+    revenueUsdc: 0,
+    revenueHouseUsdc: 0,
   };
+  const pendingReviews =
+    shelf(tips, [], "tips", notes).filter(
+      (tip) => tip.record.status === "pending_review",
+    ).length +
+    shelf(confessions, [], "confessions", notes).filter(
+      (entry) => entry.record.status === "pending_review",
+    ).length +
+    shelf(refunds, [], "refunds", notes).filter(
+      (refund) => refund.status === "refund_pending",
+    ).length;
   return c.html(
-    renderBooksPage({
+    renderOfficePage({
       monthLedger: shelf(monthLedger, emptyLedger, "month ledger", notes),
       porchLedger: shelf(
         porchLedger,
@@ -165,10 +197,23 @@ adminRoutes.get("/admin/books", async (c) => {
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
+      work: {
+        orders: shelf(orders, [], "orders", notes).filter(
+          (order) => order.status === "queued",
+        ).length,
+        letters: shelf(letters, [], "letters", notes).filter(
+          (entry) => entry.record.status !== "archived",
+        ).length,
+        reviews: pendingReviews,
+        alerts: shelf(alerts, [], "alerts", notes).length,
+      },
       loadNotes: notes,
     }),
   );
 });
+
+// Old bookmark; the books merged into the desk.
+adminRoutes.get("/admin/books", (c) => c.redirect("/admin"));
 
 adminRoutes.get("/admin/tools", (c) => c.html(renderToolsPage()));
 

@@ -1,15 +1,15 @@
 import { escapeHtml } from "@/lib/sanitize";
 
 /**
- * The back room's shared shell: one nav, three rooms.
- *   /admin        the counter (the day's actual work)
- *   /admin/books  the books (ledgers and diagnostics, read-only)
- *   /admin/tools  the back shelf (levers, rarely pulled)
+ * Keep's Office: one nav, three rooms.
+ *   /admin          the desk (analytics front and center)
+ *   /admin/counter  the counter (the day's actual work)
+ *   /admin/tools    the back shelf (levers, rarely pulled)
  * Every data section renders independently; a shelf that fails to
  * load says so without taking the room down.
  */
 
-export type AdminTab = "counter" | "books" | "tools";
+export type AdminTab = "office" | "counter" | "tools";
 
 export function renderAdminShell(
   tab: AdminTab,
@@ -31,7 +31,7 @@ export function renderAdminShell(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Back Room</title>
+  <title>Keep's Office</title>
   <style>
     body { font-family: monospace; max-width: 900px; margin: 1rem auto; padding: 0 1rem; }
     section { border: 1px solid #999; padding: 1rem; margin-bottom: 1rem; }
@@ -44,10 +44,10 @@ export function renderAdminShell(
   </style>
 </head>
 <body>
-  <h1>The Back Room</h1>
+  <h1>Keep's Office</h1>
   <nav>
-    ${link("counter", "/admin", "The counter")}
-    ${link("books", "/admin/books", "The books")}
+    ${link("office", "/admin", "The desk")}
+    ${link("counter", "/admin/counter", "The counter")}
     ${link("tools", "/admin/tools", "The back shelf")}
     <a href="/">Front of house</a>
   </nav>

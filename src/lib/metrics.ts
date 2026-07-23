@@ -30,9 +30,24 @@ export function itemKeyFromPath(path: string): string {
 }
 
 async function bump(env: Env, key: string): Promise<void> {
-  const current = await env.COUNTERS.get(key);
-  await env.COUNTERS.put(key, String((current ? parseInt(current, 10) : 0) + 1));
+  await bumpBy(env, key, 1);
 }
+
+async function bumpBy(env: Env, key: string, amount: number): Promise<void> {
+  const current = await env.COUNTERS.get(key);
+  await env.COUNTERS.put(
+    key,
+    String((current ? parseInt(current, 10) : 0) + amount),
+  );
+}
+
+/** Day key inside the month, for the trend table. */
+function dayKey(date: Date = new Date()): string {
+  return date.toISOString().slice(8, 10);
+}
+
+/** USDC stored as integer millionths so counters stay integers. */
+const USDC_MICRO = 1_000_000;
 
 export type MetricEventKind = "challenge" | "settle" | "verify" | "porch";
 
@@ -111,6 +126,17 @@ export async function recordChallengeIssued(
   // Who's window-shopping, by channel, the diagnosis column for
   // "challenges without settles: shoppers or scanners?"
   await bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel));
+  if (suffix === "") {
+    // Organic day counter for the trend table.
+    await bump(env, KV_KEYS.metric(metricsMonth(), "d402", dayKey()));
+  }
+  if (event.declared_source && !event.house) {
+    // ?src= venue markers: the free-papers measurement.
+    await bump(
+      env,
+      KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
+    );
+  }
   await writeEvent(env, event);
 }
 
@@ -151,6 +177,12 @@ export async function recordPorchVisit(
       suffix === "" ? `${surface}:${event.channel}` : surface,
     ),
   );
+  if (event.declared_source && !event.house) {
+    await bump(
+      env,
+      KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
+    );
+  }
   await writeEvent(env, event);
 }
 
@@ -201,6 +233,18 @@ export async function recordSettlement(
     ),
   );
   await bump(env, KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel));
+  // Revenue, organic and house apart, in integer millionths of USDC.
+  await bumpBy(
+    env,
+    KV_KEYS.metric(month, `rev${bucketSuffix(event, false)}`, "total"),
+    Math.round(signals.paidUsdc * USDC_MICRO),
+  );
+  if (bucketSuffix(event, false) === "") {
+    await bump(env, KV_KEYS.metric(month, "dpaid", dayKey()));
+  }
+  if (event.declared_source && !event.house) {
+    await bump(env, KV_KEYS.metric(month, "venue", event.declared_source));
+  }
   await writeEvent(env, event);
   if (signals.payer) {
     await recordPayerSeen(env, signals.payer);
@@ -239,6 +283,13 @@ export interface MonthLedger {
   channels402: Record<string, number>;
   channels402House: Record<string, number>;
   channels402Infra: Record<string, number>;
+  /** day-of-month -> organic counts, the trend table. */
+  days: Record<string, { challenges: number; settles: number }>;
+  /** ?src= venue markers seen on organic traffic, verbatim claims. */
+  venues: Record<string, number>;
+  /** USDC, organic and house apart. */
+  revenueUsdc: number;
+  revenueHouseUsdc: number;
 }
 
 function emptyRow(): LedgerRow {
@@ -275,6 +326,10 @@ export async function readMonthLedger(
     channels402: {},
     channels402House: {},
     channels402Infra: {},
+    days: {},
+    venues: {},
+    revenueUsdc: 0,
+    revenueHouseUsdc: 0,
   };
   const listed = await env.COUNTERS.list({
     prefix: KV_KEYS.metricMonthPrefix(month),
@@ -290,6 +345,22 @@ export async function readMonthLedger(
     const tail = parts.join(":");
     if (kind?.startsWith("porch")) {
       continue; // The porch table reads these; the ledger doesn't.
+    }
+    if (kind === "d402" || kind === "dpaid") {
+      const day = (ledger.days[tail] ??= { challenges: 0, settles: 0 });
+      if (kind === "d402") day.challenges = value;
+      else day.settles = value;
+      continue;
+    }
+    if (kind === "venue") {
+      ledger.venues[tail] = value;
+      continue;
+    }
+    if (kind === "rev" || kind === "revh") {
+      const usdc = value / 1_000_000;
+      if (kind === "rev") ledger.revenueUsdc += usdc;
+      else ledger.revenueHouseUsdc += usdc;
+      continue;
     }
     if (kind === "src") {
       ledger.channels[tail] = value;
