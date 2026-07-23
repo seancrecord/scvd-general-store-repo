@@ -31,7 +31,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NEXT BUILD (big one, keeper-directed 2026-07-23)
 
-- [ ] FULL UI REWORK — direction from the keeper: positive vibes, sunny day, clean, readable, marketable (not corporate), fun, fitting the canon instead of trying to be something we aren't. The neon-dusk cyberpunk front retires. De-overt doctrine applies everywhere: sexy/cool/sleek, "scvd.store" energy; the story lives in tidbits that can be pieced together, never announced. Nothing explains itself. Scope: storefront-page/storefront-css rework, porch page follows the same sky, paper pages stay paper. Needs a design pass proposal for keeper approval before build
+- [ ] FULL UI REWORK — direction from the keeper: positive vibes, sunny day, clean, readable, marketable (not corporate), fun, fitting the canon instead of trying to be something we aren't. The neon-dusk cyberpunk front retires. De-overt doctrine applies everywhere: sexy/cool/sleek, "scvd.store" energy; the story lives in tidbits that can be pieced together, never announced. Nothing explains itself. Scope: storefront-page/storefront-css rework, porch page follows the same sky, paper pages stay paper. PROPOSAL FILED 2026-07-23 at registry/sunny-day-ui-proposal.md (concept: the store stands in front of its own shelves — the artifacts' paper/ink/brick language becomes the building; five keeper decisions listed with defaults). AWAITING THE NOD; no build until it lands
 
 ## NOW (keeper's pen, post-canon)
 
