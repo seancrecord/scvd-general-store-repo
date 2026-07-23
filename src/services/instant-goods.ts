@@ -71,7 +71,7 @@ export async function deliverInstantGoods(
       }
       const created = await createAnchor(env, anchorInput);
       return {
-        deliverable: anchorNote(created.anchorUrl),
+        deliverable: anchorNote(),
         extras: {
           anchor_id: created.record.anchor.anchor_id,
           anchor_url: created.anchorUrl,
@@ -109,7 +109,6 @@ export async function deliverInstantGoods(
         deliverable: phantomCheckNote(
           scheduled.record.target,
           scheduled.record.due_at,
-          scheduled.pickupUrl,
         ),
         extras: {
           check_id: scheduled.record.check_id,

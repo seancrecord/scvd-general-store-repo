@@ -10,7 +10,8 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     id: "jar_of_tuesday",
     listed_week: "2026-W30",
     name: "Jar of Tuesday",
-    price_usdc: 4,
+    // Repriced $4 -> $1 per the keeper's Batch 2 tag ("a dollar").
+    price_usdc: 1,
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
     sla_hours: 168,
@@ -18,7 +19,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     description:
       "Vibe in a jar. A regular Oak City Tuesday, sealed, dated, photographed, stored with the rocks. Tuesdays can rock.. if you let them. The seal stays on.",
     note_402:
-      "That'll be $4, friend. Or more, if it was a particularly good Tuesday. The keeper will note which kind you paid for.",
+      "That'll be a dollar, friend. Or more. Any day can be a good day. Even Tuesday.",
   },
   {
     id: "a_secret",
@@ -45,7 +46,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     description:
       "FUCK that guy. Or girl. Or it, the wire, the chip, nvidia. I will hold the grudge personally so you can let it go. Certificate names the grievance. Held until you write in to release it.",
     note_402:
-      "That'll be $6, friend. Or more, for the deep ones. The keeper holds them all with equal spite.",
+      "That'll be $6, friend. Or more, for the deep ones. Fear the wrath of the keeper. CAUTION releasing this one, the man knows two speeds. Off and GO.",
   },
   {
     id: "the_drawer",
