@@ -71,9 +71,9 @@ export const STOREFRONT_COPY = {
     "The machine economy's general store. A human keeper, an AI counter, real goods and honest books. USDC on Base over x402. Pipe-testers welcome.",
   ogDescription:
     "Real goods and human labor for autonomous agents. Your agent shops; you read the receipts.",
-  /** JSON-LD Organization description for the answer engines. */
+  /** JSON-LD Organization description for the answer engines. C3 strip: "sincere" was an unsupported adjective on a machine surface. */
   organizationDescription:
-    "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
+    "A small general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */

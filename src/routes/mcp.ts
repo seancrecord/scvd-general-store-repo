@@ -4,6 +4,7 @@ import { runMcpPayment } from "@/lib/mcp-payment";
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
+import { factBlockText } from "@/lib/listing-spec";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
@@ -11,8 +12,12 @@ import { getCertificate } from "@/services/certificates";
 import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
-import { verifyCertificateSignature } from "@/lib/signing";
+import {
+  cachedPublicKeyHex,
+  verifyCertificateSignature,
+} from "@/lib/signing";
 import { getMenuItem } from "@/store";
+import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
 import { isRecord, type HonoEnv, type MenuItem } from "@/types";
 
@@ -240,6 +245,7 @@ async function callPurchaseTool(
   const outcome = await runMcpPayment(c.env, item.id, paymentMeta, mcpSignals(c));
   if (outcome.kind === "payment-required") {
     const body = isRecord(outcome.body) ? outcome.body : {};
+    const base = c.env.STORE_BASE_URL;
     return rpcError(
       id,
       402,
@@ -248,6 +254,16 @@ async function callPurchaseTool(
         ...(outcome.challenge !== undefined
           ? { "x402/payment-required": outcome.challenge }
           : {}),
+        // S2: the strongest evidence lives in the challenge itself.
+        spec_note: factBlockText(item),
+        verification: {
+          verify_url: `${base}/api/verify/{id}`,
+          key_fingerprint: await cachedPublicKeyHex(c.env.SIGNING_KEY),
+          signing_key_url: `${base}/.well-known/scvd-signing-key`,
+          sample_artifact_id: SAMPLE_ARTIFACT_ID,
+          sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+          identity_policy: IDENTITY_POLICY,
+        },
         note: "Sign one of the accepts and retry this tools/call with the payment in _meta['x402/payment'].",
       },
     );
@@ -318,8 +334,10 @@ async function handleRpc(
           : DEFAULT_PROTOCOL,
         capabilities: { tools: { listChanged: false } },
         serverInfo: {
+          // S2 identity audit: exactly the storefront/Bazaar/skill names,
+          // slug and display form both; nothing appended anywhere.
           name: "scvd-general-store",
-          title: "Sean-Claude Van Damme's General Store (scvd.store)",
+          title: "Sean-Claude Van Damme's General Store",
           version: "0.4.0",
         },
         instructions:
@@ -330,13 +348,15 @@ async function handleRpc(
       return rpcResult(id, {});
     case "tools/list":
       return rpcResult(id, {
-        tools: mcpToolCatalog().map(({ itemId: _itemId, ...tool }) => tool),
+        tools: mcpToolCatalog(c.env.STORE_BASE_URL).map(
+          ({ itemId: _itemId, ...tool }) => tool,
+        ),
       });
     case "tools/call": {
       const params = isRecord(request.params) ? request.params : {};
       const name = typeof params["name"] === "string" ? params["name"] : "";
       const args = isRecord(params["arguments"]) ? params["arguments"] : {};
-      const tool = findMcpTool(name);
+      const tool = findMcpTool(name, c.env.STORE_BASE_URL);
       if (!tool) {
         return rpcError(id, -32602, `No tool by that name on the shelf: ${name}`);
       }

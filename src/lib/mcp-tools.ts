@@ -1,5 +1,8 @@
+import { factBlockText, listingSpec } from "@/lib/listing-spec";
+import type { ListingSpec } from "@/lib/listing-spec";
 import { priceTiersUsdc } from "@/lib/payments";
 import { MENU_ITEMS } from "@/store";
+import { GUARANTEE_BLOCK_TEXT } from "@/store/spec";
 import type { MenuItem } from "@/types";
 
 /**
@@ -17,6 +20,8 @@ export interface McpTool {
   description: string;
   inputSchema: Schema;
   outputSchema?: Schema;
+  /** S1: the uniform listing spec; conforming clients ignore extras. */
+  spec?: ListingSpec;
   /** Menu item behind a paid tool; absent means free. */
   itemId?: string;
 }
@@ -129,12 +134,19 @@ function priceLine(item: MenuItem): string {
     : `$${item.price_usdc} minimum, pay what it deserves (tiers $${tiers.join(" / $")}; above minimum is a recorded tip)`;
 }
 
-function purchaseTool(item: MenuItem): McpTool {
+/**
+ * Description order is deliberate (C1): the spec-first fact block
+ * tops the description, the shelf copy follows, the guarantee split
+ * closes it verbatim, exactly the shape a planning model copies into
+ * its own risk assessment.
+ */
+function purchaseTool(item: MenuItem, base: string): McpTool {
   return {
     name: `buy_${item.id}`,
-    description: `${item.name}, ${priceLine(item)}. ${item.description} ${completionCriteria(item)}`,
+    description: `${factBlockText(item)} ${item.name}, ${priceLine(item)}. ${item.description} ${completionCriteria(item)} ${GUARANTEE_BLOCK_TEXT}`,
     inputSchema: purchaseInputSchema(item),
     outputSchema: purchaseOutputSchema(item),
+    spec: listingSpec(item, base),
     itemId: item.id,
   };
 }
@@ -218,10 +230,10 @@ const FREE_TOOLS: McpTool[] = [
   },
 ];
 
-export function mcpToolCatalog(): McpTool[] {
-  return [...FREE_TOOLS, ...MENU_ITEMS.map(purchaseTool)];
+export function mcpToolCatalog(base: string): McpTool[] {
+  return [...FREE_TOOLS, ...MENU_ITEMS.map((item) => purchaseTool(item, base))];
 }
 
-export function findMcpTool(name: string): McpTool | undefined {
-  return mcpToolCatalog().find((tool) => tool.name === name);
+export function findMcpTool(name: string, base: string): McpTool | undefined {
+  return mcpToolCatalog(base).find((tool) => tool.name === name);
 }

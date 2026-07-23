@@ -141,6 +141,7 @@ body.night {
   text-shadow: 0 0 10px rgba(255,180,94,0.55), 0 0 30px rgba(255,120,60,0.25);
 }
 .proprietors { position: relative; z-index: 2; margin-top: 0.6rem; font-style: italic; font-size: 0.9rem; color: var(--night-faded); }
+.track-record { position: relative; z-index: 2; margin: 0.7rem auto 0; max-width: 560px; font-size: 0.72rem; color: var(--night-faded); }
 
 /* ---- the instruments: nixie odometer + mailbox LED ---- */
 .gauges {

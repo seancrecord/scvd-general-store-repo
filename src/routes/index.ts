@@ -23,6 +23,8 @@ export { stampRoutes } from "@/routes/stamps";
 export { tradingPostRoutes } from "@/routes/trading-post";
 export { requestRoutes } from "@/routes/requests";
 export { faviconRoutes } from "@/routes/favicon";
+export { schemaRoutes } from "@/routes/schemas";
+export { statsRoutes } from "@/routes/stats";
 export { luckyRoutes } from "@/routes/luckies";
 export { verifyRoutes } from "@/routes/verify";
 export { badgeRoutes } from "@/routes/badges";

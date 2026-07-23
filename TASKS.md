@@ -80,15 +80,15 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## THE SYNTHESIS (received 2026-07-23; the document lives in the back office, NOT this repo — keeper's call, same as KEEPER_CANON and CHARACTER_CANON)
 
-Six surfacing changes queued from it, all gated on the keeper's nod. Read the document in the back office before building any of them; the one-line pointers below are deliberately bare.
+BUILD PASS EXECUTED 2026-07-23 on the keeper's order (all six, same evening):
 
-- [ ] C1 — spec-first fact block on every listing, with a live sample artifact id (the luckies specimen card is the first of these, shipped 2026-07-23)
-- [ ] C2 — the honest track-record line + a public /stats endpoint it computes from
-- [ ] C3 — one credibility signal per listing + a guaranteed / not-guaranteed split block (strip decoration, never facts)
-- [ ] S1 — one schema, one field order, all items, published and test-validated
-- [ ] S2 — verification in-band on every 402 (verify URL, key fingerprint, sample id) + a one-line identity policy
-- [ ] S3 — skill restructure from prose to layers; folds into the pending ClawHub v1.0.2+ republish
-- [ ] Its falsification set joins the monthly ledger review ritual (the document holds the predictions)
+- [x] C1 — spec-first fact block on every listing (canonical Returns/Price/Latency/Verify/Constraints form), topping MCP descriptions and Bazaar entries, mirrored into the 402 body as spec_note; live sample artifact rides every one (the founding cert — per-item specimens would inflate patron numbers, flagged)
+- [x] C2 — /stats public, computed live (patron counter + monthly paid/paidh sums, pre-meter settles stated apart), house-flag policy published beside the numbers; track-record line on the storefront header, catalog root metadata, and the skill's evidence layer ⚑ connective wording KEEPER REVIEW
+- [x] C3 — adjective census found the store nearly clean already; "sincere" stripped from the JSON-LD organization description (only decorative trust adjective on a machine surface); guaranteed/not-guaranteed split verbatim in MCP descriptions + arrays on every listing. Kept, as each item's one signal: portrait's "Sincerity guaranteed", app review's honesty line (keeper ink) — flagged, not stripped
+- [x] S1 — uniform listing spec (capability → inputs → outputs → verification → constraints → price, literal key order) on menu.json, /menu/:id, MCP tools, x402.json resources, and 402 bodies; schema published at /schemas/listing-spec-v1.json; CI validates every listing incl. key order; catalog reordered to the legible ladder (handshake → pennies → utility → census → human labor → novelties) ⚑ ordering judgment, trivial revert
+- [x] S2 — verification adjacency: every JSON 402 (HTTP and MCP) carries verify URL, full signing key in-payload (stronger than a fingerprint; matches .well-known exactly, tested), sample artifact id, and the identity policy line; .well-known/scvd-signing-key carries the policy + sample. NAME AUDIT: one mismatch found and fixed — the MCP serverInfo title appended "(scvd.store)"; now exact across storefront/Bazaar/skill/MCP
+- [x] S3 — skill.md restructured to three layers (scheduling signals / execution structure / resource evidence), v2.0.0, voice lines kept as frame; ClawHub source restructured to match ⚑ scheduling-signal wording KEEPER REVIEW; when_to_use mirrored into .well-known/x402.json. NEEDS KEEPER HANDS: republish ClawHub as 2.0.0 after merge
+- [ ] The falsification set (P0–P6, in the back-office document) joins the monthly ledger review ritual — first review ~60 days after listing
 
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 

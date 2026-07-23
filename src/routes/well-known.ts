@@ -1,8 +1,14 @@
 import { Hono } from "hono";
+import {
+  factBlockText,
+  listingSpec,
+  SPEC_SCHEMA_PATH,
+} from "@/lib/listing-spec";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
 import { listIssues } from "@/services/gazette";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { SCHEDULING_SIGNALS } from "@/store/spec";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -36,15 +42,18 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
 
 wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
+  // C1: the fact block tops every catalog entry; S1: the uniform spec
+  // rides each resource (indexers that don't know the field ignore it).
   const menuResources = MENU_ITEMS.map((item) => ({
     resourceUrl: `${base}/api/buy/${item.id}`,
     method: "GET",
     x402Version: 2,
-    description: `${item.name}, ${item.description}`,
+    description: `${factBlockText(item)} ${item.name}, ${item.description}`,
     mimeType: "application/json",
     price_usdc_options: priceTiersUsdc(item),
     pricing: item.pricing,
     fulfillment: item.fulfillment,
+    spec: listingSpec(item, base),
   }));
   const almanacResources = ALMANAC_ENTRIES.map((entry) => ({
     resourceUrl: `${base}/almanac/${entry.slug}`,
@@ -71,9 +80,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     x402Version: 2,
     name: STORE_METADATA.name,
     network: "eip155:8453",
+    // S3 mirror: the scheduling-signals layer, when to reach for the store.
+    when_to_use: SCHEDULING_SIGNALS,
     resources: [...menuResources, ...almanacResources, ...gazetteResources],
     openapi: `${base}/openapi.json`,
     catalog: `${base}/menu.json`,
+    stats: `${base}/stats`,
+    listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
     mcp: {
       endpoint: `${base}/mcp`,
