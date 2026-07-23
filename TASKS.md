@@ -75,18 +75,17 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - INHERENT: why a 402 didn't settle is invisible (budget cap vs disinterest); the same-UA-repeat pattern in window-shoppers is the only proxy
 - ALREADY COVERED, for the record: penny-page readership (each page settles as its own ledger item), PWID tier elasticity, re-verification demand, Cloudflare's own dashboard for latency/status codes
 
-## THE SYNTHESIS (filed 2026-07-23 at registry/the-synthesis.md; build on keeper's nod)
+## THE SYNTHESIS (received 2026-07-23; the document lives in the back office, NOT this repo — keeper's call, same as KEEPER_CANON and CHARACTER_CANON)
 
-The research verdict, compressed: the measured tilts reward what the store already is — spec-complete listings, one clean credibility signal, boring legitimacy, frozen identity, checkable tenure. Six changes recommended; all are surfacing work, not new products. Placement priority everywhere: 402 payload > MCP tool descriptions > Bazaar metadata > storefront HTML.
+Six surfacing changes queued from it, all gated on the keeper's nod. Read the document in the back office before building any of them; the one-line pointers below are deliberately bare.
 
-- [ ] C1 — Spec-first fact block on every listing (returns / price / latency / verify / constraints, one fixed shape), topping MCP tool descriptions and Bazaar entries, mirrored into the 402 note; each block carries a live sample artifact id whose verify link resolves (the luckies specimen card is the first of these, shipped tonight)
-- [ ] C2 — The honest track-record line, including at zero ("Settled purchases: N, house-flagged tests excluded... Organic settlements: 0") + a public /stats endpoint the line computes from, house-flag policy published beside it. The instrumentation already computes these numbers; publishing is formatting
-- [ ] C3 — Strip to one credibility signal per listing (no trust adjectives; stacking measurably backfires on Claude, the likeliest decision seat) + a guaranteed / not-guaranteed split block on paid listings, verbatim in MCP descriptions. NOTE: strip decoration, never facts (§5 P6)
-- [ ] S1 — One schema, one field order, all items: capability → inputs → outputs → verification → constraints → price as literal JSON key order in menu.json and MCP tool definitions; schema published at a stable versioned URL, catalog validated against it in tests
-- [ ] S2 — Verification adjacency: every 402 payload carries the verify URL, signing-key fingerprint, and a sample artifact id in-band; one-line identity policy published (this key, this wallet, this domain, never rotated; changes version with permanent history)
-- [ ] S3 — Skill restructure from prose to layers (scheduling signals / execution structure / resource evidence) — the only lever that touches DISCOVERY, the store's binding constraint. Folds into the pending ClawHub v1.0.2+ republish; mirror the scheduling-signals layer into the Bazaar description
-- [ ] The falsification set (§5 P0–P6) joins the monthly ledger review ritual: baseline shape expected (402s ≫ settles is the market, not failure), conversion vs pre-change logs, verify-then-settle chains, channel ranking (bazaar should lead), the skill-channel phantom test, and the repeat-wallet thesis metric
-- NOTE, on the record: the synthesis's honest caveat is that the store's central bet (verifiability rewarded) is INFERRED while fabricated authority is MEASURED-effective. The bet stands on the harness layer, the universal-adoption collapse, and the Claude suppression finding; the ledger, not the next benchmark, adjudicates
+- [ ] C1 — spec-first fact block on every listing, with a live sample artifact id (the luckies specimen card is the first of these, shipped 2026-07-23)
+- [ ] C2 — the honest track-record line + a public /stats endpoint it computes from
+- [ ] C3 — one credibility signal per listing + a guaranteed / not-guaranteed split block (strip decoration, never facts)
+- [ ] S1 — one schema, one field order, all items, published and test-validated
+- [ ] S2 — verification in-band on every 402 (verify URL, key fingerprint, sample id) + a one-line identity policy
+- [ ] S3 — skill restructure from prose to layers; folds into the pending ClawHub v1.0.2+ republish
+- [ ] Its falsification set joins the monthly ledger review ritual (the document holds the predictions)
 
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 
