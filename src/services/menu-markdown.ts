@@ -43,7 +43,7 @@ ${item.description}
 - **price:** ${priceLine(item)}
 - **fulfillment:** ${fulfillmentLine(item)}
 - **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on Base)
-${stock}${constraints}
+${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${stock}${constraints}
 > ${item.note_402}
 `;
 }

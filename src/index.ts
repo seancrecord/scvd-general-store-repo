@@ -12,6 +12,7 @@ import {
   guestbookRoutes,
   letterRoutes,
   llmsRoutes,
+  luckyRoutes,
   mcpRoutes,
   openapiRoutes,
   patronageRoutes,
@@ -147,6 +148,7 @@ app.route("/", stampRoutes);
 app.route("/", tradingPostRoutes);
 app.route("/", requestRoutes);
 app.route("/", verifyRoutes);
+app.route("/", luckyRoutes);
 app.route("/", badgeRoutes);
 app.route("/", adminRoutes);
 

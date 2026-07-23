@@ -9,6 +9,7 @@ import {
   readPhantomCheck,
   verifyPhantomSignature,
 } from "@/services/phantom";
+import { getLucky, verifyLuckySignature } from "@/services/luckies";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { VOICE } from "@/store";
 import type { HonoEnv } from "@/types";
@@ -97,6 +98,23 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       note: valid
         ? "Genuine anchor. Signed by the store when it says it was."
         : "Signature doesn't match. Treat this anchor as compromised.",
+    });
+  }
+
+  const luckyRecord = await getLucky(c.env, id);
+  if (luckyRecord) {
+    await noteVerify(c, "luckies");
+    const valid = await verifyLuckySignature(luckyRecord);
+    return c.json({
+      valid,
+      lucky: luckyRecord.lucky,
+      signature: luckyRecord.signature,
+      public_key: luckyRecord.public_key,
+      algorithm: "ed25519",
+      card_url: `${c.env.STORE_BASE_URL}/luckies/${luckyRecord.lucky.lucky_id}.svg`,
+      note: valid
+        ? "Genuine lucky. Picked, graded, and signed by the store itself."
+        : "Signature doesn't match. That's not one of our luckies.",
     });
   }
 

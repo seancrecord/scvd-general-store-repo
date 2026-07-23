@@ -13,6 +13,7 @@
  *            patronage_note:<YYYY-MM>, metric:<YYYY-MM>:<kind>:<rest>,
  *            payer:<address>
  * PATRONS    patron:<number>, cert:<id>, stamp:<id>, anchor:<id>, pass:<id>,
+ *            lucky:<id> (signed lucky records; the card is the record),
  *            stamp_card:<nameSlug> (append-only visit-week log)
  * COUNTERS   stamp_condition:<week> (write-once, same week only)
  */
@@ -84,6 +85,8 @@ export const KV_KEYS = {
   stampCondition: (weekKey: string): string => `stamp_condition:${weekKey}`,
   anchor: (anchorId: string): string => `anchor:${anchorId}`,
   patronagePass: (passId: string): string => `pass:${passId}`,
+  lucky: (luckyId: string): string => `lucky:${luckyId}`,
+  luckyPrefix: "lucky:",
 } as const;
 
 /**

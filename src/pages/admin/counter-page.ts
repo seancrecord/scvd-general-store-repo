@@ -35,6 +35,27 @@ export interface CounterPageData {
   loadNotes: string[];
 }
 
+/**
+ * A luckies order completes with structured fields, the card is the
+ * record and the record needs its parts. Everything else takes the
+ * plain deliverable box.
+ */
+function luckyCompleteForm(orderId: string): string {
+  return `<form method="POST" action="/admin/orders/${escapeHtml(orderId)}/complete-lucky">
+          <input type="text" name="lucky_name" placeholder="The object's name" maxlength="80" required>
+          <input type="text" name="provenance" placeholder="Where it came from (recorded and honest)" maxlength="300" required>
+          <input type="text" name="power" placeholder="What it does, farmers-market terms" maxlength="300" required>
+          <select name="strength" required>
+            <option value="" disabled selected>Strength, graded honest</option>
+            <option value="faint">faint</option>
+            <option value="fair">fair</option>
+            <option value="strong">strong</option>
+            <option value="uncanny">uncanny</option>
+          </select>
+          <button type="submit">Pick it, card it, complete</button>
+        </form>`;
+}
+
 function ordersHtml(orders: OrderRecord[]): string {
   if (orders.length === 0) {
     return "<p>No orders yet.</p>";
@@ -48,10 +69,14 @@ function ordersHtml(orders: OrderRecord[]): string {
                 ? `<p><em>Acknowledged ${escapeHtml(order.acknowledged_at)}</em></p>`
                 : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/ack" style="display:inline"><button type="submit">Acknowledge (stands down the 24h page)</button></form>`
             }
-        <form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
+        ${
+          order.item_id === "luckies"
+            ? luckyCompleteForm(order.order_id)
+            : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
           <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
           <button type="submit">Mark complete</button>
         </form>`
+        }`
           : `<p><em>Delivered:</em> ${escapeHtml(order.deliverable ?? "")}</p>`;
       return `<li>
       <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}

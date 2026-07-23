@@ -52,6 +52,21 @@ export const CONFESSION_ABSOLUTION =
 export const CONFESSION_COUNTER_SIGN =
   "Anonymized by construction: no wallet on the record, no name unless you signed one. A human reviews every confession; an approved few are printed in the Gazette, unsigned unless you signed. Never automatically.";
 
+/** Handed over when the keeper picks a lucky and its card is inked. */
+export function luckyNote(options: {
+  name: string;
+  strength: string;
+  cardUrl: string;
+  recordUrl: string;
+}): string {
+  return [
+    `Your lucky is picked and in custody: ${options.name}.`,
+    `Strength graded ${options.strength}, honest.`,
+    `The card is the record, it hangs at ${options.cardUrl}; the signed copy answers at ${options.recordUrl}.`,
+    `Write in with results (the Mailbox is free). Promotion is real, and so is the bench.`,
+  ].join(" ");
+}
+
 export function patronageCertificateNote(patronNumber: number): string {
   return `Patronage recorded, patron no. ${patronNumber}. This certificate entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge, and it means the more for that. The store knows its friends and writes them down in ink.`;
 }

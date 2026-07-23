@@ -35,6 +35,7 @@ catalogRoutes.get("/menu.json", (c) => {
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
     price_tiers_usdc: priceTiersUsdc(item),
+    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
   }));
   return c.json({
     store: {
@@ -123,6 +124,7 @@ catalogRoutes.get("/menu/:item_id", (c) => {
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
     price_tiers_usdc: priceTiersUsdc(item),
+    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
     markdown_note:
       "This same URL serves markdown when the Accept header prefers text/markdown.",
   });

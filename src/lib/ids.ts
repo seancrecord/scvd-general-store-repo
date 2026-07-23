@@ -60,3 +60,7 @@ export function newConfessionId(): string {
 export function newRefundId(): string {
   return `refund_${randomToken(10)}`;
 }
+
+export function newLuckyId(): string {
+  return `lucky_${randomToken(10)}`;
+}

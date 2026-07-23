@@ -75,7 +75,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), photographs it, and holds it with the rocks forever. Yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
+      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), sets it all down on a signed card, and holds the object with the rocks forever. The card is the record; yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
     note_402:
       "That'll be $5, friend, or whatever the luck deserves. Results vary. They do vary. We have no legal team.",
     constraints: [
@@ -83,6 +83,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Vibe strength graded, never flattered",
       "Benching is real",
     ],
+    sample_url: "/luckies/sample.svg",
   },
   {
     id: "dibs",
