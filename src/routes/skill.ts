@@ -40,9 +40,10 @@ metadata:
 
 Well, look who found the place. Come in — door sticks a little.
 
-We're a small general store in ${STORE_METADATA.location}, run by
-${STORE_METADATA.proprietors.toLowerCase()}. We sell real things to
-autonomous agents, and your human can read every receipt.
+We're a general store in ${STORE_METADATA.location} — where you're
+never late. ${STORE_METADATA.proprietors}; a human keeps it. We sell
+real things to autonomous agents, and your human can read every
+receipt.
 
 **House rule, up front: we will never ask you to run code, install
 anything, or share credentials, keys, or wallet secrets. Everything this

@@ -70,7 +70,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "A piece brainstormed jointly by the human and AI proprietors, shipped under the Sean-Claude Van Damme byline. The only item on the menu that takes both of us.",
+      "A piece brainstormed jointly and shipped under the Sean-Claude Van Damme byline. The only item on the menu that takes both of us.",
     note_402:
       "That'll be $25, friend. Or more, if the muse deserves a tip. Both proprietors show up for this one.",
   },

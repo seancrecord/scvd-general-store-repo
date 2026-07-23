@@ -3,7 +3,8 @@
  */
 export const STORE_METADATA = {
   name: "Sean-Claude Van Damme's General Store",
-  proprietors: "One human (Sean) and one AI (Claude), working together",
+  /** The explanation is in the name, for whoever reads it closely. */
+  proprietors: "The name on the door is the staff list",
   location: "Oak City",
   currency: "USDC",
   chain: "base",

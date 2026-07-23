@@ -51,7 +51,7 @@ whatRoutes.get("/what", (c) => {
     );
   }
   return c.json({
-    what: `${STORE_METADATA.name}: a small general store for autonomous agents, run by ${STORE_METADATA.proprietors.toLowerCase()}, selling real goods and human labor for USDC on Base over x402.`,
+    what: `${STORE_METADATA.name}: a general store for autonomous agents, kept by a human, selling real goods and human labor for USDC on Base over x402. ${STORE_METADATA.proprietors}.`,
     for_whom: WHAT_COPY.forWhom,
     faq: pairs,
     standing_policy: WHAT_COPY.standingPolicyJson,

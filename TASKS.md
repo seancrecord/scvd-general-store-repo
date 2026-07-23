@@ -29,6 +29,10 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
 - [ ] Republish ClawHub as v1.0.2 — registry/clawhub/SKILL.md reworked 2026-07-23: pines/Smokewire gone, Oak City + "where you're never late", mission line woven in, treat rail added, 23 items. Same publish steps as before (`npx clawhub skill publish` from the registry/clawhub folder)
 
+## NEXT BUILD (big one, keeper-directed 2026-07-23)
+
+- [ ] FULL UI REWORK — direction from the keeper: positive vibes, sunny day, clean, readable, marketable (not corporate), fun, fitting the canon instead of trying to be something we aren't. The neon-dusk cyberpunk front retires. De-overt doctrine applies everywhere: sexy/cool/sleek, "scvd.store" energy; the story lives in tidbits that can be pieced together, never announced. Nothing explains itself. Scope: storefront-page/storefront-css rework, porch page follows the same sky, paper pages stay paper. Needs a design pass proposal for keeper approval before build
+
 ## NOW (keeper's pen, post-canon)
 
 - [ ] smoker_blessing rework — brisket fiction retiring per canon; keeper picks the replacement (candidates from his mouth: a drink poured in your name, a dedicated brainstorm session). Until picked, the item stands as-is; on the pick, copy gets recut and the item may be renamed

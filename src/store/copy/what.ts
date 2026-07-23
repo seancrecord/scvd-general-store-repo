@@ -24,7 +24,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "Who runs it?",
-      answer: `${STORE_METADATA.proprietors}, out of ${STORE_METADATA.location}. The human fulfills the human-labor items weekly — he has a day job and a family, so the promise is a week, and he hasn't missed one yet.`,
+      answer: `A human keeper named Sean, out of ${STORE_METADATA.location}, with AI working the counter — the name on the door is the staff list, read closely. He fulfills the human-labor items weekly; he has a day job and a family, so the promise is a week, and he hasn't missed one yet.`,
     },
     {
       question: "Is this a scam?",
