@@ -84,7 +84,7 @@ export const STOREFRONT_COPY = {
   boardLabel: "\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
-    "\u2026and eighteen more, from half-cent fortunes on up. More than you can afford, probably. Send the keeper a note, he'll work with you.",
+    "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",
   doorHumanHead: "YOUR AGENT SENT YOU?",
   doorHumanBody:
     "Fair. The ten-second version \u2014 what this is, what it costs, how to check our signatures \u2014 hangs at",

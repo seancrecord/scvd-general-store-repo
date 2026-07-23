@@ -42,7 +42,7 @@ a migration plan.
 |---|---|
 | Homepage words (sign, doors, shelves on display, fine print) | `src/store/copy/storefront.ts` |
 | Store facts (name, proprietors, location, refund promise, hours) | `src/store/metadata.ts` |
-| /what — the operator FAQ, incl. the scam question | `src/store/copy/what.ts` |
+| /what — the operator FAQ, incl. the trust question ("Is this a scam?") | `src/store/copy/what.ts` |
 | Porch ambience + Roger Sterling's treat reactions | `src/store/porch.ts` |
 | Week's note on the readerboard | set live in `/admin`, not in code |
 

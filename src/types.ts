@@ -229,10 +229,9 @@ export type StampVariant = "visitor" | "contributor";
 export type RefundStatus = "refund_pending" | "refund_paid";
 
 /**
- * a_secret's whole point: the store scams you and refunds you, on
- * the record. Created after settle; the keeper pays refunds by hand
- * (the Worker holds no keys and never will) and marks them paid
- * with the transaction hash.
+ * A refund on the ledger. The keeper pays by hand (the Worker holds
+ * no keys and never will) and marks the record paid with the
+ * transaction hash. Public status at /api/refund/:id.
  */
 export interface RefundRecord {
   refund_id: string;

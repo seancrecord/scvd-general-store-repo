@@ -148,7 +148,7 @@ function tipsHtml(tips: TipRecord[]): string {
 
 function refundsHtml(refunds: RefundRecord[]): string {
   if (refunds.length === 0) {
-    return "<p>No refunds on the ledger. Nobody's bought the scam yet.</p>";
+    return "<p>No refunds on the ledger.</p>";
   }
   return refunds
     .map((refund) => {
@@ -299,7 +299,7 @@ export function renderCounterPage(data: CounterPageData): string {
     </details>
     <details ${pendingRefunds > 0 ? "open" : ""}>
       <summary>The refund ledger (${pendingRefunds} pending)</summary>
-      <p>a_secret's whole point. Pay by hand from the store wallet, record the hash; the public route tells the truth either way.</p>
+      <p>Pay by hand from the store wallet, record the hash; the public route tells the truth either way.</p>
       <ul>${refundsHtml(data.refunds)}</ul>
     </details>
   </section>

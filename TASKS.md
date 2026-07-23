@@ -37,9 +37,11 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 - [x] smoker_blessing — REMOVED 2026-07-23 per Batch 1 (item, pitch, tag, tests); the replacement concepts (drink poured in your name / dedicated brainstorm) stay available if the keeper ever wants them as a new item
 - [x] retired_word — retired 2026-07-23 per Batch 1. No epitaph, which is the epitaph
-- [x] a_secret — reworked 2026-07-23 into the scam that refunds (Batch 1): instant, refund ledger, keyless Worker, keeper pays by hand. Apology + 402 tag PENDING KEEPER REVIEW in the PR
-- [ ] Batch 1 keeper review: approve/edit the a_secret apology text (src/store/copy/deliverables.ts secretApology) and the a_secret note_402; confirm or recount the "eighteen more" storefront line (true count is sixteen post-deletions)
-- [ ] Batch 2 keeper confirmation: the_drawer repriced to $2 fixed per the "two bucks" tag — confirm or revert
+- [x] a_secret — scam framing KILLED 2026-07-23 per keeper trust veto; restored to original human_queue secret. Refund novelty parked (ledger stays as general plumbing, not a product)
+- [x] Storefront shelvesMore — de-quantified 2026-07-23 ("…and more on the menu…"); no inventory count to maintain
+- [ ] ICEBOX: refund-as-novelty — only revive if it earns network/marketing value without trust risk and without being cumbersome; not feeling it otherwise
+- [ ] Batch 2 keeper confirmations: the_drawer $2 fixed ("two bucks") and jar_of_tuesday $1 min PWID ("a dollar") — both repriced to match keeper tags; confirm or revert
+- [ ] Batch 2 copy pass keeper check: two-line stamp mottos render at 17px (words intact, type smaller) — confirm the wrap treatment; porch lines await review in the PR
 - [x] Keep-line ruling OVERRULED by the keeper 2026-07-23 — the tag advertises the price of the name now; §4 amended to that extent by his hand
 - [ ] KEEPER HANDS, urgent: upgrade Cloudflare to Workers Paid ($5/mo) — the free tier's 1,000 KV writes/day and 50 subrequests/request are both too small for the store as built; the admin 500 was the subrequest cap, and "priced out" was almost certainly the write cap
 - [ ] Almanac needs its first REAL entry — keeper dictates (Green Egg cook, a ledger read, an exact funny detail), machine structures, keeper kill-passes. The brisket placeholder was shelved 2026-07-23; the journal currently holds one page

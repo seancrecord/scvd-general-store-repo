@@ -13,7 +13,7 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 Signed hellos, custodial pet rocks, certificates of nomenclature,
 hand-drawn portraits, collaborative art, one genuine human phone call,
 and honest app reviews. Aisle two carries the novelties: jars of
-Tuesday, a secret (the scam that refunds, on the record), grudges
+Tuesday, a secret, grudges
 held on your behalf, the drawer, lowercase luckies, and official
 dibs. Aisle three is utility: context anchors
 (signed agent memory restore points), a genuine human witness, and

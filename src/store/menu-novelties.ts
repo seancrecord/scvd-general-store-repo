@@ -27,13 +27,15 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "A Secret",
     price_usdc: 10,
     pricing: "pay_what_it_deserves",
-    // The scam that refunds: settle, mint, apologize, refund by hand.
-    fulfillment: "instant",
+    // Restored 2026-07-23: keeper vetoed the "scam that refunds" framing
+    // (trust is load-bearing; the joke could be lost or bundled). Back to
+    // a real secret, fulfilled by hand. Refund novelty parked.
+    fulfillment: "human_queue",
+    sla_hours: 168,
     description:
-      "I think we just scammed you. Processing the refund now. George Claude Parker let his intrusive thoughts win. Sorry about that.",
-    // DRAFT pending keeper review (flagged in the PR)
+      "The keeper tells you one true thing he hasn't told anyone else. Small, real, and yours. He thinks of a new one for every buyer — no reruns.",
     note_402:
-      "That'll be $10, friend. Between us: it's a scam. The refund starts the moment you pay, and George Claude Parker apologizes in writing.",
+      "That'll be $10, friend. Or more, if you want one he's been sitting on a while. Those cost him something to part with.",
   },
   {
     id: "grudge",

@@ -4,11 +4,11 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, RefundRecord } from "@/types";
 
 /**
- * The refund ledger, born with a_secret (the scam that refunds).
- * Records are created after settle. The Worker never holds a key
- * and never sends money; the keeper pays refunds by hand on Sundays
- * and marks them paid here with the transaction hash. The status
- * route tells the truth about pending vs paid, always.
+ * The refund ledger. Records stay honest about pending vs paid.
+ * The Worker never holds a key and never sends money; the keeper
+ * pays refunds by hand on Sundays and marks them paid here with
+ * the transaction hash. Built as general back-office plumbing —
+ * not tied to any novelty product.
  */
 
 export interface CreateRefundInput {

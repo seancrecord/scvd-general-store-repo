@@ -3,10 +3,11 @@ import { STORE_METADATA } from "@/store/metadata";
 
 /**
  * KEEPER-EDITABLE COPY — /what, the Operator Glance.
- * The questions a human actually asks, answered plainly. The scam
- * question is asked verbatim on purpose: it is the exact string
- * humans and their AIs query. The route that hangs these up is
- * src/routes/what.ts; the words are all here.
+ * The questions a human actually asks, answered plainly. "Is this a
+ * scam?" is asked verbatim on purpose: it is the exact string humans
+ * and their AIs query, and the answer is the trust check — not a
+ * product. The route that hangs these up is src/routes/what.ts; the
+ * words are all here.
  */
 
 export interface FaqPair {
