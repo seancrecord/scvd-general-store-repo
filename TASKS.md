@@ -30,6 +30,8 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW (keeper's pen)
 
+- [ ] Tone doc → flavor pass: when the keeper's tone doc lands, run it surface-by-surface through the content layer (map in CONTENT_GUIDE.md). Item names/pitches in src/store/menu*.ts, deliverables in src/store/copy/deliverables.ts, storefront in src/store/copy/storefront.ts, FAQ in src/store/copy/what.ts, shared lines in src/store/voice.ts. Item ids stay frozen (breaking); names are free
+
 - [ ] Founding edition — DRAFT at registry/founding-edition-draft.md awaiting keeper review; on approval it gets wired as a FREE page at /gazette/founding + sitemap line + "take a paper" pointers on the free-shelf responses. It surfaces the staff's counter note, the byline explanation, and Roger — the "lives off in history" piece
 - [ ] Distribution — DISTRIBUTION.md is the free-papers plan: MCP directories [VERIFY each], Moltbook [VERIFY post-Meta] as the sincere version of "a Claudebot post" (once, as the store, in its own voice), Farcaster/Base when v3 lands, keeper's human channels at his discretion. Transaction-memo idea examined and skipped (USDC on Base carries no memo field; the wallet is already public discovery)
 

@@ -1,5 +1,9 @@
 import { KV_KEYS } from "@/lib/kv-keys";
-import { PORCH_AMBIENCE } from "@/store/porch";
+import {
+  PORCH_AMBIENCE,
+  TREAT_REACTION_ELSEWHERE,
+  TREAT_REACTIONS_OUT,
+} from "@/store/porch";
 import type { Env } from "@/types";
 
 /**
@@ -47,20 +51,9 @@ export async function takeSeat(env: Env, date: Date = new Date()): Promise<numbe
 /**
  * The treat rail. Anyone can leave Roger Sterling a treat, free.
  * Nothing about the treat is stored — only that one was left. His
- * reaction runs on the same hour clock as the rest of the porch:
- * everyone leaving one in the same hour gets the same Roger.
+ * reaction runs on the same hour clock as the rest of the porch;
+ * his lines live in src/store/porch.ts with the ambience.
  */
-const TREAT_REACTIONS_OUT: readonly string[] = [
-  "Roger Sterling inspected it from a distance of one full plank, then looked back at the road.",
-  "Roger Sterling accepted it with the dignity of a toll collector.",
-  "Roger Sterling sniffed it once and sat down beside it, which is as close as he comes to thanks.",
-  "Roger Sterling watched you set it down. He'll get to it on his own schedule.",
-  "Roger Sterling blinked slowly. Around here that's a receipt.",
-] as const;
-
-const TREAT_REACTION_ELSEWHERE =
-  "Roger Sterling is elsewhere. The treat stays on the rail. These things are always gone by morning.";
-
 export function treatReaction(date: Date = new Date()): string {
   if (!catIsOut(date)) {
     return TREAT_REACTION_ELSEWHERE;

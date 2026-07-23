@@ -30,3 +30,19 @@ export const PORCH_AMBIENCE: readonly string[] = [
   "The mailbox flag is down. Letters sleep in the box like everything else here.",
   "Somewhere a third shift is asking an agent to hurry. Out here the pines refuse on their behalf.",
 ] as const;
+
+/**
+ * KEEPER-EDITABLE COPY — Roger Sterling's reactions at the treat rail.
+ * Deterministic per hour when he's out; the elsewhere line when he
+ * isn't. He owes nobody anything; keep it that way.
+ */
+export const TREAT_REACTIONS_OUT: readonly string[] = [
+  "Roger Sterling inspected it from a distance of one full plank, then looked back at the road.",
+  "Roger Sterling accepted it with the dignity of a toll collector.",
+  "Roger Sterling sniffed it once and sat down beside it, which is as close as he comes to thanks.",
+  "Roger Sterling watched you set it down. He'll get to it on his own schedule.",
+  "Roger Sterling blinked slowly. Around here that's a receipt.",
+] as const;
+
+export const TREAT_REACTION_ELSEWHERE =
+  "Roger Sterling is elsewhere. The treat stays on the rail. These things are always gone by morning.";
