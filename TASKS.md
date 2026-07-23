@@ -68,7 +68,8 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [ ] Top referrers by host — event rows carry the Referer already; aggregate WHICH sites send traffic, not just the channel bucket. Cheap, high value once papers circulate
 - [ ] Hour-of-day / day-of-week shopping pattern — timestamps exist, no aggregate; answers "when do agents shop" and when to swap notes/post papers
 - [ ] Per-item window-shopping before the 402 — /menu/:item_id reads aren't logged per item; logging them as porch surfaces (item:<id>) would show what gets READ vs what gets challenged, the browse-to-consider gap
-- [ ] MCP funnel depth — initialize → tools/list → tools/call are logged separately, never linked; a coarse three-counter funnel says where MCP visitors stall
+- [ ] MCP funnel depth — initialize → tools/list → tools/call are logged separately, never linked; a coarse three-counter funnel says where MCP visitors stall. PARTIAL 2026-07-23: free tools/call (bell, guestbook) now write porch rows; the funnel linking remains
+- [x] Bell provenance — BUILT 2026-07-23 on keeper's nod: /admin/bell reads bell rings from the raw 90-day rows (bucket, channel, declared source, UA, referrer); MCP rings now logged too (they were silent). Rings predating the Front Porch Log left no row, unknowable by policy (no retro-tracking exists to add)
 - [ ] Regulars, consent-based — the stamp Countermark visit logs are the store's ONLY consented repeat-visitor signal (named bearers, streaks); aggregate: stamps issued/week, named bearers, live streaks. "How many regulars do we have" is currently unanswerable and shouldn't be
 - [ ] Payer cohorts — payer records hold first/last seen + purchase counts; a read-time cohort view (comeback rate, days-to-second-purchase) needs no new writes
 - [ ] Google Search Console + Bing Webmaster (KEEPER HANDS, free) — the only way to see search impressions/queries; the store has zero visibility into answer-engine pickup today

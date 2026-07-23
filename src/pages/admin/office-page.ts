@@ -312,7 +312,8 @@ export function renderOfficePage(data: OfficePageData): string {
   <section>
     <details>
       <summary>The front porch, by surface</summary>
-      <p>Free-tier visits by surface. Infrastructure is the noise floor made visible, never organic, never house.</p>
+      <p>Free-tier visits by surface. Infrastructure is the noise floor made visible, never organic, never house.
+      This table counts from its own deploy; <a href="/admin/bell">the bell, ring by ring</a> reads the raw rows and remembers further back.</p>
       ${porchHtml(data.porchLedger)}
     </details>
   </section>

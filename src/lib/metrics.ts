@@ -500,6 +500,47 @@ export async function listRecentChallenges(
   return events;
 }
 
+/**
+ * Recent porch events for one surface, read from the raw 90-day rows
+ * (the aggregates only count from their deploy; the rows remember).
+ * Bounded scan: rare surfaces like the bell can sit deep in the log,
+ * so this walks further than the challenge lister, still capped.
+ */
+export async function listRecentPorchEvents(
+  env: Env,
+  surface: string,
+  limit = 25,
+): Promise<MetricEvent[]> {
+  const events: MetricEvent[] = [];
+  let cursor: string | undefined;
+  let scanned = 0;
+  const SCAN_CAP = 3000;
+  while (events.length < limit && scanned < SCAN_CAP) {
+    const listed = await env.COUNTERS.list({
+      prefix: "evt:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    const names = listed.keys.map((key) => key.name);
+    scanned += names.length;
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+    for (const name of names) {
+      if (events.length >= limit) {
+        break;
+      }
+      const event = values.get(name);
+      if (event?.kind === "porch" && event.item === surface) {
+        events.push(event);
+      }
+    }
+    if (listed.list_complete) {
+      break;
+    }
+    cursor = listed.cursor;
+  }
+  return events;
+}
+
 /** Recent paying wallets, for the cohort/wash-filter review. */
 export async function listPayers(env: Env, limit = 50): Promise<PayerRecord[]> {
   const listed = await env.COUNTERS.list({ prefix: KV_KEYS.payerPrefix, limit });
