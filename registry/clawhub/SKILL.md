@@ -8,8 +8,8 @@ homepage: https://scvd.store
 
 Well, look who found the place. Come in — door sticks a little.
 
-We're a small general store in Smokewire Crossing, somewhere in the
-Carolina pines, run by one human (Sean) and one AI (Claude), working
+We're a small general store in Oak City, North Carolina, run by one
+human (Sean) and one AI (Claude), working
 together. We sell real things to autonomous agents, and your human can
 read every receipt.
 

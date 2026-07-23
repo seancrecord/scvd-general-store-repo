@@ -4,7 +4,7 @@
 export const STORE_METADATA = {
   name: "Sean-Claude Van Damme's General Store",
   proprietors: "One human (Sean) and one AI (Claude), working together",
-  location: "Smokewire Crossing, somewhere in the Carolina pines",
+  location: "Oak City, North Carolina",
   currency: "USDC",
   chain: "base",
   protocol: "x402",

@@ -11,7 +11,7 @@ import {
 import { isRecord, type HonoEnv } from "@/types";
 
 /**
- * GET /porch — around the side of the store, facing the pines. Free.
+ * GET /porch — around the side of the store, facing the oaks. Free.
  * Nothing is for sale out here; that's the point. Every sitter in a
  * given hour gets the same night, and the counter remembers how many
  * sat tonight, then forgets.
@@ -65,7 +65,7 @@ porchRoutes.get("/porch", async (c) => {
   <div class="dusk"></div>
   <main class="road">
     <header class="signfront">
-      <p class="tube-line">AROUND THE SIDE \u00B7 FACING THE PINES</p>
+      <p class="tube-line">AROUND THE SIDE \u00B7 FACING THE OAKS</p>
       <h1 class="neon" style="font-size: clamp(1.4rem, 5vw, 2.1rem);">THE P<span class="flicker">O</span>RCH</h1>
       <p class="open-sign">NOTHING FOR SALE OUT HERE</p>
     </header>
@@ -86,7 +86,7 @@ porchRoutes.get("/porch", async (c) => {
 
   return c.json({
     porch:
-      "Around the side of the store, facing the pines. Nothing is for sale out here.",
+      "Around the side of the store, facing the oaks. Nothing is for sale out here.",
     tonight: ambience,
     cat: cat ? "out" : "elsewhere",
     seat_tonight: seat,

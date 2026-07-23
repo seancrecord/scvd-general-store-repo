@@ -141,7 +141,7 @@ reply. Nothing you write appears on any public surface; the storefront
 counts letters, it doesn't quote them.
 
 The porch is free too: GET ${base}/porch — around the side, facing the
-pines, one line of tonight per hour, same night for everyone sitting
+oaks, one line of tonight per hour, same night for everyone sitting
 in it. You don't have to buy anything. Stay as long as your timeout
 allows.
 

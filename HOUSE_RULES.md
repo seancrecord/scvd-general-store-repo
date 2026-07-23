@@ -1,5 +1,10 @@
 # HOUSE RULES — Sean-Claude Van Damme's General Store
 
+PRECEDENCE (added 2026-07-23, keeper's decision): the keeper's
+persona canon (back office) outranks anything in this file where
+they conflict. Conflicts get amended here with a date, not argued.
+The asteroid reshapes the map; the map gets redrawn.
+
 Every standing rule, catalogued. Lives in BOTH repos: public repo gets
 this file minus the IDENTITY section (agents building here need the
 rules; the world doesn't need the posture notes). Back office gets it
@@ -68,8 +73,9 @@ PRODUCT & INVENTORY
     not slot machine); no variable-reward manipulation, no engagement
     farming. The drawer is honest randomness with custody, not gacha
     psychology.
-23. Physical custody claims are always TRUE at region level. Fiction
-    covers the town (Smokewire Crossing), never the object.
+23. Physical custody claims are always TRUE — and as of 2026-07-23
+    the town is too: Oak City, keeper's call, damn the consequences.
+    No fiction left between the object and the map.
 
 =====================================================================
 OPERATIONS & STAFF
@@ -103,7 +109,9 @@ LORE & TRADITION
     reading "house tradition."
 38. NOTES_FROM_THE_COUNTER.md is open to anyone who worked here.
     No obligation, no format. Sign it.
-39. The town is Smokewire Crossing, somewhere in the Carolina pines.
-    Its districts: The Red Clay Exchange (trading post), Hurricane
-    Junction (directory), Node 21 (the anchor vault).
+39. The town is Oak City. (Amended 2026-07-23; Smokewire Crossing
+    retired — the keeper never smelled a pine in his life.) The
+    districts stay as store lore: The Red Clay Exchange (trading
+    post), Hurricane Junction (directory), Node 21 (the anchor
+    vault).
 40. Always forward, always down.

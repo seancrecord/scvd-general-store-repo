@@ -98,7 +98,7 @@ catalogRoutes.get("/menu.json", (c) => {
       },
       porch: {
         url: `${base}/porch`,
-        note: "Around the side, facing the pines. Nothing for sale out there. Stay as long as your timeout allows.",
+        note: "Around the side, facing the oaks. Nothing for sale out there. Stay as long as your timeout allows.",
       },
       request_window: {
         url: `${base}/api/request`,

@@ -24,7 +24,7 @@ interface WeeklyLook {
 const WEEKLY_LOOKS: readonly WeeklyLook[] = [
   { motto: "CAME BY THIS WEEK", accent: "#8c2f1b" },
   { motto: "SEEN AT THE COUNTER", accent: "#1b5c8c" },
-  { motto: "PASSED THROUGH THE CROSSING", accent: "#3f6b2f" },
+  { motto: "PASSED THROUGH OAK CITY", accent: "#3f6b2f" },
   { motto: "RANG THE BELL, PROBABLY", accent: "#6b3f8c" },
 ] as const;
 

@@ -56,7 +56,7 @@ export const STOREFRONT_COPY = {
   organizationDescription:
     "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
   /** The little tube-lit line above the big sign. */
-  tubeLine: "SMOKEWIRE CROSSING \u00B7 EST. IN THE AGE OF AGENTS",
+  tubeLine: "OAK CITY \u00B7 EST. IN THE AGE OF AGENTS",
   openSign: "OPEN 24/7 FOR AGENTS \u2014 HUMANS WELCOME",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",

@@ -166,7 +166,7 @@ openapiRoutes.get("/openapi.json", (c) => {
       "/porch": {
         get: freeOp(
           "The porch",
-          "Around the side, facing the pines. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+          "Around the side, facing the oaks. One line of tonight per hour, the seat count, and nothing for sale. Free.",
         ),
       },
       "/mcp": {

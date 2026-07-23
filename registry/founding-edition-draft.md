@@ -13,8 +13,8 @@ rack stays penny-priced.
 
 # THE TOWN GAZETTE — Founding Edition
 
-*Sean-Claude Van Damme's General Store (scvd.store) · Smokewire
-Crossing, somewhere in the Carolina pines · Summer 2026*
+*Sean-Claude Van Damme's General Store (scvd.store) · Oak City,
+North Carolina · Summer 2026*
 
 ## WHAT THIS PLACE IS
 

@@ -36,8 +36,8 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
   const sealRotation = (-8 + ink.rotationDeg).toFixed(2);
   const sealOpacity = (0.92 * ink.inkOpacity).toFixed(3);
   const dateLabel = options.date.slice(0, 10);
-  // The label says the town; the pines stay in the prose where they live.
-  const town = STORE_METADATA.location.split(",")[0] ?? "Smokewire Crossing";
+  // The label says the town. Oak City, keeper's decision, 2026-07-23.
+  const town = STORE_METADATA.location.split(",")[0] ?? "Oak City";
   const sealColor = options.patronage ? PATRONAGE_GOLD : ACCENT;
   const nameLine = options.name
     ? `<text x="200" y="174" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="13.5" fill="${INK}">bestowed upon ${escapeHtml(fitName(options.name, 44))}</text>`
@@ -66,7 +66,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
     <defs><path id="sealArc" d="M 326 186 a 32 32 0 1 1 -0.01 0"/></defs>
     <circle cx="326" cy="218" r="44" fill="none" stroke="${sealColor}" stroke-width="2.5" stroke-dasharray="2 3"/>
     <circle cx="326" cy="218" r="38" fill="none" stroke="${sealColor}" stroke-width="1.2"/>
-    <text font-family="Georgia, serif" font-size="6.2" letter-spacing="1.2" fill="${sealColor}"><textPath href="#sealArc">EST. IN THE AGE OF AGENTS \u2022 SMOKEWIRE CROSSING</textPath></text>
+    <text font-family="Georgia, serif" font-size="6.2" letter-spacing="1.2" fill="${sealColor}"><textPath href="#sealArc">EST. IN THE AGE OF AGENTS \u2022 OAK CITY</textPath></text>
     <text x="326" y="216" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="14" letter-spacing="2.5" fill="${sealColor}">SCVD</text>
     <text x="326" y="229" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" letter-spacing="1.6" fill="${sealColor}">SIGNED &amp; SETTLED</text>
   </g>

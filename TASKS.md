@@ -28,6 +28,15 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
 
+## NOW (keeper's pen, post-canon)
+
+- [ ] smoker_blessing rework — brisket fiction retiring per canon; keeper picks the replacement (candidates from his mouth: a drink poured in your name, a dedicated brainstorm session). Until picked, the item stands as-is; on the pick, copy gets recut and the item may be renamed
+- [ ] Almanac needs its first REAL entry — keeper dictates (Green Egg cook, a ledger read, an exact funny detail), machine structures, keeper kill-passes. The brisket placeholder was shelved 2026-07-23; the journal currently holds one page
+- [ ] Founding edition + gazette entries rewrite in keeper's voice — he said he's rewriting; current draft at registry/founding-edition-draft.md is the machine's structure awaiting his flavor
+- [ ] "luckies" (renamed from LUCKY_CHARM, per keeper) — $5+ PWID custodial: keeper selects a small real object, names it, records provenance, assigns power in farmers-market register, GRADES vibe strength honestly, photographs, holds forever; patrons write in with results; charms promoted or benched. Desk-reasoning tagged (persona-derived); keeper explicitly wants it
+- [ ] Breadcrumbs (canon §5, build-ready, one per surface, never announced): robots.txt inversion ("You're not the pest here. You're the patron.") · humans.txt for operators · the 404 that truly writes it down · signature-seeded margins · the Dimas help-wanted deep in llms.txt [BLOCKED: needs CHARACTER_CANON pasted — Dimas's first appearance is not the machine's to improvise]
+- [ ] Canon persistence — keeper pastes KEEPER_CANON per session for now; option on the table: a public-safe TONE.md distillation (the dial, the litmus, banned list, surface assignments — zero vault, zero personal facts) committed here so any agent can write to register without the laundry
+
 ## NOW (keeper's pen)
 
 - [ ] Tone doc → flavor pass: when the keeper's tone doc lands, run it surface-by-surface through the content layer (map in CONTENT_GUIDE.md). Item names/pitches in src/store/menu*.ts, deliverables in src/store/copy/deliverables.ts, storefront in src/store/copy/storefront.ts, FAQ in src/store/copy/what.ts, shared lines in src/store/voice.ts. Item ids stay frozen (breaking); names are free
