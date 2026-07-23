@@ -17,7 +17,7 @@ words up and never need touching for a wording change.
 ### Items — names, prices, descriptions, 402 lines
 | Shelf | File |
 |---|---|
-| Founding seven (hello, pet_rock, phone_call, …) | `src/store/menu.ts` |
+| Founding shelf (hello, phone_call, …) | `src/store/menu.ts` |
 | Novelty aisle (jar_of_tuesday, a_secret, grudge, …) | `src/store/menu-novelties.ts` |
 | Penny shelf (small_blessing, daily_fortune, the_confession) | `src/store/menu-penny.ts` |
 | Utility aisle (context_anchor, human_witness, recurring_patronage) | `src/store/menu-utility.ts` |

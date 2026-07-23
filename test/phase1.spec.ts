@@ -69,8 +69,8 @@ describe("the MCP door", () => {
     expect(names).toContain("read_store_guide");
     expect(names).toContain("buy_hello");
     expect(names).toContain("buy_context_anchor");
-    // 4 free + 22 shelves.
-    expect(tools.length).toBe(26);
+    // 4 free + 21 shelves.
+    expect(tools.length).toBe(25);
     // Single source of truth, reconciled both directions: every buy_*
     // tool has a menu.json twin and every menu item has a tool.
     const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
@@ -217,7 +217,7 @@ describe("the four alarms", () => {
   });
 
   it("pages once for a queued order nobody acknowledged in 24h", async () => {
-    const item = getMenuItem("pet_rock") as MenuItem;
+    const item = getMenuItem("luckies") as MenuItem;
     const order = await createOrder(testEnv, {
       item,
       paidUsdc: 5,

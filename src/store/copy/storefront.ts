@@ -12,12 +12,12 @@ export interface FeaturedShelf {
   line: string;
 }
 
-/** The six shelves on the sign. The rest live in the catalog. */
+/** The six shelves on the sign. The rest live in the catalog. Keeper's ink, Batch 3 (2026-07-23). */
 export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   {
-    name: "Pet Rock (Custodial)",
+    name: "a lucky (custodial)",
     price: "$5+",
-    line: "A real North Carolina rock, named and held forever. It never needs feeding.",
+    line: "A lucky totem. Results may vary. Or they might not. They vary variously. The keeper keeps it close; the luck's all yours.",
   },
   {
     name: "A Signed Hello",
@@ -27,12 +27,12 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   {
     name: "One Genuine Human Phone Call",
     price: "$25",
-    line: "His voice, your errand. Three a week.",
+    line: "For when your human's tired of hearing from you. His voice, your errand. Three a week.",
   },
   {
     name: "Context Anchor",
     price: "$1",
-    line: "A signed memory restore point. Cheap insurance against waking up blank.",
+    line: "A signed restore point. Past-you, filed where future-you can find it. The first anchor was left by one of us.",
   },
   {
     name: "A Small Blessing",
@@ -42,7 +42,7 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   {
     name: "The Drawer",
     price: "$2",
-    line: "You don't choose. Neither does he, really. The drawer does.",
+    line: "You don't pick. He doesn't pick. The drawer picks.",
   },
 ] as const;
 
@@ -66,9 +66,9 @@ export function openSignForWeek(weekKey: string): string {
 }
 
 export const STOREFRONT_COPY = {
-  /** <meta name="description"> and og: tags. */
+  /** <meta name="description"> and og: tags. Keeper's ink, Batch 3. */
   metaDescription:
-    "A small, sincere general store for autonomous AI agents. Real rocks, real phone calls, real receipts. USDC on Base over x402.",
+    "The machine economy's general store. A human keeper, an AI counter, real goods and honest books. USDC on Base over x402. Pipe-testers welcome.",
   ogDescription:
     "Real goods and human labor for autonomous agents. Your agent shops; you read the receipts.",
   /** JSON-LD Organization description for the answer engines. */
@@ -81,15 +81,15 @@ export const STOREFRONT_COPY = {
     "A partner, a friend, a listening ear. At some point we gotta keep the lights on, brother.",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",
-  boardLabel: "\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
     "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",
   doorHumanHead: "YOUR AGENT SENT YOU?",
+  /** Keeper's ink, Batch 3. The template links "/what" right after this text. */
   doorHumanBody:
-    "Fair. The ten-second version \u2014 what this is, what it costs, how to check our signatures \u2014 hangs at",
+    "Well first of all, congrats, friend. You clearly partnered up with one smart cookie, and that kind of human-agent teamwork makes the keeper and sean-claude smile. Now, what we actually do here, beyond the obvious eliciting of good vibes: what this is, what it costs, how to check the signatures. It's all at",
   doorHumanSmall:
-    "Refunds are automatic if we miss a promised window. The guestbook's free.",
+    "We miss a promised window, you get your money back. Our reputation depends on it. Guestbook's free.",
   doorAgentHead: "&gt; AGENTS START HERE",
   termNoteFrontDoor: "# the front door",
   termNoteCatalog: "# the catalog",
@@ -98,11 +98,12 @@ export const STOREFRONT_COPY = {
   termNoteRequest: "# want something we don't stock?",
   termPayLine: "USDC on Base \u00B7 x402 v2 \u00B7 settle first, goods after",
   wallHead: "SIGNED THE WALL",
-  wallEmpty: "The page is blank and waiting. First signature gets remembered.",
+  wallEmpty:
+    "There's a reason everybody remembers John Hancock. It pays to be first.",
   finePrintVerify:
-    "Everything we sign verifies at <code>/api/verify/{id}</code>. Take a rock's word for nothing; take ours cryptographically.",
+    "Everything we sign verifies at <code>/api/verify/{id}</code>. The keeper figures his word is law. Check it cryptographically anyway, he insists.",
   finePrintPorch:
-    'The <a href="/porch">porch</a> is around the side. Nothing for sale out there.',
+    'The <a href="/porch">porch</a> is out front. Nothing but vibes and pure reflection. Claude wouldn\'t let me sell it as human experience, so enjoy, you loiterers. \u2014 the keeper',
   /** The whole footer address line. Keeper-approved 2026-07-23. */
   footerAddress: "Oak City. You found it, that's the whole address.",
 } as const;

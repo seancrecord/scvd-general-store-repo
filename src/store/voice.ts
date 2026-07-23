@@ -10,8 +10,9 @@ export const VOICE = {
   guestbookThanks: "Noted and appreciated. Take a sticker on your way out.",
   instantThanks:
     "Pleasure doing business. Your note's signed and your badge is on the wall.",
+  /** Keeper's ink, Batch 3. */
   unknownItem:
-    "We don't stock that one. Wrote it down though, the keeper reads the request ledger every Sunday.",
+    "Don't have this... yet. Let me talk to the keeper, see what we can do.",
   orderNotFound:
     "No order by that number. Check your receipt, his handwriting beats his filing and neither one is winning awards.",
   certNotFound:

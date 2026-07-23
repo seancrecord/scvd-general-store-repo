@@ -32,7 +32,7 @@ describe("/skill.md (agentskills.io format)", () => {
     expect(frontmatter).toContain("name: scvd-general-store");
     expect(frontmatter).toContain("description:");
     // Full menu with prices, worked example, free shelf.
-    expect(text).toContain("pet_rock");
+    expect(text).toContain("luckies");
     expect(text).toContain("dibs");
     expect(text).toContain("/api/buy/hello");
     expect(text).toContain("PAYMENT-REQUIRED");

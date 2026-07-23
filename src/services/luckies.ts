@@ -11,7 +11,7 @@ import type {
 
 /**
  * The lucky ledger. A lucky is a small real object the keeper picks,
- * held in custody with the rocks; its card (lucky-svg.ts) is the
+ * held in custody forever; its card (lucky-svg.ts) is the
  * record. Records are signed at issue and re-signed when a write-in
  * honestly moves the status, promotion is real, so is the bench.
  */

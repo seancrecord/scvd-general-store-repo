@@ -23,7 +23,7 @@ describe("the storefront", () => {
     const html = await response.text();
     expect(html).toContain("General Store");
     expect(html).toContain("The bell has been rung");
-    expect(html).toContain("Pet Rock");
+    expect(html).toContain("a lucky");
     // Mobile rendering depends on the viewport meta tag.
     expect(html).toContain('name="viewport"');
   });
@@ -51,7 +51,7 @@ describe("the storefront", () => {
     const response = await SELF.fetch(`${BASE}/llms.txt`);
     expect(response.status).toBe(200);
     const text = await response.text();
-    expect(text).toContain("pet_rock");
+    expect(text).toContain("luckies");
     expect(text).toContain("$5 minimum");
     expect(text).toContain("x402");
     expect(text).toContain("refund is automatic");
@@ -64,7 +64,6 @@ describe("the storefront", () => {
     const items = body["items"] as Array<{ id: string }>;
     expect(items.map((item) => item.id)).toEqual([
       "hello",
-      "pet_rock",
       "nomenclature",
       "portrait",
       "the_collab",
@@ -103,7 +102,7 @@ describe("the shelf check (before the payment gate)", () => {
     const response = await SELF.fetch(`${BASE}/api/buy/moon_deed`);
     expect(response.status).toBe(404);
     const body = await json(response);
-    expect(body["error"]).toContain("don't stock");
+    expect(body["error"]).toContain("Don't have this... yet");
     const tally = await testEnv.COUNTERS.get("failed_item:moon_deed");
     expect(tally).toBe("1");
   });

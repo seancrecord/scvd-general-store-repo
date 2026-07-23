@@ -264,15 +264,15 @@ describe("discovery surfaces", () => {
     expect(menuMd.headers.get("Content-Type")).toContain("text/markdown");
     expect(await menuMd.text()).toContain("| id | item | price |");
 
-    const itemJson = await json(await SELF.fetch(`${BASE}/menu/pet_rock`));
-    expect(itemJson["id"]).toBe("pet_rock");
-    expect(itemJson["buy_url"]).toBe(`${BASE}/api/buy/pet_rock`);
+    const itemJson = await json(await SELF.fetch(`${BASE}/menu/luckies`));
+    expect(itemJson["id"]).toBe("luckies");
+    expect(itemJson["buy_url"]).toBe(`${BASE}/api/buy/luckies`);
 
-    const itemMd = await SELF.fetch(`${BASE}/menu/pet_rock`, {
+    const itemMd = await SELF.fetch(`${BASE}/menu/luckies`, {
       headers: { Accept: "text/markdown" },
     });
     expect(itemMd.headers.get("Content-Type")).toContain("text/markdown");
-    expect(await itemMd.text()).toContain("# Pet Rock (Custodial)");
+    expect(await itemMd.text()).toContain("# a lucky (custodial)");
 
     const missing = await SELF.fetch(`${BASE}/menu/moon_deed`);
     expect(missing.status).toBe(404);

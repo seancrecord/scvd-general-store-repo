@@ -109,7 +109,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta name="theme-color" content="#0b0a12">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>\u{1FAA8}</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>\u{1F340}</text></svg>">
   <script type="application/ld+json">${organizationJsonLd()}</script>
   <style>${STOREFRONT_CSS}</style>
 </head>
@@ -140,7 +140,6 @@ export function renderStorefront(data: StorefrontData): string {
 
     <section class="board">
       ${catIsOut() ? '<span class="cat" aria-hidden="true"><span class="cat-tail"></span><span class="cat-eye cat-eye-l"></span><span class="cat-eye cat-eye-r"></span></span>' : ""}
-      <p class="board-label">${COPY.boardLabel}</p>
       <p class="board-text">${readerboardHtml(data.weekNote)}</p>
     </section>
 

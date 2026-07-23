@@ -13,7 +13,7 @@ export const LUCKY_CARD_LINES = {
   provenanceLabel: "PROVENANCE",
   powerLabel: "WHAT IT DOES",
   strengthLabel: "STRENGTH, GRADED HONEST",
-  custodyLine: "held with the rocks",
+  custodyLine: "held in custody",
   specimenMark: "SPECIMEN",
   specimenFootnote: "A sample, printed to show the form.",
   specimenFootnote2: "Real cards are signed and verify.",
