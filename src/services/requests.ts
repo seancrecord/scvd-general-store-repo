@@ -1,4 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { newRequestId } from "@/lib/ids";
 import { sanitizeText } from "@/lib/sanitize";
 import type { CommissionRequest, Env, WaitlistEntry } from "@/types";
@@ -62,9 +63,12 @@ export async function recordCommission(
 
 export async function listCommissions(env: Env): Promise<CommissionRequest[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.requestPrefix });
+  const values = await bulkGetJson<CommissionRequest>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const requests: CommissionRequest[] = [];
-  for (const key of listed.keys) {
-    const request = await env.ORDERS.get<CommissionRequest>(key.name, "json");
+  for (const request of values.values()) {
     if (request) {
       requests.push(request);
     }
@@ -99,9 +103,12 @@ export async function joinWaitlist(
 
 export async function listWaitlist(env: Env): Promise<WaitlistEntry[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.waitlistPrefix() });
+  const values = await bulkGetJson<WaitlistEntry>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const entries: WaitlistEntry[] = [];
-  for (const key of listed.keys) {
-    const entry = await env.ORDERS.get<WaitlistEntry>(key.name, "json");
+  for (const entry of values.values()) {
     if (entry) {
       entries.push(entry);
     }
@@ -129,9 +136,13 @@ export async function listFailedItems(
   const listed = await env.COUNTERS.list({
     prefix: KV_KEYS.failedItemPrefix,
   });
+  const values = await bulkGetText(
+    env.COUNTERS,
+    listed.keys.map((key) => key.name),
+  );
   const tally: Record<string, number> = {};
   for (const key of listed.keys) {
-    const count = await env.COUNTERS.get(key.name);
+    const count = values.get(key.name);
     tally[key.name.slice(KV_KEYS.failedItemPrefix.length)] = count
       ? parseInt(count, 10)
       : 0;

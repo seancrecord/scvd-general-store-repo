@@ -50,6 +50,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "A 30-day standing patronage pass. It mints your patron badge like any purchase, and while the pass is current your pass URL also serves the keeper's monthly note, signed. Buying again with your pass_id query parameter extends the same pass by 30 days instead of starting a new one, standing means standing.",
     note_402:
-      "That'll be $3 for thirty days of standing, friend. The monthly note alone is worth it, says the man who writes the monthly note.",
+      "That'll be $3 for thirty days of standing, friend. Keep this up and you can call him Keep.",
   },
 ] as const;

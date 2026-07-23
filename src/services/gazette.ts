@@ -1,4 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { issueStamp } from "@/services/stamps";
 import { setTipStatus } from "@/services/tips";
 import type { Env, GazetteIssue, TipRecord } from "@/types";
@@ -91,9 +92,12 @@ export async function getIssue(
 
 export async function listIssues(env: Env): Promise<GazetteIssue[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.gazettePrefix });
+  const values = await bulkGetJson<GazetteIssue>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const issues: GazetteIssue[] = [];
-  for (const key of listed.keys) {
-    const issue = await env.ORDERS.get<GazetteIssue>(key.name, "json");
+  for (const issue of values.values()) {
     if (issue) {
       issues.push(issue);
     }

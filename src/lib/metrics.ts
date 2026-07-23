@@ -1,5 +1,6 @@
 import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
+import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import type { Channel, Env, PayerRecord } from "@/types";
 
@@ -139,6 +140,17 @@ export async function recordPorchVisit(
   }
   porchBudgetUsed += 1;
   const event = buildEvent(env, "porch", surface, signals);
+  // Aggregate counter alongside the event row, so the porch table
+  // reads from a handful of keys instead of scanning event rows.
+  const suffix = bucketSuffix(event, true);
+  await bump(
+    env,
+    KV_KEYS.metric(
+      metricsMonth(),
+      `porch${suffix}`,
+      suffix === "" ? `${surface}:${event.channel}` : surface,
+    ),
+  );
   await writeEvent(env, event);
 }
 
@@ -267,11 +279,18 @@ export async function readMonthLedger(
   const listed = await env.COUNTERS.list({
     prefix: KV_KEYS.metricMonthPrefix(month),
   });
+  const values = await bulkGetText(
+    env.COUNTERS,
+    listed.keys.map((key) => key.name),
+  );
   for (const key of listed.keys) {
-    const value = parseInt((await env.COUNTERS.get(key.name)) ?? "0", 10);
+    const value = parseInt(values.get(key.name) ?? "0", 10);
     const rest = key.name.slice(KV_KEYS.metricMonthPrefix(month).length);
     const [kind, ...parts] = rest.split(":");
     const tail = parts.join(":");
+    if (kind?.startsWith("porch")) {
+      continue; // The porch table reads these; the ledger doesn't.
+    }
     if (kind === "src") {
       ledger.channels[tail] = value;
       continue;
@@ -329,13 +348,12 @@ export interface PorchLedger {
   truncated: boolean;
 }
 
-const PORCH_SCAN_CAP = 1000;
-
 /**
- * The front-porch section, computed from event rows at read time (no
- * porch counters exist to contend over). Uniqueness is deliberately
- * unavailable, no cookies, no IP retention, so porch-to-purchase is
- * organic 402s per organic visit, stated as a rate, not unique heads.
+ * The front-porch section, read from the monthly porch aggregates
+ * (written alongside each event row) in one list + one bulk read.
+ * Uniqueness is deliberately unavailable, no cookies, no IP
+ * retention, so porch-to-purchase is organic 402s per organic
+ * visit, stated as a rate, not unique heads.
  */
 export async function readPorchLedger(
   env: Env,
@@ -347,31 +365,39 @@ export async function readPorchLedger(
     porchToPurchase: null,
     truncated: false,
   };
-  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: PORCH_SCAN_CAP });
-  porch.truncated = !listed.list_complete;
+  const prefix = KV_KEYS.metricMonthPrefix(month);
+  const listed = await env.COUNTERS.list({ prefix });
+  const names = listed.keys
+    .map((key) => key.name)
+    .filter((name) => {
+      const kind = name.slice(prefix.length).split(":")[0] ?? "";
+      return kind.startsWith("porch") || kind === "src402";
+    });
+  const values = await bulkGetText(env.COUNTERS, names);
   let organicChallenges = 0;
-  for (const key of listed.keys) {
-    const event = await env.COUNTERS.get<MetricEvent>(key.name, "json");
-    if (!event || !event.at.startsWith(month)) {
+  for (const name of names) {
+    const value = parseInt(values.get(name) ?? "0", 10);
+    const rest = name.slice(prefix.length);
+    const [kind, ...parts] = rest.split(":");
+    if (kind === "src402") {
+      organicChallenges += value;
       continue;
     }
-    if (event.kind === "challenge" && !event.house && event.channel !== "infrastructure") {
-      organicChallenges += 1;
-    }
-    if (event.kind !== "porch") {
+    if (kind === "porch") {
+      // Organic rows carry surface:channel.
+      const channel = parts.pop() ?? "unknown";
+      const surfaceName = parts.join(":") || "unknown";
+      const surface = (porch.surfaces[surfaceName] ??= {});
+      surface["organic"] = (surface["organic"] ?? 0) + value;
+      surface[`organic:${channel}`] =
+        (surface[`organic:${channel}`] ?? 0) + value;
+      porch.organicVisits += value;
       continue;
     }
-    const bucket = event.house
-      ? "house"
-      : event.channel === "infrastructure"
-        ? "infrastructure"
-        : "organic";
-    const surface = (porch.surfaces[event.item] ??= {});
-    surface[bucket] = (surface[bucket] ?? 0) + 1;
-    surface[`${bucket}:${event.channel}`] =
-      (surface[`${bucket}:${event.channel}`] ?? 0) + 1;
-    if (bucket === "organic") {
-      porch.organicVisits += 1;
+    if (kind === "porchh" || kind === "porchi") {
+      const bucket = kind === "porchh" ? "house" : "infrastructure";
+      const surface = (porch.surfaces[parts.join(":")] ??= {});
+      surface[bucket] = (surface[bucket] ?? 0) + value;
     }
   }
   if (porch.organicVisits > 0) {
@@ -386,13 +412,16 @@ export async function listRecentChallenges(
   env: Env,
   limit = 15,
 ): Promise<MetricEvent[]> {
+  // Newest first by key design; one list + one bulk read, bounded.
+  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: 100 });
+  const names = listed.keys.map((key) => key.name);
+  const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
   const events: MetricEvent[] = [];
-  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: 500 });
-  for (const key of listed.keys) {
+  for (const name of names) {
     if (events.length >= limit) {
       break;
     }
-    const event = await env.COUNTERS.get<MetricEvent>(key.name, "json");
+    const event = values.get(name);
     if (event?.kind === "challenge") {
       events.push(event);
     }
@@ -403,9 +432,12 @@ export async function listRecentChallenges(
 /** Recent paying wallets, for the cohort/wash-filter review. */
 export async function listPayers(env: Env, limit = 50): Promise<PayerRecord[]> {
   const listed = await env.COUNTERS.list({ prefix: KV_KEYS.payerPrefix, limit });
+  const values = await bulkGetJson<PayerRecord>(
+    env.COUNTERS,
+    listed.keys.map((key) => key.name),
+  );
   const payers: PayerRecord[] = [];
-  for (const key of listed.keys) {
-    const record = await env.COUNTERS.get<PayerRecord>(key.name, "json");
+  for (const record of values.values()) {
     if (record) {
       payers.push(record);
     }

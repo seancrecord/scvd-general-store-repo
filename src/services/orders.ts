@@ -1,4 +1,5 @@
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
 
@@ -73,9 +74,12 @@ export async function getOrder(
 
 export async function listOrders(env: Env): Promise<OrderRecord[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.orderPrefix });
+  const values = await bulkGetJson<OrderRecord>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const orders: OrderRecord[] = [];
-  for (const key of listed.keys) {
-    const order = await env.ORDERS.get<OrderRecord>(key.name, "json");
+  for (const order of values.values()) {
     if (order) {
       orders.push(order);
     }

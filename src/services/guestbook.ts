@@ -1,4 +1,5 @@
 import { KV_KEYS, invertedTimestamp } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { newEntryId } from "@/lib/ids";
 import {
   GUESTBOOK_MESSAGE_CAP,
@@ -55,9 +56,13 @@ export async function listGuestbook(
     prefix: KV_KEYS.guestbookPrefix,
     limit,
   });
+  const values = await bulkGetJson<GuestbookEntry>(
+    env.GUESTBOOK,
+    listed.keys.map((key) => key.name),
+  );
   const entries: ListedEntry[] = [];
   for (const key of listed.keys) {
-    const entry = await env.GUESTBOOK.get<GuestbookEntry>(key.name, "json");
+    const entry = values.get(key.name);
     if (entry) {
       entries.push({ ...entry, kv_key: key.name });
     }

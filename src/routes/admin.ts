@@ -11,7 +11,9 @@ import {
   readPorchLedger,
 } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
-import { renderAdminPage } from "@/pages/admin-page";
+import { renderBooksPage } from "@/pages/admin/books-page";
+import { renderCounterPage } from "@/pages/admin/counter-page";
+import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { listIssues, publishIssue } from "@/services/gazette";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
@@ -64,7 +66,22 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 
+/** One shelf failing to load never takes the room down. */
+function shelf<T>(
+  result: PromiseSettledResult<T>,
+  fallback: T,
+  label: string,
+  notes: string[],
+): T {
+  if (result.status === "fulfilled") {
+    return result.value;
+  }
+  notes.push(label);
+  return fallback;
+}
+
 adminRoutes.get("/admin", async (c) => {
+  const notes: string[] = [];
   const [
     orders,
     waitlist,
@@ -73,60 +90,87 @@ adminRoutes.get("/admin", async (c) => {
     guestbook,
     weekNote,
     tips,
-    gazetteIssues,
-    bazaarLedger,
-    monthLedger,
-    payers,
     letters,
     alerts,
     gazetteDraft,
-    porchLedger,
-    recentChallenges,
     confessions,
     refunds,
-  ] = await Promise.all([
+  ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
     listCommissions(c.env),
     listFailedItems(c.env),
-    listGuestbook(c.env, 100),
+    listGuestbook(c.env, 30),
     c.env.COUNTERS.get(KV_KEYS.weekNote),
     listTips(c.env),
-    listIssues(c.env),
-    listBazaarLedger(c.env),
-    readMonthLedger(c.env),
-    listPayers(c.env),
     listLetters(c.env),
-    listAlerts(c.env),
+    listAlerts(c.env, 5),
     getDraft(c.env),
-    readPorchLedger(c.env),
-    listRecentChallenges(c.env),
     listConfessions(c.env),
     listRefunds(c.env),
   ]);
   return c.html(
-    renderAdminPage({
-      orders,
-      waitlist,
-      commissions,
-      failedItems,
-      guestbook,
-      weekNote: weekNote || DEFAULT_WEEK_NOTE,
-      tips: tips.map((tip) => tip.record),
-      gazetteIssues,
-      bazaarLedger,
-      monthLedger,
-      payers,
-      letters: letters.map((entry) => entry.record),
-      alerts,
-      gazetteDraft,
-      porchLedger,
-      recentChallenges,
-      confessions: confessions.map((entry) => entry.record),
-      refunds,
+    renderCounterPage({
+      orders: shelf(orders, [], "orders", notes),
+      waitlist: shelf(waitlist, [], "waitlists", notes),
+      commissions: shelf(commissions, [], "requests", notes),
+      failedItems: shelf(failedItems, {}, "failed items", notes),
+      guestbook: shelf(guestbook, [], "guestbook", notes),
+      weekNote: shelf(weekNote, null, "week note", notes) || DEFAULT_WEEK_NOTE,
+      tips: shelf(tips, [], "tips", notes).map((tip) => tip.record),
+      letters: shelf(letters, [], "letters", notes).map(
+        (entry) => entry.record,
+      ),
+      alerts: shelf(alerts, [], "alerts", notes),
+      gazetteDraft: shelf(gazetteDraft, null, "gazette draft", notes),
+      confessions: shelf(confessions, [], "confessions", notes).map(
+        (entry) => entry.record,
+      ),
+      refunds: shelf(refunds, [], "refunds", notes),
+      loadNotes: notes,
     }),
   );
 });
+
+adminRoutes.get("/admin/books", async (c) => {
+  const notes: string[] = [];
+  const [monthLedger, porchLedger, payers, recentChallenges, bazaarLedger, gazetteIssues] =
+    await Promise.allSettled([
+      readMonthLedger(c.env),
+      readPorchLedger(c.env),
+      listPayers(c.env),
+      listRecentChallenges(c.env),
+      listBazaarLedger(c.env),
+      listIssues(c.env),
+    ]);
+  const emptyLedger = {
+    month: new Date().toISOString().slice(0, 7),
+    items: {},
+    channels: {},
+    channelsHouse: {},
+    channels402: {},
+    channels402House: {},
+    channels402Infra: {},
+  };
+  return c.html(
+    renderBooksPage({
+      monthLedger: shelf(monthLedger, emptyLedger, "month ledger", notes),
+      porchLedger: shelf(
+        porchLedger,
+        { surfaces: {}, organicVisits: 0, porchToPurchase: null, truncated: false },
+        "porch",
+        notes,
+      ),
+      payers: shelf(payers, [], "payers", notes),
+      recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
+      bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
+      gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
+      loadNotes: notes,
+    }),
+  );
+});
+
+adminRoutes.get("/admin/tools", (c) => c.html(renderToolsPage()));
 
 adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
   const updated = await setConfessionStatus(
@@ -219,7 +263,7 @@ adminRoutes.post("/admin/patronage/note", async (c) => {
     return c.text("The monthly note needs words in it.", 400);
   }
   await setMonthlyNote(c.env, note);
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/tips/:tip_id/approve", async (c) => {
@@ -262,7 +306,7 @@ adminRoutes.post("/admin/gazette/publish", async (c) => {
     );
   }
   await publishIssue(c.env, title, approved);
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
@@ -298,7 +342,7 @@ adminRoutes.post("/admin/alerts/test", async (c) => {
       "Dummy alert, the keeper pulled the test lever. If you're reading this in your inbox, the wire works.",
     key: `test-${Date.now()}`,
   });
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
@@ -334,7 +378,7 @@ adminRoutes.post("/admin/note", async (c) => {
 
 adminRoutes.post("/admin/inventory/reset", async (c) => {
   await resetWeeklyInventory(c.env);
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.get("/admin/digest", async (c) => {

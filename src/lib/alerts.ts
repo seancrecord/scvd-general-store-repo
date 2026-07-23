@@ -1,4 +1,5 @@
 import { invertedTimestamp } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
 
 /**
@@ -84,13 +85,13 @@ export async function listAlerts(
   limit = 20,
 ): Promise<Array<{ condition: string; detail: string; at: string }>> {
   const listed = await env.COUNTERS.list({ prefix: "alert_log:", limit });
+  const values = await bulkGetJson<{
+    condition: string;
+    detail: string;
+    at: string;
+  }>(env.COUNTERS, listed.keys.map((key) => key.name));
   const alerts: Array<{ condition: string; detail: string; at: string }> = [];
-  for (const key of listed.keys) {
-    const record = await env.COUNTERS.get<{
-      condition: string;
-      detail: string;
-      at: string;
-    }>(key.name, "json");
+  for (const record of values.values()) {
     if (record) {
       alerts.push(record);
     }

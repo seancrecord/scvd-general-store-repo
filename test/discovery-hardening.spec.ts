@@ -78,11 +78,13 @@ describe("Bazaar discovery (extensions.bazaar)", () => {
     expect(JSON.stringify(bazaar)).toContain('"summary"');
   });
 
-  it("surfaces facilitator EXTENSION-RESPONSES in the admin ledger", async () => {
+  it("surfaces facilitator EXTENSION-RESPONSES in the admin books", async () => {
     const paid = await payFor(`${BASE}/api/buy/hello`);
     expect(paid.status).toBe(200);
 
-    const admin = await SELF.fetch(`${BASE}/admin`, { headers: adminAuth });
+    const admin = await SELF.fetch(`${BASE}/admin/books`, {
+      headers: adminAuth,
+    });
     const html = await admin.text();
     expect(html).toContain("Bazaar ledger");
     expect(html).toContain("bazaar: accepted");

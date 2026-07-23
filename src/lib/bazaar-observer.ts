@@ -1,4 +1,5 @@
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { isRecord } from "@/types";
 import type { BazaarLedgerEntry, Env } from "@/types";
 
@@ -108,9 +109,12 @@ export async function listBazaarLedger(
     prefix: KV_KEYS.bazaarLedgerPrefix,
     limit,
   });
+  const values = await bulkGetJson<BazaarLedgerEntry>(
+    env.COUNTERS,
+    listed.keys.map((key) => key.name),
+  );
   const entries: BazaarLedgerEntry[] = [];
-  for (const key of listed.keys) {
-    const entry = await env.COUNTERS.get<BazaarLedgerEntry>(key.name, "json");
+  for (const entry of values.values()) {
     if (entry) {
       entries.push(entry);
     }

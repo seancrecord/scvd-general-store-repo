@@ -1,4 +1,5 @@
 import { newRefundId } from "@/lib/ids";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, RefundRecord } from "@/types";
 
@@ -46,9 +47,12 @@ export async function getRefund(
 
 export async function listRefunds(env: Env): Promise<RefundRecord[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.refundPrefix });
+  const values = await bulkGetJson<RefundRecord>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const refunds: RefundRecord[] = [];
-  for (const key of listed.keys) {
-    const record = await env.ORDERS.get<RefundRecord>(key.name, "json");
+  for (const record of values.values()) {
     if (record) {
       refunds.push(record);
     }

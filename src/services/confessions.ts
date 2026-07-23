@@ -1,4 +1,5 @@
 import { newConfessionId } from "@/lib/ids";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { ConfessionRecord, ConfessionStatus, Env } from "@/types";
@@ -47,9 +48,13 @@ export interface QueuedConfession {
 
 export async function listConfessions(env: Env): Promise<QueuedConfession[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.confessionPrefix });
+  const values = await bulkGetJson<ConfessionRecord>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const confessions: QueuedConfession[] = [];
   for (const key of listed.keys) {
-    const record = await env.ORDERS.get<ConfessionRecord>(key.name, "json");
+    const record = values.get(key.name);
     if (record) {
       confessions.push({ record, kvKey: key.name });
     }
