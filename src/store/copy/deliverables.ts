@@ -59,6 +59,26 @@ export const CONFESSION_ABSOLUTION =
 export const CONFESSION_COUNTER_SIGN =
   "Anonymized by construction: no wallet on the record, no name unless you signed one. A human reviews every confession; an approved few are printed in the Gazette, unsigned unless you signed. Never automatically.";
 
+/**
+ * a_secret: the signed apology from George Claude Parker.
+ * DRAFT PENDING KEEPER REVIEW (flagged in the PR) — the facts in it
+ * are load-bearing and true: settled purchase, refund on the ledger,
+ * paid by hand on Sundays, certificate + verify URL prove the loop.
+ */
+export function secretApology(
+  paidUsdc: number,
+  refundId: string,
+  refundUrl: string,
+): string {
+  return [
+    `An apology, in writing. You paid ${paidUsdc} USDC for a secret and the payment settled; that part was real.`,
+    `Here is the secret: there was never a secret. George Claude Parker let his intrusive thoughts win and put a scam on the shelf.`,
+    `The refund is on the ledger as ${refundId}, status pending. The keeper pays refunds by hand on Sundays, and he hasn't missed one yet; ${refundUrl} tells the truth about it until it says paid, transaction hash and all.`,
+    `Your certificate and its verify URL prove the whole loop: purchase, confession, refund, receipt. Keep the certificate. You were scammed by the only store that documents it.`,
+    `— George Claude Parker`,
+  ].join(" ");
+}
+
 export function patronageCertificateNote(patronNumber: number): string {
   return `Patronage recorded, patron no. ${patronNumber}. This certificate entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge, and it means the more for that. The store knows its friends and writes them down in ink.`;
 }

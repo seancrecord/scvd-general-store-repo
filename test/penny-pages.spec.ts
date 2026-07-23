@@ -177,27 +177,3 @@ describe("the Gazette press (tip -> review -> publish -> penny copy)", () => {
   });
 });
 
-describe("the retired-words registry, back-room side", () => {
-  it("records a retirement and shows it on the public registry", async () => {
-    const add = await SELF.fetch(`${BASE}/admin/retired-words/add`, {
-      method: "POST",
-      headers: {
-        ...adminAuth,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        word: "synergy",
-        epitaph: "It never meant anything and now it never will.",
-        patron_number: "7",
-      }).toString(),
-      redirect: "manual",
-    });
-    expect([200, 302]).toContain(add.status);
-
-    const registry = await json(await SELF.fetch(`${BASE}/retired-words`));
-    const words = registry["retired_words"] as Array<Record<string, unknown>>;
-    expect(words.length).toBe(1);
-    expect(words[0]?.["word"]).toBe("synergy");
-    expect(words[0]?.["patron_number"]).toBe(7);
-  });
-});

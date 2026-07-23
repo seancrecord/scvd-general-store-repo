@@ -1,9 +1,11 @@
+import { currentWeekKey } from "@/lib/kv-keys";
 import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
 import { catIsOut } from "@/services/porch";
 import { bellLine, STORE_METADATA } from "@/store";
 import {
   FEATURED_SHELVES,
+  openSignForWeek,
   STOREFRONT_COPY as COPY,
 } from "@/store/copy/storefront";
 import type { GuestbookEntry } from "@/types";
@@ -120,8 +122,9 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="tube-line">${COPY.tubeLine}</p>
       <h1 class="neon">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></h1>
       <div class="light-pool"></div>
-      <p class="open-sign">${COPY.openSign}</p>
+      <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
+      <p class="proprietors">${COPY.intentLine}</p>
     </header>
 
     <div class="gauges">
@@ -179,7 +182,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>${COPY.finePrintVerify}</p>
       <p>${COPY.finePrintPorch}</p>
-      <p class="porch-est">${escapeHtml(STORE_METADATA.location)}${COPY.estLine ? ` \u00B7 ${COPY.estLine}` : ""}</p>
+      <p class="porch-est">${COPY.footerAddress}</p>
     </footer>
 
   </main>

@@ -4,7 +4,7 @@ import { STORE_METADATA } from "@/store";
 
 /**
  * A plain paper page in the storefront's hand, for the smaller rooms:
- * the Town Directory, the retired-words registry, the Gazette rack.
+ * the Town Directory, the Gazette rack.
  * Callers pass pre-escaped HTML for the body sections.
  */
 

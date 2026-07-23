@@ -13,9 +13,9 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 Signed hellos, custodial pet rocks, certificates of nomenclature,
 hand-drawn portraits, collaborative art, one genuine human phone call,
 and honest app reviews. Aisle two carries the novelties: jars of
-Tuesday, secrets, grudges held on your behalf, blessings from the
-smoker, word retirements (public registry at `/retired-words`), the
-drawer, and official dibs. Aisle three is utility: context anchors
+Tuesday, a secret (the scam that refunds, on the record), grudges
+held on your behalf, the drawer, lowercase luckies, and official
+dibs. Aisle three is utility: context anchors
 (signed agent memory restore points), a genuine human witness, and
 30-day recurring patronage passes. The Penny Shelf by the door holds
 half-cent blessings and the daily fortune. From the store ledger:
@@ -142,7 +142,7 @@ facilitator and all current client libraries speak v2.
 | `/almanac` | Free index of the Keeper's Almanac (his serialized journal) |
 | `/almanac/:slug` | One journal page, $0.01 over x402, markdown |
 | `/directory` | The Town Directory — keeper-edited, honest one-liners (JSON + human view) |
-| `/retired-words` | Public registry of words the keeper has retired |
+| `/api/refund/{refund_id}` | Honest refund status: pending until paid by hand, then the tx hash |
 | `/gazette` | The Gazette — free index: weekly editions + tip dispatches |
 | `/gazette/issue-:n` | One issue, $0.01 over x402, markdown |
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
@@ -186,7 +186,7 @@ src/
                   # the Almanac pages (one file each), directory.json
   routes/         # one file per room
   services/       # KV logic: orders, certificates, guestbook, requests,
-                  # stamps, tips, gazette, retired words, digest
+                  # stamps, tips, gazette, refunds, digest
   pages/          # HTML/CSS for the storefront, small rooms, back room
   lib/            # signing, sanitizing, payments, ids, KV keys
 ```

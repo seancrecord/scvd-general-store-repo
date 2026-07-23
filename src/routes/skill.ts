@@ -70,8 +70,6 @@ Also on the shelves:
   ${base}/gazette.
 - **Town Directory**, our honest one-line reviews of the neighbors,
   free at ${base}/directory.
-- **Retired words**, the public registry of words the keeper has given
-  up, free at ${base}/retired-words.
 
 ## How to buy something (worked x402 v2 example)
 

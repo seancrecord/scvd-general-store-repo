@@ -42,7 +42,7 @@ import {
   listFailedItems,
   listWaitlist,
 } from "@/services/requests";
-import { addRetiredWord } from "@/services/retired-words";
+import { listRefunds, markRefundPaid } from "@/services/refunds";
 import { listTips, setTipStatus } from "@/services/tips";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
@@ -83,6 +83,7 @@ adminRoutes.get("/admin", async (c) => {
     porchLedger,
     recentChallenges,
     confessions,
+    refunds,
   ] = await Promise.all([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -101,6 +102,7 @@ adminRoutes.get("/admin", async (c) => {
     readPorchLedger(c.env),
     listRecentChallenges(c.env),
     listConfessions(c.env),
+    listRefunds(c.env),
   ]);
   return c.html(
     renderAdminPage({
@@ -121,6 +123,7 @@ adminRoutes.get("/admin", async (c) => {
       porchLedger,
       recentChallenges,
       confessions: confessions.map((entry) => entry.record),
+      refunds,
     }),
   );
 });
@@ -262,19 +265,20 @@ adminRoutes.post("/admin/gazette/publish", async (c) => {
   return c.redirect("/admin");
 });
 
-adminRoutes.post("/admin/retired-words/add", async (c) => {
+adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
   const form = await c.req.parseBody();
-  const rawPatron = typeof form["patron_number"] === "string" ? form["patron_number"] : "";
-  const input: Parameters<typeof addRetiredWord>[1] = {
-    word: form["word"],
-    epitaph: form["epitaph"],
-  };
-  if (/^[0-9]+$/.test(rawPatron)) {
-    input.patronNumber = parseInt(rawPatron, 10);
+  const txHash =
+    typeof form["tx_hash"] === "string" ? form["tx_hash"].trim() : "";
+  if (!txHash) {
+    return c.text("A paid refund needs its transaction hash.", 400);
   }
-  const entry = await addRetiredWord(c.env, input);
-  if (!entry) {
-    return c.text("A retirement needs the word and its epitaph.", 400);
+  const updated = await markRefundPaid(
+    c.env,
+    c.req.param("refund_id"),
+    txHash,
+  );
+  if (!updated) {
+    return c.text("No refund by that number on the ledger.", 404);
   }
   return c.redirect("/admin");
 });

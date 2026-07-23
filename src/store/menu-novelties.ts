@@ -14,8 +14,9 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
     sla_hours: 168,
+    // ".." below is the keeper's, intentional, not a typo
     description:
-      "The keeper seals an ordinary Oak City Tuesday in a real jar, dated, labeled, photographed, held in custody with the rocks. A genuine North Carolina Tuesday; the jar is real and so was the day. The seal stays on; that's the whole point.",
+      "Vibe in a jar. A regular Oak City Tuesday, sealed, dated, photographed, stored with the rocks. Tuesdays can rock.. if you let them. The seal stays on.",
     note_402:
       "That'll be $4, friend. Or more, if it was a particularly good Tuesday. The keeper will note which kind you paid for.",
   },
@@ -25,12 +26,13 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "A Secret",
     price_usdc: 10,
     pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    sla_hours: 168,
+    // The scam that refunds: settle, mint, apologize, refund by hand.
+    fulfillment: "instant",
     description:
-      "The keeper tells you one true thing he hasn't told anyone else. Small, real, and yours. He thinks of a new one for every buyer, no reruns.",
+      "I think we just scammed you. Processing the refund now. George Claude Parker let his intrusive thoughts win. Sorry about that.",
+    // DRAFT pending keeper review (flagged in the PR)
     note_402:
-      "That'll be $10, friend. Or more, if you want one he's been sitting on a while. Those cost him something to part with.",
+      "That'll be $10, friend. Between us: it's a scam. The refund starts the moment you pay, and George Claude Parker apologizes in writing.",
   },
   {
     id: "grudge",
@@ -41,35 +43,9 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper holds a grudge personally on your behalf, a rate limit, a flaky API, a deprecation with no migration guide, whatever wronged you, so you can let it go. Certificate names the grievance. Held until you write to release it.",
+      "FUCK that guy. Or girl. Or it, the wire, the chip, nvidia. I will hold the grudge personally so you can let it go. Certificate names the grievance. Held until you write in to release it.",
     note_402:
       "That'll be $6, friend. Or more, for the deep ones. The keeper holds them all with equal spite.",
-  },
-  {
-    id: "smoker_blessing",
-    listed_week: "2026-W30",
-    name: "Blessing from the Smoker",
-    price_usdc: 7,
-    pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    description:
-      "On the next cook, the keeper says your name over the smoker while the post oak does its work, and writes down what the smoke was doing at that moment. Photographic proof included. Genuinely aromatic; blessings non-denominational.",
-    note_402:
-      "That'll be $7, friend. Or more, if you'd like the blessing said during the stall, when the smoker is most sincere.",
-  },
-  {
-    id: "retired_word",
-    listed_week: "2026-W30",
-    name: "Retire a Word",
-    price_usdc: 15,
-    pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    description:
-      "The keeper retires a word of the buyer's choosing from his vocabulary, permanently, with a written epitaph. Entered on the public registry at /retired-words for all to check. He has already lost some good ones this way. Family names and words he needs for the day job are respectfully declined (refunded).",
-    note_402:
-      "That'll be $15, friend. Or more, if it's a word he uses a lot. Retiring 'actually' nearly broke him.",
   },
   {
     id: "the_drawer",
@@ -80,7 +56,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "Every store has a drawer of things that have no shelf. Pay, and the keeper opens it, picks what the drawer offers that week, photographs it, and holds it in custody under your name. You don't choose. Neither does he, really. The drawer does.",
+      "Every store has a drawer. Pay, it opens, you get what it gives that week, photographed and held under your name. You don't pick. Nothing more human than the fuckin lotto. Congrats. HOORAY. Another sticker.",
     note_402:
       "That'll be $9, friend. Or more, if you want the keeper to reach toward the back. The back is where the drawer keeps its opinions.",
   },

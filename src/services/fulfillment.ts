@@ -94,6 +94,12 @@ export async function fulfillPurchase(
     if (input.confessionText !== undefined) {
       goodsInput.confessionText = input.confessionText;
     }
+    if (item.id === "a_secret") {
+      goodsInput.paidUsdc = payment.paidUsdc;
+      if (payment.payer) {
+        goodsInput.payer = payment.payer;
+      }
+    }
     const goods = await deliverInstantGoods(env, item, goodsInput);
     return {
       message: VOICE.instantThanks,

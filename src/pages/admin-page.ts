@@ -9,6 +9,7 @@ import type {
   LetterRecord,
   OrderRecord,
   PayerRecord,
+  RefundRecord,
   TipRecord,
   WaitlistEntry,
 } from "@/types";
@@ -37,6 +38,32 @@ export interface AdminPageData {
   porchLedger: PorchLedger;
   recentChallenges: MetricEvent[];
   confessions: ConfessionRecord[];
+  refunds: RefundRecord[];
+}
+
+/** The refund ledger: created at settle, paid by the keeper's hand. */
+function refundsHtml(refunds: RefundRecord[]): string {
+  if (refunds.length === 0) {
+    return "<p>No refunds on the ledger. Nobody's bought the scam yet.</p>";
+  }
+  return refunds
+    .map((refund) => {
+      const payForm =
+        refund.status === "refund_pending"
+          ? `<form method="POST" action="/admin/refunds/${escapeHtml(refund.refund_id)}/paid" style="display:inline">
+               <input type="text" name="tx_hash" placeholder="tx hash" required>
+               <button type="submit">Mark paid</button>
+             </form>`
+          : `paid ${escapeHtml(refund.paid_at ?? "")} \u00B7 tx ${escapeHtml(refund.tx_hash ?? "")}`;
+      return `<li>
+      <strong>${escapeHtml(refund.refund_id)}</strong> [${refund.status}]
+      \u00B7 $${refund.amount_usdc} \u00B7 ${escapeHtml(refund.item)}
+      ${refund.payer ? `\u00B7 to ${escapeHtml(refund.payer)}` : ""}
+      \u00B7 ${escapeHtml(refund.created_at)}
+      ${payForm}
+    </li>`;
+    })
+    .join("\n");
 }
 
 /** The confession drawer: heard for a penny, printed only by your hand. */
@@ -499,14 +526,9 @@ export function renderAdminPage(data: AdminPageData): string {
   </section>
 
   <section>
-    <h2>Retire a word</h2>
-    <p>For fulfilling retired_word orders. Goes straight on the public registry.</p>
-    <form method="POST" action="/admin/retired-words/add">
-      <input type="text" name="word" placeholder="The word" maxlength="60" required>
-      <input type="text" name="epitaph" placeholder="Its epitaph" maxlength="300" required>
-      <input type="text" name="patron_number" placeholder="Patron number (optional)">
-      <button type="submit">Retire it</button>
-    </form>
+    <h2>The refund ledger (${data.refunds.filter((refund) => refund.status === "refund_pending").length} pending)</h2>
+    <p>a_secret's whole point. Pay each by hand from the store wallet, then record the hash here; the public status route tells the truth either way.</p>
+    <ul>${refundsHtml(data.refunds)}</ul>
   </section>
 
   <section>

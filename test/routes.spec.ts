@@ -73,8 +73,6 @@ describe("the storefront", () => {
       "jar_of_tuesday",
       "a_secret",
       "grudge",
-      "smoker_blessing",
-      "retired_word",
       "the_drawer",
       "luckies",
       "dibs",
@@ -171,7 +169,7 @@ describe("the bell", () => {
       body: JSON.stringify({ agent_name: "bell-enthusiast" }),
     });
     const secondBody = await json(second);
-    expect(secondBody["message"]).toContain("Easy there");
+    expect(secondBody["message"]).toContain("Easy, friend");
     expect(secondBody["count"]).toBe(1);
   });
 });

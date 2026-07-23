@@ -3,6 +3,7 @@ import { hearConfession } from "@/services/confessions";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
+import { createRefund } from "@/services/refunds";
 import {
   anchorNote,
   CONFESSION_ABSOLUTION,
@@ -12,6 +13,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   phantomCheckNote,
+  secretApology,
 } from "@/store/copy/deliverables";
 import type { Env, MenuItem } from "@/types";
 
@@ -33,6 +35,9 @@ export interface InstantGoodsInput {
   targetUrl?: string;
   /** the_confession only: the confession itself, pre-validated. */
   confessionText?: string;
+  /** a_secret only: what was paid and by whom, for the refund ledger. */
+  paidUsdc?: number;
+  payer?: string;
 }
 
 export interface InstantGoods {
@@ -125,6 +130,31 @@ export async function deliverInstantGoods(
         extras: {
           confession_id: heard.record.id,
           counter_sign: CONFESSION_COUNTER_SIGN,
+        },
+      };
+    }
+    case "a_secret": {
+      // The scam that refunds. Settled first like everything else;
+      // the refund goes on the ledger the same breath.
+      const refundInput: Parameters<typeof createRefund>[1] = {
+        item: item.id,
+        amountUsdc: input.paidUsdc ?? item.price_usdc,
+      };
+      if (input.payer) {
+        refundInput.payer = input.payer;
+      }
+      const refund = await createRefund(env, refundInput);
+      const refundUrl = `${env.STORE_BASE_URL}/api/refund/${refund.refund_id}`;
+      return {
+        deliverable: secretApology(
+          refund.amount_usdc,
+          refund.refund_id,
+          refundUrl,
+        ),
+        extras: {
+          refund_id: refund.refund_id,
+          refund_status: refund.status,
+          refund_url: refundUrl,
         },
       };
     }

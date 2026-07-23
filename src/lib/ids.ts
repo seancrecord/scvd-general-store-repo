@@ -56,3 +56,7 @@ export function newLetterId(): string {
 export function newConfessionId(): string {
   return `conf_${randomToken(10)}`;
 }
+
+export function newRefundId(): string {
+  return `refund_${randomToken(10)}`;
+}

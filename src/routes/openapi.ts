@@ -337,8 +337,11 @@ openapiRoutes.get("/openapi.json", (c) => {
       "/directory": {
         get: freeOp("Town Directory", "Honest one-line reviews of the neighbors."),
       },
-      "/retired-words": {
-        get: freeOp("Retired words", "The public registry of retired words."),
+      "/api/refund/{refund_id}": {
+        get: freeOp(
+          "Refund status",
+          "The honest status of a refund on the ledger: pending until the keeper pays it by hand, then paid with the transaction hash.",
+        ),
       },
       "/.well-known/x402": {
         get: freeOp(

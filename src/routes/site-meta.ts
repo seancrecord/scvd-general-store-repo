@@ -17,7 +17,6 @@ const HUMAN_SURFACES = [
   "/gazette",
   "/almanac",
   "/directory",
-  "/retired-words",
   "/zodiac",
   "/porch",
 ] as const;

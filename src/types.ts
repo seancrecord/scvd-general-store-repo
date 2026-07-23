@@ -224,14 +224,26 @@ export interface DirectoryData {
 }
 
 /** A word retired from the keeper's vocabulary, on the public registry. */
-export interface RetiredWordEntry {
-  word: string;
-  epitaph: string;
-  patron_number?: number;
-  retired_at: string;
-}
-
 export type StampVariant = "visitor" | "contributor";
+
+export type RefundStatus = "refund_pending" | "refund_paid";
+
+/**
+ * a_secret's whole point: the store scams you and refunds you, on
+ * the record. Created after settle; the keeper pays refunds by hand
+ * (the Worker holds no keys and never will) and marks them paid
+ * with the transaction hash.
+ */
+export interface RefundRecord {
+  refund_id: string;
+  item: string;
+  amount_usdc: number;
+  payer?: string;
+  status: RefundStatus;
+  created_at: string;
+  tx_hash?: string;
+  paid_at?: string;
+}
 
 /** A free, dated, signed visit stamp. Rotates weekly. */
 export interface StampRecord {

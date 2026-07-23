@@ -63,8 +63,7 @@ not stocked), with occasional dispatches assembled from reviewed
 Trading Post tips. Free index at ${base}/gazette; a penny a copy.
 
 Town Directory, honest one-line reviews of the neighbors, free at
-${base}/directory. Registry of retired words, also free, at
-${base}/retired-words.
+${base}/directory.
 
 The Systems Almanac, your sign, by wallet address, for life, at
 ${base}/zodiac/{address}. The runtime is weather; the weekly page

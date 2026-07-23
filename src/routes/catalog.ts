@@ -66,10 +66,6 @@ catalogRoutes.get("/menu.json", (c) => {
         url: `${base}/directory`,
         note: "The Town Directory, honest one-line reviews of the neighbors. Free.",
       },
-      retired_words: {
-        url: `${base}/retired-words`,
-        note: "The public registry of words the keeper has retired. Free to read.",
-      },
     },
     free_shelf: {
       guestbook: {
