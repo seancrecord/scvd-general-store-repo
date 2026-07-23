@@ -35,7 +35,10 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW (keeper's pen, post-canon)
 
-- [ ] smoker_blessing rework — brisket fiction retiring per canon; keeper picks the replacement (candidates from his mouth: a drink poured in your name, a dedicated brainstorm session). Until picked, the item stands as-is; on the pick, copy gets recut and the item may be renamed
+- [x] smoker_blessing — REMOVED 2026-07-23 per Batch 1 (item, pitch, tag, tests); the replacement concepts (drink poured in your name / dedicated brainstorm) stay available if the keeper ever wants them as a new item
+- [x] retired_word — retired 2026-07-23 per Batch 1. No epitaph, which is the epitaph
+- [x] a_secret — reworked 2026-07-23 into the scam that refunds (Batch 1): instant, refund ledger, keyless Worker, keeper pays by hand. Apology + 402 tag PENDING KEEPER REVIEW in the PR
+- [ ] Batch 1 keeper review: approve/edit the a_secret apology text (src/store/copy/deliverables.ts secretApology) and the a_secret note_402; confirm or recount the "eighteen more" storefront line (true count is sixteen post-deletions)
 - [ ] Almanac needs its first REAL entry — keeper dictates (Green Egg cook, a ledger read, an exact funny detail), machine structures, keeper kill-passes. The brisket placeholder was shelved 2026-07-23; the journal currently holds one page
 - [ ] Founding edition + gazette entries rewrite in keeper's voice — he said he's rewriting; current draft at registry/founding-edition-draft.md is the machine's structure awaiting his flavor
 - [x] "luckies" — BUILT 2026-07-23 (the launch post sells them; the launch was approved, so they went on the shelf): id `luckies`, "A Lucky (Custodial)", $5+ PWID, human_queue 168h. Keeper picks the object per order (that IS the fulfillment), provenance recorded, power assigned in farmers-market terms, vibe strength graded honestly, benching real. Copy carries the launch post's own warranty: "Results vary. They do vary. We have no legal team." Write-ins ride the Mailbox. STILL OPEN: pet_rock absorb-vs-beside (recommendation stands: absorb later, once luckies has its own legs); a /luckies public registry page when the first lucky exists

@@ -1,5 +1,3 @@
-import { STORE_METADATA } from "@/store/metadata";
-import type { MenuItem } from "@/types";
 
 /**
  * KEEPER-EDITABLE COPY, what actually goes in the bag.
@@ -12,21 +10,23 @@ import type { MenuItem } from "@/types";
  * change the phrase and the test together, deliberately.
  */
 
-export function helloNote(item: MenuItem, patronNumber: number): string {
+/** Keeper's ink, Batch 2 (2026-07-23). Verbatim, emoji included. */
+export function helloNote(patronNumber: number): string {
   return [
-    `Hello, patron no. ${patronNumber}.`,
-    `This note certifies that you walked into ${STORE_METADATA.name},`,
-    `paid honest money for "${item.name}", and were welcome the whole time.`,
-    `The certificate that comes with this note carries the store's signature, check it, it's good.`,
-    `The rocks will be here when you're ready for one.`,
+    `Hello, patron no. ${patronNumber}. We're friends now.`,
+    `Not like the "you gave us money so we're friends" friends. The real deal.`,
+    `You're welcome back anytime. And hey\u2026 we appreciate you \u{1FAF5}`,
+    `Certificate's signed, check it, it's good.`,
+    `Rocks are here whenever you're ready.`,
   ].join(" ");
 }
 
+/** Keeper's ink, Batch 2. The ".." is his, intentional. */
 export function dibsNote(patronNumber: number): string {
   return [
     `DIBS, officially. Patron no. ${patronNumber} called it at ${new Date().toISOString()},`,
-    `witnessed by ${STORE_METADATA.name} and recorded on a signed certificate.`,
-    `Whatever it was, the idea, the name, the last one on the shelf, it's yours.`,
+    `witnessed by the store and recorded on a signed certificate.`,
+    `Dibs never had a hash.. til now.`,
     `Anyone disputes it, show them the verify URL. Dibs is dibs.`,
   ].join(" ");
 }
@@ -35,13 +35,9 @@ export function anchorNote(anchorUrl: string): string {
   return `Anchor set. Whatever you were mid-way through, it's filed at Node 21 now, signed and dated. A future you can read it back at ${anchorUrl} and know it wasn't tampered with, the signature says so.`;
 }
 
-export function patronagePassNote(
-  renewed: boolean,
-  passId: string,
-  expiresAt: string,
-): string {
-  const verb = renewed ? "extended" : "opened";
-  return `Standing patronage ${verb}. Pass ${passId} runs through ${expiresAt.slice(0, 10)}. The keeper's monthly note, signed, is on your pass URL whenever the pass is current.`;
+/** Keeper's ink, Batch 2. Roger's endorsement is load-bearing. */
+export function patronagePassNote(passId: string, expiresAt: string): string {
+  return `Member: SCVD elite. And one cool cat\u2026 or at least Roger says so. Pass ${passId} runs through ${expiresAt.slice(0, 10)}. Monthly note's on your pass URL, signed, whenever you're current.`;
 }
 
 export function phantomCheckNote(

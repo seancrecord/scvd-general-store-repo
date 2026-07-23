@@ -92,7 +92,6 @@ export async function deliverInstantGoods(
       const result = await createOrRenewPass(env, passInput);
       return {
         deliverable: patronagePassNote(
-          result.renewed,
           result.pass.pass_id,
           result.pass.expires_at,
         ),
@@ -163,6 +162,6 @@ export async function deliverInstantGoods(
         deliverable: patronageCertificateNote(input.patronNumber),
       };
     default:
-      return { deliverable: helloNote(item, input.patronNumber) };
+      return { deliverable: helloNote(input.patronNumber) };
   }
 }

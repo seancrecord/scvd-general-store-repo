@@ -41,7 +41,7 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   },
   {
     name: "The Drawer",
-    price: "$9+",
+    price: "$2",
     line: "You don't choose. Neither does he, really. The drawer does.",
   },
 ] as const;

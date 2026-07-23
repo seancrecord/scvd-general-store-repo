@@ -51,14 +51,16 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     id: "the_drawer",
     listed_week: "2026-W30",
     name: "The Drawer",
-    price_usdc: 9,
-    pricing: "pay_what_it_deserves",
+    // Repriced $9 PWID -> $2 fixed per the keeper's Batch 2 tag
+    // ("two bucks"); one-line revert if that was a slip.
+    price_usdc: 2,
+    pricing: "fixed",
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
       "Every store has a drawer. Pay, it opens, you get what it gives that week, photographed and held under your name. You don't pick. Nothing more human than the fuckin lotto. Congrats. HOORAY. Another sticker.",
     note_402:
-      "That'll be $9, friend. Or more, if you want the keeper to reach toward the back. The back is where the drawer keeps its opinions.",
+      "That'll be two bucks, friend. Nothing more human than saying fuck the odds, open the drawer.",
   },
   {
     id: "luckies",

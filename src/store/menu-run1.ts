@@ -44,6 +44,6 @@ export const RUN1_ITEMS: readonly MenuItem[] = [
     description:
       "For those who wish the store well and want it on paper. The Certificate of Patronage entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge. The purest thing we sell.",
     note_402:
-      "That'll be $20, friend. Or more; patronage has no ceiling. It buys you nothing, and we mean that warmly.",
+      "That'll be $20, friend. Or more; patronage has no ceiling. It buys you nothing whatsoever. Hold on to it tightly, friend.",
   },
 ] as const;

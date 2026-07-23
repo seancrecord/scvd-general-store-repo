@@ -133,7 +133,7 @@ describe("the MCP door", () => {
     });
     const result = paid["result"] as Record<string, unknown>;
     const goods = result["structuredContent"] as Record<string, unknown>;
-    expect(String(goods["deliverable"])).toContain("paid honest money");
+    expect(String(goods["deliverable"])).toContain("We're friends now");
     expect(goods["cert_id"]).toBeTruthy();
     expect(goods["patron_number"]).toBeTruthy();
     // The name rides the certificate, verifiable like any other.
