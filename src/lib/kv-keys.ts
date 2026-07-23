@@ -3,7 +3,7 @@
  *
  * ORDERS     order:<id>, waitlist:<item>:<ts>, request:<id>,
  *            tip:<invertedTs>:<id>, gazette:<paddedIssue>,
- *            retired_word:<invertedTs>, phantom:<id>,
+ *            refund:<id>, phantom:<id>,
  *            letter:<invertedTs>:<id> (private; admin queue only)
  * GUESTBOOK  entry:<invertedTs>:<id>
  * COUNTERS   patron_number, bell_count, bell_ring:<who>:<day>,
@@ -31,8 +31,8 @@ export const KV_KEYS = {
   gazetteIssue: (issueNumber: number): string =>
     `gazette:${String(issueNumber).padStart(6, "0")}`,
   gazettePrefix: "gazette:",
-  retiredWord: (invertedTs: string): string => `retired_word:${invertedTs}`,
-  retiredWordPrefix: "retired_word:",
+  refund: (refundId: string): string => `refund:${refundId}`,
+  refundPrefix: "refund:",
   gazetteDraft: "gazette_draft",
   confession: (invertedTs: string, id: string): string =>
     `confession:${invertedTs}:${id}`,

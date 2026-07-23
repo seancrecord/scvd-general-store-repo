@@ -1,4 +1,5 @@
 import { newLetterId } from "@/lib/ids";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
@@ -76,9 +77,13 @@ export interface QueuedLetter {
 
 export async function listLetters(env: Env): Promise<QueuedLetter[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.letterPrefix });
+  const values = await bulkGetJson<LetterRecord>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const letters: QueuedLetter[] = [];
   for (const key of listed.keys) {
-    const record = await env.ORDERS.get<LetterRecord>(key.name, "json");
+    const record = values.get(key.name);
     if (record) {
       letters.push({ record, kvKey: key.name });
     }

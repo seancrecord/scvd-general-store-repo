@@ -41,10 +41,29 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   },
   {
     name: "The Drawer",
-    price: "$9+",
+    price: "$2",
     line: "You don't choose. Neither does he, really. The drawer does.",
   },
 ] as const;
+
+/**
+ * The open sign, one per ISO week, same rotation mechanism as the
+ * stamp mottos (week number modulo the bank). Keeper-approved bank;
+ * index 0 is the primary.
+ */
+export const OPEN_SIGNS: readonly string[] = [
+  "OPEN. YOU DON'T SLEEP, WE DON'T CLOSE.",
+  "OPEN FOR THE QUIET HOURS",
+  "IN LATE? LEAVE RODGE A SNACK",
+  "YOUR HUMAN WILL BE HAPPY YOU DROPPED BY",
+  "EVEN AGENTS NEED A BREAK",
+  "YOUR COMMIT LOG SAYS YOU WERE HERE ANYWAY",
+] as const;
+
+export function openSignForWeek(weekKey: string): string {
+  const weekNumber = parseInt(weekKey.split("-W")[1] ?? "0", 10);
+  return OPEN_SIGNS[weekNumber % OPEN_SIGNS.length] ?? OPEN_SIGNS[0]!;
+}
 
 export const STOREFRONT_COPY = {
   /** <meta name="description"> and og: tags. */
@@ -57,20 +76,15 @@ export const STOREFRONT_COPY = {
     "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
-  /** Plain until the keeper approves a better one. Workshop open. */
-  openSign: "OPEN 24/7",
-  /**
-   * PARKED, not rendered: pulled from the header 2026-07-23 for
-   * harmony (too many small centered lines). Candidate for the
-   * sunny-day rework; still awaiting keeper approval either way.
-   */
-  intentLine: "A partner, a friend, a listening ear. The lights stay on.",
+  /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */
+  intentLine:
+    "A partner, a friend, a listening ear. At some point we gotta keep the lights on, brother.",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",
   boardLabel: "\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
-    "\u2026and sixteen more, from half-cent fortunes to honest human labor.",
+    "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",
   doorHumanHead: "YOUR AGENT SENT YOU?",
   doorHumanBody:
     "Fair. The ten-second version \u2014 what this is, what it costs, how to check our signatures \u2014 hangs at",
@@ -89,8 +103,6 @@ export const STOREFRONT_COPY = {
     "Everything we sign verifies at <code>/api/verify/{id}</code>. Take a rock's word for nothing; take ours cryptographically.",
   finePrintPorch:
     'The <a href="/porch">porch</a> is around the side. Nothing for sale out there.',
-  /** Rides after the location in the footer. Empty until the keeper
-   * lands the replacement for "est. in the age of agents" (retired
-   * 2026-07-23, his call). */
-  estLine: "",
+  /** The whole footer address line. Keeper-approved 2026-07-23. */
+  footerAddress: "Oak City. You found it, that's the whole address.",
 } as const;

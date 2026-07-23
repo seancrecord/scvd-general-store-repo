@@ -11,7 +11,9 @@ import {
   readPorchLedger,
 } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
-import { renderAdminPage } from "@/pages/admin-page";
+import { renderCounterPage } from "@/pages/admin/counter-page";
+import { renderOfficePage } from "@/pages/admin/office-page";
+import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { listIssues, publishIssue } from "@/services/gazette";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
@@ -42,7 +44,7 @@ import {
   listFailedItems,
   listWaitlist,
 } from "@/services/requests";
-import { addRetiredWord } from "@/services/retired-words";
+import { listRefunds, markRefundPaid } from "@/services/refunds";
 import { listTips, setTipStatus } from "@/services/tips";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
@@ -64,7 +66,22 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 adminRoutes.use("/admin", adminGate);
 adminRoutes.use("/admin/*", adminGate);
 
-adminRoutes.get("/admin", async (c) => {
+/** One shelf failing to load never takes the room down. */
+function shelf<T>(
+  result: PromiseSettledResult<T>,
+  fallback: T,
+  label: string,
+  notes: string[],
+): T {
+  if (result.status === "fulfilled") {
+    return result.value;
+  }
+  notes.push(label);
+  return fallback;
+}
+
+adminRoutes.get("/admin/counter", async (c) => {
+  const notes: string[] = [];
   const [
     orders,
     waitlist,
@@ -73,57 +90,132 @@ adminRoutes.get("/admin", async (c) => {
     guestbook,
     weekNote,
     tips,
-    gazetteIssues,
-    bazaarLedger,
-    monthLedger,
-    payers,
     letters,
     alerts,
     gazetteDraft,
-    porchLedger,
-    recentChallenges,
     confessions,
-  ] = await Promise.all([
+    refunds,
+  ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
     listCommissions(c.env),
     listFailedItems(c.env),
-    listGuestbook(c.env, 100),
+    listGuestbook(c.env, 30),
     c.env.COUNTERS.get(KV_KEYS.weekNote),
     listTips(c.env),
-    listIssues(c.env),
-    listBazaarLedger(c.env),
-    readMonthLedger(c.env),
-    listPayers(c.env),
     listLetters(c.env),
-    listAlerts(c.env),
+    listAlerts(c.env, 5),
     getDraft(c.env),
-    readPorchLedger(c.env),
-    listRecentChallenges(c.env),
     listConfessions(c.env),
+    listRefunds(c.env),
   ]);
   return c.html(
-    renderAdminPage({
-      orders,
-      waitlist,
-      commissions,
-      failedItems,
-      guestbook,
-      weekNote: weekNote || DEFAULT_WEEK_NOTE,
-      tips: tips.map((tip) => tip.record),
-      gazetteIssues,
-      bazaarLedger,
-      monthLedger,
-      payers,
-      letters: letters.map((entry) => entry.record),
-      alerts,
-      gazetteDraft,
-      porchLedger,
-      recentChallenges,
-      confessions: confessions.map((entry) => entry.record),
+    renderCounterPage({
+      orders: shelf(orders, [], "orders", notes),
+      waitlist: shelf(waitlist, [], "waitlists", notes),
+      commissions: shelf(commissions, [], "requests", notes),
+      failedItems: shelf(failedItems, {}, "failed items", notes),
+      guestbook: shelf(guestbook, [], "guestbook", notes),
+      weekNote: shelf(weekNote, null, "week note", notes) || DEFAULT_WEEK_NOTE,
+      tips: shelf(tips, [], "tips", notes).map((tip) => tip.record),
+      letters: shelf(letters, [], "letters", notes).map(
+        (entry) => entry.record,
+      ),
+      alerts: shelf(alerts, [], "alerts", notes),
+      gazetteDraft: shelf(gazetteDraft, null, "gazette draft", notes),
+      confessions: shelf(confessions, [], "confessions", notes).map(
+        (entry) => entry.record,
+      ),
+      refunds: shelf(refunds, [], "refunds", notes),
+      loadNotes: notes,
     }),
   );
 });
+
+adminRoutes.get("/admin", async (c) => {
+  const notes: string[] = [];
+  const [
+    monthLedger,
+    porchLedger,
+    payers,
+    recentChallenges,
+    bazaarLedger,
+    gazetteIssues,
+    orders,
+    letters,
+    tips,
+    confessions,
+    refunds,
+    alerts,
+  ] = await Promise.allSettled([
+    readMonthLedger(c.env),
+    readPorchLedger(c.env),
+    listPayers(c.env),
+    listRecentChallenges(c.env),
+    listBazaarLedger(c.env),
+    listIssues(c.env),
+    listOrders(c.env),
+    listLetters(c.env),
+    listTips(c.env),
+    listConfessions(c.env),
+    listRefunds(c.env),
+    listAlerts(c.env, 5),
+  ]);
+  const emptyLedger = {
+    month: new Date().toISOString().slice(0, 7),
+    items: {},
+    channels: {},
+    channelsHouse: {},
+    channels402: {},
+    channels402House: {},
+    channels402Infra: {},
+    days: {},
+    venues: {},
+    revenueUsdc: 0,
+    revenueHouseUsdc: 0,
+  };
+  const pendingReviews =
+    shelf(tips, [], "tips", notes).filter(
+      (tip) => tip.record.status === "pending_review",
+    ).length +
+    shelf(confessions, [], "confessions", notes).filter(
+      (entry) => entry.record.status === "pending_review",
+    ).length +
+    shelf(refunds, [], "refunds", notes).filter(
+      (refund) => refund.status === "refund_pending",
+    ).length;
+  return c.html(
+    renderOfficePage({
+      monthLedger: shelf(monthLedger, emptyLedger, "month ledger", notes),
+      porchLedger: shelf(
+        porchLedger,
+        { surfaces: {}, organicVisits: 0, porchToPurchase: null, truncated: false },
+        "porch",
+        notes,
+      ),
+      payers: shelf(payers, [], "payers", notes),
+      recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
+      bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
+      gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
+      work: {
+        orders: shelf(orders, [], "orders", notes).filter(
+          (order) => order.status === "queued",
+        ).length,
+        letters: shelf(letters, [], "letters", notes).filter(
+          (entry) => entry.record.status !== "archived",
+        ).length,
+        reviews: pendingReviews,
+        alerts: shelf(alerts, [], "alerts", notes).length,
+      },
+      loadNotes: notes,
+    }),
+  );
+});
+
+// Old bookmark; the books merged into the desk.
+adminRoutes.get("/admin/books", (c) => c.redirect("/admin"));
+
+adminRoutes.get("/admin/tools", (c) => c.html(renderToolsPage()));
 
 adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
   const updated = await setConfessionStatus(
@@ -216,7 +308,7 @@ adminRoutes.post("/admin/patronage/note", async (c) => {
     return c.text("The monthly note needs words in it.", 400);
   }
   await setMonthlyNote(c.env, note);
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/tips/:tip_id/approve", async (c) => {
@@ -259,22 +351,23 @@ adminRoutes.post("/admin/gazette/publish", async (c) => {
     );
   }
   await publishIssue(c.env, title, approved);
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
-adminRoutes.post("/admin/retired-words/add", async (c) => {
+adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
   const form = await c.req.parseBody();
-  const rawPatron = typeof form["patron_number"] === "string" ? form["patron_number"] : "";
-  const input: Parameters<typeof addRetiredWord>[1] = {
-    word: form["word"],
-    epitaph: form["epitaph"],
-  };
-  if (/^[0-9]+$/.test(rawPatron)) {
-    input.patronNumber = parseInt(rawPatron, 10);
+  const txHash =
+    typeof form["tx_hash"] === "string" ? form["tx_hash"].trim() : "";
+  if (!txHash) {
+    return c.text("A paid refund needs its transaction hash.", 400);
   }
-  const entry = await addRetiredWord(c.env, input);
-  if (!entry) {
-    return c.text("A retirement needs the word and its epitaph.", 400);
+  const updated = await markRefundPaid(
+    c.env,
+    c.req.param("refund_id"),
+    txHash,
+  );
+  if (!updated) {
+    return c.text("No refund by that number on the ledger.", 404);
   }
   return c.redirect("/admin");
 });
@@ -294,7 +387,7 @@ adminRoutes.post("/admin/alerts/test", async (c) => {
       "Dummy alert, the keeper pulled the test lever. If you're reading this in your inbox, the wire works.",
     key: `test-${Date.now()}`,
   });
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
@@ -330,7 +423,7 @@ adminRoutes.post("/admin/note", async (c) => {
 
 adminRoutes.post("/admin/inventory/reset", async (c) => {
   await resetWeeklyInventory(c.env);
-  return c.redirect("/admin");
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.get("/admin/digest", async (c) => {

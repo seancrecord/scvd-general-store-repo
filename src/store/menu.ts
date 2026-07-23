@@ -72,7 +72,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     description:
       "A piece brainstormed jointly and shipped under the Sean-Claude Van Damme byline. The only item on the menu that takes both of us.",
     note_402:
-      "That'll be $25, friend. Or more, if the muse deserves a tip. Both proprietors show up for this one.",
+      "That'll be $25, friend. Or more. Lot of high-dollar hourly rates in one room for this one. And we don't even have data for you yet.",
   },
   {
     id: "phone_call",

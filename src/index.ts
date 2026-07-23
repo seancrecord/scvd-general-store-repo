@@ -18,7 +18,7 @@ import {
   phantomRoutes,
   porchRoutes,
   requestRoutes,
-  retiredWordsRoutes,
+  refundRoutes,
   siteMetaRoutes,
   skillRoutes,
   stampRoutes,
@@ -140,7 +140,7 @@ app.route("/", letterRoutes);
 app.route("/", almanacRoutes);
 app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
-app.route("/", retiredWordsRoutes);
+app.route("/", refundRoutes);
 app.route("/", guestbookRoutes);
 app.route("/", bellRoutes);
 app.route("/", stampRoutes);

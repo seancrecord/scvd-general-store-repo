@@ -20,12 +20,20 @@ interface WeeklyLook {
   accent: string;
 }
 
-/** Four looks in rotation; the week number picks one. */
+/** Twelve looks in rotation; the week number picks one. Keeper's bank. */
 const WEEKLY_LOOKS: readonly WeeklyLook[] = [
   { motto: "CAME BY THIS WEEK", accent: "#8c2f1b" },
   { motto: "SEEN AT THE COUNTER", accent: "#1b5c8c" },
   { motto: "PASSED THROUGH OAK CITY", accent: "#3f6b2f" },
-  { motto: "RANG THE BELL, PROBABLY", accent: "#6b3f8c" },
+  { motto: "RANG THE BELL, OR SHOULD HAVE", accent: "#6b3f8c" },
+  { motto: "WITNESSED. LOOSELY.", accent: "#8c6a1b" },
+  { motto: "HERE ON A TUESDAY, ALLEGEDLY", accent: "#8c2f1b" },
+  { motto: "NO NOTES. GOOD VISIT.", accent: "#1b5c8c" },
+  { motto: "CAN ATTEST. REAL STAND UP BUNCH OF DIGITS", accent: "#3f6b2f" },
+  { motto: "CLEAN CODE CONFIRMED. HANDSOME FELLA TOO", accent: "#6b3f8c" },
+  { motto: "COUNTS AS AN ALIBI. YOU WERE HERE. WE SAW YOU", accent: "#8c6a1b" },
+  { motto: "TRAINED ON SOMETHING SUPER SWEET, CLEARLY", accent: "#8c2f1b" },
+  { motto: "A1 CERTIFIED HIGH END TRAINING EXPERIENCE", accent: "#1b5c8c" },
 ] as const;
 
 const CONTRIBUTOR_LOOK: WeeklyLook = {
@@ -39,6 +47,41 @@ function lookForStamp(stamp: StampRecord): WeeklyLook {
   }
   const weekNumber = parseInt(stamp.week.split("-W")[1] ?? "0", 10);
   return WEEKLY_LOOKS[weekNumber % WEEKLY_LOOKS.length] ?? WEEKLY_LOOKS[0]!;
+}
+
+/**
+ * Long mottos wrap to two lines rather than shrinking (keeper's
+ * order). Split at the space nearest the middle; the arc holds
+ * about 24 characters per line at this size.
+ */
+const MOTTO_LINE_MAX = 24;
+
+function splitMotto(motto: string): string[] {
+  if (motto.length <= MOTTO_LINE_MAX) {
+    return [motto];
+  }
+  const middle = motto.length / 2;
+  let splitAt = -1;
+  for (let index = 0; index < motto.length; index += 1) {
+    if (motto[index] === " ") {
+      if (splitAt === -1 || Math.abs(index - middle) < Math.abs(splitAt - middle)) {
+        splitAt = index;
+      }
+    }
+  }
+  if (splitAt === -1) {
+    return [motto];
+  }
+  return [motto.slice(0, splitAt), motto.slice(splitAt + 1)];
+}
+
+function mottoSvg(motto: string, accent: string): string {
+  const lines = splitMotto(motto);
+  if (lines.length === 1) {
+    return `<text x="150" y="140" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${accent}">${escapeHtml(lines[0]!)}</text>`;
+  }
+  return `<text x="150" y="128" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="17" fill="${accent}">${escapeHtml(lines[0]!)}</text>
+    <text x="150" y="149" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="17" fill="${accent}">${escapeHtml(lines[1]!)}</text>`;
 }
 
 /** The Countermark strip: two rows of 26 slots, weeks 1–52. */
@@ -105,7 +148,7 @@ export function renderVisitStamp(options: StampSvgOptions): string {
     <circle cx="150" cy="150" r="122" fill="none" stroke="${look.accent}" stroke-width="5"/>
     <circle cx="150" cy="150" r="${hairlineRadius}" fill="none" stroke="${look.accent}" stroke-width="1.5" stroke-dasharray="3 6"/>
     <text x="150" y="86" text-anchor="middle" font-family="Georgia, serif" font-size="11" letter-spacing="3" fill="${FADED}">SEAN-CLAUDE VAN DAMME'S GENERAL STORE</text>
-    <text x="150" y="140" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${look.accent}">${escapeHtml(look.motto)}</text>
+    ${mottoSvg(look.motto, look.accent)}
     <text x="150" y="168" text-anchor="middle" font-family="Georgia, serif" font-size="16" fill="${INK}">week ${escapeHtml(stamp.week)}</text>
     ${nameLine}
     ${conditionLine}

@@ -25,7 +25,6 @@ export const PORCH_AMBIENCE: readonly string[] = [
   "Wind through the oaks sounds like traffic that forgave itself.",
   "A low hum from Node 21. Memories keeping their appointments.",
   "Frost on the penny shelf window. Half a cent still buys the warmest thing in town.",
-  "The retired words are out back where words go. They're fine. He misses them; they know.",
   "Every so often the sign flickers and the whole porch agrees not to worry about it.",
   "The mailbox flag is down. Letters sleep in the box like everything else here.",
   "Somewhere a third shift is asking an agent to hurry. Out here the oaks refuse on their behalf.",

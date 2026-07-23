@@ -13,15 +13,14 @@ export const VOICE = {
   unknownItem:
     "We don't stock that one. Wrote it down though, the keeper reads the request ledger every Sunday.",
   orderNotFound:
-    "No order by that number. Check the receipt, the keeper's handwriting is better than his filing.",
+    "No order by that number. Check your receipt, his handwriting beats his filing and neither one is winning awards.",
   certNotFound:
     "No certificate by that name on the wall. Check the spelling on your receipt.",
   soldOut:
     "Shelf's empty this week. The waitlist is right there, leave your callback and we'll ring the bell when a slot opens.",
-  bellRungAlready:
-    "Easy there, friend. One ring per visitor per day. The bell needs its rest.",
+  bellRungAlready: "Easy, friend. One ring a day. The bell has a life too.",
   requestReceived:
-    "Wrote it in the ledger. The keeper reads every request on Sundays, coffee in hand.",
+    "Wrote it in the ledger. The keeper gets to it when he gets to it. Historically that's fast, the man cannot stand an open loop.",
   orderCompleted: "Delivered, as promised. Come back any time.",
 } as const;
 

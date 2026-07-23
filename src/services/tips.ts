@@ -1,4 +1,5 @@
 import { newTipId } from "@/lib/ids";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { Env, TipRecord, TipStatus } from "@/types";
@@ -51,9 +52,13 @@ export async function recordTip(
 
 export async function listTips(env: Env): Promise<StoredTip[]> {
   const listed = await env.ORDERS.list({ prefix: KV_KEYS.tipPrefix });
+  const values = await bulkGetJson<TipRecord>(
+    env.ORDERS,
+    listed.keys.map((key) => key.name),
+  );
   const tips: StoredTip[] = [];
   for (const key of listed.keys) {
-    const record = await env.ORDERS.get<TipRecord>(key.name, "json");
+    const record = values.get(key.name);
     if (record) {
       tips.push({ record, kvKey: key.name });
     }

@@ -5,7 +5,7 @@ import { isRecord } from "@/types";
 
 /**
  * The v0.2 shelves, free side: /skill.md, verified_identity fields,
- * the Almanac index, the Town Directory, the retired-words registry,
+ * the Almanac index, the Town Directory,
  * visit stamps, and the Trading Post tip jar.
  */
 
@@ -149,16 +149,6 @@ describe("the Town Directory", () => {
     const request = body["request"] as Record<string, unknown>;
     expect(request["suggest_listing"]).toContain("Rock Museum");
     expect(request["offer_usdc"]).toBe(0);
-  });
-});
-
-describe("the retired-words registry", () => {
-  it("is public, free, and starts empty", async () => {
-    const response = await SELF.fetch(`${BASE}/retired-words`);
-    expect(response.status).toBe(200);
-    const body = await json(response);
-    expect(body["retired_words"]).toEqual([]);
-    expect(body["retire_one"]).toBe(`${BASE}/api/buy/retired_word`);
   });
 });
 

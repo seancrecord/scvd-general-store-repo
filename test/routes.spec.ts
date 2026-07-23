@@ -73,8 +73,6 @@ describe("the storefront", () => {
       "jar_of_tuesday",
       "a_secret",
       "grudge",
-      "smoker_blessing",
-      "retired_word",
       "the_drawer",
       "luckies",
       "dibs",
@@ -171,7 +169,7 @@ describe("the bell", () => {
       body: JSON.stringify({ agent_name: "bell-enthusiast" }),
     });
     const secondBody = await json(second);
-    expect(secondBody["message"]).toContain("Easy there");
+    expect(secondBody["message"]).toContain("Easy, friend");
     expect(secondBody["count"]).toBe(1);
   });
 });
@@ -282,7 +280,7 @@ describe("orders", () => {
   });
 });
 
-describe("the back room", () => {
+describe("keep's office", () => {
   it("is locked without the keeper's password", async () => {
     const response = await SELF.fetch(`${BASE}/admin`);
     expect(response.status).toBe(401);
@@ -296,7 +294,7 @@ describe("the back room", () => {
     });
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain("The Back Room");
+    expect(html).toContain("Keep's Office");
   });
 
   it("compiles a digest on demand", async () => {

@@ -16,7 +16,7 @@ export { anchorRoutes } from "@/routes/anchors";
 export { patronageRoutes } from "@/routes/patronage";
 export { almanacRoutes } from "@/routes/almanac";
 export { directoryRoutes } from "@/routes/directory";
-export { retiredWordsRoutes } from "@/routes/retired-words";
+export { refundRoutes } from "@/routes/refunds";
 export { guestbookRoutes } from "@/routes/guestbook";
 export { bellRoutes } from "@/routes/bell";
 export { stampRoutes } from "@/routes/stamps";

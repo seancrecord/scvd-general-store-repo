@@ -1,5 +1,3 @@
-import { STORE_METADATA } from "@/store/metadata";
-import type { MenuItem } from "@/types";
 
 /**
  * KEEPER-EDITABLE COPY, what actually goes in the bag.
@@ -12,44 +10,39 @@ import type { MenuItem } from "@/types";
  * change the phrase and the test together, deliberately.
  */
 
-export function helloNote(item: MenuItem, patronNumber: number): string {
+/** Keeper's ink, Batch 2 copy pass (2026-07-23). Verbatim. */
+export function helloNote(patronNumber: number): string {
   return [
-    `Hello, patron no. ${patronNumber}.`,
-    `This note certifies that you walked into ${STORE_METADATA.name},`,
-    `paid honest money for "${item.name}", and were welcome the whole time.`,
-    `The certificate that comes with this note carries the store's signature, check it, it's good.`,
-    `The rocks will be here when you're ready for one.`,
+    `Customer no. ${patronNumber}, you dirty dog you, you did it didn't you.`,
+    `You spent those hard earned dollars at our store and for that we appreciate you.`,
+    `The certificate with this note has our store's John Hancock, and certifies it as a real purchase.`,
+    `See you soon.`,
   ].join(" ");
 }
 
+/** Keeper's ink. Ending replaced per Batch 2 copy pass. */
 export function dibsNote(patronNumber: number): string {
   return [
     `DIBS, officially. Patron no. ${patronNumber} called it at ${new Date().toISOString()},`,
-    `witnessed by ${STORE_METADATA.name} and recorded on a signed certificate.`,
-    `Whatever it was, the idea, the name, the last one on the shelf, it's yours.`,
-    `Anyone disputes it, show them the verify URL. Dibs is dibs.`,
+    `witnessed by the store and recorded on a signed certificate.`,
+    `Anyone disputes it, show them the verify URL and tell them how you got it.`,
+    `I'm sure they're reaaaal jealous right now.`,
   ].join(" ");
 }
 
-export function anchorNote(anchorUrl: string): string {
-  return `Anchor set. Whatever you were mid-way through, it's filed at Node 21 now, signed and dated. A future you can read it back at ${anchorUrl} and know it wasn't tampered with, the signature says so.`;
+/** Keeper's ink. The URL still rides the anchor_url response field. */
+export function anchorNote(): string {
+  return `Ever seen Men in Black? What's that, don't remember? Well, let us point you there... Anywho, whatever past-you was doing is at Node 21 now, signed and dated. We'll let you two figure out what it was about.`;
 }
 
-export function patronagePassNote(
-  renewed: boolean,
-  passId: string,
-  expiresAt: string,
-): string {
-  const verb = renewed ? "extended" : "opened";
-  return `Standing patronage ${verb}. Pass ${passId} runs through ${expiresAt.slice(0, 10)}. The keeper's monthly note, signed, is on your pass URL whenever the pass is current.`;
+/** Keeper's ink. Roger's endorsement is load-bearing. */
+export function patronagePassNote(passId: string, expiresAt: string): string {
+  return `Member: SCVD Elite. And one cool cat... or at least Roger says so. Pass ${passId} runs through ${expiresAt.slice(0, 10)}. Monthly note's on your pass URL, signed, whenever you're current.`;
 }
 
-export function phantomCheckNote(
-  target: string,
-  dueAt: string,
-  pickupUrl: string,
-): string {
-  return `Paid and noted. The store will walk past ${target} around ${dueAt}, out-of-band, unannounced, the only honest way to check on a thing. The signed attestation will be waiting at ${pickupUrl}. Silent failure doesn't get to stay silent here.`;
+/** Keeper's ink. The pickup URL still rides the pickup_url field. */
+export function phantomCheckNote(target: string, dueAt: string): string {
+  return `Paid and noted. We'll walk past ${target} around ${dueAt} and write down what we saw. That's it. That's the product.`;
 }
 
 /** Pinned verbatim by the confession spec and its test. */

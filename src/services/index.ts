@@ -35,9 +35,11 @@ export { renderVisitStamp } from "@/services/stamp-svg";
 export { recordTip, listTips, findTip, setTipStatus } from "@/services/tips";
 export { publishIssue, getIssue, listIssues } from "@/services/gazette";
 export {
-  addRetiredWord,
-  listRetiredWords,
-} from "@/services/retired-words";
+  createRefund,
+  getRefund,
+  listRefunds,
+  markRefundPaid,
+} from "@/services/refunds";
 export { drawBlessing, dailyFortune } from "@/services/penny-shelf";
 export {
   createAnchor,

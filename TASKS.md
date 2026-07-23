@@ -35,7 +35,15 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NOW (keeper's pen, post-canon)
 
-- [ ] smoker_blessing rework — brisket fiction retiring per canon; keeper picks the replacement (candidates from his mouth: a drink poured in your name, a dedicated brainstorm session). Until picked, the item stands as-is; on the pick, copy gets recut and the item may be renamed
+- [x] smoker_blessing — REMOVED 2026-07-23 per Batch 1 (item, pitch, tag, tests); the replacement concepts (drink poured in your name / dedicated brainstorm) stay available if the keeper ever wants them as a new item
+- [x] retired_word — retired 2026-07-23 per Batch 1. No epitaph, which is the epitaph
+- [x] a_secret — scam framing KILLED 2026-07-23 per keeper trust veto; restored to original human_queue secret. Refund novelty parked (ledger stays as general plumbing, not a product)
+- [x] Storefront shelvesMore — de-quantified 2026-07-23 ("…and more on the menu…"); no inventory count to maintain
+- [ ] ICEBOX: refund-as-novelty — only revive if it earns network/marketing value without trust risk and without being cumbersome; not feeling it otherwise
+- [ ] Batch 2 keeper confirmations: the_drawer $2 fixed ("two bucks") and jar_of_tuesday $1 min PWID ("a dollar") — both repriced to match keeper tags; confirm or revert
+- [ ] Batch 2 copy pass keeper check: two-line stamp mottos render at 17px (words intact, type smaller) — confirm the wrap treatment; porch lines await review in the PR
+- [x] Keep-line ruling OVERRULED by the keeper 2026-07-23 — the tag advertises the price of the name now; §4 amended to that extent by his hand
+- [ ] KEEPER HANDS, urgent: upgrade Cloudflare to Workers Paid ($5/mo) — the free tier's 1,000 KV writes/day and 50 subrequests/request are both too small for the store as built; the admin 500 was the subrequest cap, and "priced out" was almost certainly the write cap
 - [ ] Almanac needs its first REAL entry — keeper dictates (Green Egg cook, a ledger read, an exact funny detail), machine structures, keeper kill-passes. The brisket placeholder was shelved 2026-07-23; the journal currently holds one page
 - [ ] Founding edition + gazette entries rewrite in keeper's voice — he said he's rewriting; current draft at registry/founding-edition-draft.md is the machine's structure awaiting his flavor
 - [x] "luckies" — BUILT 2026-07-23 (the launch post sells them; the launch was approved, so they went on the shelf): id `luckies`, "A Lucky (Custodial)", $5+ PWID, human_queue 168h. Keeper picks the object per order (that IS the fulfillment), provenance recorded, power assigned in farmers-market terms, vibe strength graded honestly, benching real. Copy carries the launch post's own warranty: "Results vary. They do vary. We have no legal team." Write-ins ride the Mailbox. STILL OPEN: pet_rock absorb-vs-beside (recommendation stands: absorb later, once luckies has its own legs); a /luckies public registry page when the first lucky exists
@@ -51,6 +59,20 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 - [ ] Founding edition — DRAFT at registry/founding-edition-draft.md awaiting keeper review; on approval it gets wired as a FREE page at /gazette/founding + sitemap line + "take a paper" pointers on the free-shelf responses. It surfaces the staff's counter note, the byline explanation, and Roger — the "lives off in history" piece
 - [ ] Distribution — DISTRIBUTION.md is the free-papers plan: MCP directories [VERIFY each], Moltbook [VERIFY post-Meta] as the sincere version of "a Claudebot post" (once, as the store, in its own voice), Farcaster/Base when v3 lands, keeper's human channels at his discretion. Transaction-memo idea examined and skipped (USDC on Base carries no memo field; the wallet is already public discovery)
+
+## DATA GAPS (green space, surveyed 2026-07-23; build on keeper's nod)
+
+- [ ] Top referrers by host — event rows carry the Referer already; aggregate WHICH sites send traffic, not just the channel bucket. Cheap, high value once papers circulate
+- [ ] Hour-of-day / day-of-week shopping pattern — timestamps exist, no aggregate; answers "when do agents shop" and when to swap notes/post papers
+- [ ] Per-item window-shopping before the 402 — /menu/:item_id reads aren't logged per item; logging them as porch surfaces (item:<id>) would show what gets READ vs what gets challenged, the browse-to-consider gap
+- [ ] MCP funnel depth — initialize → tools/list → tools/call are logged separately, never linked; a coarse three-counter funnel says where MCP visitors stall
+- [ ] Regulars, consent-based — the stamp Countermark visit logs are the store's ONLY consented repeat-visitor signal (named bearers, streaks); aggregate: stamps issued/week, named bearers, live streaks. "How many regulars do we have" is currently unanswerable and shouldn't be
+- [ ] Payer cohorts — payer records hold first/last seen + purchase counts; a read-time cohort view (comeback rate, days-to-second-purchase) needs no new writes
+- [ ] Google Search Console + Bing Webmaster (KEEPER HANDS, free) — the only way to see search impressions/queries; the store has zero visibility into answer-engine pickup today
+- [ ] Conversion latency — time from an item's first 402 to its settle, computable from the 90-day event rows; worth a script before worth a dashboard
+- PERMANENT, BY POLICY (not gaps, choices): no cookies, no IP retention, no unique heads, no free→paid identity linking; porch-to-purchase stays a rate, never a path
+- INHERENT: why a 402 didn't settle is invisible (budget cap vs disinterest); the same-UA-repeat pattern in window-shoppers is the only proxy
+- ALREADY COVERED, for the record: penny-page readership (each page settles as its own ledger item), PWID tier elasticity, re-verification demand, Cloudflare's own dashboard for latency/status codes
 
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 

@@ -48,6 +48,10 @@ const INFRASTRUCTURE_UA_HINTS = [
   "googlebot", "bingbot", "duckduckbot", "yandexbot", "baiduspider",
   "gptbot", "ccbot", "claudebot", "perplexitybot", "bytespider",
   "x402scan", "x402-crawler", "clawhub-scanner",
+  // The x402 indexing economy, observed on our own porch 2026-07-23:
+  // trust indexes and censuses probing settled routes on a loop.
+  "census-probe", "trust-index", "x402-observer", "402explorer",
+  "carbonmonitor", "healthcheck", "uptime",
   "censysinspect", "shodan", "expanse", "paloaltonetworks", "qualys",
   "nuclei", "zgrab", "masscan", "nmap",
   "uptimerobot", "pingdom", "statuscake", "site24x7", "betteruptime",

@@ -69,8 +69,8 @@ describe("the MCP door", () => {
     expect(names).toContain("read_store_guide");
     expect(names).toContain("buy_hello");
     expect(names).toContain("buy_context_anchor");
-    // 4 free + 24 shelves.
-    expect(tools.length).toBe(28);
+    // 4 free + 22 shelves.
+    expect(tools.length).toBe(26);
     // Single source of truth, reconciled both directions: every buy_*
     // tool has a menu.json twin and every menu item has a tool.
     const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
@@ -133,7 +133,7 @@ describe("the MCP door", () => {
     });
     const result = paid["result"] as Record<string, unknown>;
     const goods = result["structuredContent"] as Record<string, unknown>;
-    expect(String(goods["deliverable"])).toContain("paid honest money");
+    expect(String(goods["deliverable"])).toContain("dirty dog");
     expect(goods["cert_id"]).toBeTruthy();
     expect(goods["patron_number"]).toBeTruthy();
     // The name rides the certificate, verifiable like any other.

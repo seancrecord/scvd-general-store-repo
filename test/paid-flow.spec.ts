@@ -96,7 +96,7 @@ describe("paid purchases", () => {
     expect(response.headers.get("PAYMENT-RESPONSE")).toBeTruthy();
 
     const body = await json(response);
-    expect(body["deliverable"]).toContain("patron no. 1");
+    expect(body["deliverable"]).toContain("Customer no. 1");
     expect(body["paid_usdc"]).toBe(0.5);
     expect(body["tip_usdc"]).toBe(0);
     expect(body["patron_number"]).toBe(1);

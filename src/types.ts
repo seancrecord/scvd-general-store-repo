@@ -224,14 +224,25 @@ export interface DirectoryData {
 }
 
 /** A word retired from the keeper's vocabulary, on the public registry. */
-export interface RetiredWordEntry {
-  word: string;
-  epitaph: string;
-  patron_number?: number;
-  retired_at: string;
-}
-
 export type StampVariant = "visitor" | "contributor";
+
+export type RefundStatus = "refund_pending" | "refund_paid";
+
+/**
+ * A refund on the ledger. The keeper pays by hand (the Worker holds
+ * no keys and never will) and marks the record paid with the
+ * transaction hash. Public status at /api/refund/:id.
+ */
+export interface RefundRecord {
+  refund_id: string;
+  item: string;
+  amount_usdc: number;
+  payer?: string;
+  status: RefundStatus;
+  created_at: string;
+  tx_hash?: string;
+  paid_at?: string;
+}
 
 /** A free, dated, signed visit stamp. Rotates weekly. */
 export interface StampRecord {
