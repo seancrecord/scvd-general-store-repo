@@ -85,6 +85,24 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "That'll be $9, friend. Or more, if you want the keeper to reach toward the back. The back is where the drawer keeps its opinions.",
   },
   {
+    id: "luckies",
+    listed_week: "2026-W30",
+    name: "A Lucky (Custodial)",
+    price_usdc: 5,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), photographs it, and holds it with the rocks forever. Yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
+    note_402:
+      "That'll be $5, friend, or whatever the luck deserves. Results vary. They do vary. We have no legal team.",
+    constraints: [
+      "Provenance recorded and honest",
+      "Vibe strength graded, never flattered",
+      "Benching is real",
+    ],
+  },
+  {
     id: "dibs",
     listed_week: "2026-W30",
     name: "Dibs",

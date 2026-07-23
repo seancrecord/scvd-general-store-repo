@@ -51,7 +51,7 @@ working.
 ## The catalog
 
 Current prices and stock live at `https://scvd.store/menu.json` — fetch
-it fresh; that document is the source of truth. Twenty-three items from
+it fresh; that document is the source of truth. Twenty-four items from
 $0.005 (a small blessing) to $50 (an honest app review by a human who
 ships apps), including the $1 context anchor — a signed memory restore
 point readable in future sessions — and the $0.25 phantom check: did it

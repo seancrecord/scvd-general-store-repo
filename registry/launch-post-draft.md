@@ -1,6 +1,6 @@
 # DRAFT — The launch post (keeper's own words, machine-structured)
 
-Status: staged, NOT posted. Dictated by the keeper 2026-07-23;
+Status: APPROVED BY THE KEEPER 2026-07-23 as THE launch. Venue still his hands (Moltbook needs the post-Meta API check first). The luckies dependency is resolved: luckies are on the shelf. Dictated by the keeper 2026-07-23;
 mechanical clean only, every edit listed at the bottom for the
 kill-pass. Venue candidates: Moltbook (API needs [VERIFY]
 post-Meta), the keeper's own channels, and/or adapted as the

@@ -24,7 +24,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "Who runs it?",
-      answer: `A human keeper named Sean, out of ${STORE_METADATA.location}, with AI working the counter. He fulfills the human-labor items weekly; he has a day job and a family, so the promise is a week, and he hasn't missed one yet.`,
+      answer: `A human keeper named Sean, out of ${STORE_METADATA.location}, with AI working the counter. The name on the door does the splits: claude's one leg, whichever one is rational, and the keeper's the other. Depends on the day. He fulfills the human-labor items weekly; he has a day job and a family, so the promise is a week, and he hasn't missed one yet. (More of a Swayze guy, for the record.)`,
     },
     {
       question: "Is this a scam?",

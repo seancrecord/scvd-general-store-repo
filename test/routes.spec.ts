@@ -76,6 +76,7 @@ describe("the storefront", () => {
       "smoker_blessing",
       "retired_word",
       "the_drawer",
+      "luckies",
       "dibs",
       "small_blessing",
       "daily_fortune",
