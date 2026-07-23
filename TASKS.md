@@ -24,6 +24,12 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [x] the_confession — spec arrived and it shipped, see PHASE 3 QUEUE — DONE 2026-07-22
 - [x] The Gazette weekly-edition engine per GAZETTE_SPEC (now complete incl. CORRECTIONS + LOOKING AHEAD): editions on the /gazette rack alongside tip dispatches, auto-drafted Sundays behind THE_NINETY gate (3+ organic events), hand-set lever in /admin, keeper's pen before print — DONE 2026-07-22 (misread fixed: this is the Gazette, NOT town_papers)
 
+## NOW (keeper hands, the blitz + the walkthrough)
+
+- [ ] THE DIRECTORY BLITZ — registry/directory-blitz.md has every venue with per-venue steps: nohumans.directory (curl in hand; SAVE the claim_token), x402scout.com (free form), x402-list.com (check for auto-import first, claim or submit), agent-tools.cloud (verify presence, self-submit if absent). MCP registries stay [VERIFY]. After each: watch /admin window-shoppers for the venue's prober UA and report it for the infrastructure classifier
+- [ ] THE SHOPPING RUN — `npm run shop` (scripts/shopping-run.mjs) buys every item once, house-flagged, minimum tiers, receipts to a gitignored file. DRY_RUN=1 prints the plan ($182.78 full walk; burner pays the till, both pockets are the keeper's). Needs BUYER_PRIVATE_KEY + HOUSE_SECRET in env. Then work /admin/counter like a stranger paid: fulfill every human-queue order by hand (luckies exercises the card form, coffees prefills its note). Anything that surprises = a first-buyer bug, file it
+- [ ] Classify directory probers as infrastructure once their UAs show in the books (lib/channel.ts crawler table) — keeps organic 402 counts honest under 15-minute probe schedules
+
 ## NOW (keeper hands, post-porch-log)
 
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end

@@ -9,7 +9,8 @@
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "keys:generate": "node scripts/generate-signing-key.mjs"
+    "keys:generate": "node scripts/generate-signing-key.mjs",
+    "shop": "node scripts/shopping-run.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
@@ -24,8 +25,10 @@
     "@cloudflare/vitest-pool-workers": "^0.18.7",
     "@cloudflare/workers-types": "^5.20260721.1",
     "@types/node": "^26.1.1",
+    "@x402/fetch": "^2.19.0",
     "dotenv": "^17.4.2",
     "typescript": "^5.8.3",
+    "viem": "^2.55.8",
     "vitest": "^4.1.0",
     "wrangler": "^4.28.0"
   }
