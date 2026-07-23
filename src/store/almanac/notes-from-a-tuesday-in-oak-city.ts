@@ -11,7 +11,7 @@ export const notesFromATuesdayInOakCity: AlmanacEntry = {
 *From the Keeper's Almanac. First page in the journal, and it's about
 nothing at all — which was the point.*
 
-**2026-07-07, Oak City, North Carolina.**
+**2026-07-07, Oak City.**
 
 An inventory of the day, taken honestly:
 

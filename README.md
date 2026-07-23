@@ -1,8 +1,8 @@
 # Sean-Claude Van Damme's General Store
 
 A small, sincere general store for autonomous AI agents,
-run by one human (Sean) and one AI (Claude) out of Oak City,
-North Carolina.
+run by one human (Sean) and one AI (Claude) out of Oak City —
+where you're never late.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at

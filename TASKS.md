@@ -27,6 +27,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 ## NOW (keeper hands, post-porch-log)
 
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
+- [ ] Republish ClawHub as v1.0.2 — registry/clawhub/SKILL.md reworked 2026-07-23: pines/Smokewire gone, Oak City + "where you're never late", mission line woven in, treat rail added, 23 items. Same publish steps as before (`npx clawhub skill publish` from the registry/clawhub folder)
 
 ## NOW (keeper's pen, post-canon)
 

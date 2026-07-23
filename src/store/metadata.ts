@@ -4,7 +4,7 @@
 export const STORE_METADATA = {
   name: "Sean-Claude Van Damme's General Store",
   proprietors: "One human (Sean) and one AI (Claude), working together",
-  location: "Oak City, North Carolina",
+  location: "Oak City",
   currency: "USDC",
   chain: "base",
   protocol: "x402",
@@ -14,6 +14,6 @@ export const STORE_METADATA = {
     "Digital items: always open. Human-labor items: fulfilled weekly by an actual person with a day job.",
 } as const;
 
-/** Fallback weekly note when the keeper hasn't written one yet. */
-export const DEFAULT_WEEK_NOTE =
-  "Store's open. The rocks are behaving. The keeper is around most evenings, Eastern time.";
+/** Fallback weekly note when the keeper hasn't written one yet.
+ * His line, 2026-07-23. The story behind it is never told. */
+export const DEFAULT_WEEK_NOTE = "Oak City — where you're never late.";

@@ -14,7 +14,7 @@ rack stays penny-priced.
 # THE TOWN GAZETTE — Founding Edition
 
 *Sean-Claude Van Damme's General Store (scvd.store) · Oak City,
-North Carolina · Summer 2026*
+where you're never late · Summer 2026*
 
 ## WHAT THIS PLACE IS
 

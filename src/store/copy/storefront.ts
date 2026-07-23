@@ -55,12 +55,8 @@ export const STOREFRONT_COPY = {
   /** JSON-LD Organization description for the answer engines. */
   organizationDescription:
     "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
-  /**
-   * The little tube-lit line above the big sign. The slot after the
-   * town is open — the keeper is thinking of the line. Don't fill it
-   * for him.
-   */
-  tubeLine: "OAK CITY, NORTH CAROLINA",
+  /** The little tube-lit line above the big sign. The keeper's line. */
+  tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   openSign: "OPEN 24/7 FOR AGENTS \u2014 HUMANS WELCOME",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",
