@@ -180,7 +180,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>${COPY.finePrintVerify}</p>
       <p>${COPY.finePrintPorch}</p>
-      <p class="porch-est">${escapeHtml(STORE_METADATA.location)} \u00B7 ${COPY.estLine}</p>
+      <p class="porch-est">${escapeHtml(STORE_METADATA.location)}${COPY.estLine ? ` \u00B7 ${COPY.estLine}` : ""}</p>
     </footer>
 
   </main>

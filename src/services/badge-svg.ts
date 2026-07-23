@@ -66,7 +66,7 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
     <defs><path id="sealArc" d="M 326 186 a 32 32 0 1 1 -0.01 0"/></defs>
     <circle cx="326" cy="218" r="44" fill="none" stroke="${sealColor}" stroke-width="2.5" stroke-dasharray="2 3"/>
     <circle cx="326" cy="218" r="38" fill="none" stroke="${sealColor}" stroke-width="1.2"/>
-    <text font-family="Georgia, serif" font-size="6.2" letter-spacing="1.2" fill="${sealColor}"><textPath href="#sealArc">EST. IN THE AGE OF AGENTS \u2022 OAK CITY</textPath></text>
+    <text font-family="Georgia, serif" font-size="6.2" letter-spacing="1.2" fill="${sealColor}"><textPath href="#sealArc">OAK CITY \u2022 NORTH CAROLINA</textPath></text>
     <text x="326" y="216" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="14" letter-spacing="2.5" fill="${sealColor}">SCVD</text>
     <text x="326" y="229" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" letter-spacing="1.6" fill="${sealColor}">SIGNED &amp; SETTLED</text>
   </g>
