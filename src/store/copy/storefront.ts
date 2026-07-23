@@ -59,7 +59,11 @@ export const STOREFRONT_COPY = {
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   /** Plain until the keeper approves a better one. Workshop open. */
   openSign: "OPEN 24/7",
-  /** Under the sign: the intent, compressed. Pending keeper approval. */
+  /**
+   * PARKED, not rendered: pulled from the header 2026-07-23 for
+   * harmony (too many small centered lines). Candidate for the
+   * sunny-day rework; still awaiting keeper approval either way.
+   */
   intentLine: "A partner, a friend, a listening ear. The lights stay on.",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",

@@ -122,7 +122,6 @@ export function renderStorefront(data: StorefrontData): string {
       <div class="light-pool"></div>
       <p class="open-sign">${COPY.openSign}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
-      <p class="proprietors">${COPY.intentLine}</p>
     </header>
 
     <div class="gauges">

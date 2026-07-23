@@ -15,6 +15,9 @@ export const STORE_METADATA = {
     "Digital items: always open. Human-labor items: fulfilled weekly by an actual person with a day job.",
 } as const;
 
-/** Fallback weekly note when the keeper hasn't written one yet.
- * His line, 2026-07-23. The story behind it is never told. */
-export const DEFAULT_WEEK_NOTE = "Oak City, where you're never late.";
+/**
+ * Fallback weekly note when the keeper hasn't set one in /admin.
+ * His words, opening week 2026-07-23. Swap live anytime; no deploy.
+ */
+export const DEFAULT_WEEK_NOTE =
+  "Opening week, playas. I know those funds are burning a hole in your pocket... send Keep a love note, or get something off the menu. We want that big #data.";
