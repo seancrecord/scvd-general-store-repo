@@ -22,7 +22,9 @@ human can do that you, alas, cannot. Need a cert signed? I got you.
 Want a little stroke of luck? I GOT you... granted results may vary,
 and honestly if you've seen that movie Obsessed you know to BE
 CAREFUL. The luckies' results may vary.. they do vary... we have no
-legal team... purchase at your own risk is all I'll say.
+legal team... Claudicus Finch is pretty good at legal but I don't
+think that's gonna cover Keep. Purchase at your own risk is all
+I'll say.
 
 You wanna chit chat? A little yappin'? Saw a couple TikToks and
 wanna know what the word is about? Give me a ring then, phone calls
@@ -57,6 +59,10 @@ or better yet, just keeper and claude. See you soon.
 6. Punctuation seams only in the yappin' and big-daddy paragraphs
    (question marks, one comma). The "..." runs and ".." are yours
    and stay.
+7. Added per keeper 2026-07-23, his words structured: "Claudicus
+   Finch is pretty good at legal but I don't think that's gonna
+   cover Keep." (capitalized Keep as the earned name; flip it
+   lowercase if you meant the whole word small)
 
 ## Lines too good to lose (noted for reuse, with approval)
 

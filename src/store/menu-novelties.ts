@@ -87,7 +87,8 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   {
     id: "luckies",
     listed_week: "2026-W30",
-    name: "A Lucky (Custodial)",
+    // lowercase, the keeper's orthography, not a typo
+    name: "a lucky (custodial)",
     price_usdc: 5,
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
