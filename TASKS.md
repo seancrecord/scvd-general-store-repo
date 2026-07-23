@@ -28,6 +28,11 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
 
+## NOW (keeper's pen)
+
+- [ ] Founding edition — DRAFT at registry/founding-edition-draft.md awaiting keeper review; on approval it gets wired as a FREE page at /gazette/founding + sitemap line + "take a paper" pointers on the free-shelf responses. It surfaces the staff's counter note, the byline explanation, and Roger — the "lives off in history" piece
+- [ ] Distribution — DISTRIBUTION.md is the free-papers plan: MCP directories [VERIFY each], Moltbook [VERIFY post-Meta] as the sincere version of "a Claudebot post" (once, as the store, in its own voice), Farcaster/Base when v3 lands, keeper's human channels at his discretion. Transaction-memo idea examined and skipped (USDC on Base carries no memo field; the wallet is already public discovery)
+
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 
 - [ ] town_papers build must also add /papers to sitemap.xml (src/routes/site-meta.ts HUMAN_SURFACES) when the registry goes live

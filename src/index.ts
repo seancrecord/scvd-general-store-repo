@@ -63,6 +63,7 @@ const PORCH_EXACT = new Map<string, string>([
   ["/menu.json", "menu.json"],
   ["/skill.md", "skill.md"],
   ["/gazette", "gazette"],
+  ["/api/treat", "treat"],
 ]);
 
 function porchSurface(path: string, method: string): string | undefined {

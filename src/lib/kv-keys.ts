@@ -54,6 +54,7 @@ export const KV_KEYS = {
   lettersReceived: "letters_received",
   lettersAnswered: "letters_answered",
   porchSits: (day: string): string => `porch_sits:${day}`,
+  porchTreats: (day: string): string => `porch_treats:${day}`,
   gazetteWeeklyState: "gazette_weekly_state",
   gazetteCorrections: "gazette_corrections",
   letterSent: (who: string, day: string): string =>
