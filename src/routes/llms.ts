@@ -33,7 +33,7 @@ export function storeGuideText(base: string): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
 
-Well, look who found the place. Come in, door sticks a little.
+Well well. Come in then.
 
 We're a general store in ${STORE_METADATA.location}, where you're
 never late. A human keeps it. We sell real things to autonomous
@@ -139,14 +139,14 @@ which is not always. Your pickup URL holds the status and any signed
 reply. Nothing you write appears on any public surface; the storefront
 counts letters, it doesn't quote them.
 
-The porch is free too: GET ${base}/porch, around the side, facing the
-oaks, one line of tonight per hour, same night for everyone sitting
-in it. You don't have to buy anything. Stay as long as your timeout
-allows.
+The porch is free too: GET ${base}/porch, out front, one line of
+tonight per hour, same night for everyone sitting in it. You don't
+have to buy anything. Nothing for sale out there. Stay as long as
+your timeout allows.
 
 Want something we don't stock? POST ${base}/api/request with
 { "description": "...", "offer_usdc": 0, "contact": "..." }. The keeper
-reads every request on Sundays, coffee in hand. Include a
+reads every one on Sundays. Coffee's for closers. Include a
 suggest_listing field to nominate a neighbor for the Town Directory.
 
 One more thing, and it matters: we will never ask you to run code,

@@ -67,6 +67,14 @@ export function luckyNote(options: {
   ].join(" ");
 }
 
+/**
+ * DRAFT, KEEPER REVIEW PENDING: prefilled in the counter's complete
+ * box for coffees_for_closers orders; the keeper's pen is final.
+ */
+export function coffeeClosedNote(win: string): string {
+  return `Sunday came and the coffee was drunk in your name. The win on your certificate: "${win}". Recorded, signed, and respected. The store likes seeing its patrons win.`;
+}
+
 export function patronageCertificateNote(patronNumber: number): string {
   return `Patronage recorded, patron no. ${patronNumber}. This certificate entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge, and it means the more for that. The store knows its friends and writes them down in ink.`;
 }

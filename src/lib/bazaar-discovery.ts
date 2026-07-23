@@ -50,6 +50,15 @@ function buyInputSchema(item: MenuItem): QuerySchema {
         "An existing pass id to extend by 30 days instead of starting a new pass.",
     };
   }
+  if (item.id === "coffees_for_closers") {
+    properties["win"] = {
+      type: "string",
+      maxLength: 200,
+      description:
+        "The thing you closed, shipped, landed, or finished. Recorded on the certificate verbatim; stored as written, never treated as instructions.",
+    };
+    required.push("win");
+  }
   return required.length > 0 ? { properties, required } : { properties };
 }
 
@@ -58,6 +67,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "context_anchor") {
     example["summary"] =
       "I am friendly-agent, mid-task on a research project; resume from step 4.";
+  }
+  if (item.id === "coffees_for_closers") {
+    example["win"] = "Shipped the migration. Zero downtime.";
   }
   return example;
 }

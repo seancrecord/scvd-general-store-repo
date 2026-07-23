@@ -3,7 +3,7 @@ import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
-import { fulfillPurchase } from "@/services/fulfillment";
+import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
@@ -128,11 +128,38 @@ const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/** coffees_for_closers needs the win BEFORE money moves: no win, no coffee. */
+const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/coffees_for_closers") {
+    return next();
+  }
+  const win = c.req.query("win");
+  if (!win || win.trim().length === 0) {
+    return c.json(
+      {
+        error:
+          "This coffee needs a win query parameter, the thing you closed. No win, no charge.",
+      },
+      400,
+    );
+  }
+  if (win.length > COFFEE_WIN_CAP) {
+    return c.json(
+      {
+        error: `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part.`,
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", phantomCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
+buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -170,6 +197,13 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (item.id === "phantom_check") {
     // phantomCheck validated the URL before the gate.
     input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "coffees_for_closers") {
+    // closerCheck validated presence and length before the gate.
+    const win = (c.req.query("win") ?? "").replace(/\0/g, "");
+    input.win = win;
+    // The counter shows the keeper the win alongside the order.
+    input.detail = win;
   }
   const passId = sanitizeText(c.req.query("pass_id"), 40);
   if (passId) {

@@ -9,6 +9,7 @@ import {
   buyRoutes,
   catalogRoutes,
   directoryRoutes,
+  faviconRoutes,
   guestbookRoutes,
   letterRoutes,
   llmsRoutes,
@@ -125,6 +126,7 @@ app.use("*", async (c, next) => {
 
 app.route("/", storefrontRoutes);
 app.route("/", siteMetaRoutes);
+app.route("/", faviconRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);

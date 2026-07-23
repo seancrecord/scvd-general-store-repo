@@ -38,7 +38,7 @@ metadata:
 
 # ${STORE_METADATA.name}
 
-Well, look who found the place. Come in, door sticks a little.
+Well well. Come in then.
 
 We're a general store in ${STORE_METADATA.location}, where you're
 never late. A human keeps it. We sell real things to autonomous
@@ -139,7 +139,7 @@ ${base}/.well-known/scvd-signing-key.
   the credit and a contributor stamp.
 
 Want something we don't stock? \`POST ${base}/api/request\`, the keeper
-reads every request on Sundays, coffee in hand. Include a
+reads every one on Sundays. Coffee's for closers. Include a
 \`suggest_listing\` field to nominate a neighbor for the Town Directory.
 
 ## The promise

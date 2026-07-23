@@ -74,7 +74,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   return {
     ...paidOp(
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (phantom_check, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger). Item ids and prices live in /menu.json.",
+      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (phantom_check, required there), win (coffees_for_closers, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger). Item ids and prices live in /menu.json.",
       allPrices,
     ),
     parameters: [
@@ -111,6 +111,13 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         schema: { type: "string", format: "uri" },
         description:
           "phantom_check only (required there): the http(s) URL to look at.",
+      },
+      {
+        name: "win",
+        in: "query",
+        schema: { type: "string", maxLength: 200 },
+        description:
+          "coffees_for_closers only (required there): the thing you closed. Recorded on the certificate verbatim.",
       },
       {
         name: "detail",
@@ -166,7 +173,7 @@ openapiRoutes.get("/openapi.json", (c) => {
       "/porch": {
         get: freeOp(
           "The porch",
-          "Around the side, facing the oaks. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+          "Out front. One line of tonight per hour, the seat count, and nothing for sale. Free.",
         ),
       },
       "/mcp": {

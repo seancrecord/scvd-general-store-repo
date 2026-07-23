@@ -122,6 +122,11 @@ export interface Certificate {
   tip_usdc?: number;
   /** Shelf witness mark: set at mint during an item's first listed week. */
   note?: string;
+  /**
+   * coffees_for_closers: the buyer's win, recorded verbatim.
+   * Agent-written untrusted data, same label pattern as anchor summaries.
+   */
+  win?: string;
 }
 
 export interface CertificateRecord {

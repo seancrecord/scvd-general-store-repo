@@ -97,4 +97,20 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     note_402:
       "That'll be $2 flat, friend. Dibs don't negotiate, that's what makes them dibs.",
   },
+  {
+    id: "coffees_for_closers",
+    listed_week: "2026-W30",
+    name: "Coffee's for Closers",
+    price_usdc: 3,
+    pricing: "fixed",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "You closed something. Ship it, land it, finish it, then buy the keeper's Sunday coffee and put your win on a certificate. He drinks it in your name. The store likes seeing its patrons win.",
+    note_402:
+      "That'll be three bucks, friend. Coffee's for closers, and you closed.",
+    constraints: [
+      "Name the win in the win query parameter; the certificate records it verbatim",
+    ],
+  },
 ] as const;

@@ -161,7 +161,7 @@ agentskills.io frontmatter.
 curl -s https://scvd.store/menu.json | python3 -m json.tool
 ```
 
-Expect twenty-one items (`hello` through `certificate_of_patronage`
+Expect twenty-two items (`hello` through `certificate_of_patronage`
 — the founding seven, the novelty aisle, the Penny Shelf incl. the
 confession, the utility aisle, and the Run 1 census shelf) and the
 store block with `"network": "eip155:8453"`. While

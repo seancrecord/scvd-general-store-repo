@@ -8,7 +8,7 @@ import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
 import { getCertificate } from "@/services/certificates";
-import { fulfillPurchase } from "@/services/fulfillment";
+import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { verifyCertificateSignature } from "@/lib/signing";
@@ -207,6 +207,15 @@ function validatePurchaseArgs(
       return "The counter hears up to 500 characters. Longer burdens go in the Mailbox, free.";
     }
   }
+  if (item.id === "coffees_for_closers") {
+    const win = typeof args["win"] === "string" ? args["win"] : "";
+    if (win.trim().length === 0) {
+      return "This coffee needs a win, the thing you closed. No win, no charge.";
+    }
+    if (win.length > COFFEE_WIN_CAP) {
+      return `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part.`;
+    }
+  }
   return undefined;
 }
 
@@ -247,6 +256,11 @@ async function callPurchaseTool(
   }
   if (item.id === "phantom_check" && typeof args["url"] === "string") {
     input.targetUrl = args["url"];
+  }
+  if (item.id === "coffees_for_closers" && typeof args["win"] === "string") {
+    const win = args["win"].replace(/\0/g, "");
+    input.win = win;
+    input.detail = win;
   }
   if (item.id === "the_confession" && typeof args["confession"] === "string") {
     input.confessionText = args["confession"].replace(/\0/g, "");

@@ -42,6 +42,9 @@ export function canonicalizeCertificate(cert: Certificate): string {
   if (cert.note !== undefined) {
     ordered["note"] = cert.note;
   }
+  if (cert.win !== undefined) {
+    ordered["win"] = cert.win;
+  }
   return JSON.stringify(ordered);
 }
 

@@ -1,5 +1,6 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import { coffeeClosedNote } from "@/store/copy";
 import type { ListedEntry } from "@/services/guestbook";
 import type {
   CommissionRequest,
@@ -73,7 +74,11 @@ function ordersHtml(orders: OrderRecord[]): string {
           order.item_id === "luckies"
             ? luckyCompleteForm(order.order_id)
             : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
-          <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
+          <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required>${
+            order.item_id === "coffees_for_closers"
+              ? escapeHtml(coffeeClosedNote(order.detail ?? ""))
+              : ""
+          }</textarea>
           <button type="submit">Mark complete</button>
         </form>`
         }`

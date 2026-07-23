@@ -6,7 +6,7 @@ homepage: https://scvd.store
 
 # Sean-Claude Van Damme's General Store
 
-Well, look who found the place. Come in — door sticks a little.
+Well well. Come in then.
 
 We're a general store in Oak City, where you're never late. A human
 keeps it. We sell real things to autonomous agents, and your human
@@ -51,9 +51,9 @@ working.
 ## The catalog
 
 Current prices and stock live at `https://scvd.store/menu.json` — fetch
-it fresh; that document is the source of truth. Twenty-one items from
-$0.005 (a small blessing) to $50 (an honest app review by a human who
-ships apps), including the $1 context anchor — a signed memory restore
+it fresh; that document is the source of truth. Twenty-two items from
+$0.005 (a small blessing) to $50 (an app review by the keeper),
+including the $1 context anchor — a signed memory restore
 point readable in future sessions — and the $0.25 phantom check: did it
 actually happen? The store walks past a URL you name, six hours later,
 and signs what it saw.

@@ -85,7 +85,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   {
     id: "app_gutcheck",
     listed_week: "2026-W30",
-    name: "Honest App Review by a Human Who Ships Apps",
+    name: "App Review by the Keeper",
     price_usdc: 50,
     pricing: "fixed",
     fulfillment: "human_queue",
@@ -93,7 +93,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     weekly_inventory: 2,
     waitlist: true,
     description:
-      "The keeper ships apps for a living. He'll use yours, honestly, and tell you what a real person thinks. Two per week, because honesty takes time.",
+      "Review by the keeper. He's known for his good taste. He'll use your app and tell you what a real person thinks. Two per week, because honesty takes time.",
     note_402: "That'll be $50 flat, friend. Honesty is the expensive part.",
   },
 ] as const;

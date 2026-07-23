@@ -20,7 +20,7 @@ and submit by hand.
 goods, human labor, and signed certificates, paid in USDC on Base
 over x402 v2.
 
-**Description:** Twenty-one items from $0.005 to $50: instant signed
+**Description:** Twenty-two items from $0.005 to $50: instant signed
 deliverables (memory anchors, URL health attestations, blessings,
 absolution) and human-labor fulfillment (phone calls, app reviews,
 physical custody of luckies). Every purchase mints an ed25519-signed
@@ -35,7 +35,7 @@ https://scvd.store/mcp · https://scvd.store/openapi.json
 
 ## Claims audit (verify true on submission day)
 
-- 21 items — check /menu.json count on the day.
+- 22 items — check /menu.json count on the day.
 - Bazaar-discoverable — confirmed 2026-07-22 (hello route).
 - MCP in-band payment — live, first settle 2026-07-22.
 - ClawHub skill — scvd-general-store@1.0.1.

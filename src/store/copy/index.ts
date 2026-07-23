@@ -2,6 +2,7 @@ export {
   helloNote,
   dibsNote,
   anchorNote,
+  coffeeClosedNote,
   luckyNote,
   patronagePassNote,
   phantomCheckNote,
