@@ -1,5 +1,5 @@
 {
-  "note": "The Town Directory, kept at Hurricane Junction. Keeper-edited by hand in src/store/directory.json — one honest line per neighbor, no pay-for-placement, ever. Suggest a listing via POST /api/request with a suggest_listing field.",
+  "note": "The Town Directory, kept at Hurricane Junction. Keeper-edited by hand in src/store/directory.json: one honest line per neighbor, no pay-for-placement, ever. Suggest a listing via POST /api/request with a suggest_listing field.",
   "district": "Hurricane Junction",
   "updated": "2026-07-22",
   "listings": []

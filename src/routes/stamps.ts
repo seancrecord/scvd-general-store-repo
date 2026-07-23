@@ -6,9 +6,9 @@ import { getStamp, issueStamp } from "@/services/stamps";
 import { isRecord, type HonoEnv } from "@/types";
 
 /**
- * POST /api/stamp — a free, dated, ed25519-signed visit stamp for the
+ * POST /api/stamp, a free, dated, ed25519-signed visit stamp for the
  * current week. The design rotates weekly. Verifiable at /api/verify.
- * GET /badges/stamps/:stamp_id.svg — the stamp itself, inked.
+ * GET /badges/stamps/:stamp_id.svg, the stamp itself, inked.
  */
 export const stampRoutes = new Hono<HonoEnv>();
 
@@ -18,7 +18,7 @@ stampRoutes.post("/api/stamp", async (c) => {
   const issued = await issueStamp(c.env, "visitor", name || undefined);
   return c.json(
     {
-      message: `Stamped. Week ${issued.record.stamp.week}'s design — come back next week for the next one in the set.`,
+      message: `Stamped. Week ${issued.record.stamp.week}'s design, come back next week for the next one in the set.`,
       stamp: issued.record.stamp,
       signature: issued.record.signature,
       public_key: issued.record.public_key,

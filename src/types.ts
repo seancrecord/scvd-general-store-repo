@@ -73,7 +73,7 @@ export interface MenuItem {
   constraints?: string[];
   /**
    * ISO week the item first went on the shelf. Purchases during this
-   * week carry the shelf witness mark — catalog history, recorded as
+   * week carry the shelf witness mark, catalog history, recorded as
    * it happens. Every new item must state its listing week.
    */
   listed_week: string;
@@ -244,7 +244,7 @@ export interface StampRecord {
   /**
    * The Countermark: 52 characters of "1"/"0", one per ISO week of the
    * stamp's year, punched at issuance from the bearer's actual visit
-   * log. Frozen into the signed record — gaps are permanent.
+   * log. Frozen into the signed record, gaps are permanent.
    */
   card?: string;
   /** Consecutive visit weeks ending at this stamp's week. */

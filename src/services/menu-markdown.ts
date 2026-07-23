@@ -58,13 +58,13 @@ export function renderMenuMarkdown(
         `| \`${item.id}\` | ${item.name} | ${priceLine(item)} | ${fulfillmentLine(item)} |`,
     )
     .join("\n");
-  return `# ${STORE_METADATA.name} — the menu
+  return `# ${STORE_METADATA.name}, the menu
 
 | id | item | price | fulfillment |
 |---|---|---|---|
 ${rows}
 
-One item up close: \`GET ${base}/menu/{item_id}\` (this same document knows JSON too — plain Accept gets JSON).
+One item up close: \`GET ${base}/menu/{item_id}\` (this same document knows JSON too, plain Accept gets JSON).
 Buying: \`GET ${base}/api/buy/{item_id}\` over x402 v2. Full onboarding at ${base}/skill.md; contract at ${base}/openapi.json.
 `;
 }

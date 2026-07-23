@@ -9,7 +9,7 @@ export const notesFromATuesdayInOakCity: AlmanacEntry = {
   markdown: `# Notes from a Tuesday in Oak City
 
 *From the Keeper's Almanac. First page in the journal, and it's about
-nothing at all — which was the point.*
+nothing at all, which was the point.*
 
 **2026-07-07, Oak City.**
 

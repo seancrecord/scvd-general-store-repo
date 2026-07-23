@@ -150,7 +150,7 @@ export async function runMcpPayment(
       status: 402,
       body: {
         error:
-          "That payment authorization has been through this till once already. Sign a fresh one — the register remembers.",
+          "That payment authorization has been through this till once already. Sign a fresh one, the register remembers.",
       },
     };
   }

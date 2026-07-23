@@ -6,7 +6,7 @@ import type { AlmanacEntry } from "@/types";
  * in this folder, a penny a page. Newest entries first. To add a page,
  * drop a new file here and add it to the list below.
  *
- * Content rule: entries are dated, first-person field notes — sensory,
+ * Content rule: entries are dated, first-person field notes, sensory,
  * particular, slightly strange, in the KEEPER'S OWN WORDS (his voice is
  * non-delegable here; the machine structures, never invents). Never
  * how-to, listicle, "lessons learned", career content, or anything

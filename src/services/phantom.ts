@@ -5,7 +5,7 @@ import type { Env, PhantomCheckRecord } from "@/types";
 
 /**
  * phantom_check, per the store ledger: an out-of-band probe ~6 hours
- * after purchase — long after the buyer's own smoke has cleared — and
+ * after purchase, long after the buyer's own smoke has cleared, and
  * a signed health attestation. The hourly cron sweeps due checks; the
  * pickup route also resolves a due check on read, so the promise holds
  * even if a cron tick goes missing. Unreachable is a finding.
@@ -110,7 +110,7 @@ export async function getPhantomCheck(
   return record;
 }
 
-/** Passive read for verification — never triggers the walk itself. */
+/** Passive read for verification, never triggers the walk itself. */
 export async function readPhantomCheck(
   env: Env,
   checkId: string,

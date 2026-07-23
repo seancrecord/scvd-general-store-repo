@@ -9,7 +9,7 @@ import {
 import type { GuestbookEntry } from "@/types";
 
 /**
- * The human storefront at GET / — the one screen a person ever sees or
+ * The human storefront at GET /, the one screen a person ever sees or
  * shares. Neon roadside general store at dusk. This file is the HTML
  * scaffolding ONLY; every word on the building lives in
  * src/store/copy/storefront.ts, keeper-editable.

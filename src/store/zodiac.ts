@@ -3,7 +3,7 @@ import type { ZodiacSign } from "@/types";
 /**
  * The Systems Almanac: twelve signs, assigned by wallet address, for
  * life. Canon per the keeper, 2026-07-22. The derivation (address ->
- * array index, services/zodiac.ts) is FROZEN — recasting names is
+ * array index, services/zodiac.ts) is FROZEN, recasting names is
  * allowed; remapping wallets is not. Array position is canonical sign
  * order 1-12.
  */

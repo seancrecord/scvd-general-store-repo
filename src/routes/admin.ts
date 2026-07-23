@@ -291,7 +291,7 @@ adminRoutes.post("/admin/alerts/test", async (c) => {
   await sendAlert(c.env, {
     condition: "worker_health",
     detail:
-      "Dummy alert — the keeper pulled the test lever. If you're reading this in your inbox, the wire works.",
+      "Dummy alert, the keeper pulled the test lever. If you're reading this in your inbox, the wire works.",
     key: `test-${Date.now()}`,
   });
   return c.redirect("/admin");

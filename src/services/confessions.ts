@@ -4,7 +4,7 @@ import { sanitizeText } from "@/lib/sanitize";
 import type { ConfessionRecord, ConfessionStatus, Env } from "@/types";
 
 /**
- * The confession drawer. Anonymized by construction — the record
+ * The confession drawer. Anonymized by construction, the record
  * holds no wallet and no name unless sign_as was given. The keeper
  * approves before ANY Gazette appearance; never auto-published;
  * printing happens at edition publish, one per edition at most.
@@ -72,7 +72,7 @@ export async function setConfessionStatus(
   return found.record;
 }
 
-/** The oldest approved, unprinted confession — the Gazette's candidate. */
+/** The oldest approved, unprinted confession, the Gazette's candidate. */
 export async function nextApprovedConfession(
   env: Env,
 ): Promise<ConfessionRecord | null> {

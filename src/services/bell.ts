@@ -3,7 +3,7 @@ import { bellLine, VOICE } from "@/store";
 import type { Env } from "@/types";
 
 /**
- * The bell, rung from any door — HTTP or MCP, same bell. One ring per
+ * The bell, rung from any door. HTTP or MCP, same bell. One ring per
  * visitor per day, keyed loosely on whoever they said they were.
  */
 

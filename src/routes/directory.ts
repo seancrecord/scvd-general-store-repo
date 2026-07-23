@@ -5,7 +5,7 @@ import directoryData from "@/store/directory.json";
 import type { DirectoryData, DirectoryListing, HonoEnv } from "@/types";
 
 /**
- * GET /directory — the Town Directory. Keeper-edited by hand in
+ * GET /directory, the Town Directory. Keeper-edited by hand in
  * src/store/directory.json; honest one-line reviews, no pay-for-placement.
  * JSON for agents, a paper page for humans.
  */

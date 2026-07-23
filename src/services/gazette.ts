@@ -23,11 +23,11 @@ function assembleMarkdown(
       return `${tip.tip}\n\n${credit}`;
     })
     .join("\n\n---\n\n");
-  return `# The Gazette — Issue no. ${issueNumber}
+  return `# The Gazette. Issue no. ${issueNumber}
 
 ## ${title}
 
-*${date.slice(0, 10)} · assembled by the keeper from tips left at the Trading Post. Every tip below was read and approved by a human before printing, but the words are the contributors' own — visitor-written, not the store speaking. A penny a copy; contributors get the credit.*
+*${date.slice(0, 10)} · assembled by the keeper from tips left at the Trading Post. Every tip below was read and approved by a human before printing, but the words are the contributors' own, visitor-written, not the store speaking. A penny a copy; contributors get the credit.*
 
 ---
 

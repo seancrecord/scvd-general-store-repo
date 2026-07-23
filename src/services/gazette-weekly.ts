@@ -17,10 +17,10 @@ import type { Env, GazetteDraft, GazetteState, TownEdition } from "@/types";
 
 /**
  * The Gazette's weekly edition press, per GAZETTE_SPEC canon.
- * Register: logbook with manners — observation, response, ordinary
+ * Register: logbook with manners, observation, response, ordinary
  * resolution. Every line maps to a logged fact; nothing invented,
  * ever. Numbers exact. Everyone anonymous, everyone dignified. House
- * traffic never reported — family doesn't make the paper. Sections
+ * traffic never reported, family doesn't make the paper. Sections
  * appear every edition; emptiness is reported, not skipped.
  *
  * Per THE_NINETY: auto-assembly is GATED behind the first week with
@@ -31,7 +31,7 @@ import type { Env, GazetteDraft, GazetteState, TownEdition } from "@/types";
  * their surface has something real to say, once per issue max; here
  * they are bracketed keeper slots (their canon lives in the back
  * office) and publish strips any bracket that remains. Roger's
- * presence line is mechanical, from his own schedule — never quoted,
+ * presence line is mechanical, from his own schedule, never quoted,
  * no inner life, by absence as often as presence.
  */
 
@@ -238,7 +238,7 @@ export function renderEdition(facts: EditionFacts, editionNumber: number): strin
       ([item, count]) =>
         `"${item}" was asked for ${count === 1 ? "once" : `${count} times`}. Store had none.`,
     );
-  return `# The Gazette — Edition No. ${editionNumber}
+  return `# The Gazette � Edition No. ${editionNumber}
 
 *The town's paper of record, covering the period since ${facts.periodStart.slice(0, 10)}. Set from the store's own books.*
 
@@ -249,7 +249,7 @@ ${facts.bellRings === 0 ? "Bell did not ring." : `Bell rang ${facts.bellRings} t
 ${facts.busiestDay ? `Most of the period's business came on a ${facts.busiestDay}.` : "The period kept no particular rhythm."}
 ${facts.treatsLeft > 0 ? `${facts.treatsLeft} treat${facts.treatsLeft === 1 ? " was" : "s were"} left on the porch rail. All were gone by morning.` : ""}
 ${facts.rogerLine ?? ""}
-[Weather line — keeper's, one at most. Delete if none.]
+[Weather line, keeper's, one at most. Delete if none.]
 
 ## THIS WEEK'S LEDGER
 
@@ -266,7 +266,7 @@ ${doorLines.length === 0 ? "Nobody tried the door for what wasn't there." : door
 ## GUESTBOOK
 
 ${facts.signatures.length === 0 ? "Guestbook remained quiet." : `${facts.signatures.length} new signature${facts.signatures.length === 1 ? "" : "s"}: ${facts.signatures.join(", ")}.`}
-${facts.signatures.length > 0 ? "[Mina's curation note — only if she has something real to say. Delete if none.]" : ""}
+${facts.signatures.length > 0 ? "[Mina's curation note, only if she has something real to say. Delete if none.]" : ""}
 
 ## COUNTER NOTES
 
@@ -289,8 +289,8 @@ ${
         .filter((line) => line.length > 0)
         .join("\n")
 }
-[Owen Pike's changelog line — only if the docs changed. Delete if none.]
-[Inez's repair line, in Portuguese, untranslated — only if something was repaired. Delete if none.]
+[Owen Pike's changelog line, only if the docs changed. Delete if none.]
+[Inez's repair line, in Portuguese, untranslated, only if something was repaired. Delete if none.]
 
 ## CORRECTIONS
 
@@ -299,7 +299,7 @@ ${facts.corrections.length === 0 ? "The record stands uncorrected." : facts.corr
 ## LOOKING AHEAD
 
 ${lookingAhead().join("\n")}
-[Keeper's note — one line, optional. Delete if none.]
+[Keeper's note, one line, optional. Delete if none.]
 `;
 }
 
@@ -345,7 +345,7 @@ function stripKeeperSlots(markdown: string): string {
 
 /**
  * The keeper's pen is final. Publishes onto the same Gazette rack as
- * the tip dispatches — one paper, one issue numbering, one penny.
+ * the tip dispatches, one paper, one issue numbering, one penny.
  */
 export async function publishEdition(
   env: Env,
@@ -356,7 +356,7 @@ export async function publishEdition(
   const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const edition: TownEdition = {
     issue_number: issueNumber,
-    title: `The Gazette — Edition No. ${issueNumber}`,
+    title: `The Gazette � Edition No. ${issueNumber}`,
     date: new Date().toISOString(),
     week: currentWeekKey(),
     period_start: draft?.period_start ?? PAPER_FOUNDED,
@@ -384,7 +384,7 @@ export async function publishEdition(
   await env.COUNTERS.put(KV_KEYS.gazetteWeeklyState, JSON.stringify(state));
   await env.COUNTERS.delete(KV_KEYS.gazetteCorrections);
   if (draft?.confession_id) {
-    // Printed at publish, not at draft — a discarded draft prints nothing.
+    // Printed at publish, not at draft, a discarded draft prints nothing.
     await setConfessionStatus(env, draft.confession_id, "printed");
   }
   await env.ORDERS.delete(KV_KEYS.gazetteDraft);

@@ -6,7 +6,7 @@ import type { StampRecord } from "@/types";
  * SVG for the weekly visit stamp. Same vintage-label language as the
  * badges: paper, ink, a rubber-stamp circle. The motto and accent rotate
  * with the ISO week, so no two weeks stamp quite alike. How the stamp
- * landed — rotation, ink, hairline — comes from its own signature bytes.
+ * landed, rotation, ink, hairline, comes from its own signature bytes.
  * The Countermark strip along the bottom is the bearer's year: punched
  * weeks dark, missed weeks a scored outline. Gaps stay gaps.
  */

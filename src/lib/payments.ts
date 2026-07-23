@@ -92,7 +92,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
       : "";
   return {
     accepts,
-    description: `${item.name} — ${item.description}${tierNote} Also served over MCP: tool buy_${item.id} at ${env.STORE_BASE_URL}/mcp.`,
+    description: `${item.name}, ${item.description}${tierNote} Also served over MCP: tool buy_${item.id} at ${env.STORE_BASE_URL}/mcp.`,
     mimeType: "application/json",
     resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
     extensions: buyDiscoveryExtensions(item),
@@ -105,7 +105,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
         item_id: item.id,
         min_price_usdc: item.price_usdc,
         pricing: item.pricing,
-        want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request — the keeper reads every one on Sundays.`,
+        want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),
     settlementFailedResponseBody: async () => ({
@@ -145,7 +145,7 @@ function pennyPageRouteConfig(
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
         price_usdc: PENNY_PAGE_USDC,
         pricing: "fixed",
-        want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request — the keeper reads every one on Sundays.`,
+        want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),
     settlementFailedResponseBody: async () => ({
@@ -209,7 +209,7 @@ export function getPaymentStack(env: Env): PaymentStack {
     for (const entry of ALMANAC_ENTRIES) {
       routes[`GET /almanac/${entry.slug}`] = pennyPageRouteConfig(
         env,
-        `Keeper's Almanac — "${entry.title}" (${entry.date}). One journal page, one penny.`,
+        `Keeper's Almanac, "${entry.title}" (${entry.date}). One journal page, one penny.`,
         "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
         entry.title,
         `${env.STORE_BASE_URL}/almanac/${entry.slug}`,
@@ -220,17 +220,17 @@ export function getPaymentStack(env: Env): PaymentStack {
     // each request's 402 carries its own exact URL as the resource.
     routes["GET /gazette/issue-:issue"] = pennyPageRouteConfig(
       env,
-      "The Gazette — dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
+      "The Gazette, dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
       "The Gazette is a penny a copy, friend. The contributors get the credit; the press gets the cent.",
-      "The Gazette — Issue no. 1",
+      "The Gazette. Issue no. 1",
     );
     // The Systems Almanac archive: past weeks turn into penny pages as
     // the season advances, so the paid route is a pattern too.
     routes["GET /zodiac/archive/:sign/week-:week"] = pennyPageRouteConfig(
       env,
-      "The Systems Almanac archive — one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
+      "The Systems Almanac archive, one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
       "That page of the Almanac has turned, friend. A penny opens the archive.",
-      "The Systems Almanac — The Checksum, Season One, Week 1",
+      "The Systems Almanac. The Checksum, Season One, Week 1",
     );
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };

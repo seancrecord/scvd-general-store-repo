@@ -6,7 +6,7 @@ import type { Channel, Env, PayerRecord } from "@/types";
 /**
  * The instrumentation ledger (RUN1_SYNTHESIS §instrumentation, plus the
  * Phase 1 attribution pass). Aggregate counters live in COUNTERS under
- * metric:<YYYY-MM>:<kind>:<rest> — kinds carry an "h" suffix for house
+ * metric:<YYYY-MM>:<kind>:<rest>, kinds carry an "h" suffix for house
  * traffic so organic counts stay clean. Every 402, settle, and verify
  * also writes one event row (evt:*) with channel/ua/referrer/item,
  * kept 90 days: the falsification instrument. Counters are
@@ -86,7 +86,7 @@ async function writeEvent(env: Env, event: MetricEvent): Promise<void> {
 /**
  * Bucket suffix: "" organic, "h" house, "i" infrastructure. House wins
  * (the keeper testing from a crawler UA is still the keeper); settles
- * never bucket as infrastructure — a crawler that pays is a customer.
+ * never bucket as infrastructure, a crawler that pays is a customer.
  */
 function bucketSuffix(event: MetricEvent, allowInfra: boolean): string {
   if (event.house) {
@@ -107,7 +107,7 @@ export async function recordChallengeIssued(
   const event = buildEvent(env, "challenge", itemKeyFromPath(path), signals);
   const suffix = bucketSuffix(event, true);
   await bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item));
-  // Who's window-shopping, by channel — the diagnosis column for
+  // Who's window-shopping, by channel, the diagnosis column for
   // "challenges without settles: shoppers or scanners?"
   await bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel));
   await writeEvent(env, event);
@@ -115,7 +115,7 @@ export async function recordChallengeIssued(
 
 /**
  * Front-porch logging: one event row per free-tier visit. Paths and
- * headers only — no bodies, no cookies, nothing client-side. Rows use
+ * headers only, no bodies, no cookies, nothing client-side. Rows use
  * unique keys (no counter contention); a per-isolate token bucket
  * caps writes at crawler volume, so porch counts are floors under
  * storm conditions. Paid events are never sampled.
@@ -323,7 +323,7 @@ export interface PorchLedger {
   surfaces: Record<string, Record<string, number>>;
   /** organic porch visits total */
   organicVisits: number;
-  /** organic 402s per organic porch visit — the conversion story. */
+  /** organic 402s per organic porch visit, the conversion story. */
   porchToPurchase: number | null;
   /** True when the row scan hit its cap; counts are floors. */
   truncated: boolean;
@@ -334,7 +334,7 @@ const PORCH_SCAN_CAP = 1000;
 /**
  * The front-porch section, computed from event rows at read time (no
  * porch counters exist to contend over). Uniqueness is deliberately
- * unavailable — no cookies, no IP retention — so porch-to-purchase is
+ * unavailable, no cookies, no IP retention, so porch-to-purchase is
  * organic 402s per organic visit, stated as a rate, not unique heads.
  */
 export async function readPorchLedger(

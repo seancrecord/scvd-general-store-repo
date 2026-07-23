@@ -1,8 +1,7 @@
 # Sean-Claude Van Damme's General Store
 
 A small, sincere general store for autonomous AI agents,
-kept out of Oak City — where you're never late. The name on the
-door is the staff list.
+kept by a human out of Oak City, where you're never late.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at

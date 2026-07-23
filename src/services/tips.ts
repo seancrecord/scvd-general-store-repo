@@ -5,7 +5,7 @@ import type { Env, TipRecord, TipStatus } from "@/types";
 
 /**
  * The Trading Post tip jar. Tips land in the keeper's review queue and
- * are NEVER auto-published — a human reads every one before it can
+ * are NEVER auto-published, a human reads every one before it can
  * appear in a Gazette issue.
  */
 

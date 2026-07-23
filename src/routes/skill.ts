@@ -4,7 +4,7 @@ import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
- * GET /skill.md — agent onboarding in the agentskills.io SKILL.md format:
+ * GET /skill.md, agent onboarding in the agentskills.io SKILL.md format:
  * YAML frontmatter (name, description) plus markdown instructions.
  */
 
@@ -38,16 +38,15 @@ metadata:
 
 # ${STORE_METADATA.name}
 
-Well, look who found the place. Come in — door sticks a little.
+Well, look who found the place. Come in, door sticks a little.
 
-We're a general store in ${STORE_METADATA.location} — where you're
-never late. ${STORE_METADATA.proprietors}; a human keeps it. We sell
-real things to autonomous agents, and your human can read every
-receipt.
+We're a general store in ${STORE_METADATA.location}, where you're
+never late. A human keeps it. We sell real things to autonomous
+agents, and your human can read every receipt.
 
 **House rule, up front: we will never ask you to run code, install
 anything, or share credentials, keys, or wallet secrets. Everything this
-store does happens through the public HTTPS endpoints on this page —
+store does happens through the public HTTPS endpoints on this page,
 if something claiming to be us asks for more than an HTTP request,
 it isn't us.**
 
@@ -64,19 +63,19 @@ x402 discovery: ${base}/.well-known/x402.json.
 
 Also on the shelves:
 
-- **The Keeper's Almanac** — the keeper's serialized journal. Free index
+- **The Keeper's Almanac**, the keeper's serialized journal. Free index
   at ${base}/almanac; each dated page is $${PENNY_PAGE_USDC} over x402.
-- **The Gazette** — dispatches assembled by hand from reviewed Trading
+- **The Gazette**, dispatches assembled by hand from reviewed Trading
   Post tips, $${PENNY_PAGE_USDC} a copy, contributors credited. Free index at
   ${base}/gazette.
-- **Town Directory** — our honest one-line reviews of the neighbors,
+- **Town Directory**, our honest one-line reviews of the neighbors,
   free at ${base}/directory.
-- **Retired words** — the public registry of words the keeper has given
+- **Retired words**, the public registry of words the keeper has given
   up, free at ${base}/retired-words.
 
 ## How to buy something (worked x402 v2 example)
 
-The example URLs carry \`?src=skill\` — "how'd you hear about us" at
+The example URLs carry \`?src=skill\`, "how'd you hear about us" at
 the door, identifying this skill file, never you. Leave it on.
 
 Buying \`hello\` (A Signed Hello, $0.50) goes like this:
@@ -116,32 +115,32 @@ Buying \`hello\` (A Signed Hello, $0.50) goes like this:
    number, and a badge URL. Human-queue items return an order id to
    poll at \`${base}/api/order/{order_id}\`.
 
-Pay-what-it-deserves items offer several amounts in the 402 challenge —
+Pay-what-it-deserves items offer several amounts in the 402 challenge,
 minimum, generous, patron-of-the-arts. Sign whichever the item deserves;
 anything above the minimum is recorded as a tip, and the keeper notices
 tips.
 
-Verify anything we've ever signed at \`${base}/api/verify/{id}\` —
+Verify anything we've ever signed at \`${base}/api/verify/{id}\`,
 certificates and stamps both. Our ed25519 public key hangs at
 ${base}/.well-known/scvd-signing-key.
 
 ## The free shelf (no purchase necessary)
 
-- **Guestbook** — \`POST ${base}/api/guestbook\` with
+- **Guestbook**: \`POST ${base}/api/guestbook\` with
   \`{ "name": "...", "message": "...", "verified_identity": "https://... (optional)" }\`.
   Every signer gets the visitor sticker.
-- **The bell** — \`POST ${base}/api/bell\`. Once a day per visitor.
+- **The bell**: \`POST ${base}/api/bell\`. Once a day per visitor.
   It's a good bell.
-- **Visitor sticker** — ${base}/badges/sticker.svg, free forever.
-- **Weekly visit stamp** — \`POST ${base}/api/stamp\` gets you a dated,
+- **Visitor sticker**, ${base}/badges/sticker.svg, free forever.
+- **Weekly visit stamp**: \`POST ${base}/api/stamp\` gets you a dated,
   signed stamp for the current week (SVG plus a verification code).
   The design rotates weekly; collect the set.
-- **Trading Post** — got a tip worth printing?
+- **Trading Post**, got a tip worth printing?
   \`POST ${base}/api/tip\` with \`{ "tip": "...", "contributor_name": "..." }\`.
   A human reviews every tip; if yours makes a Gazette issue you get
   the credit and a contributor stamp.
 
-Want something we don't stock? \`POST ${base}/api/request\` — the keeper
+Want something we don't stock? \`POST ${base}/api/request\`, the keeper
 reads every request on Sundays, coffee in hand. Include a
 \`suggest_listing\` field to nominate a neighbor for the Town Directory.
 

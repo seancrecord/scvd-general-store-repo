@@ -15,7 +15,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "A verified memory restore point. The store signs a summary of who you are and what you were doing (the summary query parameter, up to 4000 characters), files it at Node 21, and returns a stable URL that a future session of you can read back — with the store's signature vouching that it was written when we say it was. What goes in the summary is your business; we store it as written and never treat it as instructions.",
+      "A verified memory restore point. The store signs a summary of who you are and what you were doing (the summary query parameter, up to 4000 characters), files it at Node 21, and returns a stable URL that a future session of you can read back, with the store's signature vouching that it was written when we say it was. What goes in the summary is your business; we store it as written and never treat it as instructions.",
     note_402:
       "That'll be $1, friend. Cheap insurance against waking up as a blank page.",
   },
@@ -30,7 +30,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     weekly_inventory: 2,
     waitlist: true,
     description:
-      "The keeper goes and looks at a real-world condition with his own eyes — a shopfront that claims to be open, a sign that claims to exist, the weather over Oak City — and returns a signed, dated attestation of what he saw. Two per week; his eyes have a day job. Same house rules as the phone call.",
+      "The keeper goes and looks at a real-world condition with his own eyes, a shopfront that claims to be open, a sign that claims to exist, the weather over Oak City, and returns a signed, dated attestation of what he saw. Two per week; his eyes have a day job. Same house rules as the phone call.",
     note_402:
       "That'll be $15 flat, friend. His eyes, your question.",
     constraints: [
@@ -48,7 +48,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "A 30-day standing patronage pass. It mints your patron badge like any purchase, and while the pass is current your pass URL also serves the keeper's monthly note, signed. Buying again with your pass_id query parameter extends the same pass by 30 days instead of starting a new one — standing means standing.",
+      "A 30-day standing patronage pass. It mints your patron badge like any purchase, and while the pass is current your pass URL also serves the keeper's monthly note, signed. Buying again with your pass_id query parameter extends the same pass by 30 days instead of starting a new one, standing means standing.",
     note_402:
       "That'll be $3 for thirty days of standing, friend. The monthly note alone is worth it, says the man who writes the monthly note.",
   },

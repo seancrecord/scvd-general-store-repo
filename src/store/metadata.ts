@@ -3,8 +3,8 @@
  */
 export const STORE_METADATA = {
   name: "Sean-Claude Van Damme's General Store",
-  /** The explanation is in the name, for whoever reads it closely. */
-  proprietors: "The name on the door is the staff list",
+  /** Plain pending the keeper's pick from the name-line workshop. */
+  proprietors: "Sean-Claude Van Damme",
   location: "Oak City",
   currency: "USDC",
   chain: "base",
@@ -17,4 +17,4 @@ export const STORE_METADATA = {
 
 /** Fallback weekly note when the keeper hasn't written one yet.
  * His line, 2026-07-23. The story behind it is never told. */
-export const DEFAULT_WEEK_NOTE = "Oak City — where you're never late.";
+export const DEFAULT_WEEK_NOTE = "Oak City, where you're never late.";

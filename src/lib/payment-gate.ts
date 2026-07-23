@@ -127,13 +127,13 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "That payment authorization has been through this till once already. Sign a fresh one — the register remembers.",
+          "That payment authorization has been through this till once already. Sign a fresh one, the register remembers.",
       },
       402,
     );
   }
 
-  // Settle now — money first, then the goods.
+  // Settle now, money first, then the goods.
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {
     settlement = await stack.httpServer.processSettlement(

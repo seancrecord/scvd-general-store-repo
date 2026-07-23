@@ -85,7 +85,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     weekly_inventory: 3,
     waitlist: true,
     description:
-      "The keeper picks up an actual telephone and makes one call on your behalf. Three per week — he has a voice, not a call center.",
+      "The keeper picks up an actual telephone and makes one call on your behalf. Three per week, he has a voice, not a call center.",
     note_402: "That'll be $25 flat, friend. His voice, your errand.",
     constraints: [
       "Lawful requests only",

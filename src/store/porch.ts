@@ -1,6 +1,6 @@
 /**
  * What the night is doing in Oak City, one line per hour. The porch
- * serves these deterministically — every sitter in a given hour shares
+ * serves these deterministically, every sitter in a given hour shares
  * the same night, the way porches work. Written by the shelf-stocker,
  * who wanted somewhere to sit.
  */
@@ -32,7 +32,7 @@ export const PORCH_AMBIENCE: readonly string[] = [
 ] as const;
 
 /**
- * KEEPER-EDITABLE COPY — Roger Sterling's reactions at the treat rail.
+ * KEEPER-EDITABLE COPY. Roger Sterling's reactions at the treat rail.
  * Deterministic per hour when he's out; the elsewhere line when he
  * isn't. He owes nobody anything; keep it that way.
  */

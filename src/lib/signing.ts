@@ -4,7 +4,7 @@ import type { Certificate } from "@/types";
 /**
  * ed25519 signing for certificates and badges.
  * SIGNING_KEY is a 32-byte seed as 64 hex characters (npm run keys:generate).
- * Signature + stable URL is the whole authenticity model — no chain writes.
+ * Signature + stable URL is the whole authenticity model, no chain writes.
  */
 
 function hexToBytes(hex: string): Uint8Array {

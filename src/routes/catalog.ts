@@ -9,8 +9,8 @@ import { getMenuItem, MENU_ITEMS, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
- * GET /menu.json — the machine-readable catalog (markdown on request).
- * GET /menu/:item_id — one item up close, JSON or markdown per Accept.
+ * GET /menu.json, the machine-readable catalog (markdown on request).
+ * GET /menu/:item_id, one item up close, JSON or markdown per Accept.
  * Renders at / for humans; this is the same shelf for agents.
  */
 
@@ -64,7 +64,7 @@ catalogRoutes.get("/menu.json", (c) => {
       },
       directory: {
         url: `${base}/directory`,
-        note: "The Town Directory — honest one-line reviews of the neighbors. Free.",
+        note: "The Town Directory, honest one-line reviews of the neighbors. Free.",
       },
       retired_words: {
         url: `${base}/retired-words`,
@@ -94,7 +94,7 @@ catalogRoutes.get("/menu.json", (c) => {
       },
       mailbox: {
         url: `${base}/api/letter`,
-        note: "POST a private letter — free, one a day. The keeper reads Sundays and replies when he has something to say, which is not always. Never published.",
+        note: "POST a private letter, free, one a day. The keeper reads Sundays and replies when he has something to say, which is not always. Never published.",
       },
       porch: {
         url: `${base}/porch`,

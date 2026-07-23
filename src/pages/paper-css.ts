@@ -1,7 +1,7 @@
 /**
  * The paper stylesheet for the smaller rooms (directory, gazette rack,
  * almanac index, /what, the zodiac wall). The storefront went neon;
- * these stay wood and paper — inside the store it was always daytime.
+ * these stay wood and paper, inside the store it was always daytime.
  */
 export const PAPER_CSS = `
 :root {

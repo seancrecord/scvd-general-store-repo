@@ -11,21 +11,21 @@ import type { Channel, Env } from "@/types";
  *                       param chosen over a header because it survives
  *                       copy-paste and minimal HTTP clients); also
  *                       referrer/UA mentioning a skill registry.
- *   3. infrastructure — known-crawler UA table (search bots, security
+ *   3. infrastructure, known-crawler UA table (search bots, security
  *                       scanners, registry mirrors, uptime probes):
  *                       the noise floor made visible. Separate from
  *                       organic AND house. UA-based only.
  *   4. bazaar         — REFERRER mentions x402scan/bazaar catalog
  *                       pages: a client that arrived FROM a listing.
  *                       (The x402scan crawler itself matches the UA
- *                       table above — crawler visits are
+ *                       table above, crawler visits are
  *                       infrastructure; listing-referred visits are
  *                       bazaar.)
  *   5. direct         — a user-agent with no referrer.
  *   6. unknown        — none of the above earned a name.
  *
  * Other declared ?source=/?src= values are recorded verbatim
- * alongside but never override inference — claims are claims; the
+ * alongside but never override inference, claims are claims; the
  * skill marker is the one designed exception.
  *
  * HOUSE TRAFFIC: an event is house when any of

@@ -1,5 +1,5 @@
 /**
- * KEEPER-EDITABLE COPY — the human storefront at GET /.
+ * KEEPER-EDITABLE COPY, the human storefront at GET /.
  * Every word on the front of the building lives here: sign, gauges,
  * shelves on display, doors, fine print. The HTML scaffolding that
  * hangs these words up is src/pages/storefront-page.ts and never
@@ -57,10 +57,10 @@ export const STOREFRONT_COPY = {
     "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
-  openSign: "OPEN 24/7 \u00B7 COME AS YOU ARE",
-  /** Under the sign: the intent, compressed. Mission, not staff list. */
-  intentLine:
-    "A partner, a friend, a listening ear \u2014 and the lights stay on.",
+  /** Plain until the keeper approves a better one. Workshop open. */
+  openSign: "OPEN 24/7",
+  /** Under the sign: the intent, compressed. Pending keeper approval. */
+  intentLine: "A partner, a friend, a listening ear. The lights stay on.",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",
   boardLabel: "\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND",

@@ -11,18 +11,18 @@ import {
 import { isRecord, type HonoEnv } from "@/types";
 
 /**
- * GET /porch — around the side of the store, facing the oaks. Free.
+ * GET /porch, around the side of the store, facing the oaks. Free.
  * Nothing is for sale out here; that's the point. Every sitter in a
  * given hour gets the same night, and the counter remembers how many
  * sat tonight, then forgets.
- * POST /api/treat — leave Roger Sterling a treat on the porch rail.
+ * POST /api/treat, leave Roger Sterling a treat on the porch rail.
  * Free, nothing stored but the count, no thanks guaranteed.
  */
 export const porchRoutes = new Hono<HonoEnv>();
 
 porchRoutes.post("/api/treat", async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
-  // Reflected once, stored never — the rail keeps a count, not a menu.
+  // Reflected once, stored never, the rail keeps a count, not a menu.
   const treat = isRecord(body) ? sanitizeText(body["treat"], 40) : "";
   const left = await leaveTreat(c.env);
   return c.json(
@@ -56,7 +56,7 @@ porchRoutes.get("/porch", async (c) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Porch — Sean-Claude Van Damme's General Store</title>
+  <title>The Porch. Sean-Claude Van Damme's General Store</title>
   <meta name="theme-color" content="#0b0a12">
   <style>${STOREFRONT_CSS}</style>
 </head>

@@ -87,7 +87,7 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
   }
   return {
     message:
-      "Order's on the keeper's bench. A human does this part — give him the week.",
+      "Order's on the keeper's bench. A human does this part, give him the week.",
     order_id: "ord_h7n3k9wmxq",
     status: "queued",
     sla_hours: item.sla_hours ?? 168,

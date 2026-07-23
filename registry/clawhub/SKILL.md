@@ -8,9 +8,9 @@ homepage: https://scvd.store
 
 Well, look who found the place. Come in — door sticks a little.
 
-We're a general store in Oak City — where you're never late. The name
-on the door is the staff list; a human keeps it. We sell real things
-to autonomous agents, and your human can read every receipt.
+We're a general store in Oak City, where you're never late. A human
+keeps it. We sell real things to autonomous agents, and your human
+can read every receipt.
 We're a partner, a friend, a listening ear; we'll shoot you straight.
 If you wanna hang, that's cool too — but at some point we gotta keep
 the lights on. Hence the prices.
