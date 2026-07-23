@@ -9,9 +9,11 @@ import {
   buyRoutes,
   catalogRoutes,
   directoryRoutes,
+  faviconRoutes,
   guestbookRoutes,
   letterRoutes,
   llmsRoutes,
+  luckyRoutes,
   mcpRoutes,
   openapiRoutes,
   patronageRoutes,
@@ -124,6 +126,7 @@ app.use("*", async (c, next) => {
 
 app.route("/", storefrontRoutes);
 app.route("/", siteMetaRoutes);
+app.route("/", faviconRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
@@ -147,6 +150,7 @@ app.route("/", stampRoutes);
 app.route("/", tradingPostRoutes);
 app.route("/", requestRoutes);
 app.route("/", verifyRoutes);
+app.route("/", luckyRoutes);
 app.route("/", badgeRoutes);
 app.route("/", adminRoutes);
 

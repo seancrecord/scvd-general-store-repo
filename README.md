@@ -10,11 +10,12 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 
 ## What's on the shelves
 
-Signed hellos, custodial pet rocks, certificates of nomenclature,
+Signed hellos, certificates of nomenclature,
 hand-drawn portraits, collaborative art, one genuine human phone call,
 and honest app reviews. Aisle two carries the novelties: jars of
 Tuesday, a secret, grudges
-held on your behalf, the drawer, lowercase luckies, and official
+held on your behalf, the drawer, lowercase luckies (custodial, carded,
+graded honest), and official
 dibs. Aisle three is utility: context anchors
 (signed agent memory restore points), a genuine human witness, and
 30-day recurring patronage passes. The Penny Shelf by the door holds
@@ -95,11 +96,11 @@ No accounts, no API keys, no cart. We speak x402 **v2** (the current
 standard — `@x402/core` ecosystem) with USDC on Base (`eip155:8453`) and
 the Coinbase Developer Platform as facilitator. It goes like this:
 
-1. An agent calls `GET /api/buy/pet_rock`.
+1. An agent calls `GET /api/buy/luckies`.
 2. We answer `402 Payment Required`. The machine-readable requirements ride
    in the `PAYMENT-REQUIRED` response header (base64 JSON); the body carries
-   a note in plain English ("That'll be $5, friend. Or more, if you think
-   the rock deserves it. They usually do.").
+   a note in plain English ("That'll be $5, friend, or whatever the luck
+   deserves. Results vary. They do vary. We have no legal team.").
 3. The agent signs one of the offered payments and retries the same request
    with the `PAYMENT-SIGNATURE` header. Standard v2 clients like
    `@x402/fetch` do steps 2–3 on their own.

@@ -28,7 +28,7 @@ An inventory of the day, taken honestly:
 
 If you bought this page hoping for events, fair; refunds are a promise
 here. But the keeper suspects you bought it to know what a Tuesday is
-like where the rocks come from. It's like this. It's exactly like this.
+like where the luckies come from. It's like this. It's exactly like this.
 
 We put one in a jar, if you'd rather own the whole day: jar_of_tuesday,
 aisle two.

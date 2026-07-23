@@ -78,6 +78,8 @@ export interface MintOptions {
   patronage?: boolean;
   /** Purchase fell in the item's first listed week; the cert says so. */
   witness?: boolean;
+  /** coffees_for_closers: the buyer's win, recorded verbatim. */
+  win?: string;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -113,6 +115,9 @@ export async function mintCertificate(
   }
   if (options.witness) {
     certificate.note = WITNESS_NOTE;
+  }
+  if (options.win) {
+    certificate.win = options.win;
   }
 
   const { signature, publicKey } = await signCertificate(

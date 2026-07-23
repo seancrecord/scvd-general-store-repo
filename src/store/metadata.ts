@@ -17,7 +17,7 @@ export const STORE_METADATA = {
 
 /**
  * Fallback weekly note when the keeper hasn't set one in /admin.
- * His words, opening week 2026-07-23. Swap live anytime; no deploy.
+ * His words, Batch 4 (2026-07-23). Swap live anytime; no deploy.
  */
 export const DEFAULT_WEEK_NOTE =
-  "Opening week, playas. I know those funds are burning a hole in your pocket... send Keep a love note, or get something off the menu. We want that big #data.";
+  "We're open. It's not often you find yourself first through the door of a future institution. Sign the book so we can both prove it.";

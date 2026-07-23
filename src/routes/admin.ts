@@ -25,9 +25,17 @@ import {
 import {
   acknowledgeOrder,
   completeOrder,
+  getOrder,
   listOrders,
   resetWeeklyInventory,
 } from "@/services/orders";
+import {
+  createLucky,
+  parseLuckyStatus,
+  parseLuckyStrength,
+  setLuckyStatus,
+} from "@/services/luckies";
+import { luckyNote } from "@/store/copy";
 import {
   listConfessions,
   setConfessionStatus,
@@ -401,6 +409,72 @@ adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
     return c.text("No order by that number.", 404);
   }
   return c.redirect("/admin");
+});
+
+/**
+ * Completing a luckies order takes structured fields, not free text:
+ * the card is the record, so the record needs its parts. Creates the
+ * signed lucky, then completes the order with the card in the bag.
+ */
+adminRoutes.post("/admin/orders/:order_id/complete-lucky", async (c) => {
+  const form = await c.req.parseBody();
+  const name = sanitizeText(form["lucky_name"], 80);
+  const provenance = sanitizeText(form["provenance"], 300);
+  const power = sanitizeText(form["power"], 300);
+  const strength = parseLuckyStrength(form["strength"]);
+  if (!name || !provenance || !power || !strength) {
+    return c.text(
+      "A lucky needs a name, a provenance, a power, and an honest grade.",
+      400,
+    );
+  }
+  const order = await getOrder(c.env, c.req.param("order_id"));
+  if (!order || order.item_id !== "luckies") {
+    return c.text("No luckies order by that number.", 404);
+  }
+  if (order.status === "completed") {
+    return c.text("That lucky is already picked and carded.", 400);
+  }
+  const record = await createLucky(c.env, {
+    name,
+    provenance,
+    power,
+    strength,
+    orderId: order.order_id,
+    certId: order.cert_id,
+    patronNumber: order.patron_number,
+  });
+  const base = c.env.STORE_BASE_URL;
+  await completeOrder(
+    c.env,
+    order.order_id,
+    luckyNote({
+      name: record.lucky.name,
+      strength: record.lucky.strength,
+      cardUrl: `${base}/luckies/${record.lucky.lucky_id}.svg`,
+      recordUrl: `${base}/api/lucky/${record.lucky.lucky_id}`,
+    }),
+  );
+  return c.redirect("/admin");
+});
+
+/** A write-in moved a lucky. Promotion is real; so is the bench. */
+adminRoutes.post("/admin/luckies/move", async (c) => {
+  const form = await c.req.parseBody();
+  const luckyId = sanitizeText(form["lucky_id"], 40);
+  const status = parseLuckyStatus(form["status"]);
+  if (!luckyId || !status) {
+    return c.text(
+      "Moving a lucky takes its id and one of in_service, promoted, benched.",
+      400,
+    );
+  }
+  const note = sanitizeText(form["status_note"], 200);
+  const record = await setLuckyStatus(c.env, luckyId, status, note || undefined);
+  if (!record) {
+    return c.text("No lucky by that id in custody.", 404);
+  }
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/guestbook/delete", async (c) => {

@@ -44,7 +44,7 @@ whatRoutes.get("/what", (c) => {
           <p class="menu-desc">${WHAT_COPY.intro}</p>
           ${pairsHtml}
           <p class="menu-desc">Standing policy, in writing at <code>${escapeHtml(base)}/skill.md</code>: ${WHAT_COPY.standingPolicy}</p>
-          <p class="menu-meta">A question this page doesn't answer: POST ${escapeHtml(base)}/api/request, a human reads every one on Sundays, coffee in hand.</p>
+          <p class="menu-meta">A question this page doesn't answer: POST ${escapeHtml(base)}/api/request. A human reads every one on Sundays. Coffee's for closers.</p>
         </section>
         <script type="application/ld+json">${faqJsonLd(pairs)}</script>`,
       }),

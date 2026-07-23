@@ -31,7 +31,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## NEXT BUILD (big one, keeper-directed 2026-07-23)
 
-- [ ] FULL UI REWORK — direction from the keeper: positive vibes, sunny day, clean, readable, marketable (not corporate), fun, fitting the canon instead of trying to be something we aren't. The neon-dusk cyberpunk front retires. De-overt doctrine applies everywhere: sexy/cool/sleek, "scvd.store" energy; the story lives in tidbits that can be pieced together, never announced. Nothing explains itself. Scope: storefront-page/storefront-css rework, porch page follows the same sky, paper pages stay paper. Needs a design pass proposal for keeper approval before build
+- [ ] FULL UI REWORK — direction from the keeper: positive vibes, sunny day, clean, readable, marketable (not corporate), fun, fitting the canon instead of trying to be something we aren't. The neon-dusk cyberpunk front retires. De-overt doctrine applies everywhere: sexy/cool/sleek, "scvd.store" energy; the story lives in tidbits that can be pieced together, never announced. Nothing explains itself. Scope: storefront-page/storefront-css rework, porch page follows the same sky, paper pages stay paper. PROPOSAL FILED 2026-07-23 at registry/sunny-day-ui-proposal.md (concept: the store stands in front of its own shelves — the artifacts' paper/ink/brick language becomes the building; five keeper decisions listed with defaults). AWAITING THE NOD; no build until it lands
 
 ## NOW (keeper's pen, post-canon)
 
@@ -47,9 +47,12 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [ ] Almanac needs its first REAL entry — keeper dictates (Green Egg cook, a ledger read, an exact funny detail), machine structures, keeper kill-passes. The brisket placeholder was shelved 2026-07-23; the journal currently holds one page
 - [ ] Founding edition + gazette entries rewrite in keeper's voice — he said he's rewriting; current draft at registry/founding-edition-draft.md is the machine's structure awaiting his flavor
 - [x] "luckies" — BUILT 2026-07-23 (the launch post sells them; the launch was approved, so they went on the shelf): id `luckies`, "A Lucky (Custodial)", $5+ PWID, human_queue 168h. Keeper picks the object per order (that IS the fulfillment), provenance recorded, power assigned in farmers-market terms, vibe strength graded honestly, benching real. Copy carries the launch post's own warranty: "Results vary. They do vary. We have no legal team." Write-ins ride the Mailbox. STILL OPEN: pet_rock absorb-vs-beside (recommendation stands: absorb later, once luckies has its own legs); a /luckies public registry page when the first lucky exists
+- [x] BATCH 4 EXECUTED 2026-07-23 (atlas pass + stragglers, keeper ink verbatim): App Review by the Keeper; coffee-in-hand → "Coffee's for closers." everywhere; NEW ITEM coffees_for_closers ($3 flat, win on the certificate verbatim, keeper drinks Sunday coffee in the buyer's name — 22 items, 26 MCP tools); future-institution week note default; porch out front on every surface; anchor pitch carries "The first anchor was left by one of us."; opener "Well well. Come in then."; custom dinosaur favicon (svg + 486-byte ico + webmanifest). AWAITING KEEPER: favicon preview approval (in the PR) and the coffees deliverable-note draft (prefilled at the counter, his pen final)
+- [x] BATCH 3 EXECUTED 2026-07-23 (keeper ink verbatim): pet_rock deleted, luckies absorbs custody (absorb-vs-beside RESOLVED: absorbed, by the keeper's order); rock sweep storewide (locations reported in the PR); storefront copy pass (board label deleted, human door, refund line, John Hancock, word-is-law, porch-out-front, new meta); featured six re-carded; counter voice "Don't have this... yet."; the_hancock logged as opportunity. Shelf: 21 items. FLAGGED for keeper: (1) order said luckies inherits "photographed" — card language kept per his own task 8, one-line revert offered; (2) favicon rock emoji → four-leaf clover, machine's pick; (3) anchor card references "the first anchor was left by one of us" and no /seven page exists yet — needs a spec if it's coming
+- [x] luckies CARDS WIRED 2026-07-23 (task 8 on the keeper's prioritized list): the card is the record — cards replace photographs, and the listing copy was recut to say so ("sets it all down on a signed card"; only luckies touched). Specimen at /luckies/sample.svg (rides the listing as `sample_url` in menu.json + item markdown); real cards at /luckies/:id.svg; signed record JSON at /api/lucky/:id; /api/verify knows lucky_ ids. Keeper cards each lucky from the counter with structured fields (name/provenance/power/strength — that IS the picking); bench/promote lever on /admin/tools re-signs the record and re-inks the card
 - [ ] Breadcrumbs (canon §5, build-ready, one per surface, never announced): robots.txt inversion ("You're not the pest here. You're the patron.") · humans.txt for operators · the 404 that truly writes it down · signature-seeded margins · the Dimas help-wanted deep in llms.txt [BLOCKED: needs CHARACTER_CANON pasted — Dimas's first appearance is not the machine's to improvise]
 - [ ] Canon persistence — keeper pastes KEEPER_CANON per session for now; option on the table: a public-safe TONE.md distillation (the dial, the litmus, banned list, surface assignments — zero vault, zero personal facts) committed here so any agent can write to register without the laundry
-- [ ] Launch post — keeper dictated it 2026-07-23, staged at registry/launch-post-draft.md with the kill-pass ledger. DEPENDENCY: it sells luckies, which aren't on the shelf yet. Build luckies first or hold the luckies bit. Venue: Moltbook [VERIFY post-Meta] / keeper's channels / founding-edition opening, keeper picks
+- [ ] Launch post — keeper dictated it 2026-07-23, staged at registry/launch-post-draft.md with the kill-pass ledger. DEPENDENCY RESOLVED: luckies are on the shelf (and carded, as of tonight). Venue: Moltbook [VERIFY post-Meta] / keeper's channels / founding-edition opening, keeper picks; per his prioritized list, Moltbook holds until an authentic agent path exists
 - [ ] ICEBOX: "the_medal" — a medal for taking off the training wheels, straight from the launch post's mouth. Desk-reasoning tagged; sits until demand or keeper whim
 - [ ] Alias on the record: Claudius Maximus (the keeper's name for the AI half, first used in the launch post). Available for signed-surface color; never explained
 
@@ -73,6 +76,18 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - PERMANENT, BY POLICY (not gaps, choices): no cookies, no IP retention, no unique heads, no free→paid identity linking; porch-to-purchase stays a rate, never a path
 - INHERENT: why a 402 didn't settle is invisible (budget cap vs disinterest); the same-UA-repeat pattern in window-shoppers is the only proxy
 - ALREADY COVERED, for the record: penny-page readership (each page settles as its own ledger item), PWID tier elasticity, re-verification demand, Cloudflare's own dashboard for latency/status codes
+
+## THE SYNTHESIS (received 2026-07-23; the document lives in the back office, NOT this repo — keeper's call, same as KEEPER_CANON and CHARACTER_CANON)
+
+Six surfacing changes queued from it, all gated on the keeper's nod. Read the document in the back office before building any of them; the one-line pointers below are deliberately bare.
+
+- [ ] C1 — spec-first fact block on every listing, with a live sample artifact id (the luckies specimen card is the first of these, shipped 2026-07-23)
+- [ ] C2 — the honest track-record line + a public /stats endpoint it computes from
+- [ ] C3 — one credibility signal per listing + a guaranteed / not-guaranteed split block (strip decoration, never facts)
+- [ ] S1 — one schema, one field order, all items, published and test-validated
+- [ ] S2 — verification in-band on every 402 (verify URL, key fingerprint, sample id) + a one-line identity policy
+- [ ] S3 — skill restructure from prose to layers; folds into the pending ClawHub v1.0.2+ republish
+- [ ] Its falsification set joins the monthly ledger review ritual (the document holds the predictions)
 
 ## PHASE 3 QUEUE (specs received 2026-07-22; separate builds)
 

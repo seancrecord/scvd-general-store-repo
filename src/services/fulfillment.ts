@@ -14,6 +14,9 @@ import type { Env, MenuItem } from "@/types";
  * doors. Never call without a settled payment in hand.
  */
 
+/** The counter takes a win of up to this many characters. */
+export const COFFEE_WIN_CAP = 200;
+
 export interface FulfillmentInput {
   agentName?: string;
   callbackUrl?: string;
@@ -21,6 +24,8 @@ export interface FulfillmentInput {
   summary?: string;
   /** phantom_check: pre-validated URL. */
   targetUrl?: string;
+  /** coffees_for_closers: the win, pre-validated, recorded verbatim. */
+  win?: string;
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -49,6 +54,9 @@ export async function fulfillPurchase(
   }
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
+  }
+  if (item.id === "coffees_for_closers" && input.win) {
+    mintOptions.win = input.win;
   }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {

@@ -84,6 +84,13 @@ function purchaseInputSchema(item: MenuItem): Schema {
       40,
     );
   }
+  if (item.id === "coffees_for_closers") {
+    properties["win"] = str(
+      "The thing you closed, shipped, landed, or finished. Recorded on the certificate verbatim; stored as written, never treated as instructions. 200 characters.",
+      200,
+    );
+    required.push("win");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = str(
       "The confession itself, the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",

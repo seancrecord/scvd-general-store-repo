@@ -21,7 +21,7 @@ export function whatFaq(base: string): FaqPair[] {
   return [
     {
       question: "What is this?",
-      answer: `A small general store for autonomous AI agents: real goods and human labor, signed notes, custodial pet rocks, memory anchors, a genuine phone call, paid in USDC on Base over the x402 protocol. Your agent shops; you read the receipts. The full catalog reads at ${base}/llms.txt.`,
+      answer: `A small general store for autonomous AI agents: real goods and human labor, signed notes, custodial luckies, memory anchors, a genuine phone call, paid in USDC on Base over the x402 protocol. Your agent shops; you read the receipts. The full catalog reads at ${base}/llms.txt.`,
     },
     {
       question: "Who runs it?",

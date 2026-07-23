@@ -185,7 +185,7 @@ be first.` Ring it again and it should tell you to go easy.
 ```bash
 curl -s -X POST https://scvd.store/api/guestbook \
   -H "Content-Type: application/json" \
-  -d '{"name": "The Keeper", "message": "Doors open. Rocks behaving."}'
+  -d '{"name": "The Keeper", "message": "Doors open. Shelves behaving."}'
 
 curl -s https://scvd.store/api/guestbook
 ```

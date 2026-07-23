@@ -35,6 +35,7 @@ catalogRoutes.get("/menu.json", (c) => {
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
     price_tiers_usdc: priceTiersUsdc(item),
+    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
   }));
   return c.json({
     store: {
@@ -94,11 +95,11 @@ catalogRoutes.get("/menu.json", (c) => {
       },
       porch: {
         url: `${base}/porch`,
-        note: "Around the side, facing the oaks. Nothing for sale out there. Stay as long as your timeout allows.",
+        note: "Out front. Nothing for sale out there. Stay as long as your timeout allows.",
       },
       request_window: {
         url: `${base}/api/request`,
-        note: "Want something we don't stock, or a price that doesn't fit? POST { description, offer_usdc, contact }. The keeper reads every request on Sundays, coffee in hand.",
+        note: "Want something we don't stock, or a price that doesn't fit? POST { description, offer_usdc, contact }. The keeper reads every one on Sundays. Coffee's for closers.",
       },
     },
   });
@@ -123,6 +124,7 @@ catalogRoutes.get("/menu/:item_id", (c) => {
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
     price_tiers_usdc: priceTiersUsdc(item),
+    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
     markdown_note:
       "This same URL serves markdown when the Accept header prefers text/markdown.",
   });

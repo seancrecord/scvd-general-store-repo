@@ -217,7 +217,7 @@ describe("the four alarms", () => {
   });
 
   it("pages once for a queued order nobody acknowledged in 24h", async () => {
-    const item = getMenuItem("pet_rock") as MenuItem;
+    const item = getMenuItem("luckies") as MenuItem;
     const order = await createOrder(testEnv, {
       item,
       paidUsdc: 5,

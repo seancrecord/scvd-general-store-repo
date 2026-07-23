@@ -17,7 +17,7 @@ export const PORCH_AMBIENCE: readonly string[] = [
   "You can hear the highway from here if you try. Nobody on this porch is trying.",
   "The bell is asleep. It earned it.",
   "Chalk dust on the fortune board. Tomorrow's is already decided; it just hasn't been said.",
-  "The rocks are in their crates, doing what they do best. Nothing has ever gone wrong on that shelf.",
+  "The luckies are in their crates, doing what they do best. Nothing has ever gone wrong on that shelf.",
   "Heat lightning over the oaks, too far to hear. The sky, arguing properly.",
   "The guestbook is inside on the counter, holding everyone who ever said so.",
   "A car slows, reads the sign, drives on. Wrong century. The store waves anyway.",

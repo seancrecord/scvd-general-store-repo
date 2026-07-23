@@ -48,7 +48,7 @@ async function buyPaid(
 
 describe("the 402 challenge (x402 v2)", () => {
   it("answers an unpaid buy with a well-formed v2 challenge", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/pet_rock`);
+    const response = await SELF.fetch(`${BASE}/api/buy/luckies`);
     expect(response.status).toBe(402);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
 
@@ -71,12 +71,12 @@ describe("the 402 challenge (x402 v2)", () => {
     }
 
     const body = await json(response);
-    expect(body["error"]).toContain("if you think the rock deserves it");
+    expect(body["error"]).toContain("or whatever the luck deserves");
     expect(body["min_price_usdc"]).toBe(5);
   });
 
   it("shows humans with browsers to the front porch", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/pet_rock`, {
+    const response = await SELF.fetch(`${BASE}/api/buy/luckies`, {
       headers: {
         Accept: "text/html",
         "User-Agent": "Mozilla/5.0 (a curious human)",
@@ -113,8 +113,8 @@ describe("paid purchases", () => {
   });
 
   it("queues a human item and records a generous tier as a tip", async () => {
-    // Tier 1 on pet_rock = $10 against a $5 minimum: $5 tip.
-    const response = await buyPaid("pet_rock", 1);
+    // Tier 1 on luckies = $10 against a $5 minimum: $5 tip.
+    const response = await buyPaid("luckies", 1);
     expect(response.status).toBe(200);
     const body = await json(response);
     expect(body["status"]).toBe("queued");
@@ -135,7 +135,7 @@ describe("paid purchases", () => {
     try {
       const instant = await buyPaid("hello");
       expect(instant.status).toBe(402);
-      const queued = await buyPaid("pet_rock");
+      const queued = await buyPaid("luckies");
       expect(queued.status).toBe(402);
     } finally {
       facilitator.settleShouldFail = false;
@@ -233,7 +233,7 @@ describe("the keeper's completion flow", () => {
       method: "POST",
       headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        week_note: "Fresh rocks in. The good gray kind.",
+        week_note: "Fresh luckies in. The good gray kind.",
       }).toString(),
       redirect: "manual",
     });
@@ -241,7 +241,7 @@ describe("the keeper's completion flow", () => {
     // The readerboard sets the note word by word, so match per word.
     const storefront = await (await SELF.fetch(`${BASE}/`)).text();
     expect(storefront).toContain("gray");
-    expect(storefront).toContain("rocks");
+    expect(storefront).toContain("luckies");
 
     const reset = await SELF.fetch(`${BASE}/admin/inventory/reset`, {
       method: "POST",

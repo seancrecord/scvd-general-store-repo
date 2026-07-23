@@ -30,6 +30,21 @@ export function renderToolsPage(): string {
   </section>
 
   <section>
+    <h2>The lucky shelf</h2>
+    <p>Write-ins move a lucky (they ride the Mailbox). The record re-signs and the card re-inks; the bench is real.</p>
+    <form method="POST" action="/admin/luckies/move">
+      <input type="text" name="lucky_id" placeholder="lucky_..." required>
+      <select name="status" required>
+        <option value="in_service">in service</option>
+        <option value="promoted">promoted</option>
+        <option value="benched">benched</option>
+      </select>
+      <input type="text" name="status_note" placeholder="One honest line on why (optional)" maxlength="200">
+      <button type="submit">Move it</button>
+    </form>
+  </section>
+
+  <section>
     <h2>Test levers</h2>
     <form method="POST" action="/admin/alerts/test">
       <button type="submit">Fire a test alert (confirms email delivery once)</button>

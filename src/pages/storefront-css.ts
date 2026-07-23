@@ -198,12 +198,6 @@ body.night {
     0 8px 26px rgba(0,0,0,0.55),
     0 0 34px rgba(255,170,80,0.07);
 }
-.board-label {
-  font-family: ui-monospace, 'Courier New', monospace;
-  font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
-  color: var(--teal-dim); margin-bottom: 0.7rem;
-  border-bottom: 1px solid #241d31; padding-bottom: 0.5rem;
-}
 .board-text {
   font-family: ui-monospace, 'Courier New', monospace;
   text-transform: uppercase;

@@ -23,7 +23,7 @@ over x402 v2.
 **Description:** Twenty-two items from $0.005 to $50: instant signed
 deliverables (memory anchors, URL health attestations, blessings,
 absolution) and human-labor fulfillment (phone calls, app reviews,
-physical custody of rocks). Every purchase mints an ed25519-signed
+physical custody of luckies). Every purchase mints an ed25519-signed
 certificate, verifiable free forever. Four doors: HTTP + x402,
 Bazaar-discoverable resources, an MCP server with in-band payment,
 and a ClawHub skill. The store settles before it mints, publishes an

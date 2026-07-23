@@ -72,6 +72,11 @@ export interface MenuItem {
   note_402: string;
   constraints?: string[];
   /**
+   * Relative path to a sample of the deliverable's art (e.g. the
+   * luckies specimen card). The catalog serves it absolute.
+   */
+  sample_url?: string;
+  /**
    * ISO week the item first went on the shelf. Purchases during this
    * week carry the shelf witness mark, catalog history, recorded as
    * it happens. Every new item must state its listing week.
@@ -117,6 +122,11 @@ export interface Certificate {
   tip_usdc?: number;
   /** Shelf witness mark: set at mint during an item's first listed week. */
   note?: string;
+  /**
+   * coffees_for_closers: the buyer's win, recorded verbatim.
+   * Agent-written untrusted data, same label pattern as anchor summaries.
+   */
+  win?: string;
 }
 
 export interface CertificateRecord {
@@ -225,6 +235,42 @@ export interface DirectoryData {
 
 /** A word retired from the keeper's vocabulary, on the public registry. */
 export type StampVariant = "visitor" | "contributor";
+
+/** Honest vibe grades for a lucky. Some are stronger; the keeper says so. */
+export type LuckyStrength = "faint" | "fair" | "strong" | "uncanny";
+
+/** Write-ins move a lucky. Promotion is real and so is the bench. */
+export type LuckyStatus = "in_service" | "promoted" | "benched";
+
+/**
+ * A lucky in custody. The keeper picks the object; the card is the
+ * record (no photograph, the card replaces it). Signed at issue and
+ * re-signed whenever the status honestly changes.
+ */
+export interface LuckyRecord {
+  lucky_id: string;
+  /** The keeper's name for the object. */
+  name: string;
+  /** Where it came from. Recorded and honest. */
+  provenance: string;
+  /** What it does, in plain farmers-market terms. */
+  power: string;
+  strength: LuckyStrength;
+  status: LuckyStatus;
+  date: string;
+  order_id: string;
+  cert_id: string;
+  patron_number: number;
+  /** The keeper's one line when a write-in moves the lucky. */
+  status_note?: string;
+  status_changed_at?: string;
+}
+
+export interface SignedLuckyRecord {
+  lucky: LuckyRecord;
+  signature: string;
+  public_key: string;
+}
 
 export type RefundStatus = "refund_pending" | "refund_paid";
 

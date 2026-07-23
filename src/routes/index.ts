@@ -22,6 +22,8 @@ export { bellRoutes } from "@/routes/bell";
 export { stampRoutes } from "@/routes/stamps";
 export { tradingPostRoutes } from "@/routes/trading-post";
 export { requestRoutes } from "@/routes/requests";
+export { faviconRoutes } from "@/routes/favicon";
+export { luckyRoutes } from "@/routes/luckies";
 export { verifyRoutes } from "@/routes/verify";
 export { badgeRoutes } from "@/routes/badges";
 export { adminRoutes } from "@/routes/admin";

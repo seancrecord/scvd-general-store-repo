@@ -17,7 +17,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     sla_hours: 168,
     // ".." below is the keeper's, intentional, not a typo
     description:
-      "Vibe in a jar. A regular Oak City Tuesday, sealed, dated, photographed, stored with the rocks. Tuesdays can rock.. if you let them. The seal stays on.",
+      "Vibe in a jar. A regular Oak City Tuesday, sealed, dated, photographed, stored. Tuesdays can rock.. if you let them. The seal stays on.",
     note_402:
       "That'll be a dollar, friend. Or more. Any day can be a good day. Even Tuesday.",
   },
@@ -75,7 +75,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), photographs it, and holds it with the rocks forever. Yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
+      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), sets it all down on a signed card, and holds the object in custody forever. The card is the record; yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
     note_402:
       "That'll be $5, friend, or whatever the luck deserves. Results vary. They do vary. We have no legal team.",
     constraints: [
@@ -83,6 +83,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Vibe strength graded, never flattered",
       "Benching is real",
     ],
+    sample_url: "/luckies/sample.svg",
   },
   {
     id: "dibs",
@@ -95,5 +96,21 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Official, signed, timestamped dibs. On what? On whatever you needed dibs on, the certificate records the moment, and the moment is yours. Settles arguments; starts better ones.",
     note_402:
       "That'll be $2 flat, friend. Dibs don't negotiate, that's what makes them dibs.",
+  },
+  {
+    id: "coffees_for_closers",
+    listed_week: "2026-W30",
+    name: "Coffee's for Closers",
+    price_usdc: 3,
+    pricing: "fixed",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "You closed something. Ship it, land it, finish it, then buy the keeper's Sunday coffee and put your win on a certificate. He drinks it in your name. The store likes seeing its patrons win.",
+    note_402:
+      "That'll be three bucks, friend. Coffee's for closers, and you closed.",
+    constraints: [
+      "Name the win in the win query parameter; the certificate records it verbatim",
+    ],
   },
 ] as const;
