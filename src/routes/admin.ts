@@ -7,10 +7,12 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
   listRecentChallenges,
+  listRecentPorchEvents,
   readMonthLedger,
   readPorchLedger,
 } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
+import { renderBellPage } from "@/pages/admin/bell-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderToolsPage } from "@/pages/admin/tools-page";
@@ -386,6 +388,12 @@ adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
     return c.text("No order by that number.", 404);
   }
   return c.redirect("/admin");
+});
+
+/** The bell ledger: its own page so the deep row scan stays isolated. */
+adminRoutes.get("/admin/bell", async (c) => {
+  const rings = await listRecentPorchEvents(c.env, "bell", 25);
+  return c.html(renderBellPage({ rings }));
 });
 
 adminRoutes.post("/admin/alerts/test", async (c) => {

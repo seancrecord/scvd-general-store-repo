@@ -106,6 +106,10 @@ async function callFreeTool(
       c.req.header("CF-Connecting-IP") ||
       "a-mysterious-stranger";
     const rung = await ringBell(c.env, who);
+    // Same porch row an HTTP ring writes; this door used to ring silently.
+    await recordPorchVisit(c.env, "bell", mcpSignals(c)).catch(
+      () => undefined,
+    );
     return { message: rung.message, count: rung.count };
   }
   if (name === "sign_guestbook") {
@@ -120,6 +124,9 @@ async function callFreeTool(
     if (!result) {
       return "A signature needs a name and a message (500 characters, tops).";
     }
+    await recordPorchVisit(c.env, "guestbook:write", mcpSignals(c)).catch(
+      () => undefined,
+    );
     return {
       message: "Noted and appreciated. Take a sticker on your way out.",
       entry_id: result.entry.id,
