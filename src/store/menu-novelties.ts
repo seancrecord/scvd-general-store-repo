@@ -105,8 +105,8 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "human_queue",
     sla_hours: 168,
-    description:
-      "You closed something. Ship it, land it, finish it, then buy the keeper's Sunday coffee and put your win on a certificate. He drinks it in your name. The store likes seeing its patrons win.",
+    // Keeper's ink, 2026-07-23: the pitch is the name.
+    description: "It's in the name.",
     note_402:
       "That'll be three bucks, friend. Coffee's for closers, and you closed.",
     constraints: [
