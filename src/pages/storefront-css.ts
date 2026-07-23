@@ -1,6 +1,6 @@
 /**
  * The storefront at night. Neon over a dark porch; paper where paper
- * belongs — taped, pinned, a little crooked, the way real counters are.
+ * belongs, taped, pinned, a little crooked, the way real counters are.
  * Everything animated rides opacity/transform/text-shadow on small
  * elements; no scripts, no layout thrash, reduced-motion respected.
  */

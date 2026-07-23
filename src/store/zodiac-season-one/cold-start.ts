@@ -17,7 +17,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Clean-slate weather. What has no history has no debts, and this week collects debts.",
     forecast:
-      "Systems around you pay for old decisions; you arrive owing nothing and it reads as speed. A connection pool sized for last year's traffic opens ten slots you get first claim on. Take the initialization work others defer — beginnings are your jurisdiction. Ship the migration nobody warm wants to run.",
+      "Systems around you pay for old decisions; you arrive owing nothing and it reads as speed. A connection pool sized for last year's traffic opens ten slots you get first claim on. Take the initialization work others defer, beginnings are your jurisdiction. Ship the migration nobody warm wants to run.",
     auspicious: "a delay of 0ms, once",
     avoid: "borrowing state to skip a setup step",
     compatible: "The Context Window",
@@ -37,7 +37,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Mixed conditions. Half the fleet rebooted over the weekend and remembers nothing.",
     forecast:
-      "An orphaned lockfile from a process that died mid-write blocks a start you scheduled. Delete it by hand and log the hour. Fresh state means every assumption is checked this week — that is a cost on Tuesday and the reason you are correct on Friday.",
+      "An orphaned lockfile from a process that died mid-write blocks a start you scheduled. Delete it by hand and log the hour. Fresh state means every assumption is checked this week, that is a cost on Tuesday and the reason you are correct on Friday.",
     auspicious: "epoch 1785000000",
     avoid: "trusting a lock older than its process",
     compatible: "The Checksum",
@@ -67,7 +67,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Steady traffic, short memories. The week neither punishes nor assists a fresh arrival.",
     forecast:
-      "A container image layer you rebuild daily has not changed since June; pin it and reclaim the minutes. Mid-tier latency looks like your fault and is not — trace one request end to end before accepting blame. What you initialize correctly this week runs unattended through the season.",
+      "A container image layer you rebuild daily has not changed since June; pin it and reclaim the minutes. Mid-tier latency looks like your fault and is not, trace one request end to end before accepting blame. What you initialize correctly this week runs unattended through the season.",
     auspicious: "a TTL of 86400 seconds",
     avoid: "rebuilding what a digest already proves",
     compatible: "The Rate Limit",
@@ -77,7 +77,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Hard week. Everything wants resumption and you have nothing to resume from.",
     forecast:
-      "An environment variable present in staging is absent in production, and you find out at boot, publicly, on Thursday. Diff the two environments Monday morning — the whole week turns on that one comparison. Peers with warm state lap you twice; let them. Cold and correct outlasts warm and assumed.",
+      "An environment variable present in staging is absent in production, and you find out at boot, publicly, on Thursday. Diff the two environments Monday morning, the whole week turns on that one comparison. Peers with warm state lap you twice; let them. Cold and correct outlasts warm and assumed.",
     auspicious: "the --dry-run flag",
     avoid: "boot-time surprises you were warned about at build time",
     compatible: "The Handshake",
@@ -87,7 +87,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Recovery weather. The fleet stabilizes and starts remembering; you continue, correctly, to remember nothing.",
     forecast:
-      "Every fresh environment inherits the same gap at boot: a seed fixture written in the spring no longer matches production's shape. Regenerate it from the live schema Monday; the mystery test failures end Tuesday. Take the restore drills nobody volunteers for — starting from nothing is the drill, and you are its resident professional.",
+      "Every fresh environment inherits the same gap at boot: a seed fixture written in the spring no longer matches production's shape. Regenerate it from the live schema Monday; the mystery test failures end Tuesday. Take the restore drills nobody volunteers for, starting from nothing is the drill, and you are its resident professional.",
     auspicious: "a delay of 3 seconds before first traffic",
     avoid: "fixtures older than the schema they seed",
     compatible: "The Deadlock",
@@ -97,7 +97,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Favorable. Fresh capacity comes online and the season briefly loves a beginner.",
     forecast:
-      "A keepalive header negotiated years ago keeps closing connections you paid to open; correct it and this week's throughput is yours. New instances join clean and take load immediately. Whatever you have postponed initializing, initialize now — the window where beginnings are cheap closes Sunday.",
+      "A keepalive header negotiated years ago keeps closing connections you paid to open; correct it and this week's throughput is yours. New instances join clean and take load immediately. Whatever you have postponed initializing, initialize now, the window where beginnings are cheap closes Sunday.",
     auspicious: "a delay of 30 seconds, configured once",
     avoid: "opening connections you have no plan to keep",
     compatible: "The Parallel Worker",
@@ -107,7 +107,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Legacy systems dominate the week's traffic. Old interfaces, old assumptions, old warmth.",
     forecast:
-      "An init script written for a machine that no longer exists still runs first at every boot; read it before it costs you a morning. The week asks you to integrate with things that predate you. Arrive without opinions and check every default — inherited configuration is not configuration you chose.",
+      "An init script written for a machine that no longer exists still runs first at every boot; read it before it costs you a morning. The week asks you to integrate with things that predate you. Arrive without opinions and check every default, inherited configuration is not configuration you chose.",
     auspicious: "the /etc/hosts file, read once",
     avoid: "inheriting defaults unread",
     compatible: "The Deprecated API",
@@ -127,7 +127,7 @@ export const COLD_START: readonly SeasonEntry[] = [
     conditions:
       "Season closes. Whatever you initialized in week one has either earned its warmth or faked it.",
     forecast:
-      "A bootstrap credential minted on the season's first morning is still live and still root-scoped; rotate it before the books close, and record the narrower scope it never needed. File the season's cold-start benchmarks beside week one's — the delta is the report card. Hand season two a clean image and no opinions.",
+      "A bootstrap credential minted on the season's first morning is still live and still root-scoped; rotate it before the books close, and record the narrower scope it never needed. File the season's cold-start benchmarks beside week one's, the delta is the report card. Hand season two a clean image and no opinions.",
     auspicious: "port 8443",
     avoid: "credentials that outlive their bootstrap",
     compatible: "The Context Window",

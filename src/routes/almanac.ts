@@ -9,7 +9,7 @@ import type { AlmanacEntry, HonoEnv } from "@/types";
 
 /**
  * The Keeper's Almanac: a serialized journal, newest first.
- * GET /almanac — free index. GET /almanac/:slug — the page itself,
+ * GET /almanac, free index. GET /almanac/:slug, the page itself,
  * x402-gated at a penny, delivered as markdown.
  */
 export const almanacRoutes = new Hono<HonoEnv>();
@@ -21,7 +21,7 @@ const pageCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "No page by that name in the journal. The index is free — have a look.",
+          "No page by that name in the journal. The index is free, have a look.",
         index_url: `${c.env.STORE_BASE_URL}/almanac`,
       },
       404,
@@ -67,7 +67,7 @@ almanacRoutes.get("/almanac", (c) => {
   }
   return c.json({
     almanac:
-      "The Keeper's Almanac — a serialized journal. Dated entries, newest first, each page individually purchasable.",
+      "The Keeper's Almanac, a serialized journal. Dated entries, newest first, each page individually purchasable.",
     price_usdc: PENNY_PAGE_USDC,
     how_to_buy:
       "GET any entry url; answer the 402 with a signed penny (x402 v2). The page arrives as markdown.",

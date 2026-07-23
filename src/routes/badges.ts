@@ -7,8 +7,8 @@ import {
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /badges/:patron_number.svg — the patron badge, vintage label style.
- * GET /badges/sticker.svg — the free visitor sticker.
+ * GET /badges/:patron_number.svg, the patron badge, vintage label style.
+ * GET /badges/sticker.svg, the free visitor sticker.
  */
 export const badgeRoutes = new Hono<HonoEnv>();
 

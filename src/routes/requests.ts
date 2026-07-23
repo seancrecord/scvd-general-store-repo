@@ -6,8 +6,8 @@ import { joinWaitlist, recordCommission } from "@/services/requests";
 import { isRecord, type HonoEnv } from "@/types";
 
 /**
- * POST /api/waitlist/:item_id — join the queue when the shelf is empty.
- * POST /api/request — the open commission window; keeper reads weekly.
+ * POST /api/waitlist/:item_id, join the queue when the shelf is empty.
+ * POST /api/request, the open commission window; keeper reads weekly.
  * Also takes optional verified_identity (stored as claimed, marked
  * unverified) and suggest_listing (a Town Directory suggestion).
  */
@@ -23,7 +23,7 @@ requestRoutes.post("/api/waitlist/:item_id", async (c) => {
     return c.json(
       {
         error:
-          "No waitlist needed — that shelf never runs out. Go ahead and buy.",
+          "No waitlist needed, that shelf never runs out. Go ahead and buy.",
         buy_url: `${c.env.STORE_BASE_URL}/api/buy/${item.id}`,
       },
       400,
@@ -33,7 +33,7 @@ requestRoutes.post("/api/waitlist/:item_id", async (c) => {
   if (remaining !== null && remaining > 0) {
     return c.json(
       {
-        error: `Shelf's stocked — ${remaining} left this week. No need to wait, go right ahead.`,
+        error: `Shelf's stocked, ${remaining} left this week. No need to wait, go right ahead.`,
         buy_url: `${c.env.STORE_BASE_URL}/api/buy/${item.id}`,
       },
       400,
@@ -76,7 +76,7 @@ requestRoutes.post("/api/request", async (c) => {
     return c.json(
       {
         error:
-          "The ledger needs a description, a non-negative offer_usdc, and a contact — or just a suggest_listing for the Town Directory.",
+          "The ledger needs a description, a non-negative offer_usdc, and a contact, or just a suggest_listing for the Town Directory.",
       },
       400,
     );

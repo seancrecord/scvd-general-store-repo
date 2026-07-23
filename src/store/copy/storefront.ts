@@ -1,5 +1,5 @@
 /**
- * KEEPER-EDITABLE COPY — the human storefront at GET /.
+ * KEEPER-EDITABLE COPY, the human storefront at GET /.
  * Every word on the front of the building lives here: sign, gauges,
  * shelves on display, doors, fine print. The HTML scaffolding that
  * hangs these words up is src/pages/storefront-page.ts and never
@@ -55,9 +55,16 @@ export const STOREFRONT_COPY = {
   /** JSON-LD Organization description for the answer engines. */
   organizationDescription:
     "A small, sincere general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
-  /** The little tube-lit line above the big sign. */
-  tubeLine: "SMOKEWIRE CROSSING \u00B7 EST. IN THE AGE OF AGENTS",
-  openSign: "OPEN 24/7 FOR AGENTS \u2014 HUMANS WELCOME",
+  /** The little tube-lit line above the big sign. The keeper's line. */
+  tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
+  /** Plain until the keeper approves a better one. Workshop open. */
+  openSign: "OPEN 24/7",
+  /**
+   * PARKED, not rendered: pulled from the header 2026-07-23 for
+   * harmony (too many small centered lines). Candidate for the
+   * sunny-day rework; still awaiting keeper approval either way.
+   */
+  intentLine: "A partner, a friend, a listening ear. The lights stay on.",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",
   boardLabel: "\u2630 THIS WEEK'S NOTE \u2014 LETTERS SET BY HAND",
@@ -82,5 +89,8 @@ export const STOREFRONT_COPY = {
     "Everything we sign verifies at <code>/api/verify/{id}</code>. Take a rock's word for nothing; take ours cryptographically.",
   finePrintPorch:
     'The <a href="/porch">porch</a> is around the side. Nothing for sale out there.',
-  estLine: "est. in the age of agents",
+  /** Rides after the location in the footer. Empty until the keeper
+   * lands the replacement for "est. in the age of agents" (retired
+   * 2026-07-23, his call). */
+  estLine: "",
 } as const;

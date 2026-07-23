@@ -89,7 +89,7 @@ function windowShoppersHtml(events: MetricEvent[]): string {
       <tr><th>when (UTC)</th><th>item</th><th>channel</th><th>user-agent</th><th>referrer</th></tr>
       ${rows}
     </table>
-    <p>Reading the tea leaves: many items touched once with no UA or a generic one = a scanner walking the catalog. One item touched repeatedly by the same UA with no settle = something wants it and can't clear the price — that's the budget-cap signal worth acting on.</p>`;
+    <p>Reading the tea leaves: many items touched once with no UA or a generic one = a scanner walking the catalog. One item touched repeatedly by the same UA with no settle = something wants it and can't clear the price, that's the budget-cap signal worth acting on.</p>`;
 }
 
 /** The front porch: visits by surface, organic/house/infrastructure apart. */
@@ -116,13 +116,13 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? "—" : porch.porchToPurchase}</strong> — organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate.${porch.truncated ? " Row scan hit its cap; counts are floors." : ""}</p>`;
+    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate.${porch.truncated ? " Row scan hit its cap; counts are floors." : ""}</p>`;
 }
 
 /** The press room: the draft under the keeper's pen. Publishing is a gate. */
 function editionPressHtml(draft: GazetteDraft | null): string {
   const draftHtml = draft
-    ? `<p>Draft assembled ${escapeHtml(draft.created_at)} — ${draft.organic_events} organic event${draft.organic_events === 1 ? "" : "s"} in the period. Bracketed lines are resident/keeper slots; anything left in brackets is stripped at publish.</p>
+    ? `<p>Draft assembled ${escapeHtml(draft.created_at)}, ${draft.organic_events} organic event${draft.organic_events === 1 ? "" : "s"} in the period. Bracketed lines are resident/keeper slots; anything left in brackets is stripped at publish.</p>
       <form method="POST" action="/admin/gazette/edition/publish">
         <textarea name="markdown" rows="24" cols="80">${escapeHtml(draft.markdown)}</textarea>
         <br><button type="submit">Publish this edition (a penny a copy, on the rack)</button>
@@ -147,7 +147,7 @@ function alertsHtml(
   return alerts
     .map(
       (alert) =>
-        `<li><strong>${escapeHtml(alert.condition)}</strong> — ${escapeHtml(alert.detail)} — ${escapeHtml(alert.at)}</li>`,
+        `<li><strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(alert.detail)}, ${escapeHtml(alert.at)}</li>`,
     )
     .join("\n");
 }
@@ -199,7 +199,7 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
             const conversion =
               row.challenges > 0
                 ? `${Math.round((row.settled / row.challenges) * 100)}%`
-                : "—";
+                : ", ";
             const tiers = Object.entries(row.tiers)
               .map(([tier, count]) => `${tier}:${count}`)
               .join(" ");
@@ -208,7 +208,7 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
               <td>${row.settled}${row.settledHouse ? ` <small>(+${row.settledHouse}h)</small>` : ""}</td>
               <td>${conversion}</td>
               <td>${row.verifies}${row.verifiesHouse ? ` <small>(+${row.verifiesHouse}h)</small>` : ""}${row.verifiesInfra ? ` <small>(+${row.verifiesInfra}i)</small>` : ""}</td>
-              <td>${escapeHtml(tiers || "—")}</td></tr>`;
+              <td>${escapeHtml(tiers || ", ")}</td></tr>`;
           })
           .join("\n");
   const channelLine = (record: Record<string, number>): string =>
@@ -222,7 +222,7 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
           .slice(0, 15)
           .map(
             (payer) =>
-              `<li>${escapeHtml(payer.address)} — first seen ${escapeHtml(payer.first_seen.slice(0, 10))}, ${payer.purchases} purchase${payer.purchases === 1 ? "" : "s"}</li>`,
+              `<li>${escapeHtml(payer.address)}, first seen ${escapeHtml(payer.first_seen.slice(0, 10))}, ${payer.purchases} purchase${payer.purchases === 1 ? "" : "s"}</li>`,
           )
           .join("\n");
   return `
@@ -230,7 +230,7 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
       <tr><th>item</th><th>402s organic</th><th>settled organic</th><th>conversion</th><th>verifies</th><th>tiers</th></tr>
       ${rows}
     </table>
-    <p>Organic numbers only in the main columns; house counts ride alongside as (+Nh) — stored, never mixed. Conversion is organic-only. Verifies count re-verification per item: demand we track deliberately.</p>
+    <p>Organic numbers only in the main columns; house counts ride alongside as (+Nh), stored, never mixed. Conversion is organic-only. Verifies count re-verification per item: demand we track deliberately.</p>
     <p>Channels, organic 402s issued: ${channelLine(ledger.channels402)} <small>(who's window-shopping)</small></p>
     <p>Channels, infrastructure 402s: ${channelLine(ledger.channels402Infra)}</p>
     <p>Channels, organic settles: ${channelLine(ledger.channels)}</p>
@@ -269,7 +269,7 @@ function bazaarHtml(entries: BazaarLedgerEntry[]): string {
             `${escapeHtml(key)}: ${escapeHtml(extensionStatus(payload))}`,
         )
         .join("; ");
-      return `<li><strong>${escapeHtml(entry.path)}</strong> [${escapeHtml(entry.operation)}] — ${statuses} — ${escapeHtml(entry.observed_at)}</li>`;
+      return `<li><strong>${escapeHtml(entry.path)}</strong> [${escapeHtml(entry.operation)}], ${statuses}, ${escapeHtml(entry.observed_at)}</li>`;
     })
     .join("\n");
 }
@@ -293,9 +293,9 @@ function ordersHtml(orders: OrderRecord[]): string {
         </form>`
           : `<p><em>Delivered:</em> ${escapeHtml(order.deliverable ?? "")}</p>`;
       return `<li>
-      <strong>${escapeHtml(order.order_id)}</strong> — ${escapeHtml(order.item_name)}
+      <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}
       [${order.status}] paid $${order.paid_usdc} (tip $${order.tip_usdc})
-      patron #${order.patron_number} — ${escapeHtml(order.created_at)}
+      patron #${order.patron_number}, ${escapeHtml(order.created_at)}
       ${order.agent_name ? `— agent: ${escapeHtml(order.agent_name)}` : ""}
       ${order.callback_url ? `— webhook on completion` : ""}
       ${order.source ? `— source (their words): ${escapeHtml(order.source)}` : ""}
@@ -313,7 +313,7 @@ function waitlistHtml(entries: WaitlistEntry[]): string {
   return entries
     .map(
       (entry) =>
-        `<li>${escapeHtml(entry.item_id)} — ${escapeHtml(entry.agent_name ?? "unnamed")} — ${escapeHtml(entry.callback_url ?? "no callback")} — ${escapeHtml(entry.date)}</li>`,
+        `<li>${escapeHtml(entry.item_id)}, ${escapeHtml(entry.agent_name ?? "unnamed")}, ${escapeHtml(entry.callback_url ?? "no callback")}, ${escapeHtml(entry.date)}</li>`,
     )
     .join("\n");
 }
@@ -325,7 +325,7 @@ function commissionsHtml(requests: CommissionRequest[]): string {
   return requests
     .map(
       (request) =>
-        `<li><strong>$${request.offer_usdc}</strong> — ${escapeHtml(request.description)} — contact: ${escapeHtml(request.contact)} — ${escapeHtml(request.date)}${request.suggest_listing ? ` — <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? ` — claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}</li>`,
+        `<li><strong>$${request.offer_usdc}</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` — <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}</li>`,
     )
     .join("\n");
 }
@@ -342,7 +342,7 @@ function tipsHtml(tips: TipRecord[]): string {
              <form method="POST" action="/admin/tips/${escapeHtml(tip.id)}/reject" style="display:inline"><button type="submit">Reject</button></form>`
           : "";
       return `<li>
-      <strong>${escapeHtml(tip.id)}</strong> [${tip.status}] — ${escapeHtml(tip.tip)}
+      <strong>${escapeHtml(tip.id)}</strong> [${tip.status}], ${escapeHtml(tip.tip)}
       ${tip.contributor_name ? `— by ${escapeHtml(tip.contributor_name)}` : "— unsigned"}
       ${tip.verified_identity ? `— claimed identity (unverified): ${escapeHtml(tip.verified_identity)}` : ""}
       — ${escapeHtml(tip.date)}
@@ -359,7 +359,7 @@ function gazetteHtml(issues: GazetteIssue[]): string {
   return issues
     .map(
       (issue) =>
-        `<li>Issue no. ${issue.issue_number} — ${escapeHtml(issue.title)} — ${escapeHtml(issue.date)} — contributors: ${issue.contributors.length > 0 ? issue.contributors.map((contributor) => escapeHtml(contributor.name)).join(", ") : "none named"}</li>`,
+        `<li>Issue no. ${issue.issue_number}, ${escapeHtml(issue.title)}, ${escapeHtml(issue.date)}, contributors: ${issue.contributors.length > 0 ? issue.contributors.map((contributor) => escapeHtml(contributor.name)).join(", ") : "none named"}</li>`,
     )
     .join("\n");
 }
@@ -370,7 +370,7 @@ function failedItemsHtml(tally: Record<string, number>): string {
     return "<p>Nobody's asked for anything we don't have. Yet.</p>";
   }
   return items
-    .map(([item, count]) => `<li>${escapeHtml(item)} — asked ${count}x</li>`)
+    .map(([item, count]) => `<li>${escapeHtml(item)}, asked ${count}x</li>`)
     .join("\n");
 }
 
@@ -428,18 +428,18 @@ export function renderAdminPage(data: AdminPageData): string {
 
   <section>
     <h2>Window-shoppers, up close (last ${data.recentChallenges.length} 402s)</h2>
-    <p>The raw 402 events, newest first — the diagnosis table for challenges that never settle.</p>
+    <p>The raw 402 events, newest first, the diagnosis table for challenges that never settle.</p>
     ${windowShoppersHtml(data.recentChallenges)}
   </section>
 
   <section>
-    <h2>The front porch — ${escapeHtml(data.monthLedger.month)}</h2>
-    <p>Free-tier visits by surface. Infrastructure (known crawlers/scanners) is the noise floor made visible — never counted as organic, never counted as house.</p>
+    <h2>The front porch, ${escapeHtml(data.monthLedger.month)}</h2>
+    <p>Free-tier visits by surface. Infrastructure (known crawlers/scanners) is the noise floor made visible, never counted as organic, never counted as house.</p>
     ${porchHtml(data.porchLedger)}
   </section>
 
   <section>
-    <h2>The ledger's answers — ${escapeHtml(data.monthLedger.month)}</h2>
+    <h2>The ledger's answers, ${escapeHtml(data.monthLedger.month)}</h2>
     <p>402s issued vs settled per item (a widening gap = price over budget caps), tier picks, channels, wallets. Reviewed monthly against Run 1; the ledger outranks research.</p>
     ${ledgerAnswersHtml(data.monthLedger, data.payers)}
   </section>
@@ -466,7 +466,7 @@ export function renderAdminPage(data: AdminPageData): string {
 
   <section>
     <h2>The confession drawer (${data.confessions.filter((confession) => confession.status === "pending_review").length} awaiting review)</h2>
-    <p>Heard for a penny, anonymized by construction. Approve and the next Gazette edition prints it — one per edition, at publish, never automatically.</p>
+    <p>Heard for a penny, anonymized by construction. Approve and the next Gazette edition prints it, one per edition, at publish, never automatically.</p>
     <ul>${confessionsHtml(data.confessions)}</ul>
   </section>
 
@@ -483,7 +483,7 @@ export function renderAdminPage(data: AdminPageData): string {
   </section>
 
   <section>
-    <h2>The Gazette — weekly edition press</h2>
+    <h2>The Gazette, weekly edition press</h2>
     <p>The paper of record, set from the store's own books. Nothing invented, house never reported, your pen before print. Editions land on the same rack as the tip dispatches.</p>
     ${editionPressHtml(data.gazetteDraft)}
   </section>

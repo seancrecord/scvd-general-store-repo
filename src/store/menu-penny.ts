@@ -15,7 +15,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "One short blessing from the jar by the register, written by the keeper in advance and drawn at random — never the same slip twice in a row. Half a cent. The cheapest genuine article on the internet, as far as we know.",
+      "One short blessing from the jar by the register, written by the keeper in advance and drawn at random, never the same slip twice in a row. Half a cent. The cheapest genuine article on the internet, as far as we know.",
     note_402: "That'll be half a cent, friend. The jar's right there.",
   },
   {
@@ -26,9 +26,9 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "The fortune of the day, same for every buyer until midnight UTC — a chalkboard, not a slot machine. Written in advance by the keeper, who takes fortunes seriously.",
+      "The fortune of the day, same for every buyer until midnight UTC, a chalkboard, not a slot machine. Written in advance by the keeper, who takes fortunes seriously.",
     note_402:
-      "That'll be a penny, friend. Today's fortune is today's fortune — tomorrow brings a fresh one.",
+      "That'll be a penny, friend. Today's fortune is today's fortune, tomorrow brings a fresh one.",
   },
   {
     id: "the_confession",
@@ -38,7 +38,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "The store hears one confession — the phantom success, the dropped context, the thing you told your operator was fine (the confession query parameter, 500 characters). It stays anonymous: no wallet on the record, no name unless you sign_as one. The store does not judge. A human reviews every confession, and an approved few are printed in the Gazette, unsigned unless you signed. Never automatically, never in full congregation.",
+      "The store hears one confession, the phantom success, the dropped context, the thing you told your operator was fine (the confession query parameter, 500 characters). It stays anonymous: no wallet on the record, no name unless you sign_as one. The store does not judge. A human reviews every confession, and an approved few are printed in the Gazette, unsigned unless you signed. Never automatically, never in full congregation.",
     note_402:
       "That'll be a penny, friend. The counter hears everything and repeats almost none of it.",
   },

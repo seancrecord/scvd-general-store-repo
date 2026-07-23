@@ -129,7 +129,7 @@ async function callFreeTool(
   if (name === "verify_artifact") {
     const id = sanitizeText(args["id"], 60);
     if (!id) {
-      return "Verification needs an id — cert_, stamp_, or anchor_.";
+      return "Verification needs an id, cert_, stamp_, or anchor_.";
     }
     const cert = await getCertificate(c.env, id);
     if (cert) {
@@ -188,14 +188,14 @@ function validatePurchaseArgs(
   if (item.id === "context_anchor") {
     const summary = typeof args["summary"] === "string" ? args["summary"] : "";
     if (summary.trim().length === 0) {
-      return "An anchor needs a summary — the state you want remembered. No summary, no charge.";
+      return "An anchor needs a summary, the state you want remembered. No summary, no charge.";
     }
     if (summary.length > 4000) {
       return "That summary runs past the ledger margin. 4000 characters, tops.";
     }
   }
   if (item.id === "phantom_check" && !isValidHttpUrl(args["url"])) {
-    return "A phantom check needs a url — http or https, the thing you want looked at. No target, no charge.";
+    return "A phantom check needs a url, http or https, the thing you want looked at. No target, no charge.";
   }
   if (item.id === "the_confession") {
     const confession =

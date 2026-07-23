@@ -9,7 +9,7 @@ import {
 import type { GuestbookEntry } from "@/types";
 
 /**
- * The human storefront at GET / — the one screen a person ever sees or
+ * The human storefront at GET /, the one screen a person ever sees or
  * shares. Neon roadside general store at dusk. This file is the HTML
  * scaffolding ONLY; every word on the building lives in
  * src/store/copy/storefront.ts, keeper-editable.
@@ -122,7 +122,6 @@ export function renderStorefront(data: StorefrontData): string {
       <div class="light-pool"></div>
       <p class="open-sign">${COPY.openSign}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
-      <p class="proprietors">${escapeHtml(STORE_METADATA.proprietors)}</p>
     </header>
 
     <div class="gauges">
@@ -180,7 +179,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>${COPY.finePrintVerify}</p>
       <p>${COPY.finePrintPorch}</p>
-      <p class="porch-est">${escapeHtml(STORE_METADATA.location)} \u00B7 ${COPY.estLine}</p>
+      <p class="porch-est">${escapeHtml(STORE_METADATA.location)}${COPY.estLine ? ` \u00B7 ${COPY.estLine}` : ""}</p>
     </footer>
 
   </main>

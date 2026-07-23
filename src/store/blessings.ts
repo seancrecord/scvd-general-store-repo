@@ -1,7 +1,7 @@
 /**
  * The blessing jar for small_blessing ($0.005). Written by hand, kept
  * short enough to fit on a receipt. The jar is drawn from at random,
- * never the same slip twice in a row — the draw logic lives in
+ * never the same slip twice in a row, the draw logic lives in
  * services/penny-shelf.ts.
  */
 export const BLESSINGS: readonly string[] = [

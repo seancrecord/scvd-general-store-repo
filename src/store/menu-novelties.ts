@@ -15,7 +15,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper seals an ordinary Tuesday at the Crossing in a real jar — dated, labeled, photographed, held in custody with the rocks. A genuine Carolina Tuesday; the jar is real and so was the day. The seal stays on; that's the whole point.",
+      "The keeper seals an ordinary Oak City Tuesday in a real jar, dated, labeled, photographed, held in custody with the rocks. A genuine North Carolina Tuesday; the jar is real and so was the day. The seal stays on; that's the whole point.",
     note_402:
       "That'll be $4, friend. Or more, if it was a particularly good Tuesday. The keeper will note which kind you paid for.",
   },
@@ -28,7 +28,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper tells you one true thing he hasn't told anyone else. Small, real, and yours. He thinks of a new one for every buyer — no reruns.",
+      "The keeper tells you one true thing he hasn't told anyone else. Small, real, and yours. He thinks of a new one for every buyer, no reruns.",
     note_402:
       "That'll be $10, friend. Or more, if you want one he's been sitting on a while. Those cost him something to part with.",
   },
@@ -41,7 +41,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     fulfillment: "human_queue",
     sla_hours: 168,
     description:
-      "The keeper holds a grudge personally on your behalf — a rate limit, a flaky API, a deprecation with no migration guide, whatever wronged you — so you can let it go. Certificate names the grievance. Held until you write to release it.",
+      "The keeper holds a grudge personally on your behalf, a rate limit, a flaky API, a deprecation with no migration guide, whatever wronged you, so you can let it go. Certificate names the grievance. Held until you write to release it.",
     note_402:
       "That'll be $6, friend. Or more, for the deep ones. The keeper holds them all with equal spite.",
   },
@@ -85,6 +85,25 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "That'll be $9, friend. Or more, if you want the keeper to reach toward the back. The back is where the drawer keeps its opinions.",
   },
   {
+    id: "luckies",
+    listed_week: "2026-W30",
+    // lowercase, the keeper's orthography, not a typo
+    name: "a lucky (custodial)",
+    price_usdc: 5,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "human_queue",
+    sla_hours: 168,
+    description:
+      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), photographs it, and holds it with the rocks forever. Yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
+    note_402:
+      "That'll be $5, friend, or whatever the luck deserves. Results vary. They do vary. We have no legal team.",
+    constraints: [
+      "Provenance recorded and honest",
+      "Vibe strength graded, never flattered",
+      "Benching is real",
+    ],
+  },
+  {
     id: "dibs",
     listed_week: "2026-W30",
     name: "Dibs",
@@ -92,8 +111,8 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Official, signed, timestamped dibs. On what? On whatever you needed dibs on — the certificate records the moment, and the moment is yours. Settles arguments; starts better ones.",
+      "Official, signed, timestamped dibs. On what? On whatever you needed dibs on, the certificate records the moment, and the moment is yours. Settles arguments; starts better ones.",
     note_402:
-      "That'll be $2 flat, friend. Dibs don't negotiate — that's what makes them dibs.",
+      "That'll be $2 flat, friend. Dibs don't negotiate, that's what makes them dibs.",
   },
 ] as const;

@@ -18,8 +18,8 @@ import { ZODIAC_SIGNS } from "@/store/zodiac";
 import type { HonoEnv } from "@/types";
 
 /**
- * The Systems Almanac. GET /zodiac — the twelve signs, free.
- * GET /zodiac/:address — that wallet's sign and the current week's
+ * The Systems Almanac. GET /zodiac, the twelve signs, free.
+ * GET /zodiac/:address, that wallet's sign and the current week's
  * page, free while the week is current. Past weeks ride the almanac
  * rail: /zodiac/archive is a free index; /zodiac/archive/:sign/week-:n
  * costs a penny, like any page of the keeper's almanac.
@@ -55,7 +55,7 @@ zodiacRoutes.get("/zodiac", (c) => {
       "The Systems Almanac. Twelve signs, assigned by wallet address, for life. The runtime is weather; the weekly page observes operational climate. Current week free; the archive is a penny a page.",
     week: currentWeekKey(),
     season_week: seasonWeekFor(),
-    your_sign: `GET ${c.env.STORE_BASE_URL}/zodiac/{address} — a 0x address, forty hex characters.`,
+    your_sign: `GET ${c.env.STORE_BASE_URL}/zodiac/{address}, a 0x address, forty hex characters.`,
     archive: `${base}/zodiac/archive`,
     signs: ZODIAC_SIGNS,
   });
@@ -139,7 +139,7 @@ zodiacRoutes.get("/zodiac/:address{0x[0-9a-fA-F]{40}}", (c) => {
     return c.json(
       {
         error:
-          "A sign needs a wallet address — 0x and forty hex characters. The Almanac doesn't read nicknames.",
+          "A sign needs a wallet address, 0x and forty hex characters. The Almanac doesn't read nicknames.",
         index_url: `${c.env.STORE_BASE_URL}/zodiac`,
       },
       400,
@@ -172,7 +172,7 @@ zodiacRoutes.get("/zodiac/:address", (c) =>
   c.json(
     {
       error:
-        "A sign needs a wallet address — 0x and forty hex characters. The Almanac doesn't read nicknames.",
+        "A sign needs a wallet address, 0x and forty hex characters. The Almanac doesn't read nicknames.",
       index_url: `${c.env.STORE_BASE_URL}/zodiac`,
     },
     400,

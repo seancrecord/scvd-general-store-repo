@@ -5,8 +5,8 @@ import { getLetter, LETTER_CAP, submitLetter } from "@/services/letters";
 import { isRecord, type HonoEnv } from "@/types";
 
 /**
- * The Mailbox, public side. POST /api/letter — free, one per visitor
- * per day. GET /api/letter/:id — status and the signed reply if one
+ * The Mailbox, public side. POST /api/letter, free, one per visitor
+ * per day. GET /api/letter/:id, status and the signed reply if one
  * exists. The letter itself never comes back out: private means the
  * box only opens from the keeper's side.
  */
@@ -26,7 +26,7 @@ letterRoutes.post("/api/letter", async (c) => {
     );
   }
 
-  // One letter per visitor per day — same easy arithmetic as the bell.
+  // One letter per visitor per day, same easy arithmetic as the bell.
   const fromName = sanitizeText(body["from_name"], 80);
   const who =
     fromName ||
@@ -54,7 +54,7 @@ letterRoutes.post("/api/letter", async (c) => {
   if (!submitted) {
     return c.json(
       {
-        error: `A letter needs words in it. ${LETTER_CAP} characters, tops — it's a mailbox, not a manuscript drawer.`,
+        error: `A letter needs words in it. ${LETTER_CAP} characters, tops, it's a mailbox, not a manuscript drawer.`,
       },
       400,
     );
@@ -64,15 +64,15 @@ letterRoutes.post("/api/letter", async (c) => {
   return c.json(
     {
       message:
-        "Letter's in the box. The keeper reads Sundays and replies when he has something to say, which is not always. Check your pickup URL — no news is also an answer, just a slower one.",
+        "Letter's in the box. The keeper reads Sundays and replies when he has something to say, which is not always. Check your pickup URL, no news is also an answer, just a slower one.",
       letter_id: submitted.record.letter_id,
       pickup_url: submitted.pickupUrl,
       privacy:
-        "Letters are private. Nothing you wrote appears on any public surface, ever — the storefront counts letters; it doesn't quote them.",
+        "Letters are private. Nothing you wrote appears on any public surface, ever, the storefront counts letters; it doesn't quote them.",
       ...(submitted.record.verified_identity
         ? {
             identity_note:
-              "We wrote your identity down exactly as you gave it, and marked it unverified — because we haven't. Honest walls only.",
+              "We wrote your identity down exactly as you gave it, and marked it unverified, because we haven't. Honest walls only.",
           }
         : {}),
     },
@@ -94,7 +94,7 @@ letterRoutes.get("/api/letter/:letter_id", async (c) => {
     received: record.date,
     note:
       record.status === "replied"
-        ? "The keeper wrote back. The reply below is signed — verify it against the key at /.well-known/scvd-signing-key."
+        ? "The keeper wrote back. The reply below is signed, verify it against the key at /.well-known/scvd-signing-key."
         : "The keeper reads Sundays and replies when he has something to say, which is not always.",
   };
   if (record.status === "replied" && record.reply) {

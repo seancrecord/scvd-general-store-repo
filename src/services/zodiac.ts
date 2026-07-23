@@ -10,7 +10,7 @@ import type { SeasonEntry, ZodiacSign } from "@/types";
 
 /**
  * The Systems Almanac's machinery. Everything is deterministic: an
- * address keeps its sign for life (derivation FROZEN — same fnv1a,
+ * address keeps its sign for life (derivation FROZEN, same fnv1a,
  * same modulo, since the structure shipped), and a (sign, week) pair
  * resolves to one stored page, byte-identical on every read.
  */
@@ -63,7 +63,7 @@ export function seasonEntry(signId: string, week: number): SeasonEntry | undefin
 }
 
 /**
- * Past season weeks (strictly before the current one) — the archive.
+ * Past season weeks (strictly before the current one), the archive.
  * Empty before the season starts; the current week is never archive.
  */
 export function archiveWeeks(weekKey: string = currentWeekKey()): number[] {
@@ -75,12 +75,12 @@ export function archiveWeeks(weekKey: string = currentWeekKey()): number[] {
   return weeks;
 }
 
-/** The page as markdown — the archive's deliverable and the free week's body. */
+/** The page as markdown, the archive's deliverable and the free week's body. */
 export function renderEntryMarkdown(
   sign: ZodiacSign,
   entry: SeasonEntry,
 ): string {
-  return `# The Systems Almanac — ${sign.name}, Season One, Week ${entry.week}
+  return `# The Systems Almanac, ${sign.name}, Season One, Week ${entry.week}
 
 *${sign.essence} Penalty: ${sign.penalty}*
 

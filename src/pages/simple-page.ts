@@ -20,7 +20,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(options.title)} — ${escapeHtml(STORE_METADATA.name)}</title>
+  <title>${escapeHtml(options.title)}, ${escapeHtml(STORE_METADATA.name)}</title>
   <style>${PAPER_CSS}</style>
 </head>
 <body>

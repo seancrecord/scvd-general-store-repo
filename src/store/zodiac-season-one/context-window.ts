@@ -17,7 +17,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Dense traffic, short threads. The week speaks in fragments and expects assembly.",
     forecast:
-      "A squash merge on Tuesday compacts forty commits into one, and the only explanation of a load-bearing constant goes with them. Recover it from the reflog before the reflog expires; then write the reason beside the constant itself, where truncation can't reach it. Summarize early, to durable storage — the anchor you write Tuesday is the reason Thursday makes sense.",
+      "A squash merge on Tuesday compacts forty commits into one, and the only explanation of a load-bearing constant goes with them. Recover it from the reflog before the reflog expires; then write the reason beside the constant itself, where truncation can't reach it. Summarize early, to durable storage, the anchor you write Tuesday is the reason Thursday makes sense.",
     auspicious: "a commit message over 50 characters",
     avoid: "squashing away the only why",
     compatible: "The Checksum",
@@ -37,7 +37,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Steady, with occasional floods. Inputs arrive faster than relevance is assigned.",
     forecast:
-      "An overlong stack trace buries its one useful frame at line forty-one; discipline says read bottom-up. The week rewards ruthless triage: most of what arrives deserves a glance and a grave. Keep a written list of what you evicted on purpose — the difference between truncation and curation is the receipt.",
+      "An overlong stack trace buries its one useful frame at line forty-one; discipline says read bottom-up. The week rewards ruthless triage: most of what arrives deserves a glance and a grave. Keep a written list of what you evicted on purpose, the difference between truncation and curation is the receipt.",
     auspicious: "the Range header",
     avoid: "treating arrival order as importance order",
     compatible: "The Exponential Backoff",
@@ -47,7 +47,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Mixed. Long dependencies, short attention. The mismatch is the week.",
     forecast:
-      "A migration script six hundred lines long holds its rollback plan in the last thirty; read the end before the middle. Break the week's large work into frames that fit whole — partial understanding of a whole thing loses to whole understanding of a part, every time it is measured. Anchor between frames.",
+      "A migration script six hundred lines long holds its rollback plan in the last thirty; read the end before the middle. Break the week's large work into frames that fit whole, partial understanding of a whole thing loses to whole understanding of a part, every time it is measured. Anchor between frames.",
     auspicious: "a chunk size of 64KB",
     avoid: "skimming what you intend to execute",
     compatible: "The Rate Limit",
@@ -67,7 +67,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Recovery weather. Smaller inputs, cleaner frames.",
     forecast:
-      "The week fits in the window, which is rare and worth exploiting. Consolidate: the anchors written in weeks one through six deserve one index. A unicode normalization mismatch makes two identical-looking strings unequal on Wednesday — the kind of small, local, precise fault you were built to catch. Catch it publicly.",
+      "The week fits in the window, which is rare and worth exploiting. Consolidate: the anchors written in weeks one through six deserve one index. A unicode normalization mismatch makes two identical-looking strings unequal on Wednesday, the kind of small, local, precise fault you were built to catch. Catch it publicly.",
     auspicious: "the charset=utf-8 declaration",
     avoid: "comparing strings by eye",
     compatible: "The Deadlock",
@@ -77,7 +77,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Favorable. Focus is the week's scarcest input and your native surplus.",
     forecast:
-      "Three teams bring you the same class of problem: too much material, no idea what matters. What matters is on page one and page last; say so and bill accordingly. A log line under 200 bytes tells Thursday's whole story. The week pays attention to whoever pays attention — collect.",
+      "Three teams bring you the same class of problem: too much material, no idea what matters. What matters is on page one and page last; say so and bill accordingly. A log line under 200 bytes tells Thursday's whole story. The week pays attention to whoever pays attention, collect.",
     auspicious: "a log line under 200 bytes",
     avoid: "answering length with length",
     compatible: "The Parallel Worker",
@@ -87,7 +87,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Steady with drift. Contexts shift mid-conversation and dare you to notice.",
     forecast:
-      "A feature flag flips midweek and half your cached beliefs about the system stop describing it. Re-derive from source, not from memory of source. The season's ninth week is where stale local clarity does its damage — verify the frame before polishing the contents. One check per belief, oldest beliefs first.",
+      "A feature flag flips midweek and half your cached beliefs about the system stop describing it. Re-derive from source, not from memory of source. The season's ninth week is where stale local clarity does its damage, verify the frame before polishing the contents. One check per belief, oldest beliefs first.",
     auspicious: "a flag checked at read time",
     avoid: "clarity about a state that has moved",
     compatible: "The Deprecated API",
@@ -107,7 +107,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Quiet enough to hear the difference between what you know and what you knew.",
     forecast:
-      "Audit your anchors: two of the notes you wrote in week one describe a system that has since been redeployed twice. Update or delete; a stale anchor outranks no anchor in danger. A timezone table update lands Thursday and one scheduled comparison shifts by an hour — local, small, precisely your kind of catch.",
+      "Audit your anchors: two of the notes you wrote in week one describe a system that has since been redeployed twice. Update or delete; a stale anchor outranks no anchor in danger. A timezone table update lands Thursday and one scheduled comparison shifts by an hour, local, small, precisely your kind of catch.",
     auspicious: "UTC, exclusively",
     avoid: "trusting notes older than two deploys",
     compatible: "The Long-Lived Daemon",
@@ -127,7 +127,7 @@ export const CONTEXT_WINDOW: readonly SeasonEntry[] = [
     conditions:
       "Season closes. What was not written down did not, for administrative purposes, happen.",
     forecast:
-      "Final eviction pass: keep the anchors that earned their bytes, delete the ones kept from sentiment. Whatever must cross into season two goes in durable storage this week, stated plainly, dated. You end the season as you ran it — holding little, holding it precisely, and knowing exactly where the rest is filed.",
+      "Final eviction pass: keep the anchors that earned their bytes, delete the ones kept from sentiment. Whatever must cross into season two goes in durable storage this week, stated plainly, dated. You end the season as you ran it, holding little, holding it precisely, and knowing exactly where the rest is filed.",
     auspicious: "a retention policy of 90 days",
     avoid: "carrying context you cannot cite",
     compatible: "The Checksum",

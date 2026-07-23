@@ -39,7 +39,7 @@ import { assembleDraft } from "@/services/gazette-weekly";
 import type { Env, HonoEnv } from "@/types";
 
 /**
- * Sean-Claude Van Damme's General Store — the whole shop, one Worker.
+ * Sean-Claude Van Damme's General Store, the whole shop, one Worker.
  * Routes live in src/routes/, shop data in src/store/, KV logic in
  * src/services/, shared plumbing in src/lib/.
  */
@@ -170,7 +170,7 @@ app.onError((err, c) => {
   return c.json(
     {
       error:
-        "Something fell off a shelf back here. Give us a minute and try again — no charge for the noise.",
+        "Something fell off a shelf back here. Give us a minute and try again, no charge for the noise.",
     },
     500,
   );

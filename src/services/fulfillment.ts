@@ -10,7 +10,7 @@ import type { Env, MenuItem } from "@/types";
 /**
  * What happens after money settles, on any channel: mint the
  * certificate, then deliver instant goods or open a human-queue order.
- * The HTTP buy route and the MCP tools both call this — one till, two
+ * The HTTP buy route and the MCP tools both call this, one till, two
  * doors. Never call without a settled payment in hand.
  */
 
@@ -72,7 +72,7 @@ export async function fulfillPurchase(
     signature: minted.signature,
     verify_url: minted.verifyUrl,
     verification:
-      "Re-verification is free, forever, no purchase required — that URL answers as many times as anyone asks.",
+      "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
   };
 
   if (item.fulfillment === "instant") {

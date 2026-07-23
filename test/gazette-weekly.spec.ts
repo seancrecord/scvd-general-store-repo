@@ -122,7 +122,7 @@ describe("the edition itself", () => {
     expect(copy.status).toBe(200);
     expect(copy.headers.get("Cache-Control")).toBe("no-store");
     const text = await copy.text();
-    expect(text).toContain("The Gazette â€” Edition No. 1");
+    expect(text).toContain("The Gazette · Edition No. 1");
     expect(text).toContain("small_blessing (1)");
   });
 

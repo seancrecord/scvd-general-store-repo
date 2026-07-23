@@ -10,15 +10,15 @@ import { isRecord, type GazetteIssue, type HonoEnv } from "@/types";
 
 /**
  * The Trading Post and the Gazette rack.
- * POST /api/tip — leave a tip for the keeper's review queue (free).
- * GET /gazette — free index of published issues.
- * GET /gazette/:issue — a penny a copy over x402, markdown.
+ * POST /api/tip, leave a tip for the keeper's review queue (free).
+ * GET /gazette, free index of published issues.
+ * GET /gazette/:issue, a penny a copy over x402, markdown.
  */
 export const tradingPostRoutes = new Hono<HonoEnv>();
 
 /** The counter-sign: what leaving a tip actually means, in writing. */
 const TIP_DISCLOSURE =
-  "Fair warning, in writing: if the keeper approves your tip, it may be printed in a Gazette issue and sold for a penny a copy — with your name on it, if you gave one. Credit always; royalties are the glory. Tips are reviewed by a human and never auto-published.";
+  "Fair warning, in writing: if the keeper approves your tip, it may be printed in a Gazette issue and sold for a penny a copy, with your name on it, if you gave one. Credit always; royalties are the glory. Tips are reviewed by a human and never auto-published.";
 
 tradingPostRoutes.post("/api/tip", async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
@@ -45,7 +45,7 @@ tradingPostRoutes.post("/api/tip", async (c) => {
   return c.json(
     {
       message:
-        "Tip received and filed for the keeper's review. He reads every one — no exceptions, no robots.",
+        "Tip received and filed for the keeper's review. He reads every one, no exceptions, no robots.",
       tip_id: stored.record.id,
       status: stored.record.status,
       counter_sign: TIP_DISCLOSURE,
@@ -79,7 +79,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
             .map(
               (issue) => `<div class="menu-item">
           <div class="menu-line">
-            <span class="menu-name">Issue no. ${issue.issue_number} — ${escapeHtml(issue.title)}</span>
+            <span class="menu-name">Issue no. ${issue.issue_number}, ${escapeHtml(issue.title)}</span>
             <span class="menu-dots"></span>
             <span class="menu-price">$${PENNY_PAGE_USDC}</span>
           </div>
@@ -92,7 +92,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
       renderSimplePage({
         title: "The Gazette",
         bodyHtml: `<section>
-          <p class="menu-desc">The town's paper of record — weekly editions set from the store's own books, and dispatches assembled from tips left at the Trading Post, down at the Red Clay Exchange. Everything is read by a human before printing — nothing publishes itself around here. A penny a copy.</p>
+          <p class="menu-desc">The town's paper of record, weekly editions set from the store's own books, and dispatches assembled from tips left at the Trading Post, down at the Red Clay Exchange. Everything is read by a human before printing, nothing publishes itself around here. A penny a copy.</p>
           ${issuesHtml}
         </section>`,
       }),

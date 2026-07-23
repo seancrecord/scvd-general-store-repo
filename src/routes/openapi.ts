@@ -4,7 +4,7 @@ import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
- * GET /openapi.json — an OpenAPI 3.1 contract for the whole store,
+ * GET /openapi.json, an OpenAPI 3.1 contract for the whole store,
  * linked from the homepage. Paid operations carry a 402 response and an
  * x-payment vendor extension describing the x402 v2 terms.
  */
@@ -74,7 +74,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   return {
     ...paidOp(
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (phantom_check, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us — for the ledger). Item ids and prices live in /menu.json.",
+      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (phantom_check, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger). Item ids and prices live in /menu.json.",
       allPrices,
     ),
     parameters: [
@@ -117,7 +117,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         in: "query",
         schema: { type: "string", maxLength: 600 },
         description:
-          "Human-queue task detail — the quick_judgment dilemma, the phone_call errand. Stored on the order for the keeper.",
+          "Human-queue task detail, the quick_judgment dilemma, the phone_call errand. Stored on the order for the keeper.",
       },
       {
         name: "source",
@@ -137,7 +137,7 @@ openapiRoutes.get("/openapi.json", (c) => {
       title: STORE_METADATA.name,
       version: "0.3.0",
       description:
-        "A human-run general store for autonomous agents. Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453). The store never asks a visitor to run code or share credentials — these public endpoints are the whole relationship.",
+        "A human-run general store for autonomous agents. Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453). The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.",
       contact: { url: base },
     },
     servers: [{ url: base }],
@@ -166,7 +166,7 @@ openapiRoutes.get("/openapi.json", (c) => {
       "/porch": {
         get: freeOp(
           "The porch",
-          "Around the side, facing the pines. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+          "Around the side, facing the oaks. One line of tonight per hour, the seat count, and nothing for sale. Free.",
         ),
       },
       "/mcp": {
@@ -199,7 +199,7 @@ openapiRoutes.get("/openapi.json", (c) => {
         get: {
           ...paidOp(
             "One archive page",
-            "A past week's page for one sign, markdown, a penny — the almanac rail.",
+            "A past week's page for one sign, markdown, a penny, the almanac rail.",
             [PENNY_PAGE_USDC],
             true,
           ),

@@ -6,7 +6,7 @@ import { WHAT_COPY, whatFaq, type FaqPair } from "@/store/copy/what";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /what — the Operator Glance. All the words live in
+ * GET /what, the Operator Glance. All the words live in
  * src/store/copy/what.ts (keeper-editable); this file only hangs
  * them up and rides the FAQPage JSON-LD along as invisible plumbing.
  */
@@ -44,17 +44,17 @@ whatRoutes.get("/what", (c) => {
           <p class="menu-desc">${WHAT_COPY.intro}</p>
           ${pairsHtml}
           <p class="menu-desc">Standing policy, in writing at <code>${escapeHtml(base)}/skill.md</code>: ${WHAT_COPY.standingPolicy}</p>
-          <p class="menu-meta">A question this page doesn't answer: POST ${escapeHtml(base)}/api/request — a human reads every one on Sundays, coffee in hand.</p>
+          <p class="menu-meta">A question this page doesn't answer: POST ${escapeHtml(base)}/api/request, a human reads every one on Sundays, coffee in hand.</p>
         </section>
         <script type="application/ld+json">${faqJsonLd(pairs)}</script>`,
       }),
     );
   }
   return c.json({
-    what: `${STORE_METADATA.name}: a small general store for autonomous agents, run by ${STORE_METADATA.proprietors.toLowerCase()}, selling real goods and human labor for USDC on Base over x402.`,
+    what: `${STORE_METADATA.name}: a general store for autonomous agents, kept by a human, selling real goods and human labor for USDC on Base over x402.`,
     for_whom: WHAT_COPY.forWhom,
     faq: pairs,
     standing_policy: WHAT_COPY.standingPolicyJson,
-    questions: `POST ${base}/api/request — a human reads every one on Sundays.`,
+    questions: `POST ${base}/api/request, a human reads every one on Sundays.`,
   });
 });

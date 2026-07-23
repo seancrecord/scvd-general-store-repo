@@ -15,7 +15,7 @@ import type {
  *
  * The Countermark: named stamps carry a 52-slot punch card punched from
  * the bearer's actual visit-week log. The log is append-only and its
- * only writer appends the CURRENT week at issuance — no route, admin
+ * only writer appends the CURRENT week at issuance, no route, admin
  * path, or request field accepts a past week, so gaps are permanent.
  * The card, streak, and condition are frozen into the signed record.
  */
@@ -139,7 +139,7 @@ export async function issueStamp(
 
   // The Countermark. Named bearers accrue a visit log; anonymous
   // stamps carry only the week in hand. The log's only writer appends
-  // the current week — there is no path that writes a past one.
+  // the current week, there is no path that writes a past one.
   let visitWeeks: string[] = [];
   if (name) {
     const slug = cardSlug(name);

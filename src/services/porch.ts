@@ -9,7 +9,7 @@ import type { Env } from "@/types";
 /**
  * The porch: free, useless, open all night. The ambience is
  * deterministic per UTC hour so everyone sitting in the same hour
- * shares the same night. The cat keeps its own schedule — also
+ * shares the same night. The cat keeps its own schedule, also
  * deterministic, never explained, out about two hours in five.
  */
 
@@ -50,7 +50,7 @@ export async function takeSeat(env: Env, date: Date = new Date()): Promise<numbe
 
 /**
  * The treat rail. Anyone can leave Roger Sterling a treat, free.
- * Nothing about the treat is stored — only that one was left. His
+ * Nothing about the treat is stored, only that one was left. His
  * reaction runs on the same hour clock as the rest of the porch;
  * his lines live in src/store/porch.ts with the ambience.
  */

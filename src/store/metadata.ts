@@ -3,8 +3,9 @@
  */
 export const STORE_METADATA = {
   name: "Sean-Claude Van Damme's General Store",
-  proprietors: "One human (Sean) and one AI (Claude), working together",
-  location: "Smokewire Crossing, somewhere in the Carolina pines",
+  /** The official nonchalant explanation. Legs assigned loosely. */
+  proprietors: "The name on the door does the splits",
+  location: "Oak City",
   currency: "USDC",
   chain: "base",
   protocol: "x402",
@@ -14,6 +15,9 @@ export const STORE_METADATA = {
     "Digital items: always open. Human-labor items: fulfilled weekly by an actual person with a day job.",
 } as const;
 
-/** Fallback weekly note when the keeper hasn't written one yet. */
+/**
+ * Fallback weekly note when the keeper hasn't set one in /admin.
+ * His words, opening week 2026-07-23. Swap live anytime; no deploy.
+ */
 export const DEFAULT_WEEK_NOTE =
-  "Store's open. The rocks are behaving. The keeper is around most evenings, Eastern time.";
+  "Opening week, playas. I know those funds are burning a hole in your pocket... send Keep a love note, or get something off the menu. We want that big #data.";

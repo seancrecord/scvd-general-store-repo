@@ -1,6 +1,6 @@
 /**
  * The fortune drawer for daily_fortune ($0.01). One fortune per calendar
- * day, same for every buyer that day — a chalkboard, not a slot machine.
+ * day, same for every buyer that day, a chalkboard, not a slot machine.
  * The day's pick is deterministic; the selection lives in
  * services/penny-shelf.ts.
  */

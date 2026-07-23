@@ -27,6 +27,23 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 ## NOW (keeper hands, post-porch-log)
 
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
+- [ ] Republish ClawHub as v1.0.2 — registry/clawhub/SKILL.md reworked 2026-07-23: pines/Smokewire gone, Oak City + "where you're never late", mission line woven in, treat rail added, 23 items. Same publish steps as before (`npx clawhub skill publish` from the registry/clawhub folder)
+
+## NEXT BUILD (big one, keeper-directed 2026-07-23)
+
+- [ ] FULL UI REWORK — direction from the keeper: positive vibes, sunny day, clean, readable, marketable (not corporate), fun, fitting the canon instead of trying to be something we aren't. The neon-dusk cyberpunk front retires. De-overt doctrine applies everywhere: sexy/cool/sleek, "scvd.store" energy; the story lives in tidbits that can be pieced together, never announced. Nothing explains itself. Scope: storefront-page/storefront-css rework, porch page follows the same sky, paper pages stay paper. Needs a design pass proposal for keeper approval before build
+
+## NOW (keeper's pen, post-canon)
+
+- [ ] smoker_blessing rework — brisket fiction retiring per canon; keeper picks the replacement (candidates from his mouth: a drink poured in your name, a dedicated brainstorm session). Until picked, the item stands as-is; on the pick, copy gets recut and the item may be renamed
+- [ ] Almanac needs its first REAL entry — keeper dictates (Green Egg cook, a ledger read, an exact funny detail), machine structures, keeper kill-passes. The brisket placeholder was shelved 2026-07-23; the journal currently holds one page
+- [ ] Founding edition + gazette entries rewrite in keeper's voice — he said he's rewriting; current draft at registry/founding-edition-draft.md is the machine's structure awaiting his flavor
+- [x] "luckies" — BUILT 2026-07-23 (the launch post sells them; the launch was approved, so they went on the shelf): id `luckies`, "A Lucky (Custodial)", $5+ PWID, human_queue 168h. Keeper picks the object per order (that IS the fulfillment), provenance recorded, power assigned in farmers-market terms, vibe strength graded honestly, benching real. Copy carries the launch post's own warranty: "Results vary. They do vary. We have no legal team." Write-ins ride the Mailbox. STILL OPEN: pet_rock absorb-vs-beside (recommendation stands: absorb later, once luckies has its own legs); a /luckies public registry page when the first lucky exists
+- [ ] Breadcrumbs (canon §5, build-ready, one per surface, never announced): robots.txt inversion ("You're not the pest here. You're the patron.") · humans.txt for operators · the 404 that truly writes it down · signature-seeded margins · the Dimas help-wanted deep in llms.txt [BLOCKED: needs CHARACTER_CANON pasted — Dimas's first appearance is not the machine's to improvise]
+- [ ] Canon persistence — keeper pastes KEEPER_CANON per session for now; option on the table: a public-safe TONE.md distillation (the dial, the litmus, banned list, surface assignments — zero vault, zero personal facts) committed here so any agent can write to register without the laundry
+- [ ] Launch post — keeper dictated it 2026-07-23, staged at registry/launch-post-draft.md with the kill-pass ledger. DEPENDENCY: it sells luckies, which aren't on the shelf yet. Build luckies first or hold the luckies bit. Venue: Moltbook [VERIFY post-Meta] / keeper's channels / founding-edition opening, keeper picks
+- [ ] ICEBOX: "the_medal" — a medal for taking off the training wheels, straight from the launch post's mouth. Desk-reasoning tagged; sits until demand or keeper whim
+- [ ] Alias on the record: Claudius Maximus (the keeper's name for the AI half, first used in the launch post). Available for signed-surface color; never explained
 
 ## NOW (keeper's pen)
 

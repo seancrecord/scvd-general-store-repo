@@ -4,7 +4,7 @@ import { getPhantomCheck } from "@/services/phantom";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /api/phantom/:check_id — pick up a phantom_check attestation.
+ * GET /api/phantom/:check_id, pick up a phantom_check attestation.
  * A due-but-unswept check gets observed right here on read, so the
  * six-hour promise survives a missed cron tick.
  */
@@ -32,7 +32,7 @@ phantomRoutes.get("/api/phantom/:check_id", async (c) => {
       status: "scheduled",
       target: record.target,
       due_at: record.due_at,
-      note: "The store hasn't walked past yet. Out-of-band means out-of-band — come back after the hour on the slip.",
+      note: "The store hasn't walked past yet. Out-of-band means out-of-band, come back after the hour on the slip.",
     });
   }
   return c.json({

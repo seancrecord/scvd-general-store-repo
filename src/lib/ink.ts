@@ -2,7 +2,7 @@
  * Signature-seeded rendering. Every signed artifact (stamp, badge,
  * certificate label) takes its tiny physical imperfections from its
  * own signature bytes: how the stamp landed, how much ink was on it,
- * where the hairline sat. Deterministic — same signature, same
+ * where the hairline sat. Deterministic, same signature, same
  * rendering, forever. No randomness, no fake texture, no rarity.
  */
 

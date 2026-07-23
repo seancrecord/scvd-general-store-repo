@@ -7,7 +7,7 @@ import {
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /api/patronage/:pass_id — a standing patronage pass: its dates,
+ * GET /api/patronage/:pass_id, a standing patronage pass: its dates,
  * whether it's current, and (while current) the keeper's signed monthly
  * note. Renewal happens by buying recurring_patronage again with
  * pass_id as a query parameter.
@@ -39,6 +39,6 @@ patronageRoutes.get("/api/patronage/:pass_id", async (c) => {
   return c.json({
     ...base,
     monthly_note: monthly,
-    note: "Pass is current. The monthly note above is signed — verify it against the key at /.well-known/scvd-signing-key.",
+    note: "Pass is current. The monthly note above is signed, verify it against the key at /.well-known/scvd-signing-key.",
   });
 });

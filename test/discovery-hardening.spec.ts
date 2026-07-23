@@ -214,7 +214,7 @@ describe("settlement finality on the new shelves", () => {
         `${BASE}/api/buy/daily_fortune`,
         `${BASE}/api/buy/context_anchor?summary=state`,
         `${BASE}/api/buy/human_witness`,
-        `${BASE}/almanac/notes-from-a-tuesday-at-the-crossing`,
+        `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`,
       ]) {
         const response = await payFor(url);
         expect(response.status).toBe(402);
@@ -235,7 +235,7 @@ describe("discovery surfaces", () => {
     const resources = minimal["resources"] as string[];
     expect(resources).toContain(`${BASE}/api/buy/hello`);
     expect(resources).toContain(
-      `${BASE}/almanac/notes-from-a-tuesday-at-the-crossing`,
+      `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`,
     );
 
     const full = await json(await SELF.fetch(`${BASE}/.well-known/x402.json`));

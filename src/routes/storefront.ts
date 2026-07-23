@@ -7,7 +7,7 @@ import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET / — the human storefront. Reads the weekly note, bell count, and
+ * GET /, the human storefront. Reads the weekly note, bell count, and
  * recent guestbook entries; falls back gracefully if any shelf is bare.
  */
 export const storefrontRoutes = new Hono<HonoEnv>();

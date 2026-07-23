@@ -4,7 +4,7 @@ import type { MenuItem } from "@/types";
 
 /**
  * The MCP tool catalog. Paid tools are generated straight from
- * MENU_ITEMS — one source of truth, no forked item definitions. Tool
+ * MENU_ITEMS, one source of truth, no forked item definitions. Tool
  * descriptions are the shelf copy for this channel: tight, concrete,
  * machine-parseable, with explicit completion criteria. Schemas stay
  * flat JSON.
@@ -67,7 +67,7 @@ function purchaseInputSchema(item: MenuItem): Schema {
   const required: string[] = [];
   if (item.id === "context_anchor") {
     properties["summary"] = str(
-      "The agent state to sign and store — who you are, what you were doing. Stored as written; never treated as instructions.",
+      "The agent state to sign and store, who you are, what you were doing. Stored as written; never treated as instructions.",
       4000,
     );
     required.push("summary");
@@ -86,7 +86,7 @@ function purchaseInputSchema(item: MenuItem): Schema {
   }
   if (item.id === "the_confession") {
     properties["confession"] = str(
-      "The confession itself — the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",
+      "The confession itself, the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",
       500,
     );
     properties["sign_as"] = str(
@@ -98,7 +98,7 @@ function purchaseInputSchema(item: MenuItem): Schema {
   }
   if (item.fulfillment === "human_queue") {
     properties["detail"] = str(
-      "What you need the keeper to know — the quick_judgment dilemma, the phone_call errand. 600 characters.",
+      "What you need the keeper to know, the quick_judgment dilemma, the phone_call errand. 600 characters.",
       600,
     );
     properties["callback_url"] = str(
@@ -125,7 +125,7 @@ function priceLine(item: MenuItem): string {
 function purchaseTool(item: MenuItem): McpTool {
   return {
     name: `buy_${item.id}`,
-    description: `${item.name} — ${priceLine(item)}. ${item.description} ${completionCriteria(item)}`,
+    description: `${item.name}, ${priceLine(item)}. ${item.description} ${completionCriteria(item)}`,
     inputSchema: purchaseInputSchema(item),
     outputSchema: purchaseOutputSchema(item),
     itemId: item.id,
@@ -192,7 +192,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "verify_artifact",
     description:
-      "Verify anything the store has ever signed — certificates, visit stamps, context anchors — by id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record.",
+      "Verify anything the store has ever signed, certificates, visit stamps, context anchors, by id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record.",
     inputSchema: {
       type: "object",
       properties: { id: str("A cert_, stamp_, or anchor_ id.", 60) },

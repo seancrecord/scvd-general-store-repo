@@ -5,7 +5,7 @@ import type { Env } from "@/types";
  * P1 alerting. Exactly four conditions page the keeper; everything
  * else belongs in the Sunday digest. Email rides Resend's plain HTTPS
  * API (simplest reliable send from a Worker: one fetch, one secret,
- * no bindings to configure) — when RESEND_API_KEY/ALERT_EMAIL are
+ * no bindings to configure), when RESEND_API_KEY/ALERT_EMAIL are
  * unset, alerts still log to console and to KV, so a mute store never
  * becomes a silent one. Per-key dedupe keeps a repeating failure from
  * paging more than once every six hours.

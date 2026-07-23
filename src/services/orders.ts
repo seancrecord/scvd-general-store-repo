@@ -113,7 +113,7 @@ export async function completeOrder(
   await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
 
   if (order.callback_url) {
-    // Best effort — a broken webhook never blocks the keeper's afternoon.
+    // Best effort, a broken webhook never blocks the keeper's afternoon.
     try {
       await fetch(order.callback_url, {
         method: "POST",

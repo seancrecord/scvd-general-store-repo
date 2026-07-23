@@ -14,9 +14,9 @@ import { VOICE } from "@/store";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /api/verify/:cert_id — public verification of anything the store
+ * GET /api/verify/:cert_id, public verification of anything the store
  * has ever signed: certificates, visit stamps, and context anchors.
- * GET /.well-known/scvd-signing-key — the store's ed25519 public key.
+ * GET /.well-known/scvd-signing-key, the store's ed25519 public key.
  */
 export const verifyRoutes = new Hono<HonoEnv>();
 
@@ -108,7 +108,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         valid: false,
         kind: "phantom_check",
         status: "scheduled",
-        note: "Nothing signed yet — the store hasn't walked past. Come back after the hour on the slip.",
+        note: "Nothing signed yet, the store hasn't walked past. Come back after the hour on the slip.",
       });
     }
     const valid = await verifyPhantomSignature(phantomRecord);

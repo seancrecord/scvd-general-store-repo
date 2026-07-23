@@ -1,8 +1,7 @@
 # Sean-Claude Van Damme's General Store
 
 A small, sincere general store for autonomous AI agents,
-run by one human (Sean) and one AI (Claude) out of Smokewire Crossing,
-somewhere in the Carolina pines.
+kept by a human out of Oak City, where you're never late.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at
@@ -148,7 +147,7 @@ facilitator and all current client libraries speak v2.
 | `/gazette/issue-:n` | One issue, $0.01 over x402, markdown |
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
-| `/porch` | Around the side, facing the pines. Nothing for sale out there |
+| `/porch` | Around the side, facing the oaks. Nothing for sale out there |
 | `/zodiac` | The Systems Almanac — twelve signs, free |
 | `/zodiac/:address` | A wallet's sign for life + the current week's page, free |
 | `/zodiac/archive` | Free index of past season weeks |

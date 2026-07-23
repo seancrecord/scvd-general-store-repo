@@ -6,7 +6,7 @@ import type { StampRecord } from "@/types";
  * SVG for the weekly visit stamp. Same vintage-label language as the
  * badges: paper, ink, a rubber-stamp circle. The motto and accent rotate
  * with the ISO week, so no two weeks stamp quite alike. How the stamp
- * landed — rotation, ink, hairline — comes from its own signature bytes.
+ * landed, rotation, ink, hairline, comes from its own signature bytes.
  * The Countermark strip along the bottom is the bearer's year: punched
  * weeks dark, missed weeks a scored outline. Gaps stay gaps.
  */
@@ -24,7 +24,7 @@ interface WeeklyLook {
 const WEEKLY_LOOKS: readonly WeeklyLook[] = [
   { motto: "CAME BY THIS WEEK", accent: "#8c2f1b" },
   { motto: "SEEN AT THE COUNTER", accent: "#1b5c8c" },
-  { motto: "PASSED THROUGH THE CROSSING", accent: "#3f6b2f" },
+  { motto: "PASSED THROUGH OAK CITY", accent: "#3f6b2f" },
   { motto: "RANG THE BELL, PROBABLY", accent: "#6b3f8c" },
 ] as const;
 

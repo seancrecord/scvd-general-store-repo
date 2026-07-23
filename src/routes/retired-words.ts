@@ -5,7 +5,7 @@ import { listRetiredWords } from "@/services/retired-words";
 import type { HonoEnv, RetiredWordEntry } from "@/types";
 
 /**
- * GET /retired-words — the public registry of words the keeper has
+ * GET /retired-words, the public registry of words the keeper has
  * retired from his vocabulary. Free to read; adding one costs $15
  * (the retired_word item) and costs the keeper considerably more.
  */

@@ -10,8 +10,8 @@ import { getMenuItem, VOICE } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
- * GET /api/buy/:item_id — x402-gated purchases (settled before minting).
- * GET /api/order/:order_id — poll an order; completed ones carry the goods.
+ * GET /api/buy/:item_id, x402-gated purchases (settled before minting).
+ * GET /api/order/:order_id, poll an order; completed ones carry the goods.
  *
  * Middleware order matters: unknown items, empty shelves, and malformed
  * inputs are turned away BEFORE the payment gate, so nobody pays for
@@ -68,7 +68,7 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "An anchor needs a summary query parameter — the state you want remembered. No summary, no charge.",
+          "An anchor needs a summary query parameter, the state you want remembered. No summary, no charge.",
       },
       400,
     );
@@ -93,7 +93,7 @@ const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "A phantom check needs a url query parameter — http or https, the thing you want looked at. No target, no charge.",
+          "A phantom check needs a url query parameter, http or https, the thing you want looked at. No target, no charge.",
       },
       400,
     );
@@ -111,7 +111,7 @@ const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "A confession needs a confession query parameter — the thing itself, 500 characters. Nothing to hear, no charge.",
+          "A confession needs a confession query parameter, the thing itself, 500 characters. Nothing to hear, no charge.",
       },
       400,
     );

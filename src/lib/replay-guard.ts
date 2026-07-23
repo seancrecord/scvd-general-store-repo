@@ -8,7 +8,7 @@ import type { Env } from "@/types";
  * The exact-EVM scheme is already replay-safe at the source of truth:
  * EIP-3009 nonces are consumed on-chain, so a second settlement of the
  * same authorization reverts at the facilitator and the gate never
- * mints. This KV guard adds an early, cheaper rejection — a nonce we've
+ * mints. This KV guard adds an early, cheaper rejection, a nonce we've
  * already settled is turned away before we call the facilitator at all —
  * with a TTL so the namespace doesn't grow forever.
  */
