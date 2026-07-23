@@ -12,6 +12,7 @@ import {
 import { getLucky, verifyLuckySignature } from "@/services/luckies";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { VOICE } from "@/store";
+import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -158,6 +159,9 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
     algorithm: "ed25519",
     public_key: publicKey,
     encoding: "hex",
+    identity_policy: IDENTITY_POLICY,
+    sample_artifact_id: SAMPLE_ARTIFACT_ID,
+    sample_verify_url: `${c.env.STORE_BASE_URL}/api/verify/${SAMPLE_ARTIFACT_ID}`,
     note: "Anything we sign, this key verifies. Hangs by the door for a reason.",
   });
 });

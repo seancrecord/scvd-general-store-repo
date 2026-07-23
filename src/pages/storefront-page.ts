@@ -25,6 +25,8 @@ export interface StorefrontData {
   lettersReceived: number;
   lettersAnswered: number;
   patronCount: number;
+  /** C2: the honest track-record line, computed live, never hand-edited. */
+  trackRecord?: string;
 }
 
 function featuredHtml(): string {
@@ -127,6 +129,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
+      ${data.trackRecord ? `<p class="track-record">${escapeHtml(data.trackRecord)}</p>` : ""}
     </header>
 
     <div class="gauges">

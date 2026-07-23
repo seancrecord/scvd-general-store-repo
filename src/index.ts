@@ -21,8 +21,10 @@ import {
   porchRoutes,
   requestRoutes,
   refundRoutes,
+  schemaRoutes,
   siteMetaRoutes,
   skillRoutes,
+  statsRoutes,
   stampRoutes,
   storefrontRoutes,
   tradingPostRoutes,
@@ -66,6 +68,7 @@ const PORCH_EXACT = new Map<string, string>([
   ["/skill.md", "skill.md"],
   ["/gazette", "gazette"],
   ["/api/treat", "treat"],
+  ["/stats", "stats"],
 ]);
 
 function porchSurface(path: string, method: string): string | undefined {
@@ -127,6 +130,8 @@ app.use("*", async (c, next) => {
 app.route("/", storefrontRoutes);
 app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
+app.route("/", statsRoutes);
+app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);

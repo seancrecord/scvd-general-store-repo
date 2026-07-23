@@ -23,12 +23,13 @@ const CALLBACK_URL_SCHEMA = {
     "Optional https URL that receives a POST with the deliverable when a human-queue order completes.",
 } as const;
 
-type QuerySchema = Record<string, unknown> & {
+export type QuerySchema = Record<string, unknown> & {
   properties: Record<string, unknown>;
   required?: string[];
 };
 
-function buyInputSchema(item: MenuItem): QuerySchema {
+/** One input schema per item, shared by Bazaar, the listing spec, and MCP. */
+export function buyInputSchema(item: MenuItem): QuerySchema {
   const properties: Record<string, unknown> = { agent_name: AGENT_NAME_SCHEMA };
   const required: string[] = [];
   if (item.fulfillment === "human_queue") {

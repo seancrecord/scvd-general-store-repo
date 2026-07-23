@@ -3,6 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { renderStorefront } from "@/pages/storefront-page";
 import { listGuestbook } from "@/services/guestbook";
 import { letterCounts } from "@/services/letters";
+import { computeStats, trackRecordLine } from "@/services/stats";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -13,13 +14,14 @@ import type { HonoEnv } from "@/types";
 export const storefrontRoutes = new Hono<HonoEnv>();
 
 storefrontRoutes.get("/", async (c) => {
-  const [weekNote, bellCountRaw, guestbook, letters, patronRaw] =
+  const [weekNote, bellCountRaw, guestbook, letters, patronRaw, stats] =
     await Promise.all([
       c.env.COUNTERS.get(KV_KEYS.weekNote),
       c.env.COUNTERS.get(KV_KEYS.bellCount),
       listGuestbook(c.env, 8).catch(() => []),
       letterCounts(c.env).catch(() => ({ received: 0, answered: 0 })),
       c.env.COUNTERS.get(KV_KEYS.patronNumber),
+      computeStats(c.env).catch(() => null),
     ]);
   return c.html(
     renderStorefront({
@@ -29,6 +31,9 @@ storefrontRoutes.get("/", async (c) => {
       lettersReceived: letters.received,
       lettersAnswered: letters.answered,
       patronCount: patronRaw ? parseInt(patronRaw, 10) : 0,
+      trackRecord: stats
+        ? trackRecordLine(stats, c.env.STORE_BASE_URL)
+        : undefined,
     }),
   );
 });

@@ -98,12 +98,19 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
   },
 ] as const;
 
+/**
+ * S1, catalog order: the commitment ladder made legible. The
+ * handshake first, then pennies, then utility, then the census shelf,
+ * then human labor, novelties last. Every list the store controls
+ * (menu.json, llms.txt, skill.md, MCP tools) reads in this order.
+ */
 export const MENU_ITEMS: readonly MenuItem[] = [
-  ...FOUNDING_ITEMS,
-  ...NOVELTY_ITEMS,
+  ...FOUNDING_ITEMS.filter((item) => item.id === "hello"),
   ...PENNY_SHELF_ITEMS,
   ...UTILITY_ITEMS,
   ...RUN1_ITEMS,
+  ...FOUNDING_ITEMS.filter((item) => item.id !== "hello"),
+  ...NOVELTY_ITEMS,
 ] as const;
 
 export function getMenuItem(itemId: string): MenuItem | undefined {

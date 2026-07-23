@@ -7,8 +7,22 @@ import type { Context, MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { sendAlert } from "@/lib/alerts";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
-import { recordChallengeIssued, recordSettlement } from "@/lib/metrics";
+import { factBlockText, listingSpec } from "@/lib/listing-spec";
+import {
+  itemKeyFromPath,
+  recordChallengeIssued,
+  recordSettlement,
+} from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
+import { cachedPublicKeyHex } from "@/lib/signing";
+import { getMenuItem } from "@/store";
+import {
+  GUARANTEE_BLOCK_TEXT,
+  IDENTITY_POLICY,
+  SAMPLE_ARTIFACT_ID,
+} from "@/store/spec";
+import { isRecord } from "@/types";
+import type { Env } from "@/types";
 import {
   atomicToUsdc,
   getPaymentStack,
@@ -33,6 +47,42 @@ import type { HonoEnv } from "@/types";
  * facilitator is called; the chain's EIP-3009 nonce remains the source
  * of truth if the guard's TTL has lapsed.
  */
+
+/**
+ * S2, verification adjacency: the challenge is the one surface
+ * guaranteed to be in a buyer's context, so the strongest evidence
+ * lives in it, not one fetch away. Menu items also carry their
+ * uniform spec and the C1 fact block in-payload.
+ */
+async function enrich402Body(
+  env: Env,
+  path: string,
+  body: unknown,
+): Promise<unknown> {
+  if (!isRecord(body)) {
+    return body;
+  }
+  const base = env.STORE_BASE_URL;
+  const item = getMenuItem(itemKeyFromPath(path));
+  return {
+    ...body,
+    ...(item
+      ? {
+          spec_note: factBlockText(item),
+          spec: listingSpec(item, base),
+          guarantee: GUARANTEE_BLOCK_TEXT,
+        }
+      : {}),
+    verification: {
+      verify_url: `${base}/api/verify/{id}`,
+      key_fingerprint: await cachedPublicKeyHex(env.SIGNING_KEY),
+      signing_key_url: `${base}/.well-known/scvd-signing-key`,
+      sample_artifact_id: SAMPLE_ARTIFACT_ID,
+      sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+      identity_policy: IDENTITY_POLICY,
+    },
+  };
+}
 
 function respondWithInstructions(
   c: Context<HonoEnv>,
@@ -116,6 +166,12 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // Challenge issued. The monthly gap between these and settlements
       // is the budget-cap / abandonment signal (RUN1 instrumentation).
       await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
+      if (!result.response.isHtml) {
+        return respondWithInstructions(c, {
+          ...result.response,
+          body: await enrich402Body(c.env, c.req.path, result.response.body),
+        });
+      }
     }
     return respondWithInstructions(c, result.response);
   }

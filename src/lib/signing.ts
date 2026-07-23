@@ -105,3 +105,14 @@ export async function getPublicKeyHex(signingKeyHex: string): Promise<string> {
   const publicKey = await ed25519.getPublicKeyAsync(hexToBytes(signingKeyHex));
   return bytesToHex(publicKey);
 }
+
+/** One key per store, one derivation per isolate; 402s carry it in-payload. */
+let cachedPublicKey: string | undefined;
+export async function cachedPublicKeyHex(
+  signingKeyHex: string,
+): Promise<string> {
+  if (!cachedPublicKey) {
+    cachedPublicKey = await getPublicKeyHex(signingKeyHex);
+  }
+  return cachedPublicKey;
+}

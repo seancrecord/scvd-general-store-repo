@@ -1,11 +1,17 @@
 import { Hono } from "hono";
+import {
+  listingSpec,
+  SPEC_SCHEMA_PATH,
+} from "@/lib/listing-spec";
 import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
 import {
   renderItemMarkdown,
   renderMenuMarkdown,
   wantsMarkdown,
 } from "@/services/menu-markdown";
+import { computeStats, trackRecordLine } from "@/services/stats";
 import { getMenuItem, MENU_ITEMS, STORE_METADATA } from "@/store";
+import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -18,6 +24,11 @@ interface CatalogItem extends MenuItem {
   buy_url: string;
   /** Amounts offered in the 402 challenge; above-minimum = tip. */
   price_tiers_usdc: number[];
+  /** S1: the uniform listing spec, one shape storewide. */
+  spec: ReturnType<typeof listingSpec>;
+  /** C3: the guaranteed / not-guaranteed split, storewide. */
+  guaranteed: readonly string[];
+  not_guaranteed: readonly string[];
 }
 
 export const catalogRoutes = new Hono<HonoEnv>();
@@ -26,7 +37,7 @@ const MARKDOWN_HEADERS = {
   "Content-Type": "text/markdown; charset=utf-8",
 } as const;
 
-catalogRoutes.get("/menu.json", (c) => {
+catalogRoutes.get("/menu.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   if (wantsMarkdown(c.req.header("Accept"))) {
     return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
@@ -35,14 +46,23 @@ catalogRoutes.get("/menu.json", (c) => {
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
     price_tiers_usdc: priceTiersUsdc(item),
+    spec: listingSpec(item, base),
+    guaranteed: GUARANTEED,
+    not_guaranteed: NOT_GUARANTEED,
     ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
   }));
+  // The books are part of the catalog's root metadata (C2); a ledger
+  // hiccup never blocks the menu.
+  const stats = await computeStats(c.env).catch(() => null);
   return c.json({
     store: {
       ...STORE_METADATA,
       network: BASE_NETWORK,
       x402_version: 2,
       url: base,
+      ...(stats ? { track_record: trackRecordLine(stats, base) } : {}),
+      stats: `${base}/stats`,
+      listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
       llms_txt: `${base}/llms.txt`,
       skill_md: `${base}/skill.md`,
       openapi: `${base}/openapi.json`,
@@ -124,6 +144,9 @@ catalogRoutes.get("/menu/:item_id", (c) => {
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
     price_tiers_usdc: priceTiersUsdc(item),
+    spec: listingSpec(item, base),
+    guaranteed: GUARANTEED,
+    not_guaranteed: NOT_GUARANTEED,
     ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
     markdown_note:
       "This same URL serves markdown when the Accept header prefers text/markdown.",

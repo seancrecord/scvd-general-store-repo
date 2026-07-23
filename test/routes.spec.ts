@@ -62,8 +62,18 @@ describe("the storefront", () => {
     expect(response.status).toBe(200);
     const body = await json(response);
     const items = body["items"] as Array<{ id: string }>;
+    // S1 ladder order: handshake, pennies, utility, census, human labor, novelties.
     expect(items.map((item) => item.id)).toEqual([
       "hello",
+      "small_blessing",
+      "daily_fortune",
+      "the_confession",
+      "context_anchor",
+      "human_witness",
+      "recurring_patronage",
+      "phantom_check",
+      "quick_judgment",
+      "certificate_of_patronage",
       "nomenclature",
       "portrait",
       "the_collab",
@@ -76,15 +86,6 @@ describe("the storefront", () => {
       "luckies",
       "dibs",
       "coffees_for_closers",
-      "small_blessing",
-      "daily_fortune",
-      "the_confession",
-      "context_anchor",
-      "human_witness",
-      "recurring_patronage",
-      "phantom_check",
-      "quick_judgment",
-      "certificate_of_patronage",
     ]);
     const store = body["store"] as Record<string, unknown>;
     expect(store["protocol"]).toBe("x402");
