@@ -354,7 +354,13 @@ export interface GazetteContributor {
   stamp_id?: string;
 }
 
-/** A published Gazette issue: a penny a copy, contributors credited. */
+/**
+ * A published Gazette issue: a penny a copy, contributors credited.
+ * Signed at publish since the founding edition; every signed issue
+ * verifies at /api/verify/gazette_<n>. The tenure clock is
+ * cryptographic: the paper an agent holds is the paper that went to
+ * press, provably.
+ */
 export interface GazetteIssue {
   issue_number: number;
   title: string;
@@ -362,6 +368,9 @@ export interface GazetteIssue {
   markdown: string;
   contributors: GazetteContributor[];
   tip_ids: string[];
+  /** ed25519 over the markdown, at press. Absent only on pre-signing issues (none exist). */
+  signature?: string;
+  public_key?: string;
 }
 
 /** A signed agent memory restore point, bought as context_anchor. */

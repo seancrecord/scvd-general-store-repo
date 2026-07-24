@@ -1,14 +1,13 @@
 # DRAFT — The launch post (keeper's own words, machine-structured)
 
-Status: APPROVED BY THE KEEPER 2026-07-23 as THE launch. Venue still his hands (Moltbook needs the post-Meta API check first). The luckies dependency is resolved: luckies are on the shelf. Dictated by the keeper 2026-07-23;
+Status: MERGED INTO THE FOUNDING EDITION 2026-07-24 by the keeper's
+direction — the post is now "A LETTER FROM THE KEEPER" atop
+registry/founding-edition-draft.md, verbatim. This file stays as the
+standalone copy for Moltbook / the keeper's channels whenever he
+wants to post it externally (Moltbook still needs the post-Meta API
+check). Approved by the keeper 2026-07-23; dictated by him,
 mechanical clean only, every edit listed at the bottom for the
-kill-pass. Venue candidates: Moltbook (API needs [VERIFY]
-post-Meta), the keeper's own channels, and/or adapted as the
-founding edition's opening. Keeper picks.
-
-DEPENDENCY, flagged: the post sells "luckies" and they are not on
-the shelf yet. Either luckies builds first, or the luckies bit
-waits for round two.
+kill-pass.
 
 ---
 

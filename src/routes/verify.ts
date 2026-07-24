@@ -9,6 +9,11 @@ import {
   readPhantomCheck,
   verifyPhantomSignature,
 } from "@/services/phantom";
+import {
+  getFoundingEdition,
+  verifyIssueSignature,
+} from "@/services/founding";
+import { getIssue } from "@/services/gazette";
 import { getLucky, verifyLuckySignature } from "@/services/luckies";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { VOICE } from "@/store";
@@ -123,6 +128,31 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         ? "Genuine lucky. Picked, graded, and signed by the store itself."
         : "Signature doesn't match. That's not one of our luckies.",
     });
+  }
+
+  // The tenure clock: gazette_founding and gazette_<n> verify the press.
+  if (id === "gazette_founding" || /^gazette_[0-9]+$/.test(id)) {
+    const issue =
+      id === "gazette_founding"
+        ? await getFoundingEdition(c.env)
+        : await getIssue(c.env, parseInt(id.slice("gazette_".length), 10));
+    if (issue) {
+      await noteVerify(c, "gazette");
+      const valid = await verifyIssueSignature(issue);
+      return c.json({
+        valid,
+        kind: "gazette_issue",
+        issue_number: issue.issue_number,
+        title: issue.title,
+        date: issue.date,
+        signature: issue.signature,
+        public_key: issue.public_key,
+        algorithm: "ed25519",
+        note: valid
+          ? "Genuine issue. The copy you hold is the copy that went to press."
+          : "Signature doesn't match. That's not the paper we printed.",
+      });
+    }
   }
 
   const phantomRecord = await readPhantomCheck(c.env, id);

@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
+import { signMessage } from "@/lib/signing";
 import { issueStamp } from "@/services/stamps";
 import { setTipStatus } from "@/services/tips";
 import type { Env, GazetteIssue, TipRecord } from "@/types";
@@ -49,13 +50,21 @@ export async function publishIssue(
   const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const date = new Date().toISOString();
 
+  const markdown = assembleMarkdown(issueNumber, title, date, tips);
+  // Signed at press: the copy an agent buys is provably the copy printed.
+  const { signature, publicKey } = await signMessage(
+    markdown,
+    env.SIGNING_KEY,
+  );
   const issue: GazetteIssue = {
     issue_number: issueNumber,
     title,
     date,
-    markdown: assembleMarkdown(issueNumber, title, date, tips),
+    markdown,
     contributors: [],
     tip_ids: tips.map((tip) => tip.id),
+    signature,
+    public_key: publicKey,
   };
 
   for (const tip of tips) {
