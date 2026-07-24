@@ -70,6 +70,8 @@ export const KV_KEYS = {
   failedItem: (itemId: string): string => `failed_item:${itemId}`,
   failedItemPrefix: "failed_item:",
   weekNote: "week_note",
+  keeperLastSeen: "keeper_last_seen",
+  shutterOverride: "shutter_override",
   latestDigest: "digest:latest",
   gazetteIssueCount: "gazette_issue_count",
   blessingLast: "blessing_last",

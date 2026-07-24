@@ -4,6 +4,7 @@ import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
+import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
@@ -154,8 +155,34 @@ const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * The shutter: no money taken for labor nobody is present to do.
+ * Runs BEFORE the payment gate, so an away keeper can never cost a
+ * buyer anything. Machine shelves and stocked luckies pass through.
+ */
+const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const itemId = c.req.path.replace(/^\/api\/buy\//, "");
+  const item = getMenuItem(itemId);
+  if (item && (await requiresPresentKeeper(c.env, item))) {
+    const state = await shutterState(c.env);
+    if (state.closed) {
+      return c.json(
+        {
+          error:
+            "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken; the promise stays honest. The machine shelves never close.",
+          machine_shelves: `${c.env.STORE_BASE_URL}/menu.json`,
+          leave_a_request: `POST ${c.env.STORE_BASE_URL}/api/request \u2014 read when the keeper is back.`,
+        },
+        503,
+      );
+    }
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
+buyRoutes.use("/api/buy/*", shutterCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", phantomCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);

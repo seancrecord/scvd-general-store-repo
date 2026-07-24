@@ -11,6 +11,7 @@ import { ringBell } from "@/services/bell";
 import { getCertificate } from "@/services/certificates";
 import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
+import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import {
   cachedPublicKeyHex,
@@ -241,6 +242,17 @@ async function callPurchaseTool(
   const invalid = validatePurchaseArgs(item, args);
   if (invalid) {
     return rpcError(id, -32602, invalid);
+  }
+  // The shutter, same as the HTTP door: no money for absent labor.
+  if (await requiresPresentKeeper(c.env, item)) {
+    const state = await shutterState(c.env);
+    if (state.closed) {
+      return rpcError(
+        id,
+        -32000,
+        "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken. The machine shelves never close.",
+      );
+    }
   }
   const outcome = await runMcpPayment(c.env, item.id, paymentMeta, mcpSignals(c));
   if (outcome.kind === "payment-required") {

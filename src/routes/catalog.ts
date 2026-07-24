@@ -9,6 +9,7 @@ import {
   renderMenuMarkdown,
   wantsMarkdown,
 } from "@/services/menu-markdown";
+import { shutterState } from "@/services/shutter";
 import { computeStats, trackRecordLine } from "@/services/stats";
 import { getMenuItem, MENU_ITEMS, STORE_METADATA } from "@/store";
 import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
@@ -54,12 +55,16 @@ catalogRoutes.get("/menu.json", async (c) => {
   // The books are part of the catalog's root metadata (C2); a ledger
   // hiccup never blocks the menu.
   const stats = await computeStats(c.env).catch(() => null);
+  const shutter = await shutterState(c.env).catch(() => ({ closed: false }));
   return c.json({
     store: {
       ...STORE_METADATA,
       network: BASE_NETWORK,
       x402_version: 2,
       url: base,
+      human_shelf: shutter.closed
+        ? "shuttered (the keeper is away from the counter; human-labor purchases are refused before money moves; machine shelves and stocked luckies keep selling)"
+        : "open",
       ...(stats ? { track_record: trackRecordLine(stats, base) } : {}),
       stats: `${base}/stats`,
       listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
