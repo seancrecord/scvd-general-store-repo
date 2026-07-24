@@ -11,9 +11,12 @@ import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import {
   itemKeyFromPath,
   recordChallengeIssued,
+  recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
+import { takeDeclineReason } from "@/lib/payments";
+import type { DeclineReason } from "@/lib/payments";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import {
@@ -58,6 +61,7 @@ async function enrich402Body(
   env: Env,
   path: string,
   body: unknown,
+  decline?: DeclineReason,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -66,6 +70,15 @@ async function enrich402Body(
   const item = getMenuItem(itemKeyFromPath(path));
   return {
     ...body,
+    ...(decline
+      ? {
+          payment_declined: {
+            reason: decline.reason,
+            ...(decline.message ? { message: decline.message } : {}),
+            note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
+          },
+        }
+      : {}),
     ...(item
       ? {
           spec_note: factBlockText(item),
@@ -97,6 +110,18 @@ function respondWithInstructions(
     return c.html(String(instructions.body ?? ""), status);
   }
   return c.json(instructions.body ?? {}, status);
+}
+
+/** The nonce inside a PAYMENT-SIGNATURE header, for decline matching. */
+function nonceFromPaymentHeader(header: string | undefined): string | null {
+  if (!header) {
+    return null;
+  }
+  try {
+    return extractPaymentNonce(JSON.parse(atob(header)));
+  } catch {
+    return null;
+  }
 }
 
 /** Attribution signals for a Hono-carried request (heuristics in lib/channel.ts). */
@@ -166,10 +191,29 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // Challenge issued. The monthly gap between these and settlements
       // is the budget-cap / abandonment signal (RUN1 instrumentation).
       await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
+      // If a signed payment rode in and still got a 402, that's a
+      // decline: tell the payer why and keep the reason in the books.
+      const paymentHeader =
+        c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT");
+      const nonce = nonceFromPaymentHeader(paymentHeader);
+      const decline = nonce ? takeDeclineReason(nonce) : undefined;
+      if (paymentHeader) {
+        await recordPaymentDecline(
+          c.env,
+          c.req.path,
+          decline?.reason ?? "unspecified",
+          gateSignals(c),
+        ).catch(() => undefined);
+      }
       if (!result.response.isHtml) {
         return respondWithInstructions(c, {
           ...result.response,
-          body: await enrich402Body(c.env, c.req.path, result.response.body),
+          body: await enrich402Body(
+            c.env,
+            c.req.path,
+            result.response.body,
+            decline,
+          ),
         });
       }
     }
@@ -208,6 +252,28 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   await persistBazaarObservations(c.env, c.req.path);
   if (!settlement.success) {
+    // Verified but didn't settle: same instrument, settle-side reason.
+    await recordPaymentDecline(
+      c.env,
+      c.req.path,
+      `settle:${settlement.errorReason}`,
+      gateSignals(c),
+    ).catch(() => undefined);
+    if (!settlement.response.isHtml && isRecord(settlement.response.body)) {
+      return respondWithInstructions(c, {
+        ...settlement.response,
+        body: {
+          ...settlement.response.body,
+          payment_declined: {
+            reason: settlement.errorReason,
+            ...(settlement.errorMessage
+              ? { message: settlement.errorMessage }
+              : {}),
+            note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+          },
+        },
+      });
+    }
     return respondWithInstructions(c, settlement.response);
   }
   if (nonce) {

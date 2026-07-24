@@ -49,7 +49,12 @@ function dayKey(date: Date = new Date()): string {
 /** USDC stored as integer millionths so counters stay integers. */
 const USDC_MICRO = 1_000_000;
 
-export type MetricEventKind = "challenge" | "settle" | "verify" | "porch";
+export type MetricEventKind =
+  | "challenge"
+  | "settle"
+  | "verify"
+  | "porch"
+  | "decline";
 
 export interface MetricEvent {
   kind: MetricEventKind;
@@ -61,6 +66,8 @@ export interface MetricEvent {
   referrer?: string;
   /** Declared ?source= value, recorded verbatim as a claim. */
   declared_source?: string;
+  /** decline events: the facilitator's reason, kept, not discarded. */
+  note?: string;
 }
 
 export interface EventSignals extends ChannelSignals, HouseSignals {
@@ -137,6 +144,26 @@ export async function recordChallengeIssued(
       KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
     );
   }
+  await writeEvent(env, event);
+}
+
+/**
+ * A signed payment was offered and turned away. The reason is the
+ * instrument: it distinguishes "buyer's wallet is short" from "our
+ * pipeline broke," which are different emergencies.
+ */
+export async function recordPaymentDecline(
+  env: Env,
+  path: string,
+  reason: string,
+  signals: EventSignals = {},
+): Promise<void> {
+  const event = buildEvent(env, "decline", itemKeyFromPath(path), signals);
+  event.note = reason.slice(0, 200);
+  await bump(
+    env,
+    KV_KEYS.metric(metricsMonth(), `decl${bucketSuffix(event, false)}`, event.item),
+  );
   await writeEvent(env, event);
 }
 
