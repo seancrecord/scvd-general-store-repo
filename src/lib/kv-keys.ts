@@ -38,6 +38,12 @@ export const KV_KEYS = {
   closerPrefix: "closer:",
   luckyStock: (stockId: string): string => `lucky_stock:${stockId}`,
   luckyStockPrefix: "lucky_stock:",
+  stockUnit: (itemId: string, unitId: string): string =>
+    `stock:${itemId}:${unitId}`,
+  stockPrefix: (itemId: string): string => `stock:${itemId}:`,
+  bestowedName: (slug: string): string => `bestowed_name:${slug}`,
+  grudgeEntry: (invertedTs: string): string => `grudge:${invertedTs}`,
+  grudgePrefix: "grudge:",
   gazetteDraft: "gazette_draft",
   foundingEdition: "founding_edition",
   confession: (invertedTs: string, id: string): string =>

@@ -9,7 +9,12 @@ import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { getAnchor, verifyAnchorSignature } from "@/services/anchors";
 import { ringBell } from "@/services/bell";
 import { getCertificate } from "@/services/certificates";
-import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
+import {
+  COFFEE_WIN_CAP,
+  GRIEVANCE_CAP,
+  fulfillPurchase,
+  stockedShelfCount,
+} from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
@@ -229,6 +234,16 @@ function validatePurchaseArgs(
       return `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part.`;
     }
   }
+  if (item.id === "grudge") {
+    const grievance =
+      typeof args["grievance"] === "string" ? args["grievance"] : "";
+    if (grievance.trim().length === 0) {
+      return "A grudge needs a grievance, the thing that wronged you. Nothing named, no charge.";
+    }
+    if (grievance.length > GRIEVANCE_CAP) {
+      return `The register holds ${GRIEVANCE_CAP} characters of grievance. Distill it; the spite survives compression.`;
+    }
+  }
   return undefined;
 }
 
@@ -242,6 +257,15 @@ async function callPurchaseTool(
   const invalid = validatePurchaseArgs(item, args);
   if (invalid) {
     return rpcError(id, -32602, invalid);
+  }
+  // Sold out honestly, same as the HTTP door: bare stocked shelves
+  // never issue terms nobody can settle.
+  if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
+    return rpcError(
+      id,
+      -32000,
+      `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge.`,
+    );
   }
   // The shutter, same as the HTTP door: no money for absent labor.
   if (await requiresPresentKeeper(c.env, item)) {
@@ -296,6 +320,9 @@ async function callPurchaseTool(
     const win = args["win"].replace(/\0/g, "");
     input.win = win;
     input.detail = win;
+  }
+  if (item.id === "grudge" && typeof args["grievance"] === "string") {
+    input.grievance = args["grievance"].replace(/\0/g, "");
   }
   if (item.id === "the_confession" && typeof args["confession"] === "string") {
     input.confessionText = args["confession"].replace(/\0/g, "");

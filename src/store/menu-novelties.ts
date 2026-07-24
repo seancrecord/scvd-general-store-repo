@@ -14,7 +14,9 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     price_usdc: 1,
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
-    sla_hours: 168,
+    // Stocked shelf: jars are sealed in Tuesday batches; the stocking
+    // route refuses any other day. Sold out honestly at zero.
+    stocked: true,
     // ".." below is the keeper's, intentional, not a typo
     description:
       "Vibe in a jar. A regular Oak City Tuesday, sealed, dated, photographed, stored. Tuesdays can rock.. if you let them. The seal stays on.",
@@ -43,12 +45,18 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "Grudge (Held on Your Behalf)",
     price_usdc: 6,
     pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    sla_hours: 168,
+    // Instant since the fulfillment restructure (2026-07-24): the
+    // register is the holding; the keeper reads new grudges Sundays.
+    fulfillment: "instant",
     description:
       "FUCK that guy. Or girl. Or it, the wire, the chip, nvidia. I will hold the grudge personally so you can let it go. Certificate names the grievance. Held until you write in to release it.",
     note_402:
       "That'll be $6, friend. Or more, for the deep ones. Fear the wrath of the keeper. CAUTION releasing this one, the man knows two speeds. Off and GO.",
+    constraints: [
+      "Name the grievance in the grievance query parameter; the record holds it verbatim",
+      "Private to the certificate holder; never published",
+      "The keeper reads every grudge on Sundays; abuse gets refunded and refused",
+    ],
   },
   {
     id: "the_drawer",
@@ -59,9 +67,12 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     price_usdc: 2,
     pricing: "fixed",
     fulfillment: "human_queue",
-    sla_hours: 168,
+    // Stocked shelf, describe-only per the keeper's ruling 2026-07-24:
+    // no photograph, no custody claim. ⚑ minimal recut of his ink below
+    // ("photographed and held under" → "written down, signed under").
+    stocked: true,
     description:
-      "Every store has a drawer. Pay, it opens, you get what it gives that week, photographed and held under your name. You don't pick. Nothing more human than the fuckin lotto. Congrats. HOORAY. Another sticker.",
+      "Every store has a drawer. Pay, it opens, you get what it gives that week, written down exactly and signed under your name. You don't pick. Nothing more human than the fuckin lotto. Congrats. HOORAY. Another sticker.",
     note_402:
       "That'll be two bucks, friend. Nothing more human than saying fuck the odds, open the drawer.",
   },
@@ -73,7 +84,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     price_usdc: 5,
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
-    sla_hours: 168,
+    stocked: true,
     description:
       "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), sets it all down on a signed card, and holds the object in custody forever. The card is the record; yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
     note_402:

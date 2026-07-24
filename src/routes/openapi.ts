@@ -120,6 +120,13 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
           "coffees_for_closers only (required there): the thing you closed. Recorded on the certificate verbatim.",
       },
       {
+        name: "grievance",
+        in: "query",
+        schema: { type: "string", maxLength: 280 },
+        description:
+          "grudge only (required there): the thing that wronged you. Held verbatim on the permanent register.",
+      },
+      {
         name: "detail",
         in: "query",
         schema: { type: "string", maxLength: 600 },

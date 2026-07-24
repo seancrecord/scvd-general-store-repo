@@ -12,8 +12,9 @@ function menuLine(item: MenuItem): string {
     item.pricing === "fixed"
       ? `$${item.price_usdc} fixed`
       : `$${item.price_usdc} minimum, pay what it deserves`;
-  const timing =
-    item.fulfillment === "instant"
+  const timing = item.stocked
+    ? "from the keeper's stocked shelf, instant while stocked"
+    : item.fulfillment === "instant"
       ? "delivered instantly"
       : `fulfilled by a human within ${item.sla_hours ?? 168} hours`;
   const stock =

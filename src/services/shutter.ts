@@ -1,5 +1,4 @@
 import { KV_KEYS } from "@/lib/kv-keys";
-import { listLuckyStock } from "@/services/luckies";
 import type { Env, MenuItem } from "@/types";
 
 /**
@@ -61,19 +60,14 @@ export async function shutterState(env: Env): Promise<ShutterState> {
 }
 
 /**
- * Whether this purchase needs the keeper present. Stocked luckies
- * don't; they fulfill themselves off the shelf.
+ * Whether this purchase needs the keeper present. Stocked shelves
+ * never do: their units are keeper-made ahead of time, and a bare
+ * shelf sells out honestly before any 402 (buy.ts stockCheck), so no
+ * order can land on an absent keeper's counter.
  */
 export async function requiresPresentKeeper(
-  env: Env,
+  _env: Env,
   item: MenuItem,
 ): Promise<boolean> {
-  if (item.fulfillment !== "human_queue") {
-    return false;
-  }
-  if (item.id === "luckies") {
-    const stock = await listLuckyStock(env).catch(() => []);
-    return stock.length === 0;
-  }
-  return true;
+  return item.fulfillment === "human_queue" && !item.stocked;
 }

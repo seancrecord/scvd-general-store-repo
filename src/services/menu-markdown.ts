@@ -22,6 +22,9 @@ function priceLine(item: MenuItem): string {
 }
 
 function fulfillmentLine(item: MenuItem): string {
+  if (item.stocked) {
+    return "from the keeper's stocked shelf, instant while stocked; sold out honestly at zero";
+  }
   return item.fulfillment === "instant"
     ? "delivered instantly"
     : `fulfilled by a human within ${item.sla_hours ?? 168} hours`;

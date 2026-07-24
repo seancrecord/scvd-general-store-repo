@@ -33,6 +33,9 @@ export interface ListingSpec {
 }
 
 function latencyLine(item: MenuItem): string {
+  if (item.stocked) {
+    return "delivered from the keeper's stocked shelf in the purchase response; sells out honestly at zero";
+  }
   return item.fulfillment === "instant"
     ? "delivered in the purchase response, same request"
     : `human fulfillment within ${item.sla_hours ?? 168} hours; the order URL reports status`;
@@ -45,7 +48,11 @@ function trueConstraints(item: MenuItem): string[] {
       `${item.weekly_inventory} per week; a waitlist opens when the shelf empties`,
     );
   }
-  if (item.fulfillment === "human_queue") {
+  if (item.stocked) {
+    constraints.push(
+      "units are keeper-made ahead of orders; a bare shelf sells out honestly instead of queueing",
+    );
+  } else if (item.fulfillment === "human_queue") {
     constraints.push(
       `human fulfillment, ${item.sla_hours ?? 168}h promise; refund is automatic if the window is missed`,
     );

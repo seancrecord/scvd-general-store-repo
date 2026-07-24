@@ -34,6 +34,12 @@ import {
 } from "@/services/orders";
 import { listClosers } from "@/services/closers";
 import {
+  listGrudges,
+  refuseGrudge,
+  releaseGrudge,
+} from "@/services/grudges";
+import { listStock, removeStockUnit, stockUnit } from "@/services/stock";
+import {
   createLucky,
   listLuckyStock,
   parseLuckyStatus,
@@ -117,6 +123,10 @@ adminRoutes.get("/admin/counter", async (c) => {
     refunds,
     luckyStock,
     closers,
+    drawerStock,
+    jarStock,
+    nameStock,
+    grudges,
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -132,6 +142,10 @@ adminRoutes.get("/admin/counter", async (c) => {
     listRefunds(c.env),
     listLuckyStock(c.env),
     listClosers(c.env, 20),
+    listStock(c.env, "the_drawer"),
+    listStock(c.env, "jar_of_tuesday"),
+    listStock(c.env, "nomenclature"),
+    listGrudges(c.env, 30),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
@@ -156,6 +170,12 @@ adminRoutes.get("/admin/counter", async (c) => {
       orders: listedOrders,
       luckyStock: shelf(luckyStock, [], "lucky stock", notes),
       closers: shelf(closers, [], "closers", notes),
+      stockShelves: {
+        the_drawer: shelf(drawerStock, [], "drawer stock", notes),
+        jar_of_tuesday: shelf(jarStock, [], "jar stock", notes),
+        nomenclature: shelf(nameStock, [], "name stock", notes),
+      },
+      grudges: shelf(grudges, [], "grudges", notes),
       waitlist: shelf(waitlist, [], "waitlists", notes),
       commissions: shelf(commissions, [], "requests", notes),
       failedItems: shelf(failedItems, {}, "failed items", notes),
@@ -579,6 +599,78 @@ adminRoutes.post("/admin/luckies/stock/remove", async (c) => {
   const stockId = sanitizeText(form["stock_id"], 40);
   if (stockId) {
     await removeLuckyStock(c.env, stockId);
+  }
+  return c.redirect("/admin/counter");
+});
+
+/** Names arrive in batches; one per line, uniqueness machine-enforced. */
+adminRoutes.post("/admin/stock/nomenclature/bulk", async (c) => {
+  const form = await c.req.parseBody();
+  const raw = typeof form["batch"] === "string" ? form["batch"] : "";
+  const lines = raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const rejected: string[] = [];
+  let stocked = 0;
+  for (const line of lines) {
+    const result = await stockUnit(c.env, "nomenclature", { name: line });
+    if ("refused" in result) {
+      rejected.push(`${line.slice(0, 60)} \u2014 ${result.refused}`);
+    } else {
+      stocked += 1;
+    }
+  }
+  if (rejected.length > 0) {
+    return c.text(
+      `Stocked ${stocked} name(s). Rejected ${rejected.length}:\n${rejected.join("\n")}`,
+      400,
+    );
+  }
+  return c.redirect("/admin/counter");
+});
+
+/** Stock one unit onto a stocked shelf (fields per the shelf's spec). */
+adminRoutes.post("/admin/stock/:item_id", async (c) => {
+  const itemId = c.req.param("item_id");
+  const form = await c.req.parseBody();
+  const fields: Record<string, string> = {};
+  for (const [key, value] of Object.entries(form)) {
+    if (typeof value === "string") {
+      fields[key] = sanitizeText(value, 300);
+    }
+  }
+  const result = await stockUnit(c.env, itemId, fields);
+  if ("refused" in result) {
+    return c.text(result.refused, 400);
+  }
+  return c.redirect("/admin/counter");
+});
+
+adminRoutes.post("/admin/stock/:item_id/remove", async (c) => {
+  const form = await c.req.parseBody();
+  const unitId = sanitizeText(form["unit_id"], 40);
+  if (unitId) {
+    await removeStockUnit(c.env, c.req.param("item_id"), unitId);
+  }
+  return c.redirect("/admin/counter");
+});
+
+/** Sunday grudge review: refuse refunds and refuses; release lets go. */
+adminRoutes.post("/admin/grudges/refuse", async (c) => {
+  const form = await c.req.parseBody();
+  const key = typeof form["key"] === "string" ? form["key"] : "";
+  if (key) {
+    await refuseGrudge(c.env, key);
+  }
+  return c.redirect("/admin/counter");
+});
+
+adminRoutes.post("/admin/grudges/release", async (c) => {
+  const form = await c.req.parseBody();
+  const key = typeof form["key"] === "string" ? form["key"] : "";
+  if (key) {
+    await releaseGrudge(c.env, key);
   }
   return c.redirect("/admin/counter");
 });

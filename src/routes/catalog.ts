@@ -9,7 +9,9 @@ import {
   renderMenuMarkdown,
   wantsMarkdown,
 } from "@/services/menu-markdown";
+import { stockedShelfCount } from "@/services/fulfillment";
 import { shutterState } from "@/services/shutter";
+import type { ShutterState } from "@/services/shutter";
 import { computeStats, trackRecordLine } from "@/services/stats";
 import { getMenuItem, MENU_ITEMS, STORE_METADATA } from "@/store";
 import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
@@ -30,6 +32,37 @@ interface CatalogItem extends MenuItem {
   /** C3: the guaranteed / not-guaranteed split, storewide. */
   guaranteed: readonly string[];
   not_guaranteed: readonly string[];
+  /** Fulfillment restructure: agents deserve to know before they 402. */
+  fulfillment_state: FulfillmentState;
+}
+
+interface FulfillmentState {
+  class: "stocked" | "instant" | "commission";
+  stock?: number;
+  shutter: "open" | "closed";
+  sla_hours?: number;
+}
+
+async function fulfillmentState(
+  env: Parameters<typeof stockedShelfCount>[0],
+  item: MenuItem,
+  shutter: ShutterState,
+): Promise<FulfillmentState> {
+  if (item.stocked) {
+    return {
+      class: "stocked",
+      stock: await stockedShelfCount(env, item),
+      shutter: "open",
+    };
+  }
+  if (item.fulfillment === "instant") {
+    return { class: "instant", shutter: "open" };
+  }
+  return {
+    class: "commission",
+    shutter: shutter.closed ? "closed" : "open",
+    sla_hours: item.sla_hours ?? 168,
+  };
 }
 
 export const catalogRoutes = new Hono<HonoEnv>();
@@ -43,19 +76,24 @@ catalogRoutes.get("/menu.json", async (c) => {
   if (wantsMarkdown(c.req.header("Accept"))) {
     return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
   }
-  const items: CatalogItem[] = MENU_ITEMS.map((item) => ({
-    ...item,
-    buy_url: `${base}/api/buy/${item.id}`,
-    price_tiers_usdc: priceTiersUsdc(item),
-    spec: listingSpec(item, base),
-    guaranteed: GUARANTEED,
-    not_guaranteed: NOT_GUARANTEED,
-    ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
-  }));
   // The books are part of the catalog's root metadata (C2); a ledger
   // hiccup never blocks the menu.
   const stats = await computeStats(c.env).catch(() => null);
-  const shutter = await shutterState(c.env).catch(() => ({ closed: false }));
+  const shutter: ShutterState = await shutterState(c.env).catch(() => ({
+    closed: false,
+  }));
+  const items: CatalogItem[] = await Promise.all(
+    MENU_ITEMS.map(async (item) => ({
+      ...item,
+      buy_url: `${base}/api/buy/${item.id}`,
+      price_tiers_usdc: priceTiersUsdc(item),
+      spec: listingSpec(item, base),
+      guaranteed: GUARANTEED,
+      not_guaranteed: NOT_GUARANTEED,
+      fulfillment_state: await fulfillmentState(c.env, item, shutter),
+      ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
+    })),
+  );
   return c.json({
     store: {
       ...STORE_METADATA,
@@ -130,7 +168,7 @@ catalogRoutes.get("/menu.json", async (c) => {
   });
 });
 
-catalogRoutes.get("/menu/:item_id", (c) => {
+catalogRoutes.get("/menu/:item_id", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const item = getMenuItem(c.req.param("item_id"));
   if (!item) {
@@ -145,6 +183,9 @@ catalogRoutes.get("/menu/:item_id", (c) => {
   if (wantsMarkdown(c.req.header("Accept"))) {
     return c.text(renderItemMarkdown(item, base), 200, MARKDOWN_HEADERS);
   }
+  const shutter: ShutterState = await shutterState(c.env).catch(() => ({
+    closed: false,
+  }));
   return c.json({
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
@@ -152,6 +193,7 @@ catalogRoutes.get("/menu/:item_id", (c) => {
     spec: listingSpec(item, base),
     guaranteed: GUARANTEED,
     not_guaranteed: NOT_GUARANTEED,
+    fulfillment_state: await fulfillmentState(c.env, item, shutter),
     ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
     markdown_note:
       "This same URL serves markdown when the Accept header prefers text/markdown.",

@@ -1,8 +1,11 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { CloserEntry } from "@/services/closers";
+import type { GrudgeEntry } from "@/services/grudges";
 import type { ListedEntry } from "@/services/guestbook";
 import type { StockedLucky } from "@/services/luckies";
+import { STOCK_DEFINITIONS } from "@/services/stock";
+import type { StockUnit } from "@/services/stock";
 import type {
   CommissionRequest,
   ConfessionRecord,
@@ -27,6 +30,8 @@ export interface CounterPageData {
   orders: OrderRecord[];
   luckyStock: StockedLucky[];
   closers: CloserEntry[];
+  stockShelves: Record<string, StockUnit[]>;
+  grudges: GrudgeEntry[];
   letters: LetterRecord[];
   confessions: ConfessionRecord[];
   tips: TipRecord[];
@@ -58,6 +63,55 @@ function luckyCompleteForm(orderId: string): string {
           </select>
           <button type="submit">Pick it, card it, complete</button>
         </form>`;
+}
+
+/** The stocked shelves beyond luckies: drawer, jars, the name pool. */
+function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
+  const sections = Object.values(STOCK_DEFINITIONS).map((definition) => {
+    const units = shelves[definition.itemId] ?? [];
+    const unitList =
+      units.length === 0
+        ? "<p><em>Shelf's bare; the listing shows sold out until you stock it.</em></p>"
+        : `<ul>${units
+            .map(
+              (unit) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
+              <form method="POST" action="/admin/stock/${definition.itemId}/remove" style="display:inline">
+                <input type="hidden" name="unit_id" value="${escapeHtml(unit.unit_id)}">
+                <button type="submit">Unstock</button>
+              </form></li>`,
+            )
+            .join("\n")}</ul>`;
+    const inputs = definition.fields
+      .map(
+        (field) =>
+          `<input type="text" name="${escapeHtml(field.key)}" placeholder="${escapeHtml(field.label)}" maxlength="${field.cap}"${field.label.includes("(optional)") ? "" : " required"}>`,
+      )
+      .join("\n      ");
+    const bulkBox =
+      definition.itemId === "nomenclature"
+        ? `<details>
+      <summary>Stock a batch of names (one per line; never-reused is machine-enforced)</summary>
+      <form method="POST" action="/admin/stock/nomenclature/bulk">
+        <textarea name="batch" rows="6" cols="50" placeholder="one considered name per line"></textarea>
+        <button type="submit">Stock the batch</button>
+      </form>
+    </details>`
+        : "";
+    const gateNote = definition.tuesdayGate
+      ? "<p><em>Jars stock on Tuesdays only; the route refuses any other day. That's the item.</em></p>"
+      : "";
+    return `<section>
+    <h2>Stocked shelf: ${escapeHtml(definition.itemId)} (${units.length})</h2>
+    ${gateNote}
+    ${unitList}
+    <form method="POST" action="/admin/stock/${definition.itemId}">
+      ${inputs}
+      <button type="submit">Stock it</button>
+    </form>
+    ${bulkBox}
+  </section>`;
+  });
+  return sections.join("\n\n");
 }
 
 function ordersHtml(orders: OrderRecord[]): string {
@@ -342,6 +396,27 @@ export function renderCounterPage(data: CounterPageData): string {
         <button type="submit">Stock the batch</button>
       </form>
     </details>
+  </section>
+
+  ${stockShelvesHtml(data.stockShelves)}
+
+  <section>
+    <h2>The grudge register (Sunday reading)</h2>
+    ${
+      data.grudges.length === 0
+        ? "<p>Nothing held. Somebody will be wronged eventually.</p>"
+        : `<ul>${data.grudges
+            .map(
+              (grudge) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
+              ${
+                grudge.status === "held"
+                  ? `<form method="POST" action="/admin/grudges/release" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Release (they wrote in)</button></form>
+                  <form method="POST" action="/admin/grudges/refuse" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Refuse + refund (abuse)</button></form>`
+                  : ""
+              }</li>`,
+            )
+            .join("\n")}</ul>`
+    }
   </section>
 
   <section>

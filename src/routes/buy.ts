@@ -3,7 +3,12 @@ import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
-import { COFFEE_WIN_CAP, fulfillPurchase } from "@/services/fulfillment";
+import {
+  COFFEE_WIN_CAP,
+  GRIEVANCE_CAP,
+  fulfillPurchase,
+  stockedShelfCount,
+} from "@/services/fulfillment";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
@@ -158,7 +163,7 @@ const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 /**
  * The shutter: no money taken for labor nobody is present to do.
  * Runs BEFORE the payment gate, so an away keeper can never cost a
- * buyer anything. Machine shelves and stocked luckies pass through.
+ * buyer anything. Machine shelves and stocked shelves pass through.
  */
 const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const itemId = c.req.path.replace(/^\/api\/buy\//, "");
@@ -180,13 +185,65 @@ const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * Sold out, honestly: a bare stocked shelf issues no 402 nobody can
+ * settle. Real scarcity, checkable, restocked by the keeper's hands.
+ */
+const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const itemId = c.req.path.replace(/^\/api\/buy\//, "");
+  const item = getMenuItem(itemId);
+  if (item?.stocked) {
+    const count = await stockedShelfCount(c.env, item);
+    if (count === 0) {
+      return c.json(
+        {
+          error: `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge, no waitlist theater.`,
+          fulfillment_class: "stocked",
+          stock: 0,
+          menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
+        },
+        409,
+      );
+    }
+  }
+  await next();
+};
+
+/** grudge needs its grievance BEFORE money moves: nothing named, no charge. */
+const grievanceCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/grudge") {
+    return next();
+  }
+  const grievance = c.req.query("grievance");
+  if (!grievance || grievance.trim().length === 0) {
+    return c.json(
+      {
+        error:
+          "A grudge needs a grievance query parameter, the thing that wronged you. Nothing named, no charge.",
+      },
+      400,
+    );
+  }
+  if (grievance.length > GRIEVANCE_CAP) {
+    return c.json(
+      {
+        error: `The register holds ${GRIEVANCE_CAP} characters of grievance. Distill it; the spite survives compression.`,
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
+buyRoutes.use("/api/buy/*", stockCheck);
 buyRoutes.use("/api/buy/*", shutterCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", phantomCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
+buyRoutes.use("/api/buy/*", grievanceCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -231,6 +288,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     input.win = win;
     // The counter shows the keeper the win alongside the order.
     input.detail = win;
+  }
+  if (item.id === "grudge") {
+    // grievanceCheck validated presence and length before the gate.
+    input.grievance = (c.req.query("grievance") ?? "").replace(/\0/g, "");
   }
   const passId = sanitizeText(c.req.query("pass_id"), 40);
   if (passId) {

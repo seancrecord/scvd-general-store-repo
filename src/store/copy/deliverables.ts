@@ -75,6 +75,24 @@ export function coffeeNote(win: string): string {
   return `Your win is on the certificate, verbatim and signed: "${win}". Sunday, the keeper's coffee gets drunk to the week's closers, no exceptions, and you're on the list. The store likes seeing its patrons win.`;
 }
 
+/** ⚑ KEEPER REVIEW: stocked-shelf notes, registrar-plain drafts. */
+export function drawerNote(description: string): string {
+  return `The drawer opened and gave: ${description}. Written down exactly, signed, under your name. The drawer's decision is final.`;
+}
+
+export function jarNote(sealedDate: string, note?: string): string {
+  return `One jar of Tuesday, sealed ${sealedDate}${note ? ` (${note})` : ""}. The seal stays on; that's the whole point.`;
+}
+
+export function bestowedNameNote(name: string): string {
+  return `The keeper bestows: ${name}. From his considered stock, yours alone, never to be bestowed again. Wear it well.`;
+}
+
+/** ⚑ KEEPER REVIEW: the instant grudge acknowledgement. */
+export function grudgeNote(grievance: string): string {
+  return `Held, as of this moment: "${grievance}". The keeper reads every new grudge on Sundays and holds them all with equal spite. Write in to release it; until then it only ages.`;
+}
+
 export function patronageCertificateNote(patronNumber: number): string {
   return `Patronage recorded, patron no. ${patronNumber}. This certificate entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge, and it means the more for that. The store knows its friends and writes them down in ink.`;
 }
