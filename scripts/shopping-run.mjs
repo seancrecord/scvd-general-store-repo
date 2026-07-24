@@ -198,9 +198,27 @@ for (const item of items) {
             ? "a signed payment was offered and DECLINED (usually: not enough USDC on Base in this wallet, or the authorization failed verification)"
             : "the client never attached a payment to the retry (client-side problem, tell the shoptender)"
           : "unexpected status";
+      // Full forensics: the decline body says WHY, when anyone asks it to.
+      const declineDetail = JSON.stringify(body).slice(0, 600);
+      const paymentResponseHeader =
+        response.headers.get("PAYMENT-RESPONSE") ??
+        response.headers.get("X-PAYMENT-RESPONSE");
       console.log(`✖ ${response.status}: ${body.error ?? "unknown"}`);
       console.log(`    diagnosis: ${diagnosis}`);
-      receipts.push({ item: item.id, at: new Date().toISOString(), ok: false, status: response.status, payment_attached: lastRequestPaid, error: body.error });
+      console.log(`    decline body: ${declineDetail}`);
+      if (paymentResponseHeader) {
+        console.log(`    payment-response header: ${paymentResponseHeader.slice(0, 300)}`);
+      }
+      receipts.push({
+        item: item.id,
+        at: new Date().toISOString(),
+        ok: false,
+        status: response.status,
+        payment_attached: lastRequestPaid,
+        error: body.error,
+        decline_body: body,
+        payment_response_header: paymentResponseHeader,
+      });
       continue;
     }
     const certId = body.certificate?.cert_id ?? body.cert_id;
