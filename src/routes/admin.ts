@@ -519,6 +519,47 @@ adminRoutes.post("/admin/luckies/stock", async (c) => {
   return c.redirect("/admin/counter");
 });
 
+/**
+ * Bulk stocking: one lucky per line, four fields split on "|":
+ *   name | provenance | power | strength
+ * Bad lines are reported back, good lines stock; nothing partial
+ * within a line.
+ */
+adminRoutes.post("/admin/luckies/stock/bulk", async (c) => {
+  const form = await c.req.parseBody();
+  const raw = typeof form["batch"] === "string" ? form["batch"] : "";
+  const lines = raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const rejected: string[] = [];
+  let stocked = 0;
+  for (const line of lines) {
+    const [name, provenance, power, strengthRaw] = line
+      .split("|")
+      .map((part) => sanitizeText(part, 300));
+    const strength = parseLuckyStrength(strengthRaw);
+    if (!name || !provenance || !power || !strength) {
+      rejected.push(line.slice(0, 80));
+      continue;
+    }
+    await stockLucky(c.env, {
+      name: name.slice(0, 80),
+      provenance,
+      power,
+      strength,
+    });
+    stocked += 1;
+  }
+  if (rejected.length > 0) {
+    return c.text(
+      `Stocked ${stocked}. Rejected ${rejected.length} line(s) (need: name | provenance | power | faint/fair/strong/uncanny):\n${rejected.join("\n")}`,
+      400,
+    );
+  }
+  return c.redirect("/admin/counter");
+});
+
 adminRoutes.post("/admin/luckies/stock/remove", async (c) => {
   const form = await c.req.parseBody();
   const stockId = sanitizeText(form["stock_id"], 40);

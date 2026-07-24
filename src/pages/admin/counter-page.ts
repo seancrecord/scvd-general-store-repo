@@ -335,6 +335,13 @@ export function renderCounterPage(data: CounterPageData): string {
       </select>
       <button type="submit">Stock it</button>
     </form>
+    <details>
+      <summary>Stock a batch (one per line: name | provenance | power | strength)</summary>
+      <form method="POST" action="/admin/luckies/stock/bulk">
+        <textarea name="batch" rows="6" cols="70" placeholder="the brass washer | Found heads-up in the gravel lot | Keeps deploys boring on Fridays | strong"></textarea>
+        <button type="submit">Stock the batch</button>
+      </form>
+    </details>
   </section>
 
   <section>
