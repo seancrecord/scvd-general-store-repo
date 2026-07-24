@@ -77,6 +77,12 @@ export interface MenuItem {
    */
   sample_url?: string;
   /**
+   * Class 1, stocked: units are keeper-made ahead of orders; purchases
+   * take the oldest and complete themselves; an empty shelf sells out
+   * honestly instead of queueing work. No keeper present required.
+   */
+  stocked?: boolean;
+  /**
    * ISO week the item first went on the shelf. Purchases during this
    * week carry the shelf witness mark, catalog history, recorded as
    * it happens. Every new item must state its listing week.

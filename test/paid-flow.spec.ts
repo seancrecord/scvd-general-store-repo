@@ -48,17 +48,17 @@ async function buyPaid(
 
 describe("the 402 challenge (x402 v2)", () => {
   it("answers an unpaid buy with a well-formed v2 challenge", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/luckies`);
+    const response = await SELF.fetch(`${BASE}/api/buy/portrait`);
     expect(response.status).toBe(402);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
 
     const required = decodePaymentRequired(response);
     expect(required.x402Version).toBe(2);
-    // Three pay-what-it-deserves tiers: $5, $10, $25 in USDC atomic units.
+    // Three pay-what-it-deserves tiers: $8, $16, $40 in USDC atomic units.
     expect(required.accepts.map((a) => a.amount)).toEqual([
-      "5000000",
-      "10000000",
-      "25000000",
+      "8000000",
+      "16000000",
+      "40000000",
     ]);
     for (const requirement of required.accepts) {
       expect(requirement.scheme).toBe("exact");
@@ -71,12 +71,12 @@ describe("the 402 challenge (x402 v2)", () => {
     }
 
     const body = await json(response);
-    expect(body["error"]).toContain("or whatever the luck deserves");
-    expect(body["min_price_usdc"]).toBe(5);
+    expect(body["error"]).toContain("if you want him to sharpen the pencil");
+    expect(body["min_price_usdc"]).toBe(8);
   });
 
   it("shows humans with browsers to the front porch", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/luckies`, {
+    const response = await SELF.fetch(`${BASE}/api/buy/portrait`, {
       headers: {
         Accept: "text/html",
         "User-Agent": "Mozilla/5.0 (a curious human)",
@@ -113,13 +113,13 @@ describe("paid purchases", () => {
   });
 
   it("queues a human item and records a generous tier as a tip", async () => {
-    // Tier 1 on luckies = $10 against a $5 minimum: $5 tip.
-    const response = await buyPaid("luckies", 1);
+    // Tier 1 on portrait = $16 against an $8 minimum: $8 tip.
+    const response = await buyPaid("portrait", 1);
     expect(response.status).toBe(200);
     const body = await json(response);
     expect(body["status"]).toBe("queued");
-    expect(body["paid_usdc"]).toBe(10);
-    expect(body["tip_usdc"]).toBe(5);
+    expect(body["paid_usdc"]).toBe(16);
+    expect(body["tip_usdc"]).toBe(8);
     expect(body["message"]).toContain("give him the week");
 
     const orderId = body["order_id"] as string;
@@ -135,7 +135,7 @@ describe("paid purchases", () => {
     try {
       const instant = await buyPaid("hello");
       expect(instant.status).toBe(402);
-      const queued = await buyPaid("luckies");
+      const queued = await buyPaid("portrait");
       expect(queued.status).toBe(402);
     } finally {
       facilitator.settleShouldFail = false;

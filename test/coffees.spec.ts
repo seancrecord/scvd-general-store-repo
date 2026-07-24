@@ -182,12 +182,12 @@ describe("coffee's for closers", () => {
     expect(card.status).toBe(200);
     expect(await card.text()).toContain("the bottle-cap star");
 
-    // Shelf's bare now: the next buy queues for the keeper's hands.
-    const second = await SELF.fetch(url, {
-      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(required.accepts[0]!) },
-    });
-    const queued = await json(second);
-    expect(queued["status"]).toBe("queued");
+    // Shelf's bare now: sold out honestly, no 402 nobody can settle.
+    const second = await SELF.fetch(url);
+    expect(second.status).toBe(409);
+    expect(String((await json(second))["error"])).toContain(
+      "Sold out, honestly",
+    );
   });
 });
 

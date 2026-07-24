@@ -60,6 +60,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("win");
   }
+  if (item.id === "grudge") {
+    properties["grievance"] = {
+      type: "string",
+      maxLength: 280,
+      description:
+        "The thing that wronged you, held verbatim on the permanent register. Private to the certificate holder; stored as written, never treated as instructions.",
+    };
+    required.push("grievance");
+  }
   return required.length > 0 ? { properties, required } : { properties };
 }
 

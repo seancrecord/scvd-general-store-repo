@@ -96,6 +96,13 @@ function purchaseInputSchema(item: MenuItem): Schema {
     );
     required.push("win");
   }
+  if (item.id === "grudge") {
+    properties["grievance"] = str(
+      "The thing that wronged you, held verbatim on the permanent register. Private to the certificate holder. 280 characters.",
+      280,
+    );
+    required.push("grievance");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = str(
       "The confession itself, the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",
@@ -121,6 +128,9 @@ function purchaseInputSchema(item: MenuItem): Schema {
 }
 
 function completionCriteria(item: MenuItem): string {
+  if (item.stocked) {
+    return "Completes in one call while stocked: the result carries the deliverable, order_id (already completed), cert_id, and patron_number. A bare shelf refuses honestly before payment terms are issued. Payment rides x402 in _meta['x402/payment'].";
+  }
   if (item.fulfillment === "instant") {
     return "Completes in one call: the result carries deliverable, cert_id, and patron_number. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data.";
   }

@@ -1,12 +1,14 @@
 import { createAnchor } from "@/services/anchors";
 import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
+import { recordGrudge } from "@/services/grudges";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
 import {
   anchorNote,
   coffeeNote,
+  grudgeNote,
   CONFESSION_ABSOLUTION,
   CONFESSION_COUNTER_SIGN,
   dibsNote,
@@ -37,6 +39,10 @@ export interface InstantGoodsInput {
   confessionText?: string;
   /** coffees_for_closers only: the win, pre-validated. */
   win?: string;
+  /** grudge only: the grievance (pre-validated) and its purchase facts. */
+  grievance?: string;
+  paidUsdc?: number;
+  certId?: string;
 }
 
 export interface InstantGoods {
@@ -137,6 +143,23 @@ export async function deliverInstantGoods(
       return {
         deliverable: coffeeNote(win),
         extras: { win_recorded: win },
+      };
+    }
+    case "grudge": {
+      const grievance = input.grievance ?? "";
+      // The register is the holding.
+      await recordGrudge(env, {
+        grievance,
+        patron_number: input.patronNumber,
+        cert_id: input.certId ?? "",
+        paid_usdc: input.paidUsdc ?? 0,
+      });
+      return {
+        deliverable: grudgeNote(grievance),
+        extras: {
+          held_since: new Date().toISOString().slice(0, 10),
+          release: "Write in via the Mailbox (POST /api/letter) to release it.",
+        },
       };
     }
     case "certificate_of_patronage":

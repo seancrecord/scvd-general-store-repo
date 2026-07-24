@@ -3,9 +3,15 @@ import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { deliverInstantGoods } from "@/services/instant-goods";
-import { createLucky, takeStockedLucky } from "@/services/luckies";
+import { createLucky, listLuckyStock, takeStockedLucky } from "@/services/luckies";
 import { completeOrder, createOrder, recordInventorySale } from "@/services/orders";
-import { luckyNote } from "@/store/copy";
+import { listStock, takeStockUnit } from "@/services/stock";
+import {
+  bestowedNameNote,
+  drawerNote,
+  jarNote,
+  luckyNote,
+} from "@/store/copy";
 import { VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
@@ -19,6 +25,20 @@ import type { Env, MenuItem } from "@/types";
 /** The counter takes a win of up to this many characters. */
 export const COFFEE_WIN_CAP = 200;
 
+/** The register holds this much grievance. Spite survives compression. */
+export const GRIEVANCE_CAP = 280;
+
+/** Live stock for a stocked item, whichever shelf machinery holds it. */
+export async function stockedShelfCount(
+  env: Env,
+  item: MenuItem,
+): Promise<number> {
+  if (item.id === "luckies") {
+    return (await listLuckyStock(env).catch(() => [])).length;
+  }
+  return (await listStock(env, item.id).catch(() => [])).length;
+}
+
 export interface FulfillmentInput {
   agentName?: string;
   callbackUrl?: string;
@@ -28,6 +48,8 @@ export interface FulfillmentInput {
   targetUrl?: string;
   /** coffees_for_closers: the win, pre-validated, recorded verbatim. */
   win?: string;
+  /** grudge: the grievance, pre-validated, held verbatim. */
+  grievance?: string;
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -107,6 +129,11 @@ export async function fulfillPurchase(
     if (input.win !== undefined) {
       goodsInput.win = input.win;
     }
+    if (input.grievance !== undefined) {
+      goodsInput.grievance = input.grievance;
+      goodsInput.paidUsdc = payment.paidUsdc;
+      goodsInput.certId = minted.certificate.cert_id;
+    }
     const goods = await deliverInstantGoods(env, item, goodsInput);
     return {
       message: VOICE.instantThanks,
@@ -149,6 +176,33 @@ export async function fulfillPurchase(
   }
   const order = await createOrder(env, orderOptions);
   await recordInventorySale(env, item);
+
+  // Stocked shelves (drawer, jars, names): the unit is keeper-made
+  // already; the order completes itself. Bare shelves never reach
+  // here (the buy route sells out honestly pre-402); this take is
+  // belt-and-braces against the take-race.
+  if (item.stocked && item.id !== "luckies") {
+    const unit = await takeStockUnit(env, item.id).catch(() => null);
+    if (unit) {
+      const note =
+        item.id === "the_drawer"
+          ? drawerNote(unit.fields["description"] ?? "")
+          : item.id === "jar_of_tuesday"
+            ? jarNote(unit.fields["sealed_date"] ?? "", unit.fields["jar_note"])
+            : bestowedNameNote(unit.fields["name"] ?? "");
+      await completeOrder(env, order.order_id, note);
+      return {
+        message: VOICE.instantThanks,
+        order_id: order.order_id,
+        status: "completed",
+        deliverable: note,
+        order_url: `${env.STORE_BASE_URL}/api/order/${order.order_id}`,
+        paid_usdc: payment.paidUsdc,
+        tip_usdc: payment.tipUsdc,
+        ...patronBlock,
+      };
+    }
+  }
 
   // The stocked lucky shelf: if the keeper picked ahead, the next
   // lucky comes off the shelf now and the order completes itself.

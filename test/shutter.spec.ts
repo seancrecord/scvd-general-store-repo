@@ -69,12 +69,13 @@ describe("the shutter", () => {
     expect(reopened.status).toBe(402);
   });
 
-  it("stocked luckies sell through a closed shutter; a bare shelf doesn't", async () => {
+  it("stocked luckies sell through a closed shutter; a bare shelf sells out", async () => {
     await throwShutter("closed");
 
-    // Bare shelf: luckies would need the keeper's hands, so refuse.
+    // Bare shelf: sold out honestly, before the shutter even speaks.
     const bare = await SELF.fetch(`${BASE}/api/buy/luckies`);
-    expect(bare.status).toBe(503);
+    expect(bare.status).toBe(409);
+    expect(String((await json(bare))["error"])).toContain("Sold out, honestly");
 
     // Stock one; the shelf fulfills itself, keeper not required.
     await SELF.fetch(`${BASE}/admin/luckies/stock`, {
@@ -112,9 +113,10 @@ describe("the shutter", () => {
     expect(refused.status).toBe(503);
 
     // Opening the counter is proof of presence; the shelf reopens.
-    await SELF.fetch(`${BASE}/admin/counter`, {
+    const counter = await SELF.fetch(`${BASE}/admin/counter`, {
       headers: { Authorization: adminAuth.Authorization },
     });
+    expect(counter.status).toBe(200);
     const reopened = await SELF.fetch(`${BASE}/api/buy/portrait`);
     expect(reopened.status).toBe(402);
   });
