@@ -6,6 +6,7 @@ import { replyToLetter } from "@/services/letters";
 import { seasonEntry, signForAddress } from "@/services/zodiac";
 import { ZODIAC_SIGNS } from "@/store/zodiac";
 import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
+import { markKeeperPresent } from "./helpers/keeper";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -20,8 +21,9 @@ import type { Env } from "@/types";
 const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
 
-beforeAll(() => {
+beforeAll(async () => {
   installFacilitatorMock();
+  await markKeeperPresent(testEnv);
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

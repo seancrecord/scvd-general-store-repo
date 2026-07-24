@@ -39,7 +39,7 @@ export function renderToolsPage(): string {
 
   <section>
     <h2>The shutter (human-labor shelf)</h2>
-    <p>Closed = human-labor purchases are refused before any money moves ("the keeper is away from the counter"). Machine shelves and stocked luckies keep selling. It also closes ITSELF if the counter goes unvisited for 14 days, and opening the counter restarts that clock, so a long absence can never break the 168h promise.</p>
+    <p>The shelf runs on a PRESENCE WINDOW: it's only open within 48 hours of you being seen at the counter, and it's closed by default — no visit on record, no sale, so an order can never sit on money you'd have to hunt down and refund. Opening the counter (or this lever) restarts the window; machine shelves and stocked shelves never close. Closed = human-labor purchases are refused before any money moves.</p>
     <form method="POST" action="/admin/shutter" style="display:inline">
       <input type="hidden" name="state" value="closed">
       <button type="submit">Close the shutter (going away)</button>
