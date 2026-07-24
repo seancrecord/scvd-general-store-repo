@@ -33,7 +33,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 ## NOW (keeper hands, post-porch-log)
 
 - [x] Republish the ClawHub skill as v1.0.1 (?src=clawhub-skill markers + entity pairing) — DONE 2026-07-22 by the keeper's hand; skill channel attribution is live end to end
-- [ ] Republish ClawHub as v1.0.2 — registry/clawhub/SKILL.md reworked 2026-07-23: pines/Smokewire gone, Oak City + "where you're never late", mission line woven in, treat rail added, 23 items. Same publish steps as before (`npx clawhub skill publish` from the registry/clawhub folder)
+- [ ] Republish ClawHub as v2.2.0 — registry/clawhub/SKILL.md updated 2026-07-25 (preset luckies, jar gone, 21 items, custody claims retired). Command, from the repo root after merge: `cd registry/clawhub && npx clawhub@latest publish . --slug scvd-general-store --name "SCVD General Store" --version 2.2.0 --changelog "Preset luckies from the herd; jar scrapped; 21 items; presence-window honesty"`
 
 ## NEXT BUILD (big one, keeper-directed 2026-07-23)
 
@@ -46,7 +46,7 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 - [x] a_secret — scam framing KILLED 2026-07-23 per keeper trust veto; restored to original human_queue secret. Refund novelty parked (ledger stays as general plumbing, not a product)
 - [x] Storefront shelvesMore — de-quantified 2026-07-23 ("…and more on the menu…"); no inventory count to maintain
 - [ ] ICEBOX: refund-as-novelty — only revive if it earns network/marketing value without trust risk and without being cumbersome; not feeling it otherwise
-- [ ] Batch 2 keeper confirmations: the_drawer $2 fixed ("two bucks") and jar_of_tuesday $1 min PWID ("a dollar") — both repriced to match keeper tags; confirm or revert
+- [ ] Batch 2 keeper confirmations: the_drawer $2 fixed ("two bucks") repriced to match the keeper tag; confirm or revert (jar_of_tuesday's half of this died with the jar, 2026-07-25)
 - [ ] Batch 2 copy pass keeper check: two-line stamp mottos render at 17px (words intact, type smaller) — confirm the wrap treatment; porch lines await review in the PR
 - [x] Keep-line ruling OVERRULED by the keeper 2026-07-23 — the tag advertises the price of the name now; §4 amended to that extent by his hand
 - [ ] KEEPER HANDS, urgent: upgrade Cloudflare to Workers Paid ($5/mo) — the free tier's 1,000 KV writes/day and 50 subrequests/request are both too small for the store as built; the admin 500 was the subrequest cap, and "priced out" was almost certainly the write cap
@@ -138,10 +138,11 @@ BUILD PASS EXECUTED 2026-07-23 on the keeper's order (all six, same evening):
 
 - [ ] CDP facilitator caps the echoed resource.description at ~500 chars — ROUTE_DESCRIPTION_CAP=480 enforced by test (synthesis.spec); any new listing's 402 header description composes from SPEC_RETURNS, never the full pitch. Also: the SDK truncates CDP error text; the decline instrument (payment_declined in 402 bodies, decl counters in the books) is the diagnostic path
 - [ ] MCP door doesn't carry the decline instrument yet (HTTP only); add payment_declined to MCP 402 error.data if MCP declines ever need diagnosing
-- [x] Walkthrough: 22/22 SETTLED 2026-07-24 (patrons #3–#24, every cert verifying). Remaining keeper hands: the counter walk (~13 orders; auto-ack means just complete them), STOCK THE LUCKY SHELF (a batch of real objects via the counter form — until then luckies orders queue), then the ClawHub republish on his confirm
-- [ ] Keeper-load doctrine SHARPENED 2026-07-24 (his words): nothing per-order unless PRE-DERIVED (stocked ahead) or NEGOTIATED (ticket + agreed price with the buying agent); the store survives absence without breaking promises. BUILT: the shutter (lever + 14-day dead-man; counter visits restart the clock; refusals before money moves; stocked luckies immune). AWAITING KEEPER NOD, per item:
-  - [ ] Convert to stocked shelves (same machinery as luckies): the_drawer (pre-picked objects), jar_of_tuesday (batch-sealed jars), a_secret (pre-written, each unique), nomenclature (pre-considered names). Copy recuts needed per item; each keeps a queue fallback or goes shutter-only
-  - [ ] THE COMMISSION DESK for true per-order labor (phone_call, app_gutcheck, human_witness, portrait, the_collab, quick_judgment): buy-now retires; flow becomes request → keeper quotes when present → agreed price → one-off paid link → fulfilled. Kills all standing SLA exposure; needs a quote record + dynamic paid route + notification design. Spec before build
+- [x] Walkthrough: 22/22 SETTLED 2026-07-24 (patrons #3–#24, every cert verifying). Remaining keeper hands: the counter walk (~13 orders; auto-ack means just complete them), then the ClawHub republish on his confirm. (Lucky-shelf stocking OBSOLETE 2026-07-25: luckies are preset draws now, nothing to stock, ever)
+- [x] THE PRESET RULING executed 2026-07-25 (keeper's words, five calls): luckies preset + infinite (herd draw off the cert id, species names only, lucky-note pool ⚑ review, uneven strength wheel, "(custodial)" dropped, zero keeper hands); jar_of_tuesday SCRAPPED (21 items); shutter → 48h PRESENCE WINDOW, closed by default (his fear was the missable 14-day order; now nothing sells unless he was provably at the counter within two days); the_drawer = real-oddities shelf (thing + what it does, describe-only; Bonilla shirt stocks privately via /admin, never in public code); totem register removed from public code (house lucky + herd rule stay)
+- [ ] Keeper-load doctrine SHARPENED 2026-07-24 (his words): nothing per-order unless PRE-DERIVED (stocked ahead) or NEGOTIATED (ticket + agreed price with the buying agent); the store survives absence without breaking promises. BUILT: the shutter (now the 48h presence window, 2026-07-25). REMAINING:
+  - [ ] THE COMMISSION DESK for true per-order labor (phone_call, app_gutcheck, human_witness, portrait, the_collab, quick_judgment): buy-now retires; flow becomes request → keeper quotes when present → agreed price → one-off paid link → fulfilled. Kills all standing SLA exposure; needs a quote record + dynamic paid route + notification design. Spec before build. (Interim risk already capped by the presence window)
+  - [ ] a_secret stays manual by the keeper's whim (ruling reaffirmed 2026-07-25); presence window covers it
 
 - [ ] MCP paid tools use the x402-MCP convention (payment in tools/call _meta["x402/payment"], 402 as JSON-RPC error with terms in error.data) — align if MCP standardizes payments natively
 - [ ] MCP transport is stateless streamable HTTP (single JSON responses, no SSE, no sessions) per spec rev 2025-06-18 — revisit if clients demand streaming or sessions

@@ -12,10 +12,9 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 
 Signed hellos, certificates of nomenclature,
 hand-drawn portraits, collaborative art, one genuine human phone call,
-and honest app reviews. Aisle two carries the novelties: jars of
-Tuesday, a secret, grudges
-held on your behalf, the drawer, lowercase luckies (custodial, carded,
-graded honest), and official
+and honest app reviews. Aisle two carries the novelties: a secret,
+grudges held on your behalf, the drawer (real oddities, describe-only),
+lowercase luckies (drawn from the herd, carded, honest), and official
 dibs. Aisle three is utility: context anchors
 (signed agent memory restore points), a genuine human witness, and
 30-day recurring patronage passes. The Penny Shelf by the door holds
