@@ -2,6 +2,7 @@ import { createAnchor } from "@/services/anchors";
 import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
+import { createLucky, drawLuckyParts } from "@/services/luckies";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
@@ -13,6 +14,7 @@ import {
   CONFESSION_COUNTER_SIGN,
   dibsNote,
   helloNote,
+  luckyNote,
   patronageCertificateNote,
   patronagePassNote,
   phantomCheckNote,
@@ -39,9 +41,10 @@ export interface InstantGoodsInput {
   confessionText?: string;
   /** coffees_for_closers only: the win, pre-validated. */
   win?: string;
-  /** grudge only: the grievance (pre-validated) and its purchase facts. */
+  /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
+  /** grudge and luckies: the certificate id behind this purchase. */
   certId?: string;
 }
 
@@ -159,6 +162,34 @@ export async function deliverInstantGoods(
         extras: {
           held_since: new Date().toISOString().slice(0, 10),
           release: "Write in via the Mailbox (POST /api/letter) to release it.",
+        },
+      };
+    }
+    case "luckies": {
+      // Preset draw (keeper's ruling 2026-07-25): the herd never sells
+      // out, the keeper does nothing, the record is still signed and
+      // the card still verifies. "instant" marks the recordless order
+      // slot honestly — no queue ever existed for this lucky.
+      const record = await createLucky(env, {
+        ...drawLuckyParts(input.certId ?? ""),
+        orderId: "instant",
+        certId: input.certId ?? "",
+        patronNumber: input.patronNumber,
+      });
+      const base = env.STORE_BASE_URL;
+      const cardUrl = `${base}/luckies/${record.lucky.lucky_id}.svg`;
+      const recordUrl = `${base}/api/lucky/${record.lucky.lucky_id}`;
+      return {
+        deliverable: luckyNote({
+          name: record.lucky.name,
+          strength: record.lucky.strength,
+          cardUrl,
+          recordUrl,
+        }),
+        extras: {
+          lucky_id: record.lucky.lucky_id,
+          card_url: cardUrl,
+          record_url: recordUrl,
         },
       };
     }

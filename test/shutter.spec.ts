@@ -8,9 +8,11 @@ import {
 import type { Env } from "@/types";
 
 /**
- * The shutter: the store never promises labor nobody is there to do.
- * Manual lever + the 14-day dead-man rule; machine shelves and
- * stocked luckies never close.
+ * The shutter as a presence window (keeper's ruling 2026-07-25): the
+ * human-labor shelf only sells within 48h of the keeper being seen at
+ * the counter, and it starts CLOSED — no visit on record, no sale.
+ * The lever still closes it early; machine shelves, stocked shelves,
+ * and the preset lucky draw never close.
  */
 
 const BASE = "https://scvd.store";
@@ -37,7 +39,27 @@ async function throwShutter(state: "closed" | "open"): Promise<void> {
   });
 }
 
+async function buyPaid(url: string): Promise<Response> {
+  const challenge = await SELF.fetch(url);
+  expect(challenge.status).toBe(402);
+  const required = decodePaymentRequired(challenge);
+  return SELF.fetch(url, {
+    headers: {
+      "PAYMENT-SIGNATURE": buildPaymentSignature(required.accepts[0]!),
+    },
+  });
+}
+
 describe("the shutter", () => {
+  it("starts closed: no visit on record means no human-labor sale", async () => {
+    // Fresh KV, nobody seen at the counter yet.
+    await testEnv.COUNTERS.delete("keeper_last_seen");
+    await testEnv.COUNTERS.delete("shutter_override");
+    const refused = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    expect(refused.status).toBe(503);
+    expect(String((await json(refused))["error"])).toContain("keeper is away");
+  });
+
   it("refuses human labor before money moves; machine shelves never close", async () => {
     await throwShutter("closed");
 
@@ -48,16 +70,8 @@ describe("the shutter", () => {
     expect(String(refusal["error"])).toContain("machine shelves never close");
 
     // Instant items sell straight through the closed shutter.
-    const challenge = await SELF.fetch(`${BASE}/api/buy/dibs`);
-    expect(challenge.status).toBe(402);
-    const paid = await SELF.fetch(`${BASE}/api/buy/dibs`, {
-      headers: {
-        "PAYMENT-SIGNATURE": buildPaymentSignature(
-          decodePaymentRequired(challenge).accepts[0]!,
-        ),
-      },
-    });
-    expect(paid.status).toBe(200);
+    const paidDibs = await buyPaid(`${BASE}/api/buy/dibs`);
+    expect(paidDibs.status).toBe(200);
 
     // The menu says so, honestly.
     const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
@@ -69,50 +83,26 @@ describe("the shutter", () => {
     expect(reopened.status).toBe(402);
   });
 
-  it("stocked luckies sell through a closed shutter; a bare shelf sells out", async () => {
+  it("luckies draw through a closed shutter and never sell out", async () => {
     await throwShutter("closed");
 
-    // Bare shelf: sold out honestly, before the shutter even speaks.
-    const bare = await SELF.fetch(`${BASE}/api/buy/luckies`);
-    expect(bare.status).toBe(409);
-    expect(String((await json(bare))["error"])).toContain("Sold out, honestly");
-
-    // Stock one; the shelf fulfills itself, keeper not required.
-    await SELF.fetch(`${BASE}/admin/luckies/stock`, {
-      method: "POST",
-      headers: adminAuth,
-      body: new URLSearchParams({
-        lucky_name: "the shutter key",
-        provenance: "Cut for a door this store never installed.",
-        power: "Opens nothing; reminds you the store stays honest while away.",
-        strength: "solid",
-      }).toString(),
-      redirect: "manual",
-    });
-    const challenge = await SELF.fetch(`${BASE}/api/buy/luckies`);
-    expect(challenge.status).toBe(402);
-    const paid = await SELF.fetch(`${BASE}/api/buy/luckies`, {
-      headers: {
-        "PAYMENT-SIGNATURE": buildPaymentSignature(
-          decodePaymentRequired(challenge).accepts[0]!,
-        ),
-      },
-    });
+    const paid = await buyPaid(`${BASE}/api/buy/luckies`);
+    expect(paid.status).toBe(200);
     const body = await json(paid);
-    expect(body["status"]).toBe("completed");
+    expect(String(body["deliverable"])).toContain("Drawn from the herd");
 
     await throwShutter("open");
   });
 
-  it("dead-man rule: an unvisited counter shutters by itself; a visit reopens", async () => {
-    // Wind the clock: last seen 15 days ago.
-    const staleDate = new Date(Date.now() - 15 * 86400 * 1000).toISOString();
+  it("presence window: the shelf closes 48h after the last visit; a visit reopens", async () => {
+    // Wind the clock: last seen 3 days ago, well past the 48h window.
+    const staleDate = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
     await testEnv.COUNTERS.put("keeper_last_seen", staleDate);
 
     const refused = await SELF.fetch(`${BASE}/api/buy/portrait`);
     expect(refused.status).toBe(503);
 
-    // Opening the counter is proof of presence; the shelf reopens.
+    // Opening the counter is proof of presence; the window restarts.
     const counter = await SELF.fetch(`${BASE}/admin/counter`, {
       headers: { Authorization: adminAuth.Authorization },
     });

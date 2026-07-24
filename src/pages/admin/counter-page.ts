@@ -3,7 +3,6 @@ import { renderAdminShell } from "@/pages/admin/layout";
 import type { CloserEntry } from "@/services/closers";
 import type { GrudgeEntry } from "@/services/grudges";
 import type { ListedEntry } from "@/services/guestbook";
-import type { StockedLucky } from "@/services/luckies";
 import { STOCK_DEFINITIONS } from "@/services/stock";
 import type { StockUnit } from "@/services/stock";
 import type {
@@ -28,7 +27,6 @@ export interface CounterPageData {
   weekNote: string;
   alerts: Array<{ condition: string; detail: string; at: string }>;
   orders: OrderRecord[];
-  luckyStock: StockedLucky[];
   closers: CloserEntry[];
   stockShelves: Record<string, StockUnit[]>;
   grudges: GrudgeEntry[];
@@ -46,8 +44,9 @@ export interface CounterPageData {
 
 /**
  * A luckies order completes with structured fields, the card is the
- * record and the record needs its parts. Everything else takes the
- * plain deliverable box.
+ * record and the record needs its parts. Legacy: luckies draw
+ * instantly since 2026-07-25, so this form only appears for orders
+ * queued before the ruling. Everything else takes the plain box.
  */
 function luckyCompleteForm(orderId: string): string {
   return `<form method="POST" action="/admin/orders/${escapeHtml(orderId)}/complete-lucky">
@@ -64,7 +63,7 @@ function luckyCompleteForm(orderId: string): string {
         </form>`;
 }
 
-/** The stocked shelves beyond luckies: drawer, jars, the name pool. */
+/** The stocked shelves: the drawer (real oddities) and the name pool. */
 function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
   const sections = Object.values(STOCK_DEFINITIONS).map((definition) => {
     const units = shelves[definition.itemId] ?? [];
@@ -96,12 +95,13 @@ function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
       </form>
     </details>`
         : "";
-    const gateNote = definition.tuesdayGate
-      ? "<p><em>Jars stock on Tuesdays only; the route refuses any other day. That's the item.</em></p>"
-      : "";
+    const shelfNote =
+      definition.itemId === "the_drawer"
+        ? "<p><em>The real-oddities shelf: a real thing of yours plus what it does, as listed. Describe-only; the object never ships and the shirt never gets named in public code.</em></p>"
+        : "";
     return `<section>
     <h2>Stocked shelf: ${escapeHtml(definition.itemId)} (${units.length})</h2>
-    ${gateNote}
+    ${shelfNote}
     ${unitList}
     <form method="POST" action="/admin/stock/${definition.itemId}">
       ${inputs}
@@ -360,40 +360,8 @@ export function renderCounterPage(data: CounterPageData): string {
   </section>
 
   <section>
-    <h2>The lucky shelf (${data.luckyStock.length} stocked)</h2>
-    <p>Stock draws ONLY from the pocket dinos and safari animals; the herd is the entire randomness mechanism (canon, 2026-07-24). Each unit: one animal, keeper-named, power in farmers-market register, graded honest. Purchases take the oldest; a bare shelf sells out honestly.</p>
-    ${
-      data.luckyStock.length === 0
-        ? "<p><em>Shelf's bare. The next luckies order waits on your hands.</em></p>"
-        : `<ul>${data.luckyStock
-            .map(
-              (stocked) => `<li><strong>${escapeHtml(stocked.name)}</strong> (${escapeHtml(stocked.strength)}) \u00B7 ${escapeHtml(stocked.provenance)}
-              <form method="POST" action="/admin/luckies/stock/remove" style="display:inline">
-                <input type="hidden" name="stock_id" value="${escapeHtml(stocked.stock_id)}">
-                <button type="submit">Unstock</button>
-              </form></li>`,
-            )
-            .join("\n")}</ul>`
-    }
-    <form method="POST" action="/admin/luckies/stock">
-      <input type="text" name="lucky_name" placeholder="The object's name" maxlength="80" required>
-      <input type="text" name="provenance" placeholder="Where it came from (recorded and honest)" maxlength="300" required>
-      <input type="text" name="power" placeholder="What it does, farmers-market terms" maxlength="300" required>
-      <select name="strength" required>
-        <option value="" disabled selected>Strength, graded honest</option>
-        <option value="strong">strong</option>
-        <option value="solid">solid</option>
-        <option value="still proving itself">still proving itself</option>
-      </select>
-      <button type="submit">Stock it</button>
-    </form>
-    <details>
-      <summary>Stock a batch (one per line: name | provenance | power | strength)</summary>
-      <form method="POST" action="/admin/luckies/stock/bulk">
-        <textarea name="batch" rows="6" cols="70" placeholder="Reginald the Ankylosaur | Off the couch, with the herd | Keeps deploys boring on Fridays | solid"></textarea>
-        <button type="submit">Stock the batch</button>
-      </form>
-    </details>
+    <h2>The lucky shelf (preset; nothing to do here)</h2>
+    <p>Luckies draw themselves from the herd since 2026-07-25: animal, lucky note, and strength all come off the preset pools in src/store/luckies.ts, never sell out, and need no hands. Write-ins still move a lucky from /admin/tools; the bench is real.</p>
   </section>
 
   ${stockShelvesHtml(data.stockShelves)}

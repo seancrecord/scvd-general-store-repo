@@ -15,7 +15,9 @@ export interface FeaturedShelf {
 /** The six shelves on the sign. The rest live in the catalog. Keeper's ink, Batch 3 (2026-07-23). */
 export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   {
-    name: "a lucky (custodial)",
+    // "(custodial)" dropped 2026-07-25: luckies are preset draws from
+    // the herd now; the line itself is the keeper's ink, untouched.
+    name: "a lucky",
     price: "$5+",
     line: "A lucky totem. Results may vary. Or they might not. They vary variously. The keeper keeps it close; the luck's all yours.",
   },

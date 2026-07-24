@@ -9,7 +9,7 @@ import { STORE_METADATA } from "@/store/metadata";
 import type { LuckyRecord, LuckyStrength } from "@/types";
 
 /**
- * The lucky card: the record of a lucky in custody, same vintage-label
+ * The lucky card: the record of a lucky from the herd, same vintage-label
  * language as the badges. No photograph and no drawing of the object,
  * a drawing would be an invention; the card records name, provenance,
  * power, and an honest grade. The typeset part sits straight; the

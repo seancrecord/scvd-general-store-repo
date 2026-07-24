@@ -37,6 +37,9 @@ const ERC20_BALANCE_ABI = [
  *
  * The wallet needs USDC on Base for the total (the plan prints it)
  * plus nothing else; x402 uses gasless EIP-3009 transfers.
+ *
+ * Heads-up: the human-labor shelf is presence-gated (48h window).
+ * Open /admin/counter right before the run or those items answer 503.
  */
 
 const STORE_URL = process.env.STORE_URL ?? "https://scvd.store";
@@ -257,5 +260,5 @@ console.log(
   `\nDone: ${bought} bought, ${failed} failed. Receipts in ${RECEIPTS_FILE}.`,
 );
 console.log(
-  "Next: /admin/counter has the human-queue orders — fulfill each one by hand\n(the luckies order exercises the card form; coffees prefills its note).\nAnything that surprised you = a bug a first buyer would have found. File it.",
+  "Next: /admin/counter has the human-queue orders — fulfill each one by hand.\n(Luckies and coffees are instant now; nothing waits on you for those.)\nAnything that surprised you = a bug a first buyer would have found. File it.",
 );

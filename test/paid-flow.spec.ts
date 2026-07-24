@@ -7,6 +7,7 @@ import {
   TEST_WEBHOOK_URL,
   type FacilitatorMockState,
 } from "./helpers/facilitator-mock";
+import { markKeeperPresent } from "./helpers/keeper";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -17,8 +18,9 @@ const BASE = "https://scvd.store";
 
 let facilitator: FacilitatorMockState;
 
-beforeAll(() => {
+beforeAll(async () => {
   facilitator = installFacilitatorMock();
+  await markKeeperPresent(testEnv);
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {

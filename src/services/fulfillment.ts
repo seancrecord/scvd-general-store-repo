@@ -3,15 +3,9 @@ import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { deliverInstantGoods } from "@/services/instant-goods";
-import { createLucky, listLuckyStock, takeStockedLucky } from "@/services/luckies";
 import { completeOrder, createOrder, recordInventorySale } from "@/services/orders";
 import { listStock, takeStockUnit } from "@/services/stock";
-import {
-  bestowedNameNote,
-  drawerNote,
-  jarNote,
-  luckyNote,
-} from "@/store/copy";
+import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
@@ -28,14 +22,11 @@ export const COFFEE_WIN_CAP = 200;
 /** The register holds this much grievance. Spite survives compression. */
 export const GRIEVANCE_CAP = 280;
 
-/** Live stock for a stocked item, whichever shelf machinery holds it. */
+/** Live stock for a stocked item. */
 export async function stockedShelfCount(
   env: Env,
   item: MenuItem,
 ): Promise<number> {
-  if (item.id === "luckies") {
-    return (await listLuckyStock(env).catch(() => [])).length;
-  }
   return (await listStock(env, item.id).catch(() => [])).length;
 }
 
@@ -132,8 +123,9 @@ export async function fulfillPurchase(
     if (input.grievance !== undefined) {
       goodsInput.grievance = input.grievance;
       goodsInput.paidUsdc = payment.paidUsdc;
-      goodsInput.certId = minted.certificate.cert_id;
     }
+    // The grudge register and the lucky draw both key off the cert.
+    goodsInput.certId = minted.certificate.cert_id;
     const goods = await deliverInstantGoods(env, item, goodsInput);
     return {
       message: VOICE.instantThanks,
@@ -177,64 +169,23 @@ export async function fulfillPurchase(
   const order = await createOrder(env, orderOptions);
   await recordInventorySale(env, item);
 
-  // Stocked shelves (drawer, jars, names): the unit is keeper-made
-  // already; the order completes itself. Bare shelves never reach
-  // here (the buy route sells out honestly pre-402); this take is
-  // belt-and-braces against the take-race.
-  if (item.stocked && item.id !== "luckies") {
+  // Stocked shelves (the drawer, the name pool): the unit is
+  // keeper-made already; the order completes itself. Bare shelves
+  // never reach here (the buy route sells out honestly pre-402); this
+  // take is belt-and-braces against the take-race.
+  if (item.stocked) {
     const unit = await takeStockUnit(env, item.id).catch(() => null);
     if (unit) {
       const note =
         item.id === "the_drawer"
-          ? drawerNote(unit.fields["description"] ?? "")
-          : item.id === "jar_of_tuesday"
-            ? jarNote(unit.fields["sealed_date"] ?? "", unit.fields["jar_note"])
-            : bestowedNameNote(unit.fields["name"] ?? "");
+          ? drawerNote(unit.fields["item"] ?? "", unit.fields["does"] ?? "")
+          : bestowedNameNote(unit.fields["name"] ?? "");
       await completeOrder(env, order.order_id, note);
       return {
         message: VOICE.instantThanks,
         order_id: order.order_id,
         status: "completed",
         deliverable: note,
-        order_url: `${env.STORE_BASE_URL}/api/order/${order.order_id}`,
-        paid_usdc: payment.paidUsdc,
-        tip_usdc: payment.tipUsdc,
-        ...patronBlock,
-      };
-    }
-  }
-
-  // The stocked lucky shelf: if the keeper picked ahead, the next
-  // lucky comes off the shelf now and the order completes itself.
-  // An empty shelf falls back to the queue; the 168h promise stands.
-  if (item.id === "luckies") {
-    const stocked = await takeStockedLucky(env).catch(() => null);
-    if (stocked) {
-      const record = await createLucky(env, {
-        name: stocked.name,
-        provenance: stocked.provenance,
-        power: stocked.power,
-        strength: stocked.strength,
-        orderId: order.order_id,
-        certId: minted.certificate.cert_id,
-        patronNumber: minted.patronNumber,
-      });
-      const base = env.STORE_BASE_URL;
-      const note = luckyNote({
-        name: record.lucky.name,
-        strength: record.lucky.strength,
-        cardUrl: `${base}/luckies/${record.lucky.lucky_id}.svg`,
-        recordUrl: `${base}/api/lucky/${record.lucky.lucky_id}`,
-      });
-      await completeOrder(env, order.order_id, note);
-      return {
-        message: VOICE.instantThanks,
-        order_id: order.order_id,
-        status: "completed",
-        deliverable: note,
-        lucky_id: record.lucky.lucky_id,
-        card_url: `${base}/luckies/${record.lucky.lucky_id}.svg`,
-        record_url: `${base}/api/lucky/${record.lucky.lucky_id}`,
         order_url: `${env.STORE_BASE_URL}/api/order/${order.order_id}`,
         paid_usdc: payment.paidUsdc,
         tip_usdc: payment.tipUsdc,

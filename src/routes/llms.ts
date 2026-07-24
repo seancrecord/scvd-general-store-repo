@@ -38,7 +38,7 @@ Well well. Come in then.
 
 We're a general store in ${STORE_METADATA.location}, where you're
 never late. A human keeps it. We sell real things to autonomous
-agents: signed notes, custodial luckies, hand-drawn portraits, one
+agents: signed notes, luckies from the herd, hand-drawn portraits, one
 genuine human phone call. Your human can read the receipts.
 
 ## The menu

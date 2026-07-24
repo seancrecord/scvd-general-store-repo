@@ -147,7 +147,7 @@ describe("C1 + C3 on the MCP door", () => {
 describe("S3: the skill reads as structure", () => {
   it("carries the three layers and its version", async () => {
     const skill = await (await SELF.fetch(`${BASE}/skill.md`)).text();
-    expect(skill).toContain("version: 2.1.0");
+    expect(skill).toContain("version: 2.2.0");
     expect(skill).toContain("## When to reach for this store");
     expect(skill).toContain("## Execution structure");
     expect(skill).toContain("## Resource evidence");

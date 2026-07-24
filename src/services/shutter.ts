@@ -3,16 +3,18 @@ import type { Env, MenuItem } from "@/types";
 
 /**
  * The shutter: the store never promises labor nobody is there to do.
- * Two ways it closes the human-labor shelf, both honest:
+ * Since the keeper's ruling 2026-07-25 it works as a PRESENCE WINDOW,
+ * not a dead-man switch: the human-labor shelf is only open within
+ * PRESENT_WINDOW_HOURS of the keeper being seen at the counter, and
+ * it is CLOSED by default — no visit on record means no sale, so a
+ * missed order can never sit on money. Two ways to close it early:
  *   1. The keeper throws the lever (vacation, day job, life).
- *   2. The dead-man rule: no counter visit in AWAY_AFTER_DAYS means
- *      the shelf shutters on its own — a buyer years from now gets a
- *      straight answer, not a broken 168h promise.
- * The machine shelves never close. Stocked luckies keep selling; a
- * bare shelf behind the shutter queues nothing.
+ *   2. Time: the window simply runs out.
+ * Opening the counter (or the lever) restarts the window. The machine
+ * shelves and the stocked shelves never close.
  */
 
-export const AWAY_AFTER_DAYS = 14;
+export const PRESENT_WINDOW_HOURS = 48;
 
 export async function markKeeperSeen(env: Env): Promise<void> {
   await env.COUNTERS.put(KV_KEYS.keeperLastSeen, new Date().toISOString());
@@ -23,15 +25,15 @@ export async function setShutter(env: Env, closed: boolean): Promise<void> {
     await env.COUNTERS.put(KV_KEYS.shutterOverride, "closed");
   } else {
     await env.COUNTERS.delete(KV_KEYS.shutterOverride);
-    // Reopening is proof of presence; the dead-man clock restarts.
+    // Opening is proof of presence; the window restarts.
     await markKeeperSeen(env);
   }
 }
 
 export interface ShutterState {
   closed: boolean;
-  /** "lever" or "dead-man"; absent when open. */
-  cause?: "lever" | "dead-man";
+  /** "lever" or "away" (window expired or never started); absent when open. */
+  cause?: "lever" | "away";
   keeper_last_seen?: string;
 }
 
@@ -47,14 +49,14 @@ export async function shutterState(env: Env): Promise<ShutterState> {
       ...(lastSeen ? { keeper_last_seen: lastSeen } : {}),
     };
   }
-  // No visit recorded yet (fresh meter): open until the first visit
-  // starts the clock. The keeper is provably around on deploy days.
+  // Closed by default: no visit on record means nobody is provably
+  // at the counter, and this store does not take money on a maybe.
   if (!lastSeen) {
-    return { closed: false };
+    return { closed: true, cause: "away" };
   }
   const ageMs = Date.now() - new Date(lastSeen).getTime();
-  if (ageMs > AWAY_AFTER_DAYS * 86400 * 1000) {
-    return { closed: true, cause: "dead-man", keeper_last_seen: lastSeen };
+  if (ageMs > PRESENT_WINDOW_HOURS * 3600 * 1000) {
+    return { closed: true, cause: "away", keeper_last_seen: lastSeen };
   }
   return { closed: false, keeper_last_seen: lastSeen };
 }

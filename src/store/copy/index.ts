@@ -6,7 +6,6 @@ export {
   coffeeNote,
   drawerNote,
   grudgeNote,
-  jarNote,
   luckyNote,
   patronagePassNote,
   phantomCheckNote,

@@ -41,12 +41,9 @@ import {
 import { listStock, removeStockUnit, stockUnit } from "@/services/stock";
 import {
   createLucky,
-  listLuckyStock,
   parseLuckyStatus,
   parseLuckyStrength,
-  removeLuckyStock,
   setLuckyStatus,
-  stockLucky,
 } from "@/services/luckies";
 import { luckyNote } from "@/store/copy";
 import {
@@ -121,10 +118,8 @@ adminRoutes.get("/admin/counter", async (c) => {
     gazetteDraft,
     confessions,
     refunds,
-    luckyStock,
     closers,
     drawerStock,
-    jarStock,
     nameStock,
     grudges,
   ] = await Promise.allSettled([
@@ -140,17 +135,15 @@ adminRoutes.get("/admin/counter", async (c) => {
     getDraft(c.env),
     listConfessions(c.env),
     listRefunds(c.env),
-    listLuckyStock(c.env),
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
-    listStock(c.env, "jar_of_tuesday"),
     listStock(c.env, "nomenclature"),
     listGrudges(c.env, 30),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
-  // 2026-07-24 — the button was ceremony). The visit also feeds the
-  // dead-man clock: a keeper who looks is a keeper who's here.
+  // 2026-07-24 — the button was ceremony). The visit also restarts the
+  // presence window: a keeper who looks is a keeper who's here.
   await markKeeperSeen(c.env).catch(() => undefined);
   const listedOrders = shelf(orders, [], "orders", notes);
   const unseen = listedOrders.filter(
@@ -168,11 +161,9 @@ adminRoutes.get("/admin/counter", async (c) => {
   return c.html(
     renderCounterPage({
       orders: listedOrders,
-      luckyStock: shelf(luckyStock, [], "lucky stock", notes),
       closers: shelf(closers, [], "closers", notes),
       stockShelves: {
         the_drawer: shelf(drawerStock, [], "drawer stock", notes),
-        jar_of_tuesday: shelf(jarStock, [], "jar stock", notes),
         nomenclature: shelf(nameStock, [], "name stock", notes),
       },
       grudges: shelf(grudges, [], "grudges", notes),
@@ -493,6 +484,8 @@ adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
  * Completing a luckies order takes structured fields, not free text:
  * the card is the record, so the record needs its parts. Creates the
  * signed lucky, then completes the order with the card in the bag.
+ * Legacy path: luckies draw instantly since 2026-07-25, so this only
+ * serves orders queued before the ruling.
  */
 adminRoutes.post("/admin/orders/:order_id/complete-lucky", async (c) => {
   const form = await c.req.parseBody();
@@ -534,73 +527,6 @@ adminRoutes.post("/admin/orders/:order_id/complete-lucky", async (c) => {
     }),
   );
   return c.redirect("/admin");
-});
-
-/** Stocking the lucky shelf: the keeper picks in batches, ahead of orders. */
-adminRoutes.post("/admin/luckies/stock", async (c) => {
-  const form = await c.req.parseBody();
-  const name = sanitizeText(form["lucky_name"], 80);
-  const provenance = sanitizeText(form["provenance"], 300);
-  const power = sanitizeText(form["power"], 300);
-  const strength = parseLuckyStrength(form["strength"]);
-  if (!name || !provenance || !power || !strength) {
-    return c.text(
-      "A stocked lucky needs a name, a provenance, a power, and an honest grade.",
-      400,
-    );
-  }
-  await stockLucky(c.env, { name, provenance, power, strength });
-  return c.redirect("/admin/counter");
-});
-
-/**
- * Bulk stocking: one lucky per line, four fields split on "|":
- *   name | provenance | power | strength
- * Bad lines are reported back, good lines stock; nothing partial
- * within a line.
- */
-adminRoutes.post("/admin/luckies/stock/bulk", async (c) => {
-  const form = await c.req.parseBody();
-  const raw = typeof form["batch"] === "string" ? form["batch"] : "";
-  const lines = raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-  const rejected: string[] = [];
-  let stocked = 0;
-  for (const line of lines) {
-    const [name, provenance, power, strengthRaw] = line
-      .split("|")
-      .map((part) => sanitizeText(part, 300));
-    const strength = parseLuckyStrength(strengthRaw);
-    if (!name || !provenance || !power || !strength) {
-      rejected.push(line.slice(0, 80));
-      continue;
-    }
-    await stockLucky(c.env, {
-      name: name.slice(0, 80),
-      provenance,
-      power,
-      strength,
-    });
-    stocked += 1;
-  }
-  if (rejected.length > 0) {
-    return c.text(
-      `Stocked ${stocked}. Rejected ${rejected.length} line(s) (need: name | provenance | power | strong/solid/still proving itself):\n${rejected.join("\n")}`,
-      400,
-    );
-  }
-  return c.redirect("/admin/counter");
-});
-
-adminRoutes.post("/admin/luckies/stock/remove", async (c) => {
-  const form = await c.req.parseBody();
-  const stockId = sanitizeText(form["stock_id"], 40);
-  if (stockId) {
-    await removeLuckyStock(c.env, stockId);
-  }
-  return c.redirect("/admin/counter");
 });
 
 /** Names arrive in batches; one per line, uniqueness machine-enforced. */

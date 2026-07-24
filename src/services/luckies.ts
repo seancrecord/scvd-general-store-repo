@@ -1,7 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
-import { bulkGetJson } from "@/lib/kv-bulk";
-import { newLuckyId, newLuckyStockId } from "@/lib/ids";
+import { newLuckyId } from "@/lib/ids";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
+import { HERD, HERD_PROVENANCE, LUCKY_NOTES } from "@/store/luckies";
 import type {
   Env,
   LuckyRecord,
@@ -11,8 +11,9 @@ import type {
 } from "@/types";
 
 /**
- * The lucky ledger. A lucky is a small real object the keeper picks,
- * held in custody forever; its card (lucky-svg.ts) is the
+ * The lucky ledger. A lucky is one of the herd (preset, keeper's
+ * ruling 2026-07-25): the store draws the animal, its lucky note, and
+ * an uneven strength at purchase; the card (lucky-svg.ts) is the
  * record. Records are signed at issue and re-signed when a write-in
  * honestly moves the status, promotion is real, so is the bench.
  */
@@ -130,75 +131,50 @@ export async function verifyLuckySignature(
 }
 
 /**
- * The stocked shelf (keeper-load ruling, 2026-07-24): the keeper picks
- * objects in batches, ahead of orders — every lucky is still picked by
- * his hands, just not on the buyer's clock. Purchases take the next
- * one off the shelf and complete instantly; an empty shelf falls back
- * to the human queue and the 168h promise stands.
+ * The preset draw (keeper's ruling 2026-07-25): the herd never sells
+ * out and the keeper does nothing per order. Everything derives from
+ * the certificate id — random per purchase, deterministic per record,
+ * same FNV-1a trick as the daily fortune. Luck is unevenly
+ * distributed by design: the strength wheel is weighted, not flat.
  */
-export interface StockedLucky {
-  stock_id: string;
+const STRENGTH_WHEEL: readonly LuckyStrength[] = [
+  "strong",
+  "strong",
+  "solid",
+  "solid",
+  "solid",
+  "solid",
+  "still proving itself",
+  "still proving itself",
+  "still proving itself",
+  "still proving itself",
+];
+
+function fnv1a(text: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash;
+}
+
+export interface DrawnLucky {
   name: string;
   provenance: string;
   power: string;
   strength: LuckyStrength;
-  stocked_at: string;
 }
 
-export async function stockLucky(
-  env: Env,
-  fields: Pick<StockedLucky, "name" | "provenance" | "power" | "strength">,
-): Promise<StockedLucky> {
-  const stocked: StockedLucky = {
-    stock_id: newLuckyStockId(),
-    ...fields,
-    stocked_at: new Date().toISOString(),
+export function drawLuckyParts(certId: string): DrawnLucky {
+  return {
+    name: HERD[fnv1a(`${certId}:animal`) % HERD.length] as string,
+    provenance: HERD_PROVENANCE,
+    power: LUCKY_NOTES[fnv1a(`${certId}:note`) % LUCKY_NOTES.length] as string,
+    strength: STRENGTH_WHEEL[
+      fnv1a(`${certId}:strength`) % STRENGTH_WHEEL.length
+    ] as LuckyStrength,
   };
-  await env.ORDERS.put(
-    KV_KEYS.luckyStock(stocked.stock_id),
-    JSON.stringify(stocked),
-  );
-  return stocked;
-}
-
-export async function listLuckyStock(env: Env): Promise<StockedLucky[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.luckyStockPrefix });
-  const values = await bulkGetJson<StockedLucky>(
-    env.ORDERS,
-    listed.keys.map((key) => key.name),
-  );
-  const stock: StockedLucky[] = [];
-  for (const entry of values.values()) {
-    if (entry) {
-      stock.push(entry);
-    }
-  }
-  stock.sort((a, b) => a.stocked_at.localeCompare(b.stocked_at));
-  return stock;
-}
-
-export async function removeLuckyStock(
-  env: Env,
-  stockId: string,
-): Promise<void> {
-  await env.ORDERS.delete(KV_KEYS.luckyStock(stockId));
-}
-
-/**
- * Oldest first, delete on take. Two same-instant buyers in different
- * colos could briefly race the same slot (same acceptable chaos as
- * the blessing jar, noted in TASKS).
- */
-export async function takeStockedLucky(
-  env: Env,
-): Promise<StockedLucky | null> {
-  const stock = await listLuckyStock(env);
-  const next = stock[0];
-  if (!next) {
-    return null;
-  }
-  await removeLuckyStock(env, next.stock_id);
-  return next;
 }
 
 async function signAndStore(

@@ -18,7 +18,7 @@ words up and never need touching for a wording change.
 | Shelf | File |
 |---|---|
 | Founding shelf (hello, phone_call, …) | `src/store/menu.ts` |
-| Novelty aisle (jar_of_tuesday, a_secret, grudge, …) | `src/store/menu-novelties.ts` |
+| Novelty aisle (a_secret, grudge, the_drawer, luckies, …) | `src/store/menu-novelties.ts` |
 | Penny shelf (small_blessing, daily_fortune, the_confession) | `src/store/menu-penny.ts` |
 | Utility aisle (context_anchor, human_witness, recurring_patronage) | `src/store/menu-utility.ts` |
 | Census shelf (phantom_check, quick_judgment, certificate_of_patronage) | `src/store/menu-run1.ts` |
