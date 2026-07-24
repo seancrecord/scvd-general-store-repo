@@ -1,9 +1,23 @@
 import "dotenv/config";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
+import { createPublicClient, http, formatUnits } from "viem";
+import { base } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm";
+
+/** USDC on Base mainnet; the store's till takes nothing else. */
+const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const ERC20_BALANCE_ABI = [
+  {
+    name: "balanceOf",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+];
 
 /**
  * The keeper's shopping run: buy every item on the shelf once, as the
@@ -100,6 +114,32 @@ if (process.env.DRY_RUN) {
   process.exit(0);
 }
 
+// Know thy wallet before the till does: whose key, and is it funded?
+const buyerAccount = privateKeyToAccount(privateKey);
+const publicClient = createPublicClient({ chain: base, transport: http() });
+const balanceRaw = await publicClient
+  .readContract({
+    address: USDC_ADDRESS,
+    abi: ERC20_BALANCE_ABI,
+    functionName: "balanceOf",
+    args: [buyerAccount.address],
+  })
+  .catch(() => null);
+const balanceUsdc =
+  balanceRaw === null ? null : Number(formatUnits(balanceRaw, 6));
+console.log(`  Buyer wallet: ${buyerAccount.address}`);
+console.log(
+  balanceUsdc === null
+    ? "  USDC balance on Base: (couldn't read; RPC hiccup, proceeding blind)"
+    : `  USDC balance on Base: $${balanceUsdc.toFixed(3)}`,
+);
+if (balanceUsdc !== null && balanceUsdc < total) {
+  fail(
+    `That wallet holds $${balanceUsdc.toFixed(3)} USDC on Base but the run needs $${total.toFixed(3)}. ` +
+      "Check: is this the wallet you funded, and is the USDC on the BASE network (not mainnet/other chains)?",
+  );
+}
+
 if (!process.env.YES) {
   const readline = createInterface({ input: process.stdin, output: process.stdout });
   const answer = await readline.question(`Spend $${total.toFixed(3)}? (yes/no) `);
@@ -109,15 +149,20 @@ if (!process.env.YES) {
   }
 }
 
-const account = privateKeyToAccount(privateKey);
-const houseFetch = (url, init = {}) =>
-  fetch(url, {
-    ...init,
-    headers: { ...(init.headers ?? {}), "X-House": houseSecret },
-  });
+// Diagnostic tap: notice whether a signed payment actually rode the retry.
+let lastRequestPaid = false;
+const houseFetch = (url, init = {}) => {
+  const headers = { ...(init.headers ?? {}), "X-House": houseSecret };
+  lastRequestPaid = Object.keys(headers).some(
+    (name) => name.toUpperCase() === "PAYMENT-SIGNATURE",
+  );
+  return fetch(url, { ...init, headers });
+};
 // x402 v2.19 client shape: schemes registered per network, EVM signer inside.
 const fetchWithPay = wrapFetchWithPaymentFromConfig(houseFetch, {
-  schemes: [{ network: "eip155:8453", client: new ExactEvmScheme(account) }],
+  schemes: [
+    { network: "eip155:8453", client: new ExactEvmScheme(buyerAccount) },
+  ],
 });
 
 const receipts = existsSync(RECEIPTS_FILE)
@@ -135,12 +180,20 @@ for (const item of items) {
   const url = `${STORE_URL}/api/buy/${item.id}?${params}`;
   process.stdout.write(`→ ${item.id} ... `);
   try {
+    lastRequestPaid = false;
     const response = await fetchWithPay(url);
     const body = await response.json();
     if (!response.ok) {
       failed += 1;
+      const diagnosis =
+        response.status === 402
+          ? lastRequestPaid
+            ? "a signed payment was offered and DECLINED (usually: not enough USDC on Base in this wallet, or the authorization failed verification)"
+            : "the client never attached a payment to the retry (client-side problem, tell the shoptender)"
+          : "unexpected status";
       console.log(`✖ ${response.status}: ${body.error ?? "unknown"}`);
-      receipts.push({ item: item.id, at: new Date().toISOString(), ok: false, status: response.status, error: body.error });
+      console.log(`    diagnosis: ${diagnosis}`);
+      receipts.push({ item: item.id, at: new Date().toISOString(), ok: false, status: response.status, payment_attached: lastRequestPaid, error: body.error });
       continue;
     }
     const certId = body.certificate?.cert_id ?? body.cert_id;
