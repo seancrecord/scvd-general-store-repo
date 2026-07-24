@@ -37,5 +37,50 @@ export const SPECIMEN_LUCKY: {
     "Printed by the store to show the card. No shelf, no history, no object.",
   power:
     "Shows a buyer what the card records. That is all it does, and we grade honest.",
-  strength: "faint",
+  strength: "still proving itself",
 };
+
+/**
+ * THE TOTEM REGISTER — keeper-approved paste block, 2026-07-24,
+ * verbatim. Reference data for card copy and the grading register.
+ * These are the keeper's OWN totems: not stock, not for sale, never
+ * editorialized. Store stock draws ONLY from the pocket dinos and
+ * safari animals ("The Luckies"); the herd is the entire randomness
+ * mechanism. Re-grading canon: patron results may promote or bench a
+ * charm's siblings; demotion for underperformance is canon (The
+ * Luckies themselves are BENCHED as of this writing).
+ */
+export const TOTEM_REGISTER: readonly { totem: string; power: string }[] = [
+  {
+    totem: "Bobby Bonilla card",
+    power: 'money zone; "the annuity deal \u2014 vibes are immaculate"',
+  },
+  {
+    totem: "Blue stone",
+    power: "powerful voice/speech (situational: presentations, right pocket)",
+  },
+  { totem: "Pot of gold", power: "feels like wealth" },
+  { totem: "Gem ball", power: "confidence" },
+  { totem: "Buddha", power: "belly rubs" },
+  { totem: "Bull from Spain", power: "bullish" },
+  { totem: "LT rookie card", power: "fantasy season only (seasonal)" },
+  { totem: "Viking figurine", power: "roots" },
+  {
+    totem: "Arrowhead",
+    power: `idk what it does but it's a fucking arrowhead`,
+  },
+  {
+    totem: "The Luckies (pocket dinos/safari animals)",
+    power: "luck, unevenly distributed (status: BENCHED)",
+  },
+] as const;
+
+/**
+ * THE HOUSE LUCKY — one dino off the couch, on the shelf behind the
+ * counter, the store's own totem. Never explained beyond this.
+ */
+export const HOUSE_LUCKY = {
+  totem: "one pocket dinosaur, off the couch",
+  power: "second chances",
+  rotation: "probationary",
+} as const;

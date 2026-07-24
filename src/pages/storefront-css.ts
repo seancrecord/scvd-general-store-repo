@@ -185,6 +185,12 @@ body.night {
   text-shadow: 0 0 10px rgba(93,230,200,0.8), 0 0 26px rgba(93,230,200,0.35);
 }
 .led-sep { color: var(--line); }
+/* The empty frame by the register. It's waiting. */
+.frame-line {
+  display: inline-block; padding: 0.3rem 0.9rem;
+  border: 1px dashed var(--line); border-radius: 3px;
+  font-style: italic; font-size: 0.85rem; color: var(--night-faded);
+}
 
 /* ---- the readerboard: this week's note, letters set by hand ---- */
 .board {

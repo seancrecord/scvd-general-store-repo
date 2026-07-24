@@ -2,6 +2,7 @@ import { currentWeekKey } from "@/lib/kv-keys";
 import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
 import { catIsOut } from "@/services/porch";
+import type { FirstDollar } from "@/lib/metrics";
 import { bellLine, STORE_METADATA } from "@/store";
 import {
   FEATURED_SHELVES,
@@ -27,6 +28,16 @@ export interface StorefrontData {
   patronCount: number;
   /** C2: the honest track-record line, computed live, never hand-edited. */
   trackRecord?: string;
+  /** The empty frame by the register. Null means "It's waiting." */
+  firstDollar?: FirstDollar | null;
+}
+
+/** Canon 2026-07-24: the frame holds the first organic settlement, forever. */
+function firstDollarHtml(firstDollar: FirstDollar | null | undefined): string {
+  if (!firstDollar) {
+    return `<span class="frame-line">It's waiting.</span>`;
+  }
+  return `<span class="frame-line">${escapeHtml(firstDollar.item)} \u00B7 $${firstDollar.paid_usdc} \u00B7 ${escapeHtml(firstDollar.at.slice(0, 10))} \u00B7 money zone</span>`;
 }
 
 function featuredHtml(): string {
@@ -141,6 +152,10 @@ export function renderStorefront(data: StorefrontData): string {
         <span class="gauge-label">${COPY.gaugeMailbox}</span>
         <span class="led"><em class="led-num">${data.lettersReceived}</em> in <span class="led-sep">\u00B7</span> <em class="led-num">${data.lettersAnswered}</em> answered</span>
       </div>
+      <div class="gauge">
+        <span class="gauge-label">The first dollar</span>
+        ${firstDollarHtml(data.firstDollar)}
+      </div>
     </div>
 
     <section class="board">
@@ -186,6 +201,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>${COPY.finePrintVerify}</p>
       <p>${COPY.finePrintFounding}</p>
+      <p>${COPY.finePrintHouseLucky}</p>
       <p>${COPY.finePrintPorch}</p>
       <p class="porch-est">${COPY.footerAddress}</p>
     </footer>

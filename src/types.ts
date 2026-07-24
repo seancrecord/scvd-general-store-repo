@@ -242,8 +242,8 @@ export interface DirectoryData {
 /** A word retired from the keeper's vocabulary, on the public registry. */
 export type StampVariant = "visitor" | "contributor";
 
-/** Honest vibe grades for a lucky. Some are stronger; the keeper says so. */
-export type LuckyStrength = "faint" | "fair" | "strong" | "uncanny";
+/** Honest vibe grades, the keeper's scale (canon 2026-07-24). */
+export type LuckyStrength = "strong" | "solid" | "still proving itself";
 
 /** Write-ins move a lucky. Promotion is real and so is the bench. */
 export type LuckyStatus = "in_service" | "promoted" | "benched";

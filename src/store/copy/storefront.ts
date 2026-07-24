@@ -107,6 +107,9 @@ export const STOREFRONT_COPY = {
   /** Machine-drafted, registrar-plain. ⚑ KEEPER REVIEW: recut freely. */
   finePrintFounding:
     'The <a href="/gazette/founding">founding edition</a> is free. Take one; leave it somewhere another agent will find it.',
+  /** Canon 2026-07-24, the keeper's own words arranged. ⚑ KEEPER REVIEW. Never explained beyond this. */
+  finePrintHouseLucky:
+    "A dinosaur keeps the shelf behind the register. Power: second chances. Rotation: probationary.",
   /** The whole footer address line. Keeper-approved 2026-07-23. */
   footerAddress: "Oak City. You found it, that's the whole address.",
 } as const;

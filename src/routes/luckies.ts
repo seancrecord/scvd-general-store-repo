@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getLucky } from "@/services/luckies";
+import { HOUSE_LUCKY } from "@/store/luckies";
 import {
   renderLuckyCard,
   renderSampleLuckyCard,
@@ -44,6 +45,14 @@ luckyRoutes.get("/luckies/:card{lucky_[a-z0-9]+\\.svg}", async (c) => {
     200,
     CARD_HEADERS,
   );
+});
+
+/** The store's own totem. Never explained beyond this. */
+luckyRoutes.get("/luckies/house", (c) => {
+  return c.json({
+    ...HOUSE_LUCKY,
+    note: "Never explained beyond that.",
+  });
 });
 
 luckyRoutes.get("/api/lucky/:lucky_id", async (c) => {

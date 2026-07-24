@@ -587,7 +587,7 @@ adminRoutes.post("/admin/luckies/stock/bulk", async (c) => {
   }
   if (rejected.length > 0) {
     return c.text(
-      `Stocked ${stocked}. Rejected ${rejected.length} line(s) (need: name | provenance | power | faint/fair/strong/uncanny):\n${rejected.join("\n")}`,
+      `Stocked ${stocked}. Rejected ${rejected.length} line(s) (need: name | provenance | power | strong/solid/still proving itself):\n${rejected.join("\n")}`,
       400,
     );
   }

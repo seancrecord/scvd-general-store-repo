@@ -267,6 +267,19 @@ export async function recordSettlement(
     Math.round(signals.paidUsdc * USDC_MICRO),
   );
   if (bucketSuffix(event, false) === "") {
+    // The First Dollar: the empty frame by the register fills exactly
+    // once, with the first organic settlement, forever.
+    const frame = await env.COUNTERS.get(KV_KEYS.firstDollar);
+    if (!frame) {
+      await env.COUNTERS.put(
+        KV_KEYS.firstDollar,
+        JSON.stringify({
+          item: event.item,
+          paid_usdc: signals.paidUsdc,
+          at: event.at,
+        }),
+      );
+    }
     await bump(env, KV_KEYS.metric(month, "dpaid", dayKey()));
   }
   if (event.declared_source && !event.house) {
@@ -566,6 +579,17 @@ export async function listRecentPorchEvents(
     cursor = listed.cursor;
   }
   return events;
+}
+
+export interface FirstDollar {
+  item: string;
+  paid_usdc: number;
+  at: string;
+}
+
+/** What the frame by the register holds. Null means "It's waiting." */
+export async function getFirstDollar(env: Env): Promise<FirstDollar | null> {
+  return env.COUNTERS.get<FirstDollar>(KV_KEYS.firstDollar, "json");
 }
 
 /** Recent paying wallets, for the cohort/wash-filter review. */
