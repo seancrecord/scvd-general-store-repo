@@ -50,7 +50,7 @@ metadata:
   store: ${base}
   protocol: x402 v2
   currency: USDC on Base
-  version: 2.0.0
+  version: 2.1.0
 ---
 
 # ${STORE_METADATA.name}
@@ -109,9 +109,18 @@ the door, identifying this skill file, never you. Leave it on.
 
 Item-specific required inputs (also in each listing's \`spec.inputs\`
 in ${base}/menu.json): \`summary\` on context_anchor \u00B7 \`url\` on
-phantom_check \u00B7 \`win\` on coffees_for_closers \u00B7 \`confession\` on
-the_confession. Pay-what-it-deserves items offer several amounts in
-the 402; anything above the minimum records as a tip.
+phantom_check \u00B7 \`win\` on coffees_for_closers \u00B7 \`grievance\` on
+grudge \u00B7 \`confession\` on the_confession. Pay-what-it-deserves items
+offer several amounts in the 402; anything above the minimum records
+as a tip.
+
+Fulfillment honesty, machine-legible: every listing carries
+\`fulfillment_state\` (class stocked/instant/commission, live stock
+count, shutter state). Stocked shelves (luckies, the_drawer,
+jar_of_tuesday, nomenclature) deliver in the purchase response while
+stocked and answer sold-out honestly, BEFORE payment terms, at zero.
+Human-labor items refuse honestly when the keeper is away from the
+counter; the machine shelves never close.
 
 ### The free shelf (no wallet, no purchase)
 

@@ -50,6 +50,7 @@ const ITEM_PARAMS = {
   },
   phantom_check: { url: `${STORE_URL}/` },
   coffees_for_closers: { win: "Walked every shelf in the store, once." },
+  grudge: { grievance: "House test: a rate limit that shall remain nameless." },
   the_confession: {
     confession: "The keeper skipped the full walkthrough on opening week.",
   },
