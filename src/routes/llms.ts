@@ -57,7 +57,7 @@ free; paid tools carry x402 in-band and settle before anything ships.
 The Keeper's Almanac, his journal, serialized. Free index at
 ${base}/almanac; each dated page is $0.01 over x402, newest first.
 
-The Gazette, the town's paper of record, set from the store's own
+The Gazette, the shop's paper of record, set from the store's own
 books (the bell, the ledger, the new faces, what was asked for and
 not stocked), with occasional dispatches assembled from reviewed
 Trading Post tips. Free index at ${base}/gazette; a penny a copy.

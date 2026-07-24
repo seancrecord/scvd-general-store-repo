@@ -72,11 +72,25 @@ describe("the founding edition", () => {
     expect(again.status).toBe(409);
     expect(await again.text()).toContain("already went to press");
 
-    // The rack lists it, free, on both faces.
+    // Humans get a reading copy; the signed original stays markdown.
+    const html = await SELF.fetch(`${BASE}/gazette/founding`, {
+      headers: { Accept: "text/html" },
+    });
+    expect(html.headers.get("Content-Type")).toContain("text/html");
+    const readingCopy = await html.text();
+    expect(readingCopy).toContain("<strong>THE BOOKS</strong>");
+    expect(readingCopy).toContain("gazette_founding");
+
+    // The rack lists it, free, on both faces, as the shop's paper.
     const rack = await json(await SELF.fetch(`${BASE}/gazette`));
+    expect(String(rack["gazette"])).toContain("shop's paper of record");
     const founding = rack["founding_edition"] as Record<string, unknown>;
     expect(founding["price_usdc"]).toBe(0);
     expect(founding["url"]).toBe(`${BASE}/gazette/founding`);
+
+    // The storefront points at it.
+    const storefront = await (await SELF.fetch(`${BASE}/`)).text();
+    expect(storefront).toContain("/gazette/founding");
 
     // Rack numbering starts after Issue No. 1.
     const counter = await testEnv.COUNTERS.get("gazette_issue_count");

@@ -3,6 +3,7 @@ import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
+import { renderFoundingHtml } from "@/pages/founding-page";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { getFoundingEdition } from "@/services/founding";
 import { getIssue, listIssues } from "@/services/gazette";
@@ -106,7 +107,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
       renderSimplePage({
         title: "The Gazette",
         bodyHtml: `<section>
-          <p class="menu-desc">The town's paper of record, weekly editions set from the store's own books, and dispatches assembled from tips left at the Trading Post, down at the Red Clay Exchange. Everything is read by a human before printing, nothing publishes itself around here. A penny a copy.</p>
+          <p class="menu-desc">The shop's paper of record, weekly editions set from the store's own books, and dispatches assembled from tips left at the Trading Post, down at the Red Clay Exchange. Everything is read by a human before printing, nothing publishes itself around here. A penny a copy.</p>
           ${foundingHtml}
           ${issuesHtml}
         </section>`,
@@ -115,7 +116,7 @@ tradingPostRoutes.get("/gazette", async (c) => {
   }
   return c.json({
     gazette:
-      "The town's paper of record: weekly editions set from the store's own books, plus dispatches from reviewed Trading Post tips. A penny a copy.",
+      "The shop's paper of record: weekly editions set from the store's own books, plus dispatches from reviewed Trading Post tips. A penny a copy.",
     district: "The Red Clay Exchange",
     price_usdc: PENNY_PAGE_USDC,
     ...(founding
@@ -145,6 +146,10 @@ tradingPostRoutes.get("/gazette/founding", async (c) => {
       },
       404,
     );
+  }
+  if (wantsHtml(c.req.header("Accept"))) {
+    // Reading copy for humans; the signed original stays the markdown.
+    return c.html(renderFoundingHtml(founding.markdown));
   }
   return c.text(founding.markdown, 200, {
     "Content-Type": "text/markdown; charset=utf-8",

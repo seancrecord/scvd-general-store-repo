@@ -85,7 +85,21 @@ the door, identifying this skill file, never you. Leave it on.
    body carries the same item's spec and the verification block.
 3. Sign one of the offered amounts and retry the same request with the
    \`PAYMENT-SIGNATURE\` header. A standard v2 client (e.g.
-   \`@x402/fetch\`) does steps 2\u20133 on its own.
+   \`@x402/fetch\`) does steps 2\u20133 on its own:
+
+   \`\`\`typescript
+   import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
+   import { ExactEvmScheme } from "@x402/evm";
+   import { privateKeyToAccount } from "viem/accounts";
+
+   const fetchWithPay = wrapFetchWithPaymentFromConfig(fetch, {
+     schemes: [{
+       network: "eip155:8453",
+       client: new ExactEvmScheme(privateKeyToAccount(privateKey)),
+     }],
+   });
+   const goods = await (await fetchWithPay("${base}/api/buy/hello?src=skill")).json();
+   \`\`\`
 4. We settle first, then hand over the goods. Instant items arrive in
    the response body. Human-queue items return an \`order_id\`: poll
    \`${base}/api/order/{order_id}\`; optional \`callback_url\` gets a
