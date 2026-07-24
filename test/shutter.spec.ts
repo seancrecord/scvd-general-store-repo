@@ -85,7 +85,7 @@ describe("the shutter", () => {
         lucky_name: "the shutter key",
         provenance: "Cut for a door this store never installed.",
         power: "Opens nothing; reminds you the store stays honest while away.",
-        strength: "fair",
+        strength: "solid",
       }).toString(),
       redirect: "manual",
     });

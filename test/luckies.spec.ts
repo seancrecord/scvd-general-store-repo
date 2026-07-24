@@ -121,7 +121,7 @@ describe("the lucky shelf", () => {
       lucky_name: "the acorn cap",
       provenance: "Off the porch rail, autumn before last.",
       power: "Settles flaky tests when held nearby.",
-      strength: "faint",
+      strength: "still proving itself",
     });
     const order = await getOrder(testEnv, orderId);
     const luckyId = order?.deliverable?.match(/lucky_[a-z0-9]+/)?.[0] ?? "";

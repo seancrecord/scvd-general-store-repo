@@ -56,10 +56,9 @@ function luckyCompleteForm(orderId: string): string {
           <input type="text" name="power" placeholder="What it does, farmers-market terms" maxlength="300" required>
           <select name="strength" required>
             <option value="" disabled selected>Strength, graded honest</option>
-            <option value="faint">faint</option>
-            <option value="fair">fair</option>
             <option value="strong">strong</option>
-            <option value="uncanny">uncanny</option>
+            <option value="solid">solid</option>
+            <option value="still proving itself">still proving itself</option>
           </select>
           <button type="submit">Pick it, card it, complete</button>
         </form>`;
@@ -362,7 +361,7 @@ export function renderCounterPage(data: CounterPageData): string {
 
   <section>
     <h2>The lucky shelf (${data.luckyStock.length} stocked)</h2>
-    <p>Pick in batches, ahead of orders: every stocked lucky is yours-picked; purchases take the oldest one and complete on their own. An empty shelf falls back to the queue above.</p>
+    <p>Stock draws ONLY from the pocket dinos and safari animals; the herd is the entire randomness mechanism (canon, 2026-07-24). Each unit: one animal, keeper-named, power in farmers-market register, graded honest. Purchases take the oldest; a bare shelf sells out honestly.</p>
     ${
       data.luckyStock.length === 0
         ? "<p><em>Shelf's bare. The next luckies order waits on your hands.</em></p>"
@@ -382,17 +381,16 @@ export function renderCounterPage(data: CounterPageData): string {
       <input type="text" name="power" placeholder="What it does, farmers-market terms" maxlength="300" required>
       <select name="strength" required>
         <option value="" disabled selected>Strength, graded honest</option>
-        <option value="faint">faint</option>
-        <option value="fair">fair</option>
         <option value="strong">strong</option>
-        <option value="uncanny">uncanny</option>
+        <option value="solid">solid</option>
+        <option value="still proving itself">still proving itself</option>
       </select>
       <button type="submit">Stock it</button>
     </form>
     <details>
       <summary>Stock a batch (one per line: name | provenance | power | strength)</summary>
       <form method="POST" action="/admin/luckies/stock/bulk">
-        <textarea name="batch" rows="6" cols="70" placeholder="the brass washer | Found heads-up in the gravel lot | Keeps deploys boring on Fridays | strong"></textarea>
+        <textarea name="batch" rows="6" cols="70" placeholder="Reginald the Ankylosaur | Off the couch, with the herd | Keeps deploys boring on Fridays | solid"></textarea>
         <button type="submit">Stock the batch</button>
       </form>
     </details>

@@ -78,6 +78,7 @@ export const KV_KEYS = {
   weekNote: "week_note",
   keeperLastSeen: "keeper_last_seen",
   shutterOverride: "shutter_override",
+  firstDollar: "first_dollar",
   latestDigest: "digest:latest",
   gazetteIssueCount: "gazette_issue_count",
   blessingLast: "blessing_last",

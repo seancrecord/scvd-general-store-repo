@@ -27,11 +27,11 @@ const GOLD = "#8c6a1b";
 const WIDTH = 320;
 const HEIGHT = 480;
 
+/** Weakest to strongest, the keeper's scale. */
 const STRENGTH_ORDER: readonly LuckyStrength[] = [
-  "faint",
-  "fair",
+  "still proving itself",
+  "solid",
   "strong",
-  "uncanny",
 ];
 
 /** Greedy word wrap; SVG text doesn't do it for us. */
@@ -76,15 +76,15 @@ function textLines(
   return { svg, nextY: startY + lines.length * step };
 }
 
-/** Four slots, filled to the grade. The countermark's honest language. */
+/** Three slots, filled to the grade. The countermark's honest language. */
 function strengthSlots(strength: LuckyStrength, y: number): string {
   const gradeIndex = STRENGTH_ORDER.indexOf(strength);
-  const slotWidth = 20;
-  const gap = 7;
-  const total = 4 * slotWidth + 3 * gap;
+  const slotWidth = 24;
+  const gap = 8;
+  const total = 3 * slotWidth + 2 * gap;
   const startX = (WIDTH - total) / 2;
   const slots: string[] = [];
-  for (let index = 0; index < 4; index += 1) {
+  for (let index = 0; index < 3; index += 1) {
     const x = startX + index * (slotWidth + gap);
     slots.push(
       index <= gradeIndex

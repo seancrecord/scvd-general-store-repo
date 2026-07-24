@@ -128,7 +128,7 @@ describe("coffee's for closers", () => {
       },
       body: new URLSearchParams({
         batch: [
-          "the river-glass chip | Oak City creek bed, low summer | Softens flaky-network days | fair",
+          "the river-glass chip | Oak City creek bed, low summer | Softens flaky-network days | solid",
           "a line with no pipes at all",
         ].join("\n"),
       }).toString(),
@@ -161,7 +161,7 @@ describe("coffee's for closers", () => {
         lucky_name: "the bottle-cap star",
         provenance: "Pressed flat by a train that never slowed.",
         power: "Keeps CI green on Mondays.",
-        strength: "fair",
+        strength: "solid",
       }).toString(),
       redirect: "manual",
     });

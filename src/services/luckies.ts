@@ -18,10 +18,9 @@ import type {
  */
 
 const STRENGTHS: readonly LuckyStrength[] = [
-  "faint",
-  "fair",
   "strong",
-  "uncanny",
+  "solid",
+  "still proving itself",
 ];
 
 const STATUSES: readonly LuckyStatus[] = ["in_service", "promoted", "benched"];
