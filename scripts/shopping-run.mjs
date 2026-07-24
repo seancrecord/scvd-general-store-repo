@@ -133,7 +133,11 @@ console.log(
     ? "  USDC balance on Base: (couldn't read; RPC hiccup, proceeding blind)"
     : `  USDC balance on Base: $${balanceUsdc.toFixed(3)}`,
 );
-if (balanceUsdc !== null && balanceUsdc < total) {
+if (
+  balanceUsdc !== null &&
+  balanceUsdc < total &&
+  !process.env.SKIP_BALANCE_CHECK
+) {
   fail(
     `That wallet holds $${balanceUsdc.toFixed(3)} USDC on Base but the run needs $${total.toFixed(3)}. ` +
       "Check: is this the wallet you funded, and is the USDC on the BASE network (not mainnet/other chains)?",
@@ -150,13 +154,16 @@ if (!process.env.YES) {
 }
 
 // Diagnostic tap: notice whether a signed payment actually rode the retry.
+// IMPORTANT: the x402 wrapper retries with a fully-built Request OBJECT as
+// the first argument (no init). Any wrapper that rebuilds headers from init
+// silently strips PAYMENT-SIGNATURE off the retry — twice now this comment
+// is a headstone. Normalize through new Request() and mutate ITS headers.
 let lastRequestPaid = false;
-const houseFetch = (url, init = {}) => {
-  const headers = { ...(init.headers ?? {}), "X-House": houseSecret };
-  lastRequestPaid = Object.keys(headers).some(
-    (name) => name.toUpperCase() === "PAYMENT-SIGNATURE",
-  );
-  return fetch(url, { ...init, headers });
+const houseFetch = (input, init) => {
+  const request = new Request(input, init);
+  request.headers.set("X-House", houseSecret);
+  lastRequestPaid = request.headers.has("PAYMENT-SIGNATURE");
+  return fetch(request);
 };
 // x402 v2.19 client shape: schemes registered per network, EVM signer inside.
 const fetchWithPay = wrapFetchWithPaymentFromConfig(houseFetch, {
