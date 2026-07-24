@@ -49,6 +49,11 @@ import {
 } from "@/services/confessions";
 import { setMonthlyNote } from "@/services/patronage";
 import {
+  markKeeperSeen,
+  setShutter,
+  shutterState,
+} from "@/services/shutter";
+import {
   addCorrection,
   assembleDraft,
   getDraft,
@@ -130,7 +135,9 @@ adminRoutes.get("/admin/counter", async (c) => {
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
   // so the 24h page stands down for everything listed (keeper's order,
-  // 2026-07-24 — the button was ceremony).
+  // 2026-07-24 — the button was ceremony). The visit also feeds the
+  // dead-man clock: a keeper who looks is a keeper who's here.
+  await markKeeperSeen(c.env).catch(() => undefined);
   const listedOrders = shelf(orders, [], "orders", notes);
   const unseen = listedOrders.filter(
     (order) => order.status === "queued" && !order.acknowledged_at,
@@ -421,6 +428,13 @@ adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
 adminRoutes.get("/admin/bell", async (c) => {
   const rings = await listRecentPorchEvents(c.env, "bell", 25);
   return c.html(renderBellPage({ rings }));
+});
+
+/** The shutter lever: close or open the human-labor shelf by hand. */
+adminRoutes.post("/admin/shutter", async (c) => {
+  const form = await c.req.parseBody();
+  await setShutter(c.env, form["state"] === "closed");
+  return c.redirect("/admin/tools");
 });
 
 /** The founding press: prints once, signed, with the numbers of its day. */

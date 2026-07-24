@@ -38,6 +38,19 @@ export function renderToolsPage(): string {
   </section>
 
   <section>
+    <h2>The shutter (human-labor shelf)</h2>
+    <p>Closed = human-labor purchases are refused before any money moves ("the keeper is away from the counter"). Machine shelves and stocked luckies keep selling. It also closes ITSELF if the counter goes unvisited for 14 days, and opening the counter restarts that clock, so a long absence can never break the 168h promise.</p>
+    <form method="POST" action="/admin/shutter" style="display:inline">
+      <input type="hidden" name="state" value="closed">
+      <button type="submit">Close the shutter (going away)</button>
+    </form>
+    <form method="POST" action="/admin/shutter" style="display:inline">
+      <input type="hidden" name="state" value="open">
+      <button type="submit">Open the shutter (back at the counter)</button>
+    </form>
+  </section>
+
+  <section>
     <h2>The lucky shelf</h2>
     <p>Write-ins move a lucky (they ride the Mailbox). The record re-signs and the card re-inks; the bench is real.</p>
     <form method="POST" action="/admin/luckies/move">
