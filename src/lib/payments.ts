@@ -19,6 +19,7 @@ import { installBazaarObserver } from "@/lib/bazaar-observer";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { getMenuItem, MENU_ITEMS } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { SPEC_RETURNS } from "@/store/spec";
 import type { Env, MenuItem } from "@/types";
 
 /**
@@ -79,6 +80,27 @@ like a regular person. The guestbook's free.</p>
 </body></html>`;
 }
 
+/**
+ * The 402's resource description rides inside the payment payload the
+ * client echoes to the facilitator, and CDP's schema caps it at 500
+ * characters — discovered the hard way when the store's four wordiest
+ * listings became unbuyable. The header carries the compact spec
+ * capability line; the full pitch lives in menu.json and the 402 body.
+ * DESCRIPTION_CAP is pinned by test; never let a pitch outgrow the till.
+ */
+export const ROUTE_DESCRIPTION_CAP = 480;
+
+export function buyRouteDescription(item: MenuItem, env: Env): string {
+  const tierNote =
+    item.pricing === "pay_what_it_deserves"
+      ? " Amounts above the minimum record as tips."
+      : "";
+  const description = `${item.name}. ${SPEC_RETURNS[item.id] ?? item.description}${tierNote} Full listing: ${env.STORE_BASE_URL}/menu/${item.id}. MCP tool: buy_${item.id}.`;
+  return description.length > ROUTE_DESCRIPTION_CAP
+    ? `${description.slice(0, ROUTE_DESCRIPTION_CAP - 1)}\u2026`
+    : description;
+}
+
 function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
   const payTo = env.PAY_TO_ADDRESS;
   const accepts: PaymentOption[] = priceTiersUsdc(item).map((tierUsdc) => ({
@@ -87,13 +109,9 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
     price: `$${tierUsdc}`,
     payTo,
   }));
-  const tierNote =
-    item.pricing === "pay_what_it_deserves"
-      ? " Higher offers in the accepts list are welcome; the difference is recorded as a tip and the keeper notices tips."
-      : "";
   return {
     accepts,
-    description: `${item.name}, ${item.description}${tierNote} Also served over MCP: tool buy_${item.id} at ${env.STORE_BASE_URL}/mcp.`,
+    description: buyRouteDescription(item, env),
     mimeType: "application/json",
     resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
     extensions: buyDiscoveryExtensions(item),
