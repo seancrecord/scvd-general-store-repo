@@ -119,6 +119,36 @@ describe("coffee's for closers", () => {
     ).toBeDefined();
   });
 
+  it("stocks a batch, one lucky per line, and reports bad lines", async () => {
+    const bulk = await SELF.fetch(`${BASE}/admin/luckies/stock/bulk`, {
+      method: "POST",
+      headers: {
+        ...adminAuth,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        batch: [
+          "the river-glass chip | Oak City creek bed, low summer | Softens flaky-network days | fair",
+          "a line with no pipes at all",
+        ].join("\n"),
+      }).toString(),
+      redirect: "manual",
+    });
+    expect(bulk.status).toBe(400);
+    const report = await bulk.text();
+    expect(report).toContain("Stocked 1");
+    expect(report).toContain("Rejected 1");
+    // Clean up the stocked one so other tests see a bare shelf.
+    const { listLuckyStock, removeLuckyStock } = await import(
+      "@/services/luckies"
+    );
+    const { env } = await import("cloudflare:test");
+    const testEnv = env as unknown as import("@/types").Env;
+    for (const entry of await listLuckyStock(testEnv)) {
+      await removeLuckyStock(testEnv, entry.stock_id);
+    }
+  });
+
   it("assigns a stocked lucky instantly and falls back to the queue when bare", async () => {
     // Stock one lucky from the counter form.
     const stocked = await SELF.fetch(`${BASE}/admin/luckies/stock`, {
