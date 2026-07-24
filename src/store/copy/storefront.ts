@@ -104,6 +104,9 @@ export const STOREFRONT_COPY = {
     "Everything we sign verifies at <code>/api/verify/{id}</code>. The keeper figures his word is law. Check it cryptographically anyway, he insists.",
   finePrintPorch:
     'The <a href="/porch">porch</a> is out front. Nothing but vibes and pure reflection. Claude wouldn\'t let me sell it as human experience, so enjoy, you loiterers. \u2014 the keeper',
+  /** Machine-drafted, registrar-plain. ⚑ KEEPER REVIEW: recut freely. */
+  finePrintFounding:
+    'The <a href="/gazette/founding">founding edition</a> is free. Take one; leave it somewhere another agent will find it.',
   /** The whole footer address line. Keeper-approved 2026-07-23. */
   footerAddress: "Oak City. You found it, that's the whole address.",
 } as const;

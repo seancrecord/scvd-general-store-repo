@@ -241,7 +241,7 @@ export function renderEdition(facts: EditionFacts, editionNumber: number): strin
     );
   return `# The Gazette · Edition No. ${editionNumber}
 
-*The town's paper of record, covering the period since ${facts.periodStart.slice(0, 10)}. Set from the store's own books.*
+*The shop's paper of record, covering the period since ${facts.periodStart.slice(0, 10)}. Set from the store's own books.*
 
 ## FRONT COUNTER
 

@@ -2,9 +2,8 @@ import "dotenv/config";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { privateKeyToAccount } from "viem/accounts";
-import { createWalletClient, http } from "viem";
-import { base } from "viem/chains";
-import { wrapFetchWithPayment } from "@x402/fetch";
+import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
+import { ExactEvmScheme } from "@x402/evm";
 
 /**
  * The keeper's shopping run: buy every item on the shelf once, as the
@@ -111,13 +110,15 @@ if (!process.env.YES) {
 }
 
 const account = privateKeyToAccount(privateKey);
-const walletClient = createWalletClient({ account, chain: base, transport: http() });
 const houseFetch = (url, init = {}) =>
   fetch(url, {
     ...init,
     headers: { ...(init.headers ?? {}), "X-House": houseSecret },
   });
-const fetchWithPay = wrapFetchWithPayment(houseFetch, walletClient);
+// x402 v2.19 client shape: schemes registered per network, EVM signer inside.
+const fetchWithPay = wrapFetchWithPaymentFromConfig(houseFetch, {
+  schemes: [{ network: "eip155:8453", client: new ExactEvmScheme(account) }],
+});
 
 const receipts = existsSync(RECEIPTS_FILE)
   ? JSON.parse(readFileSync(RECEIPTS_FILE, "utf8"))

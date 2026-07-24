@@ -185,6 +185,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${escapeHtml(STORE_METADATA.refund_policy)}</p>
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
       <p>${COPY.finePrintVerify}</p>
+      <p>${COPY.finePrintFounding}</p>
       <p>${COPY.finePrintPorch}</p>
       <p class="porch-est">${COPY.footerAddress}</p>
     </footer>
