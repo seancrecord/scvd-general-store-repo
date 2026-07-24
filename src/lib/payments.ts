@@ -16,6 +16,7 @@ import {
   pennyPageDiscoveryExtensions,
 } from "@/lib/bazaar-discovery";
 import { installBazaarObserver } from "@/lib/bazaar-observer";
+import { extractPaymentNonce } from "@/lib/replay-guard";
 import { getMenuItem, MENU_ITEMS } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import type { Env, MenuItem } from "@/types";
@@ -180,6 +181,46 @@ export function minimumUsdcForPath(path: string): number {
   return 0;
 }
 
+/**
+ * Why a payment was declined, remembered briefly by nonce so the gate
+ * can tell the payer the truth instead of re-issuing a mute challenge.
+ * In-isolate, best effort, bounded.
+ */
+export interface DeclineReason {
+  reason: string;
+  message?: string;
+}
+
+const declineReasons = new Map<string, DeclineReason>();
+const DECLINE_MEMORY = 50;
+
+function rememberDecline(
+  paymentPayload: unknown,
+  reason: string,
+  message?: string,
+): void {
+  const nonce = extractPaymentNonce(paymentPayload);
+  if (!nonce) {
+    return;
+  }
+  if (declineReasons.size >= DECLINE_MEMORY) {
+    const oldest = declineReasons.keys().next().value;
+    if (oldest) {
+      declineReasons.delete(oldest);
+    }
+  }
+  declineReasons.set(nonce, { reason, ...(message ? { message } : {}) });
+}
+
+/** One read per decline; the gate consumes it into the 402 body and the books. */
+export function takeDeclineReason(nonce: string): DeclineReason | undefined {
+  const found = declineReasons.get(nonce);
+  if (found) {
+    declineReasons.delete(nonce);
+  }
+  return found;
+}
+
 export interface PaymentStack {
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
@@ -202,6 +243,26 @@ export function getPaymentStack(env: Env): PaymentStack {
       new ExactEvmScheme(),
     );
     resourceServer.registerExtension(bazaarResourceServerExtension);
+    // The decline instrument: keep the facilitator's verdict so the
+    // gate can put WHY into the 402 body and the books, instead of
+    // discarding it (which it did, to the keeper's own confusion).
+    resourceServer.onAfterVerify(async (context) => {
+      if (context.result.isValid === false) {
+        rememberDecline(
+          context.paymentPayload,
+          context.result.invalidReason ?? "verification_declined",
+          context.result.invalidMessage,
+        );
+      }
+    });
+    resourceServer.onVerifyFailure(async (context) => {
+      rememberDecline(
+        context.paymentPayload,
+        "verify_error",
+        context.error instanceof Error ? context.error.message : undefined,
+      );
+      return undefined;
+    });
     const routes: RoutesConfig = {};
     for (const item of MENU_ITEMS) {
       routes[`GET /api/buy/${item.id}`] = buyRouteConfig(item, env);
