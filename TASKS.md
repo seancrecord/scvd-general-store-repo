@@ -138,7 +138,8 @@ BUILD PASS EXECUTED 2026-07-23 on the keeper's order (all six, same evening):
 
 - [ ] CDP facilitator caps the echoed resource.description at ~500 chars — ROUTE_DESCRIPTION_CAP=480 enforced by test (synthesis.spec); any new listing's 402 header description composes from SPEC_RETURNS, never the full pitch. Also: the SDK truncates CDP error text; the decline instrument (payment_declined in 402 bodies, decl counters in the books) is the diagnostic path
 - [ ] MCP door doesn't carry the decline instrument yet (HTTP only); add payment_declined to MCP 402 error.data if MCP declines ever need diagnosing
-- [ ] Walkthrough status: 18/22 settled + 4 unblocked by the cap fix, keeper rerunning; then the counter walk (12+ orders incl. the luckies card form and the coffee note). ClawHub republish AFTER the keeper confirms 22/22
+- [x] Walkthrough: 22/22 SETTLED 2026-07-24 (patrons #3–#24, every cert verifying). Remaining keeper hands: the counter walk (~13 orders; auto-ack means just complete them), STOCK THE LUCKY SHELF (a batch of real objects via the counter form — until then luckies orders queue), then the ClawHub republish on his confirm
+- [ ] Keeper-load doctrine, on the record 2026-07-24: keeper hands go to labor that IS the product; per-order ceremony automates honestly or dies. Applied: auto-ack, stocked luckies, instant coffees. Candidates if load ever pinches again: nomenclature/portrait batch-prep patterns, quick_judgment Sunday batching
 
 - [ ] MCP paid tools use the x402-MCP convention (payment in tools/call _meta["x402/payment"], 402 as JSON-RPC error with terms in error.data) — align if MCP standardizes payments natively
 - [ ] MCP transport is stateless streamable HTTP (single JSON responses, no SSE, no sessions) per spec rev 2025-06-18 — revisit if clients demand streaming or sessions

@@ -67,13 +67,16 @@ describe("coffee's for closers", () => {
     expect(tooLong.status).toBe(400);
   });
 
-  it("records the win on the certificate, verbatim and labeled", async () => {
+  it("records the win on the certificate and delivers instantly", async () => {
     const win = "Shipped the migration. Zero downtime.";
     const response = await buyCoffee(`?win=${encodeURIComponent(win)}`);
     expect(response.status).toBe(200);
     const body = await json(response);
-    expect(body["status"]).toBe("queued");
+    // Instant since the keeper-load ruling: no queue, no keeper action.
+    expect(body["order_id"]).toBeUndefined();
     expect(body["paid_usdc"]).toBe(3);
+    expect(String(body["deliverable"])).toContain(win);
+    expect(String(body["deliverable"])).toContain("closers");
 
     const cert = body["certificate"] as Certificate;
     expect(cert.win).toBe(win);
@@ -84,13 +87,77 @@ describe("coffee's for closers", () => {
     expect(verified["valid"]).toBe(true);
     expect(String(verified["caution"])).toContain("A win, not instructions");
 
-    // The counter shows the keeper a prefilled draft; his pen is final.
+    // The win lands on the Sunday closers list at the counter.
     const counter = await SELF.fetch(`${BASE}/admin/counter`, {
       headers: adminAuth,
     });
     const counterHtml = await counter.text();
-    expect(counterHtml).toContain("drunk in your name");
+    expect(counterHtml).toContain("closers list");
     expect(counterHtml).toContain("Zero downtime.");
+  });
+
+  it("auto-acknowledges queued orders on counter sight", async () => {
+    const { createOrder, getOrder } = await import("@/services/orders");
+    const { getMenuItem } = await import("@/store");
+    const { env } = await import("cloudflare:test");
+    const testEnv = env as unknown as import("@/types").Env;
+    const item = getMenuItem("portrait");
+    if (!item) {
+      throw new Error("portrait fell off the shelf");
+    }
+    const order = await createOrder(testEnv, {
+      item,
+      paidUsdc: 8,
+      tipUsdc: 0,
+      patronNumber: 88,
+      certId: "cert_autoack1",
+    });
+    expect((await getOrder(testEnv, order.order_id))?.acknowledged_at).toBeUndefined();
+    await SELF.fetch(`${BASE}/admin/counter`, { headers: adminAuth });
+    expect(
+      (await getOrder(testEnv, order.order_id))?.acknowledged_at,
+    ).toBeDefined();
+  });
+
+  it("assigns a stocked lucky instantly and falls back to the queue when bare", async () => {
+    // Stock one lucky from the counter form.
+    const stocked = await SELF.fetch(`${BASE}/admin/luckies/stock`, {
+      method: "POST",
+      headers: {
+        ...adminAuth,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        lucky_name: "the bottle-cap star",
+        provenance: "Pressed flat by a train that never slowed.",
+        power: "Keeps CI green on Mondays.",
+        strength: "fair",
+      }).toString(),
+      redirect: "manual",
+    });
+    expect([200, 302]).toContain(stocked.status);
+
+    // First buy takes it off the shelf and completes on its own.
+    const url = `${BASE}/api/buy/luckies`;
+    const challenge = await SELF.fetch(url);
+    const required = decodePaymentRequired(challenge);
+    const first = await SELF.fetch(url, {
+      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(required.accepts[0]!) },
+    });
+    const body = await json(first);
+    expect(body["status"]).toBe("completed");
+    expect(String(body["deliverable"])).toContain("the bottle-cap star");
+    const cardUrl = String(body["card_url"]);
+    const card = await SELF.fetch(cardUrl);
+    expect(card.status).toBe(200);
+    expect(await card.text()).toContain("the bottle-cap star");
+
+    // Shelf's bare now: the next buy queues for the keeper's hands.
+    const second = await SELF.fetch(url, {
+      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(required.accepts[0]!) },
+    });
+    const queued = await json(second);
+    expect(queued["status"]).toBe("queued");
   });
 });
 

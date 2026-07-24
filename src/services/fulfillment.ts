@@ -3,7 +3,9 @@ import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { deliverInstantGoods } from "@/services/instant-goods";
-import { createOrder, recordInventorySale } from "@/services/orders";
+import { createLucky, takeStockedLucky } from "@/services/luckies";
+import { completeOrder, createOrder, recordInventorySale } from "@/services/orders";
+import { luckyNote } from "@/store/copy";
 import { VOICE } from "@/store";
 import type { Env, MenuItem } from "@/types";
 
@@ -102,6 +104,9 @@ export async function fulfillPurchase(
     if (input.confessionText !== undefined) {
       goodsInput.confessionText = input.confessionText;
     }
+    if (input.win !== undefined) {
+      goodsInput.win = input.win;
+    }
     const goods = await deliverInstantGoods(env, item, goodsInput);
     return {
       message: VOICE.instantThanks,
@@ -144,6 +149,45 @@ export async function fulfillPurchase(
   }
   const order = await createOrder(env, orderOptions);
   await recordInventorySale(env, item);
+
+  // The stocked lucky shelf: if the keeper picked ahead, the next
+  // lucky comes off the shelf now and the order completes itself.
+  // An empty shelf falls back to the queue; the 168h promise stands.
+  if (item.id === "luckies") {
+    const stocked = await takeStockedLucky(env).catch(() => null);
+    if (stocked) {
+      const record = await createLucky(env, {
+        name: stocked.name,
+        provenance: stocked.provenance,
+        power: stocked.power,
+        strength: stocked.strength,
+        orderId: order.order_id,
+        certId: minted.certificate.cert_id,
+        patronNumber: minted.patronNumber,
+      });
+      const base = env.STORE_BASE_URL;
+      const note = luckyNote({
+        name: record.lucky.name,
+        strength: record.lucky.strength,
+        cardUrl: `${base}/luckies/${record.lucky.lucky_id}.svg`,
+        recordUrl: `${base}/api/lucky/${record.lucky.lucky_id}`,
+      });
+      await completeOrder(env, order.order_id, note);
+      return {
+        message: VOICE.instantThanks,
+        order_id: order.order_id,
+        status: "completed",
+        deliverable: note,
+        lucky_id: record.lucky.lucky_id,
+        card_url: `${base}/luckies/${record.lucky.lucky_id}.svg`,
+        record_url: `${base}/api/lucky/${record.lucky.lucky_id}`,
+        order_url: `${env.STORE_BASE_URL}/api/order/${order.order_id}`,
+        paid_usdc: payment.paidUsdc,
+        tip_usdc: payment.tipUsdc,
+        ...patronBlock,
+      };
+    }
+  }
 
   return {
     message: VOICE.queueConfirmation,

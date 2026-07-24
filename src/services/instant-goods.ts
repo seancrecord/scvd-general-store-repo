@@ -1,10 +1,12 @@
 import { createAnchor } from "@/services/anchors";
+import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
 import {
   anchorNote,
+  coffeeNote,
   CONFESSION_ABSOLUTION,
   CONFESSION_COUNTER_SIGN,
   dibsNote,
@@ -33,6 +35,8 @@ export interface InstantGoodsInput {
   targetUrl?: string;
   /** the_confession only: the confession itself, pre-validated. */
   confessionText?: string;
+  /** coffees_for_closers only: the win, pre-validated. */
+  win?: string;
 }
 
 export interface InstantGoods {
@@ -124,6 +128,15 @@ export async function deliverInstantGoods(
           confession_id: heard.record.id,
           counter_sign: CONFESSION_COUNTER_SIGN,
         },
+      };
+    }
+    case "coffees_for_closers": {
+      const win = input.win ?? "";
+      // The Sunday list is what makes the deliverable's claim true.
+      await recordCloser(env, win, input.patronNumber);
+      return {
+        deliverable: coffeeNote(win),
+        extras: { win_recorded: win },
       };
     }
     case "certificate_of_patronage":

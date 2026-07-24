@@ -68,11 +68,11 @@ export function luckyNote(options: {
 }
 
 /**
- * DRAFT, KEEPER REVIEW PENDING: prefilled in the counter's complete
- * box for coffees_for_closers orders; the keeper's pen is final.
+ * Instant since the keeper-load ruling (2026-07-24): same note every
+ * time, consistent by design. ⚑ KEEPER REVIEW: recut freely.
  */
-export function coffeeClosedNote(win: string): string {
-  return `Sunday came and the coffee was drunk in your name. The win on your certificate: "${win}". Recorded, signed, and respected. The store likes seeing its patrons win.`;
+export function coffeeNote(win: string): string {
+  return `Your win is on the certificate, verbatim and signed: "${win}". Sunday, the keeper's coffee gets drunk to the week's closers, no exceptions, and you're on the list. The store likes seeing its patrons win.`;
 }
 
 export function patronageCertificateNote(patronNumber: number): string {
