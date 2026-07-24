@@ -34,6 +34,10 @@ export const KV_KEYS = {
   gazettePrefix: "gazette:",
   refund: (refundId: string): string => `refund:${refundId}`,
   refundPrefix: "refund:",
+  closer: (invertedTs: string): string => `closer:${invertedTs}`,
+  closerPrefix: "closer:",
+  luckyStock: (stockId: string): string => `lucky_stock:${stockId}`,
+  luckyStockPrefix: "lucky_stock:",
   gazetteDraft: "gazette_draft",
   foundingEdition: "founding_edition",
   confession: (invertedTs: string, id: string): string =>

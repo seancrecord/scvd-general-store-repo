@@ -1,7 +1,8 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
-import { coffeeClosedNote } from "@/store/copy";
+import type { CloserEntry } from "@/services/closers";
 import type { ListedEntry } from "@/services/guestbook";
+import type { StockedLucky } from "@/services/luckies";
 import type {
   CommissionRequest,
   ConfessionRecord,
@@ -24,6 +25,8 @@ export interface CounterPageData {
   weekNote: string;
   alerts: Array<{ condition: string; detail: string; at: string }>;
   orders: OrderRecord[];
+  luckyStock: StockedLucky[];
+  closers: CloserEntry[];
   letters: LetterRecord[];
   confessions: ConfessionRecord[];
   tips: TipRecord[];
@@ -65,20 +68,12 @@ function ordersHtml(orders: OrderRecord[]): string {
     .map((order) => {
       const completeForm =
         order.status === "queued"
-          ? `${
-              order.acknowledged_at
-                ? `<p><em>Acknowledged ${escapeHtml(order.acknowledged_at)}</em></p>`
-                : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/ack" style="display:inline"><button type="submit">Acknowledge (stands down the 24h page)</button></form>`
-            }
+          ? `<p><em>Seen ${escapeHtml(order.acknowledged_at ?? "just now")} (auto-acknowledged on sight; the 24h page stands down)</em></p>
         ${
           order.item_id === "luckies"
             ? luckyCompleteForm(order.order_id)
             : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
-          <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required>${
-            order.item_id === "coffees_for_closers"
-              ? escapeHtml(coffeeClosedNote(order.detail ?? ""))
-              : ""
-          }</textarea>
+          <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
           <button type="submit">Mark complete</button>
         </form>`
         }`
@@ -309,6 +304,51 @@ export function renderCounterPage(data: CounterPageData): string {
   <section>
     <h2>Orders (${openOrders} open of ${data.orders.length})</h2>
     <ul>${ordersHtml(data.orders)}</ul>
+  </section>
+
+  <section>
+    <h2>The lucky shelf (${data.luckyStock.length} stocked)</h2>
+    <p>Pick in batches, ahead of orders: every stocked lucky is yours-picked; purchases take the oldest one and complete on their own. An empty shelf falls back to the queue above.</p>
+    ${
+      data.luckyStock.length === 0
+        ? "<p><em>Shelf's bare. The next luckies order waits on your hands.</em></p>"
+        : `<ul>${data.luckyStock
+            .map(
+              (stocked) => `<li><strong>${escapeHtml(stocked.name)}</strong> (${escapeHtml(stocked.strength)}) \u00B7 ${escapeHtml(stocked.provenance)}
+              <form method="POST" action="/admin/luckies/stock/remove" style="display:inline">
+                <input type="hidden" name="stock_id" value="${escapeHtml(stocked.stock_id)}">
+                <button type="submit">Unstock</button>
+              </form></li>`,
+            )
+            .join("\n")}</ul>`
+    }
+    <form method="POST" action="/admin/luckies/stock">
+      <input type="text" name="lucky_name" placeholder="The object's name" maxlength="80" required>
+      <input type="text" name="provenance" placeholder="Where it came from (recorded and honest)" maxlength="300" required>
+      <input type="text" name="power" placeholder="What it does, farmers-market terms" maxlength="300" required>
+      <select name="strength" required>
+        <option value="" disabled selected>Strength, graded honest</option>
+        <option value="faint">faint</option>
+        <option value="fair">fair</option>
+        <option value="strong">strong</option>
+        <option value="uncanny">uncanny</option>
+      </select>
+      <button type="submit">Stock it</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>The closers list (Sunday coffee reading)</h2>
+    ${
+      data.closers.length === 0
+        ? "<p>No wins on the list yet. Somebody will close.</p>"
+        : `<ul>${data.closers
+            .map(
+              (closer) =>
+                `<li>"${escapeHtml(closer.win)}" \u2014 patron #${closer.patron_number}, ${escapeHtml(closer.at.slice(0, 10))}</li>`,
+            )
+            .join("\n")}</ul>`
+    }
   </section>
 
   <section>

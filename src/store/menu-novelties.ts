@@ -103,8 +103,10 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "Coffee's for Closers",
     price_usdc: 3,
     pricing: "fixed",
-    fulfillment: "human_queue",
-    sla_hours: 168,
+    // Instant since 2026-07-24 (keeper load ruling): the certificate
+    // records the win at purchase; the Sunday coffee covers the week's
+    // list. No per-order keeper action.
+    fulfillment: "instant",
     // Keeper's ink, 2026-07-23: the pitch is the name.
     description: "It's in the name.",
     note_402:

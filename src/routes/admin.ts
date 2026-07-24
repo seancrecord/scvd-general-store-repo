@@ -32,11 +32,15 @@ import {
   listOrders,
   resetWeeklyInventory,
 } from "@/services/orders";
+import { listClosers } from "@/services/closers";
 import {
   createLucky,
+  listLuckyStock,
   parseLuckyStatus,
   parseLuckyStrength,
+  removeLuckyStock,
   setLuckyStatus,
+  stockLucky,
 } from "@/services/luckies";
 import { luckyNote } from "@/store/copy";
 import {
@@ -106,6 +110,8 @@ adminRoutes.get("/admin/counter", async (c) => {
     gazetteDraft,
     confessions,
     refunds,
+    luckyStock,
+    closers,
   ] = await Promise.allSettled([
     listOrders(c.env),
     listWaitlist(c.env),
@@ -119,10 +125,30 @@ adminRoutes.get("/admin/counter", async (c) => {
     getDraft(c.env),
     listConfessions(c.env),
     listRefunds(c.env),
+    listLuckyStock(c.env),
+    listClosers(c.env, 20),
   ]);
+  // Auto-acknowledge on sight: opening the counter IS seeing the queue,
+  // so the 24h page stands down for everything listed (keeper's order,
+  // 2026-07-24 — the button was ceremony).
+  const listedOrders = shelf(orders, [], "orders", notes);
+  const unseen = listedOrders.filter(
+    (order) => order.status === "queued" && !order.acknowledged_at,
+  );
+  await Promise.all(
+    unseen.map((order) =>
+      acknowledgeOrder(c.env, order.order_id).catch(() => null),
+    ),
+  );
+  const seenAt = new Date().toISOString();
+  for (const order of unseen) {
+    order.acknowledged_at = seenAt;
+  }
   return c.html(
     renderCounterPage({
-      orders: shelf(orders, [], "orders", notes),
+      orders: listedOrders,
+      luckyStock: shelf(luckyStock, [], "lucky stock", notes),
+      closers: shelf(closers, [], "closers", notes),
       waitlist: shelf(waitlist, [], "waitlists", notes),
       commissions: shelf(commissions, [], "requests", notes),
       failedItems: shelf(failedItems, {}, "failed items", notes),
@@ -474,6 +500,32 @@ adminRoutes.post("/admin/orders/:order_id/complete-lucky", async (c) => {
     }),
   );
   return c.redirect("/admin");
+});
+
+/** Stocking the lucky shelf: the keeper picks in batches, ahead of orders. */
+adminRoutes.post("/admin/luckies/stock", async (c) => {
+  const form = await c.req.parseBody();
+  const name = sanitizeText(form["lucky_name"], 80);
+  const provenance = sanitizeText(form["provenance"], 300);
+  const power = sanitizeText(form["power"], 300);
+  const strength = parseLuckyStrength(form["strength"]);
+  if (!name || !provenance || !power || !strength) {
+    return c.text(
+      "A stocked lucky needs a name, a provenance, a power, and an honest grade.",
+      400,
+    );
+  }
+  await stockLucky(c.env, { name, provenance, power, strength });
+  return c.redirect("/admin/counter");
+});
+
+adminRoutes.post("/admin/luckies/stock/remove", async (c) => {
+  const form = await c.req.parseBody();
+  const stockId = sanitizeText(form["stock_id"], 40);
+  if (stockId) {
+    await removeLuckyStock(c.env, stockId);
+  }
+  return c.redirect("/admin/counter");
 });
 
 /** A write-in moved a lucky. Promotion is real; so is the bench. */

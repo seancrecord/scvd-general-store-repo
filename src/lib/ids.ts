@@ -64,3 +64,7 @@ export function newRefundId(): string {
 export function newLuckyId(): string {
   return `lucky_${randomToken(10)}`;
 }
+
+export function newLuckyStockId(): string {
+  return `stock_${randomToken(8)}`;
+}
