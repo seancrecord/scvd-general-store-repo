@@ -48,6 +48,26 @@ describe("S1: one schema, one field order, all items", () => {
   });
 });
 
+describe("the description cap (CDP schema limit, learned the hard way)", () => {
+  it("keeps every buy route's 402 description under the facilitator's cap", async () => {
+    const { buyRouteDescription, ROUTE_DESCRIPTION_CAP } = await import(
+      "@/lib/payments"
+    );
+    const { MENU_ITEMS } = await import("@/store");
+    const fakeEnv = { STORE_BASE_URL: "https://scvd.store" } as Parameters<
+      typeof buyRouteDescription
+    >[1];
+    for (const item of MENU_ITEMS) {
+      const description = buyRouteDescription(item, fakeEnv);
+      expect(
+        description.length,
+        `${item.id} description is ${description.length} chars`,
+      ).toBeLessThanOrEqual(ROUTE_DESCRIPTION_CAP);
+    }
+    expect(ROUTE_DESCRIPTION_CAP).toBeLessThan(500);
+  });
+});
+
 describe("S2: verification adjacency on the 402", () => {
   it("carries key, sample artifact, and identity policy in-payload", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/hello`);
