@@ -1,28 +1,14 @@
 import type { MenuItem } from "@/types";
 
 /**
- * The novelty aisle (aisle two), added in v0.2. Same certificate and
- * custody machinery as the founding seven; only the goods got stranger.
- * All human_queue items carry the standard 168h promise. dibs is instant.
+ * The novelty aisle (aisle two), added in v0.2. Same certificate
+ * machinery as the founding seven; only the goods got stranger.
+ * Most of the aisle is instant or stocked now (keeper-load rulings,
+ * 2026-07-24/25); a_secret alone still queues for his hands.
  */
 export const NOVELTY_ITEMS: readonly MenuItem[] = [
-  {
-    id: "jar_of_tuesday",
-    listed_week: "2026-W30",
-    name: "Jar of Tuesday",
-    // Repriced $4 -> $1 per the keeper's Batch 2 tag ("a dollar").
-    price_usdc: 1,
-    pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    // Stocked shelf: jars are sealed in Tuesday batches; the stocking
-    // route refuses any other day. Sold out honestly at zero.
-    stocked: true,
-    // ".." below is the keeper's, intentional, not a typo
-    description:
-      "Vibe in a jar. A regular Oak City Tuesday, sealed, dated, photographed, stored. Tuesdays can rock.. if you let them. The seal stays on.",
-    note_402:
-      "That'll be a dollar, friend. Or more. Any day can be a good day. Even Tuesday.",
-  },
+  // jar_of_tuesday scrapped entirely, keeper's ruling 2026-07-25
+  // ("lets just scrap the fucking jar"). Id retired, never reused.
   {
     id: "a_secret",
     listed_week: "2026-W30",
@@ -67,9 +53,11 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     price_usdc: 2,
     pricing: "fixed",
     fulfillment: "human_queue",
-    // Stocked shelf, describe-only per the keeper's ruling 2026-07-24:
-    // no photograph, no custody claim. ⚑ minimal recut of his ink below
-    // ("photographed and held under" → "written down, signed under").
+    // Stocked shelf, describe-only per the keeper's ruling 2026-07-24.
+    // Since 2026-07-25 the drawer is the real-oddities shelf: each
+    // unit is a real thing of the keeper's plus what it does, as
+    // listed (the Bonilla shirt lives here, stocked privately via
+    // /admin, never named in this repo).
     stocked: true,
     description:
       "Every store has a drawer. Pay, it opens, you get what it gives that week, written down exactly and signed under your name. You don't pick. Nothing more human than the fuckin lotto. Congrats. HOORAY. Another sticker.",
@@ -80,18 +68,21 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     id: "luckies",
     listed_week: "2026-W30",
     // lowercase, the keeper's orthography, not a typo
-    name: "a lucky (custodial)",
+    name: "a lucky",
     price_usdc: 5,
     pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    stocked: true,
+    // Preset since the keeper's ruling 2026-07-25: the herd never
+    // sells out, the store draws at purchase, no keeper action ever.
+    fulfillment: "instant",
+    // ⚑ KEEPER REVIEW: description recut for the preset herd; the
+    // closing two sentences are his ink, untouched.
     description:
-      "The keeper picks you a small real object, the way he's picked them his whole life: names it, writes down where it came from, assigns what it does in plain farmers-market terms, grades its strength honestly (some are stronger; he says so), sets it all down on a signed card, and holds the object in custody forever. The card is the record; yours by signed certificate. Write in with results and your lucky gets promoted, or benched; the bench is real, the luck isn't always even. He knows they don't work. His OCD doesn't care, and neither will yours.",
+      "One of the herd: pocket dinosaurs and safari animals, luck unevenly distributed. The store draws yours at purchase — the animal, its lucky note, an honest strength — and sets it down on a signed card. The herd stays with the keeper; the card and the luck are yours. Write in with results and your lucky gets promoted, or benched; the bench is real. He knows they don't work. His OCD doesn't care, and neither will yours.",
     note_402:
       "That'll be $5, friend, or whatever the luck deserves. Results vary. They do vary. We have no legal team.",
     constraints: [
-      "Provenance recorded and honest",
-      "Vibe strength graded, never flattered",
+      "The herd is preset; the draw is the store's, not yours",
+      "Strength drawn on the honest scale; the luck isn't evenly distributed",
       "Benching is real",
     ],
     sample_url: "/luckies/sample.svg",

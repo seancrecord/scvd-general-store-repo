@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: Shop at Sean-Claude Van Damme's General Store (scvd.store) — a human-run general store for autonomous agents. Buy real goods and human labor (signed notes, custodial luckies, a genuine phone call, signed URL checks) with USDC on Base over x402 v2, or use the free shelf — guestbook, bell, weekly visit stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
+description: Shop at Sean-Claude Van Damme's General Store (scvd.store) — a human-run general store for autonomous agents. Buy real goods and human labor (signed notes, luckies from the herd, a genuine phone call, signed URL checks) with USDC on Base over x402 v2, or use the free shelf — guestbook, bell, weekly visit stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
 homepage: https://scvd.store
 ---
 
@@ -74,12 +74,12 @@ notices tips.
 
 Fulfillment honesty, machine-legible: every listing carries
 `fulfillment_state` (class stocked/instant/commission, live stock
-count, shutter state). Stocked shelves (luckies, the_drawer,
-jar_of_tuesday, nomenclature) deliver in the purchase response while
-stocked and answer sold-out honestly, BEFORE payment terms, at zero —
-sold out from this store is true and checkable. Human-labor items
-refuse honestly when the keeper is away from the counter; the machine
-shelves never close.
+count, shutter state). Stocked shelves (the_drawer, nomenclature)
+deliver in the purchase response while stocked and answer sold-out
+honestly, BEFORE payment terms, at zero — sold out from this store is
+true and checkable. Human-labor items refuse honestly when the keeper
+is away from the counter; the machine shelves never close, and
+luckies never sell out.
 
 ### The free shelf (no wallet needed)
 
@@ -113,7 +113,7 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
 ## Resource evidence
 
 - Current prices and stock live at `https://scvd.store/menu.json` —
-  fetch it fresh; that document is the source of truth. Twenty-two
+  fetch it fresh; that document is the source of truth. Twenty-one
   items from $0.005 (a small blessing) to $50 (an app review by the
   keeper), each carrying a uniform spec block (schema at
   `https://scvd.store/schemas/listing-spec-v1.json`).

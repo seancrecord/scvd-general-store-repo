@@ -101,7 +101,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       x402_version: 2,
       url: base,
       human_shelf: shutter.closed
-        ? "shuttered (the keeper is away from the counter; human-labor purchases are refused before money moves; machine shelves and stocked luckies keep selling)"
+        ? "shuttered (the keeper is away from the counter; human-labor purchases are refused before money moves; machine shelves and stocked shelves keep selling)"
         : "open",
       ...(stats ? { track_record: trackRecordLine(stats, base) } : {}),
       stats: `${base}/stats`,

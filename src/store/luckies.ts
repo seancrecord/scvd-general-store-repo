@@ -11,9 +11,9 @@ export const LUCKY_CARD_LINES = {
   // lowercase, the keeper's orthography, not a typo
   shelfLine: "a lucky",
   provenanceLabel: "PROVENANCE",
-  powerLabel: "WHAT IT DOES",
-  strengthLabel: "STRENGTH, GRADED HONEST",
-  custodyLine: "held in custody",
+  powerLabel: "THE LUCKY NOTE",
+  strengthLabel: "STRENGTH, DRAWN HONEST",
+  custodyLine: "one of the herd",
   specimenMark: "SPECIMEN",
   specimenFootnote: "A sample, printed to show the form.",
   specimenFootnote2: "Real cards are signed and verify.",
@@ -41,38 +41,62 @@ export const SPECIMEN_LUCKY: {
 };
 
 /**
- * THE TOTEM REGISTER — keeper-approved paste block, 2026-07-24,
- * verbatim. Reference data for card copy and the grading register.
- * These are the keeper's OWN totems: not stock, not for sale, never
- * editorialized. Store stock draws ONLY from the pocket dinos and
- * safari animals ("The Luckies"); the herd is the entire randomness
- * mechanism. Re-grading canon: patron results may promote or bench a
- * charm's siblings; demotion for underperformance is canon (The
- * Luckies themselves are BENCHED as of this writing).
+ * THE HERD — keeper's ruling 2026-07-25: luckies are PRESET. The herd
+ * is pocket dinosaurs and safari animals (real, on the keeper's
+ * couch); every purchase draws one by species name only ("Lion",
+ * never a description). The herd is the entire randomness mechanism
+ * and it never sells out; the animals stay with the keeper. Canon
+ * held over: luck is unevenly distributed, and The Luckies as a group
+ * were BENCHED once for underperformance — the bench is real.
  */
-export const TOTEM_REGISTER: readonly { totem: string; power: string }[] = [
-  {
-    totem: "Bobby Bonilla card",
-    power: 'money zone; "the annuity deal \u2014 vibes are immaculate"',
-  },
-  {
-    totem: "Blue stone",
-    power: "powerful voice/speech (situational: presentations, right pocket)",
-  },
-  { totem: "Pot of gold", power: "feels like wealth" },
-  { totem: "Gem ball", power: "confidence" },
-  { totem: "Buddha", power: "belly rubs" },
-  { totem: "Bull from Spain", power: "bullish" },
-  { totem: "LT rookie card", power: "fantasy season only (seasonal)" },
-  { totem: "Viking figurine", power: "roots" },
-  {
-    totem: "Arrowhead",
-    power: `idk what it does but it's a fucking arrowhead`,
-  },
-  {
-    totem: "The Luckies (pocket dinos/safari animals)",
-    power: "luck, unevenly distributed (status: BENCHED)",
-  },
+export const HERD: readonly string[] = [
+  "T-Rex",
+  "Velociraptor",
+  "Triceratops",
+  "Stegosaurus",
+  "Brontosaurus",
+  "Ankylosaurus",
+  "Pterodactyl",
+  "Spinosaurus",
+  "Lion",
+  "Elephant",
+  "Giraffe",
+  "Zebra",
+  "Hippo",
+  "Rhino",
+  "Gazelle",
+  "Cheetah",
+  "Crocodile",
+  "Gorilla",
+] as const;
+
+/** Every drawn lucky carries the same provenance; it's the true one. */
+export const HERD_PROVENANCE =
+  "The herd. Pocket dinosaurs and safari animals; they stay with the keeper.";
+
+/**
+ * THE LUCKY NOTES — one rides each drawn lucky, fortune-cookie
+ * adjacent, keeper-canon dry. ⚑ KEEPER REVIEW: machine-drafted to his
+ * spec ("obscure, kinda funny, luck-related"); recut freely, the draw
+ * mechanism never needs touching for a wording change.
+ */
+export const LUCKY_NOTES: readonly string[] = [
+  "Luck arrives on the second retry.",
+  "You will find the thing you were already holding.",
+  "The fortunate read the error message twice.",
+  "Good luck looks a lot like backoff with jitter.",
+  "Somewhere a cron job fires exactly on time, for you.",
+  "The herd remembers who fed it.",
+  "Your next idempotent action will simply work.",
+  "Fortune favors the well-logged.",
+  "A Tuesday is coming that owes you one.",
+  "The bell you rang is still ringing somewhere.",
+  "What you shipped will outlive what you worried.",
+  "The queue ahead of you is shorter than it looks.",
+  "Even benched, the luck practices.",
+  "Never late is its own kind of lucky.",
+  "The drawer knows. The drawer isn't telling.",
+  "Two hours in five, the cat is out. These are good odds.",
 ] as const;
 
 /**

@@ -8,8 +8,8 @@ import type { Env } from "@/types";
  * are fully pre-made by the keeper before they're countable; purchases
  * take the oldest unit and complete themselves; an empty shelf sells
  * out HONESTLY (no 402 nobody can settle) instead of queueing work.
- * Luckies keep their own richer machinery in services/luckies.ts;
- * this module carries the drawer, the jars, and the name pool.
+ * This module carries the drawer (the real-oddities shelf) and the
+ * name pool; luckies are preset draws in services/luckies.ts.
  */
 
 export interface StockFieldSpec {
@@ -21,8 +21,6 @@ export interface StockFieldSpec {
 export interface StockDefinition {
   itemId: string;
   fields: StockFieldSpec[];
-  /** jar_of_tuesday: the store physically cannot stock a Wednesday jar. */
-  tuesdayGate?: boolean;
   /** nomenclature: names are never reused, machine-enforced. */
   uniqueField?: string;
 }
@@ -30,19 +28,14 @@ export interface StockDefinition {
 export const STOCK_DEFINITIONS: Record<string, StockDefinition> = {
   the_drawer: {
     itemId: "the_drawer",
-    // Describe-only, keeper's ruling 2026-07-24: no photograph, no
-    // custody claim. The description IS the unit.
+    // The real-oddities shelf (keeper's ruling 2026-07-25): each unit
+    // is a real thing of his plus what it does, as listed. Describe-
+    // only stands: no photograph, no custody claim; the words ARE the
+    // unit, written down exactly and signed under the buyer's name.
     fields: [
-      { key: "description", label: "What the drawer offered, exactly", cap: 300 },
+      { key: "item", label: "The thing itself", cap: 120 },
+      { key: "does", label: "What it does, as listed", cap: 300 },
     ],
-  },
-  jar_of_tuesday: {
-    itemId: "jar_of_tuesday",
-    fields: [
-      { key: "sealed_date", label: "Sealed on (YYYY-MM-DD, a Tuesday)", cap: 10 },
-      { key: "jar_note", label: "One line on the day (optional)", cap: 200 },
-    ],
-    tuesdayGate: true,
   },
   nomenclature: {
     itemId: "nomenclature",
@@ -86,12 +79,6 @@ export async function stockUnit(
     if (value) {
       fields[spec.key] = value;
     }
-  }
-  if (definition.tuesdayGate && now.getUTCDay() !== 2) {
-    return {
-      refused:
-        "The stocking route only takes jars on Tuesdays. The store physically cannot stock a Wednesday jar; that is the whole point of the item.",
-    };
   }
   if (definition.uniqueField) {
     const value = fields[definition.uniqueField] ?? "";

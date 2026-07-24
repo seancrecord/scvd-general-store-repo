@@ -249,21 +249,23 @@ export type LuckyStrength = "strong" | "solid" | "still proving itself";
 export type LuckyStatus = "in_service" | "promoted" | "benched";
 
 /**
- * A lucky in custody. The keeper picks the object; the card is the
- * record (no photograph, the card replaces it). Signed at issue and
- * re-signed whenever the status honestly changes.
+ * A lucky on the ledger. Preset since 2026-07-25: the store draws it
+ * from the herd; the card is the record (no photograph, the card
+ * replaces it). Signed at issue and re-signed whenever the status
+ * honestly changes.
  */
 export interface LuckyRecord {
   lucky_id: string;
-  /** The keeper's name for the object. */
+  /** The animal, by species name ("Lion"), or a legacy keeper-named object. */
   name: string;
-  /** Where it came from. Recorded and honest. */
+  /** The herd, for every preset draw; honest history for legacy picks. */
   provenance: string;
-  /** What it does, in plain farmers-market terms. */
+  /** The lucky note that rode the draw (legacy: what the object does). */
   power: string;
   strength: LuckyStrength;
   status: LuckyStatus;
   date: string;
+  /** "instant" for preset draws (no queue ever existed); an order id for legacy picks. */
   order_id: string;
   cert_id: string;
   patron_number: number;

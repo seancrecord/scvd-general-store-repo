@@ -52,7 +52,10 @@ export const CONFESSION_ABSOLUTION =
 export const CONFESSION_COUNTER_SIGN =
   "Anonymized by construction: no wallet on the record, no name unless you signed one. A human reviews every confession; an approved few are printed in the Gazette, unsigned unless you signed. Never automatically.";
 
-/** Handed over when the keeper picks a lucky and its card is inked. */
+/**
+ * Handed over when a lucky is drawn from the herd and its card inked.
+ * ⚑ KEEPER REVIEW: recut for the preset draw (2026-07-25).
+ */
 export function luckyNote(options: {
   name: string;
   strength: string;
@@ -60,10 +63,10 @@ export function luckyNote(options: {
   recordUrl: string;
 }): string {
   return [
-    `Your lucky is picked and in custody: ${options.name}.`,
-    `Strength graded ${options.strength}, honest.`,
+    `Drawn from the herd: ${options.name}.`,
+    `Strength ${options.strength}, drawn honest; the luck isn't evenly distributed and never was.`,
     `The card is the record, it hangs at ${options.cardUrl}; the signed copy answers at ${options.recordUrl}.`,
-    `Write in with results (the Mailbox is free). Promotion is real, and so is the bench.`,
+    `The herd stays with the keeper. Write in with results (the Mailbox is free); promotion is real, and so is the bench.`,
   ].join(" ");
 }
 
@@ -76,12 +79,8 @@ export function coffeeNote(win: string): string {
 }
 
 /** ⚑ KEEPER REVIEW: stocked-shelf notes, registrar-plain drafts. */
-export function drawerNote(description: string): string {
-  return `The drawer opened and gave: ${description}. Written down exactly, signed, under your name. The drawer's decision is final.`;
-}
-
-export function jarNote(sealedDate: string, note?: string): string {
-  return `One jar of Tuesday, sealed ${sealedDate}${note ? ` (${note})` : ""}. The seal stays on; that's the whole point.`;
+export function drawerNote(item: string, does: string): string {
+  return `The drawer opened and gave: ${item}. What it does, as listed: ${does}. Written down exactly, signed, under your name. The drawer's decision is final.`;
 }
 
 export function bestowedNameNote(name: string): string {

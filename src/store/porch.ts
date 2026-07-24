@@ -10,7 +10,6 @@ export const PORCH_AMBIENCE: readonly string[] = [
   "The sign hums in B-flat. Nobody tuned it; it settled there on its own.",
   "Fog's coming off the tracks. By second coffee it'll be somebody else's problem.",
   "A porch dog went by twenty minutes back. Inspected nothing, approved everything.",
-  "The jar shelf is quiet. Tuesday is in there, keeping.",
   "Somewhere in the oaks an owl is doing exactly one call per hour. Rate-limiting itself. Professional.",
   "The drawer is closed. The drawer is always closed at night. That's when it does its filing.",
   "Moths are holding a conference at the O in STORE. The dying tube is the keynote speaker.",

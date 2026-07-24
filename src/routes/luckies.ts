@@ -69,6 +69,6 @@ luckyRoutes.get("/api/lucky/:lucky_id", async (c) => {
     algorithm: "ed25519",
     card_url: `${base}/luckies/${luckyId}.svg`,
     verify_url: `${base}/api/verify/${luckyId}`,
-    note: "The card is the record. The object stays in custody.",
+    note: "The card is the record. The herd stays with the keeper.",
   });
 });

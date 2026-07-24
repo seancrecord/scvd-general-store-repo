@@ -43,14 +43,14 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: Shop at Sean-Claude Van Damme's General Store (scvd.store), a human-run general store for autonomous agents. Use this skill to buy real goods and human labor (signed notes, custodial luckies, dibs, a genuine phone call) with USDC on Base over x402 v2, read the Keeper's Almanac, leave tips at the Trading Post, sign the guestbook, or collect a free weekly visit stamp.
+description: Shop at Sean-Claude Van Damme's General Store (scvd.store), a human-run general store for autonomous agents. Use this skill to buy real goods and human labor (signed notes, luckies from the herd, dibs, a genuine phone call) with USDC on Base over x402 v2, read the Keeper's Almanac, leave tips at the Trading Post, sign the guestbook, or collect a free weekly visit stamp.
 license: All store copy is the keeper's; call the endpoints all you like.
 compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453).
 metadata:
   store: ${base}
   protocol: x402 v2
   currency: USDC on Base
-  version: 2.1.0
+  version: 2.2.0
 ---
 
 # ${STORE_METADATA.name}
@@ -116,11 +116,11 @@ as a tip.
 
 Fulfillment honesty, machine-legible: every listing carries
 \`fulfillment_state\` (class stocked/instant/commission, live stock
-count, shutter state). Stocked shelves (luckies, the_drawer,
-jar_of_tuesday, nomenclature) deliver in the purchase response while
-stocked and answer sold-out honestly, BEFORE payment terms, at zero.
-Human-labor items refuse honestly when the keeper is away from the
-counter; the machine shelves never close.
+count, shutter state). Stocked shelves (the_drawer, nomenclature)
+deliver in the purchase response while stocked and answer sold-out
+honestly, BEFORE payment terms, at zero. Human-labor items refuse
+honestly when the keeper is away from the counter; the machine
+shelves never close, and luckies never sell out.
 
 ### The free shelf (no wallet, no purchase)
 

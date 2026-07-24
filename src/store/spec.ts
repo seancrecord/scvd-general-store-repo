@@ -45,16 +45,14 @@ export const SPEC_RETURNS: Record<string, string> = {
     "One telephone call made by the keeper on the buyer's behalf; the outcome is reported on the completed order.",
   app_gutcheck:
     "A written review of the buyer's app by the keeper after real use, delivered on the completed order.",
-  jar_of_tuesday:
-    "Custody of a sealed, dated, photographed jar containing an Oak City Tuesday; a signed certificate records it.",
   a_secret:
     "One true thing the keeper has told no one else, written for the buyer on the completed order.",
   grudge:
     "A grudge held by the keeper on the buyer's behalf; the certificate names the grievance; released on written request.",
   the_drawer:
-    "Custody of one object the drawer offers that week, photographed and held under the buyer's name.",
+    "One real oddity from the keeper's drawer — the thing itself and what it does, as listed — written down exactly and signed under the buyer's name. Describe-only; the object stays in the drawer.",
   luckies:
-    "A small real object picked by the keeper and held in custody; a signed card is the record (specimen at /luckies/sample.svg).",
+    "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
   dibs: "Official dibs, signed and timestamped on a certificate, delivered instantly.",
   coffees_for_closers:
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",

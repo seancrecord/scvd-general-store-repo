@@ -7,6 +7,7 @@ import {
   installFacilitatorMock,
   type FacilitatorMockState,
 } from "./helpers/facilitator-mock";
+import { markKeeperPresent } from "./helpers/keeper";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -22,8 +23,9 @@ const BASE = "https://scvd.store";
 
 let facilitator: FacilitatorMockState;
 
-beforeAll(() => {
+beforeAll(async () => {
   facilitator = installFacilitatorMock();
+  await markKeeperPresent(testEnv);
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {
@@ -272,7 +274,7 @@ describe("discovery surfaces", () => {
       headers: { Accept: "text/markdown" },
     });
     expect(itemMd.headers.get("Content-Type")).toContain("text/markdown");
-    expect(await itemMd.text()).toContain("# a lucky (custodial)");
+    expect(await itemMd.text()).toContain("# a lucky");
 
     const missing = await SELF.fetch(`${BASE}/menu/moon_deed`);
     expect(missing.status).toBe(404);

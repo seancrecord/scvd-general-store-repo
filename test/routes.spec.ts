@@ -79,7 +79,6 @@ describe("the storefront", () => {
       "the_collab",
       "phone_call",
       "app_gutcheck",
-      "jar_of_tuesday",
       "a_secret",
       "grudge",
       "the_drawer",

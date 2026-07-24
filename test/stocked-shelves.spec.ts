@@ -1,6 +1,5 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { stockUnit } from "@/services/stock";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
@@ -11,7 +10,9 @@ import type { Env } from "@/types";
 /**
  * The fulfillment restructure, Class 1 and 2: stocked shelves fulfill
  * themselves from keeper-made units; the grudge register holds
- * instantly. a_secret stays manual by the keeper's ruling.
+ * instantly. a_secret stays manual by the keeper's ruling. The jar
+ * was scrapped and luckies went preset (rulings 2026-07-25); the
+ * drawer is the real-oddities shelf now.
  */
 
 const BASE = "https://scvd.store";
@@ -41,43 +42,26 @@ async function buyPaid(url: string): Promise<Record<string, unknown>> {
 }
 
 describe("the stocked shelves", () => {
-  it("the drawer gives what it gives, describe-only, no keeper present", async () => {
+  it("the drawer sells real oddities: the thing plus what it does, describe-only", async () => {
     await SELF.fetch(`${BASE}/admin/stock/the_drawer`, {
       method: "POST",
       headers: adminAuth,
       body: new URLSearchParams({
-        description: "one brass hinge, painted over twice",
+        item: "one brass hinge, painted over twice",
+        does: "Holds doors to their word.",
       }).toString(),
       redirect: "manual",
     });
     const body = await buyPaid(`${BASE}/api/buy/the_drawer`);
     expect(body["status"]).toBe("completed");
     expect(String(body["deliverable"])).toContain("one brass hinge");
+    expect(String(body["deliverable"])).toContain("Holds doors to their word.");
     expect(String(body["deliverable"])).not.toContain("photograph");
   });
 
-  it("jars stock on Tuesdays only, machine-enforced", async () => {
-    const wednesday = new Date("2026-07-22T12:00:00Z"); // a Wednesday
-    const refused = await stockUnit(
-      testEnv,
-      "jar_of_tuesday",
-      { sealed_date: "2026-07-21" },
-      wednesday,
-    );
-    expect("refused" in refused && refused.refused).toContain("Tuesdays");
-
-    const tuesday = new Date("2026-07-21T12:00:00Z"); // a Tuesday
-    const stocked = await stockUnit(
-      testEnv,
-      "jar_of_tuesday",
-      { sealed_date: "2026-07-21" },
-      tuesday,
-    );
-    expect("stocked" in stocked).toBe(true);
-
-    const body = await buyPaid(`${BASE}/api/buy/jar_of_tuesday`);
-    expect(body["status"]).toBe("completed");
-    expect(String(body["deliverable"])).toContain("sealed 2026-07-21");
+  it("the jar is gone: scrapped, not sold out", async () => {
+    const gone = await SELF.fetch(`${BASE}/api/buy/jar_of_tuesday`);
+    expect(gone.status).toBe(404);
   });
 
   it("names stock in batches, never reuse, and bestow themselves", async () => {
