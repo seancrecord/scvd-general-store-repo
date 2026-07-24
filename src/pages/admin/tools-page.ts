@@ -17,6 +17,14 @@ export function renderToolsPage(): string {
   </section>
 
   <section>
+    <h2>The founding press</h2>
+    <p>Prints Issue No. 1 once: the founding edition, free, signed, frozen with the ledger's numbers of that day. Refuses if it already printed or if the organic zero broke first.</p>
+    <form method="POST" action="/admin/gazette/founding/print">
+      <button type="submit">Print the founding edition</button>
+    </form>
+  </section>
+
+  <section>
     <h2>Gazette dispatch (from approved tips)</h2>
     <p>Assembles a penny dispatch from approved Trading Post tips; credits contributors, mints their stamps.</p>
     <form method="POST" action="/admin/gazette/publish">

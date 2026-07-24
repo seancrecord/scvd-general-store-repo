@@ -15,6 +15,7 @@ const HUMAN_SURFACES = [
   "/",
   "/what",
   "/gazette",
+  "/gazette/founding",
   "/almanac",
   "/directory",
   "/zodiac",

@@ -1,10 +1,16 @@
-# DRAFT — The Founding Edition (keeper's edited pass, 2026-07-24)
+# The Founding Edition — WIRED (holds resolved by the keeper, 2026-07-24)
 
-Status: KEEPER'S EDITS APPLIED. Three structural-truth holds flagged
-at the bottom (location canon conflict, the "signed" masthead claim,
-the clawdbot attribution) — resolve those and it wires as the FREE
-page at /gazette/founding. The letter section was removed by the
-keeper's edited pass; the launch post stays standalone at
+Status: BUILT. All three holds resolved: Oak City stands (context
+mismatch, keeper confirmed); edition signing BUILT (option a — every
+gazette issue signs at press, verify at /api/verify/gazette_<n>);
+bell attribution generalized ("Somebody did ring the bell").
+Stale-proofing per the keeper's doctrine: THE BOOKS renders from the
+LIVE ledger at press time, then the whole paper signs and freezes —
+a newspaper prints the numbers of its day, provably. The canonical
+template now lives at src/store/gazette-founding.ts; this file is
+the record of the approved text. TO PRINT: the keeper pulls "Print
+the founding edition" at /admin/tools (refuses if already printed or
+if the organic zero broke first). The launch post stays standalone at
 registry/launch-post-draft.md for external venues.
 
 ---

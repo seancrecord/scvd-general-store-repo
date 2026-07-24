@@ -1,5 +1,6 @@
 import { isHouseWallet } from "@/lib/channel";
 import { currentWeekKey, KV_KEYS } from "@/lib/kv-keys";
+import { signMessage } from "@/lib/signing";
 import type { MetricEvent } from "@/lib/metrics";
 import { listPayers } from "@/lib/metrics";
 import {
@@ -354,13 +355,18 @@ export async function publishEdition(
   const draft = await getDraft(env);
   const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
   const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
+  const printed = stripKeeperSlots(markdown);
+  // Signed at press, same as the dispatches.
+  const { signature, publicKey } = await signMessage(printed, env.SIGNING_KEY);
   const edition: TownEdition = {
     issue_number: issueNumber,
+    signature,
+    public_key: publicKey,
     title: `The Gazette · Edition No. ${issueNumber}`,
     date: new Date().toISOString(),
     week: currentWeekKey(),
     period_start: draft?.period_start ?? PAPER_FOUNDED,
-    markdown: stripKeeperSlots(markdown),
+    markdown: printed,
     contributors: [],
     tip_ids: [],
   };

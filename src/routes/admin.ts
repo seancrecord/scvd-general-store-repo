@@ -17,6 +17,7 @@ import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
+import { printFoundingEdition } from "@/services/founding";
 import { listIssues, publishIssue } from "@/services/gazette";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
@@ -394,6 +395,15 @@ adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
 adminRoutes.get("/admin/bell", async (c) => {
   const rings = await listRecentPorchEvents(c.env, "bell", 25);
   return c.html(renderBellPage({ rings }));
+});
+
+/** The founding press: prints once, signed, with the numbers of its day. */
+adminRoutes.post("/admin/gazette/founding/print", async (c) => {
+  const result = await printFoundingEdition(c.env);
+  if ("refused" in result) {
+    return c.text(result.refused, 409);
+  }
+  return c.redirect("/admin/tools");
 });
 
 adminRoutes.post("/admin/alerts/test", async (c) => {

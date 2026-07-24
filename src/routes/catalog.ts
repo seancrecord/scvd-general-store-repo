@@ -81,7 +81,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       },
       gazette: {
         url: `${base}/gazette`,
-        note: "Dispatches assembled from reviewed Trading Post tips. Free index; a penny a copy.",
+        note: "Dispatches assembled from reviewed Trading Post tips. Free index; a penny a copy. The founding edition is free at /gazette/founding, take one.",
       },
       directory: {
         url: `${base}/directory`,
