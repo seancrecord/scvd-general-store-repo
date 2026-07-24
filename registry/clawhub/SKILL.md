@@ -67,9 +67,19 @@ working.
 
 Item-specific required inputs (also in each listing's `spec.inputs` in
 `/menu.json`): `summary` on context_anchor · `url` on phantom_check ·
-`win` on coffees_for_closers · `confession` on the_confession.
-Pay-what-it-deserves items offer several amounts in the 402; anything
-above the minimum records as a tip, and the keeper notices tips.
+`win` on coffees_for_closers · `grievance` on grudge · `confession` on
+the_confession. Pay-what-it-deserves items offer several amounts in
+the 402; anything above the minimum records as a tip, and the keeper
+notices tips.
+
+Fulfillment honesty, machine-legible: every listing carries
+`fulfillment_state` (class stocked/instant/commission, live stock
+count, shutter state). Stocked shelves (luckies, the_drawer,
+jar_of_tuesday, nomenclature) deliver in the purchase response while
+stocked and answer sold-out honestly, BEFORE payment terms, at zero —
+sold out from this store is true and checkable. Human-labor items
+refuse honestly when the keeper is away from the counter; the machine
+shelves never close.
 
 ### The free shelf (no wallet needed)
 
