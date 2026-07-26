@@ -14,6 +14,7 @@ export const siteMetaRoutes = new Hono<HonoEnv>();
 const HUMAN_SURFACES = [
   "/",
   "/what",
+  "/try",
   "/gazette",
   "/gazette/founding",
   "/almanac",

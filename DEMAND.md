@@ -45,8 +45,11 @@ facilitator's reason on every decline. That is a funnel already:
 Read it this way:
 
 - Free shelf cold too (bell, guestbook, stamp, zodiac, letters near
-  zero organic) → DISCOVERY. The fix is DISTRIBUTION.md, and that
-  plan is still mostly unexecuted.
+  zero organic) → DISCOVERY. The fix is DISTRIBUTION.md, executed
+  2026-07-26 (blitz, ClawHub, the founding edition in print) — so
+  from here a cold free shelf means the papers didn't work, which is
+  itself a finding, and a different one from never having handed
+  them out.
 - Free shelf warm, challenges issued, nothing settles, few declines
   → CAPABILITY. They came, they got the price, they had no wallet or
   no authority. Nothing on the shelf is the problem.
@@ -274,11 +277,14 @@ muting.
 
 ## What I'd do next, in order
 
-1. **Hand out the papers already written.** The directory blitz, the
-   ClawHub 2.2.0 republish, the founding-edition print lever — all
-   queued in TASKS, all keeper hands, none done. We cannot diagnose
-   discovery with the distribution plan unexecuted. Cheapest move
-   available, largest information gain.
+1. ~~Hand out the papers already written.~~ DONE 2026-07-26, keeper's
+   hands: directory blitz, ClawHub 2.2.0, the founding edition in
+   print. Which moves the whole file forward one square — the
+   distribution plan is no longer the reason we can't diagnose
+   discovery. Now the porch log gets read against it, and the next
+   thirty days of window-shopper rows are the first real evidence
+   this store has ever had. See READINESS.md for what we do while
+   that fills.
 2. **Ship the test-target page and lead with the cheap door.** One
    page, some reordering of existing surfaces, no new items. ⚑ his
    nod on the framing.

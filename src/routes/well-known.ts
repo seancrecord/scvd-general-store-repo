@@ -86,6 +86,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     openapi: `${base}/openapi.json`,
     catalog: `${base}/menu.json`,
     stats: `${base}/stats`,
+    practice_counter: `${base}/try`,
     listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
     mcp: {
