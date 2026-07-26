@@ -24,9 +24,16 @@ wording, no action needed; the link itself carries the pairing.
 - "MCP server" — TRUE: POST /mcp, first paid tools/call settled
   2026-07-22.
 - "OpenAPI contract" — TRUE: /openapi.json.
-- "Bazaar-discoverable" — TRUE: /api/buy/hello confirmed present in the
-  CDP discovery list (full-catalog scan, 2026-07-22), discovery
-  metadata intact.
+- "Bazaar-discoverable" — TRUE AS OF 2026-07-22: /api/buy/hello
+  confirmed present in the CDP discovery list (full-catalog scan),
+  discovery metadata intact. NOT RE-VERIFIED SINCE, and flagged
+  2026-07-26: the keeper looked for the store on the browsable
+  mirrors a week apart and did not find it either time, which rules
+  out propagation delay on THEIR side but says nothing about the CDP
+  list itself — the mirrors are selective importers, not a view of
+  it. The claim stands on the 07-22 scan until a keyed re-query of
+  the discovery list either renews it or retires it. Do not restate
+  it as current without running that query.
 - "on x402scan" — NOT CLAIMED: could not be independently verified from
   the build environment; add it only after you see the store on
   x402scan with your own eyes.
