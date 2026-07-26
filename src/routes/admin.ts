@@ -12,7 +12,9 @@ import {
   readPorchLedger,
 } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
+import { recountFromRows } from "@/lib/recount";
 import { renderBellPage } from "@/pages/admin/bell-page";
+import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderToolsPage } from "@/pages/admin/tools-page";
@@ -436,6 +438,33 @@ adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
 });
 
 /** The bell ledger: its own page so the deep row scan stays isolated. */
+/**
+ * The recount: the raw rows audited against the counters, with today's
+ * crawler table applied to old rows. Its own page — the scan is
+ * expensive and the desk shouldn't pay for it.
+ */
+adminRoutes.get("/admin/recount", async (c) => {
+  const [recount, ledger] = await Promise.all([
+    recountFromRows(c.env),
+    readMonthLedger(c.env),
+  ]);
+  const counterChallenges = Object.values(ledger.items).reduce(
+    (sum, row) => sum + row.challenges,
+    0,
+  );
+  const counterSettles = Object.values(ledger.items).reduce(
+    (sum, row) => sum + row.settled,
+    0,
+  );
+  return c.html(
+    renderRecountPage({
+      recount,
+      counter_challenges_organic: counterChallenges,
+      counter_settles_organic: counterSettles,
+    }),
+  );
+});
+
 adminRoutes.get("/admin/bell", async (c) => {
   const rings = await listRecentPorchEvents(c.env, "bell", 25);
   return c.html(renderBellPage({ rings }));

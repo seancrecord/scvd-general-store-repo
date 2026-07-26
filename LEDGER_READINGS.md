@@ -6,6 +6,186 @@ a date, by name, including the parts that don't flatter us.
 
 ---
 
+## 2026-07-26 (later) — are the books credible?
+
+The keeper's question, and the right one: the books are our own code
+grading its own homework. The only thing known for certain from
+outside the building is that he bought things and they landed in his
+other account.
+
+So: audited. What follows separates what has an outside witness from
+what does not.
+
+### The money has an outside witness, and it reconciles to the penny
+
+House revenue on the books reads **$187.78**. One of every item on
+the shelf, at the time of the shopping run (22 items, the jar still
+alive), came to **$182.78**. The difference is **exactly $5.00**, and
+the ledger shows **two** house settles against luckies — a $5 minimum
+pay-what-it-deserves item bought twice.
+
+    182.78  the full walk, one of each
+      +5.00  a second luckies
+    -------
+     187.78  what the books say
+
+That reconciles against the one record we do not control: the chain.
+It also means the settle path — verify, settle, then mint — is doing
+exactly what it claims, because every one of those rows corresponds
+to money that actually moved into his other account. **The revenue
+column is the most trustworthy number in the store.**
+
+### One thing does not reconcile, and it's small and worth chasing
+
+The house settle breakdown reads `direct: 23 · mcp: 1 · direct
+(founding, by hand): 1` — twenty-five events. The payer record for
+the house wallet says **24 purchases**, first seen 2026-07-22.
+
+Every house purchase came from one wallet, and `recordSettlement`
+writes the payer record on the same call that bumps the counters. So
+those two numbers should agree and they differ by one. Either the
+founding purchase is being displayed in two buckets at once, or one
+settle bumped a counter without writing a payer record. Not a crisis
+— but it is precisely the kind of off-by-one that, left alone, turns
+into "the books say 12 and the wallet says 11" the month it matters.
+
+### Where the counts are structurally soft
+
+Not speculation; this is what the code does.
+
+1. **Every counter is a read-modify-write against KV.** `bump()`
+   reads the current value, adds one, writes it back. Two requests in
+   flight at the same moment both read the same number and both write
+   the same number, and one increment vanishes. Under a catalog walk
+   — which is exactly what July was — this happens constantly.
+   **Direction of error: undercount.** 3997 is a floor, not a
+   ceiling.
+2. **KV is eventually consistent**, so the read half of that
+   read-modify-write can be stale on its own. Same direction.
+3. **Porch visits are sampled on purpose** — a token bucket caps
+   porch writes at 100 a minute per isolate, documented in the code
+   as making porch counts "floors under storm conditions." A crawler
+   storm is a storm condition. **402s are never sampled.** So
+   porch-to-purchase divides an unsampled numerator by a sampled
+   denominator, which biases it upward, on top of the crawler problem
+   already noted. The 0.738 is a ceiling wearing a rate's clothing.
+   Said now on the admin page itself, beside the number.
+4. **⚑ THE ONE HE CAN ANSWER TODAY: is the Cloudflare account on the
+   paid plan?** TASKS still carries "KEEPER HANDS, urgent: upgrade to
+   Workers Paid — the free tier's 1,000 KV writes/day." Each 402
+   writes four or five keys (item counter, channel counter, day
+   counter, sometimes a venue counter, plus the event row). July's
+   ~6,300 challenges alone are somewhere north of 25,000 writes. On
+   the free tier, writes past the daily cap **fail silently** — no
+   error surfaces to the page, the number simply stops growing for
+   the rest of the day. If any day this month ran capped, that day's
+   entire tail is missing and nothing in the books says so. The trend
+   table (62 / 665 / 1083 / 673) does not obviously plateau, which is
+   mild evidence the writes were landing. Mild is not certain, and
+   the Cloudflare dashboard answers it outright.
+5. **402s are per request, with no dedupe.** One client hitting a
+   route forty times is forty challenges. "3997 challenges" was never
+   "3997 interested parties" and shouldn't be read as one.
+
+### What was built to settle it: the recount
+
+Channel is inferred once, at write time, and never revisited — which
+is why yesterday's fix was described as forward-only. That turns out
+to be **wrong, and this corrects it**: every raw row stores the
+user-agent and referrer it arrived with, so today's crawler table can
+be applied to old rows. July can be re-read after all.
+
+`/admin/recount` does exactly that. It walks the raw rows (bounded,
+and it says how far back it actually got instead of implying it read
+everything), then reports:
+
+- how many rows the books recorded as organic that today's table
+  calls machinery, with the user-agents responsible, commonest first;
+- the corrected organic challenge count for that window;
+- rows against counters, with the reading spelled out — rows above
+  counter means lost increments, the expected direction; counter
+  above rows means something wrote a counter without a row, which
+  would be a bug worth finding.
+
+The rows are the appeal court: one row per event, unique key, no
+contention, no read-modify-write. When the rows and the counters
+disagree, believe the rows.
+
+**Run it before trusting any number in the first reading above.** The
+headline finding — zero payment signatures in thousands of challenges
+— is not affected by any of this, because it is a claim about
+something that never happened, and none of these failure modes
+invents events. Everything else in the first reading is a floor, a
+ceiling, or awaiting the recount.
+
+### Bazaar: I misread it yesterday, and here is what it actually is
+
+I flagged "every Bazaar row reads `processing`" as a possible broken
+pipeline. Reading `src/lib/bazaar-observer.ts` says otherwise, and the
+correction matters because it changes what "fix Bazaar" even means.
+
+**What those rows are.** The observer taps global fetch once and
+captures the `EXTENSION-RESPONSES` header off the facilitator's
+`/verify` and `/settle` calls — the x402 core SDK only console.logs
+that header, so we keep it ourselves. Each row is the facilitator
+saying what it did with our Bazaar discovery declaration.
+`processing` is an asynchronous acknowledgement: received, queued.
+Not an error. Not a stall we can see.
+
+**Why they are all from 07-24.** That header can only be observed
+during a payment. Twenty rows exist because twenty-odd payments
+exist, all of them the house, all on one day. "Every row says
+processing" is not a pipeline stuck in a state — it is twenty
+samples, from one afternoon, of the only payments this store has ever
+taken. There is no evidence of failure in there, and there was never
+going to be evidence of success either.
+
+**The structural fact underneath, which is the real finding.** In
+x402 v2, Bazaar catalogs resources it sees settle. That is why
+PROJECT_LOG has said since day one that "other routes list as they
+sell." So:
+
+    routes get listed by selling · we sell by being listed
+
+Bazaar depth is a function of sales, and we have no sales. Whatever
+is listed today is whatever the shopping run paid for on 07-24, and
+nothing else will join it until money moves. **Bazaar is a listing,
+not a channel, and it cannot be a demand source before it is a
+demand result.** Rule 13 closes the obvious shortcut: no automated
+self-purchase heartbeats, real unique payers or nothing. Correct
+posture is to stop counting Bazaar as a venue that owes us traffic.
+
+**What actually answers the question, and none of it is in our
+logs:**
+
+1. ⚑ Look at the catalogs with his own eyes — does `scvd.store`
+   appear, and which routes? Nothing on our side can see their index.
+   (Attempted from the build environment 2026-07-26; the proxy
+   refuses outbound to both our own domain and theirs, so this is
+   keeper hands by necessity, not by preference.)
+2. ⚑ Re-verify the declarations against the current
+   `@x402/extensions` release. They were [VERIFIED] once, against
+   2.19.0, in July. A version drift would be silent.
+3. Accept that **Bazaar attribution is close to unmeasurable for us
+   by design**: the `bazaar` channel requires a referrer mentioning
+   x402scan or a catalog page, and machine clients mostly send no
+   referrer at all. Anyone arriving from a listing today lands in
+   `direct` and is indistinguishable from a bookmark. Worth knowing
+   before we read anything into that column being empty.
+
+### Verdict
+
+- **Trust the money.** It has an outside witness and it reconciles.
+- **Trust "nobody ever tried to pay."** Undercounting cannot
+  manufacture a zero.
+- **Treat every traffic count as a floor**, the organic column as
+  dirty until the recount says otherwise, and porch-to-purchase as
+  meaningless for now.
+- **Answer the plan question today.** It is the only failure mode
+  that could be silently eating whole days.
+
+---
+
 ## 2026-07-26 — the first reading
 
 Four days of meter (revenue counts from this deploy forward; the
@@ -109,10 +289,14 @@ base.
 ### Two things worth your eyes, not mine
 
 - **Every Bazaar extension row says `processing`** — all twenty, all
-  from the 07-24 shopping run, verify and settle alike. If those
-  never advance, our Bazaar discovery may not be live at all, and
-  Bazaar is the venue we have been counting as working. [VERIFY] with
-  your own eyes; I can't see their pipeline from here.
+  from the 07-24 shopping run, verify and settle alike. ~~If those
+  never advance, our Bazaar discovery may not be live.~~ CORRECTED
+  the same day, see the credibility audit above: `processing` is the
+  facilitator's async acknowledgement, the header can only be
+  observed during a payment, and twenty rows on one afternoon is
+  simply the only twenty payments this store has ever taken. No
+  evidence of failure. The real finding is structural — Bazaar
+  catalogs what settles, so it is a listing, not a channel.
 - **Two alarms are waiting at the counter** and nobody has opened
   them.
 

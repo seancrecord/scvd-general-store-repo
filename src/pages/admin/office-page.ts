@@ -200,7 +200,7 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate.</p>`;
+    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table.</p>`;
 }
 
 function windowShoppersHtml(events: MetricEvent[]): string {
