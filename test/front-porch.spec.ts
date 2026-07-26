@@ -37,6 +37,30 @@ describe("channel inference upgrades", () => {
     // The skill's designed self-identification.
     expect(inferChannel({ declaredSource: "clawhub-skill" })).toBe("skill");
   });
+
+  it("catches machinery that names its own job (first reading, 2026-07-26)", () => {
+    // The exact UA that walked our catalog and got counted as a customer.
+    expect(inferChannel({ userAgent: "mako-pulse-prober/0.1" })).toBe(
+      "infrastructure",
+    );
+    for (const userAgent of [
+      "acme-monitor/2",
+      "fleet-watchdog/1.0",
+      "link-checker",
+      "sec-scanner/3",
+      "registry-inspector/0.9",
+      "edge-sentinel/1",
+      "deploy-canary/1",
+      "status-heartbeat/1",
+      "datadog-synthetics",
+    ]) {
+      expect(inferChannel({ userAgent })).toBe("infrastructure");
+    }
+    // The line we do not cross: agents are customers, bots included.
+    expect(inferChannel({ userAgent: "clawdbot/1.4" })).toBe("direct");
+    expect(inferChannel({ userAgent: "curl/8.4.0" })).toBe("direct");
+    expect(inferChannel({ userAgent: "python-httpx/0.27" })).toBe("direct");
+  });
 });
 
 describe("the porch log", () => {

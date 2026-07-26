@@ -105,7 +105,13 @@ the below.
   wallets do.
 - **The install base.** Every ClawHub install and every MCP config
   entry is a standing invitation that survives our silence. It costs
-  the store nothing to be in a config file for a year.
+  the store nothing to be in a config file for a year. CORRECTED
+  2026-07-26 by the first reading of the books: 239 ClawHub downloads
+  produced four marked arrivals, sixty to one. A download count is not
+  an install base — four is. The asset is real and it compounds; it is
+  roughly two orders of magnitude smaller than the registry number
+  suggests, and we should never quote the download figure as if it
+  were reach.
 - **The books.** Ninety days of rolling event rows is the only
   proprietary record of agent commerce behavior we will ever have,
   and nobody else is keeping one at this altitude. It's Gazette
