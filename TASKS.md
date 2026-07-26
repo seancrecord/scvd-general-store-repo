@@ -2,6 +2,16 @@
 
 Anti-shuffle file. When you ship something, move it to DONE with a date. Never delete ideas — ICEBOX with a reason.
 
+## NOW (the demand side, filed 2026-07-26 — see DEMAND.md, awaiting the keeper's ⚑ calls)
+
+- [ ] THE PAPERS, ALREADY WRITTEN, STILL IN THE DRAWER (keeper hands, highest information gain per minute): the directory blitz, the ClawHub 2.2.0 republish, the founding-edition print lever. Discovery cannot be diagnosed while the distribution plan sits unexecuted — everything else on this list reads a ledger these three fill
+- [ ] ⚑ THE TEST-TARGET PAGE — say out loud what the store already is: the cheapest real x402 settlement a client builder can test against (half a cent), with the exact call, the exact response, and the verify step. No new items, no discount. That URL becomes the one that rides the x402 venues and MCP listings. KEEPER TASTE CALL on the framing (infrastructure voice to a developer audience, rule 2 exposure examined in DEMAND.md)
+- [ ] ⚑ LEAD WITH THE CHEAP DOOR — the six items at or under $1 are the only ones an agent can likely buy without asking a human, and they are not first on any surface: llms.txt, menu.json order, skill.md, MCP tool order, Bazaar entries. Barbell doctrine (rule 21) already blesses it; the surfaces don't reflect it
+- [ ] THE CAPABILITY CENSUS (small build, /admin): distinct clients that ever presented a PAYMENT-SIGNATURE vs clients that only ever saw the 402 and left. One monthly number answering "does anyone in our traffic carry money" — the fact the whole thesis rests on and the one we currently cannot state
+- [ ] ⚑ THE 60-DAY LINE (~2026-09-20) into the monthly ledger review: zero organic settlements AND zero non-house signatures = "the market isn't here yet," hold at $5/mo and stop building; wallets present and not buying = a real shelf problem. Written before we need it, so an empty month means something specific
+- [ ] WORK THE TOWN DIRECTORY — built, live, empty, free, and the only rung of the supplier ladder that needs no wallet on the visitor's side. Solicit neighbors where the neighbors are; keeper visits before he lists; no pay-for-placement, ever. Consignment stays parked until somebody asks twice (risks listed in DEMAND.md)
+- [ ] ⚑ DECIDE CV — whether the clawdbot persona posts at all, and where it opens. Posture already fixed by house rules if it goes: useful before promotional, never a customer, one paper then answers, ?src=cv-<venue> on every link, [VERIFY] the venue on the day
+
 ## NOW
 
 - [x] DEPLOY.md checklist executed (Cloudflare: KV namespaces, secrets, repo connect, domain) — DONE 2026-07-22
