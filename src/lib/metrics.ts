@@ -132,7 +132,10 @@ export async function recordChallengeIssued(
   await bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item));
   // Who's window-shopping, by channel, the diagnosis column for
   // "challenges without settles: shoppers or scanners?"
-  await bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel));
+  await bump(
+    env,
+    KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel),
+  );
   if (suffix === "") {
     // Organic day counter for the trend table.
     await bump(env, KV_KEYS.metric(metricsMonth(), "d402", dayKey()));
@@ -162,7 +165,11 @@ export async function recordPaymentDecline(
   event.note = reason.slice(0, 200);
   await bump(
     env,
-    KV_KEYS.metric(metricsMonth(), `decl${bucketSuffix(event, false)}`, event.item),
+    KV_KEYS.metric(
+      metricsMonth(),
+      `decl${bucketSuffix(event, false)}`,
+      event.item,
+    ),
   );
   await writeEvent(env, event);
 }
@@ -222,7 +229,11 @@ export async function recordVerifyCall(
   const event = buildEvent(env, "verify", artifactItem, signals);
   await bump(
     env,
-    KV_KEYS.metric(metricsMonth(), `verify${bucketSuffix(event, true)}`, event.item),
+    KV_KEYS.metric(
+      metricsMonth(),
+      `verify${bucketSuffix(event, true)}`,
+      event.item,
+    ),
   );
   await writeEvent(env, event);
 }
@@ -250,7 +261,10 @@ export async function recordSettlement(
   const month = metricsMonth();
   const event = buildEvent(env, "settle", itemKeyFromPath(path), signals);
   // Settles never bucket as infrastructure: a crawler that pays is a customer.
-  await bump(env, KV_KEYS.metric(month, `paid${bucketSuffix(event, false)}`, event.item));
+  await bump(
+    env,
+    KV_KEYS.metric(month, `paid${bucketSuffix(event, false)}`, event.item),
+  );
   await bump(
     env,
     KV_KEYS.metric(
@@ -259,7 +273,10 @@ export async function recordSettlement(
       `${event.item}:${tierLabel(signals.paidUsdc, signals.minimumUsdc)}`,
     ),
   );
-  await bump(env, KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel));
+  await bump(
+    env,
+    KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel),
+  );
   // Revenue, organic and house apart, in integer millionths of USDC.
   await bumpBy(
     env,
@@ -288,6 +305,11 @@ export async function recordSettlement(
   await writeEvent(env, event);
   if (signals.payer) {
     await recordPayerSeen(env, signals.payer);
+  } else {
+    // Money moved and no wallet came back with it. Counted, so the gap
+    // between settle counters and payer rows stays explainable instead
+    // of becoming a mystery someone re-derives in six months.
+    await bump(env, KV_KEYS.metric(month, "nopayer", event.item));
   }
 }
 
@@ -297,7 +319,12 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
   const existing = await env.COUNTERS.get<PayerRecord>(key, "json");
   const record: PayerRecord = existing
     ? { ...existing, last_seen: now, purchases: existing.purchases + 1 }
-    : { address: address.toLowerCase(), first_seen: now, last_seen: now, purchases: 1 };
+    : {
+        address: address.toLowerCase(),
+        first_seen: now,
+        last_seen: now,
+        purchases: 1,
+      };
   await env.COUNTERS.put(key, JSON.stringify(record));
 }
 
@@ -327,6 +354,11 @@ export interface MonthLedger {
   days: Record<string, { challenges: number; settles: number }>;
   /** ?src= venue markers seen on organic traffic, verbatim claims. */
   venues: Record<string, number>;
+  /**
+   * item -> settles that arrived with no payer address. Named so the
+   * gap between settle counters and payer rows stays explainable.
+   */
+  settlesWithoutPayer: Record<string, number>;
   /** USDC, organic and house apart. */
   revenueUsdc: number;
   revenueHouseUsdc: number;
@@ -350,8 +382,105 @@ function emptyRow(): LedgerRow {
  * The founding $0.50 hello settle (2026-07-22, tx 0x47c8fee…50bc9c)
  * predates this instrumentation. Entered by hand as house/founding so
  * the books open complete.
+ *
+ * It is also the whole of the "off-by-one" the books have shown since
+ * July, and it is not a bug: a settle counted here writes a counter,
+ * and a settle that ran through recordSettlement ALSO writes a payer
+ * row. This one never ran through recordSettlement, so it has the
+ * counter and no payer row, permanently. Settle counters will
+ * therefore always exceed the sum of payer purchases by exactly
+ * FOUNDING_SETTLES_WITHOUT_PAYER_ROW. Any other gap is a real bug —
+ * which is the point of naming this one, so the next discrepancy
+ * cannot hide behind it.
  */
 const FOUNDING_BACKFILL = { month: "2026-07", item: "hello" } as const;
+
+/** The founding settle: on the counters, never on a payer row. */
+export const FOUNDING_SETTLES_WITHOUT_PAYER_ROW = 1;
+
+/**
+ * THE RECONCILIATION: every settle the counters know, against every
+ * purchase the payer rows know, all-time on both sides — the payer
+ * rows have no month, so comparing them to one month's counters would
+ * manufacture a discrepancy every time the calendar turned.
+ *
+ * Two differences are expected and both are named:
+ *
+ *   1. the founding settle, which predates the instrument entirely;
+ *   2. settles the facilitator returned without a payer address, which
+ *      bump a counter and have no wallet to write a row for.
+ *
+ * Anything left after those two is unexplained, and unexplained means
+ * a counter moved without its row — the bug that would otherwise wait
+ * until it reads "the books say 12, the wallet says 11."
+ */
+export interface SettleReconciliation {
+  counter_settles: number;
+  payer_purchases: number;
+  founding: number;
+  /** Settles that arrived with no payer address to attribute them to. */
+  unattributed: number;
+  /** counter − payer − founding − unattributed. Zero is healthy. */
+  unexplained: number;
+}
+
+/**
+ * Reads its own payer rows rather than taking the desk's list, which
+ * is truncated for display: a reconciliation that silently compares
+ * against the first fifty wallets is worse than none.
+ */
+export async function reconcileSettles(
+  env: Env,
+): Promise<SettleReconciliation> {
+  const [metrics, payerKeys] = await Promise.all([
+    env.COUNTERS.list({ prefix: "metric:" }),
+    env.COUNTERS.list({ prefix: KV_KEYS.payerPrefix }),
+  ]);
+  const [metricValues, payerValues] = await Promise.all([
+    bulkGetText(
+      env.COUNTERS,
+      metrics.keys
+        .map((key) => key.name)
+        .filter((name) => {
+          const kind = name.split(":")[2] ?? "";
+          return kind === "paid" || kind === "paidh" || kind === "nopayer";
+        }),
+    ),
+    bulkGetJson<PayerRecord>(
+      env.COUNTERS,
+      payerKeys.keys.map((key) => key.name),
+    ),
+  ]);
+
+  let counterSettles = FOUNDING_SETTLES_WITHOUT_PAYER_ROW;
+  let unattributed = 0;
+  for (const [name, raw] of metricValues) {
+    const value = parseInt(raw ?? "", 10);
+    if (!Number.isFinite(value)) continue;
+    if ((name.split(":")[2] ?? "") === "nopayer") {
+      unattributed += value;
+    } else {
+      counterSettles += value;
+    }
+  }
+
+  let payerPurchases = 0;
+  for (const record of payerValues.values()) {
+    if (record) payerPurchases += record.purchases;
+  }
+
+  return {
+    counter_settles: counterSettles,
+    payer_purchases: payerPurchases,
+    founding: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
+    unattributed,
+    unexplained:
+      counterSettles -
+      payerPurchases -
+      FOUNDING_SETTLES_WITHOUT_PAYER_ROW -
+      unattributed,
+  };
+}
 
 /** Everything the month's counters know, organic and house apart. */
 export async function readMonthLedger(
@@ -368,6 +497,7 @@ export async function readMonthLedger(
     channels402Infra: {},
     days: {},
     venues: {},
+    settlesWithoutPayer: {},
     revenueUsdc: 0,
     revenueHouseUsdc: 0,
   };
@@ -394,6 +524,10 @@ export async function readMonthLedger(
     }
     if (kind === "venue") {
       ledger.venues[tail] = value;
+      continue;
+    }
+    if (kind === "nopayer") {
+      ledger.settlesWithoutPayer[tail] = value;
       continue;
     }
     if (kind === "rev" || kind === "revh") {
@@ -425,7 +559,8 @@ export async function readMonthLedger(
     if (kind === "tier" || kind === "tierh") {
       const splitAt = tail.lastIndexOf(":");
       const row = (ledger.items[tail.slice(0, splitAt)] ??= emptyRow());
-      const tier = tail.slice(splitAt + 1) + (kind === "tierh" ? " (house)" : "");
+      const tier =
+        tail.slice(splitAt + 1) + (kind === "tierh" ? " (house)" : "");
       row.tiers[tier] = value;
       continue;
     }
@@ -594,7 +729,10 @@ export async function getFirstDollar(env: Env): Promise<FirstDollar | null> {
 
 /** Recent paying wallets, for the cohort/wash-filter review. */
 export async function listPayers(env: Env, limit = 50): Promise<PayerRecord[]> {
-  const listed = await env.COUNTERS.list({ prefix: KV_KEYS.payerPrefix, limit });
+  const listed = await env.COUNTERS.list({
+    prefix: KV_KEYS.payerPrefix,
+    limit,
+  });
   const values = await bulkGetJson<PayerRecord>(
     env.COUNTERS,
     listed.keys.map((key) => key.name),

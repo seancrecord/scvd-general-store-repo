@@ -11,6 +11,7 @@ import {
   listRecentPorchEvents,
   readMonthLedger,
   readPorchLedger,
+  reconcileSettles,
 } from "@/lib/metrics";
 import { sanitizeText } from "@/lib/sanitize";
 import { recountFromRows } from "@/lib/recount";
@@ -215,6 +216,7 @@ adminRoutes.get("/admin", async (c) => {
     confessions,
     refunds,
     alerts,
+    reconciliation,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -228,6 +230,7 @@ adminRoutes.get("/admin", async (c) => {
     listConfessions(c.env),
     listRefunds(c.env),
     listAlerts(c.env, 5),
+    reconcileSettles(c.env),
   ]);
   const emptyLedger = {
     month: new Date().toISOString().slice(0, 7),
@@ -239,6 +242,7 @@ adminRoutes.get("/admin", async (c) => {
     channels402Infra: {},
     days: {},
     venues: {},
+    settlesWithoutPayer: {},
     revenueUsdc: 0,
     revenueHouseUsdc: 0,
   };
@@ -268,6 +272,7 @@ adminRoutes.get("/admin", async (c) => {
       ),
       payers: shelf(payers, [], "payers", notes),
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
+      reconciliation: shelf(reconciliation, null, "reconciliation", notes),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       work: {

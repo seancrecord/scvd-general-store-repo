@@ -6,6 +6,37 @@ a date, by name, including the parts that don't flatter us.
 
 ---
 
+## 2026-07-27 (later still) — the off-by-one was not a bug, and looking for it found one
+
+The books have read one settle heavier than the payer rows since July:
+23 direct + 1 mcp + 1 founding = 25 on the counters, 24 purchases on
+the house wallet's record. Chased it. The answer is dull and complete:
+23 + 1 = 24 instrumented settles, which is exactly what the wallet
+says, and the 25th is the founding fifty cents, entered by hand at
+read time because it predates the instrument. It has a counter and no
+payer row, and it always will. **Difference of exactly one, forever,
+by construction.**
+
+The part worth writing down is what the chase turned up on the way.
+`recordSettlement` writes a payer row only when the facilitator hands
+back a payer address. When it doesn't, the counter moves and no row is
+written — silently, and *indistinguishable from the bug we were
+looking for*. That has never fired, as far as the books show. It also
+had no name, no counter, and no way to be told apart from a genuine
+lost row.
+
+So it has one now. Unattributed settles are counted per item, and the
+desk carries a reconciliation: counters, payer rows, the founding, the
+unattributed, and whatever is left. **The left-over number is the
+alarm.** Zero means the books agree with themselves. Positive means a
+counter moved without its row.
+
+The lesson is the same one the auto-refund taught in a more expensive
+way: a discrepancy nobody can explain gets explained away. Naming the
+boring cause is what makes the next one visible.
+
+---
+
 ## 2026-07-27 (later) — a standing instrument for the number we keep computing by hand
 
 Not a reading. A note that the census is now a page instead of an

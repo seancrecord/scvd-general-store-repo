@@ -1,4 +1,9 @@
-import type { MetricEvent, MonthLedger, PorchLedger } from "@/lib/metrics";
+import type {
+  MetricEvent,
+  MonthLedger,
+  PorchLedger,
+  SettleReconciliation,
+} from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
@@ -17,6 +22,8 @@ export interface OfficePageData {
   porchLedger: PorchLedger;
   payers: PayerRecord[];
   recentChallenges: MetricEvent[];
+  /** Settle counters against payer rows, all-time on both sides. */
+  reconciliation: SettleReconciliation | null;
   bazaarLedger: BazaarLedgerEntry[];
   gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
@@ -145,6 +152,43 @@ function glanceHtml(data: OfficePageData): string {
       ${data.porchLedger.porchToPurchase !== null ? `\u00B7 porch-to-purchase <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
     <p><small>Revenue counts from this deploy forward (the founding fifty cents predates the meter). House money is real money; it just doesn't count as proof.</small></p>`;
+}
+
+/**
+ * Settle counters against payer rows. The gap is expected and named:
+ * the founding settle predates the instrument, and a settle whose
+ * facilitator returned no payer address has nothing to write a row
+ * for. What is left over is a counter that moved without its row,
+ * which is the bug that would otherwise surface as "the books say 12,
+ * the wallet says 11" some month when it costs something.
+ */
+function reconciliationHtml(
+  reconciliation: SettleReconciliation | null,
+  ledger: MonthLedger,
+): string {
+  if (!reconciliation) {
+    return "<p>The reconciliation didn't load. Reload to retry.</p>";
+  }
+  const r = reconciliation;
+  const verdict =
+    r.unexplained === 0
+      ? "<strong>The books reconcile.</strong> Every settle the counters know is either on a payer row, the founding settle, or a settle that arrived without a wallet address."
+      : r.unexplained > 0
+        ? `<strong style="color:#8c2f1b">${r.unexplained} settle${r.unexplained === 1 ? "" : "s"} unexplained.</strong> A counter moved without writing its payer row. This is the one to chase.`
+        : `<strong style="color:#8c2f1b">${-r.unexplained} more purchase${r.unexplained === -1 ? "" : "s"} on the payer rows than the counters admit.</strong> A payer row was written without its counter, or a counter increment was lost to contention.`;
+  const unattributedItems = Object.entries(ledger.settlesWithoutPayer)
+    .map(([item, count]) => `${escapeHtml(item)}: ${count}`)
+    .join(" \u00B7 ");
+  return `
+    <table border="1" cellpadding="4">
+      <tr><td>settles on the counters</td><td>${r.counter_settles}</td></tr>
+      <tr><td>purchases on the payer rows</td><td>${r.payer_purchases}</td></tr>
+      <tr><td>the founding settle (predates the instrument)</td><td>${r.founding}</td></tr>
+      <tr><td>settles with no payer address returned</td><td>${r.unattributed}</td></tr>
+      <tr><td><strong>unexplained</strong></td><td><strong>${r.unexplained}</strong></td></tr>
+    </table>
+    <p>${verdict}</p>
+    <p><small>All-time on both sides: payer rows carry no month, so comparing them to one month of counters would manufacture a discrepancy every time the calendar turned. Unattributed this month${unattributedItems ? `: ${unattributedItems}` : ": none"}.</small></p>`;
 }
 
 function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
@@ -319,6 +363,11 @@ export function renderOfficePage(data: OfficePageData): string {
     <h2>The ledger's answers, per item</h2>
     <p>402s issued vs settled per item, tier picks, wallets. The ledger outranks research.</p>
     ${ledgerAnswersHtml(data.monthLedger, data.payers)}
+  </section>
+
+  <section>
+    <h2>Do the books agree with themselves</h2>
+    ${reconciliationHtml(data.reconciliation, data.monthLedger)}
   </section>
 
   <section>
