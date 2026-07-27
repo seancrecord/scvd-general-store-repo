@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { SPEC_KEY_ORDER } from "@/lib/listing-spec";
+import { SPEC_KEY_ORDER, SPEC_KEY_ORDER_FULL } from "@/lib/listing-spec";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { decodePaymentRequired } from "./helpers/payment";
 
@@ -11,6 +11,23 @@ import { decodePaymentRequired } from "./helpers/payment";
  */
 
 const BASE = "https://scvd.store";
+
+/**
+ * Canonical key order, with why_use elidable: novelty items state no
+ * capability gap and must not invent one, so its absence is part of
+ * the contract rather than a hole in it.
+ */
+function expectCanonicalKeyOrder(spec: Record<string, unknown>): void {
+  const keys = Object.keys(spec);
+  const expected = SPEC_KEY_ORDER_FULL.filter(
+    (key) => key !== "why_use" || keys.includes("why_use"),
+  );
+  expect(keys).toEqual([...expected]);
+  for (const required of SPEC_KEY_ORDER) {
+    expect(keys).toContain(required);
+  }
+}
+
 
 beforeAll(() => {
   installFacilitatorMock();
@@ -36,7 +53,7 @@ describe("S1: one schema, one field order, all items", () => {
     for (const item of items) {
       const spec = item["spec"] as Record<string, unknown>;
       // Literal JSON key order is the whole point; toEqual won't see it.
-      expect(Object.keys(spec)).toEqual([...SPEC_KEY_ORDER]);
+      expectCanonicalKeyOrder(spec);
       expect(typeof spec["capability"]).toBe("string");
       expect(Array.isArray(spec["constraints"])).toBe(true);
       const price = spec["price"] as Record<string, unknown>;
@@ -83,7 +100,7 @@ describe("S2: verification adjacency on the 402", () => {
     );
     expect(String(body["spec_note"])).toContain("Returns:");
     const spec = body["spec"] as Record<string, unknown>;
-    expect(Object.keys(spec)).toEqual([...SPEC_KEY_ORDER]);
+    expectCanonicalKeyOrder(spec);
   });
 
   it("matches the key published at .well-known exactly", async () => {
@@ -140,7 +157,7 @@ describe("C1 + C3 on the MCP door", () => {
     );
     expect(description).toContain("Not guaranteed:");
     const spec = hello?.["spec"] as Record<string, unknown>;
-    expect(Object.keys(spec)).toEqual([...SPEC_KEY_ORDER]);
+    expectCanonicalKeyOrder(spec);
   });
 });
 

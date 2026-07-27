@@ -50,7 +50,7 @@ export const PRACTICE_COUNTER_COPY = {
   honest: [
     "The money is real and so are the goods. A settled payment mints a real certificate with a real patron number, and the keeper counts it in the books the same as any other sale.",
     "We settle first and hand over the goods after. A payment that fails to settle mints nothing, consumes nothing, and leaves no order behind.",
-    "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine, which is why we've never called them automatic.",
+    "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
     "House rule, standing: this store will never ask you to run code, install anything, or hand over credentials or key material. Public HTTPS endpoints, that's the whole surface.",
   ],
 

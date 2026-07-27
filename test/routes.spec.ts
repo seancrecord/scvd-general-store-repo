@@ -54,7 +54,7 @@ describe("the storefront", () => {
     expect(text).toContain("luckies");
     expect(text).toContain("$5 minimum");
     expect(text).toContain("x402");
-    expect(text).toContain("refund is automatic");
+    expect(text).toContain("you get your money back");
   });
 
   it("serves the machine-readable menu with every shelf stocked", async () => {

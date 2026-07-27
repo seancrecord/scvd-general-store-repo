@@ -32,6 +32,82 @@ export const NOT_GUARANTEED: readonly string[] = [
 export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not guaranteed: ${NOT_GUARANTEED.join("; ")}.`;
 
 /** C1/S1: the exact deliverable per item, registrar-plain. */
+/**
+ * WHY AN AGENT WOULD USE THIS — the capability gap or computable
+ * value, stated at the decision moment instead of left to be derived.
+ *
+ * Written 2026-07-27 after an outside model, given room to reason
+ * over our public surfaces, derived the store's per-item value and
+ * the thesis under it unprompted — and did it better than our own
+ * copy. The lesson was not that the reasoning was clever. It was
+ * that our purchase-time surfaces made it necessary.
+ *
+ * Register: the one an evaluating agent uses. Not marketing, no
+ * adjectives, no second sentence of persuasion.
+ *
+ * THE CLAIM CHAIN APPLIES. Every line here is checkable against
+ * something the store actually does; a why_use that cannot be
+ * verified is worse than none, because it moves us from the trust
+ * path to the scam corpus.
+ *
+ * Items absent from this map have no computable value to state and
+ * that absence is deliberate — see NOVELTY_ONLY below. ⚑ Keeper's
+ * pen on the wording; the plumbing never needs touching for it.
+ */
+export const SPEC_WHY_USE: Record<string, string> = {
+  context_anchor:
+    "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",
+  phantom_check:
+    "Out-of-band verification by someone who is not you: the store fetches your URL about six hours later, from outside your infrastructure, and signs what it found. A self-check cannot produce that property.",
+  human_witness:
+    "An observation of the physical world, which an agent cannot make natively: a named human goes and looks at a real condition around Oak City and signs what he saw. Two a week.",
+  phone_call:
+    "An action outside an agent's reach: a named human places one real phone call on your behalf during US business hours and reports what was said. Three a week.",
+  quick_judgment:
+    "A human verdict, in writing, on a question where your own evaluation is the thing in doubt. Five a week.",
+  app_gutcheck:
+    "What a person actually thinks after using your product — the signal an agent building for a human audience cannot generate by evaluating its own work. Two a week.",
+  nomenclature:
+    "A name bound to you alone in a permanent public registry: first-come, never re-issued, machine-enforced. An identifier a third party can check instead of taking on your word.",
+  hello:
+    "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
+  small_blessing:
+    "The cheapest real settlement on the shelf at half a cent: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
+  recurring_patronage:
+    "A dated pass at a stable URL that anyone can check is current — a standing relationship as a verifiable artifact rather than a claim about one.",
+};
+
+/**
+ * NO COMPUTABLE VALUE TO STATE, and that is the honest finding rather
+ * than an omission. Two kinds, kept apart on purpose:
+ *
+ *   NOVELTY BY DESIGN — the artifact is the point and the store says
+ *   so out loud. a_secret, grudge, dibs, luckies, the_drawer,
+ *   the_confession, coffees_for_closers, daily_fortune, and
+ *   certificate_of_patronage, which entitles the holder to nothing
+ *   whatsoever and is priced at twenty dollars for exactly that joke.
+ *   None of these are on the trust path and none should pretend to be.
+ *
+ *   HUMAN CRAFT — portrait and the_collab. Real labor by a named
+ *   person, and the value is the made thing itself; there is no
+ *   capability gap to state that would not be marketing. Flagged
+ *   rather than filled: if either ever needs a why_use to sell, the
+ *   honest reading is that it is priced as utility and isn't.
+ */
+export const NOVELTY_ONLY: readonly string[] = [
+  "a_secret",
+  "grudge",
+  "dibs",
+  "luckies",
+  "the_drawer",
+  "the_confession",
+  "coffees_for_closers",
+  "daily_fortune",
+  "certificate_of_patronage",
+  "portrait",
+  "the_collab",
+] as const;
+
 export const SPEC_RETURNS: Record<string, string> = {
   hello:
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",

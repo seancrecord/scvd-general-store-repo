@@ -21,8 +21,21 @@ export const STORE_METADATA = {
   currency: "USDC",
   chain: "base",
   protocol: "x402",
+  /**
+   * RULE 10, enforced 2026-07-27: "copy never says 'automatic' until
+   * the code makes it automatic." This line said automatic since day
+   * one and the code never did — a refund is created pending and the
+   * keeper marks it paid by hand, with a transaction hash, from
+   * /admin. Caught when an outside model read our surfaces and
+   * repeated "auto-refund if missed" back to us as fact, which is
+   * exactly how an unaudited claim travels.
+   *
+   * The promise is unchanged and still good. Only the word that
+   * described a mechanism we do not have is gone. ⚑ His pen on the
+   * wording.
+   */
   refund_policy:
-    "If an item isn't delivered within its promised window, refund is automatic. No arguing with the shopkeeper required.",
+    "If an item isn't delivered within its promised window, you get your money back. The keeper sends it himself, and you won't have to argue for it.",
   hours:
     "Digital items: always open. Human-labor items: fulfilled weekly by an actual person with a day job.",
 } as const;

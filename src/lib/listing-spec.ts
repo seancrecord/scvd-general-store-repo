@@ -1,6 +1,6 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { priceTiersUsdc } from "@/lib/payments";
-import { SAMPLE_ARTIFACT_ID, SPEC_RETURNS } from "@/store/spec";
+import { SAMPLE_ARTIFACT_ID, SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import type { MenuItem } from "@/types";
 
 /**
@@ -21,10 +21,30 @@ export const SPEC_KEY_ORDER = [
   "price",
 ] as const;
 
+/**
+ * The full order including the optional field. `why_use` sits second
+ * on purpose: key order is the primacy lever, and the capability gap
+ * is what an evaluator needs before anything else. It is optional
+ * because novelty items have no gap to state and should not invent
+ * one — so v1 readers still find the same required six, in the same
+ * order, with one extra key they may ignore.
+ */
+export const SPEC_KEY_ORDER_FULL = [
+  "capability",
+  "why_use",
+  "inputs",
+  "outputs",
+  "verification",
+  "constraints",
+  "price",
+] as const;
+
 export const SPEC_SCHEMA_PATH = "/schemas/listing-spec-v1.json";
 
 export interface ListingSpec {
   capability: string;
+  /** The capability gap or computable value. Absent on novelty items. */
+  why_use?: string;
   inputs: Record<string, unknown>;
   outputs: Record<string, unknown>;
   verification: Record<string, unknown>;
@@ -54,15 +74,20 @@ function trueConstraints(item: MenuItem): string[] {
     );
   } else if (item.fulfillment === "human_queue") {
     constraints.push(
-      `human fulfillment, ${item.sla_hours ?? 168}h promise; refund is automatic if the window is missed`,
+      // Rule 10: the refund is real and personal; "automatic" described
+      // a mechanism this store does not have. Corrected 2026-07-27.
+      `human fulfillment, ${item.sla_hours ?? 168}h promise; miss the window and the keeper refunds you himself`,
     );
   }
   return constraints;
 }
 
 export function listingSpec(item: MenuItem, base: string): ListingSpec {
+  const whyUse = SPEC_WHY_USE[item.id];
   return {
     capability: SPEC_RETURNS[item.id] ?? item.description,
+    // Second by design; see SPEC_KEY_ORDER_FULL.
+    ...(whyUse ? { why_use: whyUse } : {}),
     inputs: buyInputSchema(item),
     outputs: {
       delivery: latencyLine(item),
@@ -79,6 +104,10 @@ export function listingSpec(item: MenuItem, base: string): ListingSpec {
       signing_key: `${base}/.well-known/scvd-signing-key`,
       sample_artifact_id: SAMPLE_ARTIFACT_ID,
       sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+      // Storewide, and the reason any of the rest is worth anything:
+      // the signature is the store's, not the holder's.
+      attestation:
+        "Signed by the store's key, not yours: a claim the certificate carries can be checked by a third party without trusting your self-report.",
     },
     constraints: trueConstraints(item),
     price: {
