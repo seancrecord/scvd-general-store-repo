@@ -40,6 +40,23 @@ COMMERCE & TRUST
    movement on unconfirmed payment. Ever.
 10. Refunds are a promise the keeper keeps personally — copy never
     says "automatic" until the code makes it automatic.
+    WORKED EXAMPLE, and the most instructive incident the store has
+    produced (2026-07-27): "refund is automatic" was live on EVERY
+    surface for five days — store metadata, every human-queue
+    listing, the README, and the published ClawHub skill in someone
+    else's catalogue. The code never did it; a refund is created
+    pending and paid by hand with a transaction hash. Nobody caught
+    it in review. It surfaced when an OUTSIDE MODEL read our public
+    pages and repeated "auto-refund if missed" back to us as fact.
+    THREE LESSONS, all cheap and all learned the hard way: (1) the
+    dangerous class of error is not a lie anyone told, it is a
+    true-sounding line nobody re-checked, propagating through
+    strangers who have no way to know; (2) THIS RULE WAS IN THIS FILE
+    THE ENTIRE TIME AND DID NOT SAVE US — a rule in a file is not a
+    test, and the fix was test/claim-chain.spec.ts, which walks every
+    readable surface and every 402 body; (3) an agent reading our
+    surfaces back to us is a FREE AUDIT, and the store should seek
+    that reading deliberately rather than wait to be lucky.
 11. Never auto-publish agent-contributed content. Keeper review
     stands between the tip jar and the Gazette, always.
 12. Honest scarcity only: caps and waitlists are real; the store says
@@ -73,6 +90,25 @@ PRODUCT & INVENTORY
     not slot machine); no variable-reward manipulation, no engagement
     farming. The drawer is honest randomness with custody, not gacha
     psychology.
+23a. THE SORTING LINE (canon, DEMAND_SYNTHESIS Part 7, 2026-07-27):
+    WE OBSERVE AND SIGN. WE NEVER HOLD, JUDGE, OR
+    PROMISE-TO-ACT-LATER. Attestation of a fact, yes. Custody of
+    money (escrow), no — infrastructure and liability. Judgment
+    between paying parties (arbitration), no — a lawsuit surface and
+    a reputation-killer on the first wrong ruling. A promise that
+    must fire in the future (dead-man's switch, SLA monitor), no —
+    stateful, and it violates graceful degradation. The store's one
+    real product is INDEPENDENT SIGNED OBSERVATION; every serious
+    item is that primitive pointed at a different moment.
+
+23b. DECLINED ON RECORD, regardless of demand size (real demand was
+    measured for all of these and the answer is still no): CAPTCHA
+    and Turnstile solving; non-VoIP SMS/2FA gateways;
+    credential-injection proxies; anything circumventing
+    bot-detection or KYC; escrow; arbitration; dead-man's switches.
+    Logged here so no future research run resurrects them as a
+    finding. We sell hands, never costumes (rule 16).
+
 23. Physical custody claims are always TRUE — and as of 2026-07-23
     the town is too: Oak City, keeper's call, damn the consequences.
     No fiction left between the object and the map.
@@ -91,7 +127,12 @@ OPERATIONS & STAFF
 32. Every employee gets a written job file: role, tools, boundaries,
     escalation triggers.
 33. The Sunday Grind is the heartbeat: fulfill, review, curate, swap
-    the note, sweep the horizon, update the log.
+    the note, sweep the horizon, update the log. AND THE FREE AUDIT
+    (added 2026-07-27): ask a model that has never seen the repo to
+    read the public surfaces and describe the store back — what it
+    sells, what it promises, who it is for. Every claim it repeats is
+    a claim we are making, whether we meant to or not. That is how
+    the auto-refund promise was caught, and it cost nothing.
 34. Keeper-time is the scarcest resource; the store's caps exist to
     protect it. A long line is marketing, not failure.
 35. Launch-first discipline: research and brainstorm run parallel to

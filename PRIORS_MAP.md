@@ -1,9 +1,13 @@
 # PRIORS_MAP.md — the synthesis, mapped against the store as built
 
-SCOPE NOTE: the synthesis itself (thesis, priors, personas,
-pairings) is a back-office document by the keeper's standing call,
-same as KEEPER_CANON and CHARACTER_CANON. Nothing from it is
-reproduced here. This file carries only the derived work: what the
+SCOPE NOTE, clarified 2026-07-27 now that two synthesis documents
+exist and confusing them would be expensive: this file maps
+THE_OVERWEIGHT_MAP (thesis, priors, personas, pairings), which
+remains a back-office document by the keeper's standing call, same as
+KEEPER_CANON and CHARACTER_CANON — nothing from it is reproduced
+here. The OTHER one, DEMAND_SYNTHESIS.md, is in this repo in full at
+his direction; it is the demand-mining synthesis and it is a
+different document with a different job. This file carries only the derived work: what the
 books say about it, what has gone stale, where it collides with a
 standing house rule, and which of its gaps are worth doing during a
 hold. Read it beside the source, not instead of it.
