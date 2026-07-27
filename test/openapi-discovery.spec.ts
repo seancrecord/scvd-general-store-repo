@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { STORE_CONTACT_EMAIL } from "@/store";
+import { MENU_ITEMS, STORE_CONTACT_EMAIL } from "@/store";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -60,30 +60,46 @@ describe("the spec, as a registry reads it", () => {
     expect(paid).toBeGreaterThan(0);
   });
 
-  it("gives the buy route real item ids to substitute, not just prose", async () => {
+  it("gives every item its own path instead of one template", async () => {
     const body: unknown = await (
       await SELF.fetch(`${BASE}/openapi.json`)
     ).json();
     if (!isRecord(body) || !isRecord(body.paths)) throw new Error("no paths");
-    const buy = body.paths["/api/buy/{item_id}"];
-    if (!isRecord(buy) || !isRecord(buy.get)) throw new Error("no buy route");
-    const params = buy.get.parameters;
-    if (!Array.isArray(params)) throw new Error("no parameters");
+    const paths = body.paths;
 
-    const itemId = params.find(
-      (param) => isRecord(param) && param.name === "item_id",
+    // A template is not a resource; a registry probes "{item_id}"
+    // literally and gets a 404.
+    expect(paths["/api/buy/{item_id}"]).toBeUndefined();
+    for (const item of MENU_ITEMS) {
+      expect(paths[`/api/buy/${item.id}`], item.id).toBeTruthy();
+    }
+  });
+
+  it("marks required query parameters required, from the schema the store enforces", async () => {
+    const body: unknown = await (
+      await SELF.fetch(`${BASE}/openapi.json`)
+    ).json();
+    if (!isRecord(body) || !isRecord(body.paths)) throw new Error("no paths");
+
+    // context_anchor refuses to be bought without a summary. The spec
+    // has to say so, or a prober sends nothing and calls us broken.
+    const anchor = body.paths["/api/buy/context_anchor"];
+    if (!isRecord(anchor) || !isRecord(anchor.get)) throw new Error("no anchor");
+    const params = anchor.get.parameters;
+    if (!Array.isArray(params)) throw new Error("no parameters");
+    const summary = params.find(
+      (param) => isRecord(param) && param.name === "summary",
     );
-    expect(isRecord(itemId)).toBe(true);
-    if (!isRecord(itemId)) return;
-    expect(itemId.required).toBe(true);
-    const schema = itemId.schema;
-    expect(isRecord(schema)).toBe(true);
-    if (!isRecord(schema)) return;
-    // A prober reads the schema, not the description.
-    expect(Array.isArray(schema.enum)).toBe(true);
-    if (!Array.isArray(schema.enum)) return;
-    expect(schema.enum).toContain("hello");
-    expect(schema.enum).toContain("small_blessing");
-    expect(typeof itemId.example).toBe("string");
+    expect(isRecord(summary)).toBe(true);
+    if (!isRecord(summary)) return;
+    expect(summary.required).toBe(true);
+
+    // And an optional one stays optional.
+    const named = params.find(
+      (param) => isRecord(param) && param.name === "agent_name",
+    );
+    expect(isRecord(named)).toBe(true);
+    if (!isRecord(named)) return;
+    expect(named.required).toBeUndefined();
   });
 });

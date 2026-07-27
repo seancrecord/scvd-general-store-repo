@@ -1,5 +1,8 @@
 import { Hono } from "hono";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
+import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { listIssues } from "@/services/gazette";
 import { MENU_ITEMS, STORE_CONTACT_EMAIL, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -101,6 +104,75 @@ function pathParam(
   };
 }
 
+/**
+ * ONE PATH PER ITEM, 2026-07-27.
+ *
+ * x402scan probes `/api/buy/{item_id}` literally, braces and all, and
+ * gets a 404, because a template is not a resource. Enumerating the
+ * real paths fixes that without any trickery — and it is what every
+ * registry already does with us: the Bazaar lists our endpoints one
+ * by one, not as a pattern.
+ *
+ * Parameters come from `buyInputSchema`, the same object Bazaar and
+ * the MCP tools read and the buy route enforces. One source, so the
+ * spec cannot drift from the behaviour — which is the bug we have
+ * been finding all week, in four different costumes.
+ */
+function buyItemOperation(item: MenuItem): OpenApiObject {
+  const schema = buyInputSchema(item);
+  const required = new Set(schema.required ?? []);
+  const parameters = Object.entries(schema.properties).map(
+    ([name, definition]) => {
+      const property =
+        typeof definition === "object" && definition !== null
+          ? (definition as Record<string, unknown>)
+          : {};
+      const { description, ...rest } = property;
+      return {
+        name,
+        in: "query",
+        ...(required.has(name) ? { required: true } : {}),
+        schema: rest,
+        ...(description ? { description } : {}),
+      };
+    },
+  );
+  return {
+    ...paidOp(
+      `Buy ${item.name}`,
+      `${item.description} ${
+        item.fulfillment === "instant"
+          ? "Delivered in the response."
+          : `Fulfilled by a human within ${item.sla_hours ?? 168} hours; the response carries an order id to poll.`
+      }`,
+      priceTiersUsdc(item),
+    ),
+    parameters,
+  };
+}
+
+/** Every paid buy route, by its real path. */
+function buyPaths(items: readonly MenuItem[]): Record<string, OpenApiObject> {
+  const paths: Record<string, OpenApiObject> = {};
+  for (const item of items) {
+    paths[`/api/buy/${item.id}`] = { get: buyItemOperation(item) };
+  }
+  return paths;
+}
+
+/** Penny pages that actually exist. A path with no instances is not a resource. */
+function pennyPagePaths(
+  entries: readonly { path: string; summary: string; description: string }[],
+): Record<string, OpenApiObject> {
+  const paths: Record<string, OpenApiObject> = {};
+  for (const entry of entries) {
+    paths[entry.path] = {
+      get: paidOp(entry.summary, entry.description, [PENNY_PAGE_USDC], true),
+    };
+  }
+  return paths;
+}
+
 function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   const allPrices = [...new Set(items.flatMap((i) => priceTiersUsdc(i)))].sort(
     (a, b) => a - b,
@@ -181,8 +253,12 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   };
 }
 
-openapiRoutes.get("/openapi.json", (c) => {
+openapiRoutes.get("/openapi.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
+  // Only issues that exist get a path. A route with no instances is
+  // documentation, not a resource, and a registry probing it finds a
+  // 404 and holds it against us.
+  const issues = await listIssues(c.env).catch(() => []);
   const document: OpenApiObject = {
     openapi: "3.1.0",
     info: {
@@ -246,24 +322,10 @@ openapiRoutes.get("/openapi.json", (c) => {
       "/zodiac/archive": {
         get: freeOp(
           "The Almanac archive index",
-          "Past season weeks, listed free. Each page is a penny over x402.",
+          "Past season weeks, listed free, with the URL of every page that exists. Each page is a penny over x402 at /zodiac/archive/{sign}/week-{week}, and they are listed here rather than in this contract because the set grows every week the calendar turns.",
         ),
       },
-      "/zodiac/archive/{sign}/week-{week}": {
-        get: {
-          ...paidOp(
-            "One archive page",
-            "A past week's page for one sign, markdown, a penny, the almanac rail.",
-            [PENNY_PAGE_USDC],
-            true,
-          ),
-          parameters: [
-            pathParam("sign", "A sign id from /zodiac."),
-            pathParam("week", "A season week the calendar has finished with."),
-          ],
-        },
-      },
-      "/api/buy/{item_id}": { get: buyOperation(MENU_ITEMS) },
+      ...buyPaths(MENU_ITEMS),
       "/api/order/{order_id}": {
         get: {
           ...freeOp(
@@ -279,33 +341,24 @@ openapiRoutes.get("/openapi.json", (c) => {
           "Free index of the keeper's journal pages, newest first.",
         ),
       },
-      "/almanac/{slug}": {
-        get: {
-          ...paidOp(
-            "One Almanac page",
-            "A dated journal page as markdown, one penny over x402.",
-            [PENNY_PAGE_USDC],
-            true,
-          ),
-          parameters: [pathParam("slug", "From the /almanac index.")],
-        },
-      },
+      ...pennyPagePaths(
+        ALMANAC_ENTRIES.map((entry) => ({
+          path: `/almanac/${entry.slug}`,
+          summary: `Almanac: ${entry.title}`,
+          description: `A dated journal page as markdown, one penny over x402. Written ${entry.date}.`,
+        })),
+      ),
       "/gazette": {
         get: freeOp("Gazette index", "Free index of published issues."),
       },
-      "/gazette/issue-{issue_number}": {
-        get: {
-          ...paidOp(
-            "One Gazette issue",
+      ...pennyPagePaths(
+        issues.map((issue) => ({
+          path: `/gazette/issue-${issue.issue_number}`,
+          summary: `Gazette no. ${issue.issue_number}: ${issue.title}`,
+          description:
             "A published issue as markdown, a penny a copy, contributors credited.",
-            [PENNY_PAGE_USDC],
-            true,
-          ),
-          parameters: [
-            pathParam("issue_number", "From the /gazette index."),
-          ],
-        },
-      },
+        })),
+      ),
       "/api/guestbook": {
         get: freeOp(
           "Read the guestbook",

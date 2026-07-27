@@ -255,8 +255,12 @@ describe("discovery surfaces", () => {
     const openapi = await json(await SELF.fetch(`${BASE}/openapi.json`));
     expect(openapi["openapi"]).toBe("3.1.0");
     const paths = openapi["paths"] as Record<string, unknown>;
-    expect(paths["/api/buy/{item_id}"]).toBeTruthy();
-    expect(paths["/gazette/issue-{issue_number}"]).toBeTruthy();
+    // Real paths, not templates: a registry probes what the spec says,
+    // and "{item_id}" is a 404 in every language.
+    expect(paths["/api/buy/hello"]).toBeTruthy();
+    expect(paths["/api/buy/{item_id}"]).toBeUndefined();
+    // Gazette issues appear as they are published; none yet, so none here.
+    expect(paths["/gazette/issue-{issue_number}"]).toBeUndefined();
 
     const home = await (await SELF.fetch(`${BASE}/`)).text();
     expect(home).toContain("/openapi.json");
