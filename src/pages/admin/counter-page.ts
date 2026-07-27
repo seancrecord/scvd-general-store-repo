@@ -24,6 +24,8 @@ import type {
  */
 
 export interface CounterPageData {
+  /** One line at the top of the room: what the last form actually did. */
+  notice?: string;
   weekNote: string;
   alerts: Array<{ condition: string; detail: string; at: string }>;
   orders: OrderRecord[];
@@ -340,7 +342,16 @@ export function renderCounterPage(data: CounterPageData): string {
               `<li><strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(alert.detail)}, ${escapeHtml(alert.at)}</li>`,
           )
           .join("\n")}</ul>`;
+  /**
+   * Stocking a shelf used to redirect in silence, which reads exactly
+   * like a form that did nothing. The shelf count was the only
+   * confirmation and it is halfway down the page.
+   */
+  const noticeHtml = data.notice
+    ? `<section><p><strong>${escapeHtml(data.notice)}</strong></p></section>`
+    : "";
   const body = `
+  ${noticeHtml}
   <section>
     <h2>This week's note</h2>
     <form method="POST" action="/admin/note">

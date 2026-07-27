@@ -105,6 +105,25 @@ function shelf<T>(
   return fallback;
 }
 
+/**
+ * What the last stocking form actually did. A redirect in silence
+ * reads exactly like a form that did nothing, which is how the
+ * keeper lost a name to doubt on 2026-07-27.
+ */
+function stockNotice(
+  stocked: string | undefined,
+  shelf: string | undefined,
+): string | undefined {
+  const count = Number.parseInt(stocked ?? "", 10);
+  if (!Number.isFinite(count) || count < 1) {
+    return undefined;
+  }
+  const where = shelf ? ` on the ${shelf} shelf` : "";
+  return count === 1
+    ? `Stocked one${where}. It's on the shelf and the listing is live.`
+    : `Stocked ${count}${where}. They're on the shelf and the listing is live.`;
+}
+
 adminRoutes.get("/admin/counter", async (c) => {
   const notes: string[] = [];
   const [
@@ -162,6 +181,7 @@ adminRoutes.get("/admin/counter", async (c) => {
   }
   return c.html(
     renderCounterPage({
+      notice: stockNotice(c.req.query("stocked"), c.req.query("shelf")),
       orders: listedOrders,
       closers: shelf(closers, [], "closers", notes),
       stockShelves: {
@@ -582,7 +602,7 @@ adminRoutes.post("/admin/stock/nomenclature/bulk", async (c) => {
       400,
     );
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(`/admin/counter?stocked=${stocked}&shelf=nomenclature`);
 });
 
 /** Stock one unit onto a stocked shelf (fields per the shelf's spec). */
@@ -599,7 +619,7 @@ adminRoutes.post("/admin/stock/:item_id", async (c) => {
   if ("refused" in result) {
     return c.text(result.refused, 400);
   }
-  return c.redirect("/admin/counter");
+  return c.redirect(`/admin/counter?stocked=1&shelf=${encodeURIComponent(itemId)}`);
 });
 
 adminRoutes.post("/admin/stock/:item_id/remove", async (c) => {
