@@ -148,10 +148,15 @@ now.
 
 Measured against one metric: **closer to first organic settle?**
 
-1. **A1** capability-query rewrite — found-by-search, pure precision.
-2. **A2** MCP registry submissions — pure action.
-3. **A3** Trust List v0 + **A4** guide-the-visitor — establish the
-   anchor format, make arrivals convert.
+RESEQUENCED 2026-07-27, keeper-approved, on Field Report No. 1.
+Timing: trust/continuity is the live conversation in agent-space now
+(Field Report No. 1); supply-side tasks keep, conversations don't.
+
+1. **A3** Trust List v0 — establish the anchor format while the
+   conversation it answers is live.
+2. **A1** capability-query rewrite — found-by-search, pure precision.
+3. **A2** MCP registry submissions — pure action. **A4**
+   guide-the-visitor alongside, to make arrivals convert.
 4. ~~**C1** CV charter~~ — DONE: CV is live and holds his own
    instructions.
 5. **B1** Show HN — after Trust List v0 exists, keeper-voiced.
