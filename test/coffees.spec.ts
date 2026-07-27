@@ -55,7 +55,10 @@ describe("coffee's for closers", () => {
   });
 
   it("refuses the sale without a win: no win, no charge", async () => {
-    const missing = await SELF.fetch(`${BASE}/api/buy/coffees_for_closers`);
+    // The probe rule: unsigned asks the price and gets a 402; a request
+    // that means to buy is the one held to the requirement.
+    const missing = await SELF.fetch(`${BASE}/api/buy/coffees_for_closers`,
+      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
     expect(missing.status).toBe(400);
     expect(String((await json(missing))["error"])).toContain(
       "No win, no charge",
@@ -63,6 +66,7 @@ describe("coffee's for closers", () => {
 
     const tooLong = await SELF.fetch(
       `${BASE}/api/buy/coffees_for_closers?win=${"x".repeat(201)}`,
+      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } },
     );
     expect(tooLong.status).toBe(400);
   });

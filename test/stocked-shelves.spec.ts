@@ -89,7 +89,10 @@ describe("the stocked shelves", () => {
 
 describe("the grudge register", () => {
   it("holds instantly, names the grievance, refuses nothing-named", async () => {
-    const missing = await SELF.fetch(`${BASE}/api/buy/grudge`);
+    // The probe rule: unsigned asks the price and gets a 402; a request
+    // that means to buy is the one held to the requirement.
+    const missing = await SELF.fetch(`${BASE}/api/buy/grudge`,
+      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
     expect(missing.status).toBe(400);
 
     const grievance = "A rate limit with no Retry-After header.";

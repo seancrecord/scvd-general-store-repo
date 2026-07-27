@@ -152,7 +152,10 @@ describe("the Penny Shelf", () => {
 
 describe("context_anchor", () => {
   it("turns away an anchor with no summary before any money moves", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/context_anchor`);
+    // The probe rule: unsigned asks the price and gets a 402; a request
+    // that means to buy is the one held to the requirement.
+    const response = await SELF.fetch(`${BASE}/api/buy/context_anchor`,
+      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
     expect(response.status).toBe(400);
     const body = await json(response);
     expect(body["error"]).toContain("summary");

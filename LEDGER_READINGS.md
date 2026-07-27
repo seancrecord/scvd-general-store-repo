@@ -6,6 +6,79 @@ a date, by name, including the parts that don't flatter us.
 
 ---
 
+## 2026-07-26 (last) — the cause, found by a second witness
+
+x402scout, on a submission of six endpoints: **"Probe found 3 valid
+endpoint(s)."**
+
+The six were small_blessing, daily_fortune, the_confession,
+phantom_check, hello, context_anchor. Three passed. The three that
+failed — the_confession, phantom_check, context_anchor — are three of
+the seven Bazaar never registered. Two independent indexers, the same
+verdict, and it names the cause the earlier reading could only
+gesture at.
+
+### What was actually happening
+
+`src/routes/buy.ts` ran its guards in this order:
+
+    stock (409) → shutter → anchor (400) → phantom (400)
+      → confession (400) → closers (400) → grievance (400)
+      → THE PAYMENT GATE (402)
+
+Every guard fired before the gate quoted a price. So an indexer —
+which arrives with no parameters and no signature, because that is
+what a probe is — got a 400 and concluded we were not an x402
+endpoint at all.
+
+The guards themselves are right and they stay. "No summary, no
+charge" is the honest order of business, and it is why nobody has
+ever been charged for an anchor with nothing in it. But the side
+effect was that **the items best suited to being needed were the
+ones nobody could find.** The phantom check and the context anchor —
+the two DEMAND.md picked out as most likely to be genuinely required
+by an agent doing a job — were invisible on the only surface that
+sends us traffic.
+
+### The probe rule, shipped
+
+A request carrying no PAYMENT-SIGNATURE is **asking the price**, not
+placing an order. It now gets the 402, with the requirement named in
+the challenge body (`required_params`, read off the same schema
+Bazaar and the MCP tools use, so the listing can never drift from the
+behaviour).
+
+A request carrying a signature is **buying**, and every guard applies
+exactly as before: refused before verification, before settlement,
+before any money moves. The promise is unchanged. Five existing tests
+asserted the old shape and were rewritten to assert the same
+guarantee the way it now works, plus eleven new ones.
+
+### And a smaller thing found on the way
+
+phantom_check and the_confession were **enforcing a parameter the
+published schema never declared**. The guard refused what the listing
+called optional. Fixed in the same pass — `url` and `confession` are
+now declared required, which is what they have always been in
+practice.
+
+### What this predicts
+
+Five of the seven invisible items should become probe-visible on this
+deploy. The remaining two, the_drawer and nomenclature, are stocked
+shelves sitting at zero, and a 409 for a genuinely empty shelf is
+honest scarcity working correctly — they come back when the keeper
+stocks them.
+
+⚑ So do not buy the missing items to make them appear. That was the
+plan an hour ago and it was wrong: they already settled once on
+07-24 and stayed invisible, because the probe never got far enough to
+see a price. Ship this, wait for the next crawl, and see. If the
+count moves from 14 toward 19 on its own, the diagnosis was right and
+it cost nothing.
+
+---
+
 ## 2026-07-26 (later still) — an outside witness, and what it settles
 
 agentic.market's page for the store, read by the keeper. First

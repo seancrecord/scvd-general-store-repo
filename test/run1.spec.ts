@@ -92,7 +92,10 @@ describe("the Agent Zodiac", () => {
 
 describe("the census items", () => {
   it("phantom_check requires a url before money moves", async () => {
-    const bare = await SELF.fetch(`${BASE}/api/buy/phantom_check`);
+    // The probe rule: unsigned asks the price and gets a 402; a request
+    // that means to buy is the one held to the requirement.
+    const bare = await SELF.fetch(`${BASE}/api/buy/phantom_check`,
+      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
     expect(bare.status).toBe(400);
     const body = await json(bare);
     expect(String(body["error"])).toContain("No target, no charge");

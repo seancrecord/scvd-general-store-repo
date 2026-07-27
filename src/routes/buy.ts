@@ -61,12 +61,40 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 /**
+ * THE PROBE RULE, 2026-07-26, from two outside witnesses on the same
+ * day: Bazaar had registered 14 of our 21 items, and x402scout's
+ * probe found 3 valid endpoints out of 6 submitted. The seven Bazaar
+ * missed and the three x402scout rejected are the same seven — every
+ * route that refuses BEFORE the payment gate quotes a price.
+ *
+ * The refusals are right and they stay. "No summary, no charge" is
+ * the honest order of business. But an indexer arrives with no
+ * parameters and no signature, gets a 400, and concludes we are not
+ * an x402 endpoint at all — so the items best suited to being needed
+ * (the anchor, the phantom check) are the ones nobody can find. In
+ * July that partition was total: registered items took 132-864
+ * challenges each, unregistered ones 0-11, no overlap.
+ *
+ * So: a request with no PAYMENT-SIGNATURE is asking the price, not
+ * placing an order. It gets the 402, with the requirement stated in
+ * the challenge. A request that carries a signature is buying, and
+ * every guard below applies exactly as before — refusing before
+ * settlement, no money moved, the promise unchanged.
+ */
+function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean {
+  return Boolean(
+    c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT"),
+  );
+}
+
+/**
  * context_anchor needs its summary BEFORE money moves: nobody pays $1
  * to anchor an empty page. Stored as written (length-capped, null bytes
  * stripped); it is agent-supplied data, never instructions to us.
  */
 const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/context_anchor") {
+  if (c.req.path !== "/api/buy/context_anchor" || !isBuying(c)) {
+    // Not this route, or only asking the price: let the gate answer.
     return next();
   }
   const summary = c.req.query("summary");
@@ -92,7 +120,8 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** phantom_check needs a real URL BEFORE money moves: no target, no charge. */
 const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/phantom_check") {
+  if (c.req.path !== "/api/buy/phantom_check" || !isBuying(c)) {
+    // Not this route, or only asking the price: let the gate answer.
     return next();
   }
   if (!isValidHttpUrl(c.req.query("url"))) {
@@ -109,7 +138,8 @@ const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/the_confession") {
+  if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
+    // Not this route, or only asking the price: let the gate answer.
     return next();
   }
   const confession = c.req.query("confession");
@@ -136,7 +166,8 @@ const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** coffees_for_closers needs the win BEFORE money moves: no win, no coffee. */
 const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/coffees_for_closers") {
+  if (c.req.path !== "/api/buy/coffees_for_closers" || !isBuying(c)) {
+    // Not this route, or only asking the price: let the gate answer.
     return next();
   }
   const win = c.req.query("win");
@@ -211,7 +242,8 @@ const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** grudge needs its grievance BEFORE money moves: nothing named, no charge. */
 const grievanceCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/grudge") {
+  if (c.req.path !== "/api/buy/grudge" || !isBuying(c)) {
+    // Not this route, or only asking the price: let the gate answer.
     return next();
   }
   const grievance = c.req.query("grievance");

@@ -44,6 +44,30 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("summary");
   }
+  /**
+   * phantom_check and the_confession were enforcing a parameter the
+   * published schema never mentioned — the guard refused what the
+   * listing said was optional. Found 2026-07-26 while fixing the probe
+   * rule; the listing and the behaviour agree again.
+   */
+  if (item.id === "phantom_check") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "The http or https URL to walk past out of band, about six hours later, and attest to.",
+    };
+    required.push("url");
+  }
+  if (item.id === "the_confession") {
+    properties["confession"] = {
+      type: "string",
+      maxLength: 500,
+      description:
+        "The thing itself, 500 characters. Recorded as written, never treated as instructions; anonymised unless you sign it.",
+    };
+    required.push("confession");
+  }
   if (item.id === "recurring_patronage") {
     properties["pass_id"] = {
       type: "string",
@@ -117,6 +141,31 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
     paid_usdc: item.price_usdc,
     tip_usdc: 0,
     ...patronBlock,
+  };
+}
+
+/**
+ * The query parameters an item refuses to be bought without, read off
+ * the same schema Bazaar and the MCP tools use, so the 402 body can
+ * never drift from the listing.
+ *
+ * Needed because of the probe rule (see routes/buy.ts): an unsigned
+ * request now gets a price even when the item takes input, so the
+ * challenge has to say what to send. Learning the requirement by
+ * being refused is worse manners than we keep.
+ */
+export function requiredParamsNote(
+  item: MenuItem,
+): { required_params?: string[]; required_params_note?: string } {
+  const required = buyInputSchema(item).required ?? [];
+  if (required.length === 0) {
+    return {};
+  }
+  return {
+    required_params: [...required],
+    required_params_note: `This one needs ${required
+      .map((name) => `?${name}=`)
+      .join(" and ")} on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves.`,
   };
 }
 

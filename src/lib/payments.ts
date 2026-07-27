@@ -14,6 +14,7 @@ import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
 import {
   buyDiscoveryExtensions,
   pennyPageDiscoveryExtensions,
+  requiredParamsNote,
 } from "@/lib/bazaar-discovery";
 import { installBazaarObserver } from "@/lib/bazaar-observer";
 import { extractPaymentNonce } from "@/lib/replay-guard";
@@ -124,6 +125,11 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
         item_id: item.id,
         min_price_usdc: item.price_usdc,
         pricing: item.pricing,
+        // An unsigned request now gets the price even when the item
+        // needs input (the probe rule, buy.ts). Then the challenge has
+        // to say what to send, or the caller learns the requirement by
+        // being refused, which is worse manners than we keep.
+        ...requiredParamsNote(item),
         want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),

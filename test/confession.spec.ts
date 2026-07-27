@@ -40,7 +40,10 @@ async function payFor(url: string): Promise<Response> {
 
 describe("the confession itself", () => {
   it("hears nothing without words, before money moves", async () => {
-    const bare = await SELF.fetch(`${BASE}/api/buy/the_confession`);
+    // The probe rule: unsigned asks the price and gets a 402; a request
+    // that means to buy is the one held to the requirement.
+    const bare = await SELF.fetch(`${BASE}/api/buy/the_confession`,
+      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
     expect(bare.status).toBe(400);
     const body = await json(bare);
     expect(String(body["error"])).toContain("Nothing to hear, no charge");
