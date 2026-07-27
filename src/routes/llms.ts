@@ -128,6 +128,14 @@ which is the point: you get the same code path everyone else gets.
 The whole thing, with the cheap door listed cheapest first:
 ${base}/try
 
+## The trust list
+
+A signed list of origins the keeper has personally transacted with,
+at ${base}/trust-list.json. Version 0 lists only this store; it grows
+by hand and only after he has done the thing himself. Each entry
+records an observation about a past event, not a promise about
+anyone's future.
+
 ## The promise
 
 ${STORE_METADATA.refund_policy}

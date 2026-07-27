@@ -21,6 +21,7 @@ import {
   porchRoutes,
   practiceCounterRoutes,
   requestRoutes,
+  trustListRoutes,
   refundRoutes,
   schemaRoutes,
   siteMetaRoutes,
@@ -137,6 +138,7 @@ app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
 app.route("/", practiceCounterRoutes);
+app.route("/", trustListRoutes);
 app.route("/", llmsRoutes);
 app.route("/", skillRoutes);
 app.route("/", catalogRoutes);
