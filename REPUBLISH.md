@@ -31,7 +31,22 @@ propagates without anyone filing anything.
 
 ## ⚑ Carries a frozen copy — needs a human to push it
 
-### 1. The ClawHub skill — STALE, and the one that matters
+### 1. The ClawHub skill — PUBLISHED 2026-07-27 (keeper's hands)
+
+**Done.** The refund correction, the usefulness-first description, the
+twelve situations and the practice counter are live in the registry.
+
+ONE THING TO SANITY-CHECK, because `clawhub publish` reads the local
+directory rather than the remote: if the publish ran from a checkout
+made **before** the SKILL.md fix landed, it shipped the old text under
+a new version number — which is worse than not publishing, because the
+changelog then says the false claim was corrected. Open the published
+skill and look for "refund is automatic." If it is there, pull and
+re-publish as 2.3.1.
+
+Original note follows.
+
+### 1a. The ClawHub skill — what was stale
 
 `registry/clawhub/SKILL.md` was published at 2.2.0 on 2026-07-26.
 Since then the source gained: the practice counter, `why_use` on every
