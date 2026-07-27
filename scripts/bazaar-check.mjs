@@ -61,12 +61,32 @@ function loadDevVars() {
 loadDevVars();
 
 const apiKeyId = process.env.CDP_API_KEY_ID;
-const apiKeySecret = process.env.CDP_API_KEY_SECRET;
+/**
+ * The secret is either a single-line base64 Ed25519 key or a
+ * multi-line EC PEM. A PEM does not survive a shell variable or a
+ * .dev.vars line intact, so CDP_API_KEY_SECRET_FILE takes a path and
+ * reads it whole.
+ */
+const apiKeySecret = process.env.CDP_API_KEY_SECRET_FILE
+  ? readFileSync(process.env.CDP_API_KEY_SECRET_FILE, "utf8").trim()
+  : process.env.CDP_API_KEY_SECRET;
 
 if (!apiKeyId || !apiKeySecret) {
   console.error(
     "Need CDP_API_KEY_ID and CDP_API_KEY_SECRET — in the environment, or in .dev.vars beside this repo.",
   );
+  console.error("");
+  console.error("Wrangler secrets live in Cloudflare, not on this machine, so");
+  console.error("a fresh clone has no local copy. Either paste them into");
+  console.error(".dev.vars (gitignored, copy .dev.vars.example), or pass them");
+  console.error("for one run:");
+  console.error("");
+  console.error("  CDP_API_KEY_ID='...' CDP_API_KEY_SECRET='...' npm run bazaar:check");
+  console.error("");
+  console.error("If the secret is a multi-line EC PEM rather than a one-line");
+  console.error("base64 Ed25519 key, save it to a file and use:");
+  console.error("");
+  console.error("  CDP_API_KEY_ID='...' CDP_API_KEY_SECRET_FILE=./cdp-key.pem npm run bazaar:check");
   process.exit(2);
 }
 
