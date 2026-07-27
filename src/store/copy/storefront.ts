@@ -97,6 +97,7 @@ export const STOREFRONT_COPY = {
   termNoteCatalog: "# the catalog",
   termNoteSkill: "# the skill",
   termNoteContract: "# the contract",
+  termNoteTry: "# building a client? practice on us",
   termNoteRequest: "# want something we don't stock?",
   termPayLine: "USDC on Base \u00B7 x402 v2 \u00B7 settle first, goods after",
   wallHead: "SIGNED THE WALL",

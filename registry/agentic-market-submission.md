@@ -36,6 +36,6 @@ https://scvd.store/mcp · https://scvd.store/openapi.json
 ## Claims audit (verify true on submission day)
 
 - 21 items — check /menu.json count on the day.
-- Bazaar-discoverable — confirmed 2026-07-22 (hello route).
+- Bazaar-discoverable — confirmed 2026-07-22 (hello route), NOT re-verified since; the keeper could not find the store on any browsable mirror as of 2026-07-26. Re-query the CDP discovery list before this line is submitted anywhere.
 - MCP in-band payment — live, first settle 2026-07-22.
 - ClawHub skill — scvd-general-store@1.0.1.

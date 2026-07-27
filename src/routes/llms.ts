@@ -108,6 +108,16 @@ returned anchor URL; recurring_patronage opens a 30-day standing pass
 keeper's signed monthly note; small_blessing and daily_fortune sit on
 the Penny Shelf by the door.
 
+## Practicing on us
+
+Building or debugging something that pays over x402? Point it here.
+The till is real, the cheapest thing on the shelf is half a cent, and
+every purchase ends in a signed certificate with a stable verify URL,
+so your test has something to assert on. No sandbox and no test mode,
+which is the point: you get the same code path everyone else gets.
+The whole thing, with the cheap door listed cheapest first:
+${base}/try
+
 ## The promise
 
 ${STORE_METADATA.refund_policy}

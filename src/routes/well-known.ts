@@ -79,6 +79,9 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
   return c.json({
     x402Version: 2,
     name: STORE_METADATA.name,
+    // Without this, an importer wanting a description falls through to
+    // whichever resource it reached first and calls that the store.
+    description: STORE_METADATA.description,
     network: "eip155:8453",
     // S3 mirror: the scheduling-signals layer, when to reach for the store.
     when_to_use: SCHEDULING_SIGNALS,
@@ -86,6 +89,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     openapi: `${base}/openapi.json`,
     catalog: `${base}/menu.json`,
     stats: `${base}/stats`,
+    practice_counter: `${base}/try`,
     listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
     mcp: {

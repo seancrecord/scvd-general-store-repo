@@ -56,6 +56,16 @@ const INFRASTRUCTURE_UA_HINTS = [
   "nuclei", "zgrab", "masscan", "nmap",
   "uptimerobot", "pingdom", "statuscake", "site24x7", "betteruptime",
   "headlesschrome", "phantomjs", "crawler", "spider", "scrapy",
+  // Machinery that names its own job, observed in the first reading of
+  // the books (2026-07-26): mako-pulse-prober walked the catalog and
+  // landed in ORGANIC DIRECT, because "a user-agent with no referrer"
+  // describes an indexer exactly as well as it describes a customer.
+  // These are names for looking, not for buying. Kept as whole words a
+  // machine chose for itself; nothing here matches a plain agent on
+  // curl, and "bot" stays off the list on purpose (clawdbots are
+  // customers).
+  "prober", "monitor", "watchdog", "checker", "scanner", "inspector",
+  "sentinel", "canary", "heartbeat", "synthetics",
 ];
 
 export interface ChannelSignals {

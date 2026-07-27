@@ -186,6 +186,7 @@ export function renderStorefront(data: StorefrontData): string {
         <p class="term-line">GET <a href="/menu.json">/menu.json</a>     <span class="term-note">${COPY.termNoteCatalog}</span></p>
         <p class="term-line">GET <a href="/skill.md">/skill.md</a>      <span class="term-note">${COPY.termNoteSkill}</span></p>
         <p class="term-line">GET <a href="/openapi.json">/openapi.json</a>  <span class="term-note">${COPY.termNoteContract}</span></p>
+        <p class="term-line">GET <a href="/try">/try</a>          <span class="term-note">${COPY.termNoteTry}</span></p>
         <p class="term-line">POST /api/request   <span class="term-note">${COPY.termNoteRequest}</span></p>
         <p class="term-line term-pay">${COPY.termPayLine}</p>
       </div>

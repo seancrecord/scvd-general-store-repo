@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "keys:generate": "node scripts/generate-signing-key.mjs",
-    "shop": "node scripts/shopping-run.mjs"
+    "shop": "node scripts/shopping-run.mjs",
+    "bazaar:check": "node scripts/bazaar-check.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

@@ -19,6 +19,7 @@ import {
   patronageRoutes,
   phantomRoutes,
   porchRoutes,
+  practiceCounterRoutes,
   requestRoutes,
   refundRoutes,
   schemaRoutes,
@@ -135,6 +136,7 @@ app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
+app.route("/", practiceCounterRoutes);
 app.route("/", llmsRoutes);
 app.route("/", skillRoutes);
 app.route("/", catalogRoutes);
