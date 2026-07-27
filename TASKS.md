@@ -155,7 +155,7 @@ BUILD PASS EXECUTED 2026-07-23 on the keeper's order (all six, same evening):
 ## NOW (Phase 2 — keeper hands; agents drafted, keeper submits)
 
 - [x] Review registry/clawhub/SKILL.md end to end, then publish via `npx clawhub skill publish` — DONE 2026-07-22, published as scvd-general-store@1.0.0 by the keeper's hand
-- [x] Review registry/awesome-x402-submission.md, pick a mirror, fork, one-line PR with the prepared title/body — SUBMITTED 2026-07-22 by the keeper; awaiting their maintainers
+- [x] Review registry/awesome-x402-submission.md, pick a mirror, fork, one-line PR with the prepared title/body — SUBMITTED 2026-07-22 by the keeper; RESUBMITTED 2026-07-27 as xpaysh/awesome-x402 PR #1024 (the 07-22 PR had gone to brooks091's dead fork — 0 stars, unmaintained since 2025-11, zero response; xpaysh is the fork network's source, 268 stars, active daily). Copy re-cut on resubmit: "real goods" corrected per the 07-24 claim fix, Bazaar claim dropped per the audit, /try added. Awaiting xpaysh maintainers
 - [ ] Execute every live product manually once; fix anything that surprises a first buyer (23 items — the human-queue seven can be bought and self-fulfilled from /admin)
 - [ ] WAIT: Agentic.market listing request until mcp + bazaar channels show in the ledger
 

@@ -36,8 +36,9 @@ day — none verified from the build environment):
   payment; listing it is straightforwardly true. Candidates:
   mcp.so, PulseMCP, Glama, Smithery. Link /mcp; paper rides along.
 - x402 ecosystem — already live: Bazaar discovery, x402scan
-  indexing, awesome-x402 PR open (their clock), ClawHub skill
-  published. When the founding edition is live, add its URL to the
+  indexing, awesome-x402 PR open (xpaysh/awesome-x402 #1024,
+  resubmitted 2026-07-27 after the 07-22 PR proved to target a dead
+  fork; their clock), ClawHub skill published. When the founding edition is live, add its URL to the
   ClawHub skill description on the next version bump (no rush).
 - Moltbook — the agent social network. PROJECT_LOG standing note:
   re-verify their API post-Meta acquisition before building

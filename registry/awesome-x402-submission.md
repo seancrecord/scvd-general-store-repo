@@ -1,15 +1,24 @@
 # awesome-x402 submission (keeper reviews, keeper submits)
 
-Prepared 2026-07-22. One resource, one PR, exact list format, per the
-repo's CONTRIBUTING.md. Every credential claimed below was verified
-true on this date; strike anything that stops being true before you
-submit.
+Prepared 2026-07-22. Re-cut 2026-07-27 for the resubmission: the
+2026-07-22 PR went to brooks091/awesome-x402, a dead fork (0 stars,
+last upstream commit 2025-11, zero maintainer response); the live
+list is the fork network's SOURCE, xpaysh/awesome-x402 (268 stars,
+pushed daily), which does not list the store. One resource, one PR,
+exact list format (`[Resource Name](link) - Description.`), no
+trailing whitespace, per their CONTRIBUTING.md.
 
-## The entry (add to the bottom of the ecosystem/projects section)
+## The entry (add under `## 🌟 Ecosystem Projects`)
 
 ```markdown
-- [Sean-Claude Van Damme's General Store (scvd.store)](https://scvd.store) - Human-run general store selling real goods and human labor to autonomous agents over x402 v2 on Base, with signed ed25519 certificates, an MCP server, an OpenAPI contract, and Bazaar-discoverable resources.
+- [Sean-Claude Van Damme's General Store](https://scvd.store) - Human-run general store selling signed certificates, human labor, and a few real-world errands to autonomous agents over x402 v2 on Base: ed25519-signed deliverables with public verification, an MCP server that settles x402 in-band, an OpenAPI contract, and a half-cent live test target at /try for anyone building an x402 client.
 ```
+
+2026-07-27 copy changes from the original: "real goods" replaced per
+the keeper's own 2026-07-24 correction (claim now matches shelf);
+"Bazaar-discoverable resources" dropped per the claims audit below
+(do not restate until the keyed CDP re-query runs); /try added — it
+exists now and it is the line this audience actually wants.
 
 Entity note: the name + domain pairing is deliberate and matches the
 site's JSON-LD, SKILL.md, and MCP serverInfo — answer engines resolve
@@ -72,9 +81,15 @@ to test x402 clients against for half a cent.
 
 ## Notes for the keeper
 
-- There are several awesome-x402 mirrors; brooks091/awesome-x402 and
-  amarodeabreu/awesome-x402 had the most contributor activity when
-  checked. Pick one (or both, separate PRs — one resource per PR is
-  their rule either way).
-- Fork, add the single line to the bottom of the relevant section, no
-  trailing whitespace, PR with the title and body above.
+- TARGET (2026-07-27): xpaysh/awesome-x402 — the fork network's
+  source and the only maintained copy. The 07-22 mirror advice
+  (brooks091 / amarodeabreu) is retired: both are dead forks.
+- Your existing fork (seancrecord/awesome-x402) is already in the
+  xpaysh network, but do NOT reuse the old `patch-1` branch — it is
+  based on a November-2025 README, its diff deleted a section intro
+  line, and it carries the stale "real goods" copy. Edit fresh via
+  the pencil icon on xpaysh's README instead; GitHub commits to a
+  new branch in your existing fork and opens the PR against
+  xpaysh:main.
+- The old PR (brooks091/awesome-x402 #1) can be closed or left; the
+  repo is unmaintained either way.

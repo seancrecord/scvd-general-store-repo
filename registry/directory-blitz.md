@@ -14,7 +14,11 @@ its UA added to the infrastructure classifier so the books stay honest
 - **x402scan** — passive: indexes /.well-known/x402(.json), which we
   serve. "On x402scan" stays unclaimed until seen.
 - **ClawHub** — scvd-general-store, republish to 2.0.0 pending keeper.
-- **awesome-x402** — PR submitted 2026-07-22, awaiting their maintainers.
+- **awesome-x402** — RESUBMITTED 2026-07-27 to the live list:
+  xpaysh/awesome-x402 PR #1024 (open, mergeable). The 07-22 PR went
+  to brooks091/awesome-x402, a dead fork of it (0 stars, no
+  maintainer, last upstream commit 2025-11) — left open, nobody home.
+  Entry copy re-cut per the claims audit in awesome-x402-submission.md.
 - **Agentic.market** — draft ready, GATED by the keeper's own rule until
   organic mcp + bazaar settles both show in /admin.
 
