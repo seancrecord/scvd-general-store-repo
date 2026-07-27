@@ -6,6 +6,37 @@ a date, by name, including the parts that don't flatter us.
 
 ---
 
+## 2026-07-27 (later) — a standing instrument for the number we keep computing by hand
+
+Not a reading. A note that the census is now a page instead of an
+afternoon: **/admin/census**, one row walk, two questions.
+
+The first is the one worth watching. Of every distinct client that has
+ever been shown a price, how many ever presented a payment signature —
+counting declines, because a wallet opened and turned away is still a
+wallet opened — against how many read the price and left. Answered by
+hand for July and the answer was zero on both sides of the decline
+line. The point of building it is that this is the line that moves
+first when anything at all changes, and it should not require an
+afternoon to notice.
+
+The second corrects the first. The crawler table reads a user-agent
+and believes it, so it only catches machines that admit what they are.
+The walk detector catches the rest by behaviour: 4+ distinct items
+inside 60 seconds is indexing, not shopping. Its third section is the
+only one that asks for work — walkers today's table still calls
+organic. Each one is either a new line for `channel.ts` or a real
+buyer with strange reading habits, and looking settles it.
+
+One limit, printed on the page rather than buried here, because every
+number on it inherits the limit: we keep no cookies and no IPs, so a
+"client" is a distinct user-agent string. Two agents behind one
+default SDK string count once; one agent that rotates counts many.
+The census is a shape, not a headcount. The settle column is the only
+exact one, and only because it has an outside witness on chain.
+
+---
+
 ## 2026-07-27 — one day later, and it says three things
 
 Same shape, more digits: 4731 organic 402s, 0 settles, 0 signatures,

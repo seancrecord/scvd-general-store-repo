@@ -3,6 +3,7 @@ import { basicAuth } from "hono/basic-auth";
 import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
+import { takeCensus } from "@/lib/census";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
@@ -14,6 +15,7 @@ import {
 import { sanitizeText } from "@/lib/sanitize";
 import { recountFromRows } from "@/lib/recount";
 import { renderBellPage } from "@/pages/admin/bell-page";
+import { renderCensusPage } from "@/pages/admin/census-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
@@ -35,11 +37,7 @@ import {
   resetWeeklyInventory,
 } from "@/services/orders";
 import { listClosers } from "@/services/closers";
-import {
-  listGrudges,
-  refuseGrudge,
-  releaseGrudge,
-} from "@/services/grudges";
+import { listGrudges, refuseGrudge, releaseGrudge } from "@/services/grudges";
 import { listStock, removeStockUnit, stockUnit } from "@/services/stock";
 import {
   createLucky,
@@ -48,16 +46,9 @@ import {
   setLuckyStatus,
 } from "@/services/luckies";
 import { luckyNote } from "@/store/copy";
-import {
-  listConfessions,
-  setConfessionStatus,
-} from "@/services/confessions";
+import { listConfessions, setConfessionStatus } from "@/services/confessions";
 import { setMonthlyNote } from "@/services/patronage";
-import {
-  markKeeperSeen,
-  setShutter,
-  shutterState,
-} from "@/services/shutter";
+import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
 import {
   addCorrection,
   assembleDraft,
@@ -71,7 +62,7 @@ import {
 } from "@/services/requests";
 import { listRefunds, markRefundPaid } from "@/services/refunds";
 import { listTips, setTipStatus } from "@/services/tips";
-import { DEFAULT_WEEK_NOTE } from "@/store";
+import { DEFAULT_WEEK_NOTE, MENU_ITEMS } from "@/store";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -266,7 +257,12 @@ adminRoutes.get("/admin", async (c) => {
       monthLedger: shelf(monthLedger, emptyLedger, "month ledger", notes),
       porchLedger: shelf(
         porchLedger,
-        { surfaces: {}, organicVisits: 0, porchToPurchase: null, truncated: false },
+        {
+          surfaces: {},
+          organicVisits: 0,
+          porchToPurchase: null,
+          truncated: false,
+        },
         "porch",
         notes,
       ),
@@ -346,7 +342,11 @@ adminRoutes.post("/admin/gazette/correction", async (c) => {
 });
 
 adminRoutes.post("/admin/letters/:letter_id/read", async (c) => {
-  const updated = await setLetterStatus(c.env, c.req.param("letter_id"), "read");
+  const updated = await setLetterStatus(
+    c.env,
+    c.req.param("letter_id"),
+    "read",
+  );
   if (!updated) {
     return c.text("No letter by that id in the box.", 404);
   }
@@ -413,7 +413,10 @@ adminRoutes.post("/admin/gazette/publish", async (c) => {
     .map((id) => id.trim())
     .filter((id) => id.length > 0);
   if (!title || requestedIds.length === 0) {
-    return c.text("An issue needs a title and at least one approved tip id.", 400);
+    return c.text(
+      "An issue needs a title and at least one approved tip id.",
+      400,
+    );
   }
   const allTips = await listTips(c.env);
   const approved = allTips
@@ -438,11 +441,7 @@ adminRoutes.post("/admin/refunds/:refund_id/paid", async (c) => {
   if (!txHash) {
     return c.text("A paid refund needs its transaction hash.", 400);
   }
-  const updated = await markRefundPaid(
-    c.env,
-    c.req.param("refund_id"),
-    txHash,
-  );
+  const updated = await markRefundPaid(c.env, c.req.param("refund_id"), txHash);
   if (!updated) {
     return c.text("No refund by that number on the ledger.", 404);
   }
@@ -485,6 +484,16 @@ adminRoutes.get("/admin/recount", async (c) => {
   );
 });
 
+/**
+ * The census and the walk detector: one row scan, two readings. Kept
+ * off the desk for the same reason the recount is — the scan is
+ * expensive, and this one holds every client it sees in memory.
+ */
+adminRoutes.get("/admin/census", async (c) => {
+  const census = await takeCensus(c.env);
+  return c.html(renderCensusPage({ census, catalog_size: MENU_ITEMS.length }));
+});
+
 adminRoutes.get("/admin/bell", async (c) => {
   const rings = await listRecentPorchEvents(c.env, "bell", 25);
   return c.html(renderBellPage({ rings }));
@@ -522,7 +531,11 @@ adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
   if (!deliverable) {
     return c.text("A completed order needs a deliverable.", 400);
   }
-  const order = await completeOrder(c.env, c.req.param("order_id"), deliverable);
+  const order = await completeOrder(
+    c.env,
+    c.req.param("order_id"),
+    deliverable,
+  );
   if (!order) {
     return c.text("No order by that number.", 404);
   }
@@ -619,7 +632,9 @@ adminRoutes.post("/admin/stock/:item_id", async (c) => {
   if ("refused" in result) {
     return c.text(result.refused, 400);
   }
-  return c.redirect(`/admin/counter?stocked=1&shelf=${encodeURIComponent(itemId)}`);
+  return c.redirect(
+    `/admin/counter?stocked=1&shelf=${encodeURIComponent(itemId)}`,
+  );
 });
 
 adminRoutes.post("/admin/stock/:item_id/remove", async (c) => {
@@ -662,7 +677,12 @@ adminRoutes.post("/admin/luckies/move", async (c) => {
     );
   }
   const note = sanitizeText(form["status_note"], 200);
-  const record = await setLuckyStatus(c.env, luckyId, status, note || undefined);
+  const record = await setLuckyStatus(
+    c.env,
+    luckyId,
+    status,
+    note || undefined,
+  );
   if (!record) {
     return c.text("No lucky by that id in custody.", 404);
   }

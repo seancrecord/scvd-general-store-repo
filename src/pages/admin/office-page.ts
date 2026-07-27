@@ -26,12 +26,16 @@ export interface OfficePageData {
 
 /** Plain-English channel legend, for planning, not decoration. */
 const CHANNEL_MEANING: Record<string, string> = {
-  direct: "came straight to a URL, no referrer: bookminded agents, scripts, or anyone who already knew the address",
-  skill: "arrived through the ClawHub skill (?src=clawhub-skill): the skill listing is working",
+  direct:
+    "came straight to a URL, no referrer: bookminded agents, scripts, or anyone who already knew the address",
+  skill:
+    "arrived through the ClawHub skill (?src=clawhub-skill): the skill listing is working",
   mcp: "tool-calling agents through the /mcp door: definitive, not inferred",
-  bazaar: "referred by the x402 Bazaar / x402scan catalog: discovery is working",
+  bazaar:
+    "referred by the x402 Bazaar / x402scan catalog: discovery is working",
   unknown: "no user-agent and no referrer: bare fetches, hard to plan around",
-  infrastructure: "known crawlers and scanners: the noise floor, never counted as customers",
+  infrastructure:
+    "known crawlers and scanners: the noise floor, never counted as customers",
 };
 
 /** The funnel: porch visits -> 402s -> settles, per channel, organic only. */
@@ -85,7 +89,15 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
       ${rows}
     </table>
     <p>Organic only; infrastructure and house are kept out of every column. Read it left to right: who shows up, who reaches a shelf, who pays.</p>
-    <p><small>Off the books but on file: house settles ${Object.entries(ledger.channelsHouse).map(([channel, count]) => `${escapeHtml(channel)}: ${count}`).join(" \u00B7 ") || "none"} \u00B7 infrastructure 402s ${Object.entries(ledger.channels402Infra).map(([channel, count]) => `${escapeHtml(channel)}: ${count}`).join(" \u00B7 ") || "none"}</small></p>
+    <p><small>Off the books but on file: house settles ${
+      Object.entries(ledger.channelsHouse)
+        .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
+        .join(" \u00B7 ") || "none"
+    } \u00B7 infrastructure 402s ${
+      Object.entries(ledger.channels402Infra)
+        .map(([channel, count]) => `${escapeHtml(channel)}: ${count}`)
+        .join(" \u00B7 ") || "none"
+    }</small></p>
     <p><strong>Venue markers (?src=)</strong>: ${venueLines || "none yet; they appear when papers get handed out with per-venue markers"}</p>
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
@@ -200,7 +212,7 @@ function porchHtml(porch: PorchLedger): string {
       <tr><th>surface</th><th>organic (by channel)</th><th>house</th><th>infrastructure</th></tr>
       ${rows}
     </table>
-    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table.</p>`;
+    <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left.</p>`;
 }
 
 function windowShoppersHtml(events: MetricEvent[]): string {
