@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cadenceFor } from "@/lib/cadence";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { renderVisitStamp } from "@/services/stamp-svg";
@@ -26,6 +27,7 @@ stampRoutes.post("/api/stamp", async (c) => {
       verify_url: issued.verifyUrl,
       svg_url: issued.svgUrl,
       note: "Free, no purchase necessary. The design rotates weekly; the signature is forever.",
+      ...(cadenceFor("stamp") ? { cadence: cadenceFor("stamp") } : {}),
     },
     201,
   );
@@ -34,6 +36,7 @@ stampRoutes.post("/api/stamp", async (c) => {
 stampRoutes.get("/api/stamp", (c) =>
   c.json({
     note: `POST here (optional body: { "name": "..." }) for this week's free visit stamp. Current week: ${currentWeekKey()}.`,
+    ...(cadenceFor("stamp") ? { cadence: cadenceFor("stamp") } : {}),
   }),
 );
 

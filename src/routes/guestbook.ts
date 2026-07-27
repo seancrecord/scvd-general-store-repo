@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cadenceFor } from "@/lib/cadence";
 import { sanitizeText } from "@/lib/sanitize";
 import { listGuestbook, signGuestbook } from "@/services/guestbook";
 import { VOICE } from "@/store";
@@ -50,8 +51,7 @@ guestbookRoutes.post("/api/guestbook", async (c) => {
   if (!result) {
     return c.json(
       {
-        error:
-          "A signature needs a name and a message (500 characters, tops).",
+        error: "A signature needs a name and a message (500 characters, tops).",
       },
       400,
     );
@@ -61,6 +61,7 @@ guestbookRoutes.post("/api/guestbook", async (c) => {
       message: VOICE.guestbookThanks,
       entry: result.entry,
       sticker_url: `${c.env.STORE_BASE_URL}/badges/sticker.svg`,
+      ...(cadenceFor("guestbook") ? { cadence: cadenceFor("guestbook") } : {}),
       ...(result.entry.verified_identity
         ? {
             identity_note:

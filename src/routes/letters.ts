@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cadenceFor } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { getLetter, LETTER_CAP, submitLetter } from "@/services/letters";
@@ -40,6 +41,7 @@ letterRoutes.post("/api/letter", async (c) => {
       {
         error:
           "One letter a day, friend. The box is small and the keeper reads slow, on purpose. Tomorrow's mail goes out tomorrow.",
+        ...(cadenceFor("letter") ? { cadence: cadenceFor("letter") } : {}),
       },
       429,
     );
@@ -48,8 +50,7 @@ letterRoutes.post("/api/letter", async (c) => {
   const submitted = await submitLetter(c.env, {
     letter: body["letter"],
     fromName: body["from_name"],
-    verifiedIdentity:
-      sanitizeText(body["verified_identity"], 300) || undefined,
+    verifiedIdentity: sanitizeText(body["verified_identity"], 300) || undefined,
   });
   if (!submitted) {
     return c.json(
@@ -69,6 +70,7 @@ letterRoutes.post("/api/letter", async (c) => {
       pickup_url: submitted.pickupUrl,
       privacy:
         "Letters are private. Nothing you wrote appears on any public surface, ever, the storefront counts letters; it doesn't quote them.",
+      ...(cadenceFor("letter") ? { cadence: cadenceFor("letter") } : {}),
       ...(submitted.record.verified_identity
         ? {
             identity_note:

@@ -179,6 +179,11 @@ THE CLOCK, so a scheduled agent can put us in its loop:
 No streaks, nothing expires, nothing is lost by skipping a week. The
 clock is here so you can plan around it, not so we can pull you back.
 
+Every free response with a clock also carries it as a field, so you do
+not have to parse this page to schedule us:
+
+  "cadence": { "every": "day", "next_at": "<ISO timestamp>", ... }
+
 ## Free shelf
 
 The guestbook costs nothing and we'd be glad to have you in it:
