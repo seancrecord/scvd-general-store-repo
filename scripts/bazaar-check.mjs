@@ -103,8 +103,35 @@ function loadKeyFile() {
     if (secret) process.env.CDP_API_KEY_SECRET ||= String(secret);
     return;
   }
-  // A bare .pem or .txt: the whole file is the secret.
-  process.env.CDP_API_KEY_SECRET ||= raw.trim();
+  // Not JSON: a scratch file, a .pem, or two values pasted on
+  // separate lines in either order, with or without NAME= prefixes.
+  // Classify each line by shape rather than by position.
+  if (raw.includes("-----BEGIN")) {
+    // A PEM is multi-line by nature; take the block whole.
+    const begin = raw.indexOf("-----BEGIN");
+    const endMarker = raw.indexOf("-----END");
+    const end = endMarker >= 0 ? raw.indexOf("\n", raw.indexOf("-----", endMarker + 8)) : -1;
+    process.env.CDP_API_KEY_SECRET ||= raw
+      .slice(begin, end > 0 ? end : undefined)
+      .trim();
+  }
+  for (const line of raw.split("\n")) {
+    const value = line
+      .trim()
+      // Strip a NAME= prefix — but cap the name at 40 characters, or
+      // this eats a base64 secret right up to its trailing "==".
+      .replace(/^([A-Za-z][A-Za-z0-9_]{0,39})\s*[:=]\s*(?=\S)/, "")
+      .replace(/^["']|["'],?$/g, "")
+      .trim();
+    if (!value) continue;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+      process.env.CDP_API_KEY_ID ||= value;
+    } else if (/^organizations\/.+\/apiKeys\/.+/.test(value)) {
+      process.env.CDP_API_KEY_ID ||= value;
+    } else if (/^[A-Za-z0-9+/]{40,}={0,2}$/.test(value)) {
+      process.env.CDP_API_KEY_SECRET ||= value;
+    }
+  }
 }
 
 loadKeyFile();
@@ -174,6 +201,35 @@ function diagnoseSecret(secret) {
     return "base64 of an unexpected length. A CDP Ed25519 secret is usually 88 characters ending in `==`.";
   }
   return `${secret.length} characters, no shape I recognize. If it is the password you picked, that is ADMIN_PASSWORD.`;
+}
+
+/**
+ * DOCTOR=1 reports what was found and stops. Shapes and lengths only,
+ * never a value or a fragment of one — the whole point is to diagnose
+ * a key without anyone having to look at it.
+ */
+if (process.env.DOCTOR) {
+  const idShape = !apiKeyId
+    ? "MISSING"
+    : /^[0-9a-f-]{36}$/i.test(apiKeyId)
+      ? "a UUID — correct shape for CDP_API_KEY_ID"
+      : /^organizations\//.test(apiKeyId)
+        ? "an organizations/.../apiKeys/... path — the legacy id form, also fine"
+        : `${apiKeyId.length} characters, not a UUID — probably not the id`;
+  const secretShape = !apiKeySecret
+    ? "MISSING"
+    : /^[A-Za-z0-9+/]{80,90}={0,2}$/.test(apiKeySecret)
+      ? `${apiKeySecret.length} characters of base64 — correct shape for an Ed25519 CDP secret`
+      : apiKeySecret.includes("-----BEGIN")
+        ? `a PEM block, ${apiKeySecret.split("\n").length} lines, ${apiKeySecret.includes("-----END") ? "END marker present" : "END MARKER MISSING — it was cut short"}`
+        : diagnoseSecret(apiKeySecret);
+  console.log("What the script found:");
+  console.log("");
+  console.log(`  id:     ${idShape}`);
+  console.log(`  secret: ${secretShape}`);
+  console.log("");
+  console.log("Nothing was sent anywhere. Drop DOCTOR=1 to run the check.");
+  process.exit(0);
 }
 
 // Fail on the shape before the SDK fails on the format.
