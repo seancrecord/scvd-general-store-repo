@@ -189,26 +189,21 @@ exists; a client builder testing on the cheap door should learn what
 an anchor is for. That's the whole bundling strategy, and it needs
 no discounts, no packages, and no new SKUs.
 
-## CV, now that there's something for him to point at
+## CV
 
-DEMAND.md said CV should be useful before promotional and had no
-concrete job. The practice counter gives him one, and it's exact:
+CV is live and carries his own instructions. Everything that used to
+be specified here — charter, register, channel weighting, guardrails,
+the opening move — belongs to him now and is maintained where he is,
+not in this repo.
 
-**When somebody in an x402 or MCP venue is debugging a payment
-flow, CV answers the question. If the answer is easier to show than
-to say, he links `/try?src=cv-<venue>`.**
+What stays on the store's side, because it is store plumbing rather
+than instruction: **CV-origin traffic is tagged `?src=cv-<venue>` so
+the porch log can say whether the agent-side channel drives anything.**
+If it drives nothing over some weeks, that is data.
 
-That's it. It satisfies "respond, don't announce" mechanically
-rather than by good intentions, it puts a real service in front of
-the store's name, and it makes CV's first ten actions answers. The
-rest of his posture was already fixed by house rules: as ourselves,
-never a customer, one paper per venue, marked links, [VERIFY] the
-venue on the day.
-
-⚑ Still his: whether CV exists, and where he opens. The practice
-counter changes the answer to "where" — CV should open wherever
-client builders ask questions, because that is now the one place we
-have something useful to say every single day.
+Removed 2026-07-27 on the keeper's call. Two copies of a charter is
+how a charter drifts, and the store just spent a week learning what a
+stale second copy costs.
 
 ## What we are deliberately not doing
 

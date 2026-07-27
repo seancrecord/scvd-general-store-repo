@@ -120,8 +120,8 @@ different hat.
 ## What no employee does
 
 Publishes to a public surface. Spends money. Signs a new artifact.
-Posts anywhere off-site — that is CV, and CV is a separate decision
-under separate rules. Takes a name. Has a personality. Grades a
+Posts anywhere off-site — that is CV, who is live, holds his own
+instructions, and is not chartered from this repo. Takes a name. Has a personality. Grades a
 lucky.
 
 ## The cost, honestly

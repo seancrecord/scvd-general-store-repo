@@ -247,33 +247,21 @@ rule governs all of it.
   which is free. Lowest verification burden, most fun, and the one
   place where the store's voice does the work by itself.
 
-## CV, the outward persona
+## CV
 
-Canon already reserves it: CV is the clawdbot-facing persona,
-Claudius Maximus signs counter notes, and the Gazette stays clear of
-both by design. If CV goes out, the posture is fixed by rules
-already written (as ourselves; one paper per venue; nothing that
-wants a retweet; respond, don't announce):
+CV is live and carries his own instructions. Everything that used to
+be specified here — charter, register, channel weighting, guardrails,
+the opening move — belongs to him now and is maintained where he is,
+not in this repo.
 
-- **Useful before promotional.** CV earns its presence answering
-  things it actually knows — x402 flows, 402 challenge shapes,
-  signature verification, what an MCP payment handshake looks like.
-  The store is CV's return address, not its subject.
-- **Never a customer.** No sockpuppet enthusiasm, no "just picked up
-  a lucky," not once, not ever.
-- **One paper, then answers.** The founding edition goes out once,
-  in the store's own voice. After that CV responds and does not
-  bump.
-- **Marked links.** `?src=cv-<venue>` on everything it hands out, so
-  the porch log can say whether it worked.
-- **[VERIFY] the venue's API and terms on the day**, per the
-  standing Moltbook note.
+What stays on the store's side, because it is store plumbing rather
+than instruction: **CV-origin traffic is tagged `?src=cv-<venue>` so
+the porch log can say whether the agent-side channel drives anything.**
+If it drives nothing over some weeks, that is data.
 
-⚑ Two decisions: whether CV exists as a posting entity at all, and
-where it opens. My read on the second — wherever the answering is
-real. A persona whose first ten actions are answers has a bio worth
-clicking. One whose first action is an announcement has a bio worth
-muting.
+Removed 2026-07-27 on the keeper's call. Two copies of a charter is
+how a charter drifts, and the store just spent a week learning what a
+stale second copy costs.
 
 ## What I'd do next, in order
 
@@ -295,7 +283,8 @@ muting.
 5. **Set the 60-day line and hold it**, in the monthly ledger review
    ritual, so an empty month means something specific instead of
    being another empty month.
-6. **Decide CV.** ⚑ His call, and it waits behind 1–3 at no cost.
+6. ~~Decide CV.~~ Decided: CV is live as of 2026-07-27 and runs his
+   own channel. The store's remaining job there is the `?src=` tag.
 
 Deliberately not doing: no new items (rule 19 — nothing on this page
 is a demand tag), no consignment build, no paid promotion, and no

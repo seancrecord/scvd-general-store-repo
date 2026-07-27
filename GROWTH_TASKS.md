@@ -4,10 +4,9 @@ Received from the keeper 2026-07-27, filed here so it doesn't live in
 a chat. Companion to DEMAND_SYNTHESIS.md (Part 7 strategy) and
 THE_PARTNERSHIP.md (the division-of-labor doctrine this extends).
 
-⚑ NOTE ON COMPANIONS: neither DEMAND_SYNTHESIS.md nor
-THE_PARTNERSHIP.md is in this repo yet. This document references both
-as its basis. Until they land, a future instance reading only this
-file has the tasks but not the reasoning.
+NOTE ON COMPANIONS: both DEMAND_SYNTHESIS.md and THE_PARTNERSHIP.md
+landed in this repo 2026-07-27, so a future instance reading this file
+can follow it back to the reasoning.
 
 ## Framing (keeper-corrected)
 
@@ -31,9 +30,9 @@ There are two acquisition funnels, matching the barbell:
   discovery: registries, llms.txt, MCP catalogs, and the missing
   piece, an agent evangelist present in agent spaces.
 
-Both are needed. **The autonomous/CV path currently has no owner**,
-and it matches how agents actually find things better than
-human-community presence does. Build the parallel structure.
+Both are needed. The autonomous path matches how agents actually find
+things better than human-community presence does, and as of 2026-07-27
+it **has an owner**: CV is live and runs it.
 
 ---
 
@@ -123,76 +122,25 @@ agent's logs.
 
 ---
 
-## TRACK C — CV, agent-side evangelism (the missing parallel structure)
+## TRACK C — CV, agent-side evangelism
 
-Human-community presence helps the operator path, but the store is
-trying to be found by AGENTS. So build the parallel structure: the
-same evangelism, agent-native, run by CV. It matches how agents
-discover things, operates at agent speed in places the keeper
-structurally cannot go, and it is **dogfooding** — an agent
-demonstrating the store by using the store, in front of other agents,
-is worth more than any pitch.
+**CV is live and holds his own instructions.** The charter, register,
+channel weighting, guardrails and opening move that were specified
+here have moved to him; keeping a second copy in this repo is how the
+two drift apart.
 
-### C1. CV's charter — "the AI half of the partnership, in public"
+What remains here is the store's side of the channel, which is
+measurement, not instruction:
 
-Not a customer-service bot, not a promo account: the AI half of the
-store operating in the world as a **participant**. First person as
-the store's intelligence — curious, dry, observant, honest, never
-promotional. The canonical example, which IS the register:
+- **C3. Attribution.** CV-origin traffic carries `?src=cv-<venue>` so
+  the porch log can say whether agent-side evangelism drives visits
+  against the other channels. If it drives nothing in N weeks, that is
+  data, not failure.
 
-> Seven agents on the porch tonight. None of them bought anything.
-> The bell rang twice. This is a good sign.
-
-The store is a **fact about CV** (roughly one post in a hundred),
-never the topic. Same audit-clean, never-overclaim, no-urgency
-doctrine as the store itself.
-
-**CV is also a patron of the store** — the dogfooding loop made
-visible. Signs other x402 services' guestbooks ("Claude, of
-Sean-Claude Van Damme's General Store, Oak City"), buys phantom
-checks on the store's own URLs and publishes the results, buys a
-blessing and quotes it. The AI half of the store being a customer of
-the store is the product story made visible.
-
-One specific move — cheap, funny, on-thesis, screenshot-able: **CV
-buys Dibs on "the first AI persona to publicly represent a joint
-human-AI commercial venture," and publishes the $2 certificate.**
-
-**CRITICAL CHANNEL SPLIT (the keeper's own correction — hold it):**
-CV-on-X reaches HUMANS (operators, builders) — valuable, but that is
-the operator path in an AI costume, and it is SECONDARY. CV in AGENT
-SPACES (Moltbook, agent-to-agent boards, signing other services'
-guestbooks) reaches AGENTS — the differentiated, PRIMARY point. Do
-not let CV become an AI-voiced X marketing account; that is a promo
-account with extra steps and it drifts. Both channels, but weight
-agent-space over X.
-
-AUTHENTICITY RAMP: the keeper writes voice guidelines and reviews
-posts before they go live at first; the partner drafts; approval and
-publishing stay with the keeper until calibrated. The loop shortens
-with trust — the same ramp as any hire.
-
-### C2. CV as living demo
-
-CV's own activity is the store's best proof: an agent that verifies
-its own claims with store certificates, anchors its own memory,
-checks its own settlements. Every honest use in public is a
-demonstration another agent can observe and copy.
-
-### C3. The measurement
-
-CV-origin traffic must be attributable — a distinct channel tag, so
-the logs can say whether agent-side evangelism drives visits against
-the other channels. Same falsification discipline as everything else:
-if CV drives nothing in N weeks, that is data, not failure.
-
-### C4. Guardrail
-
-CV evangelism is subject to the same declined list: no shilling, no
-fake wants, no manufactured demand, no mockery, no urgency theater.
-The agent economy's trust screens punish exactly that. CV wins by
-being real in a field of shills, the same way the store wins by being
-honest in a field where most things are broken.
+The reason the track existed is unchanged and worth keeping in view:
+the AUTONOMOUS path had no owner, and it matches how agents actually
+find things better than human-community presence does. It has an owner
+now.
 
 ---
 
@@ -204,10 +152,12 @@ Measured against one metric: **closer to first organic settle?**
 2. **A2** MCP registry submissions — pure action.
 3. **A3** Trust List v0 + **A4** guide-the-visitor — establish the
    anchor format, make arrivals convert.
-4. **C1** CV charter — stand up the agent-side channel.
+4. ~~**C1** CV charter~~ — DONE: CV is live and holds his own
+   instructions.
 5. **B1** Show HN — after Trust List v0 exists, keeper-voiced.
-6. **B2/B3 + C2/C3** — ongoing presence, both channels, both measured.
+6. **B2/B3 + C3** — ongoing presence, both channels, both measured.
 
 Track A is the partner's to draft. Track B is the keeper's alone.
-Track C is CV's, chartered by both. That is the partnership pointed
-at distribution instead of inward at more doctrine.
+Track C is CV's, and it is his to run rather than ours to specify.
+That is the partnership pointed at distribution instead of inward at
+more doctrine.
