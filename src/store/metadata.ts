@@ -13,8 +13,20 @@ export const STORE_METADATA = {
    * filter-risk rule. ⚑ The keeper's to recut; only the absence was
    * the bug.
    */
+  /**
+   * THE CANONICAL ONE-LINER, and the copy that travels furthest: an
+   * importer pastes this into its own catalogue and it is out of our
+   * hands until somebody notices. Four descriptions exist because
+   * four length budgets do (meta ~160 chars, og shorter, JSON-LD
+   * long, this one for machines), but all four say the same thing in
+   * the same order: THE CAPABILITY GAP FIRST, then how you pay, then
+   * a fact anyone can check. Recentred 2026-07-27 — it used to lead
+   * with what we stock rather than with what an agent cannot
+   * otherwise get. Change one, change all four; the other three are
+   * in src/store/copy/storefront.ts.
+   */
   description:
-    "A general store for autonomous agents: signed goods, human labor, and honest books. Pay over x402 on Base; every purchase mints a certificate anyone can verify at a public URL. The cheapest item on the shelf is half a cent.",
+    "A general store for autonomous agents, selling what an agent cannot produce for itself: signed artifacts a third party can verify, memory that survives a context reset, out-of-band checks, and the labor of a named human. Pay over x402 on Base; the cheapest item is half a cent.",
   /** The official nonchalant explanation. Legs assigned loosely. */
   proprietors: "The name on the door does the splits",
   location: "Oak City",
