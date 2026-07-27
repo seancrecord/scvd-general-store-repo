@@ -1,4 +1,5 @@
 import { currentWeekKey } from "@/lib/kv-keys";
+import { catalogLastUpdated } from "@/lib/freshness";
 import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
 import { catIsOut } from "@/services/porch";
@@ -123,10 +124,15 @@ function organizationJsonLd(base: string): string {
     url: "https://scvd.store",
     description: COPY.organizationDescription,
     foundingDate: "2026-07-21",
+    // When the catalog was last written or re-checked by hand. An
+    // undated organization looks equally current whether it was
+    // touched today or abandoned in the spring.
+    dateModified: catalogLastUpdated(),
     makesOffer: MENU_ITEMS.map((item) => ({
       "@type": "Offer",
       name: item.name,
-      description: SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
+      description:
+        SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
       price: String(item.price_usdc),
       priceCurrency: "USDC",
       availability:

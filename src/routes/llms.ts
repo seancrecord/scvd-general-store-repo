@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { catalogLastUpdated } from "@/lib/freshness";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { USE_WHEN } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -34,6 +35,10 @@ export const llmsRoutes = new Hono<HonoEnv>();
 export function storeGuideText(base: string): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
+
+Last checked by hand: ${catalogLastUpdated()}. Served: ${new Date().toISOString().slice(0, 10)}.
+Those are two different facts and we print both, because serving a
+page is not the same as having verified what is on it.
 
 Well well. Come in then.
 

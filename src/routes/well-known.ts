@@ -5,6 +5,7 @@ import {
   SPEC_SCHEMA_PATH,
 } from "@/lib/listing-spec";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { freshness } from "@/lib/freshness";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
 import { listIssues } from "@/services/gazette";
 import {
@@ -98,6 +99,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     // The short name and the tags a catalog can actually keep; the
     // full name is 37 characters against the 32-character cap the
     // x402 SDK enforces, so it is refused rather than trimmed.
+    ...freshness(),
     serviceName: STORE_SERVICE_NAME,
     tags: [...STORE_TAGS],
     iconUrl: `${base}/favicon.svg`,

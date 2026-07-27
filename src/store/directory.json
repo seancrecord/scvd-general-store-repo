@@ -8,21 +8,24 @@
       "url": "https://www.x402scan.com",
       "category": "index",
       "review": "Reads the /.well-known/x402 and openapi.json you already serve, probes your paid routes itself, and tells you which ones failed and why. Ours came back with thirty-two complaints the first time. Every one was fair.",
-      "added": "2026-07-27"
+      "added": "2026-07-27",
+      "slug": "x402scan"
     },
     {
       "name": "agentic.market",
       "url": "https://agentic.market",
       "category": "index",
       "review": "Reads the Bazaar and shows its work: endpoints, payment methods, payer counts, and quality signals it computed rather than accepted. It told us something true about ourselves we had not noticed.",
-      "added": "2026-07-27"
+      "added": "2026-07-27",
+      "slug": "agentic-market"
     },
     {
       "name": "x402scout",
       "url": "https://x402scout.com",
       "category": "index",
       "review": "Probes what you submit and says how many endpoints actually answered. Ours came back three of six, which is how we found a real bug. A directory that disagrees with you is worth more than one that doesn't.",
-      "added": "2026-07-27"
+      "added": "2026-07-27",
+      "slug": "x402scout"
     }
   ]
 }

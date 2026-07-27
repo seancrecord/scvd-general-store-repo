@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import { catalogLastUpdated } from "@/lib/freshness";
+import directoryData from "@/store/directory.json";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -38,9 +40,22 @@ Sitemap: ${base}/sitemap.xml
 
 siteMetaRoutes.get("/sitemap.xml", (c) => {
   const base = c.env.STORE_BASE_URL;
-  const urls = HUMAN_SURFACES.map(
-    (path) => `  <url><loc>${base}${path}</loc></url>`,
-  ).join("\n");
+  // Directory listings are derived rather than listed by hand, so a
+  // neighbor added to directory.json is crawlable the same day
+  // instead of whenever somebody remembers this file exists.
+  const paths = [
+    ...HUMAN_SURFACES,
+    ...directoryData.listings.map((listing) => `/directory/${listing.slug}`),
+  ];
+  // lastmod on every entry: a crawler deciding whether to re-read us
+  // has nothing else to go on, and "no date" reads as "never changed".
+  const lastmod = catalogLastUpdated();
+  const urls = paths
+    .map(
+      (path) =>
+        `  <url><loc>${base}${path}</loc><lastmod>${lastmod}</lastmod></url>`,
+    )
+    .join("\n");
   return c.body(
     `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

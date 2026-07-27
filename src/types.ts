@@ -230,6 +230,11 @@ export interface DirectoryListing {
   /** One honest line from the keeper. */
   review: string;
   added: string;
+  /**
+   * Stable path segment for /directory/:slug. A listing a neighbor
+   * cannot link to is a listing nobody has a reason to want.
+   */
+  slug: string;
 }
 
 export interface DirectoryData {
@@ -344,7 +349,11 @@ export interface ConfessionRecord {
   sign_as?: string;
 }
 
-export type TipStatus = "pending_review" | "approved" | "rejected" | "published";
+export type TipStatus =
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "published";
 
 /** A tip left at the Trading Post. Reviewed by hand, never auto-published. */
 export interface TipRecord {

@@ -4,12 +4,13 @@ import { STORE_METADATA } from "@/store";
 import {
   TRUST_LIST_ATTESTS,
   TRUST_LIST_ENTRIES,
-  TRUST_LIST_V0_NOTE,
+  TRUST_LIST_SCOPE_NOTE,
+  TRUST_LIST_SUBMISSION_NOTE,
 } from "@/store/trust-list";
 import type { HonoEnv } from "@/types";
 
 /**
- * GET /trust-list.json — the signed trust list, v0.
+ * GET /trust-list.json — the signed trust list, v1.
  *
  * Mechanism first: a working, verifiable artifact at a stable URL and
  * nothing else. No storefront section, no pitch, no page explaining
@@ -24,7 +25,7 @@ import type { HonoEnv } from "@/types";
 export const trustListRoutes = new Hono<HonoEnv>();
 
 export const TRUST_LIST_PATH = "/trust-list.json";
-export const TRUST_LIST_VERSION = 0;
+export const TRUST_LIST_VERSION = 1;
 
 trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
   const base = c.env.STORE_BASE_URL;
@@ -36,7 +37,17 @@ trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
     issuer_origin: base,
     issued_at: new Date().toISOString(),
     attests: TRUST_LIST_ATTESTS,
-    note: TRUST_LIST_V0_NOTE,
+    note: TRUST_LIST_SCOPE_NOTE,
+    how_to_be_considered: TRUST_LIST_SUBMISSION_NOTE,
+    // Counted, not just listed, so a reader can weigh the list without
+    // walking it: the strong claim and the weak one, apart.
+    counts: {
+      transacted: TRUST_LIST_ENTRIES.filter(
+        (entry) => entry.relation === "transacted",
+      ).length,
+      used: TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "used")
+        .length,
+    },
     entries: TRUST_LIST_ENTRIES.map((entry) => ({ ...entry })),
   };
   const canonical = JSON.stringify(body);

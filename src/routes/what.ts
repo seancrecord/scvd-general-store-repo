@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { catalogLastUpdated } from "@/lib/freshness";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { STORE_METADATA } from "@/store";
@@ -17,6 +18,7 @@ function faqJsonLd(pairs: FaqPair[]): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    dateModified: catalogLastUpdated(),
     mainEntity: pairs.map((pair) => ({
       "@type": "Question",
       name: pair.question,

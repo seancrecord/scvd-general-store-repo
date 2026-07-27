@@ -1,8 +1,6 @@
 import { Hono } from "hono";
-import {
-  listingSpec,
-  SPEC_SCHEMA_PATH,
-} from "@/lib/listing-spec";
+import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
+import { freshness } from "@/lib/freshness";
 import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
 import {
   renderItemMarkdown,
@@ -96,6 +94,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     })),
   );
   return c.json({
+    ...freshness(),
     store: {
       ...STORE_METADATA,
       network: BASE_NETWORK,

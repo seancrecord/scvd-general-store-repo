@@ -24,7 +24,7 @@ describe("the trust list", () => {
     expect(isRecord(body)).toBe(true);
     if (!isRecord(body)) return;
 
-    expect(body.version).toBe(0);
+    expect(body.version).toBe(1);
     expect(typeof body.signature).toBe("string");
     expect(typeof body.public_key).toBe("string");
 
@@ -80,10 +80,57 @@ describe("the trust list", () => {
     expect(attests).toContain("not a claim");
   });
 
-  it("lists only this store until a stranger has bought something", () => {
-    // v0 scope, hard-gated in the spec on the first organic settle.
-    expect(TRUST_LIST_ENTRIES).toHaveLength(1);
-    expect(TRUST_LIST_ENTRIES[0]?.origin).toBe("https://scvd.store");
+  it("keeps the gate where the gate belongs: on the PAID claim", () => {
+    // v1 grew, and the growth must not have touched the one thing the
+    // gate guards. The spec's reason is exact — we cannot be the trust
+    // anchor for a flow we have never completed with a stranger — so
+    // this store stays the only origin listed as a completed x402
+    // purchase until a stranger buys something. Unpaid entries were
+    // never what the gate was about.
+    const transacted = TRUST_LIST_ENTRIES.filter(
+      (entry) => entry.relation === "transacted",
+    );
+    expect(transacted).toHaveLength(1);
+    expect(transacted[0]?.origin).toBe("https://scvd.store");
+  });
+
+  it("marks every entry as paid or unpaid, never leaving it to be assumed", () => {
+    for (const entry of TRUST_LIST_ENTRIES) {
+      expect(
+        ["transacted", "used"].includes(entry.relation),
+        `${entry.origin} has no relation, so a reader would guess`,
+      ).toBe(true);
+    }
+  });
+
+  it("says out loud that the two claims are different", async () => {
+    const body: unknown = await (
+      await SELF.fetch(`${BASE}/trust-list.json`)
+    ).json();
+    if (!isRecord(body)) throw new Error("no body");
+    const attests = String(body.attests).toLowerCase();
+    // The distinction has to be in the artifact, not only in a comment
+    // in our source, or the field is decoration.
+    expect(attests).toContain("transacted");
+    expect(attests).toContain("used");
+    expect(attests).toContain("nothing paid");
+
+    // And the counts let a reader weigh the list without walking it.
+    if (!isRecord(body.counts)) throw new Error("no counts");
+    expect(body.counts.transacted).toBe(1);
+    expect(body.counts.used).toBe(TRUST_LIST_ENTRIES.length - 1);
+  });
+
+  it("says how an origin gets considered, and that asking is not enough", async () => {
+    const body: unknown = await (
+      await SELF.fetch(`${BASE}/trust-list.json`)
+    ).json();
+    if (!isRecord(body)) throw new Error("no body");
+    const how = String(body.how_to_be_considered).toLowerCase();
+    expect(how).toContain("/api/request");
+    // The two sentences that keep this from becoming a placement market.
+    expect(how).toContain("no fee");
+    expect(how).toContain("asking does not put you on it");
   });
 
   it("carries the entry schema the spec asked for", async () => {

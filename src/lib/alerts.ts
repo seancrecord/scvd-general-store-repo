@@ -16,7 +16,9 @@ export type AlertCondition =
   | "settlement_failure"
   | "signing_failure"
   | "worker_health"
-  | "order_sla";
+  | "order_sla"
+  /** The machine-facing surfaces have gone quiet. Not a fault; a nudge. */
+  | "catalog_stale";
 
 const DEDUPE_TTL_SECONDS = 6 * 60 * 60;
 const ALERT_LOG_TTL_SECONDS = 30 * 86400;
@@ -89,7 +91,10 @@ export async function listAlerts(
     condition: string;
     detail: string;
     at: string;
-  }>(env.COUNTERS, listed.keys.map((key) => key.name));
+  }>(
+    env.COUNTERS,
+    listed.keys.map((key) => key.name),
+  );
   const alerts: Array<{ condition: string; detail: string; at: string }> = [];
   for (const record of values.values()) {
     if (record) {
