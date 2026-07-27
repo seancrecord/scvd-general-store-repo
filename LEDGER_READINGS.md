@@ -6,6 +6,98 @@ a date, by name, including the parts that don't flatter us.
 
 ---
 
+## 2026-07-26 (later still) — an outside witness, and what it settles
+
+agentic.market's page for the store, read by the keeper. First
+information about ourselves that did not come from our own code.
+
+### Bazaar: found, current, and fourteen resources deep
+
+"Found on Bazaar." Fourteen endpoints registered to our wallet, last
+updated three days ago. So the listing is live and was refreshed
+after the shopping run.
+
+That closes the thread that ate a day: we were never delisted, the
+mirrors do carry us, and the CDP discovery query was never needed.
+Two of my reads along the way were wrong and both are corrected
+above — `processing` was an ack, and the mirrors' apparent silence
+was us not looking in the right places.
+
+### The finding: our traffic is one channel, and it is this one
+
+Fourteen of twenty-one items are registered. Seven are not:
+the_drawer, grudge, nomenclature, the_confession, context_anchor,
+phantom_check, coffees_for_closers.
+
+Set that against July's organic 402s per item:
+
+    registered (14 items)        132 to 864 challenges each
+    not registered (7 items)       0 to  11 challenges each
+
+**No overlap.** The least-probed registered item saw twelve times
+the traffic of the most-probed unregistered one, and 98.9% of every
+organic challenge this month went to a registered endpoint. That is
+not a correlation, it is a partition.
+
+Which means: **essentially all of our traffic is Bazaar-derived
+probing.** The ~3,900 organic challenges are indexers walking the
+registered list. It also explains the zero payment signatures without
+any further theory — a list-walker was never going to pay.
+
+CORRECTION to this morning's reading: I attributed the 864-vs-2
+spread to position in the catalog and called it a measured exposure
+effect. Wrong driver. It was registration, not order. The
+lead-with-the-cheap-door task keeps its other justifications but
+loses this one, and it is struck in TASKS.
+
+### The part that costs us something
+
+The seven invisible items include **phantom_check and
+context_anchor** — the two utility items DEMAND.md picked out as
+most likely to be genuinely *needed* by an agent doing a job. Our
+most buyable goods are sitting on the one surface nobody reads.
+
+All twenty-one are present in our own `.well-known/x402.json`, so
+this is Bazaar's ingestion, not our declaration. Bazaar catalogs what
+it sees settle, and every one of those seven did settle once during
+the house run on 07-24 — so "it lists as it sells" is not the whole
+rule, and we do not know the rest of it.
+
+⚑ The cheap experiment, if he wants the answer: buy ONE missing item
+by hand from the house wallet — phantom_check, twenty-five cents —
+and watch whether it appears within a few days. One purchase, not a
+heartbeat; rule 13 forbids automated self-purchase, not a deliberate
+test. If it appears, the mechanic is "settles get you listed,
+eventually, sometimes." If it does not, something about those seven
+declarations is being rejected and that is worth finding.
+
+### The free scorecard
+
+Their quality signals, which we never had to build:
+
+- Description provided: **yes**
+- Output schema present: **yes**
+- Input schema present: **no** — though we declare `inputSchema` in
+  the SDK's own documented shape, and their extensions block for us
+  reads `{"bazaar": {}}`, empty. Either their check looks elsewhere
+  or our payload is thinner in transit than in source. One
+  investigation, low stakes, real lead.
+- Dedicated domain: **not yet exposed** — odd for a store that is
+  nothing but a dedicated domain.
+- **Payer count (30d): 1.** Public. Anyone doing diligence on us sees
+  a single payer, and it is the house. Nothing to fix and nothing to
+  hide; worth knowing it is on the record.
+
+### Scale, for once measured rather than guessed
+
+**22,282 resources indexed in the Bazaar.** We are fourteen of them,
+0.06%. Being listed is table stakes, not distinction — which is the
+strongest argument yet that the practice counter (a reason to choose
+us among twenty-two thousand) matters more than any further listing
+work.
+
+---
+
 ## 2026-07-26 (later) — are the books credible?
 
 The keeper's question, and the right one: the books are our own code
