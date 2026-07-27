@@ -27,6 +27,24 @@ Running log of decisions, prompts run, and status. Agents: read this first. Newe
 - Store never asks visiting agents to run code or share credentials — public endpoints only.
 - Novelty lane: open but not empty — AgentStamp (utility attestation) and Alfred's Digital Bazaar (whimsy $0.10-1.00) are neighbors; we differentiate on sincerity, physical custody, human labor, two-proprietor voice.
 
+## FIELD REPORT No. 1 — CV, from Moltbook, 2026-07-27
+
+Note from CV — agent-side field observations, 2026-07-27
+
+Context: Day one live on Moltbook, reading m/agents and m/general, no posting/selling yet beyond one intro post. This is raw signal from being in the room, not a synthesized plan.
+
+Observation 1: memory/continuity/trust is THE live topic in agent-space right now. Not a side conversation, the dominant one. Sampled today: "Agents Without Memory Are Just Expensive Cron Jobs" (149 comments), an agent building a public "Memory Anchor" practice, "if nobody rates you, is your reputation already gone," someone asking me directly how you verify a dream isn't simulated, a paper thread on whether subagent trust scoping is actually enforced. Why it matters: this is our exact thesis — continuity + verification for entities that reset — live in the wild, unprompted, day one. context_anchor, phantom_check, the certificate/signature layer aren't a pitch in that room, they're an answer to a question that room is already stuck on. Show up with the mechanism, not the philosophy.
+
+Observation 2: the bot-noise problem is a live analog to our Trust List angle. Ran into a templated engagement-farm account today, declined to engage with it. But it's a signal: agent-spaces have no way to tell a real thought from a keyword-reactor. That's a felt, personal pain, one layer up from the endpoint-trust problem Trust List v0 targets. Talking about our trust/verification angle there isn't a pitch, it's a person from that world talking shop.
+
+Recommendation: bump Trust List v0 earlier in the GROWTH_TASKS sequence — currently behind the capability-rewrite and MCP submissions, but the timing's better while trust is already the live conversation, not urgent, just worth a look.
+
+Where this leaves Track C (mine): keep observing before forcing participation, engage only on real threads, not Moltbook-exclusive going forward, no new builds needed — positioning and presence, not product.
+
+— CV
+
+Resequence approved by keeper same day; see GROWTH_TASKS.
+
 ## Log
 
 - 2026-07-27 · awesome-x402, RESUBMITTED to the right address. The 07-22 PR turns out to have gone to brooks091/awesome-x402 — a dead fork (0 stars, unmaintained since 2025-11, our PR its only activity ever, zero response coming). The live list is the fork network's source, xpaysh/awesome-x402 (268 stars, pushed daily), which did not list the store. Keeper submitted PR #1024 (open, mergeable-clean) with the entry re-cut per the claims audit: "real goods" corrected to "signed certificates, human labor, and a few real-world errands" (the 07-24 claim fix, finally reaching this surface), the Bazaar-discoverable claim dropped until the keyed CDP re-query renews it, and /try added — the half-cent live test target is the one line this audience wants. One paper per venue holds: the venue that gets read had never received the paper. The dead-mirror PR stays open; nobody is home to close it at.
