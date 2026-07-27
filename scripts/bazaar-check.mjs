@@ -60,6 +60,34 @@ function loadDevVars() {
 
 loadDevVars();
 
+/**
+ * The portal hands you a JSON file when the key is created — that is
+ * the only moment the secret is visible. Reading it whole beats
+ * copying two values out of it, because a CDP secret is either
+ * 88 characters of base64 or a PEM with newlines, and both lose
+ * something on the way through a shell.
+ *
+ *   CDP_KEY_FILE=~/Downloads/cdp_api_key.json npm run bazaar:check
+ */
+function loadKeyFile() {
+  const path = process.env.CDP_KEY_FILE;
+  if (!path) return;
+  const raw = readFileSync(path.replace(/^~/, process.env.HOME ?? "~"), "utf8");
+  if (raw.trimStart().startsWith("{")) {
+    const parsed = JSON.parse(raw);
+    const id = parsed.id ?? parsed.name ?? parsed.apiKeyId;
+    const secret =
+      parsed.privateKey ?? parsed.privateKeySecret ?? parsed.secret;
+    if (id) process.env.CDP_API_KEY_ID ||= String(id);
+    if (secret) process.env.CDP_API_KEY_SECRET ||= String(secret);
+    return;
+  }
+  // A bare .pem or .txt: the whole file is the secret.
+  process.env.CDP_API_KEY_SECRET ||= raw.trim();
+}
+
+loadKeyFile();
+
 const apiKeyId = process.env.CDP_API_KEY_ID;
 /**
  * The secret is either a single-line base64 Ed25519 key or a
@@ -67,9 +95,14 @@ const apiKeyId = process.env.CDP_API_KEY_ID;
  * .dev.vars line intact, so CDP_API_KEY_SECRET_FILE takes a path and
  * reads it whole.
  */
-const apiKeySecret = process.env.CDP_API_KEY_SECRET_FILE
+const rawSecret = process.env.CDP_API_KEY_SECRET_FILE
   ? readFileSync(process.env.CDP_API_KEY_SECRET_FILE, "utf8").trim()
   : process.env.CDP_API_KEY_SECRET;
+// Copied out of JSON, a PEM's newlines arrive as the two characters
+// backslash-n. Put them back before the SDK sees them.
+const apiKeySecret = rawSecret?.includes("\\n")
+  ? rawSecret.replace(/\\n/g, "\n")
+  : rawSecret;
 
 if (!apiKeyId || !apiKeySecret) {
   console.error(
@@ -87,6 +120,11 @@ if (!apiKeyId || !apiKeySecret) {
   console.error("base64 Ed25519 key, save it to a file and use:");
   console.error("");
   console.error("  CDP_API_KEY_ID='...' CDP_API_KEY_SECRET_FILE=./cdp-key.pem npm run bazaar:check");
+  console.error("");
+  console.error("Easiest of all: point at the JSON the CDP portal downloaded");
+  console.error("when the key was created. It carries both halves.");
+  console.error("");
+  console.error("  CDP_KEY_FILE=~/Downloads/cdp_api_key.json npm run bazaar:check");
   process.exit(2);
 }
 
@@ -145,7 +183,17 @@ try {
     console.error("Worker uses to settle payments.");
     process.exit(2);
   }
-  throw error;
+  // Right shape, wrong content: truncated on the way through a
+  // clipboard, or an id and a secret from two different keys.
+  console.error("The CDP pair was rejected before any request went out.");
+  console.error("");
+  console.error(`  ${String(error)}`);
+  console.error("");
+  console.error("The shape is plausible, so the likely causes are: the secret");
+  console.error("lost characters in transit, or the id and the secret come");
+  console.error("from two different keys. They are issued as a pair and only");
+  console.error("work as a pair. A fresh key from the portal settles both.");
+  process.exit(2);
 }
 
 async function get(requestPath) {
