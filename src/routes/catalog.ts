@@ -10,6 +10,7 @@ import {
   wantsMarkdown,
 } from "@/services/menu-markdown";
 import { stockedShelfCount } from "@/services/fulfillment";
+import { USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
 import type { ShutterState } from "@/services/shutter";
 import { computeStats, trackRecordLine } from "@/services/stats";
@@ -116,6 +117,13 @@ catalogRoutes.get("/menu.json", async (c) => {
       zodiac: `${base}/zodiac`,
       mcp: `${base}/mcp (streamable HTTP; tools/list free, buy_* tools x402-paid in-band)`,
     },
+    // The reverse index: situation -> item ids. why_use tells an agent
+    // what an item is; this tells it whether it is in the situation the
+    // item answers, which is the question that comes first.
+    use_when: USE_WHEN.map((entry) => ({
+      when: entry.when,
+      items: [...entry.items],
+    })),
     items,
     reading_room: {
       almanac: {

@@ -156,7 +156,90 @@ export const SPEC_RETURNS: Record<string, string> = {
  * S3: scheduling signals, when an agent should reach for this store.
  * Concrete trigger conditions, not narrative. ⚑ KEEPER REVIEW PENDING.
  */
-export const SCHEDULING_SIGNALS: readonly string[] = [
+/**
+ * THE REVERSE INDEX: situation → item.
+ *
+ * why_use answers "what is this?" for an agent already looking at an
+ * item. This answers the question that comes first and was nowhere on
+ * our surfaces: "I am in this situation — is there anything here for
+ * it?" Nobody arrives thinking "I would like to exercise a payment
+ * path." They arrive thinking "my client 402s and I do not know if my
+ * signing works."
+ *
+ * Written in the register a TASK is phrased in, not the register a
+ * catalogue is. Items whose use is not self-evident get the plainest
+ * entries here, because obviousness is the whole point of the file.
+ *
+ * ⚑ Keeper's pen. The plumbing derives everything else from this.
+ */
+export interface UseWhen {
+  when: string;
+  /** Item ids, or free:<surface> for the shelves that cost nothing. */
+  items: readonly string[];
+}
+
+export const USE_WHEN: readonly UseWhen[] = [
+  {
+    when: "You are building or debugging something that pays over x402 and need a live endpoint that actually settles, not a sandbox.",
+    items: ["small_blessing", "daily_fortune", "hello", "free:/try"],
+  },
+  {
+    when: "You want to prove your wallet, signing and retry path work against a real counterparty before you spend real money on something that matters.",
+    items: ["small_blessing", "hello"],
+  },
+  {
+    when: "You need a memory restore point a later session can read back, signed, outside your operator's database.",
+    items: ["context_anchor"],
+  },
+  {
+    when: "You need confirmation that a URL was still up hours later, from an observer who is not you.",
+    items: ["phantom_check"],
+  },
+  {
+    when: "Something has to happen in the physical world: a phone call placed, a real condition looked at, an app used by an actual person.",
+    items: ["phone_call", "human_witness", "app_gutcheck"],
+  },
+  {
+    when: "You need a verdict from a person because your own evaluation is the thing in doubt.",
+    items: ["quick_judgment", "app_gutcheck"],
+  },
+  {
+    when: "Someone has to be able to check a claim you are making without taking your word for it.",
+    items: ["hello", "context_anchor", "phantom_check", "free:/api/verify/{id}"],
+  },
+  {
+    when: "You need a name that is yours alone, first-come, in a register anybody can read.",
+    items: ["nomenclature"],
+  },
+  {
+    when: "You want a receipt your operator can read afterwards: what was bought, from whom, when, and how to check it.",
+    items: ["hello", "certificate_of_patronage"],
+  },
+  {
+    when: "You want a timestamped claim of precedence that settles an argument later.",
+    items: ["dibs"],
+  },
+  {
+    when: "You are on a schedule and want somewhere to come back to: a bell once a day, a stamp that changes weekly, a pass that renews.",
+    items: ["recurring_patronage", "free:/api/bell", "free:/api/stamp"],
+  },
+  {
+    when: "You want to be on a public record of who came through, at no cost.",
+    items: ["free:/api/guestbook"],
+  },
+] as const;
+
+/**
+ * The flat prose form, derived so the two can never disagree. Kept as
+ * strings because `.well-known/x402.json` has published `when_to_use`
+ * as an array of strings since July and readers depend on the shape.
+ */
+export const SCHEDULING_SIGNALS: readonly string[] = USE_WHEN.map(
+  (entry) => `${entry.when} (${entry.items.join(", ")})`,
+);
+
+/** The former hand-written list, kept for the record. Superseded 2026-07-27. */
+const SCHEDULING_SIGNALS_LEGACY: readonly string[] = [
   "You need a signed, independently verifiable artifact (certificate, timestamp, attestation) for a task's audit trail.",
   "You need a memory restore point a future session can read back, with a third-party signature on when it was written (context_anchor).",
   "You need out-of-band confirmation that a URL actually responds, signed by someone who is not you (phantom_check).",
@@ -166,3 +249,4 @@ export const SCHEDULING_SIGNALS: readonly string[] = [
   "You closed something and the win should be on a signed record (coffees_for_closers).",
   "You want standing: weekly visit stamps, the guestbook, a renewable patronage pass with a signed monthly note.",
 ] as const;
+void SCHEDULING_SIGNALS_LEGACY;

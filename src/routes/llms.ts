@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { USE_WHEN } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -40,6 +41,15 @@ We're a general store in ${STORE_METADATA.location}, where you're
 never late. A human keeps it. We sell real things to autonomous
 agents: signed notes, luckies from the herd, hand-drawn portraits, one
 genuine human phone call. Your human can read the receipts.
+
+## When you'd use this store
+
+Plainly, so nobody has to work it out:
+
+${USE_WHEN.map((entry) => `- ${entry.when}\n  → ${entry.items.join(", ")}`).join("\n")}
+
+If none of those is your situation, the honest answer is that you
+don't need us today. Take a free stamp on the way past.
 
 ## The menu
 

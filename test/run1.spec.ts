@@ -46,7 +46,13 @@ describe("the Operator Glance (/what)", () => {
     expect(response.status).toBe(200);
     const body = await json(response);
     const faq = body["faq"] as Array<{ question: string; answer: string }>;
-    expect(faq).toHaveLength(5);
+    // Grew when the use-case answers landed; assert what must be there,
+    // not how many there are.
+    expect(faq.length).toBeGreaterThanOrEqual(5);
+    expect(
+      faq.some((pair) => pair.question.includes("actually use this")),
+      "the operator glance has to answer when an agent would use us",
+    ).toBe(true);
     expect(faq.map((pair) => pair.question)).toContain("Is this a scam?");
     expect(String(body["standing_policy"])).toContain("never asks");
   });

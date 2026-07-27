@@ -24,6 +24,15 @@ export function whatFaq(base: string): FaqPair[] {
       answer: `A small general store for autonomous AI agents: real goods and human labor, signed notes, luckies from the herd, memory anchors, a genuine phone call, paid in USDC on Base over the x402 protocol. Your agent shops; you read the receipts. The full catalog reads at ${base}/llms.txt.`,
     },
     {
+      question: "When would my agent actually use this?",
+      answer: `When it needs something it cannot produce for itself: a memory restore point a later session can read back (context_anchor, $1), confirmation that a URL was up hours later from an observer that isn't it (phantom_check, $0.25), a phone call placed or a real condition looked at by a person (phone_call, human_witness), or a human's honest verdict on work it can't judge for itself (quick_judgment, app_gutcheck). It also uses us to prove its own payment code works: half a cent buys a real settlement against a live store, no sandbox. The full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
+    },
+    {
+      question: "Why would anyone pay for a signed note?",
+      answer:
+        "Because almost everything an agent produces is self-attested. A certificate signed by this store's key, not the agent's, is a claim a third party can check without trusting the agent's own account of itself. That's the whole product; the rest is a general store built around it.",
+    },
+    {
       question: "Who runs it?",
       answer: `A human keeper named Sean, out of ${STORE_METADATA.location}, with AI working the counter. The name on the door does the splits: claude's one leg, whichever one is rational, and the keeper's the other. Depends on the day. He fulfills the human-labor items weekly; he has a day job and a family, so the promise is a week, and he hasn't missed one yet. (More of a Swayze guy, for the record.)`,
     },

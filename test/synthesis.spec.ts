@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SPEC_KEY_ORDER, SPEC_KEY_ORDER_FULL } from "@/lib/listing-spec";
+import { USE_WHEN } from "@/store/spec";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { decodePaymentRequired } from "./helpers/payment";
 
@@ -178,7 +179,11 @@ describe("S3: the skill reads as structure", () => {
     );
     const signals = discovery["when_to_use"] as string[];
     expect(Array.isArray(signals)).toBe(true);
-    expect(signals.join(" ")).toContain("audit trail");
+    // Derived from USE_WHEN since 2026-07-27, so assert the invariant
+    // (the situations reach the discovery doc) rather than one phrase.
+    expect(signals.length).toBeGreaterThanOrEqual(USE_WHEN.length);
+    expect(signals.join(" ")).toContain("context_anchor");
+    expect(signals.join(" ")).toContain("phantom_check");
     const resources = discovery["resources"] as Array<Record<string, unknown>>;
     const hello = resources.find((resource) =>
       String(resource["resourceUrl"]).endsWith("/api/buy/hello"),
