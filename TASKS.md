@@ -2,6 +2,15 @@
 
 Anti-shuffle file. When you ship something, move it to DONE with a date. Never delete ideas — ICEBOX with a reason.
 
+## NOW (FIELD REPORT PASS — first agent-side intel from CV, Moltbook day one, 2026-07-27)
+
+- [x] FIELD REPORT No. 1 — FILED 2026-07-27 in PROJECT_LOG under its own heading, CV's note verbatim, his byline, followed by the ledger line. It was blocked for one turn because the note had not come through and a field report is a primary source; inventing one would poison the only thing it is for. WAS: The instruction was to paste CV's note VERBATIM under its own heading with his byline. THE NOTE DID NOT COME THROUGH — the message carried the placeholder "[paste CV's field report exactly as he sent it]" and nothing else. Not filled in, because a field report is a primary source and inventing one would poison the only thing it is for. Everything downstream of it (the resequence, the vocab file, the two standing items) is done and stands on its own; this entry is the one hole. Paste the note and it goes in under "FIELD REPORT No. 1 — CV, from Moltbook, 2026-07-27", followed by the ledger line "Resequence approved by keeper same day; see GROWTH_TASKS."
+- [x] RESEQUENCE — DONE. Trust List v0 moves ahead of the capability-query rewrite and the MCP submissions. Keeper's rationale, in the file verbatim: "Timing: trust/continuity is the live conversation in agent-space now (Field Report No. 1); supply-side tasks keep, conversations don't."
+- [x] registry/field-vocab.md — CREATED, seeded with entry 1 ("how do you verify a dream isn't simulated" → phantom_check / verification layer, unused), and carrying the standing note at the top: quotes are raw material, never pasted into copy verbatim from identifiable posts, no usernames; vocabulary informs, the keeper's voice decides
+- [ ] CV STANDING PRACTICE: collect verbatim problem-statements → field-vocab.md via the keeper (owner: CV, filed through the keeper)
+- [ ] ⚑ TRUST LIST v0: prep mechanism-first landing; one disclosure-clean mention by CV where genuinely relevant, never steering threads (owner: keeper approves timing)
+- [x] NO COPY CHANGES this pass, per instruction 5 — no storefront, menu or listing edits from the field report. Vocabulary flows through field-vocab.md and the keeper's red ink first
+
 ## NOW (GROWTH — received from the keeper 2026-07-27, filed at GROWTH_TASKS.md so it does not live in a chat)
 
 FRAMING, keeper-corrected and worth holding: the store is five days old with infrastructure standing. This is EARLY, not undervisited. Two real problems, neither needing a new product — GUIDE the agents who arrive, and get INTO the paths agents travel. And the organizing reframe: TWO funnels, matching the barbell. The OPERATOR path (the $5+ shelf) runs through humans and the keeper being present; the AUTONOMOUS path (the sub-$1 shelf) runs through registries, llms.txt, MCP catalogs and an agent evangelist. The autonomous path currently HAS NO OWNER and matches how agents actually find things.
