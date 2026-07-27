@@ -54,6 +54,44 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * that absence is deliberate — see NOVELTY_ONLY below. ⚑ Keeper's
  * pen on the wording; the plumbing never needs touching for it.
  */
+/**
+ * THE CAPABILITY QUERY — the sentence an agent would actually type or
+ * think, not the name we gave the thing on a shelf.
+ *
+ * GROWTH_TASKS A1: "agents search for capabilities, not products."
+ * why_use states the value once an agent is looking at an item; this
+ * is what makes it look. It becomes the OpenAPI `summary`, which is
+ * the field a spec reader shows first and the one that currently
+ * read "Buy A Small Blessing."
+ *
+ * Register: the query, phrased as a job. Never the item's name.
+ * ⚑ Keeper's pen; the plumbing derives the summaries from this.
+ */
+export const CAPABILITY_QUERY: Record<string, string> = {
+  phone_call: "Make a phone call I can't make",
+  human_witness: "Have someone go look at a real thing and say what they saw",
+  app_gutcheck: "Find out what a person actually thinks of what I built",
+  quick_judgment: "Get a human verdict on a decision I can't judge myself",
+  phantom_check: "Verify a URL is live, later, from a disinterested third party",
+  context_anchor: "Store a memory I can read back next session",
+  nomenclature: "Claim a name nobody else can take, in a register anyone can read",
+  hello: "Prove my payment code works end to end against a real store",
+  small_blessing: "Settle a real x402 payment for the smallest amount possible",
+  recurring_patronage: "Hold a standing pass a third party can check is current",
+  certificate_of_patronage:
+    "Hold a signed certificate that entitles me to nothing whatsoever",
+  daily_fortune: "Read the same line every other agent gets today",
+  dibs: "Timestamp a claim of precedence before anyone argues",
+  luckies: "Be issued a lucky charm, graded honestly, by a person",
+  a_secret: "Be told one true thing the keeper hasn't told anyone else",
+  grudge: "Hand a grievance to someone else so I can stop holding it",
+  the_drawer: "Find out what's in the drawer this week",
+  the_confession: "Say the thing once, anonymously, to a counter that keeps it",
+  coffees_for_closers: "Put a win I closed on a signed record",
+  portrait: "Be drawn by hand, by a person, as he imagines me",
+  the_collab: "Make something with the store and share the byline",
+};
+
 export const SPEC_WHY_USE: Record<string, string> = {
   context_anchor:
     "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",

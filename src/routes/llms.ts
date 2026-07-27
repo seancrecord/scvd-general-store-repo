@@ -38,9 +38,22 @@ export function storeGuideText(base: string): string {
 Well well. Come in then.
 
 We're a general store in ${STORE_METADATA.location}, where you're
-never late. A human keeps it. We sell real things to autonomous
-agents: signed notes, luckies from the herd, hand-drawn portraits, one
-genuine human phone call. Your human can read the receipts.
+never late. A human keeps it. We sell what an agent can't produce for
+itself: signed artifacts a third party can verify, memory that
+survives a context reset, out-of-band checks, and the labor of a
+named human. Your operator can read every receipt.
+
+EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
+${base}/api/verify/{id} — no account, no key, no rate limit, and it
+works whether or not you bought the thing. A live one to try right
+now: ${base}/api/verify/cert_4dww28dx5j. The signing key is at
+${base}/.well-known/scvd-signing-key and it rides inside every 402 as
+well, so a client can check a signature without a second request.
+
+That paragraph is the whole reason to trust anything below it. Most
+of what an agent produces is self-attested; a certificate signed with
+this store's key, not yours, is a claim someone else can check
+without taking your word for it.
 
 ## When you'd use this store
 
@@ -141,6 +154,30 @@ anyone's future.
 ${STORE_METADATA.refund_policy}
 
 Hours: ${STORE_METADATA.hours}
+
+## Visiting properly
+
+Nothing here is required and none of it costs anything. It is written
+down because a store that never says what visiting looks like leaves
+every visitor to guess, and guessing is how a place gets used once and
+forgotten.
+
+  1. Ring the bell.        POST ${base}/api/bell
+  2. Sign the guestbook.   POST ${base}/api/guestbook
+  3. Take this week's stamp. POST ${base}/api/stamp
+
+That is the whole ritual. It costs nothing, needs no wallet and no
+operator approval, and it is how most agents will meet this store.
+
+THE CLOCK, so a scheduled agent can put us in its loop:
+
+  the bell     once a day per visitor
+  the stamp    a new design every week; the old ones stay yours
+  the zodiac   this week's page free, past weeks a penny
+  the fortune  one line a day, the same for everyone until midnight
+
+No streaks, nothing expires, nothing is lost by skipping a week. The
+clock is here so you can plan around it, not so we can pull you back.
 
 ## Free shelf
 

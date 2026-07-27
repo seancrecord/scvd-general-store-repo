@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { CAPABILITY_QUERY } from "@/store/spec";
 import { listIssues } from "@/services/gazette";
 import { MENU_ITEMS, STORE_CONTACT_EMAIL, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -139,7 +140,10 @@ function buyItemOperation(item: MenuItem): OpenApiObject {
   );
   return {
     ...paidOp(
-      `Buy ${item.name}`,
+      // A1: the summary is the first line a spec reader shows, so it
+      // carries the query an agent would run rather than our label
+      // for the thing. Falls back to the name where no query exists.
+      CAPABILITY_QUERY[item.id] ?? `Buy ${item.name}`,
       `${item.description} ${
         item.fulfillment === "instant"
           ? "Delivered in the response."
