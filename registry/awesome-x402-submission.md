@@ -43,9 +43,13 @@ wording, no action needed; the link itself carries the pairing.
   it. The claim stands on the 07-22 scan until a keyed re-query of
   the discovery list either renews it or retires it. Do not restate
   it as current without running that query.
-- "on x402scan" — NOT CLAIMED: could not be independently verified from
-  the build environment; add it only after you see the store on
-  x402scan with your own eyes.
+- "on x402scan" — TRUE as of 2026-07-27, and now claimable: the
+  store's page is https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597
+  (the keeper registered it and read it back; the old caution said to
+  claim it only after seeing it with his own eyes, and that is what
+  happened). Registration went 32 endpoint errors → 4 → clean across
+  two fixes the same day: `security: []` on every free shelf, then
+  concrete paths in place of templates.
 
 ## PR title
 

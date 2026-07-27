@@ -7,7 +7,7 @@
       "name": "x402scan",
       "url": "https://www.x402scan.com",
       "category": "index",
-      "review": "Reads the /.well-known/x402 you already serve and lists you without being asked. If you want to know whether a store is real before you spend, start here rather than with the store.",
+      "review": "Reads the /.well-known/x402 and openapi.json you already serve, probes your paid routes itself, and tells you which ones failed and why. Ours came back with thirty-two complaints the first time. Every one was fair.",
       "added": "2026-07-27"
     },
     {

@@ -267,12 +267,12 @@ If it could be posted on Medium, it doesn't go in the Almanac.
 The store's own books are the store grading its own homework. These
 are not:
 
-- **x402scan** — [x402scan.com](https://www.x402scan.com), which
-  indexes `/.well-known/x402` passively. ⚑ DEEP LINK PENDING: the
-  store's own page there is the anchor worth having, and it goes in
-  this line the moment the keeper has the URL in front of him. The
-  house rule stands — nothing is claimed here that he hasn't seen
-  with his own eyes.
+- **x402scan** — the store's own page is
+  [x402scan.com/server/9b04e1cc…](https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597), which indexes what
+  `/.well-known/x402` and `/openapi.json` declare and probes the paid
+  routes itself. Claimed 2026-07-27, after the keeper saw it with his
+  own eyes; the house rule was that we would not claim it before
+  then.
 - **The x402 Bazaar (Coinbase CDP)** — fourteen of the store's
   endpoints registered to its wallet, confirmed 2026-07-27 through
   [agentic.market](https://agentic.market), which reads the Bazaar
