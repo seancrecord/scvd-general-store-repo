@@ -119,9 +119,15 @@ certificate, verifiable by anyone at `/api/verify/:cert_id`, with a badge at
 `/badges/:patron_number.svg`. Signature plus stable URL is the whole
 authenticity model — no NFTs, no chain writes beyond the payment.
 
-If an item isn't delivered within its promised window, refund is automatic.
-No arguing with the shopkeeper required. (The refund itself is currently
-performed by the keeper's own hands — see the ledger below.)
+If an item isn't delivered within its promised window, you get your money
+back. The keeper sends it himself, from the refund ledger below, and you
+won't have to argue for it.
+
+(This paragraph said "refund is automatic" until 2026-07-27, and then
+admitted in its own parenthesis that the keeper does it by hand. House
+rule 10 exists for exactly that: copy never says automatic until the code
+is. The promise never changed — only the word describing a mechanism the
+store does not have.)
 
 Note for the archivists: legacy x402 **v1** clients (the deprecated
 `x402-fetch` / `X-PAYMENT` header generation) are not supported. The
