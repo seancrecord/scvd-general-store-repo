@@ -72,7 +72,28 @@ loadDevVars();
 function loadKeyFile() {
   const path = process.env.CDP_KEY_FILE;
   if (!path) return;
-  const raw = readFileSync(path.replace(/^~/, process.env.HOME ?? "~"), "utf8");
+  const resolved = path.replace(/^~/, process.env.HOME ?? "~");
+  let raw;
+  try {
+    raw = readFileSync(resolved, "utf8");
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      console.error(`No file at ${resolved}`);
+      console.error("");
+      console.error("That path was an example, not a guess at yours. Find the");
+      console.error("real one — the portal names it for the key, so the name");
+      console.error("varies:");
+      console.error("");
+      console.error("  ls -t ~/Downloads | head -20");
+      console.error("  find ~ -maxdepth 4 \\( -iname '*cdp*' -o -iname '*api*key*.json' \\) 2>/dev/null");
+      console.error("");
+      console.error("No file anywhere means the secret is gone — it is shown");
+      console.error("once and never again. Make a new key in the CDP portal;");
+      console.error("keys are additive and the Worker keeps using its own.");
+      process.exit(2);
+    }
+    throw error;
+  }
   if (raw.trimStart().startsWith("{")) {
     const parsed = JSON.parse(raw);
     const id = parsed.id ?? parsed.name ?? parsed.apiKeyId;
