@@ -11,6 +11,7 @@ export { mcpRoutes } from "@/routes/mcp";
 export { phantomRoutes } from "@/routes/phantom";
 export { porchRoutes } from "@/routes/porch";
 export { practiceCounterRoutes } from "@/routes/practice-counter";
+export { trustListRoutes } from "@/routes/trust-list";
 export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
 export { anchorRoutes } from "@/routes/anchors";
