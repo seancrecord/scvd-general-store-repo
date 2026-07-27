@@ -56,6 +56,15 @@ describe("channel inference upgrades", () => {
     ]) {
       expect(inferChannel({ userAgent })).toBe("infrastructure");
     }
+    // Second pass: the ones that call themselves a probe, not a prober.
+    for (const userAgent of [
+      "x402-reliability-probe/1.0",
+      "nohumans.directory-probe/1.0 (+https://nohumans.directory)",
+      "some-qos-agent/2",
+      "liveness-check/1",
+    ]) {
+      expect(inferChannel({ userAgent })).toBe("infrastructure");
+    }
     // The line we do not cross: agents are customers, bots included.
     expect(inferChannel({ userAgent: "clawdbot/1.4" })).toBe("direct");
     expect(inferChannel({ userAgent: "curl/8.4.0" })).toBe("direct");

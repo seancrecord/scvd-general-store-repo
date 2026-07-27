@@ -66,6 +66,12 @@ const INFRASTRUCTURE_UA_HINTS = [
   // customers).
   "prober", "monitor", "watchdog", "checker", "scanner", "inspector",
   "sentinel", "canary", "heartbeat", "synthetics",
+  // Second pass, 2026-07-27: "prober" missed the ones that call
+  // themselves a probe. x402-reliability-probe/1.0 and
+  // nohumans.directory-probe/1.0 both spent a day in the organic
+  // column. A directory's own liveness probe is the noise floor by
+  // definition — we submitted to it.
+  "probe", "qos", "liveness", "nohumans.directory",
 ];
 
 export interface ChannelSignals {

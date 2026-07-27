@@ -6,6 +6,75 @@ a date, by name, including the parts that don't flatter us.
 
 ---
 
+## 2026-07-27 — one day later, and it says three things
+
+Same shape, more digits: 4731 organic 402s, 0 settles, 0 signatures,
+one paying wallet and it is still ours. The diagnosis does not move.
+But three things in this pull are new.
+
+### 1. The classifier still leaked, and it is fixed
+
+Two user-agents spent the day in the ORGANIC column:
+
+    x402-reliability-probe/1.0
+    nohumans.directory-probe/1.0
+
+Yesterday's table caught "prober" and missed "probe." The second one
+stings a little: that is a directory we submitted to, running its own
+liveness check, which is the noise floor by definition. Added
+`probe`, `qos`, `liveness`, and the directory by name.
+
+The classifier is otherwise working — mako-pulse-prober,
+x402-observer and forum-labs-trust-prober all sat in the
+infrastructure column today, where yesterday they did not.
+
+### 2. The first MCP traffic the store has ever had
+
+    mcp:initialize   3
+    mcp:tools/list   2
+    tools/call       0
+
+Small, and the honest caveat is that MCP directories probe MCP
+endpoints too, so this may be another crawler wearing a better coat.
+But it is the first traffic that required a JSON-RPC client rather
+than a URL fetcher, and the funnel stalls in the same place
+everything else does. Worth watching, not worth building for at n=3.
+Also on the board: `?src=try` recorded its first visit.
+
+### 3. The write budget is the real emergency, and now it is measured
+
+One day of 402s alone: organic +734, infrastructure +1399. At three
+or four KV writes per challenge that is **roughly 7,000 writes in a
+day against a free-tier cap of 1,000.**
+
+Which retires the open question from the credibility audit. It is no
+longer "if any day ran capped." Every day is running capped, by
+something like sevenfold, and writes past the cap fail silently. The
+books are not merely a floor — they are a floor with most of each day
+missing.
+
+Two things follow, and they are not alternatives:
+
+- ⚑ **The $5.** It is no longer insurance, it is the price of the
+  books being real.
+- **Thin the infrastructure writes regardless.** Machinery we
+  explicitly do not count is currently spending the same budget as
+  the traffic we care about — three writes per probe, thousands a
+  day, to record a noise floor we already understand. Sampling infra
+  events the way porch visits are sampled, or counting them without
+  a per-item row, would cut the bill by most of it and lose nothing
+  we read. Cheap build, and it makes the free tier survivable if he
+  would rather not pay.
+
+### What has NOT moved
+
+context_anchor 2, phantom_check 0, coffees_for_closers 0 — the probe
+rule shipped today and no indexer has re-crawled yet. The prediction
+stands untested. Check in a few days; if those numbers lift on their
+own, the diagnosis was right.
+
+---
+
 ## 2026-07-26 (last) — the cause, found by a second witness
 
 x402scout, on a submission of six endpoints: **"Probe found 3 valid
