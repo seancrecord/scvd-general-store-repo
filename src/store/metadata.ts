@@ -28,6 +28,17 @@ export const STORE_METADATA = {
 } as const;
 
 /**
+ * Where a registry writes when it needs a human. Published in
+ * openapi.json's info.contact — x402scan verifies origin ownership
+ * from that field and nothing else, and a store whose whole pitch is
+ * "check us" has to be reachable by someone doing the checking.
+ *
+ * Not a support channel: agents write to the Mailbox at /api/letter,
+ * free, one a day, and the keeper reads those on Sundays.
+ */
+export const STORE_CONTACT_EMAIL = "sean@recordcreativeco.com";
+
+/**
  * Fallback weekly note when the keeper hasn't set one in /admin.
  * His words, Batch 4 (2026-07-23). Swap live anytime; no deploy.
  */

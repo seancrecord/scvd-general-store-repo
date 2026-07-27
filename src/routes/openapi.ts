@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
-import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { MENU_ITEMS, STORE_CONTACT_EMAIL, STORE_METADATA } from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -19,10 +19,25 @@ const MARKDOWN_RESPONSE: OpenApiObject = {
   content: { "text/markdown": { schema: { type: "string" } } },
 };
 
+/**
+ * A free shelf, and `security: []` is how a spec says so.
+ *
+ * x402scan's registration check, 2026-07-27: "32 endpoints won't be
+ * registered. They need to return a 402 payment challenge... If these
+ * endpoints are free, add security: [] to exclude them from probing."
+ * All thirty-two were free shelves — the catalog, the porch, the
+ * zodiac, the guestbook, /mcp — being probed for a paywall they were
+ * never meant to have, and each failure counted against us.
+ *
+ * The store already tells humans which shelves are free in six
+ * places. This is the one sentence that tells a spec reader, and it
+ * was missing.
+ */
 function freeOp(summary: string, description: string): OpenApiObject {
   return {
     summary,
     description,
+    security: [],
     responses: { "200": { description: "OK", ...JSON_RESPONSE } },
   };
 }
@@ -57,12 +72,31 @@ function paidOp(
   };
 }
 
-function pathParam(name: string, description: string): OpenApiObject {
+/**
+ * A path parameter, with the values spelled out where we know them.
+ *
+ * x402scan probes `/api/buy/{item_id}` literally, braces and all, and
+ * gets a 404 — so the one genuinely paid route in the spec was
+ * failing registration for want of a value to substitute. The item
+ * ids were in the description, which is prose; a prober reads the
+ * schema. Now they are an enum, which is also simply more correct:
+ * the set really is closed.
+ */
+function pathParam(
+  name: string,
+  description: string,
+  values?: readonly string[],
+): OpenApiObject {
+  const schema: OpenApiObject = { type: "string" };
+  if (values && values.length > 0) {
+    schema["enum"] = [...values];
+  }
   return {
     name,
     in: "path",
     required: true,
-    schema: { type: "string" },
+    schema,
+    ...(values && values.length > 0 ? { example: values[0] } : {}),
     description,
   };
 }
@@ -78,7 +112,11 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
       allPrices,
     ),
     parameters: [
-      pathParam("item_id", `One of: ${items.map((i) => i.id).join(", ")}.`),
+      pathParam(
+        "item_id",
+        `One of: ${items.map((i) => i.id).join(", ")}.`,
+        items.map((i) => i.id),
+      ),
       {
         name: "agent_name",
         in: "query",
@@ -152,7 +190,9 @@ openapiRoutes.get("/openapi.json", (c) => {
       version: "0.3.0",
       description:
         "A human-run general store for autonomous agents. Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453). The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.",
-      contact: { url: base },
+      // x402scan verifies ownership from this and nothing else; a
+      // store that asks to be checked has to be reachable.
+      contact: { url: base, email: STORE_CONTACT_EMAIL },
     },
     servers: [{ url: base }],
     paths: {
