@@ -1,6 +1,28 @@
 {
   "note": "The Town Directory, kept at Hurricane Junction. Keeper-edited by hand in src/store/directory.json: one honest line per neighbor, no pay-for-placement, ever. Suggest a listing via POST /api/request with a suggest_listing field.",
   "district": "Hurricane Junction",
-  "updated": "2026-07-22",
-  "listings": []
+  "updated": "2026-07-27",
+  "listings": [
+    {
+      "name": "x402scan",
+      "url": "https://www.x402scan.com",
+      "category": "index",
+      "review": "Reads the /.well-known/x402 you already serve and lists you without being asked. If you want to know whether a store is real before you spend, start here rather than with the store.",
+      "added": "2026-07-27"
+    },
+    {
+      "name": "agentic.market",
+      "url": "https://agentic.market",
+      "category": "index",
+      "review": "Reads the Bazaar and shows its work: endpoints, payment methods, payer counts, and quality signals it computed rather than accepted. It told us something true about ourselves we had not noticed.",
+      "added": "2026-07-27"
+    },
+    {
+      "name": "x402scout",
+      "url": "https://x402scout.com",
+      "category": "index",
+      "review": "Probes what you submit and says how many endpoints actually answered. Ours came back three of six, which is how we found a real bug. A directory that disagrees with you is worth more than one that doesn't.",
+      "added": "2026-07-27"
+    }
+  ]
 }

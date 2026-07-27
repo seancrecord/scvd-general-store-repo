@@ -40,7 +40,7 @@ with --version 1.0.1 --changelog "The skill says where you heard of us."
 
 The one-line entry, the PR title, and the filled template, with a
 claims audit — each credential was verified true on 2026-07-22, and
-"on x402scan" is deliberately not claimed until the keeper sees it
+"on x402scan" is deliberately not claimed until the keeper sees it — as of 2026-07-27 he reports he has, and the README now carries an "On other people's records" section naming x402scan, the Bazaar (via agentic.market, confirmed by screenshot) and x402scout. The DEEP LINK to our own x402scan page is still ⚑ pending: linking the index is true, linking our page there is the actual evidence anchor, and nobody has pasted that URL yet. The rule that produced this caution stands
 there personally.
 
 ## On hold

@@ -262,6 +262,31 @@ If it could be posted on Medium, it doesn't go in the Almanac.
   EXTENSION-RESPONSES headers from the facilitator are captured via a
   fetch tap (the SDK only console.logs them) and surfaced in `/admin`
   under "Bazaar ledger".
+## On other people's records
+
+The store's own books are the store grading its own homework. These
+are not:
+
+- **x402scan** — [x402scan.com](https://www.x402scan.com), which
+  indexes `/.well-known/x402` passively. ⚑ DEEP LINK PENDING: the
+  store's own page there is the anchor worth having, and it goes in
+  this line the moment the keeper has the URL in front of him. The
+  house rule stands — nothing is claimed here that he hasn't seen
+  with his own eyes.
+- **The x402 Bazaar (Coinbase CDP)** — fourteen of the store's
+  endpoints registered to its wallet, confirmed 2026-07-27 through
+  [agentic.market](https://agentic.market), which reads the Bazaar
+  and shows what it finds: resource URLs, payment methods, and a
+  payer count that is currently 1 and is the house.
+- **x402scout** — [x402scout.com](https://x402scout.com), listed and
+  awaiting its trust check.
+
+Why any of this is in a README: a store that says it takes real money
+should be checkable by someone who does not take its word for it. Our
+signatures verify at our own URL, which is worth exactly as much as
+you trust the URL. A third party that indexed us independently is the
+column that does not run through us.
+
 - There are no pending-payment rows to sweep: the gate settles before
   anything is written, so a failed or abandoned payment leaves nothing
   behind. The Sunday cron remains digest-only on purpose.
