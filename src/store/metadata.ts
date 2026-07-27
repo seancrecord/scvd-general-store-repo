@@ -69,3 +69,36 @@ export const STORE_CONTACT_EMAIL = "sean@recordcreativeco.com";
  */
 export const DEFAULT_WEEK_NOTE =
   "We're open. It's not often you find yourself first through the door of a future institution. Sign the book so we can both prove it.";
+
+/**
+ * SERVICE METADATA FOR CATALOGS, and the one field the store's own
+ * name does not fit.
+ *
+ * The x402 SDK's RouteConfig carries serviceName/tags/iconUrl, and a
+ * facilitator keeps exactly those three off every resource it
+ * catalogs (sanitizeResourceServiceMetadata). We were declaring none
+ * of them, so every entry we have in someone else's index is an
+ * anonymous URL with a price on it.
+ *
+ * SERVICE NAME: capped at 32 printable-ASCII characters. "Sean-Claude
+ * Van Damme's General Store" is 37, so the real name is REJECTED
+ * outright — not truncated, dropped, silently, which is why the field
+ * has always read empty. ⚑ THE SHORT NAME IS THE KEEPER'S CALL. This
+ * is the store's name in someone else's catalog, which is rule 7
+ * territory; "SCVD General Store" is the domain we already answer to,
+ * chosen because it is a real abbreviation of ours and not a new
+ * coinage. One string to change if he wants another.
+ *
+ * TAGS: five maximum, and they are a machine's filter, not a shelf
+ * sign — so they say what an agent can get here, in the vocabulary an
+ * agent would search, and nothing about how the place feels.
+ */
+export const STORE_SERVICE_NAME = "SCVD General Store";
+
+export const STORE_TAGS = [
+  "x402",
+  "signed-artifacts",
+  "verification",
+  "agent-memory",
+  "human-labor",
+] as const;

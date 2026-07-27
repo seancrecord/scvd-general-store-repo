@@ -4,11 +4,7 @@ import {
   x402HTTPResourceServer,
   x402ResourceServer,
 } from "@x402/core/server";
-import type {
-  PaymentOption,
-  RouteConfig,
-  RoutesConfig,
-} from "@x402/core/http";
+import type { PaymentOption, RouteConfig, RoutesConfig } from "@x402/core/http";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
 import {
@@ -18,7 +14,12 @@ import {
 } from "@/lib/bazaar-discovery";
 import { installBazaarObserver } from "@/lib/bazaar-observer";
 import { extractPaymentNonce } from "@/lib/replay-guard";
-import { getMenuItem, MENU_ITEMS } from "@/store";
+import {
+  getMenuItem,
+  MENU_ITEMS,
+  STORE_SERVICE_NAME,
+  STORE_TAGS,
+} from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { SPEC_RETURNS } from "@/store/spec";
 import type { Env, MenuItem } from "@/types";
@@ -102,6 +103,23 @@ export function buyRouteDescription(item: MenuItem, env: Env): string {
     : description;
 }
 
+/**
+ * serviceName / tags / iconUrl, the only service-level fields a
+ * facilitator carries through onto a catalogued resource. The name is
+ * the short one on purpose: the field caps at 32 printable-ASCII
+ * characters and the store's real name is 37, so the full name is not
+ * truncated by the catalog, it is dropped.
+ */
+function storeServiceMetadata(
+  env: Env,
+): Pick<RouteConfig, "serviceName" | "tags" | "iconUrl"> {
+  return {
+    serviceName: STORE_SERVICE_NAME,
+    tags: [...STORE_TAGS],
+    iconUrl: `${env.STORE_BASE_URL}/favicon.svg`,
+  };
+}
+
 function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
   const payTo = env.PAY_TO_ADDRESS;
   const accepts: PaymentOption[] = priceTiersUsdc(item).map((tierUsdc) => ({
@@ -115,6 +133,10 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
     description: buyRouteDescription(item, env),
     mimeType: "application/json",
     resource: `${env.STORE_BASE_URL}/api/buy/${item.id}`,
+    // The three fields a facilitator keeps off every resource it
+    // catalogs. Declaring none of them is why our entries in someone
+    // else's index have been anonymous URLs with prices on them.
+    ...storeServiceMetadata(env),
     extensions: buyDiscoveryExtensions(item),
     customPaywallHtml: browserPaywallHtml(item, env),
     unpaidResponseBody: async () => ({
@@ -162,6 +184,7 @@ function pennyPageRouteConfig(
     ],
     description,
     mimeType: "text/markdown",
+    ...storeServiceMetadata(env),
     extensions: pennyPageDiscoveryExtensions(exampleTitle),
     unpaidResponseBody: async () => ({
       contentType: "application/json",
