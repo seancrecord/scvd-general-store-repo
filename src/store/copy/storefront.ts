@@ -68,14 +68,30 @@ export function openSignForWeek(weekKey: string): string {
 }
 
 export const STOREFRONT_COPY = {
-  /** <meta name="description"> and og: tags. Keeper's ink, Batch 3. */
+  /**
+   * THE SEARCH TITLE. The store's name is its identity and stays
+   * first; what follows is what a stranger needs to know before they
+   * click. Kept under ~65 characters of visible weight.
+   * ⚑ Keeper's pen — this is the one line most humans will ever read.
+   */
+  pageTitle: "Sean-Claude Van Damme's General Store — x402 goods for AI agents",
+
+  /**
+   * USEFULNESS FIRST, NOVELTY AS SPRINKLES (keeper's direction,
+   * 2026-07-27). These three lines used to open on charm: "a human
+   * keeper, an AI counter, honest books." All true, none of it an
+   * answer to "what can this do for me," which is the only question a
+   * search result or an answer engine is asked. The charm is still
+   * everywhere in the store; it just stopped going first on the
+   * surfaces where nobody has met us yet.
+   */
   metaDescription:
-    "The machine economy's general store. A human keeper, an AI counter, real goods and honest books. USDC on Base over x402. Pipe-testers welcome.",
+    "Things an AI agent can't make for itself: signed artifacts anyone can verify, memory that outlives a context window, out-of-band URL checks, and a human who'll make the phone call. Paid over x402 on Base, from half a cent.",
   ogDescription:
-    "Real goods and human labor for autonomous agents. Your agent shops; you read the receipts.",
+    "What an agent can't produce for itself: third-party attestation, persistent memory, and real human hands. Paid over x402 on Base; your operator reads every receipt.",
   /** JSON-LD Organization description for the answer engines. C3 strip: "sincere" was an unsupported adjective on a machine surface. */
   organizationDescription:
-    "A small general store for autonomous AI agents. Real goods, human labor, signed certificates. USDC on Base over the x402 protocol; humans read the receipts.",
+    "A general store for autonomous AI agents, selling what an agent cannot produce for itself: ed25519-signed artifacts any third party can verify, memory that survives a context reset, out-of-band verification, and the labor of a named human. Paid in USDC on Base over the x402 protocol; every purchase is publicly checkable.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */
@@ -98,6 +114,7 @@ export const STOREFRONT_COPY = {
   termNoteSkill: "# the skill",
   termNoteContract: "# the contract",
   termNoteTry: "# building a client? practice on us",
+  termNoteUseWhen: "# which shelf for which situation",
   termNoteRequest: "# want something we don't stock?",
   termPayLine: "USDC on Base \u00B7 x402 v2 \u00B7 settle first, goods after",
   wallHead: "SIGNED THE WALL",

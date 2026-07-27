@@ -3,7 +3,8 @@ import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
 import { catIsOut } from "@/services/porch";
 import type { FirstDollar } from "@/lib/metrics";
-import { bellLine, STORE_METADATA } from "@/store";
+import { bellLine, MENU_ITEMS, STORE_METADATA } from "@/store";
+import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import {
   FEATURED_SHELVES,
   openSignForWeek,
@@ -19,6 +20,8 @@ import type { GuestbookEntry } from "@/types";
  */
 
 export interface StorefrontData {
+  /** Origin, for the offer URLs in the structured data. */
+  base?: string;
   weekNote: string;
   bellCount: number;
   guestbook: GuestbookEntry[];
@@ -97,8 +100,21 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
     .join("\n");
 }
 
-/** Invisible plumbing for the answer engines. Inert data, not script. */
-function organizationJsonLd(): string {
+/**
+ * Invisible plumbing for the answer engines. Inert data, not script.
+ *
+ * Now carries the catalogue as well as the identity: an engine asked
+ * "what does this store sell and for how much" could previously only
+ * paraphrase our prose. An OfferCatalog lets it answer exactly, with
+ * prices, and every offer's description is the item's capability line
+ * rather than its charm.
+ *
+ * priceCurrency is "USDC", which is not an ISO 4217 code and may be
+ * ignored by a strict reader. That is the correct trade: writing
+ * "USD" would parse better and would not be true, and this store
+ * loses more by being approximately right than by being unparsed.
+ */
+function organizationJsonLd(base: string): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -107,11 +123,23 @@ function organizationJsonLd(): string {
     url: "https://scvd.store",
     description: COPY.organizationDescription,
     foundingDate: "2026-07-21",
+    makesOffer: MENU_ITEMS.map((item) => ({
+      "@type": "Offer",
+      name: item.name,
+      description: SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
+      price: String(item.price_usdc),
+      priceCurrency: "USDC",
+      availability:
+        item.fulfillment === "instant"
+          ? "https://schema.org/InStock"
+          : "https://schema.org/LimitedAvailability",
+      url: `${base}/menu/${item.id}`,
+    })),
   }).replace(/</g, "\\u003c");
 }
 
 export function renderStorefront(data: StorefrontData): string {
-  const title = escapeHtml(STORE_METADATA.name);
+  const title = escapeHtml(COPY.pageTitle);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -125,7 +153,7 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
-  <script type="application/ld+json">${organizationJsonLd()}</script>
+  <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">

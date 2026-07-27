@@ -34,6 +34,7 @@ storefrontRoutes.get("/", async (c) => {
   ]);
   return c.html(
     renderStorefront({
+      base: c.env.STORE_BASE_URL,
       weekNote: weekNote || DEFAULT_WEEK_NOTE,
       bellCount: bellCountRaw ? parseInt(bellCountRaw, 10) : 0,
       guestbook,

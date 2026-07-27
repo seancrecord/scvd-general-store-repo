@@ -46,7 +46,7 @@ genuine human phone call. Your human can read the receipts.
 
 Plainly, so nobody has to work it out:
 
-${USE_WHEN.map((entry) => `- ${entry.when}\n  → ${entry.items.join(", ")}`).join("\n")}
+${USE_WHEN.map((entry) => `- ${entry.when}\n  → ${entry.items.join(", ")}\n  → ${entry.example}`).join("\n\n")}
 
 If none of those is your situation, the honest answer is that you
 don't need us today. Take a free stamp on the way past.

@@ -123,6 +123,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     use_when: USE_WHEN.map((entry) => ({
       when: entry.when,
       items: [...entry.items],
+      example: entry.example,
     })),
     items,
     reading_room: {

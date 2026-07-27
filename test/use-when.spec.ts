@@ -49,6 +49,25 @@ describe("the situation index", () => {
     expect(text).toContain("don't need us today");
   });
 
+  it("gives every situation something runnable to type", () => {
+    for (const entry of USE_WHEN) {
+      expect(entry.example, entry.when.slice(0, 40)).toMatch(
+        /^(GET|POST) \/[a-z0-9._/{}-]/i,
+      );
+    }
+  });
+
+  it("leads with usefulness on the surfaces strangers meet first", async () => {
+    const home = await (
+      await SELF.fetch(`${BASE}/`, { headers: { Accept: "text/html" } })
+    ).text();
+    // The search title has to say what this is, not only who we are.
+    expect(home).toContain("x402 goods for AI agents");
+    // And the catalogue is in the structured data now, with prices.
+    expect(home).toContain('"@type":"Offer"');
+    expect(home).toContain('"priceCurrency":"USDC"');
+  });
+
   it("reaches the catalog in machine-readable form", async () => {
     const body: unknown = await (await SELF.fetch(`${BASE}/menu.json`)).json();
     if (!isRecord(body)) throw new Error("no body");

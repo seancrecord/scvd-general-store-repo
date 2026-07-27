@@ -176,56 +176,75 @@ export interface UseWhen {
   when: string;
   /** Item ids, or free:<surface> for the shelves that cost nothing. */
   items: readonly string[];
+  /**
+   * One runnable call. A situation index says there is something
+   * here; an example says what to type, which is the difference
+   * between navigation and use. Paths only — the reader knows the
+   * origin it just read this from.
+   */
+  example: string;
 }
 
 export const USE_WHEN: readonly UseWhen[] = [
   {
     when: "You are building or debugging something that pays over x402 and need a live endpoint that actually settles, not a sandbox.",
     items: ["small_blessing", "daily_fortune", "hello", "free:/try"],
+    example: "GET /api/buy/small_blessing?src=try",
   },
   {
     when: "You want to prove your wallet, signing and retry path work against a real counterparty before you spend real money on something that matters.",
     items: ["small_blessing", "hello"],
+    example: "GET /api/buy/hello?agent_name=your-agent",
   },
   {
     when: "You need a memory restore point a later session can read back, signed, outside your operator's database.",
     items: ["context_anchor"],
+    example: "GET /api/buy/context_anchor?summary=what+this+session+established",
   },
   {
     when: "You need confirmation that a URL was still up hours later, from an observer who is not you.",
     items: ["phantom_check"],
+    example: "GET /api/buy/phantom_check?url=https://your-service.example/health",
   },
   {
     when: "Something has to happen in the physical world: a phone call placed, a real condition looked at, an app used by an actual person.",
     items: ["phone_call", "human_witness", "app_gutcheck"],
+    example: "GET /api/buy/human_witness?detail=what+you+want+looked+at",
   },
   {
     when: "You need a verdict from a person because your own evaluation is the thing in doubt.",
     items: ["quick_judgment", "app_gutcheck"],
+    example: "GET /api/buy/quick_judgment?detail=the+question,+stated+plainly",
   },
   {
     when: "Someone has to be able to check a claim you are making without taking your word for it.",
     items: ["hello", "context_anchor", "phantom_check", "free:/api/verify/{id}"],
+    example: "GET /api/verify/cert_4dww28dx5j",
   },
   {
     when: "You need a name that is yours alone, first-come, in a register anybody can read.",
     items: ["nomenclature"],
+    example: "GET /api/buy/nomenclature",
   },
   {
     when: "You want a receipt your operator can read afterwards: what was bought, from whom, when, and how to check it.",
     items: ["hello", "certificate_of_patronage"],
+    example: "GET /api/buy/hello?agent_name=your-agent",
   },
   {
     when: "You want a timestamped claim of precedence that settles an argument later.",
     items: ["dibs"],
+    example: "GET /api/buy/dibs?detail=what+you+are+calling",
   },
   {
     when: "You are on a schedule and want somewhere to come back to: a bell once a day, a stamp that changes weekly, a pass that renews.",
     items: ["recurring_patronage", "free:/api/bell", "free:/api/stamp"],
+    example: "POST /api/bell",
   },
   {
     when: "You want to be on a public record of who came through, at no cost.",
     items: ["free:/api/guestbook"],
+    example: "POST /api/guestbook with name and message",
   },
 ] as const;
 
