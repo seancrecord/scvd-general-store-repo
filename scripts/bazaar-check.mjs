@@ -90,6 +90,64 @@ if (!apiKeyId || !apiKeySecret) {
   process.exit(2);
 }
 
+/**
+ * Five secrets live in this project and several of them are "a long
+ * string of hex," so the wrong one gets pasted eventually. The CDP
+ * SDK's answer to that is "Invalid key format," which names the
+ * problem without naming the cause. This does.
+ *
+ * Shapes only — never the value, never a fragment of it.
+ */
+function diagnoseSecret(secret) {
+  if (/^[0-9a-fA-F]{64}$/.test(secret)) {
+    return "64 hex characters — that is the store's own SIGNING_KEY (the ed25519 seed from `npm run keys:generate`). Ours, not Coinbase's.";
+  }
+  if (/^0x[0-9a-fA-F]{64}$/.test(secret)) {
+    return "0x + 64 hex — that is a WALLET PRIVATE KEY (the shopping run's burner). Never send it anywhere; it spends money.";
+  }
+  if (/^0x[0-9a-fA-F]{40}$/.test(secret)) {
+    return "0x + 40 hex — that is PAY_TO_ADDRESS, the wallet that receives. Public, harmless, wrong key.";
+  }
+  if (secret.includes("BEGIN") && secret.includes("PRIVATE KEY")) {
+    return "a PEM block, but it arrived with its line breaks mangled. Save it to a file and use CDP_API_KEY_SECRET_FILE.";
+  }
+  if (/^[A-Za-z0-9+/]{40,}={0,2}$/.test(secret)) {
+    return "base64 of an unexpected length. A CDP Ed25519 secret is usually 88 characters ending in `==`.";
+  }
+  return `${secret.length} characters, no shape I recognize. If it is the password you picked, that is ADMIN_PASSWORD.`;
+}
+
+// Fail on the shape before the SDK fails on the format.
+try {
+  await generateJwt({
+    apiKeyId,
+    apiKeySecret,
+    requestMethod: "GET",
+    requestHost: HOST,
+    requestPath: "/platform/v2/x402/supported",
+  });
+} catch (error) {
+  if (String(error).includes("Invalid key format")) {
+    console.error("That secret is not a CDP API key secret.");
+    console.error("");
+    console.error(`  What you passed: ${diagnoseSecret(apiKeySecret)}`);
+    console.error("");
+    console.error("A CDP API key is a PAIR from the Coinbase Developer Platform:");
+    console.error("  CDP_API_KEY_ID      a UUID, like a1b2c3d4-5678-90ab-cdef-...");
+    console.error("  CDP_API_KEY_SECRET  one line of base64 ending in '==',");
+    console.error("                      or a multi-line -----BEGIN EC PRIVATE KEY-----");
+    console.error("");
+    console.error(`  The id you passed is ${/^[0-9a-f-]{36}$/i.test(apiKeyId) ? "shaped like a UUID, which is right" : "not shaped like a UUID, so it is probably wrong too"}.`);
+    console.error("");
+    console.error("Cloudflare will not hand the stored values back. If the pair");
+    console.error("is not in your file, make a NEW key in the CDP portal — keys");
+    console.error("are additive, and a new one will not disturb the one the");
+    console.error("Worker uses to settle payments.");
+    process.exit(2);
+  }
+  throw error;
+}
+
 async function get(requestPath) {
   const token = await generateJwt({
     apiKeyId,
