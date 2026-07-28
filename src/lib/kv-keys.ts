@@ -47,6 +47,11 @@ export const KV_KEYS = {
   confession: (invertedTs: string, id: string): string =>
     `confession:${invertedTs}:${id}`,
   confessionPrefix: "confession:",
+  // The train fills front to back, so tags key by FORWARD timestamp:
+  // KV lists ascending, which puts the oldest tag first, which is the
+  // front of the train. Every other queue here is newest-first.
+  trainTag: (ts: string, id: string): string => `train:${ts}:${id}`,
+  trainTagPrefix: "train:",
   phantomCheck: (checkId: string): string => `phantom:${checkId}`,
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
@@ -67,8 +72,7 @@ export const KV_KEYS = {
   porchTreats: (day: string): string => `porch_treats:${day}`,
   gazetteWeeklyState: "gazette_weekly_state",
   gazetteCorrections: "gazette_corrections",
-  letterSent: (who: string, day: string): string =>
-    `letter_sent:${who}:${day}`,
+  letterSent: (who: string, day: string): string => `letter_sent:${who}:${day}`,
   inventory: (itemId: string, weekKey: string): string =>
     `inventory:${itemId}:${weekKey}`,
   failedItem: (itemId: string): string => `failed_item:${itemId}`,

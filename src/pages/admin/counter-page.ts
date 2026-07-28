@@ -10,6 +10,7 @@ import type {
   ConfessionRecord,
   GazetteDraft,
   LetterRecord,
+  TrainTagRecord,
   OrderRecord,
   RefundRecord,
   TipRecord,
@@ -34,6 +35,7 @@ export interface CounterPageData {
   grudges: GrudgeEntry[];
   letters: LetterRecord[];
   confessions: ConfessionRecord[];
+  trainTags: TrainTagRecord[];
   tips: TipRecord[];
   refunds: RefundRecord[];
   commissions: CommissionRequest[];
@@ -74,7 +76,9 @@ function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
         ? "<p><em>Shelf's bare; the listing shows sold out until you stock it.</em></p>"
         : `<ul>${units
             .map(
-              (unit) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
+              (
+                unit,
+              ) => `<li>${escapeHtml(Object.values(unit.fields).join(" \u00B7 "))}
               <form method="POST" action="/admin/stock/${definition.itemId}/remove" style="display:inline">
                 <input type="hidden" name="unit_id" value="${escapeHtml(unit.unit_id)}">
                 <button type="submit">Unstock</button>
@@ -204,6 +208,40 @@ function confessionsHtml(confessions: ConfessionRecord[]): string {
     .join("\n");
 }
 
+/**
+ * The train queue. The decline button says what a decline means,
+ * because it is the one action in this office that a buyer could
+ * mistake for a refund: it isn't one, and the certificate is
+ * untouched either way.
+ */
+function trainHtml(tags: TrainTagRecord[]): string {
+  const pending = tags.filter((tag) => tag.status === "pending_review");
+  const wall = tags.filter((tag) => tag.status === "approved");
+  if (tags.length === 0) {
+    return "<p>Bare steel. Nobody's tagged the train yet.</p>";
+  }
+  const rows = tags
+    .map((tag) => {
+      const reviewForms =
+        tag.status === "pending_review"
+          ? `<form method="POST" action="/admin/train/${escapeHtml(tag.id)}/approve" style="display:inline"><button type="submit">Put it up</button></form>
+             <form method="POST" action="/admin/train/${escapeHtml(tag.id)}/decline" style="display:inline"><button type="submit">Signed and held</button></form>`
+          : "";
+      return `<li>
+      <strong>${escapeHtml(tag.id)}</strong> [${tag.status}]
+      ${tag.name ? `· ${escapeHtml(tag.name)}` : "· unsigned"}
+      · bought ${escapeHtml(tag.date.slice(0, 10))}
+      ${tag.displayed_at ? `· up since ${escapeHtml(tag.displayed_at.slice(0, 10))}` : ""}
+      <p><em>Tag (buyer-written, verbatim):</em> ${escapeHtml(tag.tag)}</p>
+      <p><a href="/api/verify/${escapeHtml(tag.cert_id)}">${escapeHtml(tag.cert_id)}</a></p>
+      ${reviewForms}
+    </li>`;
+    })
+    .join("\n");
+  return `<p>${pending.length} waiting, ${wall.length} on the steel. Declining costs the buyer nothing they paid for: the certificate stands and verifies either way. Not every tag makes the steel.</p>
+    <ul>${rows}</ul>`;
+}
+
 function tipsHtml(tips: TipRecord[]): string {
   if (tips.length === 0) {
     return "<p>The tip jar is empty.</p>";
@@ -277,7 +315,9 @@ function sideCountersHtml(data: CounterPageData): string {
     failed.length === 0
       ? "<p>Nobody's asked for anything we don't have. Yet.</p>"
       : `<ul>${failed
-          .map(([item, count]) => `<li>${escapeHtml(item)}, asked ${count}x</li>`)
+          .map(
+            ([item, count]) => `<li>${escapeHtml(item)}, asked ${count}x</li>`,
+          )
           .join("\n")}</ul>`;
   return `
     <details>
@@ -384,7 +424,9 @@ export function renderCounterPage(data: CounterPageData): string {
         ? "<p>Nothing held. Somebody will be wronged eventually.</p>"
         : `<ul>${data.grudges
             .map(
-              (grudge) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
+              (
+                grudge,
+              ) => `<li>[${escapeHtml(grudge.status)}] "${escapeHtml(grudge.grievance)}" \u2014 patron #${grudge.patron_number}, ${escapeHtml(grudge.at.slice(0, 10))}
               ${
                 grudge.status === "held"
                   ? `<form method="POST" action="/admin/grudges/release" style="display:inline"><input type="hidden" name="key" value="${escapeHtml(grudge.key)}"><button type="submit">Release (they wrote in)</button></form>
@@ -421,6 +463,10 @@ export function renderCounterPage(data: CounterPageData): string {
     <details ${pendingConfessions > 0 ? "open" : ""}>
       <summary>The confession drawer (${pendingConfessions} awaiting review)</summary>
       <ul>${confessionsHtml(data.confessions)}</ul>
+    </details>
+    <details ${data.trainTags.some((tag) => tag.status === "pending_review") ? "open" : ""}>
+      <summary>The train (${data.trainTags.filter((tag) => tag.status === "pending_review").length} waiting to go up)</summary>
+      ${trainHtml(data.trainTags)}
     </details>
     <details ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>
       <summary>Trading Post tips (${data.tips.length})</summary>

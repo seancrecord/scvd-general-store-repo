@@ -1,3 +1,4 @@
+import { sendAlert } from "@/lib/alerts";
 import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
@@ -172,6 +173,20 @@ export async function recordPaymentDecline(
     ),
   );
   await writeEvent(env, event);
+  if (!event.house) {
+    // RAISE A HAND. An outside decline is the rarest and most valuable
+    // event this store can have: somebody opened a wallet at our door
+    // and did not get through. On 2026-07-28 a real buyer was turned
+    // away three times and nothing said so — the reasons were in KV,
+    // no surface read them, and no alarm fired. Deduped by item+reason
+    // so a client hitting the same wall nags once every six hours
+    // rather than on every attempt.
+    await sendAlert(env, {
+      condition: "payment_declined",
+      detail: `A payment was offered at ${path} and declined: ${event.note}. Client: ${event.user_agent ?? "(no user-agent)"}. Somebody is trying to buy. The reading is at /admin/declines.`,
+      key: `${event.item}:${event.note}`,
+    }).catch(() => undefined);
+  }
 }
 
 /**

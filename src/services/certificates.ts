@@ -80,6 +80,8 @@ export interface MintOptions {
   witness?: boolean;
   /** coffees_for_closers: the buyer's win, recorded verbatim. */
   win?: string;
+  /** graffiti_on_a_train: the buyer's tag, recorded verbatim. */
+  tag?: string;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -118,6 +120,9 @@ export async function mintCertificate(
   }
   if (options.win) {
     certificate.win = options.win;
+  }
+  if (options.tag) {
+    certificate.tag = options.tag;
   }
 
   const { signature, publicKey } = await signCertificate(

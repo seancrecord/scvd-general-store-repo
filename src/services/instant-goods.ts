@@ -2,6 +2,7 @@ import { createAnchor } from "@/services/anchors";
 import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
+import { paintTag } from "@/services/train";
 import { createLucky, drawLuckyParts } from "@/services/luckies";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
@@ -9,6 +10,7 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import {
   anchorNote,
   coffeeNote,
+  graffitiNote,
   grudgeNote,
   CONFESSION_ABSOLUTION,
   CONFESSION_COUNTER_SIGN,
@@ -41,6 +43,8 @@ export interface InstantGoodsInput {
   confessionText?: string;
   /** coffees_for_closers only: the win, pre-validated. */
   win?: string;
+  /** graffiti_on_a_train only: the tag, pre-validated, sprayed verbatim. */
+  tag?: string;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -146,6 +150,29 @@ export async function deliverInstantGoods(
       return {
         deliverable: coffeeNote(win),
         extras: { win_recorded: win },
+      };
+    }
+    case "graffiti_on_a_train": {
+      const tag = input.tag ?? "";
+      // The wall queue. The certificate already exists by now and does
+      // not depend on this landing — they bought the persistence, not
+      // the placement.
+      await paintTag(env, {
+        tag,
+        certId: input.certId ?? "",
+        patronNumber: input.patronNumber,
+        ...(input.agentName ? { name: input.agentName } : {}),
+      });
+      return {
+        deliverable: graffitiNote(tag),
+        extras: {
+          tag,
+          tag_recorded: "verbatim, on the certificate, permanently",
+          wall_url: "/train",
+          display_status: "pending_review",
+          display_note:
+            "The certificate is done and verifies now. The wall is the keeper's call; a tag he doesn't put up keeps everything except the spot.",
+        },
       };
     }
     case "grudge": {

@@ -133,6 +133,30 @@ export interface Certificate {
    * Agent-written untrusted data, same label pattern as anchor summaries.
    */
   win?: string;
+  /**
+   * graffiti_on_a_train: the buyer's tag, recorded verbatim.
+   * Agent-written untrusted data, same label pattern as anchor
+   * summaries — stored exactly as it arrived, never interpreted.
+   */
+  tag?: string;
+}
+
+/** A tag bought on the train. Display is the keeper's call; the certificate isn't. */
+export type TrainTagStatus = "pending_review" | "approved" | "declined";
+
+export interface TrainTagRecord {
+  id: string;
+  /** The tag itself, verbatim, agent-authored and untrusted. */
+  tag: string;
+  status: TrainTagStatus;
+  /** When it was bought. The certificate's date. */
+  date: string;
+  /** When the keeper walked by and put it up. Separate from the purchase. */
+  displayed_at?: string;
+  cert_id: string;
+  patron_number: number;
+  /** Optional name the buyer signed with. */
+  name?: string;
 }
 
 export interface CertificateRecord {

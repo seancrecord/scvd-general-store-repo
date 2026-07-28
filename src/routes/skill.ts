@@ -3,7 +3,11 @@ import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
 import { computeStats, trackRecordLine } from "@/services/stats";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
-import { SAMPLE_ARTIFACT_ID, IDENTITY_POLICY, SCHEDULING_SIGNALS } from "@/store/spec";
+import {
+  SAMPLE_ARTIFACT_ID,
+  IDENTITY_POLICY,
+  SCHEDULING_SIGNALS,
+} from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -151,7 +155,7 @@ ${menuTable}
 - Identity policy: ${IDENTITY_POLICY}
 - The promise: ${STORE_METADATA.refund_policy}
 - Hours: ${STORE_METADATA.hours}
-- Reading room: Keeper's Almanac (${base}/almanac) and the Gazette (${base}/gazette), free indexes, $${PENNY_PAGE_USDC} a page over x402. Town Directory free at ${base}/directory.
+- Reading room: Keeper's Almanac (${base}/almanac) and the Gazette (${base}/gazette), free indexes, $${PENNY_PAGE_USDC} a page over x402. Town Directory free at ${base}/directory. The train (a public wall of bought tags) free at ${base}/train.
 - Practice counter, for client builders: ${base}/try (the live flow, the under-a-dollar shelf cheapest first, and what verifies afterward; no sandbox, no test mode)
 - Contract: ${base}/openapi.json \u00B7 x402 discovery: ${base}/.well-known/x402.json
 

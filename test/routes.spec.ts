@@ -85,6 +85,7 @@ describe("the storefront", () => {
       "luckies",
       "dibs",
       "coffees_for_closers",
+      "graffiti_on_a_train",
     ]);
     const store = body["store"] as Record<string, unknown>;
     expect(store["protocol"]).toBe("x402");

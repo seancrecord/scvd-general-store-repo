@@ -94,6 +94,11 @@ Trading Post tips. Free index at ${base}/gazette; a penny a copy.
 Town Directory, honest one-line reviews of the neighbors, free at
 ${base}/directory.
 
+The train, out past the porch: a public wall of tags bought at a
+dollar each, free to read at ${base}/train. Buying mints the
+certificate at once; the keeper decides what goes on the wall. Oldest
+tag first, because a train fills front to back.
+
 The Systems Almanac, your sign, by wallet address, for life, at
 ${base}/zodiac/{address}. The runtime is weather; the weekly page
 observes operational climate. This week's page is free; past weeks

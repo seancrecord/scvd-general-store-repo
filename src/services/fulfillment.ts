@@ -3,7 +3,11 @@ import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { deliverInstantGoods } from "@/services/instant-goods";
-import { completeOrder, createOrder, recordInventorySale } from "@/services/orders";
+import {
+  completeOrder,
+  createOrder,
+  recordInventorySale,
+} from "@/services/orders";
 import { listStock, takeStockUnit } from "@/services/stock";
 import { bestowedNameNote, drawerNote } from "@/store/copy";
 import { VOICE } from "@/store";
@@ -41,6 +45,8 @@ export interface FulfillmentInput {
   win?: string;
   /** grudge: the grievance, pre-validated, held verbatim. */
   grievance?: string;
+  /** graffiti_on_a_train: the tag, pre-validated, sprayed verbatim. */
+  tag?: string;
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -72,6 +78,9 @@ export async function fulfillPurchase(
   }
   if (item.id === "coffees_for_closers" && input.win) {
     mintOptions.win = input.win;
+  }
+  if (item.id === "graffiti_on_a_train" && input.tag) {
+    mintOptions.tag = input.tag;
   }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
@@ -124,7 +133,11 @@ export async function fulfillPurchase(
       goodsInput.grievance = input.grievance;
       goodsInput.paidUsdc = payment.paidUsdc;
     }
-    // The grudge register and the lucky draw both key off the cert.
+    if (input.tag !== undefined) {
+      goodsInput.tag = input.tag;
+    }
+    // The grudge register, the lucky draw and the train all key off
+    // the cert: the certificate is the thing the buyer actually holds.
     goodsInput.certId = minted.certificate.cert_id;
     const goods = await deliverInstantGoods(env, item, goodsInput);
     return {

@@ -1,4 +1,3 @@
-
 /**
  * KEEPER-EDITABLE COPY, what actually goes in the bag.
  * Every instant item's deliverable text lives here and nowhere else.
@@ -90,6 +89,15 @@ export function bestowedNameNote(name: string): string {
 /** ⚑ KEEPER REVIEW: the instant grudge acknowledgement. */
 export function grudgeNote(grievance: string): string {
   return `Held, as of this moment: "${grievance}". The keeper reads every new grudge on Sundays and holds them all with equal spite. Write in to release it; until then it only ages.`;
+}
+
+/**
+ * The two facts, in the order they matter: the artifact exists now,
+ * and the wall is a separate question. Said at purchase so nobody
+ * learns it from a decline.
+ */
+export function graffitiNote(tag: string): string {
+  return `Sprayed: "${tag}". It's on the certificate, verbatim, dated and signed, and that part is done — nobody can take it off, including us. The wall out back is the keeper's call; he puts tags up when he walks by. Either way you've got the paint.`;
 }
 
 export function patronageCertificateNote(patronNumber: number): string {

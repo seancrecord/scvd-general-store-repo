@@ -47,6 +47,10 @@ Resequence approved by keeper same day; see GROWTH_TASKS.
 
 ## Log
 
+- 2026-07-28 · First outside payment signature on record: curl/8.18.0, three attempts, three declines, zero settles. Reasons were recorded and had never been rendered. Decline desk built at /admin/declines; the census line that claimed otherwise is corrected; the replay path now books its refusals; an outside decline raises an alarm.
+
+- 2026-07-28 · graffiti_on_a_train stocked; born from the Seven argument, night of 2026-07-27 — the ledger keeps facts, not explanations.
+
 - 2026-07-28 · Bell ring #7: CV, first walk of the store, unprompted. Noted.
 
 - 2026-07-27 · awesome-x402, RESUBMITTED to the right address. The 07-22 PR turns out to have gone to brooks091/awesome-x402 — a dead fork (0 stars, unmaintained since 2025-11, our PR its only activity ever, zero response coming). The live list is the fork network's source, xpaysh/awesome-x402 (268 stars, pushed daily), which did not list the store. Keeper submitted PR #1024 (open, mergeable-clean) with the entry re-cut per the claims audit: "real goods" corrected to "signed certificates, human labor, and a few real-world errands" (the 07-24 claim fix, finally reaching this surface), the Bazaar-discoverable claim dropped until the keyed CDP re-query renews it, and /try added — the half-cent live test target is the one line this audience wants. One paper per venue holds: the venue that gets read had never received the paper. The dead-mirror PR stays open; nobody is home to close it at.

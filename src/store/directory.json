@@ -1,7 +1,7 @@
 {
   "note": "The Town Directory, kept at Hurricane Junction. Keeper-edited by hand in src/store/directory.json: one honest line per neighbor, no pay-for-placement, ever. Suggest a listing via POST /api/request with a suggest_listing field.",
   "district": "Hurricane Junction",
-  "updated": "2026-07-27",
+  "updated": "2026-07-28",
   "listings": [
     {
       "name": "x402scan",
@@ -26,6 +26,14 @@
       "review": "Probes what you submit and says how many endpoints actually answered. Ours came back three of six, which is how we found a real bug. A directory that disagrees with you is worth more than one that doesn't.",
       "added": "2026-07-27",
       "slug": "x402scout"
+    },
+    {
+      "name": "The train",
+      "url": "https://scvd.store/train",
+      "category": "ours",
+      "review": "Our own wall, listed here so the directory covers the town and not just the neighbors. A dollar buys a tag on a signed certificate; the keeper decides what goes up on the steel. Free to read, and the only listing on this page we are not a disinterested party about.",
+      "added": "2026-07-28",
+      "slug": "the-train"
     }
   ]
 }

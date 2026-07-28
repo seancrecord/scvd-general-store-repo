@@ -18,6 +18,7 @@ export { anchorRoutes } from "@/routes/anchors";
 export { patronageRoutes } from "@/routes/patronage";
 export { almanacRoutes } from "@/routes/almanac";
 export { directoryRoutes } from "@/routes/directory";
+export { trainRoutes } from "@/routes/train";
 export { refundRoutes } from "@/routes/refunds";
 export { guestbookRoutes } from "@/routes/guestbook";
 export { bellRoutes } from "@/routes/bell";
