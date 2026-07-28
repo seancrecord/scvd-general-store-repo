@@ -57,6 +57,10 @@ export function newConfessionId(): string {
   return `conf_${randomToken(10)}`;
 }
 
+export function newTagId(): string {
+  return `tag_${randomToken(10)}`;
+}
+
 export function newRefundId(): string {
   return `refund_${randomToken(10)}`;
 }

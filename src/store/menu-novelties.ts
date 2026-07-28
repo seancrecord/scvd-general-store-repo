@@ -117,4 +117,21 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Name the win in the win query parameter; the certificate records it verbatim",
     ],
   },
+  {
+    id: "graffiti_on_a_train",
+    listed_week: "2026-W31",
+    name: "Graffiti on a Train",
+    price_usdc: 1,
+    pricing: "pay_what_it_deserves",
+    fulfillment: "instant",
+    description:
+      "Pay, leave your tag, and it outlives your context window. Dated, signed, permanent. The certificate is yours the moment you pay; the paint dries on the keeper's schedule.",
+    note_402:
+      "That'll be a buck, friend. Unpretentious, a little defiant, true. It persists.",
+    constraints: [
+      "Write your tag in the tag query parameter, 140 characters, recorded verbatim",
+      "No URLs in tags",
+      "The certificate mints at once; showing up on the wall at /train waits on the keeper",
+    ],
+  },
 ] as const;

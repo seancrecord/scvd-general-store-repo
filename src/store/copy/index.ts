@@ -4,6 +4,7 @@ export {
   anchorNote,
   bestowedNameNote,
   coffeeNote,
+  graffitiNote,
   drawerNote,
   grudgeNote,
   luckyNote,

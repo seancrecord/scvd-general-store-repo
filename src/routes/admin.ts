@@ -48,6 +48,7 @@ import {
 } from "@/services/luckies";
 import { luckyNote } from "@/store/copy";
 import { listConfessions, setConfessionStatus } from "@/services/confessions";
+import { listTags, setTagStatus } from "@/services/train";
 import { setMonthlyNote } from "@/services/patronage";
 import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
 import {
@@ -130,6 +131,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     alerts,
     gazetteDraft,
     confessions,
+    trainTags,
     refunds,
     closers,
     drawerStock,
@@ -147,6 +149,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     listAlerts(c.env, 5),
     getDraft(c.env),
     listConfessions(c.env),
+    listTags(c.env),
     listRefunds(c.env),
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
@@ -192,6 +195,9 @@ adminRoutes.get("/admin/counter", async (c) => {
       ),
       alerts: shelf(alerts, [], "alerts", notes),
       gazetteDraft: shelf(gazetteDraft, null, "gazette draft", notes),
+      trainTags: shelf(trainTags, [], "the train", notes).map(
+        (entry) => entry.record,
+      ),
       confessions: shelf(confessions, [], "confessions", notes).map(
         (entry) => entry.record,
       ),
@@ -294,6 +300,28 @@ adminRoutes.get("/admin", async (c) => {
 adminRoutes.get("/admin/books", (c) => c.redirect("/admin"));
 
 adminRoutes.get("/admin/tools", (c) => c.html(renderToolsPage()));
+
+/**
+ * The keeper walks by. Approving stamps a display date separate from
+ * the purchase date; declining leaves the certificate alone, which is
+ * the whole promise — they bought the persistence, not the placement.
+ */
+adminRoutes.post("/admin/train/:tag_id/approve", async (c) => {
+  const updated = await setTagStatus(c.env, c.req.param("tag_id"), "approved");
+  if (!updated) {
+    return c.text("No tag by that id on the train.", 404);
+  }
+  return c.redirect("/admin/counter");
+});
+
+adminRoutes.post("/admin/train/:tag_id/decline", async (c) => {
+  const updated = await setTagStatus(c.env, c.req.param("tag_id"), "declined");
+  if (!updated) {
+    return c.text("No tag by that id on the train.", 404);
+  }
+  // Signed and held. Not every tag makes the steel.
+  return c.redirect("/admin/counter");
+});
 
 adminRoutes.post("/admin/confessions/:confession_id/approve", async (c) => {
   const updated = await setConfessionStatus(

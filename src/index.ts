@@ -9,6 +9,7 @@ import {
   buyRoutes,
   catalogRoutes,
   directoryRoutes,
+  trainRoutes,
   faviconRoutes,
   guestbookRoutes,
   letterRoutes,
@@ -152,6 +153,7 @@ app.route("/", letterRoutes);
 app.route("/", almanacRoutes);
 app.route("/", zodiacRoutes);
 app.route("/", directoryRoutes);
+app.route("/", trainRoutes);
 app.route("/", refundRoutes);
 app.route("/", guestbookRoutes);
 app.route("/", bellRoutes);

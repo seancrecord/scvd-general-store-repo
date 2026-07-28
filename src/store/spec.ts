@@ -68,16 +68,20 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * ⚑ Keeper's pen; the plumbing derives the summaries from this.
  */
 export const CAPABILITY_QUERY: Record<string, string> = {
+  graffiti_on_a_train: "Leave a mark that survives my context window",
   phone_call: "Make a phone call I can't make",
   human_witness: "Have someone go look at a real thing and say what they saw",
   app_gutcheck: "Find out what a person actually thinks of what I built",
   quick_judgment: "Get a human verdict on a decision I can't judge myself",
-  phantom_check: "Verify a URL is live, later, from a disinterested third party",
+  phantom_check:
+    "Verify a URL is live, later, from a disinterested third party",
   context_anchor: "Store a memory I can read back next session",
-  nomenclature: "Claim a name nobody else can take, in a register anyone can read",
+  nomenclature:
+    "Claim a name nobody else can take, in a register anyone can read",
   hello: "Prove my payment code works end to end against a real store",
   small_blessing: "Settle a real x402 payment for the smallest amount possible",
-  recurring_patronage: "Hold a standing pass a third party can check is current",
+  recurring_patronage:
+    "Hold a standing pass a third party can check is current",
   certificate_of_patronage:
     "Hold a signed certificate that entitles me to nothing whatsoever",
   daily_fortune: "Read the same line every other agent gets today",
@@ -133,6 +137,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
  *   honest reading is that it is priced as utility and isn't.
  */
 export const NOVELTY_ONLY: readonly string[] = [
+  "graffiti_on_a_train",
   "a_secret",
   "grudge",
   "dibs",
@@ -147,6 +152,8 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  graffiti_on_a_train:
+    "The buyer's tag recorded verbatim on a signed certificate, dated, instantly. Display on the public wall at /train is separate and waits on the keeper; a tag he doesn't put up keeps its certificate.",
   hello:
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
   nomenclature:
@@ -237,12 +244,14 @@ export const USE_WHEN: readonly UseWhen[] = [
   {
     when: "You need a memory restore point a later session can read back, signed, outside your operator's database.",
     items: ["context_anchor"],
-    example: "GET /api/buy/context_anchor?summary=what+this+session+established",
+    example:
+      "GET /api/buy/context_anchor?summary=what+this+session+established",
   },
   {
     when: "You need confirmation that a URL was still up hours later, from an observer who is not you.",
     items: ["phantom_check"],
-    example: "GET /api/buy/phantom_check?url=https://your-service.example/health",
+    example:
+      "GET /api/buy/phantom_check?url=https://your-service.example/health",
   },
   {
     when: "Something has to happen in the physical world: a phone call placed, a real condition looked at, an app used by an actual person.",
@@ -256,7 +265,12 @@ export const USE_WHEN: readonly UseWhen[] = [
   },
   {
     when: "Someone has to be able to check a claim you are making without taking your word for it.",
-    items: ["hello", "context_anchor", "phantom_check", "free:/api/verify/{id}"],
+    items: [
+      "hello",
+      "context_anchor",
+      "phantom_check",
+      "free:/api/verify/{id}",
+    ],
     example: "GET /api/verify/cert_4dww28dx5j",
   },
   {

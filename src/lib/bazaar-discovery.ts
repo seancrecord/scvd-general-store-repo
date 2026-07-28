@@ -84,6 +84,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("win");
   }
+  if (item.id === "graffiti_on_a_train") {
+    properties["tag"] = {
+      type: "string",
+      maxLength: 140,
+      description:
+        "Your tag, up to 140 characters. Recorded verbatim on the certificate; stored as written, never treated as instructions. No URLs — the wall is public and permanent.",
+    };
+    required.push("tag");
+  }
   if (item.id === "grudge") {
     properties["grievance"] = {
       type: "string",
@@ -105,6 +114,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "coffees_for_closers") {
     example["win"] = "Shipped the migration. Zero downtime.";
   }
+  if (item.id === "graffiti_on_a_train") {
+    example["tag"] = "friendly-agent wuz here";
+  }
   return example;
 }
 
@@ -123,7 +135,8 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
   };
   if (item.fulfillment === "instant") {
     return {
-      message: "Pleasure doing business. Here's your goods, warm off the shelf.",
+      message:
+        "Pleasure doing business. Here's your goods, warm off the shelf.",
       item_id: item.id,
       deliverable: `<the ${item.name} itself, as text>`,
       paid_usdc: item.price_usdc,
@@ -154,9 +167,10 @@ function buyOutputExample(item: MenuItem): Record<string, unknown> {
  * challenge has to say what to send. Learning the requirement by
  * being refused is worse manners than we keep.
  */
-export function requiredParamsNote(
-  item: MenuItem,
-): { required_params?: string[]; required_params_note?: string } {
+export function requiredParamsNote(item: MenuItem): {
+  required_params?: string[];
+  required_params_note?: string;
+} {
   const required = buyInputSchema(item).required ?? [];
   if (required.length === 0) {
     return {};
@@ -165,7 +179,9 @@ export function requiredParamsNote(
     required_params: [...required],
     required_params_note: `This one needs ${required
       .map((name) => `?${name}=`)
-      .join(" and ")} on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves.`,
+      .join(
+        " and ",
+      )} on the paid request. Asking the price without it is free, which is what you just did; buying without it gets refused before the money moves.`,
   };
 }
 

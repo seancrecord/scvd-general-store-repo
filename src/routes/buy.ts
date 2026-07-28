@@ -10,6 +10,7 @@ import {
   stockedShelfCount,
 } from "@/services/fulfillment";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
+import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
@@ -267,6 +268,45 @@ const grievanceCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * A tag needs a tag BEFORE money moves, and it needs to be a tag
+ * rather than a billboard. Both refusals happen unpaid: learning the
+ * rule by being charged for a decline is worse manners than we keep.
+ */
+const tagCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/graffiti_on_a_train" || !isBuying(c)) {
+    return next();
+  }
+  const tag = c.req.query("tag");
+  if (!tag || tag.trim().length === 0) {
+    return c.json(
+      {
+        error:
+          "Nothing to spray. Put your mark in the tag query parameter, up to 140 characters. No tag, no charge.",
+      },
+      400,
+    );
+  }
+  if (tag.length > TAG_CAP) {
+    return c.json(
+      {
+        error: `The side of a train holds ${TAG_CAP} characters. Anything longer is a letter, and the mailbox is free at /api/letter.`,
+      },
+      400,
+    );
+  }
+  if (tagHasUrl(tag)) {
+    return c.json(
+      {
+        error:
+          "No URLs on the train. A tag is a mark, not a billboard — the wall is public and permanent, which is exactly what link spam wants. Say it without the link.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", stockCheck);
@@ -276,6 +316,7 @@ buyRoutes.use("/api/buy/*", phantomCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", grievanceCheck);
+buyRoutes.use("/api/buy/*", tagCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -324,6 +365,12 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (item.id === "grudge") {
     // grievanceCheck validated presence and length before the gate.
     input.grievance = (c.req.query("grievance") ?? "").replace(/\0/g, "");
+  }
+  if (item.id === "graffiti_on_a_train") {
+    // tagCheck validated presence, length and link-spam before the gate.
+    input.tag = (c.req.query("tag") ?? "").replace(/\0/g, "");
+    // The counter shows the keeper the tag alongside the queue.
+    input.detail = input.tag;
   }
   const passId = sanitizeText(c.req.query("pass_id"), 40);
   if (passId) {
