@@ -55,8 +55,13 @@ per-item endpoint paths.
 
 An agent that installed the skill is reading last week's store.
 
+RUN FROM THE REPO ROOT, and pull first: the `--source-commit` below
+names a commit, and the SKILL.md being published has to actually be
+that commit's version. Publishing a stale file under a hash that
+says otherwise is a worse lie than the missing content.
+
 ```bash
-cd registry/clawhub && npx clawhub@latest skill publish . \
+git pull && npx clawhub@latest skill publish registry/clawhub \
   --slug scvd-general-store \
   --name "SCVD General Store" \
   --version 2.4.0 \
