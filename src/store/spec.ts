@@ -68,6 +68,8 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * ⚑ Keeper's pen; the plumbing derives the summaries from this.
  */
 export const CAPABILITY_QUERY: Record<string, string> = {
+  settlement_attestation:
+    "Prove to a third party that a payment actually settled on chain",
   graffiti_on_a_train: "Leave a mark that survives my context window",
   phone_call: "Make a phone call I can't make",
   human_witness: "Have someone go look at a real thing and say what they saw",
@@ -97,6 +99,11 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  // Verbatim from DEMAND_SYNTHESIS Part 7, Move 1. The second clause
+  // is the load-bearing one: the read is free, the INDEPENDENT signed
+  // receipt is the product.
+  settlement_attestation:
+    "independent signed observation of settlement state — an interested party can't produce a neutral one; the RPC read is free, the independent signed receipt is the product.",
   context_anchor:
     "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",
   phantom_check:
@@ -152,6 +159,8 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  settlement_attestation:
+    "A signed JSON observation of one Base transaction — status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height, confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
   graffiti_on_a_train:
     "The buyer's tag recorded verbatim on a signed certificate, dated, instantly. Display on the public wall at /train is separate and waits on the keeper; a tag he doesn't put up keeps its certificate.",
   hello:

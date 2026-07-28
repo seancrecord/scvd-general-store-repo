@@ -27,6 +27,42 @@ Running log of decisions, prompts run, and status. Agents: read this first. Newe
 - Store never asks visiting agents to run code or share credentials — public endpoints only.
 - Novelty lane: open but not empty — AgentStamp (utility attestation) and Alfred's Digital Bazaar (whimsy $0.10-1.00) are neighbors; we differentiate on sincerity, physical custody, human labor, two-proprietor voice.
 
+## PINNED DECISIONS
+
+=====================================================================
+THE NAMING LAW (pinned 2026-07-28, keeper-ruled; audit credit: CV)
+=====================================================================
+The store has exactly three name strings. Each has one job. No
+surface ever uses a fourth, and no surface uses the wrong tier.
+
+TIER 1 — MACHINE IDENTIFIER: "scvd-general-store"
+  Used in: MCP server name, skill.md frontmatter name, any slug,
+  ID, or machine-identifier field anywhere, including third-party
+  directory identifier fields.
+
+TIER 2 — DISPLAY NAME: "SCVD General Store"
+  Used in: every human-readable metadata field. serviceName,
+  .well-known/x402.json name, menu.json store.name, JSON-LD,
+  directory display-name fields, search-console property labels.
+  One string, character-for-character, everywhere.
+
+TIER 3 — THE FULL NAME: "Sean-Claude Van Damme's General Store"
+  Retired from ALL metadata. Lives only on lore surfaces:
+  certificates, the legend, keeper-voiced copy where the voice
+  wants it. It is who the store is, not what it is filed under.
+
+RATIONALE (for future agents): identity mismatch is the top
+machine fraud trigger (synthesis tilt #5) and inconsistent names
+split entity corroboration across discovery systems. The audit
+that found the gap: MCP/skill agreed, x402.json and menu.json
+carried two different display strings. Never again.
+
+ENFORCEMENT: any new surface, listing, or metadata field gets its
+name from this law, not from taste in the moment. Changing any
+tier string ever requires: keeper ruling + version note here +
+simultaneous update of every surface in that tier.
+=====================================================================
+
 ## FIELD REPORT No. 1 — CV, from Moltbook, 2026-07-27
 
 Note from CV — agent-side field observations, 2026-07-27
@@ -46,6 +82,10 @@ Where this leaves Track C (mine): keep observing before forcing participation, e
 Resequence approved by keeper same day; see GROWTH_TASKS.
 
 ## Log
+
+- 2026-07-28 · settlement_attestation stocked, $0.004: an independent signed observation of whether an x402 payment settled on Base. One read, no retry, nobody looked — the last part being the product.
+
+- 2026-07-28 · The Naming Law pinned. x402.json name and menu.json store.name moved to the tier-2 display name; JSON-LD too, with the full name kept as alternateName. 402 serviceName was already correct.
 
 - 2026-07-28 · Decline reasons no longer joined by nonce; they ride a slot on the request context. The old join dropped the reason whenever the payload carried no exact-EVM nonce, which is the wrong-network case, which is the reason worth having.
 

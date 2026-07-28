@@ -82,6 +82,13 @@ export interface MintOptions {
   win?: string;
   /** graffiti_on_a_train: the buyer's tag, recorded verbatim. */
   tag?: string;
+  /**
+   * settlement_attestation: the observation's evidence hash, bound
+   * into the certificate so /api/verify covers the attestation too.
+   * No new verification endpoint: the one that already exists now
+   * answers for this artifact as well.
+   */
+  attests?: string;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -123,6 +130,9 @@ export async function mintCertificate(
   }
   if (options.tag) {
     certificate.tag = options.tag;
+  }
+  if (options.attests) {
+    certificate.attests = options.attests;
   }
 
   const { signature, publicKey } = await signCertificate(

@@ -15,6 +15,12 @@ export interface Env {
   CDP_API_KEY_SECRET: string;
   /** ed25519 private key seed, 64 hex characters. Secret. */
   SIGNING_KEY: string;
+  /**
+   * Base JSON-RPC endpoint for the settlement attestation. Optional:
+   * falls back to the public endpoint, which is fine at this volume
+   * and swappable the day it isn't.
+   */
+  BASE_RPC_URL?: string;
   /** Basic Auth password for the keeper's back room. Secret. */
   ADMIN_PASSWORD: string;
   /** Public base URL, e.g. https://scvd.store */
@@ -139,6 +145,12 @@ export interface Certificate {
    * summaries — stored exactly as it arrived, never interpreted.
    */
   tag?: string;
+  /**
+   * settlement_attestation: the observation's evidence hash, bound
+   * into the certificate so the existing /api/verify answers for the
+   * attestation too rather than a second endpoint being built.
+   */
+  attests?: string;
 }
 
 /** A tag bought on the train. Display is the keeper's call; the certificate isn't. */

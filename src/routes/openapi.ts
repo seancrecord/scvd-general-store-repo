@@ -4,7 +4,12 @@ import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { CAPABILITY_QUERY } from "@/store/spec";
 import { listIssues } from "@/services/gazette";
-import { MENU_ITEMS, STORE_CONTACT_EMAIL, STORE_METADATA } from "@/store";
+import {
+  MENU_ITEMS,
+  STORE_CONTACT_EMAIL,
+  STORE_METADATA,
+  STORE_SERVICE_NAME,
+} from "@/store";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -266,7 +271,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
   const document: OpenApiObject = {
     openapi: "3.1.0",
     info: {
-      title: STORE_METADATA.name,
+      // THE NAMING LAW, tier 2. x402scan reads this document and
+      // verifies origin ownership from it, so the display name here
+      // has to match every other discovery surface exactly.
+      title: STORE_SERVICE_NAME,
       version: "0.3.0",
       description:
         "A human-run general store for autonomous agents. Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453). The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.",

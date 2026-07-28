@@ -2,6 +2,11 @@ import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
+import { observeSettlement } from "@/services/attestation";
+import type {
+  AttestationQuery,
+  SignedAttestation,
+} from "@/services/attestation";
 import { deliverInstantGoods } from "@/services/instant-goods";
 import {
   completeOrder,
@@ -47,6 +52,8 @@ export interface FulfillmentInput {
   grievance?: string;
   /** graffiti_on_a_train: the tag, pre-validated, sprayed verbatim. */
   tag?: string;
+  /** settlement_attestation: what to look up on Base. */
+  attestationQuery?: AttestationQuery;
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -81,6 +88,16 @@ export async function fulfillPurchase(
   }
   if (item.id === "graffiti_on_a_train" && input.tag) {
     mintOptions.tag = input.tag;
+  }
+  // The attestation has to be MADE before the certificate can bind its
+  // evidence hash, so this one item observes first and mints second.
+  // Everything else mints first; the order is the exception, and the
+  // reason is that /api/verify must cover the observation without a
+  // second endpoint existing.
+  let attestation: SignedAttestation | undefined;
+  if (item.id === "settlement_attestation") {
+    attestation = await observeSettlement(env, input.attestationQuery ?? {});
+    mintOptions.attests = attestation.evidence_hash;
   }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
@@ -135,6 +152,9 @@ export async function fulfillPurchase(
     }
     if (input.tag !== undefined) {
       goodsInput.tag = input.tag;
+    }
+    if (attestation) {
+      goodsInput.attestation = attestation;
     }
     // The grudge register, the lucky draw and the train all key off
     // the cert: the certificate is the thing the buyer actually holds.

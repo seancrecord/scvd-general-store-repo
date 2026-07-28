@@ -1,6 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { STORE_METADATA } from "@/store";
+import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -19,7 +19,10 @@ describe("the store describes itself", () => {
     expect(isRecord(body)).toBe(true);
     if (!isRecord(body)) return;
 
-    expect(body.name).toBe(STORE_METADATA.name);
+    // THE NAMING LAW: the discovery document carries the tier-2
+    // display name, not the tier-3 full name. The description is
+    // unchanged — only the name field moved tiers.
+    expect(body.name).toBe(STORE_SERVICE_NAME);
     expect(body.description).toBe(STORE_METADATA.description);
   });
 

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { FAVICON_SVG, faviconIcoBytes } from "@/services/favicon";
-import { STORE_METADATA } from "@/store";
+import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -29,7 +29,9 @@ faviconRoutes.get("/favicon.ico", (c) => {
 faviconRoutes.get("/site.webmanifest", (c) => {
   return c.json(
     {
-      name: STORE_METADATA.name,
+      // THE NAMING LAW, tier 2: the manifest name is what a browser
+      // or installer files us under.
+      name: STORE_SERVICE_NAME,
       short_name: "SCVD",
       icons: [
         { src: "/favicon.svg", sizes: "any", type: "image/svg+xml" },

@@ -22,7 +22,7 @@ import {
   cachedPublicKeyHex,
   verifyCertificateSignature,
 } from "@/lib/signing";
-import { getMenuItem } from "@/store";
+import { getMenuItem, STORE_SERVICE_NAME } from "@/store";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
 import { isRecord, type HonoEnv, type MenuItem } from "@/types";
@@ -375,8 +375,11 @@ async function handleRpc(
         serverInfo: {
           // S2 identity audit: exactly the storefront/Bazaar/skill names,
           // slug and display form both; nothing appended anywhere.
+          // THE NAMING LAW: tier 1 identifier, tier 2 display title.
+          // They sit together on purpose — the identifier is what a
+          // client keys on, the title is what it shows a human.
           name: "scvd-general-store",
-          title: "Sean-Claude Van Damme's General Store",
+          title: STORE_SERVICE_NAME,
           version: "0.4.0",
         },
         instructions:

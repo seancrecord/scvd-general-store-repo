@@ -3,6 +3,7 @@ import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
+import type { SignedAttestation } from "@/services/attestation";
 import { createLucky, drawLuckyParts } from "@/services/luckies";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
@@ -10,6 +11,7 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import {
   anchorNote,
   coffeeNote,
+  attestationNote,
   graffitiNote,
   grudgeNote,
   CONFESSION_ABSOLUTION,
@@ -45,6 +47,8 @@ export interface InstantGoodsInput {
   win?: string;
   /** graffiti_on_a_train only: the tag, pre-validated, sprayed verbatim. */
   tag?: string;
+  /** settlement_attestation only: the observation, already made. */
+  attestation?: SignedAttestation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -150,6 +154,26 @@ export async function deliverInstantGoods(
       return {
         deliverable: coffeeNote(win),
         extras: { win_recorded: win },
+      };
+    }
+    case "settlement_attestation": {
+      // Already observed, upstream, so its evidence hash could be
+      // bound into the certificate. One read, one verdict, one
+      // signature; if the RPC was unreachable we never got here and
+      // nothing was sold.
+      const attestation = input.attestation;
+      if (!attestation) {
+        throw new Error(
+          "settlement_attestation reached goods with no observation",
+        );
+      }
+      return {
+        deliverable: attestationNote(attestation.status),
+        extras: {
+          attestation,
+          verify_note:
+            "Two ways to check this, neither of which requires trusting us. The attestation is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into the certificate for this purchase, so /api/verify/{cert_id} answers for the observation too — the endpoint that already existed, not a new one.",
+        },
       };
     }
     case "graffiti_on_a_train": {

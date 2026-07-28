@@ -58,9 +58,15 @@ An agent that installed the skill is reading last week's store.
     cd registry/clawhub && npx clawhub@latest publish . \\
       --slug scvd-general-store \\
       --name "SCVD General Store" \\
-      --version 2.3.0 \\
-      --changelog "Practice counter; why_use and the situation index; \\
-    per-item endpoints; refund wording corrected to what the code does"
+      --version 2.4.0 \\
+      --changelog "Settlement attestation and graffiti on a train; \\
+    practice counter; why_use and the situation index; per-item \\
+    endpoints; refund wording corrected to what the code does"
+
+SKILL.md was brought current 2026-07-28 with both new items in the
+situation index and their query parameters in the parameter line. The
+2.3.0 publish never went out, so this bump carries everything since
+2.2.0 rather than only the new shelf.
 
 **Before publishing**, reconcile `registry/clawhub/SKILL.md` against
 the live `/skill.md` — the served version is generated and current;
