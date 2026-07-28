@@ -89,9 +89,31 @@ if (!process.env.DRY_RUN && !privateKey) {
     "BUYER_PRIVATE_KEY is required (0x-prefixed). Use the funded burner, never the till.",
   );
 }
-if (!process.env.DRY_RUN && !houseSecret) {
+/**
+ * A listed house wallet is family by its own address, so the secret is
+ * belt-and-braces rather than the only strap. This exists because a
+ * buy that books as ORGANIC would be recorded as the store's first
+ * outside sale, which would be false, and rule 13 does not bend for
+ * convenience.
+ */
+const houseWallets = JSON.parse(
+  readFileSync(new URL("../src/store/house-wallets.json", import.meta.url)),
+).wallets;
+const buyerAddress = privateKey
+  ? privateKeyToAccount(privateKey).address.toLowerCase()
+  : null;
+const listedHouseWallet = houseWallets.find(
+  (entry) => entry.address.toLowerCase() === buyerAddress,
+);
+if (!process.env.DRY_RUN && !houseSecret && !listedHouseWallet) {
   fail(
-    "HOUSE_SECRET is required so the whole run books as house. Family doesn't make the paper.",
+    `This wallet (${buyerAddress}) is not in src/store/house-wallets.json, so the run would book as an ORGANIC sale — the store's first, and false.\n` +
+      "  Fix it either way: add the address to that file and deploy, or pass HOUSE_SECRET=<secret>.",
+  );
+}
+if (listedHouseWallet) {
+  console.log(
+    `\nHouse wallet recognised: ${listedHouseWallet.who} (${listedHouseWallet.address}). This run books as house.`,
   );
 }
 
@@ -176,7 +198,11 @@ if (!process.env.YES) {
 let lastRequestPaid = false;
 const houseFetch = (input, init) => {
   const request = new Request(input, init);
-  request.headers.set("X-House", houseSecret);
+  // Only when we have one: setting it to "undefined" would send a
+  // header that says house and proves nothing.
+  if (houseSecret) {
+    request.headers.set("X-House", houseSecret);
+  }
   lastRequestPaid = request.headers.has("PAYMENT-SIGNATURE");
   return fetch(request);
 };

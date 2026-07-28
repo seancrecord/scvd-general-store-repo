@@ -1,3 +1,4 @@
+import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
 import type { Channel, Env } from "@/types";
 
 /**
@@ -29,16 +30,24 @@ import type { Channel, Env } from "@/types";
  * skill marker is the one designed exception.
  *
  * HOUSE TRAFFIC: an event is house when any of
- *   - the payer wallet is in the exclusion set (founding burner +
- *     comma-separated env.HOUSE_WALLETS),
+ *   - the payer wallet is in the exclusion set (src/store/
+ *     house-wallets.json + comma-separated env.HOUSE_WALLETS),
  *   - the request carried X-House: <HOUSE_SECRET> or ?house=<secret>.
  * House events are stored, counted separately, and excluded from all
  * organic counts. The flag never appears in a public response, and IP
  * is deliberately not a signal.
  */
 
-/** The founding fifty cents came from this burner. On-chain public. */
-const FOUNDING_WALLET = "0x137ae5e3c7ed176744226f67223de50ca3a19e5a";
+/**
+ * The house's own wallets, listed once in src/store/house-wallets.json
+ * so the store and the shopping run cannot disagree about who counts
+ * as family. On-chain public, none of it secret. env.HOUSE_WALLETS
+ * still adds to this at deploy time, for a wallet that arrives faster
+ * than a deploy can.
+ */
+const KNOWN_HOUSE_WALLETS: string[] = HOUSE_WALLET_FILE.wallets.map((entry) =>
+  entry.address.toLowerCase(),
+);
 
 const BAZAAR_REFERRER_HINTS = ["x402scan", "bazaar", "x402-catalog", "x402index"];
 const SKILL_HINTS = ["agentskills", "skills.sh", "skill-runner", "skillrunner", "clawhub"];
@@ -113,7 +122,7 @@ function houseWallets(env: Env): string[] {
     .split(",")
     .map((address) => address.trim().toLowerCase())
     .filter((address) => address.length > 0);
-  return [FOUNDING_WALLET, ...extra];
+  return [...KNOWN_HOUSE_WALLETS, ...extra];
 }
 
 export interface HouseSignals {

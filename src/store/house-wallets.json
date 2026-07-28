@@ -1,0 +1,17 @@
+{
+  "note": "Wallets that belong to the house. A settlement from any of these is family and never counts as an organic sale (rule 13). Addresses are public on chain; nothing here is a secret. Single source of truth: src/lib/channel.ts reads it at runtime, scripts/shopping-run.mjs reads it before spending, and a test walks it.",
+  "wallets": [
+    {
+      "address": "0x137ae5e3c7ed176744226f67223de50ca3a19e5a",
+      "who": "the founding burner",
+      "since": "2026-07-22",
+      "why": "the founding fifty cents came from here"
+    },
+    {
+      "address": "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7",
+      "who": "CV",
+      "since": "2026-07-28",
+      "why": "runs the store's live buy tests; his settles are house tests, not first sales"
+    }
+  ]
+}
