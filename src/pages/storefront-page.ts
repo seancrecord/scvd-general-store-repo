@@ -4,7 +4,12 @@ import { escapeHtml } from "@/lib/sanitize";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
 import { catIsOut } from "@/services/porch";
 import type { FirstDollar } from "@/lib/metrics";
-import { bellLine, MENU_ITEMS, STORE_METADATA } from "@/store";
+import {
+  bellLine,
+  MENU_ITEMS,
+  STORE_METADATA,
+  STORE_SERVICE_NAME,
+} from "@/store";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import {
   FEATURED_SHELVES,
@@ -119,8 +124,11 @@ function organizationJsonLd(base: string): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: STORE_METADATA.name,
-    alternateName: ["scvd.store", "SCVD"],
+    // THE NAMING LAW, tier 2: JSON-LD is named in the tier-2 list.
+    // The full name moves to alternateName, where it stays discoverable
+    // as lore without being the string entity resolvers file us under.
+    name: STORE_SERVICE_NAME,
+    alternateName: [STORE_METADATA.name, "scvd.store", "SCVD"],
     url: "https://scvd.store",
     description: COPY.organizationDescription,
     foundingDate: "2026-07-21",

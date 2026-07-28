@@ -1,0 +1,78 @@
+import { SELF } from "cloudflare:test";
+import { describe, expect, it } from "vitest";
+import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
+import { isRecord } from "@/types";
+
+const BASE = "https://scvd.store";
+
+/** The three strings, and nothing else, ever. */
+const TIER_1_MACHINE_ID = "scvd-general-store";
+const TIER_2_DISPLAY = "SCVD General Store";
+const TIER_3_FULL = "Sean-Claude Van Damme's General Store";
+
+/**
+ * THE NAMING LAW, pinned 2026-07-28. Audit credit: CV.
+ *
+ * Identity mismatch is a top machine-fraud trigger, and inconsistent
+ * names split entity corroboration across discovery systems. The audit
+ * that found the gap: MCP and skill.md agreed on the machine
+ * identifier, while x402.json and menu.json carried two different
+ * display strings.
+ *
+ * These tests are the enforcement. A future surface that reaches for
+ * a name by taste in the moment fails here rather than shipping.
+ */
+describe("the naming law", () => {
+  it("keeps the three strings exactly as pinned", () => {
+    expect(STORE_SERVICE_NAME).toBe(TIER_2_DISPLAY);
+    expect(STORE_METADATA.name).toBe(TIER_3_FULL);
+    // Changing a tier string requires a keeper ruling, a version note
+    // in PROJECT_LOG, and every surface in that tier moving together.
+    // This assertion is the tripwire on that promise.
+  });
+
+  it("puts the display name on every discovery document, identically", async () => {
+    const wellKnown: unknown = await (
+      await SELF.fetch(`${BASE}/.well-known/x402.json`)
+    ).json();
+    if (!isRecord(wellKnown)) throw new Error("no x402.json");
+    expect(wellKnown.name).toBe(TIER_2_DISPLAY);
+    expect(wellKnown.serviceName).toBe(TIER_2_DISPLAY);
+
+    const menu: unknown = await (await SELF.fetch(`${BASE}/menu.json`)).json();
+    if (!isRecord(menu) || !isRecord(menu.store)) throw new Error("no menu");
+    expect(menu.store.name).toBe(TIER_2_DISPLAY);
+
+    // Character for character, across surfaces. That is the whole law.
+    expect(wellKnown.name).toBe(menu.store.name);
+  });
+
+  it("keeps the full name out of the discovery documents entirely", async () => {
+    for (const path of ["/.well-known/x402.json", "/menu.json"]) {
+      const body: unknown = await (await SELF.fetch(`${BASE}${path}`)).json();
+      if (!isRecord(body)) throw new Error(`no body for ${path}`);
+      const name = isRecord(body.store) ? body.store.name : body.name;
+      expect(name, `${path} still files us under the full name`).not.toBe(
+        TIER_3_FULL,
+      );
+    }
+  });
+
+  it("uses the machine identifier where a machine identifier belongs", async () => {
+    const skill = await (await SELF.fetch(`${BASE}/skill.md`)).text();
+    expect(skill).toContain(`name: ${TIER_1_MACHINE_ID}`);
+    // And never the display or full name in that slot.
+    expect(skill).not.toContain(`name: ${TIER_2_DISPLAY}`);
+  });
+
+  it("files the JSON-LD entity under the display name, full name as an alias", async () => {
+    const html = await (
+      await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(html).toContain(`"name":"${TIER_2_DISPLAY}"`);
+    // The full name survives as lore where an entity resolver can still
+    // corroborate it — it just stops being the string we are filed under.
+    expect(html).toContain("alternateName");
+    expect(html).toContain(`"alternateName":["${TIER_3_FULL}"`);
+  });
+});

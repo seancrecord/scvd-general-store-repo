@@ -92,7 +92,9 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
   }));
   return c.json({
     x402Version: 2,
-    name: STORE_METADATA.name,
+    // THE NAMING LAW, tier 2: display name, one string everywhere.
+    // The full name is tier 3 and retired from all metadata.
+    name: STORE_SERVICE_NAME,
     // Without this, an importer wanting a description falls through to
     // whichever resource it reached first and calls that the store.
     description: STORE_METADATA.description,

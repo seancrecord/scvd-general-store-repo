@@ -12,7 +12,12 @@ import { USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
 import type { ShutterState } from "@/services/shutter";
 import { computeStats, trackRecordLine } from "@/services/stats";
-import { getMenuItem, MENU_ITEMS, STORE_METADATA } from "@/store";
+import {
+  getMenuItem,
+  MENU_ITEMS,
+  STORE_METADATA,
+  STORE_SERVICE_NAME,
+} from "@/store";
 import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -97,6 +102,10 @@ catalogRoutes.get("/menu.json", async (c) => {
     ...freshness(),
     store: {
       ...STORE_METADATA,
+      // THE NAMING LAW, tier 2: the spread carries the tier-3 full
+      // name, which is retired from metadata. Overridden here so this
+      // field matches serviceName and x402.json character for character.
+      name: STORE_SERVICE_NAME,
       network: BASE_NETWORK,
       x402_version: 2,
       url: base,
