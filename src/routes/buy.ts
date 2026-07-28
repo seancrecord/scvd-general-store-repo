@@ -11,6 +11,7 @@ import {
 } from "@/services/fulfillment";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
+import { nonceFromPaymentPayload } from "@/services/attestation";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
@@ -411,6 +412,14 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     if (recipient) query.recipient = recipient;
     const nonce = sanitizeText(c.req.query("nonce"), 80);
     if (nonce) query.nonce = nonce;
+    // A caller checking their own payment already holds the payload
+    // they sent. Read it with the same extractPaymentNonce the replay
+    // guard uses, rather than making them reimplement it.
+    const payload = c.req.query("payment_payload");
+    if (!query.nonce && payload) {
+      const fromPayload = nonceFromPaymentPayload(payload);
+      if (fromPayload) query.nonce = fromPayload;
+    }
     const amount = Number.parseFloat(c.req.query("amount_usdc") ?? "");
     if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
     input.attestationQuery = query;

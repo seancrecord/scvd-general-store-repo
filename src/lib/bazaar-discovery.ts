@@ -109,6 +109,11 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       description:
         "Optional. Require a transfer of exactly this many USDC. Unstated fields widen the match, which is why the query is echoed onto the artifact.",
     };
+    properties["payment_payload"] = {
+      type: "string",
+      description:
+        "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself.",
+    };
     required.push("tx_hash");
   }
   if (item.id === "graffiti_on_a_train") {

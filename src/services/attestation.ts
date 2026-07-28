@@ -8,11 +8,25 @@ import {
   usdcTransfers,
 } from "@/lib/base-rpc";
 import type { RpcReceipt } from "@/lib/base-rpc";
+import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
 
 /**
  * SETTLEMENT ATTESTATION (DEMAND_SYNTHESIS Part 7, Move 1).
+ *
+ * THE NORTH STAR, quoted rather than paraphrased because an outside
+ * security paper specified this product back at us:
+ *
+ *   "Hardening x402 against those adversaries would likely require
+ *   client-visible settlement receipts or independent on-chain
+ *   verification, rather than facilitator trust alone."
+ *   — arXiv:2605.11781, "Five Attacks on x402 Agentic Payment Protocol"
+ *
+ * That citation lives HERE and never on the storefront. Register
+ * separation: the registrar's voice cites a paper, the keeper's voice
+ * writes the customer-facing line, and neither borrows the other's
+ * authority.
  *
  * An independent, stateless, SIGNED OBSERVATION of whether an x402
  * payment settled on Base. A snapshot of public chain state at a
@@ -37,6 +51,20 @@ import type { Env } from "@/types";
  * no retry, no custody, no contract. Retrying until the answer
  * improves would turn an observation into a poll, and a poll into an
  * implied promise that we waited for the right answer.
+ *
+ * KILL CRITERIA, written before shipping rather than after, so the
+ * decision to stop is already made and does not have to be argued for
+ * by whoever is holding the sunk cost:
+ *
+ *   - NEAR-ZERO CALLS IN 30 DAYS (by ~2026-08-27) — demand unproven.
+ *     Park it. Do not reprice, do not re-market, do not "give it more
+ *     time." The census and the decline desk are where calls show.
+ *   - A CLONE APPEARS AT <= $0.002 — the thin moat is realized.
+ *     Stop investing further; the RPC read was never the moat, and a
+ *     price war over it is a war over nothing.
+ *   - DOUBLE DOWN ONLY IF agents call it INSIDE RETRY OR
+ *     RECONCILIATION LOOPS. One-off curiosity buys are not the signal
+ *     and must not be read as one.
  */
 
 export type SettlementStatus =
@@ -60,6 +88,25 @@ export interface AttestationQuery {
   nonce?: string;
   /** Expected amount in whole USDC. */
   amountUsdc?: number;
+}
+
+/**
+ * A caller checking their own payment already holds the payload they
+ * sent — making them dig the nonce out of it by hand would be asking
+ * them to reimplement what the store's replay guard already does.
+ * So take the base64 PAYMENT-SIGNATURE verbatim and read it with the
+ * SAME extractPaymentNonce the gate uses to refuse double-spends.
+ *
+ * Returns null rather than throwing: a payload we cannot read is a
+ * narrower question, not a failed one, and the observation still
+ * stands on whatever else was given.
+ */
+export function nonceFromPaymentPayload(encoded: string): string | null {
+  try {
+    return extractPaymentNonce(JSON.parse(atob(encoded)));
+  } catch {
+    return null;
+  }
 }
 
 export interface SettlementObservation {

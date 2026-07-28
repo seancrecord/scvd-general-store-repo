@@ -145,6 +145,12 @@ export interface Certificate {
    * summaries — stored exactly as it arrived, never interpreted.
    */
   tag?: string;
+  /**
+   * settlement_attestation: the observation's evidence hash, bound
+   * into the certificate so the existing /api/verify answers for the
+   * attestation too rather than a second endpoint being built.
+   */
+  attests?: string;
 }
 
 /** A tag bought on the train. Display is the keeper's call; the certificate isn't. */

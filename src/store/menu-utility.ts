@@ -64,7 +64,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "Four tenths of a cent, friend. The chain read is free; the signed, disinterested receipt is what you are buying.",
     constraints: [
       "Give the transaction hash in the tx_hash query parameter",
-      "Optional narrowing: payer, recipient, nonce, amount_usdc",
+      "Optional narrowing: payer, recipient, nonce, amount_usdc, or payment_payload (the base64 PAYMENT-SIGNATURE you sent, read with the store's own replay-guard code)",
       "Observes settlement only, never delivery",
       "One read at one moment; no polling, no retry, no second look",
     ],

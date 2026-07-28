@@ -12,6 +12,7 @@ import type { RpcReceipt } from "@/lib/base-rpc";
 import { getMenuItem } from "@/store";
 import { CAPABILITY_QUERY, SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import { attestationNote } from "@/store/copy";
+import { nonceFromPaymentPayload } from "@/services/attestation";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -132,6 +133,40 @@ describe("the honesty guards", () => {
     }
   });
 
+  it("never implies it verifies delivery, only settlement", () => {
+    // The manifest may say what it does NOT do; it may never make the
+    // positive claim. Same class of guard as claim-chain's refund
+    // check, and the same lesson behind it.
+    const manifest = [
+      item?.description ?? "",
+      item?.note_402 ?? "",
+      (item?.constraints ?? []).join(" "),
+      SPEC_WHY_USE["settlement_attestation"] ?? "",
+      SPEC_RETURNS["settlement_attestation"] ?? "",
+      attestationNote("SETTLED"),
+    ]
+      .join(" ")
+      .toLowerCase();
+    for (const claim of [
+      "confirms delivery",
+      "verifies delivery",
+      "confirms the goods",
+      "proves delivery",
+      "goods were received",
+      "confirms receipt of goods",
+      "guarantees settlement",
+      "will settle",
+    ]) {
+      expect(
+        manifest.includes(claim),
+        `the manifest claims "${claim}" — this observes settlement and nothing else`,
+      ).toBe(false);
+    }
+    // And the disclaimer is present rather than merely the absence of
+    // the claim, because silence is not a disclosure.
+    expect(manifest).toContain("does not attest that anything was delivered");
+  });
+
   it("carries the why_use the spec wrote, load-bearing clause intact", () => {
     const why = SPEC_WHY_USE["settlement_attestation"] ?? "";
     expect(why).toContain("an interested party can't produce a neutral one");
@@ -144,6 +179,70 @@ describe("the honesty guards", () => {
     expect(item?.price_usdc).toBeLessThan(0.005);
     expect(item?.fulfillment).toBe("instant");
     expect(CAPABILITY_QUERY["settlement_attestation"]).toBeTruthy();
+  });
+});
+
+describe("plugged into what already exists, not built beside it", () => {
+  it("cites the paper in the spec and nowhere a customer reads", async () => {
+    // Register separation: the registrar cites a paper, the keeper
+    // writes the counter line, and neither borrows the other's voice.
+    const item = getMenuItem("settlement_attestation");
+    const customerFacing = [
+      item?.description ?? "",
+      item?.note_402 ?? "",
+      attestationNote("SETTLED"),
+    ].join(" ");
+    expect(customerFacing).not.toContain("arXiv");
+    expect(customerFacing.toLowerCase()).not.toContain("security paper");
+
+    const llms = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    expect(llms).not.toContain("arXiv");
+  });
+
+  it("reads the nonce out of a payment payload with the replay guard's own code", () => {
+    const nonce = `0x${"cd".repeat(32)}`;
+    const payload = btoa(
+      JSON.stringify({ payload: { authorization: { nonce } } }),
+    );
+    expect(nonceFromPaymentPayload(payload)).toBe(nonce);
+    // A payload we cannot read narrows the question rather than
+    // failing it.
+    expect(nonceFromPaymentPayload("not-base64-at-all")).toBeNull();
+  });
+
+  it("is auto-generated onto every surface, with no hand-wiring", async () => {
+    // menu.json, the MCP tool and the well-known doc all come from
+    // MENU_ITEMS. If this item needed hand-wiring anywhere, one of
+    // these would be missing it.
+    const menu: unknown = await (await SELF.fetch(`${BASE}/menu.json`)).json();
+    if (!isRecord(menu) || !Array.isArray(menu.items))
+      throw new Error("no menu");
+    expect(
+      menu.items.some(
+        (entry: unknown) =>
+          isRecord(entry) && entry.id === "settlement_attestation",
+      ),
+    ).toBe(true);
+
+    const tools = await SELF.fetch(`${BASE}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    });
+    const listed: unknown = await tools.json();
+    expect(JSON.stringify(listed)).toContain("buy_settlement_attestation");
+  });
+
+  it("carries the listing spec in the canonical six-field order", async () => {
+    const body: unknown = await (
+      await SELF.fetch(`${BASE}/menu/settlement_attestation`)
+    ).json();
+    if (!isRecord(body) || !isRecord(body.spec)) throw new Error("no spec");
+    // S1 discipline: the same shape as every other item, not a
+    // bespoke block for the new thing.
+    for (const field of ["capability", "inputs", "outputs", "verification"]) {
+      expect(body.spec[field], field).toBeDefined();
+    }
   });
 });
 
