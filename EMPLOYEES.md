@@ -66,7 +66,7 @@ staffed, it is just a side effect.
 Each of these is already queued work somewhere else, wearing a
 different hat.
 
-### 1. The registrar's round ⚑ recommended first
+### 1. The registrar's round — ON SHIFT since 2026-07-28
 
 - **Role.** Confirm, on every tick, that the store's own claims still
   verify.
@@ -79,10 +79,24 @@ different hat.
   stops resolving or the advertised key stops matching.
 - **Why first.** READINESS names signature tenure as the one asset
   that cannot be bought back, and the operational rule as "never take
-  a verify URL down, for any reason." Right now nothing enforces
-  that. A deploy could break verification and we would learn it from
-  a stranger, or never. This is the cheapest possible insurance on
-  the most valuable thing in the building.
+  a verify URL down, for any reason." Nothing enforced that. A deploy
+  could break verification and we would learn it from a stranger, or
+  never — and never is the likely one, because the people who check
+  our signatures are exactly the people who do not write to us. This
+  is the cheapest possible insurance on the most valuable thing in
+  the building.
+- **What it checks, in the order a failure would hurt.** (1) The
+  published sample artifact still resolves — that id is printed in
+  llms.txt, the skill and every listing spec, so it is the one a
+  stranger tries first. (2) Its signature still verifies against the
+  key we hold now. (3) The advertised public key is still the one we
+  would sign with, because a drift there means strangers fail while
+  we pass, which is the one split that looks like fraud from outside.
+- **It never repairs anything.** A store that silently re-issues an
+  artifact to make a check pass has destroyed the only thing the
+  check was protecting. The broken-signature alarm says "do not
+  re-issue anything" in its own text, because that is the instinct it
+  has to talk somebody out of at three in the morning.
 
 ### 2. The night watch
 

@@ -130,9 +130,10 @@ claim still gated.
    402 went from three KV writes to one. Cloudflare is on Workers
    Paid, so this was headroom rather than a rescue.
 2. **Seven items are invisible** on the only surface sending traffic.
-3. **The registrar's round** — confirm on every tick that our own
-   published artifacts still verify. Signature tenure is the one asset
-   that cannot be bought back.
+3. ~~The registrar's round~~ — **ON SHIFT 2026-07-28.** Confirms on
+   every tick that our own published artifacts still resolve and
+   verify, and that the advertised key has not drifted. Read-only: it
+   reports and never repairs.
 4. **MCP tools as Bazaar MCP resources** — the only path that flips a
    catalog's "input schema" column for us.
 
