@@ -131,12 +131,44 @@ export async function recordChallengeIssued(
   const event = buildEvent(env, "challenge", itemKeyFromPath(path), signals);
   const suffix = bucketSuffix(event, true);
   await bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item));
-  // Who's window-shopping, by channel, the diagnosis column for
-  // "challenges without settles: shoppers or scanners?"
-  await bump(
-    env,
-    KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel),
-  );
+
+  // THE INFRASTRUCTURE DIET, 2026-07-28. A crawler 402 used to cost
+  // three KV writes; it now costs one. At the observed volume (one day
+  // alone put ~1,000 organic 402s through, and the noise floor is
+  // several times that) the store was running at or past the free
+  // tier's 1,000-writes-a-day ceiling, where writes fail SILENTLY and
+  // the day's tail vanishes with no error on any page. Books that go
+  // short without saying so are the failure this store exists not to
+  // have.
+  //
+  // The two writes dropped for infrastructure carry nothing the
+  // remaining one doesn't:
+  //
+  //   src402i:<channel> — the channel is definitionally
+  //     "infrastructure" for every one of these rows, so the key was a
+  //     single counter incremented on every crawler hit. Maximum
+  //     contention, zero information: it only ever equalled the sum of
+  //     402i.
+  //   the evt: row — the raw rows exist so the ORGANIC column can be
+  //     re-read with a better crawler table later. A row already
+  //     classified as machinery at write time has nothing to
+  //     reclassify INTO. The rows that matter to the recount and the
+  //     walk detector are the ones labelled organic, and every one of
+  //     those is still written.
+  //
+  // What this costs, stated rather than hidden: /admin/census's
+  // "walkers" list loses admitted crawlers. Its "undeclared walkers"
+  // list — the only one that asks for work — is untouched, because
+  // those rows are organic-labelled by definition.
+  const isNoiseFloor = suffix === "i";
+  if (!isNoiseFloor) {
+    // Who's window-shopping, by channel, the diagnosis column for
+    // "challenges without settles: shoppers or scanners?"
+    await bump(
+      env,
+      KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel),
+    );
+  }
   if (suffix === "") {
     // Organic day counter for the trend table.
     await bump(env, KV_KEYS.metric(metricsMonth(), "d402", dayKey()));
@@ -148,7 +180,9 @@ export async function recordChallengeIssued(
       KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
     );
   }
-  await writeEvent(env, event);
+  if (!isNoiseFloor) {
+    await writeEvent(env, event);
+  }
 }
 
 /**
@@ -232,7 +266,13 @@ export async function recordPorchVisit(
       KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
     );
   }
-  await writeEvent(env, event);
+  // Same diet as the challenge path: a crawler reading the porch is
+  // the noise floor, and the aggregate counter above already says how
+  // much of it there was. The bell ledger and the porch surface tables
+  // read organic rows, which are all still written.
+  if (suffix !== "i") {
+    await writeEvent(env, event);
+  }
 }
 
 /** Somebody re-checked one of our signatures. Re-verification is demand. */

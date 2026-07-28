@@ -115,6 +115,12 @@ export function renderCensusPage(data: CensusPageData): string {
     inside ${Math.round(CENSUS_WALK_RULE.window_ms / 1000)} seconds</strong> was
     walking the catalog, not shopping it. Nobody deciding whether to spend half a
     cent reads eight price tags in a minute.</p>
+    <p><small><strong>Since 2026-07-28 this list no longer sees admitted crawlers.</strong>
+    A client the table already calls machinery writes a counter but not a row, to keep
+    the store under a KV write ceiling where writes fail silently. The list below —
+    walkers still counted as organic — is untouched, because those rows are
+    organic-labelled by definition, and it is the only one of the two that asks for
+    work.</small></p>
     ${clientTable(c.walkers, data.catalog_size, "Nothing walked the catalog in this window.")}
   </section>
 
