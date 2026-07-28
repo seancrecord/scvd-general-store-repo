@@ -307,6 +307,39 @@ const tagCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * A settlement attestation needs something to look up, and the hash
+ * has to be a hash. Both refusals land before the payment gate: an
+ * observation we cannot make is not a thing to sell.
+ */
+const TX_HASH = /^0x[0-9a-fA-F]{64}$/;
+
+const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/settlement_attestation" || !isBuying(c)) {
+    return next();
+  }
+  const txHash = c.req.query("tx_hash");
+  if (!txHash) {
+    return c.json(
+      {
+        error:
+          "Nothing to look up. Give a tx_hash query parameter — a Base transaction hash — and we will read the chain once and sign what is there. No hash, no charge.",
+      },
+      400,
+    );
+  }
+  if (!TX_HASH.test(txHash)) {
+    return c.json(
+      {
+        error:
+          "That is not a transaction hash. Base wants 0x followed by 64 hex characters. Nothing charged; send the real one.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", stockCheck);
@@ -317,6 +350,7 @@ buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", grievanceCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
+buyRoutes.use("/api/buy/*", attestationCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -365,6 +399,21 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (item.id === "grudge") {
     // grievanceCheck validated presence and length before the gate.
     input.grievance = (c.req.query("grievance") ?? "").replace(/\0/g, "");
+  }
+  if (item.id === "settlement_attestation") {
+    // attestationCheck validated the hash shape before the gate.
+    const query: Parameters<typeof fulfillPurchase>[3]["attestationQuery"] = {
+      txHash: c.req.query("tx_hash") ?? "",
+    };
+    const payer = sanitizeText(c.req.query("payer"), 60);
+    if (payer) query.payer = payer;
+    const recipient = sanitizeText(c.req.query("recipient"), 60);
+    if (recipient) query.recipient = recipient;
+    const nonce = sanitizeText(c.req.query("nonce"), 80);
+    if (nonce) query.nonce = nonce;
+    const amount = Number.parseFloat(c.req.query("amount_usdc") ?? "");
+    if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
+    input.attestationQuery = query;
   }
   if (item.id === "graffiti_on_a_train") {
     // tagCheck validated presence, length and link-spam before the gate.

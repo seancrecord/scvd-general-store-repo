@@ -27,7 +27,11 @@
     { "binding": "PATRONS", "id": "b3b7dc0f951f4b4a9995afe7dc35e015" }
   ],
   "vars": {
-    "STORE_BASE_URL": "https://scvd.store"
+    "STORE_BASE_URL": "https://scvd.store",
+    // Settlement attestation reads Base once per purchase. The public
+    // endpoint is fine at this volume; swap it the day it isn't. Not a
+    // secret — it is a public RPC URL, and the store reads only.
+    "BASE_RPC_URL": "https://mainnet.base.org"
   }
   // Secrets (never in this file — set via `wrangler secret put <NAME>`):
   //   PAY_TO_ADDRESS      Base wallet that receives USDC

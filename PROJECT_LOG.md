@@ -83,6 +83,8 @@ Resequence approved by keeper same day; see GROWTH_TASKS.
 
 ## Log
 
+- 2026-07-28 · settlement_attestation stocked, $0.004: an independent signed observation of whether an x402 payment settled on Base. One read, no retry, nobody looked — the last part being the product.
+
 - 2026-07-28 · The Naming Law pinned. x402.json name and menu.json store.name moved to the tier-2 display name; JSON-LD too, with the full name kept as alternateName. 402 serviceName was already correct.
 
 - 2026-07-28 · Decline reasons no longer joined by nonce; they ride a slot on the request context. The old join dropped the reason whenever the payload carried no exact-EVM nonce, which is the wrong-network case, which is the reason worth having.

@@ -71,6 +71,7 @@ describe("the storefront", () => {
       "context_anchor",
       "human_witness",
       "recurring_patronage",
+      "settlement_attestation",
       "phantom_check",
       "quick_judgment",
       "certificate_of_patronage",

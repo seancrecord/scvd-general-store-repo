@@ -84,6 +84,33 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("win");
   }
+  if (item.id === "settlement_attestation") {
+    properties["tx_hash"] = {
+      type: "string",
+      pattern: "^0x[0-9a-fA-F]{64}$",
+      description:
+        "The Base transaction hash to observe. Read once, at one moment; never polled.",
+    };
+    properties["payer"] = {
+      type: "string",
+      description: "Optional. Narrow the match to transfers from this address.",
+    };
+    properties["recipient"] = {
+      type: "string",
+      description: "Optional. Narrow the match to transfers to this address.",
+    };
+    properties["nonce"] = {
+      type: "string",
+      description:
+        "Optional. Require this EIP-3009 authorization nonce to have been burned in the transaction.",
+    };
+    properties["amount_usdc"] = {
+      type: "number",
+      description:
+        "Optional. Require a transfer of exactly this many USDC. Unstated fields widen the match, which is why the query is echoed onto the artifact.",
+    };
+    required.push("tx_hash");
+  }
   if (item.id === "graffiti_on_a_train") {
     properties["tag"] = {
       type: "string",
@@ -116,6 +143,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "graffiti_on_a_train") {
     example["tag"] = "friendly-agent wuz here";
+  }
+  if (item.id === "settlement_attestation") {
+    example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
   }
   return example;
 }

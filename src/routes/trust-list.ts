@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { signMessage } from "@/lib/signing";
-import { STORE_METADATA } from "@/store";
+import { STORE_SERVICE_NAME } from "@/store";
 import {
   TRUST_LIST_ATTESTS,
   TRUST_LIST_ENTRIES,
@@ -33,7 +33,12 @@ trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
   // and key ride outside it, because a signature cannot cover itself.
   const body = {
     version: TRUST_LIST_VERSION,
-    issuer: STORE_METADATA.name,
+    // THE NAMING LAW, tier 2, keeper-ruled 2026-07-28. This field is
+    // INSIDE the signed payload, so the string change moves what the
+    // signature covers — harmless because the list is signed at serve
+    // time and never cached, but worth knowing: a copy saved before
+    // today verifies against its own body, not this one.
+    issuer: STORE_SERVICE_NAME,
     issuer_origin: base,
     issued_at: new Date().toISOString(),
     attests: TRUST_LIST_ATTESTS,

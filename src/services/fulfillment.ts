@@ -2,6 +2,7 @@ import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
+import type { AttestationQuery } from "@/services/attestation";
 import { deliverInstantGoods } from "@/services/instant-goods";
 import {
   completeOrder,
@@ -47,6 +48,8 @@ export interface FulfillmentInput {
   grievance?: string;
   /** graffiti_on_a_train: the tag, pre-validated, sprayed verbatim. */
   tag?: string;
+  /** settlement_attestation: what to look up on Base. */
+  attestationQuery?: AttestationQuery;
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -135,6 +138,9 @@ export async function fulfillPurchase(
     }
     if (input.tag !== undefined) {
       goodsInput.tag = input.tag;
+    }
+    if (input.attestationQuery !== undefined) {
+      goodsInput.attestationQuery = input.attestationQuery;
     }
     // The grudge register, the lucky draw and the train all key off
     // the cert: the certificate is the thing the buyer actually holds.

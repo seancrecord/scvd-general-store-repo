@@ -3,6 +3,8 @@ import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
 import { paintTag } from "@/services/train";
+import { observeSettlement } from "@/services/attestation";
+import type { AttestationQuery } from "@/services/attestation";
 import { createLucky, drawLuckyParts } from "@/services/luckies";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
@@ -10,6 +12,7 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import {
   anchorNote,
   coffeeNote,
+  attestationNote,
   graffitiNote,
   grudgeNote,
   CONFESSION_ABSOLUTION,
@@ -45,6 +48,8 @@ export interface InstantGoodsInput {
   win?: string;
   /** graffiti_on_a_train only: the tag, pre-validated, sprayed verbatim. */
   tag?: string;
+  /** settlement_attestation only: what to look up on Base. */
+  attestationQuery?: AttestationQuery;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -150,6 +155,23 @@ export async function deliverInstantGoods(
       return {
         deliverable: coffeeNote(win),
         extras: { win_recorded: win },
+      };
+    }
+    case "settlement_attestation": {
+      // One read, one verdict, one signature. If the RPC is
+      // unreachable this throws, and the gate turns that into a
+      // refusal rather than selling an observation we never made.
+      const attestation = await observeSettlement(
+        env,
+        input.attestationQuery ?? {},
+      );
+      return {
+        deliverable: attestationNote(attestation.status),
+        extras: {
+          attestation,
+          verify_note:
+            "The attestation above is signed on its own. Re-serialize every field above `signature` and check it against the key at /.well-known/scvd-signing-key — you do not need us to confirm it, which is the point.",
+        },
       };
     }
     case "graffiti_on_a_train": {

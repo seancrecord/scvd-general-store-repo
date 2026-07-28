@@ -15,6 +15,12 @@ export interface Env {
   CDP_API_KEY_SECRET: string;
   /** ed25519 private key seed, 64 hex characters. Secret. */
   SIGNING_KEY: string;
+  /**
+   * Base JSON-RPC endpoint for the settlement attestation. Optional:
+   * falls back to the public endpoint, which is fine at this volume
+   * and swappable the day it isn't.
+   */
+  BASE_RPC_URL?: string;
   /** Basic Auth password for the keeper's back room. Secret. */
   ADMIN_PASSWORD: string;
   /** Public base URL, e.g. https://scvd.store */

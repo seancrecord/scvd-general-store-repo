@@ -3,6 +3,7 @@ export {
   dibsNote,
   anchorNote,
   bestowedNameNote,
+  attestationNote,
   coffeeNote,
   graffitiNote,
   drawerNote,

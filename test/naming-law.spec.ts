@@ -58,6 +58,54 @@ describe("the naming law", () => {
     }
   });
 
+  it("files us under the display name on every metadata surface a discovery system reads", async () => {
+    // The four the first pass flagged rather than fixed. Keeper ruling
+    // 2026-07-28: all tier 2, because every one is a human-readable
+    // metadata field somebody else's index will read.
+    const openapi: unknown = await (
+      await SELF.fetch(`${BASE}/openapi.json`)
+    ).json();
+    if (!isRecord(openapi) || !isRecord(openapi.info)) {
+      throw new Error("no openapi info");
+    }
+    expect(openapi.info.title).toBe(TIER_2_DISPLAY);
+
+    const manifest: unknown = await (
+      await SELF.fetch(`${BASE}/site.webmanifest`)
+    ).json();
+    if (!isRecord(manifest)) throw new Error("no manifest");
+    expect(manifest.name).toBe(TIER_2_DISPLAY);
+
+    // Inside the signed payload, which is why it was flagged before it
+    // was changed. Signed at serve time, so the signature still covers
+    // what is served.
+    const trustList: unknown = await (
+      await SELF.fetch(`${BASE}/trust-list.json`)
+    ).json();
+    if (!isRecord(trustList)) throw new Error("no trust list");
+    expect(trustList.issuer).toBe(TIER_2_DISPLAY);
+  });
+
+  it("keeps the tier-1 identifier and tier-2 title side by side on MCP", async () => {
+    const response = await SELF.fetch(`${BASE}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: { protocolVersion: "2025-06-18", capabilities: {} },
+      }),
+    });
+    const body: unknown = await response.json();
+    if (!isRecord(body) || !isRecord(body.result)) throw new Error("no result");
+    const info = body.result.serverInfo;
+    if (!isRecord(info)) throw new Error("no serverInfo");
+    // The identifier a client keys on, and the name it shows a human.
+    expect(info.name).toBe(TIER_1_MACHINE_ID);
+    expect(info.title).toBe(TIER_2_DISPLAY);
+  });
+
   it("uses the machine identifier where a machine identifier belongs", async () => {
     const skill = await (await SELF.fetch(`${BASE}/skill.md`)).text();
     expect(skill).toContain(`name: ${TIER_1_MACHINE_ID}`);

@@ -2,6 +2,16 @@
 
 Anti-shuffle file. When you ship something, move it to DONE with a date. Never delete ideas — ICEBOX with a reason.
 
+## MOVE 1 — SETTLEMENT ATTESTATION, SHIPPED 2026-07-28
+
+- [x] BUILT to the DEMAND_SYNTHESIS Part 7 spec. `settlement_attestation`, $0.004 fixed (sub-approval-threshold as specified), instant, utility shelf. Give it `tx_hash` and optionally `payer` / `recipient` / `nonce` / `amount_usdc`; it reads Base ONCE and signs what it found: SETTLED / NOT_FOUND / PENDING_FINALITY / INSUFFICIENT_MATCH / REVERTED
+- [x] STATELESS BY CONSTRUCTION, which is the product's shape and not an implementation shortcut: one RPC read, no DB, no poll, NO RETRY, no custody, no contract. Retrying until the answer improves would turn an observation into a poll, and a poll into an implied promise that we waited for the right answer. If the chain says NOT_FOUND at the instant we looked, that is what gets signed
+- [x] THE OUTPUT IS SELF-VERIFYING — signed on its own like the trust list, so a holder checks it against /.well-known/scvd-signing-key WITHOUT ASKING US, which is the whole point of a disinterested receipt. The purchase also mints the usual certificate at /api/verify
+- [x] HONESTY GUARDS, CI-ENFORCED (the auto-refund lesson pre-empted, as the spec asked). The listing states what it does NOT do — no delivery attestation, no promise a NOT_FOUND won't settle later, no dispute resolution. And a test FAILS THE BUILD if the copy ever implies a human looked: automated and disinterested IS the value, and "the keeper checked" would make the artifact worth less, because a keeper is a party to the store. `why_use` is the spec's sentence verbatim, load-bearing clause intact
+- [x] THE EVENT TOPICS ARE DERIVED IN CI — Transfer and AuthorizationUsed hashes are hardcoded in the Worker (no hashing dependency) and re-derived from their signatures with viem in the test, so a typo fails the build instead of silently classifying every settled payment as NOT_FOUND
+- [x] Pinned counts updated same commit: MCP tool count 26→27, S1 ladder order. BASE_RPC_URL added to wrangler vars, defaulting to the public endpoint (not a secret; the store reads only)
+- [ ] ⚑ KILL CRITERIA, from the spec, to be checked ~2026-08-27: near-zero calls in 30 days = demand unproven, PARK IT. A Base clone at ≤$0.002 = thin moat realized, stop investing. Double down ONLY if agents call it inside retry/reconciliation loops — that is the signal the whole move was a test for. The decline desk and /admin/census are where the calls will show
+
 ## NAMING CONSISTENCY PASS (2026-07-28, pinned law — see PROJECT_LOG PINNED DECISIONS)
 
 - [x] THE TWO FIELDS — .well-known/x402.json top-level `name` and menu.json `store.name` both carried the tier-3 full name; both now read "SCVD General Store". menu.json's came in through a `...STORE_METADATA` spread, so it is overridden after the spread with a comment saying why, or the next person re-adds the bug by widening the spread

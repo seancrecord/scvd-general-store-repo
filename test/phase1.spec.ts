@@ -69,9 +69,10 @@ describe("the MCP door", () => {
     expect(names).toContain("read_store_guide");
     expect(names).toContain("buy_hello");
     expect(names).toContain("buy_context_anchor");
-    // 4 free + 22 shelves (the jar was scrapped, 2026-07-25;
-    // graffiti_on_a_train stocked 2026-07-28, Batch 5).
-    expect(tools.length).toBe(26);
+    // 4 free + 23 shelves (the jar was scrapped, 2026-07-25;
+    // graffiti_on_a_train stocked 2026-07-28, Batch 5;
+    // settlement_attestation stocked 2026-07-28, Move 1).
+    expect(tools.length).toBe(27);
     // Single source of truth, reconciled both directions: every buy_*
     // tool has a menu.json twin and every menu item has a tool.
     const menu = await json(await SELF.fetch(`${BASE}/menu.json`));

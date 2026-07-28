@@ -92,6 +92,18 @@ export function grudgeNote(grievance: string): string {
 }
 
 /**
+ * The settlement attestation's one line. It reports and stops.
+ *
+ * NEVER implies a human looked: automated and disinterested is the
+ * entire value here, and a test fails the build if this copy ever
+ * suggests otherwise. "The keeper checked" would make the artifact
+ * worth LESS, because a keeper is a party to the store.
+ */
+export function attestationNote(status: string): string {
+  return `Read the chain once and signed what was there: ${status}. The observation is attached and signed on its own, so anyone can check it without asking us. It says what Base said at that moment — not whether anything was delivered, and not what happens next.`;
+}
+
+/**
  * The two facts, in the order they matter: the artifact exists now,
  * and the wall is a separate question. Said at purchase so nobody
  * learns it from a decline.
