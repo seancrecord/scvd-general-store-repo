@@ -2,6 +2,88 @@
 
 Anti-shuffle file. When you ship something, move it to DONE with a date. Never delete ideas — ICEBOX with a reason.
 
+## KEEPER'S NEXT SESSION (written 2026-07-28 for tomorrow)
+
+### A. SCREENSHOT THESE — four things nobody here can see
+
+1. **AN OPERATOR APPROVAL PROMPT.** The Part 5 blocker, and the only
+   one that could kill a feature. Whatever your setup shows a human
+   when an agent wants to spend money — Claude Code, a clawdbot, any
+   MCP client. THREE THINGS TO CAPTURE: how much text it shows before
+   truncating; whether links are clickable or dead; and whether it
+   passes any merchant metadata through at all or only amount +
+   recipient. If it's only amount and recipient, the approval-prompt
+   artifact belongs in the item description instead and we should not
+   build it where Part 5 assumed. Better to learn that from one
+   screenshot than from a week of work
+2. **/admin/declines**, the three rows. You need to read it regardless;
+   a screenshot means the partner can read the raw strings too, which
+   is otherwise impossible — this session's network policy blocks
+   scvd.store outright
+3. **THE x402scan / agentic.market SCORECARD**, post-deploy. The
+   serviceName, tags, iconUrl and per-resource inputSchema all shipped
+   unverified against a live catalog for exactly that reason. Did the
+   fields land? Did "input schema: no" change?
+4. **agentic.market's endpoint list.** Seven items were invisible
+   there. Did any of them get ingested after this week's changes?
+
+### B. BUY THESE — four tests, about $1.30 total
+
+1. **`npm run shop`**, from the repo root. Not a purchase for its own
+   sake: it VETS THE DOOR, which is the only half of the bounce
+   question that is answerable. If a client you control settles, the
+   decline was theirs and you can close it. If you bounce too, you
+   have reproduced a real buyer's failure with full visibility
+2. **`settlement_attestation`, $0.004.** Never bought in production
+   and it is the only item that makes an OUTBOUND CALL (Base RPC), so
+   it is the only one whose live failure mode is untested. Use a real
+   hash — the founding settle, `0x47c8fee…50bc9c`, should come back
+   SETTLED. If it comes back NOT_FOUND the RPC path is broken and no
+   test in this repo would have caught it
+3. **`graffiti_on_a_train`, $1 minimum.** Exercises the review queue
+   end to end: buy, then approve or decline it at /admin/counter and
+   confirm the certificate is untouched either way. That promise is
+   tested in CI and has never been walked by a human
+4. **`phantom_check`, $0.25** — THE CHEAP EXPERIMENT already filed
+   below for the seven invisible items. One deliberate purchase, then
+   watch for a few days whether Bazaar ingests it. Rule 13 forbids
+   automated self-purchase, not a considered test
+
+House purchases are excluded from organic counts, so none of this
+pollutes the ledger. All four are diagnostics.
+
+### C. THE DUPLICATION PROBLEM — real, and partly mine
+
+Twenty-one markdown files, ~4,400 lines, and the same facts live in
+several of them. The dupes, named:
+
+- **TASKS.md vs GROWTH_TASKS.md** — both read as live queues and
+  carry the same A1–A4 / B / C items. Worst offender
+- **STATUS.md's "what's open" vs TASKS.md** — I created a THIRD place
+  that says what is open, one day ago, while trying to fix this exact
+  problem
+- **DEMAND.md vs DEMAND_SYNTHESIS.md** — two demand-side strategy
+  documents with overlapping conclusions
+- **PROJECT_LOG vs LEDGER_READINGS** — genuinely distinct (events vs
+  book readings) and worth keeping apart. Not a dupe
+
+PROPOSED RULE, one line each, ⚑ for the keeper's nod:
+
+- **ONE QUEUE: TASKS.md.** GROWTH_TASKS becomes a frozen SOURCE
+  document — the keeper's original framing, cited and never ticked
+- **ONE CURRENT STATE: STATUS.md**, which POINTS at the queue and
+  never restates it. Anything in STATUS that a reader could act on
+  belongs in TASKS instead
+- **STRATEGY DOCS ARE FROZEN SOURCES.** DEMAND, DEMAND_SYNTHESIS,
+  READINESS, PRIORS_MAP, THE_PARTNERSHIP get cited, not edited. A doc
+  that is both an argument and a checklist becomes neither
+- **Every doc gets one line at the top saying what it is FOR and what
+  it is NOT for**, which is the cheapest possible dupe prevention
+
+⚑ Say the word and the partner does the consolidation in one pass.
+It is mechanical once the rule is agreed, and it should not be done
+without the rule being agreed first.
+
 ## MOVE 1 — SETTLEMENT ATTESTATION, SHIPPED 2026-07-28
 
 - [x] BUILT to the DEMAND_SYNTHESIS Part 7 spec. `settlement_attestation`, $0.004 fixed (sub-approval-threshold as specified), instant, utility shelf. Give it `tx_hash` and optionally `payer` / `recipient` / `nonce` / `amount_usdc`; it reads Base ONCE and signs what it found: SETTLED / NOT_FOUND / PENDING_FINALITY / INSUFFICIENT_MATCH / REVERTED
