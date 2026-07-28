@@ -77,9 +77,44 @@ export interface DeclineReport {
  * us — but the RAW REASON IS ALWAYS SHOWN alongside, so a wrong guess
  * here can never hide the real one.
  */
-function readReason(raw: string): { fault: DeclineFault; reading: string } {
+export function readReason(raw: string): {
+  fault: DeclineFault;
+  reading: string;
+} {
   const reason = raw.toLowerCase();
 
+  // The local refusals come first, because their codes carry a field
+  // name that would otherwise trip a substring rule below and get read
+  // as a facilitator verdict it never was.
+  if (reason.startsWith("local:requirement_mismatch")) {
+    const field = reason.split(":")[2] ?? "";
+    if (field === "resource") {
+      return {
+        fault: "ours",
+        reading:
+          "The client echoed our own requirement back and the RESOURCE URL no longer matched. That is usually ours: the challenge was issued at one URL and the retry arrived at another — a dropped or added query parameter is enough. Check what we put in resource against what the client is retrying.",
+      };
+    }
+    if (field.startsWith("extra")) {
+      return {
+        fault: "buyer",
+        reading:
+          "The client's accepted.extra disagreed with what we published — they rebuilt the object instead of echoing ours. The values are in the challenge; /try#hand-rolling says so in plain words. Nothing to fix here.",
+      };
+    }
+    return {
+      fault: "buyer",
+      reading:
+        "The client's `accepted` object did not deep-equal any entry we offered, so the payment was refused BEFORE the facilitator was called — which is why the stage says verify and no facilitator string exists. The named field is the disagreement. Almost always a hand-rolled client rebuilding the object rather than echoing ours back verbatim.",
+    };
+  }
+  if (reason.startsWith("local:")) {
+    return {
+      fault: "unknown",
+      reading:
+        "The x402 SDK refused this before the facilitator saw it, and its own words are in the message beside this reading. No hook fires on that path, so this line exists to keep the reason from vanishing.",
+    };
+  }
   if (reason.includes("insufficient") || reason.includes("balance")) {
     return {
       fault: "buyer",
@@ -144,7 +179,7 @@ function readReason(raw: string): { fault: DeclineFault; reading: string } {
     return {
       fault: "unknown",
       reading:
-        "A nonce existed and the verify hook still left no reason behind. That is an INSTRUMENT gap rather than a buyer signal, and it should be rare now that the reason rides a per-request slot instead of a nonce join. If it recurs, the hook is not firing.",
+        "A nonce existed and the verify hook still left no reason behind. INSTRUMENT gap, not a buyer signal. Rows dated 2026-07-28 or earlier are explained: the SDK refuses in three places and only the last one has a hook on it, so a requirement mismatch or an extension refusal left the slot empty by design. Those refusals now read the SDK's own words out of the 402 body and book as `local:...`. If THIS label appears on a row after that fix, the hook genuinely is not firing.",
     };
   }
   if (reason === "unspecified" || reason.startsWith("unspecified")) {

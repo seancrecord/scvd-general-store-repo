@@ -268,7 +268,11 @@ export interface DeclineReason {
   reason: string;
   message?: string;
   /** Which copy answered. "slot" is exact; "nonce" is best effort. */
-  matched_by?: "slot" | "nonce";
+  /**
+   * Which copy answered. "body" is the SDK's own refusal, read out of
+   * the 402 it built for a rejection that never reached a hook.
+   */
+  matched_by?: "slot" | "nonce" | "body";
 }
 
 /**

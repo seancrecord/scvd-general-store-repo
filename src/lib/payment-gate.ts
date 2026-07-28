@@ -17,6 +17,12 @@ import {
 import type { EventSignals } from "@/lib/metrics";
 import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
+import {
+  describeMismatch,
+  mismatchReasonCode,
+  sdkRefusal,
+} from "@/lib/requirement-match";
+import type { MismatchReport } from "@/lib/requirement-match";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -63,6 +69,7 @@ async function enrich402Body(
   path: string,
   body: unknown,
   decline?: DeclineReason,
+  mismatch?: MismatchReport,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -77,6 +84,10 @@ async function enrich402Body(
             reason: decline.reason,
             ...(decline.message ? { message: decline.message } : {}),
             note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
+            // The one thing we can be precise about: our own matcher
+            // refused before the facilitator was called, and we hold
+            // both objects, so we can name the field.
+            ...(mismatch ? { requirement_mismatch: mismatch } : {}),
           },
           // A signature that did not clear is the exact moment the
           // domain trap costs somebody a night, so the whole block
@@ -119,6 +130,80 @@ function respondWithInstructions(
     return c.html(String(instructions.body ?? ""), status);
   }
   return c.json(instructions.body ?? {}, status);
+}
+
+/** The `accepted` object a client echoed back, for mismatch diagnosis. */
+function acceptedFromPaymentHeader(header: string | undefined): unknown {
+  if (!header) {
+    return undefined;
+  }
+  try {
+    const payload: unknown = JSON.parse(atob(header));
+    return isRecord(payload) ? payload.accepted : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The 402 challenge the SDK just built, out of its own response header. */
+function decodeChallengeHeader(headers: Record<string, string>): unknown {
+  const entry = Object.entries(headers).find(
+    ([key]) => key.toLowerCase() === "payment-required",
+  );
+  if (!entry) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(atob(entry[1]));
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The reason the SDK refused BEFORE the facilitator was ever called.
+ * Its two pre-verify exits (no matching requirement, extension refusal)
+ * run no hooks, so the slot stays empty and the reason lives only in
+ * the body it built. Read it there, and when it's a requirement
+ * mismatch, say WHICH FIELD — we hold both objects, so "declined" is a
+ * worse answer than we can give.
+ */
+function refusalBeforeVerify(
+  headers: Record<string, string>,
+  paymentHeader: string | undefined,
+): { decline: DeclineReason; mismatch?: MismatchReport } | undefined {
+  // The challenge rides the header, not the body — the JSON body on
+  // this path is ours alone. Cost an hour to find; hence the note.
+  const challenge = decodeChallengeHeader(headers);
+  const stated = sdkRefusal(challenge);
+  if (!stated) {
+    return undefined;
+  }
+  const accepted = acceptedFromPaymentHeader(paymentHeader);
+  const accepts = isRecord(challenge) ? challenge.accepts : undefined;
+  const mismatch = describeMismatch(accepts, accepted);
+  if (mismatch) {
+    return {
+      decline: {
+        reason: mismatchReasonCode(mismatch),
+        message: stated,
+        matched_by: "body",
+      },
+      mismatch,
+    };
+  }
+  return {
+    decline: { reason: `local:${slugRefusal(stated)}`, message: stated, matched_by: "body" },
+  };
+}
+
+/** Bounded, lowercase, book-safe. The verbatim string rides alongside. */
+function slugRefusal(stated: string): string {
+  return stated
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 60);
 }
 
 /** The nonce inside a PAYMENT-SIGNATURE header, for decline matching. */
@@ -215,8 +300,16 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // The nonce map is the fallback for anything that reached the
       // hooks without our context.
       const nonce = nonceFromPaymentHeader(paymentHeader);
+      // Third source, added after three declines from a known-good
+      // signature all booked "reason_not_captured": the SDK's own
+      // words, for the refusals that never reach a hook.
+      const refusal = paymentHeader
+        ? refusalBeforeVerify(result.response.headers, paymentHeader)
+        : undefined;
       const decline =
-        declineSlot.reason ?? (nonce ? takeDeclineReason(nonce) : undefined);
+        declineSlot.reason ??
+        (nonce ? takeDeclineReason(nonce) : undefined) ??
+        refusal?.decline;
       if (paymentHeader) {
         await recordPaymentDecline(
           c.env,
@@ -239,6 +332,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             c.req.path,
             result.response.body,
             decline,
+            refusal?.mismatch,
           ),
         });
       }

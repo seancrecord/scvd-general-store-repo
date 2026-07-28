@@ -58,6 +58,13 @@ export const HAND_ROLLING = {
     primary_type: "TransferWithAuthorization",
   },
 
+  /**
+   * The one that actually caught our first two client-builders, and it
+   * is not the signature at all.
+   */
+  echo_the_offer:
+    "Echo one of the offered `accepts` entries back as your `accepted` object, COMPLETE AND UNCHANGED — including `extra`. The server deep-compares the two: field order is free, but the key set must be identical and the types must match exactly, so \"500000\" is not 500000 and a dropped `extra` fails outright. This check runs BEFORE the facilitator is called, which means a failure here is not a signature problem, produces no facilitator error, and still comes back as a 402 that says verify. Rebuild the object from parts and you will land here. Our 402 now names the exact field that disagreed, so read `payment_declined.requirement_mismatch` before you touch your signing code.",
+
   amounts:
     "USDC on Base has SIX decimals. Half a cent is 5000 atomic units, not 0.005 and not 5000000. The amount you sign must equal the amount in the challenge exactly — a rounded value is a different authorization and will not match.",
 
@@ -71,5 +78,5 @@ export const HAND_ROLLING = {
     "Practise against /api/buy/small_blessing at half a cent. It is a real settlement on Base against production; there is no sandbox and no test mode, which is the point. If it fails, /try explains what the store saw.",
 
   honest_limit:
-    "The store cannot tell you why YOUR signature failed — verification happens at the facilitator and on chain, not here, and a failed verify tells us only that it failed. What is above is every value on our side of the wire, stated exactly, so the failure can only be on yours and you know where to look.",
+    "Two different limits, and they are worth telling apart. What WE refuse — a requirement that doesn't match what we offered — we now name field by field in the 402, because we hold both objects and can see the disagreement. What the FACILITATOR refuses we mostly cannot explain: verification happens there and on chain, not here, and a failed verify often tells us only that it failed. Everything above is our whole side of the wire, stated exactly, so anything left is on yours and you know where to look.",
 } as const;

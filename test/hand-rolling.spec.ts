@@ -110,9 +110,18 @@ describe("the hand-rolling notes", () => {
     }
   });
 
-  it("states the limit it cannot pass: we can't see why YOUR signature failed", () => {
-    // Rule: say what a thing is NOT. Verification happens at the
-    // facilitator and on chain; a failed verify tells us only that.
-    expect(HAND_ROLLING.honest_limit).toContain("cannot tell you");
+  it("separates what we can explain from what we can't", () => {
+    // Rule: say what a thing is NOT — and keep the two limits apart.
+    // Our own matcher we CAN explain field by field. The facilitator's
+    // verdict happens somewhere we don't stand, and mostly we can't.
+    expect(HAND_ROLLING.honest_limit).toContain("cannot explain");
+    expect(HAND_ROLLING.honest_limit).toContain("field by field");
+  });
+
+  it("tells a hand-roller to echo the offer back whole, extra included", () => {
+    // The failure that actually caught both client-builders, and it is
+    // not the signature: a rebuilt `accepted` that drops a field.
+    expect(HAND_ROLLING.echo_the_offer).toContain("`extra`");
+    expect(HAND_ROLLING.echo_the_offer).toContain("BEFORE the facilitator");
   });
 });
