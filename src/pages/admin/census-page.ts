@@ -65,7 +65,8 @@ export function renderCensusPage(data: CensusPageData): string {
       : `<p><strong>${presented.length}</strong> client${presented.length === 1 ? "" : "s"}
       outside the house have presented a payment signature at our door.
       ${presented.filter((client) => client.settles > 0).length} of them settled;
-      the rest were turned away, and the decline reasons are on the desk.</p>`;
+      the rest were turned away. <a href="/admin/declines">The decline desk</a> has the
+      reasons, verbatim, and a reading of whose problem each one is.</p>`;
 
   const presentedTable =
     presented.length === 0

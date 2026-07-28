@@ -223,6 +223,16 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // Verified. Refuse a nonce we've already settled once.
   const nonce = extractPaymentNonce(result.paymentPayload);
   if (nonce && (await isNonceSpent(c.env, nonce))) {
+    // BOOK IT. This path refused a signed payment and recorded nothing
+    // until 2026-07-28, which meant a buyer retrying an authorization
+    // instead of re-signing was invisible in the books — the exact
+    // shape of a real buyer bouncing repeatedly off a fixable wall.
+    await recordPaymentDecline(
+      c.env,
+      c.req.path,
+      "replay:nonce_already_settled",
+      gateSignals(c),
+    ).catch(() => undefined);
     c.header("Cache-Control", "no-store");
     return c.json(
       {
@@ -234,7 +244,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
 
   // Settle now, money first, then the goods.
-  let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
+  let settlement: Awaited<
+    ReturnType<typeof stack.httpServer.processSettlement>
+  >;
   try {
     settlement = await stack.httpServer.processSettlement(
       result.paymentPayload,

@@ -18,7 +18,9 @@ export type AlertCondition =
   | "worker_health"
   | "order_sla"
   /** The machine-facing surfaces have gone quiet. Not a fault; a nudge. */
-  | "catalog_stale";
+  | "catalog_stale"
+  /** Somebody outside the house opened a wallet here and was turned away. */
+  | "payment_declined";
 
 const DEDUPE_TTL_SECONDS = 6 * 60 * 60;
 const ALERT_LOG_TTL_SECONDS = 30 * 86400;
