@@ -160,5 +160,5 @@ export function renderDeclinesPage(data: DeclinesPageData): string {
 
   ${traceHtml(data.trace)}`;
 
-  return renderAdminShell("office", body);
+  return renderAdminShell("declines", body);
 }

@@ -132,5 +132,5 @@ export function renderCensusPage(data: CensusPageData): string {
     )}
   </section>`;
 
-  return renderAdminShell("office", body);
+  return renderAdminShell("census", body);
 }

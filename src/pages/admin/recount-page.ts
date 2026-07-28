@@ -102,5 +102,5 @@ export function renderRecountPage(data: RecountPageData): string {
     it has an outside witness.</p>
   </section>`;
 
-  return renderAdminShell("office", body);
+  return renderAdminShell("recount", body);
 }

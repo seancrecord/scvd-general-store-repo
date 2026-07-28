@@ -56,5 +56,5 @@ export function renderBellPage(data: BellPageData): string {
     fix that made that door audible.</p>
     ${ringsHtml(data.rings)}
   </section>`;
-  return renderAdminShell("office", body);
+  return renderAdminShell("bell", body);
 }

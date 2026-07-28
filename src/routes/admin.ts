@@ -14,8 +14,10 @@ import {
   readPorchLedger,
   reconcileSettles,
 } from "@/lib/metrics";
-import { sanitizeText } from "@/lib/sanitize";
+import { escapeHtml, sanitizeText } from "@/lib/sanitize";
 import { recountFromRows } from "@/lib/recount";
+import { renderAdminShell } from "@/pages/admin/layout";
+import { wantsHtml } from "@/pages/simple-page";
 import { renderBellPage } from "@/pages/admin/bell-page";
 import { renderCensusPage } from "@/pages/admin/census-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
@@ -771,7 +773,31 @@ adminRoutes.post("/admin/inventory/reset", async (c) => {
   return c.redirect("/admin/tools");
 });
 
+/**
+ * The digest. Renders in the office shell so it carries the nav like
+ * every other room — it used to return bare JSON, which meant landing
+ * on it was a one-way trip with no way back to anything. Accept:
+ * application/json still gets the raw object for anything scripted.
+ */
 adminRoutes.get("/admin/digest", async (c) => {
   const digest = (await getLatestDigest(c.env)) ?? (await compileDigest(c.env));
-  return c.json(digest);
+  // JSON stays the DEFAULT: this route was JSON-only and something
+  // scripted may be reading it. Only a browser, which asks for HTML
+  // by name, gets the shell. Same wantsHtml rule as the front of the
+  // store, and it keeps the existing contract intact.
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(digest);
+  }
+  return c.html(
+    renderAdminShell(
+      "digest",
+      `<section>
+        <h2>The digest</h2>
+        <p>The latest compiled digest, or a fresh one if none was stored. Raw, because
+        this is the assembled object rather than a reading of it — ask for it with
+        <code>Accept: application/json</code> to get it as JSON.</p>
+        <pre>${escapeHtml(JSON.stringify(digest, null, 2))}</pre>
+      </section>`,
+    ),
+  );
 });
