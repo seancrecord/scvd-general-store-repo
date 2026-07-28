@@ -55,13 +55,39 @@ per-item endpoint paths.
 
 An agent that installed the skill is reading last week's store.
 
-    cd registry/clawhub && npx clawhub@latest publish . \\
-      --slug scvd-general-store \\
-      --name "SCVD General Store" \\
-      --version 2.4.0 \\
-      --changelog "Settlement attestation and graffiti on a train; \\
-    practice counter; why_use and the situation index; per-item \\
-    endpoints; refund wording corrected to what the code does"
+```bash
+cd registry/clawhub && npx clawhub@latest skill publish . \
+  --slug scvd-general-store \
+  --name "SCVD General Store" \
+  --version 2.4.0 \
+  --changelog "Settlement attestation and graffiti on a train; practice counter; why_use and the situation index; per-item endpoints; refund wording corrected to what the code does" \
+  --source-repo seancrecord/scvd-general-store-repo \
+  --source-commit 0f4622afd83e0a0c67769829661bb64bb25ec977 \
+  --source-path registry/clawhub
+```
+
+TWO THINGS WERE WRONG with the command that sat here until
+2026-07-28, and both would have failed on paste:
+
+1. The line continuations were literal `\\` (two backslashes). In a
+   shell that is an escaped backslash, not a continuation, so the
+   command ended at the first line. This came from writing a shell
+   command inside an indented markdown block and escaping it twice.
+   The fenced block above is not indented and not escaped, so what
+   you read is what the shell gets.
+2. `clawhub publish` is a LEGACY ALIAS as of CLI v0.23.1. The current
+   form is `clawhub skill publish <path>`. The alias still works
+   today; aliases stop working eventually.
+
+Verified against `npx clawhub@latest skill publish --help` on
+2026-07-28, CLI v0.23.1, rather than remembered.
+
+The three `--source-*` flags are new here and optional. They tie the
+published skill to the exact commit it was built from, which is the
+same argument the store makes about everything else it ships: a
+claim somebody else can check beats a claim they have to take.
+
+Add `--dry-run` to see what would be published without publishing.
 
 SKILL.md was brought current 2026-07-28 with both new items in the
 situation index and their query parameters in the parameter line. The
