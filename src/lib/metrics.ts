@@ -133,13 +133,14 @@ export async function recordChallengeIssued(
   await bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item));
 
   // THE INFRASTRUCTURE DIET, 2026-07-28. A crawler 402 used to cost
-  // three KV writes; it now costs one. At the observed volume (one day
-  // alone put ~1,000 organic 402s through, and the noise floor is
-  // several times that) the store was running at or past the free
-  // tier's 1,000-writes-a-day ceiling, where writes fail SILENTLY and
-  // the day's tail vanishes with no error on any page. Books that go
-  // short without saying so are the failure this store exists not to
-  // have.
+  // three KV writes; it now costs one.
+  //
+  // NOT a rescue: Cloudflare is on Workers Paid, so no daily write cap
+  // is biting. This is headroom and hygiene — at the observed volume
+  // (one day alone put ~1,000 organic 402s through, with the noise
+  // floor several times that) two of every three crawler writes bought
+  // nothing, and a counter under contention loses increments whoever
+  // is paying.
   //
   // The two writes dropped for infrastructure carry nothing the
   // remaining one doesn't:

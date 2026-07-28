@@ -128,8 +128,9 @@ lucky.
 
 The half-hourly tick already runs, so the marginal compute is
 nothing. The real budget is **KV writes**, which is the same budget
-the books are already spending and which the free tier caps at 1,000
-a day. So: employees stay quiet by default (alerts already dedupe for
+the books are already spending. (The free tier's 1,000-a-day cap no
+longer applies — Cloudflare is on Workers Paid — but a quiet employee
+is still the correct steady state.) So: employees stay quiet by default (alerts already dedupe for
 six hours), only escalations write, and the row-walking bookkeeper
 stays weekly rather than joining the half-hour rounds.
 

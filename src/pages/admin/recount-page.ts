@@ -78,9 +78,8 @@ export function renderRecountPage(data: RecountPageData): string {
     applied to yesterday's rows. This is that comparison, on 402 challenges.</p>
     <p><small>From 2026-07-28, a challenge already classified as infrastructure at
     write time keeps its counter but writes no row — it had nothing to reclassify
-    into, and the writes were pushing the store past a free-tier ceiling where they
-    fail silently. Rows labelled ORGANIC are all still written, which is exactly the
-    set this page re-reads.</small></p>
+    into. Rows labelled ORGANIC are all still written, which is exactly the set this
+    page re-reads.</small></p>
     <table>
       <tr><th></th><th>organic</th><th>house</th><th>infrastructure</th></tr>
       <tr><td>as the books recorded it</td><td>${r.as_recorded.organic}</td><td>${r.as_recorded.house}</td><td>${r.as_recorded.infrastructure}</td></tr>

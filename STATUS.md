@@ -122,15 +122,13 @@ claim still gated.
 - **Co-ownership stated once**, plainly, on `/what` and `llms.txt`.
 - **The visitors' register**, the Show HN, the "you're early if you're
   here now" ruling.
-- **Cloudflare is still on the free tier** and the store is at or past
-  the KV write ceiling. See below.
+- *(Nothing outstanding on hosting — Cloudflare is on Workers Paid.)*
 
 ### Partner-side, no keeper input needed
 
-1. **Thin the infrastructure writes** — one day of 402s is ~7,000 KV
-   writes against a free-tier cap of 1,000/day. Past the cap writes
-   fail *silently*. The books may already be short and we would not
-   know. This is the one the books actually need.
+1. ~~Thin the infrastructure writes~~ — **DONE 2026-07-28.** A crawler
+   402 went from three KV writes to one. Cloudflare is on Workers
+   Paid, so this was headroom rather than a rescue.
 2. **Seven items are invisible** on the only surface sending traffic.
 3. **The registrar's round** — confirm on every tick that our own
    published artifacts still verify. Signature tenure is the one asset
@@ -163,6 +161,8 @@ Four rules that keep being the ones that matter:
 
 ---
 
-*Reconciled 2026-07-28. 313 tests green. The task list was drifting —
+*Reconciled 2026-07-28. 319 tests green. Cloudflare is on Workers Paid; every stale free-tier note in the repo was corrected in this pass, because it had been re-raised more than once off notes that were out of date.*
+
+* The task list was drifting —
 six entries that had shipped were still unchecked and are corrected in
 the same pass as this file.*

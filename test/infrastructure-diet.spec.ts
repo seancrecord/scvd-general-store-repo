@@ -26,12 +26,11 @@ async function countKeys(prefix: string): Promise<number> {
 /**
  * THE INFRASTRUCTURE DIET, 2026-07-28.
  *
- * A crawler 402 cost three KV writes. The free tier caps KV at 1,000
- * writes a day and one day alone put ~1,000 ORGANIC 402s through, with
- * the noise floor several times that — so the store was running at or
- * past a ceiling where writes fail SILENTLY and the day's tail
- * vanishes with no error on any page. Books that go short without
- * saying so are the exact failure this store exists not to have.
+ * A crawler 402 cost three KV writes and now costs one. Cloudflare is
+ * on Workers Paid, so this is headroom rather than a rescue: at the
+ * observed volume two of every three crawler writes bought nothing,
+ * and a counter under contention loses increments no matter who is
+ * paying for it.
  *
  * The rule: the noise floor gets counted, not transcribed. What that
  * costs is stated here rather than discovered later.
