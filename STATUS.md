@@ -53,6 +53,13 @@ Read it before reaching for a fix that isn't broken.
   signed for the wrong network. Now carried on the request itself.
 - **An alarm on any outside decline.** It was the rarest event the
   store can have and the only one with nothing watching it.
+- **The domain trap, written down** at `/try#hand-rolling`. USDC's
+  EIP-712 domain name is `USD Coin` on Base mainnet and `USDC` on Base
+  Sepolia, so a client built on testnet and pointed at mainnet signs
+  authorizations invalid everywhere, silently. It fits the bounce. It
+  cannot be accepted by anyone — the USDC contract checks its own
+  domain — so saying it is the whole fix. A declined 402 now carries
+  the full block; an ordinary one carries a link.
 
 ### The shelf — 23 items
 
