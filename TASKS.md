@@ -16,10 +16,20 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
    artifact belongs in the item description instead and we should not
    build it where Part 5 assumed. Better to learn that from one
    screenshot than from a week of work
-2. **/admin/declines**, the three rows. You need to read it regardless;
-   a screenshot means the partner can read the raw strings too, which
-   is otherwise impossible — this session's network policy blocks
-   scvd.store outright
+2. ~~/admin/declines~~ — **READ 2026-07-28.** All three rows:
+   `small_blessing` · reason `unspecified` · stage **verify** · client
+   `curl/8.18.0`. THREE THINGS FOLLOW. (a) The reason is unrecoverable
+   — these rows predate the per-request slot, so the nonce join lost
+   it, which is exactly the failure the fix addressed and exactly why
+   it was worth fixing. There is nothing further to extract from them.
+   (b) STAGE = VERIFY means the signature never cleared; it never
+   reached settle, so this was not a funds problem. (c) THE ITEM IS THE
+   TELL: `small_blessing` is the half-cent practice item, bought three
+   times with curl. That is not a customer buying a thing, it is
+   SOMEBODY TESTING AN X402 CLIENT — the x402-client-builder persona
+   DEMAND.md named as the most likely first real buyer. They were
+   trying to prove their client worked, against us, and we could not
+   tell them why it didn't
 3. **THE x402scan / agentic.market SCORECARD**, post-deploy. The
    serviceName, tags, iconUrl and per-resource inputSchema all shipped
    unverified against a live catalog for exactly that reason. Did the
@@ -29,22 +39,25 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ### B. BUY THESE — four tests, about $1.30 total
 
-1. **`npm run shop`**, from the repo root. Not a purchase for its own
-   sake: it VETS THE DOOR, which is the only half of the bounce
-   question that is answerable. If a client you control settles, the
-   decline was theirs and you can close it. If you bounce too, you
-   have reproduced a real buyer's failure with full visibility
-2. **`settlement_attestation`, $0.004.** Never bought in production
-   and it is the only item that makes an OUTBOUND CALL (Base RPC), so
-   it is the only one whose live failure mode is untested. Use a real
-   hash — the founding settle, `0x47c8fee…50bc9c`, should come back
-   SETTLED. If it comes back NOT_FOUND the RPC path is broken and no
-   test in this repo would have caught it
-3. **`graffiti_on_a_train`, $1 minimum.** Exercises the review queue
+1. **`ITEMS=small_blessing npm run shop`** — SCOPED, because a bare
+   `npm run shop` buys THE WHOLE CATALOGUE and that is a real bill.
+   Half a cent, and deliberately the SAME ITEM the bouncing client
+   tried. Not a purchase for its own sake: it VETS THE DOOR, which is
+   the only half of the bounce question that is answerable. If a
+   client you control settles, the decline was theirs and you can
+   close it. If you bounce too, you have reproduced a real buyer's
+   failure with full visibility
+2. **`ITEMS=settlement_attestation npm run shop`**, $0.004. Never
+   bought in production and it is the only item that makes an OUTBOUND
+   CALL (Base RPC), so it is the only one whose live failure mode no
+   test in this repo can reach. The shopping run now carries the real
+   founding hash for it, so a correct answer is SETTLED. NOT_FOUND
+   means the RPC path is broken
+3. **`ITEMS=graffiti_on_a_train npm run shop`**, $1 minimum. Exercises the review queue
    end to end: buy, then approve or decline it at /admin/counter and
    confirm the certificate is untouched either way. That promise is
    tested in CI and has never been walked by a human
-4. **`phantom_check`, $0.25** — THE CHEAP EXPERIMENT already filed
+4. **`ITEMS=phantom_check npm run shop`**, $0.25 — THE CHEAP EXPERIMENT already filed
    below for the seven invisible items. One deliberate purchase, then
    watch for a few days whether Bazaar ingests it. Rule 13 forbids
    automated self-purchase, not a considered test

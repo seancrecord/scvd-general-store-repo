@@ -30,7 +30,9 @@ const ERC20_BALANCE_ABI = [
  *   BUYER_PRIVATE_KEY=0x... HOUSE_SECRET=... node scripts/shopping-run.mjs
  * Options (env):
  *   STORE_URL   default https://scvd.store
- *   ITEMS       comma-separated item ids (default: the whole menu)
+ *   ITEMS       comma-separated item ids (default: THE WHOLE MENU —
+ *               which is a real bill. For a single diagnostic buy,
+ *               always scope it: ITEMS=small_blessing npm run shop
  *   SKIP        comma-separated item ids to leave on the shelf
  *   DRY_RUN=1   print the plan and the total, buy nothing
  *   YES=1       skip the confirmation prompt
@@ -52,6 +54,15 @@ const ITEM_PARAMS = {
       "House shopping run: the keeper walking his own shelves so a first buyer never trips first.",
   },
   phantom_check: { url: `${STORE_URL}/` },
+  graffiti_on_a_train: { tag: "the keeper walked past and left this" },
+  // The founding fifty cents, 2026-07-22. A real settled transfer to
+  // the store's own wallet, so a correct attestation must come back
+  // SETTLED — anything else means the RPC path is broken, which is the
+  // one failure mode no test in this repo can reach.
+  settlement_attestation: {
+    tx_hash:
+      "0x47c8fee81e6d11bf07c9580b0d3aea3fabb9c2a9fe7aee3ae6f2f8391450bc9c",
+  },
   coffees_for_closers: { win: "Walked every shelf in the store, once." },
   grudge: { grievance: "House test: a rate limit that shall remain nameless." },
   the_confession: {
