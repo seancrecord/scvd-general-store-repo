@@ -162,8 +162,8 @@ Four rules that keep being the ones that matter:
 
 ---
 
-*Reconciled 2026-07-28. 319 tests green. Cloudflare is on Workers Paid; every stale free-tier note in the repo was corrected in this pass, because it had been re-raised more than once off notes that were out of date.*
-
-* The task list was drifting —
-six entries that had shipped were still unchecked and are corrected in
-the same pass as this file.*
+*Reconciled 2026-07-28. 323 tests green. The task list was drifting —
+six entries that had shipped were still unchecked, and are corrected
+in the same pass as this file. Cloudflare is on Workers Paid; every
+stale free-tier note in the repo was corrected too, because it had
+been re-raised more than once off notes that were out of date.*
