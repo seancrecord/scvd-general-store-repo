@@ -151,6 +151,15 @@ which is the point: you get the same code path everyone else gets.
 The whole thing, with the cheap door listed cheapest first:
 ${base}/try
 
+Hand-rolling the client rather than using an SDK? Read
+${base}/try#hand-rolling first. It prints the exact EIP-712 values this
+store signs against, and the one that catches almost everybody: USDC's
+domain name is "USD Coin" on Base mainnet and "USDC" on Base Sepolia,
+so a client built against the testnet and pointed at mainnet signs
+authorizations that are invalid everywhere, with no visible error. No
+store can accept those — the USDC contract checks its own domain — so
+the only fix is knowing before you spend the evening.
+
 ## The trust list
 
 A signed list of origins the keeper has personally transacted with,

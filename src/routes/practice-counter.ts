@@ -7,6 +7,7 @@ import {
   CHEAP_DOOR_ITEM_IDS,
   PRACTICE_COUNTER_COPY as COPY,
 } from "@/store/copy/practice-counter";
+import { HAND_ROLLING } from "@/store/hand-rolling";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
 
@@ -75,6 +76,19 @@ practiceCounterRoutes.get("/try", (c) => {
       )
       .join("\n");
 
+    // The exact domain, laid out to be copied rather than retyped.
+    const eip712Html = Object.entries(HAND_ROLLING.eip712)
+      .map(
+        ([field, value]) => `<div class="menu-item">
+        <div class="menu-line">
+          <span class="menu-name"><code>${escapeHtml(field)}</code></span>
+          <span class="menu-dots"></span>
+          <span class="menu-price"><code>${escapeHtml(String(value))}</code></span>
+        </div>
+      </div>`,
+      )
+      .join("\n");
+
     const shelfHtml = shelf
       .map(
         (row) => `<div class="menu-item">
@@ -102,6 +116,17 @@ practiceCounterRoutes.get("/try", (c) => {
           <h2>${escapeHtml(COPY.stepsHead)}</h2>
           ${flowHtml}
           <p class="menu-desc">${escapeHtml(COPY.stepsNote)}</p>
+        </section>
+        <section id="hand-rolling">
+          <h2>${escapeHtml(HAND_ROLLING.heading)}</h2>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.standfirst)}</p>
+          <p class="menu-desc"><strong>${escapeHtml(HAND_ROLLING.domain_warning)}</strong></p>
+          ${eip712Html}
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.amounts)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.validity)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.read_the_challenge)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.practice)}</p>
+          <p class="menu-meta">${escapeHtml(HAND_ROLLING.honest_limit)}</p>
         </section>
         <section>
           <h2>${escapeHtml(COPY.cheapHead)}</h2>
@@ -164,6 +189,7 @@ practiceCounterRoutes.get("/try", (c) => {
       free_methods: ["initialize", "tools/list"],
       note: COPY.mcp,
     },
+    hand_rolling: HAND_ROLLING,
     honest_notes: COPY.honest,
     refund_policy: STORE_METADATA.refund_policy,
     mailbox: `${base}/api/letter`,

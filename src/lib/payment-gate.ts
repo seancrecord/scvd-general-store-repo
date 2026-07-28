@@ -19,6 +19,7 @@ import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
+import { HAND_ROLLING } from "@/store/hand-rolling";
 import {
   GUARANTEE_BLOCK_TEXT,
   IDENTITY_POLICY,
@@ -77,8 +78,16 @@ async function enrich402Body(
             ...(decline.message ? { message: decline.message } : {}),
             note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
           },
+          // A signature that did not clear is the exact moment the
+          // domain trap costs somebody a night, so the whole block
+          // rides in the response rather than a link to it.
+          hand_rolling: HAND_ROLLING,
         }
-      : {}),
+      : {
+          // Weightless on the common path: the values are already in
+          // accepts[].extra, this only says where the prose is.
+          hand_rolling_url: `${base}/try#hand-rolling`,
+        }),
     ...(item
       ? {
           spec_note: factBlockText(item),
