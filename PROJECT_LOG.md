@@ -47,6 +47,8 @@ Resequence approved by keeper same day; see GROWTH_TASKS.
 
 ## Log
 
+- 2026-07-28 · Decline reasons no longer joined by nonce; they ride a slot on the request context. The old join dropped the reason whenever the payload carried no exact-EVM nonce, which is the wrong-network case, which is the reason worth having.
+
 - 2026-07-28 · First outside payment signature on record: curl/8.18.0, three attempts, three declines, zero settles. Reasons were recorded and had never been rendered. Decline desk built at /admin/declines; the census line that claimed otherwise is corrected; the replay path now books its refusals; an outside decline raises an alarm.
 
 - 2026-07-28 · graffiti_on_a_train stocked; born from the Seven argument, night of 2026-07-27 — the ledger keeps facts, not explanations.

@@ -15,8 +15,8 @@ import {
   recordSettlement,
 } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
-import { takeDeclineReason } from "@/lib/payments";
-import type { DeclineReason } from "@/lib/payments";
+import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
+import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import {
@@ -158,11 +158,17 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new HonoAdapter(c);
+  // The decline slot rides along on the context. The SDK shallow-copies
+  // this object on its way to the verify hooks, and a shallow copy keeps
+  // the slot BY REFERENCE — so the hook writes the reason here and we
+  // read it back below, with no key to derive and nothing to race.
+  const declineSlot: DeclineSlot = {};
   const context: HTTPRequestContext = {
     adapter,
     path: c.req.path,
     method: c.req.method,
-  };
+    [DECLINE_SLOT_KEY]: declineSlot,
+  } as HTTPRequestContext;
 
   if (!stack.httpServer.requiresPayment(context)) {
     return next();
@@ -195,13 +201,24 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // decline: tell the payer why and keep the reason in the books.
       const paymentHeader =
         c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT");
+      // Slot first: it is exact and works even when the payload carries
+      // no nonce to join on, which is exactly the wrong-network case.
+      // The nonce map is the fallback for anything that reached the
+      // hooks without our context.
       const nonce = nonceFromPaymentHeader(paymentHeader);
-      const decline = nonce ? takeDeclineReason(nonce) : undefined;
+      const decline =
+        declineSlot.reason ?? (nonce ? takeDeclineReason(nonce) : undefined);
       if (paymentHeader) {
         await recordPaymentDecline(
           c.env,
           c.req.path,
-          decline?.reason ?? "unspecified",
+          // When there is no reason at all, say WHICH way it went
+          // missing. A flat "unspecified" cost a day of not knowing
+          // whether the buyer or the instrument was the problem.
+          decline?.reason ??
+            (nonce
+              ? "unspecified:reason_not_captured"
+              : "unspecified:no_nonce_in_payload"),
           gateSignals(c),
         ).catch(() => undefined);
       }

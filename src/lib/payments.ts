@@ -22,6 +22,7 @@ import {
 } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { SPEC_RETURNS } from "@/store/spec";
+import { isRecord } from "@/types";
 import type { Env, MenuItem } from "@/types";
 
 /**
@@ -229,13 +230,82 @@ export function minimumUsdcForPath(path: string): number {
 }
 
 /**
- * Why a payment was declined, remembered briefly by nonce so the gate
- * can tell the payer the truth instead of re-issuing a mute challenge.
- * In-isolate, best effort, bounded.
+ * WHY A PAYMENT WAS DECLINED — the most valuable fact this store can
+ * produce, and until 2026-07-28 the one most likely to be lost.
+ *
+ * The original design remembered the reason in a module-level Map
+ * keyed by the payment NONCE: the verify hook wrote it, the gate
+ * re-derived the same nonce from the raw header and read it back.
+ * That join had three ways to fail silently, and every one of them
+ * ended with the books saying "unspecified":
+ *
+ *   1. NO NONCE TO JOIN ON. extractPaymentNonce wants
+ *      payload.payload.authorization.nonce — an exact-EVM shape. A
+ *      client signing for the wrong scheme or network may carry no
+ *      such field at all, so the key does not exist on either side.
+ *      That is precisely the case where the reason matters most:
+ *      "you signed for the wrong network" is a fixable, OURS-shaped
+ *      decline, and it was the one guaranteed to be discarded.
+ *   2. THE TWO DERIVATIONS DISAGREEING. The hook reads the SDK's
+ *      parsed payload; the gate parsed the base64 header itself.
+ *      Nothing guarantees those produce the same string.
+ *   3. EVICTION. Fifty entries, shared across concurrent requests.
+ *
+ * THE FIX: stop joining. The gate hands the SDK an
+ * HTTPRequestContext, and the SDK passes that object through to the
+ * verify hooks as transportContext (shallow-copied, so a slot object
+ * on it keeps the same reference both ways). So the hook writes the
+ * reason into a slot belonging to THIS REQUEST, and the gate reads it
+ * back — exact, request-scoped, no key to get wrong, no race with a
+ * concurrent payment, and it works whether or not a nonce exists.
+ *
+ * The nonce map stays as a fallback for anything that reaches the
+ * hooks without our slot. Which copy answered is recorded, because a
+ * fallback that cannot be told apart from an exact match is how a
+ * guess becomes a fact.
  */
 export interface DeclineReason {
   reason: string;
   message?: string;
+  /** Which copy answered. "slot" is exact; "nonce" is best effort. */
+  matched_by?: "slot" | "nonce";
+}
+
+/**
+ * The per-request slot. Lives on the context object the gate builds,
+ * so it is created and read within one request and cannot be seen by
+ * another.
+ */
+export interface DeclineSlot {
+  reason?: DeclineReason;
+}
+
+/** The property the gate hangs its slot on, and the hook reads back. */
+export const DECLINE_SLOT_KEY = "scvdDeclineSlot";
+
+interface MaybeSlotted {
+  [DECLINE_SLOT_KEY]?: DeclineSlot;
+}
+
+/**
+ * Digs the slot out of whatever the SDK handed the hook. The transport
+ * context arrives as { request: <the context we built, shallow-copied> },
+ * and a shallow copy preserves the slot BY REFERENCE, which is the
+ * whole reason this works.
+ */
+function slotFrom(transportContext: unknown): DeclineSlot | undefined {
+  if (!isRecord(transportContext)) {
+    return undefined;
+  }
+  const direct = (transportContext as MaybeSlotted)[DECLINE_SLOT_KEY];
+  if (direct) {
+    return direct;
+  }
+  const request: unknown = transportContext["request"];
+  if (isRecord(request)) {
+    return (request as MaybeSlotted)[DECLINE_SLOT_KEY];
+  }
+  return undefined;
 }
 
 const declineReasons = new Map<string, DeclineReason>();
@@ -243,9 +313,20 @@ const DECLINE_MEMORY = 50;
 
 function rememberDecline(
   paymentPayload: unknown,
+  transportContext: unknown,
   reason: string,
   message?: string,
 ): void {
+  const record: DeclineReason = { reason, ...(message ? { message } : {}) };
+
+  // The exact copy. Works with no nonce, survives any key mismatch,
+  // and cannot be read by a concurrent request.
+  const slot = slotFrom(transportContext);
+  if (slot) {
+    slot.reason = { ...record, matched_by: "slot" };
+  }
+
+  // The fallback copy, kept for anything that arrives without a slot.
   const nonce = extractPaymentNonce(paymentPayload);
   if (!nonce) {
     return;
@@ -256,7 +337,7 @@ function rememberDecline(
       declineReasons.delete(oldest);
     }
   }
-  declineReasons.set(nonce, { reason, ...(message ? { message } : {}) });
+  declineReasons.set(nonce, { ...record, matched_by: "nonce" });
 }
 
 /** One read per decline; the gate consumes it into the 402 body and the books. */
@@ -297,6 +378,7 @@ export function getPaymentStack(env: Env): PaymentStack {
       if (context.result.isValid === false) {
         rememberDecline(
           context.paymentPayload,
+          context.transportContext,
           context.result.invalidReason ?? "verification_declined",
           context.result.invalidMessage,
         );
@@ -305,6 +387,7 @@ export function getPaymentStack(env: Env): PaymentStack {
     resourceServer.onVerifyFailure(async (context) => {
       rememberDecline(
         context.paymentPayload,
+        context.transportContext,
         "verify_error",
         context.error instanceof Error ? context.error.message : undefined,
       );

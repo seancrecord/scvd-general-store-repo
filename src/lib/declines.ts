@@ -133,11 +133,25 @@ function readReason(raw: string): { fault: DeclineFault; reading: string } {
         "The signature did not verify. Could be a broken client; could be us advertising requirements that cannot be signed as stated. If one client hits this repeatedly, assume it is ours until proven otherwise.",
     };
   }
-  if (reason === "unspecified") {
+  if (reason === "unspecified:no_nonce_in_payload") {
+    return {
+      fault: "ours",
+      reading:
+        "The payload carried no exact-EVM authorization nonce at all — which usually means the client signed for a scheme or network we do not accept. Strongly suggests a DISCOVERY mismatch on our side: check that /.well-known/x402.json and the 402 accepts block advertise only what the gate will take.",
+    };
+  }
+  if (reason === "unspecified:reason_not_captured") {
     return {
       fault: "unknown",
       reading:
-        "The decline was booked but the reason did not survive. Verify-side reasons are held in memory by nonce, so a retry landing on a different isolate loses it. This is an INSTRUMENT gap, not a buyer signal — and if it is common, the instrument is what needs fixing first.",
+        "A nonce existed and the verify hook still left no reason behind. That is an INSTRUMENT gap rather than a buyer signal, and it should be rare now that the reason rides a per-request slot instead of a nonce join. If it recurs, the hook is not firing.",
+    };
+  }
+  if (reason === "unspecified" || reason.startsWith("unspecified")) {
+    return {
+      fault: "unknown",
+      reading:
+        "The decline was booked but the reason did not survive. This is an INSTRUMENT gap, not a buyer signal — and if it is common, the instrument is what needs fixing first. Rows from before 2026-07-28 predate the per-request slot and were subject to a nonce join that could miss silently.",
     };
   }
   return {
