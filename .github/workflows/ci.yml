@@ -1,0 +1,39 @@
+# THE STORE SAID THIS EXISTED BEFORE IT DID.
+#
+# /try tells every visitor "CI validates the catalog against it on
+# every build", and /schemas/listing-spec-v1.json says field order is
+# "validated in CI". Both were false on 2026-07-29: 354 tests, and
+# nothing ran them except a hand. The tests were real; the sentence
+# describing when they run was not.
+#
+# Same class as "refunds are automatic" — a true-sounding claim about
+# our own machinery that no machinery backed. Caught the same way,
+# too: somebody went looking for the thing and it wasn't there.
+#
+# This file is that claim becoming true.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      # The suite walks every public claim the store makes: the naming
+      # law across seven surfaces, the listing spec's field order, the
+      # refund wording, the decline readings, and the skill document
+      # against the live menu. A red build means the store is saying
+      # something it cannot do.
+      - name: Tests
+        run: npm test

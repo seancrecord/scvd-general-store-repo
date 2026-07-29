@@ -1,0 +1,73 @@
+# REPUBLISHING THE CLAWHUB SKILL, FROM A PHONE.
+#
+# The keeper is often not at a desk, and the publish is a terminal
+# command. This is that command, triggered from the Actions tab, which
+# a browser on a phone can reach.
+#
+# RULE 30 IS INTACT AND THAT IS DELIBERATE. This workflow runs on
+# workflow_dispatch ONLY — never on push, never on a schedule, never
+# from a merge. Nothing publishes unless a human presses the button,
+# which is the whole point of the keeper's queue. Do not add a trigger
+# to this file.
+#
+# It also fixes the stale-hash problem permanently: --source-commit is
+# stamped from the commit being published rather than copied out of a
+# document written days earlier. Publishing a file under a hash that
+# says otherwise is a worse lie than the missing content.
+#
+# ONE-TIME SETUP (browser, phone is fine):
+#   Settings → Secrets and variables → Actions → New repository secret
+#   Name: CLAWHUB_TOKEN   Value: from `clawhub login` on a machine, or
+#   the token page on clawhub. The token never appears in a log here.
+name: Publish ClawHub skill
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 2.4.0)"
+        required: true
+        default: "2.4.0"
+      changelog:
+        description: "What changed since the last publish"
+        required: true
+        default: "Settlement attestation and graffiti on a train; practice counter with the hand-rolling notes; per-item endpoints; refund wording corrected to what the code does"
+      dry_run:
+        description: "Preview without publishing"
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The bundle is published as-is, so the shelf it describes has to
+      # be the shelf that exists. A red suite here means do not publish.
+      - run: npm ci
+      - name: The skill document still matches the menu
+        run: npx vitest run test/skill-bundle-freshness.spec.ts
+
+      - name: Publish
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+        run: |
+          if [ -z "$CLAWHUB_TOKEN" ]; then
+            echo "CLAWHUB_TOKEN is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          npx clawhub@latest login --token "$CLAWHUB_TOKEN" --no-browser
+          npx clawhub@latest skill publish registry/clawhub \
+            --slug scvd-general-store \
+            --name "SCVD General Store" \
+            --version "${{ inputs.version }}" \
+            --changelog "${{ inputs.changelog }}" \
+            --source-repo "${{ github.repository }}" \
+            --source-commit "${{ github.sha }}" \
+            --source-path registry/clawhub \
+            ${{ inputs.dry_run && '--dry-run' || '' }}

@@ -71,6 +71,26 @@ git pull && npx clawhub@latest skill publish registry/clawhub \
   --source-path registry/clawhub
 ```
 
+### From a phone — the Actions button
+
+The keeper is usually not at a desk and the publish is a terminal
+command. So it is also a workflow: **Actions → Publish ClawHub skill →
+Run workflow**, which takes a version and a changelog, and which a
+phone browser can reach.
+
+It runs on `workflow_dispatch` ONLY — never on push, never on a merge,
+never on a schedule. Rule 30 is the reason: nothing leaves the store
+under our name unless a hand pressed the button. Do not add a trigger
+to that file.
+
+It also ends the stale-hash problem, because `--source-commit` is
+stamped from the commit being published rather than copied out of this
+document. Tick `dry_run` first if you want to see it without shipping.
+
+ONE-TIME SETUP, browser, phone is fine: Settings → Secrets and
+variables → Actions → New repository secret, named `CLAWHUB_TOKEN`.
+Never paste that token into a chat, including to me.
+
 **CONFIRMED STALE 2026-07-29** — CV pulled the live `/skill.md` against
 the published ClawHub listing and diffed them. They diverge for real:
 the published copy carries an opening passage that no longer exists in
