@@ -28,10 +28,9 @@ than corrected — a count in a static document is a lie with a timer on
 it. Tests now walk the published bundle as well as the generated one,
 in both directions.
 
-**One thing still yours:** the bundle opens with a passage the live
-`/skill.md` dropped — "a partner, a friend, a listening ear... Hence
-the prices." That is voice, and voice is rule 7. Keep it or cut it;
-I have not touched it.
+~~One thing still yours: the opening passage.~~ **Keeper cut it
+2026-07-29** — the two documents now open the same way. It rides out
+with the next publish; no need to burn a version on one paragraph.
 
 ---
 
