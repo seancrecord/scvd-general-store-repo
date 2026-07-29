@@ -95,3 +95,39 @@ describe("the published bundle states no fact that expires", () => {
     expect(bundle).toContain("credentials");
   });
 });
+
+/**
+ * SYNCED IN BOTH DIRECTIONS, WHICH IS THE KEEPER'S ACTUAL ASK:
+ * "if dropped on our code, drop elsewhere."
+ *
+ * The tests above catch a shelf item that never REACHED the published
+ * bundle. This one catches the opposite and worse case — the bundle
+ * still advertising something the code no longer sells. An agent that
+ * installs the skill and calls a retired endpoint gets a 404 from a
+ * store that told it to try, which is a broken promise rather than a
+ * stale sentence.
+ *
+ * Direction matters here: the bundle is a curated PITCH and may name
+ * fewer items than the shelf holds (it points at menu.json for the
+ * catalogue). It may never name MORE.
+ */
+describe("the bundle never advertises something the code dropped", () => {
+  it("names no item that is not on the shelf", async () => {
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    // Every /api/buy/<id> the bundle tells an agent to call.
+    const advertised = new Set(
+      [...bundle.matchAll(/\/api\/buy\/([a-z_]+)/g)].map((match) => match[1]),
+    );
+    const shelf = new Set(MENU_ITEMS.map((item) => item.id));
+    const phantom = [...advertised].filter((id) => id && !shelf.has(id));
+    expect(
+      phantom,
+      "the published skill sends agents at an endpoint this store no longer sells",
+    ).toEqual([]);
+  });
+
+  it("advertises at least the cheapest door, so the pitch is never empty", async () => {
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    expect(bundle).toContain("/api/buy/small_blessing");
+  });
+});
