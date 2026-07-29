@@ -38,6 +38,7 @@ export type AdminTab =
   | "declines"
   | "census"
   | "recount"
+  | "referrals"
   | "bell"
   | "digest";
 
@@ -57,6 +58,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "declines", href: "/admin/declines", label: "Declines" },
   { tab: "census", href: "/admin/census", label: "Census" },
   { tab: "recount", href: "/admin/recount", label: "Recount" },
+  { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "bell", href: "/admin/bell", label: "Bell" },
   { tab: "digest", href: "/admin/digest", label: "Digest" },
 ];

@@ -20,6 +20,7 @@ import { renderAdminShell } from "@/pages/admin/layout";
 import { wantsHtml } from "@/pages/simple-page";
 import { renderBellPage } from "@/pages/admin/bell-page";
 import { renderCensusPage } from "@/pages/admin/census-page";
+import { renderReferralsPage } from "@/pages/admin/referrals-page";
 import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
@@ -526,6 +527,16 @@ adminRoutes.get("/admin/recount", async (c) => {
  * off the desk for the same reason the recount is — the scan is
  * expensive, and this one holds every client it sees in memory.
  */
+/**
+ * Word of mouth: the referral-marker counters, read out cheaply. No row
+ * scan, so this page is not the census's expense.
+ */
+adminRoutes.get("/admin/referrals", async (c) => {
+  const { readReferrals } = await import("@/lib/referrals");
+  const { metricsMonth } = await import("@/lib/metrics");
+  return c.html(renderReferralsPage(await readReferrals(c.env, metricsMonth())));
+});
+
 adminRoutes.get("/admin/census", async (c) => {
   const census = await takeCensus(c.env);
   return c.html(renderCensusPage({ census, catalog_size: MENU_ITEMS.length }));

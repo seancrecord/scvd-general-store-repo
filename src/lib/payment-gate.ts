@@ -6,10 +6,12 @@ import type {
 import type { Context, MiddlewareHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { sendAlert } from "@/lib/alerts";
+import { isHouseTraffic } from "@/lib/channel";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import {
   itemKeyFromPath,
+  metricsMonth,
   recordChallengeIssued,
   recordPaymentDecline,
   recordSettlement,
@@ -29,6 +31,7 @@ import type {
   MismatchReport,
   PayloadFieldProblem,
 } from "@/lib/requirement-match";
+import { parseReferralMarker, recordReferral } from "@/lib/referrals";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -161,6 +164,27 @@ function nonceFromPaymentHeader(header: string | undefined): string | null {
   }
 }
 
+/**
+ * Count a referral marker, if the request carried one. Deliberately
+ * separate from gateSignals: `?ref=` is not `?src=` and must never
+ * reach channel inference or the venue table.
+ */
+async function recordReferralFor(
+  c: Context<HonoEnv>,
+  stage: "arrived" | "settled",
+  payer?: string,
+): Promise<void> {
+  const marker = parseReferralMarker(c.req.query("ref"));
+  if (marker === undefined) {
+    return;
+  }
+  await recordReferral(c.env, metricsMonth(), stage, {
+    referralMarker: marker,
+    ...(payer ? { payer } : {}),
+    house: isHouseTraffic(c.env, gateSignals(c)),
+  });
+}
+
 /** Attribution signals for a Hono-carried request (heuristics in lib/channel.ts). */
 function gateSignals(c: Context<HonoEnv>): EventSignals {
   const signals: EventSignals = {};
@@ -272,6 +296,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // Challenge issued. The monthly gap between these and settlements
       // is the budget-cap / abandonment signal (RUN1 instrumentation).
       await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
+      // A marker that reached a priced door. Counted apart from one
+      // that settled, because the gap between them is the signal.
+      await recordReferralFor(c, "arrived").catch(() => undefined);
       // If a signed payment rode in and still got a 402, that's a
       // decline: tell the payer why and keep the reason in the books.
       const paymentHeader =
@@ -429,6 +456,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     settlementSignals.payer = payer;
   }
   await recordSettlement(c.env, c.req.path, settlementSignals);
+  await recordReferralFor(c, "settled", payer).catch(() => undefined);
   const payment: SettledPayment = {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
