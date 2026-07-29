@@ -47,7 +47,17 @@ reason have come apart, and which one governs is yours, not mine. I
 have not touched it. The receipt is published on `/neighbours` either
 way, so nothing is hidden while you decide.
 
-**b) The weekly auto-funded check on listed origins.**
+**b) `/stack` — the dependency disclosure.**
+The honest version of "name big players as a trust signal." Not
+"powered by Coinbase" (borrowed credibility, and nobody there has
+heard of us) but a signed document saying what this store RESTS ON and
+what breaks when each piece does: the CDP facilitator, Base, USDC,
+Cloudflare, our own signing key. The supply-chain mirror of the house
+ledger — that one says what we control, this says what we don't. Every
+line checkable from outside, no endorsement claimed. Frame is written
+up in COMPETITIVE.md; say the word and it ships.
+
+**c) The weekly auto-funded check on listed origins.**
 Move 2's live-maintenance upgrade: each trust-list origin gets an
 auto-funded weekly `phantom_check`, so the list flags services that go
 dark instead of aging into fiction. It spends real money on a schedule
