@@ -23,6 +23,7 @@ import {
   verifyCertificateSignature,
 } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME } from "@/store";
+import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { storeGuideText } from "@/routes/llms";
 import { isRecord, type HonoEnv, type MenuItem } from "@/types";
@@ -289,6 +290,15 @@ async function callPurchaseTool(
       {
         ...(outcome.challenge !== undefined
           ? { "x402/payment-required": outcome.challenge }
+          : {}),
+        // The reading of the decline, relayed rather than dropped. It
+        // was being built and thrown away here, which made the MCP
+        // door's new instrument invisible to the agent holding it.
+        ...(isRecord(outcome.body) && outcome.body["payment_declined"]
+          ? {
+              payment_declined: outcome.body["payment_declined"],
+              hand_rolling: HAND_ROLLING,
+            }
           : {}),
         // S2: the strongest evidence lives in the challenge itself.
         spec_note: factBlockText(item),

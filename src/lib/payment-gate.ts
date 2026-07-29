@@ -15,17 +15,16 @@ import {
   recordSettlement,
 } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
+import {
+  bookedReason,
+  decodePaymentHeader,
+  payerFromPaymentHeader,
+  payloadProblemsFor,
+  preflightBlockers,
+  refusalBeforeVerify,
+} from "@/lib/decline-diagnosis";
 import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
-import {
-  blockingProblems,
-  describeExactEvmPayload,
-  describeMismatch,
-  describePayloadShape,
-  looksLikeAnException,
-  mismatchReasonCode,
-  sdkRefusal,
-} from "@/lib/requirement-match";
 import type {
   MismatchReport,
   PayloadFieldProblem,
@@ -149,153 +148,6 @@ function respondWithInstructions(
   return c.json(instructions.body ?? {}, status);
 }
 
-/** The whole decoded payload, for shape and mismatch diagnosis. */
-function decodePaymentHeader(header: string | undefined): unknown {
-  if (!header) {
-    return undefined;
-  }
-  try {
-    return JSON.parse(atob(header));
-  } catch {
-    return undefined;
-  }
-}
-
-/** The 402 challenge the SDK just built, out of its own response header. */
-function decodeChallengeHeader(headers: Record<string, string>): unknown {
-  const entry = Object.entries(headers).find(
-    ([key]) => key.toLowerCase() === "payment-required",
-  );
-  if (!entry) {
-    return undefined;
-  }
-  try {
-    return JSON.parse(atob(entry[1]));
-  } catch {
-    return undefined;
-  }
-}
-
-/**
- * The reason the SDK refused BEFORE the facilitator was ever called.
- * Its two pre-verify exits (no matching requirement, extension refusal)
- * run no hooks, so the slot stays empty and the reason lives only in
- * the body it built. Read it there, and when it's a requirement
- * mismatch, say WHICH FIELD — we hold both objects, so "declined" is a
- * worse answer than we can give.
- */
-function refusalBeforeVerify(
-  headers: Record<string, string>,
-  paymentHeader: string | undefined,
-): { decline: DeclineReason; mismatch?: MismatchReport } | undefined {
-  // The challenge rides the header, not the body — the JSON body on
-  // this path is ours alone. Cost an hour to find; hence the note.
-  const challenge = decodeChallengeHeader(headers);
-  const stated = sdkRefusal(challenge);
-  if (!stated) {
-    return undefined;
-  }
-  const payload = decodePaymentHeader(paymentHeader);
-
-  // The envelope first. A payload missing `accepted` makes the SDK's
-  // matcher throw on undefined, and the TypeError it catches then
-  // arrives here looking exactly like a crash of ours. Answer it in
-  // words before that can happen.
-  const shape = describePayloadShape(payload);
-  if (shape) {
-    return {
-      decline: {
-        reason: shape.code,
-        message: `${shape.says} We saw these top-level fields: ${shape.keys_seen.join(", ") || "(none)"}.`,
-        matched_by: "body",
-      },
-    };
-  }
-
-  const accepted = isRecord(payload) ? payload.accepted : undefined;
-  const accepts = isRecord(challenge) ? challenge.accepts : undefined;
-  const mismatch = describeMismatch(accepts, accepted);
-  if (mismatch) {
-    return {
-      decline: {
-        reason: mismatchReasonCode(mismatch),
-        message: stated,
-        matched_by: "body",
-      },
-      mismatch,
-    };
-  }
-  // Never slug an exception into a reason code: it reads as our crash
-  // and it puts an unbounded string family into the books.
-  if (looksLikeAnException(stated)) {
-    return {
-      decline: {
-        reason: "local:sdk_threw",
-        message: `${stated} (That is the x402 library's own exception text, raised while reading the payment payload — not an error from the store's code. It nearly always means a field it expected was absent.)`,
-        matched_by: "body",
-      },
-    };
-  }
-  return {
-    decline: {
-      reason: `local:${slugRefusal(stated)}`,
-      message: stated,
-      matched_by: "body",
-    },
-  };
-}
-
-/** The account that signed the authorization, straight off the header. */
-function payerFromPaymentHeader(header: string | undefined): string | undefined {
-  const payload = decodePaymentHeader(header);
-  if (!isRecord(payload) || !isRecord(payload.payload)) {
-    return undefined;
-  }
-  const auth = payload.payload.authorization;
-  if (!isRecord(auth) || typeof auth.from !== "string") {
-    return undefined;
-  }
-  return /^0x[0-9a-fA-F]{40}$/.test(auth.from) ? auth.from : undefined;
-}
-
-/** Our reading of the inner payload, for a header we were handed. */
-function payloadProblemsFor(paymentHeader: string): PayloadFieldProblem[] {
-  const payload = decodePaymentHeader(paymentHeader);
-  if (!isRecord(payload)) {
-    return [];
-  }
-  return describeExactEvmPayload(payload.accepted, payload.payload);
-}
-
-/**
- * The books take one string. When the facilitator's verdict is opaque
- * (`verify_error` tells us nothing) and we found a concrete field
- * problem, the row carries both: the verdict, then ours, split by a +.
- * The verdict is never replaced — it is the fact, ours is the reading.
- */
-function bookedReason(
-  reason: string,
-  problems: PayloadFieldProblem[],
-): string {
-  const first = problems[0];
-  if (!first) {
-    return reason;
-  }
-  const opaque =
-    reason === "verify_error" ||
-    reason === "verification_declined" ||
-    reason.startsWith("unspecified");
-  return opaque ? `${reason}+payload:${first.field}` : reason;
-}
-
-/** Bounded, lowercase, book-safe. The verbatim string rides alongside. */
-function slugRefusal(stated: string): string {
-  return stated
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 60);
-}
 
 /** The nonce inside a PAYMENT-SIGNATURE header, for decline matching. */
 function nonceFromPaymentHeader(header: string | undefined): string | null {
@@ -369,7 +221,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // `blocking` in requirement-match.ts for what we decline to judge.
   const offeredHeader = c.req.header("PAYMENT-SIGNATURE");
   if (offeredHeader) {
-    const preflight = blockingProblems(payloadProblemsFor(offeredHeader));
+    const preflight = preflightBlockers(offeredHeader);
     const first = preflight[0];
     if (first) {
       await recordChallengeIssued(c.env, c.req.path, gateSignals(c));

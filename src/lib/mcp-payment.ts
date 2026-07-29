@@ -1,8 +1,22 @@
 import type { HTTPAdapter, HTTPRequestContext } from "@x402/core/server";
 import { sendAlert } from "@/lib/alerts";
 import { persistBazaarObservations } from "@/lib/bazaar-observer";
+import {
+  bookedReason,
+  decodePaymentHeader,
+  diagnoseDecline,
+  payerFromPaymentHeader,
+  preflightBlockers,
+  preflightRefusalBody,
+} from "@/lib/decline-diagnosis";
 import type { EventSignals } from "@/lib/metrics";
-import { recordChallengeIssued, recordSettlement } from "@/lib/metrics";
+import {
+  recordChallengeIssued,
+  recordPaymentDecline,
+  recordSettlement,
+} from "@/lib/metrics";
+import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
+import type { DeclineSlot } from "@/lib/payments";
 import {
   atomicToUsdc,
   getPaymentStack,
@@ -15,6 +29,7 @@ import {
   isNonceSpent,
   recordSpentNonce,
 } from "@/lib/replay-guard";
+import { isRecord } from "@/types";
 import type { Env } from "@/types";
 
 /**
@@ -104,11 +119,39 @@ export async function runMcpPayment(
     encodePaymentMeta(paymentMeta),
     signals.userAgent ?? "mcp-client",
   );
+  const paymentHeader = encodePaymentMeta(paymentMeta);
+
+  // THE PRE-FLIGHT, same as the HTTP door. Added 2026-07-29: this door
+  // had its own copy of the pipeline and therefore none of the
+  // diagnosis, which is exactly the shape of bug CV asked about — a
+  // fix that looks shared and isn't.
+  const preflight = preflightBlockers(paymentHeader);
+  const refused = preflightRefusalBody(preflight);
+  if (refused) {
+    await recordChallengeIssued(env, path, signals);
+    await recordPaymentDecline(env, path, refused.reason, signals).catch(
+      () => undefined,
+    );
+    return {
+      kind: "payment-required",
+      status: 402,
+      body: {
+        error:
+          "The payment payload is malformed against the x402 v2 schema, so nothing was charged and the facilitator was never called.",
+        payment_declined: refused,
+      },
+    };
+  }
+
+  // The decline slot rides the context exactly as it does on the HTTP
+  // side; the SDK shallow-copies it through to the verify hooks.
+  const declineSlot: DeclineSlot = {};
   const context: HTTPRequestContext = {
     adapter,
     path,
     method: "GET",
-  };
+    [DECLINE_SLOT_KEY]: declineSlot,
+  } as HTTPRequestContext;
   await stack.initialized;
 
   let result: Awaited<ReturnType<typeof stack.httpServer.processHTTPRequest>>;
@@ -130,10 +173,55 @@ export async function runMcpPayment(
     if (result.response.status === 402) {
       await recordChallengeIssued(env, path, signals);
     }
+    let body = result.response.body;
+    // BOOK IT. Until 2026-07-29 this door recorded no declines at all,
+    // so an agent bouncing off MCP was invisible in the one instrument
+    // built to catch a buyer bouncing. The HTTP door alarmed; this one
+    // shrugged.
+    if (paymentHeader && result.response.status === 402) {
+      const nonceForJoin = extractPaymentNonce(
+        decodePaymentHeader(paymentHeader),
+      );
+      const known =
+        declineSlot.reason ??
+        (nonceForJoin ? takeDeclineReason(nonceForJoin) : undefined);
+      const diagnosis = diagnoseDecline(
+        result.response.headers,
+        paymentHeader,
+        known,
+      );
+      await recordPaymentDecline(
+        env,
+        path,
+        bookedReason(
+          diagnosis.decline?.reason ?? "unspecified:reason_not_captured",
+          diagnosis.payloadProblems,
+        ),
+        signals,
+      ).catch(() => undefined);
+      if (diagnosis.decline) {
+        body = {
+          ...(isRecord(body) ? body : {}),
+          payment_declined: {
+            reason: diagnosis.decline.reason,
+            ...(diagnosis.decline.message
+              ? { message: diagnosis.decline.message }
+              : {}),
+            note: "The signed payment was not accepted; no money moved and nothing left the shelf.",
+            ...(diagnosis.mismatch
+              ? { requirement_mismatch: diagnosis.mismatch }
+              : {}),
+            ...(diagnosis.payloadProblems.length > 0
+              ? { payload_problems: diagnosis.payloadProblems }
+              : {}),
+          },
+        };
+      }
+    }
     const outcome: McpPaymentOutcome = {
       kind: "payment-required",
       status: result.response.status,
-      body: result.response.body,
+      body,
     };
     const challenge = decodeChallengeHeader(result.response.headers);
     if (challenge !== undefined) {
@@ -172,6 +260,12 @@ export async function runMcpPayment(
   }
   await persistBazaarObservations(env, path);
   if (!settlement.success) {
+    await recordPaymentDecline(
+      env,
+      path,
+      `settle:${settlement.errorReason}`,
+      signals,
+    ).catch(() => undefined);
     return {
       kind: "payment-required",
       status: 402,
@@ -189,8 +283,11 @@ export async function runMcpPayment(
     paidUsdc,
     minimumUsdc,
   };
-  if (settlement.payer) {
-    settlementSignals.payer = settlement.payer;
+  // Same fallback as the HTTP door: a settle with no payer would book
+  // as organic, and the house flag is decided by wallet.
+  const payer = settlement.payer ?? payerFromPaymentHeader(paymentHeader);
+  if (payer) {
+    settlementSignals.payer = payer;
   }
   await recordSettlement(env, path, settlementSignals);
 
