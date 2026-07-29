@@ -10,6 +10,7 @@ import {
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
+import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import {
   FEATURED_SHELVES,
@@ -243,6 +244,7 @@ export function renderStorefront(data: StorefrontData): string {
     <footer class="porch-print">
       <p>${escapeHtml(STORE_METADATA.refund_policy)}</p>
       <p>${escapeHtml(STORE_METADATA.hours)}</p>
+      <p><em>${escapeHtml(dareForDay(new Date().toISOString().slice(0, 10)))}</em></p>
       <p>${COPY.finePrintVerify}</p>
       <p>${COPY.finePrintFounding}</p>
       <p>${COPY.finePrintHouseLucky}</p>

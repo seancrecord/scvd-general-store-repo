@@ -36,16 +36,15 @@ with the next publish; no need to burn a version on one paragraph.
 
 ## 2. TWO RULINGS ONLY YOU CAN MAKE
 
-**a) Does the trust list's paid gate still hold?**
-The gate says this store is the only origin listed as a completed x402
-purchase until a stranger buys here. Its stated reason: *we cannot be
-the trust anchor for a flow we have never completed with a stranger.*
-
-As of 2026-07-29 we have completed one — **as the buyer.** CV paid
-402sentinel $0.002 and it delivered. The gate's letter and the gate's
-reason have come apart, and which one governs is yours, not mine. I
-have not touched it. The receipt is published on `/neighbours` either
-way, so nothing is hidden while you decide.
+~~**a) The trust list's paid gate**~~ — **RULED 2026-07-29: THE GATE
+HOLDS.** CV argued it and the argument is recorded in the code beside
+the gate, not just the verdict: the loose sentence has its own referent
+in the very next clause, and the gate asks whether this store's
+SELL-SIDE flow has ever been trusted by somebody who owes us nothing.
+Buying from a competitor is due diligence, not standing to vouch. Plus
+a claim-chain risk of the auto-refund shape — `transacted` reads by
+category as "the sell-side gate cleared" even when it didn't. The
+402sentinel receipt stays on `/neighbours`.
 
 ~~**b) `/stack`**~~ — **SHIPPED 2026-07-29 on your go.** Six
 dependencies, each with its failure mode, what a buyer loses, and how

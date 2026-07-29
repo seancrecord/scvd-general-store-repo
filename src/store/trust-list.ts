@@ -115,6 +115,42 @@ export const TRUST_LIST_ATTESTS =
   'Each entry records that the keeper dealt with the origin on the date shown and it delivered. That is an observation about a past event, signed. It is not a claim that the origin is safe, recommended, or will behave the same tomorrow — nobody can sign for someone else\'s future. Read the relation field before you weigh an entry: "transacted" means money moved over x402 and the thing arrived; "used" means the keeper used the service and it worked, with nothing paid. They are different claims and this list will never blur them.';
 
 /** Why the list is short, and what the gate still holds back. */
+/**
+ * THE GATE, RULED ON 2026-07-29 AND WHY IT HELD.
+ *
+ * The question: we had by then completed a paid x402 flow with a
+ * stranger — as the BUYER, paying 402sentinel — so did the gate's
+ * stated reason ("we cannot be the trust anchor for a flow we have
+ * never completed with a stranger") let us list a paid entry?
+ *
+ * RULING: NO. The gate holds. CV argued it and the argument is better
+ * than the question was, so it is recorded rather than summarised:
+ *
+ *   The sentence is only loose in isolation. Where it actually sits,
+ *   the very next clause defines its own referent — "this store
+ *   remains the only origin listed as a completed x402 purchase until
+ *   a stranger buys something." A flow with a stranger means a
+ *   stranger buying from US.
+ *
+ *   And the logic only works pointed one way. The gate is not asking
+ *   whether we have ever transacted with an unfamiliar counterparty —
+ *   we clear that bar constantly, and if it counted the gate would
+ *   have opened on day one and never functioned as a gate. It asks
+ *   something narrower and harder: has this store's own SELL-SIDE
+ *   flow ever been trusted with real money by somebody who owes us
+ *   nothing? That is the only evidence that our signature on someone
+ *   else's trustworthiness means anything. Us buying from a competitor
+ *   is good due diligence. It is not standing to vouch.
+ *
+ *   There is also a claim-chain risk of exactly the auto-refund shape:
+ *   `transacted` reads, BY CATEGORY, as "the sell-side gate cleared"
+ *   even when it did not. Technically defensible, misleading by
+ *   proximity — which is the class of thing the claim-chain test
+ *   exists to catch before it ships rather than after.
+ *
+ * The 402sentinel purchase stays where it belongs, on /neighbours as a
+ * receipt. It is not promoted into this list.
+ */
 export const TRUST_LIST_SCOPE_NOTE =
   "The list grows by hand, one origin at a time, and only after the keeper has personally done the thing. It is not a crawl and there is no scoring. One hard limit remains: this store is the only origin listed as a completed x402 purchase, and it will stay that way until a stranger buys something here — a trust anchor for a flow we have never finished with someone we don't know would be worth nothing. Unpaid entries carry no such gate and are marked plainly as unpaid.";
 
