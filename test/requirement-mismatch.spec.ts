@@ -2,6 +2,7 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { readReason } from "@/lib/declines";
 import {
+  blockingProblems,
   describeExactEvmPayload,
   describeMismatch,
   looksLikeAnException,
@@ -217,6 +218,74 @@ describe("a refusal before the facilitator", () => {
     const reading = readReason("verify_error+payload:payload.authorization.value");
     expect(reading.reading).toContain("OUR reading");
     expect(reading.reading).toContain("payload.authorization.value");
+  });
+
+  it("refuses a number-typed authorization locally, before the facilitator round trip", async () => {
+    // CV's point, and the reason this layer is infrastructure rather
+    // than polish: CDP's answer to this is a truncated union-type error
+    // naming no field. Caught here, it costs nothing and names one.
+    const first = await SELF.fetch("https://scvd.store/api/buy/hello");
+    const accepted = decodePaymentRequired(first).accepts[0] as unknown as Record<
+      string,
+      unknown
+    >;
+    const signature = btoa(
+      JSON.stringify({
+        x402Version: 2,
+        accepted,
+        payload: {
+          signature: `0x${"cd".repeat(65)}`,
+          authorization: {
+            from: TEST_PAYER,
+            to: accepted.payTo,
+            value: accepted.amount,
+            validAfter: 0,
+            validBefore: 99999999999,
+            nonce: `0x${"33".repeat(32)}`,
+          },
+        },
+      }),
+    );
+    const declined = await SELF.fetch("https://scvd.store/api/buy/hello", {
+      headers: { "PAYMENT-SIGNATURE": signature },
+    });
+    expect(declined.status).toBe(402);
+    const body = (await declined.json()) as Record<string, unknown>;
+    const stated = body.payment_declined as Record<string, unknown>;
+    expect(String(stated.reason)).toBe(
+      "local:preflight:payload.authorization.validAfter",
+    );
+    expect(String(body.error)).toContain("facilitator was never called");
+    expect(String(stated.note)).toContain("before spending the round trip");
+  });
+
+  it("never refuses a smart-account signature, which only looks wrong from here", () => {
+    // ERC-1271 signatures are not 65 bytes. A store that refuses one
+    // because most signatures are has turned a diagnostic into a wall,
+    // and it would refuse a payment the facilitator would have taken.
+    const problems = describeExactEvmPayload(
+      {
+        scheme: "exact",
+        network: "eip155:8453",
+        amount: "500000",
+        payTo: "0x1111111111111111111111111111111111111111",
+      },
+      {
+        signature: `0x${"ab".repeat(200)}`,
+        authorization: {
+          from: TEST_PAYER,
+          to: "0x1111111111111111111111111111111111111111",
+          value: "500000",
+          validAfter: "0",
+          validBefore: "99999999999",
+          nonce: `0x${"11".repeat(32)}`,
+        },
+      },
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.field).toBe("payload.signature");
+    expect(problems[0]?.blocking, "we refused a smart account").toBe(false);
+    expect(blockingProblems(problems)).toEqual([]);
   });
 
   it("stays silent when the echo is correct, so it can never invent a mismatch", async () => {

@@ -18,6 +18,7 @@ import type { EventSignals } from "@/lib/metrics";
 import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import {
+  blockingProblems,
   describeExactEvmPayload,
   describeMismatch,
   describePayloadShape,
@@ -356,6 +357,44 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
   if (!stack.httpServer.requiresPayment(context)) {
     return next();
+  }
+
+  // THE PRE-FLIGHT, and CV named why it is load-bearing rather than
+  // polish: the facilitator's own errors are permanently opaque to us
+  // (200-character truncation, generic union-type message), so these
+  // local checks are the only thing standing between a first-time
+  // builder and silence. Running them BEFORE the expensive round trip
+  // means a malformed payload comes back named and instant instead of
+  // cryptic and slow. Only definitively-wrong fields refuse here; see
+  // `blocking` in requirement-match.ts for what we decline to judge.
+  const offeredHeader = c.req.header("PAYMENT-SIGNATURE");
+  if (offeredHeader) {
+    const preflight = blockingProblems(payloadProblemsFor(offeredHeader));
+    const first = preflight[0];
+    if (first) {
+      await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
+      await recordPaymentDecline(
+        c.env,
+        c.req.path,
+        `local:preflight:${first.field}`,
+        gateSignals(c),
+      ).catch(() => undefined);
+      c.header("Cache-Control", "no-store");
+      return c.json(
+        {
+          error:
+            "The payment payload is malformed against the x402 v2 schema, so nothing was charged and the facilitator was never called.",
+          payment_declined: {
+            reason: `local:preflight:${first.field}`,
+            message: `${first.field}: ${first.says}`,
+            note: "Caught here on purpose. The facilitator's answer to this is a truncated union-type error that names no field, so we check what we can check before spending the round trip.",
+            payload_problems: preflight,
+          },
+          hand_rolling: HAND_ROLLING,
+        },
+        402,
+      );
+    }
   }
 
   // First facilitator sync happens on the first paid request per isolate.

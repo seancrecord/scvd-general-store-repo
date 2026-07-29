@@ -270,6 +270,23 @@ export interface PayloadFieldProblem {
   field: string;
   says: string;
   saw: string;
+  /**
+   * BLOCKING problems are wrong against the published v2 schema, full
+   * stop, so the store refuses locally and spends no facilitator call
+   * on them. ADVISORY problems are ones where our reading could be the
+   * narrow one — a smart-account signature under ERC-1271 is not 65
+   * bytes, and refusing it because ours usually are would turn a
+   * diagnostic into a wall. Advisory problems are reported and never
+   * refused.
+   */
+  blocking: boolean;
+}
+
+/** The refusals we are willing to make on our own authority. */
+export function blockingProblems(
+  problems: PayloadFieldProblem[],
+): PayloadFieldProblem[] {
+  return problems.filter((problem) => problem.blocking);
 }
 
 const HEX = (bytes: number): RegExp =>
@@ -297,15 +314,30 @@ export function describeExactEvmPayload(
     return [];
   }
   const problems: PayloadFieldProblem[] = [];
-  const push = (field: string, says: string, value: unknown): void => {
-    problems.push({ field, says, saw: saw(value) });
+  const push = (
+    field: string,
+    says: string,
+    value: unknown,
+    blocking = true,
+  ): void => {
+    problems.push({ field, says, saw: saw(value), blocking });
   };
 
-  if (typeof inner.signature !== "string" || !HEX(65).test(inner.signature)) {
+  if (typeof inner.signature !== "string" || !inner.signature.startsWith("0x")) {
     push(
       "payload.signature",
-      "Must be a 65-byte hex string: 0x followed by exactly 130 hex characters.",
+      "Must be a hex string starting 0x. An EOA signature is 65 bytes (130 hex characters).",
       inner.signature,
+    );
+  } else if (!HEX(65).test(inner.signature)) {
+    // ADVISORY, deliberately. A smart-account signature under ERC-1271
+    // or ERC-6492 is not 65 bytes, and a store that refuses one because
+    // most signatures are has turned its own diagnostic into a wall.
+    push(
+      "payload.signature",
+      "Not the usual 65 bytes (130 hex characters). That is normal for a smart-account signature and wrong for an EOA — we do not refuse it, we just say so, because from here the two are indistinguishable.",
+      inner.signature,
+      false,
     );
   }
   const auth = inner.authorization;

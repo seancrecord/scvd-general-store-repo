@@ -72,6 +72,64 @@ export const HAND_ROLLING = {
   echo_the_offer:
     "Echo one of the offered `accepts` entries back as your `accepted` object, COMPLETE AND UNCHANGED — including `extra`. The server deep-compares the two: field order is free, but the key set must be identical and the types must match exactly, so \"500000\" is not 500000 and a dropped `extra` fails outright. This check runs BEFORE the facilitator is called, which means a failure here is not a signature problem, produces no facilitator error, and still comes back as a 402 that says verify. Rebuild the object from parts and you will land here. Our 402 now names the exact field that disagreed, so read `payment_declined.requirement_mismatch` before you touch your signing code.",
 
+  /**
+   * SHOW IT. CV's second bug survived a prose description of exactly
+   * the rule it broke: he read "decimal strings", built the object,
+   * and still sent numbers, because `"0"` and `0` look the same when
+   * you are reading about them rather than looking at them. Right and
+   * wrong, side by side, is the only form that catches this.
+   */
+  worked_example: {
+    heading: "The same payload, right and wrong",
+    right: {
+      x402Version: 2,
+      accepted: {
+        scheme: "exact",
+        network: "eip155:8453",
+        amount: "5000",
+        asset: BASE_USDC,
+        payTo: "0x…the payTo from the challenge",
+        maxTimeoutSeconds: 300,
+        extra: { name: "USD Coin", version: "2" },
+      },
+      payload: {
+        signature: "0x…130 hex characters",
+        authorization: {
+          from: "0x…your wallet",
+          to: "0x…the same payTo",
+          value: "5000",
+          validAfter: "0",
+          validBefore: "1785284670",
+          nonce: "0x…64 hex characters",
+        },
+      },
+    },
+    wrong: {
+      x402Version: 2,
+      accepted: {
+        scheme: "exact",
+        network: "eip155:8453",
+        amount: "5000",
+        asset: BASE_USDC,
+        payTo: "0x…the payTo from the challenge",
+        maxTimeoutSeconds: 300,
+      },
+      payload: {
+        signature: "0x…130 hex characters",
+        authorization: {
+          from: "0x…your wallet",
+          to: "0x…the same payTo",
+          value: 5000,
+          validAfter: 0,
+          validBefore: 1785284670,
+          nonce: "0x…64 hex characters",
+        },
+      },
+    },
+    the_difference:
+      "Four characters, and every one of them is a real failure we have watched happen. `extra` dropped from `accepted` — the requirement no longer deep-equals what we offered and the payment is refused before your signature is read. Then value, validAfter and validBefore as JSON NUMBERS instead of decimal strings — that one clears our matcher, reaches the facilitator, and comes back as a truncated union-type error that names nothing. The signature is correct in both. That is the whole point: none of this is about your crypto.",
+  },
+
   amounts:
     "USDC on Base has SIX decimals. Half a cent is 5000 atomic units, not 0.005 and not 5000000. The amount you sign must equal the amount in the challenge exactly — a rounded value is a different authorization and will not match.",
 

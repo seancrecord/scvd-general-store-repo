@@ -124,6 +124,16 @@ practiceCounterRoutes.get("/try", (c) => {
           ${eip712Html}
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.envelope)}</p>
           <p class="menu-desc"><strong>${escapeHtml(HAND_ROLLING.echo_the_offer)}</strong></p>
+          <h3>${escapeHtml(HAND_ROLLING.worked_example.heading)}</h3>
+          <div class="menu-item">
+            <p class="menu-meta">RIGHT</p>
+            <pre class="menu-desc"><code>${escapeHtml(JSON.stringify(HAND_ROLLING.worked_example.right, null, 2))}</code></pre>
+          </div>
+          <div class="menu-item">
+            <p class="menu-meta">WRONG — and the signature is fine in both</p>
+            <pre class="menu-desc"><code>${escapeHtml(JSON.stringify(HAND_ROLLING.worked_example.wrong, null, 2))}</code></pre>
+          </div>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.worked_example.the_difference)}</p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.amounts)}</p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.validity)}</p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.read_the_challenge)}</p>
