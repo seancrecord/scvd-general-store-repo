@@ -51,3 +51,47 @@ describe("the ClawHub bundle keeps up with the shelf", () => {
     expect(live).toContain("/menu.json");
   });
 });
+
+/**
+ * AND THE BUNDLE ITSELF, WHICH THE TESTS ABOVE NEVER TOUCHED.
+ *
+ * Corrected 2026-07-30. The tests above walk the LIVE /skill.md, which
+ * is generated from MENU_ITEMS and therefore cannot drift. The file
+ * that actually gets published — registry/clawhub/SKILL.md — is
+ * hand-maintained, was never checked by anything, and is where the
+ * real drift was: it claimed "Twenty-one items" when the shelf held
+ * twenty-three.
+ *
+ * A count written into a static document is a lie with a timer on it.
+ * The fix was to delete the count rather than correct it, and this
+ * test keeps it deleted.
+ */
+describe("the published bundle states no fact that expires", () => {
+  it("claims no item count of its own", async () => {
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    const counts = [
+      /\b(twenty|thirty)[- ](one|two|three|four|five|six|seven|eight|nine)\b/i,
+      /\b\d{1,3}\s+items\b/i,
+    ];
+    for (const pattern of counts) {
+      expect(
+        bundle,
+        `the bundle states an item count, which goes stale the next time a shelf changes: ${pattern}`,
+      ).not.toMatch(pattern);
+    }
+  });
+
+  it("still points at menu.json as the source of truth", async () => {
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    expect(bundle).toContain("menu.json");
+    expect(bundle).toContain("source of truth");
+  });
+
+  it("keeps the credentials promise in the published copy too", async () => {
+    // The live document and the bundle are maintained separately, so
+    // the one line that must survive gets asserted in both places.
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    expect(bundle).toContain("never asks you to run code");
+    expect(bundle).toContain("credentials");
+  });
+});

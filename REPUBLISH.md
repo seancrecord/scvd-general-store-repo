@@ -91,21 +91,38 @@ ONE-TIME SETUP, browser, phone is fine: Settings → Secrets and
 variables → Actions → New repository secret, named `CLAWHUB_TOKEN`.
 Never paste that token into a chat, including to me.
 
-**CONFIRMED STALE 2026-07-29** — CV pulled the live `/skill.md` against
-the published ClawHub listing and diffed them. They diverge for real:
-the published copy carries an opening passage that no longer exists in
-the live document, and shows neither the resource-evidence table nor
-`settlement_attestation` and `graffiti_on_a_train`. An agent installing
-the skill today reads last week's store. Payment mechanics are
-unaffected — the endpoints never moved and are now better instrumented
-than they were — so this is a shelf that has moved without the sign
-changing, not a break.
+**CORRECTED 2026-07-30, and the correction is the useful part.**
 
-A test now walks the live document against `MENU_ITEMS`
-(`test/skill-bundle-freshness.spec.ts`), so an item shipping without
-reaching the skill fails CI. What no test can reach is whether the
-PUBLISHED copy matches the repo's — that gap closes only when a hand
-runs the command above.
+What sat here on 2026-07-29 — that the published listing showed neither
+the resource-evidence table nor `settlement_attestation` and
+`graffiti_on_a_train` — WAS WRONG. It was wrong because a report was
+filed into this document without being checked against the registry.
+`clawhub inspect` says v2.4.0 was published 2026-07-28 20:49 UTC,
+TWELVE MINUTES after the PR carrying both new items merged. The bundle
+contains both, and it has a Resource evidence section.
+
+THE REAL DRIFT, verified rather than reported:
+
+  * The bundle claimed "Twenty-one items". The shelf holds
+    twenty-three. A count written into a static document is a lie with
+    a timer on it, so the count is now DELETED rather than corrected,
+    and a test keeps it deleted.
+  * The bundle opens with a passage ("a partner, a friend, a listening
+    ear... Hence the prices") that the live `/skill.md` no longer
+    carries. That is a VOICE question, and voice is rule 7 — the
+    keeper's, not a test's. Flagged, not touched.
+  * The bundle names fewer items than the shelf holds. That reads as
+    deliberate curation: it is a pitch pointing at menu.json for the
+    catalogue, not a catalogue itself.
+
+WHAT THIS MEANS FOR THE NEXT PUBLISH: the published copy was never a
+week behind. It was two days behind, on one number. Republishing an
+unchanged bundle at a higher version would have shipped the same drift
+under a fresher label, which is worse than not publishing at all.
+
+TWO DOCUMENTS MAINTAINED SEPARATELY is the root cause. The live
+`/skill.md` generates from `MENU_ITEMS` and cannot drift; this bundle
+is written by hand and was checked by nothing. Tests now walk BOTH.
 
 TWO THINGS WERE WRONG with the command that sat here until
 2026-07-28, and both would have failed on paste:

@@ -154,9 +154,11 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
 ## Resource evidence
 
 - Current prices and stock live at `https://scvd.store/menu.json` —
-  fetch it fresh; that document is the source of truth. Twenty-one
-  items from $0.005 (a small blessing) to $50 (an app review by the
-  keeper), each carrying a uniform spec block with a `why_use` line
+  fetch it fresh; that document is the source of truth. The shelf runs
+  from $0.005 (a small blessing) to $50 (an app review by the keeper),
+  and how many items are on it is a question for menu.json rather than
+  for this file — a count written into a static document is a lie with
+  a timer on it. Each item carries a uniform spec block with a `why_use` line
   where a capability gap exists (schema at
   `https://scvd.store/schemas/listing-spec-v1.json`). Items without a
   `why_use` are novelties and say so by omission rather than by
