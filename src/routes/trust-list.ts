@@ -2,9 +2,13 @@ import { Hono } from "hono";
 import { signMessage } from "@/lib/signing";
 import { STORE_SERVICE_NAME } from "@/store";
 import {
+  daysSinceChecked,
+  entryFreshness,
   TRUST_LIST_ATTESTS,
   TRUST_LIST_ENTRIES,
+  TRUST_LIST_FRESHNESS_NOTE,
   TRUST_LIST_SCOPE_NOTE,
+  TRUST_LIST_STALE_AFTER_DAYS,
   TRUST_LIST_SUBMISSION_NOTE,
 } from "@/store/trust-list";
 import type { HonoEnv } from "@/types";
@@ -53,7 +57,22 @@ trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
       used: TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "used")
         .length,
     },
-    entries: TRUST_LIST_ENTRIES.map((entry) => ({ ...entry })),
+    // Age is computed at serve time and stated per entry, so a check
+    // from the spring cannot sit beside one from yesterday looking
+    // identical. The dates were always here; the arithmetic wasn't.
+    freshness_policy: {
+      stale_after_days: TRUST_LIST_STALE_AFTER_DAYS,
+      note: TRUST_LIST_FRESHNESS_NOTE,
+    },
+    evidence: {
+      receipts_url: `${base}/neighbours`,
+      note: "Services this store has actually paid, with what came back. A trust list entry says the keeper did the thing; that page shows what the thing returned.",
+    },
+    entries: TRUST_LIST_ENTRIES.map((entry) => ({
+      ...entry,
+      days_since_checked: daysSinceChecked(entry),
+      freshness: entryFreshness(entry),
+    })),
   };
   const canonical = JSON.stringify(body);
   const { signature, publicKey } = await signMessage(

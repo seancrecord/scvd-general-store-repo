@@ -121,3 +121,49 @@ export const TRUST_LIST_SCOPE_NOTE =
 /** How an origin gets considered. Never automatic, never for money. */
 export const TRUST_LIST_SUBMISSION_NOTE =
   "To be considered, POST /api/request with a suggest_listing field. The keeper goes and does the thing himself before anything is added, which is the only reason this list is worth reading. There is no fee, there is no placement to buy, and asking does not put you on it.";
+
+/**
+ * HOW OLD IS AN ENTRY, SAID OUT LOUD.
+ *
+ * Move 2 called for live maintenance — an auto-funded weekly check per
+ * listed origin, so the list flags services that go dark instead of
+ * aging into fiction. That upgrade spends real money every week and is
+ * the keeper's call, so it waits for him.
+ *
+ * What does NOT wait, and costs nothing: saying how old each check is.
+ * A trust list whose entries carry a `last_checked` date and no
+ * reading of that date is the same failure as a machine surface with
+ * no `as_of` — technically honest, practically silent. An entry the
+ * keeper verified two days ago and one he verified in the spring look
+ * identical until somebody does the arithmetic, and nobody does the
+ * arithmetic.
+ */
+export const TRUST_LIST_STALE_AFTER_DAYS = 30;
+
+export type TrustListFreshness = "recent" | "aging" | "stale";
+
+export function daysSinceChecked(
+  entry: TrustListEntry,
+  now: Date = new Date(),
+): number {
+  const checked = Date.parse(`${entry.last_checked}T00:00:00.000Z`);
+  if (Number.isNaN(checked)) {
+    return 0;
+  }
+  return Math.max(0, Math.floor((now.getTime() - checked) / 86_400_000));
+}
+
+export function entryFreshness(
+  entry: TrustListEntry,
+  now: Date = new Date(),
+): TrustListFreshness {
+  const days = daysSinceChecked(entry, now);
+  if (days > TRUST_LIST_STALE_AFTER_DAYS) {
+    return "stale";
+  }
+  return days > TRUST_LIST_STALE_AFTER_DAYS / 2 ? "aging" : "recent";
+}
+
+/** Said on the artifact, because a reader should not have to infer it. */
+export const TRUST_LIST_FRESHNESS_NOTE =
+  `Every entry carries how many days old its last check is, and a reading of that age: recent, aging, or stale past ${TRUST_LIST_STALE_AFTER_DAYS} days. A STALE ENTRY IS NOT A WARNING ABOUT THE SERVICE — it means nobody here has looked lately, which is a fact about us rather than about them. Weigh an old check as an old check.`;
