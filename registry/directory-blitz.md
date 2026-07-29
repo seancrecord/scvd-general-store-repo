@@ -52,7 +52,12 @@ Aggregates x402scan, awesome-x402, CDP Bazaar + self-submissions;
 flows in from the Bazaar on its own; check their x402 directory for
 scvd.store, use the provider self-submission only if missing.
 
-## VERIFY before touching (MCP registries)
+## MCP registries — DONE (keeper, 2026-07-29)
+
+Submitted. Nothing below is an open action; it is kept as the record
+of what was checked before submitting.
+
+## What was verified first
 
 The store's MCP door is a streamable-HTTP endpoint without a server
 card (SEP-2127 is still a draft; the store skipped the card on

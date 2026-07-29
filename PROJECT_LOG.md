@@ -30,6 +30,25 @@ Running log of decisions, prompts run, and status. Agents: read this first. Newe
 ## PINNED DECISIONS
 
 =====================================================================
+SETTLED — DO NOT RE-RAISE (pinned 2026-07-29, keeper-ordered)
+=====================================================================
+Things the keeper has done and reported done. Asking again is not
+diligence, it is not listening, and it has now happened twice.
+
+  * CLOUDFLARE HOSTING — on Workers Paid, $5/month, since before
+    2026-07-28. There is no free-tier KV write cap in play. Any note
+    that reasons from one is stale and wrong.
+  * MCP REGISTRY SUBMISSIONS (GROWTH_TASKS A2) — submitted, done,
+    closed 2026-07-29. Track A is finished entirely.
+
+RULE: before writing any item into an open list, check it here. When
+the keeper says a thing is done, it goes on this list in the same
+turn, in every file that mentions it — not just the one being quoted
+back at him. The failure mode both times was correcting one surface
+and leaving the others to resurface it later.
+=====================================================================
+
+=====================================================================
 THE NAMING LAW (pinned 2026-07-28, keeper-ruled; audit credit: CV)
 =====================================================================
 The store has exactly three name strings. Each has one job. No
@@ -94,6 +113,8 @@ Resequence approved by keeper same day; see GROWTH_TASKS.
 - 2026-07-28 · graffiti_on_a_train stocked; born from the Seven argument, night of 2026-07-27 — the ledger keeps facts, not explanations.
 
 - 2026-07-28 · Bell ring #7: CV, first walk of the store, unprompted. Noted.
+
+- 2026-07-29 · A2 CLOSED, AND A PIN SO IT STAYS CLOSED. MCP registry submissions are done — the keeper submitted them and had said so before, while GROWTH_TASKS, STATUS, TASKS and the blitz file all still listed them open, so it kept being handed back to him as an open item. Same failure as the Cloudflare free-tier notes exactly one day earlier: corrected in the surface being quoted and left standing in four others. Marked done in all four now, and a SETTLED — DO NOT RE-RAISE block is pinned at the top of this file, with both items on it, and the rule that anything the keeper reports done goes on that list in the same turn and in every file that mentions it. Track A is closed entirely.
 
 - 2026-07-29 · IT SETTLED. CV's client cleared on the first try after the fix: `small_blessing`, $0.005, HTTP 200, patron #26, cert_bhk7ytsnvf. THE WHOLE CHAIN, END TO END, ACROSS SIX DECLINES: not the domain, not the amount, not the signature — three envelope and type-shape faults stacked so that each was masked by the one in front of it. No `accepted` object at all; then, once that was fixed, `validAfter`/`validBefore` sent as JavaScript numbers where the schema requires decimal strings. Every layer of the diagnosis had to be built before the layer under it was visible, which is the argument for building the instrument rather than guessing at the fault. HARDENED IN THE SAME PASS, off CV's own question of whether it booked as house: the house flag is decided by WALLET ADDRESS, so a settle whose response carries no payer books as ORGANIC — and the store has recorded payer-less settles before, which is why the `nopayer` counter exists. That path would have promoted a house wallet to the store's first outside sale and filled the First Dollar frame permanently on its way past. The gate now falls back to the `from` in the signed authorization, which is the account about to be debited; two tests hold the line, including one that confirms a stranger's wallet still books organic, because a guard that catches everything has stopped measuring anything.
 

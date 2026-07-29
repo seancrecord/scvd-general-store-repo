@@ -112,8 +112,8 @@ New this week:
 ## WHERE WE ARE ON THE ORIGINAL PLAN
 
 **GROWTH_TASKS Track A (be findable):** A1 closed, A3 shipped and
-expanded, A4 shipped. **A2 (MCP registry submissions) is the one
-still open** — `/mcp` exists and is unlisted where operators browse.
+expanded, A4 shipped. **A2 (MCP registry submissions) is done too —
+the keeper submitted them.** Track A is closed out entirely.
 
 **Track B (Show HN, operator relationships):** keeper-only, and it was
 gated on the trust list existing. **It exists now.**

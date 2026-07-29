@@ -70,13 +70,16 @@ REMAINING: the OpenAPI summaries still read as catalogue entries
 ("Buy A Small Blessing"), and item `description` fields are still
 written product-first. Those are the surfaces this task still wants.
 
-### A2. MCP registry submissions
+### ~~A2. MCP registry submissions~~ — DONE
 
-The `/mcp` endpoint exists and is unlisted where agents' operators
-browse. Submit to Smithery and every other live MCP registry.
-Attribute the listing URLs so directory-origin traffic shows in the
-logs. **Check state first** — mcpservers.org and mcp.so may already
-be done from earlier milestone work; do not double-submit.
+**Submitted by the keeper. Closed 2026-07-29.** Reported done more
+than once before this file was corrected; that is on the file, not on
+him. Nothing further is asked of anyone here.
+
+What remains is measurement, not action: a directory-origin visit
+arrives as a prober user-agent, so classify each one as
+infrastructure when it shows on /admin's window-shoppers table, or it
+inflates the organic count it was meant to grow.
 
 ### A3. Trust List v0 — publish the FORMAT, not the vouching
 
@@ -155,8 +158,8 @@ Timing: trust/continuity is the live conversation in agent-space now
 1. **A3** Trust List v0 — establish the anchor format while the
    conversation it answers is live.
 2. **A1** capability-query rewrite — found-by-search, pure precision.
-3. **A2** MCP registry submissions — pure action. **A4**
-   guide-the-visitor alongside, to make arrivals convert.
+3. ~~**A2** MCP registry submissions~~ — DONE, keeper. **A4**
+   guide-the-visitor shipped alongside.
 4. ~~**C1** CV charter~~ — DONE: CV is live and holds his own
    instructions.
 5. **B1** Show HN — after Trust List v0 exists, keeper-voiced.
