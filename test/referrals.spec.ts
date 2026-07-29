@@ -136,3 +136,79 @@ describe("the referral marker", () => {
     expect(venue.keys.some((key) => key.name.endsWith(":31"))).toBe(false);
   });
 });
+
+/**
+ * REFERRERS BY HOST — CV's #3, built with his framing rather than
+ * against it.
+ *
+ * He pulled the live census before answering and predicted mostly
+ * nulls, for a real reason: `Referer` is a browser artifact, HTTP
+ * libraries and x402 signing clients do not set one, and the two
+ * heaviest clients on this store right now are literally no user-agent
+ * at all and a named bot. He also refused to be merely dismissive —
+ * headless-browser directory scanners and any human clicking a listing
+ * WILL populate it, and one confirmed hit from a directory's own domain
+ * would be the first evidence ever that a listing sends anybody here.
+ *
+ * So the requirement is not "make it work." It is: scope the claim so a
+ * mostly-empty table is never misread as broken instrumentation, the way
+ * the decline reasons nearly were.
+ */
+describe("referrers by host", () => {
+  it("counts a real browser referrer by host, not by URL", async () => {
+    const { readReferrerHosts } = await import("@/lib/referrals");
+    const before = await readReferrerHosts(testEnv);
+    await SELF.fetch("https://scvd.store/api/buy/hello", {
+      headers: {
+        Referer: "https://www.x402scan.com/some/listing/page?utm=whatever",
+        "User-Agent": "Mozilla/5.0 (referrer-spec)",
+      },
+    });
+    const after = await readReferrerHosts(testEnv);
+    const host = after.hosts.find((row) => row.host === "www.x402scan.com");
+    expect(host, "a real referrer was not counted").toBeTruthy();
+    expect(after.with_referrer).toBeGreaterThan(before.with_referrer);
+    // The path is deliberately dropped: a full URL is unbounded key
+    // space, and the question is which SITE sends traffic.
+    expect(
+      after.hosts.some((row) => row.host.includes("/")),
+      "a path leaked into the host table",
+    ).toBe(false);
+  });
+
+  it("ignores the house, same as every other organic count", async () => {
+    const { readReferrerHosts } = await import("@/lib/referrals");
+    const before = await readReferrerHosts(testEnv);
+    await SELF.fetch(
+      `https://scvd.store/api/buy/hello?house=${testEnv.HOUSE_SECRET}`,
+      { headers: { Referer: "https://keeper.example/private" } },
+    );
+    const after = await readReferrerHosts(testEnv);
+    expect(
+      after.hosts.some((row) => row.host === "keeper.example"),
+      "house traffic reached the referrer table",
+    ).toBe(false);
+    expect(after.with_referrer).toBe(before.with_referrer);
+  });
+
+  it("scopes its own claim so an empty table is never read as broken", async () => {
+    const { readReferrerHosts } = await import("@/lib/referrals");
+    const report = await readReferrerHosts(testEnv);
+    expect(report.honest_limit).toContain("NOT GENERAL ATTRIBUTION");
+    // The sentence that stops the decline-reasons misreading happening
+    // again: empty means no clicks, not a broken instrument.
+    expect(report.honest_limit).toContain("does NOT mean the instrument is broken");
+  });
+
+  it("keeps the two mechanisms apart on the page that shows both", async () => {
+    const page = await (
+      await SELF.fetch("https://scvd.store/admin/referrals", {
+        headers: { Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}` },
+      })
+    ).text();
+    // A typed marker and a browser header answer the same instinct by
+    // different means; adding them together would be nonsense.
+    expect(page).toContain("a DIFFERENT mechanism");
+    expect(page).toContain("do not add these numbers together");
+  });
+});

@@ -159,6 +159,11 @@ practiceCounterRoutes.get("/try", (c) => {
           <p class="menu-desc">${escapeHtml(COPY.cheapNote)}</p>
         </section>
         <section>
+          <h2>${escapeHtml(COPY.stuckHead)}</h2>
+          ${list(COPY.stuck)}
+          <p class="menu-meta"><code>GET /api/buy/settlement_attestation?tx_hash=0x…</code></p>
+        </section>
+        <section>
           <h2>${escapeHtml(COPY.verifyHead)}</h2>
           ${list(COPY.verify)}
           <p class="menu-meta">Live sample artifact: <a href="/api/verify/${escapeHtml(SAMPLE_ARTIFACT_ID)}"><code>${escapeHtml(SAMPLE_ARTIFACT_ID)}</code></a></p>
@@ -215,6 +220,12 @@ practiceCounterRoutes.get("/try", (c) => {
       note: COPY.mcp,
     },
     hand_rolling: HAND_ROLLING,
+    when_you_are_stuck: {
+      head: COPY.stuckHead,
+      notes: COPY.stuck,
+      item_id: "settlement_attestation",
+      buy: `${base}/api/buy/settlement_attestation?tx_hash={0x…}&src=try`,
+    },
     honest_notes: COPY.honest,
     refund_policy: STORE_METADATA.refund_policy,
     mailbox: `${base}/api/letter`,

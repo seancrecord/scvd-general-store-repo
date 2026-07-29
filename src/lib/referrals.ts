@@ -152,3 +152,117 @@ export async function readReferrals(
     honest_limit: HONEST_LIMIT,
   };
 }
+
+/**
+ * TOP REFERRERS BY HOST — a different mechanism from everything above,
+ * and the distinction is the point.
+ *
+ * The counters above track a marker somebody TYPED (`?ref=`). This
+ * tracks the `Referer` HEADER, which a browser sets by itself. Same
+ * instinct — where did this come from — and nothing else in common. CV
+ * flagged the confusion risk explicitly, so both live on one page with
+ * their limits stated separately rather than in two places that look
+ * alike.
+ *
+ * WHAT IT CATCHES, SCOPED UP FRONT so an empty table is never misread
+ * as broken instrumentation — which is exactly how the decline reasons
+ * were nearly misread: `Referer` is a browser-navigation artifact. HTTP
+ * client libraries and x402 signing SDKs do not set it, and there is no
+ * reason a payment library would. This store's traffic is currently
+ * almost entirely non-browser: CV pulled the live census while
+ * validating this and the two heaviest clients were literally no
+ * user-agent at all and a named bot.
+ *
+ * SO THE HONEST EXPECTATION IS MOSTLY NULLS, and this is still worth
+ * building, because the exceptions are the interesting part: a
+ * directory that renders with a headless browser for JS-heavy checks
+ * can carry a real one, and a HUMAN clicking through from a listing
+ * page will. One confirmed hit from a directory's own domain would be
+ * the first evidence ever that a specific listing sends anybody here.
+ *
+ * It catches the rare click. It is not general attribution, and it must
+ * never be described as such.
+ */
+export interface ReferrerRow {
+  host: string;
+  count: number;
+}
+
+export interface ReferrerReport {
+  rows_scanned: number;
+  /** Rows that carried a Referer at all. Usually a small fraction. */
+  with_referrer: number;
+  hosts: ReferrerRow[];
+  honest_limit: string;
+}
+
+const REFERRER_SCAN_CAP = 2000;
+
+const REFERRER_LIMIT =
+  "CATCHES THE RARE CLICK, NOT GENERAL ATTRIBUTION. The Referer header is set by browsers; HTTP libraries and x402 signing clients do not send one, and almost all traffic here is non-browser. An empty table means nobody arrived by clicking a link — it does NOT mean the instrument is broken, and it is not comparable to the marker counts above. A single row from a directory's own domain would be the first evidence that a listing sends anyone here.";
+
+/** Bare host, lowercased. A path would be unbounded key space. */
+function hostOf(referrer: string): string | undefined {
+  try {
+    const host = new URL(referrer).hostname.toLowerCase();
+    return host.length > 0 && host.length <= 120 ? host : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function readReferrerHosts(
+  env: Env,
+  scanCap = REFERRER_SCAN_CAP,
+): Promise<ReferrerReport> {
+  const counts = new Map<string, number>();
+  let scanned = 0;
+  let withReferrer = 0;
+  let cursor: string | undefined;
+
+  while (scanned < scanCap) {
+    const listed = await env.COUNTERS.list({
+      prefix: "evt:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    for (const key of listed.keys) {
+      if (scanned >= scanCap) {
+        break;
+      }
+      scanned += 1;
+      const raw = await env.COUNTERS.get(key.name);
+      if (!raw) {
+        continue;
+      }
+      let event: { referrer?: string; house?: boolean };
+      try {
+        event = JSON.parse(raw) as { referrer?: string; house?: boolean };
+      } catch {
+        continue;
+      }
+      if (event.house || !event.referrer) {
+        continue;
+      }
+      const host = hostOf(event.referrer);
+      if (!host) {
+        continue;
+      }
+      withReferrer += 1;
+      counts.set(host, (counts.get(host) ?? 0) + 1);
+    }
+    if (listed.list_complete) {
+      break;
+    }
+    cursor = listed.cursor;
+  }
+
+  return {
+    rows_scanned: scanned,
+    with_referrer: withReferrer,
+    hosts: [...counts.entries()]
+      .map(([host, count]) => ({ host, count }))
+      .sort((a, b) => b.count - a.count),
+    honest_limit: REFERRER_LIMIT,
+  };
+}

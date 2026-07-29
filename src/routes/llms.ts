@@ -160,6 +160,15 @@ returned anchor URL; recurring_patronage opens a 30-day standing pass
 keeper's signed monthly note; small_blessing and daily_fortune sit on
 the Penny Shelf by the door.
 
+## When we get it wrong
+
+Every claim this store has made that turned out not to be true is
+listed, dated, at ${base}/corrections — five of them, with what found
+each one and what changed structurally so it cannot recur quietly. A
+store eight days old claiming a clean record would be making the less
+plausible claim. Read the mechanism at the top before the list: each
+correction added the check that would have caught it.
+
 ## Our own wallets, declared
 
 Every wallet this store controls is listed and signed at

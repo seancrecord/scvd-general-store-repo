@@ -1,5 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
-import type { ReferralReport } from "@/lib/referrals";
+import type { ReferralReport, ReferrerReport } from "@/lib/referrals";
 import { renderAdminShell } from "@/pages/admin/layout";
 
 /**
@@ -20,7 +20,10 @@ import { renderAdminShell } from "@/pages/admin/layout";
  * is not happening yet, which is worth knowing for free rather than
  * discovering after building an artifact around it.
  */
-export function renderReferralsPage(report: ReferralReport): string {
+export function renderReferralsPage(
+  report: ReferralReport,
+  referrers: ReferrerReport,
+): string {
   const rows = report.rows
     .map(
       (row) => `<tr>
@@ -54,6 +57,32 @@ export function renderReferralsPage(report: ReferralReport): string {
       same way the 402-to-settle gap does everywhere else: a marker that
       reached a price and stopped is a different fact from one that went
       through. Nothing on this page is published and nothing is signed.</p>
+    </section>
+    <section>
+      <h2>Referrers by host — a DIFFERENT mechanism</h2>
+      <p class="menu-desc">Everything above counts a marker somebody
+      <strong>typed</strong>. Everything below counts the
+      <code>Referer</code> header, which a browser sets
+      <strong>by itself</strong>. Same instinct, nothing else in common —
+      do not add these numbers together.</p>
+      <p class="menu-desc">${escapeHtml(referrers.honest_limit)}</p>
+      <p class="menu-meta">Rows scanned: ${referrers.rows_scanned} · carried a referrer: ${referrers.with_referrer}</p>
+      ${
+        referrers.hosts.length > 0
+          ? `<table>
+        <thead><tr><th>Host</th><th>Arrivals</th></tr></thead>
+        <tbody>${referrers.hosts
+          .map(
+            (row) =>
+              `<tr><td>${escapeHtml(row.host)}</td><td>${row.count}</td></tr>`,
+          )
+          .join("")}</tbody>
+      </table>`
+          : `<p class="menu-desc"><strong>Nothing yet, and that is the
+      expected reading rather than a fault.</strong> Nobody has arrived
+      here by clicking a link in a browser. The instrument is working; the
+      clicks are not happening.</p>`
+      }
     </section>`,
   );
 }

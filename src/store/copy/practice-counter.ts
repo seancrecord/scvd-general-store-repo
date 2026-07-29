@@ -35,6 +35,28 @@ export const PRACTICE_COUNTER_COPY = {
   cheapNote:
     "Prices are the real prices. Nothing here is discounted for testing, because a discounted test isn't a test of anything.",
 
+  /**
+   * CV's condition, 2026-07-29, and it is the difference between a
+   * cross-reference and noise: this page's whole frame is "test your
+   * client's SIGNING." settlement_attestation answers a different
+   * question — not "is my payment well-formed" but "the payment I
+   * already sent went quiet, did it land." Listed on the cheap door
+   * without that framing it reads as a second thing to buy. Named with
+   * the moment attached, it is a second debugging tool.
+   *
+   * He had been in that seat three times this week. The one that broke
+   * was exactly this: "did my script's bug break the signing, or did
+   * something fail server-side after settlement" — and there was no way
+   * to answer it except guessing.
+   */
+  stuckHead: "If you sent a payment and don't know what happened",
+  stuck: [
+    "The failure that costs the most time isn't a rejected signature — it's silence. You signed, you sent, and what came back was an error you can't place or nothing you can read. Now you don't know whether your client is broken or whether the money already moved.",
+    "settlement_attestation answers that one question and nothing else: give it a transaction hash and it reads Base once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. $0.004. One read, no poll, no retry, and nobody looked at it on our end.",
+    "It is not a check on your signing. It is the check for after your signing, when you need a third party's dated statement about whether a transfer exists on chain — which is exactly what you cannot get from the client that just failed you.",
+    "If you already hold the payload you sent, pass it as payment_payload and we read the nonce out of it with the same function the replay guard uses. Otherwise tx_hash on its own is enough.",
+  ],
+
   verifyHead: "Checking your work",
   verify: [
     "Every certificate verifies at /api/verify/{cert_id}, no auth, forever.",

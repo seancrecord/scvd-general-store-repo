@@ -532,9 +532,13 @@ adminRoutes.get("/admin/recount", async (c) => {
  * scan, so this page is not the census's expense.
  */
 adminRoutes.get("/admin/referrals", async (c) => {
-  const { readReferrals } = await import("@/lib/referrals");
+  const { readReferrals, readReferrerHosts } = await import("@/lib/referrals");
   const { metricsMonth } = await import("@/lib/metrics");
-  return c.html(renderReferralsPage(await readReferrals(c.env, metricsMonth())));
+  const [markers, referrers] = await Promise.all([
+    readReferrals(c.env, metricsMonth()),
+    readReferrerHosts(c.env),
+  ]);
+  return c.html(renderReferralsPage(markers, referrers));
 });
 
 adminRoutes.get("/admin/census", async (c) => {
