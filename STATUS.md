@@ -155,8 +155,10 @@ claim still gated.
    every tick that our own published artifacts still resolve and
    verify, and that the advertised key has not drifted. Read-only: it
    reports and never repairs.
-4. **MCP tools as Bazaar MCP resources** — the only path that flips a
-   catalog's "input schema" column for us.
+4. ~~MCP tools as Bazaar MCP resources~~ — **DONE by the keeper,
+   2026-07-30.** He registered them himself. What's left is reading the
+   scorecard to see whether the "input schema" column flipped, which is
+   a look rather than a build.
 
 ### Standing dates
 

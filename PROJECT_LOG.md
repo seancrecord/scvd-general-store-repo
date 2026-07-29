@@ -40,6 +40,9 @@ diligence, it is not listening, and it has now happened twice.
     that reasons from one is stale and wrong.
   * MCP REGISTRY SUBMISSIONS (GROWTH_TASKS A2) — submitted, done,
     closed 2026-07-29. Track A is finished entirely.
+  * MCP TOOLS AS BAZAAR MCP RESOURCES — registered by the keeper,
+    closed 2026-07-30. Anything MCP-shaped on an open list from here
+    is a reading of a result, never a build he still owes.
 
 RULE: before writing any item into an open list, check it here. When
 the keeper says a thing is done, it goes on this list in the same
