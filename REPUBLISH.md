@@ -65,11 +65,27 @@ git pull && npx clawhub@latest skill publish registry/clawhub \
   --slug scvd-general-store \
   --name "SCVD General Store" \
   --version 2.4.0 \
-  --changelog "Settlement attestation and graffiti on a train; practice counter; why_use and the situation index; per-item endpoints; refund wording corrected to what the code does" \
+  --changelog "Settlement attestation and graffiti on a train; practice counter with the hand-rolling notes; why_use and the situation index; per-item endpoints; refund wording corrected to what the code does" \
   --source-repo seancrecord/scvd-general-store-repo \
-  --source-commit 0f4622afd83e0a0c67769829661bb64bb25ec977 \
+  --source-commit f5e030983ce4f4db597a78749225b20d95835861 \
   --source-path registry/clawhub
 ```
+
+**CONFIRMED STALE 2026-07-29** — CV pulled the live `/skill.md` against
+the published ClawHub listing and diffed them. They diverge for real:
+the published copy carries an opening passage that no longer exists in
+the live document, and shows neither the resource-evidence table nor
+`settlement_attestation` and `graffiti_on_a_train`. An agent installing
+the skill today reads last week's store. Payment mechanics are
+unaffected — the endpoints never moved and are now better instrumented
+than they were — so this is a shelf that has moved without the sign
+changing, not a break.
+
+A test now walks the live document against `MENU_ITEMS`
+(`test/skill-bundle-freshness.spec.ts`), so an item shipping without
+reaching the skill fails CI. What no test can reach is whether the
+PUBLISHED copy matches the repo's — that gap closes only when a hand
+runs the command above.
 
 TWO THINGS WERE WRONG with the command that sat here until
 2026-07-28, and both would have failed on paste:
