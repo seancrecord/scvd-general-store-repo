@@ -18,6 +18,14 @@ export interface WebhookCall {
 export interface FacilitatorMockState {
   settleShouldFail: boolean;
   verifyShouldFail: boolean;
+  /**
+   * A successful settle that comes back with no payer address. Not
+   * hypothetical: the store's `nopayer` counter exists because real
+   * settles have arrived this way, and the house flag is decided by
+   * wallet, so this is the shape that can turn a house buy into the
+   * store's first "organic" sale.
+   */
+  settleOmitsPayer: boolean;
   webhookCalls: WebhookCall[];
 }
 
@@ -35,6 +43,7 @@ export function installFacilitatorMock(): FacilitatorMockState {
   const state: FacilitatorMockState = {
     settleShouldFail: false,
     verifyShouldFail: false,
+    settleOmitsPayer: false,
     webhookCalls: [],
   };
 
@@ -81,7 +90,7 @@ export function installFacilitatorMock(): FacilitatorMockState {
           success: true,
           transaction: TEST_TRANSACTION,
           network: "eip155:8453",
-          payer: TEST_PAYER,
+          ...(state.settleOmitsPayer ? {} : { payer: TEST_PAYER }),
         },
         { headers: { "EXTENSION-RESPONSES": extensionResponses } },
       );

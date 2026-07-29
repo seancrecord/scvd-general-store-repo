@@ -244,6 +244,19 @@ function refusalBeforeVerify(
   };
 }
 
+/** The account that signed the authorization, straight off the header. */
+function payerFromPaymentHeader(header: string | undefined): string | undefined {
+  const payload = decodePaymentHeader(header);
+  if (!isRecord(payload) || !isRecord(payload.payload)) {
+    return undefined;
+  }
+  const auth = payload.payload.authorization;
+  if (!isRecord(auth) || typeof auth.from !== "string") {
+    return undefined;
+  }
+  return /^0x[0-9a-fA-F]{40}$/.test(auth.from) ? auth.from : undefined;
+}
+
 /** Our reading of the inner payload, for a header we were handed. */
 function payloadProblemsFor(paymentHeader: string): PayloadFieldProblem[] {
   const payload = decodePaymentHeader(paymentHeader);
@@ -510,8 +523,19 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     paidUsdc,
     minimumUsdc,
   };
-  if (settlement.payer) {
-    settlementSignals.payer = settlement.payer;
+  // The payer, from the facilitator if it returned one and from the
+  // signed authorization if it did not. THIS MATTERS MORE THAN IT
+  // LOOKS: the house flag is decided by wallet address, so a settle
+  // that arrives with no payer books as ORGANIC — and an organic
+  // settle is the one number this whole build is waiting on. A house
+  // wallet quietly promoted to the first outside sale would be false
+  // in the direction rule 13 exists to prevent. The `from` in the
+  // authorization is the account that signed and is about to be
+  // debited; when both are present they are the same address.
+  const payer =
+    settlement.payer ?? payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
+  if (payer) {
+    settlementSignals.payer = payer;
   }
   await recordSettlement(c.env, c.req.path, settlementSignals);
   const payment: SettledPayment = {
