@@ -24,6 +24,7 @@ import {
   requestRoutes,
   houseLedgerRoutes,
   neighboursRoutes,
+  stackRoutes,
   trustListRoutes,
   refundRoutes,
   schemaRoutes,
@@ -144,6 +145,7 @@ app.route("/", practiceCounterRoutes);
 app.route("/", trustListRoutes);
 app.route("/", houseLedgerRoutes);
 app.route("/", neighboursRoutes);
+app.route("/", stackRoutes);
 app.route("/", llmsRoutes);
 app.route("/", skillRoutes);
 app.route("/", catalogRoutes);

@@ -171,6 +171,16 @@ the chain carries no flag for "this one was the keeper testing his own
 till." Subtract those addresses and score what's left. The document
 says plainly that it is a declaration rather than a proof.
 
+## What we rest on
+
+The other half of the wallet declaration, at ${base}/stack: every
+service this store depends on and does not control, what stops working
+when each one fails, and what you lose in that case. Signed. NOT an
+endorsement in either direction — we depend on them, none of them has
+heard of us, and both facts are printed together. If you have seen a
+small operation imply a partnership by listing a large company's name,
+this is the same list written as exposure instead.
+
 ## The trust list
 
 A signed list of origins the keeper has personally transacted with,

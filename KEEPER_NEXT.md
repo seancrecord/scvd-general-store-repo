@@ -47,15 +47,12 @@ reason have come apart, and which one governs is yours, not mine. I
 have not touched it. The receipt is published on `/neighbours` either
 way, so nothing is hidden while you decide.
 
-**b) `/stack` — the dependency disclosure.**
-The honest version of "name big players as a trust signal." Not
-"powered by Coinbase" (borrowed credibility, and nobody there has
-heard of us) but a signed document saying what this store RESTS ON and
-what breaks when each piece does: the CDP facilitator, Base, USDC,
-Cloudflare, our own signing key. The supply-chain mirror of the house
-ledger — that one says what we control, this says what we don't. Every
-line checkable from outside, no endorsement claimed. Frame is written
-up in COMPETITIVE.md; say the word and it ships.
+~~**b) `/stack`**~~ — **SHIPPED 2026-07-29 on your go.** Six
+dependencies, each with its failure mode, what a buyer loses, and how
+to confirm we depend on it. Says outright that none of those companies
+has heard of us; a test bans the borrowed phrasings. Two admissions
+kept that were easier to leave out: the host is the worst failure for a
+buyer, and the signing key has no substitute and no recovery.
 
 **c) The weekly auto-funded check on listed origins.**
 Move 2's live-maintenance upgrade: each trust-list origin gets an

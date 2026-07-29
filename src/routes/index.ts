@@ -13,6 +13,7 @@ export { porchRoutes } from "@/routes/porch";
 export { practiceCounterRoutes } from "@/routes/practice-counter";
 export { houseLedgerRoutes } from "@/routes/house-ledger";
 export { neighboursRoutes } from "@/routes/neighbours";
+export { stackRoutes } from "@/routes/stack";
 export { trustListRoutes } from "@/routes/trust-list";
 export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
