@@ -59,6 +59,13 @@ export const HAND_ROLLING = {
   },
 
   /**
+   * Before anything else: the shape of what you send back. Two
+   * client-builders have now failed here rather than at the signature.
+   */
+  envelope:
+    'Send the payload base64-encoded in the PAYMENT-SIGNATURE header, shaped exactly like this: { "x402Version": 2, "accepted": <one of the offered accepts entries, copied whole>, "payload": { "signature": "0x...", "authorization": { "from", "to", "value", "validAfter", "validBefore", "nonce" } } }. If `accepted` is absent the library that reads it raises a TypeError rather than a verdict, and you get a 402 that looks like a server crash. Ours now names the missing field in plain words and lists what did arrive.',
+
+  /**
    * The one that actually caught our first two client-builders, and it
    * is not the signature at all.
    */

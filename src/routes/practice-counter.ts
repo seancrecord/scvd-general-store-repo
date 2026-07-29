@@ -122,6 +122,7 @@ practiceCounterRoutes.get("/try", (c) => {
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.standfirst)}</p>
           <p class="menu-desc"><strong>${escapeHtml(HAND_ROLLING.domain_warning)}</strong></p>
           ${eip712Html}
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.envelope)}</p>
           <p class="menu-desc"><strong>${escapeHtml(HAND_ROLLING.echo_the_offer)}</strong></p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.amounts)}</p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.validity)}</p>

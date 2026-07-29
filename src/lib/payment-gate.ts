@@ -19,6 +19,8 @@ import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import {
   describeMismatch,
+  describePayloadShape,
+  looksLikeAnException,
   mismatchReasonCode,
   sdkRefusal,
 } from "@/lib/requirement-match";
@@ -132,14 +134,13 @@ function respondWithInstructions(
   return c.json(instructions.body ?? {}, status);
 }
 
-/** The `accepted` object a client echoed back, for mismatch diagnosis. */
-function acceptedFromPaymentHeader(header: string | undefined): unknown {
+/** The whole decoded payload, for shape and mismatch diagnosis. */
+function decodePaymentHeader(header: string | undefined): unknown {
   if (!header) {
     return undefined;
   }
   try {
-    const payload: unknown = JSON.parse(atob(header));
-    return isRecord(payload) ? payload.accepted : undefined;
+    return JSON.parse(atob(header));
   } catch {
     return undefined;
   }
@@ -179,7 +180,24 @@ function refusalBeforeVerify(
   if (!stated) {
     return undefined;
   }
-  const accepted = acceptedFromPaymentHeader(paymentHeader);
+  const payload = decodePaymentHeader(paymentHeader);
+
+  // The envelope first. A payload missing `accepted` makes the SDK's
+  // matcher throw on undefined, and the TypeError it catches then
+  // arrives here looking exactly like a crash of ours. Answer it in
+  // words before that can happen.
+  const shape = describePayloadShape(payload);
+  if (shape) {
+    return {
+      decline: {
+        reason: shape.code,
+        message: `${shape.says} We saw these top-level fields: ${shape.keys_seen.join(", ") || "(none)"}.`,
+        matched_by: "body",
+      },
+    };
+  }
+
+  const accepted = isRecord(payload) ? payload.accepted : undefined;
   const accepts = isRecord(challenge) ? challenge.accepts : undefined;
   const mismatch = describeMismatch(accepts, accepted);
   if (mismatch) {
@@ -192,8 +210,23 @@ function refusalBeforeVerify(
       mismatch,
     };
   }
+  // Never slug an exception into a reason code: it reads as our crash
+  // and it puts an unbounded string family into the books.
+  if (looksLikeAnException(stated)) {
+    return {
+      decline: {
+        reason: "local:sdk_threw",
+        message: `${stated} (That is the x402 library's own exception text, raised while reading the payment payload — not an error from the store's code. It nearly always means a field it expected was absent.)`,
+        matched_by: "body",
+      },
+    };
+  }
   return {
-    decline: { reason: `local:${slugRefusal(stated)}`, message: stated, matched_by: "body" },
+    decline: {
+      reason: `local:${slugRefusal(stated)}`,
+      message: stated,
+      matched_by: "body",
+    },
   };
 }
 

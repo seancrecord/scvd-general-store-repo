@@ -1,7 +1,11 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { readReason } from "@/lib/declines";
-import { describeMismatch, mismatchReasonCode } from "@/lib/requirement-match";
+import {
+  describeMismatch,
+  looksLikeAnException,
+  mismatchReasonCode,
+} from "@/lib/requirement-match";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { decodePaymentRequired } from "./helpers/payment";
 import { TEST_PAYER } from "./helpers/facilitator-mock";
@@ -73,6 +77,57 @@ describe("a refusal before the facilitator", () => {
     const mismatch = stated.requirement_mismatch as Record<string, unknown>;
     expect(Array.isArray(mismatch.mismatches)).toBe(true);
     expect((mismatch.mismatches as unknown[]).length).toBeGreaterThan(0);
+  });
+
+  it("answers a payload with no `accepted` in words, not in a stack trace", async () => {
+    // CV's second retry, 2026-07-29. The SDK's matcher destructures
+    // `accepted`, so an absent one throws a TypeError, the SDK catches
+    // it into the challenge, and we slugged the trace into a reason
+    // code that read as our crash:
+    //   local:cannot_destructure_property_extra_of_accepted_as_it_is_undef
+    const signature = btoa(
+      JSON.stringify({
+        x402Version: 2,
+        payload: {
+          signature: `0x${"cd".repeat(65)}`,
+          authorization: {
+            from: TEST_PAYER,
+            to: "0x1111111111111111111111111111111111111111",
+            value: "500000",
+            validAfter: "0",
+            validBefore: "99999999999",
+            nonce: `0x${"22".repeat(32)}`,
+          },
+        },
+      }),
+    );
+    const declined = await SELF.fetch("https://scvd.store/api/buy/hello", {
+      headers: { "PAYMENT-SIGNATURE": signature },
+    });
+    const body = (await declined.json()) as Record<string, unknown>;
+    const stated = body.payment_declined as Record<string, unknown>;
+
+    expect(stated.reason).toBe("local:payload_missing_accepted");
+    // Never again: no exception text slugged into a reason code.
+    expect(String(stated.reason)).not.toContain("destructure");
+    expect(String(stated.reason)).not.toContain("undefined");
+    // And it says what DID arrive, which is what makes it actionable.
+    expect(String(stated.message)).toContain("x402Version");
+    expect(String(stated.message)).toContain("payload");
+    expect(readReason("local:payload_missing_accepted").fault).toBe("buyer");
+  });
+
+  it("gives an exception one stable code instead of an unbounded family", () => {
+    // A slug built from a TypeError is a truncated stack trace wearing
+    // a reason code's clothes, and every variant becomes its own row in
+    // the books.
+    expect(
+      looksLikeAnException(
+        "Cannot destructure property 'extra' of 'accepted' as it is undefined.",
+      ),
+    ).toBe(true);
+    expect(looksLikeAnException("No matching payment requirements")).toBe(false);
+    expect(readReason("local:sdk_threw").reading).toContain("is not one");
   });
 
   it("stays silent when the echo is correct, so it can never invent a mismatch", async () => {

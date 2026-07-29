@@ -175,6 +175,89 @@ export function mismatchReasonCode(report: MismatchReport): string {
     : "local:requirement_mismatch";
 }
 
+/**
+ * WHAT ARRIVED, WHEN IT ISN'T EVEN COMPARABLE.
+ *
+ * Found 2026-07-29, one retry after the last fix. CV's payload carried
+ * no `accepted` object at all, so the SDK's matcher destructured
+ * undefined and threw; the SDK caught it, put the TypeError's message
+ * in the challenge, and we dutifully slugged a stack trace into a
+ * reason code:
+ *
+ *   local:cannot_destructure_property_extra_of_accepted_as_it_is_undef
+ *
+ * That is a worse answer than "unspecified" was, because it reads like
+ * OUR crash. It was not, but a diagnostic that gets mistaken for a bug
+ * report has failed at the only job it has. So: check the envelope
+ * ourselves, before the SDK gets a chance to throw over it, and say
+ * what is missing in words.
+ */
+export interface PayloadShapeProblem {
+  code: string;
+  says: string;
+  keys_seen: string[];
+}
+
+/** Bounded and flattened; these are somebody else's field names. */
+function keysOf(value: unknown): string[] {
+  if (!isRecord(value)) {
+    return [];
+  }
+  return Object.keys(value)
+    .slice(0, 12)
+    .map((key) => key.slice(0, 40));
+}
+
+const ENVELOPE =
+  'The v2 envelope is { x402Version: 2, accepted: <one of the offered accepts entries, verbatim>, payload: { signature, authorization: { from, to, value, validAfter, validBefore, nonce } } }.';
+
+export function describePayloadShape(
+  paymentPayload: unknown,
+): PayloadShapeProblem | undefined {
+  if (!isRecord(paymentPayload)) {
+    return {
+      code: "local:payload_not_an_object",
+      says: `The PAYMENT-SIGNATURE header did not base64-decode to a JSON object. ${ENVELOPE}`,
+      keys_seen: [],
+    };
+  }
+  const keys_seen = keysOf(paymentPayload);
+  if (!isRecord(paymentPayload.accepted)) {
+    return {
+      code: "local:payload_missing_accepted",
+      says: `Your payload carried no \`accepted\` object, so there was nothing to compare against what we offered — the store never reached your signature. Copy one of the offered \`accepts\` entries into \`accepted\` unchanged. ${ENVELOPE}`,
+      keys_seen,
+    };
+  }
+  const inner = paymentPayload.payload;
+  if (!isRecord(inner)) {
+    return {
+      code: "local:payload_missing_payload",
+      says: `Your payload carried no inner \`payload\` object, which is where the signature and the authorization live. ${ENVELOPE}`,
+      keys_seen,
+    };
+  }
+  if (!isRecord(inner.authorization)) {
+    return {
+      code: "local:payload_missing_authorization",
+      says: `Your inner \`payload\` carried no \`authorization\` object. ${ENVELOPE}`,
+      keys_seen: keysOf(inner),
+    };
+  }
+  return undefined;
+}
+
+/**
+ * A message that is an exception rather than a verdict. Slugging one
+ * into a reason code produces unbounded garbage in the books and reads
+ * as our crash, so these get a single stable code and keep the words.
+ */
+export function looksLikeAnException(stated: string): boolean {
+  return /cannot |undefined|null|is not a function|typeerror|reading '|destructure/i.test(
+    stated,
+  );
+}
+
 /** The SDK's own words, when it refused before the facilitator was called. */
 export function sdkRefusal(body: unknown): string | undefined {
   if (!isRecord(body)) {

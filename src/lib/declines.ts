@@ -108,6 +108,20 @@ export function readReason(raw: string): {
         "The client's `accepted` object did not deep-equal any entry we offered, so the payment was refused BEFORE the facilitator was called — which is why the stage says verify and no facilitator string exists. The named field is the disagreement. Almost always a hand-rolled client rebuilding the object rather than echoing ours back verbatim.",
     };
   }
+  if (reason.startsWith("local:payload_")) {
+    return {
+      fault: "buyer",
+      reading:
+        "The payment envelope was the wrong SHAPE — a field the protocol requires was absent, so there was nothing to compare and the signature was never examined. Not a signing problem and not a funds problem. The message beside this says which field and lists what did arrive.",
+    };
+  }
+  if (reason === "local:sdk_threw") {
+    return {
+      fault: "buyer",
+      reading:
+        "The x402 library raised an exception while reading the payment payload, and its text is in the message. It reads like a crash and is not one: the library destructures fields it expects to exist, so an absent field surfaces as a TypeError. Treat the named field as the diagnosis. If the message does NOT name a payload field, escalate — that one would be ours.",
+    };
+  }
   if (reason.startsWith("local:")) {
     return {
       fault: "unknown",
