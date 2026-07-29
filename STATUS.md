@@ -147,6 +147,10 @@ claim still gated.
    402 went from three KV writes to one. Cloudflare is on Workers
    Paid, so this was headroom rather than a rescue.
 2. **Seven items are invisible** on the only surface sending traffic.
+   The cheap experiment is RUNNING: CV bought `phantom_check` on
+   2026-07-29 and it settled. Whether a settle is enough to get an
+   endpoint ingested is answered by watching the Bazaar listing over
+   the next week — not by anything we can build.
 3. ~~The registrar's round~~ — **ON SHIFT 2026-07-28.** Confirms on
    every tick that our own published artifacts still resolve and
    verify, and that the advertised key has not drifted. Read-only: it
