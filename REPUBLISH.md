@@ -91,6 +91,32 @@ ONE-TIME SETUP, browser, phone is fine: Settings → Secrets and
 variables → Actions → New repository secret, named `CLAWHUB_TOKEN`.
 Never paste that token into a chat, including to me.
 
+### Version history, and the gotcha that cost an hour
+
+| Version | Published (UTC) | What changed |
+|---|---|---|
+| 2.4.0 | 2026-07-28 20:49 | settlement_attestation, graffiti_on_a_train, practice counter |
+| 2.4.1 | 2026-07-29 15:41 | (a retry that landed while its own output read as a failure) |
+| 2.4.2 | 2026-07-29 ~16:51 | hardcoded item count removed |
+
+**TWO THINGS TO KNOW BEFORE THE NEXT PUBLISH, both learned the slow way
+on 2026-07-29.**
+
+1. **"Version X already exists" can mean the previous attempt WORKED.**
+   The CLI errors on the version collision, so a run that succeeded and
+   was then re-run reads, on screen, as two failures in a row. Check
+   `inspect` before assuming nothing landed, and pick the next unused
+   number rather than retrying the same one.
+2. **`latest` lags the publish.** A fresh version goes through a
+   moderation scan before the `latest` tag moves, so `inspect` can show
+   the previous version for several minutes after a successful publish.
+   The `✔ OK. Published ...` line is the authoritative signal; the tag
+   is the trailing one.
+
+The practical rule: **publish once, read the ✔ line, walk away, and
+inspect later.** Re-running because the tag has not moved yet is how
+three version numbers got burned in one afternoon.
+
 **CORRECTED 2026-07-30, and the correction is the useful part.**
 
 What sat here on 2026-07-29 — that the published listing showed neither

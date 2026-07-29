@@ -9,28 +9,29 @@ Ordered by what costs least and buys most.
 
 ---
 
-## 1. THE SKILL REPUBLISH — five minutes, phone is fine
+## 1. ~~THE SKILL REPUBLISH~~ — DONE 2026-07-29
 
-**Confirmed stale**, not suspected: CV pulled the live `/skill.md`
-against the published ClawHub listing and diffed them. The published
-copy carries an opening passage the live document no longer has, and
-shows neither the resource-evidence table nor `settlement_attestation`
-or `graffiti_on_a_train`. An agent installing the skill today reads
-last week's store.
+Published as **2.4.2**. The `latest` tag lags a moderation scan by a
+few minutes, so `inspect` may show the previous version briefly; the
+`✔ OK. Published` line is the real signal.
 
-**Do it from the phone:** Actions → *Publish ClawHub skill* → Run
-workflow. Version `2.4.0`, changelog pre-filled, `dry_run` checkbox if
-you want to see it first.
+**And the staleness this section originally described was wrong** —
+worth keeping visible rather than quietly editing out. The published
+listing was NOT missing the resource-evidence table or the two newest
+items; v2.4.0 went out twelve minutes after the PR carrying them
+merged. That claim came from an outside report I filed here without
+checking it against the registry.
 
-**One-time setup first:** Settings → Secrets and variables → Actions →
-New repository secret, named `CLAWHUB_TOKEN`. Never paste that token
-into a chat, including to me.
+What was actually stale: the bundle claimed "Twenty-one items" against
+a shelf of twenty-three. One number, two days old, now deleted rather
+than corrected — a count in a static document is a lie with a timer on
+it. Tests now walk the published bundle as well as the generated one,
+in both directions.
 
-**Timing note, and this is the actual recommendation: hold it one
-day.** CV is sending a reference client, and `/try` and `skill.md` will
-both point at it. Publishing now ships a document that goes stale on
-arrival. Publish once, after his PR lands, and it's current the day it
-goes out.
+**One thing still yours:** the bundle opens with a passage the live
+`/skill.md` dropped — "a partner, a friend, a listening ear... Hence
+the prices." That is voice, and voice is rule 7. Keep it or cut it;
+I have not touched it.
 
 ---
 
