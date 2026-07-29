@@ -22,6 +22,16 @@ organic settles isn't a flaw in the build, it's just early.*
 
 Read it before reaching for a fix that isn't broken.
 
+**What DID change, 2026-07-29: the flow is proven from outside.** CV's
+independently written client settled — `small_blessing`, $0.005,
+patron #26, `cert_bhk7ytsnvf`. House-flagged by wallet, correctly, and
+the First Dollar frame is still empty, which is how we know. That is
+not a sale and it is not a customer. It is the first evidence that a
+client nobody here wrote can go challenge → sign → settle → certificate
+against this store, and it took six declines and four instrument fixes
+to get there. Every one of those declines was ours to explain and we
+couldn't, which is the finding.
+
 ---
 
 ## WHAT SHIPPED (2026-07-26 → 2026-07-28)
