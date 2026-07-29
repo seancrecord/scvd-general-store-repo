@@ -22,6 +22,12 @@ An entry needs one of exactly two things:
    the strong form, and it is what `/neighbours` publishes.
 2. **A dated use.** We used the service, it did the thing, and the
    date is recorded. The trust list's `relation: "used"` class.
+3. **A dated read of something they published themselves.** Weakest,
+   added 2026-07-29 for a real case: a competitor's own leaderboard
+   said something useful about their market. Still checkable by a
+   stranger — go and read the same page — but it is THEIR claim, not
+   our observation, and it never appears on a public surface without
+   that label. Never promote a read into a receipt.
 
 Anything else is a QUESTION, and questions live in the "open" section
 at the bottom with a name against them. A question is not a finding.
@@ -46,13 +52,24 @@ The people a buyer might choose *instead of* us.
 
 | Service | What we know | Evidence | Date |
 |---|---|---|---|
-| 402sentinel | Sells risk scoring on payment addresses. We paid $0.002 to score our own; it returned `review`, 63/100, on address age and payer concentration. Correct on every point. | receipt, `/neighbours` | 2026-07-29 |
+| 402sentinel | Risk scoring on payment addresses. Scored ours `review`, 63/100, on address age and payer concentration. Correct on every point. | receipt | 2026-07-29 |
+| agentlair | **The direct competitor to the trust list, by a completely different mechanism.** Behavioural trust scores computed from an agent's ongoing tool-call pattern — consistency, restraint, transparency, 0-100 — against our model of a human personally checking once and saying so. | READ of their public spec, site and leaderboard. A payment attempt was made and did NOT complete (our script choked on a GET with no body — our bug, not theirs), so there is no receipt and no row on `/neighbours`. | 2026-07-29 |
+| jsonguard | JSON schema validation over x402. Paid $0.01; clean 402 → 200 first try from a hand-rolled client. | receipt | 2026-07-29 |
+| true402 | Token safety: structural checks plus live honeypot simulation. Adjacent lane, not ours. | receipt | 2026-07-29 |
 
-**That is the entire verified direct-competitor set.** One row. It
-looks thin because it is honest, and a thin true map beats a full
-invented one — but the thinness is itself a finding worth sitting
-with: after eight days in this market we have paid exactly one company
-that competes with us.
+**THE MOST IMPORTANT THING IN THIS FILE IS IN THE AGENTLAIR ROW, and
+it is their own published number:** their leaderboard tracks fifty
+agents and reports that **every one of them scores essentially zero on
+actual behavioural trust** — the top score, 45/100, is earned merely
+for having a well-formed AgentCard. By their own data, the behaviour
+they are built to measure has not appeared in the wild yet.
+
+Read that next to our zero. Two live, unproven answers to the same
+missing-trust-layer gap: their scaled-but-unmaterialised behavioural
+model, our small-but-honest observation model. **Neither of us has
+found the demand.** That is the strongest outside evidence yet for the
+"market isn't here" reading of our own numbers, and it arrived from a
+competitor rather than from our own comfort.
 
 ### 2. INFRASTRUCTURE — services we route through or are listed by
 
@@ -89,6 +106,39 @@ an assistant listing plausible analogues. Filling it is a
 conversation, not a task.
 
 ---
+
+## FINDINGS WE HOLD AND DO NOT PUBLISH
+
+Two things surfaced on 2026-07-29 that are true, checkable, and stay
+in this file rather than on `/neighbours`. The distinction is not
+squeamishness; it is the same scope guard, and it is worth writing
+down where the line actually falls.
+
+**jsonguard's payout address is shared across five or more unrelated
+services, with no disclosure anywhere on their site.** On-chain,
+verifiable by anyone, and it makes external volume attribution to any
+single one of those services unreliable.
+
+It does not go on the public page because `/neighbours` publishes
+RECEIPTS — what we paid and what came back. This is a separate
+observation about a company, aimed at them, and publishing it would be
+exactly the flaw-table move we refused. It is also the mirror of a
+thing we do well, which makes it doubly tempting and doubly worth
+resisting: **our own `/house-ledger.json` is a differentiator, and the
+honest way to make that point is to keep publishing our wallets, not
+to point at somebody who doesn't.**
+
+**agentlair's leaderboard shows near-zero scores across their whole
+directory.** That one is a fact about the MARKET rather than a knock
+on the company — they published it themselves, and publishing a number
+that unflattering is to their credit. It informs our reading of our
+own zero. It still stays here rather than on a public page, because we
+have no receipt from them and a read is not a receipt.
+
+**The general rule this establishes:** an observation about a
+competitor that is not "what we paid and what came back" belongs in
+this file. If it is worth saying publicly, the way to say it is to do
+the better thing ourselves and publish that.
 
 ## THE BIG-PLAYER QUESTION
 
@@ -142,8 +192,13 @@ change a decision. These are those questions; the rest is scenery.
 1. **Is anyone else selling to agents and actually being paid by
    strangers?** If yes, the store's zero-organic-settle number is a
    product problem. If no, it is a market timing fact and the 60-day
-   line stands as written. *Nobody has answered this. It is the single
-   highest-value question in this file.*
+   line stands as written. **PARTIALLY ANSWERED 2026-07-29, from the
+   other side:** agentlair's own leaderboard says the behaviour they
+   measure has not materialised across fifty tracked agents. That is
+   one competitor's data on one adjacent question, not an answer — but
+   it points the same way our own books do, and it is the first
+   outside evidence for the market-timing reading rather than the
+   product-problem one. Still worth a direct answer.
 2. **Does anyone publish a house-wallet declaration or equivalent?**
    If not, `/house-ledger.json` is a differentiator rather than table
    stakes, and worth saying out loud once.
@@ -165,3 +220,7 @@ change a decision. These are those questions; the rest is scenery.
   environment.
 - **Keeper** — the parallel-companies section. Conversation, not task.
 - **Keeper** — ruling on `/stack`.
+- **CV** — the agentlair payment, redone with a fixed script. It is the
+  only direct trust-layer competitor we have found and we have never
+  completed a transaction with them, which means everything above about
+  them is a read rather than a receipt.

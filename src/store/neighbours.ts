@@ -53,6 +53,32 @@ export const NEIGHBOUR_RECEIPTS: readonly NeighbourReceipt[] = [
       "Correct on every point, and the most useful thing anyone has told us. We flag house traffic in our own books and the chain carries no such flag, so from outside our settlements are indistinguishable from a store buying from itself — which, mechanically, most of them are. Their product did the job it advertises on a customer who did not want flattering. We published /house-ledger.json in response, so the addresses can be subtracted by anyone who wants to score us again.",
     bought_by: "CV",
   },
+  {
+    origin: "https://jsonguard.leeworks.dev",
+    name: "jsonguard",
+    date: "2026-07-29",
+    paid_usdc: 0.01,
+    we_asked:
+      "Validate a JSON document against a schema, over x402, from a hand-rolled client rather than an SDK.",
+    came_back:
+      "A clean 402, then a 200 on the first real attempt. The payload shape matched the spec exactly, with no ambiguity to guess at. One 400 before that was our own wrong endpoint guess, not theirs.",
+    our_reading:
+      "Protocol-correct and unfussy. Worth saying plainly because we spent an evening failing to pay ourselves: a hand-rolled client cleared their door first try, which is the bar.",
+    bought_by: "CV",
+  },
+  {
+    origin: "https://true402.dev",
+    name: "true402",
+    date: "2026-07-29",
+    paid_usdc: 0.005,
+    we_asked:
+      "Check a token for safety: structural checks plus a live buy/sell simulation.",
+    came_back:
+      "A clean 402, then a 200. Structural checks plus honeypot simulation by eth_call at two trade sizes, and — the part worth copying — explicit uncertainty labelling: a null honeypot result says it could not be simulated and warns you never to read that as safe.",
+    our_reading:
+      "Adjacent lane rather than ours (pre-trade safety, not trust listing), competently run, and the uncertainty labelling is the same discipline we try to hold: say what the answer is NOT. Nothing about this purchase reflects badly on anyone.",
+    bought_by: "CV",
+  },
 ] as const;
 
 export const NEIGHBOURS_STANDFIRST =
