@@ -108,6 +108,16 @@ export function readReason(raw: string): {
         "The client's `accepted` object did not deep-equal any entry we offered, so the payment was refused BEFORE the facilitator was called — which is why the stage says verify and no facilitator string exists. The named field is the disagreement. Almost always a hand-rolled client rebuilding the object rather than echoing ours back verbatim.",
     };
   }
+  // The books carry `<verdict>+payload:<field>` when the facilitator's
+  // answer was opaque and we could read the shape ourselves. The
+  // verdict is the fact; ours is the reading, and it goes second.
+  if (reason.includes("+payload:")) {
+    const field = raw.split("+payload:")[1] ?? "";
+    return {
+      fault: "buyer",
+      reading: `The facilitator refused without a legible reason, so this is OUR reading of the payload it judged: ${field} is not in the one legal form that field has. CDP's schema error arrives truncated at 200 characters — the variant list is cut off before it reaches us — so this is the best answer available, and it is a reading rather than its verdict. The 402 carried the full field list under payload_problems.`,
+    };
+  }
   if (reason.startsWith("local:payload_")) {
     return {
       fault: "buyer",

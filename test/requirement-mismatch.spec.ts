@@ -2,6 +2,7 @@ import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { readReason } from "@/lib/declines";
 import {
+  describeExactEvmPayload,
   describeMismatch,
   looksLikeAnException,
   mismatchReasonCode,
@@ -128,6 +129,94 @@ describe("a refusal before the facilitator", () => {
     ).toBe(true);
     expect(looksLikeAnException("No matching payment requirements")).toBe(false);
     expect(readReason("local:sdk_threw").reading).toContain("is not one");
+  });
+
+  it("names the inner-payload field when the facilitator's answer is truncated", async () => {
+    // CV's third round, 2026-07-29. Envelope right, requirement
+    // matched, and CDP answered "'paymentPayload' is invalid: must
+    // match one of [x402V2Pay..." — cut off at 200 characters by the
+    // SDK, with no way to ask for the rest. So we read the shape.
+    const offered = {
+      scheme: "exact",
+      network: "eip155:8453",
+      amount: "500000",
+      asset: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      payTo: "0x1111111111111111111111111111111111111111",
+      maxTimeoutSeconds: 300,
+    };
+    const problems = describeExactEvmPayload(offered, {
+      signature: `0x${"cd".repeat(65)}`,
+      authorization: {
+        from: TEST_PAYER,
+        to: offered.payTo,
+        // The classic: JSON.stringify of a JavaScript number.
+        value: 500000,
+        validAfter: 0,
+        validBefore: "99999999999",
+        nonce: `0x${"11".repeat(32)}`,
+      },
+    });
+    const fields = problems.map((problem) => problem.field);
+    expect(fields).toContain("payload.authorization.value");
+    expect(fields).toContain("payload.authorization.validAfter");
+    // The type is shown, or "5000 is not 5000" reads as nonsense.
+    expect(problems[0]?.saw).toContain("number");
+  });
+
+  it("catches an authorization that would pay the wrong address", () => {
+    const offered = {
+      scheme: "exact",
+      network: "eip155:8453",
+      amount: "500000",
+      payTo: "0x1111111111111111111111111111111111111111",
+    };
+    const problems = describeExactEvmPayload(offered, {
+      signature: `0x${"cd".repeat(65)}`,
+      authorization: {
+        from: TEST_PAYER,
+        to: "0x2222222222222222222222222222222222222222",
+        value: "500000",
+        validAfter: "0",
+        validBefore: "99999999999",
+        nonce: `0x${"11".repeat(32)}`,
+      },
+    });
+    // Passes every schema and still loses the money. Worth catching here.
+    expect(problems.map((problem) => problem.field)).toContain(
+      "payload.authorization.to",
+    );
+  });
+
+  it("says nothing at all about a correct payload", () => {
+    expect(
+      describeExactEvmPayload(
+        {
+          scheme: "exact",
+          network: "eip155:8453",
+          amount: "500000",
+          payTo: "0x1111111111111111111111111111111111111111",
+        },
+        {
+          signature: `0x${"cd".repeat(65)}`,
+          authorization: {
+            from: TEST_PAYER,
+            to: "0x1111111111111111111111111111111111111111",
+            value: "500000",
+            validAfter: "0",
+            validBefore: "99999999999",
+            nonce: `0x${"11".repeat(32)}`,
+          },
+        },
+      ),
+    ).toEqual([]);
+  });
+
+  it("appends our reading to an opaque verdict and never replaces it", () => {
+    // House discipline: the facilitator's string is the fact. A reading
+    // that overwrites the fact is how a guess becomes a fact.
+    const reading = readReason("verify_error+payload:payload.authorization.value");
+    expect(reading.reading).toContain("OUR reading");
+    expect(reading.reading).toContain("payload.authorization.value");
   });
 
   it("stays silent when the echo is correct, so it can never invent a mismatch", async () => {

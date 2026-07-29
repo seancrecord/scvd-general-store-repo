@@ -248,6 +248,133 @@ export function describePayloadShape(
 }
 
 /**
+ * THE INNER PAYLOAD, WHICH THE FACILITATOR JUDGES AND WILL NOT EXPLAIN.
+ *
+ * Third round with CV, 2026-07-29. Envelope correct, requirement
+ * matched, and CDP answered:
+ *
+ *   'paymentPayload' is invalid: must match one of [x402V2Pay...
+ *
+ * Truncated at 200 characters by the SDK (`responseExcerpt`), so the
+ * variant list — the one part that would name the problem — is cut off
+ * before it reaches us, and there is no way to ask for the rest.
+ *
+ * So we check what we can check. For scheme `exact` on an EVM network
+ * the inner payload shape is fixed and public, and every field below
+ * has one legal form. Reporting them ourselves turns an unfinishable
+ * sentence into a field name. This is a READING of a shape the
+ * facilitator validates, not the facilitator's verdict — the store
+ * cannot see CDP's schema, and where the two disagree, CDP is right.
+ */
+export interface PayloadFieldProblem {
+  field: string;
+  says: string;
+  saw: string;
+}
+
+const HEX = (bytes: number): RegExp =>
+  new RegExp(`^0x[0-9a-fA-F]{${bytes * 2}}$`);
+const DECIMAL_STRING = /^[0-9]+$/;
+
+/** Type included, since a number that looks right is the usual fault. */
+function saw(value: unknown): string {
+  if (value === undefined) {
+    return "(absent)";
+  }
+  const shown = typeof value === "string" ? `"${value}"` : String(value);
+  return `${typeof value} ${shown.slice(0, 90)}`;
+}
+
+export function describeExactEvmPayload(
+  accepted: unknown,
+  inner: unknown,
+): PayloadFieldProblem[] {
+  if (!isRecord(accepted) || !isRecord(inner)) {
+    return [];
+  }
+  const network = typeof accepted.network === "string" ? accepted.network : "";
+  if (accepted.scheme !== "exact" || !network.startsWith("eip155:")) {
+    return [];
+  }
+  const problems: PayloadFieldProblem[] = [];
+  const push = (field: string, says: string, value: unknown): void => {
+    problems.push({ field, says, saw: saw(value) });
+  };
+
+  if (typeof inner.signature !== "string" || !HEX(65).test(inner.signature)) {
+    push(
+      "payload.signature",
+      "Must be a 65-byte hex string: 0x followed by exactly 130 hex characters.",
+      inner.signature,
+    );
+  }
+  const auth = inner.authorization;
+  if (!isRecord(auth)) {
+    push(
+      "payload.authorization",
+      "Must be an object carrying from, to, value, validAfter, validBefore and nonce.",
+      auth,
+    );
+    return problems;
+  }
+  for (const field of ["from", "to"] as const) {
+    const value = auth[field];
+    if (typeof value !== "string" || !HEX(20).test(value)) {
+      push(
+        `payload.authorization.${field}`,
+        "Must be a 20-byte hex address: 0x followed by exactly 40 hex characters.",
+        value,
+      );
+    }
+  }
+  for (const field of ["value", "validAfter", "validBefore"] as const) {
+    const value = auth[field];
+    if (typeof value !== "string" || !DECIMAL_STRING.test(value)) {
+      push(
+        `payload.authorization.${field}`,
+        "Must be a DECIMAL STRING of digits, not a number and not hex. This is the most common one: JSON.stringify of a JavaScript number sends 5000, and the schema wants \"5000\".",
+        value,
+      );
+    }
+  }
+  if (typeof auth.nonce !== "string" || !HEX(32).test(auth.nonce)) {
+    push(
+      "payload.authorization.nonce",
+      "Must be a 32-byte hex string: 0x followed by exactly 64 hex characters, random per authorization.",
+      auth.nonce,
+    );
+  }
+
+  // Cross-checks. These pass the schema and fail the payment, which is
+  // a worse place to find out.
+  const payTo = accepted.payTo;
+  if (
+    typeof auth.to === "string" &&
+    typeof payTo === "string" &&
+    auth.to.toLowerCase() !== payTo.toLowerCase()
+  ) {
+    push(
+      "payload.authorization.to",
+      `Must be the payTo address from the requirement you accepted (${payTo}). Signing to any other address pays somebody else.`,
+      auth.to,
+    );
+  }
+  const amount = accepted.amount;
+  if (
+    typeof auth.value === "string" &&
+    typeof amount === "string" &&
+    auth.value !== amount
+  ) {
+    push(
+      "payload.authorization.value",
+      `Must equal the amount in the requirement you accepted (${amount}), exactly. A rounded value is a different authorization.`,
+      auth.value,
+    );
+  }
+  return problems;
+}
+
+/**
  * A message that is an exception rather than a verdict. Slugging one
  * into a reason code produces unbounded garbage in the books and reads
  * as our crash, so these get a single stable code and keep the words.

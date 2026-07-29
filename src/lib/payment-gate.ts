@@ -18,13 +18,17 @@ import type { EventSignals } from "@/lib/metrics";
 import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import {
+  describeExactEvmPayload,
   describeMismatch,
   describePayloadShape,
   looksLikeAnException,
   mismatchReasonCode,
   sdkRefusal,
 } from "@/lib/requirement-match";
-import type { MismatchReport } from "@/lib/requirement-match";
+import type {
+  MismatchReport,
+  PayloadFieldProblem,
+} from "@/lib/requirement-match";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -72,6 +76,7 @@ async function enrich402Body(
   body: unknown,
   decline?: DeclineReason,
   mismatch?: MismatchReport,
+  payloadProblems: PayloadFieldProblem[] = [],
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -90,6 +95,15 @@ async function enrich402Body(
             // refused before the facilitator was called, and we hold
             // both objects, so we can name the field.
             ...(mismatch ? { requirement_mismatch: mismatch } : {}),
+            // What we can read of the inner payload when the
+            // facilitator's own answer arrives truncated.
+            ...(payloadProblems.length > 0
+              ? {
+                  payload_problems: payloadProblems,
+                  payload_problems_note:
+                    "Our reading of the shape the facilitator validates, not its verdict. Where the two disagree, it is right and we are wrong — but every field above has exactly one legal form, so these are worth fixing first.",
+                }
+              : {}),
           },
           // A signature that did not clear is the exact moment the
           // domain trap costs somebody a night, so the whole block
@@ -230,6 +244,36 @@ function refusalBeforeVerify(
   };
 }
 
+/** Our reading of the inner payload, for a header we were handed. */
+function payloadProblemsFor(paymentHeader: string): PayloadFieldProblem[] {
+  const payload = decodePaymentHeader(paymentHeader);
+  if (!isRecord(payload)) {
+    return [];
+  }
+  return describeExactEvmPayload(payload.accepted, payload.payload);
+}
+
+/**
+ * The books take one string. When the facilitator's verdict is opaque
+ * (`verify_error` tells us nothing) and we found a concrete field
+ * problem, the row carries both: the verdict, then ours, split by a +.
+ * The verdict is never replaced — it is the fact, ours is the reading.
+ */
+function bookedReason(
+  reason: string,
+  problems: PayloadFieldProblem[],
+): string {
+  const first = problems[0];
+  if (!first) {
+    return reason;
+  }
+  const opaque =
+    reason === "verify_error" ||
+    reason === "verification_declined" ||
+    reason.startsWith("unspecified");
+  return opaque ? `${reason}+payload:${first.field}` : reason;
+}
+
 /** Bounded, lowercase, book-safe. The verbatim string rides alongside. */
 function slugRefusal(stated: string): string {
   return stated
@@ -343,6 +387,13 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         declineSlot.reason ??
         (nonce ? takeDeclineReason(nonce) : undefined) ??
         refusal?.decline;
+      // Fourth source, and the only one that survives a facilitator
+      // verdict we cannot read: CDP's schema error is truncated at 200
+      // characters before it reaches us, so we check the shape we DO
+      // know and name the field ourselves.
+      const payloadProblems = paymentHeader
+        ? payloadProblemsFor(paymentHeader)
+        : [];
       if (paymentHeader) {
         await recordPaymentDecline(
           c.env,
@@ -350,10 +401,16 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           // When there is no reason at all, say WHICH way it went
           // missing. A flat "unspecified" cost a day of not knowing
           // whether the buyer or the instrument was the problem.
-          decline?.reason ??
-            (nonce
-              ? "unspecified:reason_not_captured"
-              : "unspecified:no_nonce_in_payload"),
+          // The facilitator's string stays the FACT; ours is appended
+          // after a + so the desk can split it, never substituted for
+          // it. A verdict we cannot read is still the verdict.
+          bookedReason(
+            decline?.reason ??
+              (nonce
+                ? "unspecified:reason_not_captured"
+                : "unspecified:no_nonce_in_payload"),
+            payloadProblems,
+          ),
           gateSignals(c),
         ).catch(() => undefined);
       }
@@ -366,6 +423,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             result.response.body,
             decline,
             refusal?.mismatch,
+            payloadProblems,
           ),
         });
       }
