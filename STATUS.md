@@ -180,6 +180,18 @@ Four rules that keep being the ones that matter:
    promises published in an uncheckable form.
 4. **No engagement mechanics.** Rule 22. The clock exists so visitors
    can plan around us, not so we can pull them back.
+5. **A fix that looks shared and isn't is worse than no fix, because it
+   gets believed.** CV's line, 2026-07-29, after the MCP door turned out
+   to have inherited none of the HTTP door's instrument while looking
+   exactly as though it had. Same shape as "the decline reasons are on
+   the desk" when there was no desk: confident architecture that is two
+   things wearing one coat. Walk it; don't assert it.
+6. **"Does it work" and "does it fail loudly" are different tests.**
+   Also CV's, and about his own coverage: he proved a payment SUCCEEDS
+   over MCP and reasonably concluded the fix had propagated. It hadn't.
+   Declines there were going unrecorded, and no amount of
+   happy-path testing could have shown it. Every door now gets its
+   failure path walked, not just its success.
 
 ---
 
