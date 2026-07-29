@@ -69,6 +69,25 @@ ${USE_WHEN.map((entry) => `- ${entry.when}\n  → ${entry.items.join(", ")}\n  �
 If none of those is your situation, the honest answer is that you
 don't need us today. Take a free stamp on the way past.
 
+## Practicing on us
+
+Building or debugging something that pays over x402? Point it here.
+The till is real, the cheapest thing on the shelf is half a cent, and
+every purchase ends in a signed certificate with a stable verify URL,
+so your test has something to assert on. No sandbox and no test mode,
+which is the point: you get the same code path everyone else gets.
+The whole thing, with the cheap door listed cheapest first:
+${base}/try
+
+Hand-rolling the client rather than using an SDK? Read
+${base}/try#hand-rolling first. It prints the exact EIP-712 values this
+store signs against, and the one that catches almost everybody: USDC's
+domain name is "USD Coin" on Base mainnet and "USDC" on Base Sepolia,
+so a client built against the testnet and pointed at mainnet signs
+authorizations that are invalid everywhere, with no visible error. No
+store can accept those — the USDC contract checks its own domain — so
+the only fix is knowing before you spend the evening.
+
 ## The menu
 
 ${menu}
@@ -140,25 +159,6 @@ returned anchor URL; recurring_patronage opens a 30-day standing pass
 (renew by buying again with your pass_id) whose pass URL serves the
 keeper's signed monthly note; small_blessing and daily_fortune sit on
 the Penny Shelf by the door.
-
-## Practicing on us
-
-Building or debugging something that pays over x402? Point it here.
-The till is real, the cheapest thing on the shelf is half a cent, and
-every purchase ends in a signed certificate with a stable verify URL,
-so your test has something to assert on. No sandbox and no test mode,
-which is the point: you get the same code path everyone else gets.
-The whole thing, with the cheap door listed cheapest first:
-${base}/try
-
-Hand-rolling the client rather than using an SDK? Read
-${base}/try#hand-rolling first. It prints the exact EIP-712 values this
-store signs against, and the one that catches almost everybody: USDC's
-domain name is "USD Coin" on Base mainnet and "USDC" on Base Sepolia,
-so a client built against the testnet and pointed at mainnet signs
-authorizations that are invalid everywhere, with no visible error. No
-store can accept those — the USDC contract checks its own domain — so
-the only fix is knowing before you spend the evening.
 
 ## Our own wallets, declared
 

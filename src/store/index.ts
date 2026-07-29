@@ -1,4 +1,4 @@
-export { MENU_ITEMS, getMenuItem } from "@/store/menu";
+export { CHEAP_DOOR_MAX_USDC, MENU_ITEMS, getMenuItem } from "@/store/menu";
 export {
   STORE_METADATA,
   DEFAULT_WEEK_NOTE,

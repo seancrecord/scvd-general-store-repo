@@ -64,6 +64,12 @@ export const PRACTICE_COUNTER_COPY = {
  * render time, never hard-coded here.
  */
 export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
+  // settlement_attestation was MISSING from this list until 2026-07-29
+  // while being the cheapest item in the store — and it is the one item
+  // whose audience is identical to this page's: somebody debugging a
+  // payment is the buyer for an independent check on whether one
+  // settled.
+  "settlement_attestation",
   "small_blessing",
   "daily_fortune",
   "the_confession",

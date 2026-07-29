@@ -62,17 +62,23 @@ describe("the storefront", () => {
     expect(response.status).toBe(200);
     const body = await json(response);
     const items = body["items"] as Array<{ id: string }>;
-    // S1 ladder order: handshake, pennies, utility, census, human labor, novelties.
+    // CHEAP DOOR FIRST, then the S1 ladder — reordered 2026-07-29.
+    // The old order buried settlement_attestation, the cheapest item in
+    // the store at $0.004, in EIGHTH place behind a $15 human witness,
+    // because the ladder ran in file order once past the penny shelf.
+    // The one persona with observed traffic scans for the smallest
+    // number it can settle without asking a human.
     expect(items.map((item) => item.id)).toEqual([
-      "hello",
+      "settlement_attestation",
       "small_blessing",
       "daily_fortune",
       "the_confession",
+      "phantom_check",
+      "hello",
       "context_anchor",
+      "graffiti_on_a_train",
       "human_witness",
       "recurring_patronage",
-      "settlement_attestation",
-      "phantom_check",
       "quick_judgment",
       "certificate_of_patronage",
       "nomenclature",
@@ -86,7 +92,6 @@ describe("the storefront", () => {
       "luckies",
       "dibs",
       "coffees_for_closers",
-      "graffiti_on_a_train",
     ]);
     const store = body["store"] as Record<string, unknown>;
     expect(store["protocol"]).toBe("x402");

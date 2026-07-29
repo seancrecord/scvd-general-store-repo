@@ -102,18 +102,43 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
 ] as const;
 
 /**
- * S1, catalog order: the commitment ladder made legible. The
- * handshake first, then pennies, then utility, then the census shelf,
- * then human labor, novelties last. Every list the store controls
- * (menu.json, llms.txt, skill.md, MCP tools) reads in this order.
+ * S1, catalog order: THE CHEAP DOOR FIRST, then the commitment ladder.
+ *
+ * The ladder was right and its execution was not. Until 2026-07-29 the
+ * order read hello ($0.50), the penny shelf, then UTILITY and RUN1 in
+ * file order — which put a $15 human witness sixth and left
+ * settlement_attestation, THE CHEAPEST ITEM IN THE STORE at $0.004,
+ * sitting eighth behind it. The one persona with observed traffic is a
+ * client-builder scanning for the smallest number they can settle
+ * without asking a human, and the smallest number was buried.
+ *
+ * So: everything at or under a dollar leads, cheapest first, and the
+ * ladder follows behind it unchanged. Every list the store controls
+ * (menu.json, llms.txt, skill.md, MCP tools) reads in this order,
+ * which is why one array is worth getting right.
+ *
+ * The cost, stated because it is a real one: `hello` was the
+ * traditional first purchase and led the catalog by canon. It is still
+ * in the cheap door, just not at the front of it — a scanner meets
+ * $0.004 before $0.50. One line to revert if the keeper wants the
+ * handshake back on top.
  */
-export const MENU_ITEMS: readonly MenuItem[] = [
+export const CHEAP_DOOR_MAX_USDC = 1;
+
+const LADDER: readonly MenuItem[] = [
   ...FOUNDING_ITEMS.filter((item) => item.id === "hello"),
   ...PENNY_SHELF_ITEMS,
   ...UTILITY_ITEMS,
   ...RUN1_ITEMS,
   ...FOUNDING_ITEMS.filter((item) => item.id !== "hello"),
   ...NOVELTY_ITEMS,
+];
+
+export const MENU_ITEMS: readonly MenuItem[] = [
+  ...LADDER.filter((item) => item.price_usdc <= CHEAP_DOOR_MAX_USDC).sort(
+    (a, b) => a.price_usdc - b.price_usdc,
+  ),
+  ...LADDER.filter((item) => item.price_usdc > CHEAP_DOOR_MAX_USDC),
 ] as const;
 
 export function getMenuItem(itemId: string): MenuItem | undefined {

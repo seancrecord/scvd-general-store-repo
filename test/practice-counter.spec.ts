@@ -22,7 +22,10 @@ describe("the practice counter", () => {
     const cheapest = body.cheapest_settlement;
     expect(isRecord(cheapest)).toBe(true);
     if (!isRecord(cheapest)) return;
-    // Half a cent is the cheapest door in the building.
+    // Half a cent, and NOT the $0.004 attestation: the recommended
+    // practice buy is the cheapest one that needs no arguments, because
+    // a builder exercising the payment path should not have to find a
+    // transaction hash first. The cheaper item is still on the door.
     expect(cheapest.price_usdc).toBe(0.005);
     expect(cheapest.item_id).toBe("small_blessing");
     expect(cheapest.buy).toBe(`${BASE}/api/buy/small_blessing?src=try`);

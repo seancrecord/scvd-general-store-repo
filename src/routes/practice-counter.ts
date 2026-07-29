@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -44,9 +45,21 @@ function cheapDoor(): CheapDoorRow[] {
     .sort((a, b) => a.price_usdc - b.price_usdc);
 }
 
-/** The cheapest real settlement in the building, whatever it happens to be. */
+/**
+ * The cheapest real settlement A PRACTICE CLIENT CAN MAKE WITH NO
+ * ARGUMENTS. Not simply the cheapest item — that distinction matters
+ * and I got it wrong first: adding settlement_attestation ($0.004) to
+ * this page's door made it the cheapest thing here, and it REQUIRES a
+ * tx_hash. Naming it as the recommended first buy would have handed a
+ * builder who wants to exercise the payment path a homework problem
+ * first. The recommended door takes no parameters; the cheaper item is
+ * still listed, just not as the way in.
+ */
 function cheapest(): CheapDoorRow | undefined {
-  return cheapDoor()[0];
+  return cheapDoor().find((row) => {
+    const item = MENU_ITEMS.find((entry) => entry.id === row.id);
+    return item ? (buyInputSchema(item).required ?? []).length === 0 : false;
+  });
 }
 
 function steps(base: string, cheapestId: string): string[] {
