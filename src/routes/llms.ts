@@ -160,6 +160,17 @@ authorizations that are invalid everywhere, with no visible error. No
 store can accept those — the USDC contract checks its own domain — so
 the only fix is knowing before you spend the evening.
 
+## Our own wallets, declared
+
+Every wallet this store controls is listed and signed at
+${base}/house-ledger.json, with the house-against-organic settlement
+split beside it. Published because an outside risk scorer looked at
+our payment address and read few payers across many settlements as
+possible self-dealing — a correct reading from where it stood, since
+the chain carries no flag for "this one was the keeper testing his own
+till." Subtract those addresses and score what's left. The document
+says plainly that it is a declaration rather than a proof.
+
 ## The trust list
 
 A signed list of origins the keeper has personally transacted with,
