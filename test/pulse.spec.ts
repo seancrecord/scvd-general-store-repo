@@ -223,3 +223,75 @@ describe("the service, directly", () => {
     expect(computed.note).toContain("whole funnel");
   });
 });
+
+/**
+ * THE HUMAN PAGE, and the caution it is designed around.
+ *
+ * A competitor's near-empty leaderboard read as proof AGAINST their
+ * pitch rather than as evidence of being early — near-populated, every
+ * score near zero. The visitors' register answered that by publishing
+ * no total at all.
+ *
+ * This page answers it differently and the distinction is the design: a
+ * leaderboard with empty ranks implies a scale nobody claimed, while a
+ * funnel with a zero at the end is a complete sentence — "this many
+ * were offered a price, this many paid" — where the zero is the finding
+ * rather than the gap.
+ */
+describe("the pulse has a face", () => {
+  it("serves HTML to a person and JSON to everything else", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(page).toContain("<table");
+    const json = await (await SELF.fetch(`${BASE}/pulse`)).json();
+    expect(json).toHaveProperty("all_time");
+  });
+
+  it("states the funnel as a sentence, not a scoreboard", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(page).toMatch(/offered a price|Nobody has been offered a price/);
+    // No ranking shape anywhere: that is the competitor's mistake.
+    expect(page).not.toMatch(/\brank(ed|ing)?\b/i);
+    expect(page).not.toMatch(/top\s+(agent|buyer|patron)/i);
+    expect(page).not.toMatch(/#\s?1\b/);
+  });
+
+  it("tells a reader to read the denominator before the rate", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(page).toContain("READ THE DENOMINATOR BEFORE THE RATE");
+    // The sentence that stops a thin number being read as a market verdict.
+    expect(page).toContain("fact about our reach");
+    // And why an em dash is not a zero.
+    expect(page).toContain("undefined, not zero");
+  });
+
+  it("hands over the means to check it, on the page itself", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(page).toContain("/house-ledger.json");
+    expect(page).toContain("scvd-signing-key");
+    expect(page).toContain("/api/verify/");
+    // Tier 3: subtract our wallets yourself rather than trusting the split.
+    expect(page).toContain("subtract them yourself");
+  });
+
+  it("is reachable rather than needing the URL known", async () => {
+    const xml = await (await SELF.fetch(`${BASE}/sitemap.xml`)).text();
+    expect(xml).toContain(`<loc>${BASE}/pulse</loc>`);
+  });
+
+  it("does not appear on the storefront, which is a separate decision", async () => {
+    // The keeper's instruction stands until he changes it. A test
+    // rather than a note, because "we'll remember" is what failed.
+    const front = await (
+      await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(front).not.toContain("/pulse");
+  });
+});

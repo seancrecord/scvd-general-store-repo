@@ -41,6 +41,14 @@ export const HUMAN_SURFACES = [
   "/stack",
   "/corrections",
   "/visitors",
+  /**
+   * The pulse page joins the sitemap the day it gains a face. Four
+   * rooms shipped without a line here in July and were unreachable
+   * unless you already knew the URL — the quiet version of not
+   * publishing. The JSON twin is not listed: /pulse serves it to
+   * anything that does not ask for HTML, so one entry covers both.
+   */
+  "/pulse",
 ] as const;
 
 siteMetaRoutes.get("/robots.txt", (c) => {
