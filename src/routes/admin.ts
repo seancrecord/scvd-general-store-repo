@@ -27,6 +27,10 @@ import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderCvCorner } from "@/pages/admin/cv-corner-page";
+import { listKeys } from "@/lib/kv-list";
+import { bulkGetText } from "@/lib/kv-bulk";
+import { getFoundingEdition } from "@/services/founding";
+import type { ShutterState } from "@/services/shutter";
 import { readResearchTrails } from "@/lib/research-log";
 import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
@@ -294,7 +298,60 @@ adminRoutes.get("/admin", async (c) => {
 // Old bookmark; the books merged into the desk.
 adminRoutes.get("/admin/books", (c) => c.redirect("/admin"));
 
-adminRoutes.get("/admin/tools", (c) => c.html(renderToolsPage()));
+/**
+ * The back shelf. Every reading is optional and independent: the levers
+ * are what you reach for when something is wrong, so a failed read must
+ * never take the page down — and must never render as a confident
+ * default either. "Unknown" and "open" cannot look alike on a page
+ * about whether the store is taking money.
+ */
+adminRoutes.get("/admin/tools", async (c) => {
+  const month = new Date().toISOString().slice(0, 7);
+  const settled = await Promise.allSettled([
+    shutterState(c.env),
+    getFoundingEdition(c.env),
+    c.env.COUNTERS.get(KV_KEYS.patronageNote(month)),
+    getDraft(c.env),
+    listKeys(c.env.COUNTERS, { prefix: "inventory:", cap: 200 }),
+  ]);
+  const value = <T>(index: number): T | null =>
+    settled[index]?.status === "fulfilled"
+      ? ((settled[index] as PromiseFulfilledResult<T>).value ?? null)
+      : null;
+
+  let inventory: Record<string, number> | null = null;
+  const inventoryKeys = value<{ names: string[] }>(4);
+  if (inventoryKeys) {
+    inventory = {};
+    const counts = await bulkGetText(c.env.COUNTERS, inventoryKeys.names).catch(
+      () => null,
+    );
+    if (counts === null) {
+      inventory = null;
+    } else {
+      for (const name of inventoryKeys.names) {
+        const item = name.split(":")[1] ?? name;
+        const sold = Number.parseInt(counts.get(name) ?? "0", 10);
+        if (Number.isFinite(sold) && sold > 0) {
+          inventory[item] = (inventory[item] ?? 0) + sold;
+        }
+      }
+    }
+  }
+
+  return c.html(
+    renderToolsPage({
+      shutter: value<ShutterState>(0),
+      foundingPrinted:
+        settled[1]?.status === "fulfilled" ? value(1) !== null : null,
+      patronageNote: value<string>(2),
+      draftWaiting:
+        settled[3]?.status === "fulfilled" ? value(3) !== null : null,
+      inventory,
+      month,
+    }),
+  );
+});
 
 /**
  * The keeper walks by. Approving stamps a display date separate from
