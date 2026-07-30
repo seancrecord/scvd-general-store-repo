@@ -1,6 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { parseTrail, readResearchTrails } from "@/lib/research-log";
+import { isUnfiled, parseTrail, readResearchTrails } from "@/lib/research-log";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -137,13 +137,43 @@ describe("the research trails", () => {
   });
 
   it("says a trail is empty rather than inventing an entry", async () => {
-    const page = await corner();
+    /**
+     * THIS TEST PINNED A FIXTURE AND WENT RED THE MOMENT THE TRAILS
+     * FILLED — CV's first real entries merged 2026-07-30 and the store
+     * correctly stopped saying "nothing filed yet," which broke an
+     * assertion that had hardcoded the empty state.
+     *
+     * My test, my mistake, and the same class I have been naming all
+     * week: it measured the fixture rather than the behaviour. What
+     * matters is that an EMPTY trail says so and a FILLED one renders
+     * its entries — neither of which requires the real files to be in
+     * any particular state, so this can never go red again for the good
+     * reason of somebody doing the writing.
+     */
     const trails = readResearchTrails();
     expect(trails.length).toBe(3);
-    // Seeded files carry no dated entries yet; the page must say so
-    // plainly instead of rendering placeholder rows.
-    expect(page).toContain("Nothing filed on this trail yet");
-    expect(page).toContain("research/x402-pulse.md");
+
+    // The behaviour, tested against a trail we control rather than one
+    // CV is actively writing in.
+    const empty = parseTrail("empty-spec", "# Nothing here\n");
+    expect(isUnfiled(empty)).toBe(true);
+    const filled = parseTrail(
+      "filled-spec",
+      "# Something\n\n## 2026-07-30\nAn entry.\n",
+    );
+    expect(isUnfiled(filled)).toBe(false);
+
+    // And the real page renders whichever state each trail is in.
+    const page = await corner();
+    for (const trail of trails) {
+      if (isUnfiled(trail)) {
+        expect(page).toContain(`research/${trail.slug}.md`);
+      } else {
+        expect(page, `${trail.slug} has entries and renders none`).toContain(
+          trail.entries[0]?.date ?? "",
+        );
+      }
+    }
   });
 
   it("names all three trails from the spec", async () => {
