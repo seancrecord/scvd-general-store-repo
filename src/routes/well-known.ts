@@ -117,6 +117,15 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     practice_counter: `${base}/try`,
     listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
+    /**
+     * Beside the key, deliberately. An indexer that takes signing_key
+     * from this document is exactly the reader who should be told what
+     * a signature from that key does and does not prove, and until this
+     * line existed the answer lived on a page nothing linked to.
+     */
+    attestation: `${base}/attestation`,
+    pulse: `${base}/pulse.json`,
+    corrections: `${base}/corrections`,
     mcp: {
       endpoint: `${base}/mcp`,
       transport: "streamable-http",

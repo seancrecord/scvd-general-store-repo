@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
 import { MENU_ITEMS } from "@/store";
+import { ROOMS } from "@/store/rooms";
 import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
 
@@ -23,34 +24,20 @@ export const siteMetaRoutes = new Hono<HonoEnv>();
  * apiece with no line here and no meta description, which is the
  * quiet version of not being published at all. A test now fetches
  * every path in this list and fails if one does not answer as HTML,
- * so a dead entry is caught; the harder direction, a page that exists
- * and is missing from the list, is caught by the same test asserting
- * the count against the pages the router actually serves.
+ * so a dead entry is caught.
+ *
+ * DERIVED FROM @/store/rooms AS OF 2026-07-30, because being in the
+ * sitemap and nowhere else turned out to be its own quiet version of
+ * the same thing: /attestation and /pulse were listed here, absent from
+ * llms.txt, skill.md, the x402 discovery document and the storefront's
+ * structured data, and linked from no public page at all. One list now
+ * feeds all of them. The storefront leads because it is the front door,
+ * not a room.
  */
-export const HUMAN_SURFACES = [
+export const HUMAN_SURFACES: readonly string[] = [
   "/",
-  "/what",
-  "/try",
-  "/gazette",
-  "/almanac",
-  "/directory",
-  "/train",
-  "/zodiac",
-  "/porch",
-  "/neighbours",
-  "/stack",
-  "/corrections",
-  "/visitors",
-  /**
-   * The pulse page joins the sitemap the day it gains a face. Four
-   * rooms shipped without a line here in July and were unreachable
-   * unless you already knew the URL — the quiet version of not
-   * publishing. The JSON twin is not listed: /pulse serves it to
-   * anything that does not ask for HTML, so one entry covers both.
-   */
-  "/pulse",
-  "/attestation",
-] as const;
+  ...ROOMS.map((room) => room.path),
+];
 
 siteMetaRoutes.get("/robots.txt", (c) => {
   const base = c.env.STORE_BASE_URL;

@@ -24,14 +24,19 @@ name: Publish ClawHub skill
 on:
   workflow_dispatch:
     inputs:
+      # NO DEFAULTS, ON PURPOSE. Both fields carried them until
+      # 2026-07-30: a version already published and a changelog
+      # describing a release two versions back. One tap on a phone
+      # would have shipped today's bundle under July's release notes,
+      # which is the same class as every other stale-copy defect in
+      # REPUBLISH.md — a value that reads as current because nothing
+      # marks it as old. Typing both is the check.
       version:
-        description: "Version to publish (e.g. 2.4.0)"
+        description: "Version to publish, higher than the last one (e.g. 2.5.0)"
         required: true
-        default: "2.4.0"
       changelog:
         description: "What changed since the last publish"
         required: true
-        default: "Settlement attestation and graffiti on a train; practice counter with the hand-rolling notes; per-item endpoints; refund wording corrected to what the code does"
       dry_run:
         description: "Preview without publishing"
         type: boolean

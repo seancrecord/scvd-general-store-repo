@@ -11,6 +11,7 @@ import {
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
+import { STOREFRONT_ROOMS } from "@/store/rooms";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import {
@@ -126,6 +127,23 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
 }
 
 /**
+ * A LINK IS THE ONLY THING THAT MAKES A PAGE REACHABLE. The sitemap
+ * tells a crawler a URL exists; it does not tell anything why to go, and
+ * an answer engine that never parses XML never learns the room is there
+ * at all. /attestation and /pulse shipped reachable by sitemap alone,
+ * which is how a page ends up published and unread.
+ *
+ * Derived from ROOMS rather than typed out, so the next room is linked
+ * from the front of the store the day it is built rather than the day
+ * somebody remembers this footer exists.
+ */
+function roomsFooterHtml(): string {
+  return STOREFRONT_ROOMS.map(
+    (room) => `<a href="${room.path}">${escapeHtml(room.name)}</a>`,
+  ).join(" · ");
+}
+
+/**
  * Invisible plumbing for the answer engines. Inert data, not script.
  *
  * Now carries the catalogue as well as the identity: an engine asked
@@ -167,6 +185,24 @@ function organizationJsonLd(base: string): string {
           ? "https://schema.org/InStock"
           : "https://schema.org/LimitedAvailability",
       url: `${base}/menu/${item.id}`,
+    })),
+    /**
+     * THE ROOMS, AS A GRAPH RATHER THAN AS PROSE. Until this was added
+     * the structured data described what the store SELLS and nothing
+     * about what it PUBLISHES, so an engine asked "does this store say
+     * what its signatures prove" had only the sitemap — an XML file
+     * with no names in it — to work from. subjectOf is the right edge:
+     * these are documents about the organization, not parts of it.
+     *
+     * Names only, no descriptions. Each page already writes its own
+     * meta description and is required by the type to; repeating it
+     * here would be a second copy free to drift from the first, which
+     * is the defect this store keeps finding in its own work.
+     */
+    subjectOf: STOREFRONT_ROOMS.map((room) => ({
+      "@type": "WebPage",
+      name: room.name,
+      url: `${base}${room.path}`,
     })),
   }).replace(/</g, "\\u003c");
 }
@@ -267,6 +303,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${COPY.finePrintFounding}</p>
       <p>${COPY.finePrintHouseLucky}</p>
       <p>${COPY.finePrintPorch}</p>
+      <p class="porch-rooms">Every room, all free to read: ${roomsFooterHtml()}</p>
       <p class="porch-est">${COPY.footerAddress}</p>
     </footer>
 

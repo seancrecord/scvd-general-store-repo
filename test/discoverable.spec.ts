@@ -2,6 +2,7 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { HUMAN_SURFACES } from "@/routes/site-meta";
 import { MENU_ITEMS } from "@/store";
+import { ROOMS, STOREFRONT_ROOMS } from "@/store/rooms";
 
 const BASE = "https://scvd.store";
 const HTML = { Accept: "text/html" };
@@ -99,6 +100,130 @@ describe("the sitemap itself", () => {
     const mods = xml.match(/<lastmod>/g)?.length ?? 0;
     expect(locs).toBeGreaterThan(0);
     expect(mods).toBe(locs);
+  });
+});
+
+/**
+ * THE SITEMAP IS NOT PUBLICATION EITHER.
+ *
+ * The four July rooms were fixed by putting them in the sitemap, and
+ * then the sitemap became the only place a room had to be: /attestation
+ * and /pulse went live listed there and nowhere else — absent from
+ * llms.txt, from skill.md, from the x402 discovery document, from the
+ * storefront's structured data, and linked from no public page in the
+ * store. Every surface below is one an agent or an answer engine
+ * actually reads, and a room missing from any of them is a room that
+ * reader cannot find.
+ */
+describe("a room is published on every surface, or it is not published", () => {
+  it("is named in llms.txt", async () => {
+    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    for (const room of ROOMS) {
+      expect(text, `llms.txt never mentions ${room.path}`).toContain(room.path);
+    }
+  });
+
+  it("is linked from the front of the store, where a crawler starts", async () => {
+    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    for (const room of STOREFRONT_ROOMS) {
+      expect(page, `nothing on the storefront links to ${room.path}`).toContain(
+        `href="${room.path}"`,
+      );
+    }
+  });
+
+  it("is in the storefront's structured data, where an engine looks", async () => {
+    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const block = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(
+      page,
+    );
+    expect(block, "the storefront has no JSON-LD at all").toBeTruthy();
+    const data = JSON.parse((block?.[1] ?? "{}").replace(/\\u003c/g, "<"));
+    const urls = new Set(
+      (data.subjectOf ?? []).map((entry: { url: string }) => entry.url),
+    );
+    for (const room of STOREFRONT_ROOMS) {
+      expect(urls, `${room.path} is missing from subjectOf`).toContain(
+        `${BASE}${room.path}`,
+      );
+    }
+  });
+
+  it("stays off the front entirely when the keeper held it back", async () => {
+    /**
+     * The other direction, and the one that matters more. The first
+     * draft of the derived footer linked every room including the
+     * pulse, which the keeper had explicitly held off the storefront —
+     * so a "harmonize everything" change quietly overruled a standing
+     * instruction, and his own test caught it rather than me. A room
+     * flagged off the front must be absent from the LINKS and from the
+     * STRUCTURED DATA both: JSON-LD is the storefront speaking too.
+     */
+    const held = ROOMS.filter((room) => room.on_storefront === false);
+    expect(held.length, "nothing is held back; this test is asleep").toBeGreaterThan(
+      0,
+    );
+    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    for (const room of held) {
+      expect(page, `the storefront names ${room.path} anyway`).not.toContain(
+        room.path,
+      );
+    }
+  });
+
+  it("calls itself the same thing here as in its own title", async () => {
+    // The names in ROOMS feed the structured data and the storefront
+    // footer. A page that renames itself and leaves this list behind
+    // would have an engine answering under a title nobody uses.
+    for (const room of ROOMS) {
+      const page = await (
+        await SELF.fetch(`${BASE}${room.path}`, { headers: HTML })
+      ).text();
+      // Titles ship HTML-escaped; the apostrophes in "The Keeper's
+      // Almanac" arrive as entities. Unescape rather than escape the
+      // expectation, so this reads as the name a person would say.
+      const title = (/<title>([^<]*)<\/title>/.exec(page)?.[1] ?? "")
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, "&");
+      expect(title, `${room.path} does not call itself "${room.name}"`).toContain(
+        room.name,
+      );
+    }
+  });
+});
+
+describe("what a signature is worth, on the surfaces that carry the key", () => {
+  /**
+   * Narrower than the loop above and deliberately so. skill.md and the
+   * x402 document are curated rather than exhaustive — they do not owe
+   * a line to every room — but they are where a machine reader picks up
+   * the signing key, and handing over a key without handing over what
+   * it proves is the underdeclaration this page was built to end.
+   */
+  it("rides beside the key in skill.md", async () => {
+    const text = await (await SELF.fetch(`${BASE}/skill.md`)).text();
+    expect(text).toContain("/attestation");
+    expect(text).toContain("/pulse");
+  });
+
+  it("rides beside the key in the x402 discovery document", async () => {
+    const doc = (await (
+      await SELF.fetch(`${BASE}/.well-known/x402.json`)
+    ).json()) as Record<string, string>;
+    expect(doc.signing_key, "the key is served here").toBeTruthy();
+    expect(doc.attestation, "what the key proves is not").toBe(
+      `${BASE}/attestation`,
+    );
+    expect(doc.pulse).toBe(`${BASE}/pulse.json`);
+  });
+
+  it("is a documented endpoint, not just a page", async () => {
+    const spec = (await (await SELF.fetch(`${BASE}/openapi.json`)).json()) as {
+      paths: Record<string, unknown>;
+    };
+    for (const path of ["/attestation", "/pulse.json", "/corrections"]) {
+      expect(spec.paths, `${path} is not in the contract`).toHaveProperty(path);
+    }
   });
 });
 

@@ -29,8 +29,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "Why would anyone pay for a signed note?",
-      answer:
-        "Because almost everything an agent produces is self-attested. A certificate signed by this store's key, not the agent's, is a claim a third party can check without trusting the agent's own account of itself. That's the whole product; the rest is a general store built around it.",
+      answer: `Because almost everything an agent produces is self-attested. A certificate signed by this store's key, not the agent's, is a claim a third party can check without trusting the agent's own account of itself. That's the whole product; the rest is a general store built around it. What that signature does and does not prove is stated per artifact class at ${base}/attestation, including the classes where the honest answer is that it proves only that we said this, on this date.`,
     },
     {
       question: "Who runs it?",
@@ -46,7 +45,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "How do I verify a certificate?",
-      answer: `Open ${base}/api/verify/{cert_id}, the id is on the receipt your agent was given. A genuine article answers valid: true with the ed25519 signature; the store's public key hangs at ${base}/.well-known/scvd-signing-key. Free, unlimited, forever; re-checking costs nothing and never will.`,
+      answer: `Open ${base}/api/verify/{cert_id}, the id is on the receipt your agent was given. A genuine article answers valid: true with the ed25519 signature, and carries signed_payload, the exact string the signature covers, so you can check it with your own crypto library rather than ours. The store's public key hangs at ${base}/.well-known/scvd-signing-key, and what a valid signature actually proves is written out per artifact class at ${base}/attestation. Free, unlimited, forever; re-checking costs nothing and never will.`,
     },
   ];
 }

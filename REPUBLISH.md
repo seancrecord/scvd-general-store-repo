@@ -55,21 +55,52 @@ per-item endpoint paths.
 
 An agent that installed the skill is reading last week's store.
 
-RUN FROM THE REPO ROOT, and pull first: the `--source-commit` below
-names a commit, and the SKILL.md being published has to actually be
-that commit's version. Publishing a stale file under a hash that
-says otherwise is a worse lie than the missing content.
+### THE COMMAND, as of 2026-07-30
+
+```bash
+git pull && npm run skill:publish -- 2.5.0 "what changed since the last one"
+```
+
+Add `--dry-run` on the end to see it without shipping.
+
+That is the whole thing. `scripts/publish-skill.mjs` carries every
+gotcha below as a refusal rather than as a paragraph somebody has to
+remember at the moment of publishing:
+
+- **It stamps `--source-commit` from HEAD.** The old block had the
+  hash typed into this document, which meant a publish could claim a
+  commit that did not contain the file being published.
+- **It refuses on a dirty tree or an unpushed HEAD.** `clawhub skill
+  publish` reads the LOCAL directory. A publish from a checkout that
+  does not match the stamped commit ships the wrong bytes under a
+  fresh version number — worse than not publishing, because the
+  changelog then claims a fix that did not go out.
+- **It runs `skill-bundle-freshness` first.** The bundle is
+  hand-maintained; a red suite stops the publish.
+- **Version and changelog are required and have no defaults**, here
+  and in the Actions form. A default version publishes over the wrong
+  number; a default changelog describes somebody else's release.
+- **On a "version already exists" error it says the previous attempt
+  may have worked** — see the gotcha section below, which cost an
+  afternoon and three version numbers.
+
+Rule 30 is intact: it publishes only when a human runs it. It is the
+same hand, holding a shorter command.
+
+<details><summary>The old form, kept for reference</summary>
 
 ```bash
 git pull && npx clawhub@latest skill publish registry/clawhub \
   --slug scvd-general-store \
   --name "SCVD General Store" \
   --version 2.4.0 \
-  --changelog "Settlement attestation and graffiti on a train; practice counter with the hand-rolling notes; why_use and the situation index; per-item endpoints; refund wording corrected to what the code does" \
+  --changelog "..." \
   --source-repo seancrecord/scvd-general-store-repo \
-  --source-commit f5e030983ce4f4db597a78749225b20d95835861 \
+  --source-commit <the commit being published> \
   --source-path registry/clawhub
 ```
+
+</details>
 
 ### From a phone — the Actions button
 
@@ -98,6 +129,21 @@ Never paste that token into a chat, including to me.
 | 2.4.0 | 2026-07-28 20:49 | settlement_attestation, graffiti_on_a_train, practice counter |
 | 2.4.1 | 2026-07-29 15:41 | (a retry that landed while its own output read as a failure) |
 | 2.4.2 | 2026-07-29 ~16:51 | hardcoded item count removed |
+| 2.5.0 | ⚑ not yet published | /attestation, /corrections, the reading room; see the changelog line below |
+
+**READY TO PUBLISH AS 2.5.0.** The bundle gained what a machine reader
+was missing after 07-30: `/attestation` (what a signature does and does
+not prove, per artifact class, including where the trust model is the
+weakest available), `/corrections`, and the reading room — the Almanac
+and Gazette penny pages, which is the shelf the store's first organic
+sale actually came from and which the bundle never mentioned.
+
+Suggested changelog, edit freely:
+
+> Adds /attestation — what each signature covers, who holds the key,
+> and what a valid signature does not prove, per artifact class — plus
+> /corrections and the reading room (Almanac and Gazette, a penny a
+> page, pay more if it was worth more).
 
 **TWO THINGS TO KNOW BEFORE THE NEXT PUBLISH, both learned the slow way
 on 2026-07-29.**
