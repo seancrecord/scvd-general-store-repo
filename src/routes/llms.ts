@@ -195,6 +195,23 @@ system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
 
+## What this store is trying to prove
+
+${base}/becoming, kept apart from everything else on purpose. NOTHING
+ON THAT PAGE IS AVAILABLE: it holds four claims the keeper is trying
+to prove and how each could be shown false, the strategic questions
+already settled, and the things not built yet with the TRIGGER that
+would change each one rather than a date — because a date is a promise
+about a calendar and a trigger is a fact somebody outside can check.
+
+Two of the settled ones are worth knowing before you deal with us.
+THIS WILL NOT BECOME INFRASTRUCTURE: infrastructure properly defined
+means other people's uptime depends on one keeper, which points a
+pager at a man with a day job. A shop sells you a thing, you leave
+with it, the transaction is complete. And the store stops if keeping
+it would require faking something — faking enthusiasm, or faking the
+books. Zero revenue is explicitly not on that list.
+
 ## If the lights go off
 
 ${base}/wind-down, written while the store is open and nothing turns

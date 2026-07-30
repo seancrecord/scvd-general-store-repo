@@ -36,6 +36,7 @@ import {
   pulseRoutes,
   attestationRoutes,
   windDownRoutes,
+  becomingRoutes,
   stampRoutes,
   storefrontRoutes,
   tradingPostRoutes,
@@ -172,6 +173,7 @@ app.route("/", statsRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
 app.route("/", windDownRoutes);
+app.route("/", becomingRoutes);
 app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
