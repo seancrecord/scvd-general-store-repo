@@ -19,6 +19,56 @@
  * a phone gets the same page rather than a broken one.
  */
 export const BECOMING_CSS = `
+/**
+ * THE KEEPER'S ROOM COLOURS, ON A PUBLIC PAGE. His call, 2026-07-30,
+ * and the reasoning holds: the theses on this page are HIS, in his
+ * words, and it is the one public surface that is not the store
+ * speaking about its goods. So it borrows the study rather than the
+ * shop — walnut, brass and baize instead of ink and lamplight.
+ *
+ * A PALETTE OVERRIDE, NOT A SECOND STYLESHEET. This sheet is appended
+ * after the shared one, so redefining the variables re-skins every
+ * rule the base already wrote: headings, links, rules, tables and the
+ * fine print all follow without a single selector being duplicated. A
+ * page that wants different colours should not need a copy of the
+ * layout to get them, and a copy is the thing that drifts.
+ */
+body.becoming {
+  --board: #16110d;
+  --board-lift: #1e1812;
+  --card: #221b15;
+  --chalk: #ece3d2;
+  --chalk-dim: #a2947d;
+  --lamp: #c9a961;
+  --rule: #35291f;
+  --baize: #1a2a21;
+  --baize-rule: #2f4436;
+  background:
+    radial-gradient(90% 55% at 50% -8%, #2b2118 0%, var(--board) 58%);
+}
+
+/* Working surfaces get the office's brass edge. */
+body.becoming .settled,
+body.becoming .not-for-sale {
+  border-top: 2px solid var(--lamp);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.5), 0 12px 28px rgba(0,0,0,0.32);
+}
+
+/* The ledger is baize, like every other ledger the keeper reads. */
+body.becoming table {
+  background: var(--baize);
+  border: 1px solid var(--baize-rule);
+}
+body.becoming th {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--baize-rule);
+}
+body.becoming td {
+  padding: 0.85rem 0.9rem;
+  border-bottom: 1px solid rgba(47,68,54,0.55);
+}
+body.becoming tr:last-child td { border-bottom: 0; }
+
 /* The standfirst, and the line that keeps the quarantine honest. */
 body.becoming .lede {
   font-size: clamp(1.05rem, 2.6vw, 1.3rem);
@@ -29,8 +79,9 @@ body.becoming .lede {
 body.becoming .not-for-sale {
   display: block;
   margin-top: 1.5rem;
-  padding: 0.9rem 1.1rem;
-  border-left: 3px solid var(--lamp);
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
   background: var(--board-lift);
   color: var(--chalk-dim);
   font-size: 0.92rem;
