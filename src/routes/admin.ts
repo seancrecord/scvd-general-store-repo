@@ -8,7 +8,7 @@ import { readDeclines, traceClient } from "@/lib/declines";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
-  listRecentChallenges,
+  listRecentPricedEvents,
   listRecentPorchEvents,
   readMonthLedger,
   readPorchLedger,
@@ -239,7 +239,7 @@ adminRoutes.get("/admin", async (c) => {
     readMonthLedger(c.env),
     readPorchLedger(c.env),
     listPayers(c.env),
-    listRecentChallenges(c.env),
+    listRecentPricedEvents(c.env),
     listBazaarLedger(c.env),
     listIssues(c.env),
     listOrders(c.env),

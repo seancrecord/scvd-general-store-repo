@@ -779,8 +779,30 @@ export async function readPorchLedger(
   return porch;
 }
 
-/** The window-shoppers up close: the most recent 402 events, raw. */
-export async function listRecentChallenges(
+/**
+ * THE PRICED EVENTS UP CLOSE — challenges, settles AND declines.
+ *
+ * Was challenges only, and that was a display gap with teeth. The desk
+ * showed challenge ROWS beside settle COUNTERS and invited the reader to
+ * compare them as though they described one thing; they describe two
+ * different HTTP requests. A buyer's first request carries no payment
+ * header and gets a 402; the second carries the signature and settles.
+ * Those requests can legitimately differ in headers, so they can
+ * legitimately differ in channel — a bare fetch that gets a price and
+ * then retries through a client library that sets a user-agent is
+ * "unknown" on the way in and "direct" on the way through.
+ *
+ * FOUND 2026-07-30 BY THE KEEPER on the first organic settle: the
+ * Sources table showed it under "direct" while the event row on the
+ * same page said "unknown". He read it as a reconciliation bug between
+ * two aggregates. It was neither aggregate being wrong — it was that
+ * NO SURFACE ANYWHERE SHOWED A SETTLE'S OWN ROW, so the nearest row
+ * (its challenge) got read as the purchase.
+ *
+ * A page that makes a correct number look like a contradiction costs
+ * the same as a wrong one, and is harder to stop believing.
+ */
+export async function listRecentPricedEvents(
   env: Env,
   limit = 15,
 ): Promise<MetricEvent[]> {
@@ -794,7 +816,11 @@ export async function listRecentChallenges(
       break;
     }
     const event = values.get(name);
-    if (event?.kind === "challenge") {
+    if (
+      event?.kind === "challenge" ||
+      event?.kind === "settle" ||
+      event?.kind === "decline"
+    ) {
       events.push(event);
     }
   }

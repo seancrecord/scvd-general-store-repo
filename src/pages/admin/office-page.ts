@@ -306,9 +306,28 @@ function interestHtml(ledger: MonthLedger, porch: PorchLedger): string {
     <p><small>${escapeHtml(shopping.honestLimit)}</small></p>`;
 }
 
-function windowShoppersHtml(events: MetricEvent[]): string {
+/**
+ * Recent PRICED events — every 402, settle and decline, each labelled
+ * with which it was.
+ *
+ * It showed challenges only until 2026-07-30, and the keeper found what
+ * that cost on the first organic settle: the Sources table put it under
+ * "direct" while this table said "unknown", and the two looked like they
+ * disagreed. Neither was wrong. A 402 and its settlement are TWO
+ * DIFFERENT HTTP REQUESTS — the first carries no payment header, the
+ * second carries the signature — and they can arrive with different
+ * headers, so they can land in different channels. A bare fetch that
+ * reads a price and then retries through a client library that sets a
+ * user-agent is honestly "unknown" going in and "direct" coming through.
+ *
+ * Nothing here was miscounted. What was missing was the settle's OWN
+ * row, so the nearest row got read as the purchase. A page that makes a
+ * correct number look like a contradiction costs as much as a wrong one
+ * and is harder to stop believing.
+ */
+function pricedEventsHtml(events: MetricEvent[]): string {
   if (events.length === 0) {
-    return "<p>No 402s in the recent event rows.</p>";
+    return "<p>No priced events in the recent rows.</p>";
   }
   const rows = events
     .map((event) => {
@@ -317,7 +336,14 @@ function windowShoppersHtml(events: MetricEvent[]): string {
         : event.channel === "infrastructure"
           ? "infra"
           : "organic";
+      const kind =
+        event.kind === "settle"
+          ? '<strong style="color:#1b6b2f">settled</strong>'
+          : event.kind === "decline"
+            ? '<strong style="color:#8c2f1b">declined</strong>'
+            : "402";
       return `<tr><td>${escapeHtml(event.at.slice(5, 16))}</td>
+        <td>${kind}</td>
         <td>${escapeHtml(event.item)}</td>
         <td>${escapeHtml(event.channel)} <small>(${bucket})</small></td>
         <td><small>${escapeHtml((event.user_agent ?? "(no user-agent)").slice(0, 60))}</small></td>
@@ -326,10 +352,11 @@ function windowShoppersHtml(events: MetricEvent[]): string {
     .join("\n");
   return `
     <table border="1" cellpadding="4">
-      <tr><th>when (UTC)</th><th>item</th><th>channel</th><th>user-agent</th><th>referrer</th></tr>
+      <tr><th>when (UTC)</th><th>what</th><th>item</th><th>channel</th><th>user-agent</th><th>referrer</th></tr>
       ${rows}
     </table>
-    <p>Many items touched once with a generic UA = a scanner walking the catalog. One item hammered by the same UA with no settle = a budget-cap signal worth acting on.</p>`;
+    <p>Many items touched once with a generic UA = a scanner walking the catalog. One item hammered by the same UA with no settle = a budget-cap signal worth acting on.</p>
+    <p><small><strong>A 402 and its settle are two different requests.</strong> They can carry different headers and therefore land in different channels, so a purchase can read "unknown" on the 402 row and count as "direct" in the Sources table above without either being wrong. Both rows are here now, so the comparison can be made properly instead of guessed at.</small></p>`;
 }
 
 function extensionStatus(payload: unknown): string {
@@ -437,8 +464,8 @@ export function renderOfficePage(data: OfficePageData): string {
 
   <section>
     <details>
-      <summary>Window-shoppers, up close (last ${data.recentChallenges.length} 402s)</summary>
-      ${windowShoppersHtml(data.recentChallenges)}
+      <summary>Priced events, up close (last ${data.recentChallenges.length}: 402s, settles and declines)</summary>
+      ${pricedEventsHtml(data.recentChallenges)}
     </details>
   </section>
 
