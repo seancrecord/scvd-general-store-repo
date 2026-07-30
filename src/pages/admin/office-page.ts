@@ -279,7 +279,7 @@ function interestHtml(ledger: MonthLedger, porch: PorchLedger): string {
               (b.looks ?? -1) - (a.looks ?? -1) || b.looksInfra - a.looksInfra,
           )
           .map(
-            (row) => `<tr><td>${escapeHtml(row.item)}</td>
+            (row) => `<tr><td><a href="/admin/events?item=${encodeURIComponent(row.item)}">${escapeHtml(row.item)}</a></td>
               <td>$${row.price_usdc}</td>
               <td>${row.looks === null ? '<span title="the page is the product; there is nothing to read for free">&mdash;</span>' : row.looks}${row.looksHouse > 0 ? ` <small>(+${row.looksHouse}h)</small>` : ""}</td>
               <td>${row.looksInfra}</td>
@@ -347,7 +347,7 @@ function pricedEventsHtml(events: MetricEvent[]): string {
             : "402";
       return `<tr><td>${escapeHtml(event.at.slice(5, 16))}</td>
         <td>${kind}</td>
-        <td>${escapeHtml(event.item)}</td>
+        <td><a href="/admin/events?item=${encodeURIComponent(event.item)}">${escapeHtml(event.item)}</a></td>
         <td>${escapeHtml(event.channel)} <small>(${bucket})</small></td>
         <td><small>${escapeHtml((event.user_agent ?? "(no user-agent)").slice(0, 60))}</small></td>
         <td><small>${escapeHtml((event.referrer ?? "none").slice(0, 40))}</small></td></tr>`;

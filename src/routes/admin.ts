@@ -9,6 +9,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import {
   listPayers,
   listRecentPricedEvents,
+  listEventsForItem,
   listRecentPorchEvents,
   readMonthLedger,
   readPorchLedger,
@@ -27,6 +28,7 @@ import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderCvCorner } from "@/pages/admin/cv-corner-page";
+import { renderItemEventsPage } from "@/pages/admin/item-events-page";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetText } from "@/lib/kv-bulk";
 import { getFoundingEdition } from "@/services/founding";
@@ -615,6 +617,28 @@ adminRoutes.get("/admin/declines", async (c) => {
     ? { user_agent: busiest, events: await traceClient(c.env, busiest) }
     : undefined;
   return c.html(renderDeclinesPage({ report, ...(trace ? { trace } : {}) }));
+});
+
+/**
+ * The per-item lookup: /admin/events?item=<key>. A query parameter
+ * rather than a path segment because item keys carry colons
+ * (almanac:notes-from-a-tuesday-in-oak-city), and a key that has to be
+ * escaped to be looked up is a lookup nobody will use.
+ */
+adminRoutes.get("/admin/events", async (c) => {
+  const item = c.req.query("item") ?? "";
+  if (!item) {
+    return c.html(
+      renderItemEventsPage({
+        item: "(no item named)",
+        events: [],
+        rows_scanned: 0,
+        capped: false,
+        oldest_row_seen: null,
+      }),
+    );
+  }
+  return c.html(renderItemEventsPage(await listEventsForItem(c.env, item)));
 });
 
 adminRoutes.get("/admin/bell", async (c) => {

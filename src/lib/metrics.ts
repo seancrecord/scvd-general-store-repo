@@ -828,6 +828,76 @@ export async function listRecentPricedEvents(
 }
 
 /**
+ * EVERY PRICED EVENT FOR ONE ITEM — the answer to "it scrolled off."
+ *
+ * The desk shows the last fifteen priced events, newest first, which is
+ * the right shape for a glance and the wrong shape for a question. On
+ * 2026-07-30 the keeper went looking for the settle row of the store's
+ * FIRST ORGANIC SALE and could not find it: a health-check bot had hit
+ * eleven items fourteen minutes later and pushed it out of the window.
+ * The row existed. The page just could not reach it.
+ *
+ * "The answer exists but scrolled off the page" is its own kind of
+ * admin gap — not a wrong number, not a missing number, an unreachable
+ * one — and re-pulling until it surfaces is not a lookup, it is a
+ * lottery. This walks the raw rows for one item key and returns
+ * everything, oldest included, with an explicit report of how far back
+ * it got so a NOT FOUND can be told apart from a NOT REACHED.
+ */
+export interface ItemEventHistory {
+  item: string;
+  events: MetricEvent[];
+  rows_scanned: number;
+  /** True when the scan hit its cap with rows still unread. */
+  capped: boolean;
+  /** Timestamp of the oldest row reached, so "not found" has a floor. */
+  oldest_row_seen: string | null;
+}
+
+export async function listEventsForItem(
+  env: Env,
+  item: string,
+  scanCap = 4000,
+): Promise<ItemEventHistory> {
+  const history: ItemEventHistory = {
+    item,
+    events: [],
+    rows_scanned: 0,
+    capped: false,
+    oldest_row_seen: null,
+  };
+  let cursor: string | undefined;
+  while (history.rows_scanned < scanCap) {
+    const listed = await env.COUNTERS.list({
+      prefix: "evt:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    const names = listed.keys.map((key) => key.name);
+    const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
+    for (const name of names) {
+      if (history.rows_scanned >= scanCap) {
+        history.capped = true;
+        break;
+      }
+      const event = values.get(name);
+      if (!event) continue;
+      history.rows_scanned += 1;
+      history.oldest_row_seen = event.at;
+      if (event.item === item) {
+        history.events.push(event);
+      }
+    }
+    if (listed.list_complete || history.rows_scanned >= scanCap) {
+      history.capped = history.capped || !listed.list_complete;
+      break;
+    }
+    cursor = listed.cursor;
+  }
+  return history;
+}
+
+/**
  * Recent porch events for one surface, read from the raw 90-day rows
  * (the aggregates only count from their deploy; the rows remember).
  * Bounded scan: rare surfaces like the bell can sit deep in the log,

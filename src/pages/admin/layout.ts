@@ -41,7 +41,14 @@ export type AdminTab =
   | "referrals"
   | "bell"
   | "digest"
-  | "cv";
+  | "cv"
+  /**
+   * The per-item lookup. Deliberately matches no nav entry, so every
+   * link renders clickable and the page can never become a room with
+   * no way out — the July orphaning bug, avoided by construction rather
+   * than by remembering.
+   */
+  | "events";
 
 /** The three rooms. Always first, always in this order. */
 const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
