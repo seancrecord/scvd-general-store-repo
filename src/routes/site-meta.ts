@@ -49,6 +49,7 @@ export const HUMAN_SURFACES = [
    * anything that does not ask for HTML, so one entry covers both.
    */
   "/pulse",
+  "/attestation",
 ] as const;
 
 siteMetaRoutes.get("/robots.txt", (c) => {

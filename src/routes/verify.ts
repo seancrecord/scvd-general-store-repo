@@ -65,7 +65,7 @@ export const verifyRoutes = new Hono<HonoEnv>();
  * signed and what is served becomes visible instead of theoretical.
  */
 const HOW_TO_VERIFY =
-  "signed_payload is the exact UTF-8 string this signature covers. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.";
+  "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.";
 
 /** Re-verification is a demand signal; the ledger counts it per item. */
 async function noteVerify(c: Context<HonoEnv>, item: string): Promise<void> {

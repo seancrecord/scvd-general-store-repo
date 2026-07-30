@@ -34,6 +34,7 @@ import {
   skillRoutes,
   statsRoutes,
   pulseRoutes,
+  attestationRoutes,
   stampRoutes,
   storefrontRoutes,
   tradingPostRoutes,
@@ -167,6 +168,7 @@ app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
 app.route("/", pulseRoutes);
+app.route("/", attestationRoutes);
 app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);

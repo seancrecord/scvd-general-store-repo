@@ -1,0 +1,116 @@
+import { Hono } from "hono";
+import { escapeHtml } from "@/lib/sanitize";
+import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import {
+  ARTIFACT_CLASSES,
+  ATTESTATION_HONEST_LIMIT,
+  ATTESTATION_STANDFIRST,
+  HELD_AGAINST_US,
+  KEY_ARCHITECTURE,
+  NOT_BUILT,
+  TRUST_MODELS,
+  WHY_SIGNED_PAYLOAD,
+} from "@/store/attestation-spec";
+import type { HonoEnv } from "@/types";
+
+/**
+ * /attestation — what gets signed, who holds the key, whose word you
+ * are taking.
+ *
+ * The machinery existed and nobody could tell, which is the same as not
+ * having it. An outside critic reading the storefront alone concluded
+ * there was no disclosed key architecture, no spec and no statement of
+ * what is signed; three claims that were already false, and the fact
+ * that a careful reader could believe all three is the finding this
+ * page answers.
+ *
+ * It is not a rebuttal. The trust model per artifact class is stated
+ * including where it is the weakest one available, the things this
+ * store does NOT have are listed in their own words rather than left
+ * to be discovered, and the one criticism that survived reassessment
+ * is quoted verbatim rather than softened.
+ */
+export const attestationRoutes = new Hono<HonoEnv>();
+
+attestationRoutes.get("/attestation", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const payload = {
+    standfirst: ATTESTATION_STANDFIRST,
+    key_architecture: {
+      ...KEY_ARCHITECTURE,
+      public_key_url: `${base}${KEY_ARCHITECTURE.public_key_url}`,
+    },
+    why_signed_payload: WHY_SIGNED_PAYLOAD,
+    trust_models: TRUST_MODELS,
+    artifact_classes: ARTIFACT_CLASSES.map((entry) => ({
+      ...entry,
+      trust_model_name: TRUST_MODELS[entry.trust_model].name,
+      verify_url: `${base}${entry.verify_url}`,
+    })),
+    not_built: NOT_BUILT,
+    held_against_us: HELD_AGAINST_US,
+    honest_limit: ATTESTATION_HONEST_LIMIT,
+  };
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(payload);
+  }
+
+  const models = Object.values(TRUST_MODELS)
+    .map(
+      (model) => `<div class="menu-item">
+        <div class="menu-line"><span class="menu-name">${escapeHtml(model.name)}</span></div>
+        <p class="menu-desc">${escapeHtml(model.means)}</p>
+        <p class="menu-meta"><strong>Where it is weak:</strong> ${escapeHtml(model.weakness)}</p>
+      </div>`,
+    )
+    .join("\n");
+
+  const classes = ARTIFACT_CLASSES.map(
+    (entry) => `<tr>
+      <td><strong>${escapeHtml(entry.name)}</strong></td>
+      <td>${escapeHtml(TRUST_MODELS[entry.trust_model].name)}</td>
+      <td><small>${escapeHtml(entry.signs)}</small></td>
+      <td><small>${escapeHtml(entry.does_not_prove)}</small></td>
+    </tr>`,
+  ).join("\n");
+
+  return c.html(
+    renderSimplePage({
+      title: "What we sign",
+      description:
+        "What this x402 store signs, who holds the key, and whose word you are taking: the trust model per artifact class, including where it is the weakest available, and a list of what this store does not have.",
+      path: "/attestation",
+      bodyHtml: `<section>
+        <p class="menu-desc">${escapeHtml(ATTESTATION_STANDFIRST)}</p>
+      </section>
+      <section>
+        <h2>The key</h2>
+        <p class="menu-desc">One ${escapeHtml(KEY_ARCHITECTURE.algorithm)} key. ${escapeHtml(KEY_ARCHITECTURE.holder)}</p>
+        <p class="menu-desc"><strong>Rotation:</strong> ${escapeHtml(KEY_ARCHITECTURE.rotation)}</p>
+        <p class="menu-meta">Public key: <a href="${escapeHtml(KEY_ARCHITECTURE.public_key_url)}"><code>${escapeHtml(base)}${escapeHtml(KEY_ARCHITECTURE.public_key_url)}</code></a></p>
+        <p class="menu-desc">${escapeHtml(KEY_ARCHITECTURE.verification)}</p>
+        <p class="menu-meta">${escapeHtml(WHY_SIGNED_PAYLOAD)}</p>
+      </section>
+      <section>
+        <h2>Whose word you are taking</h2>
+        ${models}
+      </section>
+      <section>
+        <h2>Per artifact</h2>
+        <table border="1" cellpadding="6">
+          <tr><th>artifact</th><th>trust model</th><th>what is signed</th><th>what it does not prove</th></tr>
+          ${classes}
+        </table>
+      </section>
+      <section>
+        <h2>What this store does not have</h2>
+        <ul>${NOT_BUILT.map((line) => `<li>${escapeHtml(line)}</li>`).join("\n")}</ul>
+      </section>
+      <section>
+        <h2>The criticism that stands</h2>
+        <p class="menu-desc">${escapeHtml(HELD_AGAINST_US)}</p>
+        <p class="menu-meta">${escapeHtml(ATTESTATION_HONEST_LIMIT)}</p>
+      </section>`,
+    }),
+  );
+});
