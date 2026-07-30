@@ -5,6 +5,7 @@ import {
   CORRECTIONS,
   CORRECTIONS_INVITATION,
   CORRECTIONS_MECHANISM,
+  CORRECTIONS_OUTSIDE,
   CORRECTIONS_SCOPE,
   CORRECTIONS_STANDFIRST,
 } from "@/store/corrections";
@@ -46,6 +47,7 @@ correctionsRoutes.get("/corrections", (c) => {
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_STANDFIRST)}</p>
           <p class="menu-desc"><strong>${escapeHtml(CORRECTIONS_MECHANISM)}</strong></p>
+          <p class="menu-desc">${escapeHtml(CORRECTIONS_OUTSIDE)}</p>
         </section>
         <section>${rows}</section>
         <section>
@@ -60,6 +62,7 @@ correctionsRoutes.get("/corrections", (c) => {
     title: "Corrections",
     summary: CORRECTIONS_STANDFIRST,
     how_things_get_caught: CORRECTIONS_MECHANISM,
+    what_we_cannot_do_ourselves: CORRECTIONS_OUTSIDE,
     scope: CORRECTIONS_SCOPE,
     corrections: newestFirst.map((entry) => ({ ...entry })),
     count: newestFirst.length,

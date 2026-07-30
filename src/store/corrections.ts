@@ -114,6 +114,29 @@ export const CORRECTIONS_STANDFIRST =
 export const CORRECTIONS_MECHANISM =
   "HOW THINGS GET CAUGHT HERE, which matters more than the list below: every claim this store makes about itself is walked by a test, and the build fails when a promise outruns the code. That machinery exists because of the first entry below rather than in spite of it — each correction added the check that would have caught it. So the honest way to read a growing list is not \"they keep breaking things\" but \"the loop is short and it is running.\" A store this young claiming a clean record would be making the less plausible claim.";
 
+/**
+ * THE SECOND MECHANISM, ADDED 2026-07-30 BECAUSE THE FIRST ONE WAS NOT
+ * ENOUGH AND WE CAN NOW PROVE IT.
+ *
+ * The paragraph above was true and incomplete, which is the more
+ * dangerous kind of claim. Entry six was invisible to four hundred and
+ * forty-six passing tests, and not by accident: every one of them
+ * verified a signature by calling the same function that produced it.
+ * Sign with f, verify with f, and f's own blind spots are invisible from
+ * inside that loop permanently — no amount of the same kind of test
+ * finds them, because the error cancels itself on both sides.
+ *
+ * That is not a gap peculiar to this store. It is structural to
+ * self-verification anywhere, and it means a store cannot audit its own
+ * signatures on its own authority, however many tests it runs. The only
+ * vantage point that can see it is somebody holding nothing but a public
+ * URL. So the outside read is not a courtesy or a nice-to-have QA step;
+ * it is the only instrument that reaches this class of defect at all,
+ * and it is now named on the page as machinery rather than as thanks.
+ */
+export const CORRECTIONS_OUTSIDE =
+  "AND THE PART WE CANNOT DO OURSELVES, which the sixth entry below proved rather than suggested: a store cannot audit its own signatures on its own authority. That entry was invisible to four hundred and forty-six passing tests, and not by carelessness — every one of them checked a signature by calling the same code that made it, so a flaw in that code cancelled itself on both sides of the check and no quantity of the same kind of test could ever have surfaced it. It took somebody outside, holding nothing but a public URL and using their own cryptography library, to see that our certificates could not actually be verified. That is structural to self-verification anywhere, not a habit of ours, which is why the outside read is listed here as machinery and not as gratitude: it is the only vantage point that reaches this class of defect. Tests in CI now re-derive the signed bytes from the SERVED response and check them with the raw library, which is the closest an inside test can get to standing outside — and it is still not the same thing. If you hold something we signed and it does not check out, the mailbox is free.";
+
 export const CORRECTIONS_SCOPE =
   "WHAT THIS IS NOT: a bug log. Ordinary defects get fixed and forgotten like anywhere else. This page is narrower and more uncomfortable — it is only for things the store SAID, on a surface somebody could read, that turned out not to be so. Every entry names what changed structurally; an admission without a mechanism behind it would read as an apology, and this store does not trade in those.";
 

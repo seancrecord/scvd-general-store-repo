@@ -89,3 +89,41 @@ describe("/corrections", () => {
     expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
   });
 });
+
+/**
+ * THE SECOND MECHANISM, added 2026-07-30. The first paragraph claimed
+ * that every claim is walked by a test — true, and incomplete in the
+ * dangerous direction, since entry six was invisible to 446 passing
+ * tests by construction rather than by carelessness.
+ */
+describe("what the store cannot do for itself", () => {
+  it("says plainly that self-verification cannot reach this class", async () => {
+    const body = (await (
+      await SELF.fetch("https://scvd.store/corrections")
+    ).json()) as Record<string, unknown>;
+    const said = String(body["what_we_cannot_do_ourselves"]);
+    expect(said).toContain("cannot audit its own signatures");
+    // The mechanical reason, not a sentiment about humility.
+    expect(said).toContain("same code that made it");
+    expect(said.toLowerCase()).toContain("structural to self-verification");
+  });
+
+  it("frames the outside read as machinery, not as thanks", async () => {
+    const body = (await (
+      await SELF.fetch("https://scvd.store/corrections")
+    ).json()) as Record<string, unknown>;
+    const said = String(body["what_we_cannot_do_ourselves"]);
+    expect(said).toContain("not as gratitude");
+    // And it does not overclaim the inside fix as equivalent.
+    expect(said).toContain("still not the same thing");
+  });
+
+  it("appears on the page a reader actually lands on", async () => {
+    const page = await (
+      await SELF.fetch("https://scvd.store/corrections", {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(page).toContain("AND THE PART WE CANNOT DO OURSELVES");
+  });
+});

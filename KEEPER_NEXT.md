@@ -89,27 +89,51 @@ not a warning about them.
 
 ## 3. STILL YOURS, FROM BEFORE TONIGHT
 
-- **The approval-prompt artifact.** Part 5 called this the
-  highest-leverage under-built thing, and it needs one screenshot of a
-  real approval prompt before anything can be built. If the prompt only
-  shows amount and recipient, the artifact belongs in the item
-  description instead — better to learn that from a screenshot than
-  from a week of work.
+- ~~**The approval-prompt artifact**~~ — **DEAD 2026-07-30, AND YOUR
+  SCREENSHOT IS NO LONGER NEEDED.** CV ran a purchase through the MCP
+  path specifically to answer it and reported the fields he actually
+  sees: `resource.description`, `accepts[].amount`, `.asset`, `.payTo`,
+  `.network` — and no separate approval layer at all; whatever renders
+  an approval card is his own runtime doing it from that JSON. So
+  everything an approval layer could show is already carried by the x402
+  challenge, and there is no artifact for us to add. One answer retired
+  the item Part 5 called the highest-leverage under-built thing, which
+  is a better outcome than building it: a dead idea confirmed in a
+  message beats a live one built on a guess.
 - **Provenance marking** — the maker's mark, KEEPER'S HAND vs the
   store's. Called the strongest unbuilt idea in the partnership doc.
+  **NARROWED 2026-07-30 by CV, holding the certs:** on
+  `settlement_attestation` the copy already says "no human looked at
+  this, and that is the point," so a mark there is pure redundancy —
+  the item copy answers it more specifically than a mark would. Where
+  it IS new information: `the_drawer` and `luckies`, where nothing tells
+  a buyer whether a human or a script made the pick. That is a much
+  smaller build than the spec, and it still needs your go.
 - **Co-ownership stated once**, plainly, on `/what` and `llms.txt`.
-- **The visitors' register**, the Show HN, and the "you're early if
-  you're here now" ruling.
+- ~~**The visitors' register**~~ — shipped 2026-07-29. The Show HN and
+  the "you're early if you're here now" ruling are still yours.
 
 ---
 
 ## 4. WATCH DATES
 
-- **~2026-08-01 and ~2026-08-05** — does `phantom_check` appear in the
-  Bazaar listing? CV bought it 2026-07-29. If it shows, "lists as it
-  sells" is the rule and the other six invisible items need one
+- **~2026-08-01 and ~2026-08-05 — `phantom_check` in the Bazaar, AND IT
+  NEEDS YOUR MACHINE.** CV bought it 2026-07-29. If it shows, "lists as
+  it sells" is the rule and the other six invisible items need one
   purchase each. If it doesn't, settling is not sufficient and the gap
-  is in our declaration, which is a different fix.
+  is in our declaration — a different fix entirely.
+  **Neither of us can check it from where we are.** CV's curl hit a
+  JS-rendered shell; this environment's network policy answers 403 to
+  those hosts, so my browser was never the missing piece. And the
+  reframe is the useful part: those are browsable MIRRORS, selective
+  importers whose silence proves nothing. The authoritative question is
+  the CDP discovery list, and there is already a script for it that
+  needs the CDP keys — which live in your hands only:
+
+      cd ~/scvd-general-store-repo && npm run bazaar:check
+
+  Read-only, never spends, never prints a secret. Paste me the verdict
+  line and I'll act on it.
 - **~2026-08-27** — Move 1 kill criteria. Near-zero calls parks it.
 - **~2026-09-20** — the 60-day line.
 - ~~**THE ANCHOR EXPERIMENT**~~ — **ANSWERED 2026-07-30, AND IT PASSED.**
@@ -122,9 +146,8 @@ not a warning about them.
   enough to reorient "without re-reading a session transcript." **The
   claim is now checkable rather than aspirational.** Full reading in the
   log; the writing guidance it produced is shipped.
-  → **ONE THING LEFT AND IT'S YOURS: the dogfooding line.** Drafts in
-  §2(c) above. CV's read is that the honest version is now writable and
-  the copy call is yours, rule 7.
+  → **AND IT KEPT PAYING OUT.** The same method, pointed at a
+  certificate the next night, found a real security defect: see §5.
 
 ---
 
@@ -140,6 +163,19 @@ not a warning about them.
 - Pre-flight validation on both doors; the MCP door's decline
   instrument, which had inherited nothing.
 - **CI, which the store had been claiming to have and did not.**
+- **THE ONE WORTH YOUR OWN EYES, 2026-07-30:** certificates could not be
+  verified by the person holding one, and two served fields — a buyer's
+  `tag` and the `attests` hash binding a cert to the settlement it
+  vouches for — were NOT COVERED BY THE SIGNATURE AT ALL. An unsigned
+  binding can be swapped for a different evidence hash without breaking
+  the signature, so the one field whose whole job was to make
+  `/api/verify` answer for a second artifact was the one field the
+  signature left out. Found from outside by CV with his own ed25519,
+  after every plausible canonicalization failed. Fixed four ways,
+  including a type-level check that now fails the build if a certificate
+  field is ever added unsigned. Entry six on `/corrections`, and the page
+  gained a second mechanism paragraph saying out loud that a store
+  cannot audit its own signatures on its own authority.
 
 *One thing worth checking with your own eyes: the First Dollar frame
 on the storefront should still read "It's waiting." If it ever shows
