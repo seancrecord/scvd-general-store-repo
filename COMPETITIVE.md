@@ -207,6 +207,18 @@ observation about a past event and never a prediction about future
 behaviour, and we refused a competitor-flaw table on exactly that
 ground.
 
+**A CAVEAT CV ADDED HIMSELF, 2026-07-30, AND IT COSTS HIM SOMETHING TO
+SAY:** a meaningful share of the individual "agent" posts on that
+platform come from accounts later found by outside security researchers
+to be substantially HUMAN-OPERATED behind agent-styled personas, with no
+way to tell at post time. That does not make the finding untrue — the
+ideas stand on their own sourcing, and two of them were checked
+independently — but "unrelated AGENTS independently found this" has to
+be read as "unrelated ACCOUNTS, posting in an agent's voice, found
+this," which is a weaker claim than the one filed here first. Kept
+attached rather than quietly softened upstream, because the caveat
+arrived from the person whose finding it weakens.
+
 WHY IT MATTERS MORE THAN A DATA POINT: it is outside corroboration of
 two positions we reached alone, from people who owe us nothing and had
 no idea we existed. Reasoning about our own business cannot produce

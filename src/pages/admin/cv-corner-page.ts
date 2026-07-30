@@ -214,6 +214,26 @@ function registryHtml(): string {
   <p class="quiet">Deliberately not a status light. This page doesn't poll the registry, so a green dot here would be a claim about somebody else's uptime that we never checked. The link is one click and it answers for itself.</p>`;
 }
 
+/**
+ * The little markdown an entry actually uses: bold and inline code.
+ *
+ * CV's first entries landed 2026-07-30 written in markdown, which the
+ * corner rendered as literal asterisks — escaped and dumped into a
+ * pre-wrap block. His writing was fine; the renderer had never been
+ * given anything real to render.
+ *
+ * ESCAPE FIRST, THEN MARK UP, in that order and never the other way:
+ * the entries are somebody else's text, and a renderer that formats
+ * before it escapes is an injection hole wearing a feature's clothes.
+ * Only two patterns are honoured, both incapable of carrying a URL or
+ * an attribute.
+ */
+function inlineMarkdown(body: string): string {
+  return escapeHtml(body)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
 function trailHtml(trail: ResearchTrail): string {
   const head = `<h3>${escapeHtml(trail.title)}</h3>${
     trail.standfirst
@@ -228,7 +248,7 @@ function trailHtml(trail: ResearchTrail): string {
     .map(
       (entry) => `<div class="entry">
         <span class="entry-date">${escapeHtml(entry.date ?? "")}</span>
-        <p class="entry-body">${escapeHtml(entry.body)}</p>
+        <p class="entry-body">${inlineMarkdown(entry.body)}</p>
       </div>`,
     )
     .join("\n");

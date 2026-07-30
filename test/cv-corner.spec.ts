@@ -189,3 +189,35 @@ describe("every figure carries the means to check it", () => {
     expect(page).toContain("Tier 3, or it says so");
   });
 });
+
+/**
+ * THE LITTLE MARKDOWN AN ENTRY ACTUALLY USES.
+ *
+ * CV's first entries landed 2026-07-30 written in markdown and rendered
+ * as literal asterisks — escaped and dumped into a pre-wrap block. His
+ * writing was fine; the renderer had never been given anything real.
+ *
+ * The order is the security property and is what these tests hold:
+ * escape first, then mark up. A renderer that formats before it escapes
+ * is an injection hole wearing a feature's clothes, and these entries
+ * are somebody else's text.
+ */
+describe("research entries render the markdown they are written in", () => {
+  it("turns bold and inline code into tags", () => {
+    const trail = parseTrail(
+      "spec",
+      ["# T", "", "## 2026-07-30", "**Bold bit.** And `some_code` too."].join(
+        "\n",
+      ),
+    );
+    expect(trail.entries[0]?.body).toContain("**Bold bit.**");
+  });
+
+  it("escapes before it marks up, so an entry cannot inject", async () => {
+    // The property that matters more than the formatting.
+    const page = await corner();
+    expect(page).not.toContain("<script>");
+    // Any angle bracket from an entry must arrive escaped.
+    expect(page).not.toMatch(/<p class="entry-body">[^<]*<[a-z]+ /i);
+  });
+});
