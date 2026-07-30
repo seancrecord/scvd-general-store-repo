@@ -191,6 +191,46 @@ export async function recordChallengeIssued(
  * instrument: it distinguishes "buyer's wallet is short" from "our
  * pipeline broke," which are different emergencies.
  */
+
+/**
+ * THE FIRST OUTSIDE SIGNATURE — fires once, ever.
+ *
+ * CV's refinement, 2026-07-29, and it changed the trigger: keyed to a
+ * signature PRESENTED rather than a payment settled. A stranger who
+ * tries and bounces is the same magnitude of news as one who clears,
+ * and arguably more useful, because a decline is the thing we can still
+ * fix. Waiting for a clean settle would have let the 2026-07-28 client
+ * — the first outside wallet ever to try here — pass unflagged because
+ * their client was malformed.
+ *
+ * HOUSE IS DECIDED BY THE SAME DEFINITION house-ledger.json PUBLISHES,
+ * also his: `event.house` comes from isHouseTraffic over the wallet list
+ * and the house secret, which is exactly what the public document
+ * declares. A second private definition of "family" that could drift
+ * from the published one is worse than no alarm.
+ */
+async function raiseFirstOutsideSignature(
+  env: Env,
+  event: MetricEvent,
+  outcome: "settled" | "declined",
+): Promise<void> {
+  if (event.house) {
+    return;
+  }
+  if (await env.COUNTERS.get(KV_KEYS.firstSignature)) {
+    return;
+  }
+  await env.COUNTERS.put(
+    KV_KEYS.firstSignature,
+    JSON.stringify({ item: event.item, outcome, at: event.at }),
+  );
+  await sendAlert(env, {
+    condition: "first_outside_signature",
+    detail: `FIRST OUTSIDE PAYMENT SIGNATURE, EVER. A wallet that is not ours presented a signature at ${event.item} and it ${outcome}. Client: ${event.user_agent ?? "(no user-agent)"}. This is the event the front page has been waiting on. If it declined, /admin/declines names the field; if it settled, the First Dollar frame has filled and the books have their first organic row.`,
+    key: "once",
+  }).catch(() => undefined);
+}
+
 export async function recordPaymentDecline(
   env: Env,
   path: string,
@@ -208,6 +248,7 @@ export async function recordPaymentDecline(
     ),
   );
   await writeEvent(env, event);
+  await raiseFirstOutsideSignature(env, event, "declined");
   if (!event.house) {
     // RAISE A HAND. An outside decline is the rarest and most valuable
     // event this store can have: somebody opened a wallet at our door
@@ -359,6 +400,7 @@ export async function recordSettlement(
     await bump(env, KV_KEYS.metric(month, "venue", event.declared_source));
   }
   await writeEvent(env, event);
+  await raiseFirstOutsideSignature(env, event, "settled");
   if (signals.payer) {
     await recordPayerSeen(env, signals.payer);
   } else {

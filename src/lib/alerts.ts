@@ -20,7 +20,18 @@ export type AlertCondition =
   /** The machine-facing surfaces have gone quiet. Not a fault; a nudge. */
   | "catalog_stale"
   /** Somebody outside the house opened a wallet here and was turned away. */
-  | "payment_declined";
+  | "payment_declined"
+  /**
+   * THE ONE THE FRONT PAGE IS WAITING ON. Fires once, ever, the first
+   * time a wallet that is not ours presents a payment signature —
+   * whether it clears or bounces. CV's refinement and it is the right
+   * one: a stranger who tries and fails is the same magnitude of news
+   * as one who succeeds, and arguably better, because a decline is the
+   * thing we can still fix. Keying this to a clean settle would let a
+   * genuine first contact sit unflagged because their client was
+   * broken, which is exactly what happened on 2026-07-28.
+   */
+  | "first_outside_signature";
 
 const DEDUPE_TTL_SECONDS = 6 * 60 * 60;
 const ALERT_LOG_TTL_SECONDS = 30 * 86400;

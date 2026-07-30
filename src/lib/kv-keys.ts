@@ -81,6 +81,8 @@ export const KV_KEYS = {
   keeperLastSeen: "keeper_last_seen",
   shutterOverride: "shutter_override",
   firstDollar: "first_dollar",
+  /** Fires the outside-signature alarm exactly once, ever. */
+  firstSignature: "first_outside_signature",
   latestDigest: "digest:latest",
   gazetteIssueCount: "gazette_issue_count",
   blessingLast: "blessing_last",
