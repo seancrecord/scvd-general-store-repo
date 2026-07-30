@@ -268,17 +268,20 @@ function porchHtml(porch: PorchLedger): string {
 function interestHtml(ledger: MonthLedger, porch: PorchLedger): string {
   const shopping = readWindowShopping(ledger, porch);
   const seen = shopping.rows.filter(
-    (row) => row.looks > 0 || row.looksInfra > 0 || row.challenges > 0,
+    (row) => (row.looks ?? 0) > 0 || row.looksInfra > 0 || row.challenges > 0,
   );
   const rows =
     seen.length === 0
       ? '<tr><td colspan="5">No item page has been opened yet this month.</td></tr>'
       : seen
-          .sort((a, b) => b.looks - a.looks || b.looksInfra - a.looksInfra)
+          .sort(
+            (a, b) =>
+              (b.looks ?? -1) - (a.looks ?? -1) || b.looksInfra - a.looksInfra,
+          )
           .map(
             (row) => `<tr><td>${escapeHtml(row.item)}</td>
               <td>$${row.price_usdc}</td>
-              <td>${row.looks}${row.looksHouse > 0 ? ` <small>(+${row.looksHouse}h)</small>` : ""}</td>
+              <td>${row.looks === null ? '<span title="the page is the product; there is nothing to read for free">&mdash;</span>' : row.looks}${row.looksHouse > 0 ? ` <small>(+${row.looksHouse}h)</small>` : ""}</td>
               <td>${row.looksInfra}</td>
               <td>${row.challenges}</td>
               <td>${row.settled}</td></tr>`,

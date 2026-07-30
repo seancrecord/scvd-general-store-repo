@@ -77,6 +77,7 @@ const PORCH_EXACT = new Map<string, string>([
   ["/menu.json", "menu.json"],
   ["/skill.md", "skill.md"],
   ["/gazette", "gazette"],
+  ["/almanac", "almanac"],
   ["/api/treat", "treat"],
   ["/stats", "stats"],
 ]);

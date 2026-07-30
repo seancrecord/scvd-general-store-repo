@@ -1,4 +1,6 @@
 import type { MonthLedger, PorchLedger } from "@/lib/metrics";
+import { PENNY_PAGE_USDC } from "@/lib/payments";
+import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { MENU_ITEMS } from "@/store";
 
 /**
@@ -25,8 +27,18 @@ import { MENU_ITEMS } from "@/store";
 export interface ItemInterest {
   item: string;
   price_usdc: number;
-  /** Organic reads of this item's own page this month. */
-  looks: number;
+  /**
+   * Organic reads of this item's own page this month, or NULL when the
+   * shelf has no free page to read.
+   *
+   * Almanac pages are the case that forced this: the page IS the
+   * product, so the first touch is the 402 itself and there is nothing
+   * to look at for free. Rendering that as 0 would say "nobody looked"
+   * when the truth is "looking is not possible" — a different fact
+   * wearing the same digit, which is the shape of defect this office
+   * has already been bitten by twice this week.
+   */
+  looks: number | null;
   /** Reads bucketed as crawler/scanner traffic. Kept visible, never mixed. */
   looksInfra: number;
   looksHouse: number;
@@ -46,7 +58,7 @@ export interface WindowShoppingLedger {
 }
 
 const HONEST_LIMIT =
-  "Looks are reads of an item's own page, organic bucket only, with crawler traffic kept in its own column rather than folded in. No cookies and no IP retention, so these are reads and not readers: one client refreshing four times is four looks. Porch writes are rate-capped under storm conditions, so every look count is a floor. A row with looks and no 402 is a question, not a verdict — a crawler walking the menu makes that exact shape — and a row with no looks at all may only mean nobody found the page. The one reading this genuinely supports: comparing items against each other in the same month, since they share every bias.";
+  "Looks are reads of an item's own page, organic bucket only. A dash means the shelf has no free page to read — an almanac page IS the product, so the first touch is the 402 and there is nothing to look at without paying; that is not the same as nobody looking, and it is not rendered as a zero. with crawler traffic kept in its own column rather than folded in. No cookies and no IP retention, so these are reads and not readers: one client refreshing four times is four looks. Porch writes are rate-capped under storm conditions, so every look count is a floor. A row with looks and no 402 is a question, not a verdict — a crawler walking the menu makes that exact shape — and a row with no looks at all may only mean nobody found the page. The one reading this genuinely supports: comparing items against each other in the same month, since they share every bias.";
 
 /** The organic count for a surface, as the porch ledger buckets them. */
 function bucket(porch: PorchLedger, surface: string, name: string): number {
@@ -76,12 +88,41 @@ export function readWindowShopping(
     };
   });
 
+  /**
+   * THE ALMANAC, ADDED 2026-07-30 BECAUSE IT OUTSOLD THE ENTIRE MENU.
+   *
+   * The store's first sale to a stranger was a penny page from the
+   * keeper's journal — an item that is not in MENU_ITEMS, not in
+   * menu.json, not in the MCP tool list, and was therefore invisible to
+   * the one instrument built to answer "which shelf got picked up." The
+   * table measuring want had a hole exactly where the only want anybody
+   * has ever shown up with went.
+   *
+   * Their looks are NULL rather than zero: the page is the product, so
+   * there is no free page to read and the first touch is the 402.
+   */
+  for (const entry of ALMANAC_ENTRIES) {
+    const key = `almanac:${entry.slug}`;
+    const itemRow = ledger.items[key];
+    rows.push({
+      item: key,
+      price_usdc: PENNY_PAGE_USDC,
+      looks: null,
+      looksInfra: 0,
+      looksHouse: 0,
+      challenges: itemRow?.challenges ?? 0,
+      settled: itemRow?.settled ?? 0,
+    });
+  }
+
   return {
     rows,
     lookedNeverTried: rows
-      .filter((row) => row.looks > 0 && row.challenges === 0)
-      .sort((a, b) => b.looks - a.looks)
+      .filter((row) => (row.looks ?? 0) > 0 && row.challenges === 0)
+      .sort((a, b) => (b.looks ?? 0) - (a.looks ?? 0))
       .map((row) => row.item),
+    // A shelf with no free page cannot be "never looked at" — it can
+    // only be never bought, which is a different row on this table.
     neverLookedAt: rows
       .filter((row) => row.looks === 0 && row.looksInfra === 0)
       .map((row) => row.item),

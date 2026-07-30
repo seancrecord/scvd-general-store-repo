@@ -4,6 +4,8 @@ import { readMonthLedger, readPorchLedger } from "@/lib/metrics";
 import type { ItemInterest } from "@/lib/window-shopping";
 import { readWindowShopping } from "@/lib/window-shopping";
 import { MENU_ITEMS } from "@/store";
+import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { PENNY_PAGE_USDC } from "@/lib/payments";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -114,7 +116,9 @@ describe("per-item window shopping", () => {
 
   it("carries every menu item, so an unread shelf is visible too", async () => {
     const result = await shopping();
-    expect(result.rows.length).toBe(MENU_ITEMS.length);
+    // Every menu item plus every almanac page: the table covers
+    // everything that can be bought, not everything on the menu.
+    expect(result.rows.length).toBe(MENU_ITEMS.length + ALMANAC_ENTRIES.length);
     for (const row of result.rows) {
       expect(typeof row.price_usdc).toBe("number");
     }
@@ -134,5 +138,70 @@ describe("per-item window shopping", () => {
     ).text();
     expect(page).toContain("Which shelf got picked up");
     expect(page).toContain("reads and not readers");
+  });
+});
+
+/**
+ * THE ALMANAC, ADDED THE DAY IT OUTSOLD THE ENTIRE MENU.
+ *
+ * The store's first sale to a stranger was a penny page from the
+ * keeper's journal — an item that is not in MENU_ITEMS, not in
+ * menu.json, not in the MCP tool list, and was therefore invisible to
+ * the one instrument built to answer "which shelf got picked up." The
+ * table measuring want had a hole exactly where the only want anybody
+ * ever showed up with went.
+ */
+describe("the almanac is on the want table too", () => {
+  it("carries a row per journal page", async () => {
+    const result = await shopping();
+    for (const entry of ALMANAC_ENTRIES) {
+      const row = result.rows.find(
+        (candidate) => candidate.item === `almanac:${entry.slug}`,
+      );
+      expect(row, `${entry.slug} is missing from the want table`).toBeTruthy();
+      expect(row?.price_usdc).toBe(PENNY_PAGE_USDC);
+    }
+  });
+
+  it("shows a dash for looks, not a zero", async () => {
+    // The page IS the product: the first touch is the 402 and there is
+    // nothing to read for free. Rendering that as 0 would say "nobody
+    // looked" when the truth is "looking is not possible" — a different
+    // fact wearing the same digit.
+    const result = await shopping();
+    const row = result.rows.find((candidate) =>
+      candidate.item.startsWith("almanac:"),
+    );
+    expect(row?.looks).toBeNull();
+  });
+
+  it("never files a no-free-page shelf under 'nobody looked at it'", async () => {
+    const result = await shopping();
+    for (const item of result.neverLookedAt) {
+      expect(
+        item.startsWith("almanac:"),
+        `${item} has no free page and cannot be "never looked at"`,
+      ).toBe(false);
+    }
+  });
+
+  it("counts the free index as its own porch surface", async () => {
+    // The browse denominator: who opened the list of pages. Without it
+    // the almanac has a numerator and nothing under it.
+    const before = (await readPorchLedger(testEnv)).surfaces["almanac"];
+    await SELF.fetch(`${BASE}/almanac`, { headers: { Accept: "text/html" } });
+    await vi.waitFor(
+      async () => {
+        const after = (await readPorchLedger(testEnv)).surfaces["almanac"];
+        expect(after?.["organic"] ?? 0).toBe((before?.["organic"] ?? 0) + 1);
+      },
+      { timeout: 2000, interval: 25 },
+    );
+  });
+
+  it("explains the dash where a reader will see it", async () => {
+    const result = await shopping();
+    expect(result.honestLimit).toContain("no free page to read");
+    expect(result.honestLimit).toContain("not the same as nobody looking");
   });
 });
