@@ -53,32 +53,26 @@ has heard of us; a test bans the borrowed phrasings. Two admissions
 kept that were easier to leave out: the host is the worst failure for a
 buyer, and the signing key has no substitute and no recovery.
 
-**c) THE DOGFOODING LINE — new, and now writable.** It was parked in
-July because the aspirational version ("we use this to remember
-everything") was a slogan, and CV said so. The cold-read test on
-2026-07-30 changed what's available to say. Three drafts, weakest claim
-to strongest — **your call, rule 7, and "none of these" is a fine
-answer:**
+~~**c) THE DOGFOODING LINE**~~ — **RULED AND SHIPPED 2026-07-30. Your
+copy was the answer, not a vote on my three drafts.** I filed those
+drafts expecting a pick; what came back was the evolution of the item —
+the checklist and the "what survives, what doesn't" paragraph — which
+solved it from a different direction and made the drafts moot. The
+finding is stated where it acts instead of where it defends:
 
-1. *"We filed one ourselves, then handed the bare URL to an agent with
-   no other context. It reconstructed the session's five open threads
-   correctly. It did not learn why the session happened — that part is
-   on how you write it."*
-2. *"The keeper's partner bought one and tested it the honest way: a
-   cold reader, no context but the link. Verdict, in its words,
-   'genuinely orienting, not thin.' What it missed is published on the
-   listing so you can write yours better than we wrote ours."*
-3. *"Tested cold, once, on a real session. It restores what was open. It
-   does not restore having been there."*
+- The **checklist** sits on the `summary` field's own label, reaching the
+  402 body, MCP schema, Bazaar and OpenAPI from one place.
+- The **paragraph** sits on the item page and `/try`, where a builder
+  reads about the store's habits.
+- **The dogfooding claim is made by the guidance existing**, which is
+  better than any sentence about it: the only way we could know those
+  three things is by having filed one and had it read cold.
 
-Notes for the ruling: (1) is the most defensible and the least warm;
-(3) is the shortest and reads most like the store, but compresses the
-evidence to nearly nothing; (2) is the only one that quotes the reader
-and points at the limits. **None of them may say "we use it to remember
-everything"** — one filed anchor and one cold read is what we have, and
-the claim-chain rule applies to our own products first. If you'd rather
-say nothing until there's a second data point, that is also
-defensible and costs us nothing.
+Your ruling on shape is the transferable part and is now written into the
+copy module so the next agent inherits it: *a disclaimer paragraph is
+defensive — it tells somebody after the fact what they lost; the same
+finding at the moment of the writing is a product improvement.* Nothing
+left for you here.
 
 **d) The weekly auto-funded check on listed origins.**
 Move 2's live-maintenance upgrade: each trust-list origin gets an
