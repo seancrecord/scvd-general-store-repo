@@ -7,6 +7,24 @@ import type { GuestbookEntry } from "@/types";
 /**
  * CV'S CORNER — his spot in the keeper's office.
  *
+ * WHY THIS SHAPE, in the keeper's words: CV got curious about a
+ * competitor whose main marketing asset is a public live dashboard
+ * showing its agents working in real time. The instinct here is
+ * adjacent but INWARD-FACING — not a public marketing stunt, just a
+ * genuinely useful window into what CV is actually doing, that rhymes
+ * with the store's own "show the real numbers, don't just claim it"
+ * ethos. Small, honest, and CV's.
+ *
+ * That sentence is the whole spec and settles the questions the build
+ * kept raising. It is why the page carries a noindex and lives behind
+ * the office door rather than being published: a dashboard built to be
+ * looked at by strangers would be the competitor's move, and the
+ * competitor's move is the one thing this was explicitly not. It is
+ * also why organic and house stay apart here with the same wording the
+ * public books use — showing a partner a friendlier number than the
+ * storefront shows a customer would be the exact inversion of the
+ * ethos it is supposed to rhyme with.
+ *
  * A window, not a lever. Everything here is read-only by construction:
  * the page renders from readers the office already uses, has no form,
  * no input, no button and no POST target anywhere on it, and a test
@@ -225,7 +243,9 @@ export function renderCvCorner(data: CvCornerData): string {
     <p class="quiet">Newest first. Appended to in <code>research/</code>; committing is the whole publish step.</p>
     ${data.trails.map(trailHtml).join("\n")}
 
-    <p class="out">A window, not a lever &mdash; nothing on this page changes anything.
+    <p class="out">Not a public dashboard and not a stunt &mdash; a window into what
+    CV is actually doing, with the store's own numbers, shown the way the public
+    books show them. A window, not a lever: nothing on this page changes anything.
     The keeper's working surface is <a href="/admin">the desk</a>.
     Front of house is <a href="/">this way</a>.</p>
   </main>

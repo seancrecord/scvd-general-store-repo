@@ -1,6 +1,10 @@
+import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
+
+/** Ceiling on a paid counters scan. An unnamed cap is a silent one. */
+const PAID_METRIC_CAP = 2000;
 
 /**
  * C2: the public ledger summary. Computed live from the same counters
@@ -43,10 +47,8 @@ export async function computeStats(env: Env): Promise<StoreStats> {
   let organic = 0;
   let house = 0;
   for (const month of monthsSinceOpening()) {
-    const listed = await env.COUNTERS.list({
-      prefix: `metric:${month}:paid`,
-    });
-    const names = listed.keys.map((key) => key.name);
+    const listed = await listKeys(env.COUNTERS, { prefix: `metric:${month}:paid`, cap: PAID_METRIC_CAP });
+    const names = listed.names;
     const values = await bulkGetJson<number>(env.COUNTERS, names);
     for (const name of names) {
       const count = values.get(name) ?? 0;

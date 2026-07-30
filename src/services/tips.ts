@@ -1,8 +1,10 @@
+import { listKeys } from "@/lib/kv-list";
 import { newTipId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { Env, TipRecord, TipStatus } from "@/types";
+
 
 /**
  * The Trading Post tip jar. Tips land in the keeper's review queue and
@@ -51,16 +53,16 @@ export async function recordTip(
 }
 
 export async function listTips(env: Env): Promise<StoredTip[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.tipPrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.tipPrefix, cap: TIP_CAP });
   const values = await bulkGetJson<TipRecord>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const tips: StoredTip[] = [];
-  for (const key of listed.keys) {
-    const record = values.get(key.name);
+  for (const name of listed.names) {
+    const record = values.get(name);
     if (record) {
-      tips.push({ record, kvKey: key.name });
+      tips.push({ record, kvKey: name });
     }
   }
   return tips;

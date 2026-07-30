@@ -1,9 +1,13 @@
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { signMessage } from "@/lib/signing";
 import { issueStamp } from "@/services/stamps";
 import { setTipStatus } from "@/services/tips";
 import type { Env, GazetteIssue, TipRecord } from "@/types";
+
+/** Ceiling on a issues scan. Named because an unnamed cap is a silent one. */
+const ISSUE_CAP = 500;
 
 /**
  * The Gazette press. The keeper assembles issues by hand from approved
@@ -100,10 +104,10 @@ export async function getIssue(
 }
 
 export async function listIssues(env: Env): Promise<GazetteIssue[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.gazettePrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.gazettePrefix, cap: ISSUE_CAP });
   const values = await bulkGetJson<GazetteIssue>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const issues: GazetteIssue[] = [];
   for (const issue of values.values()) {

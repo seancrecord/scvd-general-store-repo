@@ -1,9 +1,11 @@
+import { listKeys } from "@/lib/kv-list";
 import { newLetterId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
 import type { Env, LetterRecord, LetterStatus } from "@/types";
+
 
 /**
  * The Mailbox. Letters are private correspondence: they live in the
@@ -76,16 +78,16 @@ export interface QueuedLetter {
 }
 
 export async function listLetters(env: Env): Promise<QueuedLetter[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.letterPrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.letterPrefix, cap: LETTER_CAP });
   const values = await bulkGetJson<LetterRecord>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const letters: QueuedLetter[] = [];
-  for (const key of listed.keys) {
-    const record = values.get(key.name);
+  for (const name of listed.names) {
+    const record = values.get(name);
     if (record) {
-      letters.push({ record, kvKey: key.name });
+      letters.push({ record, kvKey: name });
     }
   }
   return letters;

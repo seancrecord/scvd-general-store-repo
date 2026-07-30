@@ -1,3 +1,4 @@
+import { listKeys } from "@/lib/kv-list";
 import { isHouseWallet } from "@/lib/channel";
 import { currentWeekKey, KV_KEYS } from "@/lib/kv-keys";
 import { signMessage } from "@/lib/signing";
@@ -15,6 +16,9 @@ import { listTips } from "@/services/tips";
 import { seasonWeekFor } from "@/services/zodiac";
 import { MENU_ITEMS } from "@/store";
 import type { Env, GazetteDraft, GazetteState, TownEdition } from "@/types";
+
+/** Ceiling on a weekly event rows scan. An unnamed cap is a silent one. */
+const WEEKLY_SCAN_CAP = 1000;
 
 /**
  * The Gazette's weekly edition press, per GAZETTE_SPEC canon.
@@ -121,9 +125,9 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
   const settledByItem: Record<string, number> = {};
   const dayTally: Record<string, number> = {};
   let porchCrossings = 0;
-  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: 1000 });
-  for (const key of listed.keys) {
-    const event = await env.COUNTERS.get<MetricEvent>(key.name, "json");
+  const listed = await listKeys(env.COUNTERS, { prefix: "evt:", cap: WEEKLY_SCAN_CAP });
+  for (const name of listed.names) {
+    const event = await env.COUNTERS.get<MetricEvent>(name, "json");
     if (!event || event.house || event.at < since) {
       continue;
     }

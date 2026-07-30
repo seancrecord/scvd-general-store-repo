@@ -1,3 +1,4 @@
+import { listKeys } from "@/lib/kv-list";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
@@ -40,13 +41,10 @@ export async function listClosers(
   env: Env,
   limit = 20,
 ): Promise<CloserEntry[]> {
-  const listed = await env.ORDERS.list({
-    prefix: KV_KEYS.closerPrefix,
-    limit,
-  });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.closerPrefix, cap: limit });
   const values = await bulkGetJson<CloserEntry>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const closers: CloserEntry[] = [];
   for (const entry of values.values()) {

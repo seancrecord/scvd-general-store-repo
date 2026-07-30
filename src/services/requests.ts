@@ -1,8 +1,17 @@
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { newRequestId } from "@/lib/ids";
 import { sanitizeText } from "@/lib/sanitize";
 import type { CommissionRequest, Env, WaitlistEntry } from "@/types";
+
+/** Ceiling on a failed-item counters scan. An unnamed cap is a silent one. */
+const FAILED_ITEM_CAP = 1000;
+
+/** Ceiling on a requests scan. Named because an unnamed cap is a silent one. */
+const REQUEST_CAP = 500;
+/** Ceiling on a waitlist entries scan. Named because an unnamed cap is a silent one. */
+const WAITLIST_CAP = 500;
 
 /**
  * The request ledger: open commissions, waitlists, and the failed-item
@@ -62,10 +71,10 @@ export async function recordCommission(
 }
 
 export async function listCommissions(env: Env): Promise<CommissionRequest[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.requestPrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.requestPrefix, cap: REQUEST_CAP });
   const values = await bulkGetJson<CommissionRequest>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const requests: CommissionRequest[] = [];
   for (const request of values.values()) {
@@ -102,10 +111,10 @@ export async function joinWaitlist(
 }
 
 export async function listWaitlist(env: Env): Promise<WaitlistEntry[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.waitlistPrefix() });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.waitlistPrefix(), cap: WAITLIST_CAP });
   const values = await bulkGetJson<WaitlistEntry>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const entries: WaitlistEntry[] = [];
   for (const entry of values.values()) {
@@ -133,17 +142,15 @@ export async function recordFailedItem(
 export async function listFailedItems(
   env: Env,
 ): Promise<Record<string, number>> {
-  const listed = await env.COUNTERS.list({
-    prefix: KV_KEYS.failedItemPrefix,
-  });
+  const listed = await listKeys(env.COUNTERS, { prefix: KV_KEYS.failedItemPrefix, cap: FAILED_ITEM_CAP });
   const values = await bulkGetText(
     env.COUNTERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const tally: Record<string, number> = {};
-  for (const key of listed.keys) {
-    const count = values.get(key.name);
-    tally[key.name.slice(KV_KEYS.failedItemPrefix.length)] = count
+  for (const name of listed.names) {
+    const count = values.get(name);
+    tally[name.slice(KV_KEYS.failedItemPrefix.length)] = count
       ? parseInt(count, 10)
       : 0;
   }

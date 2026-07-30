@@ -1,7 +1,11 @@
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newLuckyStockId } from "@/lib/ids";
 import type { Env } from "@/types";
+
+/** Ceiling on a stock units scan. An unnamed cap is a silent one. */
+const STOCK_CAP = 500;
 
 /**
  * The stocked shelves (Class 1 of the fulfillment restructure): units
@@ -107,12 +111,10 @@ export async function listStock(
   env: Env,
   itemId: string,
 ): Promise<StockUnit[]> {
-  const listed = await env.ORDERS.list({
-    prefix: KV_KEYS.stockPrefix(itemId),
-  });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.stockPrefix(itemId), cap: STOCK_CAP });
   const values = await bulkGetJson<StockUnit>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const units: StockUnit[] = [];
   for (const unit of values.values()) {

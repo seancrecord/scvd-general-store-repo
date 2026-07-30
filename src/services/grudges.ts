@@ -1,3 +1,4 @@
+import { listKeys } from "@/lib/kv-list";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { createRefund } from "@/services/refunds";
@@ -41,13 +42,10 @@ export async function listGrudges(
   env: Env,
   limit = 30,
 ): Promise<GrudgeEntry[]> {
-  const listed = await env.ORDERS.list({
-    prefix: KV_KEYS.grudgePrefix,
-    limit,
-  });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.grudgePrefix, cap: limit });
   const values = await bulkGetJson<GrudgeEntry>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const grudges: GrudgeEntry[] = [];
   for (const [key, entry] of values.entries()) {

@@ -1,6 +1,10 @@
+import { listKeys } from "@/lib/kv-list";
 import { isHouseWallet } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
+
+/** Ceiling on a referral counters scan. An unnamed cap is a silent one. */
+const REFERRAL_KEY_CAP = 1000;
 
 /**
  * THE REFERRAL MARKER — MEASUREMENT ONLY, NOTHING SIGNED.
@@ -126,13 +130,13 @@ export async function readReferrals(
   const rows = new Map<number, ReferralRow>();
   for (const stage of ["a", "s"] as const) {
     const prefix = `metric:${month}:ref${stage}:`;
-    const listed = await env.COUNTERS.list({ prefix, limit: 1000 });
-    for (const key of listed.keys) {
-      const marker = parseReferralMarker(key.name.slice(prefix.length));
+    const listed = await listKeys(env.COUNTERS, { prefix, cap: REFERRAL_KEY_CAP });
+    for (const name of listed.names) {
+      const marker = parseReferralMarker(name.slice(prefix.length));
       if (marker === undefined) {
         continue;
       }
-      const raw = await env.COUNTERS.get(key.name);
+      const raw = await env.COUNTERS.get(name);
       const count = raw ? Number.parseInt(raw, 10) : 0;
       const row = rows.get(marker) ?? { marker, arrived: 0, settled: 0 };
       if (stage === "a") {
@@ -227,11 +231,12 @@ export async function readReferrerHosts(
       ...(cursor ? { cursor } : {}),
     });
     for (const key of listed.keys) {
+      const name = key.name;
       if (scanned >= scanCap) {
         break;
       }
       scanned += 1;
-      const raw = await env.COUNTERS.get(key.name);
+      const raw = await env.COUNTERS.get(name);
       if (!raw) {
         continue;
       }

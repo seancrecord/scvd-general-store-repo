@@ -1,3 +1,4 @@
+import { listKeys } from "@/lib/kv-list";
 import { newTagId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -81,19 +82,16 @@ export interface QueuedTag {
 
 /** Every tag, oldest first — the order the train fills. */
 export async function listTags(env: Env, limit = 200): Promise<QueuedTag[]> {
-  const listed = await env.ORDERS.list({
-    prefix: KV_KEYS.trainTagPrefix,
-    limit,
-  });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.trainTagPrefix, cap: limit });
   const values = await bulkGetJson<TrainTagRecord>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const tags: QueuedTag[] = [];
-  for (const key of listed.keys) {
-    const record = values.get(key.name);
+  for (const name of listed.names) {
+    const record = values.get(name);
     if (record) {
-      tags.push({ record, kvKey: key.name });
+      tags.push({ record, kvKey: name });
     }
   }
   return tags;

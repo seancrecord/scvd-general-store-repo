@@ -1,7 +1,11 @@
+import { listKeys } from "@/lib/kv-list";
 import { newCheckId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { Env, PhantomCheckRecord } from "@/types";
+
+/** Ceiling on a phantom checks scan. Named because an unnamed cap is a silent one. */
+const PHANTOM_CAP = 500;
 
 /**
  * phantom_check, per the store ledger: an out-of-band probe ~6 hours
@@ -151,10 +155,10 @@ export async function verifyPhantomSignature(
 
 /** The hourly walk: resolve every check that has come due. */
 export async function sweepPhantomChecks(env: Env): Promise<number> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.phantomPrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.phantomPrefix, cap: PHANTOM_CAP });
   let observed = 0;
-  for (const key of listed.keys) {
-    const record = await env.ORDERS.get<PhantomCheckRecord>(key.name, "json");
+  for (const name of listed.names) {
+    const record = await env.ORDERS.get<PhantomCheckRecord>(name, "json");
     if (
       record &&
       record.status === "scheduled" &&

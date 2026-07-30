@@ -1,7 +1,11 @@
+import { listKeys } from "@/lib/kv-list";
 import { newRefundId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, RefundRecord } from "@/types";
+
+/** Ceiling on a refunds scan. Named because an unnamed cap is a silent one. */
+const REFUND_CAP = 500;
 
 /**
  * The refund ledger. Records stay honest about pending vs paid.
@@ -46,10 +50,10 @@ export async function getRefund(
 }
 
 export async function listRefunds(env: Env): Promise<RefundRecord[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.refundPrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.refundPrefix, cap: REFUND_CAP });
   const values = await bulkGetJson<RefundRecord>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const refunds: RefundRecord[] = [];
   for (const record of values.values()) {

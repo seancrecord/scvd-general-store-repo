@@ -1,7 +1,14 @@
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
+
+/** Ceiling on a inventory counters scan. An unnamed cap is a silent one. */
+const INVENTORY_CAP = 2000;
+
+/** Ceiling on a orders scan. Named because an unnamed cap is a silent one. */
+const ORDER_CAP = 1000;
 
 /**
  * Order ledger: human-queue purchases, weekly inventory, completion webhooks.
@@ -73,10 +80,10 @@ export async function getOrder(
 }
 
 export async function listOrders(env: Env): Promise<OrderRecord[]> {
-  const listed = await env.ORDERS.list({ prefix: KV_KEYS.orderPrefix });
+  const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.orderPrefix, cap: ORDER_CAP });
   const values = await bulkGetJson<OrderRecord>(
     env.ORDERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const orders: OrderRecord[] = [];
   for (const order of values.values()) {
@@ -165,10 +172,8 @@ export async function recordInventorySale(
 }
 
 export async function resetWeeklyInventory(env: Env): Promise<void> {
-  const listed = await env.COUNTERS.list({
-    prefix: `inventory:`,
-  });
-  for (const key of listed.keys) {
-    await env.COUNTERS.delete(key.name);
+  const listed = await listKeys(env.COUNTERS, { prefix: `inventory:`, cap: INVENTORY_CAP });
+  for (const name of listed.names) {
+    await env.COUNTERS.delete(name);
   }
 }

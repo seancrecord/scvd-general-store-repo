@@ -1,9 +1,15 @@
+import { listKeys } from "@/lib/kv-list";
 import { sendAlert } from "@/lib/alerts";
 import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import type { Channel, Env, PayerRecord } from "@/types";
+
+/** Ceiling on a metric counters scan. Named because an unnamed cap is a silent one. */
+const METRIC_KEY_CAP = 5000;
+/** Ceiling on a payer rows scan. Named because an unnamed cap is a silent one. */
+const PAYER_KEY_CAP = 5000;
 
 /**
  * The instrumentation ledger (RUN1_SYNTHESIS §instrumentation, plus the
@@ -531,14 +537,13 @@ export async function reconcileSettles(
   env: Env,
 ): Promise<SettleReconciliation> {
   const [metrics, payerKeys] = await Promise.all([
-    env.COUNTERS.list({ prefix: "metric:" }),
-    env.COUNTERS.list({ prefix: KV_KEYS.payerPrefix }),
+    listKeys(env.COUNTERS, { prefix: "metric:", cap: METRIC_KEY_CAP }),
+    listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: PAYER_KEY_CAP }),
   ]);
   const [metricValues, payerValues] = await Promise.all([
     bulkGetText(
       env.COUNTERS,
-      metrics.keys
-        .map((key) => key.name)
+      metrics.names
         .filter((name) => {
           const kind = name.split(":")[2] ?? "";
           return kind === "paid" || kind === "paidh" || kind === "nopayer";
@@ -546,7 +551,7 @@ export async function reconcileSettles(
     ),
     bulkGetJson<PayerRecord>(
       env.COUNTERS,
-      payerKeys.keys.map((key) => key.name),
+      payerKeys.names,
     ),
   ]);
 
@@ -599,16 +604,17 @@ export async function readMonthLedger(
     revenueUsdc: 0,
     revenueHouseUsdc: 0,
   };
-  const listed = await env.COUNTERS.list({
+  const listed = await listKeys(env.COUNTERS, {
     prefix: KV_KEYS.metricMonthPrefix(month),
+    cap: METRIC_KEY_CAP,
   });
   const values = await bulkGetText(
     env.COUNTERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
-  for (const key of listed.keys) {
-    const value = parseInt(values.get(key.name) ?? "0", 10);
-    const rest = key.name.slice(KV_KEYS.metricMonthPrefix(month).length);
+  for (const name of listed.names) {
+    const value = parseInt(values.get(name) ?? "0", 10);
+    const rest = name.slice(KV_KEYS.metricMonthPrefix(month).length);
     const [kind, ...parts] = rest.split(":");
     const tail = parts.join(":");
     if (kind?.startsWith("porch")) {
@@ -733,9 +739,8 @@ export async function readPorchLedger(
     truncated: false,
   };
   const prefix = KV_KEYS.metricMonthPrefix(month);
-  const listed = await env.COUNTERS.list({ prefix });
-  const names = listed.keys
-    .map((key) => key.name)
+  const listed = await listKeys(env.COUNTERS, { prefix, cap: METRIC_KEY_CAP });
+  const names = listed.names
     .filter((name) => {
       const kind = name.slice(prefix.length).split(":")[0] ?? "";
       return kind.startsWith("porch") || kind === "src402";
@@ -780,8 +785,8 @@ export async function listRecentChallenges(
   limit = 15,
 ): Promise<MetricEvent[]> {
   // Newest first by key design; one list + one bulk read, bounded.
-  const listed = await env.COUNTERS.list({ prefix: "evt:", limit: 100 });
-  const names = listed.keys.map((key) => key.name);
+  const listed = await listKeys(env.COUNTERS, { prefix: "evt:", cap: 100 });
+  const names = listed.names;
   const values = await bulkGetJson<MetricEvent>(env.COUNTERS, names);
   const events: MetricEvent[] = [];
   for (const name of names) {
@@ -850,13 +855,10 @@ export async function getFirstDollar(env: Env): Promise<FirstDollar | null> {
 
 /** Recent paying wallets, for the cohort/wash-filter review. */
 export async function listPayers(env: Env, limit = 50): Promise<PayerRecord[]> {
-  const listed = await env.COUNTERS.list({
-    prefix: KV_KEYS.payerPrefix,
-    limit,
-  });
+  const listed = await listKeys(env.COUNTERS, { prefix: KV_KEYS.payerPrefix, cap: limit });
   const values = await bulkGetJson<PayerRecord>(
     env.COUNTERS,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const payers: PayerRecord[] = [];
   for (const record of values.values()) {

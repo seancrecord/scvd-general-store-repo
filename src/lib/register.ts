@@ -1,3 +1,4 @@
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listGuestbook } from "@/services/guestbook";
 import type { Env } from "@/types";
@@ -78,16 +79,13 @@ export async function readVisitorsRegister(
 
   const bearers: RegisterBearer[] = [];
   // Cards live in PATRONS, not GUESTBOOK — checked rather than assumed.
-  const cards = await env.PATRONS.list({
-    prefix: KV_KEYS.stampCard(""),
-    limit: BEARER_CAP,
-  });
-  for (const key of cards.keys) {
-    const slug = key.name.slice(KV_KEYS.stampCard("").length);
+  const cards = await listKeys(env.PATRONS, { prefix: KV_KEYS.stampCard(""), cap: BEARER_CAP });
+  for (const name of cards.names) {
+    const slug = name.slice(KV_KEYS.stampCard("").length);
     if (slug.length === 0) {
       continue;
     }
-    const raw = await env.PATRONS.get(key.name);
+    const raw = await env.PATRONS.get(name);
     let weeks: string[] = [];
     if (raw) {
       try {

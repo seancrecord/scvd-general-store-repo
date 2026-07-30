@@ -37,3 +37,12 @@ jobs:
       # something it cannot do.
       - name: Tests
         run: npm test
+      # THE SCALABILITY AUDIT — the same idea pointed forward instead of
+      # backward. The tests catch a claim that is false NOW; this catches
+      # a shape that will quietly become false as the store grows. Its
+      # first run found ten KV listings with no limit, which Cloudflare
+      # answers with one page and a flag nothing was reading — readings
+      # that would have stopped seeing older records with no error and
+      # no warning, at some unknown future size.
+      - name: Scalability audit
+        run: npm run audit

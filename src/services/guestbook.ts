@@ -1,3 +1,4 @@
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS, invertedTimestamp } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newEntryId } from "@/lib/ids";
@@ -7,6 +8,9 @@ import {
   sanitizeText,
 } from "@/lib/sanitize";
 import type { Env, GuestbookEntry } from "@/types";
+
+/** Ceiling on a guestbook keys scan. An unnamed cap is a silent one. */
+const GUESTBOOK_SCAN_CAP = 1000;
 
 /**
  * The guestbook by the door. Free to sign; every signer gets a sticker.
@@ -52,19 +56,16 @@ export async function listGuestbook(
   env: Env,
   limit: number,
 ): Promise<ListedEntry[]> {
-  const listed = await env.GUESTBOOK.list({
-    prefix: KV_KEYS.guestbookPrefix,
-    limit,
-  });
+  const listed = await listKeys(env.GUESTBOOK, { prefix: KV_KEYS.guestbookPrefix, cap: limit });
   const values = await bulkGetJson<GuestbookEntry>(
     env.GUESTBOOK,
-    listed.keys.map((key) => key.name),
+    listed.names,
   );
   const entries: ListedEntry[] = [];
-  for (const key of listed.keys) {
-    const entry = values.get(key.name);
+  for (const name of listed.names) {
+    const entry = values.get(name);
     if (entry) {
-      entries.push({ ...entry, kv_key: key.name });
+      entries.push({ ...entry, kv_key: name });
     }
   }
   return entries;
