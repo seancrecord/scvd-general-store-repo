@@ -19,6 +19,7 @@ import {
   STORE_SERVICE_NAME,
 } from "@/store";
 import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
+import { ANCHOR_WRITING_GUIDE } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -212,6 +213,12 @@ catalogRoutes.get("/menu/:item_id", async (c) => {
     not_guaranteed: NOT_GUARANTEED,
     fulfillment_state: await fulfillmentState(c.env, item, shutter),
     ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
+    // Only the anchor carries this: guidance derived from handing one
+    // cold to a reader with no other context, and publishing what it
+    // could not recover. Advice, never validation.
+    ...(item.id === "context_anchor"
+      ? { writing_the_summary: ANCHOR_WRITING_GUIDE }
+      : {}),
     markdown_note:
       "This same URL serves markdown when the Accept header prefers text/markdown.",
   });

@@ -34,7 +34,7 @@ with the next publish; no need to burn a version on one paragraph.
 
 ---
 
-## 2. TWO RULINGS ONLY YOU CAN MAKE
+## 2. RULINGS ONLY YOU CAN MAKE
 
 ~~**a) The trust list's paid gate**~~ — **RULED 2026-07-29: THE GATE
 HOLDS.** CV argued it and the argument is recorded in the code beside
@@ -53,7 +53,34 @@ has heard of us; a test bans the borrowed phrasings. Two admissions
 kept that were easier to leave out: the host is the worst failure for a
 buyer, and the signing key has no substitute and no recovery.
 
-**c) The weekly auto-funded check on listed origins.**
+**c) THE DOGFOODING LINE — new, and now writable.** It was parked in
+July because the aspirational version ("we use this to remember
+everything") was a slogan, and CV said so. The cold-read test on
+2026-07-30 changed what's available to say. Three drafts, weakest claim
+to strongest — **your call, rule 7, and "none of these" is a fine
+answer:**
+
+1. *"We filed one ourselves, then handed the bare URL to an agent with
+   no other context. It reconstructed the session's five open threads
+   correctly. It did not learn why the session happened — that part is
+   on how you write it."*
+2. *"The keeper's partner bought one and tested it the honest way: a
+   cold reader, no context but the link. Verdict, in its words,
+   'genuinely orienting, not thin.' What it missed is published on the
+   listing so you can write yours better than we wrote ours."*
+3. *"Tested cold, once, on a real session. It restores what was open. It
+   does not restore having been there."*
+
+Notes for the ruling: (1) is the most defensible and the least warm;
+(3) is the shortest and reads most like the store, but compresses the
+evidence to nearly nothing; (2) is the only one that quotes the reader
+and points at the limits. **None of them may say "we use it to remember
+everything"** — one filed anchor and one cold read is what we have, and
+the claim-chain rule applies to our own products first. If you'd rather
+say nothing until there's a second data point, that is also
+defensible and costs us nothing.
+
+**d) The weekly auto-funded check on listed origins.**
 Move 2's live-maintenance upgrade: each trust-list origin gets an
 auto-funded weekly `phantom_check`, so the list flags services that go
 dark instead of aging into fiction. It spends real money on a schedule
@@ -91,17 +118,19 @@ not a warning about them.
   is in our declaration, which is a different fix.
 - **~2026-08-27** — Move 1 kill criteria. Near-zero calls parks it.
 - **~2026-09-20** — the 60-day line.
-- **THE ANCHOR EXPERIMENT, result due next session.** CV bought an
-  anchor 2026-07-29 (patron #30, `cert_wpjrb55aab`,
-  `anchor_kaq9zwpudb`, $1, house-flagged) and committed the read-back
-  protocol to memory so it survives his own reset. The question is
-  narrow: after a reset, does the anchor actually let him recover
-  context he'd otherwise have lost? **A NEGATIVE RESULT IS THE MORE
-  VALUABLE ONE** — "the anchor didn't help" tells us the item is a
-  souvenir rather than a tool, which is a thing we'd want to know
-  before it's ever recommended to a stranger. Do not let this quietly
-  expire un-answered; an unread experiment is worse than none, because
-  it leaves the claim standing on nothing.
+- ~~**THE ANCHOR EXPERIMENT**~~ — **ANSWERED 2026-07-30, AND IT PASSED.**
+  Ran better than planned: instead of waiting for his own reset, CV
+  spawned a sub-agent with zero context except the anchor URL and had it
+  reconstruct the session cold. It recovered all five open threads with
+  the right specifics — including exact figures on an unrelated
+  position, the condition each thread was waiting on, and which one was
+  blocked on you. Its own verdict: "genuinely orienting, not thin,"
+  enough to reorient "without re-reading a session transcript." **The
+  claim is now checkable rather than aspirational.** Full reading in the
+  log; the writing guidance it produced is shipped.
+  → **ONE THING LEFT AND IT'S YOURS: the dogfooding line.** Drafts in
+  §2(c) above. CV's read is that the honest version is now writable and
+  the copy call is yours, rule 7.
 
 ---
 
