@@ -410,6 +410,34 @@ export function getPaymentStack(env: Env): PaymentStack {
         `${env.STORE_BASE_URL}/almanac/${entry.slug}`,
       );
     }
+    /**
+     * ALMANAC PAGES WRITTEN FROM THE OFFICE NEED THE SAME PATTERN THE
+     * GAZETTE ALREADY USES, and this was found the hard way: the
+     * office lever shipped 2026-07-30 letting the keeper write a page
+     * without a deploy, and the loop above only knows the pages
+     * compiled into the bundle. A keeper-written page therefore had NO
+     * ROUTE CONFIG, so the gate answered 402 with no PAYMENT-REQUIRED
+     * header — a page he could write and nobody could buy, which is
+     * worse than no lever at all.
+     *
+     * MY TEST PASSED ON THAT BUG. It asserted the page came back 402
+     * and stopped there, which is exactly the "measured the wrong
+     * thing" failure I had spent the day naming in other people's
+     * code. A 402 is not evidence of a purchasable page; a decodable
+     * PAYMENT-REQUIRED header is, and that is what the test asserts
+     * now.
+     *
+     * The exact per-entry configs above stay, because they carry a
+     * richer per-page description into the challenge. This pattern is
+     * the floor under everything they do not cover.
+     */
+    routes["GET /almanac/:slug"] = pennyPageRouteConfig(
+      env,
+      "Keeper's Almanac. One journal page, dated, written by hand. One penny.",
+      "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
+      "The Keeper's Almanac",
+      `${env.STORE_BASE_URL}/almanac`,
+    );
     // Gazette issues are published from the back room after deploy, so the
     // paid route is a prefixed pattern; the free index lists real URLs, and
     // each request's 402 carries its own exact URL as the resource.

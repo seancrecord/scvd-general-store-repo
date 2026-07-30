@@ -30,6 +30,7 @@ import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderCvCorner } from "@/pages/admin/cv-corner-page";
 import { renderItemEventsPage } from "@/pages/admin/item-events-page";
 import {
+  listAlmanacEntries,
   listKeeperEntries,
   removeAlmanacEntry,
   saveAlmanacEntry,
@@ -287,6 +288,9 @@ adminRoutes.get("/admin", async (c) => {
       reconciliation: shelf(reconciliation, null, "reconciliation", notes),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
+      almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(
+        (entry) => entry.slug,
+      ),
       work: {
         orders: shelf(orders, [], "orders", notes).filter(
           (order) => order.status === "queued",

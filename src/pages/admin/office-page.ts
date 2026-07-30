@@ -29,6 +29,8 @@ export interface OfficePageData {
   gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
   work: { orders: number; letters: number; reviews: number; alerts: number };
+  /** Every almanac page, compiled and office-written, for the want table. */
+  almanacSlugs: readonly string[];
   loadNotes: string[];
 }
 
@@ -265,8 +267,12 @@ function porchHtml(porch: PorchLedger): string {
  * because the question this table exists to answer is "what did they
  * pick up and put down," and the answer is at the top of that sort.
  */
-function interestHtml(ledger: MonthLedger, porch: PorchLedger): string {
-  const shopping = readWindowShopping(ledger, porch);
+function interestHtml(
+  ledger: MonthLedger,
+  porch: PorchLedger,
+  almanacSlugs: readonly string[],
+): string {
+  const shopping = readWindowShopping(ledger, porch, almanacSlugs);
   const seen = shopping.rows.filter(
     (row) => (row.looks ?? 0) > 0 || row.looksInfra > 0 || row.challenges > 0,
   );
@@ -448,7 +454,7 @@ export function renderOfficePage(data: OfficePageData): string {
     The looks column is the earliest signal this store can observe — it needs
     only curiosity, where a 402 needs a loaded wallet — and it is the only
     number here that says anything about want before money.</p>
-    ${interestHtml(data.monthLedger, data.porchLedger)}
+    ${interestHtml(data.monthLedger, data.porchLedger, data.almanacSlugs)}
   </section>
 
   <section>

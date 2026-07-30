@@ -1,5 +1,7 @@
 import { SELF, env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { decodePaymentRequired } from "./helpers/payment";
+import { beforeAll, describe, expect, it } from "vitest";
+import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   findAlmanacEntry,
   listAlmanacEntries,
@@ -26,6 +28,10 @@ const adminAuth = {
  * office. This is that rule applied where it costs the most to ignore.
  */
 describe("writing a page from the office", () => {
+  beforeAll(() => {
+    installFacilitatorMock();
+  });
+
   const TITLE = "A Test Page From The Office";
   const SLUG = slugify(TITLE);
 
@@ -47,6 +53,16 @@ describe("writing a page from the office", () => {
 
     const gated = await SELF.fetch(`${BASE}/almanac/${SLUG}`);
     expect(gated.status, "a new page is not behind the till").toBe(402);
+    /**
+     * AND IT MUST BE PAYABLE, which the first cut of this test did not
+     * check. A bare 402 with no PAYMENT-REQUIRED header is what the
+     * gate returns for a route it has no config for — so asserting the
+     * status alone passed while the page was unbuyable. A 402 is not
+     * evidence of a purchasable page; a decodable challenge is.
+     */
+    const challenge = decodePaymentRequired(gated);
+    expect(challenge.accepts.length).toBeGreaterThan(0);
+    expect(challenge.accepts[0]?.amount).toBeTruthy();
   });
 
   it("refuses rather than mangles, and says why", async () => {

@@ -73,6 +73,13 @@ function bucket(porch: PorchLedger, surface: string, name: string): number {
 export function readWindowShopping(
   ledger: MonthLedger,
   porch: PorchLedger,
+  /**
+   * Almanac slugs to include. Defaults to the pages compiled in; the
+   * office passes the merged list so a page written from the back room
+   * gets a row like any other. Optional so nothing that only wants the
+   * menu has to know the almanac exists.
+   */
+  almanacSlugs: readonly string[] = ALMANAC_ENTRIES.map((e) => e.slug),
 ): WindowShoppingLedger {
   const rows: ItemInterest[] = MENU_ITEMS.map((item) => {
     const surface = `item:${item.id}`;
@@ -101,8 +108,8 @@ export function readWindowShopping(
    * Their looks are NULL rather than zero: the page is the product, so
    * there is no free page to read and the first touch is the 402.
    */
-  for (const entry of ALMANAC_ENTRIES) {
-    const key = `almanac:${entry.slug}`;
+  for (const slug of almanacSlugs) {
+    const key = `almanac:${slug}`;
     const itemRow = ledger.items[key];
     rows.push({
       item: key,

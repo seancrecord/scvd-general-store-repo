@@ -14,7 +14,7 @@ import {
   STORE_SERVICE_NAME,
   STORE_TAGS,
 } from "@/store";
-import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { listAlmanacEntries } from "@/services/almanac-store";
 import { SCHEDULING_SIGNALS } from "@/store/spec";
 import type { Env, HonoEnv } from "@/types";
 
@@ -30,7 +30,9 @@ export const wellKnownRoutes = new Hono<HonoEnv>();
 async function paidResourceUrls(env: Env): Promise<string[]> {
   const base = env.STORE_BASE_URL;
   const urls = MENU_ITEMS.map((item) => `${base}/api/buy/${item.id}`);
-  for (const entry of ALMANAC_ENTRIES) {
+  // Both sources: a page written from the office is as real as a page
+  // compiled in, and discovery is where "real" is decided by outsiders.
+  for (const entry of await listAlmanacEntries(env)) {
     urls.push(`${base}/almanac/${entry.slug}`);
   }
   const issues = await listIssues(env).catch(() => []);
@@ -69,7 +71,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     inputSchema: { type: "object", ...buyInputSchema(item) },
     spec: listingSpec(item, base),
   }));
-  const almanacResources = ALMANAC_ENTRIES.map((entry) => ({
+  const almanacResources = (await listAlmanacEntries(c.env)).map((entry) => ({
     resourceUrl: `${base}/almanac/${entry.slug}`,
     method: "GET",
     x402Version: 2,
