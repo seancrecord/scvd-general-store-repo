@@ -25,27 +25,129 @@ function bytesToHex(bytes: Uint8Array): string {
     .join("");
 }
 
-/** Deterministic JSON so a signature always covers the same bytes. */
-export function canonicalizeCertificate(cert: Certificate): string {
-  const ordered: Record<string, string | number> = {
-    cert_id: cert.cert_id,
-    item: cert.item,
-    patron_number: cert.patron_number,
-    date: cert.date,
-  };
-  if (cert.name !== undefined) {
-    ordered["name"] = cert.name;
-  }
-  if (cert.tip_usdc !== undefined) {
-    ordered["tip_usdc"] = cert.tip_usdc;
-  }
-  if (cert.note !== undefined) {
-    ordered["note"] = cert.note;
-  }
-  if (cert.win !== undefined) {
-    ordered["win"] = cert.win;
+/**
+ * EVERY Certificate FIELD, IN SIGNING ORDER.
+ *
+ * This list fell behind the type TWICE without anyone noticing, which is
+ * why it is now a list walked by a loop instead of a hand-written object
+ * literal. `tag` (graffiti_on_a_train) and `attests` (the settlement
+ * observation's evidence hash) were both added to Certificate on
+ * 2026-07-28, both served on the certificate, and NEITHER was signed.
+ *
+ * The `attests` case was the dangerous one: that field is the binding
+ * between a certificate and the attestation it vouches for, and an
+ * unsigned binding can be altered without breaking the signature — so
+ * the one field whose whole job was to make /api/verify answer for a
+ * second artifact was the one field the signature did not cover.
+ *
+ * Found 2026-07-30 by CV, from outside, by trying to verify a real
+ * certificate with real ed25519 and failing against every plausible
+ * canonicalization. Nothing inside this repo caught it: every test
+ * verified through the same function that signed, so the omission was
+ * invisible from in here and total from out there.
+ *
+ * ORDER IS FROZEN for the first eight entries. Old signatures cover
+ * exactly those, in exactly that sequence; changing it silently voids
+ * every certificate the store has ever issued.
+ */
+const CERT_FIELDS = [
+  "cert_id",
+  "item",
+  "patron_number",
+  "date",
+  "name",
+  "tip_usdc",
+  "note",
+  "win",
+  "tag",
+  "attests",
+] as const;
+
+/**
+ * THE GUARD THAT MAKES THIS CLASS OF BUG A COMPILE ERROR. Add a field to
+ * Certificate without adding it here and typecheck fails, naming the
+ * field it is missing. This is the actual fix; the two added fields are
+ * only the instance of it.
+ */
+type UnsignedCertField = Exclude<keyof Certificate, (typeof CERT_FIELDS)[number]>;
+const _everyCertFieldIsSigned: UnsignedCertField extends never
+  ? true
+  : UnsignedCertField = true;
+void _everyCertFieldIsSigned;
+
+/**
+ * The pre-2026-07-30 field set. Certificates minted before the fix are
+ * signed over this, so verification has to accept it — and the verify
+ * endpoint has to SAY it did, naming the served fields the signature
+ * does not cover, rather than quietly reporting a clean "valid".
+ */
+const LEGACY_CERT_FIELDS = CERT_FIELDS.filter(
+  (field) => field !== "tag" && field !== "attests",
+);
+
+function canonicalize(
+  cert: Certificate,
+  fields: readonly (keyof Certificate)[],
+): string {
+  const ordered: Record<string, unknown> = {};
+  for (const field of fields) {
+    const value = cert[field];
+    if (value !== undefined) {
+      ordered[field] = value;
+    }
   }
   return JSON.stringify(ordered);
+}
+
+/** Deterministic JSON so a signature always covers the same bytes. */
+export function canonicalizeCertificate(cert: Certificate): string {
+  return canonicalize(cert, CERT_FIELDS);
+}
+
+/** What a certificate minted before 2026-07-30 was signed over. */
+export function canonicalizeCertificateLegacy(cert: Certificate): string {
+  return canonicalize(cert, LEGACY_CERT_FIELDS);
+}
+
+/** Which served fields a legacy signature leaves uncovered. */
+export function fieldsOutsideLegacySignature(cert: Certificate): string[] {
+  return (["tag", "attests"] as const).filter(
+    (field) => cert[field] !== undefined,
+  );
+}
+
+export type CertificateSignatureForm = "current" | "legacy" | "invalid";
+
+/**
+ * Which canonical form this signature actually covers. The verify route
+ * publishes the answer instead of collapsing it to a boolean, because
+ * "valid, and here is exactly what it is valid over" is the only claim
+ * a stranger can check.
+ */
+export async function certificateSignatureForm(
+  cert: Certificate,
+  signatureHex: string,
+  publicKeyHex: string,
+): Promise<CertificateSignatureForm> {
+  if (
+    await verifyMessageSignature(
+      canonicalizeCertificate(cert),
+      signatureHex,
+      publicKeyHex,
+    )
+  ) {
+    return "current";
+  }
+  if (
+    await verifyMessageSignature(
+      canonicalizeCertificateLegacy(cert),
+      signatureHex,
+      publicKeyHex,
+    )
+  ) {
+    return "legacy";
+  }
+  return "invalid";
 }
 
 export async function signCertificate(
@@ -89,15 +191,20 @@ export async function verifyMessageSignature(
   }
 }
 
+/**
+ * Genuine or not. Accepts the legacy form too — a certificate minted
+ * before the canonicalization was fixed is still one of ours, and
+ * telling its holder otherwise would be a lie in the other direction.
+ * Callers that need to know WHICH form use certificateSignatureForm.
+ */
 export async function verifyCertificateSignature(
   cert: Certificate,
   signatureHex: string,
   publicKeyHex: string,
 ): Promise<boolean> {
-  return verifyMessageSignature(
-    canonicalizeCertificate(cert),
-    signatureHex,
-    publicKeyHex,
+  return (
+    (await certificateSignatureForm(cert, signatureHex, publicKeyHex)) !==
+    "invalid"
   );
 }
 

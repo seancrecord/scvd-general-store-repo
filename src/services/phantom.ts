@@ -122,6 +122,20 @@ export async function readPhantomCheck(
 }
 
 /** Re-verify an observed check's signature. Free, forever. */
+/**
+ * The exact bytes a phantom check's signature covers. Extracted from
+ * inside the verifier on 2026-07-30 so /api/verify can SERVE the signed
+ * string rather than describe it — the fix for the defect CV found on
+ * certificates, applied to every class at once.
+ */
+export function canonicalizePhantomCheck(record: PhantomCheckRecord): string {
+  return JSON.stringify({
+    check_id: record.check_id,
+    target: record.target,
+    observation: record.observation,
+  });
+}
+
 export async function verifyPhantomSignature(
   record: PhantomCheckRecord,
 ): Promise<boolean> {
@@ -129,11 +143,7 @@ export async function verifyPhantomSignature(
     return false;
   }
   return verifyMessageSignature(
-    JSON.stringify({
-      check_id: record.check_id,
-      target: record.target,
-      observation: record.observation,
-    }),
+    canonicalizePhantomCheck(record),
     record.signature,
     record.public_key,
   );

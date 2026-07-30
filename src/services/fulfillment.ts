@@ -1,3 +1,4 @@
+import { canonicalizeCertificate } from "@/lib/signing";
 import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
@@ -114,11 +115,23 @@ export async function fulfillPurchase(
     throw error;
   }
 
+  /**
+   * The public key and the signed bytes ride the purchase response, not
+   * only /api/verify. Same defect, same fix: a holder had the
+   * certificate and the signature and no way to check one against the
+   * other without guessing the canonicalization. Found from outside
+   * 2026-07-30.
+   */
   const patronBlock = {
     patron_number: minted.patronNumber,
     badge_url: minted.badgeUrl,
     certificate: minted.certificate,
     signature: minted.signature,
+    public_key: minted.publicKey,
+    algorithm: "ed25519",
+    signed_payload: canonicalizeCertificate(minted.certificate),
+    signature_covers:
+      "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Compare its fields against the certificate above; nothing shown there is outside it.",
     verify_url: minted.verifyUrl,
     verification:
       "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
