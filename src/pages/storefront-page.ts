@@ -238,7 +238,7 @@ export function renderStorefront(data: StorefrontData): string {
     <section class="wall">
       <h2 class="night-head">${COPY.wallHead}</h2>
       ${guestbookHtml(data.guestbook)}
-      <p class="menu-meta"><a href="/train">The train's out back.</a></p>
+      <p class="menu-meta"><a href="/visitors">The whole register's in the doorway.</a> <a href="/train">The train's out back.</a></p>
     </section>
 
     <footer class="porch-print">
