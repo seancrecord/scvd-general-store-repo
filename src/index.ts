@@ -35,6 +35,7 @@ import {
   statsRoutes,
   pulseRoutes,
   attestationRoutes,
+  windDownRoutes,
   stampRoutes,
   storefrontRoutes,
   tradingPostRoutes,
@@ -51,6 +52,7 @@ import { STORE_HEADER } from "@/lib/identity";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
+import { recomputeCorrections } from "@/services/reclassify";
 import { assembleDraft } from "@/services/gazette-weekly";
 import type { Env, HonoEnv } from "@/types";
 
@@ -169,6 +171,7 @@ app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
+app.route("/", windDownRoutes);
 app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
@@ -257,6 +260,27 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     ctx.waitUntil(runHealthChecks(env));
+    /**
+     * THE STANDING CORRECTION, on the clock rather than in a page load.
+     * /admin/recount has to stop at a cap because a page that times out
+     * is worse than one that says how far it got — which makes its
+     * figure a window, not a month. Nothing renders here, so this walk
+     * reads every row and the published correction is a real month
+     * total. It recurs because the crawler table keeps gaining entries
+     * and every entry retroactively changes what old rows mean; a
+     * correction computed once is a correction with an expiry date
+     * nobody wrote down.
+     */
+    ctx.waitUntil(
+      recomputeCorrections(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Reclassification walk failed: ${String(error)}`,
+          }),
+      ),
+    );
   },
 };
 

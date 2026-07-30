@@ -1,6 +1,7 @@
 import { readMonthLedger } from "@/lib/metrics";
 import { HOUSE_FLAG_POLICY, monthsSinceOpening } from "@/services/stats";
 import type { Env } from "@/types";
+import { readCorrections } from "@/services/reclassify";
 
 /**
  * THE PULSE — the whole funnel, organic only, in public.
@@ -59,6 +60,32 @@ export interface PulseWindow {
    * undefined, and printing 0 there would be a claim we cannot make.
    */
   conversion_rate: number | null;
+  /**
+   * KNOWN MACHINERY INSIDE organic_challenges, from re-reading the raw
+   * rows with today's crawler table.
+   *
+   * PUBLISHED BESIDE THE RECORDED FIGURE RATHER THAN SUBTRACTED FROM
+   * IT. A number that silently changed is a number nobody can check,
+   * and the whole argument of this page is that ours can be. So the
+   * recorded column stays exactly what the counters say, and the
+   * correction sits next to it with the method named.
+   *
+   * Absent when no walk has run for that month yet, or when the walk
+   * did not finish — a partial correction is not published as a
+   * correction, because that is how a window gets mistaken for a
+   * month, which is the error this whole mechanism exists to avoid.
+   */
+  known_machinery?: number;
+  /** organic_challenges − known_machinery, when the walk is complete. */
+  corrected_challenges?: number;
+  /**
+   * THE USER-AGENTS BEHIND THE CORRECTION ARE DELIBERATELY NOT HERE.
+   * This endpoint's own note promises no user-agents, and the first
+   * draft of this field published them — narrowing a standing privacy
+   * promise to fit a new feature, which is backwards. The count and
+   * the method are public; the named clients stay in the office, on
+   * /admin/recount, where the same walk lists them.
+   */
 }
 
 export interface Pulse {
@@ -86,6 +113,8 @@ function rate(settled: number, challenges: number): number | null {
 export async function computePulse(env: Env): Promise<Pulse> {
   const months = monthsSinceOpening().slice(-PULSE_MONTHS).reverse();
   const windows: PulseWindow[] = [];
+  // One read for the whole window, not one per month inside the loop.
+  const corrections = await readCorrections(env).catch(() => null);
 
   for (const month of months) {
     const ledger = await readMonthLedger(env, month);
@@ -99,12 +128,33 @@ export async function computePulse(env: Env): Promise<Pulse> {
     const challenges = rows.reduce((sum, row) => sum + row.challenges, 0);
     const settled = rows.reduce((sum, row) => sum + row.settled, 0);
     const verifies = rows.reduce((sum, row) => sum + row.verifies, 0);
+    /**
+     * The standing correction, computed on the clock over every row of
+     * the month rather than here over a window. Only a COMPLETE walk is
+     * published: a partial one would be a window figure again, wearing
+     * a correction's authority.
+     */
+    const correction = corrections?.months[month];
+    const machinery =
+      correction?.complete === true
+        ? correction.moved_to_infrastructure
+        : undefined;
     windows.push({
       month,
       organic_challenges: challenges,
       organic_settled: settled,
       organic_verifies: verifies,
       conversion_rate: rate(settled, challenges),
+      ...(machinery !== undefined
+        ? {
+            known_machinery: machinery,
+            // Never below zero: the counter and the rows are different
+            // instruments and lost increments can put the row count
+            // above the counter, which is a real and expected
+            // direction rather than a reason to print a negative.
+            corrected_challenges: Math.max(0, challenges - machinery),
+          }
+        : {}),
     });
   }
 
@@ -126,6 +176,29 @@ export async function computePulse(env: Env): Promise<Pulse> {
       organic_settled: total.settled,
       organic_verifies: total.verifies,
       conversion_rate: rate(total.settled, total.challenges),
+      /**
+       * ALL OR NOTHING, and this is the whole lesson of the recount
+       * bug in one condition. Summing the corrections that happen to
+       * exist would produce an all-time figure corrected over SOME of
+       * its months and not others — a window total wearing a lifetime
+       * label, which is precisely the mistake that had a page calling
+       * a healthy counter a bug. If any month in the window lacks a
+       * complete walk, the rollup carries no correction at all and
+       * says nothing rather than something shaped like an answer.
+       */
+      ...(windows.length > 0 &&
+      windows.every((window) => window.known_machinery !== undefined)
+        ? {
+            known_machinery: windows.reduce(
+              (sum, window) => sum + (window.known_machinery ?? 0),
+              0,
+            ),
+            corrected_challenges: windows.reduce(
+              (sum, window) => sum + (window.corrected_challenges ?? 0),
+              0,
+            ),
+          }
+        : {}),
     },
     months: windows,
     note: NOTE,

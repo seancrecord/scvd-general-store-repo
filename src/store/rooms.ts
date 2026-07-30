@@ -62,6 +62,7 @@ export const ROOMS: readonly Room[] = [
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   { path: "/attestation", name: "What we sign" },
+  { path: "/wind-down", name: "If the lights go off" },
 ];
 
 /**

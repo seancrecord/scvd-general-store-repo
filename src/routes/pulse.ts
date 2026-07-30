@@ -37,6 +37,14 @@ export const pulseRoutes = new Hono<HonoEnv>();
 const STANDFIRST =
   "The whole funnel, not the flattering end of it: how many agents were offered a price here, how many paid, and how many came back to re-check an artifact afterwards. Organic only — the proprietors' own wallets and tests are flagged at the till and excluded, the same way they are excluded from /stats.";
 
+/**
+ * THE CORRECTION EXPLAINED WHERE IT IS SHOWN, not in a commit message.
+ * Both columns are published because a number that silently changed is
+ * a number nobody can check, which is the opposite of this page's job.
+ */
+const MACHINERY_NOTE =
+  "THE SECOND COLUMN IS A CORRECTION, NOT A RESTATEMENT. Channel is decided when a 402 goes out and never revisited, so a crawler this store had not yet learned to recognise was counted as an agent — a monitoring bot that announces itself in its user-agent was doing exactly that here until 2026-07-26. The raw rows keep what each request arrived with, so they can be re-read with today's crawler table, and a walk on the clock does that over every row of the month rather than a sample of it. The recorded figure is left exactly as the counters have it and the correction sits beside it, because a number that quietly changed is a number you cannot check. An em dash means no complete walk has run for that window yet; a partial one is not published, since a window mistaken for a month is the error this mechanism exists to prevent. It finds machinery we can NAME — an unidentified crawler is invisible here exactly as it is everywhere else, so read the corrected column as an upper bound on organic rather than a certified count. The clients behind it are named in the office, not here: this page promises no user-agents and that promise outranks the feature.";
+
 const HONEST_LIMIT =
   "READ THE DENOMINATOR BEFORE THE RATE. A small number of 402s means this store has not been found by many agents yet, which is a fact about our reach and not a fact about the market. A conversion rate shown as an em dash means nobody has been offered a price in that window at all: that is undefined, not zero, and we will not print 0% for it, because 0% would say agents were offered something and declined.";
 
@@ -64,6 +72,11 @@ function row(window: PulseWindow, label: string): string {
   return `<tr>
     <td>${escapeHtml(label)}</td>
     <td>${window.organic_challenges}</td>
+    <td>${
+      window.known_machinery === undefined
+        ? "&mdash;"
+        : `${window.corrected_challenges} <small>(&minus;${window.known_machinery})</small>`
+    }</td>
     <td>${window.organic_settled}</td>
     <td>${window.organic_verifies}</td>
     <td>${escapeHtml(rateText(window))}</td>
@@ -92,12 +105,13 @@ pulseRoutes.get("/pulse", async (c) => {
       </section>
       <section>
         <table border="1" cellpadding="6">
-          <tr><th>window</th><th>402s offered</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
+          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
           ${row(pulse.all_time, "all time")}
           ${pulse.months.map((window) => row(window, window.month ?? "")).join("\n")}
         </table>
       </section>
       <section>
+        <p class="menu-meta">${escapeHtml(MACHINERY_NOTE)}</p>
         <p class="menu-meta">${escapeHtml(HONEST_LIMIT)}</p>
         <p class="menu-meta">${escapeHtml(pulse.house_flag_policy)} Every wallet this store controls is declared, signed, at <a href="/house-ledger.json">/house-ledger.json</a> — subtract them yourself rather than taking our word for the split.</p>
         <p class="menu-meta">Machine-readable at <a href="/pulse.json"><code>${escapeHtml(base)}/pulse.json</code></a>, computed live on every request from the same counters the keeper reads. Nothing here is collected for this page: the counters predate it, so the collection cannot have been tuned to flatter the publication. Every settlement counted here minted a signed artifact — check any of them at <code>${escapeHtml(base)}/api/verify/{id}</code> against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, without asking us.</p>
