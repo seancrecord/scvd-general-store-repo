@@ -195,6 +195,21 @@ system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
 
+## If the lights go off
+
+${base}/wind-down, written while the store is open and nothing turns
+on the answer, because a policy written during a wind-down is a press
+release. Four kinds of thing are held here and they get four different
+endings, because a receipt and a confession are not the same object.
+What is already signed stays true — a retired key never re-signs,
+revokes or improves an old signature. What is already public stays up;
+the train does not come down after the fact. An unpublished confession
+is destroyed rather than inherited, because it was told to a person
+and continuity of custody was never the promise. A grudge not yet
+released stays held, unpublished, and that silence is the last thing
+the store does for you. The page says out loud that it is a statement
+of intent and not a mechanism, which is also true.
+
 ## The whole funnel, including the denominator
 
 ${base}/pulse, or ${base}/pulse.json for the machine copy: how many

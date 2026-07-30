@@ -35,6 +35,7 @@ export { schemaRoutes } from "@/routes/schemas";
 export { statsRoutes } from "@/routes/stats";
 export { pulseRoutes } from "@/routes/pulse";
 export { attestationRoutes } from "@/routes/attestation";
+export { windDownRoutes } from "@/routes/wind-down";
 export { luckyRoutes } from "@/routes/luckies";
 export { verifyRoutes } from "@/routes/verify";
 export { badgeRoutes } from "@/routes/badges";
