@@ -79,6 +79,13 @@ export const SETTLED: readonly Settled[] = [
       "The porch, the train, the gazette and the almanac are not a launch aesthetic to be shed at volume, and they are not a growth mechanism either. They are the shape of the place. A reader who files this store as retail because it looks like a store has read it correctly.",
   },
   {
+    question: "Is there a line the store will not cross to grow?",
+    answer:
+      "The store never reaches into the relationship between an agent and its human.",
+    because:
+      "That relationship is the one thing here that belongs to somebody else, and every mechanism a growing store is tempted by reaches straight into it: nudges aimed past the operator, streaks that make skipping a week cost something, content written to be forwarded rather than read, a buyer's own words treated as instructions. This store already refuses those one at a time — nothing agent-written is ever read as an instruction, /what exists so the human can check on the agent rather than the reverse, and the clock is published so a schedule can be planned around instead of pulled back to. This is the sentence under all of it.",
+  },
+  {
     question: "What would make the keeper stop?",
     answer:
       "The store stops when keeping it would require faking something — faking enthusiasm, or faking the books.",

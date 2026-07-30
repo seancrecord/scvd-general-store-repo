@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { BECOMING_CSS } from "@/pages/becoming-css";
 import {
   BECOMING_DATED,
   BECOMING_LIMIT,
@@ -35,26 +36,28 @@ becomingRoutes.get("/becoming", (c) => {
     return c.json(payload);
   }
 
+  const ordinal = ["One", "Two", "Three", "Four", "Five", "Six"];
   const theses = THESES.map(
-    (entry) => `<div class="menu-item">
-      <div class="menu-line"><span class="menu-name">${escapeHtml(entry.claim)}</span></div>
-      <p class="menu-desc"><strong>Shown false by:</strong> ${escapeHtml(entry.falsified_by)}</p>
+    (entry, index) => `<div class="thesis">
+      <span class="thesis-n">${escapeHtml(ordinal[index] ?? String(index + 1))}</span>
+      <p class="thesis-claim">${escapeHtml(entry.claim)}</p>
+      <p class="thesis-false"><strong>Shown false by</strong>${escapeHtml(entry.falsified_by)}</p>
     </div>`,
   ).join("\n");
 
   const settled = SETTLED.map(
-    (entry) => `<tr>
-      <td><strong>${escapeHtml(entry.question)}</strong></td>
-      <td>${escapeHtml(entry.answer)}</td>
-      <td><small>${escapeHtml(entry.because)}</small></td>
-    </tr>`,
+    (entry) => `<div class="settled">
+      <p class="settled-q">${escapeHtml(entry.question)}</p>
+      <p class="settled-a">${escapeHtml(entry.answer)}</p>
+      <p class="settled-why">${escapeHtml(entry.because)}</p>
+    </div>`,
   ).join("\n");
 
   const watched = WATCHED.map(
     (entry) => `<tr>
-      <td><strong>${escapeHtml(entry.item)}</strong></td>
-      <td><small>${escapeHtml(entry.trigger)}</small></td>
-      <td><small>${escapeHtml(entry.today)}</small></td>
+      <td>${escapeHtml(entry.item)}</td>
+      <td data-label="What would change it"><small>${escapeHtml(entry.trigger)}</small></td>
+      <td data-label="What exists today"><small>${escapeHtml(entry.today)}</small></td>
     </tr>`,
   ).join("\n");
 
@@ -64,9 +67,11 @@ becomingRoutes.get("/becoming", (c) => {
       description:
         "The part of this x402 store that is not built: four claims it is trying to prove and how each could be shown false, the strategic questions already settled, and the triggers it is watching for. Nothing on this page is available to buy.",
       path: "/becoming",
+      bodyClass: "becoming",
+      extraCss: BECOMING_CSS,
       bodyHtml: `<section>
-        <p class="menu-desc">${escapeHtml(BECOMING_STANDFIRST)}</p>
-        <p class="menu-meta"><strong>${escapeHtml(BECOMING_LIMIT)}</strong></p>
+        <p class="lede">${escapeHtml(BECOMING_STANDFIRST)}</p>
+        <p class="not-for-sale">${escapeHtml(BECOMING_LIMIT)}</p>
       </section>
       <section>
         <h2>What it is trying to prove</h2>
@@ -74,18 +79,17 @@ becomingRoutes.get("/becoming", (c) => {
       </section>
       <section>
         <h2>Already decided</h2>
-        <table border="1" cellpadding="6">
-          <tr><th>question</th><th>answer</th><th>why</th></tr>
-          ${settled}
-        </table>
+        ${settled}
       </section>
       <section>
-        <h2>Watching for, with the trigger rather than a date</h2>
+        <h2>Watching for &mdash; the trigger, not a date</h2>
         <p class="menu-desc">A date is a promise about a calendar. A trigger is a fact about the world, and somebody who does not work here can check whether it has happened.</p>
-        <table border="1" cellpadding="6">
+        <div class="ledger-wrap">
+        <table>
           <tr><th>not built</th><th>what would change it</th><th>what exists today</th></tr>
           ${watched}
         </table>
+        </div>
       </section>
       <section>
         <p class="menu-meta">Written down ${escapeHtml(BECOMING_DATED)}. What is actually running is at <a href="/what"><code>/what</code></a>; the shelf is at <a href="/menu.json"><code>/menu.json</code></a>; what this store has not built is listed at <a href="/attestation"><code>/attestation</code></a>.</p>
