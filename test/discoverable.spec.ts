@@ -217,6 +217,64 @@ describe("what a signature is worth, on the surfaces that carry the key", () => 
     expect(doc.pulse).toBe(`${BASE}/pulse.json`);
   });
 
+  it("rides beside the key in menu.json, the document that carries the shelf", async () => {
+    /**
+     * The one surface where a cold reader never reached verification
+     * at all. It was handed the signing key and an itemized shelf of
+     * novelties, with no verify endpoint and no attestation page in
+     * the document, and filed the store as an art project — a fair
+     * reading of what it was given. This is the most-fetched document
+     * here, so it is the worst place for the shelf to do all the
+     * talking.
+     */
+    const menu = (await (await SELF.fetch(`${BASE}/menu.json`)).json()) as {
+      store: Record<string, string>;
+    };
+    expect(menu.store.signing_key, "the key is served here").toBeTruthy();
+    expect(menu.store.verify, "and no way to check what it signed").toContain(
+      "/api/verify/",
+    );
+    expect(menu.store.attestation).toContain("/attestation");
+    expect(menu.store.corrections).toContain("/corrections");
+  });
+
+  it("documents the routes that take money, contra a cold reader", async () => {
+    /**
+     * A cold cataloguer reported on 2026-07-30 that the paid routes
+     * "carry only a summary, with no parameters, no 402 response
+     * documented, and no price." THAT WAS WRONG, and it was repeated
+     * as a finding before being checked — buyItemOperation has emitted
+     * parameters from buyInputSchema, a 402, and x-payment prices since
+     * 07-27. The report is the reason this test exists: an outside
+     * claim about our own surfaces is a thing to verify, not a thing to
+     * act on, and the way to close it permanently is an assertion
+     * rather than a memory.
+     */
+    const spec = (await (await SELF.fetch(`${BASE}/openapi.json`)).json()) as {
+      paths: Record<string, { get?: Record<string, unknown> }>;
+    };
+    const paid = Object.entries(spec.paths).filter(([path]) =>
+      path.startsWith("/api/buy/"),
+    );
+    expect(paid.length, "no paid routes in the contract at all").toBeGreaterThan(
+      0,
+    );
+    for (const [path, entry] of paid) {
+      const op = entry.get ?? {};
+      const payment = op["x-payment"] as
+        | { price_usdc_options?: number[] }
+        | undefined;
+      expect(op["responses"], `${path} documents no responses`).toHaveProperty(
+        "402",
+      );
+      expect(
+        payment?.price_usdc_options?.length,
+        `${path} names no price`,
+      ).toBeGreaterThan(0);
+      expect(op["parameters"], `${path} declares no parameters`).toBeDefined();
+    }
+  });
+
   it("is a documented endpoint, not just a page", async () => {
     const spec = (await (await SELF.fetch(`${BASE}/openapi.json`)).json()) as {
       paths: Record<string, unknown>;

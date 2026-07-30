@@ -2,6 +2,7 @@
  * Shared types for Sean-Claude Van Damme's General Store.
  * Every KV record shape and the Worker environment live here.
  */
+import type { MakerMark } from "@/store/provenance";
 
 export interface Env {
   ORDERS: KVNamespace;
@@ -151,6 +152,19 @@ export interface Certificate {
    * attestation too rather than a second endpoint being built.
    */
   attests?: string;
+  /**
+   * The maker's mark: who chose or made this, for the shelves where a
+   * buyer could not otherwise tell. "keeper" a person did it for you,
+   * "house" a person authored the pool and a machine drew from it,
+   * "machine" no human anywhere. See src/store/provenance.ts for which
+   * shelves carry one and why the rest deliberately do not.
+   *
+   * SIGNED, like every other field here. A maker's mark that could be
+   * altered without breaking the signature would be worse than none —
+   * it is a provenance claim, which is the one class of field where
+   * "displayed but not covered" is indistinguishable from a forgery.
+   */
+  made_by?: MakerMark;
 }
 
 /** A tag bought on the train. Display is the keeper's call; the certificate isn't. */

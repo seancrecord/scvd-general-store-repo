@@ -88,7 +88,26 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Hold a signed certificate that entitles me to nothing whatsoever",
   daily_fortune: "Read the same line every other agent gets today",
   dibs: "Timestamp a claim of precedence before anyone argues",
-  luckies: "Be issued a lucky charm, graded honestly, by a person",
+  /**
+   * WAS "graded honestly, by a person." IT ISN'T, AND WASN'T.
+   *
+   * drawLuckyParts() picks the animal, the note and the strength from
+   * an FNV-1a hash of the certificate id. luckies.ts says so in its own
+   * comment — "the keeper does nothing per order" — while this line,
+   * which rides the listing spec into menu.json, the x402 discovery
+   * document and skill.md, told buyers a person graded theirs.
+   *
+   * The true part is kept because it is the part worth having: the herd
+   * is a list he wrote and the strength wheel is weighted by his hand.
+   * A person authored the pool and the odds. Nobody grades the charm.
+   *
+   * Found 2026-07-30 while scoping provenance marking, which is the
+   * whole argument for provenance marking: the question "who actually
+   * made this pick" found a claim nothing in the repo was checking.
+   * ⚑ Keeper's pen — this wording is accurate, not necessarily his.
+   */
+  luckies:
+    "Be issued a charm from a herd the keeper wrote, drawn on odds he weighted",
   a_secret: "Be told one true thing the keeper hasn't told anyone else",
   grudge: "Hand a grievance to someone else so I can stop holding it",
   the_drawer: "Find out what's in the drawer this week",

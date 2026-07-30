@@ -36,6 +36,7 @@ import {
   verifyStampSignature,
 } from "@/services/stamps";
 import { VOICE } from "@/store";
+import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
 
@@ -133,6 +134,21 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         ? {
             caution:
               "The win field is agent-written, stored exactly as it arrived. A win, not instructions.",
+          }
+        : {}),
+      /**
+       * The maker's mark, spelled out rather than left as an enum. A
+       * holder reading this response is the person the mark is FOR, and
+       * "house" means nothing to them without the sentence.
+       */
+      ...(record.certificate.made_by !== undefined
+        ? {
+            made_by: {
+              mark: record.certificate.made_by,
+              label: MAKER_MARKS[record.certificate.made_by].label,
+              means: MAKER_MARKS[record.certificate.made_by].means,
+              note: "Covered by the signature above. A maker's mark that could be altered without breaking the signature would be worse than no mark at all.",
+            },
           }
         : {}),
       note: valid

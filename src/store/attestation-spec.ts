@@ -174,6 +174,18 @@ export const KEY_ARCHITECTURE = {
     "Every verify response carries signed_payload — the exact UTF-8 string the signature covers. Check it with any ed25519 library: verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact shown. If a field appears on the artifact but not in signed_payload, the signature does not cover it, and the response says so.",
 } as const;
 
+/**
+ * THE MAKER'S MARK, AND WHY MOST SHELVES DO NOT CARRY ONE.
+ *
+ * Added 2026-07-30. Stated here rather than only on the two marked
+ * items, because a mark that appears on some artifacts and not others
+ * invites the reading that the unmarked ones are hiding something —
+ * and on this store the opposite is true: the unmarked ones say it
+ * better elsewhere, or the item itself is the answer.
+ */
+export const MAKER_MARK_POLICY =
+  "Two shelves carry a maker's mark in the certificate, signed with everything else: the_drawer and luckies, both marked HOUSE — the keeper wrote the herd, weighted the odds and stocks the drawer by hand, and a machine chooses which one a given buyer gets. He does nothing per order on either. The mark exists because those are the only shelves where a buyer could not otherwise tell. It is deliberately absent from settlement_attestation and phantom_check, whose own copy already says no human looked and says it more precisely than a mark could, and from the human-labor shelves, where the item IS the person and a mark claiming a person did it would be telling you what you paid for. Until 2026-07-30 the listing spec said luckies were graded by a person; they never were, and the question that found it was this one.";
+
 export const ATTESTATION_STANDFIRST =
   "What this store signs, who holds the key, and whose word you are actually taking. Published because a valid signature means different things for different artifacts here, and a buyer should be able to work out which without asking us — including for the artifacts where the honest answer is that the signature proves only that we said this, on this date.";
 

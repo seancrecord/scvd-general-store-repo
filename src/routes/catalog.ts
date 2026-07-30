@@ -121,6 +121,28 @@ catalogRoutes.get("/menu.json", async (c) => {
       openapi: `${base}/openapi.json`,
       x402_discovery: `${base}/.well-known/x402.json`,
       signing_key: `${base}/.well-known/scvd-signing-key`,
+      /**
+       * THE THESIS, ON THE DOCUMENT THAT CARRIES THE SHELF.
+       *
+       * Found 2026-07-30 by a cold categorization audit: six readers
+       * entered the store at six different machine surfaces and were
+       * asked to file it. Five put verification in their top two. The
+       * one that did not entered HERE — and menu.json handed it the
+       * signing key, an itemized shelf of blessings and fortunes and
+       * grudges, and no verify endpoint, no attestation page and no
+       * corrections record anywhere in the document. It filed the
+       * store as an art project, which is a fair reading of what it
+       * was given.
+       *
+       * A key without a way to check it is decoration. This is the
+       * third instance of that exact defect in one day, after the
+       * x402 discovery document and skill.md, and it was the worst of
+       * the three: this is the most-fetched document the store serves
+       * and it is the one where the shelf does all the talking.
+       */
+      verify: `${base}/api/verify/{id} (free, forever, no account, works whether or not you bought the thing)`,
+      attestation: `${base}/attestation (what each signature covers, and what a valid one does NOT prove, per artifact class)`,
+      corrections: `${base}/corrections`,
       item_detail: `${base}/menu/{item_id} (JSON, or markdown per Accept)`,
       operator_glance: `${base}/what (for the human whose agent is here)`,
       zodiac: `${base}/zodiac`,
