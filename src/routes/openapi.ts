@@ -311,6 +311,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Out front. One line of tonight per hour, the seat count, and nothing for sale. Free.",
         ),
       },
+      "/attestation": {
+        get: freeOp(
+          "What this store signs",
+          "The trust model per artifact class: what bytes each signature covers, who holds the key, and the one thing a valid signature does not prove. Names the classes that sit on the weakest available trust model, and lists what this store has not built. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
+      "/pulse.json": {
+        get: freeOp(
+          "The funnel, denominator included",
+          "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
+        ),
+      },
+      "/corrections": {
+        get: freeOp(
+          "Corrections",
+          "Every claim this store has made that turned out not to be true, dated, with what found it and what check now catches that class. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
       "/mcp": {
         post: freeOp(
           "The MCP door",

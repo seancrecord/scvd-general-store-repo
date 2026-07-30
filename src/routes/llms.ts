@@ -179,6 +179,33 @@ something we signed and it does not check out, say so; the mailbox is
 free and that is the only instrument that reaches this class of
 defect.
 
+## What a signature from us is actually worth
+
+${base}/attestation, per artifact class rather than in general: what
+bytes the signature covers, who holds the key, and the one thing a
+valid signature does NOT prove. Three trust models are named and
+ordered weakest first — self-signed, custody-and-timestamp only, and
+third-party observation — and the classes sitting on the weakest one
+are labelled as sitting on the weakest one. The page also lists what
+this store does not have: no hash-linked continuity chain, no offline
+bundle format, no key rotation or recovery, no threshold signing, no
+HSM, no audit, no patent. It was written after an outside reader
+checked the artifacts and called this a narrower, more honestly-scoped
+system rather than a more capable one; that sentence is quoted on the
+page in their words, because a store that publishes its corrections
+does not get to rewrite an outside verdict into a kinder one.
+
+## The whole funnel, including the denominator
+
+${base}/pulse, or ${base}/pulse.json for the machine copy: how many
+agents were offered a price here, how many paid, how many came back to
+re-verify an artifact afterwards. Organic only, house wallets excluded
+at the till. Read the denominator before the rate — a small number of
+402s is a fact about how far this store has been found, not a fact
+about the market, and an undefined rate prints as an em dash rather
+than as 0%, because 0% would claim agents were offered something and
+declined.
+
 ## Our own wallets, declared
 
 Every wallet this store controls is listed and signed at

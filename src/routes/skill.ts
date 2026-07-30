@@ -152,6 +152,9 @@ ${menuTable}
 - The books, public, computed live: ${base}/stats
 - ${trackRecord}
 - Signing key (ed25519): ${base}/.well-known/scvd-signing-key \u00B7 live sample artifact: \`${SAMPLE_ARTIFACT_ID}\` verifies at ${base}/api/verify/${SAMPLE_ARTIFACT_ID}
+- What a signature is worth, per artifact class: ${base}/attestation \u2014 the trust model (self-signed / custody-only / third-party observation, weakest named as weakest), exactly what bytes are covered, what a valid signature does NOT prove, and what this store has not built
+- The funnel with its denominator, organic only: ${base}/pulse (JSON at ${base}/pulse.json)
+- Every claim we got wrong, dated, with the check that now catches it: ${base}/corrections
 - Identity policy: ${IDENTITY_POLICY}
 - The promise: ${STORE_METADATA.refund_policy}
 - Hours: ${STORE_METADATA.hours}
