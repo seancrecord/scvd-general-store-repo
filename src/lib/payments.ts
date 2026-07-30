@@ -174,15 +174,31 @@ function pennyPageRouteConfig(
   exampleTitle: string,
   resource?: string,
 ): RouteConfig {
+  /**
+   * THE PRICE STAYS A PENNY; THERE IS NOW SOMEWHERE TO PAY MORE.
+   *
+   * Keeper's call 2026-07-30, after the store's first sale to a
+   * stranger turned out to be an almanac page: keep it listed at a
+   * penny, and add a place for anyone who thinks it was worth more.
+   *
+   * The mechanism already existed and the penny pages simply never had
+   * it — menu items priced pay-what-it-deserves offer three tiers and
+   * book anything above the minimum as a tip. The FIRST tier is still
+   * the penny and is still what every listing quotes, so nothing about
+   * the advertised price changes: a buyer who wants the cheap door pays
+   * exactly what the index said, and the other two are there for
+   * somebody who doesn't.
+   *
+   * This is a floor with room above it, not a price rise, and the
+   * distinction matters enough to be a test.
+   */
   const config: RouteConfig = {
-    accepts: [
-      {
-        scheme: "exact",
-        network: BASE_NETWORK,
-        price: `$${PENNY_PAGE_USDC}`,
-        payTo: env.PAY_TO_ADDRESS,
-      },
-    ],
+    accepts: PWID_TIER_MULTIPLIERS.map((multiplier) => ({
+      scheme: "exact",
+      network: BASE_NETWORK,
+      price: `$${Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100}`,
+      payTo: env.PAY_TO_ADDRESS,
+    })),
     description,
     mimeType: "text/markdown",
     ...storeServiceMetadata(env),
@@ -194,6 +210,7 @@ function pennyPageRouteConfig(
         note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign the accepted amount and retry with the PAYMENT-SIGNATURE header.",
         price_usdc: PENNY_PAGE_USDC,
         pricing: "fixed",
+        pay_more_if_you_like: `The price is $${PENNY_PAGE_USDC} and that is what the index quotes. The PAYMENT-REQUIRED header offers higher amounts too; anything above the first is recorded as a tip to the keeper, and buys you exactly the same page. No tier is better than any other.`,
         want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),

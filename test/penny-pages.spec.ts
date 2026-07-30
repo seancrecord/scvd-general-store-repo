@@ -46,13 +46,26 @@ const adminAuth = {
 };
 
 describe("Almanac penny pages", () => {
-  it("challenges with a flat penny and delivers markdown when paid", async () => {
+  it("challenges at a penny FIRST, with room above it, and delivers markdown when paid", async () => {
+    /**
+     * This asserted a single flat tier until 2026-07-30, and the change
+     * is the keeper's: keep the almanac listed at a penny and add
+     * somewhere to pay more, after the store's first sale to a stranger
+     * turned out to be an almanac page.
+     *
+     * WHAT THE ASSERTION STILL GUARDS IS THE IMPORTANT HALF. The penny
+     * must remain FIRST, because every index, listing and discovery
+     * file in the store quotes it as the price — if the floor ever
+     * moved, all of them would be quoting an amount the till would not
+     * take at the bottom, which is a price rise dressed as an option.
+     */
     const url = `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`;
     const challenge = await SELF.fetch(url);
     expect(challenge.status).toBe(402);
     const required = decodePaymentRequired(challenge);
-    // $0.01 in USDC atomic units.
-    expect(required.accepts.map((accept) => accept.amount)).toEqual(["10000"]);
+    // $0.01 in USDC atomic units, and it leads.
+    expect(required.accepts[0]?.amount).toBe("10000");
+    expect(required.accepts.length).toBeGreaterThan(1);
     const challengeBody = await json(challenge);
     expect(challengeBody["price_usdc"]).toBe(0.01);
 
