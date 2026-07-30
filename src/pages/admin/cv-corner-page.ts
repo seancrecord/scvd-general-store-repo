@@ -2,6 +2,7 @@ import type { MonthLedger } from "@/lib/metrics";
 import type { ResearchTrail } from "@/lib/research-log";
 import { isUnfiled } from "@/lib/research-log";
 import { escapeHtml } from "@/lib/sanitize";
+import { catalogLastUpdated } from "@/lib/freshness";
 import type { GuestbookEntry } from "@/types";
 
 /**
@@ -133,6 +134,85 @@ const PALETTE = `
   .out a { color: var(--walnut); }
   a { color: var(--walnut); }
   @media (max-width: 30rem) { .figures li { flex: 1 1 100%; } }
+
+  /* FOXING. Age at the edges, not damage — the page should look
+     handled rather than printed this morning. Four soft blooms in the
+     corners and a faint warm cast, all gradients: no image to fetch
+     and nothing that repeats into a visible pattern, which is what
+     made the old public wood grain read as a texture swatch. */
+  .counter {
+    position: relative;
+    background-image:
+      radial-gradient(22% 18% at 3% 4%, rgba(160,120,60,.11) 0%, transparent 70%),
+      radial-gradient(18% 14% at 97% 8%, rgba(150,105,50,.09) 0%, transparent 70%),
+      radial-gradient(20% 16% at 6% 96%, rgba(150,110,55,.10) 0%, transparent 70%),
+      radial-gradient(24% 20% at 94% 97%, rgba(140,100,45,.08) 0%, transparent 70%),
+      repeating-linear-gradient(
+        var(--parchment) 0 1.55rem,
+        var(--parchment-line) 1.55rem 1.5625rem
+      );
+  }
+
+  /* THE SEAL. Pressed brass, and it is NOT ornament: it appears only
+     where a figure carries a link somebody else can follow. A figure
+     that cannot be checked gets no seal and says why in its own words.
+     A stamp on an unverifiable number would be the exact thing the
+     tiering discipline exists to prevent — tier 1 dressed as tier 3. */
+  .seal {
+    display: inline-block;
+    width: 1.15rem; height: 1.15rem;
+    margin-left: .35rem;
+    vertical-align: -.18rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #e8c877 0%, var(--brass) 55%, #8a6d2f 100%);
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.18);
+    position: relative;
+    transform: rotate(-8deg);
+  }
+  .seal::after {
+    content: "\\2713";
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; color: #4a3712;
+  }
+
+  /* MARGINALIA. The date moves out of the line and into the margin,
+     where a person actually annotates their own ledger afterwards. It
+     is the entry's real date and nothing invented; an undated entry
+     says so there rather than being quietly given one. */
+  .entry { position: relative; }
+  @media (min-width: 46rem) {
+    .entry { padding-left: 1.35rem; margin-left: 6.5rem; }
+    .entry-date {
+      position: absolute;
+      left: -6.5rem; top: .1rem;
+      width: 5.75rem;
+      text-align: right;
+      transform: rotate(-1.5deg);
+      line-height: 1.3;
+    }
+  }
+  .entry-undated { font-style: italic; opacity: .75; }
+
+  /* THE DATE STAMP. The freshness discipline the store already runs on
+     — as_of and checked_at as separate fields, because serving a page
+     is not the same as having verified what is on it — worn on this
+     page as the ink mark it always was. */
+  .stamp {
+    display: inline-block;
+    margin: 1.25rem 0 .25rem;
+    padding: .45rem .8rem;
+    border: 2px solid var(--brass);
+    border-radius: 3px;
+    color: var(--brass);
+    font-variant: small-caps;
+    letter-spacing: .12em;
+    font-size: .72rem;
+    line-height: 1.5;
+    transform: rotate(-1.8deg);
+    opacity: .85;
+  }
+  .stamp b { font-weight: normal; color: var(--walnut-soft); }
 `;
 
 /** Brass bell on an open ledger, circular badge. Stand-in, see above. */
@@ -160,7 +240,17 @@ function figure(
     "href" in verify
       ? `<a class="figure-v" href="${escapeHtml(verify.href)}">${escapeHtml(verify.text)} &rarr;</a>`
       : `<span class="figure-v figure-u">${escapeHtml(verify.unverifiable)}</span>`;
-  return `<li><span class="figure-n">${escapeHtml(n)}</span><span class="figure-l">${escapeHtml(label)}</span>${check}</li>`;
+  /**
+   * The seal rides on the DATA, never on the styling. It appears if
+   * and only if this figure carries a link a stranger can follow, so
+   * it cannot drift away from what it claims — a pressed mark on an
+   * unverifiable number would be tier 1 wearing tier 3's clothes.
+   */
+  const seal =
+    "href" in verify
+      ? `<span class="seal" role="img" aria-label="Checked: this figure links to something you can verify yourself"></span>`
+      : "";
+  return `<li><span class="figure-n">${escapeHtml(n)}${seal}</span><span class="figure-l">${escapeHtml(label)}</span>${check}</li>`;
 }
 
 /**
@@ -247,7 +337,7 @@ function trailHtml(trail: ResearchTrail): string {
     .filter((entry) => entry.date !== null)
     .map(
       (entry) => `<div class="entry">
-        <span class="entry-date">${escapeHtml(entry.date ?? "")}</span>
+        <span class="entry-date${entry.date ? "" : " entry-undated"}">${escapeHtml(entry.date ?? "undated")}</span>
         <p class="entry-body">${inlineMarkdown(entry.body)}</p>
       </div>`,
     )
@@ -281,6 +371,10 @@ export function renderCvCorner(data: CvCornerData): string {
         <h1>CV's Corner</h1>
         <p class="est">The counter's always open &bull; the book stays honest</p>
       </div>
+      <p class="stamp">
+        Catalog checked by hand <b>${escapeHtml(catalogLastUpdated())}</b><br>
+        This page served <b>${escapeHtml(new Date().toISOString().slice(0, 10))}</b>
+      </p>
     </header>
     ${notes}
 

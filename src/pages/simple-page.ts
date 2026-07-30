@@ -27,6 +27,17 @@ export interface SimplePageOptions {
   path?: string;
   /** Pre-escaped HTML sections, rendered inside the paper. */
   bodyHtml: string;
+  /**
+   * Extra CSS for a room that earns its own look, appended after the
+   * paper stylesheet so it overrides rather than replaces it. The head
+   * stays identical either way — the required description, the og
+   * tags, the canonical — because those are the things a room shipped
+   * without in July and the reason this function exists at all. A page
+   * gets to look different; it does not get to be published worse.
+   */
+  extraCss?: string;
+  /** Body class, so extraCss can scope itself to this room only. */
+  bodyClass?: string;
 }
 
 const SITE_ORIGIN = "https://scvd.store";
@@ -48,9 +59,9 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:description" content="${description}">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">${canonical}
-  <style>${PAPER_CSS}</style>
+  <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
-<body>
+<body${options.bodyClass ? ` class="${escapeHtml(options.bodyClass)}"` : ""}>
   <main class="paper">
     <header>
       <p class="est">${escapeHtml(STORE_METADATA.name)} \u2022 ${escapeHtml(STORE_METADATA.location)}</p>

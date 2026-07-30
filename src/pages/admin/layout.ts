@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
+import { OFFICE_CSS } from "@/pages/admin/office-css";
 
 /**
  * Keep's Office. Three rooms and a shelf of readings.
@@ -105,7 +106,7 @@ export function renderAdminShell(
   const notes =
     loadNotes.length === 0
       ? ""
-      : `<p style="color:#8c2f1b"><strong>Some shelves didn't load:</strong> ${loadNotes
+      : `<p class="shelf-trouble"><strong>Some shelves didn't load:</strong> ${loadNotes
           .map((note) => escapeHtml(note))
           .join(", ")}. The rest of the room is fine; reload to retry.</p>`;
   return `<!DOCTYPE html>
@@ -114,21 +115,12 @@ export function renderAdminShell(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Keep's Office</title>
-  <style>
-    body { font-family: monospace; max-width: 900px; margin: 1rem auto; padding: 0 1rem; }
-    section { border: 1px solid #999; padding: 1rem; margin-bottom: 1rem; }
-    li { margin-bottom: 0.75rem; }
-    textarea, input[type=text] { width: 100%; max-width: 500px; }
-    nav { margin-bottom: 0.35rem; }
-    nav a, nav strong { margin-right: 1rem; }
-    nav.readings { margin-bottom: 1rem; font-size: 0.9em; }
-    nav.readings::before { content: "readings: "; color: #666; }
-    details > summary { cursor: pointer; margin-bottom: 0.5rem; }
-    table { border-collapse: collapse; }
-  </style>
+  <style>${OFFICE_CSS}</style>
 </head>
 <body>
-  <h1>Keep's Office</h1>
+  <div class="room">
+  <h1>Keep<span class="lamp">'</span>s Office</h1>
+  <p class="room-sub">Sean-Claude Van Damme's General Store &middot; back room</p>
   <nav>
     ${ROOMS.map(link).join("\n    ")}
     <a href="/">Front of house</a>
@@ -139,6 +131,7 @@ export function renderAdminShell(
   </nav>
   ${notes}
   ${bodyHtml}
+  </div>
 </body>
 </html>`;
 }
