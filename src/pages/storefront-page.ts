@@ -1,6 +1,7 @@
 import { currentWeekKey } from "@/lib/kv-keys";
 import { catalogLastUpdated } from "@/lib/freshness";
 import { escapeHtml } from "@/lib/sanitize";
+import { priceLabel } from "@/lib/price-label";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
 import { catIsOut } from "@/services/porch";
 import type { FirstDollar } from "@/lib/metrics";
@@ -50,13 +51,30 @@ function firstDollarHtml(firstDollar: FirstDollar | null | undefined): string {
   return `<span class="frame-line">${escapeHtml(firstDollar.item)} \u00B7 $${firstDollar.paid_usdc} \u00B7 ${escapeHtml(firstDollar.at.slice(0, 10))} \u00B7 money zone</span>`;
 }
 
+/**
+ * The six shelves on the sign, in MENU_ITEMS order and priced from
+ * MENU_ITEMS. Both were hand-maintained until 2026-07-30, which is why
+ * the cheap-door reorder reached menu.json, llms.txt, skill.md and the
+ * MCP tool list and never reached the front of the building — the one
+ * surface a person actually looks at kept the old order and its own
+ * typed prices. A shelf whose id is not on the menu is dropped rather
+ * than rendered with a blank price; a test fails first, so this is a
+ * belt on a surface that shows money.
+ */
 function featuredHtml(): string {
-  return FEATURED_SHELVES.map(
-    (item) => `<div class="shelf-card">
-      <div class="shelf-top"><span class="shelf-name">${escapeHtml(item.name)}</span><span class="shelf-price">${escapeHtml(item.price)}</span></div>
-      <p class="shelf-line">${escapeHtml(item.line)}</p>
-    </div>`,
-  ).join("\n");
+  const order = new Map(MENU_ITEMS.map((item, index) => [item.id, index]));
+  return [...FEATURED_SHELVES]
+    .filter((shelf) => order.has(shelf.id))
+    .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+    .map((shelf) => {
+      const item = MENU_ITEMS.find((entry) => entry.id === shelf.id);
+      const price = item ? priceLabel(item) : "";
+      return `<div class="shelf-card">
+      <div class="shelf-top"><span class="shelf-name">${escapeHtml(shelf.name)}</span><span class="shelf-price">${escapeHtml(price)}</span></div>
+      <p class="shelf-line">${escapeHtml(shelf.line)}</p>
+    </div>`;
+    })
+    .join("\n");
 }
 
 /**

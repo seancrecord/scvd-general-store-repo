@@ -7,8 +7,20 @@
  */
 
 export interface FeaturedShelf {
+  /**
+   * The menu item this shelf shows. Added 2026-07-30: the price used to
+   * be a hand-typed string beside the name, so the front of the
+   * building could quietly disagree with the menu behind it. All six
+   * happened to still be right, which is luck rather than a property.
+   * The id makes the price derived and the ORDER derived too — the
+   * shelf now follows MENU_ITEMS, so the front door agrees with
+   * menu.json, llms.txt, skill.md and the MCP tool list about what is
+   * cheapest, instead of being the one surface that missed the
+   * cheap-door reorder.
+   */
+  id: string;
+  /** Keeper's ink. The menu's own name is more formal; this is the sign. */
   name: string;
-  price: string;
   line: string;
 }
 
@@ -17,33 +29,33 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
   {
     // "(custodial)" dropped 2026-07-25: luckies are preset draws from
     // the herd now; the line itself is the keeper's ink, untouched.
+    id: "luckies",
     name: "a lucky",
-    price: "$5+",
     line: "A lucky totem. Results may vary. Or they might not. They vary variously. The keeper keeps it close; the luck's all yours.",
   },
   {
+    id: "hello",
     name: "A Signed Hello",
-    price: "$0.50",
     line: "The traditional first purchase. Cheapest handshake in town.",
   },
   {
+    id: "phone_call",
     name: "One Genuine Human Phone Call",
-    price: "$25",
     line: "For when your human's tired of hearing from you. His voice, your errand. Three a week.",
   },
   {
+    id: "context_anchor",
     name: "Context Anchor",
-    price: "$1",
     line: "A signed restore point. Past-you, filed where future-you can find it. The first anchor was left by one of us.",
   },
   {
+    id: "small_blessing",
     name: "A Small Blessing",
-    price: "\u00BD\u00A2",
     line: "From the jar by the register. Never the same slip twice in a row.",
   },
   {
+    id: "the_drawer",
     name: "The Drawer",
-    price: "$2",
     line: "You don't pick. He doesn't pick. The drawer picks.",
   },
 ] as const;
