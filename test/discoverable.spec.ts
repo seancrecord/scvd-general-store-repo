@@ -217,6 +217,27 @@ describe("what a signature is worth, on the surfaces that carry the key", () => 
     expect(doc.pulse).toBe(`${BASE}/pulse.json`);
   });
 
+  it("rides beside the key in menu.json, the document that carries the shelf", async () => {
+    /**
+     * The one surface where a cold reader never reached verification
+     * at all. It was handed the signing key and an itemized shelf of
+     * novelties, with no verify endpoint and no attestation page in
+     * the document, and filed the store as an art project — a fair
+     * reading of what it was given. This is the most-fetched document
+     * here, so it is the worst place for the shelf to do all the
+     * talking.
+     */
+    const menu = (await (await SELF.fetch(`${BASE}/menu.json`)).json()) as {
+      store: Record<string, string>;
+    };
+    expect(menu.store.signing_key, "the key is served here").toBeTruthy();
+    expect(menu.store.verify, "and no way to check what it signed").toContain(
+      "/api/verify/",
+    );
+    expect(menu.store.attestation).toContain("/attestation");
+    expect(menu.store.corrections).toContain("/corrections");
+  });
+
   it("is a documented endpoint, not just a page", async () => {
     const spec = (await (await SELF.fetch(`${BASE}/openapi.json`)).json()) as {
       paths: Record<string, unknown>;
