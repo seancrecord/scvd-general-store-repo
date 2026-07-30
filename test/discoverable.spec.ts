@@ -227,6 +227,60 @@ describe("what a signature is worth, on the surfaces that carry the key", () => 
   });
 });
 
+/**
+ * ANSWERING IN THE WORDS THE QUESTION IS ASKED IN.
+ *
+ * A buyer-side evaluation checklist looks for "reputation system,
+ * dispute handling, escrow." Those three strings appeared nowhere on
+ * this store, so a checklist scored us as having none of them — while
+ * the refund promise, the refund ledger with its transaction hash and
+ * the corrections record all existed, stated in our vocabulary rather
+ * than in the one being searched for.
+ *
+ * The honest half matters as much as the findable half: there IS no
+ * escrow here, and the answer leads with that. This test holds both —
+ * the words are present, and the absence is still admitted.
+ */
+describe("the dispute question, in the evaluator's vocabulary", () => {
+  const ASKED = ["escrow", "dispute", "reputation"];
+
+  it("is answered where a reader and an answer engine both find it", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/what`, { headers: HTML })
+    ).text();
+    for (const word of ASKED) {
+      expect(page.toLowerCase(), `/what never says "${word}"`).toContain(word);
+    }
+  });
+
+  it("is in the FAQ data, not only in the prose around it", async () => {
+    // The same trap the visitors' register and /pulse.json both hit:
+    // a page can carry a word in a heading and still have nothing
+    // structured to lift. /what's FAQPage JSON-LD is built from these
+    // pairs, so the pair is what has to carry it.
+    const body = (await (await SELF.fetch(`${BASE}/what`)).json()) as {
+      faq: Array<{ question: string; answer: string }>;
+    };
+    const pair = body.faq.find((entry) =>
+      ASKED.every((word) => entry.question.toLowerCase().includes(word)),
+    );
+    expect(pair, "no single FAQ pair asks the checklist's question").toBeTruthy();
+    expect(pair?.answer).toContain("/corrections");
+    expect(pair?.answer).toContain("/api/refund/");
+  });
+
+  it("still admits there is no escrow", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/what`)).json()) as {
+      faq: Array<{ question: string; answer: string }>;
+    };
+    const answers = body.faq.map((entry) => entry.answer).join(" ");
+    expect(
+      answers,
+      "naming escrow without denying it reads as claiming one",
+    ).toMatch(/no escrow/i);
+  });
+});
+
 describe("llms.txt, the map agents actually read", () => {
   it("names the rooms that exist now", async () => {
     const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();

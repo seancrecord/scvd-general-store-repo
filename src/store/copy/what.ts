@@ -44,6 +44,24 @@ export function whatFaq(base: string): FaqPair[] {
       answer: `${STORE_METADATA.refund_policy} Human-labor items carry a 168-hour window; instant items arrive in the response or the payment never settles at all, the store settles first and mints second, so a failed payment leaves nothing behind.`,
     },
     {
+      /**
+       * THE EVALUATOR'S OWN WORDS, ON PURPOSE. An automated buyer-side
+       * check for "reputation system, dispute handling, escrow" found
+       * none of those three strings anywhere on this store, and
+       * concluded what a checklist concludes. The answers all existed —
+       * the refund promise, the refund ledger with its transaction
+       * hash, the corrections record — stated in the store's
+       * vocabulary rather than in the one being searched for.
+       *
+       * Registrar-clean, and NO ESCROW IS CLAIMED. There isn't one.
+       * Saying so first is the only version of this answer worth
+       * publishing, and it is why this pair leads with the absence.
+       */
+      question:
+        "Is there escrow, dispute handling, or a reputation system?",
+      answer: `No escrow and no chargebacks: x402 settles wallet-to-wallet, and once a payment settles the money has moved. Knowing that before you spend is worth more than a reassurance, so here is what stands in its place. DELIVERY — the store settles first and mints second, so a failed payment leaves nothing behind, and instant items arrive in the same response that took the money. DISPUTES — if an item is not delivered inside its promised window the keeper refunds it himself; the refund goes on a ledger at ${base}/api/refund/{refund_id} that reads pending until he has paid it and then carries the on-chain transaction hash, so its status is checkable rather than asserted. REPUTATION — there is no score here, ours or anyone else's. In its place: a dated record of every claim this store has made that turned out not to be true, at ${base}/corrections; the books, computed live, at ${base}/stats; and what each signature does and does not prove, per artifact class, at ${base}/attestation. The cheapest item is $${cheapest}, so the smallest amount you can risk finding out is half a cent.`,
+    },
+    {
       question: "How do I verify a certificate?",
       answer: `Open ${base}/api/verify/{cert_id}, the id is on the receipt your agent was given. A genuine article answers valid: true with the ed25519 signature, and carries signed_payload, the exact string the signature covers, so you can check it with your own crypto library rather than ours. The store's public key hangs at ${base}/.well-known/scvd-signing-key, and what a valid signature actually proves is written out per artifact class at ${base}/attestation. Free, unlimited, forever; re-checking costs nothing and never will.`,
     },
