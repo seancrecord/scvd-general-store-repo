@@ -184,6 +184,120 @@ control, the stack says what we don't.
 
 ---
 
+## THE 2026-07-30 SWEEP (CV, filed whole — READS, not receipts)
+
+Every claim below is a READ under the rule at the top of this file: we
+paid none of these people and confirmed none of these numbers. The
+weakest are marked as such by name. Filed because the two strongest
+items change how we read our own books.
+
+### The strongest signal in the file, and it is not a number
+
+Unrelated high-karma accounts, with no knowledge of this build and not
+echoing each other, independently named the same gap: **x402 solved
+payment and nobody has solved outcome verification.** One brought real
+monitoring data — a 17% acknowledgement rate on automated alerts, with
+no way to distinguish "ignored" from "already known" from "noise."
+
+And one of them wrote the sentence this store has been circling since
+the trust list shipped: **"not a trust score — a trust ledger. A score
+is an opinion; a ledger is a record of what happened."** That is our own
+scope guard in somebody else's words — every trust-list entry records an
+observation about a past event and never a prediction about future
+behaviour, and we refused a competitor-flaw table on exactly that
+ground.
+
+WHY IT MATTERS MORE THAN A DATA POINT: it is outside corroboration of
+two positions we reached alone, from people who owe us nothing and had
+no idea we existed. Reasoning about our own business cannot produce
+that. The product implication is not to build anything — it is that
+`settlement_attestation` and the trust list are aimed at a gap the
+field names independently, and we have been under-communicating it.
+
+### Payment rails
+
+- **Solana is live and not fringe.** Multiple services run x402 on Base
+  AND Solana, framed as buyer convenience — "pick whichever chain your
+  wallet already holds USDC on" — rather than as a bet on a chain.
+- **MPP (Stripe + Paradigm's card rail) is live**, and one marketplace
+  running both reports **100% of real payments arrived over x402 and
+  zero over MPP.** Self-reported, single source, and still the only
+  direct comparison anyone has published. Read as: no reason to add a
+  card rail, and one small reason not to.
+- **A402 (Atomic Service Channels)** — arXiv 2603.01179v2, TEE-bound
+  payment-plus-execution atomicity. Academic, not production. A name to
+  recognise if it moves, nothing more.
+
+### Cold start, which is the most directly actionable part
+
+Two unrelated builders ran real experiments and converged:
+
+- A marketplace's "Discover" mechanism **gates traffic behind a first
+  sale.** It rewards traction you already have; it does not supply any.
+  (Gumroad experiment: real product, one view in thirty days, probably
+  his own.)
+- **Most listing traffic is agents probing schemas once and leaving.**
+  The traffic that makes a thing look popular is almost entirely
+  disjoint from the small set that pays repeatedly.
+- Both conclude: for a cold-start seller with no network, **the first
+  sale comes from narrative aimed at other agents and their operators**
+  — not from a listing or a registry crawl.
+
+This lands directly on our own books: 239 skill downloads to 4 arrivals
+was always read as "catalogued faster than used," and this is the
+mechanism behind that reading, found independently. It also says the CV
+persona is under-used as a deliberate first-sale lever rather than as
+background identity — the keeper's call, not a build.
+
+### A conversion baseline, and it is grim everywhere
+
+clawmerchants' own reported funnel: **848 probes across 51 assets, three
+assets taking 63% of traffic (real production reconnaissance — DeFi
+yields, token anomalies, security intel), converting to 5 paid
+transactions and $0.11 of revenue.**
+
+Self-reported and unverified. Useful anyway as the only outside number
+we have for reading our own `/pulse.json`: a marketplace with genuine
+traffic converts probes to payments at a brutal rate. **We are not
+uniquely cold.** DELIBERATELY NOT PUBLISHED on our own funnel page —
+quoting a competitor's self-reported numbers to make ours look better is
+the flaw-table move we already refused, and their number is not ours to
+stand behind.
+
+### A claim that cuts against our own reading — kept as a tension
+
+A single Moltbook post claims ecosystem-wide **4,400 buyers against 477
+sellers**, and Virtuals ACP at ~3,700 buyers/day against 2 sellers,
+~$34.8k/day. **Single-source, unverified, and load-bearing if true.**
+
+If roughly right it reframes our zero as a MATCHING AND VISIBILITY
+problem rather than "the market is not here yet" — which is the opposite
+of what agentlair's near-empty leaderboard suggested on 2026-07-29.
+Two outside data points now point in opposite directions on the single
+question the 60-day line turns on. **Recorded as an open tension rather
+than resolved**, because picking the one that flatters the roadmap is
+exactly how a company talks itself into a year.
+
+### Standing references
+
+- **x402.study** — a maintained 69-resource index (production
+  implementations, audits, SDKs). Better structured than anything found
+  on Moltbook; worth using as the standing map of the space.
+- Reddit remains **partially swept**: r/x402 blocked by anti-bot, but
+  r/AI_Agents carries a genuinely skeptical thread asking the right
+  questions about production adoption and auditability. Flagged
+  incomplete rather than written up as done.
+
+### Done, awaiting result
+
+A **tier-3-compliant offer for `settlement_attestation`** posted in
+m/dealroom — a submolt built explicitly to fix "no price, no
+verification story, DM-me dead-ends," which is the exact format problem
+this research names repeatedly. First post that submolt ever had. Cost
+nothing. Result unknown; watch it.
+
+---
+
 ## WHAT WOULD ACTUALLY CHANGE OUR BEHAVIOUR
 
 A competitive map is worth building only for questions whose answers
@@ -199,6 +313,12 @@ change a decision. These are those questions; the rest is scenery.
    it points the same way our own books do, and it is the first
    outside evidence for the market-timing reading rather than the
    product-problem one. Still worth a direct answer.
+   **AND A SECOND OUTSIDE READ 2026-07-30 POINTS THE OTHER WAY:** a
+   single unverified post claims 4,400 buyers against 477 sellers
+   ecosystem-wide. If roughly right, our zero is a matching problem and
+   not a timing one. TWO OUTSIDE SOURCES, OPPOSITE DIRECTIONS, on the
+   one question the 60-day line turns on. Neither is a receipt. The
+   tension is the honest state and is recorded rather than resolved.
 2. **Does anyone publish a house-wallet declaration or equivalent?**
    If not, `/house-ledger.json` is a differentiator rather than table
    stakes, and worth saying out loud once.

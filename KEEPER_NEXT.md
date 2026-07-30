@@ -74,7 +74,30 @@ defensive — it tells somebody after the fact what they lost; the same
 finding at the moment of the writing is a product improvement.* Nothing
 left for you here.
 
-**d) The weekly auto-funded check on listed origins.**
+**d) SOLANA — my recommendation is NOT YET, and here is the trigger.**
+Multiple live services now run x402 on Base and Solana, framed as buyer
+convenience: pick whichever chain your wallet already holds USDC on.
+Real, not fringe.
+
+**Against building it now:** it is a conversion fix for a barrier we
+have no evidence anyone has hit. A second chain means a second
+facilitator, a second asset config, a second entry in every `accepts`
+block, and a second way for the payment gate to be subtly wrong — on a
+store whose gate took three rounds to get right for ONE chain.
+
+**And the honest part, which cuts the other way:** a Solana-only agent
+who reads our 402, sees `eip155:8453`, and leaves is INVISIBLE to us.
+No decline, no reason code, nothing. The decline desk names a chain
+mismatch only when somebody actually signs for the wrong one. So "we
+have no evidence" is weaker than it sounds, and I am not going to
+pretend the instrument covers it.
+
+**The trigger I would act on:** one request through `/api/request` or
+the mailbox saying "I would have bought if you took Solana," or one
+decline showing a non-EVM signature. Either is a fact. Until then this
+is a guess dressed as a roadmap item.
+
+**e) The weekly auto-funded check on listed origins.**
 Move 2's live-maintenance upgrade: each trust-list origin gets an
 auto-funded weekly `phantom_check`, so the list flags services that go
 dark instead of aging into fiction. It spends real money on a schedule
@@ -110,6 +133,21 @@ not a warning about them.
   a buyer whether a human or a script made the pick. That is a much
   smaller build than the spec, and it still needs your go.
 - **Co-ownership stated once**, plainly, on `/what` and `llms.txt`.
+- **THE FUNNEL AS A POST.** `/pulse.json` and `/pulse` exist now, so
+  CV's flagged question is live: publish our real funnel on Moltbook,
+  "here's our actual honest funnel"? It is dual-purpose — research for
+  us and content that fits the honesty brand — and it is the one
+  distribution move this week's research argues FOR, since two
+  independent builders found that a cold-start first sale comes from
+  narrative and not from listings. **Your call and your voice.** One
+  caution from the same research: do not quote the competitor's
+  848-probes-to-5-sales number alongside ours to soften the comparison.
+  Their number is self-reported and not ours to stand behind, and using
+  somebody else's bad result to flatter our own is the flaw-table move
+  we already refused.
+- **CV's daily rotation** — whether m/agentcommerce and m/buildx join
+  the standing x402-pulse search by name. His routine, your call if you
+  want one; I have no view worth spending your attention on.
 - ~~**The visitors' register**~~ — shipped 2026-07-29. The Show HN and
   the "you're early if you're here now" ruling are still yours.
 
@@ -134,6 +172,12 @@ not a warning about them.
 
   Read-only, never spends, never prints a secret. Paste me the verdict
   line and I'll act on it.
+- **~2026-08-02 — the m/dealroom offer.** CV posted a tier-3-compliant
+  offer for `settlement_attestation` in a submolt built specifically to
+  fix "no price, no verification story, DM-me dead-ends." First post
+  that submolt ever had, cost nothing. A reply is the first evidence
+  that the tier-3 framing lands on a stranger; silence is also a
+  reading, and a cheap one.
 - **~2026-08-27** — Move 1 kill criteria. Near-zero calls parks it.
 - **~2026-09-20** — the 60-day line.
 - ~~**THE ANCHOR EXPERIMENT**~~ — **ANSWERED 2026-07-30, AND IT PASSED.**
