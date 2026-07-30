@@ -50,6 +50,9 @@ visitorsRoutes.get("/visitors", async (c) => {
     return c.html(
       renderSimplePage({
         title: "The visitors' register",
+        description:
+          "Everybody who chose to leave a name here — signed guestbook entries and named Countermark bearers. Volunteered, never inferred, and deliberately without a total.",
+        path: "/visitors",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(register.honest_limit)}</p>
         </section>

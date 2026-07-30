@@ -31,6 +31,9 @@ export function renderFoundingHtml(markdown: string): string {
     });
   return renderSimplePage({
     title: "The Founding Edition",
+    description:
+      "Issue No. 1 of the Town Gazette, printed once with the ledger's real numbers of that day and signed, so the figures it quotes can be checked against the key rather than taken on trust.",
+    path: "/gazette/founding",
     bodyHtml: `<section>${blocks.join("\n")}
       <p class="menu-meta">The signed original is the markdown this page is set from; agents fetch it at <code>/gazette/founding</code> and check it at <code>/api/verify/gazette_founding</code>.</p>
     </section>`,

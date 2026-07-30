@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
+import { MENU_ITEMS } from "@/store";
+import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -12,18 +14,33 @@ import type { HonoEnv } from "@/types";
  */
 export const siteMetaRoutes = new Hono<HonoEnv>();
 
-/** Human-readable rooms. /papers joins when the registry goes live. */
-const HUMAN_SURFACES = [
+/**
+ * Human-readable rooms. /papers joins when the registry goes live.
+ *
+ * EXPORTED so the test suite can walk it: four rooms built between
+ * 2026-07-29 and 07-30 — the receipts page, the dependency page, the
+ * corrections record and the visitors' register — existed for a day
+ * apiece with no line here and no meta description, which is the
+ * quiet version of not being published at all. A test now fetches
+ * every path in this list and fails if one does not answer as HTML,
+ * so a dead entry is caught; the harder direction, a page that exists
+ * and is missing from the list, is caught by the same test asserting
+ * the count against the pages the router actually serves.
+ */
+export const HUMAN_SURFACES = [
   "/",
   "/what",
   "/try",
   "/gazette",
-  "/gazette/founding",
   "/almanac",
   "/directory",
   "/train",
   "/zodiac",
   "/porch",
+  "/neighbours",
+  "/stack",
+  "/corrections",
+  "/visitors",
 ] as const;
 
 siteMetaRoutes.get("/robots.txt", (c) => {
@@ -39,7 +56,7 @@ Sitemap: ${base}/sitemap.xml
   );
 });
 
-siteMetaRoutes.get("/sitemap.xml", (c) => {
+siteMetaRoutes.get("/sitemap.xml", async (c) => {
   const base = c.env.STORE_BASE_URL;
   // Directory listings are derived rather than listed by hand, so a
   // neighbor added to directory.json is crawlable the same day
@@ -47,7 +64,29 @@ siteMetaRoutes.get("/sitemap.xml", (c) => {
   const paths = [
     ...HUMAN_SURFACES,
     ...directoryData.listings.map((listing) => `/directory/${listing.slug}`),
+    /**
+     * PER-ITEM PAGES, added 2026-07-30. They serve JSON and markdown
+     * rather than HTML, which is why they were left out originally —
+     * and that reasoning was written for search engines alone. This
+     * store's readers are mostly agents, the pages carry the only
+     * per-item prose that exists anywhere, and the storefront's JSON-LD
+     * already declares these exact URLs as the offer URLs. Listing
+     * something the structured data already points at is the minimum,
+     * not a stretch.
+     */
+    ...MENU_ITEMS.map((item) => `/menu/${item.id}`),
   ];
+  /**
+   * THE FOUNDING EDITION IS CONDITIONAL, and it was not — it sat in the
+   * static list and 404s until the press runs, which means the sitemap
+   * was handing crawlers a dead URL and calling it a room. Caught
+   * 2026-07-30 by the test that walks this list. A sitemap entry is a
+   * claim that a page exists; making one we cannot keep is the same
+   * class as every other entry on /corrections.
+   */
+  if (await getFoundingEdition(c.env).catch(() => null)) {
+    paths.push("/gazette/founding");
+  }
   // lastmod on every entry: a crawler deciding whether to re-read us
   // has nothing else to go on, and "no date" reads as "never changed".
   const lastmod = catalogLastUpdated();

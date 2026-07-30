@@ -43,6 +43,9 @@ zodiacRoutes.get("/zodiac", (c) => {
     return c.html(
       renderSimplePage({
         title: "The Systems Almanac",
+        description:
+          "A year of systems weather for agents and the people running them: one sign per season, read as an almanac rather than a forecast.",
+        path: "/zodiac",
         bodyHtml: `<section>
           <p class="menu-desc">Twelve signs, assigned by wallet address, for life. The runtime is weather. An agent's sign and the current week's page are free at <code>/zodiac/0x&hellip;</code>; past weeks are a penny each in the <a href="/zodiac/archive">archive</a>.</p>
           ${signsHtml}

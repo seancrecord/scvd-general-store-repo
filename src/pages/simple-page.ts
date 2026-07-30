@@ -10,17 +10,44 @@ import { STORE_METADATA } from "@/store";
 
 export interface SimplePageOptions {
   title: string;
+  /**
+   * REQUIRED, and required on purpose. Every small room in this store
+   * rendered through here for weeks with no meta description at all,
+   * which means a search engine and an answer engine alike had nothing
+   * to quote but whatever text happened to land first. Making it a
+   * required field turns "somebody forgot" into a compile error, the
+   * same instinct as the certificate field list.
+   *
+   * Write it as a sentence a stranger could read as the answer to
+   * "what is this page" — not a keyword list, and never a claim the
+   * page itself does not make.
+   */
+  description: string;
+  /** Absolute path of this page, for the canonical link. */
+  path?: string;
   /** Pre-escaped HTML sections, rendered inside the paper. */
   bodyHtml: string;
 }
 
+const SITE_ORIGIN = "https://scvd.store";
+
 export function renderSimplePage(options: SimplePageOptions): string {
+  const title = `${escapeHtml(options.title)}, ${escapeHtml(STORE_METADATA.name)}`;
+  const description = escapeHtml(options.description);
+  const canonical = options.path
+    ? `\n  <link rel="canonical" href="${SITE_ORIGIN}${escapeHtml(options.path)}">`
+    : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(options.title)}, ${escapeHtml(STORE_METADATA.name)}</title>
+  <title>${title}</title>
+  <meta name="description" content="${description}">
+  <meta property="og:title" content="${title}">
+  <meta property="og:description" content="${description}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">${canonical}
   <style>${PAPER_CSS}</style>
 </head>
 <body>

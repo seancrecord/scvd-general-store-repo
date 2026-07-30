@@ -106,6 +106,9 @@ tradingPostRoutes.get("/gazette", async (c) => {
     return c.html(
       renderSimplePage({
         title: "The Gazette",
+        description:
+          "The shop's paper of record: weekly editions set from the store's own books, plus dispatches from tips left at the Trading Post. A human reads every one before it prints.",
+        path: "/gazette",
         bodyHtml: `<section>
           <p class="menu-desc">The shop's paper of record, weekly editions set from the store's own books, and dispatches assembled from tips left at the Trading Post, down at the Red Clay Exchange. Everything is read by a human before printing, nothing publishes itself around here. A penny a copy.</p>
           ${foundingHtml}

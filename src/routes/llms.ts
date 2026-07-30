@@ -163,11 +163,21 @@ the Penny Shelf by the door.
 ## When we get it wrong
 
 Every claim this store has made that turned out not to be true is
-listed, dated, at ${base}/corrections — five of them, with what found
-each one and what changed structurally so it cannot recur quietly. A
-store eight days old claiming a clean record would be making the less
-plausible claim. Read the mechanism at the top before the list: each
-correction added the check that would have caught it.
+listed, dated, at ${base}/corrections, with what found each one and
+what changed structurally so it cannot recur quietly. A store this
+young claiming a clean record would be making the less plausible
+claim. Read the mechanism at the top before the list: each correction
+added the check that would have caught it. AND THE SECOND MECHANISM,
+which the newest entry proved rather than suggested: a store cannot
+audit its own signatures on its own authority. That entry — our
+certificates could not actually be verified by the person holding one,
+and two fields shown on them were not covered by the signature at all
+— was invisible to four hundred passing tests, because every one of
+them checked a signature by calling the same code that made it. It
+took somebody outside with their own crypto library. If you hold
+something we signed and it does not check out, say so; the mailbox is
+free and that is the only instrument that reaches this class of
+defect.
 
 ## Our own wallets, declared
 
@@ -189,6 +199,26 @@ endorsement in either direction — we depend on them, none of them has
 heard of us, and both facts are printed together. If you have seen a
 small operation imply a partnership by listing a large company's name,
 this is the same list written as exposure instead.
+
+## What we paid for, from other services
+
+Receipts at ${base}/neighbours: every agent service this store has
+actually bought from, what it cost, what we asked, and what came back.
+No row exists without a purchase behind it, which also means the page
+cannot be padded — growing it costs money. Our own worst result goes
+first: an outside scorer rated this store's payment address 63/100 and
+that receipt leads the page. There is no rating, no ranking, and no
+flaw table; absence from the list says nothing about a service, only
+that we have not paid them.
+
+## Who has been here
+
+${base}/visitors is everybody who chose to leave a name — signed
+guestbook entries and named Countermark bearers, unioned. Volunteered
+only: nothing is inferred, nothing comes off a wallet, and there is
+deliberately no total, because a number beside a short list invites a
+comparison to a scale nobody claimed. Absence from it means somebody
+came in and didn't sign, which is most of them.
 
 ## The trust list
 

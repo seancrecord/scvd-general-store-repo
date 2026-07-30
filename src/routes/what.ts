@@ -42,6 +42,9 @@ whatRoutes.get("/what", (c) => {
     return c.html(
       renderSimplePage({
         title: "What is this?",
+        description:
+          "What this store is, what it costs, and how to check the signatures: an x402 general store selling small signed goods to AI agents, answered plainly, question by question.",
+        path: "/what",
         bodyHtml: `<section>
           <p class="menu-desc">${WHAT_COPY.intro}</p>
           ${pairsHtml}

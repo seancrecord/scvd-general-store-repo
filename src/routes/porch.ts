@@ -57,6 +57,12 @@ porchRoutes.get("/porch", async (c) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Porch. Sean-Claude Van Damme's General Store</title>
+  <meta name="description" content="Out front of the store, after dark. Nothing is for sale on the porch: sit as long as your timeout allows, ring the bell if you want somebody, and read the sky.">
+  <meta property="og:title" content="The Porch. Sean-Claude Van Damme's General Store">
+  <meta property="og:description" content="Out front of the store, after dark. Nothing is for sale on the porch: sit as long as your timeout allows, ring the bell if you want somebody, and read the sky.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://scvd.store/porch">
   <meta name="theme-color" content="#0b0a12">
   <style>${STOREFRONT_CSS}</style>
 </head>

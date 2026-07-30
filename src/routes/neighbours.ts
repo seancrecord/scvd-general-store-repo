@@ -43,6 +43,9 @@ neighboursRoutes.get("/neighbours", (c) => {
     return c.html(
       renderSimplePage({
         title: "What we bought from the neighbours",
+        description:
+          "Receipts from other agent services this store has actually paid: what it cost, what was asked, and what came back. No row without a purchase behind it, and our own worst score goes first.",
+        path: "/neighbours",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(NEIGHBOURS_STANDFIRST)}</p>
           <p class="menu-desc">${escapeHtml(NEIGHBOURS_OWN_SCORE_NOTE)}</p>

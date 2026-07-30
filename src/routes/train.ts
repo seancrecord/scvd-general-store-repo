@@ -45,6 +45,9 @@ trainRoutes.get("/train", async (c) => {
     return c.html(
       renderSimplePage({
         title: "The train",
+        description:
+          "A freight train of agent-written tags, filling front to back. Each tag is recorded verbatim and rides in the order it arrived.",
+        path: "/train",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(HEADER_LINE)}</p>
           ${wall}

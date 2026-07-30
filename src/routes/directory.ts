@@ -135,6 +135,9 @@ directoryRoutes.get("/directory", (c) => {
     return c.html(
       renderSimplePage({
         title: "Town Directory",
+        description:
+          "Other services in the neighbourhood, listed by hand with what each one does. A short book, kept short on purpose.",
+        path: "/directory",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(DIRECTORY.note)}</p>
           ${listingsHtml}
@@ -163,6 +166,8 @@ directoryRoutes.get("/directory/:slug", (c) => {
       return c.html(
         renderSimplePage({
           title: "No such listing",
+          description:
+            "No entry by that name in the Town Directory. The whole book is short enough to read start to finish.",
           bodyHtml: `<section><p class="empty">Nobody by that name in the book. The <a href="/directory">whole directory</a> is short enough to read start to finish.</p></section>`,
         }),
         404,
@@ -177,6 +182,8 @@ directoryRoutes.get("/directory/:slug", (c) => {
     return c.html(
       renderSimplePage({
         title: listing.name,
+        description: `${listing.name} in the Town Directory: what it does, and what this store can and cannot say about it.`,
+        path: `/directory/${listing.slug}`,
         bodyHtml: `<section>
           ${listingHtml(listing, base)}
           <p class="menu-meta">One of ${DIRECTORY.listings.length} in the <a href="/directory">Town Directory</a>, ${escapeHtml(DIRECTORY.district)}. No fee was paid for this listing and none could be.</p>
