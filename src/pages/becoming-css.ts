@@ -1,11 +1,13 @@
 /**
- * /becoming's own look: a hand-set broadside, nailed up at night.
+ * /becoming's own look, on top of the shared room stylesheet.
  *
- * The small rooms are wood and paper because inside the store it was
- * always daytime; the storefront is neon because outside it is always
- * night. This page is neither — it is the thing tacked to the door
- * after closing, ink on a dark board, and it should read as a
- * statement rather than as another page of inventory.
+ * TRIMMED 2026-07-30, the same day it was written. This page went dark
+ * first, as a one-off; hours later the keeper condemned the brown
+ * template every other room wore and PAPER_CSS took the same hours —
+ * warm ink, one lamp accent, left-aligned heads. So most of what was
+ * here became a duplicate of the base sheet and was deleted rather
+ * than left to drift out of step with it. What remains is only what is
+ * genuinely particular to a page of theses.
  *
  * TYPOGRAPHY DOES THE WORK, not chrome. Four claims set large enough
  * to be read across a room, each with its falsifier underneath in a
@@ -17,58 +19,6 @@
  * a phone gets the same page rather than a broken one.
  */
 export const BECOMING_CSS = `
-:root {
-  --board: #14110d;
-  --board-lift: #1c1813;
-  --chalk: #f2ece0;
-  --chalk-dim: #b3a892;
-  --lamp: #e8a33d;
-  --rule: #3a3229;
-}
-body.becoming {
-  /* Fills the canvas even when the content is short, so no white band
-     shows under the board on a tall viewport. */
-  min-height: 100vh;
-  background:
-    radial-gradient(120% 80% at 50% -10%, #241f18 0%, var(--board) 60%);
-  color: var(--chalk);
-  padding: 1rem 0.75rem 4rem;
-}
-body.becoming .paper {
-  background: transparent;
-  box-shadow: none;
-  max-width: 780px;
-  padding: 1rem 0 0;
-}
-body.becoming header {
-  border-bottom: 1px solid var(--rule);
-  text-align: left;
-  padding-bottom: 1.5rem;
-}
-body.becoming .est { color: var(--lamp); letter-spacing: 0.4em; }
-body.becoming h1 {
-  color: var(--chalk);
-  font-size: clamp(2rem, 7vw, 3.4rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  margin-top: 0.6rem;
-}
-body.becoming h2 {
-  color: var(--lamp);
-  font-size: 0.78rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  font-weight: normal;
-  border: 0;
-  margin: 3.25rem 0 1.25rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--rule);
-}
-body.becoming section { margin: 0; }
-body.becoming .menu-desc { color: var(--chalk-dim); }
-body.becoming .menu-meta { color: var(--chalk-dim); font-size: 0.85rem; }
-body.becoming a { color: var(--lamp); }
-
 /* The standfirst, and the line that keeps the quarantine honest. */
 body.becoming .lede {
   font-size: clamp(1.05rem, 2.6vw, 1.3rem);
@@ -86,10 +36,11 @@ body.becoming .not-for-sale {
   font-size: 0.92rem;
 }
 
-/* THE THESES — the reason the page exists. */
+/* THE THESES — the reason the page exists. Set large enough to be read
+   across a room, with the falsifier directly underneath in a quieter
+   hand, because a claim and its refutation belong on one surface. */
 body.becoming .thesis {
-  position: relative;
-  padding: 0 0 2.25rem 0;
+  padding-bottom: 2.25rem;
   margin-bottom: 2.25rem;
   border-bottom: 1px solid var(--rule);
 }
@@ -117,7 +68,6 @@ body.becoming .thesis-false {
 }
 body.becoming .thesis-false strong {
   color: var(--lamp);
-  font-weight: normal;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 0.72rem;
@@ -125,7 +75,7 @@ body.becoming .thesis-false strong {
   margin-bottom: 0.35rem;
 }
 
-/* SETTLED — a ruling and the reasoning that produced it. */
+/* SETTLED — a ruling, and the reasoning that produced it. */
 body.becoming .settled {
   background: var(--board-lift);
   border: 1px solid var(--rule);
@@ -156,45 +106,21 @@ body.becoming .settled-why {
    phone whatever the widths work out to.
 
    NOT WRITTEN TO FIX A BUG, and the record matters more than the CSS.
-   A screenshot at --window-size=390 appeared to show the whole
-   document overflowing, so this was written as a fix. It was not one:
-   headless Chrome clamps its window to a 500px minimum, so the shot
-   was a 500px layout cropped to 390 and the overflow was an artifact
-   of the instrument. A page that predates this file showed exactly the
-   same thing, which is what gave it away. The stacking stays because
-   it is better on a small screen; it never repaired anything, and
-   nothing below 500px here has actually been verified. */
+   A screenshot at 390px appeared to show the whole document
+   overflowing, so this was written as a fix. It was not one: headless
+   Chrome clamps its window to a 500px minimum, so the shot was a 500px
+   layout cropped to 390 and the overflow was an artifact of the
+   instrument. A page predating this file showed exactly the same
+   thing, which is what gave it away. The stacking stays because it is
+   better on a small screen; it repaired nothing, and nothing below
+   500px here has actually been verified. */
+body.becoming section > .menu-desc { margin-bottom: 1.5rem; }
 body.becoming .ledger-wrap { overflow-x: auto; margin-top: 1.5rem; }
-body.becoming table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 0;
-}
-body.becoming th {
-  text-align: left;
-  color: var(--lamp);
-  font-weight: normal;
-  font-size: 0.68rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--rule);
-  padding: 0 0.9rem 0.6rem 0;
-}
-body.becoming td {
-  vertical-align: top;
-  padding: 1rem 0.9rem 1rem 0;
-  border-bottom: 1px solid var(--rule);
-  color: var(--chalk-dim);
-  font-size: 0.9rem;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-body.becoming td:first-child { color: var(--chalk); }
 @media (min-width: 720px) {
   body.becoming table { min-width: 620px; }
 }
 @media (max-width: 719px) {
-  body.becoming thead, body.becoming tr:first-child th { display: none; }
+  body.becoming tr:first-child th { display: none; }
   body.becoming table, body.becoming tbody, body.becoming tr, body.becoming td {
     display: block;
     width: 100%;
@@ -205,10 +131,7 @@ body.becoming td:first-child { color: var(--chalk); }
     margin-bottom: 1rem;
   }
   body.becoming td { border: 0; padding: 0 0 0.75rem; }
-  body.becoming td:first-child {
-    font-size: 1.05rem;
-    padding-bottom: 0.5rem;
-  }
+  body.becoming td:first-child { font-size: 1.05rem; padding-bottom: 0.5rem; }
   body.becoming td[data-label]::before {
     content: attr(data-label);
     display: block;
@@ -219,11 +142,4 @@ body.becoming td:first-child { color: var(--chalk); }
     margin-bottom: 0.3rem;
   }
 }
-body.becoming .fine-print {
-  border-top: 1px solid var(--rule);
-  margin-top: 3rem;
-  padding-top: 1.25rem;
-  color: var(--chalk-dim);
-}
-body.becoming .fine-print code { color: var(--lamp); }
 `;

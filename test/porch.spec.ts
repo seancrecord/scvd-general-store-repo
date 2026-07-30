@@ -46,12 +46,40 @@ describe("the porch", () => {
 });
 
 describe("the paper rooms (regression)", () => {
-  it("styles the smaller rooms with the paper stylesheet", async () => {
-    const response = await SELF.fetch(`${BASE}/directory`, {
-      headers: { Accept: "text/html" },
-    });
-    const html = await response.text();
-    expect(html).toContain('class="paper"');
-    expect(html).toContain("--wood-dark");
+  /**
+   * REWRITTEN 2026-07-30, when the stylesheet was replaced and this
+   * test failed for the wrong reason. It asserted the string
+   * "--wood-dark" — a colour variable from the old palette — so it was
+   * pinning a fixture rather than the behaviour it was named for. A
+   * restyle is not a regression, and a test that cannot tell the
+   * difference will be deleted by whoever is in a hurry.
+   *
+   * What it actually guards is that the small rooms are styled by ONE
+   * SHARED SHEET rather than each inventing its own: that is the thing
+   * that would silently stop being true, and it is checkable without
+   * naming a single colour.
+   */
+  it("styles the smaller rooms from one shared stylesheet", async () => {
+    const rooms = ["/directory", "/gazette", "/corrections"];
+    const sheets: string[] = [];
+    for (const room of rooms) {
+      const html = await (
+        await SELF.fetch(`${BASE}${room}`, { headers: { Accept: "text/html" } })
+      ).text();
+      expect(html, `${room} lost its paper wrapper`).toContain('class="paper"');
+      const style = /<style>([\s\S]*?)<\/style>/.exec(html)?.[1] ?? "";
+      // The sheet's structural contract, not its palette: these are the
+      // class names every room's markup depends on.
+      expect(style, `${room} has no stylesheet`).toContain(".paper");
+      expect(style, `${room} does not style shelf lines`).toContain(
+        ".menu-desc",
+      );
+      sheets.push(style);
+    }
+    // Same bytes on every room. A page that starts carrying its own
+    // variant is the drift this test exists to catch.
+    expect(new Set(sheets).size, "the rooms disagree on their stylesheet").toBe(
+      1,
+    );
   });
 });
