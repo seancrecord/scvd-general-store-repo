@@ -4,7 +4,10 @@ import { paymentGate } from "@/lib/payment-gate";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
-import { ALMANAC_ENTRIES, getAlmanacEntry } from "@/store/almanac";
+import {
+  findAlmanacEntry,
+  listAlmanacEntries,
+} from "@/services/almanac-store";
 import type { AlmanacEntry, HonoEnv } from "@/types";
 
 /**
@@ -17,7 +20,7 @@ export const almanacRoutes = new Hono<HonoEnv>();
 /** Unknown pages are turned away before the payment gate. */
 const pageCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const slug = c.req.path.replace(/^\/almanac\//, "");
-  if (!getAlmanacEntry(slug)) {
+  if (!(await findAlmanacEntry(c.env, slug))) {
     return c.json(
       {
         error:
@@ -41,10 +44,13 @@ function indexEntry(entry: AlmanacEntry, base: string): Record<string, unknown> 
   };
 }
 
-almanacRoutes.get("/almanac", (c) => {
+almanacRoutes.get("/almanac", async (c) => {
   const base = c.env.STORE_BASE_URL;
+  // Seed pages and keeper pages, merged; a keeper page of the same slug
+  // wins, so the office can correct an entry without a deploy.
+  const entries = await listAlmanacEntries(c.env);
   if (wantsHtml(c.req.header("Accept"))) {
-    const entriesHtml = ALMANAC_ENTRIES.map(
+    const entriesHtml = entries.map(
       (entry) => `<div class="menu-item">
         <div class="menu-line">
           <span class="menu-name">${escapeHtml(entry.title)}</span>
@@ -74,7 +80,7 @@ almanacRoutes.get("/almanac", (c) => {
     price_usdc: PENNY_PAGE_USDC,
     how_to_buy:
       "GET any entry url; answer the 402 with a signed penny (x402 v2). The page arrives as markdown.",
-    entries: ALMANAC_ENTRIES.map((entry) => indexEntry(entry, base)),
+    entries: entries.map((entry) => indexEntry(entry, base)),
   });
 });
 
@@ -89,9 +95,12 @@ almanacRoutes.use("/almanac/:slug", noStore);
 almanacRoutes.use("/almanac/:slug", pageCheck);
 almanacRoutes.use("/almanac/:slug", paymentGate);
 
-almanacRoutes.get("/almanac/:slug", (c) => {
+almanacRoutes.get("/almanac/:slug", async (c) => {
   // pageCheck guarantees the entry exists by the time we're here.
-  const entry = getAlmanacEntry(c.req.param("slug")) as AlmanacEntry;
+  const entry = (await findAlmanacEntry(
+    c.env,
+    c.req.param("slug"),
+  )) as AlmanacEntry;
   if (!c.get("payment")) {
     // The gate never lets an unpaid request through; belt-and-braces.
     return c.json({ error: "The till hasn't heard from you yet." }, 402);

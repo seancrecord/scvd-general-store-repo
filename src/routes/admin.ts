@@ -29,6 +29,11 @@ import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
 import { renderCvCorner } from "@/pages/admin/cv-corner-page";
 import { renderItemEventsPage } from "@/pages/admin/item-events-page";
+import {
+  listKeeperEntries,
+  removeAlmanacEntry,
+  saveAlmanacEntry,
+} from "@/services/almanac-store";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetText } from "@/lib/kv-bulk";
 import { getFoundingEdition } from "@/services/founding";
@@ -315,6 +320,7 @@ adminRoutes.get("/admin/tools", async (c) => {
     c.env.COUNTERS.get(KV_KEYS.patronageNote(month)),
     getDraft(c.env),
     listKeys(c.env.COUNTERS, { prefix: "inventory:", cap: 200 }),
+    listKeeperEntries(c.env),
   ]);
   const value = <T>(index: number): T | null =>
     settled[index]?.status === "fulfilled"
@@ -351,6 +357,10 @@ adminRoutes.get("/admin/tools", async (c) => {
         settled[3]?.status === "fulfilled" ? value(3) !== null : null,
       inventory,
       month,
+      almanacPages:
+        settled[5]?.status === "fulfilled"
+          ? (value<{ slug: string; title: string; date: string }[]>(5) ?? [])
+          : null,
     }),
   );
 });
@@ -693,6 +703,34 @@ adminRoutes.get("/admin/cv", async (c) => {
       loadNotes,
     }),
   );
+});
+
+/**
+ * THE ALMANAC LEVER. The keeper's own rule — everything manageable from
+ * the office — applied to the one shelf a stranger has ever bought from.
+ * Pages written here go live on the next request; no deploy, no commit,
+ * no laptop. The words are his and nothing here writes them.
+ */
+adminRoutes.post("/admin/almanac", async (c) => {
+  const form = await c.req.parseBody();
+  const result = await saveAlmanacEntry(c.env, {
+    title: String(form["title"] ?? ""),
+    date: String(form["date"] ?? ""),
+    teaser: String(form["teaser"] ?? ""),
+    markdown: String(form["markdown"] ?? ""),
+  });
+  if (result.refused) {
+    // Refuse loudly with the words still in hand rather than redirect
+    // to a page that lost them.
+    return c.text(`${result.refused}\n\nNothing was saved. Go back; your page is still in the form.`, 400);
+  }
+  return c.redirect("/admin/tools");
+});
+
+adminRoutes.post("/admin/almanac/remove", async (c) => {
+  const form = await c.req.parseBody();
+  await removeAlmanacEntry(c.env, String(form["slug"] ?? ""));
+  return c.redirect("/admin/tools");
 });
 
 /** The shutter lever: close or open the human-labor shelf by hand. */

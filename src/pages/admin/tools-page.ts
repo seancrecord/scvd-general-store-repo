@@ -31,6 +31,8 @@ import type { ShutterState } from "@/services/shutter";
  */
 
 export interface ToolsPageData {
+  /** Keeper-written almanac pages, newest first. null when unreadable. */
+  almanacPages: { slug: string; title: string; date: string }[] | null;
   /** null when the read failed — never assume open. */
   shutter: ShutterState | null;
   /** True when Issue No. 1 has already gone to press. */
@@ -173,6 +175,49 @@ export function renderToolsPage(data: ToolsPageData): string {
       <input type="hidden" name="state" value="open">
       <button type="submit">Open the shutter (back at the counter)</button>
     </form>
+  </section>
+
+  <section>
+    <h2>The Keeper's Almanac &mdash; write a page</h2>
+    <p>A penny a page over x402, and the only shelf a stranger has ever bought
+    from. Pages written here go live on the next request &mdash; no deploy, no
+    commit. Same slug as an existing page REPLACES it, which is how a correction
+    gets made without a laptop.</p>
+    <p><strong>Your words only.</strong> The almanac's rule is unchanged: dated
+    first-person field notes, sensory and particular. Nothing here writes them but
+    you. If it could be posted on Medium, it doesn't go in the Almanac.</p>
+    ${
+      data.almanacPages === null
+        ? condition(false, "")
+        : data.almanacPages.length === 0
+          ? condition(
+              true,
+              "No pages written from the office yet. The seed pages compiled into the store are still there and are not listed here.",
+            )
+          : condition(
+              true,
+              `Written from here: ${data.almanacPages
+                .map((page) => `${page.date} ${page.title}`)
+                .join(" \u00B7 ")}`,
+              "on",
+            )
+    }
+    <form method="POST" action="/admin/almanac">
+      <p><input type="text" name="title" placeholder="Title (becomes the URL slug)" maxlength="120" required></p>
+      <p><input type="text" name="date" placeholder="YYYY-MM-DD &mdash; the day it is ABOUT" maxlength="10" required></p>
+      <p><input type="text" name="teaser" placeholder="The one free line shown on the index" maxlength="200" required></p>
+      <p><textarea name="markdown" rows="14" placeholder="# Title&#10;&#10;*From the Keeper's Almanac.*&#10;&#10;**${escapeHtml(data.month)}-.., Oak City.**&#10;&#10;..." required></textarea></p>
+      <button type="submit">Put it on the shelf</button>
+    </form>
+    ${
+      data.almanacPages && data.almanacPages.length > 0
+        ? `<p>Pull a page back off the shelf:</p>
+           <form method="POST" action="/admin/almanac/remove">
+             <input type="text" name="slug" placeholder="the page's slug" required>
+             <button type="submit">Take it down</button>
+           </form>`
+        : ""
+    }
   </section>
 
   <section>

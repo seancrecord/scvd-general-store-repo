@@ -78,6 +78,9 @@ export const KV_KEYS = {
   failedItem: (itemId: string): string => `failed_item:${itemId}`,
   failedItemPrefix: "failed_item:",
   weekNote: "week_note",
+  /** Keeper-written almanac pages, added from the office. ORDERS. */
+  almanacEntry: (slug: string): string => `almanac_entry:${slug}`,
+  almanacEntryPrefix: "almanac_entry:",
   keeperLastSeen: "keeper_last_seen",
   shutterOverride: "shutter_override",
   firstDollar: "first_dollar",
