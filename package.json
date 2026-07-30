@@ -12,7 +12,8 @@
     "keys:generate": "node scripts/generate-signing-key.mjs",
     "shop": "node scripts/shopping-run.mjs",
     "bazaar:check": "node scripts/bazaar-check.mjs",
-    "audit": "node scripts/audit.mjs"
+    "audit": "node scripts/audit.mjs",
+    "build:check": "wrangler deploy --dry-run --outdir .build-check"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

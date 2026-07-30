@@ -1,6 +1,14 @@
 // Sean-Claude Van Damme's General Store — Worker configuration.
 // Deploys to the scvd.store custom domain via Git-connected builds.
 {
+  /**
+   * Markdown ships as a Text module. CV's research trails live as .md
+   * in research/ so he can append to them like a notebook; esbuild has
+   * no .md loader without this, and a `?raw` import — which vite serves
+   * in tests — fails the real build. Found 2026-07-30 when the deploy
+   * broke and the tests didn't.
+   */
+  "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "scvd-general-store-repo",
   "main": "src/index.ts",

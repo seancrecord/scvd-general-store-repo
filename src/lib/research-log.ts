@@ -1,6 +1,6 @@
-import SOLO_FOUNDER from "../../research/solo-ai-founder-scan.md?raw";
-import STORE_SWEEP from "../../research/store-admin-sweep.md?raw";
-import X402_PULSE from "../../research/x402-pulse.md?raw";
+import SOLO_FOUNDER from "../../research/solo-ai-founder-scan.md";
+import STORE_SWEEP from "../../research/store-admin-sweep.md";
+import X402_PULSE from "../../research/x402-pulse.md";
 
 /**
  * CV'S RESEARCH TRAILS, read from markdown committed beside the code.

@@ -46,3 +46,15 @@ jobs:
       # no warning, at some unknown future size.
       - name: Scalability audit
         run: npm run audit
+      # DOES IT ACTUALLY BUILD — added 2026-07-30, the same day a green
+      # CI shipped nothing. The tests run under vite, which serves a
+      # `?raw` markdown import happily; wrangler builds with esbuild,
+      # which has no .md loader and refused. So typecheck passed, 485
+      # tests passed, the audit passed, and every deploy after that
+      # commit failed silently while the branch looked healthy.
+      #
+      # A suite that cannot fail on an unbuildable Worker is measuring
+      # the wrong artifact. This step builds the thing that actually
+      # ships.
+      - name: Build
+        run: npm run build:check

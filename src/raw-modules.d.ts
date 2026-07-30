@@ -8,3 +8,12 @@ declare module "*?raw" {
   const contents: string;
   export default contents;
 }
+
+/**
+ * Markdown as a Text module. wrangler.jsonc declares the rule; esbuild
+ * and the vitest pool both honour it, and TypeScript needs telling.
+ */
+declare module "*.md" {
+  const contents: string;
+  export default contents;
+}
