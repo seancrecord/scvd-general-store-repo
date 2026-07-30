@@ -2,6 +2,7 @@ import { listKeys } from "@/lib/kv-list";
 import { invertedTimestamp } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
+import { outboundHeaders } from "@/lib/identity";
 
 /**
  * P1 alerting. Exactly four conditions page the keeper; everything
@@ -82,10 +83,10 @@ async function emailKeeper(
   }
   await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
+    headers: outboundHeaders({
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
-    },
+    }),
     body: JSON.stringify({
       from: "The Store <alerts@scvd.store>",
       to: [env.ALERT_EMAIL],

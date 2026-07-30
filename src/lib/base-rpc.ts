@@ -1,4 +1,5 @@
 import type { Env } from "@/types";
+import { outboundHeaders } from "@/lib/identity";
 
 /**
  * A very small Base JSON-RPC reader. Two calls, no client library, no
@@ -56,7 +57,7 @@ function rpcUrl(env: Env): string {
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
   const response = await fetch(rpcUrl(env), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: outboundHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
   });
   if (!response.ok) {

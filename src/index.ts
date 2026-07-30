@@ -46,6 +46,7 @@ import { sendAlert } from "@/lib/alerts";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit } from "@/lib/metrics";
 import { getMenuItem } from "@/store";
+import { STORE_HEADER } from "@/lib/identity";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
@@ -63,6 +64,14 @@ const app = new Hono<HonoEnv>();
 app.use("*", async (c, next) => {
   await next();
   c.res.headers.set("X-House-Rule", "Argue properly. --7");
+  /**
+   * Passive self-citation on every response. Tier 2 display name plus
+   * the domain, because this is the header a person reads in a devtools
+   * panel; the outbound user-agent carries the tier 1 slug because that
+   * is a machine field. X-House-Rule above is untouched and stays a
+   * separate thing: one name, one job.
+   */
+  c.res.headers.set("X-Store", STORE_HEADER);
 });
 
 /**
@@ -215,6 +224,12 @@ app.onError((err, c) => {
     {
       error:
         "Something fell off a shelf back here. Give us a minute and try again, no charge for the noise.",
+      // The 404 has carried a way home since it was written; the 500
+      // did not, which meant the one response a visitor sees when
+      // something is genuinely wrong was also the one with no door in
+      // it. Copy untouched; a door added beside it.
+      front_door: c.env.STORE_BASE_URL,
+      menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
     },
     500,
   );

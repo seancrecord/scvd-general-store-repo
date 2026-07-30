@@ -1,4 +1,5 @@
 import { listKeys } from "@/lib/kv-list";
+import { outboundHeaders } from "@/lib/identity";
 import { newCheckId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -52,6 +53,8 @@ async function lookOnce(
       method: "GET",
       redirect: "follow",
       signal: controller.signal,
+      // The store says who it is when it walks past somebody's door.
+      headers: outboundHeaders(),
     });
     const latency = Date.now() - started;
     return {

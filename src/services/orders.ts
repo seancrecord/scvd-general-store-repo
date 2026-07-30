@@ -3,6 +3,7 @@ import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
+import { outboundHeaders } from "@/lib/identity";
 
 /** Ceiling on a inventory counters scan. An unnamed cap is a silent one. */
 const INVENTORY_CAP = 2000;
@@ -128,7 +129,10 @@ export async function completeOrder(
     try {
       await fetch(order.callback_url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // The one outbound call that lands in a BUYER's log. Identity
+        // attached for the same reason the certificates are signed:
+        // whoever reads it later should be able to trace it back.
+        headers: outboundHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           order_id: order.order_id,
           item_id: order.item_id,
