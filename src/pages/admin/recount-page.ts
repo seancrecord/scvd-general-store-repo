@@ -44,17 +44,50 @@ export function renderRecountPage(data: RecountPageData): string {
         .join("\n")}
     </table>`;
 
-  const drift = (label: string, rows: number, counter?: number): string => {
+  /**
+   * THE VERDICT HAS TO KNOW THE SCAN WAS CAPPED, and it did not.
+   *
+   * Reported 2026-07-30: organic-challenge counter 7762 against 1004
+   * rows, with this table calling it "a counter wrote without a row,
+   * worth finding." IT IS NOT A BUG. The counter is the whole month;
+   * the rows are the newest 3000 events of every kind, which on this
+   * store is a few days and contained 1004 challenges. Two different
+   * windows, compared as though they were one.
+   *
+   * THE CAUTION WAS ALREADY ON THE PAGE, one line above this table, in
+   * prose — "if the scan is capped, treat the row column as a floor" —
+   * and the table then printed a confident verdict contradicting it.
+   * A reader believes the cell, not the paragraph. That is the same
+   * shape as the Sources-versus-event-row report on the first organic
+   * settle: two correct numbers arranged so they read as a
+   * contradiction, which costs the same as a wrong number and is
+   * harder to stop believing, because the reader has no way to
+   * discover that the things being compared are not the same thing.
+   *
+   * So the verdict now consults the cap and refuses to draw a
+   * conclusion it cannot support.
+   */
+  const drift = (
+    label: string,
+    rows: number,
+    counter?: number,
+  ): string => {
     if (counter === undefined) {
       return `<tr><td>${escapeHtml(label)}</td><td>${rows}</td><td>—</td><td>no counter passed</td></tr>`;
     }
     const delta = rows - counter;
-    const verdict =
-      delta === 0
-        ? "rows and counter agree"
-        : delta > 0
-          ? "rows above counter: lost increments, the expected direction"
-          : "counter above rows: a counter wrote without a row, worth finding";
+    let verdict: string;
+    if (r.capped && delta < 0) {
+      verdict =
+        "not comparable: the scan stopped at its cap, so these rows cover a shorter window than the counter. A shortfall here is arithmetic, not a defect.";
+    } else if (delta === 0) {
+      verdict = "rows and counter agree";
+    } else if (delta > 0) {
+      verdict = "rows above counter: lost increments, the expected direction";
+    } else {
+      verdict =
+        "counter above rows, and the scan read every row there is: a counter wrote without a row, worth finding";
+    }
     return `<tr><td>${escapeHtml(label)}</td><td>${rows}</td><td>${counter}</td><td>${escapeHtml(verdict)}</td></tr>`;
   };
 
@@ -94,8 +127,13 @@ export function renderRecountPage(data: RecountPageData): string {
 
   <section>
     <h2>Rows against counters</h2>
-    <p>Only comparable when the scan covers the same window as the counters;
-    if the scan is capped, treat the row column as a floor.</p>
+    <p>Only comparable when the scan covers the same window as the counters.
+    The counters are the whole month; the rows are the newest ${r.rows_scanned}
+    events of every kind. ${
+      r.capped
+        ? "<strong>The scan is capped, so these are two different windows and the row column is a floor.</strong> The reading column says so rather than leaving it to be worked out."
+        : "The scan read every row in the log, so the two are comparable."
+    }</p>
     <table>
       <tr><th>metric</th><th>rows</th><th>counter</th><th>reading</th></tr>
       ${drift("organic challenges", reclassifiedOrganic, data.counter_challenges_organic)}
