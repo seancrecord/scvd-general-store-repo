@@ -61,6 +61,15 @@ const CERT_FIELDS = [
   "win",
   "tag",
   "attests",
+  /**
+   * The maker's mark, added 2026-07-30. It went in HERE FIRST, before
+   * it was served anywhere, because a provenance claim is the one field
+   * where displayed-but-unsigned is indistinguishable from a forgery:
+   * anyone could change "house" to "keeper" and the signature would
+   * still check out. The compile guard below is what made that ordering
+   * automatic rather than remembered.
+   */
+  "made_by",
 ] as const;
 
 /**
@@ -81,8 +90,11 @@ void _everyCertFieldIsSigned;
  * endpoint has to SAY it did, naming the served fields the signature
  * does not cover, rather than quietly reporting a clean "valid".
  */
+const LEGACY_FIELDS_ADDED_SINCE = ["tag", "attests", "made_by"] as const;
+
 const LEGACY_CERT_FIELDS = CERT_FIELDS.filter(
-  (field) => field !== "tag" && field !== "attests",
+  (field) =>
+    !(LEGACY_FIELDS_ADDED_SINCE as readonly string[]).includes(field),
 );
 
 function canonicalize(
@@ -111,7 +123,7 @@ export function canonicalizeCertificateLegacy(cert: Certificate): string {
 
 /** Which served fields a legacy signature leaves uncovered. */
 export function fieldsOutsideLegacySignature(cert: Certificate): string[] {
-  return (["tag", "attests"] as const).filter(
+  return LEGACY_FIELDS_ADDED_SINCE.filter(
     (field) => cert[field] !== undefined,
   );
 }

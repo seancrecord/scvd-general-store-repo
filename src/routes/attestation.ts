@@ -7,10 +7,12 @@ import {
   ATTESTATION_STANDFIRST,
   HELD_AGAINST_US,
   KEY_ARCHITECTURE,
+  MAKER_MARK_POLICY,
   NOT_BUILT,
   TRUST_MODELS,
   WHY_SIGNED_PAYLOAD,
 } from "@/store/attestation-spec";
+import { ITEM_MAKER_MARK, MAKER_MARKS } from "@/store/provenance";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -47,6 +49,9 @@ attestationRoutes.get("/attestation", (c) => {
       trust_model_name: TRUST_MODELS[entry.trust_model].name,
       verify_url: `${base}${entry.verify_url}`,
     })),
+    maker_marks: MAKER_MARKS,
+    maker_mark_policy: MAKER_MARK_POLICY,
+    marked_items: ITEM_MAKER_MARK,
     not_built: NOT_BUILT,
     held_against_us: HELD_AGAINST_US,
     honest_limit: ATTESTATION_HONEST_LIMIT,
@@ -100,6 +105,19 @@ attestationRoutes.get("/attestation", (c) => {
         <table border="1" cellpadding="6">
           <tr><th>artifact</th><th>trust model</th><th>what is signed</th><th>what it does not prove</th></tr>
           ${classes}
+        </table>
+      </section>
+      <section>
+        <h2>Who made it</h2>
+        <p class="menu-desc">${escapeHtml(MAKER_MARK_POLICY)}</p>
+        <table border="1" cellpadding="6">
+          <tr><th>mark</th><th>what it means</th></tr>
+          ${Object.entries(MAKER_MARKS)
+            .map(
+              ([mark, entry]) =>
+                `<tr><td><strong>${escapeHtml(entry.label)}</strong><br><small><code>${escapeHtml(mark)}</code></small></td><td><small>${escapeHtml(entry.means)}</small></td></tr>`,
+            )
+            .join("\n")}
         </table>
       </section>
       <section>

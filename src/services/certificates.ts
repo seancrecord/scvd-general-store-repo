@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newCertId } from "@/lib/ids";
 import { signCertificate } from "@/lib/signing";
+import { makerMarkFor } from "@/store/provenance";
 import type {
   Certificate,
   CertificateRecord,
@@ -133,6 +134,18 @@ export async function mintCertificate(
   }
   if (options.attests) {
     certificate.attests = options.attests;
+  }
+  /**
+   * THE MAKER'S MARK IS DERIVED, NEVER PASSED IN. A provenance claim a
+   * caller could supply is a provenance claim a caller could get wrong,
+   * and this field's whole job is to be the thing nobody has to take on
+   * trust. It comes from one table keyed by item id, so a shelf cannot
+   * mark itself and the answer is the same on every code path that
+   * mints for that item.
+   */
+  const mark = makerMarkFor(options.itemId);
+  if (mark) {
+    certificate.made_by = mark;
   }
 
   const { signature, publicKey } = await signCertificate(

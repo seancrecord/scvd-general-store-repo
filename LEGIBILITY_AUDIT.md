@@ -144,11 +144,19 @@ shelf does all the talking. Fixed, and guarded by test.
 Two gaps that have nothing to do with categorization and survive the
 environmental caveat:
 
-1. **`openapi.json`'s paid routes carry only a summary.** No parameters,
-   no documented 402 response, no price. Pricing and inputs live in
-   `menu.json` and `skill.md` only. The contract is the surface a machine
-   reads for schema, and ours says almost nothing about the routes that
-   take money. Same underdeclaration family. NOT YET FIXED.
+1. ~~**`openapi.json`'s paid routes carry only a summary.**~~ **WRONG, AND
+   THE WAY IT GOT IN HERE IS THE USEFUL PART.** The reader reported no
+   parameters, no documented 402 and no price on `/api/buy/*`. Checked
+   2026-07-30: `buyItemOperation` has emitted parameters from
+   `buyInputSchema`, a documented 402 and `x-payment.price_usdc_options`
+   since 07-27. Every paid route carries all three.
+
+   It was written into this file as a finding before anybody looked. An
+   outside claim about our own surfaces is a thing to VERIFY, not a
+   thing to act on — the same discipline this store applies to outside
+   praise, and it is easier to remember for praise. Closed permanently
+   by an assertion in `test/discoverable.spec.ts` rather than by this
+   paragraph.
 
 2. **Nothing anywhere states retention, deletion or confidentiality for
    buyer-supplied content.** Context anchors up to 4000 characters,
