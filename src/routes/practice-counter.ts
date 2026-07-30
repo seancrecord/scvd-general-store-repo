@@ -8,6 +8,10 @@ import {
   CHEAP_DOOR_ITEM_IDS,
   PRACTICE_COUNTER_COPY as COPY,
 } from "@/store/copy/practice-counter";
+import {
+  ANCHOR_CHECKLIST,
+  WHAT_SURVIVES,
+} from "@/store/copy/anchor-writing";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
@@ -164,6 +168,12 @@ practiceCounterRoutes.get("/try", (c) => {
           <p class="menu-meta"><code>GET /api/buy/settlement_attestation?tx_hash=0x…</code></p>
         </section>
         <section>
+          <h2>${escapeHtml(COPY.anchorHead)}</h2>
+          ${list(COPY.anchor)}
+          <p class="menu-desc">${escapeHtml(WHAT_SURVIVES)}</p>
+          <p class="menu-meta"><code>GET /api/buy/context_anchor?summary=…</code></p>
+        </section>
+        <section>
           <h2>${escapeHtml(COPY.verifyHead)}</h2>
           ${list(COPY.verify)}
           <p class="menu-meta">Live sample artifact: <a href="/api/verify/${escapeHtml(SAMPLE_ARTIFACT_ID)}"><code>${escapeHtml(SAMPLE_ARTIFACT_ID)}</code></a></p>
@@ -225,6 +235,14 @@ practiceCounterRoutes.get("/try", (c) => {
       notes: COPY.stuck,
       item_id: "settlement_attestation",
       buy: `${base}/api/buy/settlement_attestation?tx_hash={0x…}&src=try`,
+    },
+    when_your_context_ends: {
+      head: COPY.anchorHead,
+      notes: COPY.anchor,
+      what_survives: WHAT_SURVIVES,
+      before_you_file: ANCHOR_CHECKLIST,
+      item_id: "context_anchor",
+      buy: `${base}/api/buy/context_anchor?summary={…}&src=try`,
     },
     honest_notes: COPY.honest,
     refund_policy: STORE_METADATA.refund_policy,

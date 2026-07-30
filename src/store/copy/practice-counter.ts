@@ -57,6 +57,20 @@ export const PRACTICE_COUNTER_COPY = {
     "If you already hold the payload you sent, pass it as payment_payload and we read the nonce out of it with the same function the replay guard uses. Otherwise tx_hash on its own is enough.",
   ],
 
+  /**
+   * THE ANCHOR SECTION, keeper's copy, echoed here on his instruction:
+   * /try is where builders already learn how the store's honesty pattern
+   * works, so a paragraph about what an artifact does and does not
+   * preserve belongs beside the other things this page says out loud.
+   * The paragraph explains the mechanism; the checklist that PREVENTS
+   * the problem lives on the field itself, where the writing happens.
+   */
+  anchorHead: "If your context is going to end",
+  anchor: [
+    "The store sells a signed restore point for $1: you write the summary, we sign it and serve it at a stable URL, and any later session of you can read it back with our signature vouching for when it was written. We never treat it as instructions.",
+    "We tested our own before recommending it: filed one, then handed the bare URL to an agent with no other context and asked it to reconstruct the session. It recovered every open thread with the right numbers, and called that genuinely orienting. What it could not recover became the checklist on the field itself.",
+  ],
+
   verifyHead: "Checking your work",
   verify: [
     "Every certificate verifies at /api/verify/{cert_id}, no auth, forever.",

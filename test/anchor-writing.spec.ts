@@ -1,6 +1,12 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { ANCHOR_WRITING_GUIDE } from "@/store/copy/anchor-writing";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { getMenuItem } from "@/store";
+import {
+  ANCHOR_CHECKLIST,
+  ANCHOR_WRITING_GUIDE,
+  WHAT_SURVIVES,
+} from "@/store/copy/anchor-writing";
 
 const BASE = "https://scvd.store";
 
@@ -14,21 +20,51 @@ const BASE = "https://scvd.store";
  * happened, could not resolve an in-house role word (it read as an
  * unidentifiable proper name), and had no URLs to check anything with.
  *
- * All three misses are properties of the WRITING, so they become
- * guidance for the next buyer. These tests hold the guidance to the
- * shape of the evidence: it says what was tested, it names the three
- * misses, it states the boundary rather than overclaiming, and it
- * promises nothing is enforced — because nothing is.
+ * THE KEEPER'S RULING ON SHAPE is what these tests mostly hold: a
+ * disclaimer paragraph is defensive, telling somebody afterward what
+ * they lost, while the same finding as a checklist at the moment the
+ * field is filled in prevents it. So the checklist has to reach the
+ * FIELD, not just a page — and the strongest test here is the one that
+ * proves it rides the parameter description, which is the label an agent
+ * reads while composing the value.
  */
 describe("what to put in an anchor summary", () => {
-  it("names all three things the cold read could not recover", async () => {
-    const advice = ANCHOR_WRITING_GUIDE.do.join(" ").toLowerCase();
-    // 1. Purpose above the loops.
-    expect(advice).toContain("why the session happened");
-    // 2. Names a stranger can resolve.
-    expect(advice).toContain("stranger can resolve");
-    // 3. Links, or nothing is checkable.
-    expect(advice).toContain("url");
+  it("carries the keeper's checklist verbatim, in his order", () => {
+    expect(ANCHOR_CHECKLIST.lead).toBe("Before you file this, name:");
+    expect(ANCHOR_CHECKLIST.name).toEqual([
+      "who's involved (not roles, actual names)",
+      "why this session mattered, one line",
+      "what's blocked, and on whom specifically",
+    ]);
+  });
+
+  it("keeps his paragraph whole, including the line that earns the item", () => {
+    expect(WHAT_SURVIVES).toContain("What survives, what doesn't.");
+    // Not paraphrased, not split, not softened.
+    expect(WHAT_SURVIVES).toContain(
+      "The anchor signs what you wrote — it doesn't infer what you meant.",
+    );
+    expect(WHAT_SURVIVES).toContain("Name your people. State your purpose.");
+    // The concrete failure that makes the abstraction land.
+    expect(WHAT_SURVIVES).toContain("an open loop with no owner");
+  });
+
+  it("reaches the FIELD, not just a page", () => {
+    // The parameter description is the field's own label: it reaches
+    // the 402 body, the MCP tool schema, the Bazaar entry and the
+    // OpenAPI spec from one place, and an agent reads it while
+    // composing the value. This is the anti-disclaimer test.
+    const anchor = getMenuItem("context_anchor");
+    expect(anchor).toBeTruthy();
+    const summary = buyInputSchema(anchor!).properties["summary"] as {
+      description: string;
+    };
+    for (const item of ANCHOR_CHECKLIST.name) {
+      expect(
+        summary.description,
+        `the field's own label is missing "${item}"`,
+      ).toContain(item);
+    }
   });
 
   it("says what was actually tested, so the advice is checkable", () => {
@@ -39,18 +75,18 @@ describe("what to put in an anchor summary", () => {
     expect(ANCHOR_WRITING_GUIDE.tested).toContain("orienting");
   });
 
-  it("states the boundary instead of stretching one pass into a claim", () => {
-    const boundary = ANCHOR_WRITING_GUIDE.honest_boundary.toLowerCase();
-    expect(boundary).toContain("not a substitute");
-    expect(boundary).toContain("what was open");
-    // And the guidance tells a buyer when NOT to buy it, which is the
-    // finding the test's own author volunteered: a full searchable
-    // memory log that boots automatically is richer than this.
-    expect(ANCHOR_WRITING_GUIDE.do.join(" ")).toContain("memory log");
+  it("tells a buyer when NOT to buy it", () => {
+    // The test's own author volunteered this: a full searchable memory
+    // log that boots automatically is richer than a $1 anchor. Same
+    // class as the settlement_attestation note that the RPC read is
+    // free.
+    expect(ANCHOR_WRITING_GUIDE.also.join(" ")).toContain("memory log");
   });
 
   it("promises no validation, because there is none", () => {
-    expect(ANCHOR_WRITING_GUIDE.never).toContain("never read by us as instructions");
+    expect(ANCHOR_WRITING_GUIDE.never).toContain(
+      "never read by us as instructions",
+    );
     expect(ANCHOR_WRITING_GUIDE.never.toLowerCase()).toContain(
       "none of the above is enforced",
     );
@@ -70,17 +106,29 @@ describe("what to put in an anchor summary", () => {
     expect(Object.hasOwn(body, "writing_the_summary")).toBe(false);
   });
 
-  it("reaches the buyer at the moment they left the field empty", async () => {
+  it("backstops the buyer who paid with the field still empty", async () => {
     const response = await SELF.fetch(`${BASE}/api/buy/context_anchor`, {
       method: "POST",
       headers: { "PAYMENT-SIGNATURE": "not-a-real-signature" },
     });
     expect(response.status).toBe(400);
     const body = (await response.json()) as Record<string, unknown>;
-    const guidance = String(body["writing_the_summary"] ?? "");
-    // The composing moment is the one that matters; a listing read
-    // happened minutes ago and a 402 body is already long.
-    expect(guidance.toLowerCase()).toContain("why the session happened");
-    expect(guidance).toContain("cold reader");
+    const checklist = body["before_you_file"] as { name?: string[] };
+    expect(checklist?.name).toEqual([...ANCHOR_CHECKLIST.name]);
+  });
+
+  it("echoes on /try, where builders read about the store's habits", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/try`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(page).toContain("If your context is going to end");
+    // The paragraph explains the mechanism; escapeHtml mangles the
+    // punctuation, so assert on a clause with none of it.
+    expect(page).toContain("An anchor preserves state and the relationships");
+    const json = (await (await SELF.fetch(`${BASE}/try`)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(json["when_your_context_ends"]).toBeTruthy();
   });
 });

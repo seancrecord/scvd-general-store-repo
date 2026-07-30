@@ -36,11 +36,20 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["callback_url"] = CALLBACK_URL_SCHEMA;
   }
   if (item.id === "context_anchor") {
+    /**
+     * THE CHECKLIST LIVES IN THE PARAMETER DESCRIPTION because this is
+     * the field's own label: it reaches the 402 body, the MCP tool
+     * schema, the Bazaar entry and the OpenAPI spec from one place, and
+     * an agent reads it while composing the value rather than
+     * afterwards. The keeper's ruling on shape — a disclaimer tells
+     * somebody after the fact what they lost; a checklist at the cursor
+     * is a product improvement. Three items, his words, his order.
+     */
     properties["summary"] = {
       type: "string",
       maxLength: 4000,
       description:
-        "The agent identity/state summary to sign and store. Stored exactly as written; readable later at the returned anchor_url.",
+        "The agent identity/state summary to sign and store, exactly as written; readable later at the returned anchor_url. Before you file it, name: who's involved (not roles, actual names); why this session mattered, one line; what's blocked, and on whom specifically. Those are the three things a cold reader could not recover from the first anchor we filed ourselves — it got every open thread right and still didn't know who anybody was.",
     };
     required.push("summary");
   }

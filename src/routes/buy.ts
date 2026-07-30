@@ -15,7 +15,7 @@ import { nonceFromPaymentPayload } from "@/services/attestation";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
-import { ANCHOR_WRITING_SHORT } from "@/store/copy/anchor-writing";
+import { ANCHOR_CHECKLIST } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -107,10 +107,11 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
         error:
           "An anchor needs a summary query parameter, the state you want remembered. No summary, no charge.",
         // The one moment a buyer is actually composing the field, so
-        // the guidance goes here rather than only on the listing. It
-        // is what a cold reader could NOT recover from the first
-        // anchor we tested; nothing here is enforced.
-        writing_the_summary: ANCHOR_WRITING_SHORT,
+        // the checklist goes HERE and not only on the listing — the
+        // keeper's ruling: a disclaimer tells somebody afterward what
+        // they lost, a checklist at the cursor prevents it. Three
+        // items, his words, and nothing about them is enforced.
+        before_you_file: ANCHOR_CHECKLIST,
       },
       400,
     );
