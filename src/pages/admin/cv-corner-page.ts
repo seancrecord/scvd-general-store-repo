@@ -25,6 +25,21 @@ import type { GuestbookEntry } from "@/types";
  * storefront shows a customer would be the exact inversion of the
  * ethos it is supposed to rhyme with.
  *
+ * THE VERIFICATION TIERS, a design constraint applied throughout rather
+ * than a feature bolted on. From CV's market research: tier 1 is "trust
+ * my word," tier 2 is "here's a sample," tier 3 is "here's how you
+ * verify it yourself, no trust required." This store's artifacts are
+ * tier 3 BY CONSTRUCTION — ed25519-signed, checkable against a
+ * published key by somebody who owes us nothing.
+ *
+ * A dashboard that renders those numbers as bare figures throws that
+ * away and drops itself to tier 1, which is the exact move this page
+ * exists not to make. So EVERY FIGURE HERE CARRIES THE MEANS TO CHECK
+ * IT, pointed at a real endpoint rather than at a promise. Where a
+ * number genuinely cannot be independently checked — the bell count,
+ * the guestbook — that is stated instead of dressed up, because
+ * claiming tier 3 for a tier-1 number would be worse than either.
+ *
  * A window, not a lever. Everything here is read-only by construction:
  * the page renders from readers the office already uses, has no form,
  * no input, no button and no POST target anywhere on it, and a test
@@ -106,6 +121,10 @@ const PALETTE = `
   }
   .figure-n { display: block; font-size: 1.5rem; color: var(--walnut); }
   .figure-l { display: block; font-size: .72rem; font-variant: small-caps; letter-spacing: .08em; color: var(--walnut-soft); }
+  .figure-v { display: block; margin-top: .3rem; font-size: .68rem; color: var(--brass); text-decoration: none; border-top: 1px dotted var(--brass); padding-top: .25rem; }
+  .figure-v:hover { text-decoration: underline; }
+  .figure-u { color: var(--walnut-soft); font-style: italic; }
+  .tiers { font-size: .8rem; color: var(--walnut-soft); border-left: 2px solid var(--brass); padding-left: .85rem; }
   .entry { border-left: 2px solid var(--brass); padding: .1rem 0 .1rem .85rem; margin: 1rem 0; }
   .entry-date { font-variant: small-caps; letter-spacing: .08em; color: var(--brass); font-size: .8rem; }
   .entry-body { white-space: pre-wrap; font-size: .92rem; margin: .2rem 0 0; }
@@ -126,8 +145,22 @@ const MARK = `<svg width="58" height="58" viewBox="0 0 58 58" role="img" aria-la
   <circle cx="29" cy="20.5" r="2.4" fill="#d8b45c" stroke="#8a6d2f" stroke-width="1"/>
 </svg>`;
 
-function figure(n: string, label: string): string {
-  return `<li><span class="figure-n">${escapeHtml(n)}</span><span class="figure-l">${escapeHtml(label)}</span></li>`;
+/**
+ * A figure with the means to check it. `verify` is REQUIRED — a number
+ * with no way to check it must say so in its own words rather than
+ * silently omit the link, which is the difference between tier 1 stated
+ * and tier 1 disguised as tier 3.
+ */
+function figure(
+  n: string,
+  label: string,
+  verify: { href: string; text: string } | { unverifiable: string },
+): string {
+  const check =
+    "href" in verify
+      ? `<a class="figure-v" href="${escapeHtml(verify.href)}">${escapeHtml(verify.text)} &rarr;</a>`
+      : `<span class="figure-v figure-u">${escapeHtml(verify.unverifiable)}</span>`;
+  return `<li><span class="figure-n">${escapeHtml(n)}</span><span class="figure-l">${escapeHtml(label)}</span>${check}</li>`;
 }
 
 /**
@@ -142,12 +175,13 @@ function pulseHtml(data: CvCornerData): string {
   const challenges = items.reduce((sum, row) => sum + row.challenges, 0);
   return `
     <ul class="figures">
-      ${figure(String(organic), "organic settlements")}
-      ${figure(String(house), "house-flagged")}
-      ${figure(String(challenges), "402s offered")}
-      ${figure(data.patronCount === null ? "—" : String(data.patronCount), "patrons")}
-      ${figure(data.bellCount === null ? "—" : String(data.bellCount), "bell rings")}
+      ${figure(String(organic), "organic settlements", { href: "/pulse.json", text: "the whole funnel, public" })}
+      ${figure(String(house), "house-flagged", { href: "/house-ledger.json", text: "every wallet we own, signed" })}
+      ${figure(String(challenges), "402s offered", { href: "/pulse.json", text: "the denominator, public" })}
+      ${figure(data.patronCount === null ? "—" : String(data.patronCount), "patrons", { href: "/stats", text: "counted in public too" })}
+      ${figure(data.bellCount === null ? "—" : String(data.bellCount), "bell rings", { unverifiable: "our own counter — nothing signed to check" })}
     </ul>
+    <p class="tiers"><strong>Tier 3, or it says so.</strong> Tier 1 is "trust my word." Tier 2 is "here's a sample." Tier 3 is "here's how you check it yourself, no trust required." Every figure above carries the means to check it, or admits it cannot be checked — a number rendered bare is a tier-1 claim wearing tier-3 clothes, and this store sells the difference.</p>
     <p class="quiet">${escapeHtml(data.ledger.month)}, organic and house kept apart on purpose. A house-flagged settlement is one of ours walking our own shelf; it is never counted as a customer, and the two numbers are never added together. Every wallet we control is declared at <a href="/house-ledger.json">/house-ledger.json</a>.</p>`;
 }
 
@@ -162,7 +196,7 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
         `<li><strong>${escapeHtml(entry.name)}</strong> <span class="quiet">${escapeHtml(entry.date.slice(0, 10))}</span><br><span class="quiet">${escapeHtml(entry.message)}</span></li>`,
     )
     .join("\n")}</ul>
-  <p class="quiet">The whole register, including named Countermark bearers, is at <a href="/visitors">/visitors</a>.</p>`;
+  <p class="quiet">The whole register, including named Countermark bearers, is at <a href="/visitors">/visitors</a>. Tier 1 by nature: a name in a book is somebody's word, and no signature makes it otherwise — said plainly rather than dressed up.</p>`;
 }
 
 /**

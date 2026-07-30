@@ -33,6 +33,7 @@ import {
   siteMetaRoutes,
   skillRoutes,
   statsRoutes,
+  pulseRoutes,
   stampRoutes,
   storefrontRoutes,
   tradingPostRoutes,
@@ -155,6 +156,7 @@ app.route("/", storefrontRoutes);
 app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
+app.route("/", pulseRoutes);
 app.route("/", schemaRoutes);
 app.route("/", mcpRoutes);
 app.route("/", porchRoutes);

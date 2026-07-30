@@ -28,7 +28,7 @@ export interface StoreStats {
   computed_at: string;
 }
 
-function monthsSinceOpening(now: Date = new Date()): string[] {
+export function monthsSinceOpening(now: Date = new Date()): string[] {
   const months: string[] = [];
   const cursor = new Date(Date.UTC(2026, 6, 1));
   const end = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);

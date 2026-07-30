@@ -153,3 +153,39 @@ describe("the research trails", () => {
     }
   });
 });
+
+/**
+ * THE VERIFICATION TIERS, as a design constraint rather than a feature.
+ *
+ * From CV's market research: tier 1 is "trust my word," tier 2 is
+ * "here's a sample," tier 3 is "here's how you verify it yourself, no
+ * trust required." This store's artifacts are tier 3 by construction —
+ * signed, checkable against a published key by somebody who owes us
+ * nothing. A dashboard that renders them as bare figures throws that
+ * away and silently drops to tier 1, which is the one move this page
+ * exists not to make.
+ */
+describe("every figure carries the means to check it", () => {
+  it("puts a verify link or an honest admission on each one", async () => {
+    const page = await corner();
+    const figures = page.match(/<li><span class="figure-n">/g)?.length ?? 0;
+    const checks = page.match(/class="figure-v/g)?.length ?? 0;
+    expect(figures).toBeGreaterThan(0);
+    expect(checks, "a figure is rendered as a bare number").toBe(figures);
+  });
+
+  it("points settlements and the denominator at the public funnel", async () => {
+    const page = await corner();
+    expect(page).toContain('href="/pulse.json"');
+    expect(page).toContain('href="/house-ledger.json"');
+  });
+
+  it("admits tier 1 where it is tier 1, rather than dressing it up", async () => {
+    // The bell count is our own counter with nothing signed behind it.
+    // Claiming checkability for it would be worse than either honest
+    // tier, because it would teach a reader to trust the label.
+    const page = await corner();
+    expect(page).toContain("nothing signed to check");
+    expect(page).toContain("Tier 3, or it says so");
+  });
+});

@@ -33,6 +33,7 @@ export { requestRoutes } from "@/routes/requests";
 export { faviconRoutes } from "@/routes/favicon";
 export { schemaRoutes } from "@/routes/schemas";
 export { statsRoutes } from "@/routes/stats";
+export { pulseRoutes } from "@/routes/pulse";
 export { luckyRoutes } from "@/routes/luckies";
 export { verifyRoutes } from "@/routes/verify";
 export { badgeRoutes } from "@/routes/badges";
