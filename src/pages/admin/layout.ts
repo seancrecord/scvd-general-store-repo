@@ -40,7 +40,8 @@ export type AdminTab =
   | "recount"
   | "referrals"
   | "bell"
-  | "digest";
+  | "digest"
+  | "cv";
 
 /** The three rooms. Always first, always in this order. */
 const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
@@ -61,6 +62,24 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "bell", href: "/admin/bell", label: "Bell" },
   { tab: "digest", href: "/admin/digest", label: "Digest" },
+];
+
+/**
+ * CV'S CORNER, listed in the nav and DELIBERATELY OUTSIDE ADMIN_PAGES.
+ *
+ * The anti-orphaning sweep asserts every office page reaches every
+ * other, which is the right rule and the wrong fit here: the corner
+ * renders its own shell on purpose — it is the partner's surface, a
+ * counter rather than the office's monospace rack — so hanging the full
+ * office nav on it would undo the thing that makes it his.
+ *
+ * The rule's INTENT is honoured rather than waived: the corner is
+ * reachable from every office page through this entry, and it carries
+ * its own way back to the desk and the front of the store. A test holds
+ * that link, so the carve-out cannot quietly become a dead end.
+ */
+const PARTNER: readonly { tab: AdminTab; href: string; label: string }[] = [
+  { tab: "cv", href: "/admin/cv", label: "CV's Corner" },
 ];
 
 export function renderAdminShell(
@@ -109,6 +128,7 @@ export function renderAdminShell(
   </nav>
   <nav class="readings">
     ${READINGS.map(link).join("\n    ")}
+    ${PARTNER.map(link).join("\n    ")}
   </nav>
   ${notes}
   ${bodyHtml}

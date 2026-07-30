@@ -681,6 +681,29 @@ export async function readMonthLedger(
   return ledger;
 }
 
+/**
+ * A ledger of zeroes, for when the read fails and a page still has to
+ * render. Extracted 2026-07-30 from inside the office route, where it
+ * sat as an inline literal — a second caller would have copied it, and
+ * a copied shape drifts the same way a copied count does.
+ */
+export function emptyMonthLedger(month: string = metricsMonth()): MonthLedger {
+  return {
+    month,
+    items: {},
+    channels: {},
+    channelsHouse: {},
+    channels402: {},
+    channels402House: {},
+    channels402Infra: {},
+    days: {},
+    venues: {},
+    settlesWithoutPayer: {},
+    revenueUsdc: 0,
+    revenueHouseUsdc: 0,
+  };
+}
+
 export interface PorchLedger {
   /** surface -> bucket ("organic" | "house" | "infrastructure") -> count */
   surfaces: Record<string, Record<string, number>>;

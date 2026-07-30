@@ -12,6 +12,7 @@ import {
   listRecentPorchEvents,
   readMonthLedger,
   readPorchLedger,
+  emptyMonthLedger,
   reconcileSettles,
 } from "@/lib/metrics";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
@@ -25,6 +26,8 @@ import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
+import { renderCvCorner } from "@/pages/admin/cv-corner-page";
+import { readResearchTrails } from "@/lib/research-log";
 import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { printFoundingEdition } from "@/services/founding";
@@ -243,20 +246,7 @@ adminRoutes.get("/admin", async (c) => {
     listAlerts(c.env, 5),
     reconcileSettles(c.env),
   ]);
-  const emptyLedger = {
-    month: new Date().toISOString().slice(0, 7),
-    items: {},
-    channels: {},
-    channelsHouse: {},
-    channels402: {},
-    channels402House: {},
-    channels402Infra: {},
-    days: {},
-    venues: {},
-    settlesWithoutPayer: {},
-    revenueUsdc: 0,
-    revenueHouseUsdc: 0,
-  };
+  const emptyLedger = emptyMonthLedger();
   const pendingReviews =
     shelf(tips, [], "tips", notes).filter(
       (tip) => tip.record.status === "pending_review",
@@ -573,6 +563,55 @@ adminRoutes.get("/admin/declines", async (c) => {
 adminRoutes.get("/admin/bell", async (c) => {
   const rings = await listRecentPorchEvents(c.env, "bell", 25);
   return c.html(renderBellPage({ rings }));
+});
+
+/**
+ * CV'S CORNER — the partner's spot in the keeper's office.
+ *
+ * Sits behind the same admin auth as every other room (it reads the
+ * store's own books), and is READ-ONLY by construction: no form, no
+ * input, no POST target. A test asserts that, because the guardrail is
+ * the point of the surface rather than a note about it.
+ *
+ * A shelf that fails to load is NAMED rather than rendered as a zero.
+ * Showing "0 settlements" when the read threw would be the friendlier
+ * bug and the worse one, on a page whose whole job is an honest glance.
+ */
+adminRoutes.get("/admin/cv", async (c) => {
+  const loadNotes: string[] = [];
+  const shelf = async <T>(
+    load: Promise<T>,
+    fallback: T,
+    name: string,
+  ): Promise<T> => {
+    try {
+      return await load;
+    } catch {
+      loadNotes.push(name);
+      return fallback;
+    }
+  };
+  const [ledger, guestbook, bellRaw, patronRaw] = await Promise.all([
+    shelf(readMonthLedger(c.env), emptyMonthLedger(), "the month ledger"),
+    shelf(listGuestbook(c.env, 6), [], "the guestbook"),
+    shelf(c.env.COUNTERS.get(KV_KEYS.bellCount), null, "the bell count"),
+    shelf(c.env.COUNTERS.get(KV_KEYS.patronNumber), null, "the patron count"),
+  ]);
+  const asCount = (raw: string | null): number | null => {
+    if (raw === null) return null;
+    const value = Number.parseInt(raw, 10);
+    return Number.isFinite(value) ? value : null;
+  };
+  return c.html(
+    renderCvCorner({
+      ledger,
+      guestbook,
+      bellCount: asCount(bellRaw),
+      patronCount: asCount(patronRaw),
+      trails: readResearchTrails(),
+      loadNotes,
+    }),
+  );
 });
 
 /** The shutter lever: close or open the human-labor shelf by hand. */
