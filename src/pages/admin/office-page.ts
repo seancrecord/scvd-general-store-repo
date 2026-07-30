@@ -5,6 +5,7 @@ import type {
   SettleReconciliation,
 } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
+import { readWindowShopping } from "@/lib/window-shopping";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
 import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
@@ -259,6 +260,52 @@ function porchHtml(porch: PorchLedger): string {
     <p><strong>Porch-to-purchase: ${porch.porchToPurchase === null ? ", " : porch.porchToPurchase}</strong>, organic 402s per organic porch visit. No cookies and no IP retention means no unique heads; this is the honest rate. Two things bias it upward and both are structural: porch writes are rate-capped under storm conditions (so the denominator is a floor) while 402s never sample, and a scanner that hits buy routes without browsing counts in the numerator only. Read it as a ceiling until the organic column is clean; <a href="/admin/recount">the recount</a> re-reads the raw rows with today's crawler table, and <a href="/admin/census">the census</a> asks the harder question underneath it: how many distinct clients ever presented a payment signature, against how many only ever read the price and left. When one of them is turned away, <a href="/admin/declines">the decline desk</a> says why — the rarest row in the books and the only one that measures intent rather than attention.</p>`;
 }
 
+/**
+ * The shelf-by-shelf funnel: looks -> 402s -> settles. Sorted by looks,
+ * because the question this table exists to answer is "what did they
+ * pick up and put down," and the answer is at the top of that sort.
+ */
+function interestHtml(ledger: MonthLedger, porch: PorchLedger): string {
+  const shopping = readWindowShopping(ledger, porch);
+  const seen = shopping.rows.filter(
+    (row) => row.looks > 0 || row.looksInfra > 0 || row.challenges > 0,
+  );
+  const rows =
+    seen.length === 0
+      ? '<tr><td colspan="5">No item page has been opened yet this month.</td></tr>'
+      : seen
+          .sort((a, b) => b.looks - a.looks || b.looksInfra - a.looksInfra)
+          .map(
+            (row) => `<tr><td>${escapeHtml(row.item)}</td>
+              <td>$${row.price_usdc}</td>
+              <td>${row.looks}${row.looksHouse > 0 ? ` <small>(+${row.looksHouse}h)</small>` : ""}</td>
+              <td>${row.looksInfra}</td>
+              <td>${row.challenges}</td>
+              <td>${row.settled}</td></tr>`,
+          )
+          .join("\n");
+  const putDown =
+    shopping.lookedNeverTried.length === 0
+      ? "<p>Nothing was read this month without somebody at least trying to pay for it.</p>"
+      : `<p><strong>Read, never tried:</strong> ${shopping.lookedNeverTried
+          .map((item) => escapeHtml(item))
+          .join(", ")}. Most looked-at first.</p>`;
+  const unopened =
+    shopping.neverLookedAt.length === 0
+      ? ""
+      : `<p><strong>Nobody opened the page at all:</strong> ${shopping.neverLookedAt
+          .map((item) => escapeHtml(item))
+          .join(", ")}.</p>`;
+  return `
+    <table border="1" cellpadding="4">
+      <tr><th>item</th><th>price</th><th>looks (organic)</th><th>infra</th><th>402s</th><th>settled</th></tr>
+      ${rows}
+    </table>
+    ${putDown}
+    ${unopened}
+    <p><small>${escapeHtml(shopping.honestLimit)}</small></p>`;
+}
+
 function windowShoppersHtml(events: MetricEvent[]): string {
   if (events.length === 0) {
     return "<p>No 402s in the recent event rows.</p>";
@@ -363,6 +410,15 @@ export function renderOfficePage(data: OfficePageData): string {
     <h2>The ledger's answers, per item</h2>
     <p>402s issued vs settled per item, tier picks, wallets. The ledger outranks research.</p>
     ${ledgerAnswersHtml(data.monthLedger, data.payers)}
+  </section>
+
+  <section>
+    <h2>Which shelf got picked up</h2>
+    <p>Looks at an item's own page, against 402s and settles for that item.
+    The looks column is the earliest signal this store can observe — it needs
+    only curiosity, where a 402 needs a loaded wallet — and it is the only
+    number here that says anything about want before money.</p>
+    ${interestHtml(data.monthLedger, data.porchLedger)}
   </section>
 
   <section>

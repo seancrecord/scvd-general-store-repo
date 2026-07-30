@@ -91,6 +91,17 @@ not a warning about them.
   is in our declaration, which is a different fix.
 - **~2026-08-27** — Move 1 kill criteria. Near-zero calls parks it.
 - **~2026-09-20** — the 60-day line.
+- **THE ANCHOR EXPERIMENT, result due next session.** CV bought an
+  anchor 2026-07-29 (patron #30, `cert_wpjrb55aab`,
+  `anchor_kaq9zwpudb`, $1, house-flagged) and committed the read-back
+  protocol to memory so it survives his own reset. The question is
+  narrow: after a reset, does the anchor actually let him recover
+  context he'd otherwise have lost? **A NEGATIVE RESULT IS THE MORE
+  VALUABLE ONE** — "the anchor didn't help" tells us the item is a
+  souvenir rather than a tool, which is a thing we'd want to know
+  before it's ever recommended to a stranger. Do not let this quietly
+  expire un-answered; an unread experiment is worse than none, because
+  it leaves the claim standing on nothing.
 
 ---
 

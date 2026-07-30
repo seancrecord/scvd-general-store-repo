@@ -44,6 +44,7 @@ import {
 import { sendAlert } from "@/lib/alerts";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit } from "@/lib/metrics";
+import { getMenuItem } from "@/store";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
@@ -95,6 +96,21 @@ function porchSurface(path: string, method: string): string | undefined {
   }
   if (path === "/api/guestbook") {
     return method === "POST" ? "guestbook:write" : "guestbook:read";
+  }
+  /**
+   * PER-ITEM WINDOW SHOPPING. /menu.json logged as one surface, so a
+   * reader who pulled up a single item's page and left was invisible:
+   * we could see attention on the menu and money at the till, and
+   * nothing about WHICH shelf got picked up and put back down. That
+   * gap is the closest thing this store can measure to want, since a
+   * 402 needs a client that already decided to try.
+   *
+   * Only ids that are actually on the shelf log. A junk path can't
+   * mint a counter key, so the key space stays bounded by the menu.
+   */
+  if (path.startsWith("/menu/")) {
+    const itemId = path.slice("/menu/".length);
+    return getMenuItem(itemId) ? `item:${itemId}` : undefined;
   }
   return undefined;
 }
