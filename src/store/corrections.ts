@@ -105,6 +105,17 @@ export const CORRECTIONS: readonly Correction[] = [
     what_changed:
       "The endpoint no longer describes the canonical form, it SERVES it: every signed artifact now returns signed_payload, the exact string the signature covers, so verification is one library call with nothing guessed. The certificate canonicalizer now walks a declared field list, and a type-level check fails the build if a field is ever added to a certificate without being signed — the class of bug, not just its two instances. Certificates minted before the fix still verify under the form they were actually signed with, and say on their face which fields that signature leaves out. And the test that missed this now exists: verification in CI re-derives the bytes from the SERVED response and checks them with the raw ed25519 library, because every previous test verified through the same function that signed, and a function's blind spots are invisible to itself.",
   },
+  {
+    date: "2026-07-30",
+    what_was_wrong:
+      "On the day this store took its first payment from a stranger, the page built to watch for exactly that still said zero — that not one client outside the house had ever presented a payment signature. The census grouped clients by user-agent alone and marked a whole group as house the moment ANY event in it was house-flagged, then skipped it. A user-agent is a bucket rather than a person, and the emptiest bucket is \"(no user-agent)\", which the keeper's own scripted tests and a hand-rolled buyer both fall into. So the proprietors testing their own till made every outside client sharing a user-agent string invisible, on the single number the whole store is built to watch.",
+    how_long:
+      "From the day the census shipped. It could only ever be seen on a day the number was supposed to change, and that day was the first one.",
+    found_by:
+      "The keeper, reading his own office the hour the sale landed — and reading it generously, as a window-boundary quirk rather than a bug. It reproduced in three lines.",
+    what_changed:
+      "Clients are now keyed by user-agent AND house flag, so a house event still counts as house exactly as before and no longer swallows everyone standing next to it. The reproduction is a permanent test — one house settle and one outside settle sharing a user-agent must show the outside buyer — alongside its opposite, that the fix never lets house traffic read as a customer, since trading an undercount for that overcount would be far worse. The page's verdict was always computed rather than written, so no copy needed editing: fixing the books fixed the sentence, which is why it is built that way.",
+  },
 ] as const;
 
 export const CORRECTIONS_STANDFIRST =
@@ -141,4 +152,4 @@ export const CORRECTIONS_SCOPE =
   "WHAT THIS IS NOT: a bug log. Ordinary defects get fixed and forgotten like anywhere else. This page is narrower and more uncomfortable — it is only for things the store SAID, on a surface somebody could read, that turned out not to be so. Every entry names what changed structurally; an admission without a mechanism behind it would read as an apology, and this store does not trade in those.";
 
 export const CORRECTIONS_INVITATION =
-  "If you find a seventh, the mailbox at /api/letter is free and a human reads it. A correction costs us nothing except the writing down, and the writing down is the point.";
+  "If you find another, the mailbox at /api/letter is free and a human reads it. A correction costs us nothing except the writing down, and the writing down is the point.";

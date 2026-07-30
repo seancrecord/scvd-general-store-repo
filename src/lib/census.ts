@@ -8,10 +8,16 @@ import type { Channel, Env } from "@/types";
  *
  * 1. THE CENSUS. Of everything that has ever knocked, how many ever
  *    presented a payment signature, and how many only ever saw the 402
- *    and left? Answered by hand for July 2026 and the answer was zero —
- *    not one non-house client, across 3,997 challenges, no declines
- *    either. This makes it a standing number instead of an afternoon,
- *    because it is the line that moves first when anything changes.
+ *    and left? Answered by hand for July 2026 and the answer was zero,
+ *    across the whole month's challenges, with no declines either. Made
+ *    a standing number rather than an afternoon's work, because it is
+ *    the line that moves first when anything changes.
+ *
+ *    IT MOVED ON 2026-07-30: the first organic settle. The count is
+ *    computed, so this comment is history and not a claim — and the
+ *    original figure is deliberately not restated here, because a
+ *    number written into a comment is the same lie with a timer on it
+ *    that the skill bundle and llms.txt both carried this week.
  *
  * 2. THE WALK DETECTOR. The crawler table in channel.ts only catches
  *    machines that admit what they are — it reads the user-agent and
@@ -181,7 +187,27 @@ export async function takeCensus(
       }
 
       const ua = event.user_agent ?? NO_UA;
-      let tally = tallies.get(ua);
+      /**
+       * KEYED BY USER-AGENT **AND** HOUSE FLAG, fixed 2026-07-30 the day
+       * the first organic settle landed and this page still said zero.
+       *
+       * Clients were keyed by user-agent alone, and `house ||= ...` below
+       * meant ONE house-flagged event anywhere in the window marked the
+       * whole bucket as house — after which it was skipped entirely. The
+       * intent was right ("the keeper testing from a crawler string is
+       * still the keeper") and the identity model was wrong: a
+       * user-agent is not a person, it is a BUCKET, and the emptiest
+       * bucket of all is "(no user-agent)" — which the keeper's own
+       * scripted tests and a real hand-rolled buyer both fall into.
+       *
+       * So one house test poisoned every outside client sharing a
+       * string, and the number this store exists to watch read zero on
+       * the day it stopped being zero. Splitting the key keeps the
+       * original rule exactly — a house event still counts as house —
+       * while stopping it from swallowing everyone standing nearby.
+       */
+      const key = `${ua}\u0000${event.house ? "house" : "outside"}`;
+      let tally = tallies.get(key);
       if (!tally) {
         tally = {
           client: {
@@ -203,11 +229,14 @@ export async function takeCensus(
           touches: [],
           items: new Set(),
         };
-        tallies.set(ua, tally);
+        tallies.set(key, tally);
       }
       // House wins once seen: the keeper testing from a crawler string
       // is still the keeper, the same rule the counters use.
-      tally.client.house ||= event.house;
+      // Within a bucket the flag is now constant by construction; kept
+      // as an assignment rather than an assertion so the invariant is
+      // visible at the point it is relied on.
+      tally.client.house = event.house;
       if (event.at > tally.client.last_seen) tally.client.last_seen = event.at;
       if (event.at < tally.client.first_seen)
         tally.client.first_seen = event.at;
