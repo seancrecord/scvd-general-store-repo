@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
+import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   canonicalizeCertificate,
   fieldsOutsideLegacySignature,
@@ -8,6 +9,8 @@ import { ITEM_MAKER_MARK, makerMarkFor } from "@/store/provenance";
 import { MENU_ITEMS } from "@/store";
 import { CAPABILITY_QUERY, SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import type { Certificate } from "@/types";
+
+const BASE = "https://scvd.store";
 
 /**
  * THE MAKER'S MARK — who actually made the thing you are holding.
@@ -157,5 +160,58 @@ describe("a holder can read the mark without asking us", () => {
       "machine",
     ]);
     expect(body.marked_items["luckies"]).toBe("house");
+  });
+});
+
+/**
+ * THE MARK HAS TO REACH THE BUYER BEFORE THE MONEY DOES.
+ *
+ * Shipped 2026-07-30 as a certificate field, which put it on the artifact
+ * and on /api/verify — both of which a buyer only reaches AFTER paying.
+ * The keeper checked menu.json and a live 402 and found nothing, correctly:
+ * the mark was answering "who made this" at the wrong end. A provenance
+ * fact a buyer cannot see while deciding is not provenance, it is a receipt.
+ *
+ * Four pre-purchase surfaces, all fed by listingSpec so they cannot drift
+ * apart. The 402 is asserted here rather than by curl because a live 402
+ * needs facilitator secrets that a local dev server does not have — the
+ * same reason four cold readers saw 500s on /api/buy tonight.
+ */
+describe("the mark reaches a buyer before they pay", () => {
+  beforeAll(() => {
+    installFacilitatorMock();
+  });
+
+  const MARKED = "luckies";
+
+  it("rides the 402 challenge, where a buying agent actually looks", async () => {
+    const response = await SELF.fetch(`${BASE}/api/buy/${MARKED}`);
+    expect(response.status).toBe(402);
+    expect(response.headers.get("PAYMENT-REQUIRED")).toBeTruthy();
+    const body = (await response.json()) as {
+      spec?: { outputs?: { made_by?: { mark?: string } } };
+    };
+    expect(
+      body.spec?.outputs?.made_by?.mark,
+      "the 402 does not say who made the thing it is charging for",
+    ).toBe("house");
+  });
+
+  it("rides menu.json, the machine catalogue", async () => {
+    const menu = (await (await SELF.fetch(`${BASE}/menu.json`)).json()) as {
+      items: { id: string; spec?: { outputs?: { made_by?: { mark?: string } } } }[];
+    };
+    const marked = menu.items.find((item) => item.id === MARKED);
+    expect(marked?.spec?.outputs?.made_by?.mark).toBe("house");
+    // And an unmarked shelf carries nothing rather than an invented mark.
+    const plain = menu.items.find((item) => item.id === "hello");
+    expect(plain?.spec?.outputs?.made_by).toBeUndefined();
+  });
+
+  it("rides the item page and the x402 discovery document", async () => {
+    for (const path of [`/menu/${MARKED}`, "/.well-known/x402.json"]) {
+      const text = await (await SELF.fetch(`${BASE}${path}`)).text();
+      expect(text, `${path} carries no maker's mark`).toContain("made_by");
+    }
   });
 });
