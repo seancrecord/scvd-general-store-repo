@@ -13,6 +13,7 @@ import {
   HandoverError,
   verifyHandoverSignature,
 } from "@/services/key-handover";
+import { createAnchor } from "@/services/anchors";
 import { getPublicKeyHex } from "@/lib/signing";
 import type { Env } from "@/types";
 
@@ -138,6 +139,49 @@ describe("a key that is still signing is current, whatever the registry says", (
  * naming its successor, so a real handover is distinguishable from
  * somebody who took over the page and swapped the key on it.
  */
+/**
+ * THE FIELD HAS TO REACH EVERY ARTIFACT, NOT THE TWO BEING LOOKED AT.
+ *
+ * signed_by shipped on certificates and handovers and nowhere else,
+ * which is the maker's-mark lesson repeating: a field on some
+ * artifacts and absent on others reads as the unmarked ones hiding
+ * something. After a rotation it is worse than cosmetic — an unmarked
+ * stamp shows a public key the reader recognises from nowhere, with
+ * nothing saying "retired, and that is expected."
+ *
+ * Caught by re-reading the file rather than by a test. This is the
+ * test.
+ */
+describe("every artifact says which of our keys signed it", () => {
+  it("covers a class that is not a certificate", async () => {
+    // A context anchor: a different branch of the verify route, a
+    // different record shape, and one that can be built here without
+    // a purchase, a cron or a keeper action.
+    //
+    // WHAT THIS COVERS AND WHAT IT DOES NOT. It catches the class of
+    // mistake that happened — attribution added to the artifact in
+    // front of me and not to the others — for every branch it can
+    // reach. It does NOT catch a NEW branch added later without it.
+    // The first attempt tried to, by scanning the route source, and
+    // node:fs is not available in this pool; a test that cannot run
+    // is worse than a narrower one that does, which is the same
+    // lesson as the backup regex that fired on a menu item.
+    const anchor = await createAnchor(env as Env, {
+      summary: "A test anchor, for the attribution check.",
+      patronNumber: 99,
+    });
+    const body = (await (
+      await SELF.fetch(`${BASE}/api/verify/${anchor.record.anchor.anchor_id}`)
+    ).json()) as { signed_by?: { status?: string; public_key?: string } };
+    expect(
+      body.signed_by,
+      "an anchor verifies without saying which of our keys signed it",
+    ).toBeTruthy();
+    expect(body.signed_by?.status).toBe("current");
+    expect(body.signed_by?.public_key).toBe(anchor.record.public_key);
+  });
+});
+
 describe("the handover is signed by the key it retires", () => {
   it("signs with the key currently in service, recorded from the signature", async () => {
     const record = await createHandover(env as Env, {

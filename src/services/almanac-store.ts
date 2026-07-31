@@ -180,7 +180,12 @@ export async function saveAlmanacEntry(
     date?: string;
     teaser?: string;
     markdown: string;
-    /** Today, passed in so the caller owns the clock. */
+    /**
+     * Override for "today", used by tests. No route passes it — the
+     * default is the real clock — and it is named as a seam rather
+     * than described as the caller owning the clock, which was an
+     * overclaim in the first draft of this comment.
+     */
     today?: string;
   },
 ): Promise<SaveResult> {

@@ -153,6 +153,23 @@ with a badge at ${base}/badges/{patron_number}.svg, verify anything at
 ${base}/api/verify/{cert_id}. Our ed25519 public key hangs at
 ${base}/.well-known/scvd-signing-key.
 
+WHAT THE CERTIFICATE BINDS, inside the signed bytes rather than beside
+them: cert_id, item, patron_number, date, paid_usdc (the TOTAL settled,
+not the tip), asset, network, payer, and settlement_tx. The payer is
+the paying wallet address — chain-verifiable by anyone, unlike the
+optional name, which is whatever the buyer chose. settlement_tx is the
+on-chain transaction, so the certificate and a Base explorer are the
+same fact checked two ways rather than two separate claims. Any field
+shown but NOT covered by a signature is named as such in the verify
+response; certificates issued before 2026-07-31 predate the payment
+fields and say so.
+
+Every verify response also names WHICH of our keys signed the thing —
+current or retired, with the retirement date — and says plainly when a
+signature matches no key we have ever published. An artifact can be
+internally consistent and still not be ours; until 2026-07-31 nothing
+here said that.
+
 A few items do more than mint: context_anchor signs and stores a state
 summary you pass in the summary query parameter, readable forever at the
 returned anchor URL; recurring_patronage opens a 30-day standing pass

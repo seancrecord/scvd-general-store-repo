@@ -124,6 +124,15 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * line existed the answer lived on a page nothing linked to.
      */
     attestation: `${base}/attestation`,
+    /**
+     * Beside the key and the attestation, for the same reason both are
+     * here: an indexer that takes our signing key is the reader who
+     * should also know what our receipts commit to and what a buyer
+     * owns once they have one. An operator deciding whether to honour
+     * an artifact from this store needs both at discovery time, not
+     * after somebody has already paid.
+     */
+    rights: `${base}/rights`,
     pulse: `${base}/pulse.json`,
     corrections: `${base}/corrections`,
     mcp: {

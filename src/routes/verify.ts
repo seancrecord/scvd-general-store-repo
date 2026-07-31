@@ -3,11 +3,11 @@ import type { Context } from "hono";
 import { recordVerifyCall } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
 import {
+  cachedPublicKeyHex,
   canonicalizeCertificate,
   canonicalizeCertificateLegacy,
   certificateSignatureForm,
   fieldsOutsideLegacySignature,
-  getPublicKeyHex,
 } from "@/lib/signing";
 import {
   canonicalizeAnchor,
@@ -97,10 +97,47 @@ export const verifyRoutes = new Hono<HonoEnv>();
  * It is also what keeps artifacts attributable across a handover. An
  * old certificate after a rotation reads `retired` with the date its
  * key left service, instead of quietly matching nothing.
+ *
+ * ON EVERY ARTIFACT CLASS, and it was not on 2026-07-31 when first
+ * written — it went onto certificates and handovers, the two being
+ * looked at, while stamps, anchors, luckies, gazette issues and
+ * phantom checks got none. That is the maker's-mark lesson exactly:
+ * a field present on some artifacts and absent on others reads as the
+ * unmarked ones hiding something. Worse here, because after a
+ * rotation an unmarked artifact shows a public key the reader
+ * recognises from nowhere, with nothing on the response to say
+ * "retired, and that is expected." Caught by re-reading rather than
+ * by a test, which is the argument for the test underneath it.
  */
-async function signedBy(c: Context<HonoEnv>, recordPublicKey: string) {
-  const current = await getPublicKeyHex(c.env.SIGNING_KEY);
-  return { public_key: recordPublicKey, ...attributeKey(recordPublicKey, current) };
+async function signedBy(
+  c: Context<HonoEnv>,
+  recordPublicKey: string | undefined,
+): Promise<Record<string, unknown>> {
+  /**
+   * Two artifact classes record the key as optional. Where none was
+   * stored there is nothing to attribute, and the honest response is
+   * to omit the block rather than invent an attribution for a key that
+   * is not there — an "unrecognised" verdict on an absent key would be
+   * a scary answer to a question nobody asked.
+   */
+  if (!recordPublicKey) {
+    return {};
+  }
+  /**
+   * CACHED, because this runs on every verify and verification is the
+   * one thing here that is free, unlimited and forever. The first cut
+   * derived the public key from the seed on each call — an ed25519
+   * scalar multiplication per request, on the hottest public path in
+   * the store, to recompute a constant. cachedPublicKeyHex already
+   * existed and was already used by the payment gate.
+   */
+  const current = await cachedPublicKeyHex(c.env.SIGNING_KEY);
+  return {
+    signed_by: {
+      public_key: recordPublicKey,
+      ...attributeKey(recordPublicKey, current),
+    },
+  };
 }
 
 const HOW_TO_VERIFY =
@@ -157,7 +194,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       certificate: record.certificate,
       signature: record.signature,
       public_key: record.public_key,
-      signed_by: await signedBy(c, record.public_key),
+      ...(await signedBy(c, record.public_key)),
       algorithm: "ed25519",
       signed_payload:
         form === "legacy"
@@ -205,6 +242,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       stamp: stampRecord.stamp,
       signature: stampRecord.signature,
       public_key: stampRecord.public_key,
+      ...(await signedBy(c, stampRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizeStamp(stampRecord.stamp),
       signature_covers: HOW_TO_VERIFY,
@@ -223,6 +261,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       anchor: anchorRecord.anchor,
       signature: anchorRecord.signature,
       public_key: anchorRecord.public_key,
+      ...(await signedBy(c, anchorRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizeAnchor(anchorRecord.anchor),
       signature_covers: HOW_TO_VERIFY,
@@ -243,6 +282,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       lucky: luckyRecord.lucky,
       signature: luckyRecord.signature,
       public_key: luckyRecord.public_key,
+      ...(await signedBy(c, luckyRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizeLucky(luckyRecord.lucky),
       signature_covers: HOW_TO_VERIFY,
@@ -270,6 +310,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         date: issue.date,
         signature: issue.signature,
         public_key: issue.public_key,
+        ...(await signedBy(c, issue.public_key)),
         algorithm: "ed25519",
         // The paper's own markdown IS the signed payload, served whole
         // at /gazette so a holder compares the copy they read.
@@ -300,6 +341,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       observation: phantomRecord.observation,
       signature: phantomRecord.signature,
       public_key: phantomRecord.public_key,
+      ...(await signedBy(c, phantomRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizePhantomCheck(phantomRecord),
       signature_covers: HOW_TO_VERIFY,
@@ -328,7 +370,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         handover: handoverRecord.handover,
         signature: handoverRecord.signature,
         public_key: handoverRecord.public_key,
-        signed_by: await signedBy(c, handoverRecord.public_key),
+        ...(await signedBy(c, handoverRecord.public_key)),
         algorithm: "ed25519",
         signed_payload: canonicalizeHandover(handoverRecord.handover),
         signature_covers: HOW_TO_VERIFY,
@@ -344,7 +386,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 });
 
 verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
-  const publicKey = await getPublicKeyHex(c.env.SIGNING_KEY);
+  const publicKey = await cachedPublicKeyHex(c.env.SIGNING_KEY);
   return c.json({
     algorithm: "ed25519",
     public_key: publicKey,

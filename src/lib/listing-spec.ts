@@ -128,8 +128,33 @@ export function listingSpec(item: MenuItem, base: string): ListingSpec {
       verify_url: `${base}/api/verify/{id}`,
       cost: "free, unlimited, forever",
       signing_key: `${base}/.well-known/scvd-signing-key`,
+      key_history: `${base}/.well-known/scvd-signing-key`,
       sample_artifact_id: SAMPLE_ARTIFACT_ID,
       sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+      /**
+       * WHAT THE RECEIPT ACTUALLY BINDS, listed before purchase rather
+       * than discovered after. Added 2026-07-31 with the fields
+       * themselves: an outside operator asked what our certificate
+       * commits to and the honest answer had to be assembled by
+       * reading our source, which is the same defect as the maker's
+       * mark arriving only on the artifact. A counterparty deciding
+       * whether to honour our receipt needs this at the 402, not on
+       * the receipt they get afterwards.
+       */
+      certificate_binds: [
+        "cert_id",
+        "item",
+        "patron_number",
+        "date",
+        "paid_usdc",
+        "asset",
+        "network",
+        "payer",
+        "settlement_tx",
+      ],
+      certificate_binds_note:
+        "All of these ride INSIDE the signed bytes, not beside them: paid_usdc is the total settled (not the tip), payer is the paying wallet — chain-verifiable, unlike a chosen name — and settlement_tx is the on-chain transaction, so this certificate and a Base explorer are the same fact checked twice. Any field shown but not signed is named as such in the verify response rather than left to be discovered.",
+      rights: `${base}/rights`,
       // Storewide, and the reason any of the rest is worth anything:
       // the signature is the store's, not the holder's.
       attestation:

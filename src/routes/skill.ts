@@ -148,6 +148,8 @@ settle in-band via \`_meta["x402/payment"]\`.
 |---|---|---|---|
 ${menuTable}
 
+- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a Base explorer are one fact checked twice). Any field shown but unsigned is named as such in the verify response
+- What you own once you buy it: ${base}/rights — yours completely, immutable, transferable, and you may republish it including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee
 - Catalog, live, with per-item spec blocks: ${base}/menu.json (item detail at ${base}/menu/{item_id}; schema at ${base}${SPEC_SCHEMA_PATH})
 - The books, public, computed live: ${base}/stats
 - ${trackRecord}
