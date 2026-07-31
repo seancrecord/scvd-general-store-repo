@@ -12,6 +12,7 @@ import {
   STORE_SERVICE_NAME,
 } from "@/store";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
+import { EXTERNAL_RECORDS } from "@/store/trust-signals";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import {
@@ -169,6 +170,21 @@ function organizationJsonLd(base: string): string {
     url: "https://scvd.store",
     description: COPY.organizationDescription,
     foundingDate: "2026-07-21",
+    /**
+     * THE FIELD schema.org PROVIDES FOR "here is independent record of
+     * us," and the direct answer to an outside model reporting it
+     * could find no external reputation footprint. Derived from
+     * EXTERNAL_RECORDS so this list and the trust document cannot
+     * disagree, and so an entry is added in exactly one place.
+     *
+     * ONLY URLS SOMEBODY HAS OPENED. A dead or invented link here is
+     * worse than an empty array: sameAs is the one field a resolver
+     * follows, and a broken one in the middle of an identity claim is
+     * the strongest possible argument that the identity is not real.
+     */
+    ...(EXTERNAL_RECORDS.length > 0
+      ? { sameAs: EXTERNAL_RECORDS.map((record) => record.url) }
+      : {}),
     // When the catalog was last written or re-checked by hand. An
     // undated organization looks equally current whether it was
     // touched today or abandoned in the spring.

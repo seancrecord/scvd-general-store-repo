@@ -206,22 +206,32 @@ async function registrarsRound(env: Env): Promise<void> {
     }
 
     /**
-     * THE CHECK THE OLD ONE WAS ALMOST ASKING, and it is now the useful
-     * one. After a handover the advertised sample is signed by the
-     * RETIRED key, which verifies correctly and is a fine demonstration
-     * of key history — but it means the artifact we point every
-     * newcomer at exercises the harder path, and it means the key we
-     * are actually signing with today has never produced anything a
-     * stranger can check. That is worth one nudge, once, and it clears
-     * itself the first time anybody buys anything.
+     * AND NOTHING ELSE PAGES HERE, WHICH IS THE CORRECTION.
+     *
+     * A second alert briefly lived at this line: after a handover the
+     * advertised sample is signed by the RETIRED key, so the artifact
+     * every newcomer is pointed at exercises the harder path until
+     * something new gets signed. True, mildly interesting, and it was
+     * filed under `worker_health` — a P1 condition whose plain meaning
+     * is THE WORKER IS UNHEALTHY. It was not. The store was working
+     * perfectly and had just done a thing it announced, signed and
+     * published on purpose.
+     *
+     * The keeper got that email and could not tell what was wrong,
+     * correctly, because nothing was. A self-clearing cosmetic
+     * condition given the same channel as an outage does not inform
+     * anybody; it teaches the reader that alerts from this store are
+     * noise, which is the one thing an alerting system cannot afford
+     * and the reason there are only a handful of paging conditions in
+     * the first place.
+     *
+     * So it is deleted rather than reworded. A retired-key sample is
+     * a fine thing for a newcomer to land on — it demonstrates
+     * key_history working — and it stops being true the moment
+     * anybody buys anything or takes a free stamp. Whether
+     * SAMPLE_ARTIFACT_ID should ever move is a taste call for the
+     * keeper, not a condition for a cron to nag about.
      */
-    if (attribution.status === "retired") {
-      await sendAlert(env, {
-        condition: "worker_health",
-        detail: `The sample artifact ${SAMPLE_ARTIFACT_ID} is signed by the key retired on ${attribution.retired_on}. It still verifies — the retired key stays published, which is what key_history is for — but no STORED artifact with a verify URL carries the key in service today (${advertised.slice(0, 16)}…), so the example every newcomer is pointed at takes the retired-key path. Live-signed documents (/house-ledger.json, /trust-list, /stack) already carry the current key and can be checked now; this is about the /api/verify demo only. Nothing is broken and nothing is urgent. Any signed artifact clears it, including a free visit stamp (POST /api/stamp) — which costs nothing and moves no money, so it is not the house buying from itself. Then decide whether SAMPLE_ARTIFACT_ID should move at all: leaving it is a fair argument, since a retired-key sample demonstrates key_history working.`,
-        key: `samplekeyretired:${advertised.slice(0, 16)}`,
-      });
-    }
   } catch (error) {
     await sendAlert(env, {
       condition: "worker_health",

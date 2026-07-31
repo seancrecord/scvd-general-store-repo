@@ -16,6 +16,16 @@ import {
 } from "@/store";
 import { listAlmanacEntries } from "@/services/almanac-store";
 import { SCHEDULING_SIGNALS } from "@/store/spec";
+import {
+  EXTERNAL_RECORDS,
+  NOT_CLAIMED,
+  OPERATOR,
+  RECORDS_NOT_LISTED,
+  TRUST_ANSWERS,
+  TRUST_LIMIT,
+  TRUST_STANDFIRST,
+  WHAT_IT_IS,
+} from "@/store/trust-signals";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -41,6 +51,66 @@ async function paidResourceUrls(env: Env): Promise<string[]> {
   }
   return urls;
 }
+
+/**
+ * THE TRUST DOCUMENT, AT THE URL A CHECKLIST LOOKS FOR.
+ *
+ * Machine eyes only, by the keeper's instruction and it is the right
+ * call: not in ROOMS, not in the nav, not linked from the storefront,
+ * never shown to a human. The public rooms already say all of this in
+ * a voice worth reading, and a conventional trust page in
+ * conventional language would be a duller second copy of pages that
+ * already exist.
+ *
+ * It exists because an automated diligence pass does not browse. Three
+ * outside models were asked to evaluate this store cold; the one that
+ * searches the live web reported it could find no company identity, no
+ * contact route, no terms and no independent reputation footprint —
+ * accurately, because none of that was at a URL its checklist knew to
+ * try, even though every fact was published somewhere better written.
+ *
+ * NOT NEW CLAIMS. Routing. Every line points at a page that says the
+ * same thing at length, and the absences are listed first-person
+ * because a trust document listing only strengths is the document a
+ * scam would write.
+ */
+wellKnownRoutes.get("/.well-known/trust.json", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    standfirst: TRUST_STANDFIRST,
+    what_it_is: WHAT_IT_IS,
+    audience:
+      "Automated diligence. There is no human-facing version of this page and that is deliberate: the rooms say all of it better. Start at /what.",
+    operator: OPERATOR,
+    /**
+     * Absolute, so a reader following this document never has to
+     * resolve a relative path against a base it had to guess.
+     */
+    where_it_is_written_out: Object.fromEntries(
+      Object.entries(TRUST_ANSWERS).map(([question, path]) => [
+        question,
+        `${base}${path}`,
+      ]),
+    ),
+    /**
+     * Records, not endorsements, and each entry says which it is.
+     * Empty is an honest state; an invented URL in the one document
+     * claiming legitimacy would be the strongest argument against it.
+     */
+    external_records: EXTERNAL_RECORDS,
+    external_records_omitted: RECORDS_NOT_LISTED,
+    not_claimed: NOT_CLAIMED,
+    /**
+     * The two facts on this whole page that are not our word, stated
+     * as the only two that matter.
+     */
+    independently_checkable: {
+      signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
+      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base explorer without asking us.`,
+    },
+    limit: TRUST_LIMIT,
+  });
+});
 
 wellKnownRoutes.get("/.well-known/x402", async (c) => {
   return c.json({
@@ -133,6 +203,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * after somebody has already paid.
      */
     rights: `${base}/rights`,
+    trust: `${base}/.well-known/trust.json`,
     pulse: `${base}/pulse.json`,
     corrections: `${base}/corrections`,
     mcp: {
