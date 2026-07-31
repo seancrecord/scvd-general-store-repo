@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { PAPER_CSS } from "@/pages/paper-css";
 import { STORE_METADATA } from "@/store";
+import { ROOMS } from "@/store/rooms";
 
 /**
  * A plain paper page in the storefront's hand, for the smaller rooms:
@@ -42,6 +43,26 @@ export interface SimplePageOptions {
 
 const SITE_ORIGIN = "https://scvd.store";
 
+/**
+ * EVERY ROOM, ON EVERY ROOM. Until 2026-07-30 the only route between
+ * these pages was a link buried in a paragraph, so each one was an
+ * island — the same orphaning the office fixed in July, repeated on
+ * the public side and unnoticed because every page had a way HOME and
+ * that felt like enough.
+ *
+ * Derived from ROOMS, so a room built tomorrow is in the nav tomorrow
+ * rather than whenever somebody remembers this function. The current
+ * page renders as plain text rather than a link to itself.
+ */
+function roomsNav(current?: string): string {
+  const entries = ROOMS.map((room) =>
+    room.path === current
+      ? `<strong>${escapeHtml(room.name)}</strong>`
+      : `<a href="${room.path}">${escapeHtml(room.name)}</a>`,
+  );
+  return `<nav class="rooms"><a class="nav-home" href="/">Front of the store</a>${entries.join("")}</nav>`;
+}
+
 export function renderSimplePage(options: SimplePageOptions): string {
   const title = `${escapeHtml(options.title)}, ${escapeHtml(STORE_METADATA.name)}`;
   const description = escapeHtml(options.description);
@@ -66,6 +87,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
     <header>
       <p class="est">${escapeHtml(STORE_METADATA.name)} \u2022 ${escapeHtml(STORE_METADATA.location)}</p>
       <h1>${escapeHtml(options.title)}</h1>
+      ${roomsNav(options.path)}
     </header>
     ${options.bodyHtml}
     <div class="fine-print">
