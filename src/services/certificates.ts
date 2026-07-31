@@ -1,4 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import { BASE_NETWORK } from "@/lib/payments";
 import { newCertId } from "@/lib/ids";
 import { signCertificate } from "@/lib/signing";
 import { makerMarkFor } from "@/store/provenance";
@@ -90,6 +91,15 @@ export interface MintOptions {
    * answers for this artifact as well.
    */
   attests?: string;
+  /**
+   * WHAT WAS ACTUALLY PAID, and by whom. Passed straight from the
+   * settled payment rather than reconstructed from the item's list
+   * price: an item's price can change, and a receipt that recomputes
+   * the amount from today's menu would quietly restate history.
+   */
+  paidUsdc?: number;
+  payer?: string;
+  settlementTx?: string;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -122,6 +132,24 @@ export async function mintCertificate(
   }
   if (options.tipUsdc && options.tipUsdc > 0) {
     certificate.tip_usdc = options.tipUsdc;
+  }
+  /**
+   * The money rides only where money actually moved. Free-shelf
+   * artifacts get no payment fields at all rather than a zero, because
+   * a zero is a claim that nothing was paid and an absence is a claim
+   * that this was never a purchase — different facts, and the free
+   * shelf is the second one.
+   */
+  if (options.paidUsdc !== undefined && options.paidUsdc > 0) {
+    certificate.paid_usdc = options.paidUsdc;
+    certificate.asset = "USDC";
+    certificate.network = BASE_NETWORK;
+  }
+  if (options.payer) {
+    certificate.payer = options.payer;
+  }
+  if (options.settlementTx) {
+    certificate.settlement_tx = options.settlementTx;
   }
   if (options.witness) {
     certificate.note = WITNESS_NOTE;

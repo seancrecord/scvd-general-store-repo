@@ -202,11 +202,20 @@ export function renderToolsPage(data: ToolsPageData): string {
               "on",
             )
     }
+    <p><strong>Just write.</strong> Open with a <code>#&nbsp;heading</code> and
+    the title, the slug and the index teaser come out of the page itself; the
+    date is today unless you say otherwise. The three boxes under the body are
+    overrides, not requirements &mdash; fill one only when the page should not
+    speak for itself. <strong>The date is the one worth a glance</strong>, since
+    it is the day the entry is ABOUT and that is often not today.</p>
     <form method="POST" action="/admin/almanac">
-      <p><input type="text" name="title" placeholder="Title (becomes the URL slug)" maxlength="120" required></p>
-      <p><input type="text" name="date" placeholder="YYYY-MM-DD &mdash; the day it is ABOUT" maxlength="10" required></p>
-      <p><input type="text" name="teaser" placeholder="The one free line shown on the index" maxlength="200" required></p>
-      <p><textarea name="markdown" rows="14" placeholder="# Title&#10;&#10;*From the Keeper's Almanac.*&#10;&#10;**${escapeHtml(data.month)}-.., Oak City.**&#10;&#10;..." required></textarea></p>
+      <p><textarea name="markdown" rows="16" placeholder="# The title goes here&#10;&#10;*From the Keeper's Almanac.*&#10;&#10;**${escapeHtml(data.month)}-.., Oak City.**&#10;&#10;Write the thing. The first real sentence becomes the free line on the index." required></textarea></p>
+      <details>
+        <summary>Override the derived bits</summary>
+        <p><input type="text" name="date" placeholder="YYYY-MM-DD &mdash; the day it is ABOUT (blank = today)" maxlength="10"></p>
+        <p><input type="text" name="title" placeholder="Title (blank = the first # heading; becomes the URL slug)" maxlength="120"></p>
+        <p><input type="text" name="teaser" placeholder="The one free line on the index (blank = your first sentence)" maxlength="200"></p>
+      </details>
       <button type="submit">Put it on the shelf</button>
     </form>
     ${

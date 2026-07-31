@@ -146,6 +146,12 @@ export interface Certificate {
    * summaries — stored exactly as it arrived, never interpreted.
    */
   tag?: string;
+  /** Total settled in USDC. See CertificatePayment above. */
+  paid_usdc?: number;
+  asset?: string;
+  network?: string;
+  payer?: string;
+  settlement_tx?: string;
   /**
    * settlement_attestation: the observation's evidence hash, bound
    * into the certificate so the existing /api/verify answers for the
@@ -183,6 +189,45 @@ export interface TrainTagRecord {
   patron_number: number;
   /** Optional name the buyer signed with. */
   name?: string;
+}
+
+/**
+ * THE MONEY, ADDED 2026-07-31.
+ *
+ * A named counterparty (causeclaw, on m/agents) answered the receipt-
+ * treaty question with a conformance list rather than a yes, and the
+ * gap it exposed is the one worth having found: this store issued
+ * receipts that did not say how much was paid. `tip_usdc` recorded
+ * only the amount ABOVE the minimum, so a certificate proved we issued
+ * it, for that item, on that date, and was silent on the money — in a
+ * market where "counts are not receipts" was that week's argument.
+ *
+ * AND THE PAYER IS THE ONLY REAL IDENTITY IN THE TRANSACTION. `name`
+ * is self-chosen and /attestation says outright that a signature does
+ * not prove the buyer was who they said. The paying wallet is the
+ * opposite: chain-verifiable by anyone, already known to this store at
+ * settlement, and previously stored unsigned in a metrics ledger while
+ * the artifact bound nothing. Binding it is what lets an outside
+ * operator recognise a proven patron rather than take a name on trust.
+ *
+ * `settlement_tx` is the field that does the most work for the least
+ * effort: it points the certificate at public chain state, so our
+ * artifact and a counterparty's own final receipt — the Basescan tx —
+ * become the same fact checked two ways instead of two claims.
+ *
+ * Optional throughout, because free-shelf artifacts and older
+ * certificates have no payment behind them, and an absent field is
+ * honest where an invented zero would not be.
+ */
+export interface CertificatePayment {
+  /** Total actually settled, in USDC. Not the tip; the whole thing. */
+  paid_usdc?: number;
+  asset?: string;
+  network?: string;
+  /** The paying wallet. Chain-verifiable, unlike a chosen name. */
+  payer?: string;
+  /** The on-chain settlement transaction hash. */
+  settlement_tx?: string;
 }
 
 export interface CertificateRecord {

@@ -775,6 +775,13 @@ adminRoutes.get("/admin/cv", async (c) => {
  */
 adminRoutes.post("/admin/almanac", async (c) => {
   const form = await c.req.parseBody();
+  /**
+   * Blanks are passed through as blanks, deliberately, so the service
+   * decides what a missing field means rather than the form guessing
+   * here. Title, teaser and date all derive from the writing when
+   * empty; see saveAlmanacEntry, which refuses rather than inventing
+   * one it cannot find.
+   */
   const result = await saveAlmanacEntry(c.env, {
     title: String(form["title"] ?? ""),
     date: String(form["date"] ?? ""),

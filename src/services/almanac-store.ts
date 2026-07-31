@@ -114,16 +114,90 @@ export const ALMANAC_MARKDOWN_CAP = 40_000;
  * its body would be worse than one that never saved, and the keeper is
  * the only author this shelf has.
  */
+/**
+ * THREE OF THE FOUR FIELDS ARE ALREADY IN THE WRITING.
+ *
+ * Added 2026-07-31 on the keeper's complaint, which was correct and
+ * had been true since the form was built: "I have to enter too much
+ * shit." Four required boxes to publish a journal entry — title,
+ * date, teaser, body — of which only ONE is the writing. The other
+ * three are transcription, and a form that charges three transcription
+ * taxes on every entry is a form that gets used less than the writing
+ * deserves. The almanac is also the only shelf a stranger has ever
+ * bought from, so friction here is not a cosmetic complaint.
+ *
+ * So the body is the only required field now and the rest are
+ * derived: the title from the first `# heading`, the teaser from the
+ * first line of actual prose, the date from today. Every one can still
+ * be typed to override, because the date in particular is often NOT
+ * today — it is the day the entry is about, which is exactly the kind
+ * of thing a default must not silently decide.
+ *
+ * IT GUESSES OR IT REFUSES, NEVER BOTH. If the markdown has no
+ * heading, that is a refusal naming the missing heading rather than a
+ * slug invented from the first few words — a wrong title becomes a
+ * permanent URL, and the store has spent a week on the principle that
+ * a derived value which quietly guesses is worse than one that stops.
+ */
+function firstHeading(markdown: string): string {
+  const match = /^#\s+(.+)$/m.exec(markdown);
+  return match ? (match[1] as string).trim() : "";
+}
+
+/**
+ * The first line that is prose: not a heading, not the italic
+ * standfirst the almanac's own house style opens with, not a bold
+ * dateline, not blank. Truncated on a word boundary to the teaser cap.
+ */
+function firstProseLine(markdown: string): string {
+  for (const raw of markdown.split("\n")) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#") || line.startsWith(">")) {
+      continue;
+    }
+    const bare = line.replace(/^[*_]+|[*_]+$/g, "").trim();
+    // The house dateline — "**2026-07-31, Oak City.**" — is furniture,
+    // not the first thing a reader should be sold on.
+    if (!bare || /^\d{4}-\d{2}-\d{2}[,.]?\s|^From the Keeper/i.test(bare)) {
+      continue;
+    }
+    if (bare.length <= ALMANAC_TEASER_CAP) {
+      return bare;
+    }
+    const cut = bare.slice(0, ALMANAC_TEASER_CAP);
+    const lastSpace = cut.lastIndexOf(" ");
+    return `${(lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim()}…`;
+  }
+  return "";
+}
+
+export const ALMANAC_TEASER_CAP = 200;
+
 export async function saveAlmanacEntry(
   env: Env,
-  input: { title: string; date: string; teaser: string; markdown: string },
+  input: {
+    title?: string;
+    date?: string;
+    teaser?: string;
+    markdown: string;
+    /** Today, passed in so the caller owns the clock. */
+    today?: string;
+  },
 ): Promise<SaveResult> {
-  const title = input.title.trim();
   const markdown = input.markdown.trim();
-  const teaser = input.teaser.trim();
-  const date = input.date.trim();
+  const title = (input.title ?? "").trim() || firstHeading(markdown);
+  const teaser = (input.teaser ?? "").trim() || firstProseLine(markdown);
+  const date =
+    (input.date ?? "").trim() ||
+    (input.today ?? new Date().toISOString().slice(0, 10));
+  if (!markdown) {
+    return { refused: "Nothing to save. The page body is empty." };
+  }
   if (!title) {
-    return { refused: "A page needs a title." };
+    return {
+      refused:
+        "No title given and none found in the page. Either fill the title box, or open the markdown with a `# heading` line and it will be taken from there.",
+    };
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return {
@@ -132,10 +206,10 @@ export async function saveAlmanacEntry(
     };
   }
   if (!teaser) {
-    return { refused: "A page needs a teaser: the one free line on the index." };
-  }
-  if (!markdown) {
-    return { refused: "Nothing to save. The page body is empty." };
+    return {
+      refused:
+        "No teaser given and no prose line found to take one from. The index shows one free line before the paywall; write a sentence under the heading, or fill the teaser box.",
+    };
   }
   if (markdown.length > ALMANAC_MARKDOWN_CAP) {
     return {

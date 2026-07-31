@@ -81,6 +81,22 @@ export async function fulfillPurchase(
   if (payment.tipUsdc > 0) {
     mintOptions.tipUsdc = payment.tipUsdc;
   }
+  /**
+   * THE AMOUNT, THE PAYER AND THE CHAIN TRANSACTION, into the signed
+   * certificate. All three were already in hand at this line and none
+   * of them reached the artifact — the store knew what was paid, by
+   * which wallet, in which transaction, and issued a receipt that said
+   * none of it. Found by an outside operator's conformance list rather
+   * than from in here, which is now the second time that has been the
+   * instrument that worked.
+   */
+  mintOptions.paidUsdc = payment.paidUsdc;
+  if (payment.payer) {
+    mintOptions.payer = payment.payer;
+  }
+  if (payment.transaction) {
+    mintOptions.settlementTx = payment.transaction;
+  }
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
   }

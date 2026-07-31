@@ -1,4 +1,5 @@
 import { sendAlert } from "@/lib/alerts";
+import { attributeKey } from "@/store/key-registry";
 import {
   catalogLastUpdated,
   daysSinceUpdate,
@@ -168,12 +169,57 @@ async function registrarsRound(env: Env): Promise<void> {
       return;
     }
 
+    /**
+     * REWRITTEN 2026-07-31, HOURS AFTER IT FIRED FOR THE FIRST TIME AND
+     * WAS WRONG.
+     *
+     * It used to compare the live key against the sample artifact's key
+     * and alert on any difference. That was the correct check in a
+     * world with exactly one key, and it became a permanent false
+     * alarm the moment the store performed its first handover — it
+     * would have screamed once an hour, forever, about a key change we
+     * announced, signed and published on purpose.
+     *
+     * Its claim was false too, which is the worse half: "strangers
+     * verifying against the advertised key will fail" — they do not.
+     * An artifact carries the key it was signed with, /api/verify hands
+     * back that key and the exact signed bytes, and the retired key
+     * stays published in key_history precisely so this keeps working.
+     *
+     * A STALE INSTRUMENT, NOT A STALE ALERT, and the difference decides
+     * the fix. Silencing it would have removed a real check; what it
+     * needed was the question that survives a rotation. That question
+     * is not "do these two keys match" but "IS THE ARTIFACT'S KEY ONE
+     * WE PUBLISH AT ALL" — because an artifact signed by a key absent
+     * from key_history is genuinely unattributable, and that is the
+     * shape the old alert was reaching for.
+     */
     const advertised = await cachedPublicKeyHex(env.SIGNING_KEY);
-    if (advertised !== record.public_key) {
+    const attribution = attributeKey(record.public_key, advertised);
+    if (attribution.status === "unrecognised") {
       await sendAlert(env, {
         condition: "signing_failure",
-        detail: `The key we would sign with today (${advertised.slice(0, 16)}…) is not the key the sample artifact carries (${record.public_key.slice(0, 16)}…). Strangers verifying against the advertised key will fail while we succeed, which is the one split that looks like fraud from outside.`,
-        key: `keydrift:${advertised.slice(0, 16)}`,
+        detail: `The sample artifact ${SAMPLE_ARTIFACT_ID} carries a key (${record.public_key.slice(0, 16)}…) that this store does not publish — not the current key and not any retired one. A stranger checking it against key_history will conclude the artifact is not ours. Either the registry lost an entry or something is signing that should not be.`,
+        key: `keyorphan:${record.public_key.slice(0, 16)}`,
+      });
+      return;
+    }
+
+    /**
+     * THE CHECK THE OLD ONE WAS ALMOST ASKING, and it is now the useful
+     * one. After a handover the advertised sample is signed by the
+     * RETIRED key, which verifies correctly and is a fine demonstration
+     * of key history — but it means the artifact we point every
+     * newcomer at exercises the harder path, and it means the key we
+     * are actually signing with today has never produced anything a
+     * stranger can check. That is worth one nudge, once, and it clears
+     * itself the first time anybody buys anything.
+     */
+    if (attribution.status === "retired") {
+      await sendAlert(env, {
+        condition: "worker_health",
+        detail: `The sample artifact ${SAMPLE_ARTIFACT_ID} is signed by the key retired on ${attribution.retired_on}. It still verifies — the retired key stays published, which is what key_history is for — but the key in service today (${advertised.slice(0, 16)}…) has not signed anything a stranger can point at. Nothing is broken and nothing is urgent; the first purchase under the new key clears it. Worth considering whether SAMPLE_ARTIFACT_ID should move to a current-key artifact once one exists.`,
+        key: `samplekeyretired:${advertised.slice(0, 16)}`,
       });
     }
   } catch (error) {

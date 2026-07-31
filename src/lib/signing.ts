@@ -70,6 +70,21 @@ const CERT_FIELDS = [
    * automatic rather than remembered.
    */
   "made_by",
+  /**
+   * THE MONEY AND THE PAYER, added 2026-07-31 after an outside
+   * operator's conformance list showed this store issuing receipts
+   * with no amount on them. Appended, never inserted: the first eight
+   * positions are frozen because old signatures cover exactly that
+   * sequence, and the compile guard below is what makes adding a
+   * Certificate field without adding it here a build failure rather
+   * than a silent unsigned field — the defect CV found on tag and
+   * attests, which is the whole reason this list is walked by a loop.
+   */
+  "paid_usdc",
+  "asset",
+  "network",
+  "payer",
+  "settlement_tx",
 ] as const;
 
 /**
@@ -90,7 +105,16 @@ void _everyCertFieldIsSigned;
  * endpoint has to SAY it did, naming the served fields the signature
  * does not cover, rather than quietly reporting a clean "valid".
  */
-const LEGACY_FIELDS_ADDED_SINCE = ["tag", "attests", "made_by"] as const;
+const LEGACY_FIELDS_ADDED_SINCE = [
+  "tag",
+  "attests",
+  "made_by",
+  "paid_usdc",
+  "asset",
+  "network",
+  "payer",
+  "settlement_tx",
+] as const;
 
 const LEGACY_CERT_FIELDS = CERT_FIELDS.filter(
   (field) =>

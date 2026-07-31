@@ -68,10 +68,33 @@ describe("writing a page from the office", () => {
   it("refuses rather than mangles, and says why", async () => {
     // A page that silently lost its body would be worse than one that
     // never saved: the keeper is the only author this shelf has.
+    /**
+     * REWRITTEN 2026-07-31 WHEN THE CONTRACT CHANGED UNDER IT. Three of
+     * these four boxes stopped being required that day: the title, the
+     * teaser and the date all derive from the writing now, because the
+     * keeper was typing four fields to publish one journal entry and
+     * only one of them was the writing.
+     *
+     * So the blank-teaser row moved rather than being deleted. A blank
+     * teaser with prose under it is no longer a refusal — it is the
+     * normal case, and it derives. What must still refuse is a blank
+     * with NOTHING to derive from, which is the case that would
+     * otherwise publish a page with an empty line on the index. The
+     * rule the test was protecting is intact; the input that triggers
+     * it is narrower.
+     */
     for (const [input, because] of [
       [{ title: "", date: "2026-07-30", teaser: "t", markdown: "m" }, "title"],
       [{ title: "T", date: "July 30", teaser: "t", markdown: "m" }, "YYYY-MM-DD"],
-      [{ title: "T", date: "2026-07-30", teaser: "", markdown: "m" }, "teaser"],
+      [
+        {
+          title: "T",
+          date: "2026-07-30",
+          teaser: "",
+          markdown: "# Only A Heading",
+        },
+        "teaser",
+      ],
       [{ title: "T", date: "2026-07-30", teaser: "t", markdown: "" }, "empty"],
     ] as const) {
       const result = await saveAlmanacEntry(testEnv, input);
