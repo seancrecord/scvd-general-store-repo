@@ -114,10 +114,53 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
   });
 });
 
+/**
+ * THE MINIMAL DOCUMENT, WHICH WAS TOO MINIMAL TO BE FILED WELL.
+ *
+ * Until 2026-07-31 this served `{ version, resources }` and nothing
+ * else — a bare array of URLs with no name, no description and no
+ * tags, while every one of those lived next door in x402.json. An
+ * indexer reading THIS one had nothing to file us under.
+ *
+ * The evidence, and it is evidence rather than proof: x402scan's card
+ * for this store reads "x402-compatible service at
+ * https://scvd.store/api/buy/hello", categorised `other`. That is a
+ * template with a URL substituted into it, which is exactly what a
+ * directory produces when the source document gave it no words. The
+ * store spent a week making sure its rich surfaces were rich and
+ * never checked what the THIN one said about us.
+ *
+ * ADDITIVE ONLY, and that constraint is the whole design. `version`
+ * and `resources` keep their exact shape and position, because this
+ * document follows a de-facto contract that scanners parse without
+ * negotiating — a reader that ignores unknown keys is unaffected, and
+ * a reader that wanted only the URL list still gets exactly the URL
+ * list. Nothing is removed and nothing is renamed.
+ *
+ * IT IS A HYPOTHESIS ABOUT ANOTHER SERVICE'S PARSER, recorded as one.
+ * We do not know what x402scan reads or how it decides a category,
+ * and this store's own environment cannot reach it to look. What we
+ * do know is that we were handing a document with no words in it to
+ * something that produces descriptions, which is a defect whatever
+ * fixes the listing.
+ */
 wellKnownRoutes.get("/.well-known/x402", async (c) => {
+  const base = c.env.STORE_BASE_URL;
   return c.json({
     version: 1,
     resources: await paidResourceUrls(c.env),
+    name: STORE_SERVICE_NAME,
+    description: STORE_METADATA.description,
+    tags: [...STORE_TAGS],
+    network: "eip155:8453",
+    /**
+     * The richer document, named from the thinner one. An indexer that
+     * started here should not have to guess that a second, fuller
+     * catalog exists beside it.
+     */
+    catalog: `${base}/.well-known/x402.json`,
+    signing_key: `${base}/.well-known/scvd-signing-key`,
+    trust: `${base}/.well-known/trust.json`,
   });
 });
 
