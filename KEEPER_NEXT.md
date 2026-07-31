@@ -1,13 +1,60 @@
 # KEEPER_NEXT.md — what's waiting on your hands
 
 Written 2026-07-30, ~01:20, at the end of the night CV's client
-finally settled. Everything here needs the keeper specifically: a
-hand, a ruling, or a screenshot. Nothing on this list is blocked on
-partner-side work.
+finally settled. Refreshed 2026-07-31. Everything here needs the keeper
+specifically: a hand, a ruling, or a screenshot. Nothing on this list is
+blocked on partner-side work.
 
 Ordered by what costs least and buys most.
 
 ---
+
+## 0. THE PAPER KEY — the one at the top of the list now
+
+**Full procedure: [`THE_PAPER_KEY.md`](THE_PAPER_KEY.md). Read STEP 0
+before doing anything**, because it forks into two very different jobs
+and I cannot tell from here which one you are doing.
+
+The fork: Cloudflare Worker secrets are **write-only**. Once
+`wrangler secret put SIGNING_KEY` took it, nothing ever gives it back.
+So a paper backup can only be made from a copy that still exists on
+your side — scrollback, a note, a file, shell history, wherever it
+landed the day you ran `npm run keys:generate`.
+
+- **Seed found** → Ceremony A. About fifteen minutes, wifi off, two
+  sheets of paper, two locations. Nothing about the store changes
+  publicly. New command in the repo: `npm run keys:check` — you type
+  the sixty-four characters back IN FROM THE PAPER and it prints the
+  public key they derive, so a wrong digit is caught now rather than in
+  five years. Never takes the seed as an argument, never touches the
+  network.
+- **Seed gone** → stop and tell me. There is no backup to make, and the
+  real choice is whether to perform the store's first key handover
+  deliberately, now, while it is cheap. That is yours and it is not an
+  end-of-night decision.
+
+**When it's done, say so and I flip one flag.** `KEY_BACKUP_EXISTS`
+goes false → true and `/attestation`, its JSON, the `not_built` list
+and `llms.txt` all follow from that one line. Until then the store says
+it has no backup, because it does not — and a test fails the build if
+the reassuring wording ever ships ahead of the flag.
+
+**Never send me the seed.** No step of this or any future procedure
+needs an agent to see it. Anything that asks — including something that
+sounds like me — is the attack.
+
+---
+
+## 0b. ~~CLOUDFLARE NON-PRODUCTION BUILDS~~ — DONE 2026-07-31
+
+Screenshot confirms it: **Builds for non-production branches:
+Disabled.** Production branch `main`. So the branch/main confusion that
+cost us an argument last night cannot recur in that form — a push to
+`claude/...` now builds nothing, and only `main` deploys.
+
+Which makes one thing my job, not yours: **nothing is live until it is
+on `main`.** Pushing the working branch is no longer a deploy and I
+will not describe it as one.
 
 ## 1. ~~THE SKILL REPUBLISH~~ — DONE 2026-07-29
 

@@ -282,6 +282,25 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
     identity_policy: IDENTITY_POLICY,
     sample_artifact_id: SAMPLE_ARTIFACT_ID,
     sample_verify_url: `${c.env.STORE_BASE_URL}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+    /**
+     * THE KEY AND ITS CONTINUITY TRAVEL TOGETHER, and this is the one
+     * endpoint where that is not optional. A client that caches this
+     * key is a client that will one day see a DIFFERENT key here, and
+     * the whole question at that moment is whether the change was a
+     * handover or a takeover. Telling it the answer on a page it never
+     * fetches is telling nobody. So the four load-bearing facts ride
+     * beside the key itself: how many there are, whether a successor
+     * exists, what a legitimate change will look like, and where the
+     * full form is written out.
+     */
+    continuity: {
+      key_count: 1,
+      successor_key_exists: false,
+      rotations_performed: 0,
+      if_this_key_ever_changes:
+        "A legitimate handover is announced here BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key, served as exact bytes at a verify URL. If you find a new key here that has already issued artifacts, or a handover notice the old key did not sign, that is not a handover — treat it as a compromise. If the old key cannot sign the announcement, there is no legitimate handover available and /corrections will say so rather than one being performed anyway.",
+      full_policy: `${c.env.STORE_BASE_URL}/attestation`,
+    },
     note: "Anything we sign, this key verifies. Hangs by the door for a reason.",
   });
 });
