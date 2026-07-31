@@ -35,6 +35,7 @@ import {
   statsRoutes,
   pulseRoutes,
   attestationRoutes,
+  rightsRoutes,
   windDownRoutes,
   becomingRoutes,
   stampRoutes,
@@ -172,6 +173,7 @@ app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
+app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);
 app.route("/", becomingRoutes);
 app.route("/", schemaRoutes);

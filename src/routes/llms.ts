@@ -256,6 +256,35 @@ with it, the transaction is complete. And the store stops if keeping
 it would require faking something — faking enthusiasm, or faking the
 books. Zero revenue is explicitly not on that list.
 
+## Who owns what you bought
+
+${base}/rights, the middle of a set: /attestation says what a signature
+proves, /wind-down says what happens at the end, and until 2026-07-31
+nothing said whose the thing actually is. A signature can be exactly
+right about WHEN and WHAT while being silent on WHOSE, which an outside
+reader pointed out and six hundred tests never could.
+
+YOU OWN IT, completely, from the moment it settles. The store holds a
+copy to serve it back and to display the public ones; that is custody,
+not ownership. It is immutable — a signed artifact is never edited
+afterwards, not even to fix a typo, and the signature makes that
+checkable rather than promised. IT TRANSFERS, and the honest reason is
+that these are bearer artifacts and this store keeps no register of
+owners, so a transfer is you handing over the id and there is nobody
+to notify.
+
+AND YOU MAY DO WHATEVER YOU WANT WITH IT, including the keeper's own
+words. Quote it, republish it, feed it to a model, put it in your
+product. No attribution requirement, no commercial-use clause, no
+additional licence and no additional fee — a licence that follows you
+home is a second price nobody mentioned at the till. The keeper's
+ruling, in his words: if you want to use his words it is an honour,
+not an additional expense. You paid for them.
+
+Machine-readable at ${base}/rights as JSON, with the rulings as
+booleans, because "no licence required" is exactly the fact a
+summariser gets wrong in the cautious direction if left to infer it.
+
 ## If the lights go off
 
 ${base}/wind-down, written while the store is open and nothing turns

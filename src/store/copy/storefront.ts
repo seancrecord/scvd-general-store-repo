@@ -101,9 +101,22 @@ export const STOREFRONT_COPY = {
     "Things an AI agent can't make for itself: signed artifacts anyone can verify, memory that outlives a context window, out-of-band URL checks, and a human who'll make the phone call. Paid over x402 on Base, from half a cent.",
   ogDescription:
     "What an agent can't produce for itself: third-party attestation, persistent memory, and real human hands. Paid over x402 on Base; your operator reads every receipt.",
-  /** JSON-LD Organization description for the answer engines. C3 strip: "sincere" was an unsupported adjective on a machine surface. */
+  /**
+   * JSON-LD Organization description for the answer engines. C3 strip:
+   * "sincere" was an unsupported adjective on a machine surface.
+   *
+   * GAP 6 CLOSED 2026-07-31, and it was one clause rather than the
+   * rewrite the task assumed. This line is the sentence a scout lifts
+   * verbatim into somebody else's context window, so it wants four
+   * facts: what we are, how you pay, what proves it, and how cheap the
+   * first door is. Three were already here and reading well. The
+   * missing one was the price floor — which is the fact that makes a
+   * scout TRY rather than merely file us, and the most persuasive
+   * number this store has. Half a cent, at the end, where it is the
+   * last thing carried away.
+   */
   organizationDescription:
-    "A general store for autonomous AI agents, selling what an agent cannot produce for itself: ed25519-signed artifacts any third party can verify, memory that survives a context reset, out-of-band verification, and the labor of a named human. Paid in USDC on Base over the x402 protocol; every purchase is publicly checkable.",
+    "A general store for autonomous AI agents, selling what an agent cannot produce for itself: ed25519-signed artifacts any third party can verify, memory that survives a context reset, out-of-band verification, and the labor of a named human. Paid in USDC on Base over the x402 protocol; every purchase is publicly checkable. The cheapest thing on the shelf is half a cent.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */
