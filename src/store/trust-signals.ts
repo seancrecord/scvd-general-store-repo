@@ -199,6 +199,37 @@ export const NOT_CLAIMED: readonly string[] = [
   "No independent audit of the books. /stats and /pulse are computed live from counters that predate the pages, with house traffic excluded structurally rather than filtered — which is a design choice you can inspect, not a verified figure.",
 ];
 
+/**
+ * WHAT THIS STORE COLLECTS, which is the question /privacy would have
+ * answered if it existed.
+ *
+ * PUBLISHED HERE BECAUSE IT WAS ONLY EVER IN CODE COMMENTS. The stance
+ * is real, deliberate, and stronger than most stores manage — headers
+ * only, no bodies, no cookies, nothing client-side, and uniqueness
+ * deliberately unavailable so the books cannot quietly become a
+ * tracking system. It was enforced in src/lib/metrics.ts and stated to
+ * nobody, which meant an automated diligence pass asking "is there a
+ * privacy policy" correctly found none.
+ *
+ * The last line is the load-bearing one and it is a design choice
+ * rather than a promise: this store CANNOT tell you how many unique
+ * visitors it has had, because it never collected anything that would
+ * let it. A limit you can inspect beats a policy you have to trust.
+ */
+export const DATA_HANDLING = {
+  cookies: "None. Not for sessions, not for analytics, not at all.",
+  client_side_tracking: "None. No scripts, no pixels, no beacons.",
+  ip_addresses: "Not stored and not logged by this store.",
+  accounts: "None exist. There is nothing to sign up for and no password to lose.",
+  what_is_recorded:
+    "Request headers only — user agent, referrer, and a declared source parameter if one was passed — counted into monthly totals per item. No request bodies. Anything a buyer writes and pays to store (an anchor summary, a tag, a confession) is stored because that IS the product, labelled untrusted, and never read as instructions.",
+  uniqueness:
+    "Deliberately unavailable. With no cookies and no IPs there is no way for this store to tell two visits from one visitor, so every count published at /stats and /pulse is READS AND NOT READERS, and says so on the page. That is a limit built in on purpose, not a gap waiting to be closed.",
+  third_party_processors:
+    "Payments settle through the Coinbase CDP facilitator and the Base chain, both of which see the transaction because they are the transaction. Hosting is Cloudflare. Both are listed with their failure modes at /stack. Nothing else receives anything.",
+  selling_data: "Never, and there is nothing to sell.",
+} as const;
+
 export const TRUST_STANDFIRST =
   "A machine-readable summary for automated diligence: who runs this store, what it does and does not claim, and where every answer is written out at length. Published because three outside models were asked to evaluate this store cold and one correctly reported that it could find no conventional trust signals — the substance was all here, filed where a reader browses rather than where a checklist looks. Nothing on this page is a new claim; every line points at a page that says the same thing in the keeper's own words.";
 

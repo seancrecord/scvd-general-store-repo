@@ -17,6 +17,7 @@ import {
 import { listAlmanacEntries } from "@/services/almanac-store";
 import { SCHEDULING_SIGNALS } from "@/store/spec";
 import {
+  DATA_HANDLING,
   EXTERNAL_RECORDS,
   NOT_CLAIMED,
   OPERATOR,
@@ -99,6 +100,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      */
     external_records: EXTERNAL_RECORDS,
     external_records_omitted: RECORDS_NOT_LISTED,
+    data_handling: DATA_HANDLING,
     not_claimed: NOT_CLAIMED,
     /**
      * The two facts on this whole page that are not our word, stated

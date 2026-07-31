@@ -35,6 +35,7 @@ export { schemaRoutes } from "@/routes/schemas";
 export { statsRoutes } from "@/routes/stats";
 export { pulseRoutes } from "@/routes/pulse";
 export { attestationRoutes } from "@/routes/attestation";
+export { conventionalRoutes } from "@/routes/conventional";
 export { rightsRoutes } from "@/routes/rights";
 export { windDownRoutes } from "@/routes/wind-down";
 export { becomingRoutes } from "@/routes/becoming";
