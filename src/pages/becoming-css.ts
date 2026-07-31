@@ -26,6 +26,15 @@ export const BECOMING_CSS = `
  * speaking about its goods. So it borrows the study rather than the
  * shop — walnut, brass and baize instead of ink and lamplight.
  *
+ * RENAMED 2026-07-30 when the base sheet adopted the storefront's
+ * variables. This override silently stopped applying — the walnut
+ * background survived because it is a literal gradient, while every
+ * brass edge referenced a variable that no longer existed and quietly
+ * rendered as nothing. Overriding by variable name is the right
+ * design and it has exactly this failure mode: the names are a
+ * contract, and renaming one end of a contract breaks the other end
+ * without an error anywhere. Caught by looking at the page.
+ *
  * A PALETTE OVERRIDE, NOT A SECOND STYLESHEET. This sheet is appended
  * after the shared one, so redefining the variables re-skins every
  * rule the base already wrote: headings, links, rules, tables and the
@@ -34,23 +43,25 @@ export const BECOMING_CSS = `
  * layout to get them, and a copy is the thing that drifts.
  */
 body.becoming {
-  --board: #16110d;
-  --board-lift: #1e1812;
+  --night: #16110d;
+  --dusk: #1e1812;
   --card: #221b15;
-  --chalk: #ece3d2;
-  --chalk-dim: #a2947d;
-  --lamp: #c9a961;
-  --rule: #35291f;
+  --night-text: #ece3d2;
+  --night-faded: #a2947d;
+  --neon: #c9a961;
+  --teal: #d8bd7e;
+  --teal-dim: #6f5c33;
+  --line: #35291f;
   --baize: #1a2a21;
   --baize-rule: #2f4436;
   background:
-    radial-gradient(90% 55% at 50% -8%, #2b2118 0%, var(--board) 58%);
+    radial-gradient(90% 55% at 50% -8%, #2b2118 0%, var(--night) 58%);
 }
 
 /* Working surfaces get the office's brass edge. */
 body.becoming .settled,
 body.becoming .not-for-sale {
-  border-top: 2px solid var(--lamp);
+  border-top: 2px solid var(--neon);
   box-shadow: 0 1px 0 rgba(0,0,0,0.5), 0 12px 28px rgba(0,0,0,0.32);
 }
 
@@ -73,17 +84,17 @@ body.becoming tr:last-child td { border-bottom: 0; }
 body.becoming .lede {
   font-size: clamp(1.05rem, 2.6vw, 1.3rem);
   line-height: 1.5;
-  color: var(--chalk);
+  color: var(--night-text);
   margin-top: 1.5rem;
 }
 body.becoming .not-for-sale {
   display: block;
   margin-top: 1.5rem;
   padding: 1rem 1.2rem;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--line);
   border-radius: 2px;
-  background: var(--board-lift);
-  color: var(--chalk-dim);
+  background: var(--dusk);
+  color: var(--night-faded);
   font-size: 0.92rem;
 }
 
@@ -93,32 +104,32 @@ body.becoming .not-for-sale {
 body.becoming .thesis {
   padding-bottom: 2.25rem;
   margin-bottom: 2.25rem;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--line);
 }
 body.becoming .thesis:last-of-type { border-bottom: 0; }
 body.becoming .thesis-n {
   display: block;
   font-size: 0.7rem;
   letter-spacing: 0.3em;
-  color: var(--lamp);
+  color: var(--neon);
   margin-bottom: 0.6rem;
 }
 body.becoming .thesis-claim {
   font-size: clamp(1.35rem, 4.2vw, 2rem);
   line-height: 1.25;
-  color: var(--chalk);
+  color: var(--night-text);
   margin: 0 0 1rem;
   text-wrap: balance;
 }
 body.becoming .thesis-false {
-  color: var(--chalk-dim);
+  color: var(--night-faded);
   font-size: 0.95rem;
   line-height: 1.6;
   padding-left: 1rem;
-  border-left: 2px solid var(--rule);
+  border-left: 2px solid var(--line);
 }
 body.becoming .thesis-false strong {
-  color: var(--lamp);
+  color: var(--neon);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 0.72rem;
@@ -128,26 +139,26 @@ body.becoming .thesis-false strong {
 
 /* SETTLED — a ruling, and the reasoning that produced it. */
 body.becoming .settled {
-  background: var(--board-lift);
-  border: 1px solid var(--rule);
+  background: var(--dusk);
+  border: 1px solid var(--line);
   border-radius: 3px;
   padding: 1.15rem 1.25rem;
   margin-bottom: 1rem;
 }
 body.becoming .settled-q {
-  color: var(--chalk-dim);
+  color: var(--night-faded);
   font-size: 0.86rem;
   margin-bottom: 0.5rem;
 }
 body.becoming .settled-a {
-  color: var(--chalk);
+  color: var(--night-text);
   font-size: clamp(1.05rem, 3vw, 1.35rem);
   line-height: 1.3;
   margin-bottom: 0.75rem;
   text-wrap: balance;
 }
 body.becoming .settled-why {
-  color: var(--chalk-dim);
+  color: var(--night-faded);
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -177,7 +188,7 @@ body.becoming .ledger-wrap { overflow-x: auto; margin-top: 1.5rem; }
     width: 100%;
   }
   body.becoming tr {
-    border-bottom: 1px solid var(--rule);
+    border-bottom: 1px solid var(--line);
     padding-bottom: 1rem;
     margin-bottom: 1rem;
   }
@@ -186,7 +197,7 @@ body.becoming .ledger-wrap { overflow-x: auto; margin-top: 1.5rem; }
   body.becoming td[data-label]::before {
     content: attr(data-label);
     display: block;
-    color: var(--lamp);
+    color: var(--neon);
     font-size: 0.62rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;

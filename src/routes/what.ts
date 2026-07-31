@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
-import { escapeHtml } from "@/lib/sanitize";
+import { escapeHtml, linkStoreUrls } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { STORE_METADATA } from "@/store";
 import { WHAT_COPY, whatFaq, type FaqPair } from "@/store/copy/what";
@@ -35,7 +35,7 @@ whatRoutes.get("/what", (c) => {
       .map(
         (pair) => `<div class="menu-item">
         <div class="menu-line"><span class="menu-name">${escapeHtml(pair.question)}</span></div>
-        <p class="menu-desc">${escapeHtml(pair.answer)}</p>
+        <p class="menu-desc">${linkStoreUrls(escapeHtml(pair.answer))}</p>
       </div>`,
       )
       .join("\n");

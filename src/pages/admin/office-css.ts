@@ -34,7 +34,10 @@ export const OFFICE_CSS = `
   --baize: #1a2a21;
   --baize-rule: #2f4436;
   --brass: #c9a961;
-  --brass-dim: #8b7444;
+  /* Lifted from #8b7444 (4.18:1) on 2026-07-30: it carried the
+     small-caps eyebrow and the readings label at 0.64rem, where 4.18
+     fails AA for normal text. Measured, not eyeballed. */
+  --brass-dim: #a68b52;
   --ivory: #ece3d2;
   --ivory-dim: #a2947d;
   --oxblood: #a8443c;
