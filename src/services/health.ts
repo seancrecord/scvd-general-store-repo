@@ -218,7 +218,7 @@ async function registrarsRound(env: Env): Promise<void> {
     if (attribution.status === "retired") {
       await sendAlert(env, {
         condition: "worker_health",
-        detail: `The sample artifact ${SAMPLE_ARTIFACT_ID} is signed by the key retired on ${attribution.retired_on}. It still verifies — the retired key stays published, which is what key_history is for — but the key in service today (${advertised.slice(0, 16)}…) has not signed anything a stranger can point at. Nothing is broken and nothing is urgent; the first purchase under the new key clears it. Worth considering whether SAMPLE_ARTIFACT_ID should move to a current-key artifact once one exists.`,
+        detail: `The sample artifact ${SAMPLE_ARTIFACT_ID} is signed by the key retired on ${attribution.retired_on}. It still verifies — the retired key stays published, which is what key_history is for — but no STORED artifact with a verify URL carries the key in service today (${advertised.slice(0, 16)}…), so the example every newcomer is pointed at takes the retired-key path. Live-signed documents (/house-ledger.json, /trust-list, /stack) already carry the current key and can be checked now; this is about the /api/verify demo only. Nothing is broken and nothing is urgent. Any signed artifact clears it, including a free visit stamp (POST /api/stamp) — which costs nothing and moves no money, so it is not the house buying from itself. Then decide whether SAMPLE_ARTIFACT_ID should move at all: leaving it is a fair argument, since a retired-key sample demonstrates key_history working.`,
         key: `samplekeyretired:${advertised.slice(0, 16)}`,
       });
     }
