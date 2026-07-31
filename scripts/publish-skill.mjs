@@ -25,6 +25,7 @@
  *   npm run skill:publish -- 2.5.0 "..." --dry-run
  */
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const BUNDLE = "registry/clawhub/SKILL.md";
 const BUNDLE_DIR = "registry/clawhub";
@@ -60,7 +61,39 @@ if (!version || !changelog) {
 }
 
 if (!/^\d+\.\d+\.\d+$/.test(version)) {
-  die(`"${version}" is not a version`, "Use MAJOR.MINOR.PATCH, e.g. 2.5.0.");
+  die(`"${version}" is not a version`, "Use MAJOR.MINOR.PATCH, e.g. 2.6.0.");
+}
+
+/**
+ * THE FOURTH REFUSAL, ADDED 2026-07-31. The served skill.md declared
+ * `version: 2.2.0` in its frontmatter while the published bundle had
+ * moved on to 2.5.x — three releases of drift on a machine-read
+ * document, because the number lived in a template literal and this
+ * script took its version from the command line, and nothing ever
+ * compared them.
+ *
+ * So the constant is the source and this is what remembers. Publishing
+ * a number the store does not itself declare is refused rather than
+ * warned about: a bundle whose frontmatter disagrees with its release
+ * is a bundle that lies to whoever installs it, and warnings during a
+ * publish are read after the publish.
+ */
+const declared = readFileSync("src/store/spec.ts", "utf8").match(
+  /SKILL_VERSION = "([^"]+)"/,
+);
+if (!declared) {
+  die(
+    "SKILL_VERSION is not declared in src/store/spec.ts",
+    "The served skill.md takes its frontmatter version from that constant. Without it there is nothing to check this publish against.",
+  );
+}
+if (declared[1] !== version) {
+  die(
+    `The store declares ${declared[1]}; you asked to publish ${version}`,
+    `Bump SKILL_VERSION in src/store/spec.ts to ${version} and deploy, or publish ${declared[1]}.\n` +
+      `The served skill.md frontmatter would otherwise announce a different\n` +
+      `version than the bundle somebody just installed.`,
+  );
 }
 
 /**

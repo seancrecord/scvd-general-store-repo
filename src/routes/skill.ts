@@ -7,6 +7,7 @@ import {
   SAMPLE_ARTIFACT_ID,
   IDENTITY_POLICY,
   SCHEDULING_SIGNALS,
+  SKILL_VERSION,
 } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -54,7 +55,7 @@ metadata:
   store: ${base}
   protocol: x402 v2
   currency: USDC on Base
-  version: 2.2.0
+  version: ${SKILL_VERSION}
 ---
 
 # ${STORE_METADATA.name}

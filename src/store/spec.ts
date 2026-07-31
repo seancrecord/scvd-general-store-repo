@@ -9,6 +9,22 @@
  */
 import { RETIRED_KEYS } from "@/store/key-registry";
 
+/**
+ * THE SKILL VERSION, IN ONE PLACE, ENFORCED AT PUBLISH TIME.
+ *
+ * The served skill.md carried `version: 2.2.0` in its frontmatter
+ * while the published bundle had moved on to 2.5.x — three releases of
+ * drift on a machine-read document, because the number lived in a
+ * template literal and the publish version came from the command line
+ * and nothing ever compared them.
+ *
+ * Now `npm run skill:publish` REFUSES when the version it was given
+ * does not match this constant. Bumping is one edit in one file and
+ * the script is what remembers, which is the same shape as every other
+ * hand-typed value corrected today: derive it, or make the tool fail.
+ */
+export const SKILL_VERSION = "2.6.0";
+
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
 

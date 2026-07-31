@@ -1,7 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SPEC_KEY_ORDER, SPEC_KEY_ORDER_FULL } from "@/lib/listing-spec";
-import { USE_WHEN } from "@/store/spec";
+import { SKILL_VERSION, USE_WHEN } from "@/store/spec";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { decodePaymentRequired } from "./helpers/payment";
 
@@ -172,7 +172,15 @@ describe("C1 + C3 on the MCP door", () => {
 describe("S3: the skill reads as structure", () => {
   it("carries the three layers and its version", async () => {
     const skill = await (await SELF.fetch(`${BASE}/skill.md`)).text();
-    expect(skill).toContain("version: 2.2.0");
+    /**
+     * PINNED TO THE CONSTANT, NOT THE NUMBER. This read "version:
+     * 2.2.0" as a literal and passed happily for three releases while
+     * the published bundle moved to 2.5.x — a test freezing the exact
+     * value that had drifted, which is the fifth of these found today.
+     * What the skill must carry is the version THE STORE DECLARES; the
+     * publish script refuses any other.
+     */
+    expect(skill).toContain(`version: ${SKILL_VERSION}`);
     expect(skill).toContain("## When to reach for this store");
     expect(skill).toContain("## Execution structure");
     expect(skill).toContain("## Resource evidence");
