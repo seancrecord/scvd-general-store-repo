@@ -50,7 +50,7 @@ function bytesToHex(bytes: Uint8Array): string {
  * exactly those, in exactly that sequence; changing it silently voids
  * every certificate the store has ever issued.
  */
-const CERT_FIELDS = [
+export const CERT_FIELDS = [
   "cert_id",
   "item",
   "patron_number",

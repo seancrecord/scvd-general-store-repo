@@ -317,6 +317,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The trust model per artifact class: what bytes each signature covers, who holds the key, and the one thing a valid signature does not prove. Names the classes that sit on the weakest available trust model, and lists what this store has not built. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/rights": {
+        get: freeOp(
+          "What you own once you buy it",
+          "Who owns an artifact bought here, whether it transfers, and what may be done with it. You own it completely from settlement; the store has custody only. It is immutable after signing and the signature makes that checkable. It transfers, because these are bearer artifacts and no register of owners is kept. Redistribution is permitted including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee. Carries the rulings as booleans beside the prose. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
+      "/wind-down": {
+        get: freeOp(
+          "If the lights go off",
+          "What happens to anything this store holds for you if it closes for good, decided in advance and dated: signed artifacts, private confessions, held grudges and the public wall each get a different ending. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
       "/pulse.json": {
         get: freeOp(
           "The funnel, denominator included",

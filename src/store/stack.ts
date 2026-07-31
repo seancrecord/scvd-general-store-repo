@@ -94,11 +94,11 @@ export const STACK_DEPENDENCIES: readonly StackDependency[] = [
     name: "The store's own ed25519 signing key",
     role: "Signs every certificate, every attestation, the trust list, and the house ledger.",
     when_it_fails:
-      "If it is lost, nothing new can be signed and every artifact ever issued becomes unverifiable. If it is stolen, anything can be signed in our name, which is worse.",
+      "If it is lost, nothing new can be signed under it. If it is stolen, anything can be signed in our name, which is worse — and no backup helps with that, because a thief holding the key and the keeper holding the key produce identical signatures.",
     what_you_lose:
-      "The thing you actually bought. A certificate whose key cannot be checked is a sentence rather than an artifact. This is the one dependency with no substitute and no recovery, which is why signature tenure is treated here as the asset that cannot be bought back.",
+      "Less than this entry used to claim, and the correction is worth more than the reassurance. It said every artifact ever issued would become unverifiable if the key were lost. THAT WAS NEVER TRUE: the public key and the exact signed bytes are already out of our hands, published and copied, so anything already signed stays checkable by anyone holding it whatever happens to us. What a lost key actually costs is the FUTURE — nothing new could ever join the record. There is no substitute for this key, and since 2026-07-31 there is recovery from loss: it exists offline on paper, in more than one place. Not from theft, which no backup addresses. Signature tenure is still the asset that cannot be bought back.",
     how_to_check:
-      "The public key hangs at /.well-known/scvd-signing-key and rides inside every JSON 402 body, so you can verify a signature without a second request.",
+      "The public key hangs at /.well-known/scvd-signing-key and rides inside every JSON 402 body, so you can verify a signature without a second request. That endpoint also publishes key_history: every key this store has ever signed with, retired ones kept forever with their service dates, so an artifact older than the current key stays attributable to us. One handover so far, 2026-07-31, announced before the new key signed anything and signed by the outgoing key.",
     substitutable: "no",
   },
   {

@@ -30,6 +30,7 @@
  * for several classes the honest answer is "it proves we said this on
  * this date, and nothing more."
  */
+import { CERT_FIELDS } from "@/lib/signing";
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 import { RETIRED_KEYS } from "@/store/key-registry";
 
@@ -88,7 +89,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     name: "Certificates of purchase",
     trust_model: "self_signed",
     signs:
-      "The canonical JSON of the certificate's own fields, in a fixed declared order: cert_id, item, patron_number, date, then any of name, tip_usdc, note, win, tag, attests that are present. The exact string is served as signed_payload on the verify response, so nothing has to be reconstructed.",
+      `The canonical JSON of the certificate's own fields, in a fixed declared order: ${CERT_FIELDS.join(", ")} — every one of those that is present. DERIVED FROM THE SIGNING CODE, NOT TYPED BESIDE IT: this sentence was hand-written and had fallen a day behind by 2026-07-31, omitting made_by and then the five payment fields, on the page whose entire job is stating exactly what bytes a signature covers. paid_usdc is the TOTAL settled rather than the tip, payer is the paying wallet (chain-verifiable, unlike a chosen name), and settlement_tx is the on-chain transaction. The exact string is served as signed_payload on the verify response, so nothing has to be reconstructed.`,
     does_not_prove:
       "That the goods were delivered, that they were any good, or that the buyer was who they said. It proves this store issued this certificate, with these fields, on this date.",
     verify_url: "/api/verify/{cert_id}",

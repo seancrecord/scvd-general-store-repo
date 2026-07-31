@@ -57,13 +57,32 @@ describe("/stack", () => {
     }
   });
 
-  it("names the signing key as the one thing with no recovery", async () => {
+  it("names the signing key as the one thing with no substitute", async () => {
+    /**
+     * WAS PINNED TO "no substitute and no recovery" and had to change
+     * twice over in one week, which is the useful part. "No recovery"
+     * stopped being true the day a paper backup existed. And the
+     * sentence beside it — that a lost key would make every artifact
+     * ever issued unverifiable — was NEVER true: the public key and
+     * the signed bytes are already published and copied, so anything
+     * signed stays checkable whatever happens to us. A lost key costs
+     * the future, not the past.
+     *
+     * So this now pins what survives both corrections: there is no
+     * substitute for this key, and the honest limit is that a backup
+     * addresses loss and does nothing about theft. Neither can stop
+     * being true under this design.
+     */
     const key = STACK_DEPENDENCIES.find((entry) =>
       entry.name.includes("signing key"),
     );
     expect(key, "the signing key is not in its own dependency list").toBeTruthy();
     expect(key?.substitutable).toBe("no");
-    expect(key?.what_you_lose).toContain("no substitute and no recovery");
+    expect(key?.what_you_lose).toContain("no substitute for this key");
+    expect(
+      key?.what_you_lose,
+      "the entry no longer admits that a backup does nothing about theft",
+    ).toMatch(/not from theft/i);
   });
 
   it("admits the host is the worst failure for a buyer", async () => {

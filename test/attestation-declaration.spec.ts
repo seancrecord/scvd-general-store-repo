@@ -1,3 +1,4 @@
+import { CERT_FIELDS } from "@/lib/signing";
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
@@ -141,5 +142,31 @@ describe("what we sign, and whose word you are taking", () => {
     expect(page).toContain("What this store does not have");
     const xml = await (await SELF.fetch(`${BASE}/sitemap.xml`)).text();
     expect(xml).toContain(`<loc>${BASE}/attestation</loc>`);
+  });
+});
+
+/**
+ * THE PAGE THAT STATES WHAT IS SIGNED CANNOT LAG WHAT IS SIGNED.
+ *
+ * Found by a site pass on 2026-07-31, a day after it went wrong. The
+ * certificate class's `signs` sentence was hand-written and had
+ * silently dropped behind CERT_FIELDS twice — first missing made_by,
+ * then the five payment fields — on the one page whose entire job is
+ * telling a reader exactly which bytes a signature covers. A prose
+ * list beside a code list is two sources of truth for one fact, which
+ * is the defect this store keeps finding in itself.
+ */
+describe("what the page says is signed is what is actually signed", () => {
+  it("names every field in the canonical form, derived rather than typed", () => {
+    const certificate = ARTIFACT_CLASSES.find(
+      (entry) => entry.id === "certificate",
+    );
+    expect(certificate).toBeTruthy();
+    for (const field of CERT_FIELDS) {
+      expect(
+        certificate?.signs,
+        `/attestation does not tell a reader that ${field} is covered by the signature`,
+      ).toContain(field);
+    }
   });
 });
