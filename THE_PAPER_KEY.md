@@ -22,8 +22,24 @@ There is no "reveal" button and no API that returns it. So a paper
 backup can only be made from a copy that still exists somewhere on your
 side.
 
-You generated it with `npm run keys:generate`, which printed it to a
-terminal. Places it might still be:
+> ### DO NOT RUN `npm run keys:generate` TO SEE IT.
+>
+> Added 2026-07-31, because the sentence below caused exactly this and
+> the fix belongs above it rather than after it. **That command invents
+> a NEW random key every time it runs.** It cannot show you the one the
+> store is using — nothing can, that is what "write-only" means — so
+> running it produces sixty-four characters that look precisely like
+> the answer and are not connected to your store at all. A page of them
+> written down in good faith is not a backup; it is a stranger's key.
+>
+> There is no command that displays the live seed. If you cannot find
+> an existing copy, the honest outcome is the second branch below, not
+> a freshly generated number.
+
+You generated it originally with `npm run keys:generate`, which printed
+it to a terminal **at the time**, and you then pushed that value into
+Cloudflare with `wrangler secret put`. The copy you are looking for is
+whatever survived from that day. Places it might still be:
 
 - terminal scrollback, if that window is somehow still open
 - your shell history, if you ever pasted it into a command
