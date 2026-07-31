@@ -44,7 +44,7 @@ import {
 import { VOICE } from "@/store";
 import {
   attributeKey,
-  FIRST_KEY_IN_SERVICE_FROM,
+  currentKeyInServiceFrom,
   retiredKeysFor,
   rotationsPerformed,
 } from "@/store/key-registry";
@@ -379,7 +379,7 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
       current: {
         public_key: publicKey,
         status: "current",
-        in_service_from: FIRST_KEY_IN_SERVICE_FROM,
+        in_service_from: currentKeyInServiceFrom(publicKey),
       },
       retired: retiredKeysFor(publicKey),
       rotations_performed: rotationsPerformed(publicKey),

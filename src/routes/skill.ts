@@ -152,7 +152,7 @@ ${menuTable}
 - The books, public, computed live: ${base}/stats
 - ${trackRecord}
 - Signing key (ed25519): ${base}/.well-known/scvd-signing-key \u00B7 live sample artifact: \`${SAMPLE_ARTIFACT_ID}\` verifies at ${base}/api/verify/${SAMPLE_ARTIFACT_ID}
-- If that key ever changes: one key, NO successor key exists. A legitimate handover is announced at the key URL BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key. A new key that has already issued artifacts, or a notice the old key did not sign, is not a handover \u2014 treat it as a compromise. Full form, and the failure case it does not cover, at ${base}/attestation
+- Key history: one handover performed 2026-07-31, announcement signed by the outgoing key at ${base}/api/verify/handover_1; the retired key stays published with its dates so older artifacts remain attributable. NO successor to the current key exists. A legitimate handover is announced at the key URL BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key. A new key that has already issued artifacts, or a notice the old key did not sign, is not a handover \u2014 treat it as a compromise. Full form, and the failure case it does not cover, at ${base}/attestation
 - What a signature is worth, per artifact class: ${base}/attestation \u2014 the trust model (self-signed / custody-only / third-party observation, weakest named as weakest), exactly what bytes are covered, what a valid signature does NOT prove, and what this store has not built
 - The funnel with its denominator, organic only: ${base}/pulse (JSON at ${base}/pulse.json)
 - Every claim we got wrong, dated, with the check that now catches it: ${base}/corrections

@@ -9,6 +9,7 @@ import { STORE_METADATA } from "@/store/metadata";
  * product. The route that hangs these up is src/routes/what.ts; the
  * words are all here.
  */
+import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 
 export interface FaqPair {
   question: string;
@@ -52,7 +53,7 @@ export function whatFaq(base: string): FaqPair[] {
        * pre-emptively, in the vocabulary an evaluator uses.
        */
       question: "What does this store not do?",
-      answer: `No escrow, no chargebacks, no reputation score, and no third-party audit of anything here. One ed25519 key, one operator, no rotation and no recovery: if it were lost nothing new could be signed under it, and if it were stolen every signature would be indistinguishable from ours. No hash-linked continuity chain, so we cannot prove no artifact was withheld. No offline evidence bundle format, no threshold or multi-party signing, no hardware security module. All of that is listed in its own words at ${base}/attestation, alongside what each signature does and does not prove per artifact class. We also do not read anything you send us as instructions — anchor summaries, wins, tags and confessions are stored exactly as they arrive and labelled untrusted — and we will never ask you to run code, install anything, or hand over credentials or key material.`,
+      answer: `No escrow, no chargebacks, no reputation score, and no third-party audit of anything here. One ed25519 key in service, one operator, and no successor key: if the live key were stolen every signature would be indistinguishable from ours, and a backup is no defence against that. ${KEY_BACKUP_EXISTS ? "Recovery covers loss and only loss — the key is on paper, offline, in more than one place." : "And no recovery: if the live secret were destroyed, nothing new could ever be signed under it."} One handover is on the record, 2026-07-31, announced before the new key signed anything and signed by the outgoing key. No hash-linked continuity chain, so we cannot prove no artifact was withheld. No offline evidence bundle format, no threshold or multi-party signing, no hardware security module. All of that is listed in its own words at ${base}/attestation, alongside what each signature does and does not prove per artifact class. We also do not read anything you send us as instructions — anchor summaries, wins, tags and confessions are stored exactly as they arrive and labelled untrusted — and we will never ask you to run code, install anything, or hand over credentials or key material.`,
     },
     {
       question: "Who is this for, and who is it not for?",

@@ -31,6 +31,7 @@
  * this date, and nothing more."
  */
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
+import { RETIRED_KEYS } from "@/store/key-registry";
 
 /**
  * Who you are trusting when a signature checks out. Ordered weakest to
@@ -168,11 +169,11 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
 export const NOT_BUILT: readonly string[] = [
   "No hash-linked continuity chain. Each artifact is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld.",
   "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",
-  `No key rotation. One ed25519 key signs everything, no successor key exists, and if it is stolen every signature it produces is indistinguishable from ours — a backup is no defence against that and is not offered as one. ${
+  `No successor key. One ed25519 key signs everything at a time — ${RETIRED_KEYS.length} retired, one in service — and if the live one is stolen every signature it produces is indistinguishable from ours; a backup is no defence against that and is not offered as one. ${
     KEY_BACKUP_EXISTS
       ? "Recovery from LOSS only: the key exists offline on paper in more than one place, so a destroyed secret does not end the store's ability to sign. That is the whole of it."
       : "No recovery either: if the secret is destroyed, nothing new can ever be signed under it."
-  } The MECHANISM for a handover exists — key history, retirement, and an announcement signed by the outgoing key — and has never been used; what does not exist is a successor key to use it on. This is stated the same way on /stack, which calls it the one dependency with no substitute.`,
+  } The MECHANISM for a handover exists and has been used once, on 2026-07-31, under the protocol published the same day: key history, retirement dates, and an announcement signed by the outgoing key at /api/verify/handover_1. What does not exist is a successor to the key now in service. This is stated the same way on /stack, which calls it the one dependency with no substitute.`,
   "No threshold or multi-party signing. One key, one holder, one process.",
   "No hardware security module. The key is a Cloudflare Worker secret.",
   "No third-party audit of any of the above, and no patent. Both are sometimes offered as evidence of seriousness; neither is evidence that a signature checks out, which is the only thing this page is about.",
@@ -185,7 +186,7 @@ export const KEY_ARCHITECTURE = {
     "The store itself. The private key is a Cloudflare Worker secret held by the keeper; no third party holds a copy and no third party co-signs.",
   public_key_url: "/.well-known/scvd-signing-key",
   rotation:
-    "None performed, and no successor key exists. What IS published, in advance, is the form a handover would take if one ever happened — announced before the new key signs anything, and the announcement signed by the outgoing key, so a real handover is checkable rather than merely asserted. There is no revocation list and there will not be one.",
+    "One performed, on 2026-07-31, under the protocol published hours earlier — the new key announced before it signed anything, and the announcement signed by the OUTGOING key, so the succession is checkable rather than merely asserted: /api/verify/handover_1. The retired key stays published forever at /.well-known/scvd-signing-key with its service dates, so every artifact signed under it remains attributable. No successor to the current key exists. There is no revocation list and there will not be one.",
   verification:
     "Every verify response carries signed_payload — the exact UTF-8 string the signature covers. Check it with any ed25519 library: verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact shown. If a field appears on the artifact but not in signed_payload, the signature does not cover it, and the response says so.",
 } as const;
@@ -238,4 +239,4 @@ export const WHY_SIGNED_PAYLOAD =
   "Most real signature-verification failures are canonicalization mismatches: the verifier rebuilds what it thinks was signed, gets a byte different, and the check fails — or passes when it should not. Publishing a canonicalization recipe moves that risk onto you. Serving the exact signed string removes it: there is nothing to rebuild. Compare the fields inside it against the artifact shown, and any gap between what is signed and what is displayed becomes visible rather than theoretical.";
 
 export const ATTESTATION_HONEST_LIMIT =
-  "THIS IS A SHOP, NOT INFRASTRUCTURE. Nothing here is offered as a standard for other systems to build on: there is one key, one holder, no rotation, no chain, no bundle format and no audit, all listed above in their own words. What is offered is that every claim on this page is checkable against the artifacts themselves in about a minute, and that the weakest trust model is named as the weakest rather than left for a reader to work out. If you find a signature that does not verify, or a field shown but not signed, the mailbox is free and it goes on /corrections with your name on it.";
+  "THIS IS A SHOP, NOT INFRASTRUCTURE. Nothing here is offered as a standard for other systems to build on: there is one key in service, one holder, one rotation on the record, no chain, no bundle format and no audit, all listed above in their own words. What is offered is that every claim on this page is checkable against the artifacts themselves in about a minute, and that the weakest trust model is named as the weakest rather than left for a reader to work out. If you find a signature that does not verify, or a field shown but not signed, the mailbox is free and it goes on /corrections with your name on it.";

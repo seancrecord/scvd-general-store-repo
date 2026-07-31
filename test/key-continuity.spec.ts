@@ -52,7 +52,12 @@ describe("no continuity claim runs ahead of the fact", () => {
     // This entry used to be a fixed string saying "no rotation and no
     // recovery". It would have gone false the day a backup existed and
     // sat there contradicting the continuity section on the same page.
-    const entry = NOT_BUILT.find((line) => line.includes("key rotation"));
+    // Finds by "successor key" rather than "key rotation": the entry
+    // was reworded when the store actually rotated, and a finder keyed
+    // to the old phrasing silently matched nothing and asserted on
+    // undefined — a test that passes by finding no subject is worse
+    // than one that fails.
+    const entry = NOT_BUILT.find((line) => line.includes("successor key"));
     expect(entry).toBeTruthy();
     if (KEY_BACKUP_EXISTS) {
       expect(entry).toContain("Recovery from LOSS only");

@@ -86,6 +86,32 @@ export const RETIRED_KEYS: readonly RetiredKey[] = [
  */
 export const FIRST_KEY_IN_SERVICE_FROM = "2026-07-22";
 
+/**
+ * WHEN THE KEY NOW IN THE LOCK ENTERED SERVICE.
+ *
+ * DERIVED, after the first handover published it wrong. The endpoint
+ * served a constant — correct for key #1, and still saying 2026-07-22
+ * about key #2 the instant the secret changed, which dated the new key
+ * nine days before it existed. A key's service window is exactly the
+ * fact a holder uses to place an artifact in time, so getting it wrong
+ * is not cosmetic: it would have vouched for the new key over a period
+ * when it had signed nothing.
+ *
+ * A key enters service the day the one before it retired. That is a
+ * fact the registry already holds, so it is read rather than typed,
+ * and the next handover cannot repeat this.
+ */
+export function currentKeyInServiceFrom(currentPublicKeyHex: string): string {
+  const retired = retiredKeysFor(currentPublicKeyHex);
+  if (retired.length === 0) {
+    return FIRST_KEY_IN_SERVICE_FROM;
+  }
+  return retired
+    .map((entry) => entry.retired_on)
+    .sort()
+    .slice(-1)[0] as string;
+}
+
 export type KeyStatus = "current" | "retired" | "unrecognised";
 
 export interface KeyAttribution {

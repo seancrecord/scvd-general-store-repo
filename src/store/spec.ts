@@ -7,13 +7,32 @@
  * the machine to the canonical "Returns:" form; recut freely, the
  * spec plumbing never needs touching for a wording change.
  */
+import { RETIRED_KEYS } from "@/store/key-registry";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
 
-/** S2: the identity policy, one line, published wherever the key is. */
+/**
+ * S2: the identity policy, one line, published wherever the key is.
+ *
+ * REWRITTEN 2026-07-31, AT THE MOMENT IT BECAME FALSE. It read "this
+ * key, this wallet, this domain, never rotated; any future change will
+ * be versioned with permanent history" — and the store rotated its
+ * signing key that afternoon, which turned the first clause into a lie
+ * on a line published beside the key itself. The second clause was
+ * kept, exactly: the change WAS versioned with permanent history, so
+ * the promise was honoured by the same act that broke the boast.
+ *
+ * THE STALE-CLAIM DEFECT, ON THE HANDOVER THAT WAS FIXING THE STALE-
+ * CLAIM DEFECT. A sentence true when typed, false the instant a
+ * secret changed, sitting on the most machine-read surface the store
+ * has. So the rotation count is READ FROM THE REGISTRY rather than
+ * described, and the wording says what the policy actually promises —
+ * that changes are announced and permanently recorded — instead of
+ * boasting about a streak that any handover ends.
+ */
 export const IDENTITY_POLICY =
-  "This key, this wallet, this domain, never rotated; any future change will be versioned with permanent history.";
+  `This wallet, this domain, and ${RETIRED_KEYS.length + 1} signing key${RETIRED_KEYS.length === 0 ? "" : "s"} — ${RETIRED_KEYS.length} retired, ${RETIRED_KEYS.length === 0 ? "none" : "each"} kept published forever with its dates and the signed announcement that retired it. A key change here is announced before the new key signs anything and the announcement is signed by the outgoing key; nothing is ever quietly swapped. Full history at /.well-known/scvd-signing-key, policy at /attestation.`;
 
 /** C3: the guaranteed / not-guaranteed split, storewide, verbatim. */
 export const GUARANTEED: readonly string[] = [

@@ -85,7 +85,9 @@ describe("every proof /what offers actually answers", () => {
 describe("the store says what it is not", () => {
   const MUST_ADMIT = [
     "no escrow",
-    "no rotation",
+    // WAS "no rotation", true until the afternoon of 2026-07-31. The
+    // absence that survived the handover is the successor key.
+    "no successor key",
     "no recovery",
     "no third-party audit",
     "reputation score",
@@ -123,6 +125,6 @@ describe("the store says what it is not", () => {
     };
     const joined = body.faq.map((pair) => pair.answer).join(" ").toLowerCase();
     expect(joined).toContain("no escrow");
-    expect(joined).toContain("no rotation");
+    expect(joined).toContain("no successor key");
   });
 });

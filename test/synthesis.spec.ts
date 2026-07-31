@@ -97,7 +97,12 @@ describe("S2: verification adjacency on the 402", () => {
     expect(String(verification["key_fingerprint"])).toMatch(/^[0-9a-f]{64}$/);
     expect(verification["sample_artifact_id"]).toBe("cert_4dww28dx5j");
     expect(String(verification["identity_policy"])).toContain(
-      "never rotated",
+      // WAS "never rotated". The store rotated 2026-07-31 and the
+      // policy line had to stop boasting about a streak any handover
+      // ends. What the policy actually promises, and what this now
+      // pins, is that a change is announced before the new key signs
+      // and the announcement is signed by the outgoing key.
+      "signed by the outgoing key",
     );
     expect(String(body["spec_note"])).toContain("Returns:");
     const spec = body["spec"] as Record<string, unknown>;
@@ -111,7 +116,9 @@ describe("S2: verification adjacency on the 402", () => {
     );
     const verification = challenge["verification"] as Record<string, unknown>;
     expect(verification["key_fingerprint"]).toBe(wellKnown["public_key"]);
-    expect(String(wellKnown["identity_policy"])).toContain("never rotated");
+    expect(String(wellKnown["identity_policy"])).toContain(
+      "signed by the outgoing key",
+    );
   });
 });
 

@@ -2,7 +2,7 @@ import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
   attributeKey,
-  FIRST_KEY_IN_SERVICE_FROM,
+  currentKeyInServiceFrom,
   RETIRED_KEYS,
   retiredKeysFor,
   rotationsPerformed,
@@ -67,8 +67,12 @@ describe("an artifact says which of our keys signed it", () => {
       };
     };
     expect(body.key_history.current.public_key).toBe(body.public_key);
+    // Derived, not constant. The endpoint served FIRST_KEY_IN_SERVICE_FROM
+    // straight after the first handover, which dated key #2 nine days
+    // before it existed — a key's service window is exactly the fact a
+    // holder uses to place an artifact in time.
     expect(body.key_history.current.in_service_from).toBe(
-      FIRST_KEY_IN_SERVICE_FROM,
+      currentKeyInServiceFrom(body.public_key),
     );
     expect(body.key_history.retired).toEqual(
       retiredKeysFor(body.public_key),

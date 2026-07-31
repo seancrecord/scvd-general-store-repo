@@ -66,7 +66,12 @@ describe("what we sign, and whose word you are taking", () => {
     const missing = (body["not_built"] as string[]).join(" ").toLowerCase();
     for (const absence of [
       "continuity chain",
-      "rotation",
+      // WAS "rotation", until the store rotated on 2026-07-31 and the
+      // absence stopped being an absence. The durable one underneath it
+      // is the successor key: no key is pre-announced against the key
+      // now in service, and a handover therefore still depends on the
+      // outgoing key being able to sign at the time.
+      "successor key",
       "threshold",
       "hardware security module",
       "audit",
@@ -101,7 +106,17 @@ describe("what we sign, and whose word you are taking", () => {
     expect(key["algorithm"]).toBe("ed25519");
     expect(key["key_count"]).toBe(1);
     expect(String(key["public_key_url"])).toContain("scvd-signing-key");
-    expect(String(key["rotation"]).toLowerCase()).toContain("none");
+    /**
+     * PINNED TO THE PROPERTY, NOT THE COUNT. This asserted "none" and
+     * broke the afternoon the store performed its first handover —
+     * a test encoding a fact with an expiry date rather than the
+     * commitment that outlives it. What must always be true of this
+     * field is the ordering and the outgoing signature, whatever the
+     * number of rotations happens to be.
+     */
+    const rotation = String(key["rotation"]).toLowerCase();
+    expect(rotation).toContain("outgoing key");
+    expect(rotation).toContain("before");
     expect(String(key["holder"])).toContain("no third party");
   });
 
