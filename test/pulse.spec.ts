@@ -295,3 +295,77 @@ describe("the pulse has a face", () => {
     expect(front).not.toContain("/pulse");
   });
 });
+
+/**
+ * A RATE THAT CONTRADICTS THE ROW IT SITS ON.
+ *
+ * Found 2026-07-30 by the keeper reading the live payload: organic_settled 1
+ * beside conversion_rate 0. The rate rounded to three decimals, which
+ * annihilates anything under 0.0005, and one sale against 7,892 challenges
+ * is 0.000127. So the page published a zero on a window that had a sale in
+ * it — the exact number its own copy swears it will never print, because
+ * "0% would say agents were offered something and declined."
+ *
+ * Third time this store has shipped two correct-looking numbers arranged so
+ * they read as a contradiction, after the Sources-versus-event-row report
+ * and the recount's drift verdict. The pattern is always the same: a
+ * display rule applied to a value it was never sized for.
+ */
+describe("the conversion rate keeps its three states apart", () => {
+  const rateOf = (settled: number, challenges: number): number | null => {
+    if (challenges <= 0) return null;
+    if (settled === 0) return 0;
+    return Number((settled / challenges).toPrecision(3));
+  };
+
+  it("never rounds a real sale down to nothing", () => {
+    // The live shape, and every shape worse than it.
+    for (const [settled, challenges] of [
+      [1, 7892],
+      [1, 5083],
+      [1, 100000],
+      [2, 999999],
+    ] as const) {
+      const value = rateOf(settled, challenges);
+      expect(
+        value,
+        `${settled} of ${challenges} published as ${value}: a sale rounded away`,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it("still prints a real zero as zero", () => {
+    // The opposite error is worse: a store that cannot say "nobody paid"
+    // when nobody paid has stopped publishing a funnel.
+    expect(rateOf(0, 5000)).toBe(0);
+  });
+
+  it("still prints undefined as null, never as zero", () => {
+    expect(rateOf(0, 0)).toBeNull();
+  });
+});
+
+describe("the rendered rate agrees with the row it is on", () => {
+  it("never shows a zero rate beside a settlement", async () => {
+    const page = await (
+      await SELF.fetch("https://scvd.store/pulse", {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    const rows = [...page.matchAll(/<tr>[\s\S]*?<\/tr>/g)].map((m) => m[0]);
+    for (const row of rows) {
+      const cells = [...row.matchAll(/<td>([\s\S]*?)<\/td>/g)].map((m) =>
+        m[1]!.replace(/<[^>]*>/g, "").trim(),
+      );
+      if (cells.length < 6) continue;
+      const settled = Number(cells[3]);
+      const rate = cells[5] ?? "";
+      if (Number.isFinite(settled) && settled > 0) {
+        expect(
+          rate,
+          `a row with ${settled} settled shows rate "${rate}"`,
+        ).not.toMatch(/^0(\.0+)?%/);
+      }
+    }
+  });
+});
