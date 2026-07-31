@@ -51,6 +51,24 @@ write it out properly if we get there.
 
 Do it in one sitting. Do not stop halfway.
 
+> ### NOTHING IN THIS PROCEDURE TOUCHES CLOUDFLARE.
+>
+> Asked and answered 2026-07-31, and it is the one question worth
+> putting above the steps rather than inside them. Cloudflare already
+> has the key. `wrangler secret put SIGNING_KEY` is how it got IN; it
+> is not part of backing it up, and there is no Cloudflare dashboard
+> step either.
+>
+> **Do not re-run `wrangler secret put`.** It OVERWRITES. Paste the
+> seed back with one character wrong and you have silently replaced
+> the store's signing key — and because `/.well-known/scvd-signing-key`
+> derives the public key from that secret at request time, the store
+> would begin publishing a different key while every certificate,
+> stamp, anchor and attestation ever issued quietly stopped verifying
+> against it. No error, no warning, and the failure is in the one claim
+> the whole store rests on. There is no upside either, since the value
+> you would be typing is the value already there.
+
 **What you need:** the machine that has the seed on it, two pieces of
 paper, a pen that is not a pencil, and about fifteen minutes with the
 door shut.

@@ -33,6 +33,23 @@ landed the day you ran `npm run keys:generate`.
   deliberately, now, while it is cheap. That is yours and it is not an
   end-of-night decision.
 
+**2026-07-31: you have it, on paper. Ceremony A, not the fork.** Three
+things left, and none of them is in Cloudflare:
+
+1. `npm run keys:check`, wifi off, typed in FROM the paper — **both
+   sheets**. Two sheets and one check is one backup and one guess.
+2. Separate them physically. Don't tell me or any agent where.
+3. Destroy the digital copies — file, scrollback, shell history,
+   clipboard.
+
+**NOTHING IN CLOUDFLARE, and specifically do not re-run `wrangler
+secret put`.** It overwrites. One wrong character silently replaces the
+store's signing key, the public key endpoint starts publishing the new
+one, and every artifact ever issued stops verifying — no error, no
+warning. The value you'd be typing is already there. Asked and answered;
+now written above the steps in `THE_PAPER_KEY.md` rather than left to
+come up again.
+
 **When it's done, say so and I flip one flag.** `KEY_BACKUP_EXISTS`
 goes false → true and `/attestation`, its JSON, the `not_built` list
 and `llms.txt` all follow from that one line. Until then the store says
