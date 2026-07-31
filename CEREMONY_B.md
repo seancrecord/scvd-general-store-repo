@@ -221,18 +221,49 @@ PHASE 5. Either is fine.
 
 ## PHASE 3 — THE ANNOUNCEMENT
 
-**Mine, then a ten-minute read from you.**
+**YOURS. Corrected 2026-07-31, having originally been written as mine.**
 
-I sign a handover announcement with the OUTGOING key — the one still
-live in Cloudflare — naming your new public key, dated, served at its
+The first draft of this runbook said I would mint the announcement. I
+cannot, and saying so late would have been the deploy mistake again:
+minting has to happen on the LIVE store with the LIVE key, this
+environment cannot reach scvd.store at all, and I do not have the
+office password. Neither of those is a thing I should have needed
+reminding of.
+
+So it is a form in the office, at `/admin/tools`, under **Key
+handover**. A form and not a curl because a curl would put the office
+password in your shell history.
+
+The store signs the announcement with the OUTGOING key — the one still
+live in Cloudflare — naming the new public key, dated, served at its
 own verify URL. It goes out **before** the new key signs anything,
 which is protocol rule 1.
 
-Before it deploys I will send you the announcement copy to rewrite.
-It is a statement in the store's voice about losing a key, so **rule 7
-applies and it is your pen.** I will draft; you will fix it.
+### 3.1 What you paste in
 
-When it deploys, the store is publicly committed: key #1 is retiring,
+- **Incoming PUBLIC key** — the 64 characters `keys:check` printed
+  back. Never the seed. Nothing in this store ever wants a seed.
+- **Reason** — agreed in advance and pasted whole. It is signed with
+  everything else, so it is PERMANENT: editing it later would break its
+  own signature. Rule 7, his pen; settle the words before pressing the
+  button, never after.
+
+### 3.2 What comes back
+
+JSON with the `handover_id`, its verify URL, and the outgoing public
+key **read from the signature rather than from anything typed in**.
+Send me all three. The outgoing key is the value that goes into
+`RETIRED_KEYS`, and until that entry exists every artifact signed by
+the old key reads as `unrecognised` rather than `retired`.
+
+### 3.3 Check it before going further
+
+Open the verify URL. `valid` must be `true` and `signed_by.status`
+must read `current` — at this moment the outgoing key IS still the
+current key, which is exactly right and is the last moment that will
+be true.
+
+When it is live, the store is publicly committed: key #1 is retiring,
 key #2 is named, and the notice is signed by key #1 so anybody can
 check that the retiring holder blessed the successor.
 

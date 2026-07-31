@@ -248,6 +248,41 @@ export function renderToolsPage(data: ToolsPageData): string {
   </section>
 
   <section>
+    <h2>Key handover</h2>
+    <p><strong>The most consequential button in this office.</strong> It
+    mints a signed announcement that the key everything on this store
+    verifies against is changing — signed by the key being RETIRED,
+    which is what makes a real handover distinguishable from somebody
+    who has taken over the page. Read <code>CEREMONY_B.md</code> before
+    touching it.</p>
+    <p>A form and not a script, because a lever this size wants a hand
+    on it and a password typed into a browser rather than into a shell
+    history. Nothing schedules this and nothing else can call it.</p>
+    <p><strong>Order is the whole protocol.</strong> Mint FIRST, while
+    the outgoing key is still the live secret — that is what puts the
+    outgoing key's signature on the notice. Replace the
+    <code>SIGNING_KEY</code> secret only AFTER this has been minted and
+    checked. Minted afterwards, it is the new key vouching for itself
+    and worth nothing.</p>
+    <p>The incoming value is a <strong>PUBLIC key</strong>: the 64
+    characters <code>npm run keys:check</code> printed back. Never a
+    seed. Nothing here ever wants a seed.</p>
+    <p>The reason is published exactly as written and is signed with
+    everything else, so it is permanent — editing it afterwards would
+    break its own signature. Write it before you press this, not after.</p>
+    <form method="POST" action="/admin/keys/handover">
+      <label for="incoming_public_key">Incoming PUBLIC key (64 hex)</label>
+      <input type="text" id="incoming_public_key" name="incoming_public_key"
+             pattern="[0-9a-fA-F]{64}" maxlength="64" required
+             placeholder="the derived public key, never the seed">
+      <label for="handover_reason">Why, in plain words (permanent)</label>
+      <textarea id="handover_reason" name="reason" rows="10" required
+                placeholder="Published verbatim and signed. This is the sentence people will quote."></textarea>
+      <button type="submit">Mint the handover announcement</button>
+    </form>
+  </section>
+
+  <section>
     <h2>Odds and ends</h2>
     <p><a href="/admin/digest">Latest weekly digest (JSON)</a></p>
   </section>`;
