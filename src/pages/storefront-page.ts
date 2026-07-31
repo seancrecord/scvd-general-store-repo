@@ -158,8 +158,34 @@ function roomsFooterHtml(): string {
  * "USD" would parse better and would not be true, and this store
  * loses more by being approximately right than by being unparsed.
  */
+/**
+ * THE ONE ESCAPE AN INLINE <script> BLOCK NEEDS.
+ *
+ * JSON inside a script tag is not HTML, so escapeHtml is the wrong
+ * tool and would corrupt it. But the HTML parser does not know it is
+ * looking at JSON: it ends the block at the first `</script`,
+ * wherever that appears — including inside a string. One `<` in a
+ * keeper-written item description and the storefront's structured
+ * data stops parsing, silently as far as any answer engine is
+ * concerned, with markup after it landing in the document.
+ *
+ * `\u003c` is the fix and it is free: JSON.parse decodes it back to
+ * `<`, so every consumer sees the original string, while the HTML
+ * parser never sees a tag at all. Applied to the serialized output
+ * rather than to each field, so a field added later is covered
+ * without anybody remembering.
+ *
+ * Nothing in the block contains a `<` today. That is exactly why it
+ * is worth doing now: the descriptions this maps over are the
+ * keeper's to edit, and the failure would show up as answer engines
+ * quietly ignoring us rather than as anything breaking.
+ */
+function jsonLdSafe(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 function organizationJsonLd(base: string): string {
-  return JSON.stringify({
+  return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "Organization",
     // THE NAMING LAW, tier 2: JSON-LD is named in the tier-2 list.
