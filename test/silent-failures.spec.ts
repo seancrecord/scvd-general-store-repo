@@ -67,6 +67,53 @@ describe("the structured data actually parses", () => {
   });
 });
 
+/**
+ * CV'S THIRD ITEM: a number to parse instead of a paragraph to
+ * interpret. The books were public, live and honest — and entirely in
+ * prose, or in a document a schema reader has no reason to fetch. An
+ * agent doing pre-purchase diligence parses the JSON-LD on the page it
+ * is already looking at, and found no figures there at all.
+ */
+describe("the books are readable by a parser, not only a reader", () => {
+  it("publishes the organic settlement count in the structured data", async () => {
+    const html = await (
+      await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
+    ).text();
+    const match = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(
+      html,
+    );
+    const data = JSON.parse(match![1] as string) as {
+      interactionStatistic?: { userInteractionCount: number; description: string }[];
+      legalName?: string;
+    };
+    const counter = data.interactionStatistic?.[0];
+    expect(counter, "no settlement figure in the JSON-LD").toBeTruthy();
+    expect(typeof counter?.userInteractionCount).toBe("number");
+    // The method travels with the number. A count with no statement of
+    // what was excluded is a count somebody has to take on trust.
+    expect(counter?.description).toMatch(/house wallets are excluded/i);
+  });
+
+  it("names the registered entity where a diligence check looks", async () => {
+    const html = await (
+      await SELF.fetch(BASE, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(html).toContain("Record Creative Co. LLC");
+  });
+
+  it("keeps the entity out of the shop's own voice", async () => {
+    // The machine layer answers "is there a company." The rooms still
+    // say one person out of Oak City, because that is what a buyer
+    // actually deals with — the company adds no second pair of hands.
+    const what = await (
+      await SELF.fetch(`${BASE}/what`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(what, "the entity leaked into the human copy").not.toContain(
+      "Record Creative Co.",
+    );
+  });
+});
+
 describe("the contract a machine reads is a contract it can parse", () => {
   it("serves OpenAPI that parses and declares its version", async () => {
     // A spec a parser rejects is a spec nobody reads, and the failure

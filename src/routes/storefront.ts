@@ -41,6 +41,7 @@ storefrontRoutes.get("/", async (c) => {
       lettersReceived: letters.received,
       lettersAnswered: letters.answered,
       patronCount: patronRaw ? parseInt(patronRaw, 10) : 0,
+      stats,
       trackRecord: stats
         ? trackRecordLine(stats, c.env.STORE_BASE_URL)
         : undefined,

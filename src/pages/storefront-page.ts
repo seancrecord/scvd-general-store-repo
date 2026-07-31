@@ -13,6 +13,7 @@ import {
 } from "@/store";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
 import { EXTERNAL_RECORDS } from "@/store/trust-signals";
+import type { StoreStats } from "@/services/stats";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
 import {
@@ -39,6 +40,8 @@ export interface StorefrontData {
   lettersReceived: number;
   lettersAnswered: number;
   patronCount: number;
+  /** Live books, for the structured data. Absent rather than stale. */
+  stats?: StoreStats | null;
   /** C2: the honest track-record line, computed live, never hand-edited. */
   trackRecord?: string;
   /** The empty frame by the register. Null means "It's waiting." */
@@ -184,7 +187,7 @@ function jsonLdSafe(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function organizationJsonLd(base: string): string {
+function organizationJsonLd(base: string, stats?: StoreStats | null): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -196,6 +199,17 @@ function organizationJsonLd(base: string): string {
     url: "https://scvd.store",
     description: COPY.organizationDescription,
     foundingDate: "2026-07-21",
+    /**
+     * THE REGISTERED ENTITY, in the structured data only.
+     *
+     * A diligence check asks "is there a company" and schema.org has
+     * the field for it. The shop's own voice does not change: a buyer
+     * deals with one person out of Oak City, and the company adds no
+     * second pair of hands, no support desk and nobody else who can
+     * sign. It is an answer to a question, not a thing for the sign
+     * above the door.
+     */
+    legalName: "Record Creative Co. LLC",
     /**
      * THE FIELD schema.org PROVIDES FOR "here is independent record of
      * us," and the direct answer to an outside model reporting it
@@ -210,6 +224,52 @@ function organizationJsonLd(base: string): string {
      */
     ...(EXTERNAL_RECORDS.length > 0
       ? { sameAs: EXTERNAL_RECORDS.map((record) => record.url) }
+      : {}),
+    /**
+     * A NUMBER TO PARSE INSTEAD OF A PARAGRAPH TO INTERPRET.
+     *
+     * The books were already public, live and honest at /stats and
+     * /pulse.json — and entirely in prose or in a document a schema
+     * reader has no reason to fetch. An agent doing pre-purchase
+     * diligence parses the JSON-LD on the page it is already looking
+     * at, and found no figures there at all.
+     *
+     * PUBLISHED SMALL RATHER THAN NOT PUBLISHED. Organic settlements
+     * here are a single digit and the number goes out anyway, because
+     * a nine-day-old store reporting one honest settlement is a more
+     * plausible object than one reporting nothing — and the figure is
+     * checkable against /stats in the same minute. House traffic is
+     * excluded structurally rather than filtered, which is the only
+     * reason the number is worth reading at all.
+     *
+     * COMPUTED LIVE AND OMITTED ENTIRELY WHEN THE READ FAILS. A count
+     * frozen into a render would be one more hand-typed figure with an
+     * expiry date, which is the defect this store spent the day
+     * removing from four other surfaces. If stats cannot be computed
+     * the block is absent — an absent number is honest, a stale one
+     * is not.
+     *
+     * AND IT POINTS AT /stats ONLY. The first draft named /pulse.json
+     * beside it, which walked straight through the keeper's standing
+     * instruction that /pulse stays off the storefront — caught by the
+     * test that has held that line since the room shipped, for the
+     * second time. A derived or generated string is not exempt from a
+     * decision somebody made on purpose, and structured data is still
+     * the storefront speaking.
+     */
+    ...(stats
+      ? {
+          interactionStatistic: [
+            {
+              "@type": "InteractionCounter",
+              interactionType: "https://schema.org/BuyAction",
+              name: "Settled purchases from outside the house",
+              userInteractionCount: stats.organic_settlements,
+              description:
+                "Purchases settled by a wallet this store does not control. House wallets are excluded structurally at the till rather than filtered afterwards; the split, the totals and the method are at /stats.",
+            },
+          ],
+        }
       : {}),
     // When the catalog was last written or re-checked by hand. An
     // undated organization looks equally current whether it was
@@ -264,7 +324,7 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
-  <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store")}</script>
+  <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats)}</script>
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">

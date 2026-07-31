@@ -146,9 +146,21 @@ export const RECORDS_NOT_LISTED =
  */
 export const OPERATOR = {
   kind: "individual",
-  legal_entity: null,
+  /**
+   * NAMED 2026-07-31 ON THE KEEPER'S CONFIRMATION, and it was an open
+   * question until he answered it rather than something assumed either
+   * way. This field read null for a few hours, meaning "no company is
+   * claimed" — which was the honest placeholder while nobody here knew,
+   * and would have stayed the answer if there were no entity.
+   *
+   * It is here in the MACHINE layer only. The shop still speaks as one
+   * person out of Oak City, because that is what a buyer actually
+   * deals with; the registered company is the answer to a diligence
+   * question, not a thing to put on the sign.
+   */
+  legal_entity: "Record Creative Co. LLC",
   legal_entity_note:
-    "No registered company is claimed. This is one person keeping a shop, which is stated in the same words on /what and /stack. What stands in place of a company registration: the wallet the money goes to is declared and signed at /house-ledger.json, the signing key is published with its full history, and every service this store depends on and does NOT control is listed at /stack with its failure mode.",
+    "The store is operated under Record Creative Co. LLC. That is a checkable fact and it is what belongs in an automated diligence answer — but it changes nothing about what a buyer is dealing with, which is one person keeping a shop, as /what and /stack both say. The company does not add a support desk, a second pair of hands, or anyone else who can sign. What actually stands behind a purchase is unchanged: the wallet is declared and signed at /house-ledger.json, the signing key is published with its full history, and every service this store depends on and does NOT control is listed at /stack with its failure mode.",
   location: "Oak City, North Carolina",
   contact:
     "The mailbox at /api/letter — free, one a day, and a human reads every one. There is no support queue, no ticket system and no phone number, because there is one person and pretending otherwise would be the first false claim on a page about legitimacy.",
@@ -191,7 +203,7 @@ export const TRUST_ANSWERS = {
  */
 export const NOT_CLAIMED: readonly string[] = [
   "No third-party security audit of anything here, and no plans for one.",
-  "No registered company, no VAT number, no D-U-N-S.",
+  "No VAT number and no D-U-N-S. There IS a registered company — Record Creative Co. LLC — and it is worth being plain that this changes nothing operationally: it is still one person, one key, and one pair of hands on the human-labor shelf.",
   "No escrow and no chargebacks. x402 settles wallet-to-wallet; once a payment settles the money has moved. Your exposure is the price, which starts at $0.004.",
   "No insurance, no bonding, no regulator, and nothing here is offered as a financial service.",
   "One ed25519 signing key and one operator. That is the wrong root of trust for compliance, dispute resolution, or anything load-bearing, and /attestation says so on its own page rather than leaving you to work it out.",

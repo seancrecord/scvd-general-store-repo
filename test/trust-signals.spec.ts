@@ -17,16 +17,30 @@ const BASE = "https://scvd.store";
  * it at a URL a checklist knows to try.
  */
 describe("the trust document answers a diligence check", () => {
-  it("says who runs it, how to reach them, and refuses to imply a company", async () => {
+  it("states the entity as a fact rather than leaving it to be assumed", async () => {
     const body = (await (
       await SELF.fetch(`${BASE}/.well-known/trust.json`)
     ).json()) as {
       operator: { legal_entity: unknown; contact: string; kind: string };
       not_claimed: string[];
     };
-    // null rather than absent. Publishing nothing in this field lets a
-    // reader assume either answer; null is a statement.
-    expect(body.operator.legal_entity).toBeNull();
+    /**
+     * NEVER ABSENT, WHICHEVER THE ANSWER IS. This field read null for
+     * a few hours on 2026-07-31, meaning "no company is claimed" —
+     * the honest placeholder while nobody here knew, and what it would
+     * still say if there were no entity. The keeper then confirmed
+     * Record Creative Co. LLC and it became a checkable fact.
+     *
+     * Both states are correct answers; the wrong one is the field not
+     * being there, because a diligence reader finding nothing assumes
+     * whichever it already suspected.
+     */
+    expect(
+      body.operator.legal_entity === null ||
+        typeof body.operator.legal_entity === "string",
+      "the entity field is missing entirely, which answers nothing",
+    ).toBe(true);
+    expect(Object.keys(body.operator)).toContain("legal_entity");
     expect(body.operator.kind).toBe("individual");
     expect(body.operator.contact).toMatch(/api\/letter/);
     expect(body.not_claimed).toEqual(NOT_CLAIMED);
@@ -37,7 +51,19 @@ describe("the trust document answers a diligence check", () => {
       await SELF.fetch(`${BASE}/.well-known/trust.json`)
     ).json()) as { not_claimed: string[] };
     const joined = body.not_claimed.join(" ").toLowerCase();
-    for (const absence of ["no third-party security audit", "no escrow", "no registered company"]) {
+    /**
+     * "no registered company" was here until 2026-07-31, when the
+     * keeper confirmed Record Creative Co. LLC and it stopped being
+     * true — the third claim this week that had to move because a fact
+     * changed under it. What replaced it is the absence that does not
+     * move: a company does not add a second pair of hands, so the
+     * one-key, one-operator limit stands whatever the paperwork says.
+     */
+    for (const absence of [
+      "no third-party security audit",
+      "no escrow",
+      "one ed25519 signing key and one operator",
+    ]) {
       expect(joined, `the trust document never admits "${absence}"`).toContain(
         absence,
       );
