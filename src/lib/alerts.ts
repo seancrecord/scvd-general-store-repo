@@ -5,8 +5,9 @@ import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 
 /**
- * P1 alerting. Exactly four conditions page the keeper; everything
- * else belongs in the Sunday digest. Email rides Resend's plain HTTPS
+ * P1 alerting. A short list of conditions pages the keeper — see
+ * ALERT_CONDITIONS below, which is the list rather than a description
+ * of one; everything else belongs in the Sunday digest. Email rides Resend's plain HTTPS
  * API (simplest reliable send from a Worker: one fetch, one secret,
  * no bindings to configure), when RESEND_API_KEY/ALERT_EMAIL are
  * unset, alerts still log to console and to KV, so a mute store never
@@ -14,15 +15,32 @@ import { outboundHeaders } from "@/lib/identity";
  * paging more than once every six hours.
  */
 
-export type AlertCondition =
-  | "settlement_failure"
-  | "signing_failure"
-  | "worker_health"
-  | "order_sla"
+/**
+ * THE LIST IS THE SOURCE, AND THE COUNT IS READ FROM IT.
+ *
+ * This was a union type beside a sentence that said "exactly four
+ * conditions page the keeper" — and the sentence went out in the
+ * FOOTER OF EVERY ALERT EMAIL. Three conditions were added over the
+ * following week and the footer kept saying four, so the keeper was
+ * being told a number about his own alerting that had been wrong for
+ * days. He asked what the line meant, which is how it was found.
+ *
+ * A hand-typed count in prose beside a list in code is two sources of
+ * truth for one fact — the same defect as the rotation count, the
+ * "never rotated" line and the /attestation field list, all of which
+ * broke in the same week. So the array is the list, the type is
+ * derived from the array, and the count is read from the array at the
+ * moment the email is written.
+ */
+export const ALERT_CONDITIONS = [
+  "settlement_failure",
+  "signing_failure",
+  "worker_health",
+  "order_sla",
   /** The machine-facing surfaces have gone quiet. Not a fault; a nudge. */
-  | "catalog_stale"
+  "catalog_stale",
   /** Somebody outside the house opened a wallet here and was turned away. */
-  | "payment_declined"
+  "payment_declined",
   /**
    * THE ONE THE FRONT PAGE IS WAITING ON. Fires once, ever, the first
    * time a wallet that is not ours presents a payment signature —
@@ -33,7 +51,10 @@ export type AlertCondition =
    * genuine first contact sit unflagged because their client was
    * broken, which is exactly what happened on 2026-07-28.
    */
-  | "first_outside_signature";
+  "first_outside_signature",
+] as const;
+
+export type AlertCondition = (typeof ALERT_CONDITIONS)[number];
 
 const DEDUPE_TTL_SECONDS = 6 * 60 * 60;
 const ALERT_LOG_TTL_SECONDS = 30 * 86400;
@@ -91,7 +112,7 @@ async function emailKeeper(
       from: "The Store <alerts@scvd.store>",
       to: [env.ALERT_EMAIL],
       subject: `[P1] ${condition} at the store`,
-      text: `${at}\n\n${detail}\n\nFour conditions page; this was one of them. The back room: https://scvd.store/admin`,
+      text: `${at}\n\n${detail}\n\nOne of the ${ALERT_CONDITIONS.length} conditions that page you rather than waiting for the Sunday digest; this one is "${condition}". The back room: https://scvd.store/admin`,
     }),
   });
 }
