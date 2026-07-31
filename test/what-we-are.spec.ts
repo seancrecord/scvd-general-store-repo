@@ -88,7 +88,17 @@ describe("the store says what it is not", () => {
     // WAS "no rotation", true until the afternoon of 2026-07-31. The
     // absence that survived the handover is the successor key.
     "no successor key",
-    "no recovery",
+    /**
+     * WAS "no recovery", and it was a required admission for exactly
+     * as long as it was true — 2026-07-22 to 2026-07-31, when the
+     * store finally got a paper backup of its key. Kept in spirit
+     * rather than deleted: the admission that OUTLIVES a backup is
+     * that a backup does nothing about theft, since a thief holding
+     * the key and the keeper holding the key produce identical
+     * signatures. That one can never stop being true under this
+     * design, which is what makes it the right thing to pin.
+     */
+    "indistinguishable from ours",
     "no third-party audit",
     "reputation score",
   ];

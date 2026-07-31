@@ -56,8 +56,23 @@
  * Flipping it is one line and every surface follows, including the
  * "no recovery" entry in NOT_BUILT, which would otherwise stay behind
  * and quietly contradict the rest of the page.
+ *
+ * FLIPPED 2026-07-31, on the keeper's confirmation, and it refers to
+ * KEY #2 — the key generated during the handover, written on paper and
+ * verified from the paper on two sheets before it ever signed
+ * anything, then separated. The first key never had one and that is
+ * the whole reason there was a handover; the store now recovers from
+ * loss for the first time in its existence.
+ *
+ * IT WAS FALSE FOR SIX HOURS WHILE THE PAPER EXISTED, deliberately.
+ * The sheets were written and checked well before this line changed,
+ * and the store went on saying it had no recovery in the meantime,
+ * because the published claim says "in more than one physical
+ * location" and both sheets were still on one desk. A backup nobody
+ * has separated is one fire away from being no backup, which is
+ * exactly the gap the claim would have papered over.
  */
-export const KEY_BACKUP_EXISTS = false;
+export const KEY_BACKUP_EXISTS = true;
 
 /**
  * What we will and will not say about copies of the key, in both
