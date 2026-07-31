@@ -68,14 +68,14 @@ h1 {
 h1 .lamp { color: var(--brass); }
 .room-sub {
   color: var(--brass-dim);
-  font-size: 0.64rem;
-  letter-spacing: 0.34em;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   margin-bottom: 1.4rem;
 }
 h2 {
-  font-size: 0.72rem;
-  letter-spacing: 0.26em;
+  font-size: 0.84rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: normal;
   color: var(--brass);
@@ -108,9 +108,9 @@ nav.readings {
 nav.readings::before {
   content: "readings";
   color: var(--brass-dim);
-  letter-spacing: 0.24em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   margin-right: 1.1rem;
 }
 
@@ -150,8 +150,8 @@ th {
   text-align: left;
   color: var(--brass);
   font-weight: normal;
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   font-family: Georgia, serif;
   padding: 0.6rem 0.75rem;

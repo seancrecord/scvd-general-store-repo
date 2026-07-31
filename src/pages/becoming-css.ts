@@ -109,8 +109,8 @@ body.becoming .thesis {
 body.becoming .thesis:last-of-type { border-bottom: 0; }
 body.becoming .thesis-n {
   display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.3em;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
   color: var(--neon);
   margin-bottom: 0.6rem;
 }
@@ -132,7 +132,7 @@ body.becoming .thesis-false strong {
   color: var(--neon);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   display: block;
   margin-bottom: 0.35rem;
 }
@@ -198,8 +198,8 @@ body.becoming .ledger-wrap { overflow-x: auto; margin-top: 1.5rem; }
     content: attr(data-label);
     display: block;
     color: var(--neon);
-    font-size: 0.62rem;
-    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-bottom: 0.3rem;
   }
