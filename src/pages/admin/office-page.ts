@@ -236,6 +236,41 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
     <ul>${payerLines}</ul>`;
 }
 
+/**
+ * WHAT THE COUNTER KEY MEANS, spelled as a path where it is one.
+ *
+ * The porch log buckets anything under /.well-known/ as the surface
+ * "well-known" — no leading dot, because it is a bucket name and not a
+ * URL. On this page that read as a path with a typo in it, and the
+ * keeper did the reasonable thing: went to /well-known and got a 404.
+ * It is the most-hit surface in the store (every x402 indexer and
+ * scanner probes discovery on a loop), so it is also the label most
+ * likely to be misread.
+ *
+ * The KEY is deliberately unchanged — renaming it would strand every
+ * count already filed under the old name and split the history of the
+ * busiest surface here. Only the display moves, which is the whole
+ * difference between correcting a label and losing a month of data.
+ */
+const SURFACE_LABELS: Record<string, string> = {
+  "well-known": "/.well-known/* (x402 + signing key; indexers live here)",
+  treat: "/api/treat",
+  bell: "/api/bell",
+  "guestbook:read": "/api/guestbook (read)",
+  "guestbook:write": "/api/guestbook (write)",
+  storefront: "/ (the storefront)",
+};
+
+function surfaceLabel(surface: string): string {
+  if (SURFACE_LABELS[surface]) {
+    return SURFACE_LABELS[surface]!;
+  }
+  // item:<id> is a real path; so are the bare ones like /what and /stats.
+  return surface.startsWith("item:")
+    ? `/menu/${surface.slice(5)}`
+    : `/${surface}`;
+}
+
 function porchHtml(porch: PorchLedger): string {
   const surfaces = Object.entries(porch.surfaces);
   const rows =
@@ -248,7 +283,7 @@ function porchHtml(porch: PorchLedger): string {
               .filter(([key]) => key.startsWith("organic:"))
               .map(([key, count]) => `${escapeHtml(key.slice(8))}: ${count}`)
               .join(" \u00B7 ");
-            return `<tr><td>${escapeHtml(surface)}</td>
+            return `<tr><td>${escapeHtml(surfaceLabel(surface))}</td>
               <td>${buckets["organic"] ?? 0}${channels ? ` <small>(${channels})</small>` : ""}</td>
               <td>${buckets["house"] ?? 0}</td>
               <td>${buckets["infrastructure"] ?? 0}</td></tr>`;
