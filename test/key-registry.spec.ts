@@ -4,6 +4,7 @@ import {
   attributeKey,
   FIRST_KEY_IN_SERVICE_FROM,
   RETIRED_KEYS,
+  retiredKeysFor,
   rotationsPerformed,
 } from "@/store/key-registry";
 import {
@@ -69,14 +70,59 @@ describe("an artifact says which of our keys signed it", () => {
     expect(body.key_history.current.in_service_from).toBe(
       FIRST_KEY_IN_SERVICE_FROM,
     );
-    expect(body.key_history.retired).toEqual(RETIRED_KEYS);
-    expect(body.key_history.rotations_performed).toBe(rotationsPerformed());
+    expect(body.key_history.retired).toEqual(
+      retiredKeysFor(body.public_key),
+    );
+    expect(body.key_history.rotations_performed).toBe(
+      rotationsPerformed(body.public_key),
+    );
   });
 
-  it("states no rotation as a count derived from the registry", () => {
-    // Not a typed zero. The same reasoning as the NOT_BUILT entry: a
-    // hand-written number is a claim with a timer on it.
-    expect(rotationsPerformed()).toBe(RETIRED_KEYS.length);
+  it("states the rotation count as a number derived, never typed", () => {
+    // Not a hand-written figure. The same reasoning as the NOT_BUILT
+    // entry: a typed count is a claim with a timer on it.
+    expect(rotationsPerformed("z".repeat(64))).toBe(RETIRED_KEYS.length);
+  });
+});
+
+/**
+ * THE SWAP WINDOW — the minutes between announcing a handover and
+ * actually replacing the secret.
+ *
+ * The two moves cannot be simultaneous: the announcement has to be
+ * signed while the outgoing key is still live, and the secret changes
+ * afterwards. Both naive orders are wrong, and one of them is
+ * alarming. Publish the retired entry after the swap and every
+ * artifact signed by the old key reads `unrecognised` in the
+ * meantime — which tells a holder in strong terms that a genuine
+ * certificate may be a forgery. Publish it before and key_history
+ * shows one key as current and retired at once, which is just false.
+ *
+ * So the live secret decides and the registry only states intent.
+ */
+describe("a key that is still signing is current, whatever the registry says", () => {
+  it("does not list the live key as retired, even with its entry written", async () => {
+    const current = await getPublicKeyHex((env as Env).SIGNING_KEY);
+    expect(retiredKeysFor(current).map((k) => k.public_key)).not.toContain(
+      current,
+    );
+  });
+
+  it("reports it as current rather than retired during the window", async () => {
+    const current = await getPublicKeyHex((env as Env).SIGNING_KEY);
+    // The lock beats the file. An artifact signed by a key that is
+    // still in the lock is signed by the current key, full stop.
+    expect(attributeKey(current, current).status).toBe("current");
+  });
+
+  it("starts counting the rotation only once the secret has actually changed", async () => {
+    const current = await getPublicKeyHex((env as Env).SIGNING_KEY);
+    const before = rotationsPerformed(current);
+    // Same registry, a different key in the lock: the entry begins
+    // applying with no deploy and no window in either direction.
+    const after = rotationsPerformed("z".repeat(64));
+    expect(after).toBeGreaterThanOrEqual(before);
+    expect(after).toBe(RETIRED_KEYS.length);
   });
 });
 

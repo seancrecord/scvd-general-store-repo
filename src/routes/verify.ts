@@ -45,7 +45,7 @@ import { VOICE } from "@/store";
 import {
   attributeKey,
   FIRST_KEY_IN_SERVICE_FROM,
-  RETIRED_KEYS,
+  retiredKeysFor,
   rotationsPerformed,
 } from "@/store/key-registry";
 import { MAKER_MARKS } from "@/store/provenance";
@@ -381,13 +381,13 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
         status: "current",
         in_service_from: FIRST_KEY_IN_SERVICE_FROM,
       },
-      retired: RETIRED_KEYS,
-      rotations_performed: rotationsPerformed(),
+      retired: retiredKeysFor(publicKey),
+      rotations_performed: rotationsPerformed(publicKey),
     },
     continuity: {
-      key_count: 1 + RETIRED_KEYS.length,
+      key_count: 1 + retiredKeysFor(publicKey).length,
       successor_key_exists: false,
-      rotations_performed: rotationsPerformed(),
+      rotations_performed: rotationsPerformed(publicKey),
       if_this_key_ever_changes:
         "A legitimate handover is announced here BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key, served as exact bytes at a verify URL. If you find a new key here that has already issued artifacts, or a handover notice the old key did not sign, that is not a handover — treat it as a compromise. If the old key cannot sign the announcement, there is no legitimate handover available and /corrections will say so rather than one being performed anyway.",
       full_policy: `${c.env.STORE_BASE_URL}/attestation`,

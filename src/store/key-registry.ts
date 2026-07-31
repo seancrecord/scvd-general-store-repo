@@ -63,7 +63,19 @@ export interface RetiredKey {
  * from this array rather than stating a number, so the claim cannot go
  * stale the way a typed "no rotation" line would.
  */
-export const RETIRED_KEYS: readonly RetiredKey[] = [];
+export const RETIRED_KEYS: readonly RetiredKey[] = [
+  {
+    public_key:
+      "d98ebec640489852c7076aee66615705200971e7d32c54964e173aea3d37e1af",
+    in_service_from: "2026-07-22",
+    retired_on: "2026-07-31",
+    reason:
+      "No recoverable copy of the private key existed. It was generated, pushed into a Cloudflare Worker secret, and no copy kept — not as a decision, but because nobody thought that far ahead yet. Worker secrets are write-only, which is right, and is why there was nothing to retrieve when the paper-backup procedure was written on 2026-07-31. Nothing was broken by that: this key worked, and everything signed under it verifies and always will. What did not exist was any way to survive losing it. Retired in favour of a key written on paper before it ever signed anything.",
+    succeeded_by:
+      "8c22f61add201ecefa75c5d027371b64bed3c0ff739056a7b255f8322ffcb550",
+    announcement_id: "handover_1",
+  },
+];
 
 /**
  * When the first key entered service: the day the Worker went live at
@@ -132,7 +144,42 @@ export function attributeKey(
   return { status: "unrecognised", means: UNRECOGNISED_MEANS };
 }
 
-/** How many handovers this store has actually performed. */
-export function rotationsPerformed(): number {
-  return RETIRED_KEYS.length;
+/**
+ * THE SWAP WINDOW, AND WHY THE REGISTRY IS FILTERED RATHER THAN READ
+ * STRAIGHT.
+ *
+ * A handover happens in two moves that cannot be simultaneous: the
+ * announcement is signed and deployed while the outgoing key is still
+ * live, and the secret is replaced afterwards. That leaves a window —
+ * minutes, but real — in which a key is listed here as retired and is
+ * still the key the store is signing with.
+ *
+ * Neither naive order is acceptable. Publish the entry after the swap
+ * and every artifact signed by the old key reads `unrecognised` in the
+ * meantime, which tells a holder in strong terms that a genuine
+ * certificate may be forged. Publish it before and key_history shows
+ * one key as both current and retired, which is simply false.
+ *
+ * So the live secret decides. A key that is still signing is current
+ * and is not listed as retired, whatever this file says; the moment
+ * the secret changes, the same entry starts applying with no deploy
+ * and no window in either direction. The registry states intent; the
+ * key in the lock states fact, and where they disagree the lock wins.
+ */
+export function retiredKeysFor(
+  currentPublicKeyHex: string,
+): readonly RetiredKey[] {
+  const current = currentPublicKeyHex.trim().toLowerCase();
+  return RETIRED_KEYS.filter(
+    (entry) => entry.public_key.toLowerCase() !== current,
+  );
+}
+
+/**
+ * How many handovers this store has actually performed — counted from
+ * the same filtered view, so it reads 0 until the secret genuinely
+ * changes rather than from the moment the entry is written.
+ */
+export function rotationsPerformed(currentPublicKeyHex: string): number {
+  return retiredKeysFor(currentPublicKeyHex).length;
 }
