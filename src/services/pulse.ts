@@ -55,9 +55,11 @@ export interface PulseWindow {
   /** Free re-verifications of artifacts, organic only. */
   organic_verifies: number;
   /**
-   * settled / challenges, three decimals. NULL when nothing was ever
-   * offered — a rate with a zero denominator is not zero, it is
-   * undefined, and printing 0 there would be a claim we cannot make.
+   * settled / challenges. NULL when nothing was ever offered — a rate
+   * with a zero denominator is undefined, not zero, and printing 0
+   * there would be a claim we cannot make. Zero means offered and
+   * nobody paid. Anything above zero keeps enough significant figures
+   * to survive: see rate() for why that sentence had to be written.
    */
   conversion_rate: number | null;
   /**
@@ -78,6 +80,8 @@ export interface PulseWindow {
   known_machinery?: number;
   /** organic_challenges − known_machinery, when the walk is complete. */
   corrected_challenges?: number;
+  /** settled / corrected_challenges. Same three states as above. */
+  corrected_conversion_rate?: number | null;
   /**
    * THE USER-AGENTS BEHIND THE CORRECTION ARE DELIBERATELY NOT HERE.
    * This endpoint's own note promises no user-agents, and the first
@@ -103,11 +107,37 @@ export interface Pulse {
 const NOTE =
   "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here minted a signed artifact you can verify yourself without asking us.";
 
+/**
+ * NEVER ROUND A REAL RATE TO ZERO.
+ *
+ * This rounded to three decimals, which annihilates anything below
+ * 0.0005 — and one sale against several thousand challenges is
+ * exactly that. 1/7892 is 0.000127 and was being published as 0,
+ * while organic_settled on the same row said 1. The page rendered
+ * "0.0%" beside "1 settled".
+ *
+ * That is not a display nit. This endpoint's own copy promises: "we
+ * will not print 0% for it, because 0% would say agents were offered
+ * something and declined." A zero here says nobody paid, on a window
+ * where somebody did — the store printing the one number it wrote a
+ * paragraph swearing it would never print.
+ *
+ * Three states, kept apart on purpose, because collapsing any two of
+ * them is how this page starts lying:
+ *   null  nobody was offered a price — undefined, not zero
+ *   0     offered, and none of them paid — a real zero
+ *   >0    somebody paid, at whatever precision that takes
+ */
 function rate(settled: number, challenges: number): number | null {
   if (challenges <= 0) {
     return null;
   }
-  return Math.round((settled / challenges) * 1000) / 1000;
+  if (settled === 0) {
+    return 0;
+  }
+  // Significant figures rather than decimal places: a small rate keeps
+  // its resolution instead of being rounded out of existence.
+  return Number((settled / challenges).toPrecision(3));
 }
 
 export async function computePulse(env: Env): Promise<Pulse> {
@@ -153,6 +183,14 @@ export async function computePulse(env: Env): Promise<Pulse> {
             // above the counter, which is a real and expected
             // direction rather than a reason to print a negative.
             corrected_challenges: Math.max(0, challenges - machinery),
+            // The same rate against the denominator with the machinery
+            // taken out. Published beside the recorded one rather than
+            // replacing it: both are real, and which one a reader wants
+            // depends on the question they came with.
+            corrected_conversion_rate: rate(
+              settled,
+              Math.max(0, challenges - machinery),
+            ),
           }
         : {}),
     });

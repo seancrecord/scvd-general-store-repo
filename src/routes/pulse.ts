@@ -48,10 +48,25 @@ const MACHINERY_NOTE =
 const HONEST_LIMIT =
   "READ THE DENOMINATOR BEFORE THE RATE. A small number of 402s means this store has not been found by many agents yet, which is a fact about our reach and not a fact about the market. A conversion rate shown as an em dash means nobody has been offered a price in that window at all: that is undefined, not zero, and we will not print 0% for it, because 0% would say agents were offered something and declined.";
 
+/**
+ * A PERCENTAGE THIS SMALL IS UNREADABLE, so the ratio rides beside it.
+ * "0.02%" is technically right and tells a person nothing; "1 in
+ * 5,083" is the same fact in a form somebody can hold. Fixed decimals
+ * were also printing 0.0% for a window that had a sale in it, which
+ * this page's own copy swears it will never do.
+ */
 function rateText(window: PulseWindow): string {
-  return window.conversion_rate === null
-    ? "—"
-    : `${(window.conversion_rate * 100).toFixed(1)}%`;
+  if (window.conversion_rate === null) {
+    return "—";
+  }
+  if (window.organic_settled === 0) {
+    return "0%";
+  }
+  const denom = window.corrected_challenges ?? window.organic_challenges;
+  const oneIn = Math.round(denom / window.organic_settled);
+  const pct = window.conversion_rate * 100;
+  const shown = pct >= 1 ? pct.toFixed(1) : pct.toPrecision(2);
+  return `${shown}% (1 in ${oneIn.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})`;
 }
 
 /** The funnel as a sentence, which is the point of showing it whole. */
