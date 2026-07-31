@@ -456,6 +456,28 @@ export interface SignedAnchorRecord {
   public_key: string;
 }
 
+/**
+ * A key handover announcement. Signed by the OUTGOING key, which is
+ * the only property that makes a succession checkable rather than
+ * merely asserted — see src/services/key-handover.ts.
+ */
+export interface KeyHandover {
+  handover_id: string;
+  /** The key being retired. Recorded from the signature, not supplied. */
+  outgoing_public_key: string;
+  /** The key taking over. A PUBLIC key; the seed never reaches the store. */
+  incoming_public_key: string;
+  announced: string;
+  reason: string;
+  protocol_url: string;
+}
+
+export interface SignedHandoverRecord {
+  handover: KeyHandover;
+  signature: string;
+  public_key: string;
+}
+
 /** A 30-day standing patronage pass. Renewable; carries the monthly note. */
 export interface PatronagePass {
   pass_id: string;

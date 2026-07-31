@@ -172,7 +172,7 @@ export const NOT_BUILT: readonly string[] = [
     KEY_BACKUP_EXISTS
       ? "Recovery from LOSS only: the key exists offline on paper in more than one place, so a destroyed secret does not end the store's ability to sign. That is the whole of it."
       : "No recovery either: if the secret is destroyed, nothing new can ever be signed under it."
-  } The shape a handover would take is published at /attestation; the successor itself is not built. This is stated the same way on /stack, which calls it the one dependency with no substitute.`,
+  } The MECHANISM for a handover exists — key history, retirement, and an announcement signed by the outgoing key — and has never been used; what does not exist is a successor key to use it on. This is stated the same way on /stack, which calls it the one dependency with no substitute.`,
   "No threshold or multi-party signing. One key, one holder, one process.",
   "No hardware security module. The key is a Cloudflare Worker secret.",
   "No third-party audit of any of the above, and no patent. Both are sometimes offered as evidence of seriousness; neither is evidence that a signature checks out, which is the only thing this page is about.",

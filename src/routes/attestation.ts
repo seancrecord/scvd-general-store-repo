@@ -16,6 +16,7 @@ import {
   CONTINUITY_LIMIT,
   KEY_BACKUP,
   KEY_BACKUP_EXISTS,
+  SUCCESSION_MECHANISM,
   SUCCESSION_PROTOCOL,
   SUCCESSION_SECRECY,
   SUCCESSION_STATE,
@@ -51,7 +52,7 @@ export const attestationRoutes = new Hono<HonoEnv>();
  * inferred from the absence of a key — an inferred absence is exactly
  * how "they have a succession plan" gets into a summary nobody wrote.
  */
-function keyContinuity() {
+function keyContinuity(base: string) {
   return {
     backup: {
       exists: KEY_BACKUP_EXISTS,
@@ -64,6 +65,8 @@ function keyContinuity() {
       successor_key_exists: false,
       state: SUCCESSION_STATE,
       protocol: SUCCESSION_PROTOCOL,
+      mechanism: SUCCESSION_MECHANISM,
+      key_history_url: `${base}/.well-known/scvd-signing-key`,
       what_is_deliberately_undisclosed: SUCCESSION_SECRECY,
     },
     limit: CONTINUITY_LIMIT,
@@ -79,7 +82,7 @@ attestationRoutes.get("/attestation", (c) => {
       public_key_url: `${base}${KEY_ARCHITECTURE.public_key_url}`,
     },
     why_signed_payload: WHY_SIGNED_PAYLOAD,
-    key_continuity: keyContinuity(),
+    key_continuity: keyContinuity(base),
     trust_models: TRUST_MODELS,
     artifact_classes: ARTIFACT_CLASSES.map((entry) => ({
       ...entry,
@@ -145,6 +148,7 @@ attestationRoutes.get("/attestation", (c) => {
           (entry) =>
             `<li><strong>${escapeHtml(entry.rule)}</strong><br><small>${escapeHtml(entry.because)}</small></li>`,
         ).join("\n")}</ul>
+        <p class="menu-meta">${escapeHtml(SUCCESSION_MECHANISM)}</p>
         <p class="menu-desc">${escapeHtml(SUCCESSION_SECRECY)}</p>
         <p class="menu-meta">${escapeHtml(CONTINUITY_LIMIT)}</p>
       </section>

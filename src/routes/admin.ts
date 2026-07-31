@@ -44,6 +44,7 @@ import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { printFoundingEdition } from "@/services/founding";
 import { listIssues, publishIssue } from "@/services/gazette";
+import { createHandover, HandoverError } from "@/services/key-handover";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
   listLetters,
@@ -477,6 +478,63 @@ adminRoutes.post("/admin/letters/:letter_id/archive", async (c) => {
     return c.text("No letter by that id in the box.", 404);
   }
   return c.redirect("/admin");
+});
+
+/**
+ * MINT THE KEY HANDOVER ANNOUNCEMENT — the keeper's hand, one time,
+ * behind the office door.
+ *
+ * Rule 30 with the volume up. This is the single most consequential
+ * thing this store can publish: a signed statement that the key
+ * everything verifies against is changing. There is no cron for it, no
+ * public route, and no automatic trigger, because any mechanism that
+ * could mint one without the keeper deliberately asking is a mechanism
+ * that can be induced to mint one.
+ *
+ * ORDERING IS THE WHOLE PROTOCOL, and this route is the reason the
+ * ordering is even possible: it signs with whatever key is live at the
+ * moment it runs. Run it BEFORE the secret is replaced and the
+ * announcement carries the OUTGOING key's signature, which is what
+ * makes the handover checkable. Run it after and it carries the new
+ * key vouching for itself, which is worth nothing. CEREMONY_B.md puts
+ * this in a phase before the secret is touched for exactly that
+ * reason, and createHandover records the signing key from the
+ * signature rather than from anything typed in, so the announcement
+ * cannot claim an outgoing key that did not actually sign it.
+ *
+ * IT TAKES A PUBLIC KEY AND NOTHING ELSE. No seed reaches this store,
+ * this route, or any agent, ever.
+ */
+adminRoutes.post("/admin/keys/handover", async (c) => {
+  const form = await c.req.parseBody();
+  const incoming = String(form["incoming_public_key"] ?? "").trim();
+  const reason = sanitizeText(form["reason"], 2000);
+  if (!reason) {
+    return c.text(
+      "A handover needs a reason in plain words. It gets published exactly as written, and 'routine rotation' when it was not one is the kind of sentence this store exists to not write.",
+      400,
+    );
+  }
+  try {
+    const record = await createHandover(c.env, {
+      incomingPublicKey: incoming,
+      reason,
+    });
+    return c.json({
+      minted: record.handover.handover_id,
+      verify_url: `${c.env.STORE_BASE_URL}/api/verify/${record.handover.handover_id}`,
+      outgoing_public_key: record.handover.outgoing_public_key,
+      incoming_public_key: record.handover.incoming_public_key,
+      next: "The announcement is signed by the OUTGOING key and live. Now — and only now — replace the SIGNING_KEY secret, then add the retired key to RETIRED_KEYS with this handover_id. Until that entry exists, artifacts signed by the old key will read as unrecognised rather than retired.",
+    });
+  } catch (error) {
+    return c.text(
+      error instanceof HandoverError
+        ? error.message
+        : "The handover could not be minted.",
+      400,
+    );
+  }
 });
 
 adminRoutes.post("/admin/patronage/note", async (c) => {

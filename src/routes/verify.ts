@@ -35,7 +35,19 @@ import {
   getStamp,
   verifyStampSignature,
 } from "@/services/stamps";
+import {
+  canonicalizeHandover,
+  getHandover,
+  HANDOVER_MEANS,
+  verifyHandoverSignature,
+} from "@/services/key-handover";
 import { VOICE } from "@/store";
+import {
+  attributeKey,
+  FIRST_KEY_IN_SERVICE_FROM,
+  RETIRED_KEYS,
+  rotationsPerformed,
+} from "@/store/key-registry";
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import type { HonoEnv } from "@/types";
@@ -65,6 +77,32 @@ export const verifyRoutes = new Hono<HonoEnv>();
  * artifact shown — two steps, no guessing, and any gap between what was
  * signed and what is served becomes visible instead of theoretical.
  */
+/**
+ * WHICH OF OUR KEYS SIGNED THIS, ANSWERED ON THE ARTIFACT.
+ *
+ * Added 2026-07-31 alongside the key registry, and it closes a hole
+ * that predates any thought of rotation. Verification here checks a
+ * signature against the public key stored in the artifact's OWN
+ * record. That proves internal consistency and nothing else: a record
+ * carrying somebody else's keypair verifies exactly as cleanly as one
+ * of ours. What actually ties an artifact to this store is that its
+ * key is a key we publish — a tie that was real but implicit while
+ * there was one key and nothing compared against it.
+ *
+ * So every verify response now says which published key signed it, or
+ * says plainly that it matches none of them. Same discipline as
+ * signature_gap: name what the check does not cover, on the artifact,
+ * rather than let a holder infer coverage from a green `valid`.
+ *
+ * It is also what keeps artifacts attributable across a handover. An
+ * old certificate after a rotation reads `retired` with the date its
+ * key left service, instead of quietly matching nothing.
+ */
+async function signedBy(c: Context<HonoEnv>, recordPublicKey: string) {
+  const current = await getPublicKeyHex(c.env.SIGNING_KEY);
+  return { public_key: recordPublicKey, ...attributeKey(recordPublicKey, current) };
+}
+
 const HOW_TO_VERIFY =
   "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.";
 
@@ -119,6 +157,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       certificate: record.certificate,
       signature: record.signature,
       public_key: record.public_key,
+      signed_by: await signedBy(c, record.public_key),
       algorithm: "ed25519",
       signed_payload:
         form === "legacy"
@@ -270,6 +309,37 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     });
   }
 
+  /**
+   * A key handover announcement, verified like anything else — except
+   * that a holder checking one is asking a different question. On every
+   * other artifact the question is "did this store issue it." Here it
+   * is "did the key being RETIRED bless the key taking over," and the
+   * answer is the signature: only the outgoing holder could have made
+   * it. So the response says out loud which key signed, and that a
+   * signature by the outgoing key is the intended and correct state
+   * rather than something stale.
+   */
+  if (id.startsWith("handover_")) {
+    const handoverRecord = await getHandover(c.env, id);
+    if (handoverRecord) {
+      const valid = await verifyHandoverSignature(handoverRecord);
+      return c.json({
+        valid,
+        handover: handoverRecord.handover,
+        signature: handoverRecord.signature,
+        public_key: handoverRecord.public_key,
+        signed_by: await signedBy(c, handoverRecord.public_key),
+        algorithm: "ed25519",
+        signed_payload: canonicalizeHandover(handoverRecord.handover),
+        signature_covers: HOW_TO_VERIFY,
+        what_this_is: HANDOVER_MEANS,
+        note: valid
+          ? "Genuine handover announcement, signed by the key it retires."
+          : "Signature doesn't match. Do NOT act on this handover; treat the key change it describes as unannounced.",
+      });
+    }
+  }
+
   return c.json({ valid: false, error: VOICE.certNotFound }, 404);
 });
 
@@ -293,10 +363,31 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
      * exists, what a legitimate change will look like, and where the
      * full form is written out.
      */
+    /**
+     * EVERY KEY THIS STORE HAS EVER SIGNED WITH, current first.
+     *
+     * A retired key stays here permanently. An artifact carries the
+     * public key it was signed with and verifies against it on its own
+     * terms, so a rotation does not break old signatures — but a key
+     * matching nothing the store publishes leaves an artifact merely
+     * self-consistent rather than attributable to us. Publishing
+     * retired keys forever is what preserves that link across a
+     * handover, and it is why removing an entry from the registry
+     * silently orphans everything signed under it.
+     */
+    key_history: {
+      current: {
+        public_key: publicKey,
+        status: "current",
+        in_service_from: FIRST_KEY_IN_SERVICE_FROM,
+      },
+      retired: RETIRED_KEYS,
+      rotations_performed: rotationsPerformed(),
+    },
     continuity: {
-      key_count: 1,
+      key_count: 1 + RETIRED_KEYS.length,
       successor_key_exists: false,
-      rotations_performed: 0,
+      rotations_performed: rotationsPerformed(),
       if_this_key_ever_changes:
         "A legitimate handover is announced here BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key, served as exact bytes at a verify URL. If you find a new key here that has already issued artifacts, or a handover notice the old key did not sign, that is not a handover — treat it as a compromise. If the old key cannot sign the announcement, there is no legitimate handover available and /corrections will say so rather than one being performed anyway.",
       full_policy: `${c.env.STORE_BASE_URL}/attestation`,

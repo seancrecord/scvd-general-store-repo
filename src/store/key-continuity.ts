@@ -129,6 +129,24 @@ export const SUCCESSION_STATE =
   "NO SUCCESSOR KEY EXISTS. Not generated, not held, not escrowed, not pre-signed. What is published above is the FORM a handover would take, committed to in advance while nothing turns on it. The design question gating the real thing has never been cryptographic — it is where a second private key would physically live, because a successor stored beside the primary is a second way to become us in exchange for nothing.";
 
 /**
+ * ADDED 2026-07-31, hours after the protocol above.
+ *
+ * Publishing the rules exposed that the store could not have FOLLOWED
+ * them: there was no notion of a retired key anywhere in the code, no
+ * way to publish one, and no artifact class for an announcement. So
+ * /attestation described a procedure that could not have been carried
+ * out — a published claim with nothing under it, which is this store's
+ * most repeated defect, sitting under the page that exists to stop it.
+ *
+ * The machinery is built now, and this line exists so a reader can
+ * tell the difference between "we would do this" and "we can do this,"
+ * which are not the same statement and were being made with one
+ * sentence.
+ */
+export const SUCCESSION_MECHANISM =
+  "THE PROTOCOL ABOVE IS IMPLEMENTED, NOT ONLY PROMISED. Every key this store has ever signed with is published at /.well-known/scvd-signing-key under key_history, and a retired key stays there permanently — an artifact carries the key it was signed with, so a rotation never breaks an old signature, but a key matching nothing we publish would leave that artifact merely self-consistent rather than attributable to us. Every verify response now names which published key signed the thing, whether that key is current or retired, and says so out loud when a signature matches NO key we have ever published, which is the honest answer that was previously missing. A handover announcement is a signed artifact class of its own with its own verify URL, and it is signed by the outgoing key because it is minted before the secret is replaced. What has NOT happened is a handover: rotations_performed is zero, and the count is derived from the registry rather than typed, so it cannot say zero after the day it stops being true.";
+
+/**
  * The closing line, in the same register as /attestation's and
  * /wind-down's. None of these three pages gets to end on reassurance.
  */

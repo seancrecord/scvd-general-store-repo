@@ -211,6 +211,18 @@ There is no revocation list and there will not be one; a revocation
 endpoint served from the same host as the key it revokes adds ceremony
 and no security.
 
+IMPLEMENTED, NOT ONLY PROMISED. Every key this store has ever signed
+with is published at ${base}/.well-known/scvd-signing-key under
+key_history, and a retired key stays there permanently — an artifact
+carries the key it was signed with, so a rotation never breaks an old
+signature, but a key matching nothing we publish would leave that
+artifact self-consistent rather than attributable to us. Every verify
+response names which published key signed it and whether that key is
+current or retired, AND SAYS SO OUT LOUD when a signature matches no
+key we have ever published — an artifact can be internally consistent
+and still not be ours, and until now nothing said that. Rotations
+performed: zero, counted from the registry rather than typed.
+
 Deliberately undisclosed: where key material physically lives. That
 detail buys a reader nothing and costs us something real. Deliberately
 published: everything above, because a succession plan kept secret is
