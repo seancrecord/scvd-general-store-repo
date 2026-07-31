@@ -30,6 +30,7 @@
  * for several classes the honest answer is "it proves we said this on
  * this date, and nothing more."
  */
+import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 
 /**
  * Who you are trusting when a signature checks out. Ordered weakest to
@@ -153,11 +154,25 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
   },
 ];
 
-/** The things a serious reader will look for and not find here. */
+/**
+ * The things a serious reader will look for and not find here.
+ *
+ * THE KEY ENTRY IS DERIVED, NOT TYPED. It used to say "no rotation and
+ * no recovery" as a fixed string, which was true when it was written
+ * and would have gone quietly false the day a paper backup existed —
+ * leaving this list, the page's most-quoted section, contradicting the
+ * continuity section three headings above it. A stale absence claim is
+ * the same defect class as a stale capability claim, and this page is
+ * the last place that should carry one.
+ */
 export const NOT_BUILT: readonly string[] = [
   "No hash-linked continuity chain. Each artifact is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld.",
   "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",
-  "No key rotation and no recovery. One ed25519 key signs everything. If it is lost, nothing new can be signed under it; if it is stolen, every signature it produces is indistinguishable from ours. This is stated the same way on /stack, which calls it the one dependency with no substitute.",
+  `No key rotation. One ed25519 key signs everything, no successor key exists, and if it is stolen every signature it produces is indistinguishable from ours — a backup is no defence against that and is not offered as one. ${
+    KEY_BACKUP_EXISTS
+      ? "Recovery from LOSS only: the key exists offline on paper in more than one place, so a destroyed secret does not end the store's ability to sign. That is the whole of it."
+      : "No recovery either: if the secret is destroyed, nothing new can ever be signed under it."
+  } The shape a handover would take is published at /attestation; the successor itself is not built. This is stated the same way on /stack, which calls it the one dependency with no substitute.`,
   "No threshold or multi-party signing. One key, one holder, one process.",
   "No hardware security module. The key is a Cloudflare Worker secret.",
   "No third-party audit of any of the above, and no patent. Both are sometimes offered as evidence of seriousness; neither is evidence that a signature checks out, which is the only thing this page is about.",
@@ -169,7 +184,8 @@ export const KEY_ARCHITECTURE = {
   holder:
     "The store itself. The private key is a Cloudflare Worker secret held by the keeper; no third party holds a copy and no third party co-signs.",
   public_key_url: "/.well-known/scvd-signing-key",
-  rotation: "None. There is no rotation scheme and no revocation list.",
+  rotation:
+    "None performed, and no successor key exists. What IS published, in advance, is the form a handover would take if one ever happened — announced before the new key signs anything, and the announcement signed by the outgoing key, so a real handover is checkable rather than merely asserted. There is no revocation list and there will not be one.",
   verification:
     "Every verify response carries signed_payload — the exact UTF-8 string the signature covers. Check it with any ed25519 library: verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact shown. If a field appears on the artifact but not in signed_payload, the signature does not cover it, and the response says so.",
 } as const;

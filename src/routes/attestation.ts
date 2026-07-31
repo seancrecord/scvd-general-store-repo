@@ -12,6 +12,14 @@ import {
   TRUST_MODELS,
   WHY_SIGNED_PAYLOAD,
 } from "@/store/attestation-spec";
+import {
+  CONTINUITY_LIMIT,
+  KEY_BACKUP,
+  KEY_BACKUP_EXISTS,
+  SUCCESSION_PROTOCOL,
+  SUCCESSION_SECRECY,
+  SUCCESSION_STATE,
+} from "@/store/key-continuity";
 import { ITEM_MAKER_MARK, MAKER_MARKS } from "@/store/provenance";
 import type { HonoEnv } from "@/types";
 
@@ -34,6 +42,34 @@ import type { HonoEnv } from "@/types";
  */
 export const attestationRoutes = new Hono<HonoEnv>();
 
+/**
+ * The continuity block, assembled once and served to both readers.
+ *
+ * SHAPED SO A MACHINE CANNOT MISREAD THE STATE. `backup.exists` is a
+ * boolean beside the prose rather than a fact buried in it, and
+ * `successor_key_exists` is stated as false rather than left to be
+ * inferred from the absence of a key — an inferred absence is exactly
+ * how "they have a succession plan" gets into a summary nobody wrote.
+ */
+function keyContinuity() {
+  return {
+    backup: {
+      exists: KEY_BACKUP_EXISTS,
+      state: KEY_BACKUP_EXISTS ? KEY_BACKUP.present : KEY_BACKUP.absent,
+      protects_against: KEY_BACKUP_EXISTS ? ["loss"] : [],
+      not_a_defence_against: ["theft", "copying", "coercion"],
+      note: KEY_BACKUP.what_it_is_not,
+    },
+    succession: {
+      successor_key_exists: false,
+      state: SUCCESSION_STATE,
+      protocol: SUCCESSION_PROTOCOL,
+      what_is_deliberately_undisclosed: SUCCESSION_SECRECY,
+    },
+    limit: CONTINUITY_LIMIT,
+  };
+}
+
 attestationRoutes.get("/attestation", (c) => {
   const base = c.env.STORE_BASE_URL;
   const payload = {
@@ -43,6 +79,7 @@ attestationRoutes.get("/attestation", (c) => {
       public_key_url: `${base}${KEY_ARCHITECTURE.public_key_url}`,
     },
     why_signed_payload: WHY_SIGNED_PAYLOAD,
+    key_continuity: keyContinuity(),
     trust_models: TRUST_MODELS,
     artifact_classes: ARTIFACT_CLASSES.map((entry) => ({
       ...entry,
@@ -95,6 +132,21 @@ attestationRoutes.get("/attestation", (c) => {
         <p class="menu-meta">Public key: <a href="${escapeHtml(KEY_ARCHITECTURE.public_key_url)}"><code>${escapeHtml(base)}${escapeHtml(KEY_ARCHITECTURE.public_key_url)}</code></a></p>
         <p class="menu-desc">${escapeHtml(KEY_ARCHITECTURE.verification)}</p>
         <p class="menu-meta">${escapeHtml(WHY_SIGNED_PAYLOAD)}</p>
+      </section>
+      <section>
+        <h2>If the key is lost, stolen, or handed on</h2>
+        <h3>Backup — copies of the same key</h3>
+        <p class="menu-desc">${escapeHtml(KEY_BACKUP_EXISTS ? KEY_BACKUP.present : KEY_BACKUP.absent)}</p>
+        <p class="menu-meta">${escapeHtml(KEY_BACKUP.what_it_is_not)}</p>
+        <h3>Succession — a second, different key</h3>
+        <p class="menu-desc">${escapeHtml(SUCCESSION_STATE)}</p>
+        <p class="menu-desc">If this store ever does hand its key on, it will look like this, and you can hold us to every line:</p>
+        <ul>${SUCCESSION_PROTOCOL.map(
+          (entry) =>
+            `<li><strong>${escapeHtml(entry.rule)}</strong><br><small>${escapeHtml(entry.because)}</small></li>`,
+        ).join("\n")}</ul>
+        <p class="menu-desc">${escapeHtml(SUCCESSION_SECRECY)}</p>
+        <p class="menu-meta">${escapeHtml(CONTINUITY_LIMIT)}</p>
       </section>
       <section>
         <h2>Whose word you are taking</h2>

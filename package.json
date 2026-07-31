@@ -15,6 +15,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "keys:generate": "node scripts/generate-signing-key.mjs",
+    "keys:check": "node scripts/check-key-transcription.mjs",
     "shop": "node scripts/shopping-run.mjs",
     "bazaar:check": "node scripts/bazaar-check.mjs",
     "audit": "node scripts/audit.mjs",

@@ -188,12 +188,34 @@ ordered weakest first — self-signed, custody-and-timestamp only, and
 third-party observation — and the classes sitting on the weakest one
 are labelled as sitting on the weakest one. The page also lists what
 this store does not have: no hash-linked continuity chain, no offline
-bundle format, no key rotation or recovery, no threshold signing, no
-HSM, no audit, no patent. It was written after an outside reader
+bundle format, no key rotation and no successor key, no threshold
+signing, no HSM, no audit, no patent. It was written after an outside reader
 checked the artifacts and called this a narrower, more honestly-scoped
 system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
+
+## If the one key is lost, stolen, or handed on
+
+One ed25519 key. NO SUCCESSOR KEY EXISTS — not generated, not held, not
+escrowed. What is published in advance is the FORM a handover would
+take, so that if one ever happens you can tell it from a takeover: the
+new key is announced at ${base}/.well-known/scvd-signing-key before it
+signs anything, never after, and the announcement is itself SIGNED BY
+THE OUTGOING KEY and served as exact bytes at a verify URL. A new key
+that has already issued artifacts, or a handover notice the old key did
+not sign, is not a handover. If the old key cannot sign the
+announcement, there is no legitimate handover available and
+${base}/corrections says so rather than one being performed anyway.
+There is no revocation list and there will not be one; a revocation
+endpoint served from the same host as the key it revokes adds ceremony
+and no security.
+
+Deliberately undisclosed: where key material physically lives. That
+detail buys a reader nothing and costs us something real. Deliberately
+published: everything above, because a succession plan kept secret is
+worth nothing to the person it exists to protect. The full form, and
+the failure case it does not cover, is at ${base}/attestation.
 
 ## What this store is trying to prove
 

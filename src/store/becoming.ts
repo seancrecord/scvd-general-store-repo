@@ -114,9 +114,9 @@ export const WATCHED: readonly Watched[] = [
   {
     item: "Key succession — a pre-announced, pre-signed successor key.",
     trigger:
-      "This one is already overdue rather than waiting: /wind-down states that a retired key never re-signs or revokes an old signature, which is a commitment about a scheme that does not exist yet.",
+      "A place to keep a second private key that is not beside the first one. That is the whole gate, and it is a physical question rather than a cryptographic one: a successor stored next to the primary is a second way to become us in exchange for nothing.",
     today:
-      "One ed25519 key, no rotation, no recovery, listed under what this store does not have at /attestation. The design question that gates it is not cryptographic — it is where a successor private key physically lives, because a successor stored beside the primary is a second way to become us for no benefit.",
+      "One ed25519 key and no successor, listed under what this store does not have at /attestation. What DID ship, 2026-07-31, is the form a handover would take — announced before the new key signs anything, the announcement signed by the outgoing key, and the failure case named where the old key cannot sign at all. Written this way round on purpose: the shape is the part /wind-down's promise about retired keys was already leaning on, and it costs nothing to commit to while nothing turns on it. Filed here as unfinished because a published protocol is not a successor key, and it would be an easy thing to let read like one.",
   },
   {
     item: "Receipt treaties — another small shop honouring artifacts issued here.",
