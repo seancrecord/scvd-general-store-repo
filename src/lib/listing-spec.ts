@@ -1,6 +1,7 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
+import { MAKER_MARKS, makerMarkFor } from "@/store/provenance";
 import type { MenuItem } from "@/types";
 
 /**
@@ -97,6 +98,31 @@ export function listingSpec(item: MenuItem, base: string): ListingSpec {
         "badge_url",
         "verify_url",
       ],
+      /**
+       * THE MAKER'S MARK, BEFORE THE MONEY MOVES.
+       *
+       * It shipped 2026-07-30 as a certificate field, which put it on
+       * the artifact and on /api/verify — both of which a buyer only
+       * reaches AFTER paying. The keeper checked menu.json and a live
+       * 402 and found nothing, correctly: the mark was answering "who
+       * made this" at the wrong end. A provenance fact a buyer cannot
+       * see while deciding is not a provenance fact, it is a receipt.
+       *
+       * Inside outputs rather than as a seventh top-level key: v1
+       * publishes a fixed key order as a contract, and this is a
+       * property of what gets delivered. Absent on shelves that carry
+       * no mark, which is itself the honest answer — see
+       * src/store/provenance.ts for why most shelves have none.
+       */
+      ...(makerMarkFor(item.id)
+        ? {
+            made_by: {
+              mark: makerMarkFor(item.id),
+              means: MAKER_MARKS[makerMarkFor(item.id)!].means,
+              signed_into_the_certificate: true,
+            },
+          }
+        : {}),
     },
     verification: {
       verify_url: `${base}/api/verify/{id}`,
