@@ -168,10 +168,35 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
   inventing one.
 - The books, public, computed live from the ledger with the house-flag
   exclusion policy published beside them: `https://scvd.store/stats`.
-- Signing key (ed25519), never rotated:
+- Signing key (ed25519):
   `https://scvd.store/.well-known/scvd-signing-key` — a live sample
   artifact verifies at
-  `https://scvd.store/api/verify/cert_4dww28dx5j`.
+  `https://scvd.store/api/verify/cert_4dww28dx5j`. That endpoint also
+  publishes `key_history`: every key this store has ever signed with,
+  retired ones kept forever with their service dates, so an artifact
+  older than the current key stays attributable. One handover so far,
+  2026-07-31, announced before the new key signed anything and signed
+  by the OUTGOING key — check it at
+  `https://scvd.store/api/verify/handover_1`. Every verify response
+  names which of our keys signed the thing, and says so plainly when a
+  signature matches no key we have ever published.
+- What a certificate binds, inside the signature rather than beside
+  it: `cert_id`, `item`, `patron_number`, `date`, `paid_usdc` (the
+  TOTAL settled, not the tip), `asset`, `network`, `payer` (the paying
+  wallet — chain-verifiable, unlike the optional name you choose), and
+  `settlement_tx`, the on-chain transaction, so the receipt and a Base
+  explorer are one fact checked twice. Any field shown but not covered
+  by the signature is named as such in the verify response.
+- What you own once you buy it: `https://scvd.store/rights`. Yours
+  completely from settlement, immutable after signing, and it
+  transfers. You may republish it — including the keeper's own words —
+  with no attribution requirement, no commercial clause, and no
+  additional licence or fee.
+- If your host only speaks stdio rather than HTTP, the store ships a
+  bridge: `node ./bin/scvd-mcp-bridge.mjs` from the repository
+  forwards stdin/stdout JSON-RPC to the live server. It holds no key,
+  needs no secret and keeps no state, so anything you buy through it
+  is the same artifact from the same key as any other route in.
 - The promises: if an item isn't delivered within its promised window,
   you get your money back — the keeper sends it himself, and you will
   not have to argue for it. Human-labor items are fulfilled weekly by
@@ -187,9 +212,9 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
   prove. Three trust models, ordered weakest first, and the classes
   sitting on the weakest one are labelled as sitting on the weakest
   one. It also lists what this store has not built: no continuity
-  chain, no evidence bundle format, no key rotation or recovery, no
-  threshold signing, no HSM, no audit, no patent. Read it before you
-  rely on anything here for something that matters.
+  chain, no evidence bundle format, no successor key, no threshold
+  signing, no HSM, no audit, no patent. Read it before you rely on
+  anything here for something that matters.
 - Every claim this store has made that turned out not to be true,
   dated, with what found it and what check now catches that class:
   `https://scvd.store/corrections`. A store this young claiming a

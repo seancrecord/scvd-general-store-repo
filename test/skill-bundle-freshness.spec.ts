@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { RETIRED_KEYS } from "@/store/key-registry";
 import { MENU_ITEMS } from "@/store";
 
 /**
@@ -129,5 +130,41 @@ describe("the bundle never advertises something the code dropped", () => {
   it("advertises at least the cheapest door, so the pitch is never empty", async () => {
     const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
     expect(bundle).toContain("/api/buy/small_blessing");
+  });
+});
+
+/**
+ * THE BUNDLE IS PUBLISHED TO SOMEBODY ELSE'S REGISTRY, which makes a
+ * stale claim in it worse than a stale claim on our own page: we
+ * cannot edit the copy somebody already installed, and nothing about
+ * it fails loudly.
+ *
+ * On 2026-07-31 the published bundle said the signing key was "never
+ * rotated" and listed "no key rotation or recovery" among the things
+ * this store has not built. The store rotated its key that afternoon
+ * and had a paper backup by evening. The existing freshness tests
+ * walked item names and the credentials promise and had nothing to say
+ * about either.
+ */
+describe("the bundle does not contradict the key registry", () => {
+  it("never claims a streak the registry says is over", async () => {
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    if (RETIRED_KEYS.length > 0) {
+      expect(
+        bundle.toLowerCase(),
+        "the bundle still says the key was never rotated",
+      ).not.toContain("never rotated");
+      expect(
+        bundle.toLowerCase(),
+        "the bundle still lists key rotation among what is not built",
+      ).not.toContain("no key rotation");
+    }
+  });
+
+  it("tells a holder where to check which key signed their artifact", async () => {
+    // After a rotation, an artifact carries a key the reader has never
+    // seen. Without key_history that reads as unattributable.
+    const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    expect(bundle).toContain("key_history");
   });
 });
