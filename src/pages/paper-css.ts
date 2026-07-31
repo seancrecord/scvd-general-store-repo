@@ -92,10 +92,17 @@ header {
   border-bottom: 1px solid var(--line);
   padding-bottom: 1.4rem;
 }
+/* SIZE AND TRACKING, NOT COLOUR. Reported as a contrast problem;
+   contrast measures 11.2:1 here, so that was not it. What was true:
+   0.62rem at 0.3em tracking is small type pulled apart until the eye
+   has to reassemble each word letter by letter. Wide tracking is a
+   display-type device and these are body-adjacent labels, so the
+   size goes up and the tracking comes down — legible first, still
+   unmistakably a label. */
 .est {
   display: block;
-  letter-spacing: 0.3em;
-  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  font-size: 0.74rem;
   color: var(--neon);
   text-transform: uppercase;
   line-height: 1.7;
@@ -110,8 +117,8 @@ h1 {
 }
 h2 {
   color: var(--neon);
-  font-size: 0.74rem;
-  letter-spacing: 0.26em;
+  font-size: 0.86rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: normal;
   margin: 2.75rem 0 1.1rem;
@@ -168,8 +175,8 @@ th {
   text-align: left;
   color: var(--neon);
   font-weight: normal;
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--line);
   padding: 0 1rem 0.55rem 0;
