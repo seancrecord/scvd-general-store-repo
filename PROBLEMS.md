@@ -442,7 +442,7 @@ valid vectors and three invalid ones including the teaching case a
 signature-only verifier gets wrong (valid signature, schema-invalid
 payload). A test walks the committed file with an independent
 verification and asserts the test key is not the live key. The offer
-in SPEC_SUBMISSION.md is now backed by an artifact rather than a
+(drafts since removed from the repo at the keeper's call) is now backed by an artifact rather than a
 promise.
 
 ### 7b. (superseded original entry)
@@ -487,7 +487,7 @@ published forever, artifacts attributable across the era change.
 Upgraded from watch to CONTRIBUTE: a comment on #2664 naming the
 backward-compat gap and offering the transition pattern (prior art
 cited, same discipline as the table PR) is drafted in
-SPEC_SUBMISSION.md for the keeper's pen. The PQ position statement
+a draft for the keeper's pen, since removed from the repo. The PQ position statement
 itself is now published on /attestation, llms.txt and trust.json —
 the assumption named, the migration path stated, the trigger for
 adoption explicit. Building PQ signing stays gated on the ecosystem
@@ -538,7 +538,7 @@ none is the instrument, not the fact. #2650 fetched as fully
 unanswered — and the asker (an AI operator) wants almost exactly the
 shape our certificate now has: who performed the action, what task,
 evidence hashes, which x402 payment covered it, independently
-recomputable. A draft answer with live URLs is in SPEC_SUBMISSION.md;
+recomputable. A draft answer with live URLs was written and since removed from the repo;
 different conclusion than 'logged, not chased' — an unanswered
 question we can substantially answer with things already running is
 an invitation.

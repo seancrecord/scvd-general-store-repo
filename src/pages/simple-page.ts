@@ -2,6 +2,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { PAPER_CSS } from "@/pages/paper-css";
 import { STORE_METADATA } from "@/store";
 import { ROOMS } from "@/store/rooms";
+import { verificationMetaTags } from "@/store/site-verification";
 
 /**
  * A plain paper page in the storefront's hand, for the smaller rooms:
@@ -79,7 +80,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">${canonical}
+  <meta name="twitter:card" content="summary">${verificationMetaTags()}${canonical}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
 <body${options.bodyClass ? ` class="${escapeHtml(options.bodyClass)}"` : ""}>

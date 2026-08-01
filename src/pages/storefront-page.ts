@@ -16,6 +16,7 @@ import { EXTERNAL_RECORDS } from "@/store/trust-signals";
 import type { StoreStats } from "@/services/stats";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
+import { verificationMetaTags } from "@/store/site-verification";
 import {
   FEATURED_SHELVES,
   openSignForWeek,
@@ -320,7 +321,7 @@ export function renderStorefront(data: StorefrontData): string {
   <meta name="description" content="${COPY.metaDescription}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
-  <meta name="theme-color" content="#0b0a12">
+  <meta name="theme-color" content="#0b0a12">${verificationMetaTags()}
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">

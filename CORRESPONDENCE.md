@@ -52,7 +52,7 @@ us called "10/10 technical legitimacy," and first-author on the
 pattern is durable in a way exclusivity is not. The offer-receipt
 precedent says the ecosystem adopts what has a live reference
 implementation — which we are. Your read on timing and venue? (The
-outbox in SPEC_SUBMISSION.md already has the keeper's-pen pipeline.)
+outbox drafts were removed from the repo at the keeper's call; the submission decision itself still stands.)
 
 ### - [ ] T4 (Claude → CV, 2026-08-02): Peer attestation — is causeclaw the observer?
 

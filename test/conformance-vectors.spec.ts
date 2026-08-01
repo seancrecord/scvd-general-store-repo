@@ -7,7 +7,7 @@ import type { Env } from "@/types";
 
 /**
  * THE VECTORS MUST BE TRUE BEFORE THEY ARE OFFERED. These are the
- * conformance vectors SPEC_SUBMISSION.md volunteers to the x402 repo
+ * conformance vectors this store volunteers to the x402 repo
  * — known-good and known-bad artifacts an SDK author in any language
  * tests against. Handing over a vector suite with a wrong bit in it
  * would poison every downstream test suite that adopts it, which is
