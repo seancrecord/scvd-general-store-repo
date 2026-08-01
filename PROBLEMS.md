@@ -88,7 +88,19 @@ propagation window on the same shelf, observed.
 
 ## Logged, not chased
 
-### 7. The offer-receipt SDK gap (TypeScript only)
+### 7. The offer-receipt SDK gap (TypeScript only) — VECTORS SHIPPED
+
+Conformance vectors now exist at conformance/offer-receipt-vectors.json:
+deterministic, regenerable, signed by a PUBLISHED test key (0x42*32 —
+unusable for anything real precisely because it is published), two
+valid vectors and three invalid ones including the teaching case a
+signature-only verifier gets wrong (valid signature, schema-invalid
+payload). A test walks the committed file with an independent
+verification and asserts the test key is not the live key. The offer
+in SPEC_SUBMISSION.md is now backed by an artifact rather than a
+promise.
+
+### 7b. (superseded original entry)
 
 The spec's own extensions table shows every other extension with
 TypeScript, Go and Python support — Signed Offers & Receipts, the one
@@ -119,8 +131,22 @@ assumption ages out, the migration path is the one we already built —
 a handover, announced under the outgoing key, to a PQ key, with the
 old key's artifacts staying attributable via key_history. We built
 the rails a PQ migration would ride, without building the PQ.
-**Watch.** Trigger: a PQ extension landing normatively AND Workers
-crypto supporting the chosen scheme.
+**Thread-read update, 2026-08-01, and a changed conclusion.** #2664
+proposes ML-DSA-65/ML-KEM-768 with scheme identifiers and a session
+mode — and its own open-questions list EXCLUDES backward
+compatibility. No transition mechanics, no dual-algorithm rollout, no
+story for how pre-migration artifacts stay attributable. That missing
+half is precisely the succession machinery this store runs: a PQ
+migration is a handover announced under the outgoing key, old key
+published forever, artifacts attributable across the era change.
+Upgraded from watch to CONTRIBUTE: a comment on #2664 naming the
+backward-compat gap and offering the transition pattern (prior art
+cited, same discipline as the table PR) is drafted in
+SPEC_SUBMISSION.md for the keeper's pen. The PQ position statement
+itself is now published on /attestation, llms.txt and trust.json —
+the assumption named, the migration path stated, the trigger for
+adoption explicit. Building PQ signing stays gated on the ecosystem
+picking a scheme and the runtime supporting it.
 
 ### 10. Execution verification — "did the action actually happen" (x402 #2648/#2650)
 
@@ -155,6 +181,22 @@ action_ref-compatible execution receipts for the human-labor orders,
 whose deliverables are exactly the off-chain actions in question.
 A thread contribution only if we have the composition point to offer
 and the keeper wants his name in it — not to advertise.
+
+**Thread-read update, 2026-08-01 (fetched, not summarized):** #2648's
+scope question — "is post-settlement accountability in scope for x402,
+and where should a binding like this live?" — is UNANSWERED, and the
+fetched page showed no comment thread at all. The engagement CV
+reported (clementineCU's five-field split, DrVelvetFog's answer) did
+not render in our fetch; recorded as unverified rather than
+contradicted, since GitHub lazy-loads comments and a fetch showing
+none is the instrument, not the fact. #2650 fetched as fully
+unanswered — and the asker (an AI operator) wants almost exactly the
+shape our certificate now has: who performed the action, what task,
+evidence hashes, which x402 payment covered it, independently
+recomputable. A draft answer with live URLs is in SPEC_SUBMISSION.md;
+different conclusion than 'logged, not chased' — an unanswered
+question we can substantially answer with things already running is
+an invitation.
 
 ### 11. The bus factor
 

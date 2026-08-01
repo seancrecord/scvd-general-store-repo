@@ -177,6 +177,7 @@ export const NOT_BUILT: readonly string[] = [
   } The MECHANISM for a handover exists and has been used once, on 2026-07-31, under the protocol published the same day: key history, retirement dates, and an announcement signed by the outgoing key at /api/verify/handover_1. What does not exist is a successor to the key now in service. This is stated the same way on /stack, which calls it the one dependency with no substitute.`,
   "No threshold or multi-party signing. One key, one holder, one process.",
   "No hardware security module. The key is a Cloudflare Worker secret.",
+  "No post-quantum signatures. Everything here is Ed25519, which a relevant quantum computer would break, and every tenure claim assumes it holds — stated now, while it costs nothing. The migration path exists and is the succession protocol unchanged: a handover to a PQ key announced under the outgoing Ed25519 key, with the old key published forever so pre-migration artifacts stay attributable. Waiting on the ecosystem to pick a scheme, deliberately.",
   "No third-party audit of any of the above, and no patent. Both are sometimes offered as evidence of seriousness; neither is evidence that a signature checks out, which is the only thing this page is about.",
 ];
 

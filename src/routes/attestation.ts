@@ -15,6 +15,7 @@ import {
 import {
   CONTINUITY_LIMIT,
   KEY_BACKUP,
+  POST_QUANTUM,
   KEY_BACKUP_EXISTS,
   SUCCESSION_MECHANISM,
   SUCCESSION_PROTOCOL,
@@ -69,6 +70,7 @@ function keyContinuity(base: string) {
       key_history_url: `${base}/.well-known/scvd-signing-key`,
       what_is_deliberately_undisclosed: SUCCESSION_SECRECY,
     },
+    post_quantum: POST_QUANTUM,
     limit: CONTINUITY_LIMIT,
   };
 }

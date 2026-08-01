@@ -93,6 +93,56 @@ author in any language can test against. Offering vectors costs us
 an afternoon and is the kind of help a spec repo actually wants from
 a small implementer.
 
+## Draft comment for issue #2664 (post-quantum), keeper's pen
+
+> The proposal's open-questions list covers scheme naming, key
+> encoding and nonce architecture — but not backward compatibility,
+> and that may be the hardest part of a PQ migration for any service
+> already issuing signed artifacts: how do pre-migration signatures
+> stay attributable to the service after the algorithm changes?
+>
+> One transition pattern that needs no new cryptography, offered in
+> case it is useful (it is the PGP key-transition-statement / DNSSEC
+> double-signature rollover shape, not something we invented): treat
+> the PQ migration as a key handover. The service announces the
+> ML-DSA key in an artifact signed by the outgoing classical key,
+> before the PQ key signs anything; the classical key stays published
+> permanently with its in-service dates, so artifacts signed under it
+> remain attributable; verifiers distinguish "authorized during its
+> era" from "authorized now." We run this live for classical-to-
+> classical rotation (working example: a real handover at
+> https://scvd.store/api/verify/handover_1) and the mechanics are
+> algorithm-agnostic — the incoming key's type is irrelevant to the
+> transition chain.
+>
+> One honest limitation worth stating in any PQ-migration design: the
+> outgoing classical signature on the transition statement is itself
+> only as strong as the classical algorithm, so the transition chain
+> should be established BEFORE a cryptographically relevant quantum
+> computer exists, not after. Early migration is not just prudent for
+> new signatures — it is what keeps the transition itself credible.
+
+## Draft answer for issue #2650 (linking settlements to execution receipts), keeper's pen
+
+> Not a spec answer, but a live data point that may help: we run a
+> small x402 store where every settlement mints a signed certificate
+> that binds most of what you list — the payer wallet (chain-
+> verifiable), the item/task, the settlement transaction hash (so the
+> receipt and a Base explorer are one fact checked twice), and a
+> maker's mark for who/what performed fulfilment. The verify endpoint
+> serves the exact signed bytes plus an artifact_hash, so a copy is
+> independently recomputable without re-trusting the transport:
+> https://scvd.store/attestation describes what each signature does
+> and does not prove. We also implement the Signed Offers & Receipts
+> extension, which covers the "which x402 payment covered it" half at
+> the protocol layer.
+>
+> The piece your question needs that neither of these provides: an
+> execution receipt is still the SERVICE attesting it did the thing.
+> For "did the action actually happen," the missing layer is an
+> observer that is not a party to the transaction — which is a
+> different trust model, not a bigger signature.
+
 ## Notes for the keeper, not for the PR
 
 - The store's house rules hold: no "first ever," prior art named by

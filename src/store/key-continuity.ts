@@ -165,5 +165,45 @@ export const SUCCESSION_MECHANISM =
  * The closing line, in the same register as /attestation's and
  * /wind-down's. None of these three pages gets to end on reassurance.
  */
+/**
+ * POST-QUANTUM, STATED BEFORE ANYBODY ASKS.
+ *
+ * Written 2026-08-01, prompted by the x402 PQ proposal (#2664:
+ * ML-DSA-65 / ML-KEM-768). Reading it found the gap that makes OUR
+ * statement worth publishing: the proposal's own open-questions list
+ * covers scheme naming and key encoding and EXCLUDES backward
+ * compatibility — no transition mechanics, no story for how artifacts
+ * signed before the migration stay attributable after it.
+ *
+ * That missing half is the half this store already built. A PQ
+ * migration here is a HANDOVER: announced under the outgoing Ed25519
+ * key before the PQ key signs anything, the Ed25519 key published
+ * forever in key_history with its service dates, every pre-migration
+ * artifact still carrying its own key and staying attributable. The
+ * succession protocol was written for losing a key; it is also,
+ * unchanged, the rails a cryptographic era change rides.
+ *
+ * AND THE ASSUMPTION IS NAMED RATHER THAN HIDDEN: every signature-
+ * tenure claim this store makes assumes Ed25519 holds. When a
+ * cryptographically relevant quantum computer exists, an Ed25519
+ * signature stops proving WE signed a thing, because anyone could
+ * have. The honest reading of what survives that day: artifacts
+ * whose hashes were bound into public chain state (settlement_tx on
+ * certificates) keep their timestamps; pure signatures become
+ * historically attributable but no longer cryptographically
+ * exclusive. Saying this in 2026 costs nothing and is the difference
+ * between a durability claim and a durability boast.
+ */
+export const POST_QUANTUM = {
+  today:
+    "Every signature this store issues is Ed25519, which is not post-quantum safe, and every signature-tenure claim here assumes it holds. That assumption is fine today and is stated rather than hidden, because a durability claim with an unstated boundary is the defect class this store publishes corrections about.",
+  migration_path:
+    "Already built, not because we anticipated PQ but because we lost a key copy once: a PQ migration is a key handover, announced under the outgoing Ed25519 key BEFORE the post-quantum key signs anything, with the Ed25519 key kept published forever in key_history so every pre-migration artifact stays attributable. The succession protocol at /attestation does not change; only the algorithm of the incoming key does.",
+  what_would_not_survive:
+    "Cryptographic exclusivity of old signatures. Once a relevant quantum computer exists, an Ed25519 signature no longer proves this store uniquely could have made it. What keeps its footing: artifacts bound to public chain state (settlement_tx) keep independent timestamps, and the key history keeps the record of what was claimed when.",
+  trigger:
+    "A post-quantum signature extension landing normatively in the x402 spec AND the runtime supporting the chosen scheme (ML-DSA-65 is the current proposal). Watching, not building: adopting a PQ scheme before the ecosystem picks one is how a store ends up alone on the wrong algorithm.",
+} as const;
+
 export const CONTINUITY_LIMIT =
   "ONE COMMITMENT AND ONE CHECK, AND THEY ARE NOT THE SAME WEIGHT. The check is real: a handover signed by the outgoing key is something you verify with your own library and nobody's word. Everything else here — the ordering, the refusal to re-sign, the promise to say so plainly if the bad case arrives — is a statement of intent by one operator holding one key, written down early so it can be quoted back at us, and enforceable by nobody. It is worth what this store's word is worth. The record of what that has been worth so far is at /corrections.";

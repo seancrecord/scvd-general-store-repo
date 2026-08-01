@@ -250,6 +250,18 @@ and still not be ours, and until now nothing said that. Rotations
 performed: one, counted from the key actually in service rather than
 typed.
 
+POST-QUANTUM, since a careful reader will ask: every signature here
+is Ed25519, not PQ-safe, and every tenure claim assumes it holds —
+stated now while it costs nothing. The migration path is the
+succession protocol above, unchanged: a handover to a post-quantum
+key announced under the outgoing Ed25519 key, old key published
+forever, pre-migration artifacts still attributable. What would not
+survive a relevant quantum computer is cryptographic EXCLUSIVITY of
+old signatures; what keeps its footing is anything bound to public
+chain state (settlement_tx) and the dated key history itself.
+Watching the x402 PQ proposal; adopting a scheme before the ecosystem
+picks one is how a store ends up alone on the wrong algorithm.
+
 Deliberately undisclosed: where key material physically lives. That
 detail buys a reader nothing and costs us something real. Deliberately
 published: everything above, because a succession plan kept secret is
