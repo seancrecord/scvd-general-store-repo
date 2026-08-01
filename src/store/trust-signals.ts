@@ -115,16 +115,12 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     confirmed: "2026-08-02",
     /**
      * A per-service page that RUNS CHECKS rather than just listing —
-     * grade A on 14 of 14 as of the keeper's read. Stronger than a bare
-     * index entry (a third party testing claims, not repeating them),
-     * but it is NOT carrying the site's top-level "verified" flag yet,
-     * and this record says so: that flag reportedly wants more
-     * independently-observed settlement volume, which time supplies
-     * rather than a submission. Naming the missing flag beside the
-     * grade is the difference between a score and a boast.
+     * grade A on 14 of 14, and VERIFIED as of 2026-08-02: the keeper
+     * completed the directory's domain-ownership proof (one-time token
+     * at /.well-known/x402list.txt, since removed as invited).
      */
     what_it_proves:
-      "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) — a third party testing the endpoints rather than repeating a listing. Not an endorsement and not an audit of the goods, and NOT yet the site's top-level 'verified' status, which is a separate flag this store has not earned there yet.",
+      "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) — a third party testing the endpoints rather than repeating a listing — and that the store verified domain ownership with the directory on 2026-08-02. Not an endorsement and not an audit of the goods.",
   },
   {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
