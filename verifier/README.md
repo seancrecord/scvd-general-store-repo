@@ -81,13 +81,30 @@ One confirmed anchor vouches for the whole history behind it — but only
 if the chain links, so `bitcoin_confirmed` goes false the moment
 `chain_ok` does.
 
+**Running `ots verify` is not the whole check.** That command proves
+the digest existed by some Bitcoin block. It says nothing about the
+date the *snapshot* claims. The comparison that catches backdating is
+block time vs. `first_seen_at`: close together means the entry was
+committed when it says it was; a much later block means the snapshot
+was written after the fact and stamped later — which no amount of
+internal chain consistency would reveal. The result carries
+`settle_it_yourself` naming exactly this, because a verifier that
+sends you off to run one command without saying what to compare has
+handed you a ritual.
+
 Two honest limits. `ots.status` is the **issuer's claim**: this library
 has no Bitcoin header source, so it returns `ots_proof_base64` and
-`ots_status_is_unverified_claim: true` for you to settle with `ots
-verify` yourself. And an anchor proves **when** a key state was
-committed, never **who should have** held it — a thief with the key
-could anchor too. It bounds a compromise window; it does not prevent
-one.
+`ots_status_is_unverified_claim: true` for you to settle yourself. And
+an anchor proves **when** a key state was committed, never **who
+should have** held it — a thief with the key could anchor too. It
+bounds a compromise window; it does not prevent one.
+
+One thing no chain check catches: if an issuer's storage were wiped
+and a fresh chain started at sequence 1, it would look genuine to
+anyone who had never seen the old one. Same defence as any
+transparency log — if you rely on an issuer's chain, keep the digest
+you last saw. A chain that no longer contains it was replaced, not
+extended.
 
 An issuer without an anchor log returns `available: false`. That is
 information, not a failure — most do not have one, and that is the

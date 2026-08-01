@@ -364,6 +364,18 @@ describe("checkAnchoredKeyHistory", () => {
     // The proof comes back so the caller can settle it themselves.
     expect(result.ots_proof_base64).toBe("cHJvb2Y=");
     expect(result.ots_status_is_unverified_claim).toBe(true);
+    /**
+     * And it names WHAT to compare. An attacker who rewrote the chain
+     * and re-stamped it passes every check above — the digests match,
+     * the links hold, a proof exists. What they cannot fake is a
+     * Bitcoin block from before they did it. Handing a caller "run ots
+     * verify" without "then compare the block time to first_seen_at"
+     * is handing them a ritual that clears the actual forgery.
+     */
+    expect(String(result.settle_it_yourself)).toContain("first_seen_at");
+    expect(String(result.settle_it_yourself).toLowerCase()).toContain(
+      "backdated",
+    );
   });
 
   it("withdraws that inference the moment the chain does not recompute", async () => {

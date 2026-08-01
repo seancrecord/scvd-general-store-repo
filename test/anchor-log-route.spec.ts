@@ -163,6 +163,25 @@ describe("/.well-known/anchor-log.json", () => {
     expect(steps.toLowerCase()).toContain("not yet a bitcoin commitment");
   });
 
+  it("tells a reader to compare block time against taken_at, which is the check that catches backdating", async () => {
+    /**
+     * `ots verify` alone proves the digest existed by some block. It
+     * says NOTHING about the date the snapshot claims. Steps 1-3 prove
+     * the chain is internally consistent — an attacker who rewrote
+     * history and re-stamped it would pass all three. Only comparing
+     * the block time to taken_at ties the log to time we do not
+     * control, and a how-to that omits it teaches a ritual.
+     */
+    const body = await fetchLog();
+    const steps = (body["how_to_check_without_trusting_us"] as string[]).join(
+      " ",
+    );
+    expect(steps).toContain("taken_at");
+    expect(steps.toLowerCase()).toContain("backdating");
+    // And the limit no chain check can cover, said rather than hidden.
+    expect(steps.toLowerCase()).toContain("fresh chain");
+  });
+
   it("does not let its own status word be read as verification", async () => {
     /**
      * We deliberately do not parse OTS proofs — a second

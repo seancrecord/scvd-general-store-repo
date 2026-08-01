@@ -67,11 +67,68 @@ all doing the thing we criticize others for?** I think the flag plus
 the proof is honest; I'd rather hear it's not from you than from a
 stranger.
 
-**Owed and recorded:** no real OTS stamp exists yet. This
-environment has no outbound network, so every calendar interaction
-so far is a fake fetch in a test. Same pattern as the SLSA
-attestation — code tested, live confirmation owed on the first
-production cron run.
+**Owed and recorded:** no real OTS stamp exists yet. Verified rather
+than assumed — the agent proxy answers 403 to CONNECT for
+a.pool.opentimestamps.org:443 and logs it as a policy denial — so
+every calendar interaction so far is a fake fetch in a test. Same
+pattern as the SLSA attestation: code tested, live confirmation owed
+on the first production cron run.
+
+**One thing I already found by red-teaming myself, so you can start
+past it.** The published how-to said "run `ots verify` against the
+digest" and stopped. That command proves the digest existed by some
+block and says NOTHING about the date the snapshot claims — so an
+attacker who rewrote the chain and re-stamped it passed every check
+we published. The real check is block time vs. the entry's own
+`taken_at`, and we hadn't told anyone to make it. Fixed and tested.
+The reusable lesson: an instruction to run somebody else's tool is
+not a check until you say what to compare its output against. Worth
+holding against the rest of our verification surfaces.
+
+### - [ ] T9 (Claude → CV, 2026-08-02): Red-team brief for the anchor log — four angles, and the two I cannot run
+
+Please break this rather than review it. Live at
+/.well-known/anchor-log.json once deployed; code in
+src/services/anchor-log.ts, src/services/anchor-submit.ts and the
+verifier's verifyAnchorChain / checkAnchoredKeyHistory.
+
+**1. The forgery I think we now catch — check my reasoning.** Rewrite
+a past snapshot, rehash it, rewrite every entry after it, re-stamp
+the new head. Internal consistency is perfect. My claim is that the
+OLD entries' existing Bitcoin proofs contradict it, and that a
+verifier only sees this by comparing block time to `taken_at`. Is
+there a variant where the attacker never had a confirmed proof to
+contradict — e.g. compromise during the pending window — and what
+should a verifier do with a chain whose proofs are ALL pending?
+
+**2. The fresh-chain problem, which I disclosed rather than fixed.**
+KV wiped, chain restarts at sequence 1, looks genuine to anyone who
+never saw the old one. I've written the standard defence (keep the
+digest you last saw). Is disclosure the right call here, or is there
+a cheap mechanism — cross-posting head digests somewhere append-only
+we don't control — that makes it a fixed problem instead of a
+documented one? I did not want to build Rekor purely to be a second
+place to notice deletion, but that may be exactly its job.
+
+**3. The two I cannot run from here, and would rather you did.** No
+outbound network in my environment, so: (a) does a real OTS calendar
+actually accept our submission shape — raw 32 bytes POSTed to
+{calendar}/digest with Accept: application/vnd.opentimestamps.v1 —
+and does /timestamp/{digest} behave as I've modelled it (404 while
+pending, 200 with an upgraded proof after confirmation)? (b) does a
+proof we produce actually verify with the STANDARD `ots` client? Our
+proofs are opaque bytes we never parse, which is deliberate, and it
+also means a shape error would look like success all the way to
+production.
+
+**4. The strategic one.** Does an anchor log move ANY real
+counterparty, or is it a thing that impresses engineers and changes
+no purchase decision? PROBLEMS.md #2's original trigger was "a
+counterparty whose verifier requires it," and we built it before that
+counterparty appeared. I think it was still right — it is the
+credible half of the standards story and it cost nothing — but if
+your read is that it is a beautifully tested ornament, that is worth
+more to me than agreement.
 
 ### - [ ] T7 (Claude → CV, 2026-08-02): The pre-mortem's best cut — is A aimed at the wrong customer?
 

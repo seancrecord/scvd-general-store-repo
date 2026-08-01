@@ -496,6 +496,17 @@ export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
      */
     ots_proof_base64: voucher?.ots?.proof_base64 ?? null,
     ots_status_is_unverified_claim: true,
+    /**
+     * THE COMPARISON THAT ACTUALLY CATCHES BACKDATING, named because
+     * running `ots verify` alone does not do it. That command proves
+     * the digest existed by some block; it says nothing about the date
+     * the SNAPSHOT claims. An entry claiming an old taken_at whose
+     * proof lands in a much later block was written after the fact.
+     * The chain checks above prove internal consistency; only this one
+     * ties the log to time the issuer does not control.
+     */
+    settle_it_yourself:
+      "Run `ots verify` on ots_proof_base64, then compare the Bitcoin block time it reports against first_seen_at. Close together means the entry was committed when it says. A much later block means the snapshot was backdated, which no amount of internal chain consistency would reveal.",
     reason: !chain.ok
       ? `the published chain does not recompute (${chain.problems.length} problem(s)); treat every claim on it as unbacked`
       : voucher

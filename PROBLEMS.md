@@ -70,12 +70,36 @@ anchors exactly as validly as we do. It bounds a compromise window
 after the fact; it does not prevent one. That is forensics, not a
 defence, and #1 above is still the entry that matters.
 
+**Caught the same day, before anyone outside saw it — the how-to
+taught a ritual.** The published steps said "run `ots verify` against
+the digest" and stopped there. That command proves the digest existed
+by some Bitcoin block; it says NOTHING about the date the snapshot
+claims. An attacker who rewrote history and re-stamped the rewritten
+chain passes every check we had published: digests match, links hold,
+a proof exists. What they cannot fake is a block from before they did
+it — so the check that actually catches backdating is comparing the
+block time against the entry's own `taken_at`, and we had not told
+anyone to make it. Now step 4 of the how-to and a `settle_it_yourself`
+field on the verifier's result, both tested. THE GENERAL LESSON, which
+is the reusable part: an instruction to run somebody else's tool is
+not a check until you say what to compare its output against.
+
+**And the limit no chain check can cover, now said rather than left
+implicit:** if this store's KV were wiped and a fresh chain started at
+sequence 1, it would look genuine to a reader who never saw the old
+one. That is inherent to any transparency log and the defence is the
+standard one — if you rely on the chain, keep the digest you last saw;
+a chain that no longer contains it was replaced, not extended. Written
+into the how-to and the verifier README rather than filed as a to-do,
+because it is a property to disclose, not a bug to fix.
+
 **Owed, and recorded rather than quietly skipped:** no real OTS stamp
-has been made yet — this environment has no outbound network, so
-every calendar interaction so far is a fake fetch in a test. Same
-pattern as the SLSA attestation: the code is tested, the live
-confirmation is owed and will be checked on the first cron run in
-production. Rekor is designed for but not built; OTS is the durable
+has been made yet. Verified, not assumed: the agent proxy answers 403
+CONNECT to a.pool.opentimestamps.org:443 (policy denial, confirmed in
+its own recentRelayFailures log), so every calendar interaction so far
+is a fake fetch in a test. Same pattern as the SLSA attestation: the
+code is tested, the live confirmation is owed and will be checked on
+the first cron run in production. Rekor is designed for but not built; OTS is the durable
 anchor and the one that closes the gap, Rekor was the fast
 corroborating log.
 
