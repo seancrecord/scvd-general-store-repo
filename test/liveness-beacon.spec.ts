@@ -62,6 +62,39 @@ describe("the liveness beacon", () => {
     );
   });
 
+  it("binds a client nonce into the signed payload so a replay is detectable", async () => {
+    const nonce = "fresh-nonce-abc123";
+    const res = await SELF.fetch(
+      `${BASE}/.well-known/liveness.json?nonce=${nonce}`,
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body["client_nonce"]).toBe(nonce);
+    // The nonce is COVERED by the signature, not just echoed beside it.
+    const ok = await ed25519.verifyAsync(
+      bytes(String(body["signature"])),
+      new TextEncoder().encode(String(body["signed_payload"])),
+      bytes(String(body["public_key"])),
+    );
+    expect(ok).toBe(true);
+    const signed = JSON.parse(String(body["signed_payload"])) as Record<
+      string,
+      unknown
+    >;
+    expect(signed["client_nonce"]).toBe(nonce);
+    // A verifier's own contract for using it is stated on the doc.
+    expect(String(body["anti_replay"])).toContain("replayed");
+  });
+
+  it("stays a plain cacheable statement when no nonce is asked for", async () => {
+    const body = await fetchBeacon();
+    expect(body["client_nonce"]).toBeNull();
+    const signed = JSON.parse(String(body["signed_payload"])) as Record<
+      string,
+      unknown
+    >;
+    expect(signed["client_nonce"]).toBeNull();
+  });
+
   it("reports the keeper inside the window when he was provably just here", async () => {
     await testEnv.COUNTERS.put("keeper_last_seen", new Date().toISOString());
     const body = await fetchBeacon();

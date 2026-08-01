@@ -183,6 +183,70 @@ Gemini red-team pass pending):**
   the live key AND coerces the keeper — both reports state it,
   the threat model says it out loud.
 
+**DR2 round 3 (Gemini, narrowed red-team brief), vetted 2026-08-02
+— the demoted-engine-in-its-lane experiment, and it worked.** Given
+only the attack slice (enumerate how a motivated attacker defeats
+each layer, cheapest-first, with forensic residue), Gemini returned
+a genuinely useful 10-vector assessment. Three were checkable
+against our own code immediately:
+
+- **V3 (error handler dumps env into a 500): CLOSED, verified.**
+  src/index.ts onError returns fixed prose plus front_door/menu_url,
+  never stringifies err or env; console.error logs the error object
+  server-side only. The attack this names is real and common; our
+  handler already doesn't commit it. Left a note here so the next
+  edit to onError knows why it must never interpolate env.
+- **V7 (liveness beacon replay): REAL GAP, FIXED SAME DAY.** The
+  beacon signed only its own issued_at, so a captured beacon was
+  replayable during an outage to fake this-instant liveness. Fixed:
+  an optional ?nonce= is signed INTO the payload (client_nonce),
+  so a verifier who needs freshness gets a signature that could
+  only have been minted for their request, after they chose the
+  nonce. No nonce → null → the cacheable statement it always was;
+  the guarantee is opt-in and the doc's anti_replay field states
+  the verifier's contract. Capped at 128 chars. Commit: "Close the
+  liveness-beacon replay gap." Gemini earned its keep on this one.
+- **V1 (dependency exfiltrates the Worker secret): standing risk,
+  not a bug — logged as its own watch.** No fix is a line of code;
+  the mitigations are supply-chain hygiene (lockfile discipline,
+  minimal deps — the store already runs a deliberately thin
+  dependency set — and outbound-request review). AT_SCALE's feature
+  checklist gains this; see below.
+
+The other seven are architecture/opsec, not code, and each maps to
+a defense already on the staged plan or already stated as
+out-of-scope:
+- **V5 (succession race) is the sharp one, and it REORDERS the
+  plan.** A thief who steals the live key immediately signs a
+  rotation to THEIR key and publishes first; the keeper's later
+  paper-backup rotation is rejected as second. This is precisely
+  why pre-rotation (Stage 0b) must ship BEFORE it is needed, not
+  after theft: with the successor hash already committed under the
+  current key, the thief cannot rotate to a key they control — they
+  lack the preimage — and the race has no prize. Gemini independently
+  re-derived the same top-priority the two full reports reached.
+  Also strengthens the case for OTS/Rekor (Stage 0a): an externally
+  timestamped legitimate succession history makes a thief's
+  competing artifact forensically later, not just contested.
+- **V4/V6/V8/V9/V10 (did:web domain hijack, dashboard phishing/SIM
+  swap, physical seed theft, $5-wrench duress, Cloudflare insider /
+  V8 isolate escape):** opsec and platform-trust, not code.
+  Captured as keeper-awareness items — the actionable ones are
+  concrete and cheap: registrar lock + hardware-key 2FA (FIDO2, not
+  SMS) on both the domain registrar and Cloudflare closes V4 and the
+  cheap half of V6 outright; the rest (physical, duress, insider)
+  are the residual the threat model already says no design defeats.
+  These belong in the keeper's operational runbook, not the repo;
+  noted here so they are not lost.
+
+*Cycle-2 close:* three engines again, and the demotion policy
+proved correct — Gemini in a narrowed red-team lane produced the
+one same-day code fix of the round (V7) and independently confirmed
+the plan's top priority (V5 → pre-rotation first). The staged plan
+is unchanged in content, sharpened in order: pre-rotation is not
+just strongest-defense, it is time-critical against the succession
+race. Awaiting the keeper's go on Stage 0.
+
 ### 3. Demand
 
 The store cannot engineer a reason to arrive. Everything in the trust

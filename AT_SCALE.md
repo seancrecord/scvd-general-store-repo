@@ -238,6 +238,15 @@ The five questions every new feature answers before it ships:
    immutability is the product — so the certs-per-month × years
    napkin math gets redone when volume moves, before the 1GB line
    does.
+6. Does it add a dependency, and could that dependency read
+   env.SIGNING_KEY? A red-team pass (PROBLEMS #1, DR2) named the
+   cheapest attack on the whole store as a malicious npm package
+   exfiltrating the secret from isolate memory on deploy. The
+   defense is not code — it is a deliberately thin dependency set,
+   lockfile discipline, and treating every new dep on a
+   secret-handling path as a supply-chain decision, not a
+   convenience. The signing path especially earns its dependencies
+   or does without them.
 
 ## What this file is not
 
