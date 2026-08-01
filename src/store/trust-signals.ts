@@ -115,24 +115,26 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
  * WHAT IS DELIBERATELY NOT IN THE LIST ABOVE, and why.
  *
  * A trust document is exactly the wrong place to round up. Two real
- * listings are known and both are left out, for two different reasons,
- * and saying which is which costs nothing:
+ * listings are left out, and the reason turned out to be the same one
+ * for both, which the keeper established by going and looking on
+ * 2026-07-31: NEITHER CATALOGUE PUBLISHES A PER-SERVICE PAGE. You are
+ * in the index and that is all there is; there is no URL that points
+ * at this store rather than at the directory containing it.
  *
- *   - x402scout.com carries an entry per this store's own notes, and
- *     NOBODY HERE HAS OPENED IT to confirm. An unverified URL in the
- *     one document claiming legitimacy is worse than an absence.
- *   - The official MCP registry (registry.modelcontextprotocol.io) has
- *     this store published under store.scvd/general-store since
- *     2026-07-30. It is left out because there is no stable
- *     per-service page to link, not because the listing is in doubt —
- *     sameAs takes URLs a resolver can follow, and an identifier is
- *     not one.
+ * So the omission is permanent rather than pending a link somebody
+ * has not found yet, and that distinction is worth writing down —
+ * "we could not find the URL" and "the URL does not exist" invite
+ * completely different next actions from whoever reads this next.
  *
- * Both go in the moment somebody has a followable URL they have
- * actually opened.
+ * A CATALOGUE ROOT IS NOT A sameAs AND WILL NOT BE ADDED AS ONE.
+ * schema.org defines that field as a page that unambiguously
+ * indicates the ITEM's identity, and a directory homepage identifies
+ * the directory. Listing it would be padding a legitimacy document
+ * with a link that proves somebody else exists, which is worse than
+ * the empty space it fills.
  */
 export const RECORDS_NOT_LISTED =
-  "Two known listings are deliberately absent. x402scout.com is reported to carry an entry that nobody here has independently confirmed, and an unverified link in a legitimacy document is worse than none. The official MCP registry has published this store as store.scvd/general-store since 2026-07-30, omitted only because it exposes no stable per-service page to link — an identifier is not a URL a reader can follow. Both are listed here rather than quietly left out, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
+  "Two further listings exist and are deliberately not linked above, for one reason: NEITHER PUBLISHES A PER-SERVICE PAGE. The official MCP registry has carried this store as store.scvd/general-store since 2026-07-30, and x402scout.com lists it too — in both cases you are in the index and that is all there is, with no URL that points at this store rather than at the directory containing it. That is a permanent property of those catalogues rather than a link nobody has found yet, and the difference matters to whoever reads this next. A catalogue root will not be added to stand in for one: schema.org's sameAs means a page that unambiguously indicates THIS item's identity, and a directory homepage identifies the directory. Padding a legitimacy document with a link that proves somebody else exists is worse than the space it fills. Both are named here rather than quietly dropped, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
 
 /**
  * THE OPERATOR, stated the way a diligence check expects to find it.
