@@ -1293,6 +1293,40 @@ the payer now verified the cache is safe even if a key is public, so
 T11 becomes buildable — but on its own merits and after this, not
 before it.
 
+**T11 then SHIPPED the same day, on those merits.** The 402 now
+carries a suggested Idempotency-Key an agent can simply echo, because
+a client cannot send a header it does not know exists. CV's read on
+why it is safe is sharper than the one above: with the payer verified,
+the key is no longer an authentication mechanism at all — it is a
+BUCKETING FUNCTION. Computing it selects a cache slot; opening one
+still takes a signature. So it is public by construction, and written
+to look it (`scvd-suggested-hello-29123456`, not a hash), because a
+value that looks like entropy invites being treated as a secret.
+
+It is time-bucketed at 60 seconds rather than random, and that is the
+whole design: a random per-challenge suggestion would be useless
+against the exact failure it targets, since a looping agent re-fetches
+the challenge each pass and would get a fresh key every time. To bind
+a loop the value must be stable across it.
+
+*Built past the spec in one place.* CV called the bucket-boundary leak
+acceptable and it is genuinely bounded — but it is a real double
+charge at every boundary, forever, and closing it was nearly free. So
+on a MISS, if the presented key is exactly the suggestion we would
+hand out now, the lookup also tries the previous bucket's. It fires
+only for clients echoing our own value, costs one KV read on a path
+that already missed, and stays scoped to the verified payer. Still
+uncovered and said plainly: a loop spanning more than two buckets,
+which is slow enough that the second attempt is arguably a second
+intent — and failing there charges normally, the direction this file
+always fails.
+
+Suggested, never required: a client sending its own key keeps using
+it, a client sending none is charged exactly as before, and a test
+pins that. Both doors are fed by one helper with a test asserting the
+two suggestions are byte-identical, because this codebase has already
+been bitten by a fix that looked shared and was not.
+
 **A process finding fell out of the same hour, and it is the more
 embarrassing one.** `npm run build:check` is `wrangler deploy
 --dry-run`: esbuild bundling, which STRIPS types without checking

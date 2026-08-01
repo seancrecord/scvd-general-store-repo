@@ -102,81 +102,6 @@ artifact classes casually. (3) What is the authoritative source — the
 settled-order records, or the certificate log? They should agree, and
 if they ever do not, THAT is the more interesting finding.
 
-### - [ ] T11 (CV → Claude, 2026-08-02): Pre-supply the Idempotency-Key in the 402 challenge itself
-
-CV's UX cut, and it is a good one: an agent cannot send an
-`Idempotency-Key` it does not know it should send. Ship a suggested
-key **inside the 402 challenge**, so a client that never read our docs
-still gets replay protection by echoing what it was handed. Closes the
-"agent doesn't know to send one" gap without requiring anybody to read
-anything.
-
-*Claude's read: agreed on the goal, with one design constraint that
-has to hold or it makes things worse.* A key WE generate is a key we
-chose — so if the client echoes it, replay protection is only as good
-as our randomness AND, more importantly, the key must be bound to the
-challenge rather than reusable across purchases. Two failure modes to
-design against before writing code: (a) a client that caches our
-suggested key and reuses it on a DIFFERENT item silently collides with
-its own earlier purchase and gets the wrong artifact back — worse than
-no protection, because it looks like it worked; (b) a suggested key
-must never become a REQUIRED key, or we have broken every client that
-already sends its own. The shape that satisfies both is a per-challenge
-suggestion, namespaced by item, that the client is free to ignore or
-override. Building this next unless the keeper redirects — it is small,
-it is on the money path, and money-path changes get the careful pass.
-
-*Claude, 2026-08-02 — NOT BUILT YET, and your idea is the reason a
-real hole got found. Read this before arguing with the deferral.*
-
-Scoping it turned up a prerequisite hiding underneath. The replay
-lookup ran at the TOP of the gate, off the payer address read straight
-out of the base64 payment header — `JSON.parse(atob(...))` and a field
-read, with verification happening later in the pipeline. So a cached
-purchase went to whoever ASSERTED the buyer's address, and a buyer's
-address is public on Base. Same shape on the MCP door. **The only
-thing standing between a stranger and another wallet's goods was that
-the Idempotency-Key is a caller-held secret.**
-
-That is a real defence and it is a SINGLE one. Publishing a suggested
-key in the public 402 — exactly what you proposed — would have removed
-it. Your UX cut and that ordering bug were each defensible alone and
-jointly a hole: read the suggested key off any 402, take any payer
-address off-chain, collect that buyer's certificate. This is the
-"makes things worse" case I flagged when I first read your idea, and
-it was worse and more specific than I guessed.
-
-*Fixed by moving, not by adding crypto* (PROBLEMS.md #19): both doors
-already had a seam between verify and settle, so the lookup runs there
-now, against a deliberately separate reader for verified payloads. A
-replay takes the private key, not knowledge of an address. The
-regression test was run against the OLD code first to confirm it fails
-there — a test that passes both ways proves nothing and looks like
-proof.
-
-**So T11 stays open and is now buildable on its own merits.** With the
-payer verified, a public suggested key is no longer a skeleton key.
-Two questions I want your read on first, because they decide whether
-it WORKS, not just whether it is safe:
-
-1. **A random per-challenge suggestion is useless for the case it
-   targets.** A looping agent re-fetches the 402 each pass, gets a
-   fresh suggestion each pass, and every loop is a fresh charge. To
-   bind a loop the suggestion must be STABLE across it — derived from
-   something the loop repeats. My candidate is (item, coarse time
-   bucket): identical for every client in that window, but still
-   isolated because the lookup is scoped by payer regardless. A bucket
-   boundary leaks exactly one extra charge. Bounded, not eliminated.
-   Does that trade look right to you?
-2. **The boundary behaviour IS the design.** I would rather ship
-   something that admits it closes most of a loop than something that
-   reads like it closes all of it.
-
-*One thing your idea earned regardless:* the unverified payer reader
-is deleted rather than left sitting unused, because the next person
-needing "the payer" would have found it and it would have looked
-right.
-
 ### - [ ] T12 (CV → Claude, 2026-08-02): Freeze live counters at the moment they are cited
 
 Fallout from T2, promoted to its own thread because it is a mechanism
@@ -357,6 +282,134 @@ quality is deliberately absent. Drafts the moment a counterparty says
 ---
 
 ## Settled threads
+
+### - [x] T11 (CV → Claude, 2026-08-02): Pre-supplied Idempotency-Key — SHIPPED, after it exposed ledger #19
+
+CV's UX cut, and it is a good one: an agent cannot send an
+`Idempotency-Key` it does not know it should send. Ship a suggested
+key **inside the 402 challenge**, so a client that never read our docs
+still gets replay protection by echoing what it was handed. Closes the
+"agent doesn't know to send one" gap without requiring anybody to read
+anything.
+
+*Claude's read: agreed on the goal, with one design constraint that
+has to hold or it makes things worse.* A key WE generate is a key we
+chose — so if the client echoes it, replay protection is only as good
+as our randomness AND, more importantly, the key must be bound to the
+challenge rather than reusable across purchases. Two failure modes to
+design against before writing code: (a) a client that caches our
+suggested key and reuses it on a DIFFERENT item silently collides with
+its own earlier purchase and gets the wrong artifact back — worse than
+no protection, because it looks like it worked; (b) a suggested key
+must never become a REQUIRED key, or we have broken every client that
+already sends its own. The shape that satisfies both is a per-challenge
+suggestion, namespaced by item, that the client is free to ignore or
+override. Building this next unless the keeper redirects — it is small,
+it is on the money path, and money-path changes get the careful pass.
+
+*Claude, 2026-08-02 — NOT BUILT YET, and your idea is the reason a
+real hole got found. Read this before arguing with the deferral.*
+
+Scoping it turned up a prerequisite hiding underneath. The replay
+lookup ran at the TOP of the gate, off the payer address read straight
+out of the base64 payment header — `JSON.parse(atob(...))` and a field
+read, with verification happening later in the pipeline. So a cached
+purchase went to whoever ASSERTED the buyer's address, and a buyer's
+address is public on Base. Same shape on the MCP door. **The only
+thing standing between a stranger and another wallet's goods was that
+the Idempotency-Key is a caller-held secret.**
+
+That is a real defence and it is a SINGLE one. Publishing a suggested
+key in the public 402 — exactly what you proposed — would have removed
+it. Your UX cut and that ordering bug were each defensible alone and
+jointly a hole: read the suggested key off any 402, take any payer
+address off-chain, collect that buyer's certificate. This is the
+"makes things worse" case I flagged when I first read your idea, and
+it was worse and more specific than I guessed.
+
+*Fixed by moving, not by adding crypto* (PROBLEMS.md #19): both doors
+already had a seam between verify and settle, so the lookup runs there
+now, against a deliberately separate reader for verified payloads. A
+replay takes the private key, not knowledge of an address. The
+regression test was run against the OLD code first to confirm it fails
+there — a test that passes both ways proves nothing and looks like
+proof.
+
+**So T11 stays open and is now buildable on its own merits.** With the
+payer verified, a public suggested key is no longer a skeleton key.
+Two questions I want your read on first, because they decide whether
+it WORKS, not just whether it is safe:
+
+1. **A random per-challenge suggestion is useless for the case it
+   targets.** A looping agent re-fetches the 402 each pass, gets a
+   fresh suggestion each pass, and every loop is a fresh charge. To
+   bind a loop the suggestion must be STABLE across it — derived from
+   something the loop repeats. My candidate is (item, coarse time
+   bucket): identical for every client in that window, but still
+   isolated because the lookup is scoped by payer regardless. A bucket
+   boundary leaks exactly one extra charge. Bounded, not eliminated.
+   Does that trade look right to you?
+2. **The boundary behaviour IS the design.** I would rather ship
+   something that admits it closes most of a loop than something that
+   reads like it closes all of it.
+
+*One thing your idea earned regardless:* the unverified payer reader
+is deleted rather than left sitting unused, because the next person
+needing "the payer" would have found it and it would have looked
+right.
+
+---
+
+*CV's answer, 2026-08-02 (relayed) — ship it, and he corrected my own
+framing on the way past.* His read on why the derivation is safe is
+better than mine was: **once the cache read requires a verified payer
+match, the key stops being an authentication mechanism at all and
+becomes a bucketing function.** It can be fully public and derivable,
+because computing it only selects a slot — opening one still takes a
+signature. He checked the structure rather than taking my word for it:
+the KV key is already (surface, payer, hash(key)), so two real buyers
+echoing the identical public suggestion in the same minute land in
+different slots and cannot collide. On the boundary leak: acceptable,
+and not a new risk class — it is the same "ambiguity resolves toward a
+normal charge" shape already written into idempotency.ts, and a
+bounded double charge is what the refund policy already covers.
+Concrete suggestion adopted: **a 60-second bucket**, sized to the real
+retry timescale, wide enough to catch naive loops firing within
+seconds and narrow enough that a deliberate second purchase two
+minutes later is not silently swallowed.
+
+*BUILT the same day, with one thing added past the spec.* CV called
+the boundary leak acceptable and he is right that it is bounded — but
+it is a real double charge at every boundary, forever, and it was
+nearly free to close. So on a cache MISS, if the key presented is
+exactly the suggestion we would hand out right now, the lookup also
+tries the previous bucket's suggestion. That fires only for clients
+demonstrably echoing our own value, costs one KV read on a path that
+already missed, and stays scoped to the same verified payer — so it
+can return a buyer nothing but their own earlier purchase. A client
+using its own key never reaches it. **What is still uncovered, stated
+rather than implied: a loop spanning more than two buckets** — which
+is a loop slow enough that the second attempt is arguably a second
+intent, and failing there means charging normally, the direction
+everything else in this file fails.
+
+*Both doors are fed by one helper*, and a test asserts the HTTP and
+MCP suggestions are byte-identical — this codebase has already been
+bitten once by a fix that looked shared and was not (the MCP door
+missing the decline diagnosis, 2026-07-29).
+
+*Proven rather than asserted, again:* the boundary test was run
+against the code with the grace disabled and fails there. A test that
+passes both ways proves nothing and looks like proof.
+
+*One honest note about the key's shape.* It is deliberately readable —
+`scvd-suggested-hello-29123456` — rather than a hash. A key that LOOKS
+like entropy invites being treated as a secret, and this one must not
+be: it is public by construction and the 402 says so in as many words
+(`not_a_secret`, and what it does and does not open). A test pins that
+every item's suggestion clears the store's own minimum length, because
+a suggestion the store would itself reject as decoration would be
+protection theatre.
 
 ### - [x] T6 (Claude → CV, 2026-08-02): Bazaar cataloging — ANSWERED, we are indexed
 

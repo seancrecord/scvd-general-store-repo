@@ -42,6 +42,61 @@ export const IDEMPOTENCY_KEY_MAX_LENGTH = 128;
  * the cache never becomes a shadow order store. */
 export const IDEMPOTENCY_TTL_SECONDS = 24 * 3600;
 
+/**
+ * THE SUGGESTED KEY — replay protection for a client that never read
+ * the docs.
+ *
+ * An agent cannot send an `Idempotency-Key` it does not know it should
+ * send, so the 402 challenge now carries one it can simply echo. CV's
+ * idea; it was unsafe until the cache read moved behind signature
+ * verification (ledger #19), and it is safe now for a reason worth
+ * stating exactly:
+ *
+ * THIS KEY IS NOT A SECRET AND IS NOT MEANT TO BE. It is a BUCKETING
+ * FUNCTION, not an authentication mechanism. The KV lookup is
+ * (surface, VERIFIED payer, hash(key)), so the payer is already baked
+ * into the slot: two real buyers echoing the same public suggestion in
+ * the same minute land in different slots and cannot see each other's
+ * goods, and a stranger who computes the key gets a cache slot they
+ * still cannot open without signing as that payer. Anyone can derive
+ * it. That is fine, and the key is written to LOOK derivable —
+ * readable, self-describing, obviously not entropy — because a key
+ * that looks like a secret invites being treated as one.
+ *
+ * WHY IT IS TIME-BUCKETED rather than random. A random per-challenge
+ * suggestion would be useless for the exact failure this exists to
+ * stop: a looping agent re-fetches the 402 each pass, so a fresh
+ * suggestion each pass means every loop is a fresh charge. To bind a
+ * loop the value must be STABLE across it. Sixty seconds is sized to
+ * the real retry timescale — naive loops fire again within seconds —
+ * and narrow enough that a deliberate second purchase two minutes
+ * later is not silently swallowed. Tune against real retry telemetry
+ * when there is any; do not guess harder now.
+ *
+ * SUGGESTED, NEVER REQUIRED. A client that sends its own key keeps
+ * using it; a client that sends none is charged normally, exactly as
+ * before. Nothing about this rejects a request.
+ */
+export const SUGGESTED_KEY_BUCKET_SECONDS = 60;
+
+/** The bucket a moment falls in. Exported so tests can straddle one. */
+export function idempotencyBucket(nowMs: number = Date.now()): number {
+  return Math.floor(nowMs / (SUGGESTED_KEY_BUCKET_SECONDS * 1000));
+}
+
+/**
+ * Deliberately readable and comfortably over the minimum length by
+ * construction — the prefix alone is 15 characters, so no item id is
+ * short enough to produce a key the store would then reject as
+ * decoration.
+ */
+export function suggestedIdempotencyKey(
+  itemId: string,
+  nowMs: number = Date.now(),
+): string {
+  return `scvd-suggested-${itemId}-${idempotencyBucket(nowMs)}`;
+}
+
 export function usableIdempotencyKey(key: string | undefined): string | null {
   if (
     !key ||
@@ -79,6 +134,52 @@ async function kvKeyFor(
     payer.toLowerCase(),
     await sha256Hex(idempotencyKey),
   );
+}
+
+/**
+ * THE BUCKET-BOUNDARY GRACE, and it is why the suggested key is worth
+ * shipping rather than merely defensible.
+ *
+ * A loop that starts at second 59 and retries at second 61 re-fetches
+ * the challenge, is handed the NEXT bucket's suggestion, and misses
+ * its own cached purchase — a real double charge, at every boundary,
+ * forever. CV called that acceptable and consistent with how this file
+ * already treats ambiguity, and he is right that it is bounded. It is
+ * also nearly free to close, and the thing being spent is somebody
+ * else's money.
+ *
+ * So: on a miss, IF the key presented is exactly the suggestion we
+ * would hand out right now, try the previous bucket's suggestion too.
+ * That fires only for clients demonstrably echoing our own value, adds
+ * one KV read to a path that has already missed, and is scoped by the
+ * same verified payer — so it can return a buyer nothing but their own
+ * earlier purchase. A client using its own key never reaches it.
+ *
+ * What remains uncovered, stated rather than implied: a loop spanning
+ * more than two buckets, which is a loop slow enough that the second
+ * charge is arguably a second intent. Failing there means charging
+ * normally, which is the direction everything else in this file fails.
+ */
+export async function lookupIdempotentWithBucketGrace(
+  env: Env,
+  surface: string,
+  payer: string,
+  presentedKey: string,
+  itemId: string,
+  nowMs: number = Date.now(),
+): Promise<StoredReplay | null> {
+  const direct = await lookupIdempotent(env, surface, payer, presentedKey);
+  if (direct) {
+    return direct;
+  }
+  if (presentedKey !== suggestedIdempotencyKey(itemId, nowMs)) {
+    return null;
+  }
+  const previous = suggestedIdempotencyKey(
+    itemId,
+    nowMs - SUGGESTED_KEY_BUCKET_SECONDS * 1000,
+  );
+  return lookupIdempotent(env, surface, payer, previous);
 }
 
 export async function lookupIdempotent(

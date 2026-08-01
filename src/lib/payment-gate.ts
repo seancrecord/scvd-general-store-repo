@@ -26,8 +26,10 @@ import {
   refusalBeforeVerify,
 } from "@/lib/decline-diagnosis";
 import {
-  lookupIdempotent,
+  lookupIdempotentWithBucketGrace,
   replayNote,
+  SUGGESTED_KEY_BUCKET_SECONDS,
+  suggestedIdempotencyKey,
   storeIdempotent,
   usableIdempotencyKey,
 } from "@/lib/idempotency";
@@ -211,6 +213,22 @@ async function enrich402Body(
           spec_note: factBlockText(item),
           spec: listingSpec(item, base),
           guarantee: GUARANTEE_BLOCK_TEXT,
+          /**
+           * REPLAY PROTECTION FOR A CLIENT THAT NEVER READ THE DOCS.
+           * An agent cannot send a header it does not know exists, so
+           * the challenge hands it one to echo. Optional in the
+           * strongest sense: ignore this and the till behaves exactly
+           * as it did before it existed.
+           */
+          idempotency: {
+            suggested_key: suggestedIdempotencyKey(item.id),
+            how: "Send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] on MCP) with your payment. If your retry loop fires again inside the minute, the second attempt returns your ORIGINAL purchase from cache — no settlement, no second charge.",
+            optional:
+              "Entirely. Send your own key instead and it is used as-is; send none and you are charged normally, exactly as before. Nothing here can refuse a purchase.",
+            not_a_secret:
+              "This value is derived from the item and the current minute, so anyone can compute it — that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this key only ever reaches your own earlier purchase, never somebody else's.",
+            stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+          },
         }
       : {}),
     verification: {
@@ -523,11 +541,12 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     ? payerOfVerifiedPayload(result.paymentPayload)
     : undefined;
   if (idempotencyKey && idempotencyPayer) {
-    const replay = await lookupIdempotent(
+    const replay = await lookupIdempotentWithBucketGrace(
       c.env,
       c.req.path,
       idempotencyPayer,
       idempotencyKey,
+      itemKeyFromPath(c.req.path),
     );
     if (replay) {
       c.header("Cache-Control", "no-store");

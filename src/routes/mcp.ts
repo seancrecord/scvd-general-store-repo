@@ -17,8 +17,10 @@ import {
 } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
-  lookupIdempotent,
+  lookupIdempotentWithBucketGrace,
   replayNote,
+  SUGGESTED_KEY_BUCKET_SECONDS,
+  suggestedIdempotencyKey,
   storeIdempotent,
   usableIdempotencyKey,
 } from "@/lib/idempotency";
@@ -337,11 +339,12 @@ async function callPurchaseTool(
   const idempotencySurface = `mcp:buy_${item.id}`;
   const replayCheck = idempotencyKey
     ? async (verifiedPayer: string) => {
-        const replay = await lookupIdempotent(
+        const replay = await lookupIdempotentWithBucketGrace(
           c.env,
           idempotencySurface,
           verifiedPayer,
           idempotencyKey,
+          item.id,
         );
         return replay
           ? { ...replay.body, ...replayNote(replay.first_served_at) }
@@ -405,6 +408,21 @@ async function callPurchaseTool(
           : {}),
         // S2: the strongest evidence lives in the challenge itself.
         spec_note: factBlockText(item),
+        /**
+         * The same suggestion the HTTP door offers, in the envelope
+         * this door speaks. Both are fed by one helper on purpose —
+         * this codebase has already been bitten by a fix that looked
+         * shared and was not.
+         */
+        idempotency: {
+          suggested_key: suggestedIdempotencyKey(item.id),
+          how: "Send it back as _meta['x402/idempotency-key'] with your payment. A retry inside the minute returns your ORIGINAL purchase from cache — no settlement, no second charge.",
+          optional:
+            "Entirely. Your own key is used as-is; no key means a normal charge, exactly as before. Nothing here can refuse a purchase.",
+          not_a_secret:
+            "Derived from the item and the current minute, so anyone can compute it. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this only ever reaches your own earlier purchase.",
+          stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+        },
         verification: {
           verify_url: `${base}/api/verify/{id}`,
           key_fingerprint: await cachedPublicKeyHex(c.env.SIGNING_KEY),
