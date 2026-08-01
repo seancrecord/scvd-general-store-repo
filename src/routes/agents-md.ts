@@ -75,6 +75,7 @@ artifact any third party can verify without trusting us.
 - x402 discovery: ${base}/.well-known/x402.json
 - did:web identity + key history: ${base}/.well-known/did.json
 - Conformance vectors (offer/receipt): ${base}/.well-known/conformance/offer-receipt-vectors.json
+- Free open-source verifier (MIT, zero deps, works on any store's artifacts): https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
 - Issuer liveness beacon: ${base}/.well-known/liveness.json
 - Responsible disclosure: ${base}/.well-known/security.txt
 

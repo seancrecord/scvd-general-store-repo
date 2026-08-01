@@ -53,12 +53,21 @@ describe("/agents.md", () => {
 
   it("derives every URL from the request base, so it cannot drift", async () => {
     const text = await (await SELF.fetch(`${BASE}/agents.md`)).text();
-    // No hardcoded alternate host slipped in.
+    // No hardcoded alternate host slipped in. Deliberate outbound
+    // links (the open-source verifier's repo) are named here rather
+    // than allowed by pattern, so a new external URL has to be a
+    // decision instead of an accident.
+    const ALLOWED_EXTERNAL = ["https://github.com/seancrecord/"];
     expect(text).not.toContain("http://");
     for (const line of text.split("\n")) {
       const urls = line.match(/https:\/\/[^\s)]+/g) ?? [];
       for (const url of urls) {
-        expect(url.startsWith(BASE), `${url} is not under ${BASE}`).toBe(true);
+        const allowed =
+          url.startsWith(BASE) ||
+          ALLOWED_EXTERNAL.some((prefix) => url.startsWith(prefix));
+        expect(allowed, `${url} is neither under ${BASE} nor allow-listed`).toBe(
+          true,
+        );
       }
     }
   });

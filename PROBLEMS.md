@@ -1096,7 +1096,34 @@ strongest revenue idea on the board — but gated behind B per both
 DR4 rounds, priced like a commodity check per DR4's Let's Encrypt
 band, and trigger-dependent (no buyer until risk forces one).**
 
-### B. A tiny open-source verifier (the free VERIFICATION tier)
+### B. A tiny open-source verifier (the free VERIFICATION tier) — SHIPPED 2026-08-02
+
+Live at verifier/ in this repo: x402-verify.js, zero dependencies, MIT,
+works on ANY store's artifacts with nothing privileged about ours.
+Keeps the four checks separate on purpose (parse / resolve the kid to
+a key from somewhere other than the artifact / verify the signature /
+validate the schema) because signature validity and schema validity
+are NOT the same check — and proves it: the suite runs the library
+against our own published conformance vectors and asserts the
+teaching case (a valid signature over a schema-invalid payload) is
+rejected for the schema reason, not the signature one. Crypto and
+fetch are injectable seams so a runtime without Ed25519 in WebCrypto
+can still use it. Expiry is advisory and never folded into ok, with
+caller-set leeway — issuance strict, consumption tolerant. The honest
+limit is stated in the module, the README and the standards block: it
+verifies cryptography and shape, and CANNOT tell you whether a seller
+delivered, because no offline check can. That gap is the reason this
+tier is free and observation (A) is not. Surfaced in trust.json's
+standards block and on /agents.md.
+
+The two red-team constraints, honestly reported: the versioned
+fixture and the live-authority hook are NOT built. The hook was
+designed for a key-liveness/registry lookup only we can answer, which
+depends on the OTS/Rekor anchoring in #2 that has not shipped yet —
+building a hook with nothing behind it would be the ornament this
+ledger exists to prevent. Next build closes it.
+
+### B (original entry)
 
 A dependency-light package that verifies ANY store's offer-receipt
 artifacts, did:web keys and key history — ours included but not

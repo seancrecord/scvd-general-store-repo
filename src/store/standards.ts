@@ -44,6 +44,13 @@ export const STANDARDS_POSTURE = {
   ],
   verifier_guidance:
     "Issuance is strict, consumption should be tolerant: offers carry validUntil = issuance + 300 seconds from this store's clock, and a verifier comparing against its own clock should allow a few seconds of skew leeway before rejecting — NTP drift on your side is real and a 300-second window makes small leeway harmless. This store itself compares no timestamps on the verify path (checked 2026-08-01, recorded in PROBLEMS.md), so the leeway that matters is yours.",
+  open_source_verifier: {
+    what: "A zero-dependency verifier for x402 Signed Offers & Receipts, did:web identity and key history — MIT, works on ANY store's artifacts with nothing privileged about ours. It keeps the four checks separate (parse, resolve the kid to a key from somewhere other than the artifact, verify the signature, validate the schema) because signature validity and schema validity are not the same check, and a verifier that folds them together accepts a valid signature over a non-conformant payload.",
+    honest_limit:
+      "It verifies cryptography and shape. It cannot tell you whether a seller actually delivered what it promised — no offline check can, because that is a fact about the world rather than about bytes.",
+    source:
+      "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier",
+  },
   conformance_vectors: {
     what: "Deterministic test vectors for the offer-receipt extension: 2 valid artifacts and 3 invalid ones (schema-invalid with a VALID signature, wrong key, tampered payload) — the invalid cases teach a verifier that signature validity and schema validity are separate checks.",
     test_key_note:
