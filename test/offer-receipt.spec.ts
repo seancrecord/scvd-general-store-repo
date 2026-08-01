@@ -98,7 +98,17 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
       atob(headerPart!.replace(/-/g, "+").replace(/_/g, "/")),
     ) as { alg: string; kid: string };
     expect(header.alg).toBe("EdDSA");
-    expect(header.kid).toBe("did:web:scvd.store#key-1");
+    /**
+     * #key-2, NOT #key-1, and not because of an off-by-one: the kid
+     * names the KEY, and this store's current key is its second — the
+     * first was retired 2026-07-31. A slot-named #key-1 was here for
+     * an hour; the keeper asked how it behaved across rotation, and
+     * the answer was that every receipt signed today would resolve to
+     * tomorrow's key and fail. Derived from the registry now, so the
+     * next rotation mints #key-3 and this kid stays pointing at this
+     * key forever.
+     */
+    expect(header.kid).toBe("did:web:scvd.store#key-2");
     // Verified with an independent reconstruction of the signing
     // input, against the same key every certificate carries — one
     // identity, checkable three ways.

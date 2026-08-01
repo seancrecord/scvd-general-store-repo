@@ -1,5 +1,6 @@
 import * as ed25519 from "@noble/ed25519";
 import { cachedPublicKeyHex } from "@/lib/signing";
+import { retiredKeysFor } from "@/store/key-registry";
 import type { Env } from "@/types";
 
 /**
@@ -68,9 +69,20 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-/** did:web is derived from the live origin, never typed beside it. */
-function kidFor(env: Env): string {
-  return `did:web:${new URL(env.STORE_BASE_URL).host}#key-1`;
+/**
+ * did:web derived from the live origin; the fragment derived from the
+ * key registry. #key-1 was hardcoded here for about an hour before
+ * the keeper asked how this behaves across rotation — and the answer
+ * was: badly. A slot-named kid repoints on rotation, so a receipt
+ * signed today would resolve to TOMORROW'S key and fail verification
+ * outright. The fragment now names the key itself: current key =
+ * (retired count + 1), permanently, matching did.json exactly because
+ * both derive from the same registry.
+ */
+async function kidFor(env: Env): Promise<string> {
+  const publicKey = await cachedPublicKeyHex(env.SIGNING_KEY);
+  const keyNumber = retiredKeysFor(publicKey).length + 1;
+  return `did:web:${new URL(env.STORE_BASE_URL).host}#key-${keyNumber}`;
 }
 
 /**
@@ -87,7 +99,7 @@ async function signJws(
   payload: Record<string, unknown>,
 ): Promise<string> {
   const header = base64UrlFromString(
-    JSON.stringify({ alg: "EdDSA", kid: kidFor(env) }),
+    JSON.stringify({ alg: "EdDSA", kid: await kidFor(env) }),
   );
   const body = base64UrlFromString(JSON.stringify(payload));
   const signingInput = `${header}.${body}`;

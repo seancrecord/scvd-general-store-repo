@@ -45,6 +45,22 @@ describe("the DID document publishes the key that actually signs", () => {
     );
   });
 
+  it("names each key permanently, never by slot", async () => {
+    // The kid must survive rotation: a receipt signed today carries
+    // it forever, and a fragment that repoints to the next key would
+    // make that receipt FAIL verification rather than merely age.
+    const body = await did();
+    const live = await getPublicKeyHex((env as Env).SIGNING_KEY);
+    const method = (body["verificationMethod"] as { id: string }[])[0];
+    const expected = `did:web:scvd.store#key-${retiredKeysFor(live).length + 1}`;
+    expect(method?.id).toBe(expected);
+    // And every retired key keeps the number it always had.
+    const scvd = body["scvd"] as { retired_keys: { kid: string }[] };
+    scvd.retired_keys.forEach((entry, index) => {
+      expect(entry.kid).toBe(`did:web:scvd.store#key-${index + 1}`);
+    });
+  });
+
   it("agrees with the well-known key endpoint exactly", async () => {
     const body = await did();
     const wellKnown = (await (

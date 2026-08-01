@@ -62,7 +62,19 @@ didRoutes.get("/.well-known/did.json", async (c) => {
   const domain = new URL(base).host;
   const did = `did:web:${domain}`;
   const publicKey = await cachedPublicKeyHex(c.env.SIGNING_KEY);
-  const kid = `${did}#key-1`;
+  /**
+   * THE KID NAMES THE KEY, NOT THE SLOT — the keeper's catch, hours
+   * after this shipped as a hardcoded #key-1. A slot name is a kid
+   * that silently repoints on rotation: every receipt signed today
+   * would then carry an identifier resolving to a DIFFERENT key, and
+   * verification would not merely find no record — it would find the
+   * wrong key and FAIL. So the fragment is derived from the registry:
+   * this store's current key is its (retired + 1)th, permanently,
+   * and the next key gets the next number rather than inheriting
+   * this one's name.
+   */
+  const retired = retiredKeysFor(publicKey);
+  const kid = `${did}#key-${retired.length + 1}`;
 
   return c.json(
     {
@@ -102,7 +114,9 @@ didRoutes.get("/.well-known/did.json", async (c) => {
         key_history_note:
           "This document is mutable and shows only the key in service today, which is a known limitation of did:web rather than a choice we made. The durable record is at key_history: every key this store has ever signed with, kept published forever with the dates it was in service, and each handover announced in an artifact SIGNED BY THE OUTGOING KEY — so a verifier checking whether a key was authorised at the moment of issuance can establish it rather than take our word. That is the temporal-durability gap the x402 offer-receipt documentation names, and it was built here for our own reasons before the extension was on our radar.",
         in_service_from: currentKeyInServiceFrom(publicKey),
-        retired_keys: retiredKeysFor(publicKey).map((entry) => ({
+        retired_keys: retired.map((entry, index) => ({
+          /** Permanent: the Nth key this store ever held keeps #key-N. */
+          kid: `${did}#key-${index + 1}`,
           public_key_hex: entry.public_key,
           in_service_from: entry.in_service_from,
           retired_on: entry.retired_on,
