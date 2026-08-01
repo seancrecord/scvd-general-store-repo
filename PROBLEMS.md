@@ -208,26 +208,70 @@ the mitigation and it is real. Genuinely unsolved beyond that, and
 probably correctly so — a shop this size hiring a second human to
 satisfy a continuity doc would be the tail wagging the dog.
 
-### 12. Escrow / conditional release — an ecosystem-wide gap, and a gap-hunt candidate
+### 12. Escrow / conditional release — the gap-hunt, now with research in hand
 
-Nothing live in the x402 ecosystem holds funds until fulfillment
-confirms: everything proves settlement happened or proves an action
-happened, and the gap between settle and deliver is unprotected by
-protocol everywhere, not just here. Same shape as the settle-then-
-crash gap in AT_SCALE.md, aimed at humans instead of crashes. **Not
-built tonight, on purpose** — rushing conditional release under time
-pressure is how the overclaim mistake happens, and this one touches
-money. What DID ship instead, 2026-08-01, is the honest mitigation:
-a written refund commitment with the numbers attached (on /rights,
-trust.json and the fulfillment log — the keeper refunds missed
-windows himself, full amount, and the policy says plainly that it is
-a commitment, not escrow) plus /fulfillment-log, where whether the
-commitment is kept is public, order by order, with refund tx hashes.
-**Trigger for the real thing:** the gap-hunt — if the standards walk
-that produced the key-history submission finds the same missing-half
-pattern here (transition mechanics existed for #2664; maybe
-conditional-release mechanics have a prior-art pattern too), it
-becomes a spec contribution before it becomes our code.
+**CORRECTED 2026-08-01 (on /corrections):** this entry originally
+claimed nothing live in x402 holds funds until fulfillment confirms.
+False when written — Boson Protocol's x402B (non-custodial contract
+escrow, on-chain dispute resolution, redeemable NFTs) has been on
+mainnet including Base since 2026-06-08, verified against the live
+web during the DR1 vet. The gap is not "nobody has conditional
+release"; it is that contract escrow's operational weight (a contract
+to run, monitor, and arbitrate) does not fit a one-person shop or
+half-cent tickets. The honest mitigation shipped 2026-08-01 stands:
+written refund commitment + /fulfillment-log, stated plainly as a
+commitment, not escrow.
+
+**DR1 round 1 (Perplexity), vetted 2026-08-01.** The report ranked
+eight paths; verdicts after checking its load-bearing claims:
+
+- **Verified by us against primary sources:** x402B exists as above
+  (report said May 2026; actually June 8). ERC-3009 semantics
+  (validAfter/validBefore checked against block.timestamp at
+  execution) — AND the report MISSED a primitive: the spec defines
+  `cancelAuthorization`, so a buyer holding an unsubmitted signed
+  authorization can revoke it on-chain. That makes the
+  delayed-submission construction closer to a revocable hold than
+  the report's "not a hold" verdict — buyer protection is stronger
+  than reported, at the cost of a gas fee.
+- **Reported, not yet verified (Perplexity's bibliography did not
+  survive the paste):** the FinCEN 2014 escrow/money-transmission
+  ruling, UMA bond economics ($500+ floors), TLSNotary proxy-mode
+  timings, Superfluid's no-clawback quote. Directionally plausible,
+  all; none load-bearing for a build decision yet.
+- **Structural flaw in the report's top recommendation, ours to
+  catch:** for THIS store's own sales, the "independent observer"
+  cannot be this store — an observer paid by the seller to attest
+  the seller's delivery is self-attestation, the exact thing
+  /attestation's taxonomy exists to name (and OpenBazaar's
+  moderator-collusion history to warn about). The 2-of-3 pattern
+  works with us as OBSERVER for trades we are not a party to
+  (opportunity A), or with a peer operator observing ours
+  (opportunity C — the causeclaw shape). The report glossed this.
+- **The proposed experiment (hold buyer's validAfter-deadline
+  authorization, submit after delivery, optional buyer-side
+  observation): sound design, wrong month.** It assumes a "batch of
+  human-fulfilled orders" and 30–60 days of dispute-rate data; the
+  store has two organic sales. It also inverts the published
+  settle-first law (unpaid labor risk moves to the keeper), departs
+  from the standard x402 flow (would need an explicitly-labeled
+  experimental tier, or it undercuts the spec-exact positioning),
+  and holding unsubmitted authorizations means storing a live
+  payment instrument in KV — not fund custody, but a bearer-shaped
+  liability the report did not price. **Trigger to run it:** human-
+  queue volume that would make the numbers mean something (≥10
+  human-fulfilled orders in a month), or a counterparty asking for
+  deferred settlement by name — and it runs on ONE clearly-labeled
+  item first.
+- **Confirmed by the report, already ours:** path 7 (legal-wrapper
+  reputational commitment, never custody) is exactly what shipped;
+  the custody disqualifier kills HTLC-via-mint and literal UMA
+  bonding, as briefed. The never-custody rule gains a legal edge to
+  its existing architectural one, pending FinCEN-source verification.
+
+Two rounds still inbound (Claude DR, Gemini); cross-check before any
+build. Source URLs for round 1 to be captured when the keeper pastes
+the bibliography.
 
 ### 13. Keeper identity and staked reputation — a decision, not a build
 
