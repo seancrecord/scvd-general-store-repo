@@ -440,8 +440,123 @@ round that resolved things:**
   "Five Attacks on x402" paper — the round-1 unverified column is
   now largely graduated or superseded.
 
-Gemini round 3 still inbound; the Path-1 testnet experiment and the
-x402B fee/resolver questions are what remain in front of any build.
+**DR1 round 3 (Gemini), vetted 2026-08-02 — weakest sourcing of the
+three, two real contributions:**
+
+- *Citation integrity: poor.* Three of its first references resolve
+  to the same Avalanche academy page; others are irrelevant (an ABA
+  banking-law page, a French fundraising list, a WEF PDF); bracket
+  numbers repeat on paragraphs regardless of content. Its claims
+  count only where they converge with better-sourced rounds.
+- *Third FinCEN ruling number, third framing:* Gemini cites
+  "FIN-2014-R009, agent-of-payee." The cycle has now produced R004,
+  R009, and R012 for adjacent concepts — and agent-of-payee is
+  substantially a STATE money-transmission doctrine (Gemini's own
+  supporting reference is a California DFPI letter). The confusion
+  across three careful-sounding reports is itself the finding: the
+  ruling landscape is genuinely muddled, all three agree the
+  DIRECT-SELLER position is safe, and nothing beyond that gets
+  relied on without counsel. Unchanged posture, better documented.
+- *Its "50–80% default rates" for deliver-first: unsupported.* No
+  source given survives inspection; Claude DR's specific lumpy
+  losses (Goldfinch/Maple/TrueFi) remain the best evidence, and
+  they describe concentrated correlated losses, not a 50–80% rate.
+  Discarded.
+- *Contribution 1 — the Sybil harvest attack, kept:* an adversary
+  ages or buys clean burner wallets, submits deliver-first work
+  requests across many vendors in parallel, harvests outputs,
+  defaults on all invoices; wallet-acquisition cost < aggregate
+  stolen labor. The sharpest adversarial argument against
+  reputation-gated inversion in the whole cycle, and it binds our
+  Path-6 thinking: deliver-first only ever ships gated on
+  NON-FUNGIBLE identity signals, small tickets, and eaten-loss
+  budgets — never as a default.
+- *Contribution 2 — the adversarial validation script, kept:* a
+  concrete Base Sepolia nonce-burn/balance-drain sequence proving
+  EIP-3009 is not a hold (expected revert:
+  AuthorizationIsUsedOrCanceled). Complements Claude DR's
+  experiment; together they are the full testnet protocol — prove
+  the mechanic AND prove its failure mode, so the honest framing is
+  forced by evidence.
+- *Its Phase-3 roadmap: REJECTED on house law.* "Worker
+  automatically triggers an on-chain USDC refund from the
+  operational wallet" requires a hot spending key inside the
+  Worker. This store's standing design is the opposite — the Worker
+  never holds a spending key and never moves money; refunds are the
+  keeper's hand. A hot wallet is a new attack surface bolted onto
+  the component most exposed to the internet, and no report finding
+  justifies it.
+- *Observer bribe math, sharpened and kept:* at micro tickets a
+  bribe exceeds an observer's cumulative fee income, so observer
+  honesty must rest on reputation collateral, not fees — which is
+  exactly the peer-with-a-public-breach-log design T4 proposes, and
+  a working argument for why OUR observation product (backed by
+  /corrections-grade reputation) is credible where a fee-only
+  micro-notary would not be.
+
+---
+
+**DR1 CYCLE SYNTHESIS — filed for initial review, 2026-08-02.**
+Three independent reports (Perplexity + follow-up, Claude DR,
+Gemini), every load-bearing claim vetted, primary sources fetched
+where reachable. The keeper asked for cost-benefit, differentiation,
+what it opens, and confirmation nobody else is here. Filed:
+
+*The convergent finding (all three rounds, high confidence):* the
+only conditional-release shape that fits this store — non-custodial,
+Workers-native, no new legal surface, honest — is EIP-3009
+delayed submission: buyer signs with validAfter = fulfillment
+deadline, store holds the authorization unsubmitted, delivers, then
+settles. It is NOT a hold and is never marketed as one: the buyer
+keeps a verified on-chain kill switch (cancelAuthorization, live on
+USDC-Base) and can drain the balance; the store bears non-payment
+risk. It is a buyer-protection tier the store backs with its own
+labor risk.
+
+*Cost:* testnet validation ≈ $0 (both experiment scripts on file —
+the happy path and the adversarial nonce-burn). Build cost if
+validated: a held-authorization state machine in KV (design notes
+from Stripe auth/capture prior art on file), encrypted at rest,
+validBefore as native expiry — days, not weeks, of work. Legal
+cost: one counsel review of the held-authorization reading before
+mainnet reliance (Rule 0 carve-out). Operating cost: bounded unpaid-
+labor risk per defecting buyer — cap exposure by ticket size
+(start: human items ≤$8), so worst case is one keeper task unpaid,
+which the store survives trivially and prices in.
+
+*Benefit and differentiation:* "your money stays in your wallet
+until we deliver" — a one-sentence differentiator NO x402 service
+offers today, stacking on the wallet-safety pair (idempotency +
+claims) to make this store the one designed end-to-end for the
+buyer's failure modes. It converts the trust layer from defensive
+(we won't cheat you) to affirmative (we structurally can't take
+your money without performing).
+
+*Uniqueness, confirmed to the limit of three research passes plus
+our own searches:* nobody is doing non-custodial delivery-
+conditioned settlement in x402. The adjacent rails differ in kind —
+x402B and Circle RP lock funds in contracts (custody moved, not
+removed; different trust shape), Cloudflare's deferred scheme is
+usage metering. Also confirmed unique-adjacent: no micro-notary
+market exists at our ticket sizes (our observation product stands
+alone), and peer-merchant mutual attestation has NO prior art
+anywhere (T4's pilot would be a first).
+
+*What it opens:* (1) a premium tier with honest pricing for the
+labor risk; (2) a spec-contribution candidate — a delivery-
+conditioned settlement scheme proposal, legitimized by the
+precedent that x402 schemes are extensible (CF's deferred scheme),
+feeding T5's standards-authorship strategy; (3) the observer leg —
+if the pattern spreads, every adopter needs independent delivery
+attestation, which is opportunity A's product sold at ecosystem
+scale; (4) the T4 peer pilot becomes the live demonstration.
+
+*Next gates, in order:* (1) run both testnet scripts (anytime, ~$0);
+(2) counsel on the held-authorization reading (before mainnet);
+(3) keeper decisions with facts under them — the Path-1 tier
+build, and separately whether x402B earns a Rule 0 re-open once
+fee/resolver questions resolve (CV's T3 read pending). Nothing
+builds before its gate.
 
 ### 13. Keeper identity and staked reputation — a decision, not a build
 
