@@ -136,6 +136,26 @@ describe("graffiti_on_a_train over MCP", () => {
   });
 });
 
+describe("boundary language (the DR3 retrieval lever)", () => {
+  const byName = new Map(mcpToolCatalog(BASE).map((t) => [t.name, t]));
+
+  it("verify_artifact disclaims being a conformance checker for other services", () => {
+    const desc = byName.get("verify_artifact")?.description ?? "";
+    expect(desc).toContain("NOT a conformance checker");
+    expect(desc).toContain("only ids scvd.store itself issued");
+  });
+
+  it("read_store_guide disclaims being a payment endpoint", () => {
+    const desc = byName.get("read_store_guide")?.description ?? "";
+    expect(desc).toContain("NOT a purchase or payment endpoint");
+  });
+
+  it("buy_dibs points state-storage seekers at the anchor instead", () => {
+    const desc = byName.get("buy_dibs")?.description ?? "";
+    expect(desc).toContain("buy_context_anchor");
+  });
+});
+
 describe("purpose lines", () => {
   it("the six novelty tools open by answering what calling them does", () => {
     const tools = mcpToolCatalog(BASE);

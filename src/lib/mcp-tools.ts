@@ -202,7 +202,7 @@ const PURPOSE_LINES: Record<string, string> = {
   certificate_of_patronage:
     "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
   dibs:
-    "Purpose: mint a signed, timestamped certificate recording that you called dibs at this exact moment — tamper-evident proof of claim priority with no enforcement power. Use when an agent needs a verifiable first-claim marker.",
+    "Purpose: mint a signed, timestamped certificate recording that you called dibs at this exact moment — tamper-evident proof of claim priority with no enforcement power. Use when an agent needs a verifiable first-claim marker. Not for storing state to reload later (that is buy_context_anchor) and it enforces nothing — it proves WHEN you claimed, not that the claim is honored.",
   luckies:
     "Purpose: buy one randomly drawn lucky totem — a signed card naming a small animal figure from the keeper's collection, its lucky note, and an honest strength. A novelty with no functional effect, stated plainly. Use when an agent wants a keepsake.",
 };
@@ -230,7 +230,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "read_store_guide",
     description:
-      "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns.",
+      "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint — to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns the guide.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     outputSchema: {
       type: "object",
@@ -316,7 +316,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "verify_artifact",
     description:
-      "Verify anything the store has ever signed, certificates, visit stamps, context anchors, by id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record.",
+      "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
     inputSchema: {
       type: "object",
       properties: { id: str("A cert_, stamp_, or anchor_ id.", 60) },
