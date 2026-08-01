@@ -1159,9 +1159,89 @@ there); the strategy findings:
   business; conflating them would hurt conversion exactly where it
   matters.
 
-Claude DR4 and the two Gemini red-team briefs (attack the demand
-plan; pre-mortem the strategy) still to run. The cross-check to
-watch on Claude's round: does it agree B-before-A, or does DR3's
-"expose a paid conformance SKU" read as A-first? That divergence,
-if it holds, is the one real strategic fork — resolve it before any
-build past the free verifier.
+### DR4 round 2 (Claude DR), vetted 2026-08-02 — RESOLVES the fork, and one competitive claim VERIFIED live.
+
+- **THE FORK IS RESOLVED: both DR4 engines independently land on
+  B-before-A.** Claude DR sequences it identically to Perplexity —
+  Month 1 ship the free verifier (B) + operate honestly to age the
+  track record; Month 2 distribution-as-being-the-example; Month 3
+  soft-launch paid A to the qualified-lead list B surfaces. The
+  A-first implication in the Opportunity block above is now
+  superseded by two-engine agreement, not one. Build order settled.
+
+- **The load-bearing risk, named cleanly: A is TRIGGER-dependent.**
+  Every paid-attestation business that survived had an external
+  trigger — a compliance MANDATE (SOC 2, sold by Vanta/Drata who
+  sell the badge not the audit), a measurable CONVERSION LIFT the
+  customer rewards (trust seals), or a counterparty DEMANDING
+  validation (OV/EV certs for banks). x402 has NONE yet: no enterprise
+  refuses to transact with a non-conformant x402 seller. The bet is
+  that the store can be READY and REPUTABLE when the trigger arrives;
+  if it never does, A stays a hobby line and B + honest operating IS
+  the business. The CA cautionary tale sharpens it: Let's Encrypt
+  annihilated paid DV certs (16:1 migration away from GeoTrust), and
+  paid attestation survives only where it attaches to a mandate.
+
+- **The competitive claim, VERIFIED by us against the live web
+  (2026-08-02) because the whole A/B thesis rests on it:** Claude DR
+  says the full-scope conformance-verification niche is empty. Search
+  confirmed the adjacent players and their scope precisely —
+  402audit.com does SERVICE QUALITY (proxy detection, pricing-markup,
+  reliability scoring, public leaderboard); x402station.io does a $1
+  badge gated on UPTIME (≥95% over 7 days), re-run on render; Vauban
+  VPSF is a receipt FORMAT extension (IETF drafts), not an attester.
+  NONE does the cryptographic full scope — 402 shape + Signed
+  Offers/Receipts validation + did:web key-history resolution +
+  settlement attestation, signed and published. And the x402
+  Foundation launched 2026-07-14 with, by public admission, "no
+  conformance suite, security profile, or validation procedure."
+  The niche is genuinely empty of a full-scope competitor AND the
+  standards body just publicly named the hole. That is the closest
+  thing to a forming trigger in the whole cycle — it strengthens
+  B-first (the free verifier fills exactly the admitted gap).
+
+- **The pseudonymous-attester precedent, and it directly validates
+  the keeper's model:** samczsun built crypto's most trusted security
+  reputation while pseudonymous — reputation-first, badge-second,
+  identity secondary to the receipts; hired by Paradigm, founded SEAL.
+  Code4rena/Sherlock pay often-pseudonymous researchers by
+  demonstrated public findings. The working model is EXACTLY the
+  store's structural advantage: reputation earned through public,
+  verifiable, track-recorded work. Caveat kept honest: a pseudonymous
+  attester of OTHERS' compliance is a subtly different trust ask than
+  a pseudonymous bug-finder, and the track record + radical-honesty
+  layer must carry it — unproven at scale, but the precedent is real.
+
+- **"The pain is real" datapoint, specific and checkable:** the
+  academic tool x402scope (arXiv 2607.19545) found spec violations in
+  ALL 15 major facilitators it tested, and Coinbase adopted
+  mitigations. Real defects exist for a verifier to surface, so B is
+  immediately useful, not theoretical.
+
+- **Convergent with Perplexity DR4 on the rest:** novelty shelf is a
+  moat, firewalled from attestation (the "never make the attestation
+  cute" rule holds from both); the pay-to-be-rated trap (Trustpilot
+  "Mafia" report, -32% in a day; BBB) makes our radical-honesty layer
+  the exact antidote AND a design constraint — A must be architected
+  so the attested party cannot buy a better result. Pinboard/Tarsnap
+  the durable analogs; voice load-bearing not decorative.
+
+- **The kill-metric, cleaner than round 1's:** ≥2 genuine unsolicited
+  requests from DISTINCT parties to pay for a signed observation
+  (not the free tool, not novelties — the paid attestation
+  specifically) by end of month 2 → the trigger arrived early, pull
+  A forward now. Zero paid demand while B gets usage → confirms
+  "empty because early," let the record age while B compounds.
+  Honest-law-compatible: measures revealed demand, manufactures
+  nothing.
+
+**BOTH RESEARCH CYCLES NOW CLOSED on the full-report side** (DR1+1b
+conditional release; DR2 key continuity; DR3 demand; DR4 strategy —
+three engines each, every load-bearing claim vetted, three of our
+own claims corrected along the way, two real gaps fixed in code).
+Remaining: the two Gemini red-team briefs (attack the demand plan;
+pre-mortem the strategy) as the adversarial close. Build queue that
+emerged, in agreed order: (1) tool-description boundary pass — hours,
+triple-validated; (2) free verifier B — a week, both DR4s' month-1
+move; (3) paid conformance A — gated on B's inbound + the kill-metric;
+distribution and C stay human/opportunistic.
