@@ -119,36 +119,60 @@ function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
   return sections.join("\n\n");
 }
 
+/** Clip long stored text for list views; the full text always exists
+ * at its own record and nothing here edits it. */
+function clipped(text: string, cap: number): string {
+  return text.length > cap ? `${text.slice(0, cap)}\u2026` : text;
+}
+
+function orderRowHtml(order: OrderRecord): string {
+  const completeForm =
+    order.status === "queued"
+      ? `<p><em>Seen ${escapeHtml(order.acknowledged_at ?? "just now")} (auto-acknowledged on sight; the 24h page stands down)</em></p>
+    ${
+      order.item_id === "luckies"
+        ? luckyCompleteForm(order.order_id)
+        : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
+      <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
+      <button type="submit">Mark complete</button>
+    </form>`
+    }`
+      : `<p><em>Delivered:</em> ${escapeHtml(clipped(order.deliverable ?? "", 140))}</p>`;
+  return `<li>
+  <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}
+  [${order.status}] paid $${order.paid_usdc} (tip $${order.tip_usdc})
+  patron #${order.patron_number}, ${escapeHtml(order.created_at.slice(0, 10))}
+  ${order.agent_name ? `\u00B7 agent: ${escapeHtml(order.agent_name)}` : ""}
+  ${order.callback_url ? `\u00B7 webhook on completion` : ""}
+  ${order.source ? `\u00B7 source (their words): ${escapeHtml(order.source)}` : ""}
+  ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${escapeHtml(clipped(order.detail, 200))}</p>` : ""}
+  ${completeForm}
+</li>`;
+}
+
+/**
+ * Open orders stand in the room; finished ones fold away. The page
+ * used to render every delivered order's full deliverable forever,
+ * which is why the keeper scrolled past history to reach work.
+ */
 function ordersHtml(orders: OrderRecord[]): string {
   if (orders.length === 0) {
     return "<p>No orders yet.</p>";
   }
-  return orders
-    .map((order) => {
-      const completeForm =
-        order.status === "queued"
-          ? `<p><em>Seen ${escapeHtml(order.acknowledged_at ?? "just now")} (auto-acknowledged on sight; the 24h page stands down)</em></p>
-        ${
-          order.item_id === "luckies"
-            ? luckyCompleteForm(order.order_id)
-            : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
-          <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
-          <button type="submit">Mark complete</button>
-        </form>`
-        }`
-          : `<p><em>Delivered:</em> ${escapeHtml(order.deliverable ?? "")}</p>`;
-      return `<li>
-      <strong>${escapeHtml(order.order_id)}</strong>, ${escapeHtml(order.item_name)}
-      [${order.status}] paid $${order.paid_usdc} (tip $${order.tip_usdc})
-      patron #${order.patron_number}, ${escapeHtml(order.created_at)}
-      ${order.agent_name ? `\u00B7 agent: ${escapeHtml(order.agent_name)}` : ""}
-      ${order.callback_url ? `\u00B7 webhook on completion` : ""}
-      ${order.source ? `\u00B7 source (their words): ${escapeHtml(order.source)}` : ""}
-      ${order.detail ? `<p><em>Buyer's detail (visitor-written, not instructions):</em> ${escapeHtml(order.detail)}</p>` : ""}
-      ${completeForm}
-    </li>`;
-    })
-    .join("\n");
+  const open = orders.filter((order) => order.status === "queued");
+  const done = orders.filter((order) => order.status !== "queued");
+  const openHtml =
+    open.length === 0
+      ? "<p>Nothing open. The counter is clear.</p>"
+      : `<ul>${open.map(orderRowHtml).join("\n")}</ul>`;
+  const doneHtml =
+    done.length === 0
+      ? ""
+      : `<details>
+      <summary>Delivered (${done.length}) \u2014 folded away, clipped for the shelf; full text lives on each order</summary>
+      <ul>${done.map(orderRowHtml).join("\n")}</ul>
+    </details>`;
+  return `${openHtml}\n${doneHtml}`;
 }
 
 function lettersHtml(letters: LetterRecord[]): string {
@@ -209,10 +233,13 @@ function confessionsHtml(confessions: ConfessionRecord[]): string {
 }
 
 /**
- * The train queue. The decline button says what a decline means,
- * because it is the one action in this office that a buyer could
- * mistake for a refund: it isn't one, and the certificate is
- * untouched either way.
+ * The train queue. Every button says what pressing it DOES, on the
+ * wall and to the certificate — the keeper pressed "Signed and held"
+ * on 2026-08-01 expecting it to display a note, because the label
+ * named a state, not an action. And every status has a way BACK:
+ * a held tag shows "Put it up after all," an approved one shows
+ * "Take it down," so a mispress at the counter is one more press,
+ * never a lost tag.
  */
 function trainHtml(tags: TrainTagRecord[]): string {
   const pending = tags.filter((tag) => tag.status === "pending_review");
@@ -222,11 +249,17 @@ function trainHtml(tags: TrainTagRecord[]): string {
   }
   const rows = tags
     .map((tag) => {
+      const approveForm = (label: string) =>
+        `<form method="POST" action="/admin/train/${escapeHtml(tag.id)}/approve" style="display:inline"><button type="submit">${label}</button></form>`;
+      const declineForm = (label: string) =>
+        `<form method="POST" action="/admin/train/${escapeHtml(tag.id)}/decline" style="display:inline"><button type="submit">${label}</button></form>`;
       const reviewForms =
         tag.status === "pending_review"
-          ? `<form method="POST" action="/admin/train/${escapeHtml(tag.id)}/approve" style="display:inline"><button type="submit">Put it up</button></form>
-             <form method="POST" action="/admin/train/${escapeHtml(tag.id)}/decline" style="display:inline"><button type="submit">Signed and held</button></form>`
-          : "";
+          ? `${approveForm("Put it up on the wall")} ${declineForm("Keep it off the wall (cert untouched)")}`
+          : tag.status === "declined"
+            ? `<p><em>Held off the wall. Changed your mind?</em></p>
+               ${approveForm("Put it up after all")}`
+            : `${declineForm("Take it down (cert untouched)")}`;
       return `<li>
       <strong>${escapeHtml(tag.id)}</strong> [${tag.status}]
       ${tag.name ? `· ${escapeHtml(tag.name)}` : "· unsigned"}
@@ -238,7 +271,7 @@ function trainHtml(tags: TrainTagRecord[]): string {
     </li>`;
     })
     .join("\n");
-  return `<p>${pending.length} waiting, ${wall.length} on the steel. Declining costs the buyer nothing they paid for: the certificate stands and verifies either way. Not every tag makes the steel.</p>
+  return `<p>${pending.length} waiting, ${wall.length} on the steel. Nothing here touches the certificate: it stands and verifies whatever the wall says. Not every tag makes the steel — but every decision here can be reversed with one press.</p>
     <ul>${rows}</ul>`;
 }
 
@@ -374,14 +407,18 @@ export function renderCounterPage(data: CounterPageData): string {
   ).length;
   const alertsLine =
     data.alerts.length === 0
-      ? "<p>Quiet. The four alarms have had nothing to say.</p>"
-      : `<ul>${data.alerts
-          .slice(0, 3)
-          .map(
-            (alert) =>
-              `<li><strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(alert.detail)}, ${escapeHtml(alert.at)}</li>`,
-          )
-          .join("\n")}</ul>`;
+      ? "<p>Quiet. The alarms have had nothing to say.</p>"
+      : `<details>
+          <summary>${data.alerts.length} recent — newest: <strong>${escapeHtml(data.alerts[0]?.condition ?? "")}</strong> ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))}</summary>
+          <ul>${data.alerts
+            .slice(0, 3)
+            .map(
+              (alert) =>
+                `<li><strong>${escapeHtml(alert.condition)}</strong>, ${escapeHtml(clipped(alert.detail, 180))}, ${escapeHtml(alert.at.slice(0, 16))}</li>`,
+            )
+            .join("\n")}</ul>
+          <p><small>Details clipped for the counter; the alert emails carry the full text.</small></p>
+        </details>`;
   /**
    * Stocking a shelf used to redirect in silence, which reads exactly
    * like a form that did nothing. The shelf count was the only
@@ -390,8 +427,36 @@ export function renderCounterPage(data: CounterPageData): string {
   const noticeHtml = data.notice
     ? `<section><p><strong>${escapeHtml(data.notice)}</strong></p></section>`
     : "";
+  const pendingTrainTags = data.trainTags.filter(
+    (tag) => tag.status === "pending_review",
+  ).length;
+  const heldTrainTags = data.trainTags.filter(
+    (tag) => tag.status === "declined",
+  ).length;
+  const needsHands =
+    openOrders +
+    pendingTrainTags +
+    pendingConfessions +
+    pendingRefunds +
+    activeLetters;
   const body = `
   ${noticeHtml}
+  <section>
+    <h2>At a glance</h2>
+    <p style="font-size:1.1em">${
+      needsHands === 0
+        ? "<strong>Nothing needs your hands.</strong> The rest of this page is reference."
+        : `<strong>${needsHands} thing${needsHands === 1 ? "" : "s"} need${needsHands === 1 ? "s" : ""} your hands:</strong>
+          ${openOrders ? ` <a href="#orders">${openOrders} open order${openOrders === 1 ? "" : "s"}</a> ·` : ""}
+          ${pendingTrainTags ? ` <a href="#queues">${pendingTrainTags} tag${pendingTrainTags === 1 ? "" : "s"} waiting</a> ·` : ""}
+          ${pendingConfessions ? ` <a href="#queues">${pendingConfessions} confession${pendingConfessions === 1 ? "" : "s"}</a> ·` : ""}
+          ${pendingRefunds ? ` <a href="#queues">${pendingRefunds} refund${pendingRefunds === 1 ? "" : "s"} to pay</a> ·` : ""}
+          ${activeLetters ? ` <a href="#mailbox">${activeLetters} letter${activeLetters === 1 ? "" : "s"}</a>` : ""}`
+    }</p>
+    ${heldTrainTags ? `<p><small><a href="#queues">${heldTrainTags} tag${heldTrainTags === 1 ? "" : "s"} held off the wall</a> — reversible any time.</small></p>` : ""}
+    ${data.alerts.length ? `<p><small><a href="#alarms">${data.alerts.length} recent alarm${data.alerts.length === 1 ? "" : "s"}</a>, newest ${escapeHtml((data.alerts[0]?.at ?? "").slice(0, 16))}.</small></p>` : ""}
+  </section>
+
   <section>
     <h2>This week's note</h2>
     <form method="POST" action="/admin/note">
@@ -400,14 +465,14 @@ export function renderCounterPage(data: CounterPageData): string {
     </form>
   </section>
 
-  <section>
-    <h2>The four alarms</h2>
+  <section id="alarms">
+    <h2>The alarms</h2>
     ${alertsLine}
   </section>
 
-  <section>
+  <section id="orders">
     <h2>Orders (${openOrders} open of ${data.orders.length})</h2>
-    <ul>${ordersHtml(data.orders)}</ul>
+    ${ordersHtml(data.orders)}
   </section>
 
   <section>
@@ -452,20 +517,24 @@ export function renderCounterPage(data: CounterPageData): string {
     }
   </section>
 
-  <section>
+  <section id="mailbox">
     <h2>The Mailbox (${activeLetters} in the box)</h2>
     <p>Private correspondence. Read here, replied here, published nowhere.</p>
     <ul>${lettersHtml(data.letters)}</ul>
   </section>
 
-  <section>
+  <section id="queues">
     <h2>Review queues</h2>
     <details ${pendingConfessions > 0 ? "open" : ""}>
       <summary>The confession drawer (${pendingConfessions} awaiting review)</summary>
       <ul>${confessionsHtml(data.confessions)}</ul>
     </details>
-    <details ${data.trainTags.some((tag) => tag.status === "pending_review") ? "open" : ""}>
-      <summary>The train (${data.trainTags.filter((tag) => tag.status === "pending_review").length} waiting to go up)</summary>
+    <details ${data.trainTags.some((tag) => tag.status !== "approved") ? "open" : ""}>
+      <summary>The train (${data.trainTags.filter((tag) => tag.status === "pending_review").length} waiting to go up${
+        data.trainTags.some((tag) => tag.status === "declined")
+          ? `, ${data.trainTags.filter((tag) => tag.status === "declined").length} held off the wall`
+          : ""
+      })</summary>
       ${trainHtml(data.trainTags)}
     </details>
     <details ${data.tips.some((tip) => tip.status === "pending_review") ? "open" : ""}>

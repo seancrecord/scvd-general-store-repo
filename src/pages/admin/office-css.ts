@@ -124,7 +124,24 @@ section {
   margin-bottom: 1.25rem;
   box-shadow: 0 1px 0 rgba(0,0,0,0.5), 0 12px 28px rgba(0,0,0,0.35);
 }
-@media (max-width: 600px) { section { padding: 1.1rem 1rem; } }
+/* THE COUNTER FITS THE KEEPER'S POCKET. He runs this office from a
+   phone at 6:32 in the morning; a textarea sized in desktop columns
+   or a table wider than the glass makes him scroll sideways past his
+   own work. Inputs take the room's width, tables scroll inside their
+   own rail, and long buyer-written strings break instead of pushing
+   the page. */
+@media (max-width: 600px) {
+  section { padding: 1.1rem 1rem; }
+  input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+  textarea { min-height: 4.5rem; }
+  form[style*="inline"] button, button { margin: 0.15rem 0.25rem 0.15rem 0; }
+  li { overflow-wrap: anywhere; }
+}
+input[type="text"], textarea { max-width: 100%; box-sizing: border-box; }
+.table-rail { overflow-x: auto; }
+@media (max-width: 600px) {
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}
 
 p { margin: 0 0 0.85rem; }
 p:last-child { margin-bottom: 0; }

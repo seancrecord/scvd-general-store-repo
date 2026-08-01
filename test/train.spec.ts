@@ -208,3 +208,52 @@ describe("the wall", () => {
     expect(llms).toContain(`${BASE}/train`);
   });
 });
+
+describe("the counter's train queue is reversible", () => {
+  /**
+   * 2026-08-01: the keeper pressed "Signed and held" expecting it to
+   * display the buyer's note, and the tag vanished from the queue
+   * with no way back — the label named a state, not an action, and
+   * the decline was one-way in the UI while setTagStatus was always
+   * reversible underneath. Every status now shows its way back.
+   */
+  it("shows a held tag with a put-it-up-after-all button, and an approved one with a take-down", async () => {
+    const adminAuth = {
+      Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+    };
+    const painted = await paintTag(testEnv, {
+      tag: "reversibility test tag",
+      certId: "cert_trainrev1",
+      patronNumber: 990003,
+    });
+    await setTagStatus(testEnv, painted.record.id, "declined");
+    let html = await (
+      await SELF.fetch(`${BASE}/admin/counter`, { headers: adminAuth })
+    ).text();
+    expect(html).toContain("Put it up after all");
+    expect(html).toContain("held off the wall");
+
+    await setTagStatus(testEnv, painted.record.id, "approved");
+    html = await (
+      await SELF.fetch(`${BASE}/admin/counter`, { headers: adminAuth })
+    ).text();
+    expect(html).toContain("Take it down (cert untouched)");
+  });
+
+  it("labels the pending buttons as actions on the wall, not states", async () => {
+    const adminAuth = {
+      Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+    };
+    await paintTag(testEnv, {
+      tag: "pending label test",
+      certId: "cert_trainrev2",
+      patronNumber: 990004,
+    });
+    const html = await (
+      await SELF.fetch(`${BASE}/admin/counter`, { headers: adminAuth })
+    ).text();
+    expect(html).toContain("Put it up on the wall");
+    expect(html).toContain("Keep it off the wall (cert untouched)");
+    expect(html).not.toContain(">Signed and held<");
+  });
+});
