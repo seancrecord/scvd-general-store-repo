@@ -139,3 +139,25 @@ describe("the office shows the state it lets him change", () => {
     expect(page.toLowerCase()).not.toContain("visit the site");
   });
 });
+
+describe("the desk's numbers name their window", () => {
+  /**
+   * 2026-08-01, first day of a month: the desk said 1 organic settle
+   * while the storefront said 2 — both correct, July's sale had
+   * rolled out of the desk's UNLABELED month window at midnight UTC,
+   * and the keeper rightly read it as data loss. A window states
+   * itself; the desk now names the month and shows the all-time
+   * count beside it, from the same computation the public pages use.
+   */
+  it("labels the month on the glance line and serves the all-time count beside it", async () => {
+    const response = await SELF.fetch(`${BASE}/admin`, {
+      headers: adminAuth,
+    });
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    const month = new Date().toISOString().slice(0, 7);
+    expect(html).toContain(`${month}:`);
+    expect(html).toContain("All-time:");
+    expect(html).toContain("The month line above resets when the calendar turns");
+  });
+});

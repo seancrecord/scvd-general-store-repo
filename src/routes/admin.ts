@@ -18,6 +18,7 @@ import {
 } from "@/lib/metrics";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
 import { recountFromRows } from "@/lib/recount";
+import { computeStats } from "@/services/stats";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { wantsHtml } from "@/pages/simple-page";
 import { renderBellPage } from "@/pages/admin/bell-page";
@@ -244,6 +245,7 @@ adminRoutes.get("/admin", async (c) => {
     refunds,
     alerts,
     reconciliation,
+    allTimeStats,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -258,6 +260,7 @@ adminRoutes.get("/admin", async (c) => {
     listRefunds(c.env),
     listAlerts(c.env, 5),
     reconcileSettles(c.env),
+    computeStats(c.env),
   ]);
   const emptyLedger = emptyMonthLedger();
   const pendingReviews =
@@ -287,6 +290,15 @@ adminRoutes.get("/admin", async (c) => {
       payers: shelf(payers, [], "payers", notes),
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
       reconciliation: shelf(reconciliation, null, "reconciliation", notes),
+      allTime: (() => {
+        const stats = shelf(allTimeStats, null, "all-time stats", notes);
+        return stats
+          ? {
+              organic: stats.organic_settlements,
+              house: stats.house_settlements,
+            }
+          : null;
+      })(),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(

@@ -23,6 +23,15 @@ export interface OfficePageData {
   porchLedger: PorchLedger;
   payers: PayerRecord[];
   recentChallenges: MetricEvent[];
+  /**
+   * All-time organic/house settle counts, same computation the public
+   * pages use. Beside the month numbers because on 2026-08-01 the
+   * desk said 1 while the storefront said 2 — both correct, July's
+   * sale had rolled out of the desk's unlabeled month window at
+   * midnight UTC, and the keeper rightly read it as data loss. A
+   * window states itself (AT_SCALE rule 4), especially at the desk.
+   */
+  allTime: { organic: number; house: number } | null;
   /** Settle counters against payer rows, all-time on both sides. */
   reconciliation: SettleReconciliation | null;
   bazaarLedger: BazaarLedgerEntry[];
@@ -146,14 +155,20 @@ function glanceHtml(data: OfficePageData): string {
   );
   return `
     <p style="font-size:1.15em">
+      <strong>${escapeHtml(ledger.month)}:</strong>
       <strong>$${ledger.revenueUsdc.toFixed(2)}</strong> organic revenue
       <small>(+$${ledger.revenueHouseUsdc.toFixed(2)} house)</small> \u00B7
       <strong>${organicSettles}</strong> organic settle${organicSettles === 1 ? "" : "s"} \u00B7
       <strong>${organic402s}</strong> organic 402s \u00B7
-      <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} \u00B7
+      <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
       ${data.porchLedger.porchToPurchase !== null ? `\u00B7 porch-to-purchase <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
+    ${
+      data.allTime
+        ? `<p style="font-size:1.05em"><strong>All-time:</strong> <strong>${data.allTime.organic}</strong> organic settle${data.allTime.organic === 1 ? "" : "s"} <small>(+${data.allTime.house} house)</small> \u2014 the number the storefront and /stats publish. The month line above resets when the calendar turns; this one never does.</p>`
+        : ""
+    }
     <p><small>Revenue counts from this deploy forward (the founding fifty cents predates the meter). House money is real money; it just doesn't count as proof.</small></p>`;
 }
 
