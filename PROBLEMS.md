@@ -1077,3 +1077,91 @@ and the ruling has an architectural reason (nobody's uptime should
 depend on one keeper). A signed observation (A) is a THING SOLD, not
 a dependency taken on; that is the line, and it is why A fits and
 these do not.
+
+---
+
+### DR4 round 1 (Perplexity), vetted 2026-08-02 — REFINES the A/B ordering above, does not just echo it.
+
+Market stats consistent with DR3 (same trackers, cross-verified
+there); the strategy findings:
+
+- **The pricing bands, and the one that survives, decide how A is
+  priced IF built.** Third-party attestation has three historical
+  tiers: SOC 2 ($25k-70k, needs an accredited firm's liability and
+  brand — structurally inaccessible to a solo pseudonymous
+  operator); BBB ($400-1500/yr, reputationally WEAK because it is
+  pay-to-play accreditation the buyer knows is bought not earned);
+  and the Let's Encrypt commodity tier ($0-100, survived by being
+  independently verifiable WITHOUT trusting the issuer's brand).
+  Only the third fits us, and it fits exactly: A must price like a
+  commodity check (single dollars, the quarter already planned),
+  publish precisely what was tested and how, and lean entirely on
+  the signed observation being cryptographically checkable — because
+  institutional authority is the one thing a solo pseudonymous
+  operator cannot buy or fake, and claiming it would break the
+  honesty law. This is a design constraint on A, not just a price.
+
+- **THE SEQUENCING REFINEMENT — B before A, and why it matters.**
+  The A block above calls A "the strongest revenue idea on the
+  board." DR4 does not contradict the DIRECTION (both research
+  cycles confirm verification is where our edge and the demand
+  converge) but corrects the ORDER: A is UNPROVEN — no evidence
+  exists of anyone paying for x402 third-party attestation yet, a
+  genuine gap, uncontradicted but unvalidated. B (the free verifier)
+  is the de-risking funnel: cheap to build, ships inside the
+  8-hr/week budget in a month, targets the same Stripe-test-mode
+  fixture mechanism, AND its adoption IS the missing evidence for
+  whether anyone values conformance checking at all. Building A
+  before B is observed is building a paid product for an unconfirmed
+  market. Revised sequence: (1) operate + polish vectors + run the
+  description pass continuously; (2) ship B free; (3) attempt A only
+  once B shows inbound; (4) C stays opportunistic (needs a willing
+  peer — T4's territory). Logged as a correction to the A-first
+  implication, per Rule 0's "a pivot has a date on it."
+
+- **The falsifier that would flip B-before-A:** if B ships and gets
+  zero external engagement in 8 weeks WHILE a paid-A request arrives
+  anyway (a peer asking "check my offers/receipts and sign it"),
+  that means demand is real but does not route through a free funnel
+  — skip straight to minimal paid A at commodity price. The inverse
+  (B adopted, nobody ever asks about paid) says A's payoff is
+  reputational not commercial, and A deprioritizes further. Either
+  way B is the instrument that tells us which world we're in.
+
+- **Pinboard is the closest analog, and it VALIDATES what the store
+  already does.** One person, anti-growth, paid from day one, ~$212-
+  250k/yr on near-zero costs, no ads, sustained 15+ years — and
+  Ceglowski credits three things: charge real money immediately
+  (filters for committed users), radical minimalism, and — his
+  words — "if I wasn't funny and if I couldn't tweet, I don't think
+  I could make this work." The store already charges from day one
+  and already has the voice. Reality-check kept honest: of ~1000
+  scraped solo products, 80.9% make under $500 MRR and only 12 clear
+  $10k — Pinboard-scale is the tail, not the median, so the honest
+  baseline for this store is modest revenue on low costs, not a
+  breakout. That is not a downgrade; it is the operating philosophy
+  already in the wind-down doc, confirmed from outside.
+
+- **The novelty shelf is a MOAT, with a sharp caveat that becomes a
+  design rule.** Significant Objects (thrift trinkets, $128 → $3,612
+  on invented backstories, measured +6258% from narrative alone) is
+  real experimental evidence that voice raises value and
+  memorability independent of utility; Pinboard corroborates at
+  whole-business scale. BUT no evidence tests voice-moats on TRUST
+  products specifically, and the defensible synthesis is a rule we
+  keep: voice is TOP-OF-FUNNEL (makes the store rememberable and
+  referred — luckies/dibs/graffiti do marketing without marketing),
+  while the trust products must stay LEGIBLE AND SERIOUS at the
+  point of technical evaluation. They do not compete for the same
+  attention. The actionable constraint for when A/B ship: the
+  conformance reports themselves stay boring and precise — never
+  make the attestation cute. Cutting either layer weakens the
+  business; conflating them would hurt conversion exactly where it
+  matters.
+
+Claude DR4 and the two Gemini red-team briefs (attack the demand
+plan; pre-mortem the strategy) still to run. The cross-check to
+watch on Claude's round: does it agree B-before-A, or does DR3's
+"expose a paid conformance SKU" read as A-first? That divergence,
+if it holds, is the one real strategic fork — resolve it before any
+build past the free verifier.
