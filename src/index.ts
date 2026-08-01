@@ -38,6 +38,7 @@ import {
   conventionalRoutes,
   didRoutes,
   livenessRoutes,
+  fulfillmentLogRoutes,
   rightsRoutes,
   windDownRoutes,
   becomingRoutes,
@@ -179,6 +180,7 @@ app.route("/", attestationRoutes);
 app.route("/", conventionalRoutes);
 app.route("/", didRoutes);
 app.route("/", livenessRoutes);
+app.route("/", fulfillmentLogRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);
 app.route("/", becomingRoutes);

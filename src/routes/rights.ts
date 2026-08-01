@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { REFUND_POLICY } from "@/store/refund-policy";
 import { RIGHTS, RIGHTS_LIMIT, RIGHTS_STANDFIRST } from "@/store/rights";
 import type { HonoEnv } from "@/types";
 
@@ -39,12 +40,25 @@ rightsRoutes.get("/rights", (c) => {
       artifact_immutable_after_signing: true,
       transferable: true,
       transfer_mechanism: "bearer; the store keeps no register of owners",
+      /**
+       * The sharp edge of bearer transfer, named before a buyer finds
+       * it in a dispute: our signature proves authenticity, and
+       * authenticity is not sole possession.
+       */
+      transfer_caveat:
+        "A bearer transfer hands over a copy of signed bytes; nothing stops the previous holder keeping one. The signature proves the artifact is genuinely ours — it does not and cannot prove there is only one holder. Nothing sold here is scarce, and we would rather say so than let a resale market assume it.",
       redistribution_permitted: true,
       attribution_required: false,
       commercial_use_permitted: true,
       additional_licence_or_fee: null,
       keeper_words_included: true,
     },
+    /**
+     * Beside ownership because it is the same pre-purchase question
+     * from the other side: what you hold if the thing goes right, and
+     * what you are owed if it goes wrong.
+     */
+    refund_policy: REFUND_POLICY,
   };
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json(payload);

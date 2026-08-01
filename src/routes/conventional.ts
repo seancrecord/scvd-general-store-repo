@@ -61,9 +61,9 @@ const GUESSED: Record<string, string> = {
    */
   "/privacy": "/.well-known/trust.json",
   "/privacy-policy": "/.well-known/trust.json",
-  // The conventional home of a security contact file; we do not serve
-  // one, but the trust document says who to write to and how.
-  "/.well-known/security.txt": "/.well-known/trust.json",
+  // /.well-known/security.txt left this map 2026-08-01: a real RFC
+  // 9116 file is served by well-known.ts now, and a redirect here
+  // would shadow it (this router mounts first).
 };
 
 for (const [guessed, real] of Object.entries(GUESSED)) {
