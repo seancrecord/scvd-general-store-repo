@@ -42,6 +42,8 @@ export const STANDARDS_POSTURE = {
     "2. Take the JWS from extensions['offer-receipt'] in a 402's PAYMENT-REQUIRED header (offers) or a settled response's PAYMENT-RESPONSE header (receipt).",
     "3. Verify with any RFC 7515 / Ed25519 library: signing input is ASCII(base64url(header) + '.' + base64url(payload)). No scvd.store code or endpoint involved.",
   ],
+  verifier_guidance:
+    "Issuance is strict, consumption should be tolerant: offers carry validUntil = issuance + 300 seconds from this store's clock, and a verifier comparing against its own clock should allow a few seconds of skew leeway before rejecting — NTP drift on your side is real and a 300-second window makes small leeway harmless. This store itself compares no timestamps on the verify path (checked 2026-08-01, recorded in PROBLEMS.md), so the leeway that matters is yours.",
   conformance_vectors: {
     what: "Deterministic test vectors for the offer-receipt extension: 2 valid artifacts and 3 invalid ones (schema-invalid with a VALID signature, wrong key, tampered payload) — the invalid cases teach a verifier that signature validity and schema validity are separate checks.",
     test_key_note:

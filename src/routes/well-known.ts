@@ -322,6 +322,8 @@ wellKnownRoutes.get(
     return c.json({
       ...conformanceVectors,
       live_counterpart: `${base}/api/buy/hello — a real 402 whose PAYMENT-REQUIRED header carries live signed offers under extensions['offer-receipt'], signed by the production key at ${base}/.well-known/did.json (never the test key in these vectors).`,
+      verifier_guidance:
+        "Allow a few seconds of clock-skew leeway when comparing validUntil against your own clock — issuance is strict, consumption should be tolerant, and NTP drift on your side against a 300-second window makes small leeway harmless.",
       regenerate:
         "node scripts/generate-conformance-vectors.mjs in the repository reproduces this file byte for byte.",
     });

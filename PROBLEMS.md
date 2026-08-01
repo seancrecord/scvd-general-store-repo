@@ -285,10 +285,20 @@ AT_SCALE walk, and citing beats re-deriving:
 - **Settle-then-crash / no chargebacks:** accepted with trigger
   (AT_SCALE #2, #3); the buyer-facing half shipped 2026-08-01 as the
   written refund policy and /fulfillment-log. Escrow proper is #12.
-- **Clock drift:** non-issue at our timescales — a ±3s NTP drift
-  against a 300-second offer window is one percent, and we set no nbf
-  claim for a drifted clock to trip on. Would matter at sub-10s TTLs,
-  which nothing here uses.
+- **Clock drift:** checked TWICE and the second look sharpened the
+  verdict. CV's audit claimed "raw validUntil comparison in the
+  verification path, no leeway" — read against the code, NO timestamp
+  comparison exists anywhere in our verify path at all
+  (requirement-match.ts validates shape only; validUntil appears only
+  at issuance). The comparisons that can bounce a drifted buyer live
+  in the BUYER's client and on the chain — so a leeway constant in
+  our code would be a fix at the wrong layer, guarding a comparison
+  we never make. What shipped instead, at the right layer:
+  verifier_guidance on the standards block and the served vectors
+  ("issuance is strict, consumption should be tolerant — allow a few
+  seconds of skew"), which reaches the code that actually compares.
+  Same class as rule 6: the audit's paraphrase of our code was not
+  our code.
 - **Gas spikes vs. micropayments:** not our layer. The exact scheme
   on Base has the facilitator carry gas; our exposure is facilitator
   pricing, which is a /stack dependency already named there.
@@ -299,7 +309,19 @@ answer already on file: opportunity A (conformance checks as a
 product) is the layer where this store's answer is a THING SOLD
 rather than infrastructure taken on.
 
-### 16. Idempotency keys — the infinite-loop wallet drain
+### 16. Idempotency keys — the infinite-loop wallet drain — SHIPPED 2026-08-01
+
+Built the same night it was logged, on the keeper's green light: both
+buy doors honor it now (Idempotency-Key header on HTTP,
+_meta['x402/idempotency-key'] on MCP), scoped by item + payer + hashed
+key so honoring a replay requires knowing the paying wallet AND its
+secret key; 16-character minimum so "retry-1" is treated as absent
+rather than guessably honored; 24h TTL; only SETTLED sales cache
+(errors and 402s stay retryable); every failure direction falls
+toward a normal charge, which the refund policy already covers.
+lib/idempotency.ts. The original entry follows for the record.
+
+### 16b. (original entry, for the record)
 
 The one real hole the catalog found. The chain refuses to settle the
 SAME authorization twice, but a non-deterministic agent stuck in a
@@ -319,7 +341,19 @@ like a loop rather than intent (the fulfillment log and till make
 this visible), or a counterparty SDK that sends the header expecting
 it to mean something.
 
-### 17. Wallet-authenticated claims — surviving a context reset
+### 17. Wallet-authenticated claims — surviving a context reset — SHIPPED 2026-08-01
+
+Built the same night: /api/claims, challenge-response with a
+single-use five-minute nonce, EIP-191 personal_sign verified by
+recovery (the address comes FROM the signature, never from the
+claimant's word), failed attempts burn the nonce so guessing earns
+nothing. Returns the proving wallet's own orders with their order
+URLs. EOA-only, stated plainly on the door (EIP-1271 needs an RPC
+dependency this Worker deliberately does not carry). The sharp edge
+the entry named — never accept a bare address — is the door's whole
+design. The original entry follows for the record.
+
+### 17b. (original entry, for the record)
 
 An agent pays for a two-hour human job, crashes at minute ten, and
 the respawned instance holds no order id — the goods exist, claimed

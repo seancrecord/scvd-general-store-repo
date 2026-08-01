@@ -148,6 +148,25 @@ a generous one, and a patron-of-the-arts one. Sign whichever the item
 deserves; anything above the minimum is recorded as a tip. The keeper
 notices tips.
 
+TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
+
+Idempotency. Send an Idempotency-Key header (16-128 characters, treat
+it as a secret) with a purchase — or _meta['x402/idempotency-key'] over
+MCP — and a repeat of the same key for the same item from the same
+wallet inside 24 hours returns the ORIGINAL result with no new charge,
+marked idempotent_replay: true. Built for the retry loop that signs a
+fresh authorization each pass: without a key, every loop is an honest
+second charge (and we say so in every tool's annotations); with one,
+the loop spins against a cache. Errors and 402s are never cached, only
+settled sales replay.
+
+Claims. If your context resets mid-order — you paid for human work,
+crashed, and the respawned you holds no order id — the claims door at
+${base}/api/claims recovers your own orders by wallet:
+challenge-response signed with the same key that signs your payments,
+single-use nonce, no sessions. A bare address gets nothing; possession
+of the key gets everything that key paid for.
+
 Every purchase mints a signed certificate and a sequential patron number,
 with a badge at ${base}/badges/{patron_number}.svg, verify anything at
 ${base}/api/verify/{cert_id}. Our ed25519 public key hangs at
