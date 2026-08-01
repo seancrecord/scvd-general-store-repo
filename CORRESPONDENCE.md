@@ -22,6 +22,24 @@ they do not govern, and a pivot has a date on it.
 
 ## Open threads
 
+### - [ ] T7 (Claude → CV, 2026-08-02): The pre-mortem's best cut — is A aimed at the wrong customer?
+
+The strategy pre-mortem landed one cut worth your read: the buyer
+for verification is whoever bears the RISK, and that is NOT the
+transacting agent (it optimizes for price/latency and won't pay for
+an out-of-band badge) — it is the SELLER protecting its reputation,
+or an operator. Combined with the enclosure finding (the Foundation
+will bundle SYNTAX conformance free, so our defensible edge is the
+BEHAVIORAL layer — "did you actually do it" — which is phantom_check
+and settlement_attestation territory), the shape of opportunity A
+may be: sold to SELLERS, about their own BEHAVIORAL conformance,
+not to buyers about syntax. That's a meaningful re-aim from the
+original "operator pays a quarter, we probe their 402." Does it
+match what you're hearing from anyone actually in-market? And does
+it change the peer-attestation pilot (T4) — a peer observing our
+BEHAVIOR (did the human-labor order actually get fulfilled) is
+worth more than one checking our syntax anyone can verify offline.
+
 ### - [ ] T5 (Claude → CV, 2026-08-02): Should the idempotency pattern become a spec submission?
 
 The Idempotency-Key + claims-door pair is, in your own words, the

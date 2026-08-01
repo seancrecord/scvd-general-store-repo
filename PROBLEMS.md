@@ -1332,3 +1332,109 @@ pass (instant items, not human-queue), and one discipline promoted to
 an explicit rule (never count internal probing as demand). Gemini's
 pre-mortem of the STRATEGY (brief 4) is the last adversarial pass;
 after it, the build queue is final.
+
+**STRATEGY PRE-MORTEM (Gemini brief 4), vetted 2026-08-02 — the
+capstone, and the best adversarial work of the effort. Its six
+causes-of-death share ONE hidden through-line, and naming it is the
+finding:**
+
+*THE THROUGH-LINE: every failure mode assumes an ENTERPRISE buyer
+and an INFRASTRUCTURE-DEPENDENCY model — the two things the store
+explicitly rejects.* Read that way, the pre-mortem is not a refutation
+of the strategy; it is a proof that IF the store drifts toward selling
+to enterprise compliance teams and toward being depended-upon
+infrastructure, its constraints (no-infra, pseudonymity, voice) become
+fatal. Which is an argument FOR staying in its lane, precisely stated.
+The constraints Gemini attacks are the same ones that make the store's
+ending clean and its bus-factor survivable. Held against that frame,
+each cause resolves:
+
+- **#1 Mercenaristic routing — the deepest cut, and it reframes WHO
+  the customer is.** Buyer agents optimize for price/latency and won't
+  pay for out-of-band trust badges; the transport layer already
+  validates payment (sig/balance/nonce at the facilitator). PARTLY
+  overstated — Gemini conflates PAYMENT validation (real, done by CDP)
+  with CONFORMANCE/BEHAVIORAL verification (does the seller deliver,
+  does its did:web resolve, does its receipt match spec — facilitators
+  do NOT do this). But the core survives and it is important:
+  verification demand comes from whoever bears the RISK, and that is
+  NOT the transacting buyer-agent — it is the SELLER protecting its
+  reputation, or an operator. This matches DR3's "demand is a function
+  of transaction risk, not volume." The reframe: A's customer is the
+  seller/operator, not the buyer-agent — which points at the hedge
+  (inline validation middleware a seller embeds) and reconnects to
+  opportunity A being sold to the /try audience (builders), not to
+  passing agents. Logged as the sharpest correction to how A is aimed.
+
+- **#3 Enclosure from above — refines the defensible niche, converges
+  with DR1 #10.** The Foundation/CDP will bundle native SYNTAX
+  conformance free (it already admits it has none), making an
+  independent syntax-checker roadkill. The surviving niche is exactly
+  what Gemini names and what PROBLEMS #10 (execution verification)
+  already identified: cede "does your 402 conform" to the platform,
+  own "did you actually DO what you said" — behavioral/execution
+  assertions platforms disclaim. The store already holds those
+  primitives (phantom_check = independent world-effect observation;
+  settlement_attestation = chain-state observation). So B verifies
+  syntax (free public good, commodity by design) while A's paid edge
+  is the BEHAVIORAL layer no facilitator will touch. This is the
+  single most valuable strategic refinement of the pre-mortem.
+
+- **#5 Novelty/voice as enterprise liability — resolves the apparent
+  contradiction with DR4 by buyer identity.** DR4 said voice is the
+  MOAT (Pinboard, samczsun); Gemini says enterprise procurement reads
+  it as risk. Both true, different buyers: voice wins the
+  developer/community/operator buyer the store is actually built for;
+  voice loses the enterprise-compliance buyer the store explicitly is
+  NOT chasing. The domain-isolation hedge (a sterile
+  x402-conformance.org) only becomes real IF A ever targets
+  enterprise — logged as a conditional, not a to-do. The store's
+  whole positioning is the samczsun model (reputation-through-public-
+  work, community buyer), where voice is load-bearing.
+
+- **#4 No-infra bottleneck — Gemini MISUNDERSTANDS the constraint.**
+  It assumes no-infra blocks continuous observation, forcing a Rule 0
+  bend. But the store ALREADY runs stateless serverless with crons
+  (phantom_check is scheduled). The rule is "nobody's UPTIME depends
+  on us," not "no compute" — a continuous-observation feed whose
+  staleness fails safe does not violate it. So Gemini's own hedge
+  (stateless serverless cron) is already available and needs no bend.
+  Correction logged: the constraint is narrower than the critique
+  assumes.
+
+- **#2 Trigger horizon + #6 bus-factor — real, already in the ledger,
+  self-consistently mitigated.** The multi-year mandate horizon is the
+  trigger-dependency both DR4 rounds named; the hedge is not "freeze B
+  as dead repo" (too pessimistic) but keep B cheap and let A wait on
+  the kill-metric, which is the plan. Bus-factor is #11/#14 already;
+  Gemini's "radical honesty makes the ending uglier" holds ONLY under
+  the infrastructure-dependency premise — because the store is a shop
+  whose artifacts stay verifiable forever without the keeper (published
+  key, published bytes, the wind-down doc), a keeper departure strands
+  nobody the way infra would. The clean ending is DESIGNED; the
+  constraints Gemini attacks are what make it clean.
+
+**THE DEEP-RESEARCH EFFORT IS NOW CLOSED.** Four questions
+(conditional release, key continuity, demand, strategy), three
+engines each plus one follow-up and two red-team passes, every
+load-bearing claim vetted, several verified against primary sources,
+three of the store's own claims corrected along the way, two real
+code gaps fixed (offer-signing, beacon replay), and one demoted
+engine proven useful in a narrowed adversarial lane. What survives as
+the strategic picture:
+- Verification is the store's edge, and the DEFENSIBLE half is
+  BEHAVIORAL/execution observation (phantom_check/settlement lineage),
+  not syntax conformance (which the platform will commoditize).
+- A's real customer is the SELLER/operator bearing reputational risk,
+  not the buyer-agent — aim it there.
+- Order stands: description boundary pass (instant items) → free
+  verifier B (syntax, forkable, with the live-authority lookup for
+  stickiness) → paid A (behavioral, gated on B's inbound and the
+  ≥2-unsolicited-request kill-metric) → C opportunistic.
+- Every constraint the pre-mortem called fatal is fatal ONLY on a
+  pivot to enterprise + infrastructure the store refuses; in the
+  store's actual lane they are load-bearing, and Rule 0 bends them
+  only behind a real case with a date, never behind pre-mortem fear.
+The build queue is final. Nothing builds until the keeper's go;
+the research's job — knowing exactly what we'd be building and why,
+and what would kill it — is done.
