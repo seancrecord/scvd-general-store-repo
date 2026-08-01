@@ -108,11 +108,80 @@ NOT-stop sections throughout, bibliography inline.**
   one counterparty, two trust services, both novel. Logged for T4's
   orbit; months-not-weekends, social infrastructure first.
 
-*Verdict pending round 2 (Claude DR2 inbound; Gemini demoted to a
-narrowed red-team brief per the new rotation policy).* The build
-candidate to beat: OTS/Rekor anchoring of durable artifacts and
-registry digests — $0, one weekend, closes gap (b), supersedes the
-Base-writes fix. Decision after cross-check.
+**DR2 round 2 (Claude DR), vetted 2026-08-02 — the strongest report
+of either cycle, cross-checked against round 1:**
+
+*Unanimous across both rounds (decision-grade):* OTS + Rekor ranks
+first in both — Claude DR adds the precise trust boundaries
+(calendars can censor, never forge; Rekor equivocation is
+detectable via signed tree heads but durability is NOT guaranteed,
+so Bitcoin/OTS is the durable anchor and Rekor the fast
+corroboration). FROST is root-key-only in both (ZF frost-ed25519,
+RFC 9591; Claude DR's maturity detail: v3.0.0 as of 2026-04, but
+the NCC audit covered v0.6.0 and frost-tools is demo-grade — you
+script against the audited library, and there is NO turnkey
+solo-operator product; Frostsnap is secp256k1-only, inapplicable).
+Dead-man protects disappearance, never impersonation, in both.
+Timelock's veto-under-duress flaw named in both.
+
+*Divergence, minor:* Claude DR ranks timelocked succession #2
+(Zodiac Delay / Safe Sentinel / Argent as production prior art,
+cents on Base) where Perplexity ranked it #4 — Claude DR values it
+as anti-QUIET-takeover once pre-rotation exists, and flags real
+implementation risk (a June 2026 Delay Module flaw on Gnosis Pay
+bypassed a veto gate — audited unmodified contracts only).
+
+*New in round 2, kept:* the OFF-CLOUDFLARE rule for any co-signer —
+a second signer on the same platform adds zero independence, so the
+bounded-blast-radius design requires a second trust domain (Nitro
+Enclave class); tlock/drand timelock encryption as the dead-man
+primitive (GA since 2023, Kudelski-reviewed, not post-quantum);
+and the KERI recognition — commit-the-next-key-hash pre-rotation is
+KERI's core defense, and full KERI tooling is too heavy for one
+person while the manual version captures most of the benefit.
+
+*TWO VET CATCHES, ours:*
+1. **Claude DR says "you already do manual pre-rotation." We do
+   not.** We hold a paper backup of the CURRENT seed and a published
+   succession protocol — the pre-committed SUCCESSOR key hash is
+   planned (this entry's own "what would actually move this"),
+   never executed. The report promoted "planned" to "shipped." The
+   catch matters in the good direction: both reports independently
+   treat pre-rotation as the single strongest theft defense
+   available to us, and it is a ceremony away — generate the
+   successor offline, paper it, publish its HASH in an artifact
+   signed by the current key. A thief holding the current key then
+   cannot rotate to a key they control; they lack the committed
+   preimage. Elevated to the top of the staged plan.
+2. **"The hot/cold split costs nothing" is wrong for this
+   codebase.** The architectural insight is right and convergent
+   (both rounds; our round-1 vet said the same): per-request
+   beacons cannot share heavy machinery with succession authority.
+   But splitting keys touches did.json (second verificationMethod),
+   the key registry, /attestation's per-class key mapping, every
+   verify surface, and the test suite. Days of coherent
+   multi-surface work, not zero — priced honestly before anyone
+   builds it.
+
+**THE STAGED PLAN, standing as the build candidate (keeper's go +
+Gemini red-team pass pending):**
+- *Stage 0a — OTS/Rekor anchoring* (unanimous #1): durable artifact
+  classes + registry/did.json digests per change; Workers-native
+  via HTTP; weekly upgrade cron; ~$0.
+- *Stage 0b — execute pre-rotation* (the vet-elevated item): the
+  successor-key ceremony, hash committed under the current key.
+  Keeper's hands required (offline generation, paper); the
+  announcement artifact and registry field are code we write.
+- *Stage 1 — the hot/cold split*, priced as real work; then
+  timelocked succession on audited unmodified contracts (cents);
+  co-signer stays deferred on its volume trigger, off-Cloudflare
+  by rule when it comes.
+- *Stage 2 — FROST 2-of-3 on the root key* once it exists as a
+  separate root; scripted on the audited crate, loss-risk trade
+  accepted explicitly.
+- *Never claimed:* anything here defeating an attacker who steals
+  the live key AND coerces the keeper — both reports state it,
+  the threat model says it out loud.
 
 ### 3. Demand
 
