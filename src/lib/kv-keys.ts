@@ -90,6 +90,11 @@ export const KV_KEYS = {
   gazetteIssueCount: "gazette_issue_count",
   blessingLast: "blessing_last",
   paymentNonce: (nonce: string): string => `payment_nonce:${nonce}`,
+  /** Idempotency replay cache: surface + payer + sha256(key). */
+  idempotency: (surface: string, payer: string, keyHash: string): string =>
+    `idem:${surface}:${payer}:${keyHash}`,
+  /** Single-use claims-door challenge nonce, per wallet address. */
+  claimChallenge: (address: string): string => `claim_challenge:${address}`,
   bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,
   bazaarLedgerPrefix: "bazaar_ext:",
   patronageNote: (month: string): string => `patronage_note:${month}`,

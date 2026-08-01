@@ -16,6 +16,12 @@ import {
   stockedShelfCount,
 } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
+import {
+  lookupIdempotent,
+  replayNote,
+  storeIdempotent,
+  usableIdempotencyKey,
+} from "@/lib/idempotency";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
@@ -283,16 +289,57 @@ function validatePurchaseArgs(
   return undefined;
 }
 
+/** The signing account inside an MCP payment object, mirror of the
+ * HTTP header decode in decline-diagnosis. */
+function payerFromPaymentMeta(meta: unknown): string | undefined {
+  if (!isRecord(meta) || !isRecord(meta["payload"])) {
+    return undefined;
+  }
+  const auth = meta["payload"]["authorization"];
+  if (!isRecord(auth) || typeof auth["from"] !== "string") {
+    return undefined;
+  }
+  return /^0x[0-9a-fA-F]{40}$/.test(auth["from"]) ? auth["from"] : undefined;
+}
+
 async function callPurchaseTool(
   c: Context<HonoEnv>,
   item: MenuItem,
   args: Record<string, unknown>,
   paymentMeta: unknown,
   id: number | string | null,
+  rawIdempotencyKey?: string,
 ): Promise<Response> {
   const invalid = validatePurchaseArgs(item, args);
   if (invalid) {
     return rpcError(id, -32602, invalid);
+  }
+  /**
+   * Idempotency replay, same mechanism as the HTTP door (see
+   * lib/idempotency.ts): _meta['x402/idempotency-key'] + the same
+   * payer + the same tool inside 24h returns the ORIGINAL result with
+   * no settlement. Checked before the stock and shutter gates on
+   * purpose — a replayed purchase already owns its goods, and a shelf
+   * that emptied since must not turn a retry into a refusal.
+   */
+  const idempotencyKey = usableIdempotencyKey(rawIdempotencyKey);
+  const idempotencyPayer = idempotencyKey
+    ? payerFromPaymentMeta(paymentMeta)
+    : undefined;
+  const idempotencySurface = `mcp:buy_${item.id}`;
+  if (idempotencyKey && idempotencyPayer) {
+    const replay = await lookupIdempotent(
+      c.env,
+      idempotencySurface,
+      idempotencyPayer,
+      idempotencyKey,
+    );
+    if (replay) {
+      return rpcResult(
+        id,
+        toolText({ ...replay.body, ...replayNote(replay.first_served_at) }),
+      );
+    }
   }
   // Sold out honestly, same as the HTTP door: bare stocked shelves
   // never issue terms nobody can settle.
@@ -398,7 +445,18 @@ async function callPurchaseTool(
     input.userAgent = userAgent;
   }
   const response = await fulfillPurchase(c.env, item, outcome.payment, input);
-  return rpcResult(id, toolText(flattenPurchase(response)));
+  const flat = flattenPurchase(response);
+  if (idempotencyKey && idempotencyPayer) {
+    await storeIdempotent(
+      c.env,
+      idempotencySurface,
+      idempotencyPayer,
+      idempotencyKey,
+      flat,
+      outcome.payment.transaction,
+    );
+  }
+  return rpcResult(id, toolText(flat));
 }
 
 async function handleRpc(
@@ -460,7 +518,17 @@ async function handleRpc(
         const meta = isRecord(params["_meta"])
           ? params["_meta"]["x402/payment"]
           : undefined;
-        return callPurchaseTool(c, item, args, meta, id);
+        const idempotencyKey = isRecord(params["_meta"])
+          ? params["_meta"]["x402/idempotency-key"]
+          : undefined;
+        return callPurchaseTool(
+          c,
+          item,
+          args,
+          meta,
+          id,
+          typeof idempotencyKey === "string" ? idempotencyKey : undefined,
+        );
       }
       const result = await callFreeTool(c, name, args);
       if (typeof result === "string") {

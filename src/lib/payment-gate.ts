@@ -25,6 +25,12 @@ import {
   preflightBlockers,
   refusalBeforeVerify,
 } from "@/lib/decline-diagnosis";
+import {
+  lookupIdempotent,
+  replayNote,
+  storeIdempotent,
+  usableIdempotencyKey,
+} from "@/lib/idempotency";
 import { BASE_NETWORK, DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import type {
@@ -349,6 +355,36 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
+  /**
+   * IDEMPOTENCY REPLAY, before any money conversation happens. A
+   * usable key + a payment header whose payer matches a purchase this
+   * same payer already made under this same key means the agent is
+   * retrying, not re-buying: serve the original result and settle
+   * nothing. Scoped by (path, payer, hashed key) so honoring a replay
+   * requires knowing the paying wallet AND its secret key. Every
+   * failure direction here falls through to a normal charge — the
+   * cache is a courtesy, the till is the product.
+   */
+  const idempotencyKey = usableIdempotencyKey(
+    c.req.header("Idempotency-Key"),
+  );
+  const idempotencyPayer = idempotencyKey
+    ? payerFromPaymentHeader(offeredHeader)
+    : undefined;
+  if (idempotencyKey && idempotencyPayer) {
+    const replay = await lookupIdempotent(
+      c.env,
+      c.req.path,
+      idempotencyPayer,
+      idempotencyKey,
+    );
+    if (replay) {
+      c.header("Cache-Control", "no-store");
+      c.header("Idempotency-Replay", "true");
+      return c.json({ ...replay.body, ...replayNote(replay.first_served_at) });
+    }
+  }
+
   // First facilitator sync happens on the first paid request per isolate.
   await stack.initialized;
 
@@ -589,5 +625,32 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   });
   for (const [key, value] of Object.entries(outHeaders)) {
     c.res.headers.set(key, value);
+  }
+
+  /**
+   * The idempotency store, only after a REAL sale: a settled payment
+   * and a 2xx with goods in it. Errors and 402s are never cached — a
+   * refusal must stay retryable, only a charge must not repeat.
+   */
+  if (idempotencyKey && idempotencyPayer && c.res.status < 300) {
+    const bodyText = await c.res.clone().text().catch(() => null);
+    if (bodyText) {
+      try {
+        const parsed: unknown = JSON.parse(bodyText);
+        if (isRecord(parsed)) {
+          await storeIdempotent(
+            c.env,
+            c.req.path,
+            idempotencyPayer,
+            idempotencyKey,
+            parsed,
+            settlement.transaction,
+          );
+        }
+      } catch {
+        // Non-JSON goods stay uncached; the header's absence on the
+        // next attempt is honest.
+      }
+    }
   }
 };
