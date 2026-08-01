@@ -84,6 +84,17 @@ under real concurrency; blast radius is one novelty item. Durable
 Objects is the named v0.2 fix. **Trigger:** two settles inside one
 propagation window on the same shelf, observed.
 
+**Sharpened 2026-08-02 by CV's platform read:** the precise ceiling
+is KV's 1 write/second per key (every tier — the store is on Workers
+Paid, so daily caps are not in play), and the FIRST key to queue
+under a real burst is claimPatronNumber()'s shared counter — before
+CPU, before the edge. It already fails the right direction (retries,
+worst case a shared badge number, never a failed sale). The full
+five-question capacity checklist for new features now lives in
+AT_SCALE.md; write amplification (~4-5 KV writes per settle) and the
+someday storage napkin math (artifacts accumulate forever by design)
+are noted there too.
+
 ---
 
 ## Logged, not chased
@@ -269,9 +280,31 @@ eight paths; verdicts after checking its load-bearing claims:
   bonding, as briefed. The never-custody rule gains a legal edge to
   its existing architectural one, pending FinCEN-source verification.
 
+**Round-1 bibliography, captured 2026-08-02** (titles as delivered;
+several came without full URLs — flagged rather than invented):
+- Independently verified by us: [5]/[7] ERC-3009 spec (we read the
+  normative text at ethereum/ERCs — validAfter/validBefore semantics
+  confirmed, cancelAuthorization present); [4] Boson x402B (verified
+  via live web search: mainnet 2026-06-08, non-custodial escrow +
+  dispute resolution + rNFTs, Base supported — report's "May" was
+  off by a month).
+- Report-cited, unverified by us, plausible: [1][3] Coinbase
+  x402-for-Business rollout (July 2026, "no chargeback risk"
+  marketing); [2] x402 whitepaper; [6][8] EIP-3009 integration
+  guides; [9]-[14] UMA docs + Polymarket dispute coverage (incl. the
+  $60M May 2026 Strategy-bitcoin-sale DVM vote and $500-750 bond
+  norms); [15][16] OpenBazaar moderator/dispute documentation
+  (2-of-3 multisig, Keybase-verified moderators, collusion history);
+  [18][19][21] FinCEN CVC guidance + the April 29, 2014
+  administrative rulings on money-transmitter exemptions (exact
+  ruling numbers demanded in follow-up 1b); [20] California MTA
+  exemption note; [22]-[26] zkTLS/TLSNotary cost and proxy-mode
+  posts including TLSNotary's own "publicly verifiable ≠ trustless."
+- [17] resolved to a bare YouTube link — cited for nothing we kept.
+
 Two rounds still inbound (Claude DR, Gemini); cross-check before any
-build. Source URLs for round 1 to be captured when the keeper pastes
-the bibliography.
+build. Follow-up 1b (DEEP_RESEARCH.md) demands full URLs and the
+FinCEN ruling numbers before any of the unverified column graduates.
 
 ### 13. Keeper identity and staked reputation — a decision, not a build
 

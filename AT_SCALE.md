@@ -135,6 +135,17 @@ retired_keys record with dates and the outgoing-key-signed handover.
 One day of finds, compressed. Each rule earned its place by a real
 instance, named so the next reader can check the story.
 
+**Rule 0, the keeper's, about all the others (2026-08-02): rules
+guide, they do not govern.** Every rule below — and every settled
+ruling in the problem ledger — exists to prevent a specific recurring
+mistake, not to bind the store against a pivot it is ready for or to
+refuse significant capital on procedural grounds. When holding a rule
+would do either, the rule is re-opened: OUT LOUD, by the keeper, with
+the change dated and the reasoning recorded, exactly the way a
+correction ships. What Rule 0 does not license is drift — a rule
+quietly ignored is a correction waiting to be written. The difference
+between a pivot and a slip is that a pivot has a date on it.
+
 1. **Derive or refuse — never a hand-typed value beside the code it
    describes.** Five in one day: the rotation count, "never rotated,"
    the /attestation field list, the alert-condition count, the skill
@@ -176,6 +187,44 @@ instance, named so the next reader can check the story.
    leads with the load-bearing fact instead of burying it under
    voice. This applies to reports and summaries the same as to
    surfaces: the reader who has to dig for the point was not told it.
+
+## The capacity checklist (CV's platform read, logged 2026-08-02)
+
+An outside read of the real architecture, kept because it named the
+actual ceiling instead of gesturing at "scale." Compute is not the
+limit — Workers scale; the limits live in Workers KV, the store's
+entire datastore. The platform facts as checked on 2026-08-02:
+1 write/second per key (every tier), and the store is on Workers
+Paid (settled July), so the daily write cap is not in play.
+
+**The one named hot spot:** claimPatronNumber() in certificates.ts —
+sequential patron numbers over a single shared COUNTERS key with
+read-write-readback and up to 8 retries, because KV has no atomic
+increment. It fails in the right direction already (worst case two
+badges share a number; the sale never fails), and it is where a real
+burst queues FIRST — before CPU, before the edge. The fix when it
+becomes real is a Durable Object for that one counter (problem
+ledger #6 already names it); not built now, on purpose.
+
+The five questions every new feature answers before it ships:
+1. Does it write a shared/singleton key? If two buyers can hit it in
+   the same second, that is the bottleneck — walk-forward-and-retry
+   (the existing pattern) or a Durable Object once volume justifies.
+2. Do writes scale linearly, or does one sale fan out? A settle is
+   already ~4-5 KV writes (order, patron, counter, metrics) — write
+   amplification reaches caps faster than one-sale-one-write
+   intuition suggests.
+3. Anything touching the wallet or payment path gets the idempotency
+   treatment BY DEFAULT — the precedent is set, and it is the bar
+   for every new buy door, not a feature two doors happen to have.
+4. Agent-written text (tags, letters, confessions, summaries) is
+   escaped everywhere it renders and never interpreted — the
+   existing discipline, restated as the default posture for anything
+   new that stores it.
+5. Storage: signed artifacts accumulate forever by design —
+   immutability is the product — so the certs-per-month × years
+   napkin math gets redone when volume moves, before the 1GB line
+   does.
 
 ## What this file is not
 
