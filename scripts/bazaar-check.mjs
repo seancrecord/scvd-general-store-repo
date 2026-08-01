@@ -27,6 +27,46 @@ const HOST = "api.cdp.coinbase.com";
 const NEEDLE = "scvd.store";
 
 /**
+ * THE SEARCH ENDPOINT IS THE AUTHORITATIVE ANSWER, and the list is not.
+ *
+ * Added 2026-08-02 after this script's own design lied twice in one
+ * day — not to us, but to CV running the equivalent check by hand. He
+ * filtered a list endpoint with a parameter the API SILENTLY IGNORES,
+ * read the absence as a finding, and reported "not in the Bazaar."
+ * Re-run against /discovery/search the store came back immediately:
+ * indexed, searchable by name, carrying real lastCalledAt and quality
+ * figures that match our own /pulse.
+ *
+ * This script had the same defect in a different costume. It reads ONE
+ * PAGE of a list and prints "VERDICT: ABSENT" when our URL is not on
+ * it — while its own help text admits the response may be paginated.
+ * A verdict that says ABSENT when it means "not on the first page I
+ * happened to read" is an instrument that manufactures findings, and
+ * we would have chased that one.
+ *
+ * So: search decides PRESENT. A list-page miss can no longer print a
+ * verdict on its own (AT_SCALE rule 5 — test the instrument; a null
+ * from a probe that cannot see the thing is not evidence of absence).
+ *
+ * The path comes from CV's live run. It is NOT exercised in this
+ * repo's environment, which has no CDP keys and no outbound network,
+ * so the first real run is the first proof this code is right.
+ */
+const SEARCH_PATHS = (
+  process.env.SEARCH_PATHS ??
+  [
+    "/platform/v2/x402/discovery/search",
+    "/v2/x402/discovery/search",
+  ].join(",")
+).split(",");
+
+/** What to ask for. The store's name and its domain, both. */
+const SEARCH_QUERIES = (
+  process.env.SEARCH_QUERIES ??
+  ["Sean-Claude Van Damme general store", "scvd.store"].join("|")
+).split("|");
+
+/**
  * The v2 x402 route is confirmed from the installed @coinbase/x402
  * (verify/settle/supported hang off it). The discovery path is NOT
  * exported by any installed SDK, so we try the plausible ones and
@@ -300,6 +340,84 @@ function urlsIn(value, found = []) {
   return found;
 }
 
+/**
+ * THE SEARCH PASS, run FIRST because it is the answer and the list is
+ * the anecdote. A JWT is signed over the path without its query
+ * string, which is the usual CDP convention; if a deployment wants it
+ * signed with the query, SEARCH_PATHS can carry the whole thing.
+ */
+async function searchFor(query) {
+  const hits = [];
+  for (const basePath of SEARCH_PATHS) {
+    const requestPath = `${basePath}?query=${encodeURIComponent(query)}`;
+    let result;
+    try {
+      const token = await generateJwt({
+        apiKeyId,
+        apiKeySecret,
+        requestMethod: "GET",
+        requestHost: HOST,
+        requestPath: basePath,
+      });
+      const response = await fetch(`https://${HOST}${requestPath}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+      result = { status: response.status, body: await response.text() };
+    } catch (error) {
+      console.log(`  search ${basePath} → request failed: ${String(error)}`);
+      continue;
+    }
+    console.log(`  search ${basePath} "${query}" → HTTP ${result.status}`);
+    if (result.status !== 200) continue;
+    try {
+      const parsed = JSON.parse(result.body);
+      if (process.env.DEBUG) {
+        console.log(JSON.stringify(parsed, null, 2).slice(0, 2000));
+      }
+      for (const url of new Set(urlsIn(parsed))) {
+        if (url.includes(NEEDLE)) hits.push(url);
+      }
+    } catch {
+      console.log("    (200 but not JSON)");
+    }
+    break;
+  }
+  return [...new Set(hits)];
+}
+
+console.log("Asking the search endpoint, which is the one that answers:");
+const searchHits = new Map();
+for (const query of SEARCH_QUERIES) {
+  for (const url of await searchFor(query)) {
+    searchHits.set(url, query);
+  }
+}
+console.log("");
+
+if (searchHits.size > 0) {
+  console.log(
+    `SEARCH VERDICT: PRESENT — ${searchHits.size} of our resources are indexed and searchable.`,
+  );
+  for (const [url, query] of [...searchHits].sort()) {
+    console.log(`  ${url}   (matched "${query}")`);
+  }
+  console.log("");
+  console.log("The store is discoverable by name in CDP's own index. The");
+  console.log("browsable mirrors are separate importers and their silence");
+  console.log("still tests nothing.");
+} else {
+  console.log("SEARCH VERDICT: no match returned for any query.");
+  console.log("");
+  console.log("Before treating that as absence, confirm the search PATH is");
+  console.log("right — a wrong path and an empty index look identical from");
+  console.log("here, and this exact confusion (a filter the API silently");
+  console.log("ignored) produced a false 'not listed' finding on 2026-08-02.");
+  console.log("Re-run with SEARCH_PATHS=/the/right/path before concluding.");
+}
+console.log("");
+console.log("The list pass below is context, not a verdict:");
+console.log("");
+
 let answered = null;
 
 for (const path of CANDIDATE_PATHS) {
@@ -364,14 +482,28 @@ if (ours.length > 0) {
   console.log("Means: the CDP side is fine and the mirrors simply never");
   console.log("imported us. Stop waiting on auto-import; self-submit to");
   console.log("x402scout, x402-list /submit, and agent-tools directly.");
+} else if (searchHits.size > 0) {
+  /**
+   * NOT A FINDING, and this branch exists so it can never be read as
+   * one. Search already proved we are indexed; this pass read one page
+   * of a possibly-paginated list and did not happen to see us. Those
+   * two facts are compatible and the loud one is the wrong one.
+   */
+  console.log("Not on this page of the list — which means nothing, because");
+  console.log("search above already found us. This pass reads ONE page of a");
+  console.log("list that may be paginated and may be ordered by recency.");
+  console.log("Absence here is not evidence; the search verdict stands.");
 } else {
-  console.log("VERDICT: ABSENT from this page of the list.");
+  console.log("Not on this page of the list, AND search returned nothing.");
   console.log("");
-  console.log("Before concluding we aged out, check whether the response is");
-  console.log("paginated (DEBUG=1 shows the raw payload) — this reads one");
-  console.log("page. If it really is absent: either ingestion stopped, or the");
-  console.log("list is scoped to recent settlement activity and we aged out,");
-  console.log("which fits our only settles being 07-22 and 07-24. That case is");
-  console.log("fixed by re-verifying the declarations and getting a settlement");
-  console.log("through, not by marketing.");
+  console.log("Still not a verdict on its own. Two innocent explanations to");
+  console.log("rule out first, in this order: (1) the search path is wrong —");
+  console.log("a wrong path and an empty index are indistinguishable from");
+  console.log("here; (2) this list is paginated and we are on another page");
+  console.log("(DEBUG=1 shows the raw payload). Only after both are excluded");
+  console.log("does absence mean absence — and then it means either ingestion");
+  console.log("stopped or the list is scoped to recent settlement activity and");
+  console.log("we aged out, which fits our only settles being 07-22 and 07-24.");
+  console.log("That case is fixed by getting a settlement through, not by");
+  console.log("marketing.");
 }

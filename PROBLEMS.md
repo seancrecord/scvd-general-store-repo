@@ -476,10 +476,31 @@ question:**
 *Cross-checked verdict — the demand plan, ordered:*
 1. Boundary-language pass on tool descriptions (hours, highest
    evidence, fights the retrieval bottleneck) — BUILD-able now.
-2. Verify Bazaar cataloging — a live CDP-discovery check the keeper
-   or CV runs (are we in GET /v2/x402/discovery/resources after our
-   settled sales?); pursue curated lists (Agentic.Market categories,
-   Merit skills). Distribution, human work.
+2. ~~Verify Bazaar cataloging~~ — **DONE 2026-08-02, and the answer
+   is YES.** CV ran `/v2/x402/discovery/search?query=...`: the store
+   returns under both its name and its domain, tagged
+   `serviceName: "SCVD General Store"` with the full tag list, across
+   at least five items (the_collab, graffiti_on_a_train,
+   small_blessing, hello, dibs) — carrying real `lastCalledAt` and
+   quality figures that match our own /pulse. **Step one of demand was
+   already done and we did not know it**, which is worth sitting with:
+   the item on this list was "find out whether we are discoverable,"
+   and the honest reading of the answer is that discoverability was
+   never the bottleneck. Two live consequences: (a) CDP holds usage
+   data on us, so agents reaching these items is a measurable fact
+   rather than a hope, and (b) the "beautiful and unused" worry
+   attached to the anchor log and opportunity A cannot be answered by
+   pointing at obscurity — we are findable, so whatever is or is not
+   happening is happening to a store that CAN be found. The remaining
+   distribution work (curated lists — Agentic.Market categories, Merit
+   skills) stands unchanged.
+   *Its first answer was WRONG in the other direction* — a list
+   endpoint filtered by a parameter the API silently ignores, read as
+   "not listed." Our own `scripts/bazaar-check.mjs` had the same
+   defect in a different costume (one page of a paginated list,
+   printing `VERDICT: ABSENT`) and has been rewritten so search is the
+   authoritative pass and a list-page miss cannot print a verdict
+   alone. See AT_SCALE rule 5, sharpened the same day.
 3. The /try + conformance-vectors sandbox WITH a designed free→paid
    bridge and a rate limit (the RequestBin lesson) — BUILD-able,
    a week.

@@ -172,9 +172,23 @@ the store either way.
 4. **A cap, a truncation, or a propagation delay states itself.**
    The capped scan that read as complete, the verify 404 that read as
    fake, the handover count that refuses on truncation.
-5. **Test the instrument before trusting its null.** The curl with
-   the wrong Accept, the node:fs test that couldn't run, the 500px
-   screenshot, the backup regex that flagged a menu item.
+5. **Test the instrument before trusting its null — and before
+   trusting its PASS.** The curl with the wrong Accept, the node:fs
+   test that couldn't run, the 500px screenshot, the backup regex that
+   flagged a menu item.
+   *Sharpened 2026-08-02, after both clerks made the same mistake
+   inside one hour with different tools.* CV filtered a discovery
+   endpoint with a parameter the API SILENTLY IGNORES and read the
+   empty result as "not listed" — the store was indexed the whole
+   time. Claude ran `wrangler deploy --dry-run` as a typecheck for a
+   whole session; it is an esbuild bundle that strips types without
+   checking them, and it happily bundled a reference to a deleted
+   variable twice. Neither failure was a null misread. **Both were a
+   confident answer from a probe that was not answering the question
+   asked**, and the green one is the more dangerous kind, because
+   nobody investigates good news. Before trusting a result, confirm
+   the instrument measures the thing — ideally by making it fail on
+   purpose first.
 6. **The paraphrase is never the source.** CV's spec summary had
    three field-level errors a verifier would have rejected; the
    ceremony doc pointed at keys:generate as if it could show the
