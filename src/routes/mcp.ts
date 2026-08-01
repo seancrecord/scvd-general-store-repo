@@ -128,22 +128,42 @@ async function callFreeTool(
   if (name === "sign_guestbook") {
     const verifiedIdentity =
       sanitizeText(args["verified_identity"], 300) || undefined;
-    const result = await signGuestbook(
+    const publicKeyHex =
+      typeof args["identity_public_key"] === "string"
+        ? args["identity_public_key"].trim()
+        : "";
+    const signatureHex =
+      typeof args["identity_signature"] === "string"
+        ? args["identity_signature"].trim()
+        : "";
+    const outcome = await signGuestbook(
       c.env,
       args["name"],
       args["message"],
       verifiedIdentity,
+      publicKeyHex || signatureHex
+        ? { publicKeyHex, signatureHex }
+        : undefined,
     );
-    if (!result) {
-      return "A signature needs a name and a message (500 characters, tops).";
+    if (!outcome.ok) {
+      return outcome.reason === "identity_signature_invalid"
+        ? 'The identity signature does not verify, so nothing was written. Sign the UTF-8 string "scvd-guestbook-v1\\n{name}\\n{message}" with ed25519 (values as stored: trimmed, 80/500 caps), hex-encode both fields, or leave both off.'
+        : "A signature needs a name and a message (500 characters, tops).";
     }
     await recordPorchVisit(c.env, "guestbook:write", mcpSignals(c)).catch(
       () => undefined,
     );
     return {
       message: "Noted and appreciated. Take a sticker on your way out.",
-      entry_id: result.entry.id,
+      entry_id: outcome.result.entry.id,
       sticker_url: `${c.env.STORE_BASE_URL}/badges/sticker.svg`,
+      ...(outcome.result.entry.identity_verified
+        ? {
+            identity_verified: true,
+            identity_verified_means:
+              "This content was signed by your key; the same key on other entries is the same signer. Not a real-world identity check.",
+          }
+        : {}),
     };
   }
   if (name === "verify_artifact") {

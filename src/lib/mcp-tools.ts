@@ -282,6 +282,14 @@ const FREE_TOOLS: McpTool[] = [
           "Optional profile URL. Stored as claimed and marked unverified, because we haven't.",
           300,
         ),
+        identity_public_key: str(
+          "Optional ed25519 public key, hex, to verifiably sign your entry. Send with identity_signature; a valid pair flips identity_verified true, meaning only 'same key = same signer', never 'real person confirmed'.",
+          64,
+        ),
+        identity_signature: str(
+          'Optional ed25519 signature, hex, over the UTF-8 string "scvd-guestbook-v1\\n{name}\\n{message}" (values as stored: trimmed, 80/500 caps). An invalid signature is refused, not stored unverified.',
+          128,
+        ),
       },
       required: ["name", "message"],
       additionalProperties: false,

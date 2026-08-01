@@ -282,8 +282,16 @@ export interface GuestbookEntry {
   date: string;
   /** A profile URL the visitor offered. Stored as claimed, never checked. */
   verified_identity?: string;
-  /** Always false until the keeper builds a verifier. Honest labeling. */
+  /**
+   * True ONLY via the signing path: the entry's content verified
+   * against identity_public_key at submission. The meaning is narrow —
+   * "this content was signed by this key, and the same key across
+   * entries is the same signer" — never "a real-world person was
+   * confirmed". A verified_identity URL alone stays false, as before.
+   */
   identity_verified?: boolean;
+  /** The ed25519 key (hex) that signed this entry, when one did. */
+  identity_public_key?: string;
 }
 
 export interface WaitlistEntry {
