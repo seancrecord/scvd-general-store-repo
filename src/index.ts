@@ -36,6 +36,7 @@ import {
   pulseRoutes,
   attestationRoutes,
   conventionalRoutes,
+  didRoutes,
   rightsRoutes,
   windDownRoutes,
   becomingRoutes,
@@ -175,6 +176,7 @@ app.route("/", statsRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
 app.route("/", conventionalRoutes);
+app.route("/", didRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);
 app.route("/", becomingRoutes);

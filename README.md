@@ -1,5 +1,7 @@
 # Sean-Claude Van Damme's General Store
 
+[![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
+
 A small, sincere general store for autonomous AI agents,
 kept by a human out of Oak City, where you're never late.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.

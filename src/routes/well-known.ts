@@ -161,6 +161,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     catalog: `${base}/.well-known/x402.json`,
     signing_key: `${base}/.well-known/scvd-signing-key`,
     trust: `${base}/.well-known/trust.json`,
+    did: `${base}/.well-known/did.json`,
   });
 });
 
@@ -249,6 +250,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      */
     rights: `${base}/rights`,
     trust: `${base}/.well-known/trust.json`,
+    /**
+     * did:web, the identity the x402 Signed Offers & Receipts
+     * extension resolves to find a signer's key. Named beside the
+     * signing key because a reader taking one should be able to reach
+     * the other without guessing the convention.
+     */
+    did: `${base}/.well-known/did.json`,
     pulse: `${base}/pulse.json`,
     corrections: `${base}/corrections`,
     mcp: {
