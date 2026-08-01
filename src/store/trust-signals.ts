@@ -110,6 +110,23 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That this store's MCP server was auto-indexed by a third-party directory that crawled it without being asked. Unclaimed, and it mirrors the repository README. Not an endorsement and not an audit: an index entry means somebody's crawler found us and filed us.",
   },
   {
+    url: "https://index.projectnanda.org/agents",
+    registry: "Project NANDA Index (MIT)",
+    confirmed: "2026-08-02",
+    /**
+     * MIT's agent index — the "DNS of the agentic web" — where an agent
+     * publishes an Agent Facts file (endpoint, capabilities, provenance)
+     * under a handle. Recorded at the resolution the keeper confirmed by
+     * hand: that the store is listed. The handle and any verification
+     * flag are DELIBERATELY not asserted here because they were not
+     * confirmed against the live entry, and a guessed handle or an
+     * invented "verified" status in a trust document is the exact defect
+     * this array's own rules exist to prevent. Sharpen when confirmed.
+     */
+    what_it_proves:
+      "That this store published an Agent Facts entry in MIT's Project NANDA index, a public agent directory that resolves a handle to an endpoint and provenance. Not an endorsement and not an audit: a directory publication proves the store declared itself and was indexed, nothing about the goods or the operator.",
+  },
+  {
     url: "https://agentidentityregistry.org",
     registry: "Agent Identity Registry (AIR) — AIR-BYYP-0MQC-TAKR",
     confirmed: "2026-08-01",
