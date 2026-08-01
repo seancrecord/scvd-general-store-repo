@@ -54,8 +54,18 @@ export function priceTiersUsdc(item: MenuItem): number[] {
   if (item.pricing !== "pay_what_it_deserves") {
     return [item.price_usdc];
   }
+  /**
+   * ROUNDED TO USDC's OWN RESOLUTION, NOT TO CENTS. Cent rounding sat
+   * here while the shelf's floor price was $0.004 — safe only because
+   * every sub-cent item happens to be fixed-price, which made the menu
+   * composition the only guard on the till's arithmetic. The day a
+   * sub-cent shelf went pay-what-it-deserves, its tiers would have
+   * collapsed to $0.00. Found in the 2026-08-01 scale walk; same
+   * defect shape as the conversion rate that rounded 1/7892 to zero.
+   * Six decimals is atomic USDC: exact for anything that can settle.
+   */
   return PWID_TIER_MULTIPLIERS.map(
-    (multiplier) => Math.round(item.price_usdc * multiplier * 100) / 100,
+    (multiplier) => Math.round(item.price_usdc * multiplier * 1e6) / 1e6,
   );
 }
 
@@ -494,5 +504,13 @@ export interface SettledPayment {
 
 export function tipFromPaid(paidUsdc: number, minimumUsdc: number): number {
   const tip = Math.max(0, paidUsdc - minimumUsdc);
-  return Math.round(tip * 100) / 100;
+  /**
+   * Atomic-USDC resolution, not cents. Cent rounding here would book
+   * a $0.004 tip as zero and a $0.005 tip as a full cent — one
+   * understates the books and the other inflates them, and the
+   * inflating direction is the one rule 13 exists to keep impossible.
+   * Latent until a sub-cent shelf takes tips; fixed before it could
+   * go live rather than after it had.
+   */
+  return Math.round(tip * 1e6) / 1e6;
 }

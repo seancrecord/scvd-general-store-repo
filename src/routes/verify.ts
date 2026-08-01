@@ -431,7 +431,26 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     }
   }
 
-  return c.json({ valid: false, error: VOICE.certNotFound }, 404);
+  /**
+   * THE HONEST 404, WITH THE ONE CAVEAT THAT STOPS IT LYING. KV writes
+   * reach the minting region immediately and every other region within
+   * about a minute — and this store now hands out signed receipts AT
+   * SETTLEMENT TIME, inviting counterparties to verify them seconds
+   * later from wherever they run. To that reader, a propagation 404 is
+   * indistinguishable from "this artifact is fake," which is the worst
+   * possible misreading of a delay. So the not-found says so: recent
+   * ids may still be travelling, and a retry costs nothing. Found in
+   * the 2026-08-01 scale walk, made urgent by the offer-receipt ship.
+   */
+  return c.json(
+    {
+      valid: false,
+      error: VOICE.certNotFound,
+      freshly_minted_note:
+        "If this id was issued within the last minute, the record may still be propagating between regions — a just-minted artifact can 404 here briefly without being any less real. Verification is free and unlimited; try again in a minute before concluding anything.",
+    },
+    404,
+  );
 });
 
 verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
