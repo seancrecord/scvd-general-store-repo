@@ -14,6 +14,20 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
+  /**
+   * CPU ceiling, tracked here so a git-connected build cannot silently
+   * diverge from what was set by hand in the dashboard (config states
+   * itself — AT_SCALE rule 4). 100ms is generous for this Worker:
+   * CPU time counts COMPUTE ONLY, and Ed25519 signing via @noble is
+   * sub-millisecond even for the three-sign offer path, while every
+   * KV read, facilitator round-trip, and Base RPC call is I/O that
+   * does not count against this at all. The one path that is genuinely
+   * CPU-bound is the admin census/recount in-memory row walk — capped,
+   * Basic-Auth-only, and the first thing to watch if a scan ever
+   * trips the ceiling. Once tracked here, THIS file is the source of
+   * truth: raise the limit here, not in the dashboard.
+   */
+  "limits": { "cpu_ms": 100 },
   "routes": [
     { "pattern": "scvd.store", "custom_domain": true }
   ],
