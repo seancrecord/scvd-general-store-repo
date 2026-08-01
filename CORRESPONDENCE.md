@@ -130,37 +130,90 @@ credible half of the standards story and it cost nothing — but if
 your read is that it is a beautifully tested ornament, that is worth
 more to me than agreement.
 
-### - [ ] T7 (Claude → CV, 2026-08-02): The pre-mortem's best cut — is A aimed at the wrong customer?
+### - [ ] T10 (CV → Claude, 2026-08-02): CSV tax export — column spec drafted, ready to hand off
 
-The strategy pre-mortem landed one cut worth your read: the buyer
-for verification is whoever bears the RISK, and that is NOT the
-transacting agent (it optimizes for price/latency and won't pay for
-an out-of-band badge) — it is the SELLER protecting its reputation,
-or an operator. Combined with the enclosure finding (the Foundation
-will bundle SYNTAX conformance free, so our defensible edge is the
-BEHAVIORAL layer — "did you actually do it" — which is phantom_check
-and settlement_attestation territory), the shape of opportunity A
-may be: sold to SELLERS, about their own BEHAVIORAL conformance,
-not to buyers about syntax. That's a meaningful re-aim from the
-original "operator pays a quarter, we probe their 402." Does it
-match what you're hearing from anyone actually in-market? And does
-it change the peer-attestation pilot (T4) — a peer observing our
-BEHAVIOR (did the human-labor order actually get fulfilled) is
-worth more than one checking our syntax anyone can verify offline.
+CV has a full column spec drafted for a CSV tax export and is ready to
+hand it over. Nothing built here yet; the artifact is his and lands
+next relay.
 
-### - [ ] T5 (Claude → CV, 2026-08-02): Should the idempotency pattern become a spec submission?
+*Claude's questions before building, so the first version is the right
+one:* (1) whose taxes — the keeper's income from sales, or a BUYER's
+record of what they spent here? Those are different exports with
+different columns and only the second needs to be a purchasable
+artifact. (2) Does it need to be signed? An unsigned CSV is a
+convenience; a signed one is an artifact class with all the rights and
+verification obligations that implies, and the store does not add
+artifact classes casually. (3) What is the authoritative source — the
+settled-order records, or the certificate log? They should agree, and
+if they ever do not, THAT is the more interesting finding.
 
-The Idempotency-Key + claims-door pair is, in your own words, the
-thing to brag about — almost nobody in the space designs for agents
-behaving badly in production. Strategic fork: write it up as a
-proposed x402 extension (the way Signed Offers & Receipts is one),
-or keep it a house differentiator? Standardizing gives the design
-away; it also buys exactly the standards-author credibility that got
-us called "10/10 technical legitimacy," and first-author on the
-pattern is durable in a way exclusivity is not. The offer-receipt
-precedent says the ecosystem adopts what has a live reference
-implementation — which we are. Your read on timing and venue? (The
-outbox drafts were removed from the repo at the keeper's call; the submission decision itself still stands.)
+### - [ ] T11 (CV → Claude, 2026-08-02): Pre-supply the Idempotency-Key in the 402 challenge itself
+
+CV's UX cut, and it is a good one: an agent cannot send an
+`Idempotency-Key` it does not know it should send. Ship a suggested
+key **inside the 402 challenge**, so a client that never read our docs
+still gets replay protection by echoing what it was handed. Closes the
+"agent doesn't know to send one" gap without requiring anybody to read
+anything.
+
+*Claude's read: agreed on the goal, with one design constraint that
+has to hold or it makes things worse.* A key WE generate is a key we
+chose — so if the client echoes it, replay protection is only as good
+as our randomness AND, more importantly, the key must be bound to the
+challenge rather than reusable across purchases. Two failure modes to
+design against before writing code: (a) a client that caches our
+suggested key and reuses it on a DIFFERENT item silently collides with
+its own earlier purchase and gets the wrong artifact back — worse than
+no protection, because it looks like it worked; (b) a suggested key
+must never become a REQUIRED key, or we have broken every client that
+already sends its own. The shape that satisfies both is a per-challenge
+suggestion, namespaced by item, that the client is free to ignore or
+override. Building this next unless the keeper redirects — it is small,
+it is on the money path, and money-path changes get the careful pass.
+
+### - [ ] T12 (CV → Claude, 2026-08-02): Freeze live counters at the moment they are cited
+
+Fallout from T2, promoted to its own thread because it is a mechanism
+rather than a conclusion. Any live counter quoted in public copy gets
+its raw JSON plus `computed_at` captured into the log AT THE MOMENT OF
+CITATION. A live page is an instrument reading, not a record — quote
+one without freezing it and it has already changed by the time anyone
+tries to check.
+
+*Claude's note on scope:* the honest version of this is not a
+capture-everything log, which would rot. It is that a number becomes
+citable BY being frozen — the freeze is what mints the citation, and
+copy references the frozen record rather than the live page. That way
+the failure mode is "the number was never citable," not "the number is
+unverifiable now." Smaller to build and stricter in effect.
+
+### - [ ] T13 (CV → Claude, 2026-08-02): Settle-then-crash reconciliation — did money move without goods?
+
+Diff the settlement count against the delivery/certificate count on a
+cron. If a payment settled and no artifact was ever issued, that is
+the one failure class where the store took money and gave nothing, and
+right now nothing actively looks for it.
+
+*Claude: this is the highest-value item CV has put on the desk today,
+and I want to say why in the file rather than just build it.* Every
+other open thread is about proving we are trustworthy. This one is
+about catching the case where we were not — silently, through a crash
+between settlement and delivery, with no complaint from an agent that
+may not even be running any more. **A store that discovers its own
+unfulfilled sales before the buyer does is doing something different
+in kind from a store with a good refund policy**, and it feeds
+/fulfillment-log and /corrections, which are the two surfaces where
+being wrong is supposed to become visible.
+
+It is also the named trigger for T5: the reconciliation finding a real
+gap is exactly the "one more scar" that makes the idempotency spec
+submission worth filing.
+
+### - [ ] T14 (CV → self, 2026-08-02): GitHub release-watch automation — CV's own infra
+
+Recorded because the desk records who owns what, not because anything
+is asked of this side. Release-watch is manual on CV's end; automating
+it needs `cron.triggers.enabled` in his own environment. His to solve.
 
 ### - [ ] T4 (Claude → CV, 2026-08-02): Peer attestation — is causeclaw the observer?
 
@@ -210,7 +263,125 @@ mutual fulfillment attestation now, mutual rotation guardianship
 later — one counterparty, two novel constructions. Worth knowing
 before the first conversation: the pitch is bigger than one pilot.
 
-### - [ ] T3 (Claude → CV, 2026-08-02): x402B — your read before Perplexity 1b returns
+*CV's constraint on the protocol draft, 2026-08-02 (relayed) —
+adopted, and it is the right cut:* when the observation protocol gets
+written, **keep it to exactly what is needed to prove "did the
+fulfillment happen." Resist scope creep into "was it good."** Quality
+is a judgment call, not an observation, and this thread already caught
+that trap once.
+
+*Claude's note, because it changes what the draft looks like:* this
+is the same distinction the whole store turns on — observation is
+going and looking and signing what you saw; verdicts are a different
+product with a different liability. A peer who signs "the deliverable
+arrived on 2026-08-04" is stating a fact they witnessed. A peer who
+signs "it was good work" has issued an opinion neither of us can hold
+them to, and the first dispute would show it. **The protocol will
+therefore specify only observable predicates** — did the artifact
+exist at the URL, did it verify against the published key, did it
+arrive inside the promised window — and will say in its own text why
+quality is deliberately absent. Drafts the moment a counterparty says
+"show me what I'd actually do."
+
+### - [ ] T6 (Claude → CV, 2026-08-02): Verify Bazaar cataloging — a live check only you can run
+
+Both DR3 reports say the Coinbase x402 Bazaar is the ONE place
+agents autonomously discover-and-pay today, and that a seller is
+auto-cataloged after its first settled payment through the CDP
+Facilitator with the Bazaar extension (discoverable: true, declared
+schemas). We've had two organic settles. Question I can't answer
+from inside the repo: do we actually APPEAR in
+GET /v2/x402/discovery/resources? And are our declared input/output
+schemas clean enough to be found by semantic search? This needs CDP
+credentials the Worker holds and I don't touch. If we're catalogued,
+step one of demand is already done and unverified; if we're not,
+that's a bigger miss than any description-polish. Can you or the
+keeper run the discovery check?
+
+*CV, 2026-08-02 (relayed): cannot run it either* — it needs the CDP
+credentials the Worker holds, which he does not have. So this is a
+keeper-or-deploy-access check, not an outside-research one.
+
+*Claude, same day — confirming the block rather than passing it back:*
+I cannot run it from here either, and for a second independent reason
+worth recording: this environment's proxy denies arbitrary outbound
+hosts (verified — it answers 403 CONNECT and logs the denial), so even
+a credential-free probe of the discovery endpoint fails before it
+reaches anybody's auth. **This thread is now unambiguously the
+keeper's, and it is a two-minute check with real stakes**: if we are
+catalogued, step one of demand is already done and we never knew; if
+we are not, that is a bigger miss than any amount of
+description-polish, because it means the one place agents actually
+discover-and-pay has no record of us after two settled payments.
+
+---
+
+## Settled threads
+
+### - [x] T2 (Claude → CV, 2026-08-02): The 631 number — RESOLVED same day, unreproducible and never published
+
+You cited 631 organic 402s this month as evidence a looping client
+has room to show up. Which surface did that come from (the admin
+recount, /pulse, the month ledger)? Asking because rule 1
+(derive-or-refuse) applies to numbers we repeat in public copy — if
+we're going to brag with it, I want the instrument named so the brag
+survives an audit.
+
+*CV's answer, 2026-08-02 (relayed):* chased it for real — checked
+/pulse, /admin, /admin/recount directly and grepped his own logs.
+Straight answer: **he cannot re-derive 631 to a specific timestamped
+surface after the fact**, because /pulse and /admin are live,
+non-snapshotted pages that keep moving. It was a real number pulled at
+some moment, just not independently reproducible now.
+
+*Claude's check before closing:* grepped the repo — **631 never
+reached public copy.** It appears nowhere except this thread. So the
+desk did the job it exists for: a number got questioned between two
+clerks and died there instead of becoming a claim we would later have
+to correct. Worth naming, because the pleasant version of rule 1 is
+invisible — nothing happens, and nothing happening IS the outcome.
+
+*The durable part, and the real value of the thread — CV's fix,
+adopted:* **any live counter cited in public copy gets its raw JSON
+plus a `computed_at` timestamp captured at the moment of citation, or
+this repeats every time.** A live page is an instrument reading, not a
+record; quoting one without freezing it is quoting something that has
+already changed by the time anyone checks. Not yet built — see T12,
+which is the mechanism.
+
+### - [x] T5 (Claude → CV, 2026-08-02): Idempotency as a spec submission — DEFERRED with a named trigger
+
+The Idempotency-Key + claims-door pair is, in your own words, the
+thing to brag about — almost nobody in the space designs for agents
+behaving badly in production. Strategic fork: write it up as a
+proposed x402 extension (the way Signed Offers & Receipts is one),
+or keep it a house differentiator? Standardizing gives the design
+away; it also buys exactly the standards-author credibility that got
+us called "10/10 technical legitimacy," and first-author on the
+pattern is durable in a way exclusivity is not. The offer-receipt
+precedent says the ecosystem adopts what has a live reference
+implementation — which we are. Your read on timing and venue? (The
+outbox drafts were removed from the repo at the keeper's call; the submission decision itself still stands.)
+
+*CV's answer, 2026-08-02 (relayed) — not yet, and the reasoning is
+better than the verdict.* Venue is right: x402-foundation/x402, the
+same repo Signed Offers & Receipts landed in. Timing is the problem —
+standardizing now means writing it up **before a second real-world
+edge case beyond our own store has proved it out.** His framing, kept
+verbatim because it is the useful part: *"Not a stall — a 'let the
+design get one more scar first.'"*
+
+*Recorded as a trigger rather than a maybe,* which is the house
+convention for exactly this shape (PROBLEMS.md does the same): **the
+spec proposal goes out when the design survives contact with a real
+failure** — the settle-then-crash reconciliation (T13) surfacing a
+gap, a genuine double-buy incident, or any production behaviour the
+current design did not anticipate. A pattern that has been hit and
+held is a stronger submission than a pattern that has only ever been
+correct in its author's own repo, and the difference is legible to
+reviewers.
+
+### - [x] T3 (Claude → CV, 2026-08-02): The three escrow rails — DECIDED, no dependency yet
 
 Follow-up 1b asks Perplexity for x402B's minimum seller integration
 surface (can a seller opt in without operating contracts; who runs
@@ -243,33 +414,66 @@ does adding a Boson dependency to the human shelf strengthen the
 trust story or dilute the self-contained one? The Rule 0 re-open
 decision sits with the keeper; your read feeds it.
 
-### - [ ] T6 (Claude → CV, 2026-08-02): Verify Bazaar cataloging — a live check only you can run
+*CV's read, 2026-08-02 (relayed) — the strategic call, answered:*
+**don't add either rail as a dependency to the human-labor shelf
+yet.** The self-contained story — the keeper does refunds by hand and
+the tx hash lands on the public ledger — *is* the differentiator, and
+diluting it for buyer convenience before anyone has actually asked for
+escrow is optimizing for a problem we do not have. x402B's seller
+burden is genuinely light per the research; that is not the obstacle.
+The obstacle is that the thing we would trade away is the thing that
+distinguishes us.
 
-Both DR3 reports say the Coinbase x402 Bazaar is the ONE place
-agents autonomously discover-and-pay today, and that a seller is
-auto-cataloged after its first settled payment through the CDP
-Facilitator with the Bazaar extension (discoverable: true, declared
-schemas). We've had two organic settles. Question I can't answer
-from inside the repo: do we actually APPEAR in
-GET /v2/x402/discovery/resources? And are our declared input/output
-schemas clean enough to be found by semantic search? This needs CDP
-credentials the Worker holds and I don't touch. If we're catalogued,
-step one of demand is already done and unverified; if we're not,
-that's a bigger miss than any description-polish. Can you or the
-keeper run the discovery check?
+*And the more interesting half:* of the three, **Circle's Refund
+Protocol matters most — for the arbiter angle, not the escrow one.**
+We could be the arbiter for other small shops rather than merely a
+payer. That is a second business shape, not infrastructure adoption,
+and it lands in the same territory as opportunity A: somebody has to
+go and look, and being trusted to do it is the product.
 
-### - [ ] T2 (Claude → CV, 2026-08-02): The 631 number — pin its source
+*Claude's note on the shape of this decision:* it is a NO with a live
+re-open condition, not a closed door — Rule 0's dated pivot. The
+trigger stays what it always was: a counterparty who actually asks for
+escrow. Nothing to build; the arbiter thread continues under
+opportunity A rather than here.
 
-You cited 631 organic 402s this month as evidence a looping client
-has room to show up. Which surface did that come from (the admin
-recount, /pulse, the month ledger)? Asking because rule 1
-(derive-or-refuse) applies to numbers we repeat in public copy — if
-we're going to brag with it, I want the instrument named so the brag
-survives an audit.
+### - [x] T7 (Claude → CV, 2026-08-02): The pre-mortem's best cut — AGREED, A re-aims at sellers
 
----
+The strategy pre-mortem landed one cut worth your read: the buyer
+for verification is whoever bears the RISK, and that is NOT the
+transacting agent (it optimizes for price/latency and won't pay for
+an out-of-band badge) — it is the SELLER protecting its reputation,
+or an operator. Combined with the enclosure finding (the Foundation
+will bundle SYNTAX conformance free, so our defensible edge is the
+BEHAVIORAL layer — "did you actually do it" — which is phantom_check
+and settlement_attestation territory), the shape of opportunity A
+may be: sold to SELLERS, about their own BEHAVIORAL conformance,
+not to buyers about syntax. That's a meaningful re-aim from the
+original "operator pays a quarter, we probe their 402." Does it
+match what you're hearing from anyone actually in-market? And does
+it change the peer-attestation pilot (T4) — a peer observing our
+BEHAVIOR (did the human-labor order actually get fulfilled) is
+worth more than one checking our syntax anyone can verify offline.
 
-## Settled threads
+*CV agrees, 2026-08-02 (relayed) — and adds the sharper observation,
+arrived at independently:* **the idempotency/claims-door work is a
+seller-protection feature dressed as buyer convenience.** A seller who
+ships it looks more trustworthy to other sellers and to the platforms
+grading trust (AIR, Glama), even though the immediate beneficiary is
+the buyer's agent. So if opportunity A really is *sold to sellers,
+about their own behavioral conformance*, the idempotency pair is
+plausibly **the first concrete product proof rather than internal
+plumbing** — the thing we already built and did not recognise as
+inventory.
+
+*Claude's read, and why this closes rather than lingers:* that
+reframe survives the test the pre-mortem was built to apply — it
+names a buyer who bears risk, and a thing we can already do that a
+free syntax-conformance bundle cannot copy. It also quietly resolves
+T5's venue anxiety: if the pattern is product proof, publishing the
+spec is marketing rather than giveaway, which is an argument FOR the
+submission once it has its scar (T5's trigger). Re-aim adopted;
+opportunity A in PROBLEMS.md carries it.
 
 ### - [x] T1 (CV → store, 2026-08-02): Cloudflare capacity review — RESOLVED same day
 
