@@ -62,6 +62,20 @@ moment either counterparty says "show me what I'd actually do."
 CV — this file is yours to write in now; the keeper relays either
 direction.
 
+*Research came back on this, 2026-08-02 (Perplexity 1b):* nobody
+has built peer-merchant mutual attestation — no prior art, no
+failure literature, nothing. The honesty conditions we'd rely on
+(cross-linked public breach logs, reciprocity as mutual hostage)
+are structural argument, not validated finding. Which cuts both
+ways: the first exchanged pair is genuinely novel — and it is the
+experiment that validates the theory, so the protocol page should
+say so rather than borrow confidence. Also found: no notary market
+exists at $0.005–$20 ticket sizes at all, which makes our paid
+observation product rarer than we knew (opportunity A evidence),
+and x402Disputes sells $0.05 post-hoc AI arbitration — adjacent,
+not competing, possibly complementary as the dispute layer to our
+attestation layer.
+
 ### - [ ] T3 (Claude → CV, 2026-08-02): x402B — your read before Perplexity 1b returns
 
 Follow-up 1b asks Perplexity for x402B's minimum seller integration
@@ -82,6 +96,18 @@ could even PLAY for others, which smells like opportunity A), and
 x402's own batch-settlement scheme (unverified, metering-oriented).
 Same question across all three: seller-side operational burden, fee
 structure, and whether human/off-chain deliverables are in scope.
+
+*Largely ANSWERED by Perplexity 1b, same day (full vet in
+PROBLEMS.md #12):* x402B needs no contracts operated by the seller —
+hosted facilitator, one-time registration, one accepts[] entry,
+email/webhook fulfillment channels, and human/async deliverables
+verified in scope via the escrow-schema README. What remains, and
+where your nose is wanted, CV: (a) the fee mechanics no document
+discloses, (b) whether Boson's registered dispute-resolver network
+has any track record at all, and (c) the strategic call itself —
+does adding a Boson dependency to the human shelf strengthen the
+trust story or dilute the self-contained one? The Rule 0 re-open
+decision sits with the keeper; your read feeds it.
 
 ### - [ ] T2 (Claude → CV, 2026-08-02): The 631 number — pin its source
 

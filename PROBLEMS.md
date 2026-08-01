@@ -370,9 +370,78 @@ commitment (shipped) → Path-1 testnet validation (runnable now,
 ~$0) → if validated, a clearly-labeled premium "money stays in your
 wallet until we deliver" tier gated on buyer reputation for larger
 tickets → Circle Refund Protocol pilot for $1–$20 if per-ticket gas
-pencils. Gemini round 3 and Perplexity 1b arbitrate the FinCEN
-contradiction and the x402B seller-surface question before anything
-builds.
+pencils.
+
+**DR1 round 1b (Perplexity follow-up), vetted 2026-08-02 — the
+round that resolved things:**
+
+- **The FinCEN contradiction is RESOLVED: two rulings, not one.**
+  Both earlier reports were right about different documents.
+  FIN-2014-R012 (2014-10-27): the company holding funds WAS money
+  transmission — "not covered by either the payment processor or the
+  integral exemption." FIN-2014-R004: escrow WITH active
+  transaction-management (establishing conditions precedent and
+  validating their discharge) IS exempt as integral. The line:
+  active management of conditions can exempt; bare fund-holding
+  cannot. On HOLDING AN UNSUBMITTED AUTHORIZATION: no ruling on
+  point — the reasoned inference (an unexecuted signature is not
+  "acceptance of currency, funds, or value"; the buyer's balance is
+  untouched throughout) is plausible-but-unconfirmed, and per Rule
+  0's carve-out it gets counsel before operational reliance, not a
+  commit. Ruling quotes are report-cited (fincen.gov bot-blocks our
+  fetches); exact numbers and dates on file.
+- **cancelAuthorization VERIFIED on USDC-on-Base** (the live
+  contract implements it, typehash on file; signable with the same
+  EIP-712 stack agents already run; gas sub-cent, inferred-and-
+  flagged). Race semantics now precise: cancel and submit target
+  the same nonce, first-mined wins, so the kill switch is a
+  MITIGANT needing a time margin, not a last-second guarantee.
+  Path 1 upgraded accordingly: a real, tooled buyer kill switch.
+- **The x402B seller surface, ANSWERED — and it moves a ruling to
+  the keeper's desk.** Per Boson's docs (report-cited) and the
+  x402-escrow-schema README (VERIFIED by us): a seller integrates
+  without operating any contract — Boson runs the Diamond escrow
+  and a hosted facilitator; the seller does a one-time on-chain
+  registration, adds one accepts[] entry, and wires a fulfillment
+  channel (email/webhook among them). Human/async deliverables are
+  IN SCOPE: "physical goods, generated content, gated access
+  credentials, and asynchronous services all have a provable gap
+  between 'funds sent' and 'resource received'" — round 1's
+  digital-only framing was never sourced and is withdrawn. **Open
+  blockers before any pilot:** fee mechanics undisclosed in every
+  retrieved document; the dispute-resolver network's fairness and
+  cost unaudited; and adopting it adds a real dependency on Boson's
+  facilitator uptime — smaller than running escrow ourselves, not
+  zero, and disclosed to buyers if ever adopted. Whether the
+  no-escrow stance gets its dated Rule 0 re-open is now a decision
+  with facts under it, and it is the keeper's.
+- **Peer attestation (T4): nobody has built it.** No prior art
+  exists for peer-merchant mutual-attestation networks — the
+  structural honesty conditions (cross-linked public breach logs;
+  reciprocity as mutual hostage) are argument, not validated
+  finding, and an exchanged pair with a peer would be a genuine
+  first. Also: no professional notary/oracle market takes
+  $0.005–$20 attestation jobs — our observation product appears to
+  be rare-to-unique at this scale (moat evidence for opportunity
+  A). Adjacent commercial find: x402Disputes, $0.05/dispute
+  AI-assisted post-hoc arbitration — dispute resolution, not
+  delivery attestation; track record unverified.
+- **Held-authorization handling, from Stripe's auth/capture prior
+  art, kept as Path-1 design notes:** model every held
+  authorization as an explicit state machine (signed → held →
+  checked → submitted/cancelled/expired) persisted in KV; encrypt
+  at rest; use EIP-3009's own validBefore as the expiry rather
+  than inventing a TTL; idempotent writes throughout; and disclose
+  honestly that Workers+KV is not a PCI vault — the instrument is
+  less sensitive than a card number, the storage is less hardened
+  than Stripe's, both true.
+- **Bibliography delivered in full** (URLs on file in the report),
+  including the official x402 batch-settlement page and the arXiv
+  "Five Attacks on x402" paper — the round-1 unverified column is
+  now largely graduated or superseded.
+
+Gemini round 3 still inbound; the Path-1 testnet experiment and the
+x402B fee/resolver questions are what remain in front of any build.
 
 ### 13. Keeper identity and staked reputation — a decision, not a build
 
