@@ -1,6 +1,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { SELF, env } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
+import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import { guestbookSigningPayload } from "@/services/guestbook";
 import { createOrder, completeOrder } from "@/services/orders";
 import { createRefund, markRefundPaid } from "@/services/refunds";
@@ -10,6 +11,10 @@ import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
 const testEnv = env as unknown as Env;
+
+beforeAll(() => {
+  installFacilitatorMock();
+});
 
 /**
  * THE TRUST-LAYER ADDITIONS OF 2026-08-01, tested the way their
@@ -61,6 +66,30 @@ describe("the standards story, front and center", () => {
     expect(String(vectors["regenerate"])).toContain(
       "generate-conformance-vectors",
     );
+  });
+
+  it("says the wallet-safety story where buyers actually read", async () => {
+    // trust.json carries the block; the 402 itself carries it at the
+    // exact moment a retry loop is born; every MCP buy tool teaches
+    // the retry-safety line in its completion criteria.
+    const trust = await getJson("/.well-known/trust.json");
+    const safety = isRecord(trust["wallet_safety"]) ? trust["wallet_safety"] : {};
+    expect(JSON.stringify(safety)).toContain("Idempotency-Key");
+
+    const res = await SELF.fetch(`${BASE}/api/buy/hello`);
+    expect(res.status).toBe(402);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(isRecord(body["wallet_safety"])).toBe(true);
+    expect(JSON.stringify(body["wallet_safety"])).toContain("no second charge");
+
+    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
+    for (const tool of mcpToolCatalog(BASE).filter((t) =>
+      t.name.startsWith("buy_"),
+    )) {
+      expect(tool.description, tool.name).toContain(
+        "x402/idempotency-key",
+      );
+    }
   });
 
   it("x402.json names the vectors for implementers who land there first", async () => {

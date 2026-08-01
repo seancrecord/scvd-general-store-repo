@@ -4,6 +4,7 @@ import { priceTiersUsdc } from "@/lib/payments";
 import { TAG_CAP } from "@/services/train";
 import { MENU_ITEMS } from "@/store";
 import { GUARANTEE_BLOCK_TEXT } from "@/store/spec";
+import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
 
 /**
@@ -168,12 +169,12 @@ function purchaseInputSchema(item: MenuItem): Schema {
 
 function completionCriteria(item: MenuItem): string {
   if (item.stocked) {
-    return "Completes in one call while stocked: the result carries the deliverable, order_id (already completed), cert_id, and patron_number. A bare shelf refuses honestly before payment terms are issued. Payment rides x402 in _meta['x402/payment'].";
+    return `Completes in one call while stocked: the result carries the deliverable, order_id (already completed), cert_id, and patron_number. A bare shelf refuses honestly before payment terms are issued. Payment rides x402 in _meta['x402/payment']. ${RETRY_SAFETY_MCP_LINE}`;
   }
   if (item.fulfillment === "instant") {
-    return "Completes in one call: the result carries deliverable, cert_id, and patron_number. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data.";
+    return `Completes in one call: the result carries deliverable, cert_id, and patron_number. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. ${RETRY_SAFETY_MCP_LINE}`;
   }
-  return `Completes in one call with an order, not the goods: the result carries order_id and order_url; a human fulfills within ${item.sla_hours ?? 168}h and the completed order carries the deliverable. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data.`;
+  return `Completes in one call with an order, not the goods: the result carries order_id and order_url; a human fulfills within ${item.sla_hours ?? 168}h and the completed order carries the deliverable. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. ${RETRY_SAFETY_MCP_LINE}`;
 }
 
 function priceLine(item: MenuItem): string {

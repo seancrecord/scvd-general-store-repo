@@ -94,6 +94,65 @@ custody other people's funds — that is a hard disqualifier.
 
 ---
 
+## DR PROMPT 1b — Follow-up to the conditional-release report (run after DR1)
+
+Your previous report on conditional release for x402 was vetted
+against primary sources and code. Several findings survived; several
+need depth or correction. Answer ONLY the following, with full source
+URLs for every claim:
+
+1. BIBLIOGRAPHY FIRST: your previous answer cited sources [1]–[26]
+   as bracket numbers; list them all as full URLs with one-line
+   descriptions, because unverifiable citations were excluded from
+   our record.
+2. YOU MISSED cancelAuthorization: ERC-3009 defines an optional
+   cancelAuthorization(authorizer, nonce, v, r, s) letting the
+   signer revoke an unused authorization on-chain. Verify: does the
+   USDC contract ON BASE implement it? What does calling it cost in
+   gas at current Base prices? Is there wallet/SDK tooling an
+   autonomous agent could actually use to call it? Does a revocable
+   delayed-submission authorization change your Path 1 ranking, and
+   how does the buyer-cancels vs. seller-submits race actually
+   resolve on-chain?
+3. THE SELF-OBSERVER FLAW you glossed: an observer commissioned by
+   or affiliated with the seller attesting the seller's own delivery
+   is self-attestation. For a one-person shop's OWN deliveries, who
+   are the viable genuinely-independent observers today? Research:
+   peer-merchant mutual-attestation arrangements (two small
+   operators observing each other's fulfillments — any prior art,
+   any failure analysis), professional notary/oracle networks that
+   would take micro-jobs, and TEE-based attestation services. What
+   are the collusion economics when the observer is a PEER MERCHANT
+   with their own public reputation log?
+4. x402B, the shipping baseline, in depth: what is the MINIMUM
+   integration surface for a seller — can a seller list through
+   x402B without deploying or operating any contract of their own?
+   Who operates dispute resolution and what does it cost per
+   dispute? Fee structure? Does it support HUMAN/off-chain-task
+   deliverables or only the five digital categories? What does the
+   buyer's side require (wallet capabilities, gas)? Bottom line:
+   could a one-person shop OPT INTO x402B as a rail for its $2–$20
+   human-labor items without becoming infrastructure, yes or no,
+   and what exactly is the operational burden?
+5. FinCEN precision: name the exact ruling numbers and quote the
+   operative sentences for (a) the escrow/conditions-precedent
+   arrangement found to BE money transmission, and (b) the
+   payee-agent exemption. Then the question that actually matters to
+   us: does HOLDING an unsubmitted signed payment authorization — a
+   bearer-shaped instrument, never funds — implicate money
+   transmission at all? Any guidance or analysis on point?
+6. Prior art for safely holding authorizations at rest: how do
+   payment processors that hold capture-later authorizations
+   (Stripe-style auth/capture, payment tokens at rest) secure and
+   scope them, and what of that transfers to a Cloudflare Workers +
+   KV architecture?
+
+Output: numbered answers with primary-source URLs inline. Where the
+answer is "no source exists," say that plainly — an honest gap
+placed our last report's best finding.
+
+---
+
 ## DR PROMPT 2 — One key, one human: theft, proof-of-time, and continuity
 
 You are researching cryptographic identity continuity for a

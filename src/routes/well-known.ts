@@ -18,6 +18,7 @@ import { listAlmanacEntries } from "@/services/almanac-store";
 import { SCHEDULING_SIGNALS } from "@/store/spec";
 import { REFUND_POLICY } from "@/store/refund-policy";
 import { STANDARDS_POSTURE } from "@/store/standards";
+import { WALLET_SAFETY } from "@/store/wallet-safety";
 import conformanceVectors from "../../conformance/offer-receipt-vectors.json";
 import {
   DATA_HANDLING,
@@ -93,6 +94,13 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * every surface a diligence pass reads.
      */
     standards: STANDARDS_POSTURE,
+    /**
+     * Beside standards because it is the same argument from the
+     * buyer's side: the store designed for agents behaving badly in
+     * production — the retry loop, the lost session — not just the
+     * happy path a demo needs.
+     */
+    wallet_safety: WALLET_SAFETY,
     /**
      * Absolute, so a reader following this document never has to
      * resolve a relative path against a base it had to guess.

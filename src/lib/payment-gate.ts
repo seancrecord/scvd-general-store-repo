@@ -31,6 +31,7 @@ import {
   storeIdempotent,
   usableIdempotencyKey,
 } from "@/lib/idempotency";
+import { WALLET_SAFETY } from "@/store/wallet-safety";
 import { BASE_NETWORK, DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import type {
@@ -215,6 +216,14 @@ async function enrich402Body(
       sample_verify_url: `${base}/api/verify/${SAMPLE_ARTIFACT_ID}`,
       identity_policy: IDENTITY_POLICY,
     },
+    /**
+     * On the 402 itself because this is the exact moment a retry loop
+     * is born: the agent that mishandles this response is the agent
+     * about to double-fire, and the mechanism that saves its wallet
+     * should be in its hands before the first signature, not in a
+     * guide it never read.
+     */
+    wallet_safety: WALLET_SAFETY,
   };
 }
 
