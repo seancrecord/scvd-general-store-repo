@@ -41,6 +41,7 @@ import {
   livenessRoutes,
   fulfillmentLogRoutes,
   claimsRoutes,
+  anchorLogRoutes,
   rightsRoutes,
   windDownRoutes,
   becomingRoutes,
@@ -62,6 +63,8 @@ import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
 import { recomputeCorrections } from "@/services/reclassify";
 import { assembleDraft } from "@/services/gazette-weekly";
+import { appendAnchor, listAnchors } from "@/services/anchor-log";
+import { runAnchorCron } from "@/services/anchor-submit";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -184,6 +187,7 @@ app.route("/", didRoutes);
 app.route("/", livenessRoutes);
 app.route("/", fulfillmentLogRoutes);
 app.route("/", claimsRoutes);
+app.route("/", anchorLogRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);
 app.route("/", becomingRoutes);
@@ -276,6 +280,29 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     ctx.waitUntil(runHealthChecks(env));
+    /**
+     * THE ANCHOR PASS. Appends at most one entry a day (the interval
+     * is read off the log itself, not a second cron trigger) and tries
+     * to upgrade pending proofs every hour, because a proof becomes
+     * Bitcoin-backed an hour or two after submission and until then it
+     * proves less than it will. Never on the money path, and every
+     * failure inside is already recorded on its own entry — this catch
+     * is for the unexpected kind.
+     */
+    ctx.waitUntil(
+      listAnchors(env)
+        .then((records) =>
+          runAnchorCron(env, records, () => appendAnchor(env)),
+        )
+        .then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Anchor pass failed: ${String(error)}`,
+            }),
+        ),
+    );
     /**
      * THE STANDING CORRECTION, on the clock rather than in a page load.
      * /admin/recount has to stop at a cap because a page that times out

@@ -81,14 +81,24 @@ describe("the trust document answers a diligence check", () => {
     }
   });
 
-  it("names the only two facts on it that are not our own word", async () => {
+  it("names the only facts on it that are not our own word", async () => {
     const body = (await (
       await SELF.fetch(`${BASE}/.well-known/trust.json`)
     ).json()) as {
       independently_checkable: Record<string, string>;
       limit: string;
     };
+    /**
+     * AN EXACT LIST, ON PURPOSE. This block is the one place on the
+     * document that claims a reader does not have to take our word,
+     * so anything added to it has to clear that bar in fact — a
+     * signature checkable with a stranger's own library, a
+     * transaction on Base, a digest timestamped into Bitcoin. Growing
+     * it is a deliberate act with a defence, which is why this
+     * assertion is a whitelist and not a `toContain`.
+     */
     expect(Object.keys(body.independently_checkable).sort()).toEqual([
+      "key_history_over_time",
       "settlement",
       "signatures",
     ]);

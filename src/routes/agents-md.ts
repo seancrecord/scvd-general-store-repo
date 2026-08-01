@@ -77,6 +77,7 @@ artifact any third party can verify without trusting us.
 - Conformance vectors (offer/receipt): ${base}/.well-known/conformance/offer-receipt-vectors.json
 - Free open-source verifier (MIT, zero deps, works on any store's artifacts): https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
 - Issuer liveness beacon: ${base}/.well-known/liveness.json
+- Externally anchored key history: ${base}/.well-known/anchor-log.json (hash chain over the signing-key state, digests timestamped into Bitcoin via OpenTimestamps; proves WHEN a key state was committed, never WHO SHOULD HAVE held it)
 - Responsible disclosure: ${base}/.well-known/security.txt
 
 ## What this store will NOT do

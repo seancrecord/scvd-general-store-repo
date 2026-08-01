@@ -501,6 +501,23 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
       if_this_key_ever_changes:
         "A legitimate handover is announced here BEFORE the new key signs anything, and the announcement is itself signed by the OUTGOING key, served as exact bytes at a verify URL. If you find a new key here that has already issued artifacts, or a handover notice the old key did not sign, that is not a handover — treat it as a compromise. If the old key cannot sign the announcement, there is no legitimate handover available and /corrections will say so rather than one being performed anyway.",
       full_policy: `${c.env.STORE_BASE_URL}/attestation`,
+      /**
+       * THE ADMISSION THIS BLOCK OWES ITS READER, and the first thing
+       * that has ever been able to answer it.
+       *
+       * Everything above is served by us, off a page we control. The
+       * transition chain makes an invented PREDECESSOR impossible
+       * without its signature, but nothing here stops the registry
+       * being quietly rewritten about WHEN. A reader who cached this
+       * key a year ago and came back to a different one has been asked
+       * to take our word about the dates on the change.
+       *
+       * The anchor log is that word committed somewhere we cannot
+       * reach: a hash chain over this exact key state, timestamped into
+       * Bitcoin. Named right here rather than on a page of its own,
+       * because the reader who needs it is the one reading this block.
+       */
+      externally_anchored_history: `${c.env.STORE_BASE_URL}/.well-known/anchor-log.json — everything above is served by us and is editable by us. That log is a hash chain over this key state whose digests are timestamped into Bitcoin via OpenTimestamps, so how far back this registry could quietly have been rewritten is bounded by something outside our control. It proves WHEN a key state was committed and never WHO SHOULD HAVE held it: a thief with this key could timestamp exactly as validly. Forensics, not a defence.`,
     },
     note: "Anything we sign, this key verifies. Hangs by the door for a reason.",
   });

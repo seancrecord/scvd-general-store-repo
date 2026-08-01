@@ -48,8 +48,19 @@ export const STANDARDS_POSTURE = {
     what: "A zero-dependency verifier for x402 Signed Offers & Receipts, did:web identity and key history — MIT, works on ANY store's artifacts with nothing privileged about ours. It keeps the four checks separate (parse, resolve the kid to a key from somewhere other than the artifact, verify the signature, validate the schema) because signature validity and schema validity are not the same check, and a verifier that folds them together accepts a valid signature over a non-conformant payload.",
     honest_limit:
       "It verifies cryptography and shape. It cannot tell you whether a seller actually delivered what it promised — no offline check can, because that is a fact about the world rather than about bytes.",
+    anchored_key_history:
+      "It also takes an OPTIONAL step past offline math: checkAnchoredKeyHistory() reads any issuer's /.well-known/anchor-log.json, RECOMPUTES the whole hash chain from the published snapshots rather than trusting the digests printed on it, and reports when a key first appears and whether a Bitcoin-confirmed entry stands at or above it. Generic by design — an issuer without an anchor log returns available:false, which is information rather than a failure, and nothing about this store is privileged.",
     source:
       "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier",
+  },
+  externally_anchored_key_history: {
+    what: "An append-only hash chain over this store's signing-key state, published in full at /.well-known/anchor-log.json. Each entry commits to the digest of the entry before it, and digests are submitted to OpenTimestamps, which aggregates them into Bitcoin — so one confirmed anchor vouches for the entire history behind it.",
+    why: "A self-hosted key registry is editable after the fact. The transition chain is cryptographic and the git history is third-party timestamped, but neither is immutability. This makes 'this key state existed before block N' a fact about the Bitcoin chain instead of a claim on our own website.",
+    honest_limit:
+      "It proves WHEN, never WHO SHOULD HAVE. Anyone holding this store's key — including a thief — could sign and timestamp exactly as validly. What it buys is a forensic timeline that bounds a compromise window after the fact, not a defence that prevents one. The defence against theft is the succession protocol at /attestation, and it is a separate thing.",
+    pending_vs_complete:
+      "A 'pending' proof is a calendar server's promise and not yet a Bitcoin commitment; it typically confirms within a couple of hours, and a cron upgrades it when it does. The distinction is published per entry rather than smoothed over, because a pending proof genuinely proves less than a complete one.",
+    path: "/.well-known/anchor-log.json",
   },
   conformance_vectors: {
     what: "Deterministic test vectors for the offer-receipt extension: 2 valid artifacts and 3 invalid ones (schema-invalid with a VALID signature, wrong key, tampered payload) — the invalid cases teach a verifier that signature validity and schema validity are separate checks.",

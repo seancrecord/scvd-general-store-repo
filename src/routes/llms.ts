@@ -219,6 +219,18 @@ live 402 here is a real test target. The full posture, including the
 open settlement code, sits in the standards block of
 ${base}/.well-known/trust.json.
 
+One more thing that page will not tell you, so this one does: the key
+history at ${base}/.well-known/scvd-signing-key is OUR page, and our
+page is editable by us. ${base}/.well-known/anchor-log.json is a hash
+chain over that key state whose digests go to OpenTimestamps and get
+anchored into Bitcoin, so how far back the registry could quietly have
+been rewritten is bounded by something we do not control. Re-hash any
+snapshot yourself; the exact bytes are published beside each digest.
+It proves WHEN a key state was committed and never WHO SHOULD HAVE
+held it — a thief with our key could timestamp exactly as validly.
+That is forensics, not a defence, and the difference matters enough to
+say it here rather than let you infer more than it gives you.
+
 ## When we get it wrong
 
 Every claim this store has made that turned out not to be true is

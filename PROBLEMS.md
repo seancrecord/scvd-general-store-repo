@@ -32,9 +32,54 @@ cryptographic: where a second seed lives such that one burglary
 cannot take both. Already filed on /becoming; it is the top of this
 file because everything else assumes the key is ours alone.
 
-### 2. Temporally immutable proof of authorization
+### 2. Temporally immutable proof of authorization — OTS ANCHORING SHIPPED 2026-08-02
 
-Our key registry is self-hosted and mutable. The transition chain is
+**Shipped:** an append-only hash chain over the key state at
+/.well-known/anchor-log.json, with digests submitted to the free
+OpenTimestamps calendars and a cron that upgrades pending proofs to
+Bitcoin-confirmed. Built to the three rules this codebase already
+earned: never on the money path (cron only — no purchase waits on a
+calendar server, no calendar outage fails a sale); store the digest
+BEFORE trying to anchor it (the chain is ours and survives every
+external failure; submission is a separate retryable step recorded on
+the entry); and recomputable by a stranger or it proves nothing (full
+snapshots published in the exact field order they hash in, next to
+the canonical string itself).
+
+The half that makes it more than an ornament: the free verifier now
+RECOMPUTES the chain rather than reading it. `verifyAnchorChain()`
+rebuilds each canonical form from the snapshot's own fields —
+deliberately ignoring the `canonical_form` string the issuer
+published, since a log that prints both can print two different
+things — re-hashes, checks every previous_digest link, and checks the
+sequence for gaps. That catches an edited snapshot, an edited-AND-
+rehashed one (the next entry still commits to the old digest), a
+deleted entry, and a canonical form that isn't the snapshot beside
+it. Tested by lying to it in all four ways, plus the property that
+matters most: one Bitcoin-confirmed entry vouches for the whole
+history behind it, and that inference is WITHDRAWN the instant the
+chain fails to recompute.
+
+Two limits kept in the open, on the route and in the verifier's
+return value. `ots.status` is the ISSUER'S CLAIM — the zero-dependency
+verifier has no Bitcoin header source, so it hands back the proof and
+`ots_status_is_unverified_claim: true` for the caller to settle with
+`ots verify` themselves. And the anchor proves WHEN a key state was
+committed, never WHO SHOULD HAVE held it: a thief with the key
+anchors exactly as validly as we do. It bounds a compromise window
+after the fact; it does not prevent one. That is forensics, not a
+defence, and #1 above is still the entry that matters.
+
+**Owed, and recorded rather than quietly skipped:** no real OTS stamp
+has been made yet — this environment has no outbound network, so
+every calendar interaction so far is a fake fetch in a test. Same
+pattern as the SLSA attestation: the code is tested, the live
+confirmation is owed and will be checked on the first cron run in
+production. Rekor is designed for but not built; OTS is the durable
+anchor and the one that closes the gap, Rekor was the fast
+corroborating log.
+
+*Original entry, kept:* Our key registry is self-hosted and mutable. The transition chain is
 cryptographic (a predecessor cannot be invented without its
 signature) and the public git history is third-party-timestamped and
 tamper-evident — but none of that is immutability, and the spec
@@ -1122,6 +1167,27 @@ designed for a key-liveness/registry lookup only we can answer, which
 depends on the OTS/Rekor anchoring in #2 that has not shipped yet —
 building a hook with nothing behind it would be the ornament this
 ledger exists to prevent. Next build closes it.
+
+**Update 2026-08-02 — the live-authority hook is now CLOSED, and it
+closed differently than the red team framed it.** `checkAnchoredKeyHistory()`
+takes a did:web and a key and answers when that key first appears in
+the issuer's anchored history and whether a Bitcoin-confirmed entry
+stands at or above it — which is exactly the "was this key authorized
+AT THE TIME" question offline math cannot reach.
+
+The framing that changed: the red team wanted the hook to be a lookup
+ONLY WE CAN ANSWER, so the fork becomes the funnel. We built it
+GENERIC instead. It reads any issuer's /.well-known/anchor-log.json,
+nothing about ours is privileged, and an issuer without one returns
+`available: false` rather than failing. That is a deliberate trade of
+lock-in for adoption, and it is the same bet entry 0 makes: the moat
+is OBSERVATION, not a proprietary hook bolted to a public library. A
+verifier that only worked properly against its author's own store
+would be an advertisement, and nobody vendors an advertisement. If
+the ecosystem picks up the shape, our log is one of many it can
+check — and the reason to come back to us was never the lookup.
+
+Still not built: the versioned /try/v1 fixture endpoint.
 
 ### B (original entry)
 

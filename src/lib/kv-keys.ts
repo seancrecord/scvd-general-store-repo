@@ -95,6 +95,8 @@ export const KV_KEYS = {
     `idem:${surface}:${payer}:${keyHash}`,
   /** Single-use claims-door challenge nonce, per wallet address. */
   claimChallenge: (address: string): string => `claim_challenge:${address}`,
+  /** The external-anchor hash chain; keys sort by zero-padded sequence. */
+  anchorLogPrefix: "anchor_log:",
   bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,
   bazaarLedgerPrefix: "bazaar_ext:",
   patronageNote: (month: string): string => `patronage_note:${month}`,

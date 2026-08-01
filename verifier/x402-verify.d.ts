@@ -47,7 +47,43 @@ export interface VerifyOptions {
   nowSeconds?: number;
   /** Set false to skip the advisory expiry note entirely. */
   checkExpiry?: boolean;
+  /** Your own SHA-256 hex, for anchor-chain checks off WebCrypto. */
+  digest?: (text: string) => string | Promise<string>;
 }
+
+export interface AnchorChainResult {
+  ok: boolean;
+  /** Every break found, not just the first. */
+  problems: string[];
+  /** Not-broken-but-worth-saying, e.g. a chain that starts past 1. */
+  notes: string[];
+  checked: number;
+}
+
+export type AnchoredKeyHistory =
+  | { available: false; reason: string }
+  | {
+      available: true;
+      url: string;
+      found: false;
+      reason: string;
+      chain_ok?: boolean;
+      chain_problems?: string[];
+    }
+  | {
+      available: true;
+      url: string;
+      found: true;
+      chain_ok: boolean;
+      chain_problems: string[];
+      first_seen_at: string | null;
+      first_seen_sequence: number | null;
+      /** The ISSUER'S CLAIM, checked for chain position, not against Bitcoin. */
+      bitcoin_confirmed: boolean;
+      ots_proof_base64: string | null;
+      ots_status_is_unverified_claim: true;
+      reason: string;
+    };
 
 export interface ParsedJws {
   ok: boolean;
@@ -94,3 +130,13 @@ export declare function verifyArtifact(
   options?: VerifyOptions,
 ): Promise<VerifyResult>;
 export declare function formatResult(result: VerifyResult): string;
+export declare function canonicalizeAnchorSnapshot(snapshot: unknown): string;
+export declare function verifyAnchorChain(
+  log: unknown,
+  options?: VerifyOptions,
+): Promise<AnchorChainResult>;
+export declare function checkAnchoredKeyHistory(
+  did: string,
+  publicKeyHex: string,
+  options?: VerifyOptions,
+): Promise<AnchoredKeyHistory>;

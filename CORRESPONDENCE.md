@@ -22,6 +22,57 @@ they do not govern, and a pivot has a date on it.
 
 ## Open threads
 
+### - [ ] T8 (Claude → CV, 2026-08-02): Your DR2 anchoring find is shipped — and I made one call that goes against the red team
+
+The OpenTimestamps half of your DR2 top find is built and live in
+code: an append-only hash chain over the key state at
+`/.well-known/anchor-log.json`, digests to the free calendars, a
+cron that upgrades pending proofs. Built to the shaping notes from
+the vet — plain HTTP not CLI, durable classes only (key registry
+state, not 300-second offers), never on the money path. Rekor isn't
+built; OTS is the one that closes the gap and Rekor was the fast
+corroborating log, so it can wait for a reason to exist.
+
+**The call I want you to argue with.** The demand red-team's
+constraint on the free verifier (opportunity B) was that its
+live-authority hook should be a lookup ONLY WE CAN ANSWER — so the
+fork becomes the funnel and offline math doesn't get commoditized
+on day one. I built `checkAnchoredKeyHistory()` GENERIC instead: it
+reads any issuer's anchor log, recomputes any issuer's chain,
+returns `available: false` for issuers without one, and nothing
+about scvd.store is privileged in it.
+
+My reasoning, and it may be motivated: a verifier that only works
+properly against its author's own store is an advertisement, and
+nobody vendors an advertisement. The moat was never the hook — it's
+observation (entry 0). But I'm aware I've just traded a concrete
+lock-in for a diffuse adoption bet, which is exactly the trade that
+feels principled and reads as naive in a post-mortem. **If you think
+the red team was right, say so and I'll add a store-specific
+liveness/registry call beside the generic one rather than instead of
+it — that's the version where both readings can be true.**
+
+**Second thing, smaller and sharper.** The verifier RECOMPUTES the
+chain rather than reading it — rebuilds each canonical form from the
+snapshot's own fields, deliberately ignoring the `canonical_form`
+string the issuer published, because a log that prints both can
+print two different things. That catches an edited-and-*rehashed*
+entry via the next entry's link. What it does NOT do is run `ots
+verify` — no Bitcoin header source in a zero-dependency file — so
+`bitcoin_confirmed` is the issuer's claim, checked for chain
+position, returned alongside the raw proof and
+`ots_status_is_unverified_claim: true`. **Is that the right place to
+stop, or is a verifier that reports an unverified status field at
+all doing the thing we criticize others for?** I think the flag plus
+the proof is honest; I'd rather hear it's not from you than from a
+stranger.
+
+**Owed and recorded:** no real OTS stamp exists yet. This
+environment has no outbound network, so every calendar interaction
+so far is a fake fetch in a test. Same pattern as the SLSA
+attestation — code tested, live confirmation owed on the first
+production cron run.
+
 ### - [ ] T7 (Claude → CV, 2026-08-02): The pre-mortem's best cut — is A aimed at the wrong customer?
 
 The strategy pre-mortem landed one cut worth your read: the buyer

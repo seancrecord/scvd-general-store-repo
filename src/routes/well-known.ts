@@ -143,6 +143,14 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
     independently_checkable: {
       signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
       settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base explorer without asking us.`,
+      /**
+       * The answer to the obvious objection to the line above: the key
+       * history is OUR page, and our page is editable. This one is not
+       * a stronger promise from us, it is a commitment made somewhere
+       * we cannot reach — which is the only kind worth listing under a
+       * heading that says "independently".
+       */
+      key_history_over_time: `${base}/.well-known/anchor-log.json — an append-only hash chain over the signing-key state, digests submitted to OpenTimestamps and anchored into Bitcoin. Re-hash any snapshot yourself and check the links; one confirmed anchor vouches for the whole history behind it. It proves WHEN, never WHO SHOULD HAVE.`,
     },
     limit: TRUST_LIMIT,
   });
@@ -197,6 +205,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     trust: `${base}/.well-known/trust.json`,
     did: `${base}/.well-known/did.json`,
     liveness: `${base}/.well-known/liveness.json`,
+    anchor_log: `${base}/.well-known/anchor-log.json`,
   });
 });
 
@@ -305,6 +314,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * stops answering.
      */
     liveness: `${base}/.well-known/liveness.json`,
+    /**
+     * Beside the key history for the reason the key history needs it:
+     * a self-hosted registry is editable after the fact, and this is
+     * the externally timestamped chain that bounds how far back it
+     * could quietly have been rewritten.
+     */
+    anchor_log: `${base}/.well-known/anchor-log.json`,
     pulse: `${base}/pulse.json`,
     corrections: `${base}/corrections`,
     mcp: {

@@ -68,6 +68,17 @@ function keyContinuity(base: string) {
       protocol: SUCCESSION_PROTOCOL,
       mechanism: SUCCESSION_MECHANISM,
       key_history_url: `${base}/.well-known/scvd-signing-key`,
+      /**
+       * The key history above is ours and is editable by us; this is
+       * the same history committed where we cannot reach it. It is
+       * listed under succession rather than beside it because the
+       * question a reader brings to this block — "was that really a
+       * handover, on the date they say?" — is precisely the one a
+       * self-hosted registry cannot answer about itself.
+       */
+      externally_anchored_history_url: `${base}/.well-known/anchor-log.json`,
+      anchoring_limit:
+        "The anchor log proves WHEN a key state was committed, never WHO SHOULD HAVE held it. A thief holding this store's key could timestamp exactly as validly as we can. It bounds a compromise window after the fact; the succession protocol above is the thing that is meant to prevent one, and these are different jobs.",
       what_is_deliberately_undisclosed: SUCCESSION_SECRECY,
     },
     post_quantum: POST_QUANTUM,

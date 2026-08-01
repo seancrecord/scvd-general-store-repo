@@ -58,6 +58,13 @@ imports), and a green test suite can still fail the real deploy.
   it 500s instead of 402ing (a recurring gotcha).
 - Test the instrument, not just the output — a null result from a
   probe that cannot run is not evidence of absence (`AT_SCALE.md` rule 5).
+- KV persists across tests in a file. A spec over an append-only
+  surface (the anchor log, the porch counters) clears its own prefix in
+  `beforeEach`, or it passes alone and fails in the suite.
+- A tamper-evidence claim is tested by TAMPERING, not by checking the
+  happy path twice. `test/verifier-anchor.spec.ts` is the pattern: edit
+  a snapshot, edit-and-rehash one, delete an entry, and desynchronize
+  the published canonical form from the snapshot beside it.
 
 ## Security constraints (hard)
 

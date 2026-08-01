@@ -373,6 +373,316 @@ export async function verifyArtifact(jws, options = {}) {
   return { ok, checks, header: parsed.header, payload: parsed.payload, kind };
 }
 
+/**
+ * OPTIONAL: check a key against an issuer's externally anchored key
+ * history.
+ *
+ * Offline verification answers "did this key sign this?". It cannot
+ * answer "was this key the issuer's key at the time, and can the
+ * issuer prove they did not rewrite that later?" — because a
+ * self-hosted key registry can be edited after the fact.
+ *
+ * Some issuers publish an append-only hash chain of their key state at
+ * /.well-known/anchor-log.json and submit its digests to
+ * OpenTimestamps, which anchors them into Bitcoin. Where that exists,
+ * this reads it and tells you when the key first appears and whether
+ * that entry's timestamp is Bitcoin-confirmed or still pending.
+ *
+ * GENERIC BY DESIGN. Any issuer can publish this shape; nothing here
+ * is specific to whoever wrote this library. An issuer without one
+ * simply returns `available: false`, which is information rather than
+ * a failure — most do not have one, and that is the honest state of
+ * the ecosystem today.
+ *
+ * WHAT IT STILL DOES NOT PROVE: an anchor proves WHEN a key state was
+ * committed, never WHO SHOULD HAVE held it. A thief with the key could
+ * anchor too. This bounds a compromise window; it does not prevent one.
+ */
+export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
+  if (typeof did !== "string" || !did.startsWith("did:web:")) {
+    return { available: false, reason: "not a did:web identifier" };
+  }
+  const wanted = String(publicKeyHex ?? "")
+    .replace(/^0x/, "")
+    .toLowerCase();
+  if (wanted.length === 0) {
+    // Without this guard an empty key would match an entry that simply
+    // omitted the field, and the function would answer "found" to a
+    // question nobody asked.
+    return { available: false, reason: "no public key given to look for" };
+  }
+  const url = anchorLogUrlFor(did);
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+  if (!fetchImpl) {
+    return { available: false, reason: "no fetch available" };
+  }
+  let log;
+  try {
+    const response = await fetchImpl(url);
+    if (!response.ok) {
+      return {
+        available: false,
+        reason: `no anchor log at ${url} (HTTP ${response.status})`,
+      };
+    }
+    log = await response.json();
+  } catch (error) {
+    return {
+      available: false,
+      reason: `anchor log unreachable: ${String(error)}`,
+    };
+  }
+
+  const entries = Array.isArray(log?.entries) ? log.entries : [];
+  if (entries.length === 0) {
+    return { available: true, url, found: false, reason: "anchor log is empty" };
+  }
+
+  // Recompute the chain BEFORE reading anything off it. An unverified
+  // chain is just a web page making claims about itself.
+  const chain = await verifyAnchorChain(log, options);
+
+  const matches = entries
+    .filter((entry) => snapshotNamesKey(entry?.snapshot, wanted))
+    .sort((a, b) => sequenceOf(a) - sequenceOf(b));
+  if (matches.length === 0) {
+    return {
+      available: true,
+      url,
+      found: false,
+      chain_ok: chain.ok,
+      chain_problems: chain.problems,
+      reason:
+        "this key does not appear anywhere in the issuer's anchored key history",
+    };
+  }
+
+  const first = matches[0];
+  const firstSequence = sequenceOf(first);
+  /**
+   * A LATER CONFIRMED ENTRY VOUCHES FOR AN EARLIER ONE — but only if
+   * the chain between them actually links, which is why this reads
+   * `chain.ok` rather than taking the log's word. Each entry commits
+   * to the digest before it, so one Bitcoin-confirmed digest at
+   * sequence N puts every entry at or below N on the wrong side of
+   * rewriting. With a broken chain that inference is void, and we
+   * fall back to demanding the matching entry be confirmed itself.
+   */
+  const voucher = entries
+    .filter((entry) => entry?.ots?.status === "complete")
+    .filter((entry) =>
+      chain.ok
+        ? sequenceOf(entry) >= firstSequence
+        : sequenceOf(entry) === firstSequence,
+    )
+    .sort((a, b) => sequenceOf(a) - sequenceOf(b))[0];
+
+  return {
+    available: true,
+    url,
+    found: true,
+    chain_ok: chain.ok,
+    chain_problems: chain.problems,
+    first_seen_at: first?.snapshot?.taken_at ?? null,
+    first_seen_sequence: Number.isFinite(firstSequence) ? firstSequence : null,
+    bitcoin_confirmed: Boolean(voucher),
+    /**
+     * Handed back so the caller can settle the question themselves.
+     * We do not run `ots verify` — that needs a Bitcoin header source
+     * and this file has no dependencies — so `bitcoin_confirmed` is
+     * the ISSUER'S CLAIM about their own proof, checked for chain
+     * position but not against Bitcoin. The proof is right here;
+     * verifying it is one command and nobody should take our word.
+     */
+    ots_proof_base64: voucher?.ots?.proof_base64 ?? null,
+    ots_status_is_unverified_claim: true,
+    reason: !chain.ok
+      ? `the published chain does not recompute (${chain.problems.length} problem(s)); treat every claim on it as unbacked`
+      : voucher
+        ? "key appears in the chain at or below a Bitcoin-confirmed entry; run `ots verify` on ots_proof_base64 to confirm the timestamp independently"
+        : "key appears in an intact chain, but no entry at or after it is Bitcoin-confirmed yet (a pending proof is a calendar's promise, not a commitment)",
+  };
+}
+
+/** did:web -> the host-rooted anchor-log URL, ports decoded per did:web. */
+function anchorLogUrlFor(did) {
+  const host = did.slice("did:web:".length).split("#")[0].split(":")[0];
+  return `https://${host.replace(/%3A/gi, ":")}/.well-known/anchor-log.json`;
+}
+
+function sequenceOf(entry) {
+  const value = entry?.snapshot?.sequence;
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : Number.NaN;
+}
+
+function snapshotNamesKey(snapshot, wanted) {
+  if (!snapshot || typeof snapshot !== "object") return false;
+  const current = String(snapshot.current_public_key ?? "")
+    .replace(/^0x/, "")
+    .toLowerCase();
+  if (current.length > 0 && current === wanted) return true;
+  const retired = Array.isArray(snapshot.retired_keys)
+    ? snapshot.retired_keys
+    : [];
+  return retired.some((key) => {
+    const hex = String(key?.public_key ?? "")
+      .replace(/^0x/, "")
+      .toLowerCase();
+    return hex.length > 0 && hex === wanted;
+  });
+}
+
+/**
+ * The canonical byte string an anchor snapshot hashes to.
+ *
+ * DERIVED, NEVER READ OFF THE PAGE. A log that publishes both a
+ * snapshot and the string it claims to have hashed can publish two
+ * different things — show you an innocent snapshot and hash a
+ * different one. So this rebuilds the string from the snapshot's own
+ * fields in the documented order and ignores any `canonical_form` the
+ * issuer supplied. Unknown fields are dropped rather than appended,
+ * because a hash that grows with whatever the issuer adds is not a
+ * fixed form.
+ */
+export function canonicalizeAnchorSnapshot(snapshot) {
+  const retired = Array.isArray(snapshot?.retired_keys)
+    ? snapshot.retired_keys
+    : [];
+  return JSON.stringify({
+    version: snapshot?.version,
+    sequence: snapshot?.sequence,
+    taken_at: snapshot?.taken_at,
+    previous_digest: snapshot?.previous_digest ?? null,
+    current_public_key: snapshot?.current_public_key,
+    retired_keys: [...retired]
+      .map((key) => ({
+        public_key: String(key?.public_key ?? ""),
+        retired_on: String(key?.retired_on ?? ""),
+      }))
+      .sort((a, b) =>
+        a.retired_on === b.retired_on
+          ? a.public_key.localeCompare(b.public_key)
+          : a.retired_on.localeCompare(b.retired_on),
+      ),
+    artifacts_issued_total: snapshot?.artifacts_issued_total,
+  });
+}
+
+/** SHA-256 hex. WebCrypto by default; injectable like `verify` is. */
+async function sha256Hex(text, options = {}) {
+  if (typeof options.digest === "function") {
+    return options.digest(text);
+  }
+  const bytes = new TextEncoder().encode(text);
+  const hashed = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(hashed)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Recompute an anchor log end to end: every digest, every link.
+ *
+ * This is the whole reason the anchor log is worth more than a
+ * sentence on a website. Three things are checked, and each catches a
+ * different lie:
+ *
+ *   - REHASH. sha256 of the canonical snapshot must equal the
+ *     published digest. Catches an edited snapshot.
+ *   - LINK. `previous_digest` must equal the previous entry's actual
+ *     recomputed digest. Catches an edited-and-rehashed snapshot,
+ *     because the next entry still commits to the old digest.
+ *   - SEQUENCE. Consecutive published entries must step by one.
+ *     Catches a deleted entry, which the link check alone would miss
+ *     if the deletion took a matched pair with it.
+ *
+ * A log that does not start at sequence 1 is NOT reported as broken —
+ * it may simply be paged or capped — but it is reported, because
+ * "the history before this point was not published here" is
+ * something a reader should be told rather than left to assume.
+ */
+export async function verifyAnchorChain(log, options = {}) {
+  const entries = Array.isArray(log?.entries) ? log.entries : [];
+  const problems = [];
+  const notes = [];
+  if (entries.length === 0) {
+    return { ok: true, problems, notes, checked: 0 };
+  }
+
+  let previousDigest = null;
+  let previousSequence = null;
+  for (const entry of entries) {
+    const snapshot = entry?.snapshot;
+    const sequence = sequenceOf(entry);
+    const label = Number.isFinite(sequence) ? `sequence ${sequence}` : "an entry";
+    if (!snapshot || typeof snapshot !== "object") {
+      problems.push(`${label}: no snapshot published, so nothing can be checked`);
+      previousDigest = null;
+      previousSequence = sequence;
+      continue;
+    }
+    if (!Number.isFinite(sequence)) {
+      problems.push("an entry has no numeric sequence");
+    }
+
+    const canonical = canonicalizeAnchorSnapshot(snapshot);
+    let recomputed;
+    try {
+      recomputed = await sha256Hex(canonical, options);
+    } catch (error) {
+      problems.push(`${label}: could not hash (${String(error)})`);
+      previousDigest = null;
+      previousSequence = sequence;
+      continue;
+    }
+    if (recomputed !== String(entry?.digest ?? "").toLowerCase()) {
+      problems.push(
+        `${label}: published digest does not match the published snapshot`,
+      );
+    }
+    if (
+      typeof entry?.canonical_form === "string" &&
+      entry.canonical_form !== canonical
+    ) {
+      problems.push(
+        `${label}: the issuer's canonical_form is not the snapshot they published`,
+      );
+    }
+
+    if (previousSequence === null) {
+      if (sequence !== 1) {
+        notes.push(
+          `chain starts at sequence ${sequence}; entries before it were not published here`,
+        );
+      }
+      if (sequence === 1 && snapshot.previous_digest !== null) {
+        problems.push("sequence 1: genesis entry claims a previous digest");
+      }
+    } else {
+      if (Number.isFinite(sequence) && sequence !== previousSequence + 1) {
+        problems.push(
+          `gap between sequence ${previousSequence} and ${sequence}: an entry is missing`,
+        );
+      }
+      if (
+        previousDigest !== null &&
+        String(snapshot.previous_digest ?? "").toLowerCase() !== previousDigest
+      ) {
+        problems.push(
+          `${label}: previous_digest does not match the entry before it`,
+        );
+      }
+    }
+
+    previousDigest = recomputed;
+    previousSequence = sequence;
+  }
+
+  return { ok: problems.length === 0, problems, notes, checked: entries.length };
+}
+
 /** A one-line human summary; handy in CI logs. */
 export function formatResult(result) {
   const lines = result.checks.map(
