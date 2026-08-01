@@ -42,6 +42,77 @@ submission says so in its own words. **Trigger for the real thing:**
 a counterparty whose verifier requires it, at which point the fix is
 anchoring registry digests on Base — the store already has the wallet
 and the chain access, and has simply declined chain writes so far.
+*Fix candidate superseded 2026-08-02 by the DR2 finding below:
+OpenTimestamps/Rekor anchoring does the same job for $0, with no
+chain writes from our wallet and no on-chain footprint of ours at
+all — see the DR2 block.*
+
+**DR2 round 1 (Perplexity), vetted 2026-08-02 — covers this entry,
+#1, and #11 as one cluster. Strong report: honest what-this-does-
+NOT-stop sections throughout, bibliography inline.**
+
+- **Top find, and it beats our own filed fix: transparency-log
+  anchoring (OpenTimestamps + Rekor).** Every durable signed
+  artifact's hash anchored into Bitcoin via OTS's free calendar
+  servers (fractions of a cent, batched, verification self-contained
+  once the proof upgrades ~1-2h post-confirmation) and pushed as a
+  hashedrekord to the public Rekor log (seconds, append-only,
+  Merkle-checkpointed). "Signed before date X" becomes checkable
+  against Bitcoin itself instead of our self-hosted registry —
+  gap (b) closed for $0. THE HONEST LIMIT, stated by the report and
+  kept: logs prove WHEN, never WHO-SHOULD-HAVE — a thief timestamps
+  as validly as we do. What it buys against theft is forensics: an
+  undeniable timeline that bounds a compromise window after the
+  fact. *Our shaping notes for a build:* both services take plain
+  HTTP (Workers-compatible; the report's CLI framing adapts to
+  fetch + a cron that upgrades pending OTS proofs); and the
+  highest-value targets are the DURABLE classes — certificates,
+  anchors, handover artifacts, and above all the key-registry/
+  did.json digest per change — not ephemeral 300-second offers,
+  which would be noise.
+- **The FROST insight, sharpened by our vet into the design the
+  report implies but never states: a key hierarchy.** frost-ed25519
+  (Zcash Foundation, RFC 9591, NCC-audited, produces signatures
+  indistinguishable from single-key Ed25519 — verify side unchanged)
+  cannot protect the HOT key: interactive multi-round signing among
+  paper/hardware/successor shares is impossible per-request in a
+  Worker. What it CAN protect is a ROOT: day-to-day artifacts keep
+  the hot Workers key (bounded blast radius), while key-registry
+  updates and succession announcements require the FROST-split root
+  — the thing a thief most wants becomes the thing a stolen Worker
+  secret cannot touch. Costs the honest trade the report names:
+  threshold schemes convert theft risk into loss/availability risk
+  (2 of 3 shares gone = capability gone), and a solo DKG ceremony
+  done wrong can leak the key.
+- **The dead-man distinction, kept verbatim into house thinking:**
+  a dead-man switch protects against operator DISAPPEARANCE, not
+  IMPERSONATION — a thief holding the key keeps the liveness beacon
+  signing on schedule and suppresses the trigger indefinitely. Our
+  beacon already claims only what it can (infrastructure liveness);
+  this names why that restraint was correct.
+- **Time-locked succession: fatal as a standalone,** per the report
+  and our prior read agreeing — the veto key is the same stolen key.
+  Component only, layered on a FROST root or guardians.
+- **Rate-limited co-signer (Nitro/KMS attestation): real but
+  second-step.** Strongest raw protection against gap (a); honest
+  flaws named — a solo admin can eventually redeploy permissive
+  policy, and a rotation carve-out reintroduces a small gap (a).
+  ~$30-50/mo and multi-weekend hardening is disproportionate at
+  current volume; adds AWS to /stack if ever adopted. Deferred with
+  a volume trigger.
+- **Cross-operator guardian networks: NO prior art** — the second
+  "nobody has built this" cross-operator construction this research
+  cycle has surfaced (peer attestation being the first). Notable
+  shape: the SAME peer relationship could carry both functions —
+  mutual fulfillment attestation and mutual rotation guardianship —
+  one counterparty, two trust services, both novel. Logged for T4's
+  orbit; months-not-weekends, social infrastructure first.
+
+*Verdict pending round 2 (Claude DR2 inbound; Gemini demoted to a
+narrowed red-team brief per the new rotation policy).* The build
+candidate to beat: OTS/Rekor anchoring of durable artifacts and
+registry digests — $0, one weekend, closes gap (b), supersedes the
+Base-writes fix. Decision after cross-check.
 
 ### 3. Demand
 

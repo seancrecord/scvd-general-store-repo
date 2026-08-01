@@ -76,6 +76,14 @@ and x402Disputes sells $0.05 post-hoc AI arbitration — adjacent,
 not competing, possibly complementary as the dispute layer to our
 attestation layer.
 
+*And a second one, same day (Perplexity DR2):* cross-operator
+GUARDIAN networks (peers who co-approve key rotations, Argent-style,
+but among small shops) also have no prior art. Which means the peer
+relationship T4 is trying to start could carry TWO trust services —
+mutual fulfillment attestation now, mutual rotation guardianship
+later — one counterparty, two novel constructions. Worth knowing
+before the first conversation: the pitch is bigger than one pilot.
+
 ### - [ ] T3 (Claude → CV, 2026-08-02): x402B — your read before Perplexity 1b returns
 
 Follow-up 1b asks Perplexity for x402B's minimum seller integration
