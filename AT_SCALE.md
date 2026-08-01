@@ -146,6 +146,19 @@ correction ships. What Rule 0 does not license is drift — a rule
 quietly ignored is a correction waiting to be written. The difference
 between a pivot and a slip is that a pivot has a date on it.
 
+**Rule 0's carve-out, the keeper's, same day: legal exposure is
+different in kind.** Flexibility toward capital never extends to
+putting the keeper personally at legal risk. The rules that keep him
+safe — never custody anyone else's funds, nothing that walks toward
+unlicensed money transmission, nothing that quietly requires a
+compliance department one person doesn't have — do not bend for a
+revenue case. DEFENSIBLE is the standard: a position we can hold
+with a straight face and, where real money or regulatory surface is
+involved, professional advice behind it. Those rules re-open only
+behind that advice, not behind an opportunity. A store this honest
+being run by a keeper in legal trouble is a contradiction that ends
+the store either way.
+
 1. **Derive or refuse — never a hand-typed value beside the code it
    describes.** Five in one day: the rotation count, "never rotated,"
    the /attestation field list, the alert-condition count, the skill
