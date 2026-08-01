@@ -122,7 +122,41 @@ the rails a PQ migration would ride, without building the PQ.
 **Watch.** Trigger: a PQ extension landing normatively AND Workers
 crypto supporting the chosen scheme.
 
-### 10. The bus factor
+### 10. Execution verification — "did the action actually happen" (x402 #2648/#2650)
+
+The gap one level below our receipts, named precisely: the
+offer-receipt extension we ship proves THIS SERVER RETURNED 200 to
+this payer for this URL at this time. It does not prove the promised
+off-chain action was carried out. Somebody already answered that
+question with working code — vaaraio's SEP-2828 (action_ref join
+key, RFC 8785 canonicalization, signed execution receipts,
+implementations on PyPI and npm), with serious engagement already in
+the thread (a proposed five-field split: payment_hash / action_ref /
+receipt signature / service_response_hash / world_effect_hash).
+
+**Verdict: solved elsewhere — adopt, don't build.** Racing an open
+spec with existing implementations and traction would be the
+paraphrase defect at project scale. What we DO hold, and it is the
+genuinely additive observation if we ever join that thread: an
+execution receipt is still SELF-SIGNED — the service attesting "I did
+the thing." That is the exact distinction our /attestation taxonomy
+draws between self_signed and third_party_observation, and the
+proposed world_effect_hash field begs precisely the question the
+taxonomy answers: WHO attests the world effect? A self-signed hash of
+it is a claim; an independent observer looking is evidence. This
+store already sells the second half — phantom_check IS independent
+world-effect verification for hire, and settlement_attestation is the
+same shape for chain state. The two schemes compose rather than
+compete: their receipt says "we did it," our observation says
+"somebody disinterested checked."
+
+**Triggers:** SEP-2828 landing normatively in the spec repo → emit
+action_ref-compatible execution receipts for the human-labor orders,
+whose deliverables are exactly the off-chain actions in question.
+A thread contribution only if we have the composition point to offer
+and the keeper wants his name in it — not to advertise.
+
+### 11. The bus factor
 
 One human fulfils the labor shelf, holds the office password, and
 answers the mailbox. /wind-down covers the ending; succession covers
