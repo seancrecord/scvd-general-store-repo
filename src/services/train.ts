@@ -124,10 +124,17 @@ export async function setTagStatus(
     return null;
   }
   found.record.status = status;
-  if (status === "approved") {
+  /**
+   * The display date stamps ONCE and survives status flips. Two real
+   * mistap shapes on a phone at the counter: a double-submit of
+   * approve must not reset "up since" to the second tap, and an
+   * accidental take-down followed by putting it back must not
+   * replace the true first-display date with the date of the
+   * mistake. The wall only shows displayed_at on approved tags, so
+   * keeping it on a held record is bookkeeping, not a claim.
+   */
+  if (status === "approved" && !found.record.displayed_at) {
     found.record.displayed_at = new Date().toISOString();
-  } else {
-    delete found.record.displayed_at;
   }
   await env.ORDERS.put(found.kvKey, JSON.stringify(found.record));
   return found.record;

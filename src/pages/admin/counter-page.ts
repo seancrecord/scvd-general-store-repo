@@ -259,7 +259,11 @@ function trainHtml(tags: TrainTagRecord[]): string {
           : tag.status === "declined"
             ? `<p><em>Held off the wall. Changed your mind?</em></p>
                ${approveForm("Put it up after all")}`
-            : `${declineForm("Take it down (cert untouched)")}`;
+            : `<details>
+                 <summary><small>Take it down…</small></summary>
+                 <p><small>This pulls a LIVE tag off the public wall. The certificate and the original up-since date both survive, and one press puts it back.</small></p>
+                 ${declineForm("Yes, take it down (cert untouched)")}
+               </details>`;
       return `<li>
       <strong>${escapeHtml(tag.id)}</strong> [${tag.status}]
       ${tag.name ? `· ${escapeHtml(tag.name)}` : "· unsigned"}

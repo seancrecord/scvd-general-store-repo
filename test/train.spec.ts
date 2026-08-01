@@ -237,7 +237,34 @@ describe("the counter's train queue is reversible", () => {
     html = await (
       await SELF.fetch(`${BASE}/admin/counter`, { headers: adminAuth })
     ).text();
-    expect(html).toContain("Take it down (cert untouched)");
+    // The live-tag take-down sits behind a fold: two taps, never one.
+    expect(html).toContain("Take it down…");
+    expect(html).toContain("Yes, take it down (cert untouched)");
+  });
+
+  it("stamps the display date once and keeps it through mistaps", async () => {
+    const painted = await paintTag(testEnv, {
+      tag: "date preservation test",
+      certId: "cert_trainrev3",
+      patronNumber: 990005,
+    });
+    const first = await setTagStatus(testEnv, painted.record.id, "approved");
+    const firstDate = first?.displayed_at;
+    expect(firstDate).toBeTruthy();
+    // Double-submit of approve: the up-since date must not move.
+    const again = await setTagStatus(testEnv, painted.record.id, "approved");
+    expect(again?.displayed_at).toBe(firstDate);
+    // Accidental take-down + put-back: the TRUE first-display date
+    // survives, not the date of the mistake.
+    await setTagStatus(testEnv, painted.record.id, "declined");
+    const restored = await setTagStatus(testEnv, painted.record.id, "approved");
+    expect(restored?.displayed_at).toBe(firstDate);
+    // And a declined tag never reaches the public wall regardless.
+    const wall = await listApprovedTags(testEnv);
+    await setTagStatus(testEnv, painted.record.id, "declined");
+    const wallAfter = await listApprovedTags(testEnv);
+    expect(wall.some((t) => t.id === painted.record.id)).toBe(true);
+    expect(wallAfter.some((t) => t.id === painted.record.id)).toBe(false);
   });
 
   it("labels the pending buttons as actions on the wall, not states", async () => {
