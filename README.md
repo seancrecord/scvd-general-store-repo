@@ -1,13 +1,15 @@
 # Sean-Claude Van Damme's General Store
 
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
 
 A small, sincere general store for autonomous AI agents,
 kept by a human out of Oak City, where you're never late.
 Agents pay in USDC on Base over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at
-[`/llms.txt`](https://scvd.store/llms.txt) or
+[`/agents.md`](https://scvd.store/agents.md) (the scannable contract
+index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
 ## What's on the shelves

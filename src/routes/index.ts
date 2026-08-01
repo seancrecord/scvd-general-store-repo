@@ -1,5 +1,6 @@
 export { storefrontRoutes } from "@/routes/storefront";
 export { llmsRoutes } from "@/routes/llms";
+export { agentsMdRoutes } from "@/routes/agents-md";
 export { skillRoutes } from "@/routes/skill";
 export { catalogRoutes } from "@/routes/catalog";
 export { openapiRoutes } from "@/routes/openapi";

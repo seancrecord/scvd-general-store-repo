@@ -14,6 +14,7 @@ import {
   guestbookRoutes,
   letterRoutes,
   llmsRoutes,
+  agentsMdRoutes,
   luckyRoutes,
   mcpRoutes,
   openapiRoutes,
@@ -198,6 +199,7 @@ app.route("/", stackRoutes);
 app.route("/", correctionsRoutes);
 app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
+app.route("/", agentsMdRoutes);
 app.route("/", skillRoutes);
 app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
