@@ -106,7 +106,11 @@ describe("idempotency on the MCP door", () => {
           jsonrpc: "2.0",
           id: 1,
           method: "tools/call",
-          params: { name: "buy_hello", arguments: {}, _meta: meta },
+          params: {
+            name: "buy_signed_record",
+            arguments: { item_id: "hello" },
+            _meta: meta,
+          },
         }),
       });
       return (await res.json()) as Record<string, unknown>;

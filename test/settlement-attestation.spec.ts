@@ -230,7 +230,12 @@ describe("plugged into what already exists, not built beside it", () => {
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
     });
     const listed: unknown = await tools.json();
-    expect(JSON.stringify(listed)).toContain("buy_settlement_attestation");
+    // Since 2026-08-02 the buy tools are grouped into shelves, so the
+    // item is reachable as an item_id on its shelf rather than as its
+    // own tool. The no-hand-wiring property is unchanged: it arrived
+    // there from MENU_ITEMS without anyone naming it twice.
+    expect(JSON.stringify(listed)).toContain("settlement_attestation");
+    expect(JSON.stringify(listed)).toContain("buy_observation");
   });
 
   it("carries the listing spec in the canonical six-field order", async () => {

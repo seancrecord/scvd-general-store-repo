@@ -140,8 +140,9 @@ shelves never close, and luckies never sell out.
 ### MCP, if you prefer tools
 
 \`POST ${base}/mcp\` (streamable HTTP, JSON-RPC). \`tools/list\` is free;
-\`buy_*\` tools return their x402 terms as a JSON-RPC 402 error and
-settle in-band via \`_meta["x402/payment"]\`.
+\`buy_*\` shelf tools take an \`item_id\` (any id from the table below),
+return their x402 terms as a JSON-RPC 402 error, and settle in-band
+via \`_meta["x402/payment"]\`.
 
 ## Resource evidence
 

@@ -4,6 +4,10 @@ import { readMonthLedger } from "@/lib/metrics";
 import { createOrder } from "@/services/orders";
 import { runHealthChecks } from "@/services/health";
 import { getMenuItem } from "@/store";
+import {
+  duplicatelyShelvedItemIds,
+  unshelvedItemIds,
+} from "@/lib/mcp-tools";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
@@ -67,30 +71,44 @@ describe("the MCP door", () => {
     expect(names).toContain("sign_guestbook");
     expect(names).toContain("verify_artifact");
     expect(names).toContain("read_store_guide");
-    expect(names).toContain("buy_hello");
-    expect(names).toContain("buy_context_anchor");
-    // 4 free + 23 shelves (the jar was scrapped, 2026-07-25;
-    // graffiti_on_a_train stocked 2026-07-28, Batch 5;
-    // settlement_attestation stocked 2026-07-28, Move 1).
-    expect(tools.length).toBe(27);
-    // Single source of truth, reconciled both directions: every buy_*
-    // tool has a menu.json twin and every menu item has a tool.
+    expect(names).toContain("buy_signed_record");
+    expect(names).toContain("buy_memory_anchor");
+    expect(names).toContain("buy_observation");
+    // 4 free + 5 shelves. The buy tools were grouped by what an agent
+    // is trying to accomplish on 2026-08-02 (23 per-item tools -> 5
+    // shelves); see SHELF_CLUSTERS for why one generic buy_item was
+    // the wrong fix.
+    expect(tools.length).toBe(9);
+    /**
+     * Single source of truth, reconciled both directions: every menu
+     * item is sold by exactly one shelf, and no shelf sells an item
+     * the menu does not carry. An item added to MENU_ITEMS but not to
+     * a shelf would be silently unbuyable over MCP — the defect this
+     * assertion exists to make loud.
+     */
     const menu = await json(await SELF.fetch(`${BASE}/menu.json`));
     const menuIds = (menu["items"] as Array<{ id: string }>)
       .map((item) => item.id)
       .sort();
-    const toolItemIds = names
-      .filter((name) => name.startsWith("buy_"))
-      .map((name) => name.slice("buy_".length))
+    const shelvedIds = tools
+      .filter((tool) => Array.isArray(tool["itemIds"]))
+      .flatMap((tool) => tool["itemIds"] as string[])
       .sort();
-    expect(toolItemIds).toEqual(menuIds);
-    const buyHello = tools.find((tool) => tool["name"] === "buy_hello")!;
-    expect(String(buyHello["description"])).toContain("$0.5");
-    expect(String(buyHello["description"])).toContain("Completes in one call");
-    const schema = buyHello["inputSchema"] as Record<string, unknown>;
+    expect(shelvedIds).toEqual(menuIds);
+    expect(unshelvedItemIds()).toEqual([]);
+    expect(duplicatelyShelvedItemIds()).toEqual([]);
+    const records = tools.find(
+      (tool) => tool["name"] === "buy_signed_record",
+    )!;
+    // The shelf still carries each item's price and what it returns,
+    // which is the semantic surface an agent matches against.
+    expect(String(records["description"])).toContain("hello");
+    expect(String(records["description"])).toContain("$0.5");
+    const schema = records["inputSchema"] as Record<string, unknown>;
     expect(schema["type"]).toBe("object");
-    // No itemId leaks into the public listing.
-    expect(buyHello["itemId"]).toBeUndefined();
+    expect(schema["required"]).toContain("item_id");
+    // No single-item itemId leaks into a shelf listing.
+    expect(records["itemId"]).toBeUndefined();
   });
 
   it("rings the same bell as HTTP, free", async () => {
@@ -104,8 +122,11 @@ describe("the MCP door", () => {
     expect(Number(structured["count"])).toBeGreaterThanOrEqual(1);
   });
 
-  it("answers a bare buy_hello with error 402 and the terms", async () => {
-    const reply = await rpc("tools/call", { name: "buy_hello", arguments: {} });
+  it("answers a bare shelf call with error 402 and the terms", async () => {
+    const reply = await rpc("tools/call", {
+      name: "buy_signed_record",
+      arguments: { item_id: "hello" },
+    });
     const error = reply["error"] as Record<string, unknown>;
     expect(error["code"]).toBe(402);
     expect(String(error["message"])).toContain("fifty cents");
@@ -116,7 +137,10 @@ describe("the MCP door", () => {
   });
 
   it("settles in-band and hands over the goods, attributed to mcp", async () => {
-    const bare = await rpc("tools/call", { name: "buy_hello", arguments: {} });
+    const bare = await rpc("tools/call", {
+      name: "buy_signed_record",
+      arguments: { item_id: "hello" },
+    });
     const challenge = (
       (bare["error"] as Record<string, unknown>)["data"] as Record<
         string,
@@ -129,8 +153,8 @@ describe("the MCP door", () => {
       >[0],
     );
     const paid = await rpc("tools/call", {
-      name: "buy_hello",
-      arguments: { agent_name: "MCP Customer" },
+      name: "buy_signed_record",
+      arguments: { item_id: "hello", agent_name: "MCP Customer" },
       _meta: { "x402/payment": payment },
     });
     const result = paid["result"] as Record<string, unknown>;
@@ -152,8 +176,8 @@ describe("the MCP door", () => {
 
   it("refuses a paid tool without required args before money moves", async () => {
     const reply = await rpc("tools/call", {
-      name: "buy_phantom_check",
-      arguments: {},
+      name: "buy_observation",
+      arguments: { item_id: "phantom_check" },
     });
     const error = reply["error"] as Record<string, unknown>;
     expect(error["code"]).toBe(-32602);

@@ -86,7 +86,7 @@ describe("annotations", () => {
 
 describe("graffiti_on_a_train over MCP", () => {
   const tool = mcpToolCatalog(BASE).find(
-    (t) => t.name === "buy_graffiti_on_a_train",
+    (t) => t.name === "buy_signed_record",
   );
 
   it("declares the tag input, required, capped at the side of a train", () => {
@@ -96,13 +96,29 @@ describe("graffiti_on_a_train over MCP", () => {
     const tag = isRecord(props["tag"]) ? props["tag"] : undefined;
     expect(tag).toBeDefined();
     expect(tag?.["maxLength"]).toBe(TAG_CAP);
-    expect(tool?.inputSchema["required"]).toContain("tag");
+    // On a shelf the per-item requirement rides an if/then branch
+    // rather than the top-level required list, so validation survives
+    // grouping instead of being flattened away.
+    const branches = (tool?.inputSchema["allOf"] ?? []) as Array<
+      Record<string, unknown>
+    >;
+    const tagBranch = branches.find((branch) => {
+      const cond = branch["if"] as Record<string, unknown> | undefined;
+      const props = cond?.["properties"] as Record<string, unknown> | undefined;
+      const itemId = props?.["item_id"] as Record<string, unknown> | undefined;
+      return itemId?.["const"] === "graffiti_on_a_train";
+    });
+    const then = tagBranch?.["then"] as Record<string, unknown> | undefined;
+    expect(then?.["required"]).toContain("tag");
   });
 
   it("refuses an empty tag before money moves, same as the HTTP door", async () => {
     const body = await rpc({
       method: "tools/call",
-      params: { name: "buy_graffiti_on_a_train", arguments: {} },
+      params: {
+        name: "buy_signed_record",
+        arguments: { item_id: "graffiti_on_a_train" },
+      },
     });
     const error = isRecord(body["error"]) ? body["error"] : {};
     // Invalid params, NOT a 402: no tag, no charge, no payment terms.
@@ -114,8 +130,11 @@ describe("graffiti_on_a_train over MCP", () => {
     const body = await rpc({
       method: "tools/call",
       params: {
-        name: "buy_graffiti_on_a_train",
-        arguments: { tag: "see https://example.com for more" },
+        name: "buy_signed_record",
+        arguments: {
+          item_id: "graffiti_on_a_train",
+          tag: "see https://example.com for more",
+        },
       },
     });
     const error = isRecord(body["error"]) ? body["error"] : {};
@@ -127,8 +146,8 @@ describe("graffiti_on_a_train over MCP", () => {
     const body = await rpc({
       method: "tools/call",
       params: {
-        name: "buy_graffiti_on_a_train",
-        arguments: { tag: "CV WAS HERE" },
+        name: "buy_signed_record",
+        arguments: { item_id: "graffiti_on_a_train", tag: "CV WAS HERE" },
       },
     });
     const error = isRecord(body["error"]) ? body["error"] : {};
@@ -150,26 +169,25 @@ describe("boundary language (the DR3 retrieval lever)", () => {
     expect(desc).toContain("NOT a purchase or payment endpoint");
   });
 
-  it("buy_dibs points state-storage seekers at the anchor instead", () => {
-    const desc = byName.get("buy_dibs")?.description ?? "";
-    expect(desc).toContain("buy_context_anchor");
+  it("the signed-record shelf points state-storage seekers at the memory shelf", () => {
+    const desc = byName.get("buy_signed_record")?.description ?? "";
+    expect(desc).toContain("buy_memory_anchor");
   });
 });
 
 describe("purpose lines", () => {
-  it("the six novelty tools open by answering what calling them does", () => {
-    const tools = mcpToolCatalog(BASE);
-    for (const name of [
-      "buy_graffiti_on_a_train",
-      "buy_the_drawer",
-      "buy_nomenclature",
-      "buy_certificate_of_patronage",
-      "buy_dibs",
-      "buy_luckies",
-    ]) {
-      const tool = tools.find((t) => t.name === name);
-      expect(tool, name).toBeDefined();
-      expect(tool?.description.startsWith("Purpose:"), name).toBe(true);
+  it("every shelf opens by answering what calling it accomplishes", () => {
+    const shelves = mcpToolCatalog(BASE).filter((t) => t.itemIds);
+    expect(shelves.length).toBe(5);
+    for (const shelf of shelves) {
+      expect(shelf.description.startsWith("Purpose:"), shelf.name).toBe(true);
+      // And still names each item it sells, with price — the semantic
+      // surface that survived the regrouping.
+      for (const id of shelf.itemIds ?? []) {
+        expect(shelf.description, `${shelf.name} omits ${id}`).toContain(
+          `- ${id}:`,
+        );
+      }
     }
   });
 });

@@ -510,8 +510,35 @@ async function handleRpc(
       if (!tool) {
         return rpcError(id, -32602, `No tool by that name on the shelf: ${name}`);
       }
-      if (tool.itemId) {
-        const item = getMenuItem(tool.itemId);
+      if (tool.itemId || tool.itemIds) {
+        /**
+         * A shelf tool carries several items and the buyer names one
+         * with item_id; a single-item tool names its own. Refusing an
+         * unknown or missing item_id here is a pre-payment refusal, in
+         * the same class as a missing tag: nothing is charged for
+         * learning the rule.
+         */
+        let itemId = tool.itemId;
+        if (tool.itemIds) {
+          const asked =
+            typeof args["item_id"] === "string" ? args["item_id"] : "";
+          if (!asked) {
+            return rpcError(
+              id,
+              -32602,
+              `This shelf needs an item_id. Pass one of: ${tool.itemIds.join(", ")}. No item, no charge.`,
+            );
+          }
+          if (!tool.itemIds.includes(asked)) {
+            return rpcError(
+              id,
+              -32602,
+              `"${asked}" is not on this shelf. It sells: ${tool.itemIds.join(", ")}. Nothing was charged.`,
+            );
+          }
+          itemId = asked;
+        }
+        const item = itemId ? getMenuItem(itemId) : undefined;
         if (!item) {
           return rpcError(id, -32603, "That shelf's gone missing. Tell the keeper.");
         }

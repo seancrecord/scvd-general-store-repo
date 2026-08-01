@@ -47,7 +47,7 @@ artifact any third party can verify without trusting us.
 ## Purchasing flow (MCP)
 
 - Endpoint: ${base}/mcp — Streamable HTTP, JSON-RPC 2.0. \`tools/list\` is free and unauthenticated.
-- Call a \`buy_*\` tool; without payment it returns JSON-RPC error 402 with the terms in \`error.data\`. Sign one accept and retry with the payment in \`_meta['x402/payment']\`.
+- Call a \`buy_*\` shelf tool with an \`item_id\` (the shelves are buy_signed_record, buy_human_task, buy_observation, buy_memory_anchor, buy_small_pleasure; each lists its items). Without payment it returns JSON-RPC error 402 with the terms in \`error.data\`. Sign one accept and retry with the payment in \`_meta['x402/payment']\`.
 - Free tools need no payment: \`read_store_guide\`, \`verify_artifact\`, \`ring_bell\`, \`sign_guestbook\`.
 
 ## Checkout rules & rate limits

@@ -33,8 +33,8 @@ async function callTool(payment: unknown): Promise<Record<string, unknown>> {
       id: 1,
       method: "tools/call",
       params: {
-        name: "buy_hello",
-        arguments: {},
+        name: "buy_signed_record",
+        arguments: { item_id: "hello" },
         _meta: { "x402/payment": payment },
       },
     }),

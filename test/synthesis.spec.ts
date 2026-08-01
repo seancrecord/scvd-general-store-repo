@@ -156,16 +156,21 @@ describe("C1 + C3 on the MCP door", () => {
     });
     const result = (await json(reply))["result"] as Record<string, unknown>;
     const tools = result["tools"] as Array<Record<string, unknown>>;
-    const hello = tools.find((tool) => tool["name"] === "buy_hello");
-    expect(hello).toBeDefined();
-    const description = String(hello?.["description"]);
-    expect(description.startsWith("Returns:")).toBe(true);
+    const shelf = tools.find((tool) => tool["name"] === "buy_signed_record");
+    expect(shelf).toBeDefined();
+    const description = String(shelf?.["description"]);
+    // A shelf leads with what calling it accomplishes, then lists its
+    // items with price and what each returns.
+    expect(description.startsWith("Purpose:")).toBe(true);
+    expect(description).toContain("hello:");
     expect(description).toContain(
       "Guaranteed: signature validity forever; verification free forever; price as displayed; delivery format as specified.",
     );
     expect(description).toContain("Not guaranteed:");
-    const spec = hello?.["spec"] as Record<string, unknown>;
-    expectCanonicalKeyOrder(spec);
+    // S1 survives grouping: each item keeps its uniform listing spec,
+    // now keyed by item_id on the shelf.
+    const specs = shelf?.["specs"] as Record<string, Record<string, unknown>>;
+    expectCanonicalKeyOrder(specs["hello"]!);
   });
 });
 

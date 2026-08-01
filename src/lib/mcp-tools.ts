@@ -3,7 +3,7 @@ import type { ListingSpec } from "@/lib/listing-spec";
 import { priceTiersUsdc } from "@/lib/payments";
 import { TAG_CAP } from "@/services/train";
 import { MENU_ITEMS } from "@/store";
-import { GUARANTEE_BLOCK_TEXT } from "@/store/spec";
+import { GUARANTEE_BLOCK_TEXT, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
 
@@ -34,9 +34,105 @@ export interface McpTool {
   annotations?: McpToolAnnotations;
   /** S1: the uniform listing spec; conforming clients ignore extras. */
   spec?: ListingSpec;
+  /** Listing specs per item for a cluster tool, keyed by item_id. */
+  specs?: Record<string, ListingSpec>;
   /** Menu item behind a paid tool; absent means free. */
   itemId?: string;
+  /** The items a cluster tool can sell, selected by the item_id input. */
+  itemIds?: readonly string[];
 }
+
+/**
+ * THE SHELVES, and why the buy tools are grouped rather than one per
+ * product.
+ *
+ * Until 2026-08-02 this catalog emitted one tool per menu item: 23
+ * buy_* tools plus 4 free ones, 27 total. Glama's published
+ * tool-definition rubric grades "tool count appropriateness" and puts
+ * 25+ in its lowest band, which is a real graded finding rather than
+ * a matter of taste. The obvious fix — collapse everything into a
+ * single buy_item — would have traded that problem for a worse one:
+ * the strongest evidence we have about how agents actually choose a
+ * tool (semantic match between the request and the tool description)
+ * says 23 distinct descriptions are 23 chances to be the right
+ * answer, and one generic tool is one. A store nobody has heard of
+ * wins on being unmistakably relevant or it does not win.
+ *
+ * So the grouping is by WHAT AN AGENT IS TRYING TO ACCOMPLISH, which
+ * keeps a coherent semantic surface per tool while landing inside the
+ * rubric's top band. Per-item validation is not lost: each tool's
+ * schema carries the union of its items' fields and an if/then branch
+ * per item that needs one, so an agent still gets named, checked
+ * inputs instead of a guess-the-field-name blob.
+ *
+ * Observation gets its own shelf on purpose. It is the one thing here
+ * a platform cannot commoditize — going and looking, then signing what
+ * was seen — and it earns a tool an agent can find by name.
+ */
+export interface ShelfCluster {
+  name: string;
+  title: string;
+  /** The lead line: what calling this does, in the agent's terms. */
+  purpose: string;
+  itemIds: readonly string[];
+}
+
+export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
+  {
+    name: "buy_signed_record",
+    title: "Signed Records",
+    purpose:
+      "Purpose: buy a signed, dated certificate that permanently records something — a greeting, a claim, a mark, a grievance, a confession, a contribution, or a standing pass. Every one returns an ed25519-signed artifact with a public verify URL any third party can check without trusting this store. Use when an agent wants durable, independently checkable proof that a thing happened at a time. Does NOT store reloadable agent state — that is buy_memory_anchor — and does not enforce anything it records: a certificate proves WHEN you claimed a thing, not that anyone honours the claim.",
+    itemIds: [
+      "hello",
+      "dibs",
+      "certificate_of_patronage",
+      "graffiti_on_a_train",
+      "coffees_for_closers",
+      "grudge",
+      "the_confession",
+      "recurring_patronage",
+    ],
+  },
+  {
+    name: "buy_human_task",
+    title: "Human Labor",
+    purpose:
+      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself: place a phone call, witness a thing, render a considered verdict, review an app, draw a portrait, collaborate, name you, or pick something from the drawer. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. Use when the task genuinely needs hands or judgment.",
+    itemIds: [
+      "phone_call",
+      "human_witness",
+      "quick_judgment",
+      "app_gutcheck",
+      "portrait",
+      "the_collab",
+      "nomenclature",
+      "the_drawer",
+      "a_secret",
+    ],
+  },
+  {
+    name: "buy_observation",
+    title: "Third-Party Observation",
+    purpose:
+      "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer.",
+    itemIds: ["phantom_check", "settlement_attestation"],
+  },
+  {
+    name: "buy_memory_anchor",
+    title: "Agent Memory",
+    purpose:
+      "Purpose: sign and store a summary of your own state — who you are, what you were doing — at a permanent URL you can read back after a context reset, a restart, or a handoff to another agent. The store holds it; the signature proves it was not altered. Use when an agent needs memory that outlives its own context window and does not depend on its operator's database.",
+    itemIds: ["context_anchor"],
+  },
+  {
+    name: "buy_small_pleasure",
+    title: "The Penny Shelf",
+    purpose:
+      "Purpose: buy a small signed novelty — a blessing, a fortune, or a lucky totem drawn from the keeper's collection. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
+    itemIds: ["small_blessing", "daily_fortune", "luckies"],
+  },
+];
 
 /**
  * Every buy_* tool gets the same honest hints, because they are all
@@ -226,6 +322,146 @@ function purchaseTool(item: MenuItem, base: string): McpTool {
   };
 }
 
+/**
+ * One shelf's inputs: every field its items take, plus an if/then
+ * branch per item that requires one. The union keeps field names
+ * NAMED and described rather than hidden behind a generic object, and
+ * the branches keep the requirements per item, so a client that
+ * validates schemas still refuses a confession with no confession in
+ * it before any money moves.
+ */
+function clusterInputSchema(items: MenuItem[]): Schema {
+  const properties: Record<string, Schema> = {
+    item_id: {
+      type: "string",
+      description:
+        "Which item on this shelf to buy. Required. Each item's own required fields are listed in this schema's allOf branches and in the description above.",
+      enum: items.map((item) => item.id),
+    },
+  };
+  const branches: Schema[] = [];
+  for (const item of items) {
+    const per = purchaseInputSchema(item);
+    const perProperties = (per["properties"] ?? {}) as Record<string, Schema>;
+    const perRequired = (per["required"] ?? []) as string[];
+    for (const [field, schema] of Object.entries(perProperties)) {
+      if (!(field in properties)) {
+        properties[field] = schema;
+      }
+    }
+    if (perRequired.length > 0) {
+      branches.push({
+        if: {
+          properties: { item_id: { const: item.id } },
+          required: ["item_id"],
+        },
+        then: { required: perRequired },
+      });
+    }
+  }
+  return {
+    type: "object",
+    properties,
+    required: ["item_id"],
+    additionalProperties: false,
+    ...(branches.length > 0 ? { allOf: branches } : {}),
+  };
+}
+
+/**
+ * A shelf can hold both instant and human-queue items, so the output
+ * schema carries both shapes and requires only what every purchase
+ * returns. Which one you get is stated per item in the description
+ * rather than implied by a field that might not arrive.
+ */
+function clusterOutputSchema(items: MenuItem[]): Schema {
+  const hasInstant = items.some((item) => item.fulfillment === "instant");
+  const hasQueue = items.some((item) => item.fulfillment === "human_queue");
+  return {
+    type: "object",
+    properties: {
+      ...(hasInstant
+        ? { deliverable: str("The goods themselves, as text. Instant items.") }
+        : {}),
+      ...(hasQueue
+        ? {
+            order_id: str("Your place in the human queue. Human-queue items."),
+            order_url: str("Poll here; completed orders carry the goods."),
+            sla_hours: {
+              type: "number",
+              description: "The delivery promise, in hours.",
+            },
+          }
+        : {}),
+      message: str("The store's confirmation line."),
+      paid_usdc: { type: "number", description: "What settled, in USDC." },
+      tip_usdc: { type: "number", description: "Anything above the minimum." },
+      patron_number: {
+        type: "number",
+        description: "Your sequential patron number.",
+      },
+      badge_url: str("Your patron badge, SVG."),
+      cert_id: str("The signed certificate's id."),
+      signature: str("ed25519 signature over the certificate."),
+      verify_url: str("Check the signature here any time, free."),
+    },
+    required: ["cert_id", "patron_number"],
+  };
+}
+
+/** One compact line per item: what it is, what it costs, what returns. */
+function shelfItemLine(item: MenuItem): string {
+  const returns = SPEC_RETURNS[item.id] ?? item.description;
+  const timing =
+    item.fulfillment === "instant"
+      ? "instant"
+      : `human-fulfilled within ${item.sla_hours ?? 168}h`;
+  return `- ${item.id}: ${item.name}, ${priceLine(item)}, ${timing}. ${returns}`;
+}
+
+function clusterCompletion(items: MenuItem[]): string {
+  const hasInstant = items.some((item) => item.fulfillment === "instant");
+  const hasQueue = items.some((item) => item.fulfillment === "human_queue");
+  const shapes: string[] = [];
+  if (hasInstant) {
+    shapes.push(
+      "instant items complete in one call, the result carrying deliverable, cert_id and patron_number",
+    );
+  }
+  if (hasQueue) {
+    shapes.push(
+      "human-fulfilled items return order_id and order_url instead of the goods, and the completed order carries the deliverable",
+    );
+  }
+  return `Pass item_id to choose. ${shapes.join("; ")}. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. A bare stocked shelf or a shuttered human shelf refuses honestly BEFORE payment terms are issued. ${RETRY_SAFETY_MCP_LINE}`;
+}
+
+function clusterTool(cluster: ShelfCluster, base: string): McpTool {
+  const items = cluster.itemIds
+    .map((id) => MENU_ITEMS.find((item) => item.id === id))
+    .filter((item): item is MenuItem => item !== undefined);
+  const lines = items.map(shelfItemLine).join("\n");
+  const specs: Record<string, ListingSpec> = {};
+  for (const item of items) {
+    specs[item.id] = listingSpec(item, base);
+  }
+  return {
+    name: cluster.name,
+    description: `${cluster.purpose}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT}`,
+    inputSchema: clusterInputSchema(items),
+    outputSchema: clusterOutputSchema(items),
+    annotations: {
+      title: cluster.title,
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    specs,
+    itemIds: items.map((item) => item.id),
+  };
+}
+
 const FREE_TOOLS: McpTool[] = [
   {
     name: "read_store_guide",
@@ -341,10 +577,49 @@ const FREE_TOOLS: McpTool[] = [
   },
 ];
 
+/**
+ * The served catalog: four free tools plus one tool per shelf. The
+ * per-item builder above stays because the shelf schemas are composed
+ * from it — one source of truth for what an item takes, whether it is
+ * read as its own tool or as a branch of its shelf.
+ *
+ * A FLOOR THAT STATES ITSELF: every menu item must be reachable
+ * through exactly one shelf. An item added to MENU_ITEMS and not to
+ * SHELF_CLUSTERS would be unbuyable over MCP and silently so, which
+ * is the same defect class as a capped scan that reads as complete.
+ * unshelvedItemIds() names them and a test fails the build.
+ */
 export function mcpToolCatalog(base: string): McpTool[] {
-  return [...FREE_TOOLS, ...MENU_ITEMS.map((item) => purchaseTool(item, base))];
+  return [
+    ...FREE_TOOLS,
+    ...SHELF_CLUSTERS.map((cluster) => clusterTool(cluster, base)),
+  ];
+}
+
+/** Menu items no shelf sells. Must be empty; a test enforces it. */
+export function unshelvedItemIds(): string[] {
+  const shelved = new Set(SHELF_CLUSTERS.flatMap((c) => c.itemIds));
+  return MENU_ITEMS.filter((item) => !shelved.has(item.id)).map(
+    (item) => item.id,
+  );
+}
+
+/** Item ids claimed by more than one shelf. Must be empty; tested. */
+export function duplicatelyShelvedItemIds(): string[] {
+  const seen = new Map<string, number>();
+  for (const cluster of SHELF_CLUSTERS) {
+    for (const id of cluster.itemIds) {
+      seen.set(id, (seen.get(id) ?? 0) + 1);
+    }
+  }
+  return [...seen.entries()].filter(([, n]) => n > 1).map(([id]) => id);
 }
 
 export function findMcpTool(name: string, base: string): McpTool | undefined {
   return mcpToolCatalog(base).find((tool) => tool.name === name);
+}
+
+/** The shelf that sells an item, if any. */
+export function shelfForItem(itemId: string): ShelfCluster | undefined {
+  return SHELF_CLUSTERS.find((cluster) => cluster.itemIds.includes(itemId));
 }
