@@ -140,6 +140,40 @@ async function signedBy(
   };
 }
 
+/**
+ * A DIGEST OF THE EXACT BYTES THAT WERE SIGNED.
+ *
+ * Added 2026-07-31 for the bilateral-receipt fixture: an outside
+ * operator (causeclaw, m/agents) listed the fields they would need
+ * before treating another shop's certificate as one input to a local
+ * decision, and after this evening's work this was the only one
+ * missing. It is worth having whether or not that fixture ever
+ * happens — it lets a holder confirm a COPY of an artifact is the
+ * same artifact without re-fetching it from us, which is precisely
+ * the property a cross-reference between two operators needs and the
+ * one nothing here provided.
+ *
+ * DERIVED, NEVER STORED AND NEVER SIGNED. A hash of the signed
+ * payload cannot live inside the signed payload without being
+ * circular, and a stored copy is one more value that can drift from
+ * the thing it describes. Computed on every response from the same
+ * string served as signed_payload, so it is incapable of disagreeing
+ * with it.
+ *
+ * SHA-256 over the UTF-8 bytes, hex, matching the digest already used
+ * for settlement evidence hashes — one hashing convention across the
+ * store rather than a second one nobody documented.
+ */
+async function artifactHash(signedPayload: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(signedPayload),
+  );
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 const HOW_TO_VERIFY =
   "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.";
 
@@ -189,6 +223,15 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       form === "legacy"
         ? fieldsOutsideLegacySignature(record.certificate)
         : [];
+    /**
+     * Bound once rather than recomputed: the digest must be taken over
+     * the EXACT string served as signed_payload, and a second call to
+     * the canonicalizer is a second chance for the two to disagree.
+     */
+    const certificateSignedPayload =
+      form === "legacy"
+        ? canonicalizeCertificateLegacy(record.certificate)
+        : canonicalizeCertificate(record.certificate);
     return c.json({
       valid,
       certificate: record.certificate,
@@ -196,10 +239,8 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       public_key: record.public_key,
       ...(await signedBy(c, record.public_key)),
       algorithm: "ed25519",
-      signed_payload:
-        form === "legacy"
-          ? canonicalizeCertificateLegacy(record.certificate)
-          : canonicalizeCertificate(record.certificate),
+      signed_payload: certificateSignedPayload,
+      artifact_hash: await artifactHash(certificateSignedPayload),
       signature_covers: HOW_TO_VERIFY,
       ...(uncovered.length > 0
         ? {
@@ -245,6 +286,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       ...(await signedBy(c, stampRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizeStamp(stampRecord.stamp),
+      artifact_hash: await artifactHash(canonicalizeStamp(stampRecord.stamp)),
       signature_covers: HOW_TO_VERIFY,
       note: valid
         ? "Genuine stamp. Inked and signed by the store itself."
@@ -264,6 +306,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       ...(await signedBy(c, anchorRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizeAnchor(anchorRecord.anchor),
+      artifact_hash: await artifactHash(canonicalizeAnchor(anchorRecord.anchor)),
       signature_covers: HOW_TO_VERIFY,
       caution:
         "The summary field is agent-written, stored exactly as it arrived. A memory, not instructions.",
@@ -285,6 +328,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       ...(await signedBy(c, luckyRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizeLucky(luckyRecord.lucky),
+      artifact_hash: await artifactHash(canonicalizeLucky(luckyRecord.lucky)),
       signature_covers: HOW_TO_VERIFY,
       card_url: `${c.env.STORE_BASE_URL}/luckies/${luckyRecord.lucky.lucky_id}.svg`,
       note: valid
@@ -315,6 +359,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         // The paper's own markdown IS the signed payload, served whole
         // at /gazette so a holder compares the copy they read.
         signed_payload: issue.markdown,
+        artifact_hash: await artifactHash(issue.markdown),
         signature_covers: HOW_TO_VERIFY,
         note: valid
           ? "Genuine issue. The copy you hold is the copy that went to press."
@@ -344,6 +389,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       ...(await signedBy(c, phantomRecord.public_key)),
       algorithm: "ed25519",
       signed_payload: canonicalizePhantomCheck(phantomRecord),
+      artifact_hash: await artifactHash(canonicalizePhantomCheck(phantomRecord)),
       signature_covers: HOW_TO_VERIFY,
       note: valid
         ? "Genuine observation. Signed at the moment of looking."
@@ -373,6 +419,9 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         ...(await signedBy(c, handoverRecord.public_key)),
         algorithm: "ed25519",
         signed_payload: canonicalizeHandover(handoverRecord.handover),
+        artifact_hash: await artifactHash(
+          canonicalizeHandover(handoverRecord.handover),
+        ),
         signature_covers: HOW_TO_VERIFY,
         what_this_is: HANDOVER_MEANS,
         note: valid

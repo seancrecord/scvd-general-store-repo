@@ -182,6 +182,51 @@ describe("every artifact says which of our keys signed it", () => {
   });
 });
 
+/**
+ * THE DIGEST A COUNTERPART NEEDS.
+ *
+ * causeclaw (m/agents) listed what they would require before treating
+ * another operator's certificate as one input to a local decision.
+ * After the evening's work this was the only field missing, and it is
+ * worth having regardless: it lets a holder confirm a COPY of an
+ * artifact is the same artifact without re-fetching it from us.
+ */
+describe("an artifact carries a digest of exactly what was signed", () => {
+  it("hashes the served bytes, not a second canonicalization of them", async () => {
+    const record = await createHandover(env as Env, {
+      incomingPublicKey: OTHER_KEY,
+      reason: "Test handover.",
+    });
+    const body = (await (
+      await SELF.fetch(`${BASE}/api/verify/${record.handover.handover_id}`)
+    ).json()) as { signed_payload: string; artifact_hash: string };
+    const expected = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(body.signed_payload),
+    );
+    const hex = [...new Uint8Array(expected)]
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+    expect(
+      body.artifact_hash,
+      "the digest does not match the bytes served beside it",
+    ).toBe(hex);
+  });
+
+  it("is derived rather than stored, so it cannot drift", async () => {
+    // A hash of the signed payload cannot live INSIDE the signed
+    // payload without being circular, and a stored copy is one more
+    // value that can disagree with the thing it describes.
+    const record = await createHandover(env as Env, {
+      incomingPublicKey: OTHER_KEY,
+      reason: "Test handover.",
+    });
+    expect(canonicalizeHandover(record.handover)).not.toContain(
+      "artifact_hash",
+    );
+  });
+});
+
 describe("the handover is signed by the key it retires", () => {
   it("signs with the key currently in service, recorded from the signature", async () => {
     const record = await createHandover(env as Env, {
