@@ -367,26 +367,7 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   );
 });
 
-/**
- * x402-list.com domain-ownership verification.
- *
- * A one-time token the directory issued for this store to publish,
- * proving control of scvd.store before it flips the top-level
- * "verified" flag. NOT secret material — it is a proof-of-control
- * nonce, useless to anyone who does not already control this domain,
- * which is the entire point of the check. Safe to remove once
- * x402-list confirms the listing (the token expires 72h after issue
- * regardless); left in with a dated note rather than silently.
- */
-wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
-  c.text(
-    [
-      "# x402-list.com domain-ownership verification for scvd.store.",
-      "# One-time proof-of-control token; not secret. Issued 2026-08-02,",
-      "# expires 72h after issue. Removable once the listing is verified.",
-      "x402list-verify-r1Q5CPn90VtlNmKOAthsCvtoXtQuD8mAnlaZ_3Nv7Xo",
-    ].join("\n"),
-    200,
-    { "content-type": "text/plain; charset=utf-8" },
-  ),
-);
+// x402-list.com domain ownership was verified 2026-08-02; the
+// one-time token that briefly served at /.well-known/x402list.txt has
+// done its job and been removed, as the directory itself invited. A
+// verification nonce that outlives its verification is just litter.
