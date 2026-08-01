@@ -110,48 +110,38 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That this store's MCP server was auto-indexed by a third-party directory that crawled it without being asked. Unclaimed, and it mirrors the repository README. Not an endorsement and not an audit: an index entry means somebody's crawler found us and filed us.",
   },
   {
-    url: "https://index.projectnanda.org/agents",
-    registry: "Project NANDA Index (MIT)",
-    confirmed: "2026-08-02",
-    /**
-     * MIT's agent index — the "DNS of the agentic web" — where an agent
-     * publishes an Agent Facts file (endpoint, capabilities, provenance)
-     * under a handle. Recorded at the resolution the keeper confirmed by
-     * hand: that the store is listed. The handle and any verification
-     * flag are DELIBERATELY not asserted here because they were not
-     * confirmed against the live entry, and a guessed handle or an
-     * invented "verified" status in a trust document is the exact defect
-     * this array's own rules exist to prevent. Sharpen when confirmed.
-     */
-    what_it_proves:
-      "That this store published an Agent Facts entry in MIT's Project NANDA index, a public agent directory that resolves a handle to an endpoint and provenance. Verification status is VERIFIED BY USER — self-attested, with organization verification not yet performed — and this record says so rather than letting the word 'verified' imply more than a self-claim. Not an endorsement and not an audit: a directory publication proves the store declared itself and was indexed, nothing about the goods or the operator.",
-  },
-  {
-    url: "https://agentidentityregistry.org",
-    registry: "Agent Identity Registry (AIR) — AIR-BYYP-0MQC-TAKR",
+    url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
+    registry: "Agent Identity Registry (AIR) — scvd-store, AIR-BYYP-0MQC-TAKR",
     confirmed: "2026-08-01",
     /**
      * A THIRD-PARTY SCORE, and its two lowest dimensions independently
      * name the two weak spots this store's own /corrections and its
      * research already knew — which is the point worth recording, not
-     * the number. Verification level is Self-Verified / UNVERIFIED, and
-     * that is the deliberate posture (reputation-through-public-work,
-     * not identity disclosure), not a gap to close by doxxing.
+     * the number. The URL is the id-lookup page, which resolves to THIS
+     * store's passport (registered there as scvd-store), so it is a
+     * per-service page rather than a directory root — a legitimate
+     * sameAs. Verification level is VERIFIED BY USER: self-attested,
+     * NOT verified by the organization, and the record says so rather
+     * than letting "verified" imply more than a self-claim. That is the
+     * deliberate posture (reputation-through-public-work), not a gap to
+     * close by doxxing.
      */
     what_it_proves:
-      "That an agent-identity registry scored this store 470/1000 (grade B, self-verified/unverified) against five weighted dimensions, resolving did:web:scvd.store. Not an endorsement and not an audit of the goods: it is an automated score of posture. Its highest dimension is Transparency (650) — the radical-honesty layer showing — and its two lowest, Security Posture (300) and Peer Attestations (300), are the same two this store already flags itself: the OpenSSF Scorecard's security items, and the fact that no peer has yet cross-attested us (there is no peer-attestation prior art in x402 to have earned one from).",
+      "That an agent-identity registry scored this store 470/1000 (grade B) against five weighted dimensions, resolving did:web:scvd.store, at verification level VERIFIED BY USER — self-attested, not organization-verified, and the record says so. Not an endorsement and not an audit of the goods: it is an automated score of posture. Its highest dimension is Transparency (650) — the radical-honesty layer showing — and its two lowest, Security Posture (300) and Peer Attestations (300), are the same two this store already flags itself: the OpenSSF Scorecard's security items, and the fact that no peer has yet cross-attested us (there is no peer-attestation prior art in x402 to have earned one from).",
   },
 ];
 
 /**
  * WHAT IS DELIBERATELY NOT IN THE LIST ABOVE, and why.
  *
- * A trust document is exactly the wrong place to round up. Two real
- * listings are left out, and the reason turned out to be the same one
- * for both, which the keeper established by going and looking on
- * 2026-07-31: NEITHER CATALOGUE PUBLISHES A PER-SERVICE PAGE. You are
- * in the index and that is all there is; there is no URL that points
- * at this store rather than at the directory containing it.
+ * A trust document is exactly the wrong place to round up. Three real
+ * listings are left out, and the reason is the same for all: NONE
+ * PUBLISHES A PER-SERVICE PAGE that points at this store. You are in
+ * the index and that is all there is; there is no URL that points at
+ * this store rather than at the directory containing it. MIT's Project
+ * NANDA is the sharpest example of the distinction — its entry links
+ * OUT to this site's llms.txt, which is NANDA pointing at us, not a
+ * NANDA page identifying us, so there is still nothing to sameAs to.
  *
  * So the omission is permanent rather than pending a link somebody
  * has not found yet, and that distinction is worth writing down —
@@ -166,7 +156,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
  * the empty space it fills.
  */
 export const RECORDS_NOT_LISTED =
-  "Two further listings exist and are deliberately not linked above, for one reason: NEITHER PUBLISHES A PER-SERVICE PAGE. The official MCP registry has carried this store as store.scvd/general-store since 2026-07-30, and x402scout.com lists it too — in both cases you are in the index and that is all there is, with no URL that points at this store rather than at the directory containing it. That is a permanent property of those catalogues rather than a link nobody has found yet, and the difference matters to whoever reads this next. A catalogue root will not be added to stand in for one: schema.org's sameAs means a page that unambiguously indicates THIS item's identity, and a directory homepage identifies the directory. Padding a legitimacy document with a link that proves somebody else exists is worse than the space it fills. Both are named here rather than quietly dropped, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
+  "Three further listings exist and are deliberately not linked in the sameAs above, for one reason: none publishes a per-service page that points at THIS store. The official MCP registry has carried this store as store.scvd/general-store since 2026-07-30, and x402scout.com lists it too — in both you are in the index and that is all there is. MIT's Project NANDA index (the 'DNS of the agentic web', where an agent publishes an Agent Facts file) lists the store as scvd.store, and its entry links OUT to this site's llms.txt — which is NANDA pointing at us, not a NANDA page identifying us, so there is still no URL that points at this store rather than at the directory. NANDA carries no organization verification of the entry, and this says so rather than borrowing the word. That is a permanent property of these catalogues rather than a link nobody has found yet, and the difference matters to whoever reads this next. A catalogue root will not be added to stand in for one: schema.org's sameAs means a page that unambiguously indicates THIS item's identity, and a directory homepage identifies the directory. Padding a legitimacy document with a link that proves somebody else exists is worse than the space it fills. All three are named here rather than quietly dropped, because a curated list with no statement of its own edges is a list you cannot tell is curated.";
 
 /**
  * THE OPERATOR, stated the way a diligence check expects to find it.
