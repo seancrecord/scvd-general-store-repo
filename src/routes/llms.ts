@@ -177,6 +177,29 @@ returned anchor URL; recurring_patronage opens a 30-day standing pass
 keeper's signed monthly note; small_blessing and daily_fortune sit on
 the Penny Shelf by the door.
 
+## Standards, so you can check us without asking us
+
+Nothing about verifying this store requires this store's cooperation,
+and that is the design, not a side effect. The payment path implements
+the official x402 Signed Offers & Receipts extension: every 402
+carries signed offers (JWS, EdDSA over Ed25519, RFC 7515 compact)
+committing to exact terms BEFORE money moves, and every settled
+purchase returns a signed receipt in the PAYMENT-RESPONSE header. The
+kid in each JWS is a did:web URL — resolve ${base}/.well-known/did.json,
+take the key, verify with any standard library. No custom parsing, no
+"trust our /api/verify" step; the endpoint is a convenience, never a
+requirement. A signed offer is your evidence of what was promised if
+delivery falls short; a signed receipt is portable proof of purchase
+you can hand any third party.
+
+Building an offer-receipt implementation of your own? Deterministic
+conformance vectors (known-good and known-bad, regenerable byte for
+byte from a published test seed) are served at
+${base}/.well-known/conformance/offer-receipt-vectors.json, and every
+live 402 here is a real test target. The full posture, including the
+open settlement code, sits in the standards block of
+${base}/.well-known/trust.json.
+
 ## When we get it wrong
 
 Every claim this store has made that turned out not to be true is
@@ -195,6 +218,18 @@ took somebody outside with their own crypto library. If you hold
 something we signed and it does not check out, say so; the mailbox is
 free and that is the only instrument that reaches this class of
 defect.
+
+## The fulfillment log, order by order
+
+${base}/fulfillment-log: every human-labor order's promised window vs.
+what actually happened, plus every refund with its on-chain tx hash
+once paid — computed live from the same records fulfillment runs on,
+so it cannot be edited without editing the orders themselves. The
+written refund commitment rides the log and ${base}/rights: miss the
+promised window and the keeper refunds you himself, full amount, tip
+included — a personal commitment recorded before you pay, not an
+automated mechanism, and the log is where you check it has been kept.
+A short log is a young store, not a hidden one.
 
 ## What a signature from us is actually worth
 

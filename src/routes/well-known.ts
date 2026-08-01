@@ -16,6 +16,9 @@ import {
 } from "@/store";
 import { listAlmanacEntries } from "@/services/almanac-store";
 import { SCHEDULING_SIGNALS } from "@/store/spec";
+import { REFUND_POLICY } from "@/store/refund-policy";
+import { STANDARDS_POSTURE } from "@/store/standards";
+import conformanceVectors from "../../conformance/offer-receipt-vectors.json";
 import {
   DATA_HANDLING,
   EXTERNAL_RECORDS,
@@ -84,6 +87,13 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
       "Automated diligence. There is no human-facing version of this page and that is deliberate: the rooms say all of it better. Start at /what.",
     operator: OPERATOR,
     /**
+     * Front and center by the keeper's instruction: the strongest
+     * legitimacy fact this store has is that verifying it requires no
+     * cooperation from it. It was true in the code and absent from
+     * every surface a diligence pass reads.
+     */
+    standards: STANDARDS_POSTURE,
+    /**
      * Absolute, so a reader following this document never has to
      * resolve a relative path against a base it had to guess.
      */
@@ -113,6 +123,15 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * closed on) rides the document itself.
      */
     liveness: `${base}/.well-known/liveness.json`,
+    /**
+     * Track record as a record rather than a request for trust: every
+     * human-labor order's promised window vs. actual delivery, and
+     * every refund with its tx hash, computed live from the same
+     * records fulfillment runs on. The written refund commitment
+     * rides the log and /rights.
+     */
+    fulfillment_log: `${base}/fulfillment-log`,
+    refund_policy: REFUND_POLICY,
     independently_checkable: {
       signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
       settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base explorer without asking us.`,
@@ -266,6 +285,12 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      */
     did: `${base}/.well-known/did.json`,
     /**
+     * For implementers who land here first: the offer-receipt test
+     * vectors, and the standards block in trust.json that explains
+     * how to verify this store with no scvd.store code involved.
+     */
+    conformance_vectors: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
+    /**
      * The dead-man beacon, same reason as the key and the attestation:
      * an operator deciding whether to honour our receipts is exactly
      * the reader who needs a signal to fail closed on when this store
@@ -280,4 +305,54 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
       note: "tools/list is free; buy_* tools settle x402 in-band via _meta['x402/payment'].",
     },
   });
+});
+
+/**
+ * THE CONFORMANCE VECTORS, SERVED — because "test your verifier
+ * against us" only works if an implementer can fetch the vectors from
+ * the store itself rather than hunting a repo. Bundled at build time
+ * from conformance/offer-receipt-vectors.json, the same committed file
+ * the test suite verifies independently, so this route cannot drift
+ * from what the tests prove.
+ */
+wellKnownRoutes.get(
+  "/.well-known/conformance/offer-receipt-vectors.json",
+  (c) => {
+    const base = c.env.STORE_BASE_URL;
+    return c.json({
+      ...conformanceVectors,
+      live_counterpart: `${base}/api/buy/hello — a real 402 whose PAYMENT-REQUIRED header carries live signed offers under extensions['offer-receipt'], signed by the production key at ${base}/.well-known/did.json (never the test key in these vectors).`,
+      regenerate:
+        "node scripts/generate-conformance-vectors.mjs in the repository reproduces this file byte for byte.",
+    });
+  },
+);
+
+/**
+ * RFC 9116 security.txt — the URL a responsible-disclosure checklist
+ * tries first, verified missing on 2026-08-01 (the request fell
+ * through to a redirect). Contact is the store's own mailbox rather
+ * than an email address: it exists, it is read, and it exposes
+ * nothing the keeper has kept private. Expires is computed, not
+ * hand-typed, per the derive-or-refuse rule; the RFC wants under a
+ * year and this serves exactly half of one, rolling.
+ */
+wellKnownRoutes.get("/.well-known/security.txt", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const expires = new Date(Date.now() + 182 * 24 * 3600 * 1000).toISOString();
+  return c.text(
+    [
+      `Contact: ${base}/api/letter`,
+      `Expires: ${expires}`,
+      `Canonical: ${base}/.well-known/security.txt`,
+      `Policy: ${base}/.well-known/trust.json`,
+      "Preferred-Languages: en",
+      "",
+      "# One operator, one ed25519 key; scope and limits at /attestation.",
+      "# Found something? The mailbox above is free and read by a human.",
+      "# What we got wrong before is on the record at /corrections.",
+    ].join("\n"),
+    200,
+    { "content-type": "text/plain; charset=utf-8" },
+  );
 });
