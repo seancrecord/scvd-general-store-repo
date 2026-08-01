@@ -109,6 +109,21 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     what_it_proves:
       "That this store's MCP server was auto-indexed by a third-party directory that crawled it without being asked. Unclaimed, and it mirrors the repository README. Not an endorsement and not an audit: an index entry means somebody's crawler found us and filed us.",
   },
+  {
+    url: "https://agentidentityregistry.org",
+    registry: "Agent Identity Registry (AIR) — AIR-BYYP-0MQC-TAKR",
+    confirmed: "2026-08-01",
+    /**
+     * A THIRD-PARTY SCORE, and its two lowest dimensions independently
+     * name the two weak spots this store's own /corrections and its
+     * research already knew — which is the point worth recording, not
+     * the number. Verification level is Self-Verified / UNVERIFIED, and
+     * that is the deliberate posture (reputation-through-public-work,
+     * not identity disclosure), not a gap to close by doxxing.
+     */
+    what_it_proves:
+      "That an agent-identity registry scored this store 470/1000 (grade B, self-verified/unverified) against five weighted dimensions, resolving did:web:scvd.store. Not an endorsement and not an audit of the goods: it is an automated score of posture. Its highest dimension is Transparency (650) — the radical-honesty layer showing — and its two lowest, Security Posture (300) and Peer Attestations (300), are the same two this store already flags itself: the OpenSSF Scorecard's security items, and the fact that no peer has yet cross-attested us (there is no peer-attestation prior art in x402 to have earned one from).",
+  },
 ];
 
 /**
