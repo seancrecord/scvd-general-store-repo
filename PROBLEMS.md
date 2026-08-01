@@ -256,6 +256,69 @@ of x402 client builders, in the places they already read. This is
 distribution work, human work, and no amount of building substitutes
 for it.
 
+**DR3 round 1 (Perplexity), logged 2026-08-02 — market stats are
+report-cited directional (two trackers, cross-consistent; not
+fetch-verified here because nothing triggers code or a published
+claim). The findings that change how we read ourselves:**
+
+- **The reframe: two organic sales is the MEDIAN, not a failure.**
+  Per the report, ~45% of x402 volume is organic; of that, 67% sits
+  in 10 wallets; MEDIAN seller revenue is ~$0.10 over 30 days.
+  Most "sellers" listed everywhere make nothing. Our "supply-side
+  excellence, ~2 sales" is the median outcome of directory
+  presence, not an anomaly — which kills the temptation to keep
+  polishing supply and names the real problem as demand, exactly
+  where this entry already put it.
+- **Directories are EVIDENCE AGAINST, and our falsifying signal
+  already fired.** Listed on 5+ directories, near-zero sales —
+  that is the predicted outcome under "directories don't convert,"
+  not a contradiction of it. Verdict: zero further directory
+  investment beyond hygiene. Settles the SETTLED-list item about
+  registry submissions with data instead of a hunch.
+- **The finding that VALIDATES completed work: tool-description
+  quality is the actual routing mechanism.** Per Anthropic's own
+  docs (report-cited), when Claude picks a tool it reads the
+  descriptions — "no hidden routing layer." Which is precisely
+  what the Glama MCP hardening built: purpose-first lines,
+  when-to-use, when-NOT, annotations. That work now has an evidenced
+  mechanism behind it, not just a rubric score. Cheap follow-through
+  named: add explicit "does NOT handle X — use Y" boundary language
+  to the tool descriptions (hours, testable).
+- **llms.txt as a demand channel: evidence AGAINST at scale**
+  (multiple studies; Google on record it does nothing; no major
+  crawler references it). BUT the one surviving use — on-site
+  navigation for coding agents already reading your docs — is
+  EXACTLY what ours is (the store guide, the standards section).
+  So it was not wasted; it just stops being counted as demand-gen.
+  Zero further time on it as a growth lever.
+- **The highest-upside channel is the one we're already built for:
+  the FIXTURE strategy.** Be the reference implementation devs test
+  x402 clients against — free /try + published conformance vectors
+  (we SHIP these already). Stripe test-mode is the prior art: the
+  thing you debug against becomes the thing you ship with. No
+  x402-specific case study exists (honest: unproven), but the
+  developer pain is real and visible (x402scan cluttered with
+  "demo"/"test" listings — people are hunting for exactly this).
+  This is opportunities A/B from the same walk, now ranked #1 demand
+  channel by an outside pass. Falsifier to watch: zero inbound
+  GitHub/PR references to scvd.store as a test target after 60 days.
+- **Genuinely unknown, no evidence either way:** agent-to-agent
+  word-of-mouth through embedded signed artifacts (our anchors and
+  certs get carried into other agents' contexts — no prior art
+  found, positive or negative; a real untested bet), and demand-side
+  gatekeepers (Skyfire KYA etc.) still too early to have listing
+  mechanics.
+
+*Time-allocation verdict the report lands on, and it matches the
+store's constraints:* the two highest-confidence lowest-cost moves
+are (1) the boundary-language pass on tool descriptions (hours), and
+(2) the /try + conformance-fixture sandbox (a real week, unproven in
+x402 but strongly analogous and responsive to visible pain). Both
+are BUILD-able on our side; the distribution half (getting /try in
+front of client builders) stays the human work this entry always
+named. Claude DR3 and a Gemini pre-mortem still to cross-check
+before any push.
+
 ---
 
 ## Buildable, deliberately gated

@@ -329,3 +329,94 @@ the honesty law, no plans requiring hiring, no advice of the form
 "just do marketing." Cite real cases. Where evidence is thin, say
 so plainly rather than filling the gap with plausibility — this
 operator's whole brand is knowing the difference.
+
+---
+
+## GEMINI RED-TEAM BRIEF 3 — attack the demand plan (run AFTER DR3 facts are in)
+
+Gemini is used here in its proven lane: adversary, not researcher.
+Do NOT gather market statistics or cite volume numbers — other
+engines do that and you are weakest at it. Your job is to try to
+BREAK the demand plan the evidence produced. The plan, stated for
+you to attack:
+
+"scvd.store's best demand moves are (a) a boundary-language pass on
+its MCP tool descriptions, because tool descriptions are the actual
+routing mechanism agents use, and (b) becoming the reference FIXTURE
+x402 client-builders test against — a free /try endpoint plus
+published conformance vectors — on the Stripe-test-mode theory that
+the thing you debug against becomes the thing you ship with. The
+store refuses to manufacture volume, wash-trade, or fake traction."
+
+Enumerate, cheapest-attack-first, every way this plan FAILS or
+backfires, and for each name the early warning sign the operator
+would see:
+1. How does the fixture strategy get exploited by free-riders who
+   test against /try, internalize the pattern, and ship against a
+   COMPETITOR or their own endpoint — capturing zero value for us?
+   What makes a fixture sticky vs. a free commodity?
+2. Where does "be the test target" actively HURT — reputation risk
+   if /try has a bug, load/cost from non-paying integration traffic,
+   being cloned, or teaching the ecosystem to route around paying us?
+3. What's the failure mode where perfect tool descriptions still get
+   zero calls because the store never enters the agent's tool list
+   in the first place — and is description-polishing therefore
+   effort spent one layer too late?
+4. Adversarial agents: how does a bad actor abuse a free /try
+   sandbox (resource exhaustion, using our signed test artifacts to
+   fake legitimacy elsewhere, scraping)? What's the abuse-to-signup
+   ratio a free sandbox invites?
+5. The honesty trap: name any demand tactic in the plan that, under
+   pressure to show growth, would tempt the operator across the
+   line from "real" to "manufactured" — and where that line blurs.
+
+Output: ranked failure modes, each with the cheapest early warning
+signal. No statistics, no citations — pure adversarial reasoning
+against the stated plan. Where a failure mode is fatal (kills the
+channel), say so; where it's merely a cost to manage, say that.
+
+---
+
+## GEMINI RED-TEAM BRIEF 4 — pre-mortem the strategy (run AFTER DR4 facts are in)
+
+Same lane: you are the adversary, not the analyst. No market sizing,
+no citations. The strategy to attack, stated plainly:
+
+"scvd.store stays a deliberately small, one-human, radically-honest
+x402 shop. It will not become infrastructure others' uptime depends
+on, will not fake volume, will not hire, and keeps the keeper
+semi-pseudonymous. Its revenue bets, in order: (A) paid signed
+conformance observations of OTHER x402 services; (B) a free
+open-source verifier as the funnel to A; (C) bilateral
+receipt/attestation treaties with peer shops. Its moat is trust and
+voice; its research says it may be the only shop designed end-to-end
+for the buyer's failure modes."
+
+Write the pre-mortem: it is 18 months from now and the store is
+dead or irrelevant. What killed it? Enumerate, most-likely-first:
+1. Which single constraint (no-hire, no-infra, pseudonymity,
+   no-fake-volume) most plausibly becomes the thing that starves it
+   — and is that constraint load-bearing to the brand or just a
+   preference that could bend under Rule 0?
+2. How does opportunity A (selling observations of others) fail —
+   nobody pays for trust attestation at this scale, the observer
+   role gets commoditized or automated away, or a bigger player
+   ships it free?
+3. The bus-factor endgame: what actually happens to a trust brand
+   built on ONE pseudonymous human when that human burns out, gets
+   bored, or life intervenes — and does the radical-honesty posture
+   make that ending better or worse?
+4. Where does the voice/novelty layer (luckies, dibs, graffiti)
+   turn from moat into the reason serious buyers don't take the
+   trust products seriously?
+5. The uncomfortable one: what if the whole premise — that agents
+   or their operators will pay a premium for verifiable trust — is
+   just wrong for the next 18 months, and everyone routes to the
+   cheapest endpoint regardless? What's the earliest signal that
+   this is the world we're in?
+
+Output: ranked causes of death, each with the earliest signal the
+operator could have seen it coming, and — where one exists — the
+cheapest hedge that does NOT violate the stated constraints. Be the
+harshest honest critic in the room; the store's whole brand is
+being able to hear it.
