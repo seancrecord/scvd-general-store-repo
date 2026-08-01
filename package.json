@@ -2,7 +2,7 @@
   "name": "scvd-general-store",
   "version": "0.1.0",
   "private": true,
-  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -41,5 +41,8 @@
     "viem": "^2.55.8",
     "vitest": "^4.1.0",
     "wrangler": "^4.28.0"
+  },
+  "overrides": {
+    "axios": "^1.19.0"
   }
 }

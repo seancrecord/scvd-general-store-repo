@@ -248,6 +248,33 @@ The five questions every new feature answers before it ships:
    convenience. The signing path especially earns its dependencies
    or does without them.
 
+## The dependency-audit finding (2026-08-02, OpenSSF Scorecard + npm audit)
+
+Scorecard flagged 11 dep vulns; walked, they are 6 unique findings in
+two chains, and the split is the whole answer:
+- **sharp → miniflare → wrangler / vitest-pool-workers (5, dev-only):**
+  libvips image CVEs inside the LOCAL dev simulator and test pool.
+  Never ships in the deployed Worker, never processes an attacker's
+  image. Left as-is on purpose: churning the runner that executes 747
+  tests to patch a dev image lib with no real exposure is the tail
+  wagging the dog. Reassess if a clean vitest-pool-workers bump lands.
+- **axios via @coinbase/x402 → @coinbase/cdp-sdk (1, production):**
+  a real transitive PRODUCTION dep, and the one worth attention. Two
+  facts bounded it: (a) exploitability — every axios CVE needs the
+  attacker to control our axios CONFIG or the SERVER axios talks to,
+  and in this store axios (if it executes at all) only ever talks to
+  the CDP facilitator (Coinbase, trusted); a buyer controls the
+  payment payload, not our transport. Our one touchpoint,
+  createFacilitatorConfig, generates CDP auth headers (crypto), while
+  the facilitator HTTP calls go through the @x402 SDK's fetch path in
+  Workers. So it was not buyer-reachable even unpatched. (b) We were
+  already on the latest @coinbase/x402 and cdp-sdk, so no upstream fix
+  existed to pull. Patched anyway, defense in depth: an npm override
+  pins axios to ^1.19.0 (1.16→1.19, API-stable minor); audit drops
+  from 6 to 4, full suite + build:check green. The rule for next time:
+  a production transitive gets patched-or-assessed; a dev-only one
+  gets a documented shrug, not a runner-churning bump.
+
 ## What this file is not
 
 A guarantee. It is the walk one engineer did on one day, against the
