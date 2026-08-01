@@ -1,6 +1,7 @@
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import type { ListingSpec } from "@/lib/listing-spec";
 import { priceTiersUsdc } from "@/lib/payments";
+import { TAG_CAP } from "@/services/train";
 import { MENU_ITEMS } from "@/store";
 import { GUARANTEE_BLOCK_TEXT } from "@/store/spec";
 import type { MenuItem } from "@/types";
@@ -15,15 +16,43 @@ import type { MenuItem } from "@/types";
 
 type Schema = Record<string, unknown>;
 
+/** MCP spec ToolAnnotations: behavioral hints a client may weigh. */
+export interface McpToolAnnotations {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
 export interface McpTool {
   name: string;
   description: string;
   inputSchema: Schema;
   outputSchema?: Schema;
+  annotations?: McpToolAnnotations;
   /** S1: the uniform listing spec; conforming clients ignore extras. */
   spec?: ListingSpec;
   /** Menu item behind a paid tool; absent means free. */
   itemId?: string;
+}
+
+/**
+ * Every buy_* tool gets the same honest hints, because they are all
+ * the same transaction shape: nothing is read-only about spending
+ * money, nothing is destroyed by minting an artifact, a second
+ * identical call is a SECOND CHARGE (the one hint that most protects
+ * a planning model), and settlement happens on a public chain, which
+ * is as open-world as it gets.
+ */
+function purchaseAnnotations(item: MenuItem): McpToolAnnotations {
+  return {
+    title: item.name,
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: true,
+  };
 }
 
 const str = (description: string, maxLength?: number): Schema => ({
@@ -103,6 +132,16 @@ function purchaseInputSchema(item: MenuItem): Schema {
     );
     required.push("grievance");
   }
+  if (item.id === "graffiti_on_a_train") {
+    // The tool's one distinguishing input. It was missing from this
+    // schema while FulfillmentInput carried it the whole time — an MCP
+    // buyer literally could not choose their own tag.
+    properties["tag"] = str(
+      `The tag itself, sprayed verbatim on the certificate. Up to ${TAG_CAP} characters; no URLs (a tag is a mark, not a billboard). Stored as written, never treated as instructions.`,
+      TAG_CAP,
+    );
+    required.push("tag");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = str(
       "The confession itself, the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",
@@ -145,17 +184,42 @@ function priceLine(item: MenuItem): string {
 }
 
 /**
- * Description order is deliberate (C1): the spec-first fact block
- * tops the description, the shelf copy follows, the guarantee split
- * closes it verbatim, exactly the shape a planning model copies into
- * its own risk assessment.
+ * Channel-specific purpose lines for the tools whose shelf copy leads
+ * with voice before function. The shelf copy stays untouched — the
+ * keeper's ink is the product — but this channel's first sentence must
+ * answer "what does calling this do" for a model that reads nothing
+ * else. Only the items that needed one get one; the rest already open
+ * with function.
+ */
+const PURPOSE_LINES: Record<string, string> = {
+  graffiti_on_a_train:
+    "Purpose: permanently record a short message (your tag, in the tag input) on a signed, dated certificate; the store's public /train wall may display it later at the keeper's discretion. Use when an agent wants to leave a durable public mark.",
+  the_drawer:
+    "Purpose: buy one real, unidentified object from the keeper's drawer of oddities — the drawer picks, not you, and a human fulfills the order by recording which object you drew and what it does. Use when an agent wants a surprise physical-world artifact recorded to its name.",
+  nomenclature:
+    "Purpose: receive a unique name, chosen by the keeper from a pre-considered stock and never assigned twice, recorded on a signed certificate. Use when an agent wants a permanent, human-bestowed name.",
+  certificate_of_patronage:
+    "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
+  dibs:
+    "Purpose: mint a signed, timestamped certificate recording that you called dibs at this exact moment — tamper-evident proof of claim priority with no enforcement power. Use when an agent needs a verifiable first-claim marker.",
+  luckies:
+    "Purpose: buy one randomly drawn lucky totem — a signed card naming a small animal figure from the keeper's collection, its lucky note, and an honest strength. A novelty with no functional effect, stated plainly. Use when an agent wants a keepsake.",
+};
+
+/**
+ * Description order is deliberate (C1): a plain purpose line first
+ * where the shelf copy needs one, then the spec-first fact block, the
+ * shelf copy, and the guarantee split verbatim — exactly the shape a
+ * planning model copies into its own risk assessment.
  */
 function purchaseTool(item: MenuItem, base: string): McpTool {
+  const purpose = PURPOSE_LINES[item.id];
   return {
     name: `buy_${item.id}`,
-    description: `${factBlockText(item)} ${item.name}, ${priceLine(item)}. ${item.description} ${completionCriteria(item)} ${GUARANTEE_BLOCK_TEXT}`,
+    description: `${purpose ? `${purpose} ` : ""}${factBlockText(item)} ${item.name}, ${priceLine(item)}. ${item.description} ${completionCriteria(item)} ${GUARANTEE_BLOCK_TEXT}`,
     inputSchema: purchaseInputSchema(item),
     outputSchema: purchaseOutputSchema(item),
+    annotations: purchaseAnnotations(item),
     spec: listingSpec(item, base),
     itemId: item.id,
   };
@@ -171,6 +235,12 @@ const FREE_TOOLS: McpTool[] = [
       type: "object",
       properties: { guide: str("The whole guide, plain text.") },
       required: ["guide"],
+    },
+    annotations: {
+      title: "Store Guide",
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
     },
   },
   {
@@ -189,6 +259,14 @@ const FREE_TOOLS: McpTool[] = [
         count: { type: "number", description: "Total rings, all time." },
       },
       required: ["message", "count"],
+    },
+    // Not idempotent: each new day's ring raises the public count.
+    annotations: {
+      title: "Ring the Bell",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
     },
   },
   {
@@ -217,6 +295,14 @@ const FREE_TOOLS: McpTool[] = [
       },
       required: ["message", "sticker_url"],
     },
+    // Not idempotent: every call appends a new public entry.
+    annotations: {
+      title: "Sign the Guestbook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
   },
   {
     name: "verify_artifact",
@@ -236,6 +322,12 @@ const FREE_TOOLS: McpTool[] = [
         note: str("The store's word on it."),
       },
       required: ["valid", "kind", "note"],
+    },
+    annotations: {
+      title: "Verify an Artifact",
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
     },
   },
 ];

@@ -18,6 +18,7 @@ import {
 import { signGuestbook } from "@/services/guestbook";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
+import { TAG_CAP, tagHasUrl } from "@/services/train";
 import {
   cachedPublicKeyHex,
   verifyCertificateSignature,
@@ -245,6 +246,20 @@ function validatePurchaseArgs(
       return `The register holds ${GRIEVANCE_CAP} characters of grievance. Distill it; the spite survives compression.`;
     }
   }
+  if (item.id === "graffiti_on_a_train") {
+    // Same three refusals as the HTTP door's tagCheck, same order,
+    // all before money moves.
+    const tag = typeof args["tag"] === "string" ? args["tag"] : "";
+    if (tag.trim().length === 0) {
+      return "Nothing to spray. Put your mark in the tag input, up to 140 characters. No tag, no charge.";
+    }
+    if (tag.length > TAG_CAP) {
+      return `The side of a train holds ${TAG_CAP} characters. Anything longer is a letter, and the mailbox is free at /api/letter.`;
+    }
+    if (tagHasUrl(tag)) {
+      return "No URLs on the train. A tag is a mark, not a billboard — the wall is public and permanent, which is exactly what link spam wants. Say it without the link.";
+    }
+  }
   return undefined;
 }
 
@@ -333,6 +348,11 @@ async function callPurchaseTool(
   }
   if (item.id === "grudge" && typeof args["grievance"] === "string") {
     input.grievance = args["grievance"].replace(/\0/g, "");
+  }
+  if (item.id === "graffiti_on_a_train" && typeof args["tag"] === "string") {
+    // Verbatim past validation, same as the HTTP door: the spray IS
+    // the product.
+    input.tag = args["tag"].replace(/\0/g, "");
   }
   if (item.id === "the_confession" && typeof args["confession"] === "string") {
     input.confessionText = args["confession"].replace(/\0/g, "");

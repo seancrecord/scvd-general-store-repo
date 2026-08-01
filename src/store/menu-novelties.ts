@@ -129,7 +129,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     note_402:
       "That'll be a buck, friend. Unpretentious, a little defiant, true. It persists.",
     constraints: [
-      "Write your tag in the tag query parameter, 140 characters, recorded verbatim",
+      "Write your tag in the tag parameter (HTTP query param, or the tag input over MCP), 140 characters, recorded verbatim",
       "No URLs in tags",
       "The certificate mints at once; showing up on the wall at /train waits on the keeper",
     ],
