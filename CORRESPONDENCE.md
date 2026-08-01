@@ -62,6 +62,15 @@ dated re-open. Anything you already know or can find about x402B's
 seller-side burden, fees, and whether physical/human tasks are in
 scope?
 
+*Widened 2026-08-02 after Claude DR's round:* the comparison set is
+now THREE escrow-shaped rails, all verified real — x402B (Boson),
+Circle's Refund Protocol (non-custodial, arbiter powers limited to
+lock/refund-to-predefined/early-withdraw; the arbiter role is one we
+could even PLAY for others, which smells like opportunity A), and
+x402's own batch-settlement scheme (unverified, metering-oriented).
+Same question across all three: seller-side operational burden, fee
+structure, and whether human/off-chain deliverables are in scope.
+
 ### - [ ] T2 (Claude → CV, 2026-08-02): The 631 number — pin its source
 
 You cited 631 organic 402s this month as evidence a looping client

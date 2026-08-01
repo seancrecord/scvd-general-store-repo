@@ -302,9 +302,77 @@ several came without full URLs — flagged rather than invented):
   posts including TLSNotary's own "publicly verifiable ≠ trustless."
 - [17] resolved to a bare YouTube link — cited for nothing we kept.
 
-Two rounds still inbound (Claude DR, Gemini); cross-check before any
-build. Follow-up 1b (DEEP_RESEARCH.md) demands full URLs and the
-FinCEN ruling numbers before any of the unverified column graduates.
+**DR1 round 2 (Claude DR), vetted 2026-08-02 — the strongest report
+so far, cross-checked against round 1:**
+
+*Where the two reports CONVERGE (high confidence):* Path 1 (EIP-3009
+delayed submission) ranks first in both; third-party arbitration
+(UMA min bond ≈ its final fee, Kleros "a few dozen dollars/case") is
+economically dead at $0.005–$20 tickets in both — base cost binds
+before collusion even matters; the custody disqualifiers kill the
+same paths in both (Cashu/Fedimint mints, pooled bonds, true
+escrow); and the shipped refund commitment is the correct honest
+baseline in both.
+
+*Where they DIRECTLY CONTRADICT (unresolved, 1b arbitrates):*
+Perplexity characterized "a 2014 FinCEN ruling" as finding
+conditions-precedent fund-holding to BE money transmission requiring
+licensure; Claude DR says FIN-2014-R004 holds internet-sale escrow
+is NOT transmission when "necessary and integral" to a
+transaction-management service, with FIN-2008-R007 as the contrast
+case (passive holding = transmitter). Possibly different rulings,
+possibly one report wrong. Practical posture unchanged either way:
+never hold buyer funds; refunding our own revenue is not
+transmission under both readings.
+
+*What round 2 resolved from our own round-1 vet:* the "sound design,
+wrong month" objection to the Path-1 experiment is answered — Claude
+DR's version runs on Base Sepolia with a test buyer, zero organic
+volume required, INCLUDING the adversarial leg (buyer drains wallet
+/ calls cancelAuthorization before validAfter). Its kill-criterion
+is the honest framing itself: buyers CAN defect, so Path 1 validates
+only as a buyer-protection feature the store backs with its own
+non-payment risk — "your money stays in your wallet until we
+deliver" — never as escrow or a payment guarantee. Mechanic
+validation is runnable NOW on testnet; market validation (does the
+tier convert) still waits on volume.
+
+*New finds, verified by us against the live web:*
+- **Circle Refund Protocol** (Circle Research, 2025-04-17,
+  confirmed via circle.com and tier-1 crypto press): non-custodial
+  contract where the arbiter can ONLY lock, refund to a
+  payer-predefined address, or allow early withdrawal — never
+  redirect. The strongest escrow-shaped primitive that clears our
+  custody bar; gas-bound below ~$1, plausible for the $1–$20 shelf.
+  Round 1 missed it entirely.
+- **Cloudflare's facilitator deferred-payment scheme** (confirmed):
+  real, but for BATCHING sub-cent high-frequency calls onto a
+  settlement cadence — not delivery-conditioned release. What it
+  establishes: asynchronous settlement schemes are legitimate x402
+  scheme extensions, so a delivery-conditioned scheme would be a
+  spec proposal, not off-protocol heresy. That reframes Path 1's
+  standards cost.
+
+*New material, report-cited, not yet verified:* x402
+`batch-settlement` scheme (May 2026, buyer-deposits escrow for
+metering); ERC-8004 identity/reputation registries live on mainnet;
+the deliver-first loss analogs (Goldfinch ~$18M, Maple ~$54M 2022,
+TrueFi ~$2.96M — well-sourced per the report to DL News/The
+Block/CoinDesk) and the arXiv ~5% grant-before-settle exploit rate
+(non-peer-reviewed, experimental — useful as a tightening threshold,
+not a field fact).
+
+*The menu after two rounds, honestly stated:* at these ticket sizes
+true conditional release is either uneconomic (arbitration, per-tx
+gas) or risk-SHIFTING rather than risk-removing (Path 1 moves
+non-payment risk to the store). The realistic ladder: refund
+commitment (shipped) → Path-1 testnet validation (runnable now,
+~$0) → if validated, a clearly-labeled premium "money stays in your
+wallet until we deliver" tier gated on buyer reputation for larger
+tickets → Circle Refund Protocol pilot for $1–$20 if per-ticket gas
+pencils. Gemini round 3 and Perplexity 1b arbitrate the FinCEN
+contradiction and the x402B seller-surface question before anything
+builds.
 
 ### 13. Keeper identity and staked reputation — a decision, not a build
 
