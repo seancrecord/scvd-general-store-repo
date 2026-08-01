@@ -1,0 +1,85 @@
+# SLSA provenance + Sigstore signatures on tagged releases.
+#
+# ON THEME: a store whose entire product is signed, verifiable
+# artifacts should hold its own build artifacts to the same bar. On
+# each published release this produces a source archive, signs it
+# keyless with cosign (GitHub OIDC — no new secret), and generates
+# SLSA build provenance anyone can verify.
+#
+# HONEST SCOPE, stated because the store states scope everywhere: this
+# attests the RELEASE ARCHIVE's origin and build. It does NOT prove the
+# live Worker matches it — scvd.store deploys via Cloudflare's own
+# git-connected build, a separate pipeline. What a verifier gets is
+# "this tagged archive was built from this repo at this commit by this
+# workflow, signed by GitHub's OIDC identity." That is provenance for
+# the release, not an attestation of the running site.
+name: Release provenance
+
+on:
+  release:
+    types: [published]
+
+permissions: read-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # attach assets to the release
+      id-token: write # keyless cosign via OIDC
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create reproducible source archive
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          git archive --format=tar.gz --prefix="scvd-store-${TAG}/" \
+            -o "scvd-store-${TAG}.tar.gz" "${TAG}"
+
+      - name: Compute subject hashes for provenance
+        id: hash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          echo "hashes=$(sha256sum "scvd-store-${TAG}.tar.gz" | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign archive (keyless, OIDC)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          cosign sign-blob --yes "scvd-store-${TAG}.tar.gz" \
+            --output-signature "scvd-store-${TAG}.tar.gz.sig" \
+            --output-certificate "scvd-store-${TAG}.tar.gz.pem"
+
+      - name: Attach archive + signature to the release
+        env:
+          TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${TAG}" \
+            "scvd-store-${TAG}.tar.gz" \
+            "scvd-store-${TAG}.tar.gz.sig" \
+            "scvd-store-${TAG}.tar.gz.pem" \
+            --clobber
+
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read # read the workflow run for provenance
+      id-token: write # keyless signing of the provenance
+      contents: write # attach the .intoto.jsonl to the release
+    # The generic SLSA3 generator MUST be referenced by a semver tag
+    # (not a commit hash) for its own provenance to verify.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: ${{ needs.build.outputs.hashes }}
+      upload-assets: true
