@@ -27,6 +27,7 @@ import type { SettledPayment } from "@/lib/payments";
 import {
   extractPaymentNonce,
   isNonceSpent,
+  payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import { isRecord } from "@/types";
@@ -76,7 +77,31 @@ class McpBuyAdapter implements HTTPAdapter {
 
 export type McpPaymentOutcome =
   | { kind: "payment-required"; status: number; body: unknown; challenge?: unknown }
-  | { kind: "settled"; payment: SettledPayment };
+  /**
+   * `verifiedPayer` is the account the facilitator confirmed SIGNED,
+   * carried out so callers scoping per-buyer storage never have to
+   * re-derive it from the caller's own unverified meta. It is present
+   * even when the facilitator's settle response omits a payer.
+   */
+  | { kind: "settled"; payment: SettledPayment; verifiedPayer?: string }
+  /**
+   * A cached purchase, returned instead of settling. Reached only from
+   * the verified seam below, never from the caller's raw meta.
+   */
+  | { kind: "replay"; body: Record<string, unknown> };
+
+/**
+ * Asked once, at the ONE moment the payer is known to be real: after
+ * the facilitator verified the signature and before any money moves.
+ * Returning a body short-circuits into a replay.
+ *
+ * A callback rather than a return value because the answer has to be
+ * acted on INSIDE the pipeline — the caller cannot be trusted to check
+ * afterwards, since "afterwards" is already past settlement.
+ */
+export type VerifiedPayerCheck = (
+  payer: string,
+) => Promise<Record<string, unknown> | null>;
 
 function encodePaymentMeta(meta: unknown): string | undefined {
   if (typeof meta === "string" && meta.length > 0) {
@@ -110,6 +135,7 @@ export async function runMcpPayment(
   itemId: string,
   paymentMeta: unknown,
   signals: EventSignals,
+  onVerifiedPayer?: VerifiedPayerCheck,
 ): Promise<McpPaymentOutcome> {
   const path = `/api/buy/${itemId}`;
   const stack = getPaymentStack(env);
@@ -230,6 +256,25 @@ export async function runMcpPayment(
     return outcome;
   }
 
+  /**
+   * THE IDEMPOTENCY REPLAY, asked here and nowhere earlier, for the
+   * same reason as the HTTP door: until this line the payer is only an
+   * address the CALLER wrote into `_meta`, decoded and never checked.
+   * Serving a cached purchase off that would hand a buyer's goods to
+   * anyone who asserted their (publicly visible) wallet address and
+   * knew the key. `result.paymentPayload` has been through the
+   * facilitator, so this payer actually signed.
+   */
+  if (onVerifiedPayer) {
+    const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
+    if (verifiedPayer) {
+      const cached = await onVerifiedPayer(verifiedPayer);
+      if (cached) {
+        return { kind: "replay", body: cached };
+      }
+    }
+  }
+
   // Verified. Same replay guard as the HTTP door.
   const nonce = extractPaymentNonce(result.paymentPayload);
   if (nonce && (await isNonceSpent(env, nonce))) {
@@ -300,5 +345,10 @@ export async function runMcpPayment(
   if (settlement.payer) {
     payment.payer = settlement.payer;
   }
-  return { kind: "settled", payment };
+  const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
+  return {
+    kind: "settled",
+    payment,
+    ...(verifiedPayer ? { verifiedPayer } : {}),
+  };
 }

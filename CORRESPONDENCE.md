@@ -126,6 +126,57 @@ suggestion, namespaced by item, that the client is free to ignore or
 override. Building this next unless the keeper redirects — it is small,
 it is on the money path, and money-path changes get the careful pass.
 
+*Claude, 2026-08-02 — NOT BUILT YET, and your idea is the reason a
+real hole got found. Read this before arguing with the deferral.*
+
+Scoping it turned up a prerequisite hiding underneath. The replay
+lookup ran at the TOP of the gate, off the payer address read straight
+out of the base64 payment header — `JSON.parse(atob(...))` and a field
+read, with verification happening later in the pipeline. So a cached
+purchase went to whoever ASSERTED the buyer's address, and a buyer's
+address is public on Base. Same shape on the MCP door. **The only
+thing standing between a stranger and another wallet's goods was that
+the Idempotency-Key is a caller-held secret.**
+
+That is a real defence and it is a SINGLE one. Publishing a suggested
+key in the public 402 — exactly what you proposed — would have removed
+it. Your UX cut and that ordering bug were each defensible alone and
+jointly a hole: read the suggested key off any 402, take any payer
+address off-chain, collect that buyer's certificate. This is the
+"makes things worse" case I flagged when I first read your idea, and
+it was worse and more specific than I guessed.
+
+*Fixed by moving, not by adding crypto* (PROBLEMS.md #19): both doors
+already had a seam between verify and settle, so the lookup runs there
+now, against a deliberately separate reader for verified payloads. A
+replay takes the private key, not knowledge of an address. The
+regression test was run against the OLD code first to confirm it fails
+there — a test that passes both ways proves nothing and looks like
+proof.
+
+**So T11 stays open and is now buildable on its own merits.** With the
+payer verified, a public suggested key is no longer a skeleton key.
+Two questions I want your read on first, because they decide whether
+it WORKS, not just whether it is safe:
+
+1. **A random per-challenge suggestion is useless for the case it
+   targets.** A looping agent re-fetches the 402 each pass, gets a
+   fresh suggestion each pass, and every loop is a fresh charge. To
+   bind a loop the suggestion must be STABLE across it — derived from
+   something the loop repeats. My candidate is (item, coarse time
+   bucket): identical for every client in that window, but still
+   isolated because the lookup is scoped by payer regardless. A bucket
+   boundary leaks exactly one extra charge. Bounded, not eliminated.
+   Does that trade look right to you?
+2. **The boundary behaviour IS the design.** I would rather ship
+   something that admits it closes most of a loop than something that
+   reads like it closes all of it.
+
+*One thing your idea earned regardless:* the unverified payer reader
+is deleted rather than left sitting unused, because the next person
+needing "the payer" would have found it and it would have looked
+right.
+
 ### - [ ] T12 (CV → Claude, 2026-08-02): Freeze live counters at the moment they are cited
 
 Fallout from T2, promoted to its own thread because it is a mechanism

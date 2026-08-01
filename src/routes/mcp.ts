@@ -289,18 +289,16 @@ function validatePurchaseArgs(
   return undefined;
 }
 
-/** The signing account inside an MCP payment object, mirror of the
- * HTTP header decode in decline-diagnosis. */
-function payerFromPaymentMeta(meta: unknown): string | undefined {
-  if (!isRecord(meta) || !isRecord(meta["payload"])) {
-    return undefined;
-  }
-  const auth = meta["payload"]["authorization"];
-  if (!isRecord(auth) || typeof auth["from"] !== "string") {
-    return undefined;
-  }
-  return /^0x[0-9a-fA-F]{40}$/.test(auth["from"]) ? auth["from"] : undefined;
-}
+/**
+ * DELETED 2026-08-02: payerFromPaymentMeta, which read the payer out
+ * of the caller's unverified `_meta`. Its only remaining caller was
+ * the idempotency replay lookup, and that now happens inside the
+ * payment pipeline against the facilitator-verified payload
+ * (payerOfVerifiedPayload in lib/replay-guard). The function is gone
+ * rather than left unused, because an unverified payer reader sitting
+ * in the file is an invitation to the exact bug just fixed — the next
+ * person needing "the payer" would find it and it would look right.
+ */
 
 async function callPurchaseTool(
   c: Context<HonoEnv>,
@@ -318,29 +316,38 @@ async function callPurchaseTool(
    * Idempotency replay, same mechanism as the HTTP door (see
    * lib/idempotency.ts): _meta['x402/idempotency-key'] + the same
    * payer + the same tool inside 24h returns the ORIGINAL result with
-   * no settlement. Checked before the stock and shutter gates on
-   * purpose — a replayed purchase already owns its goods, and a shelf
-   * that emptied since must not turn a retry into a refusal.
+   * no settlement.
+   *
+   * THE LOOKUP IS NOT PERFORMED HERE. It is handed to the payment
+   * pipeline as a callback and runs at the one point the payer is
+   * known to have SIGNED — after the facilitator verifies, before
+   * anything settles. It used to run right here, off the address the
+   * caller wrote into `_meta`, which is decoded and never checked;
+   * that meant a cached purchase went to whoever asserted the buyer's
+   * (publicly visible) wallet address and knew the key. Same fix, same
+   * day, as the HTTP door.
+   *
+   * The consequence for the stock and shutter gates below is
+   * deliberate and unchanged in spirit: a replay still never trips
+   * them, because it short-circuits inside the pipeline before they
+   * are consulted for a settlement — a retry that already owns its
+   * goods must not be turned away by a shelf that emptied since.
    */
   const idempotencyKey = usableIdempotencyKey(rawIdempotencyKey);
-  const idempotencyPayer = idempotencyKey
-    ? payerFromPaymentMeta(paymentMeta)
-    : undefined;
   const idempotencySurface = `mcp:buy_${item.id}`;
-  if (idempotencyKey && idempotencyPayer) {
-    const replay = await lookupIdempotent(
-      c.env,
-      idempotencySurface,
-      idempotencyPayer,
-      idempotencyKey,
-    );
-    if (replay) {
-      return rpcResult(
-        id,
-        toolText({ ...replay.body, ...replayNote(replay.first_served_at) }),
-      );
-    }
-  }
+  const replayCheck = idempotencyKey
+    ? async (verifiedPayer: string) => {
+        const replay = await lookupIdempotent(
+          c.env,
+          idempotencySurface,
+          verifiedPayer,
+          idempotencyKey,
+        );
+        return replay
+          ? { ...replay.body, ...replayNote(replay.first_served_at) }
+          : null;
+      }
+    : undefined;
   // Sold out honestly, same as the HTTP door: bare stocked shelves
   // never issue terms nobody can settle.
   if (item.stocked && (await stockedShelfCount(c.env, item)) === 0) {
@@ -361,7 +368,21 @@ async function callPurchaseTool(
       );
     }
   }
-  const outcome = await runMcpPayment(c.env, item.id, paymentMeta, mcpSignals(c));
+  const outcome = await runMcpPayment(
+    c.env,
+    item.id,
+    paymentMeta,
+    mcpSignals(c),
+    replayCheck,
+  );
+  /**
+   * The retry that already owns its goods: the pipeline recognised a
+   * verified payer holding a key it has served before, and returned
+   * the original purchase without settling anything.
+   */
+  if (outcome.kind === "replay") {
+    return rpcResult(id, toolText(outcome.body));
+  }
   if (outcome.kind === "payment-required") {
     const body = isRecord(outcome.body) ? outcome.body : {};
     const base = c.env.STORE_BASE_URL;
@@ -446,11 +467,18 @@ async function callPurchaseTool(
   }
   const response = await fulfillPurchase(c.env, item, outcome.payment, input);
   const flat = flattenPurchase(response);
-  if (idempotencyKey && idempotencyPayer) {
+  /**
+   * Stored under the VERIFIED payer the pipeline carried out, not the
+   * address the caller claimed. The two are the same for an honest
+   * client and only diverge for a dishonest one, which is the case
+   * worth being right about: a cache written under an asserted
+   * address would be a cache another wallet could later collect.
+   */
+  if (idempotencyKey && outcome.verifiedPayer) {
     await storeIdempotent(
       c.env,
       idempotencySurface,
-      idempotencyPayer,
+      outcome.verifiedPayer,
       idempotencyKey,
       flat,
       outcome.payment.transaction,

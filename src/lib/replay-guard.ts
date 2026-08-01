@@ -33,6 +33,31 @@ export function extractPaymentNonce(paymentPayload: unknown): string | null {
   return typeof nonce === "string" && nonce.length > 0 ? nonce : null;
 }
 
+/**
+ * The payer out of a VERIFIED payment payload.
+ *
+ * Deliberately distinct from `payerFromPaymentHeader`, which decodes
+ * the raw request header and checks nothing — fine for books and
+ * diagnostics, never for an authorization decision, because anyone can
+ * write any address into a base64 blob. This one is only ever called
+ * on the object the facilitator handed back, so the address it returns
+ * is an account that actually signed. Two functions rather than one
+ * with a flag, so the unsafe reading cannot be selected by accident.
+ */
+export function payerOfVerifiedPayload(
+  paymentPayload: unknown,
+): string | undefined {
+  if (!isRecord(paymentPayload)) return undefined;
+  const payload = paymentPayload["payload"];
+  if (!isRecord(payload)) return undefined;
+  const authorization = payload["authorization"];
+  if (!isRecord(authorization)) return undefined;
+  const from = authorization["from"];
+  return typeof from === "string" && /^0x[0-9a-fA-F]{40}$/.test(from)
+    ? from
+    : undefined;
+}
+
 export async function isNonceSpent(env: Env, nonce: string): Promise<boolean> {
   return (await env.COUNTERS.get(KV_KEYS.paymentNonce(nonce))) !== null;
 }

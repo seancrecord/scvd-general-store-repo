@@ -53,7 +53,19 @@ imports), and a green test suite can still fail the real deploy.
 
 ## Testing
 
+- **`npm run typecheck` is the typecheck. `npm run build:check` is NOT.**
+  build:check is `wrangler deploy --dry-run`, which bundles with esbuild
+  and strips types without checking them — it will happily bundle a
+  reference to a variable that does not exist. Run `tsc --noEmit`
+  before claiming a change typechecks. (Learned 2026-08-02 the
+  expensive way: a deleted variable still referenced at another call
+  site passed build:check twice and was caught by a test.)
+- `vitest` does not typecheck either. Green tests plus a green bundle
+  still leaves type errors sitting in the tree.
 - Every behavior change ships with a test that would fail without it.
+- A test asserting a fix must be shown to FAIL without the fix —
+  `git stash` the source change, run it, confirm red, restore. A test
+  that passes both ways proves nothing and looks like proof.
 - A 402-issuing path needs `installFacilitatorMock()` in the spec, or
   it 500s instead of 402ing (a recurring gotcha).
 - Test the instrument, not just the output — a null result from a

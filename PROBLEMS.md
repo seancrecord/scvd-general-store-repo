@@ -1227,6 +1227,61 @@ sold-out included, runs before the gate and moves no money. Adding a
 money-losing route to prove money-losing routes are detected is the
 wrong trade.
 
+### 19. The idempotency cache was collectable without a signature — FIXED 2026-08-02
+
+Found while scoping CV's T11 (pre-supply an Idempotency-Key in the 402
+challenge), and it is the reason T11 must NOT be built as asked.
+
+The cache holds a buyer's actual goods — the certificate they paid
+for — keyed by (surface, payer, hashed key). The replay lookup ran at
+the TOP of the gate, off `payerFromPaymentHeader`, which is
+`JSON.parse(atob(header))` and a field read. No verification, because
+verification happens later in `processHTTPRequest`. So the store
+handed a cached purchase to whoever ASSERTED the buyer's address, and
+a buyer's address is public on Base. Same hole, same shape, on the MCP
+door via `payerFromPaymentMeta`.
+
+**Not a live exploit, and worth being exact about why:** honoring a
+replay also required the Idempotency-Key, which is a caller-generated
+secret we never publish. The documented model even says so — "honoring
+one requires knowing the paying wallet AND its chosen key". So the
+defence was real. It was also SINGLE, and resting entirely on a value
+the caller controls and can leak through a log, a shared client
+library, or a predictable generator. One disclosed key meant one
+wallet's goods collectable by a stranger.
+
+**Fixed by moving, not by adding crypto.** Both doors already had a
+seam between verify and settle — `processHTTPRequest` returns a
+verified `paymentPayload`, `processSettlement` is a separate call. The
+lookup now happens there, against `payerOfVerifiedPayload()`, a
+deliberately separate reader from the header-decoding one so the
+unsafe reading cannot be selected by accident. A replay now takes the
+private key rather than knowledge of an address. It costs one verify
+round trip on the replay path, which the looping agent this exists for
+already pays: it signs a fresh authorization every pass by definition
+(#16). `payerFromPaymentMeta` was deleted rather than left unused,
+because an unverified payer reader sitting in the file is an
+invitation to the same bug.
+
+*Proven, not asserted:* the regression test was run against the old
+code first and fails there, passes here.
+
+**What this means for T11:** publishing a suggested key in the public
+402 would have converted the one secret into public knowledge. With
+the payer now verified the cache is safe even if a key is public, so
+T11 becomes buildable — but on its own merits and after this, not
+before it.
+
+**A process finding fell out of the same hour, and it is the more
+embarrassing one.** `npm run build:check` is `wrangler deploy
+--dry-run`: esbuild bundling, which STRIPS types without checking
+them. It had been standing in for a typecheck all session and it
+bundled a reference to a deleted variable twice without complaint; a
+test caught it. `npm run typecheck` (tsc --noEmit) is the real one,
+and running it surfaced 25 further type errors sitting in committed
+test code plus a `.d.ts` that had drifted from its implementation.
+All fixed, and AGENTS.md now says which command is which.
+
 ---
 
 ## Opportunities (the $ question, from the same walk)

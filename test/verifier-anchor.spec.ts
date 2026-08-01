@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { AnchoredKeyHistory } from "../verifier/x402-verify.js";
 import {
   canonicalizeAnchorSnapshot,
   checkAnchoredKeyHistory,
@@ -25,6 +26,31 @@ import type { AnchorSnapshot } from "@/services/anchor-log";
  * tested only against its own output would agree with itself forever
  * while drifting away from the thing it verifies.
  */
+
+/**
+ * NARROWING HELPERS, and they earn their place rather than silencing
+ * the compiler: `AnchoredKeyHistory` is a discriminated union because
+ * "no anchor log exists" and "the key is not in it" and "here is where
+ * it first appears" are genuinely different answers with different
+ * fields. A test that reached past that union would be asserting
+ * against a shape the library never promises. These fail loudly with
+ * the library's own reason string, so a test that lands in the wrong
+ * branch says WHY instead of reading `undefined`.
+ */
+function availableHistory(result: AnchoredKeyHistory) {
+  if (!result.available) {
+    throw new Error(`expected an available anchor log, got: ${result.reason}`);
+  }
+  return result;
+}
+
+function foundHistory(result: AnchoredKeyHistory) {
+  const open = availableHistory(result);
+  if (!open.found) {
+    throw new Error(`expected the key to be found, got: ${open.reason}`);
+  }
+  return open;
+}
 
 const KEY_A = "a".repeat(64);
 const KEY_B = "b".repeat(64);
@@ -318,10 +344,10 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_A, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.found).toBe(true);
-    expect(result.chain_ok).toBe(true);
-    expect(result.first_seen_sequence).toBe(2);
-    expect(result.bitcoin_confirmed).toBe(false);
+    expect(availableHistory(result).found).toBe(true);
+    expect(availableHistory(result).chain_ok).toBe(true);
+    expect(foundHistory(result).first_seen_sequence).toBe(2);
+    expect(foundHistory(result).bitcoin_confirmed).toBe(false);
   });
 
   it("finds a retired key too, since old artifacts still need checking", async () => {
@@ -335,8 +361,8 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_B, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.found).toBe(true);
-    expect(result.first_seen_sequence).toBe(1);
+    expect(availableHistory(result).found).toBe(true);
+    expect(foundHistory(result).first_seen_sequence).toBe(1);
   });
 
   it("says plainly when a key is nowhere in the history", async () => {
@@ -345,7 +371,7 @@ describe("checkAnchoredKeyHistory", () => {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
     expect(result.available).toBe(true);
-    expect(result.found).toBe(false);
+    expect(availableHistory(result).found).toBe(false);
     expect(String(result.reason)).toContain("does not appear");
   });
 
@@ -359,11 +385,11 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_A, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.first_seen_sequence).toBe(1);
-    expect(result.bitcoin_confirmed).toBe(true);
+    expect(foundHistory(result).first_seen_sequence).toBe(1);
+    expect(foundHistory(result).bitcoin_confirmed).toBe(true);
     // The proof comes back so the caller can settle it themselves.
-    expect(result.ots_proof_base64).toBe("cHJvb2Y=");
-    expect(result.ots_status_is_unverified_claim).toBe(true);
+    expect(foundHistory(result).ots_proof_base64).toBe("cHJvb2Y=");
+    expect(foundHistory(result).ots_status_is_unverified_claim).toBe(true);
     /**
      * And it names WHAT to compare. An attacker who rewrote the chain
      * and re-stamped it passes every check above — the digests match,
@@ -372,8 +398,8 @@ describe("checkAnchoredKeyHistory", () => {
      * verify" without "then compare the block time to first_seen_at"
      * is handing them a ritual that clears the actual forgery.
      */
-    expect(String(result.settle_it_yourself)).toContain("first_seen_at");
-    expect(String(result.settle_it_yourself).toLowerCase()).toContain(
+    expect(String(foundHistory(result).settle_it_yourself)).toContain("first_seen_at");
+    expect(String(foundHistory(result).settle_it_yourself).toLowerCase()).toContain(
       "backdated",
     );
   });
@@ -387,8 +413,8 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_A, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.chain_ok).toBe(false);
-    expect(result.bitcoin_confirmed).toBe(false);
+    expect(availableHistory(result).chain_ok).toBe(false);
+    expect(foundHistory(result).bitcoin_confirmed).toBe(false);
     expect(String(result.reason)).toContain("unbacked");
   });
 
@@ -407,8 +433,8 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_A, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.anchor_confidence).toBe("pending_only");
-    expect(result.bitcoin_confirmed).toBe(false);
+    expect(availableHistory(result).anchor_confidence).toBe("pending_only");
+    expect(foundHistory(result).bitcoin_confirmed).toBe(false);
     // And the prose has to carry the reason, not just the enum.
     expect(String(result.reason).toLowerCase()).toContain("rewritten today");
   });
@@ -417,10 +443,10 @@ describe("checkAnchoredKeyHistory", () => {
     const base = await buildLog([snapshot(1, null)]);
     // Nothing submitted at all.
     expect(
-      (
+      availableHistory(
         await checkAnchoredKeyHistory(did, KEY_A, {
           fetch: fakeFetch(base) as unknown as typeof fetch,
-        })
+        }),
       ).anchor_confidence,
     ).toBe("unanchored");
 
@@ -428,10 +454,10 @@ describe("checkAnchoredKeyHistory", () => {
     const confirmed = await buildLog([snapshot(1, null)]);
     confirmed.entries[0]!.ots = { status: "complete", proof_base64: "cA==" };
     expect(
-      (
+      availableHistory(
         await checkAnchoredKeyHistory(did, KEY_A, {
           fetch: fakeFetch(confirmed) as unknown as typeof fetch,
-        })
+        }),
       ).anchor_confidence,
     ).toBe("confirmed");
 
@@ -441,10 +467,10 @@ describe("checkAnchoredKeyHistory", () => {
     broken.entries[1]!.ots = { status: "complete", proof_base64: "cA==" };
     broken.entries[0]!.snapshot.artifacts_issued_total = 99999;
     expect(
-      (
+      availableHistory(
         await checkAnchoredKeyHistory(did, KEY_A, {
           fetch: fakeFetch(broken) as unknown as typeof fetch,
-        })
+        }),
       ).anchor_confidence,
     ).toBe("chain_broken");
   });
@@ -455,7 +481,7 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_A, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.bitcoin_confirmed).toBe(false);
+    expect(foundHistory(result).bitcoin_confirmed).toBe(false);
     expect(String(result.reason)).toContain("calendar's promise");
   });
 
@@ -469,7 +495,7 @@ describe("checkAnchoredKeyHistory", () => {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
     // Position lies; the sequence number does not.
-    expect(result.first_seen_sequence).toBe(1);
+    expect(foundHistory(result).first_seen_sequence).toBe(1);
   });
 
   it("matches keys case-insensitively and past an 0x prefix", async () => {
@@ -479,7 +505,7 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, `0x${KEY_A}`, {
       fetch: fakeFetch(log) as unknown as typeof fetch,
     });
-    expect(result.found).toBe(true);
+    expect(availableHistory(result).found).toBe(true);
   });
 
   it("handles an empty log without claiming anything about it", async () => {
@@ -487,7 +513,7 @@ describe("checkAnchoredKeyHistory", () => {
       fetch: fakeFetch({ entries: [] }) as unknown as typeof fetch,
     });
     expect(result.available).toBe(true);
-    expect(result.found).toBe(false);
+    expect(availableHistory(result).found).toBe(false);
     expect(String(result.reason)).toContain("empty");
   });
 
@@ -495,6 +521,6 @@ describe("checkAnchoredKeyHistory", () => {
     const result = await checkAnchoredKeyHistory(did, KEY_A, {
       fetch: fakeFetch({ entries: "no" }) as unknown as typeof fetch,
     });
-    expect(result.found).toBe(false);
+    expect(availableHistory(result).found).toBe(false);
   });
 });

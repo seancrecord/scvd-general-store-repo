@@ -64,6 +64,7 @@ import type { SettledPayment } from "@/lib/payments";
 import {
   extractPaymentNonce,
   isNonceSpent,
+  payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
 import type { HonoEnv } from "@/types";
@@ -369,34 +370,13 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
 
   /**
-   * IDEMPOTENCY REPLAY, before any money conversation happens. A
-   * usable key + a payment header whose payer matches a purchase this
-   * same payer already made under this same key means the agent is
-   * retrying, not re-buying: serve the original result and settle
-   * nothing. Scoped by (path, payer, hashed key) so honoring a replay
-   * requires knowing the paying wallet AND its secret key. Every
-   * failure direction here falls through to a normal charge — the
-   * cache is a courtesy, the till is the product.
+   * The caller's key, read here; the REPLAY LOOKUP ITSELF happens
+   * after verification, further down, and the distance between those
+   * two facts is deliberate — see the note at the lookup.
    */
   const idempotencyKey = usableIdempotencyKey(
     c.req.header("Idempotency-Key"),
   );
-  const idempotencyPayer = idempotencyKey
-    ? payerFromPaymentHeader(offeredHeader)
-    : undefined;
-  if (idempotencyKey && idempotencyPayer) {
-    const replay = await lookupIdempotent(
-      c.env,
-      c.req.path,
-      idempotencyPayer,
-      idempotencyKey,
-    );
-    if (replay) {
-      c.header("Cache-Control", "no-store");
-      c.header("Idempotency-Replay", "true");
-      return c.json({ ...replay.body, ...replayNote(replay.first_served_at) });
-    }
-  }
 
   // First facilitator sync happens on the first paid request per isolate.
   await stack.initialized;
@@ -511,6 +491,49 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       }
     }
     return respondWithInstructions(c, result.response);
+  }
+
+  /**
+   * IDEMPOTENCY REPLAY — AFTER VERIFICATION, BEFORE SETTLEMENT, and
+   * the position is the security property.
+   *
+   * This lookup used to run at the top of the gate, off the payer
+   * address read straight out of the base64 PAYMENT-SIGNATURE header.
+   * That header is decoded, never checked, at that point — anyone can
+   * write any `authorization.from` they like into it. So serving a
+   * cached purchase there meant serving it to whoever ASSERTED the
+   * buyer's address, and a buyer's address is public on Base. The only
+   * thing standing between a stranger and another wallet's goods was
+   * that the Idempotency-Key is a caller-held secret.
+   *
+   * That is a real defence and it is a single one, resting on a value
+   * the caller controls and could leak through a log, a shared client,
+   * or a predictable generator. Here, `result.paymentPayload` has been
+   * through the facilitator: the payer is the account that actually
+   * SIGNED. A replay now requires the private key, not knowledge of an
+   * address, and the cache can no longer be read by anyone who merely
+   * learns a key.
+   *
+   * Costs one verify round trip on the replay path, which the looping
+   * agent this exists for is already paying — it signs a fresh
+   * authorization every pass by definition (ledger #16). It settles
+   * nothing, which is the whole point.
+   */
+  const idempotencyPayer = idempotencyKey
+    ? payerOfVerifiedPayload(result.paymentPayload)
+    : undefined;
+  if (idempotencyKey && idempotencyPayer) {
+    const replay = await lookupIdempotent(
+      c.env,
+      c.req.path,
+      idempotencyPayer,
+      idempotencyKey,
+    );
+    if (replay) {
+      c.header("Cache-Control", "no-store");
+      c.header("Idempotency-Replay", "true");
+      return c.json({ ...replay.body, ...replayNote(replay.first_served_at) });
+    }
   }
 
   // Verified. Refuse a nonce we've already settled once.

@@ -94,6 +94,8 @@ export type AnchoredKeyHistory =
       bitcoin_confirmed: boolean;
       ots_proof_base64: string | null;
       ots_status_is_unverified_claim: true;
+      /** Names the comparison that catches backdating: block time vs first_seen_at. */
+      settle_it_yourself: string;
       reason: string;
     };
 
