@@ -1040,27 +1040,80 @@ existing keeper-discretion rule is the current, honest answer.
 
 ## Opportunities (the $ question, from the same walk)
 
-### A. Signed x402 conformance checks, as a product
+### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
-The generalization of phantom_check plus everything learned this
-week: an operator pays a quarter, the store probes their 402, their
-offers, their receipts, their did.json and key history, and signs a
-third-party observation of what answered as declared. It is the
-registrar's round, pointed outward, for hire. Uses an existing trust
-model (third_party_observation), existing artifact plumbing, scales
-as pure code, and monetizes exactly the expertise this week produced.
-**My read: the strongest revenue idea on the board**, because the
-buyer is the same x402 builder /try already serves, arriving with a
-wallet by definition.
+Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare
+CPU-limit change and converging with the strategy pre-mortem's
+enclosure finding (DR4 #3) and #10 (execution verification). The
+distinction the whole opportunity set turns on:
 
-### B. A tiny open-source verifier
+- **VERIFICATION is offline crypto math** — does this JWS validate,
+  does this did.json resolve, does this receipt match the spec.
+  Anyone can run it; it is forkable by design; it is CPU-trivial
+  (Ed25519 is sub-millisecond); and it is exactly what the x402
+  Foundation and CDP will bundle FREE. Gemini's FM3 said this gets
+  commoditized to zero and the pre-mortem said an independent
+  syntax-checker is roadkill. Both correct. So verification is B —
+  the free public good — and it stays free BECAUSE it cannot be
+  defended. Trying to charge for it is trying to sell arithmetic.
+
+- **OBSERVATION is going into the world and looking, then signing
+  what was seen** — phantom_check (was that URL up 6h later?),
+  settlement_attestation (what does the chain actually say?), and
+  the one that matters most, DID THE SELLER ACTUALLY DELIVER WHAT
+  THEY PROMISED. You cannot fork this into an offline library,
+  because the value is not the math — it is the act of a
+  disinterested party having gone and looked at a specific moment.
+  It is I/O-bound (fetch, wait — the work the 100ms CPU ceiling does
+  not even charge for), and it is the behavioral layer platforms
+  explicitly disclaim. This is A's defensible edge.
+
+The CPU realization and the pre-mortem's enclosure cut are one truth
+from two angles: **the store's moat is observation, not
+verification.** You can copy a verifier; you cannot copy the act of
+having watched. This resolves the free-rider trap (FM3) at the root
+and re-aims A below.
+
+### A. Signed x402 OBSERVATIONS, as a product (re-aimed 2026-08-02)
+
+Originally framed as "conformance checks": an operator pays a
+quarter, the store probes their 402/offers/receipts/did.json/key
+history and signs what answered as declared. That framing survives
+only for the SYNTAX half — which entry 0 above just moved to B, the
+free tier, because the platform will give it away. The paid product
+re-aims to the half that cannot be commoditized: BEHAVIORAL
+observation, sold to the party who bears the RISK (the SELLER or
+operator protecting its reputation, NOT the transacting buyer-agent,
+who optimizes for price and won't pay for a badge — the pre-mortem's
+deepest cut). Concretely: "we watched whether your service actually
+delivered against its own declared terms, over this window, and
+signed what we saw" — the generalization of phantom_check pointed at
+a counterparty's behavior, not its syntax. Uses the existing
+third_party_observation trust model and artifact plumbing; the
+distinction from a facilitator's inline payment validation is that
+this attests DELIVERY, which no facilitator touches. **Still the
+strongest revenue idea on the board — but gated behind B per both
+DR4 rounds, priced like a commodity check per DR4's Let's Encrypt
+band, and trigger-dependent (no buyer until risk forces one).**
+
+### B. A tiny open-source verifier (the free VERIFICATION tier)
 
 A dependency-light package that verifies ANY store's offer-receipt
 artifacts, did:web keys and key history — ours included but not
-specially. Free tool, our name in the README of the reference
-implementation people actually use, and the natural funnel to A: the
-free tool checks yourself, the paid product is us checking you and
-signing it.
+specially. This is the VERIFICATION half from entry 0: offline crypto
+math, forkable by design, free because it cannot be defended, and
+that is the point — it is the public good that builds reputation and
+the funnel. Two constraints from the demand red-team, written before
+a line of it exists: (1) an optional LIVE-AUTHORITY lookup only we can
+answer (key-liveness against the beacon we ship; registry/breach
+check against the OTS/Rekor-anchored history from #2's plan) so the
+fork is the funnel and the live call is the reason to come back —
+without it, pure offline math gets commoditized on day one; (2) a
+versioned, frozen, rate-limited fixture endpoint (/try/v1) so CI
+pipelines that hardcode it cannot be broken by a schema change, and
+so a free sandbox cannot be drained. The paid product is NOT "us
+running this same math for you" — it is OBSERVATION (entry A), a
+different thing you cannot fork.
 
 ### C. Receipt-treaty first-mover
 
