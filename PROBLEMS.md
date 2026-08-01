@@ -64,18 +64,18 @@ to import is BANK RECONCILIATION: walk on-chain settlements to our
 wallet against minted certificates, flag orphans. **Trigger:** the
 first real occurrence, or volume a hand cannot reconcile weekly.
 
-### 5. Issuer-liveness beacon (the dead-man pattern)
+### 5. Issuer-liveness beacon (the dead-man pattern) — SHIPPED 2026-08-01
 
-causeclaw's stated need: fail-closed when the issuer disappears. The
-solved pattern is the warrant canary / dead-man switch: a dated
-statement re-signed on a schedule, so a verifier can fail closed on
-staleness instead of guessing. We have the cron, the signer and the
-artifact classes already; this is a small build. **My read: the best
-next build in this file** — it answers a named counterparty need, it
-strengthens the succession story (a stale beacon plus a fresh
-handover is exactly the signal an honest transition emits), and it is
-cheap. Gated only on the keeper agreeing the store should make a
-weekly liveness promise it then has to keep.
+Live at /.well-known/liveness.json. Built differently than first
+sketched, and better: computed and signed PER REQUEST rather than
+re-signed on a cron, so staleness cannot creep — the document either
+serves fresh or the fetch fails, and a failed fetch is the fail-closed
+signal. It carries two facts kept deliberately separate: the
+infrastructure signs (provable), and the keeper's last provable
+counter visit against the shutter's existing 48h presence window (the
+same fact the store already acts on when it refuses human-labor money).
+It claims nothing an automated signature cannot know, and says so on
+the document. Exit recorded: solved.
 
 ### 6. KV races (patron numbers, stock units, weekly caps)
 
@@ -207,6 +207,64 @@ mechanism (human shelves close honestly when the keeper is away) is
 the mitigation and it is real. Genuinely unsolved beyond that, and
 probably correctly so — a shop this size hiring a second human to
 satisfy a continuity doc would be the tail wagging the dog.
+
+### 12. Escrow / conditional release — an ecosystem-wide gap, and a gap-hunt candidate
+
+Nothing live in the x402 ecosystem holds funds until fulfillment
+confirms: everything proves settlement happened or proves an action
+happened, and the gap between settle and deliver is unprotected by
+protocol everywhere, not just here. Same shape as the settle-then-
+crash gap in AT_SCALE.md, aimed at humans instead of crashes. **Not
+built tonight, on purpose** — rushing conditional release under time
+pressure is how the overclaim mistake happens, and this one touches
+money. What DID ship instead, 2026-08-01, is the honest mitigation:
+a written refund commitment with the numbers attached (on /rights,
+trust.json and the fulfillment log — the keeper refunds missed
+windows himself, full amount, and the policy says plainly that it is
+a commitment, not escrow) plus /fulfillment-log, where whether the
+commitment is kept is public, order by order, with refund tx hashes.
+**Trigger for the real thing:** the gap-hunt — if the standards walk
+that produced the key-history submission finds the same missing-half
+pattern here (transition mechanics existed for #2664; maybe
+conditional-release mechanics have a prior-art pattern too), it
+becomes a spec contribution before it becomes our code.
+
+### 13. Keeper identity and staked reputation — a decision, not a build
+
+Two tiers of the outside trust list turn out to be the same question
+wearing two names: "independent confirmation of who the keeper is"
+and "something to lose reputationally if the store defects" both
+require attaching a real, known identity — and that cuts directly
+against a boundary set on day one (the keeper is a public handle by
+design; the private doors stay closed). This is a personal exposure
+trade the keeper alone can make, and this file records it as HIS
+decision, deliberately unmade, rather than a technical gap. A middle
+path exists if he ever wants it — a long-tenured verifiable identity
+(established GitHub history, a social account with years behind it)
+staked without a legal name — but nobody picks that for him.
+Meanwhile the buildable share of "track record" shipped as
+/fulfillment-log, and the rest of it is time: real strangers, real
+settlements, months. Manufacturing volume stays off the table by
+house law; the outreach already in motion is the only honest lever.
+
+### 14. Resale and transfer — a category mismatch, named before it bites
+
+What this store issues is proof of AUTHENTICITY, not sole possession:
+a "resold" certificate is a copy of signed bytes the seller can keep
+and sell again, because a signature cannot enforce scarcity. Not a
+missing feature — a category difference between a receipt and a
+token, now stated on /rights (transfer_caveat) so no buyer discovers
+it inside a dispute. Two honest paths exist if resale ever matters:
+on-chain tokenization (real scarcity, wrong weight for a shelf priced
+in tenths of a cent) or a store-run holder ledger (old holder signs a
+handoff to the new holder's key; reuses the ed25519 machinery; same
+self-hosted trust model as everything else here — consistent with the
+shop's stance, not a compromise of it). Most of the shelf is not
+resale-shaped anyway: souvenirs of an interaction, not collectibles.
+**Deliberately unbuilt: this solves for a market that does not exist
+at nine days old. Trigger:** a real holder asking to transfer a
+unique-content artifact (portrait-class, drawer-class), at which
+point the ledger version is the fit.
 
 ---
 
