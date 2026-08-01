@@ -25,13 +25,14 @@ import {
   preflightBlockers,
   refusalBeforeVerify,
 } from "@/lib/decline-diagnosis";
-import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
+import { BASE_NETWORK, DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import type {
   MismatchReport,
   PayloadFieldProblem,
 } from "@/lib/requirement-match";
 import { parseReferralMarker, recordReferral } from "@/lib/referrals";
+import { signedOffersForChallenge, withReceiptHeader } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -73,6 +74,81 @@ import type { HonoEnv } from "@/types";
  * lives in it, not one fetch away. Menu items also carry their
  * uniform spec and the C1 fact block in-payload.
  */
+/**
+ * Signed offers, sourced from the PAYMENT-REQUIRED header — because on
+ * THIS store the 402 body is the keeper's prose, not the standard
+ * payment-required JSON. The accepts[] a client actually signs against
+ * travel base64-encoded in the header, which is where the first cut of
+ * this looked for them in the body and found nothing; the probe test
+ * caught it before it shipped. Reading the header means the offers
+ * commit to exactly the terms a client pays, never a copy.
+ */
+async function offerExtensionsFor(
+  env: Env,
+  headers: Record<string, string>,
+): Promise<Record<string, unknown> | null> {
+  try {
+    const headerName = Object.keys(headers).find(
+      (name) => name.toLowerCase() === "payment-required",
+    );
+    if (!headerName) {
+      return null;
+    }
+    const decoded = JSON.parse(atob(headers[headerName] as string)) as Record<
+      string,
+      unknown
+    >;
+    const resource = decoded["resource"];
+    const resourceUrl =
+      typeof resource === "string"
+        ? resource
+        : isRecord(resource) && typeof resource["url"] === "string"
+          ? resource["url"]
+          : undefined;
+    if (!resourceUrl) {
+      return null;
+    }
+    return await signedOffersForChallenge(
+      env,
+      resourceUrl,
+      decoded["accepts"],
+      Math.floor(Date.now() / 1000),
+    );
+  } catch {
+    // Fail open: a 402 without offers is a working 402.
+    return null;
+  }
+}
+
+/** Splice the signed offers into the PAYMENT-REQUIRED header's JSON. */
+function withOfferHeader(
+  headers: Record<string, string>,
+  offers: Record<string, unknown>,
+): Record<string, string> {
+  try {
+    const headerName = Object.keys(headers).find(
+      (name) => name.toLowerCase() === "payment-required",
+    );
+    if (!headerName) {
+      return headers;
+    }
+    const decoded = JSON.parse(atob(headers[headerName] as string)) as Record<
+      string,
+      unknown
+    >;
+    const merged = {
+      ...decoded,
+      extensions: {
+        ...(isRecord(decoded["extensions"]) ? decoded["extensions"] : {}),
+        ...offers,
+      },
+    };
+    return { ...headers, [headerName]: btoa(JSON.stringify(merged)) };
+  } catch {
+    return headers;
+  }
+}
+
 async function enrich402Body(
   env: Env,
   path: string,
@@ -346,16 +422,42 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         ).catch(() => undefined);
       }
       if (!result.response.isHtml) {
+        /**
+         * x402 Signed Offers & Receipts: one JWS offer per accepts
+         * tier, the store COMMITTING to its quoted terms before any
+         * money moves. Spliced into the PAYMENT-REQUIRED header's own
+         * JSON — the document a compliant client actually parses —
+         * and mirrored onto the body for readers following the docs'
+         * body-first example. Null on any failure, and the 402 goes
+         * out exactly as it would have: no decoration is worth
+         * blocking the till. See lib/offer-receipt.ts.
+         */
+        const offers = await offerExtensionsFor(c.env, result.response.headers);
+        const enriched = await enrich402Body(
+          c.env,
+          c.req.path,
+          result.response.body,
+          decline,
+          refusal?.mismatch,
+          payloadProblems,
+        );
         return respondWithInstructions(c, {
           ...result.response,
-          body: await enrich402Body(
-            c.env,
-            c.req.path,
-            result.response.body,
-            decline,
-            refusal?.mismatch,
-            payloadProblems,
-          ),
+          headers: offers
+            ? withOfferHeader(result.response.headers, offers)
+            : result.response.headers,
+          body:
+            offers && isRecord(enriched)
+              ? {
+                  ...enriched,
+                  extensions: {
+                    ...(isRecord(enriched["extensions"])
+                      ? enriched["extensions"]
+                      : {}),
+                    ...offers,
+                  },
+                }
+              : enriched,
         });
       }
     }
@@ -470,7 +572,22 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
   await next();
 
-  for (const [key, value] of Object.entries(settlement.headers)) {
+  /**
+   * The receipt, into the facilitator's PAYMENT-RESPONSE header per
+   * the spec's placement — signed proof of delivery beside the proof
+   * of payment. withReceiptHeader returns the ORIGINAL headers
+   * untouched on any failure, because mangling the settlement header
+   * to attach a receipt would break the buyer's proof of payment in
+   * order to decorate it.
+   */
+  const outHeaders = await withReceiptHeader(c.env, settlement.headers, {
+    resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`,
+    ...(payer ? { payer } : {}),
+    network: BASE_NETWORK,
+    ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
+    nowSeconds: Math.floor(Date.now() / 1000),
+  });
+  for (const [key, value] of Object.entries(outHeaders)) {
     c.res.headers.set(key, value);
   }
 };
