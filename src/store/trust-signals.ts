@@ -110,6 +110,23 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That this store's MCP server was auto-indexed by a third-party directory that crawled it without being asked. Unclaimed, and it mirrors the repository README. Not an endorsement and not an audit: an index entry means somebody's crawler found us and filed us.",
   },
   {
+    url: "https://x402-list.com/services/sean-claude-van-damme-s-general-store",
+    registry: "x402-list.com",
+    confirmed: "2026-08-02",
+    /**
+     * A per-service page that RUNS CHECKS rather than just listing —
+     * grade A on 14 of 14 as of the keeper's read. Stronger than a bare
+     * index entry (a third party testing claims, not repeating them),
+     * but it is NOT carrying the site's top-level "verified" flag yet,
+     * and this record says so: that flag reportedly wants more
+     * independently-observed settlement volume, which time supplies
+     * rather than a submission. Naming the missing flag beside the
+     * grade is the difference between a score and a boast.
+     */
+    what_it_proves:
+      "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) — a third party testing the endpoints rather than repeating a listing. Not an endorsement and not an audit of the goods, and NOT yet the site's top-level 'verified' status, which is a separate flag this store has not earned there yet.",
+  },
+  {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
     registry: "Agent Identity Registry (AIR) — scvd-store, AIR-BYYP-0MQC-TAKR",
     confirmed: "2026-08-01",
