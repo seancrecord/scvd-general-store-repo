@@ -124,7 +124,7 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      * this array's own rules exist to prevent. Sharpen when confirmed.
      */
     what_it_proves:
-      "That this store published an Agent Facts entry in MIT's Project NANDA index, a public agent directory that resolves a handle to an endpoint and provenance. Not an endorsement and not an audit: a directory publication proves the store declared itself and was indexed, nothing about the goods or the operator.",
+      "That this store published an Agent Facts entry in MIT's Project NANDA index, a public agent directory that resolves a handle to an endpoint and provenance. Verification status is VERIFIED BY USER — self-attested, with organization verification not yet performed — and this record says so rather than letting the word 'verified' imply more than a self-claim. Not an endorsement and not an audit: a directory publication proves the store declared itself and was indexed, nothing about the goods or the operator.",
   },
   {
     url: "https://agentidentityregistry.org",
