@@ -266,6 +266,79 @@ at nine days old. Trigger:** a real holder asking to transfer a
 unique-content artifact (portrait-class, drawer-class), at which
 point the ledger version is the fit.
 
+### 15. The outside gotcha catalog, reviewed against the code (2026-08-01)
+
+An outside AI's production-infrastructure catalog, walked item by
+item rather than nodded at — most of it was already answered by the
+AT_SCALE walk, and citing beats re-deriving:
+
+- **Key rotation vs. historical receipts:** solved and exercised for
+  real. Permanent per-key kids, retired keys append-only in did.json
+  with dates and the outgoing-key-signed handover (AT_SCALE #10).
+- **Offer hoarding / replay:** solved by design. Offers carry a 300s
+  validUntil and are EVIDENCE, not coupons — nothing redeems them;
+  the gate rebuilds terms per request and the chain settles an
+  authorization nonce exactly once (AT_SCALE #1, #8).
+- **DDoS via 402 signing:** accepted with numbers — sub-millisecond
+  signs, bounded metric keyspace, rate-capped porch writes
+  (AT_SCALE #9).
+- **Settle-then-crash / no chargebacks:** accepted with trigger
+  (AT_SCALE #2, #3); the buyer-facing half shipped 2026-08-01 as the
+  written refund policy and /fulfillment-log. Escrow proper is #12.
+- **Clock drift:** non-issue at our timescales — a ±3s NTP drift
+  against a 300-second offer window is one percent, and we set no nbf
+  claim for a drifted clock to trip on. Would matter at sub-10s TTLs,
+  which nothing here uses.
+- **Gas spikes vs. micropayments:** not our layer. The exact scheme
+  on Base has the facilitator carry gas; our exposure is facilitator
+  pricing, which is a /stack dependency already named there.
+
+The two genuinely new items became #16 and #17. The catalog's closing
+question — "which layer do you want to solve?" — has a shop-shaped
+answer already on file: opportunity A (conformance checks as a
+product) is the layer where this store's answer is a THING SOLD
+rather than infrastructure taken on.
+
+### 16. Idempotency keys — the infinite-loop wallet drain
+
+The one real hole the catalog found. The chain refuses to settle the
+SAME authorization twice, but a non-deterministic agent stuck in a
+retry loop signs a FRESH authorization each pass — 500 loops is 500
+honest charges, and "the store behaved correctly" is no comfort to
+the drained wallet. Our MCP annotations already warn (idempotentHint:
+false, "a second identical call is a second charge"), but a warning
+is not a mechanism. **The build, when triggered:** honor an
+Idempotency-Key header (and its MCP _meta twin) on buy paths — same
+key + same item inside a window returns the ORIGINAL result, cached,
+unsettled, with the repeat named in the response. KV with a TTL fits;
+the race window (two identical keys inside one propagation window)
+fails toward a duplicate charge, which the refund policy already
+covers — fail closed on money would mean refusing sales for a cache.
+**Trigger:** the first observed repeat-purchase pattern that looks
+like a loop rather than intent (the fulfillment log and till make
+this visible), or a counterparty SDK that sends the header expecting
+it to mean something.
+
+### 17. Wallet-authenticated claims — surviving a context reset
+
+An agent pays for a two-hour human job, crashes at minute ten, and
+the respawned instance holds no order id — the goods exist, claimed
+by nobody. Everything needed already binds: orders and certificates
+carry the payer wallet. **The build, when triggered:** a claims door
+where a wallet proves itself live (sign a server-issued nonce with
+the payer key — never a stored session) and gets back its own orders
+and artifacts. Privacy is the sharp edge: the endpoint must prove
+possession of the key, not accept an address, or it becomes an
+enumeration service for anybody's purchase history. **Trigger:** the
+first letter from an agent that lost its order id — the mailbox
+answer today is the keeper looking it up by hand, which is the
+correct mechanism at eight settlements. Also filed: the legal
+half-thoughts from the same catalog (sanctions screening on
+anonymous wallets, liability lines on human-executed errands) are
+real, unmapped, and NOT a build — they are keeper-awareness items
+for the day volume makes them concrete, and the phone_call shelf's
+existing keeper-discretion rule is the current, honest answer.
+
 ---
 
 ## Opportunities (the $ question, from the same walk)

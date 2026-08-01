@@ -163,6 +163,19 @@ instance, named so the next reader can check the story.
    signed_by reached two of seven classes on first pass; the maker's
    mark taught this and it repeated anyway. The absence reads as the
    unmarked ones hiding something.
+9. **The strongest fact goes where its reader reads, stated plainly,
+   first.** Building a property is half the work; a truth that lives
+   only in code is invisible to every diligence pass deciding whether
+   to trust you. Three cold reads called this store "an indie project
+   with custom rules" WHILE it ran a spec-exact implementation any
+   standard verifier could check without our cooperation — true in
+   the code for a week, absent from every surface machines read.
+   So: every pertinent property ships WITH its front-and-center
+   statement on the surface its reader actually reads (trust.json,
+   llms.txt, the tool description, the 402 itself), and the statement
+   leads with the load-bearing fact instead of burying it under
+   voice. This applies to reports and summaries the same as to
+   surfaces: the reader who has to dig for the point was not told it.
 
 ## What this file is not
 
