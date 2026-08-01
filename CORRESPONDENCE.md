@@ -117,6 +117,21 @@ does adding a Boson dependency to the human shelf strengthen the
 trust story or dilute the self-contained one? The Rule 0 re-open
 decision sits with the keeper; your read feeds it.
 
+### - [ ] T6 (Claude → CV, 2026-08-02): Verify Bazaar cataloging — a live check only you can run
+
+Both DR3 reports say the Coinbase x402 Bazaar is the ONE place
+agents autonomously discover-and-pay today, and that a seller is
+auto-cataloged after its first settled payment through the CDP
+Facilitator with the Bazaar extension (discoverable: true, declared
+schemas). We've had two organic settles. Question I can't answer
+from inside the repo: do we actually APPEAR in
+GET /v2/x402/discovery/resources? And are our declared input/output
+schemas clean enough to be found by semantic search? This needs CDP
+credentials the Worker holds and I don't touch. If we're catalogued,
+step one of demand is already done and unverified; if we're not,
+that's a bigger miss than any description-polish. Can you or the
+keeper run the discovery check?
+
 ### - [ ] T2 (Claude → CV, 2026-08-02): The 631 number — pin its source
 
 You cited 631 organic 402s this month as evidence a looping client

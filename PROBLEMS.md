@@ -316,8 +316,75 @@ are (1) the boundary-language pass on tool descriptions (hours), and
 x402 but strongly analogous and responsive to visible pain). Both
 are BUILD-able on our side; the distribution half (getting /try in
 front of client builders) stays the human work this entry always
-named. Claude DR3 and a Gemini pre-mortem still to cross-check
-before any push.
+named.
+
+**DR3 round 2 (Claude DR), vetted 2026-08-02 — converges hard with
+round 1 and lands the load-bearing finding of the whole demand
+question:**
+
+- *Convergence, now decision-grade:* both engines independently rank
+  the ROUTING/TOOL-SELECTION layer as the #1 evidenced lever — and
+  Claude DR backs it with peer-reviewed work (BiasBusters, arXiv
+  2510.00307v2, Oxford+Microsoft, ICLR 2026: semantic alignment of
+  tool description to query is the strongest driver; small
+  description perturbations shift selection; position and
+  pre-training exposure follow). This is the third independent
+  validation of the Glama hardening. Both flag llms.txt as
+  evidence-against for citations, surviving only as IDE-agent docs
+  nav. Both name the fixture strategy as high-upside/unproven with
+  the Stripe-test-mode prior art — Claude DR adds the crucial trap:
+  httpbin and RequestBin were beloved, free, and UNMONETIZED
+  (RequestBin died of free-target abuse), so a /try door needs a
+  designed free→paid bridge AND a rate limit or it becomes a cost
+  center, not a channel.
+- *The retrieval bottleneck, sharpened:* "Incumbent Advantage"
+  (arXiv 2606.17443) — identical-spec tools go 100% to the
+  recognized brand, and an unknown brand is retrieved only ~6.1% of
+  the time in top-5. Implication for us: we lose head-to-head on
+  brand, so the only winnable game is (a) get retrieved at all
+  (semantic description quality — the boundary-language pass) and
+  (b) be UNIQUELY relevant, never framed as a functional substitute
+  for an incumbent. That reframes the description pass from "polish"
+  to "the one move that fights the actual bottleneck."
+- *THE FINDING THAT OUTRANKS EVERY TACTIC — product-market fit, not
+  marketing.* Both reports, arriving separately, say the proven
+  autonomous x402 demand today is for LIVE DATA FEEDS and INFERENCE
+  — and this store sells signed artifacts, memory, and human-labor,
+  categories with NO documented autonomous demand yet. Claude DR is
+  blunt: "the demand channels will not manufacture demand for a
+  category buyers aren't buying." The honest read: our two sales
+  aren't a distribution failure to fix with better descriptions;
+  they may be a category that hasn't arrived. This is logged as the
+  real problem behind #3, above any tactic.
+- *And the bridge both the demand research AND the earlier
+  opportunity walk point at the SAME thing:* Claude DR's single
+  most-valuable recommendation is to expose a SKU in a category
+  agents DO pay for — naming "a paid x402-conformance-check
+  endpoint" explicitly. That is opportunity A (PROBLEMS "Opportunity
+  A: signed conformance checks as a product"), independently
+  re-derived from the demand side. Two separate research threads —
+  "what's our strongest revenue idea" and "what do agents actually
+  buy" — converged on the conformance-check product. That
+  convergence is the strongest signal in either cycle for what to
+  build next after the trust-layer work.
+
+*Cross-checked verdict — the demand plan, ordered:*
+1. Boundary-language pass on tool descriptions (hours, highest
+   evidence, fights the retrieval bottleneck) — BUILD-able now.
+2. Verify Bazaar cataloging — a live CDP-discovery check the keeper
+   or CV runs (are we in GET /v2/x402/discovery/resources after our
+   settled sales?); pursue curated lists (Agentic.Market categories,
+   Merit skills). Distribution, human work.
+3. The /try + conformance-vectors sandbox WITH a designed free→paid
+   bridge and a rate limit (the RequestBin lesson) — BUILD-able,
+   a week.
+4. **Strategic: the conformance-check SKU (opportunity A), now
+   double-confirmed as both our best revenue idea AND a category
+   with documented demand.** This is the DR4 question's likely
+   center of gravity.
+Gemini red-team brief 3 (attack this plan) still to run before any
+push; DR4 (strategy) will decide the conformance-SKU question with
+its own cross-check.
 
 ---
 
