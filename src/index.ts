@@ -39,6 +39,7 @@ import {
   didRoutes,
   livenessRoutes,
   fulfillmentLogRoutes,
+  claimsRoutes,
   rightsRoutes,
   windDownRoutes,
   becomingRoutes,
@@ -181,6 +182,7 @@ app.route("/", conventionalRoutes);
 app.route("/", didRoutes);
 app.route("/", livenessRoutes);
 app.route("/", fulfillmentLogRoutes);
+app.route("/", claimsRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);
 app.route("/", becomingRoutes);

@@ -39,6 +39,7 @@ export { conventionalRoutes } from "@/routes/conventional";
 export { didRoutes } from "@/routes/did";
 export { livenessRoutes } from "@/routes/liveness";
 export { fulfillmentLogRoutes } from "@/routes/fulfillment-log";
+export { claimsRoutes } from "@/routes/claims";
 export { rightsRoutes } from "@/routes/rights";
 export { windDownRoutes } from "@/routes/wind-down";
 export { becomingRoutes } from "@/routes/becoming";
