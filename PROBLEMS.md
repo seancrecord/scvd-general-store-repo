@@ -1245,3 +1245,90 @@ emerged, in agreed order: (1) tool-description boundary pass — hours,
 triple-validated; (2) free verifier B — a week, both DR4s' month-1
 move; (3) paid conformance A — gated on B's inbound + the kill-metric;
 distribution and C stay human/opportunistic.
+
+**DEMAND RED-TEAM (Gemini brief 3), vetted 2026-08-02 — no shipped
+bug this round (unlike DR2's beacon), but two real strategic
+refinements and three design constraints that bind the free verifier
+BEFORE it is written:**
+
+- **FM3 (free-rider commoditization) — the sharpest catch, and it
+  hands us the anti-commodity design for B.** A purely offline
+  stateless verifier gets forked, stripped of our identity, and
+  bundled into rivals' packages — we carry the maintenance, capture
+  zero flow. Gemini's fix is exactly right and we already hold the
+  pieces: the verifier stays sticky only if it makes a DYNAMIC
+  authority call only we can answer — a live key-liveness check (the
+  liveness beacon we already ship) and a real-time registry/breach
+  check (the OTS/Rekor-anchored key history from the DR2 plan). So B
+  is designed as: offline crypto math anyone can run (honest, forkable
+  by design — that IS the free public good) PLUS an optional live
+  authority lookup against scvd.store that answers "is this key
+  current, retired, or unknown, as of now, anchored externally." The
+  fork is the funnel; the live lookup is the reason to come back. This
+  converts two already-built/planned assets into B's moat.
+
+- **FM2 (Layer-0 candidate exclusion) — FATAL tag, and a genuine
+  qualifier on the triple-validated description finding.** Agent
+  frameworks pre-filter tools DETERMINISTICALLY before semantic
+  matching ever runs — latency caps (drop anything with a human
+  fulfillment window), whitelist/registry gates, minimum-age/volume
+  bars. If our human-labor shelf is dropped at Layer 0, its
+  description is never read. This does NOT kill the description pass;
+  it SCOPES it: the boundary-language work pays off for INSTANT,
+  machine-verifiable items (verify, the conformance-check SKU, signed
+  artifacts) and is largely wasted on human-queue items that get
+  pre-filtered on latency. Sharpens the #1 build item — polish
+  descriptions where Layer 0 lets them through. Early signal: high
+  Bazaar indexing with zero manifest/mcp.json fetches from agent IPs.
+
+- **FM1 (test-artifact arbitrage) — a hard design constraint on B/try,
+  partly pre-mitigated.** A free /try that signs real JWS with a test
+  key invites harvesting those receipts and passing them as paid work
+  to naive third-party verifiers that check signature validity but not
+  WHICH key. We already run the discipline for conformance vectors
+  (published test key, distinct test kid did:web:scvd.store#conformance-
+  test-key, a test asserting test≠live). The constraint for /try:
+  inherit that exactly — a visibly distinct test kid, and our OWN
+  verify surface must LOUDLY name a test-key artifact as proving
+  nothing about a real purchase (verify.ts already names which key
+  signed and flags no-known-key; extend it to flag the test key by
+  name when /try ships). We cannot fix third parties' loose kid
+  checks, but we can make the honest reading unmissable and never mint
+  a test artifact that looks production. Early signal: production
+  verify traffic for test-key signatures.
+
+- **FM4 (unpriced CI load + reputational blast radius) — COST, and
+  the RequestBin lesson again from another angle.** If frameworks
+  hardcode /try into CI, every PR across dozens of repos hits our
+  edge, and any schema change or key rotation breaks hundreds of
+  builds globally — devs then flag us as an unstable dependency. Fix:
+  a versioned, explicitly-stable fixture endpoint (/try/v1 frozen),
+  a rate limit, and the free→paid bridge Claude DR4 already required.
+  Stable-by-contract, not stable-by-luck. Early signal: identical
+  top-of-hour POST spikes from CI runner IP ranges.
+
+- **FM5 (the honesty trap) — existential, largely pre-mitigated,
+  now named as explicit discipline.** The slow slide: zero organic
+  volume → pressure → "uptime-monitor bots making real paid txns" →
+  logging them as fulfillment → "impartial audits" that are
+  cherry-picked marketing. The store's structural house-wallet
+  exclusion already blocks the first step (monitoring wallets flag as
+  house, excluded from every organic count). What this adds is the
+  STATED rule and a periodic audit: no internal probing is ever
+  counted as external demand, and the check is Gemini's own signal —
+  do any public-fulfillment-log payer wallets trace to operator
+  funding sources? Ever. That the store's whole edge is integrity
+  makes this the one failure mode where the early-warning signal
+  should be run deliberately, not just watched for. The kill-metric
+  for pulling A forward (≥2 unsolicited paid requests) is honest-law
+  clean precisely because it measures inbound the operator cannot
+  manufacture.
+
+*Net:* the demand plan survives with its order intact and three
+constraints written onto B before a line of it exists (live-authority
+lookup for stickiness; distinct+loudly-flagged test kid; versioned
+stable fixture + rate limit), one scope refinement on the description
+pass (instant items, not human-queue), and one discipline promoted to
+an explicit rule (never count internal probing as demand). Gemini's
+pre-mortem of the STRATEGY (brief 4) is the last adversarial pass;
+after it, the build queue is final.
