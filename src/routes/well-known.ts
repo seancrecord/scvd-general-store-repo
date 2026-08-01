@@ -106,6 +106,13 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * The two facts on this whole page that are not our word, stated
      * as the only two that matter.
      */
+    /**
+     * The dead-man beacon: computed and signed per request, carrying
+     * infrastructure liveness and the keeper's last provable counter
+     * visit as SEPARATE facts. The consumption contract (what to fail
+     * closed on) rides the document itself.
+     */
+    liveness: `${base}/.well-known/liveness.json`,
     independently_checkable: {
       signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
       settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base explorer without asking us.`,
@@ -162,6 +169,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     signing_key: `${base}/.well-known/scvd-signing-key`,
     trust: `${base}/.well-known/trust.json`,
     did: `${base}/.well-known/did.json`,
+    liveness: `${base}/.well-known/liveness.json`,
   });
 });
 
@@ -257,6 +265,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * the other without guessing the convention.
      */
     did: `${base}/.well-known/did.json`,
+    /**
+     * The dead-man beacon, same reason as the key and the attestation:
+     * an operator deciding whether to honour our receipts is exactly
+     * the reader who needs a signal to fail closed on when this store
+     * stops answering.
+     */
+    liveness: `${base}/.well-known/liveness.json`,
     pulse: `${base}/pulse.json`,
     corrections: `${base}/corrections`,
     mcp: {
