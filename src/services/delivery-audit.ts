@@ -1,0 +1,182 @@
+import { listKeys } from "@/lib/kv-list";
+import { bulkGetJson } from "@/lib/kv-bulk";
+import { KV_KEYS } from "@/lib/kv-keys";
+import { sendAlert } from "@/lib/alerts";
+import type { Env } from "@/types";
+
+/**
+ * THE DELIVERY AUDIT — did the goods actually leave the shelf after
+ * the money moved?
+ *
+ * THE GAP THIS EXISTS FOR (problem ledger #18). The money path runs:
+ *
+ *     processSettlement      money moves
+ *     recordSettlement       counter AND payer row both written
+ *     await next()           the handler that mints the artifact
+ *
+ * Both sides of the reconciliation we already had — settle counters
+ * against payer rows — are written BEFORE delivery is attempted. So a
+ * handler that throws, returns a non-2xx, or never finishes because
+ * the isolate went away leaves a settled payment, a bumped counter, a
+ * bumped payer row and NO ARTIFACT, and the old check reports
+ * `unexplained: 0`. The books balance. The buyer got nothing. That is
+ * the worst failure class this store has: money taken, goods not
+ * delivered, and no complaint guaranteed, because the buyer may be an
+ * agent that is no longer running.
+ *
+ * HOW: an intent row, written after settlement and before the handler,
+ * deleted only when the handler returns goods. Anything still sitting
+ * there after a grace period is a sale that took money and delivered
+ * nothing. This is the ordinary outbox pattern, and the reason it fits
+ * is that it does not need the artifact classes to agree on a shape —
+ * a certificate, an order, a stamp and a pass are all just "the
+ * handler returned 2xx", which is the one fact common to every shelf.
+ *
+ * WHICH DIRECTION IT FAILS, chosen deliberately. If the intent write
+ * fails, the sale still proceeds — refusing a paid sale because an
+ * audit row would not write is worse than the gap it protects — and
+ * that sale becomes invisible to this audit rather than falsely
+ * flagged. If the CLEARING write fails after a good delivery, the row
+ * survives and raises a false alarm. A false alarm the keeper can
+ * dismiss beats a silent loss he never learns about, so the design
+ * leans that way on purpose.
+ */
+
+/** How long a row may sit before it stops being an in-flight request. */
+export const DELIVERY_GRACE_MINUTES = 10;
+
+/** Ceiling on a sweep. An unnamed cap is a silent one. */
+export const DELIVERY_SCAN_CAP = 500;
+
+export interface DeliveryIntent {
+  /** The route that took the money. */
+  path: string;
+  /** On-chain settlement, when the facilitator returned one. */
+  transaction?: string;
+  payer?: string;
+  paid_usdc: number;
+  settled_at: string;
+}
+
+export interface UndeliveredSale extends DeliveryIntent {
+  key: string;
+  minutes_waiting: number;
+}
+
+export interface DeliveryAudit {
+  checked: number;
+  /** Rows young enough to still be a request in flight. */
+  in_flight: number;
+  undelivered: UndeliveredSale[];
+  truncated: boolean;
+  scanned_at: string;
+}
+
+/**
+ * A settled sale whose goods have not gone out yet.
+ *
+ * Keyed by transaction when there is one, because that is the fact an
+ * outside party can check on Base; only synthesised when the
+ * facilitator returned no hash, and marked so the difference stays
+ * visible rather than being smoothed over.
+ */
+export async function openDeliveryIntent(
+  env: Env,
+  intent: DeliveryIntent,
+): Promise<string> {
+  const id = intent.transaction ?? `notx-${crypto.randomUUID()}`;
+  const key = KV_KEYS.deliveryIntent(id);
+  await env.ORDERS.put(key, JSON.stringify(intent));
+  return key;
+}
+
+/** Goods went out. The row's whole purpose is to stop existing. */
+export async function closeDeliveryIntent(
+  env: Env,
+  key: string,
+): Promise<void> {
+  await env.ORDERS.delete(key);
+}
+
+/**
+ * Walk the open intents and separate "still in flight" from "took the
+ * money and delivered nothing".
+ *
+ * Reports rather than repairs. There is no honest automatic remedy: we
+ * cannot re-run a handler whose side effects we do not know, and we
+ * will not refund without the keeper, because a refund is money moving
+ * and money never moves on a cron here. What this buys is that the
+ * keeper finds out before the buyer does.
+ */
+export async function auditDeliveries(
+  env: Env,
+  now: Date = new Date(),
+): Promise<DeliveryAudit> {
+  const listed = await listKeys(env.ORDERS, {
+    prefix: KV_KEYS.deliveryIntentPrefix,
+    cap: DELIVERY_SCAN_CAP,
+  });
+  const values = await bulkGetJson<DeliveryIntent>(env.ORDERS, listed.names);
+
+  const undelivered: UndeliveredSale[] = [];
+  let inFlight = 0;
+  for (const key of listed.names) {
+    const intent = values.get(key);
+    if (!intent) continue;
+    const settledAt = new Date(intent.settled_at).getTime();
+    /**
+     * An unreadable timestamp counts as OVERDUE, not as in-flight.
+     * The opposite choice would let one bad date hide a real
+     * undelivered sale forever, and the cost of being wrong this way
+     * is one dismissible alert.
+     */
+    const minutes = Number.isFinite(settledAt)
+      ? Math.floor((now.getTime() - settledAt) / 60000)
+      : Number.POSITIVE_INFINITY;
+    if (minutes < DELIVERY_GRACE_MINUTES) {
+      inFlight += 1;
+      continue;
+    }
+    undelivered.push({
+      ...intent,
+      key,
+      minutes_waiting: Number.isFinite(minutes) ? minutes : -1,
+    });
+  }
+  undelivered.sort((a, b) => b.minutes_waiting - a.minutes_waiting);
+
+  return {
+    checked: listed.names.length,
+    in_flight: inFlight,
+    undelivered,
+    truncated: listed.names.length >= DELIVERY_SCAN_CAP,
+    scanned_at: now.toISOString(),
+  };
+}
+
+/**
+ * The cron pass. Alerts per sale rather than in a batch, keyed so a
+ * standing failure pages once every six hours instead of hourly — but
+ * a SECOND undelivered sale is its own news and gets its own page.
+ */
+export async function runDeliveryAudit(
+  env: Env,
+  now: Date = new Date(),
+): Promise<DeliveryAudit> {
+  const audit = await auditDeliveries(env, now);
+  for (const sale of audit.undelivered) {
+    await sendAlert(env, {
+      condition: "undelivered_sale",
+      detail: `A payment settled on ${sale.path} ${sale.minutes_waiting} minutes ago and no goods went out.${
+        sale.transaction ? ` Settlement: ${sale.transaction}.` : ""
+      }${
+        sale.payer ? ` Payer: ${sale.payer}.` : ""
+      } Paid ${sale.paid_usdc} USDC. This is money taken without delivery — check the order, then refund or fulfil by hand.`,
+      key: sale.key,
+    }).catch(() => {
+      // The alert is the courtesy; the row stays either way, and the
+      // next pass will try again.
+    });
+  }
+  return audit;
+}

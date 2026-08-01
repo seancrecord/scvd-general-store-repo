@@ -526,7 +526,25 @@ export interface SettleReconciliation {
   unattributed: number;
   /** counter − payer − founding − unattributed. Zero is healthy. */
   unexplained: number;
+  /**
+   * WHAT A ZERO HERE DOES NOT MEAN, carried on the output because a
+   * number that reads healthy is worse than no number when it is
+   * blind (problem ledger #18).
+   *
+   * Both sides of this reconciliation — the settle counters and the
+   * payer rows — are written by recordSettlement, which runs BEFORE
+   * the handler that mints the artifact. So a settled payment whose
+   * delivery threw, returned a non-2xx, or never finished bumps both
+   * sides equally and lands here as `unexplained: 0`. The books
+   * balance and the buyer got nothing. Delivery is a different axis
+   * and it has its own instrument.
+   */
+  does_not_cover: string;
+  delivery_audit: string;
 }
+
+const RECONCILIATION_BLIND_SPOT =
+  "This compares money-in against money-attributed. It does NOT cover DELIVERY: both sides are written before the handler that mints the artifact runs, so a sale that settled and delivered nothing balances here exactly like a healthy one. Delivery has its own instrument.";
 
 /**
  * Reads its own payer rows rather than taking the desk's list, which
@@ -582,6 +600,8 @@ export async function reconcileSettles(
       payerPurchases -
       FOUNDING_SETTLES_WITHOUT_PAYER_ROW -
       unattributed,
+    does_not_cover: RECONCILIATION_BLIND_SPOT,
+    delivery_audit: "/admin/deliveries",
   };
 }
 

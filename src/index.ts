@@ -65,6 +65,7 @@ import { recomputeCorrections } from "@/services/reclassify";
 import { assembleDraft } from "@/services/gazette-weekly";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
+import { runDeliveryAudit } from "@/services/delivery-audit";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -280,6 +281,23 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     ctx.waitUntil(runHealthChecks(env));
+    /**
+     * THE DELIVERY AUDIT. The one failure this store cannot be told
+     * about: a payment settled, the handler never delivered, and the
+     * buyer is an agent that may not be running any more to complain.
+     * Every counter we keep is written before delivery is attempted,
+     * so nothing else on this cron can see it (problem ledger #18).
+     */
+    ctx.waitUntil(
+      runDeliveryAudit(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Delivery audit failed: ${String(error)}`,
+          }),
+      ),
+    );
     /**
      * THE ANCHOR PASS. Appends at most one entry a day (the interval
      * is read off the log itself, not a second cron trigger) and tries

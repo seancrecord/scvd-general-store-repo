@@ -1141,7 +1141,7 @@ real, unmapped, and NOT a build — they are keeper-awareness items
 for the day volume makes them concrete, and the phone_call shelf's
 existing keeper-discretion rule is the current, honest answer.
 
-### 18. The reconciliation is blind to the failure it looks like it covers
+### 18. The reconciliation was blind to the failure it looked like it covered — FIXED 2026-08-02
 
 Found 2026-08-02 while scoping CV's settle-then-crash idea
 (CORRESPONDENCE T13), and it is worse than the idea it came from,
@@ -1179,8 +1179,53 @@ delivery. A number that reads healthy while blind is worse than no
 number, and the correction that matters is the one that stops the
 healthy reading being trusted for something it never measured.
 
-*Not yet built at time of writing; this entry exists so the gap is
-recorded before the fix rather than announced with it.*
+**BUILT the same day, both halves.**
+
+*(1) The missing axis.* An intent row opens after settlement and
+before the handler, and is deleted only when the handler returns a
+2xx. Anything still sitting there past a ten-minute grace window is a
+sale that took money and delivered nothing; the hourly cron finds it
+and pages, and /admin/deliveries is the desk. The row is keyed on the
+settlement transaction where there is one, because that is the fact an
+outsider can check on Base. It reports rather than repairs, on
+purpose: re-running a handler whose side effects are unknown could
+double-deliver, and a refund is money moving, which never happens on a
+cron here. What it buys is that the keeper finds out before the buyer
+does.
+
+*Failure direction chosen deliberately:* a failed intent write never
+fails the sale — refusing a paid customer because a bookkeeping row
+would not write is the wrong trade — so such a sale is invisible to
+the audit rather than falsely flagged. A failed CLEAR after a good
+delivery leaves a false alarm. A false alarm the keeper dismisses
+beats a silent loss he never hears about.
+
+*(2) The honesty fix, which matters more.* `reconcileSettles()` now
+carries `does_not_cover` on its own output, stating that both its
+sides are written before delivery and that a clean zero says nothing
+about whether goods went out. The bug was never that the number was
+wrong; it was that a correct number was load-bearing for a question it
+could not answer.
+
+**A second bug fell out of testing this, and it was the wider one.**
+The audit's own "survives a corrupt row" test failed: KV's bulk JSON
+read rejects the ENTIRE batch if one key holds unparseable data.
+Every list-then-read in this store goes through `bulkGetJson`, so a
+single corrupt row could 500 the published anchor log or blind the
+delivery audit — an instrument that stops working exactly when the
+data is already damaged, which is the wrong shape for a safety net.
+Fixed at the helper: a failed batch falls back to per-row text parse,
+so readable rows survive and an unreadable one degrades to `null`,
+which is the case every caller already handles. Found only because
+the test put junk in a row on purpose.
+
+**Coverage boundary, recorded rather than assumed:** the
+post-settlement failure path is proven at the unit level but not end
+to end, because inducing it needs a route that fails after taking
+money and there is deliberately none — every pre-flight refusal,
+sold-out included, runs before the gate and moves no money. Adding a
+money-losing route to prove money-losing routes are detected is the
+wrong trade.
 
 ---
 

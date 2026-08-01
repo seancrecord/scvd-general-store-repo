@@ -39,6 +39,10 @@ import type {
   PayloadFieldProblem,
 } from "@/lib/requirement-match";
 import { parseReferralMarker, recordReferral } from "@/lib/referrals";
+import {
+  closeDeliveryIntent,
+  openDeliveryIntent,
+} from "@/services/delivery-audit";
 import { signedOffersForChallenge, withReceiptHeader } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
@@ -615,7 +619,48 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   c.set("payment", payment);
 
+  /**
+   * THE DELIVERY INTENT, opened here because HERE is the seam. Money
+   * has moved and the handler has not run; every counter this store
+   * keeps has already been written. If `next()` throws, returns a
+   * non-2xx, or never finishes because the isolate went away, this row
+   * is the only trace that a buyer paid and got nothing (problem
+   * ledger #18, where the reconciliation we already had reads healthy
+   * through exactly this failure).
+   *
+   * NEVER FAILS THE SALE. A paid customer does not get an error
+   * because an audit row would not write — that would trade a real
+   * delivery for a bookkeeping preference. The cost is that such a
+   * sale is invisible to the audit rather than falsely flagged, which
+   * is the quieter direction and is recorded as such in the service.
+   */
+  const deliveryKey = await openDeliveryIntent(c.env, {
+    path: c.req.path,
+    ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
+    ...(payer ? { payer } : {}),
+    paid_usdc: paidUsdc,
+    settled_at: new Date().toISOString(),
+  }).catch(() => null);
+
   await next();
+
+  /**
+   * Goods went out, so the intent stops existing. Deliberately gated
+   * on a 2xx: a handler that settled the money and then returned 409
+   * SOLD OUT has taken payment without delivering just as surely as
+   * one that threw, and leaving the row is how that surfaces.
+   *
+   * A throw inside next() never reaches this line at all — Hono
+   * propagates it to the error handler — which is the correct
+   * behaviour and the reason the row is opened before rather than
+   * cleared in a finally.
+   */
+  if (deliveryKey && c.res.status < 300) {
+    await closeDeliveryIntent(c.env, deliveryKey).catch(() => {
+      // Left open on failure: a false alarm the keeper can dismiss
+      // beats a silent loss he never hears about.
+    });
+  }
 
   /**
    * The receipt, into the facilitator's PAYMENT-RESPONSE header per

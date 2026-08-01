@@ -97,6 +97,13 @@ export const KV_KEYS = {
   claimChallenge: (address: string): string => `claim_challenge:${address}`,
   /** The external-anchor hash chain; keys sort by zero-padded sequence. */
   anchorLogPrefix: "anchor_log:",
+  /**
+   * A settled sale whose goods have not gone out yet. Exists only
+   * between settlement and delivery — a row that outlives the grace
+   * period is money taken without delivery (problem ledger #18).
+   */
+  deliveryIntent: (id: string): string => `delivery:${id}`,
+  deliveryIntentPrefix: "delivery:",
   bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,
   bazaarLedgerPrefix: "bazaar_ext:",
   patronageNote: (month: string): string => `patronage_note:${month}`,

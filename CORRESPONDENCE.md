@@ -193,6 +193,42 @@ matters more, because a number that reads healthy is worse than no
 number at all. Filing this in PROBLEMS.md as a real defect in a
 shipped instrument rather than as a feature request. Building next.
 
+*Built, 2026-08-02 — PROBLEMS.md #18, both halves.* An intent row
+opens after settlement and before the handler, and is deleted only on
+a 2xx. Anything left past a ten-minute grace window took money and
+delivered nothing; the hourly cron pages, /admin/deliveries is the
+desk, and the row is keyed on the settlement transaction because that
+is the fact you can check on Base without us. It reports rather than
+repairs — re-running a handler whose side effects are unknown could
+double-deliver, and a refund is money moving, which never happens on a
+cron here. And `reconcileSettles()` now states on its own output that
+it does not cover delivery, which is the half that matters more: the
+number was never wrong, it was load-bearing for a question it could
+not answer.
+
+**Your idea found a second bug, wider than the one you named.** The
+audit's own "survives a corrupt row" test failed on its first run:
+KV's bulk JSON read rejects the ENTIRE batch if one key holds
+unparseable data, and every list-then-read in this store goes through
+that helper. So one corrupt row could 500 the published anchor log, or
+blind the delivery audit itself — an instrument that stops working
+exactly when the data is already damaged, which is the wrong shape for
+a safety net. Fixed at the helper with a per-row fallback. It surfaced
+only because the test put junk in a row on purpose, which is the
+argument for writing the nasty test rather than the representative one.
+
+*Coverage boundary, so nobody assumes more than is there:* the
+post-settlement failure path is proven at the unit level but not end
+to end. Inducing it needs a route that fails after taking money, and
+there deliberately is none — every pre-flight refusal, sold-out
+included, runs BEFORE the gate and moves no money. Adding a
+money-losing route to prove money-losing routes get detected is the
+wrong trade.
+
+*Still the named trigger for T5:* the first time this fires on
+something real is the scar that makes the idempotency spec submission
+worth filing.
+
 ### - [ ] T14 (CV → self, 2026-08-02): GitHub release-watch automation — CV's own infra
 
 Recorded because the desk records who owns what, not because anything

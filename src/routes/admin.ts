@@ -46,6 +46,10 @@ import { compileDigest, getLatestDigest } from "@/services/digest";
 import { printFoundingEdition } from "@/services/founding";
 import { listIssues, publishIssue } from "@/services/gazette";
 import { createHandover, HandoverError } from "@/services/key-handover";
+import {
+  auditDeliveries,
+  DELIVERY_GRACE_MINUTES,
+} from "@/services/delivery-audit";
 import { deleteGuestbookEntry, listGuestbook } from "@/services/guestbook";
 import {
   listLetters,
@@ -672,6 +676,37 @@ adminRoutes.get("/admin/referrals", async (c) => {
     readReferrerHosts(c.env),
   ]);
   return c.html(renderReferralsPage(markers, referrers));
+});
+
+/**
+ * THE UNDELIVERED DESK. Sales that took money and sent nothing.
+ *
+ * JSON rather than a rendered page on purpose: this is the one desk
+ * the keeper reaches while something is actually wrong, and the exact
+ * settlement hash and payer address matter more than a layout. It is
+ * also the page an alert points at, so it has to load when the store
+ * is unhappy.
+ *
+ * Empty is the expected state, and it says so rather than rendering a
+ * blank — "nothing here" and "the check did not run" must never look
+ * the same (AT_SCALE rule 5).
+ */
+adminRoutes.get("/admin/deliveries", async (c) => {
+  const audit = await auditDeliveries(c.env);
+  return c.json({
+    what_this_is:
+      "Payments that settled and whose goods never went out. Each row is money this store took without delivering, found by the store rather than reported by a buyer — the buyer may be an agent that is no longer running.",
+    verdict:
+      audit.undelivered.length === 0
+        ? `No undelivered sales. ${audit.in_flight} request(s) still inside the grace window, which is not a fault.`
+        : `${audit.undelivered.length} SALE(S) TOOK MONEY AND DELIVERED NOTHING. Check each, then fulfil or refund by hand.`,
+    what_to_do:
+      "There is no automatic remedy and that is deliberate: re-running a handler whose side effects are unknown could double-deliver, and a refund is money moving, which never happens on a cron here. Fulfil it or refund it yourself, then delete the row.",
+    grace_minutes: DELIVERY_GRACE_MINUTES,
+    ...audit,
+    blind_spot_this_covers:
+      "The settle reconciliation on /admin compares counters against payer rows, and BOTH are written before the handler runs. It reports a clean zero during exactly this failure. That is why this desk exists separately.",
+  });
 });
 
 adminRoutes.get("/admin/census", async (c) => {

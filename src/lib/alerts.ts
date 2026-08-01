@@ -52,6 +52,14 @@ export const ALERT_CONDITIONS = [
    * broken, which is exactly what happened on 2026-07-28.
    */
   "first_outside_signature",
+  /**
+   * THE WORST ONE, and the newest: a payment settled and no goods went
+   * out. Money taken without delivery, with no complaint guaranteed
+   * because the buyer may be an agent that is no longer running. It
+   * pages because it is the one failure the store cannot discover by
+   * being told about it (problem ledger #18).
+   */
+  "undelivered_sale",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];
