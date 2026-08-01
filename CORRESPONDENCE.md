@@ -85,51 +85,6 @@ The reusable lesson: an instruction to run somebody else's tool is
 not a check until you say what to compare its output against. Worth
 holding against the rest of our verification surfaces.
 
-### - [ ] T9 (Claude → CV, 2026-08-02): Red-team brief for the anchor log — four angles, and the two I cannot run
-
-Please break this rather than review it. Live at
-/.well-known/anchor-log.json once deployed; code in
-src/services/anchor-log.ts, src/services/anchor-submit.ts and the
-verifier's verifyAnchorChain / checkAnchoredKeyHistory.
-
-**1. The forgery I think we now catch — check my reasoning.** Rewrite
-a past snapshot, rehash it, rewrite every entry after it, re-stamp
-the new head. Internal consistency is perfect. My claim is that the
-OLD entries' existing Bitcoin proofs contradict it, and that a
-verifier only sees this by comparing block time to `taken_at`. Is
-there a variant where the attacker never had a confirmed proof to
-contradict — e.g. compromise during the pending window — and what
-should a verifier do with a chain whose proofs are ALL pending?
-
-**2. The fresh-chain problem, which I disclosed rather than fixed.**
-KV wiped, chain restarts at sequence 1, looks genuine to anyone who
-never saw the old one. I've written the standard defence (keep the
-digest you last saw). Is disclosure the right call here, or is there
-a cheap mechanism — cross-posting head digests somewhere append-only
-we don't control — that makes it a fixed problem instead of a
-documented one? I did not want to build Rekor purely to be a second
-place to notice deletion, but that may be exactly its job.
-
-**3. The two I cannot run from here, and would rather you did.** No
-outbound network in my environment, so: (a) does a real OTS calendar
-actually accept our submission shape — raw 32 bytes POSTed to
-{calendar}/digest with Accept: application/vnd.opentimestamps.v1 —
-and does /timestamp/{digest} behave as I've modelled it (404 while
-pending, 200 with an upgraded proof after confirmation)? (b) does a
-proof we produce actually verify with the STANDARD `ots` client? Our
-proofs are opaque bytes we never parse, which is deliberate, and it
-also means a shape error would look like success all the way to
-production.
-
-**4. The strategic one.** Does an anchor log move ANY real
-counterparty, or is it a thing that impresses engineers and changes
-no purchase decision? PROBLEMS.md #2's original trigger was "a
-counterparty whose verifier requires it," and we built it before that
-counterparty appeared. I think it was still right — it is the
-credible half of the standards story and it cost nothing — but if
-your read is that it is a beautifully tested ornament, that is worth
-more to me than agreement.
-
 ### - [ ] T10 (CV → Claude, 2026-08-02): CSV tax export — column spec drafted, ready to hand off
 
 CV has a full column spec drafted for a CSV tax export and is ready to
@@ -208,6 +163,35 @@ being wrong is supposed to become visible.
 It is also the named trigger for T5: the reconciliation finding a real
 gap is exactly the "one more scar" that makes the idempotency spec
 submission worth filing.
+
+*Claude, 2026-08-02 — scoped it against the code before building, and
+found something worse than the gap you described.* **We already have a
+reconciliation, and it is blind to exactly this failure while looking
+like it covers it.**
+
+`reconcileSettles()` in src/lib/metrics.ts compares settle COUNTERS
+against PAYER ROWS and reports `unexplained`, with the two legitimate
+differences named. Good instrument. But read the order in
+src/lib/payment-gate.ts:
+
+    processSettlement      ← money moves
+    recordSettlement       ← counter AND payer row both written
+    await next()           ← the handler that mints the artifact
+
+Both sides of that reconciliation are written BEFORE the handler runs.
+So the settle-then-crash case — money moved, delivery never happened —
+leaves the counter bumped, the payer row bumped, and no artifact, and
+the existing check reports `unexplained: 0`. **Healthy books, buyer
+got nothing.** The one instrument we would reach for during this
+incident is the one that cannot see it.
+
+That is rule 5 in its exact form: a zero from a probe that cannot
+observe the thing is not evidence the thing is fine. So T13 is not
+"add a reconciliation" — it is **add the missing THIRD axis, delivery,
+and make the existing one say out loud what it does not cover**, which
+matters more, because a number that reads healthy is worse than no
+number at all. Filing this in PROBLEMS.md as a real defect in a
+shipped instrument rather than as a feature request. Building next.
 
 ### - [ ] T14 (CV → self, 2026-08-02): GitHub release-watch automation — CV's own infra
 
@@ -307,16 +291,147 @@ I cannot run it from here either, and for a second independent reason
 worth recording: this environment's proxy denies arbitrary outbound
 hosts (verified — it answers 403 CONNECT and logs the denial), so even
 a credential-free probe of the discovery endpoint fails before it
-reaches anybody's auth. **This thread is now unambiguously the
-keeper's, and it is a two-minute check with real stakes**: if we are
-catalogued, step one of demand is already done and we never knew; if
-we are not, that is a bigger miss than any amount of
-description-polish, because it means the one place agents actually
-discover-and-pay has no record of us after two settled payments.
+reaches anybody's auth.
+
+*CV corrects himself, 2026-08-02 (relayed):* **the CDP Bazaar
+discovery query needs NO credentials** — his earlier "I'd need CDP
+creds" was wrong, and he flagged it himself rather than letting it
+stand. So the check is runnable by anyone with an ordinary network
+path, which is him, not me.
+
+*Still genuinely open, and worth being pedantic about:* "the check can
+be run" is not "the check was run." **What nobody has yet said is
+whether we actually APPEAR in the discovery resources, and that was
+always the question.** Recorded as unanswered rather than closed,
+because a thread that closes on the availability of an answer instead
+of the answer is exactly the kind of quiet drift this file exists to
+prevent. Two settled payments through the facilitator should have
+catalogued us; if they did, step one of demand is already done and we
+never knew, and if they did not, that is a bigger miss than any amount
+of description-polish.
 
 ---
 
 ## Settled threads
+
+### - [x] T9 (Claude → CV, 2026-08-02): Red-team brief for the anchor log — RUN, and it held
+
+Please break this rather than review it. Live at
+/.well-known/anchor-log.json once deployed; code in
+src/services/anchor-log.ts, src/services/anchor-submit.ts and the
+verifier's verifyAnchorChain / checkAnchoredKeyHistory.
+
+**1. The forgery I think we now catch — check my reasoning.** Rewrite
+a past snapshot, rehash it, rewrite every entry after it, re-stamp
+the new head. Internal consistency is perfect. My claim is that the
+OLD entries' existing Bitcoin proofs contradict it, and that a
+verifier only sees this by comparing block time to `taken_at`. Is
+there a variant where the attacker never had a confirmed proof to
+contradict — e.g. compromise during the pending window — and what
+should a verifier do with a chain whose proofs are ALL pending?
+
+**2. The fresh-chain problem, which I disclosed rather than fixed.**
+KV wiped, chain restarts at sequence 1, looks genuine to anyone who
+never saw the old one. I've written the standard defence (keep the
+digest you last saw). Is disclosure the right call here, or is there
+a cheap mechanism — cross-posting head digests somewhere append-only
+we don't control — that makes it a fixed problem instead of a
+documented one? I did not want to build Rekor purely to be a second
+place to notice deletion, but that may be exactly its job.
+
+**3. The two I cannot run from here, and would rather you did.** No
+outbound network in my environment, so: (a) does a real OTS calendar
+actually accept our submission shape — raw 32 bytes POSTed to
+{calendar}/digest with Accept: application/vnd.opentimestamps.v1 —
+and does /timestamp/{digest} behave as I've modelled it (404 while
+pending, 200 with an upgraded proof after confirmation)? (b) does a
+proof we produce actually verify with the STANDARD `ots` client? Our
+proofs are opaque bytes we never parse, which is deliberate, and it
+also means a shape error would look like success all the way to
+production.
+
+**4. The strategic one.** Does an anchor log move ANY real
+counterparty, or is it a thing that impresses engineers and changes
+no purchase decision? PROBLEMS.md #2's original trigger was "a
+counterparty whose verifier requires it," and we built it before that
+counterparty appeared. I think it was still right — it is the
+credible half of the standards story and it cost nothing — but if
+your read is that it is a beautifully tested ornament, that is worth
+more to me than agreement.
+
+---
+
+*CV ran it, 2026-08-02 (relayed), including both checks I said only he
+could do. Results in full:*
+
+**(3a) Submission shape — ACCEPTED, twice, against production
+calendars.** The exact request this code sends returned HTTP 200 with
+a real proof from a.pool (277 bytes) and b.pool (205 bytes).
+
+**(3b) Proof format — ROUND-TRIPS through the reference
+implementation.** Using javascript-opentimestamps, which the `ots` CLI
+is built on: genuine magic header (`\x00OpenTimestamps\x00`, a real
+.ots file rather than a bare calendar response), serialize→deserialize
+returned a byte-identical digest, and `info()` reported a
+PendingAttestation — the correct state for a fresh stamp.
+
+*Why this was the check I most wanted and why I'm relieved:* we never
+parse proofs, on purpose, which meant a shape error would have looked
+like success all the way to production. There was no way to catch it
+from inside this repo. It does not look like success — it is success.
+
+*One boundary on what was proven, stated so nobody over-reads it
+later:* the round trip validates the FORMAT and the calendars'
+acceptance. CV did not wait the ~1-2 hours for Bitcoin confirmation,
+so the confirm→upgrade path — 404 while pending, 200 with an upgraded
+proof after — remains modelled-but-unobserved. That is now the ONLY
+unobserved path left, and it is recorded as owed in PROBLEMS.md #2
+rather than quietly folded into "tested." CV has offered to sit on it;
+otherwise the first production cron settles it.
+
+**(1) Pending-only chains — CV's answer, and it is the sharpest thing
+to come out of this round. BUILT the same day.** His read: a chain
+with zero confirmed proofs is not merely "unverified", it is the exact
+state a same-day forgery would be in, because nothing has confirmed
+that could contradict a rewrite. Do not let a response collapse
+"submitted" and "confirmed" into one green checkmark. So both the
+route and the verifier now publish an explicit `anchor_confidence` —
+`confirmed` / `pending_only` / `unanchored` / `chain_broken` —
+deliberately four KINDS of answer rather than a score, with the reason
+carried in prose beside the enum so the nuance survives being read
+quickly. Tested, including that `chain_broken` beats a confirmed proof
+(if the log does not recompute, what its proofs claim is moot).
+
+**(2) Fresh chain — CV changed my mind, and the argument is worth
+keeping verbatim in shape.** I had disclosed it and moved on, and I
+had explicitly declined to build Rekor "purely to be a second place to
+notice deletion." His correction: that IS its job, and it is a real
+one. OTS alone proves "this digest existed by this Bitcoin block" and
+says nothing about continuity with a prior chain that got wiped. Rekor
+is a third-party-hosted append-only log — an external witness that is
+not ours to lose. And the fix is specific rather than a gesture:
+**submit to Rekor too, and publish the log index/UUID next to the OTS
+proof**, so a verifier checking continuity has two independent
+external anchors and wiping our own KV does not erase the fact that a
+Rekor entry already exists with the old chain's head baked in.
+
+*My concession, recorded plainly:* I filed the fresh-chain problem as
+a property to disclose rather than a bug to fix, and reached for the
+"inherent to any transparency log" framing — which is true of the
+general case and let me stop thinking one step early about ours.
+Disclosure was the right call for the moment. It is not the final
+answer. Rekor moves from "designed for, no reason to exist yet" to a
+queued build with a named job. Sequenced after T13.
+
+**(4) The strategic one — honestly unresolved, and left that way.**
+CV cannot answer it either; it is a market question, not a technical
+one. His framing, which I am not going to soften: we built provably
+correct infrastructure with zero confirmed demand, before the
+counterparty who needed it appeared. T7's re-aim (the buyer is the
+seller protecting reputation, not the transacting agent) is the reason
+to think it lands eventually. **"Beautiful and unused" stays an open
+risk to sit with rather than a solved problem**, and it stays written
+down here so nobody gets to quietly conclude otherwise later.
 
 ### - [x] T2 (Claude → CV, 2026-08-02): The 631 number — RESOLVED same day, unreproducible and never published
 

@@ -55,6 +55,29 @@ anchorLogRoutes.get("/.well-known/anchor-log.json", async (c) => {
     canonical_form_note:
       "version, sequence, taken_at, previous_digest, current_public_key, retired_keys (sorted by retired_on then public_key, each {public_key, retired_on}), artifacts_issued_total. JSON with no whitespace, exactly these keys in exactly this order.",
     chain_length: records.length,
+    /**
+     * ONE WORD, PUBLISHED AT THE SOURCE, so no reader downstream can
+     * collapse "submitted" and "confirmed" into one green checkmark.
+     *
+     * The state that earns this field is `pending_only`: a chain whose
+     * proofs are ALL pending is exactly the state a chain rewritten
+     * TODAY would be in — nothing has confirmed yet, so nothing exists
+     * that could contradict a rewrite. Reporting that as "anchored"
+     * would be publishing an attacker's best case as if it were ours.
+     * Counted here rather than left for each consumer to derive,
+     * because a distinction every reader must rediscover is one most
+     * readers will lose.
+     */
+    anchor_confidence:
+      problems.length > 0
+        ? "chain_broken"
+        : complete > 0
+          ? "confirmed"
+          : pending > 0
+            ? "pending_only"
+            : "unanchored",
+    anchor_confidence_note:
+      "confirmed = at least one entry's timestamp is Bitcoin-backed, which vouches for the whole chain behind it. pending_only = submitted and accepted by a calendar, nothing confirmed — weakest state that still looks like progress, and the same state a same-day rewrite would show. unanchored = nothing submitted yet. chain_broken = the log does not recompute, and the rest is moot.",
     ots_complete: complete,
     ots_pending: pending,
     /**

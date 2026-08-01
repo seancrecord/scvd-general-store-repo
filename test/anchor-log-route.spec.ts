@@ -182,6 +182,21 @@ describe("/.well-known/anchor-log.json", () => {
     expect(steps.toLowerCase()).toContain("fresh chain");
   });
 
+  it("publishes an anchor_confidence so no reader can collapse submitted into confirmed", async () => {
+    // Empty log: nothing submitted, and it says so in one word rather
+    // than leaving every consumer to derive it and lose the nuance.
+    const empty = await fetchLog();
+    expect(empty["anchor_confidence"]).toBe("unanchored");
+
+    await appendAnchor(testEnv);
+    const withEntry = await fetchLog();
+    expect(withEntry["anchor_confidence"]).toBe("unanchored");
+    const note = String(withEntry["anchor_confidence_note"]);
+    expect(note).toContain("pending_only");
+    // The reason pending_only exists as its own state, said out loud.
+    expect(note.toLowerCase()).toContain("same-day rewrite");
+  });
+
   it("does not let its own status word be read as verification", async () => {
     /**
      * We deliberately do not parse OTS proofs — a second

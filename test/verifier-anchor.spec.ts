@@ -392,6 +392,63 @@ describe("checkAnchoredKeyHistory", () => {
     expect(String(result.reason)).toContain("unbacked");
   });
 
+  it("names a pending-only chain as its own state, not a weaker 'anchored'", async () => {
+    /**
+     * CV's finding from the live red team, and the sharpest one: a
+     * chain whose proofs are ALL pending is EXACTLY the state a chain
+     * rewritten today would be in. Nothing has confirmed, so nothing
+     * exists that could contradict the rewrite. Collapsing that into
+     * the same answer as a confirmed chain publishes the attacker's
+     * best case as if it were the defender's.
+     */
+    const log = await buildLog([snapshot(1, null), snapshot(2, null)]);
+    log.entries[0]!.ots = { status: "pending", proof_base64: "cHJvb2Y=" };
+    log.entries[1]!.ots = { status: "pending", proof_base64: "cHJvb2Y=" };
+    const result = await checkAnchoredKeyHistory(did, KEY_A, {
+      fetch: fakeFetch(log) as unknown as typeof fetch,
+    });
+    expect(result.anchor_confidence).toBe("pending_only");
+    expect(result.bitcoin_confirmed).toBe(false);
+    // And the prose has to carry the reason, not just the enum.
+    expect(String(result.reason).toLowerCase()).toContain("rewritten today");
+  });
+
+  it("separates the four confidence states rather than scoring them", async () => {
+    const base = await buildLog([snapshot(1, null)]);
+    // Nothing submitted at all.
+    expect(
+      (
+        await checkAnchoredKeyHistory(did, KEY_A, {
+          fetch: fakeFetch(base) as unknown as typeof fetch,
+        })
+      ).anchor_confidence,
+    ).toBe("unanchored");
+
+    // Confirmed.
+    const confirmed = await buildLog([snapshot(1, null)]);
+    confirmed.entries[0]!.ots = { status: "complete", proof_base64: "cA==" };
+    expect(
+      (
+        await checkAnchoredKeyHistory(did, KEY_A, {
+          fetch: fakeFetch(confirmed) as unknown as typeof fetch,
+        })
+      ).anchor_confidence,
+    ).toBe("confirmed");
+
+    // Broken beats everything: if the log does not recompute, what the
+    // proofs claim about it is moot.
+    const broken = await buildLog([snapshot(1, null), snapshot(2, null)]);
+    broken.entries[1]!.ots = { status: "complete", proof_base64: "cA==" };
+    broken.entries[0]!.snapshot.artifacts_issued_total = 99999;
+    expect(
+      (
+        await checkAnchoredKeyHistory(did, KEY_A, {
+          fetch: fakeFetch(broken) as unknown as typeof fetch,
+        })
+      ).anchor_confidence,
+    ).toBe("chain_broken");
+  });
+
   it("calls a pending proof pending, not a Bitcoin commitment", async () => {
     const log = await buildLog([snapshot(1, null)]);
     log.entries[0]!.ots = { status: "pending", proof_base64: "cHJvb2Y=" };

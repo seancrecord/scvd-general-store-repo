@@ -450,6 +450,7 @@ export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
       available: true,
       url,
       found: false,
+      anchor_confidence: anchorConfidence(entries, chain, false),
       chain_ok: chain.ok,
       chain_problems: chain.problems,
       reason:
@@ -481,6 +482,7 @@ export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
     available: true,
     url,
     found: true,
+    anchor_confidence: anchorConfidence(entries, chain, Boolean(voucher)),
     chain_ok: chain.ok,
     chain_problems: chain.problems,
     first_seen_at: first?.snapshot?.taken_at ?? null,
@@ -511,8 +513,38 @@ export async function checkAnchoredKeyHistory(did, publicKeyHex, options = {}) {
       ? `the published chain does not recompute (${chain.problems.length} problem(s)); treat every claim on it as unbacked`
       : voucher
         ? "key appears in the chain at or below a Bitcoin-confirmed entry; run `ots verify` on ots_proof_base64 to confirm the timestamp independently"
-        : "key appears in an intact chain, but no entry at or after it is Bitcoin-confirmed yet (a pending proof is a calendar's promise, not a commitment)",
+        : "key appears in an intact chain, but NO entry at or after it is Bitcoin-confirmed yet. Weigh this carefully rather than reading it as anchored: a pending-only chain is the exact state a chain rewritten TODAY would be in, because nothing has confirmed that could contradict it. A calendar's promise, not a commitment.",
   };
+}
+
+/**
+ * ONE WORD FOR HOW MUCH THE ANCHORING IS WORTH, so a caller cannot
+ * collapse "submitted" and "confirmed" into one green checkmark.
+ *
+ * This exists because of a specific gap: a chain whose proofs are ALL
+ * pending is exactly the state a SAME-DAY FORGERY would be in. Nothing
+ * has confirmed yet, so nothing contradicts a rewrite — the calendars
+ * hold a promise about a chain that may itself be minutes old. A
+ * verifier that reports "anchored" for that state is reporting the
+ * attacker's best case as if it were the defender's.
+ *
+ * The four states are deliberately not a score. They are different
+ * KINDS of answer, and the caller has to decide what each is worth:
+ *
+ *   unanchored    — entries exist, nothing was ever submitted.
+ *   pending_only  — submitted, nothing confirmed. A calendar's promise.
+ *                   Weakest state that still looks like progress.
+ *   confirmed     — at least one Bitcoin-confirmed entry vouches.
+ *   chain_broken  — the log does not recompute; the rest is moot.
+ */
+function anchorConfidence(entries, chain, hasVoucher) {
+  if (!chain.ok) return "chain_broken";
+  if (hasVoucher) return "confirmed";
+  const anySubmitted = entries.some(
+    (entry) =>
+      entry?.ots?.status === "pending" || entry?.ots?.status === "complete",
+  );
+  return anySubmitted ? "pending_only" : "unanchored";
 }
 
 /** did:web -> the host-rooted anchor-log URL, ports decoded per did:web. */

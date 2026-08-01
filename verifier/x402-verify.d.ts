@@ -60,6 +60,16 @@ export interface AnchorChainResult {
   checked: number;
 }
 
+/**
+ * How much the anchoring is worth, in one word. `pending_only` is the
+ * load-bearing one: it is the state a same-day rewrite would show.
+ */
+export type AnchorConfidence =
+  | "confirmed"
+  | "pending_only"
+  | "unanchored"
+  | "chain_broken";
+
 export type AnchoredKeyHistory =
   | { available: false; reason: string }
   | {
@@ -67,6 +77,7 @@ export type AnchoredKeyHistory =
       url: string;
       found: false;
       reason: string;
+      anchor_confidence?: AnchorConfidence;
       chain_ok?: boolean;
       chain_problems?: string[];
     }
@@ -74,6 +85,7 @@ export type AnchoredKeyHistory =
       available: true;
       url: string;
       found: true;
+      anchor_confidence: AnchorConfidence;
       chain_ok: boolean;
       chain_problems: string[];
       first_seen_at: string | null;

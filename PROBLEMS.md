@@ -93,13 +93,49 @@ a chain that no longer contains it was replaced, not extended. Written
 into the how-to and the verifier README rather than filed as a to-do,
 because it is a property to disclose, not a bug to fix.
 
-**Owed, and recorded rather than quietly skipped:** no real OTS stamp
-has been made yet. Verified, not assumed: the agent proxy answers 403
-CONNECT to a.pool.opentimestamps.org:443 (policy denial, confirmed in
-its own recentRelayFailures log), so every calendar interaction so far
-is a fake fetch in a test. Same pattern as the SLSA attestation: the
-code is tested, the live confirmation is owed and will be checked on
-the first cron run in production. Rekor is designed for but not built; OTS is the durable
+**The owed live check — LARGELY DISCHARGED 2026-08-02 by CV, who has
+a network path this environment does not.** It was recorded as owed
+because the agent proxy answers 403 CONNECT to
+a.pool.opentimestamps.org:443 (policy denial, confirmed in its own
+recentRelayFailures log), so every calendar interaction here is a fake
+fetch in a test. CV ran the two checks that mattered:
+
+- **Submission shape accepted, twice, against production calendars.**
+  The exact request this code sends — POST /digest, Content-Type
+  application/x-www-form-urlencoded, Accept
+  application/vnd.opentimestamps.v1, raw 32-byte digest as the body —
+  returned HTTP 200 with a real proof from a.pool (277 bytes) and
+  b.pool (205 bytes).
+- **Proof format round-trips through the reference implementation.**
+  Using javascript-opentimestamps (what the `ots` CLI is built on):
+  the magic header is genuine (`\x00OpenTimestamps\x00`, i.e. a real
+  .ots file rather than a bare calendar response), serialize→
+  deserialize returned a byte-identical digest, and `info()` on the
+  reloaded proof reported a PendingAttestation — the correct state for
+  a fresh unconfirmed stamp.
+
+This closes the failure mode that worried me most: we never parse
+proofs (deliberate), so a shape error would have looked like success
+all the way to production. It does not look like success. It is
+success.
+
+**Still owed, and narrower now:** the confirm→upgrade cycle. Nobody
+has waited the ~1-2 hours for Bitcoin confirmation and then watched
+`upgradeOtsProof()` turn a pending proof into a complete one against a
+real calendar. That is the one remaining modelled-but-unobserved path
+(404 while pending, 200 with an upgraded proof after). It gets
+confirmed on the first production cron run, or sooner if CV sits on
+it.
+
+**Sharpened the same day by CV's read on pending-only chains, and
+built:** a chain whose proofs are ALL pending is exactly the state a
+chain rewritten TODAY would be in — nothing has confirmed that could
+contradict it. Reporting that as "anchored" publishes the attacker's
+best case as if it were ours. So both the route and the verifier now
+carry an explicit `anchor_confidence` of `confirmed` / `pending_only`
+/ `unanchored` / `chain_broken`, deliberately four kinds of answer
+rather than a score, so no consumer downstream can collapse
+"submitted" and "confirmed" into one green checkmark. Rekor is designed for but not built; OTS is the durable
 anchor and the one that closes the gap, Rekor was the fast
 corroborating log.
 
@@ -1104,6 +1140,47 @@ anonymous wallets, liability lines on human-executed errands) are
 real, unmapped, and NOT a build — they are keeper-awareness items
 for the day volume makes them concrete, and the phone_call shelf's
 existing keeper-discretion rule is the current, honest answer.
+
+### 18. The reconciliation is blind to the failure it looks like it covers
+
+Found 2026-08-02 while scoping CV's settle-then-crash idea
+(CORRESPONDENCE T13), and it is worse than the idea it came from,
+because the instrument already exists and reads healthy.
+
+`reconcileSettles()` compares settle COUNTERS against PAYER ROWS and
+reports `unexplained`, with the two legitimate differences named. It
+is a good instrument for the axis it measures. But the money path in
+payment-gate.ts runs:
+
+    processSettlement      ← money moves
+    recordSettlement       ← counter AND payer row both written
+    await next()           ← the handler that mints the artifact
+
+**Both sides of that reconciliation are written before delivery is
+attempted.** So the settle-then-crash case — payment settled, handler
+throws, no certificate or order ever created — bumps the counter,
+bumps the payer row, mints nothing, and the reconciliation reports
+`unexplained: 0`. The books balance. The buyer got nothing. And the
+one number anyone would check during that incident is the number that
+cannot see it.
+
+This is rule 5 exactly: a zero from a probe that cannot observe the
+thing is not evidence the thing is fine. The blast radius is the worst
+class this store has — money taken, goods not delivered, no complaint
+guaranteed because the buyer may be an agent that is no longer
+running. It is also invisible to /fulfillment-log, which reports on
+orders that EXIST.
+
+**The fix, in two parts and the second matters more:** (1) add the
+missing third axis — settled purchases against artifacts actually
+issued — on the existing hourly cron, alerting on any gap; (2) make
+`reconcileSettles()` state on its own output that it does not cover
+delivery. A number that reads healthy while blind is worse than no
+number, and the correction that matters is the one that stops the
+healthy reading being trusted for something it never measured.
+
+*Not yet built at time of writing; this entry exists so the gap is
+recorded before the fix rather than announced with it.*
 
 ---
 
