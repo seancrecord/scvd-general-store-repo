@@ -118,6 +118,18 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
         .join(" \u00B7 ") || "none"
     }</small></p>
     <p><strong>Venue markers (?src=)</strong>: ${venueLines || "none yet; they appear when papers get handed out with per-venue markers"}</p>
+    <p><small><strong>WHAT THIS TABLE CANNOT SEE, and it is not the same gap in both halves.</strong>
+    The <em>source</em> column above infers <code>bazaar</code> from a REFERRER, and machine
+    clients overwhelmingly send none — a directory-referred agent is indistinguishable
+    from a bookmark and lands in <code>direct</code>. So a zero in the bazaar row is zero
+    ATTRIBUTABLE arrivals and says nothing about zero arrivals. The venue line beside it
+    has the opposite problem and it is ours: <code>?src=</code> needs no referrer and works
+    fine on a bare machine client, but it only counts markers we actually minted, and the
+    only ones in the code are <code>try</code> and <code>skill</code>. No directory listing
+    carries one. An empty venue line therefore means we never handed out the paper, not
+    that nobody read it. Neither number is evidence about directory traffic, and reading
+    either as evidence is the mistake this note exists to stop
+    (<code>AT_SCALE.md</code> rule 5b).</small></p>
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
 

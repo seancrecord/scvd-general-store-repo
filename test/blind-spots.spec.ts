@@ -1,4 +1,5 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
+import type { Env } from "@/types";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
@@ -101,5 +102,74 @@ describe("surfaces that already knew their limits keep them", () => {
       await SELF.fetch(`${BASE}/.well-known/trust.json`)
     ).json()) as Record<string, unknown>;
     expect(String(body["limit"]).toLowerCase()).toContain("weakest");
+  });
+});
+
+/**
+ * THE FOURTH ONE, FOUND 2026-08-02 IN A STRATEGY CONVERSATION RATHER
+ * THAN IN A SWEEP — which is the argument for the sweep.
+ *
+ * A reading of the office's Sources table concluded that no traffic
+ * has ever arrived from a directory listing. The table said so. The
+ * table cannot know it, and the two instruments on that page are blind
+ * for OPPOSITE reasons:
+ *
+ *   - The channel column infers `bazaar` from a referrer header.
+ *     Machine clients overwhelmingly send none, so a directory-referred
+ *     agent lands in `direct`, indistinguishable from a bookmark. A
+ *     zero there is zero ATTRIBUTABLE arrivals.
+ *   - The venue line takes `?src=` markers, which need no referrer and
+ *     work fine on a bare client — but it only counts markers we
+ *     minted, and the only two in the codebase are `try` and `skill`.
+ *     No directory listing carries one. An empty venue line means we
+ *     never handed out the paper.
+ *
+ * Neither is evidence about directory traffic. A number nobody can
+ * falsify, read as a finding, is how a store decides to stop doing
+ * something that was working — so the page says this itself now,
+ * beside the numbers, where the reading happens.
+ */
+describe("the office says why its channel numbers cannot settle the question", () => {
+  const adminAuth = {
+    Authorization: `Basic ${btoa(`keeper:${(env as unknown as Env).ADMIN_PASSWORD}`)}`,
+  };
+
+  it("names the referrer gap under the channel table", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin`, { headers: adminAuth })
+    ).text();
+    // The template wraps, so a phrase that spans a line break is not a
+    // literal substring of the response. Collapse whitespace and match
+    // the sentence rather than pinning the copy's line endings.
+    const flat = html.replace(/\s+/g, " ");
+    expect(flat).toContain("zero ATTRIBUTABLE arrivals");
+    expect(flat).toContain("indistinguishable from a bookmark");
+  });
+
+  it("names the unminted-marker gap beside the venue line", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin`, { headers: adminAuth })
+    ).text();
+    expect(html).toContain("we never handed out the paper");
+  });
+
+  /**
+   * The caveat names the two markers that exist. It is pinned here so
+   * that minting a third — which is the fix the caveat is asking for —
+   * fails this test and forces the sentence to be rewritten instead of
+   * quietly becoming false.
+   *
+   * NOT DERIVED, and said so rather than dressed up: the markers live
+   * as literals in the documents that carry them (?src=try in the
+   * practice counter, ?src=skill and ?src=clawhub-skill in the skill
+   * documents), not in a registry this could count. A real derivation
+   * needs that registry, which is worth building at the same time as
+   * the directory markers and not before.
+   */
+  it("still names the two markers that exist", async () => {
+    const html = await (
+      await SELF.fetch(`${BASE}/admin`, { headers: adminAuth })
+    ).text();
+    expect(html).toContain("<code>try</code> and <code>skill</code>");
   });
 });
