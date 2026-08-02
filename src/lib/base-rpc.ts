@@ -83,6 +83,45 @@ export async function getReceipt(
   return rpc<RpcReceipt | null>(env, "eth_getTransactionReceipt", [txHash]);
 }
 
+/**
+ * Every USDC Transfer INTO one address over a block range.
+ *
+ * The only call in this file that looks at the chain rather than at a
+ * transaction we already knew about, and that is the point: the
+ * settle-without-mint check has to walk the side of the books WE DID
+ * NOT WRITE (problem ledger #4). Everything else the store knows about
+ * a payment came from our own pipeline, so it cannot see a payment our
+ * own pipeline failed to record.
+ *
+ * The `to` filter is an indexed topic, so the node does the work and
+ * we receive only our own receipts rather than every USDC transfer on
+ * Base.
+ */
+export async function usdcTransfersTo(
+  env: Env,
+  toAddress: string,
+  fromBlock: number,
+  toBlock: number,
+): Promise<Array<{ txHash: string; from: string; amount: bigint; block: number }>> {
+  const padded = `0x${toAddress.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+  const logs = await rpc<
+    Array<{ transactionHash: string; topics: string[]; data: string; blockNumber: string }>
+  >(env, "eth_getLogs", [
+    {
+      address: BASE_USDC,
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: `0x${toBlock.toString(16)}`,
+      topics: [TRANSFER_TOPIC, null, padded],
+    },
+  ]);
+  return (logs ?? []).map((log) => ({
+    txHash: String(log.transactionHash ?? "").toLowerCase(),
+    from: addressFromTopic(log.topics?.[1] ?? ""),
+    amount: BigInt(log.data && log.data !== "0x" ? log.data : "0x0"),
+    block: Number.parseInt(log.blockNumber ?? "0x0", 16),
+  }));
+}
+
 export async function getBlockNumber(env: Env): Promise<number> {
   const hex = await rpc<string>(env, "eth_blockNumber", []);
   return Number.parseInt(hex, 16);

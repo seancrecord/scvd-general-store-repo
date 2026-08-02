@@ -115,6 +115,14 @@ export const KV_KEYS = {
 
   patron: (patronNumber: number): string => `patron:${patronNumber}`,
   cert: (certId: string): string => `cert:${certId}`,
+  certPrefix: "cert:",
+  /**
+   * How far the bank reconciliation has walked Base. Stored rather
+   * than derived: re-walking history every hour would eventually stop
+   * running, and an instrument that stops running is the defect the
+   * check exists to catch (problem ledger #4).
+   */
+  reconcileCursor: "reconcile_cursor",
   stamp: (stampId: string): string => `stamp:${stampId}`,
   stampCard: (nameSlug: string): string => `stamp_card:${nameSlug}`,
   stampCondition: (weekKey: string): string => `stamp_condition:${weekKey}`,

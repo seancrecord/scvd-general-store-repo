@@ -516,7 +516,7 @@ its own cross-check.
 
 ## Buildable, deliberately gated
 
-### 4. Settle-without-mint reconciliation — HALF CLOSED 2026-08-02, and the open half is the stronger one
+### 4. Settle-without-mint reconciliation — CLOSED 2026-08-02, both halves
 
 Money can move without goods if the Worker dies between settle and
 mint; detection is currently the keeper noticing. The solved pattern
@@ -550,12 +550,40 @@ transfers to PAY_TO_ADDRESS on Base, against certificates minted. It
 is independent of every write we make, which is exactly why it is the
 stronger check — and it is the one still not built.
 
-**Trigger unchanged**, and now sharper: the store already has
-BASE_RPC_URL and reads the chain elsewhere, so this is a cron that
-walks transfers and flags any settlement with no artifact against it.
-The reason it is not urgent at eight settlements is that a hand can
-still do it; the reason it is on this list is that the delivery audit
-looks like it covers this and does not.
+**BUILT the same day, on the keeper's call to take it rather than wait
+for the trigger.** src/services/chain-reconciliation.ts walks USDC
+Transfer logs into PAY_TO_ADDRESS (the `to` is an indexed topic, so
+the node filters and we receive only our own receipts) against the
+settlement hashes on minted certificates. A transfer with no
+certificate naming it is money we took without delivering, and it is
+found from evidence the keeper does not have to trust us for.
+
+Design choices worth keeping:
+
+- **Incremental, with a stored cursor.** Re-walking history hourly
+  would eventually stop running, and an instrument that stops running
+  is the defect this entry is about. First run starts near the head
+  rather than at genesis — starting late and saying so beats a walk
+  that times out forever and reports nothing.
+- **The cursor moves ONLY on a clean read.** Every failure path leaves
+  it where it was, so a failed window is retried rather than skipped.
+  A reconciliation that advanced past blocks it never read would skip
+  exactly the ones it failed on, and nothing would look there again.
+- **It answers one question and refuses the neighbouring ones.** Is
+  there an artifact for this payment — nothing about amounts matching,
+  because a tip, a refund and a keeper transfer all move USDC without
+  being a sale, and a check that guessed at those would cry wolf.
+- **An unreadable chain reads as NOT RUN, never as clean.** Tested,
+  because "we could not look" and "we looked and it was fine" are the
+  two answers this store has spent a day learning to keep apart.
+- **The certificate scan cap is reported on the alert itself**, so a
+  possible false alarm from a partial read says so in the message
+  rather than sending the keeper hunting.
+
+13 tests. The honest limit: like every other outbound path here, no
+live run has happened — this environment cannot reach Base. The
+contract is tested against a fake RPC; the first real pass is the
+first proof.
 
 ### 5. Issuer-liveness beacon (the dead-man pattern) — SHIPPED 2026-08-01
 

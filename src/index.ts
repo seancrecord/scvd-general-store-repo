@@ -66,6 +66,7 @@ import { assembleDraft } from "@/services/gazette-weekly";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
 import { runDeliveryAudit } from "@/services/delivery-audit";
+import { runChainReconciliation } from "@/services/chain-reconciliation";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -288,6 +289,22 @@ const worker: ExportedHandler<Env> = {
      * Every counter we keep is written before delivery is attempted,
      * so nothing else on this cron can see it (problem ledger #18).
      */
+    /**
+     * THE BANK RECONCILIATION (ledger #4). Walks USDC arriving at the
+     * store's wallet against certificates minted, which is the only
+     * check here that does not depend on our own writes — so it is the
+     * only one that can see a payment our own pipeline never recorded.
+     */
+    ctx.waitUntil(
+      runChainReconciliation(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Chain reconciliation failed: ${String(error)}`,
+          }),
+      ),
+    );
     ctx.waitUntil(
       runDeliveryAudit(env).then(
         () => undefined,
