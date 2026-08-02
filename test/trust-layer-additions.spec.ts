@@ -59,8 +59,15 @@ describe("the standards story, front and center", () => {
     );
     expect(Array.isArray(vectors["valid"])).toBe(true);
     expect(Array.isArray(vectors["invalid"])).toBe(true);
-    expect((vectors["valid"] as unknown[]).length).toBe(2);
-    expect((vectors["invalid"] as unknown[]).length).toBe(3);
+    // Derived, not pinned to a number: the set grows as failure modes
+    // are found, and a hard-coded count turns every addition into a
+    // test edit (AT_SCALE rule 1). What matters is that both arms are
+    // populated and the known-bad arm is the larger one — a suite that
+    // is mostly happy-path is a demo.
+    expect((vectors["valid"] as unknown[]).length).toBeGreaterThan(0);
+    expect((vectors["invalid"] as unknown[]).length).toBeGreaterThan(
+      (vectors["valid"] as unknown[]).length,
+    );
     // The served copy points at the live counterpart and the recipe.
     expect(String(vectors["live_counterpart"])).toContain("/api/buy/hello");
     expect(String(vectors["regenerate"])).toContain(

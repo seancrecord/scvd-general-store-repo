@@ -137,7 +137,30 @@ export function parseJws(jws) {
 /** Ed25519 verification via WebCrypto, or whatever you inject. */
 export async function verifyEd25519(signingInput, signature, publicKey, options = {}) {
   if (typeof options.verify === "function") {
-    return Boolean(await options.verify(signingInput, signature, publicKey));
+    /**
+     * THE INJECTED SEAM GETS THE SAME GUARD THE WEBCRYPTO PATH HAS,
+     * and it did not until 2026-08-02.
+     *
+     * The WebCrypto branch below already turns a throw into `false`,
+     * because a malformed signature from a stranger is a VERDICT and
+     * never an exception — a verifier that throws pushes the failure
+     * into its caller's error path, where a forgery reads as an
+     * outage. The injected branch, which exists precisely for runtimes
+     * whose WebCrypto lacks Ed25519, had no such guard: it handed the
+     * bytes straight to somebody else's library and let whatever came
+     * back propagate. @noble/ed25519 throws "Uint8Array expected" on a
+     * wrong-length signature, so the truncated-signature conformance
+     * vector crashed the check instead of failing it.
+     *
+     * Two paths to the same answer, one hardened and one not. Found by
+     * a vector written to assert exactly this property, which is the
+     * argument for the vectors existing.
+     */
+    try {
+      return Boolean(await options.verify(signingInput, signature, publicKey));
+    } catch {
+      return false;
+    }
   }
   const subtle = options.subtle ?? globalThis.crypto?.subtle;
   if (!subtle) {

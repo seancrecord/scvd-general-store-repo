@@ -69,10 +69,26 @@ describe("the verifier against the published vectors", () => {
       const failed = result.checks
         .filter((check) => !check.ok && !check.advisory)
         .map((check) => check.name);
-      // reject_at names WHERE it should fail: schema or signature.
-      expect(failed, `${vector.name}\n${formatResult(result)}`).toContain(
-        vector.reject_at,
+      /**
+       * reject_at names where a verifier SHOULD conceptually catch it.
+       * Rejecting EARLIER is also conformant and the vectors file says
+       * so in how_to_use.conformance — alg:none, for instance, has an
+       * empty signature segment and dies at parse before any algorithm
+       * is consulted. What is never conformant is accepting, which the
+       * assertion above already covers.
+       */
+      const ORDER = ["parse", "alg", "kid", "schema", "signature", "expiry"];
+      const declared = ORDER.indexOf(vector.reject_at);
+      const earliest = Math.min(
+        ...failed.map((name) => {
+          const index = ORDER.indexOf(name);
+          return index === -1 ? ORDER.length : index;
+        }),
       );
+      expect(
+        earliest,
+        `${vector.name} was refused at ${failed.join("/")}, later than the declared ${vector.reject_at}\n${formatResult(result)}`,
+      ).toBeLessThanOrEqual(declared === -1 ? ORDER.length : declared);
     }
   });
 
