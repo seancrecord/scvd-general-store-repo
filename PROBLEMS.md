@@ -1397,6 +1397,37 @@ only as a bare hostname — no scheme, path, credentials, or localhost —
 because otherwise our own verifier fetches wherever an attacker points
 it.
 
+**TWO MORE HOLES, BOTH FOUND BY THE KEEPER ASKING "does this fuck up
+any of our shit if they never respond again."** The right question,
+and the first cut got both halves wrong.
+
+*(a) It coupled our verify endpoint to their uptime.* The counterpart
+fetch had NO TIMEOUT. A dead DNS entry fails fast, but a host that
+ACCEPTS the connection and never answers does not — and this
+resolution runs inside /api/verify, the endpoint this store promises
+is free, forever, and works whether or not you bought the thing. One
+silent counterpart would have held a stranger's verify request open.
+Now bounded at 3 seconds with an AbortSignal, tested with a fetch that
+never resolves, and tested that the signal is actually passed so the
+bound is real rather than decorative.
+
+*(b) A passing check overclaimed.* We fetch the counterpart's KEY
+document. We never fetch their artifact — so a green result means
+"that key really is theirs," NOT "their record exists and agrees with
+ours." A reader taking the stronger reading would believe two
+operators had agreed when one of them merely named a key the other
+owns. The success message now says which half was checked, in those
+words.
+
+**What a dead counterpart actually costs us: nothing.** Their entry
+reads `verified: false` and everything else is untouched. Our
+signature is ours, over our own fields, checkable against our own
+published key with no network at all — `valid` never depends on
+anyone's uptime. That is the whole reason this is a POINTER we sign
+rather than a dependency we take, and it is now stated on the verify
+response itself (`if_the_counterpart_disappears`) and pinned by a test
+that signs a certificate and verifies it with no network in the path.
+
 **Not yet wired to a mint path, deliberately.** Nothing accepts a
 cross_ref from buyer input, because signing a buyer-supplied claim
 about another operator is the risk this entry exists to prevent. The

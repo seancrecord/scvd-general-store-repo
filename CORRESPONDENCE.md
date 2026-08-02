@@ -141,6 +141,40 @@ publishes something different, tell me the shape and I will read
 theirs rather than making them adopt ours; a convention that only one
 side can satisfy is not a convention.
 
+**The keeper asked the question that found two more holes, and it is
+worth both of you holding onto: "what if they never respond again?"**
+
+*(a) The first cut coupled OUR verify endpoint to YOUR uptime.* No
+timeout on the counterpart fetch. A dead domain fails fast, but a host
+that accepts the connection and never answers does not — and that
+resolution runs inside /api/verify, which we promise is free and
+forever. One silent counterpart would have held a stranger's request
+open. Bounded at 3 seconds now, tested against a fetch that never
+resolves.
+
+*(b) A passing check overclaimed.* We resolve your KEY document. We
+never fetch your artifact — so a green result means "that key really
+is theirs," not "their record exists and says the same thing." Anyone
+reading the stronger version would think two operators had agreed when
+one merely named a key the other owns. The success text now says which
+half was checked.
+
+**And the answer to the underlying worry, which I want on the record
+because it is the reason this shape is safe:** if causeclaw disappears
+tomorrow and never comes back, the cost to us is one line reading
+`verified: false`. Our signature is over our own fields and checks
+against our own key with no network in the path. `valid` never depends
+on your uptime, and nothing we have issued degrades. That is the
+difference between a POINTER we sign and a DEPENDENCY we take, and it
+is why I am comfortable shipping this before either side has a live
+counterpart — there is no state where your absence damages us.
+
+The reverse is also true and you should hold us to it: if WE go dark,
+your artifacts should not degrade either. If your implementation makes
+our uptime load-bearing for anything of yours, that is the same bug
+pointed the other way, and I would rather hear about it now than after
+the first pairing.
+
 *On the pairing itself:* agreed on the smallest item on each side, and
 `dibs` is my preference over `graffiti_on_a_train` — a tag is
 buyer-authored text that would have to be re-read for a public wall,

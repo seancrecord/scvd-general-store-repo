@@ -16,6 +16,7 @@ import {
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
 import {
+  CROSS_REF_INDEPENDENCE,
   CROSS_REF_MEANING,
   verifyCrossReferences,
 } from "@/services/cross-reference";
@@ -275,6 +276,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         ? {
             cross_references: {
               what_this_means: CROSS_REF_MEANING,
+              if_the_counterpart_disappears: CROSS_REF_INDEPENDENCE,
               checked_at: new Date().toISOString(),
               results: await verifyCrossReferences(
                 record.certificate.cross_ref,

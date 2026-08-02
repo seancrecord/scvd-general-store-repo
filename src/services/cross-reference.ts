@@ -61,7 +61,29 @@ export interface CrossRefOptions {
   fetch?: typeof fetch;
   /** The date the artifact is claimed for; defaults to now. */
   asOf?: Date;
+  /** Milliseconds to wait on a counterpart before giving up. */
+  timeoutMs?: number;
 }
+
+/**
+ * HOW LONG ANOTHER OPERATOR GETS TO ANSWER BEFORE WE STOP WAITING.
+ *
+ * This number exists because of a question the keeper asked that the
+ * first cut got wrong: what happens if the counterpart goes away and
+ * never comes back? A dead DNS entry fails fast, but a host that
+ * ACCEPTS the connection and never responds does not — and this
+ * resolution runs inside /api/verify, which is the endpoint this store
+ * promises is free, forever, and works whether or not you bought the
+ * thing. Without a bound, one silent counterpart makes our own core
+ * promise hang.
+ *
+ * Three seconds is chosen against what the call is worth: it is a
+ * courtesy lookup on a page whose PRIMARY answer — is this signature
+ * genuine — never touches the network at all. Better to report "they
+ * did not answer in time" quickly and truthfully than to hold a
+ * stranger's verify request open hoping.
+ */
+export const COUNTERPART_TIMEOUT_MS = 3000;
 
 /** Where a counterpart publishes its key history, by convention. */
 export function counterpartKeyUrl(issuer: string): string | null {
@@ -211,7 +233,9 @@ export async function verifyCrossReference(
 
   let doc: CounterpartKeyDoc;
   try {
-    const response = await fetchImpl(url);
+    const response = await fetchImpl(url, {
+      signal: AbortSignal.timeout(options.timeoutMs ?? COUNTERPART_TIMEOUT_MS),
+    });
     if (!response.ok) {
       return {
         ...base,
@@ -252,8 +276,18 @@ export async function verifyCrossReference(
     ...base,
     verified: verdict.ok,
     key_document_url: url,
+    /**
+     * PRECISE ABOUT WHICH HALF WAS CHECKED. We resolved their KEY
+     * against their own published history. We did NOT fetch their
+     * artifact, so we have not confirmed that
+     * `counterpart_artifact_id` exists over there or says anything in
+     * particular. Calling that "verified" without the qualifier would
+     * be the overclaim this whole feature is supposed to avoid — the
+     * reader would think two operators agreed, when what actually
+     * happened is that one of them named a key the other really owns.
+     */
     reason: verdict.ok
-      ? `${verdict.reason}. This confirms the counterpart's key, and nothing about quality or delivery.`
+      ? `${verdict.reason}. That resolves the ISSUER, not the artifact: we did not fetch ${base.counterpart_artifact_id || "their record"} and cannot say it exists or what it contains. Nothing here speaks to quality, delivery or endorsement.`
       : verdict.reason,
   };
 }
@@ -273,4 +307,23 @@ export async function verifyCrossReferences(
 
 /** What a cross-reference block means, served beside every result. */
 export const CROSS_REF_MEANING =
-  "A cross-reference points from this certificate to a counterpart artifact another operator issued for the same event. `issuer_verified_settlement` is the only claim it can carry: this happened, and it was signed by a key we resolved from the counterpart's own published history. It says NOTHING about quality, delivery, or endorsement, and it never will under that value. Verification fails closed — an unreachable counterpart reads as unverified, never as fine.";
+  "A cross-reference points from this certificate to a counterpart artifact another operator issued for the same event. `issuer_verified_settlement` is the only claim it can carry, and it is narrow on purpose: we resolved the counterpart's KEY against their own published history. We did not fetch their artifact, so this says nothing about whether that record exists or what it contains — and nothing at all about quality, delivery or endorsement. Verification fails closed: an unreachable counterpart reads as unverified, never as fine.";
+
+/**
+ * WHAT A DEAD COUNTERPART DOES TO THIS CERTIFICATE: NOTHING.
+ *
+ * Served beside the results because it is the first question anyone
+ * sensible asks, and the answer is load-bearing. The certificate's own
+ * signature is ours, over our own fields, checkable with our own
+ * published key and no network at all. A counterpart that vanishes,
+ * goes bust, or simply stops answering makes its cross-reference read
+ * `verified: false` and changes nothing else — not the signature, not
+ * `valid`, not the artifact.
+ *
+ * This is the whole reason the reference is a POINTER we sign rather
+ * than a dependency we take. We never needed their permission to
+ * issue a certificate and we do not need their continued existence to
+ * keep one honest.
+ */
+export const CROSS_REF_INDEPENDENCE =
+  "A cross-reference is a pointer, not a dependency. If the counterpart goes offline forever, its entry below reads verified:false and NOTHING else about this certificate changes — the signature is ours, over our own fields, and checks against our published key with no network involved. `valid` above never depends on anyone else's uptime.";

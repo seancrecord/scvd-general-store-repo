@@ -174,7 +174,7 @@ describe("it fails closed", () => {
     });
     expect(check.verified).toBe(true);
     // Even the success message refuses to imply more than it proved.
-    expect(check.reason).toContain("nothing about quality");
+    expect(check.reason.toLowerCase()).toContain("nothing here speaks to quality");
   });
 
   it("reads an unreachable counterpart as UNVERIFIED, not as fine", async () => {
@@ -220,6 +220,103 @@ describe("it fails closed", () => {
 
   it("returns nothing for a certificate with no references", async () => {
     expect(await verifyCrossReferences(undefined)).toEqual([]);
+  });
+});
+
+describe("a counterpart that goes away forever", () => {
+  /**
+   * The keeper's question, and the one that decides whether this
+   * feature is safe to ship at all: if causeclaw vanishes, does any of
+   * OUR stuff break?
+   *
+   * The answer has to be no, in two separate senses — the certificate
+   * must stay valid, AND our own verify endpoint must not hang waiting
+   * on a corpse.
+   */
+  const cert: Certificate = {
+    cert_id: "cert_orphan",
+    item: "dibs",
+    patron_number: 7,
+    date: "2026-08-02",
+    cross_ref: [ref()],
+  };
+
+  it("leaves OUR signature completely unaffected", async () => {
+    const { signature, publicKey } = await signCertificate(cert, TEST_SEED);
+    // No network anywhere in this check. That is the point: our
+    // signature is ours, over our own fields, against our own key.
+    expect(await certificateSignatureForm(cert, signature, publicKey)).toBe(
+      "current",
+    );
+  });
+
+  it("gives up on a hanging counterpart instead of waiting forever", async () => {
+    /**
+     * A dead DNS entry fails fast. A host that ACCEPTS the connection
+     * and never answers does not — and this resolution runs inside
+     * /api/verify, the endpoint promised free and forever. Without a
+     * bound, one silent counterpart holds a stranger's request open.
+     */
+    const hangingFetch = ((_url: string, init?: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () =>
+          reject(new Error("TimeoutError: signal timed out")),
+        );
+      })) as unknown as typeof fetch;
+
+    const started = Date.now();
+    const check = await verifyCrossReference(ref(), {
+      fetch: hangingFetch,
+      timeoutMs: 50,
+    });
+    expect(check.verified).toBe(false);
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(check.reason).toContain("unreachable");
+  });
+
+  it("passes an abort signal, so the bound is real and not decorative", async () => {
+    let sawSignal = false;
+    const spyFetch = ((_url: string, init?: RequestInit) => {
+      sawSignal = init?.signal instanceof AbortSignal;
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ key_history: { current: { public_key: KEY_A } } }),
+      } as unknown as Response);
+    }) as unknown as typeof fetch;
+
+    await verifyCrossReference(ref(), { fetch: spyFetch });
+    expect(sawSignal).toBe(true);
+  });
+
+  it("keeps a permanently dead domain to one unverified line", async () => {
+    const checks = await verifyCrossReferences([ref()], {
+      fetch: (async () => {
+        throw new Error("getaddrinfo ENOTFOUND zooid.fund");
+      }) as unknown as typeof fetch,
+    });
+    expect(checks).toHaveLength(1);
+    expect(checks[0]!.verified).toBe(false);
+    // And it still says WHOSE record it was, so the keeper can act.
+    expect(checks[0]!.counterpart_issuer).toBe("zooid.fund");
+  });
+});
+
+describe("what a passing check does NOT claim", () => {
+  it("says it resolved the issuer, not the artifact", async () => {
+    /**
+     * We fetch their KEY document. We never fetch their record. So a
+     * green result means "that key really is theirs", not "their
+     * receipt exists and agrees with ours" — and a reader who took the
+     * stronger reading would think two operators had agreed when one
+     * of them merely named a key the other owns.
+     */
+    const check = await verifyCrossReference(ref(), {
+      fetch: keyDocFetch({ key_history: { current: { public_key: KEY_A } } }),
+    });
+    expect(check.verified).toBe(true);
+    expect(check.reason).toContain("not the artifact");
+    expect(check.reason).toContain("cannot say it exists");
   });
 });
 
