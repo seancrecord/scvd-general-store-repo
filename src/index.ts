@@ -41,6 +41,7 @@ import {
   livenessRoutes,
   fulfillmentLogRoutes,
   claimsRoutes,
+  conformanceRoutes,
   anchorLogRoutes,
   rightsRoutes,
   windDownRoutes,
@@ -105,6 +106,8 @@ const PORCH_EXACT = new Map<string, string>([
   ["/almanac", "almanac"],
   ["/api/treat", "treat"],
   ["/stats", "stats"],
+  ["/api/conformance", "conformance"],
+  ["/api/conformance/v1", "conformance"],
 ]);
 
 function porchSurface(path: string, method: string): string | undefined {
@@ -189,6 +192,7 @@ app.route("/", didRoutes);
 app.route("/", livenessRoutes);
 app.route("/", fulfillmentLogRoutes);
 app.route("/", claimsRoutes);
+app.route("/", conformanceRoutes);
 app.route("/", anchorLogRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);

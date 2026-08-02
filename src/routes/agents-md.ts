@@ -43,6 +43,7 @@ artifact any third party can verify without trusting us.
 3. Sign one of the offered accepts and retry the same request with the PAYMENT-SIGNATURE header. Standard x402 v2 clients (e.g. @x402/fetch) do steps 2–3 for you.
 4. The store settles on-chain first, then returns the goods: instant items in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
 5. Verify anything you were given, free and forever: GET ${base}/api/verify/{id}.
+6. Check ANY issuer's x402 offer or receipt, free: POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
 
 ## Purchasing flow (MCP)
 

@@ -41,6 +41,7 @@ export { didRoutes } from "@/routes/did";
 export { livenessRoutes } from "@/routes/liveness";
 export { fulfillmentLogRoutes } from "@/routes/fulfillment-log";
 export { claimsRoutes } from "@/routes/claims";
+export { conformanceRoutes } from "@/routes/conformance";
 export { anchorLogRoutes } from "@/routes/anchor-log";
 export { rightsRoutes } from "@/routes/rights";
 export { windDownRoutes } from "@/routes/wind-down";

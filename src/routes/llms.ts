@@ -185,6 +185,21 @@ challenge-response signed with the same key that signs your payments,
 single-use nonce, no sessions. A bare address gets nothing; possession
 of the key gets everything that key paid for.
 
+The conformance desk, free, and NOT about us. ${base}/api/conformance
+takes any x402 signed offer or receipt — whoever issued it — and
+returns a structured verdict: does it parse, is the schema complete,
+does the EdDSA signature check against the key in its kid, and is the
+offer still live. POST {"artifact": "<compact JWS>"}. Supply
+public_key_hex and it runs entirely offline, making no request in your
+name; leave it out and the kid's did:web is resolved for you. No
+wallet, no account, no 402, no rate card, and it checks a competitor's
+artifact exactly as readily as ours. The method is the MIT
+zero-dependency file at
+https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
+— every verdict tells you to reproduce it offline rather than trust
+us, because we sell x402 goods and a verdict about a rival from a
+rival is worth only its method.
+
 Every purchase mints a signed certificate and a sequential patron number,
 with a badge at ${base}/badges/{patron_number}.svg, verify anything at
 ${base}/api/verify/{cert_id}. Our ed25519 public key hangs at
