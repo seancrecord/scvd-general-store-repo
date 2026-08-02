@@ -4,6 +4,13 @@ import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
+/**
+ * The venue register is the allowlist for this file's ?src= counters.
+ * The raw string still rides the EVENT row verbatim (a hand test wants
+ * its own name); only the COUNTER key is bounded, because that key is
+ * the one a stranger could otherwise mint without limit.
+ */
+import { venueCounterKey } from "@/store/venues";
 import type { Channel, Env, PayerRecord } from "@/types";
 
 /** Ceiling on a metric counters scan. Named because an unnamed cap is a silent one. */
@@ -184,7 +191,11 @@ export async function recordChallengeIssued(
     // ?src= venue markers: the free-papers measurement.
     await bump(
       env,
-      KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
+      KV_KEYS.metric(
+        metricsMonth(),
+        "venue",
+        venueCounterKey(event.declared_source),
+      ),
     );
   }
   if (!isNoiseFloor) {
@@ -311,7 +322,11 @@ export async function recordPorchVisit(
   if (event.declared_source && !event.house) {
     await bump(
       env,
-      KV_KEYS.metric(metricsMonth(), "venue", event.declared_source),
+      KV_KEYS.metric(
+        metricsMonth(),
+        "venue",
+        venueCounterKey(event.declared_source),
+      ),
     );
   }
   // Same diet as the challenge path: a crawler reading the porch is
@@ -403,7 +418,10 @@ export async function recordSettlement(
     await bump(env, KV_KEYS.metric(month, "dpaid", dayKey()));
   }
   if (event.declared_source && !event.house) {
-    await bump(env, KV_KEYS.metric(month, "venue", event.declared_source));
+    await bump(
+      env,
+      KV_KEYS.metric(month, "venue", venueCounterKey(event.declared_source)),
+    );
   }
   await writeEvent(env, event);
   await raiseFirstOutsideSignature(env, event, "settled");

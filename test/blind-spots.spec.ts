@@ -150,26 +150,36 @@ describe("the office says why its channel numbers cannot settle the question", (
     const html = await (
       await SELF.fetch(`${BASE}/admin`, { headers: adminAuth })
     ).text();
-    expect(html).toContain("we never handed out the paper");
+    const flat = html.replace(/\s+/g, " ");
+    expect(flat).toContain("the paper was never handed out");
   });
 
   /**
-   * The caveat names the two markers that exist. It is pinned here so
-   * that minting a third — which is the fix the caveat is asking for —
-   * fails this test and forces the sentence to be rewritten instead of
-   * quietly becoming false.
+   * THE HAND-TYPED VERSION OF THIS TEST LASTED ABOUT AN HOUR.
    *
-   * NOT DERIVED, and said so rather than dressed up: the markers live
-   * as literals in the documents that carry them (?src=try in the
-   * practice counter, ?src=skill and ?src=clawhub-skill in the skill
-   * documents), not in a registry this could count. A real derivation
-   * needs that registry, which is worth building at the same time as
-   * the directory markers and not before.
+   * It pinned the caveat's claim that the only markers were `try` and
+   * `skill` — which was already false when it was written: the marker
+   * that actually ships in the ClawHub bundle is `clawhub-skill`, and
+   * a fourth (`workcheck-persona-test`) had fired in the live books
+   * without existing anywhere in this codebase at all.
+   *
+   * Both facts came from CV reading the counters, not from the test.
+   * That is rule 1 collecting on a debt inside the same afternoon: a
+   * hand-typed list is wrong the moment somebody looks. The register
+   * in src/store/venues.ts is the source now, the page counts it, and
+   * test/venue-register.spec.ts holds the two together — so this file
+   * asserts only the shape of the caveat, not its contents.
    */
-  it("still names the two markers that exist", async () => {
+  it("says the old rows keep their own names, so history is not silently rewritten", async () => {
+    // Bucketing applies to NEW writes only; keys written before the
+    // register are read as written. A reader who remembers seeing a
+    // marker that is no longer registrable needs to know it is still
+    // its own row rather than folded away.
     const html = await (
       await SELF.fetch(`${BASE}/admin`, { headers: adminAuth })
     ).text();
-    expect(html).toContain("<code>try</code> and <code>skill</code>");
+    const flat = html.replace(/\s+/g, " ");
+    expect(flat).toContain("Rows predating the register keep their own names");
+    expect(flat).toContain("Only new writes are bucketed");
   });
 });

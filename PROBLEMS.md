@@ -1817,6 +1817,34 @@ there); the strategy findings:
   peer — T4's territory). Logged as a correction to the A-first
   implication, per Rule 0's "a pivot has a date on it."
 
+- **CORRECTION TO THE LINE ABOVE, 2026-08-02: "no evidence exists"
+  is now too strong by one live example, and the conclusion survives
+  it.** CV found x402station.io selling a $1 badge gated on ≥95%
+  uptime over 7 days, re-verified on render. That is a real dollar
+  for a BEHAVIOURAL claim rather than a syntax check, and — the part
+  that matters for us — the buyer is the ENDPOINT OPERATOR buying
+  proof of their own reliability to show prospective payers, which
+  is exactly the re-aimed buyer T7 identified: the party bearing
+  reputational risk, not the transacting agent. So A is no longer
+  "uncontradicted but unvalidated"; it is validated at one point,
+  small, by somebody else.
+  WHAT IT DOES NOT VALIDATE, and the distinction is the whole
+  question: liveness is not delivery-fidelity. Nobody found paying
+  for "did you deliver what you promised," which is the harder and
+  more valuable claim and the one A actually proposes. Uptime is
+  observable by anyone with a cron; delivery-fidelity needs the
+  buyer's side of a transaction. A precedent for the easy half is
+  not a precedent for the hard half.
+  THE SEQUENCE DOES NOT CHANGE. B-before-A rested on "no confirmed
+  buyer," and one $1 badge sold by a third party to a different
+  claim does not move it. Logged because a research verdict this
+  file states as fact should be corrected the day it stops being
+  fact, not the day it becomes inconvenient.
+  NOT INDEPENDENTLY VERIFIED BY THIS REPO: x402station.io was
+  fetched by CV and reported; outbound HTTPS from the build
+  environment cannot reach it, so no agent here has seen the page.
+  Treat as report-cited, one source, unreplicated.
+
 - **The falsifier that would flip B-before-A:** if B ships and gets
   zero external engagement in 8 weeks WHILE a paid-A request arrives
   anyway (a peer asking "check my offers/receipts and sign it"),

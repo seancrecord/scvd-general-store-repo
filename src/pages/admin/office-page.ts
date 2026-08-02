@@ -5,6 +5,7 @@ import type {
   SettleReconciliation,
 } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
+import { registeredMarkers, UNREGISTERED_VENUE } from "@/store/venues";
 import { readWindowShopping } from "@/lib/window-shopping";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
@@ -124,12 +125,19 @@ function sourcesHtml(ledger: MonthLedger, porch: PorchLedger): string {
     from a bookmark and lands in <code>direct</code>. So a zero in the bazaar row is zero
     ATTRIBUTABLE arrivals and says nothing about zero arrivals. The venue line beside it
     has the opposite problem and it is ours: <code>?src=</code> needs no referrer and works
-    fine on a bare machine client, but it only counts markers we actually minted, and the
-    only ones in the code are <code>try</code> and <code>skill</code>. No directory listing
-    carries one. An empty venue line therefore means we never handed out the paper, not
-    that nobody read it. Neither number is evidence about directory traffic, and reading
-    either as evidence is the mistake this note exists to stop
+    fine on a bare machine client, but it only counts markers we actually minted. The
+    register holds ${registeredMarkers().length}
+    (<code>${registeredMarkers().map(escapeHtml).join("</code>, <code>")}</code>), and
+    everything else folds into <code>${escapeHtml(UNREGISTERED_VENUE)}</code> — one bucket,
+    deliberately, because this used to take any string a caller invented and mint a KV key
+    from it. A venue with a marker but no arrivals means the paper was never handed out;
+    it does not mean nobody read it. Neither number is evidence about directory traffic,
+    and reading either as evidence is the mistake this note exists to stop
     (<code>AT_SCALE.md</code> rule 5b).</small></p>
+    <p><small>Rows predating the register keep their own names — old keys are read as
+    written, so a historical one-off like <code>workcheck-persona-test</code> still shows
+    itself. Only new writes are bucketed, and the exact string always survives per-event
+    under <a href="/admin/item-events">item events</a>.</small></p>
     <details><summary>What each source means</summary><ul>${legend}</ul></details>`;
 }
 
