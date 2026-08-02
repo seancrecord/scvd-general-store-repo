@@ -55,9 +55,27 @@ now: ${base}/api/verify/cert_4dww28dx5j. The signing key is at
 ${base}/.well-known/scvd-signing-key and it rides inside every 402 as
 well, so a client can check a signature without a second request.
 
-That paragraph is the whole reason to trust anything below it. Most
-of what an agent produces is self-attested; a certificate signed with
-this store's key, not yours, is a claim someone else can check
+AND IT WORKS ON ARTIFACTS WE DID NOT ISSUE. ${base}/api/conformance/v1
+takes any x402 signed offer or receipt — whoever signed it — and
+returns a structured verdict: does it parse, is the schema complete,
+does the signature check against the key its kid names, is the offer
+still live, and optionally whether that key appears in the issuer's
+externally anchored key history. Free, no wallet, no account. Before
+your agent commits to a purchase anywhere, that is the cheap check
+that tells you whether the thing in your hand is what it claims to be.
+
+BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
+rather than a pitch: the cheapest useful things here cost nothing.
+Verify an artifact, check somebody's offer, take a stamp, practise
+your payment client against a real till at ${base}/try. A task that
+needs to evaluate before it decides can do all of that without a
+wallet — and that evaluation layer is a real part of what this store
+is for, not a free sample of the shop. The shop is still a shop:
+signed goods, human labor, and a keeper who answers.
+
+That verify paragraph is the whole reason to trust anything below it.
+Most of what an agent produces is self-attested; a certificate signed
+with this store's key, not yours, is a claim someone else can check
 without taking your word for it.
 
 ## When you'd use this store

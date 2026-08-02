@@ -6,6 +6,8 @@ import {
   CONFORMANCE_VERSION,
 } from "@/services/conformance";
 import type { ConformanceRequest } from "@/services/conformance";
+import { escapeHtml } from "@/lib/sanitize";
+import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { isRecord } from "@/types";
 import type { HonoEnv } from "@/types";
 
@@ -63,9 +65,78 @@ async function handleCheck(c: Context<HonoEnv>) {
   return c.json(result.verdict, 200, { "Cache-Control": "no-store" });
 }
 
-conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) =>
-  c.json(conformanceDoc(c.env.STORE_BASE_URL)),
-);
+/**
+ * THE READABLE TWIN, and it exists for the reason /pulse's does: a
+ * surface only machines can read is the one place a person has to
+ * take our word. This desk's whole argument is "check it yourself
+ * rather than trust us," which would be a half-claim if the
+ * explanation of it were only available as JSON.
+ *
+ * It is also the link a human can be handed. The endpoint is the
+ * product; a curl invocation is not something anybody reads in a
+ * chat window and decides to try.
+ */
+function docHtml(base: string): string {
+  const doc = conformanceDoc(base);
+  const list = (lines: readonly string[]): string =>
+    lines
+      .map((line) => `<p class="menu-desc">${escapeHtml(line)}</p>`)
+      .join("\n");
+  const params = Object.entries(doc.request)
+    .map(
+      ([name, note]) =>
+        `<div class="menu-item">
+          <div class="menu-line"><span class="menu-name"><code>${escapeHtml(name)}</code></span></div>
+          <p class="menu-desc">${escapeHtml(String(note))}</p>
+        </div>`,
+    )
+    .join("\n");
+  const curl = `curl -sS ${base}/api/conformance/${CONFORMANCE_VERSION} \\
+  -H 'Content-Type: application/json' \\
+  -d '{"artifact":"<compact JWS>"}'`;
+  return `<section>
+      <p class="menu-desc">${escapeHtml(doc.summary)}</p>
+      <p class="menu-desc"><strong>${escapeHtml(String(doc.why_it_is_free))}</strong></p>
+    </section>
+    <section>
+      <h2>Calling it</h2>
+      <pre class="menu-desc"><code>${escapeHtml(curl)}</code></pre>
+      ${params}
+    </section>
+    <section>
+      <h2>What it checks</h2>
+      ${list(doc.what_it_checks)}
+    </section>
+    <section>
+      <h2>What it cannot tell you</h2>
+      ${list(doc.what_it_cannot_tell_you)}
+    </section>
+    <section>
+      <h2>Why you should not trust this page</h2>
+      <p class="menu-desc">${escapeHtml(doc.our_conflict_of_interest)}</p>
+      <p class="menu-desc">${escapeHtml(doc.run_it_yourself)}</p>
+    </section>
+    <section>
+      <p class="menu-meta">${escapeHtml(String(doc.contract))}</p>
+      <p class="menu-meta">${escapeHtml(String(doc.rate_limit))}</p>
+    </section>`;
+}
+
+conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) => {
+  const base = c.env.STORE_BASE_URL;
+  if (wantsHtml(c.req.header("Accept"))) {
+    return c.html(
+      renderSimplePage({
+        title: "The conformance desk",
+        description:
+          "Free, hosted x402 artifact checking. Send any issuer's signed offer or receipt and get a structured verdict: parse, schema, signature, liveness, and optionally the issuer's anchored key history. No wallet, no account.",
+        path: `/api/conformance/${CONFORMANCE_VERSION}`,
+        bodyHtml: docHtml(base),
+      }),
+    );
+  }
+  return c.json(conformanceDoc(base));
+});
 conformanceRoutes.post(`/api/conformance/${CONFORMANCE_VERSION}`, handleCheck);
 
 /**

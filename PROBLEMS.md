@@ -1868,8 +1868,30 @@ there); the strategy findings:
   payment logic and is only saying out loud what the store already
   structurally is. It also gives the conformance desk a throughline —
   "check before you commit" — instead of leaving it as an unrelated
-  second feature. NOT DONE: this is a keeper taste call on the
-  storefront voice (rule 7), filed rather than executed.
+  second feature.
+  RULED 2026-08-02, and the ruling is narrower than the reframe:
+  ADDITIONAL VALUE-ADD, NOT THE FULL VALUE PROPOSITION — "but it does
+  need to be value facing as it's a critical early entry point."
+  That distinction is the whole of it. The tempting move was to take
+  an outside framework that fits well and let it become the store's
+  description, which trades a general store for a category label and
+  quietly retires the half of the shelf that carries the highest
+  tickets. What shipped instead: the evaluation layer is named where
+  an arriving agent reads first — llms.txt now opens the free checks
+  as a thing to do BEFORE committing to anything bigger — and the same
+  paragraph says out loud that this is a real part of what the store
+  is for rather than a free sample, and that the shop is still a shop.
+  A test holds BOTH halves, because copy that quietly renamed us "the
+  cheap evaluation layer" would satisfy the entry-point half and fail
+  the ruling.
+  /api/conformance/v1 also gained a readable HTML twin, on the same
+  reasoning /pulse carries: a surface only machines can read is the
+  one place a person has to take our word, which is a half-claim from
+  a desk whose whole pitch is "check it yourself rather than trust
+  us." It doubles as the link a human can be handed in a chat window,
+  which is what the CDP Discord conversation needs.
+  STILL NOT DONE: the storefront and skill.md, which are the keeper's
+  own voice under rule 7.
   NOT INDEPENDENTLY VERIFIED: the Galaxy piece was read by CV;
   outbound HTTPS is blocked from the build environment, so nothing
   here has seen it.

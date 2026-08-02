@@ -488,3 +488,75 @@ describe("the anchored-key-history check", () => {
     expect(body.what_it_checks.join(" ")).toContain("anchored key history");
   });
 });
+
+/**
+ * THE READABLE TWIN. /pulse's own comment makes the argument: a
+ * surface only machines can read is the one place a person has to
+ * take our word. This desk's entire pitch is "check it yourself
+ * rather than trust us," which would be a half-claim if the
+ * explanation were available only as JSON.
+ *
+ * It is also the link somebody can be handed in a chat window, which
+ * a curl invocation is not.
+ */
+describe("the desk has a page a person can read", () => {
+  it("serves HTML to a browser and JSON to everything else", async () => {
+    const html = await SELF.fetch(`${BASE}/api/conformance/v1`, {
+      headers: { Accept: "text/html" },
+    });
+    expect(html.headers.get("content-type")).toContain("text/html");
+    const json = await SELF.fetch(`${BASE}/api/conformance/v1`);
+    expect(json.headers.get("content-type")).toContain("application/json");
+  });
+
+  it("carries the limits and the conflict on the human page too", async () => {
+    // A caveat stated in JSON and dropped in prose is a caveat stated
+    // to nobody — the same failure the blind-spot sweep found on /pulse.
+    const page = await (
+      await SELF.fetch(`${BASE}/api/conformance/v1`, {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(page).toContain("CONFORMANCE IS NOT ENDORSEMENT");
+    expect(page).toContain("WE COMPETE WITH SOME OF THE ISSUERS");
+    expect(page).toContain("Why you should not trust this page");
+  });
+
+  it("shows a command somebody could actually paste", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/api/conformance/v1`, {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(page).toContain("curl");
+    expect(page).toContain("/api/conformance/v1");
+  });
+});
+
+/**
+ * THE ENTRY-POINT FRAMING, ruled on by the keeper 2026-08-02: the
+ * upstream-of-checkout reading is an ADDITIONAL value-add and not the
+ * whole proposition, and it has to be value-facing because it is a
+ * critical early entry point.
+ *
+ * So the test holds both halves. The evaluation layer is named where
+ * an arriving agent reads first, AND the store is still a store — a
+ * version of this copy that quietly renamed us "the cheap evaluation
+ * layer" would satisfy the first half and fail the ruling.
+ */
+describe("llms.txt names the evaluation layer without becoming it", () => {
+  it("offers the free checks as a thing to do before committing", async () => {
+    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    expect(text).toContain("/api/conformance/v1");
+    expect(text).toContain("BEFORE YOU COMMIT TO ANYTHING BIGGER");
+  });
+
+  it("still says it is a shop", async () => {
+    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    expect(text).toContain("general store");
+    expect(
+      text,
+      "the evaluation layer was allowed to eat the store's own description",
+    ).toContain("The shop is still a shop");
+  });
+});
