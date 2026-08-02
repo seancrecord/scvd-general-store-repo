@@ -63,6 +63,32 @@ Three numbers, each falsifiable:
    it feels like taste and is not: it is a testable claim about
    position in a document.
 
+## The adjacent class: guards that only look one way
+
+Not a cold-agent finding, but it surfaced from the same question and
+belongs beside it, because both are "correct code that reads as more
+covered than it is."
+
+Several lists here are keyed by menu item id, and each was guarded in
+ONE direction — "is anything missing" — while the resolvers that read
+them silently drop what does not resolve:
+
+    clusterTool():  .filter((item) => item !== undefined)
+    cheapDoor():    .filter((item) => item !== undefined)
+
+So a renamed or mistyped id never failed. The MCP shelf would quietly
+sell one fewer item, `/try`'s cheap door would quietly show one fewer,
+and every existing test would still pass, because everything remaining
+was present and correct.
+
+`test/no-stale-item-ids.spec.ts` closes it in both directions and
+demonstrates the silent drop rather than asserting it, so the guard
+can be simplified the day resolution starts reporting instead.
+
+**If you add a list keyed by item id, add it there.** That is the one
+manual step, and it is written here because a list nobody knows to
+extend is the next instance of this.
+
 ## Standing rule
 
 A pass that finds nothing is a finding. Write it down with the date and
