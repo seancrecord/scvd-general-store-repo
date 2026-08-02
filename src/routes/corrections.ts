@@ -3,6 +3,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   CORRECTIONS,
+  CORRECTIONS_HAND_KEPT,
   CORRECTIONS_INVITATION,
   CORRECTIONS_MECHANISM,
   CORRECTIONS_OUTSIDE,
@@ -55,6 +56,7 @@ correctionsRoutes.get("/corrections", (c) => {
         <section>${rows}</section>
         <section>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_SCOPE)}</p>
+          <p class="menu-desc"><strong>${escapeHtml(CORRECTIONS_HAND_KEPT)}</strong></p>
           <p class="menu-meta">${escapeHtml(CORRECTIONS_INVITATION)}</p>
         </section>`,
       }),
@@ -67,6 +69,7 @@ correctionsRoutes.get("/corrections", (c) => {
     how_things_get_caught: CORRECTIONS_MECHANISM,
     what_we_cannot_do_ourselves: CORRECTIONS_OUTSIDE,
     scope: CORRECTIONS_SCOPE,
+    what_this_record_cannot_show_you: CORRECTIONS_HAND_KEPT,
     corrections: newestFirst.map((entry) => ({ ...entry })),
     count: newestFirst.length,
     corrections_url: `${base}/corrections`,

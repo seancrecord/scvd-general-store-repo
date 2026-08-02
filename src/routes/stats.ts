@@ -27,5 +27,23 @@ statsRoutes.get("/stats", async (c) => {
     sample_artifact_id: SAMPLE_ARTIFACT_ID,
     listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
     note: "Computed from the same counters the keeper reads. No hand edits; the line rewrites itself as the ledger grows.",
+    /**
+     * AT_SCALE rule 5b. Every number above comes from counters this
+     * store writes, which makes them our BOOKS and not the chain. The
+     * failure they cannot see is the one that matters: a payment that
+     * settled on Base and never bumped a counter is not a discrepancy
+     * here, it is an absence, and these figures would read clean.
+     *
+     * The check exists — an hourly walk compares USDC transfers to our
+     * pay-to address against the settlement_tx on every certificate —
+     * so the honest move is to NAME it and hand over the address,
+     * rather than let "computed live, no hand edits" stand in for
+     * independence it does not provide. Computed live says nobody
+     * typed it. It does not say anybody outside agreed with it.
+     */
+    what_these_numbers_are:
+      "OUR BOOKS, NOT THE CHAIN. Every figure here is computed from counters this store writes, so a settlement that landed on Base and never bumped one would not appear as a discrepancy — it would not appear at all, and this page would look clean while a payment went unrecorded. 'Computed live, no hand edits' means nobody typed these numbers; it does not mean anybody outside checked them.",
+    how_to_check_it_without_us:
+      "An hourly walk compares USDC transfers to our pay-to address against the settlement_tx recorded on every certificate, and a mismatch raises an alert that a person writes up at /corrections. You do not have to take our word for that walk: the pay-to address is public in the 402 terms and at /.well-known/x402.json, every certificate carries its own settlement_tx, and Base is readable by anyone. Walk it yourself and tell us if the two disagree — the mailbox at /api/letter is free.",
   });
 });

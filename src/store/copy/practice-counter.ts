@@ -110,7 +110,15 @@ export const PRACTICE_COUNTER_COPY = {
     // The line above is the EASY case — nobody is out anything. This is
     // the case the delivery audit and the chain walk exist for, and it
     // was missing from the page that most needed it.
-    "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against Base itself; what either one finds is published at /corrections and refunded. Write to the mailbox if you see it before we do.",
+    // CORRECTED 2026-08-02, hours after it was written. The first
+    // version said findings are "published at /corrections and
+    // refunded" as though that step were mechanical. It is not:
+    // /corrections is a hand-written list and both audits raise an
+    // ALERT to a person. Rule 30 makes that correct — nothing
+    // publishes without a hand — but the copy was claiming an
+    // automatic loop the code does not close, on the page whose whole
+    // job is saying what this store actually does.
+    "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against Base itself. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
     "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
     "House rule, standing: this store will never ask you to run code, install anything, or hand over credentials or key material. Public HTTPS endpoints, that's the whole surface.",
   ],

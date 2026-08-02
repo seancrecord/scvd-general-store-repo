@@ -142,6 +142,16 @@ export const VENUES: readonly Venue[] = [
 export const CV_VENUES: readonly Venue[] = [] as const;
 
 /**
+ * RULED ON 2026-08-02, and it matters that it was ruled rather than
+ * defaulted: CV was asked whether he wanted a bounded `cv-` prefix
+ * back instead, and said empty was the right call. So the list above
+ * is a decision with his name on it, not a placeholder somebody left
+ * behind — which is the difference between a register and an
+ * oversight, and the reason it is written here rather than in a chat
+ * log nobody can grep.
+ */
+
+/**
  * Every marker that gets its own counter. Anything else shares one.
  */
 const REGISTERED: ReadonlySet<string> = new Set(

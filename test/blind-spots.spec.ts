@@ -183,3 +183,59 @@ describe("the office says why its channel numbers cannot settle the question", (
     expect(flat).toContain("Only new writes are bucketed");
   });
 });
+
+/**
+ * ROUND TWO OF THE SWEEP, 2026-08-02. Same question asked of the
+ * surfaces the first pass did not reach: what would this page look
+ * like if the thing it measures failed silently?
+ *
+ * Two answers came back wrong, and one of them was a sentence written
+ * earlier the same day on /try — which is the argument for asking the
+ * question on a schedule rather than when something feels off.
+ */
+describe("round two: the record and the books state their limits", () => {
+  it("/corrections says the list is written by hand", async () => {
+    // Nothing writes to CORRECTIONS. It is a static array in
+    // src/store/corrections.ts; the delivery audit and the chain walk
+    // raise ALERTS and stop there, by design (rule 30). A reader had
+    // no way to tell a quiet week from an unwritten one.
+    const body = (await (
+      await SELF.fetch(`${BASE}/corrections`)
+    ).json()) as Record<string, unknown>;
+    const caveat = String(body["what_this_record_cannot_show_you"]);
+    expect(caveat).toContain("written by hand");
+    expect(caveat).toContain("raises an ALERT to a person");
+    expect(
+      caveat,
+      "the caveat has to name the ambiguity, not just the mechanism",
+    ).toContain("nobody wrote anything down");
+  });
+
+  it("/stats says its numbers are our books rather than the chain", async () => {
+    // "Computed live, no hand edits" was standing in for independence
+    // it does not provide: a settle that never bumped a counter is an
+    // ABSENCE here, not a discrepancy, so the page reads clean.
+    const body = (await (await SELF.fetch(`${BASE}/stats`)).json()) as Record<
+      string,
+      unknown
+    >;
+    const what = String(body["what_these_numbers_are"]);
+    expect(what).toContain("OUR BOOKS, NOT THE CHAIN");
+    expect(what).toContain("would not appear at all");
+    expect(
+      String(body["how_to_check_it_without_us"]),
+      "naming the limit without handing over the means to check it is half an answer",
+    ).toContain("Base is readable by anyone");
+  });
+
+  it("/stats still publishes the numbers it is caveating", async () => {
+    // A caveat that arrived by deleting the figure would be the wrong
+    // fix. The books stay; the frame goes around them.
+    const body = (await (await SELF.fetch(`${BASE}/stats`)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(body["track_record"]).toBeTruthy();
+    expect(body["house_flag_policy"]).toBeTruthy();
+  });
+});

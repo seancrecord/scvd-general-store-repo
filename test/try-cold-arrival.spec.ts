@@ -213,5 +213,19 @@ describe("a cold agent can follow /try without knowing anything else", () => {
     const honest = page.honest_notes.join(" ");
     expect(honest).toContain("settled and nothing came back");
     expect(honest.toLowerCase()).toContain("/corrections");
+    // AND it must not sell that loop as self-driving. The first
+    // version of this copy said findings are "published at
+    // /corrections and refunded"; /corrections is a hand-written list
+    // and both audits only raise an alert. A buyer deciding whether to
+    // trust the safety net needs to know which half is which.
+    //
+    // The second version said so using the word "automatic", and
+    // test/claim-chain.spec.ts caught it: that guard fails any
+    // readable surface with "automatic" within 140 characters of
+    // "refund", and it exists because this store once published an
+    // auto-refund promise it could not keep. The guard could not tell
+    // my disclaimer from the defect, and the right move was to reword
+    // rather than widen the guard.
+    expect(honest).toContain("FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON");
   });
 });

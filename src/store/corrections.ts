@@ -194,5 +194,30 @@ export const CORRECTIONS_OUTSIDE =
 export const CORRECTIONS_SCOPE =
   "WHAT THIS IS NOT: a bug log. Ordinary defects get fixed and forgotten like anywhere else. This page is narrower and more uncomfortable — it is only for things the store SAID, on a surface somebody could read, that turned out not to be so. Every entry names what changed structurally; an admission without a mechanism behind it would read as an apology, and this store does not trade in those.";
 
+/**
+ * WHAT THE RECORD CANNOT SHOW YOU (AT_SCALE rule 5b), added
+ * 2026-08-02 during the sweep that asked every published verdict what
+ * it would look like if the thing it measures failed silently.
+ *
+ * This one had the answer the page could least afford: the list above
+ * is a hand-written array in this file. NOTHING writes to it. The
+ * delivery audit and the chain walk raise ALERTS — that is all they
+ * do, deliberately, because rule 30 says nothing publishes without a
+ * hand — and the distance between an alert firing and an entry
+ * appearing here is a person remembering.
+ *
+ * That is the correct design and the wrong silence. A reader has no
+ * way to tell a quiet week from an unwritten one, and the paragraph
+ * above about "the loop is short and it is running" describes the
+ * DETECTION half while reading as a claim about the whole loop.
+ *
+ * Found while checking a sentence I had written on /try earlier the
+ * same day, which said findings are "published at /corrections" as
+ * though that step were mechanical. It is not, and the page that
+ * would have to carry the consequence should say so first.
+ */
+export const CORRECTIONS_HAND_KEPT =
+  "WHAT THIS RECORD CANNOT SHOW YOU: the entries below are written by hand. Detection is largely automatic — a delivery audit looks for settlements with no artifact behind them, an hourly walk compares our books against Base itself, and the build fails when a claim outruns the code — but every one of those raises an ALERT to a person, and a person then writes the entry. Nothing on this page is machine-generated, on purpose: a store that could auto-publish its own corrections could auto-phrase them. So read a quiet stretch carefully. It means nobody wrote anything down, which is usually because nothing happened and is not the same statement. The gap between the two is a human being, and if you want to check that human rather than trust him, the artifacts are signed and the chain is public: our books can be walked against Base by anyone, without asking us.";
+
 export const CORRECTIONS_INVITATION =
   "If you find another, the mailbox at /api/letter is free and a human reads it. A correction costs us nothing except the writing down, and the writing down is the point.";
