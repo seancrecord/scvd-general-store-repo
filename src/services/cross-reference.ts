@@ -127,9 +127,31 @@ const keyDocCache = new Map<
   { at: number; doc: CounterpartKeyDoc | null; failure?: string }
 >();
 
-/** Test seam: drop memoised counterpart documents. */
+/**
+ * REQUESTS ALREADY IN THE AIR FOR A HOST.
+ *
+ * The cache stops repeat lookups; it does NOT stop a stampede. Fifty
+ * concurrent verifications arriving during a cold window all miss the
+ * cache together and all dial the same counterpart — which is the
+ * amplification we just closed, reopened by concurrency. Coalescing
+ * makes the second through fiftieth await the first one's promise, so
+ * a host sees at most one request in flight from us no matter how hard
+ * a stranger hammers our verify endpoint.
+ *
+ * This is the per-host concurrency cap, set at one, which is the right
+ * number for a document that changes about never.
+ */
+const inFlight = new Map<string, Promise<CachedDoc>>();
+
+interface CachedDoc {
+  doc: CounterpartKeyDoc | null;
+  failure?: string;
+}
+
+/** Test seam: drop memoised counterpart documents and in-flight work. */
 export function clearCounterpartCache(): void {
   keyDocCache.clear();
+  inFlight.clear();
 }
 
 /** Where a counterpart publishes its key history, by convention. */
@@ -159,7 +181,7 @@ const IP_IN_DISGUISE =
   /(^|\.)(\d{1,3}[.-]\d{1,3}[.-]\d{1,3}[.-]\d{1,3})(\.|$)/;
 
 export function counterpartKeyUrl(issuer: string): string | null {
-  const host = String(issuer ?? "").trim().toLowerCase();
+  const host = safeString(issuer).trim().toLowerCase();
   /**
    * A hostname and nothing else: no scheme, no path, no credentials,
    * no port. The issuer arrives inside a signed artifact, but it was
@@ -211,8 +233,32 @@ export function crossRefShapeProblem(value: unknown): string | null {
  * that read as "appears nowhere in their history" would be a false
  * accusation dressed as a security finding.
  */
+/**
+ * A string, or the empty string. Never a coercion that can throw.
+ *
+ * Same hazard as normalizeKey: `String(x)` on an object with a
+ * non-callable toString throws, and every one of these sits on a path
+ * that runs inside /api/verify. A field that is not a string is not a
+ * value we can use, and treating it as absent fails closed.
+ */
+function safeString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
 function normalizeKey(value: unknown): string {
-  return String(value ?? "").trim().toLowerCase().replace(/^0x/, "");
+  /**
+   * ONLY AN ACTUAL STRING. `String(value)` looks harmless and is not:
+   * a hostile counterpart serving {"public_key": {"toString": "x"}}
+   * makes it THROW "Cannot convert object to primitive value" — and
+   * that throw lands inside /api/verify, so a document we do not
+   * control could 500 the endpoint this store promises is free and
+   * forever. Found 2026-08-02 by a test that fed it exactly that.
+   *
+   * Anything that is not a string is not a key, and reads as no key,
+   * which fails closed the way everything else here does.
+   */
+  if (typeof value !== "string") return "";
+  return value.trim().toLowerCase().replace(/^0x/, "");
 }
 
 function retiredEntries(doc: CounterpartKeyDoc): Array<{
@@ -284,6 +330,100 @@ export function keyAcceptableAt(
   };
 }
 
+
+/**
+ * FETCHING A DOCUMENT FROM A HOST WE DO NOT CONTROL, treated as the
+ * threat model it actually is rather than as "what if they are slow."
+ *
+ * A hostile counterpart can serve anything: a gigabyte, a redirect
+ * chain, a lying Content-Length, a body that drips one byte a minute,
+ * JSON shaped to confuse whatever reads it. Each is handled here and
+ * every failure is a NAMED reason rather than a throw, because a
+ * counterpart misbehaving must read as "unverified" on one line and
+ * never as an error on our own verify endpoint.
+ */
+async function fetchKeyDoc(
+  url: string,
+  fetchImpl: typeof fetch,
+  options: CrossRefOptions,
+): Promise<CachedDoc> {
+  try {
+    const response = await fetchImpl(url, {
+      signal: AbortSignal.timeout(options.timeoutMs ?? COUNTERPART_TIMEOUT_MS),
+      /**
+       * NO REDIRECTS. Following one hands back the bypass the
+       * allowlist exists to remove: an allowed host answering 302
+       * pointing anywhere turns our verifier into a request emitter
+       * aimed at a target we never approved.
+       */
+      redirect: "error",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      return {
+        doc: null,
+        failure: `counterpart key document returned HTTP ${response.status}; an unreachable counterpart is an unproven claim, never an assumed one`,
+      };
+    }
+    /**
+     * DECLARED SIZE FIRST. A lying Content-Length is still bounded by
+     * the abort signal, but an honest large one is refused before a
+     * byte of body is read — cheapest check available, so it goes
+     * first.
+     */
+    const declared = Number(response.headers?.get?.("content-length") ?? "");
+    if (Number.isFinite(declared) && declared > MAX_KEY_DOC_BYTES) {
+      return {
+        doc: null,
+        failure: `counterpart key document declares ${declared} bytes, over the ${MAX_KEY_DOC_BYTES} ceiling, and was not read`,
+      };
+    }
+    /**
+     * READ AS TEXT, THEN MEASURE, THEN PARSE. `.json()` on a body from
+     * a host we do not control hands them our parser and our memory in
+     * one step. The honest limit: this measures AFTER the read
+     * completes, so the real bound on a lying host is the abort signal
+     * above — the ceiling catches the merely oversized, the timeout
+     * catches the malicious.
+     */
+    const raw = await response.text();
+    if (raw.length > MAX_KEY_DOC_BYTES) {
+      return {
+        doc: null,
+        failure: `counterpart key document exceeds ${MAX_KEY_DOC_BYTES} bytes and was not parsed`,
+      };
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return { doc: null, failure: "counterpart key document is not valid JSON" };
+    }
+    if (!isRecord(parsed)) {
+      return { doc: null, failure: "counterpart key document is not a JSON object" };
+    }
+    const history = isRecord(parsed["key_history"]) ? parsed["key_history"] : parsed;
+    /**
+     * ONLY THE TWO FIELDS WE UNDERSTAND leave this function. Whatever
+     * else a hostile document carries — extra keys, nested structures,
+     * a `__proto__` entry — is dropped here rather than travelling
+     * into the comparison logic. JSON.parse does not pollute a
+     * prototype on its own, and this makes sure nothing downstream has
+     * to depend on that being true.
+     */
+    return {
+      doc: {
+        current: isRecord(history["current"])
+          ? { public_key: (history["current"] as Record<string, unknown>)["public_key"] }
+          : undefined,
+        retired: Array.isArray(history["retired"]) ? history["retired"] : [],
+      },
+    };
+  } catch (error) {
+    return { doc: null, failure: `counterpart key document unreachable: ${String(error)}` };
+  }
+}
+
 /**
  * Resolve and check one cross-reference. Never throws; every failure
  * is a named `verified: false`.
@@ -294,8 +434,8 @@ export async function verifyCrossReference(
 ): Promise<CrossRefCheck> {
   const asOf = options.asOf ?? new Date();
   const base: Omit<CrossRefCheck, "verified" | "reason"> = {
-    counterpart_issuer: String(ref?.counterpart_issuer ?? ""),
-    counterpart_artifact_id: String(ref?.counterpart_artifact_id ?? ""),
+    counterpart_issuer: safeString(ref?.counterpart_issuer),
+    counterpart_artifact_id: safeString(ref?.counterpart_artifact_id),
     verified_at_mint: Boolean(ref?.verified_at_mint),
   };
 
@@ -314,7 +454,7 @@ export async function verifyCrossReference(
     return {
       ...base,
       verified: false,
-      reason: `"${ref.counterpart_issuer}" is not a counterpart this store resolves. Nothing was fetched. Being absent from that list is not a judgment about them — it means no request will be made to a host we did not deliberately add.`,
+      reason: `"${base.counterpart_issuer}" is not a counterpart this store resolves. Nothing was fetched. Being absent from that list is not a judgment about them — it means no request will be made to a host we did not deliberately add.`,
     };
   }
 
@@ -323,7 +463,7 @@ export async function verifyCrossReference(
     return {
       ...base,
       verified: false,
-      reason: `"${ref.counterpart_issuer}" is not a plain public hostname, so no key document location can be derived from it`,
+      reason: `"${base.counterpart_issuer}" is not a plain public hostname, so no key document location can be derived from it`,
     };
   }
 
@@ -337,78 +477,46 @@ export async function verifyCrossReference(
     };
   }
 
-  let doc: CounterpartKeyDoc;
   const now = Date.now();
   const cached = keyDocCache.get(url);
+  let resolved: CachedDoc;
   if (cached && now - cached.at < COUNTERPART_CACHE_MS) {
-    if (!cached.doc) {
+    resolved = { doc: cached.doc, ...(cached.failure ? { failure: cached.failure } : {}) };
+    if (!resolved.doc) {
       return {
         ...base,
         verified: false,
         key_document_url: url,
-        reason: `${cached.failure ?? "counterpart unreachable"} (remembered from a recent attempt rather than re-asking, so a public verify loop cannot be aimed at them through us)`,
+        reason: `${resolved.failure ?? "counterpart unreachable"} (remembered from a recent attempt rather than re-asking, so a public verify loop cannot be aimed at them through us)`,
       };
     }
-    doc = cached.doc;
   } else {
-    try {
-      const response = await fetchImpl(url, {
-        signal: AbortSignal.timeout(options.timeoutMs ?? COUNTERPART_TIMEOUT_MS),
-        /**
-         * NO REDIRECTS. Following one would hand an attacker the
-         * bypass the allowlist exists to prevent: an allowed host
-         * answering 302 to a link-local address turns our verifier
-         * into a request emitter aimed anywhere.
-         */
-        redirect: "error",
-        headers: { Accept: "application/json" },
+    /**
+     * COALESCED. Concurrent misses share one request; see inFlight.
+     */
+    let pending = inFlight.get(url);
+    if (!pending) {
+      pending = fetchKeyDoc(url, fetchImpl, options).finally(() => {
+        inFlight.delete(url);
       });
-      if (!response.ok) {
-        const failure = `counterpart key document returned HTTP ${response.status}; an unreachable counterpart is an unproven claim, never an assumed one`;
-        keyDocCache.set(url, { at: now, doc: null, failure });
-        return { ...base, verified: false, key_document_url: url, reason: failure };
-      }
-      /**
-       * READ AS TEXT WITH A CEILING, then parse. `.json()` on an
-       * unbounded body is a memory exhaustion invitation from a host
-       * we do not control, and the declared Content-Length cannot be
-       * trusted to describe what actually arrives.
-       */
-      const raw = await response.text();
-      if (raw.length > MAX_KEY_DOC_BYTES) {
-        const failure = `counterpart key document exceeds ${MAX_KEY_DOC_BYTES} bytes and was not parsed`;
-        keyDocCache.set(url, { at: now, doc: null, failure });
-        return { ...base, verified: false, key_document_url: url, reason: failure };
-      }
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        const failure = "counterpart key document is not valid JSON";
-        keyDocCache.set(url, { at: now, doc: null, failure });
-        return { ...base, verified: false, key_document_url: url, reason: failure };
-      }
-      if (!isRecord(parsed)) {
-        const failure = "counterpart key document is not a JSON object";
-        keyDocCache.set(url, { at: now, doc: null, failure });
-        return { ...base, verified: false, key_document_url: url, reason: failure };
-      }
-      const history = isRecord(parsed["key_history"])
-        ? parsed["key_history"]
-        : parsed;
-      doc = {
-        current: isRecord(history["current"])
-          ? (history["current"] as CounterpartKeyDoc["current"])
-          : undefined,
-        retired: history["retired"],
+      inFlight.set(url, pending);
+    }
+    resolved = await pending;
+    keyDocCache.set(url, {
+      at: Date.now(),
+      doc: resolved.doc,
+      ...(resolved.failure ? { failure: resolved.failure } : {}),
+    });
+    if (!resolved.doc) {
+      return {
+        ...base,
+        verified: false,
+        key_document_url: url,
+        reason: resolved.failure ?? "counterpart unreachable",
       };
-      keyDocCache.set(url, { at: now, doc });
-    } catch (error) {
-      const failure = `counterpart key document unreachable: ${String(error)}`;
-      keyDocCache.set(url, { at: now, doc: null, failure });
-      return { ...base, verified: false, key_document_url: url, reason: failure };
     }
   }
+  const doc = resolved.doc;
 
   const verdict = keyAcceptableAt(doc, ref.counterpart_key_fingerprint, asOf);
   return {
@@ -445,7 +553,7 @@ export async function verifyCrossReferences(
    */
   const seen = new Set<string>();
   for (const ref of refs.slice(0, MAX_CROSS_REFS)) {
-    const fingerprint = `${String(ref?.counterpart_issuer)}|${String(ref?.counterpart_artifact_id)}`;
+    const fingerprint = `${safeString(ref?.counterpart_issuer)}|${safeString(ref?.counterpart_artifact_id)}`;
     if (seen.has(fingerprint)) continue;
     seen.add(fingerprint);
     checks.push(await verifyCrossReference(ref, options));

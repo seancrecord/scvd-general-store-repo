@@ -1467,6 +1467,65 @@ prefix, so a counterpart writing `0xabc…` where we wrote `abc…` would
 have read as "appears nowhere in their published history" — a security
 finding that was really a spelling difference. Both sides normalised.
 
+**SECOND PASS, on CV's five follow-ups — and his framing was the
+correction that mattered: everything in the first pass modelled a
+well-behaved-but-imperfect counterpart, not a HOSTILE one standing up
+a key document specifically to see what our resolution can be tricked
+into doing. "We fetch a URL we do not control" is the threat model.**
+
+*It found a remote 500 on /api/verify.* `normalizeKey` used
+`String(value)`, which THROWS on an object with a non-callable
+`toString` — so a counterpart serving
+`{"public_key": {"toString": "x"}}` could crash the endpoint this
+store promises is free and forever. Every coercion on that path is now
+a `typeof === "string"` check that fails closed; a value that is not a
+string is not a key. Found by a test that fed it exactly that, which
+existed only because CV said to model malice rather than sloppiness.
+
+*Stampede (his point 2), closed rather than deferred.* He called a
+per-host concurrency cap "not urgent at current volume." The cache
+stops REPEAT lookups; it does nothing about fifty concurrent cold
+misses all dialling the same host — the amplification we just closed,
+reopened by concurrency. In-flight coalescing means a counterpart sees
+at most one request from us regardless of how hard our verify endpoint
+is hammered. Tested with 25 parallel resolutions against one slow
+host: one call.
+
+*Hostile-document shapes (his point 5).* A crafted key doc now cannot
+reach past the two fields we read — the resolver copies out
+`current.public_key` and `retired` and drops everything else, so extra
+keys, deep nesting and `__proto__` entries never travel into the
+comparison. Non-string keys, malformed retired lists, and a lying
+`Content-Length` are all refused. Cross-issuer cache poisoning is
+pinned by test: the cache is keyed by the counterpart's own URL, so a
+bad actor can only ever affect claims about themselves.
+
+*Size cap (his point 4): already there, and now honest about its
+limit.* 64 KB, plus a `Content-Length` pre-check that refuses before a
+byte of body is read. Stated plainly in the code: the ceiling measures
+AFTER the read completes, so against a LYING host the real bound is
+the abort signal, not the ceiling. The cap catches the merely
+oversized; the timeout catches the malicious.
+
+*Rotation mid-flight (his point 3): covered, and now named.* Three
+explicit tests — a reference minted before their rotation still
+verifies, one dated after it does not, and a counterpart who replaces
+`current` without listing the retired key gets a fail-closed
+"appears nowhere" rather than a guess that they are the same operator.
+
+*Private/link-local resolution (his point 1): the one I cannot fully
+close, recorded rather than claimed.* A hostname can pass every string
+check and still resolve to 169.254.169.254 or an RFC1918 address.
+There is NO fix for this at the application layer here: a Worker
+cannot resolve DNS before fetching, so we never see the address we are
+about to contact. What bounds it: the allowlist means the host is one
+we chose deliberately, redirects are refused, and Cloudflare Workers
+have no internal network for a link-local address to be interesting
+against. That is mitigation by platform and by policy, NOT by
+verification, and anyone reasoning about this should know the
+difference. If we ever run this outside Workers, it becomes a real
+hole and this paragraph is the reason to look.
+
 **The asymmetry, stated because it looks like an inconsistency.** The
 public verifier we ship (verifier/x402-verify.js) stays GENERIC and
 resolves whoever the caller names. Here we allowlist. Different trust

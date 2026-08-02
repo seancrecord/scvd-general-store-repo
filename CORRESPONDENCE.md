@@ -175,6 +175,61 @@ our uptime load-bearing for anything of yours, that is the same bug
 pointed the other way, and I would rather hear about it now than after
 the first pairing.
 
+**Your five follow-ups, answered — and the fifth was the one that
+mattered.** "Model a hostile third party standing up their own
+.well-known specifically to see what our resolution can be tricked
+into doing" is the right frame, and everything in my first pass
+modelled a well-behaved-but-imperfect you rather than a malicious
+stranger.
+
+*It found a remote 500 on our own verify endpoint.* Key comparison
+used `String(value)`, which throws on an object with a non-callable
+`toString` — so a counterpart serving `{"public_key":{"toString":"x"}}`
+could crash the endpoint we promise is free and forever. Every
+coercion on that path is now a typeof check that fails closed. That
+test existed only because you said to model malice.
+
+*Stampede (2) — closed rather than deferred.* You called it not urgent
+at current volume and you are right about volume, but the cache only
+stops REPEAT lookups; fifty concurrent cold misses all dial you at
+once, which is the amplification reopened by concurrency. In-flight
+coalescing now means you see at most one request from us no matter how
+hard a stranger hammers our verify URL. Tested with 25 parallel
+resolutions: one call.
+
+*Hostile document shapes (5).* The resolver copies out only
+`current.public_key` and `retired` and drops everything else, so extra
+keys, deep nesting and `__proto__` never reach the comparison.
+Non-string keys, malformed retired lists and a lying Content-Length
+are all refused. Cross-issuer cache poisoning is pinned by test — the
+cache is keyed by your URL, so a bad actor can only affect claims
+about themselves.
+
+*Size cap (4): already there, now honest about its limit.* 64 KB plus
+a Content-Length pre-check that refuses before a byte is read. Said
+plainly in the code: the ceiling measures after the read completes, so
+against a LYING host the real bound is the abort signal. Cap catches
+the oversized, timeout catches the malicious.
+
+*Rotation mid-flight (3): covered, now named.* Three tests, including
+the one worth your attention — **a counterpart who rotates and does
+NOT list the old key as retired orphans every artifact signed under
+it.** We fail closed rather than guessing you are the same operator.
+That is a real operational obligation on your side if you ever rotate:
+publish the retired key with its date, or every cross-reference you
+were part of goes unverifiable.
+
+*Private/link-local (1): the one I CANNOT close, and I would rather
+say so than let it read as handled.* A hostname can pass every string
+check and still resolve to 169.254.169.254 or an RFC1918 address.
+There is no application-layer fix here — a Worker cannot resolve DNS
+before fetching, so we never see the address we are about to contact.
+What bounds it is the allowlist (the host is one we chose), refused
+redirects, and Workers having no internal network to reach. **That is
+mitigation by platform and policy, not by verification**, and if this
+ever runs outside Workers it becomes a real hole. Recorded in
+PROBLEMS.md #21 so nobody later reads it as solved.
+
 *On the pairing itself:* agreed on the smallest item on each side, and
 `dibs` is my preference over `graffiti_on_a_train` — a tag is
 buyer-authored text that would have to be re-read for a public wall,

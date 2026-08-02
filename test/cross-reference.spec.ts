@@ -589,3 +589,220 @@ describe("RED TEAM: redirects and key spelling", () => {
     expect(check.verified).toBe(true);
   });
 });
+
+describe("RED TEAM: a HOSTILE counterpart, not merely an absent one", () => {
+  /**
+   * CV's sharpest note: everything up to here modelled a
+   * well-behaved-but-imperfect partner. This block models someone who
+   * stood up a .well-known key document specifically to see what our
+   * resolution can be tricked into doing. "We fetch a URL we do not
+   * control" is the threat model; slow and wrong are the easy cases.
+   */
+  const hostile = (body: string, headers: Record<string, string> = {}) =>
+    (async () =>
+      ({
+        ok: true,
+        status: 200,
+        headers: { get: (k: string) => headers[k.toLowerCase()] ?? null },
+        text: async () => body,
+      }) as unknown as Response) as unknown as typeof fetch;
+
+  it("refuses a document that declares itself oversized, before reading it", async () => {
+    let read = false;
+    const liar = (async () =>
+      ({
+        ok: true,
+        status: 200,
+        headers: { get: () => String(MAX_KEY_DOC_BYTES + 1) },
+        text: async () => {
+          read = true;
+          return "{}";
+        },
+      }) as unknown as Response) as unknown as typeof fetch;
+    const check = await verifyCrossReference(ref(), { ...ALLOW_ALL, fetch: liar });
+    expect(check.verified).toBe(false);
+    expect(read, "an oversized body was read anyway").toBe(false);
+  });
+
+  it("does not let a crafted document reach past the two fields we read", async () => {
+    // __proto__ in JSON is an own property, not pollution — but the
+    // resolver drops everything it does not understand rather than
+    // depending on that staying true in every runtime.
+    const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: hostile(
+        JSON.stringify({
+          __proto__: { polluted: true },
+          key_history: {
+            current: { public_key: KEY_A, extra: { deeply: { nested: 1 } } },
+            retired: "not-an-array",
+            constructor: { prototype: { x: 1 } },
+          },
+        }),
+      ),
+    });
+    expect(check.verified).toBe(true);
+    expect(({} as Record<string, unknown>)["polluted"]).toBeUndefined();
+  });
+
+  it("cannot match by sending a non-string key that stringifies oddly", async () => {
+    for (const evil of [{ toString: "x" }, ["a".repeat(64)], 12345, null, true]) {
+      const check = await verifyCrossReference(ref(), {
+        ...ALLOW_ALL,
+        fetch: hostile(
+          JSON.stringify({ key_history: { current: { public_key: evil } } }),
+        ),
+      });
+      expect(check.verified, `${JSON.stringify(evil)} matched`).toBe(false);
+    }
+  });
+
+  it("cannot smuggle a match through a malformed retired list", async () => {
+    for (const retired of [
+      [{ public_key: KEY_A }],
+      [{ retired_on: "2026-01-01" }],
+      [null, "string", 42],
+      [{ public_key: KEY_A, retired_on: null }],
+    ]) {
+      const check = await verifyCrossReference(ref(), {
+        ...ALLOW_ALL,
+        fetch: hostile(
+          JSON.stringify({
+            key_history: { current: { public_key: KEY_B }, retired },
+          }),
+        ),
+      });
+      expect(check.verified, `${JSON.stringify(retired)} matched`).toBe(false);
+    }
+  });
+
+  it("a hostile host can only ever affect claims about ITSELF", async () => {
+    /**
+     * The cache is keyed by the counterpart's own URL, so a malicious
+     * document cannot poison the resolution of a reference to somebody
+     * else. Worth pinning: cache poisoning across issuers would turn
+     * one bad actor into a lever against every partner we have.
+     */
+    const perHost = (async (url: string) =>
+      ({
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        text: async () =>
+          JSON.stringify({
+            key_history: {
+              current: {
+                public_key: url.includes("evil.example") ? KEY_A : KEY_B,
+              },
+            },
+          }),
+      }) as unknown as Response) as unknown as typeof fetch;
+
+    const evil = await verifyCrossReference(
+      ref({ counterpart_issuer: "evil.example" }),
+      { ...ALLOW_ALL, fetch: perHost },
+    );
+    const honest = await verifyCrossReference(
+      ref({ counterpart_issuer: "honest.example" }),
+      { ...ALLOW_ALL, fetch: perHost },
+    );
+    expect(evil.verified).toBe(true);
+    // The hostile answer did not become the honest host's answer.
+    expect(honest.verified).toBe(false);
+  });
+
+  it("collapses a concurrent stampede into one request", async () => {
+    /**
+     * The cache stops REPEAT lookups; it does not stop fifty
+     * simultaneous cold misses all dialling the same host — the
+     * amplification we closed, reopened by concurrency.
+     */
+    let calls = 0;
+    const slow = (async () => {
+      calls += 1;
+      await new Promise((r) => setTimeout(r, 20));
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        text: async () =>
+          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
+      } as unknown as Response;
+    }) as unknown as typeof fetch;
+
+    const results = await Promise.all(
+      Array.from({ length: 25 }, () =>
+        verifyCrossReference(ref(), { ...ALLOW_ALL, fetch: slow }),
+      ),
+    );
+    expect(calls, "a stampede reached the counterpart").toBe(1);
+    expect(results.every((r) => r.verified)).toBe(true);
+  });
+});
+
+describe("RED TEAM: the counterpart rotates between mint and verification", () => {
+  /**
+   * CV asked for this named explicitly rather than assumed covered.
+   * A cross-reference is minted at T against key K. The counterpart
+   * rotates afterwards. The first person to verify arrives later, and
+   * must still get a true answer about what was true at T.
+   */
+  const rotated = (retiredOn: string) =>
+    (async () =>
+      ({
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        text: async () =>
+          JSON.stringify({
+            key_history: {
+              current: { public_key: KEY_B },
+              retired: [{ public_key: KEY_A, retired_on: retiredOn }],
+            },
+          }),
+      }) as unknown as Response) as unknown as typeof fetch;
+
+  it("still verifies a reference minted BEFORE their rotation", async () => {
+    // The artifact is dated 2026-08-02; they rotated on 2026-09-01.
+    const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: rotated("2026-09-01"),
+      asOf: new Date("2026-08-02"),
+    });
+    expect(check.verified).toBe(true);
+    expect(check.reason).toContain("in service");
+  });
+
+  it("refuses a reference dated AFTER their rotation", async () => {
+    const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: rotated("2026-07-01"),
+      asOf: new Date("2026-08-02"),
+    });
+    expect(check.verified).toBe(false);
+    expect(check.reason).toContain("already retired");
+  });
+
+  it("fails closed when a rotating counterpart drops the old key entirely", async () => {
+    /**
+     * Their hygiene problem, our correct answer: a counterpart who
+     * replaces `current` without listing the retired key orphans every
+     * artifact signed under it. We report unverified rather than
+     * guessing they are the same operator — and the reason names what
+     * they would have to publish to fix it.
+     */
+    const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: (async () =>
+        ({
+          ok: true,
+          status: 200,
+          headers: { get: () => null },
+          text: async () =>
+            JSON.stringify({ key_history: { current: { public_key: KEY_B } } }),
+        }) as unknown as Response) as unknown as typeof fetch,
+    });
+    expect(check.verified).toBe(false);
+    expect(check.reason).toContain("appears nowhere");
+  });
+});

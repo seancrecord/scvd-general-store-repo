@@ -66,6 +66,16 @@ imports), and a green test suite can still fail the real deploy.
 - A test asserting a fix must be shown to FAIL without the fix —
   `git stash` the source change, run it, confirm red, restore. A test
   that passes both ways proves nothing and looks like proof.
+- The suite (112 files, 920 tests, ~4 min) can TIME OUT under load: a
+  handful of unrelated tests fail at ~15s on assertions that take
+  milliseconds alone. Before treating that as a regression, re-run.
+  **Same tests failing twice = deterministic, and yours. Different
+  tests or none = load.** Observed 2026-08-02. Do NOT "fix" it by
+  raising timeouts — that hides a real regression next time.
+- A test whose verdict can move with the wall clock is not a test.
+  Inject the clock on BOTH sides: `anchor-submit` read a fake clock for
+  its due-check and the real one for the row it wrote, so it passed all
+  evening and failed after midnight with no code change.
 - A 402-issuing path needs `installFacilitatorMock()` in the spec, or
   it 500s instead of 402ing (a recurring gotcha).
 - Test the instrument, not just the output — a null result from a
