@@ -189,6 +189,24 @@ the store either way.
    nobody investigates good news. Before trusting a result, confirm
    the instrument measures the thing — ideally by making it fail on
    purpose first.
+5b. **A published verdict states what it CANNOT see, beside itself.**
+   Swept 2026-08-02 after three instruments turned out to have unstated
+   blind spots inside one day, every one found by accident:
+   `reconcileSettles` read clean through undelivered sales, the delivery
+   audit could not see its own writes failing, and the skill freshness
+   suite passes while the bundle silently lacks new capabilities. None
+   of them was WRONG — each was correct about the thing it measured.
+   The defect is that a correct answer to a narrow question READS as an
+   answer to the broad one, and the reader cannot tell which they were
+   handed. The sweep found two more: /fulfillment-log, the store's own
+   track record, is computed entirely from orders and would read clean
+   while a buyer who paid and got nothing simply never appeared; and
+   /pulse asserted "every settlement counted here minted a signed
+   artifact" when the counter is bumped BEFORE the handler that mints,
+   making it falsifiable and unverified. Both now name the limit and
+   the instrument that covers it. The test for a new check is not "is
+   it right" — it is "what would it miss, and does the reader learn
+   that from the check itself."
 6. **The paraphrase is never the source.** CV's spec summary had
    three field-level errors a verifier would have rejected; the
    ceremony doc pointed at keys:generate as if it could show the

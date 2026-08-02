@@ -1,0 +1,105 @@
+import { SELF } from "cloudflare:test";
+import { beforeAll, describe, expect, it } from "vitest";
+import { installFacilitatorMock } from "./helpers/facilitator-mock";
+
+const BASE = "https://scvd.store";
+
+/**
+ * WHAT EACH PUBLISHED VERDICT CANNOT SEE.
+ *
+ * Swept 2026-08-02 after three instruments turned out to have unstated
+ * blind spots inside one day, every one found by accident:
+ * reconcileSettles reported clean through undelivered sales, the
+ * delivery audit could not see its own writes failing, and the skill
+ * freshness suite passes while the bundle silently lacks new
+ * capabilities.
+ *
+ * The pattern is not that the checks were wrong. Each was correct
+ * about the thing it measured. The failure is that a correct answer
+ * to a narrow question READS as an answer to the broad one, and a
+ * reader has no way to tell which they were handed.
+ *
+ * So: every surface that publishes a verdict states what it cannot
+ * see, and these tests hold that in place. A limit that can be
+ * dropped in a refactor is a limit that will be.
+ */
+
+beforeAll(() => {
+  installFacilitatorMock();
+});
+
+describe("the track record names its own blind spot", () => {
+  it("says the log is built from our own writes and cannot see what was never written", async () => {
+    /**
+     * The worst possible place for an unstated blind spot: a page
+     * whose entire job is evidencing conduct. Computed from ORDERS,
+     * so a settlement that never created one does not appear as a
+     * failure — it does not appear at all, and the log reads clean
+     * while a buyer got nothing.
+     */
+    const body = (await (
+      await SELF.fetch(`${BASE}/fulfillment-log`)
+    ).json()) as Record<string, unknown>;
+    const limit = String(body["what_this_log_cannot_see"]);
+    expect(limit).toContain("would not show up at all");
+    // And it names the instruments that DO cover it, so a reader can
+    // go ask about those rather than discovering the gap themselves.
+    expect(limit).toContain("delivery audit");
+    expect(limit.toLowerCase()).toContain("base");
+    expect(limit).toContain("/corrections");
+  });
+});
+
+describe("the funnel does not assert what it cannot check", () => {
+  it("stops claiming every counted settlement minted an artifact", async () => {
+    /**
+     * The counter is bumped in recordSettlement, which runs BEFORE
+     * the handler that mints. So a sale that settled and then failed
+     * to deliver IS counted here and has nothing behind it — the flat
+     * claim was falsifiable and unverified, which is the shape this
+     * store exists to avoid.
+     */
+    const body = (await (
+      await SELF.fetch(`${BASE}/pulse.json`)
+    ).json()) as Record<string, unknown>;
+    const text = JSON.stringify(body);
+    expect(text).not.toContain("Every settlement counted here minted");
+    expect(text).toContain("EXPECTED to have minted");
+    // A claim with an instrument behind it, not an assurance.
+    expect(text).toContain("delivery audit");
+  });
+
+  it("says the same thing on the page a human reads", async () => {
+    // The HTML carried its own copy of the claim; a limit stated in
+    // JSON and dropped in prose is a limit stated to nobody.
+    // /pulse content-negotiates; without this header it serves JSON,
+    // so the first cut of this test was checking the wrong document.
+    const html = await (
+      await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(html).not.toContain("Every settlement counted here minted a signed artifact —");
+    expect(html).toContain("checked rather than asserted");
+  });
+});
+
+describe("surfaces that already knew their limits keep them", () => {
+  it("the anchor log still leads with WHEN not WHO", async () => {
+    const body = (await (
+      await SELF.fetch(`${BASE}/.well-known/anchor-log.json`)
+    ).json()) as Record<string, unknown>;
+    expect(String(body["what_it_does_not_prove"])).toContain("WHO SHOULD HAVE");
+  });
+
+  it("the claims door still names what it cannot verify", async () => {
+    const res = await SELF.fetch(`${BASE}/api/claims`);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(String(body["limits"])).toContain("EOA signatures only");
+  });
+
+  it("trust.json still carries its limit", async () => {
+    const body = (await (
+      await SELF.fetch(`${BASE}/.well-known/trust.json`)
+    ).json()) as Record<string, unknown>;
+    expect(String(body["limit"]).toLowerCase()).toContain("weakest");
+  });
+});
