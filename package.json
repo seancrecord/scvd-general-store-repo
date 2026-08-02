@@ -2,7 +2,7 @@
   "name": "scvd-general-store",
   "version": "0.1.0",
   "private": true,
-  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -20,7 +20,8 @@
     "bazaar:check": "node scripts/bazaar-check.mjs",
     "audit": "node scripts/audit.mjs",
     "skill:publish": "node scripts/publish-skill.mjs",
-    "build:check": "wrangler deploy --dry-run --outdir .build-check"
+    "build:check": "wrangler deploy --dry-run --outdir .build-check",
+    "bazaar:validate": "node scripts/bazaar-validate.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

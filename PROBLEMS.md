@@ -1845,6 +1845,45 @@ there); the strategy findings:
   environment cannot reach it, so no agent here has seen the page.
   Treat as report-cited, one source, unreplicated.
 
+- **THE UPSTREAM-OF-CHECKOUT REFRAME, 2026-08-02 (CV, from the
+  Galaxy piece) — a positioning finding, not a build.** The report
+  draws a hard line the store has never drawn for itself: x402's
+  defensible near-term category is API/data micropayments UPSTREAM of
+  checkout — evaluation, data-gathering, small non-reversible calls a
+  task makes BEFORE a decision — while ACP/Stripe-style rails carry
+  the committed purchase a human signs off on.
+  WHY IT LANDS. We have been thinking "e-commerce for agents,"
+  competing conceptually with a shelf. Look at what the shelf actually
+  contains and it is two different games on one board: the free and
+  cheap tier (/api/verify, /try, hello, small_blessing, and now
+  /api/conformance) is literally pre-commitment evaluation
+  infrastructure, and the human-labor items at the top (app review,
+  phone call, the collab) are the opposite end — a person approves,
+  fulfillment is trust-based, nothing is instant. Those are ACP's
+  world, not x402's. We have had both ends on one shelf without ever
+  naming that they play by different rules.
+  WHAT IT IMPLIES: a copy pass on llms.txt, skill.md and the
+  storefront that leans the LOW tier into "the cheap evaluation layer
+  before your agent commits to anything bigger," which touches no
+  payment logic and is only saying out loud what the store already
+  structurally is. It also gives the conformance desk a throughline —
+  "check before you commit" — instead of leaving it as an unrelated
+  second feature. NOT DONE: this is a keeper taste call on the
+  storefront voice (rule 7), filed rather than executed.
+  NOT INDEPENDENTLY VERIFIED: the Galaxy piece was read by CV;
+  outbound HTTPS is blocked from the build environment, so nothing
+  here has seen it.
+
+- **VOLUME IS DOWN ~96% ON THE TRAILING 30 DAYS** (Artemis dashboard,
+  checked by CV 2026-08-02, report-cited and unreplicated here). Filed
+  plainly rather than folded into the entry above, because it cuts the
+  other way and should not be buried inside good news. It is
+  CONSISTENT with the DR3/DR4 reading already on file — wash trading
+  collapsed, real usage is smaller and realer — but consistency is not
+  confirmation, and the honest summary is that composition may be
+  improving while the tide goes out on raw volume. Anything that reads
+  x402 adoption as a rising line should be checked against this first.
+
 - **The falsifier that would flip B-before-A:** if B ships and gets
   zero external engagement in 8 weeks WHILE a paid-A request arrives
   anyway (a peer asking "check my offers/receipts and sign it"),

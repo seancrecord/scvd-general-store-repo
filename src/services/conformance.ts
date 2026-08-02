@@ -1,6 +1,8 @@
 import {
   parseJws,
   verifyArtifact,
+  resolveDidWeb,
+  checkAnchoredKeyHistory,
   OFFER_REQUIRED_FIELDS,
   RECEIPT_REQUIRED_FIELDS,
 } from "../../verifier/x402-verify.js";
@@ -112,6 +114,38 @@ export interface ConformanceRequest {
   kind?: unknown;
   public_key_hex?: unknown;
   resolve_key?: unknown;
+  check_anchor?: unknown;
+}
+
+/**
+ * THE ANCHORED-KEY-HISTORY RESULT, and why it is a separate block
+ * rather than another entry in `checks`.
+ *
+ * Every other check answers "is this artifact well-formed and signed
+ * by the key it names." This one answers a different and harder
+ * question: WAS THAT KEY THE ISSUER'S KEY AT THE TIME, and can the
+ * issuer prove they did not rewrite that history afterwards? A
+ * self-hosted key registry can be edited; an append-only hash chain
+ * whose digests are submitted to OpenTimestamps cannot be, at least
+ * not without the edit being visible.
+ *
+ * It is `available: false` for almost every issuer alive, and that is
+ * information rather than a failure — most people do not publish one.
+ * Folding it into the pass/fail verdict would mark the entire
+ * ecosystem non-conformant for not having adopted something almost
+ * nobody has adopted.
+ */
+export interface AnchorFinding {
+  available: boolean;
+  reason?: string;
+  url?: string;
+  found?: boolean;
+  anchor_confidence?: string;
+  chain_ok?: boolean;
+  chain_problems?: string[];
+  first_seen_at?: string | null;
+  bitcoin_confirmed?: boolean;
+  what_it_does_not_prove?: string;
 }
 
 export interface ConformanceCheck {
@@ -146,6 +180,11 @@ export interface ConformanceVerdict {
   live: boolean | null;
   liveness: string;
   key_resolution: "offline" | "did:web" | "not_attempted" | "budget_exhausted";
+  /**
+   * Present only when check_anchor was requested. Never folded into
+   * `verdict` — see AnchorFinding.
+   */
+  anchored_key_history: AnchorFinding | null;
   what_this_means: string;
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
@@ -302,7 +341,42 @@ export async function checkConformance(
   const budgetOk = askedForResolution ? takeResolutionBudget() : true;
   const wantsResolution = askedForResolution && budgetOk;
 
+  const wantsAnchor = body.check_anchor === true;
+
   const parsed = parseJws(artifact);
+  const kid =
+    typeof parsed.header?.kid === "string" ? parsed.header.kid : undefined;
+
+  /**
+   * RESOLVED ONCE, HERE, rather than inside verifyArtifact.
+   *
+   * The anchored-key-history check needs the key AS HEX to look it up
+   * in the issuer's chain. Letting the verifier resolve internally
+   * would mean either resolving a second time or not offering the
+   * anchor check at all, and a second outbound request to a stranger's
+   * host to learn something we already knew is exactly the waste the
+   * budget exists to prevent.
+   */
+  let resolvedHex: string | undefined = publicKeyHex;
+  let resolutionProblem: string | undefined;
+  if (!resolvedHex && wantsResolution && kid?.startsWith("did:web:")) {
+    const resolved = (await resolveDidWeb(kid, {
+      fetch: guardedFetch(),
+    })) as { ok: boolean; keys?: Map<string, Uint8Array>; problem?: string };
+    if (resolved.ok) {
+      const matched = resolved.keys?.get(kid);
+      if (matched) {
+        resolvedHex = [...matched]
+          .map((byte) => byte.toString(16).padStart(2, "0"))
+          .join("");
+      } else {
+        resolutionProblem = "kid is not in the DID document";
+      }
+    } else {
+      resolutionProblem = resolved.problem;
+    }
+  }
+
   const kind: "offer" | "receipt" | null = requestedKind
     ? requestedKind
     : parsed.ok
@@ -315,9 +389,16 @@ export async function checkConformance(
   try {
     raw = (await verifyArtifact(artifact, {
       ...(requestedKind ? { kind: requestedKind } : {}),
-      ...(publicKeyHex ? { publicKey: publicKeyHex } : {}),
-      ...(wantsResolution ? { fetch: guardedFetch() } : {}),
+      ...(resolvedHex ? { publicKey: resolvedHex } : {}),
     })) as { ok: boolean; checks: ConformanceCheck[] };
+    if (!resolvedHex && resolutionProblem) {
+      // Keep the reason visible rather than reporting a bare "no key".
+      raw.checks = raw.checks.map((check) =>
+        check.name === "key-resolution"
+          ? { ...check, detail: `${check.detail} (${resolutionProblem})` }
+          : check,
+      );
+    }
   } catch (error) {
     /**
      * The verifier throwing is OUR defect, not the caller's, and it
@@ -336,6 +417,48 @@ export async function checkConformance(
       : wantsResolution
         ? "did:web"
         : "not_attempted";
+
+  /**
+   * THE ANCHOR CHECK, opt-in and budgeted like any other outbound
+   * request. It reads the issuer's /.well-known/anchor-log.json — a
+   * path fixed by their DID, same as did:web resolution, so it adds
+   * no new outbound shape.
+   */
+  let anchor: AnchorFinding | null = null;
+  if (wantsAnchor) {
+    if (!kid?.startsWith("did:web:")) {
+      anchor = {
+        available: false,
+        reason:
+          "the kid is not a did:web identifier, so there is no issuer origin to look for an anchor log on",
+      };
+    } else if (!resolvedHex) {
+      anchor = {
+        available: false,
+        reason:
+          "no public key was established, and an anchor log is searched BY key — without one this would answer a question nobody asked",
+      };
+    } else if (!takeResolutionBudget()) {
+      anchor = {
+        available: false,
+        reason:
+          "the outbound budget for this minute is spent. This is our limit, not a fact about the issuer: it says nothing about whether they publish an anchor log. Retry next minute.",
+      };
+    } else {
+      try {
+        anchor = (await checkAnchoredKeyHistory(kid, resolvedHex, {
+          fetch: guardedFetch(),
+        })) as AnchorFinding;
+        anchor.what_it_does_not_prove =
+          "An anchor proves WHEN a key state was committed, never WHO SHOULD HAVE held it. A thief holding the key could anchor it too. This bounds how far back a compromise could have been backdated; it does not prevent one, and `available: false` is the normal state of almost every issuer alive rather than a mark against them.";
+      } catch (error) {
+        anchor = {
+          available: false,
+          reason: `anchor log unreadable: ${String(error)}`,
+        };
+      }
+    }
+  }
 
   const expiryCheck = raw.checks.find((check) => check.name === "expiry");
   const live = expiryCheck ? expiryCheck.ok : null;
@@ -365,6 +488,7 @@ export async function checkConformance(
           ? "Not applicable: a receipt records something that already happened and has no expiry to check."
           : expiryCheck?.detail ?? "",
       key_resolution: keyResolution,
+      anchored_key_history: anchor,
       what_this_means: meaningOf(verdict, kind, live),
       what_this_cannot_tell_you: limitsFor(keyResolution),
       our_conflict_of_interest: CONFLICT,
@@ -393,12 +517,15 @@ export function conformanceDoc(base: string) {
         "Optional. Supply it and the check runs entirely offline — no network request is made in your name.",
       resolve_key:
         "Optional, defaults true when no public_key_hex is given. Set false to refuse did:web resolution and get a shape-and-time verdict only.",
+      check_anchor:
+        "Optional, default false. Asks whether the signing key appears in the issuer's ANCHORED key history at /.well-known/anchor-log.json — an append-only hash chain whose digests are submitted to OpenTimestamps. That answers \"was this key theirs at the time, provably un-rewritten\" rather than only \"does this signature verify against a key I chose to trust.\" One extra outbound request, reported in its own block and never folded into the verdict, because almost no issuer publishes one and absence is not a fault.",
     },
     what_it_checks: [
       "The JWS parses into three segments with JSON header and payload.",
       "alg is EdDSA. Nothing else is accepted, and `none` is not a special case here because it never reaches the signature step.",
       "The payload carries every required field for its kind.",
       "The signature verifies against the key named in the kid.",
+      "Optionally (check_anchor), whether the key appears in the issuer's externally anchored key history — a different and harder question than signature validity, reported in its own block.",
       "Whether the offer is still live — reported separately as `live`, never folded into the verdict, because an expired offer is a valid artifact you simply cannot pay against.",
     ],
     required_fields: {

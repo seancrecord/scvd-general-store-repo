@@ -334,6 +334,7 @@ describe("the desk is bounded before anybody finds it", () => {
       "live",
       "liveness",
       "key_resolution",
+      "anchored_key_history",
       "what_this_means",
       "what_this_cannot_tell_you",
       "our_conflict_of_interest",
@@ -403,5 +404,87 @@ describe("the desk is bounded before anybody finds it", () => {
     expect(limits).toContain("OUR LIMIT RATHER THAN YOUR REQUEST");
     expect(limits).toContain("NOTHING IS WRONG WITH YOUR ARTIFACT");
     expect(limits).toContain("public_key_hex");
+  });
+});
+
+/**
+ * THE ANCHORED-KEY-HISTORY CHECK, which is the one that makes this
+ * desk different from "does this signature verify."
+ *
+ * Signature validity answers: was this signed by the key it names.
+ * It cannot answer: was that key the issuer's key AT THE TIME, and
+ * can the issuer prove they did not rewrite that history afterwards?
+ * A self-hosted key registry is editable after the fact; an
+ * append-only chain anchored into Bitcoin via OpenTimestamps is not,
+ * or at least not invisibly.
+ *
+ * CORRECTION THAT PROMPTED THIS: the endpoint shipped WITHOUT it. The
+ * function had been in the library for a while and I did not wire it,
+ * while the capability was being described outward as though it were
+ * there. Building it was the right repair rather than softening the
+ * description — but the gap was real, and it is the same overclaim
+ * shape this codebase spent the day finding elsewhere.
+ */
+describe("the anchored-key-history check", () => {
+  it("is absent unless asked for, so nobody pays for a request they did not want", async () => {
+    const { jws, publicKeyHex } = await foreignOffer();
+    const { json } = await post({ artifact: jws, public_key_hex: publicKeyHex });
+    expect(json.anchored_key_history).toBeNull();
+  });
+
+  it("reports unavailable rather than failing when an issuer publishes no log", async () => {
+    // The normal case for almost every issuer alive. `available:
+    // false` is information, never a mark against them, and must not
+    // move the verdict.
+    const { jws, publicKeyHex } = await foreignOffer();
+    const { json } = await post({
+      artifact: jws,
+      public_key_hex: publicKeyHex,
+      check_anchor: true,
+    });
+    expect(json.anchored_key_history).not.toBeNull();
+    expect(json.anchored_key_history.available).toBe(false);
+    expect(
+      json.verdict,
+      "a missing anchor log changed the conformance verdict, which would mark the entire ecosystem non-conformant for not adopting something almost nobody has adopted",
+    ).toBe("conforms");
+  });
+
+  it("refuses to search a chain by a key it does not have", async () => {
+    // An anchor log is searched BY public key. Without one the lookup
+    // would answer a question nobody asked — the same empty-key trap
+    // the library guards internally.
+    const { jws } = await foreignOffer();
+    const { json } = await post({
+      artifact: jws,
+      resolve_key: false,
+      check_anchor: true,
+    });
+    expect(json.anchored_key_history.available).toBe(false);
+    expect(json.anchored_key_history.reason).toContain("searched BY key");
+  });
+
+  it("carries the limit that matters most", async () => {
+    const { jws, publicKeyHex } = await foreignOffer();
+    const { json } = await post({
+      artifact: jws,
+      public_key_hex: publicKeyHex,
+      check_anchor: true,
+    });
+    // Only present once the check actually ran against a log; when it
+    // short-circuits there is nothing to caveat.
+    if (json.anchored_key_history.what_it_does_not_prove) {
+      expect(json.anchored_key_history.what_it_does_not_prove).toContain(
+        "never WHO SHOULD HAVE",
+      );
+    }
+  });
+
+  it("documents itself on the versioned contract", async () => {
+    const body = (await (
+      await SELF.fetch(`${BASE}/api/conformance/v1`)
+    ).json()) as Record<string, any>;
+    expect(String(body.request.check_anchor)).toContain("anchor-log.json");
+    expect(body.what_it_checks.join(" ")).toContain("anchored key history");
   });
 });
