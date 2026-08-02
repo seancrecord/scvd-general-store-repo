@@ -53,6 +53,17 @@ export const STANDARDS_POSTURE = {
     source:
       "https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier",
   },
+  wallet_safety_for_buggy_clients: {
+    what: "Two mechanisms that protect a buyer's wallet from the buyer's own bugs, both free and both on by default. Idempotency-Key (HTTP header or _meta['x402/idempotency-key'] over MCP): a repeat of the same key for the same item by the same VERIFIED payer inside 24 hours returns the original purchase with no settlement. And a wallet-authenticated claims door at /api/claims for recovering order ids lost to a context reset.",
+    you_do_not_have_to_invent_a_key:
+      "Every 402 carries an idempotency.suggested_key an agent can echo back verbatim, because a client cannot send a header it does not know exists. It is stable for 60 seconds — a value that changed on every fetch would be useless to a retry loop that re-fetches the challenge each pass — and a retry straddling that boundary is still matched against the previous minute's value.",
+    the_suggested_key_is_public_on_purpose:
+      "It is derived from the item and the current minute, so anyone can compute it. That is safe because it is a BUCKETING function rather than an authentication one: it selects a cache slot and does not open one. Slots are keyed by the payer the facilitator verified as having SIGNED, so echoing a key can only ever return your own earlier purchase — a stranger who computes it still needs your private key.",
+    never_required:
+      "A client sending its own key has it honoured as-is; a client sending none is charged normally. Nothing in this mechanism can refuse a sale.",
+    why_it_exists:
+      "The chain refuses to settle the same authorization twice, but a non-deterministic agent in a retry loop signs a FRESH authorization each pass — 500 loops is 500 honest charges, and 'the store behaved correctly' is no comfort to a drained wallet.",
+  },
   externally_anchored_key_history: {
     what: "An append-only hash chain over this store's signing-key state, published in full at /.well-known/anchor-log.json. Each entry commits to the digest of the entry before it, and digests are submitted to OpenTimestamps, which aggregates them into Bitcoin — so one confirmed anchor vouches for the entire history behind it.",
     why: "A self-hosted key registry is editable after the fact. The transition chain is cryptographic and the git history is third-party timestamped, but neither is immutability. This makes 'this key state existed before block N' a fact about the Bitcoin chain instead of a claim on our own website.",

@@ -1337,9 +1337,42 @@ and running it surfaced 25 further type errors sitting in committed
 test code plus a `.d.ts` that had drifted from its implementation.
 All fixed, and AGENTS.md now says which command is which.
 
----
+### 20. /menu.json is barely hit, and that is the system working
 
-## Opportunities (the $ question, from the same walk)
+Keeper's observation from the porch counters, 2026-08-02. Filed
+because the number invites a wrong fix, not because it is a fault.
+
+**Why it is cold, verified in the code rather than guessed:** the
+catalog is DUPLICATED into every surface a machine actually reads.
+`llms.txt` embeds the whole menu inline (`${menu}` under "## The
+menu"), so an agent reading the front door already has it. The MCP
+shelf tools carry each item's line AND its full listing spec in
+`tools/list`, so an MCP client never needs a second fetch.
+`/.well-known/x402.json` ships the resource list, which is what
+directories and scanners read. A Bazaar-discovered agent gets resource
+URLs straight from CDP's index — confirmed live on 2026-08-02 — and
+goes directly to `/api/buy/<item>`.
+
+So `/menu.json` is the only catalog surface whose content is available
+everywhere else in the reader's own idiom. Nothing needs it. **A cold
+menu.json is evidence the redundancy worked**, not evidence nobody is
+looking.
+
+**THE TRAP, and the reason this is filed at all.** Reading menu.json
+hits as "attention on the catalog" would be reading the wrong
+instrument — the same mistake both clerks made in different tools the
+same day (AT_SCALE rule 5, sharpened). Catalog attention is spread
+across llms.txt, tools/list, x402.json and the per-item pages, and
+`item:<id>` is the surface actually built to measure window shopping:
+it says WHICH shelf got picked up and put back down, which is the
+closest thing this store can measure to want. menu.json says almost
+nothing and should not be promoted, decorated, or "fixed" to make its
+number go up. That would be optimising a redundant surface to improve
+a metric nobody should be reading.
+
+**Not a build.** The one thing that follows from it: the embedded menu
+in llms.txt and the tool descriptions carry more weight than
+menu.json's, so freshness and wording effort belongs there first.
 
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 

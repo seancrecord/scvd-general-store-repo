@@ -141,6 +141,14 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
  * identical call is a SECOND CHARGE (the one hint that most protects
  * a planning model), and settlement happens on a public chain, which
  * is as open-world as it gets.
+ *
+ * idempotentHint STAYS FALSE now that the 402 offers a suggested key,
+ * and the reasoning matters. The hint describes what a bare repeat of
+ * THIS TOOL CALL does, and a bare repeat still charges — the key is
+ * something the caller must choose to echo. Flipping the hint to true
+ * would tell a planning model the retry is safe by default, which is
+ * exactly the flattering direction rule 3 forbids. The escape hatch
+ * lives in the description instead, where a caller can act on it.
  */
 function purchaseAnnotations(item: MenuItem): McpToolAnnotations {
   return {
@@ -447,7 +455,17 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
   }
   return {
     name: cluster.name,
-    description: `${cluster.purpose}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT}`,
+    /**
+     * THE RETRY LINE EARNS ITS SPACE, and space in a tool description
+     * is the scarcest thing this store has — a planning model reads
+     * this string and nothing else before deciding to spend.
+     * idempotentHint stays FALSE because a bare second call really is
+     * a second charge, and softening that would be the flattering lie.
+     * But a model told only "not idempotent" has no way to act on it,
+     * so the escape hatch travels beside the warning: the 402 hands
+     * you a key, echoing it makes the retry free.
+     */
+    description: `${cluster.purpose}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
     inputSchema: clusterInputSchema(items),
     outputSchema: clusterOutputSchema(items),
     annotations: {

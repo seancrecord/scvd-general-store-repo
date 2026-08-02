@@ -243,6 +243,78 @@ describe("the 402 carries it", () => {
   });
 });
 
+describe("the machine-readable surfaces teach it", () => {
+  /**
+   * A mechanism an agent cannot discover is a mechanism that does not
+   * exist for the reader it was built for. These assert the SHAPE and
+   * the two load-bearing caveats, not prose — so the docs can be
+   * rewritten freely but cannot quietly lose the field name, the
+   * window, or the not-a-secret explanation.
+   */
+  const surfaces = ["/llms.txt", "/agents.md"];
+
+  it("names the field an agent has to read, on every guide", async () => {
+    for (const path of surfaces) {
+      const text = await (await SELF.fetch(`${BASE}${path}`)).text();
+      expect(text, `${path} never names the field`).toContain(
+        "suggested_key",
+      );
+      expect(text, `${path} omits the window`).toContain("60 seconds");
+    }
+  });
+
+  it("carries the not-a-secret explanation wherever it is offered", async () => {
+    // The dangerous misreading is "this is my secret, guard it" —
+    // which would make a client hide a value it should be echoing,
+    // and might make somebody treat leaking it as an incident.
+    for (const path of surfaces) {
+      const text = (await (await SELF.fetch(`${BASE}${path}`)).text())
+        .toLowerCase();
+      expect(text, `${path} lets it read as a secret`).toContain(
+        "not a secret",
+      );
+      expect(text, `${path} omits what it can and cannot do`).toContain(
+        "does not open",
+      );
+    }
+  });
+
+  it("keeps the honest warning beside the escape hatch on the MCP tools", async () => {
+    const res = await SELF.fetch(`${BASE}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    });
+    const body = (await res.json()) as Record<string, unknown>;
+    const result = body["result"] as Record<string, unknown>;
+    const tools = result["tools"] as Array<Record<string, unknown>>;
+    const shelf = tools.find((t) => t["name"] === "buy_signed_record")!;
+    expect(String(shelf["description"])).toContain("suggested_key");
+    // The warning must NOT have been softened into a promise: a bare
+    // repeat really is a second charge, and the hint says so.
+    const annotations = shelf["annotations"] as Record<string, unknown>;
+    expect(annotations["idempotentHint"]).toBe(false);
+    expect(String(shelf["description"])).toContain("second charge");
+  });
+
+  it("is in the standards block a diligence pass reads", async () => {
+    const trust = (await (
+      await SELF.fetch(`${BASE}/.well-known/trust.json`)
+    ).json()) as Record<string, unknown>;
+    const standards = trust["standards"] as Record<string, unknown>;
+    const safety = standards["wallet_safety_for_buggy_clients"] as Record<
+      string,
+      unknown
+    >;
+    expect(String(safety["you_do_not_have_to_invent_a_key"])).toContain(
+      "suggested_key",
+    );
+    expect(String(safety["never_required"]).toLowerCase()).toContain(
+      "can refuse a sale",
+    );
+  });
+});
+
 describe("the MCP door offers the same thing", () => {
   it("carries the suggestion in its 402 error data", async () => {
     const res = await SELF.fetch(`${BASE}/mcp`, {

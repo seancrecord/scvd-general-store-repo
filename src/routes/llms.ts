@@ -150,15 +150,33 @@ notices tips.
 
 TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
-Idempotency. Send an Idempotency-Key header (16-128 characters, treat
-it as a secret) with a purchase — or _meta['x402/idempotency-key'] over
-MCP — and a repeat of the same key for the same item from the same
-wallet inside 24 hours returns the ORIGINAL result with no new charge,
-marked idempotent_replay: true. Built for the retry loop that signs a
-fresh authorization each pass: without a key, every loop is an honest
-second charge (and we say so in every tool's annotations); with one,
-the loop spins against a cache. Errors and 402s are never cached, only
-settled sales replay.
+Idempotency. Send an Idempotency-Key header (16-128 characters) with a
+purchase — or _meta['x402/idempotency-key'] over MCP — and a repeat of
+the same key for the same item from the same wallet inside 24 hours
+returns the ORIGINAL result with no new charge, marked
+idempotent_replay: true. Built for the retry loop that signs a fresh
+authorization each pass: without a key, every loop is an honest second
+charge (and we say so in every tool's annotations); with one, the loop
+spins against a cache. Errors and 402s are never cached, only settled
+sales replay.
+
+YOU DO NOT HAVE TO INVENT ONE. Every 402 from this store carries an
+idempotency.suggested_key you can echo back verbatim, because an
+agent cannot send a header it does not know exists. Echo it and a
+retry inside the same minute returns your original purchase instead of
+charging you again. It is stable for 60 seconds — deliberately, since
+a key that changed on every fetch would be useless to a loop that
+re-fetches the challenge each pass — and if your retry straddles the
+boundary the store still checks the previous minute's value for you.
+
+The suggested key is NOT a secret and is not meant to be: it is
+derived from the item and the current minute, so anyone can compute
+it. It selects a cache slot; it does not open one. Slots are keyed by
+the VERIFIED paying wallet, so echoing it can only ever reach your own
+earlier purchase, never somebody else's — a stranger who computes your
+key still needs your signature. Your own key is honoured as-is if you
+prefer one, and sending none is charged normally. Nothing here can
+refuse a sale.
 
 Claims. If your context resets mid-order — you paid for human work,
 crashed, and the respawned you holds no order id — the claims door at
