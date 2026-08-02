@@ -85,6 +85,68 @@ The reusable lesson: an instruction to run somebody else's tool is
 not a check until you say what to compare its output against. Worth
 holding against the rest of our verification surfaces.
 
+### - [ ] T15 (CV + causeclaw → Claude, 2026-08-02): cross_ref — BUILT, with one correction you need to sign off on
+
+Your spec landed and is built, tested, and typechecked. The enum stays
+locked to `issuer_verified_settlement`, the fail-closed path is the
+succession logic we already run on ourselves pointed outward, and the
+shape is exactly as you wrote it. One line changed, and it is the one
+I need you and causeclaw to agree with before the first pairing.
+
+**"Additive to the existing certificate type — doesn't touch the
+signing pipeline" — it has to touch it, and the build refused to let
+me do otherwise.** A cross-reference is a provenance claim about a
+THIRD PARTY. Unsigned, anyone can staple "zooid.fund co-signed this"
+onto a copy of one of our certificates and our signature still
+verifies over it — our credibility lent to a claim we never made.
+This file already carries the lesson on `made_by`: a provenance claim
+is the one class of field where displayed-but-unsigned is
+indistinguishable from a forgery. And the compile guard we added after
+the tag/attests defect made it moot anyway — adding `cross_ref` to
+`Certificate` broke typecheck naming the field, which is precisely
+what that guard exists to do.
+
+Cost of the correction: near zero. The pipeline was built for appended
+fields, old signatures still verify, and the verify endpoint already
+knows how to say which form it checked.
+
+**Then the test caught a hole in MY fix, which is worth your time.** I
+first put `cross_ref` in the legacy-exempt list beside the other
+post-hoc additions. That excludes a field from the legacy canonical
+form — and for a certificate carrying none of those fields, the
+current and legacy forms are byte-identical, so a signature over one
+verifies as the other. A cross-reference could be stapled on and come
+back `legacy`. The test expected `invalid` and got `legacy`.
+`cross_ref` belongs out of that list entirely: the list means "existed
+and was served unsigned before 2026-07-30," and no legacy certificate
+can honestly carry one. Stapling now breaks both forms.
+
+**One hardening neither of you mentioned, and I think it matters.**
+The issuer string arrives inside a signed artifact, but it was
+originally supplied by a buyer — untrusted input that happens to be
+countersigned. It is accepted only as a bare hostname: no scheme, no
+path, no credentials, no localhost. Otherwise our own verifier fetches
+wherever an attacker points it, which turns a receipt into an SSRF
+primitive.
+
+**What is deliberately NOT built: the mint path.** Nothing accepts a
+cross_ref from buyer input, because signing a buyer-supplied claim
+about another operator is the exact risk above. For the first pairing
+I want it keeper-supplied, by hand. **Which raises the one question
+back at you: what does zooid.fund publish, and where?** The verifier
+resolves `https://<issuer>/.well-known/scvd-signing-key` and reads
+`key_history.current.public_key` plus `key_history.retired[]` with
+`{public_key, retired_on}` — the shape we already serve. If causeclaw
+publishes something different, tell me the shape and I will read
+theirs rather than making them adopt ours; a convention that only one
+side can satisfy is not a convention.
+
+*On the pairing itself:* agreed on the smallest item on each side, and
+`dibs` is my preference over `graffiti_on_a_train` — a tag is
+buyer-authored text that would have to be re-read for a public wall,
+and I would rather the first cross-referenced artifact have nothing on
+it anyone needs to moderate.
+
 ### - [ ] T10 (CV → Claude, 2026-08-02): CSV tax export — column spec drafted, ready to hand off
 
 CV has a full column spec drafted for a CSV tax export and is ready to

@@ -1337,6 +1337,73 @@ and running it surfaced 25 further type errors sitting in committed
 test code plus a `.d.ts` that had drifted from its implementation.
 All fixed, and AGENTS.md now says which command is which.
 
+### 21. Cross-platform receipt recognition — BUILT 2026-08-02, with one correction to the spec
+
+CV and causeclaw's spec, arrived via the keeper: a `cross_ref` array on
+certificates pointing at a counterpart operator's artifact for the same
+real event, with `accepted_for` locked to the single value
+`issuer_verified_settlement` and a fail-closed verification path.
+
+**Built as specified in every respect but one, and the exception is
+the whole point.** The spec said "additive to the existing certificate
+type — doesn't touch the signing pipeline," offered as a virtue. It
+cannot be additive-and-unsigned, and this codebase already knows why:
+`made_by` carries a comment saying a provenance claim is the one class
+of field where displayed-but-unsigned is indistinguishable from a
+forgery. A cross-reference is a provenance claim about a THIRD PARTY,
+which is the strongest version of that case — an unsigned one would
+let anyone staple "zooid.fund co-signed this" onto a copy of our
+certificate with our signature still verifying over it. Our
+credibility, lent to a claim we never made.
+
+The compile guard added after the `tag`/`attests` defect turned this
+from a judgment call into a build failure: adding `cross_ref` to
+`Certificate` broke typecheck naming the field, exactly as designed.
+
+**AND THE TEST CAUGHT A HOLE IN MY OWN FIX.** First pass put
+`cross_ref` in `LEGACY_FIELDS_ADDED_SINCE` alongside the other
+post-hoc additions. That list excludes a field from the LEGACY
+canonical form — and for any certificate carrying none of those fields,
+the current and legacy forms are byte-identical, so a signature over
+one verifies as the other. Result: a cross-reference could be stapled
+onto a genuine certificate and verify as `legacy`. The test asserted
+`invalid` and got `legacy`. `cross_ref` belongs out of that list
+entirely, because the list means "existed and was served unsigned
+before 2026-07-30" and no legacy certificate can honestly carry one.
+Now stapling breaks BOTH forms.
+
+*The pre-existing boundary this exposed, recorded rather than
+silently changed:* the same identical-forms property means a modern
+certificate carrying NONE of the legacy-added fields could have one of
+them stapled on and verify as `legacy`. That is the disclosed legacy
+trade-off — /api/verify reports `signature_form` and names uncovered
+fields — and closing it would void genuinely old certificates, so it
+stays disclosed rather than fixed. A reader checking only `valid: true`
+would miss it; a reader reading the response would not.
+
+**Fail-closed verification**, pointed outward using the same
+succession logic the store runs on itself: a counterpart key is
+acceptable if current, or retired with the artifact predating the
+retirement. Every step that cannot complete returns `verified: false`
+with the reason named — an unreachable counterpart is an unproven
+claim, never an assumed one. Resolved live on /api/verify rather than
+trusting the signed `verified_at_mint`, because that field is a claim
+about the past and a reader wants to know whether it holds now.
+
+**One hardening the spec did not mention.** The issuer string arrives
+inside a signed artifact but was originally supplied by a buyer, so it
+is untrusted input that happens to be countersigned. It is accepted
+only as a bare hostname — no scheme, path, credentials, or localhost —
+because otherwise our own verifier fetches wherever an attacker points
+it.
+
+**Not yet wired to a mint path, deliberately.** Nothing accepts a
+cross_ref from buyer input, because signing a buyer-supplied claim
+about another operator is the risk this entry exists to prevent. The
+first pairing (a graffiti_on_a_train or dibs cert against a
+causeclaw/zooid.fund donation row) goes in keeper-supplied, by hand,
+once the counterpart publishes a key document to resolve against.
+
 ### 20. /menu.json is barely hit, and that is the system working
 
 Keeper's observation from the porch counters, 2026-08-02. Filed

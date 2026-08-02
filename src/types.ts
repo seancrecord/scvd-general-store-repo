@@ -171,6 +171,55 @@ export interface Certificate {
    * "displayed but not covered" is indistinguishable from a forgery.
    */
   made_by?: MakerMark;
+  /**
+   * CROSS-PLATFORM RECEIPT RECOGNITION (CORRESPONDENCE T4/T15). A
+   * pointer from this certificate to a counterpart artifact issued by
+   * a DIFFERENT operator for the same real event.
+   *
+   * SIGNED, and that is a deliberate departure from the spec as
+   * relayed, which proposed this as "additive, doesn't touch the
+   * signing pipeline." It has to touch it. A cross-reference is a
+   * provenance claim about a THIRD PARTY, which makes it the strongest
+   * possible case of the rule `made_by` already taught this file:
+   * displayed-but-unsigned is indistinguishable from a forgery. An
+   * unsigned cross_ref would let anyone append "zooid.fund co-signed
+   * this" to a copy of our certificate and have our signature still
+   * verify over it — our credibility lent to a claim we never made.
+   * The compile guard below CERT_FIELDS makes this automatic rather
+   * than remembered.
+   */
+  cross_ref?: CrossReference[];
+}
+
+/** The one thing a cross-reference is allowed to assert in v0. */
+export const CROSS_REF_ACCEPTED_FOR = "issuer_verified_settlement" as const;
+export type CrossRefAcceptedFor = typeof CROSS_REF_ACCEPTED_FOR;
+
+/**
+ * One pointer to a counterpart operator's artifact for the same event.
+ *
+ * THE ENUM IS LOCKED TO ONE VALUE ON PURPOSE, and it is the guardrail
+ * both CV and causeclaw flagged independently as non-negotiable. This
+ * says "this happened, and it was signed by a key we checked." It says
+ * NOTHING about quality, delivery, satisfaction or endorsement — the
+ * same observation-versus-verdict line the whole store runs on. No
+ * value is added to the enum until a second real use case forces the
+ * question; a pivot needs a date and a reason, not a "might as well
+ * while we are in here" (AT_SCALE rule 0).
+ */
+export interface CrossReference {
+  /** The counterpart operator's domain, e.g. "zooid.fund". */
+  counterpart_issuer: string;
+  counterpart_key_fingerprint: string;
+  /** Their receipt or row id. Opaque to us; never parsed. */
+  counterpart_artifact_id: string;
+  accepted_for: CrossRefAcceptedFor;
+  /**
+   * Whether OUR pipeline resolved and checked their key at mint time.
+   * Signed, so it cannot be flipped after the fact — a `true` an
+   * attacker could write would be worth less than no field at all.
+   */
+  verified_at_mint: boolean;
 }
 
 /** A tag bought on the train. Display is the keeper's call; the certificate isn't. */

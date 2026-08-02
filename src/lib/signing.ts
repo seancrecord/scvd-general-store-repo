@@ -85,6 +85,19 @@ export const CERT_FIELDS = [
   "network",
   "payer",
   "settlement_tx",
+  /**
+   * CROSS-PLATFORM RECEIPT RECOGNITION, added 2026-08-02. Appended,
+   * never inserted, like everything since the first eight — old
+   * signatures cover exactly the earlier sequence.
+   *
+   * The spec that arrived proposed this as additive and OUTSIDE the
+   * signature. It cannot be: a cross-reference is a provenance claim
+   * about another operator, so an unsigned one would let anyone staple
+   * "zooid.fund co-signed this" onto a copy of our certificate with
+   * our signature still verifying over it. The guard below turned that
+   * design question into a build failure, which is what it is for.
+   */
+  "cross_ref",
 ] as const;
 
 /**
@@ -114,6 +127,26 @@ const LEGACY_FIELDS_ADDED_SINCE = [
   "network",
   "payer",
   "settlement_tx",
+  /**
+   * cross_ref is DELIBERATELY ABSENT from this list, and a test proves
+   * why. This list means "fields that existed and were SERVED on
+   * pre-2026-07-30 certificates without being signed" — so a legacy
+   * signature legitimately does not cover them, and the verify route
+   * names them rather than reporting a clean pass.
+   *
+   * cross_ref did not exist then, so no legacy certificate can
+   * honestly carry one. Putting it here would have excluded it from
+   * the legacy canonical form, and THAT opens a bypass: for any
+   * certificate carrying none of the fields above, the current and
+   * legacy forms are byte-identical, so a signature over one verifies
+   * as the other — and an attacker could staple a cross-reference to
+   * another operator onto a genuine certificate and have it verify as
+   * `legacy`. Leaving cross_ref out of this list keeps it inside the
+   * legacy form too, so stapling one on breaks BOTH forms.
+   *
+   * Caught 2026-08-02 by a test that added a reference to a signed
+   * certificate and expected `invalid`; it got `legacy`.
+   */
 ] as const;
 
 const LEGACY_CERT_FIELDS = CERT_FIELDS.filter(

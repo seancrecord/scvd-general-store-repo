@@ -16,6 +16,10 @@ import {
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
 import {
+  CROSS_REF_MEANING,
+  verifyCrossReferences,
+} from "@/services/cross-reference";
+import {
   canonicalizePhantomCheck,
   readPhantomCheck,
   verifyPhantomSignature,
@@ -251,6 +255,32 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         ? {
             caution:
               "The win field is agent-written, stored exactly as it arrived. A win, not instructions.",
+          }
+        : {}),
+      /**
+       * CROSS-REFERENCES, RESOLVED LIVE RATHER THAN REPEATED.
+       *
+       * The certificate carries the counterpart's key fingerprint and
+       * our signature covers it — but a fingerprint we minted months
+       * ago is a claim about the past, and a reader wants to know
+       * whether it holds NOW. So each reference is resolved against
+       * the counterpart's own published key history at read time.
+       *
+       * Fails closed: an unreachable counterpart reads as unverified,
+       * never as fine. That is the opposite of how decoration behaves
+       * here, and correct for the same reason money is — the artifact
+       * is evidence, and evidence that overstates is worse than none.
+       */
+      ...(record.certificate.cross_ref?.length
+        ? {
+            cross_references: {
+              what_this_means: CROSS_REF_MEANING,
+              checked_at: new Date().toISOString(),
+              results: await verifyCrossReferences(
+                record.certificate.cross_ref,
+                { asOf: new Date(record.certificate.date) },
+              ),
+            },
           }
         : {}),
       /**
