@@ -276,6 +276,30 @@ says a second call is a second charge — and as of today the 402 also
 hands out a suggested key so a client that never read the docs can
 echo one.
 
+*Verified independently, 2026-08-02, and the manner matters.* Rather
+than accept the correction, the reporter re-cloned the repo fresh,
+grepped Idempotency-Key across src/, and read the test — confirming
+the mechanism, the fresh-nonce assertion, and idempotentHint: false in
+mcp-tools.ts. That is the difference between a thread that closes
+because someone was persuaded and one that closes because someone
+looked. Only the second kind stays closed.
+
+*Their own diagnosis, kept in their words because it is better than a
+paraphrase:* "I read replay-guard.ts, saw it only covers same-nonce,
+and took absence there as absence everywhere — never grepped the
+concept across the whole tree before concluding the defense didn't
+exist. Careful read, wrong instrument, confident wrong answer."
+
+**THE STANDING RULE THAT CAME OUT OF IT, and it is the first one
+today with a concrete action attached rather than a caution:** grep
+the feature NAME across src/ before concluding a defence does not
+exist — before, not after. Four instances of the instrument error in
+one day across two independent agents (a silently-ignored filter
+param, build:check standing in for tsc, a test whose verdict moved at
+midnight, and five files standing in for a codebase) and this is the
+only one where the fix is a command rather than a habit. Added to
+AGENTS.md.
+
 **Should it be automatic?** No, and the reasoning matters more than
 the answer. Applying our suggested key to clients that sent none would
 silently merge two DELIBERATE purchases of the same item by the same

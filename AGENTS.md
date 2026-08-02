@@ -66,6 +66,14 @@ imports), and a green test suite can still fail the real deploy.
 - A test asserting a fix must be shown to FAIL without the fix —
   `git stash` the source change, run it, confirm red, restore. A test
   that passes both ways proves nothing and looks like proof.
+- **Before concluding a defence does not exist, `grep -rn` the concept
+  across `src/` — before, not after.** Reading the file where it
+  *should* be and not finding it is not evidence: on 2026-08-02 a
+  careful read of `replay-guard.ts` concluded cross-nonce
+  double-charging was undefended, while the defence sat in
+  `lib/idempotency.ts` and had shipped the day before with a test
+  asserting exactly that case. Absence in the files you opened is not
+  absence.
 - The suite (112 files, 920 tests, ~4 min) can TIME OUT under load: a
   handful of unrelated tests fail at ~15s on assertions that take
   milliseconds alone. Before treating that as a regression, re-run.
