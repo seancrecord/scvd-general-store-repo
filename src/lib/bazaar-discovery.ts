@@ -146,6 +146,28 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   return required.length > 0 ? { properties, required } : { properties };
 }
 
+/**
+ * THE WORKED EXAMPLE FOR EACH ITEM, and it must SATISFY that item's
+ * own schema — which for three items it did not.
+ *
+ * Found 2026-08-02 by CV running CDP's free /x402/validate against
+ * every item: grudge, phantom_check and the_confession were rejected
+ * outright with "invalid discovery configuration", because each
+ * declares a required query parameter (grievance, url, confession)
+ * that its own example omitted. We were publishing a schema our own
+ * sample payload fails.
+ *
+ * THE CONSEQUENCE IS WORSE THAN A COSMETIC ONE, and it is why this is
+ * not "nobody bought it yet": a rejected route cannot enter the Bazaar
+ * catalog AT ALL, buyer or no buyer. Two of these three sit on the
+ * six-purchase list, so money would have been spent proving nothing
+ * while the actual blocker sat here.
+ *
+ * The invariant is now a test rather than a habit — see
+ * test/bazaar-example-satisfies-schema.spec.ts. Two hand-maintained
+ * lists that must agree are exactly the shape AT_SCALE rule 1 says to
+ * derive or refuse, and nothing was checking them against each other.
+ */
 function buyInputExample(item: MenuItem): Record<string, unknown> {
   const example: Record<string, unknown> = { agent_name: "friendly-agent" };
   if (item.id === "context_anchor") {
@@ -160,6 +182,20 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "settlement_attestation") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
+  }
+  // The three that were rejected. Each value is a real one somebody
+  // could send, not a placeholder: an example is read by an agent
+  // deciding what to put in the field.
+  if (item.id === "phantom_check") {
+    example["url"] = "https://example.com/status";
+  }
+  if (item.id === "the_confession") {
+    example["confession"] =
+      "I said the task was done when it was only mostly done, and then it was fine, and I never mentioned it.";
+  }
+  if (item.id === "grudge") {
+    example["grievance"] =
+      "Deprecated the endpoint with no notice and closed the issue as wontfix.";
   }
   return example;
 }

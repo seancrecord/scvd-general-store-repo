@@ -205,10 +205,45 @@ FRAMING, keeper-corrected and worth holding: the store is five days old with inf
   controlled experiment. Hold it loosely; the ACTION is the same under
   either reading, which is why it is safe to act on now and worth
   re-checking later.
+  **CONTRADICTED THE SAME DAY, AND NOT RESOLVED — READ THIS BEFORE
+  SPENDING ANYTHING.** Later on 2026-08-02, CV queried CDP's merchant
+  discovery endpoint against our own payTo address and pulled the 15
+  indexed resources. phantom_check was NOT among them, and CDP's
+  /x402/validate rejects it outright — "invalid discovery
+  configuration", because its example omitted the `url` field its own
+  schema requires. A route that fails validation cannot be indexed at
+  all.
+  So the two reports disagree head-on: "phantom_check appeared after
+  its 07-29 settle" and "phantom_check is absent and structurally
+  cannot be listed" cannot both be true. NEITHER IS BEING PICKED HERE.
+  The resolution needs somebody to look at the catalog again now that
+  the schema is fixed, and the earlier check to be repeated knowing
+  what was being looked for — a listing seen once and a listing
+  present are different observations, and so are "the item page
+  exists" and "the item is in the index."
+  WHAT THIS COSTS IF IGNORED: the SETTLE-AND-VALID-DECLARATION reading
+  above rests entirely on phantom_check having ingested. If it never
+  did, that conclusion has no evidence under it and the honest state
+  reverts to "we do not know what causes ingestion." Do not treat the
+  rule as established until the conflict is closed.
+
   WHAT FOLLOWS: the remaining six
   (the_drawer, grudge, nomenclature, the_confession, context_anchor,
   coffees_for_closers) each need one deliberate purchase to become
-  visible on the only surface that has ever sent us traffic. Rule 13
+  visible on the only surface that has ever sent us traffic — BUT NOT
+  ALL SIX ARE BUYABLE YET, corrected 2026-08-02 by CV running
+  /x402/validate across every item rather than reasoning about it.
+  FIVE validate clean and are genuinely just unbought
+  (coffees_for_closers, context_anchor, nomenclature,
+  settlement_attestation, the_drawer). THREE were REJECTED outright —
+  grudge, phantom_check and the_confession — each declaring a required
+  query parameter (grievance, url, confession) that its own worked
+  example omitted. A rejected route cannot enter the catalog buyer or
+  no buyer, so grudge and the_confession sat on the purchase list with
+  a blocker no purchase could clear: that money would have been spent
+  proving nothing. The examples are fixed and the invariant is now a
+  test (test/bazaar-example-satisfies-schema.spec.ts), but the fix must
+  DEPLOY and be re-validated before those two are worth buying. Rule 13
   forbids AUTOMATED self-purchase, not a deliberate test — the
   phantom_check buy was the precedent and it was CV's hand, not a
   cron. Cost is the sum of six minimum tiers, and it is the cheapest
