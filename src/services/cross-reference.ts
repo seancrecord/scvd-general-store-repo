@@ -1,3 +1,4 @@
+import { isAllowedCounterpart } from "@/store/counterparts";
 import {
   CROSS_REF_ACCEPTED_FOR,
   isRecord,
@@ -63,6 +64,8 @@ export interface CrossRefOptions {
   asOf?: Date;
   /** Milliseconds to wait on a counterpart before giving up. */
   timeoutMs?: number;
+  /** Test seam for the allowlist. Production always uses the real one. */
+  allowHost?: (issuer: string) => boolean;
 }
 
 /**
@@ -85,15 +88,94 @@ export interface CrossRefOptions {
  */
 export const COUNTERPART_TIMEOUT_MS = 3000;
 
+/**
+ * HOW MANY REFERENCES ONE CERTIFICATE MAY CARRY.
+ *
+ * A cap, because without one a single certificate could name a
+ * thousand counterparts and every public verification of it would fan
+ * out into a thousand outbound requests — a self-inflicted denial of
+ * service that doubles as an attack tool aimed at whoever was listed.
+ * Four is generous for the actual use: an event settled from two or
+ * three sides. Anything past the cap is REPORTED, never silently
+ * dropped, because a truncation nobody is told about is the failure
+ * this codebase already has a rule against.
+ */
+export const MAX_CROSS_REFS = 4;
+
+/** Bytes we will read from a counterpart before giving up. */
+export const MAX_KEY_DOC_BYTES = 64 * 1024;
+
+/** How long a counterpart's key document is reused within an isolate. */
+export const COUNTERPART_CACHE_MS = 300_000;
+
+/**
+ * WHY THERE IS A CACHE AT ALL, and it is not about speed.
+ *
+ * /api/verify is free, unlimited and public. Without memoisation,
+ * anyone could loop a verify URL and make this store hammer whichever
+ * counterpart that certificate names — turning our own most
+ * open-handed promise into a weapon pointed at a partner. The cache
+ * bounds a stranger's ability to spend somebody else's bandwidth
+ * through us, and incidentally stops us leaking a precise verification
+ * rhythm to the host being referenced.
+ *
+ * Bounded by construction: keys are allowlisted hosts, so this map
+ * cannot grow past the number of counterparts we chose.
+ */
+const keyDocCache = new Map<
+  string,
+  { at: number; doc: CounterpartKeyDoc | null; failure?: string }
+>();
+
+/** Test seam: drop memoised counterpart documents. */
+export function clearCounterpartCache(): void {
+  keyDocCache.clear();
+}
+
 /** Where a counterpart publishes its key history, by convention. */
+/**
+ * Suffixes that resolve inside a network rather than on the internet.
+ * Belt to the allowlist's braces: if an entry is ever added here by
+ * mistake, these still refuse.
+ */
+const INTERNAL_SUFFIXES = [
+  ".internal",
+  ".local",
+  ".localhost",
+  ".home.arpa",
+  ".localdomain",
+  ".intranet",
+  ".corp",
+  ".lan",
+];
+
+/**
+ * Hosts whose LABELS are an IP address wearing a domain suffix —
+ * 127.0.0.1.nip.io, 10.0.0.1.sslip.io and every clone. A bare-hostname
+ * regex passes these happily because they end in a real TLD, and they
+ * resolve straight back to the loopback or a private range.
+ */
+const IP_IN_DISGUISE =
+  /(^|\.)(\d{1,3}[.-]\d{1,3}[.-]\d{1,3}[.-]\d{1,3})(\.|$)/;
+
 export function counterpartKeyUrl(issuer: string): string | null {
   const host = String(issuer ?? "").trim().toLowerCase();
-  // A hostname and nothing else: no scheme, no path, no credentials.
-  // An issuer string is data from a signed artifact, but it is data a
-  // buyer originally supplied, so it never becomes a URL unchecked.
+  /**
+   * A hostname and nothing else: no scheme, no path, no credentials,
+   * no port. The issuer arrives inside a signed artifact, but it was
+   * originally supplied from outside, so it never becomes a URL
+   * unchecked.
+   */
   if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host)) {
     return null;
   }
+  // A hostname long enough to be a payload is not a hostname.
+  if (host.length > 253) return null;
+  if (host.split(".").some((label) => label.length === 0 || label.length > 63)) {
+    return null;
+  }
+  if (INTERNAL_SUFFIXES.some((suffix) => host.endsWith(suffix))) return null;
+  if (IP_IN_DISGUISE.test(host)) return null;
   return `https://${host}/.well-known/scvd-signing-key`;
 }
 
@@ -123,6 +205,16 @@ export function crossRefShapeProblem(value: unknown): string | null {
   return null;
 }
 
+/**
+ * One spelling for a key on both sides of a comparison. A counterpart
+ * writing `0xabc…` where we wrote `abc…` is the same key, and letting
+ * that read as "appears nowhere in their history" would be a false
+ * accusation dressed as a security finding.
+ */
+function normalizeKey(value: unknown): string {
+  return String(value ?? "").trim().toLowerCase().replace(/^0x/, "");
+}
+
 function retiredEntries(doc: CounterpartKeyDoc): Array<{
   public_key: string;
   retired_on: string;
@@ -134,7 +226,7 @@ function retiredEntries(doc: CounterpartKeyDoc): Array<{
     const key = entry["public_key"];
     const retired = entry["retired_on"];
     if (typeof key === "string" && typeof retired === "string") {
-      out.push({ public_key: key.toLowerCase(), retired_on: retired });
+      out.push({ public_key: normalizeKey(key), retired_on: retired });
     }
   }
   return out;
@@ -156,10 +248,10 @@ export function keyAcceptableAt(
   fingerprint: string,
   asOf: Date,
 ): { ok: boolean; reason: string } {
-  const wanted = String(fingerprint ?? "").toLowerCase();
+  const wanted = normalizeKey(fingerprint);
   if (!wanted) return { ok: false, reason: "no key fingerprint to check" };
 
-  const current = String(doc.current?.public_key ?? "").toLowerCase();
+  const current = normalizeKey(doc.current?.public_key);
   if (current && current === wanted) {
     return { ok: true, reason: "key is the counterpart's current signing key" };
   }
@@ -212,12 +304,26 @@ export async function verifyCrossReference(
     return { ...base, verified: false, reason: `malformed reference: ${shape}` };
   }
 
+  /**
+   * THE ALLOWLIST, CHECKED BEFORE ANYTHING IS PARSED OR FETCHED. Every
+   * clever URL filter is a game of catching the next bypass, and the
+   * defender loses that game eventually. A host we did not choose is
+   * simply never contacted.
+   */
+  if (!(options.allowHost ?? isAllowedCounterpart)(ref.counterpart_issuer)) {
+    return {
+      ...base,
+      verified: false,
+      reason: `"${ref.counterpart_issuer}" is not a counterpart this store resolves. Nothing was fetched. Being absent from that list is not a judgment about them — it means no request will be made to a host we did not deliberately add.`,
+    };
+  }
+
   const url = counterpartKeyUrl(ref.counterpart_issuer);
   if (!url) {
     return {
       ...base,
       verified: false,
-      reason: `"${ref.counterpart_issuer}" is not a plain hostname, so no key document location can be derived from it`,
+      reason: `"${ref.counterpart_issuer}" is not a plain public hostname, so no key document location can be derived from it`,
     };
   }
 
@@ -232,43 +338,76 @@ export async function verifyCrossReference(
   }
 
   let doc: CounterpartKeyDoc;
-  try {
-    const response = await fetchImpl(url, {
-      signal: AbortSignal.timeout(options.timeoutMs ?? COUNTERPART_TIMEOUT_MS),
-    });
-    if (!response.ok) {
+  const now = Date.now();
+  const cached = keyDocCache.get(url);
+  if (cached && now - cached.at < COUNTERPART_CACHE_MS) {
+    if (!cached.doc) {
       return {
         ...base,
         verified: false,
         key_document_url: url,
-        reason: `counterpart key document returned HTTP ${response.status}; an unreachable counterpart is an unproven claim, never an assumed one`,
+        reason: `${cached.failure ?? "counterpart unreachable"} (remembered from a recent attempt rather than re-asking, so a public verify loop cannot be aimed at them through us)`,
       };
     }
-    const parsed: unknown = await response.json();
-    if (!isRecord(parsed)) {
-      return {
-        ...base,
-        verified: false,
-        key_document_url: url,
-        reason: "counterpart key document is not a JSON object",
+    doc = cached.doc;
+  } else {
+    try {
+      const response = await fetchImpl(url, {
+        signal: AbortSignal.timeout(options.timeoutMs ?? COUNTERPART_TIMEOUT_MS),
+        /**
+         * NO REDIRECTS. Following one would hand an attacker the
+         * bypass the allowlist exists to prevent: an allowed host
+         * answering 302 to a link-local address turns our verifier
+         * into a request emitter aimed anywhere.
+         */
+        redirect: "error",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        const failure = `counterpart key document returned HTTP ${response.status}; an unreachable counterpart is an unproven claim, never an assumed one`;
+        keyDocCache.set(url, { at: now, doc: null, failure });
+        return { ...base, verified: false, key_document_url: url, reason: failure };
+      }
+      /**
+       * READ AS TEXT WITH A CEILING, then parse. `.json()` on an
+       * unbounded body is a memory exhaustion invitation from a host
+       * we do not control, and the declared Content-Length cannot be
+       * trusted to describe what actually arrives.
+       */
+      const raw = await response.text();
+      if (raw.length > MAX_KEY_DOC_BYTES) {
+        const failure = `counterpart key document exceeds ${MAX_KEY_DOC_BYTES} bytes and was not parsed`;
+        keyDocCache.set(url, { at: now, doc: null, failure });
+        return { ...base, verified: false, key_document_url: url, reason: failure };
+      }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        const failure = "counterpart key document is not valid JSON";
+        keyDocCache.set(url, { at: now, doc: null, failure });
+        return { ...base, verified: false, key_document_url: url, reason: failure };
+      }
+      if (!isRecord(parsed)) {
+        const failure = "counterpart key document is not a JSON object";
+        keyDocCache.set(url, { at: now, doc: null, failure });
+        return { ...base, verified: false, key_document_url: url, reason: failure };
+      }
+      const history = isRecord(parsed["key_history"])
+        ? parsed["key_history"]
+        : parsed;
+      doc = {
+        current: isRecord(history["current"])
+          ? (history["current"] as CounterpartKeyDoc["current"])
+          : undefined,
+        retired: history["retired"],
       };
+      keyDocCache.set(url, { at: now, doc });
+    } catch (error) {
+      const failure = `counterpart key document unreachable: ${String(error)}`;
+      keyDocCache.set(url, { at: now, doc: null, failure });
+      return { ...base, verified: false, key_document_url: url, reason: failure };
     }
-    const history = isRecord(parsed["key_history"])
-      ? parsed["key_history"]
-      : parsed;
-    doc = {
-      current: isRecord(history["current"])
-        ? (history["current"] as CounterpartKeyDoc["current"])
-        : undefined,
-      retired: history["retired"],
-    };
-  } catch (error) {
-    return {
-      ...base,
-      verified: false,
-      key_document_url: url,
-      reason: `counterpart key document unreachable: ${String(error)}`,
-    };
   }
 
   const verdict = keyAcceptableAt(doc, ref.counterpart_key_fingerprint, asOf);
@@ -299,8 +438,31 @@ export async function verifyCrossReferences(
 ): Promise<CrossRefCheck[]> {
   if (!Array.isArray(refs) || refs.length === 0) return [];
   const checks: CrossRefCheck[] = [];
-  for (const ref of refs) {
+  /**
+   * DEDUPED, so a certificate naming the same counterpart artifact
+   * fifty times costs one lookup rather than fifty. Without this the
+   * cap alone would still let a handful of entries multiply work.
+   */
+  const seen = new Set<string>();
+  for (const ref of refs.slice(0, MAX_CROSS_REFS)) {
+    const fingerprint = `${String(ref?.counterpart_issuer)}|${String(ref?.counterpart_artifact_id)}`;
+    if (seen.has(fingerprint)) continue;
+    seen.add(fingerprint);
     checks.push(await verifyCrossReference(ref, options));
+  }
+  /**
+   * SAID OUT LOUD, never silent. A capped list that reads as complete
+   * is the failure mode AT_SCALE rule 4 exists for, and here it would
+   * hide references from exactly the reader trying to audit them.
+   */
+  if (refs.length > MAX_CROSS_REFS) {
+    checks.push({
+      counterpart_issuer: "",
+      counterpart_artifact_id: "",
+      verified: false,
+      verified_at_mint: false,
+      reason: `This certificate carries ${refs.length} cross-references and only the first ${MAX_CROSS_REFS} were checked. The cap exists so one artifact cannot fan a single public verification out into unbounded outbound requests. The remainder are NOT verified and must not be read as such.`,
+    });
   }
   return checks;
 }

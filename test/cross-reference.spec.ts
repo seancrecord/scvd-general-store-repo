@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { COUNTERPARTS, isAllowedCounterpart } from "@/store/counterparts";
 import {
+  clearCounterpartCache,
   counterpartKeyUrl,
+  MAX_CROSS_REFS,
+  MAX_KEY_DOC_BYTES,
   crossRefShapeProblem,
   keyAcceptableAt,
   verifyCrossReference,
@@ -31,6 +35,9 @@ import { CROSS_REF_ACCEPTED_FOR, type Certificate, type CrossReference } from "@
 const KEY_A = "a".repeat(64);
 const KEY_B = "b".repeat(64);
 const TEST_SEED = "42".repeat(32);
+const ALLOW_ALL = { allowHost: () => true };
+
+beforeEach(() => clearCounterpartCache());
 
 function ref(overrides: Partial<CrossReference> = {}): CrossReference {
   return {
@@ -43,12 +50,17 @@ function ref(overrides: Partial<CrossReference> = {}): CrossReference {
   };
 }
 
+/**
+ * The body is read as TEXT and parsed by us, so the size ceiling can be
+ * applied before a host we do not control gets to allocate memory in
+ * our isolate. The mock mirrors that rather than the old .json() shape.
+ */
 function keyDocFetch(body: unknown, status = 200): typeof fetch {
   return (async () =>
     ({
       ok: status >= 200 && status < 300,
       status,
-      json: async () => body,
+      text: async () => JSON.stringify(body),
     }) as unknown as Response) as unknown as typeof fetch;
 }
 
@@ -170,6 +182,7 @@ describe("key acceptability at a date", () => {
 describe("it fails closed", () => {
   it("verifies a good reference against a reachable counterpart", async () => {
     const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
       fetch: keyDocFetch({ key_history: { current: { public_key: KEY_A } } }),
     });
     expect(check.verified).toBe(true);
@@ -179,6 +192,7 @@ describe("it fails closed", () => {
 
   it("reads an unreachable counterpart as UNVERIFIED, not as fine", async () => {
     const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
       fetch: keyDocFetch(null, 503),
     });
     expect(check.verified).toBe(false);
@@ -188,6 +202,7 @@ describe("it fails closed", () => {
 
   it("reads a network failure as unverified", async () => {
     const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
       fetch: (async () => {
         throw new Error("ECONNREFUSED");
       }) as unknown as typeof fetch,
@@ -204,6 +219,7 @@ describe("it fails closed", () => {
      * and stopping.
      */
     const check = await verifyCrossReference(ref({ verified_at_mint: true }), {
+      ...ALLOW_ALL,
       fetch: keyDocFetch({ key_history: { current: { public_key: KEY_B } } }),
     });
     expect(check.verified_at_mint).toBe(true);
@@ -213,7 +229,7 @@ describe("it fails closed", () => {
   it("checks every reference on a certificate, keeping order", async () => {
     const checks = await verifyCrossReferences(
       [ref({ counterpart_artifact_id: "one" }), ref({ counterpart_artifact_id: "two" })],
-      { fetch: keyDocFetch({ key_history: { current: { public_key: KEY_A } } }) },
+      { ...ALLOW_ALL, fetch: keyDocFetch({ key_history: { current: { public_key: KEY_A } } }) },
     );
     expect(checks.map((c) => c.counterpart_artifact_id)).toEqual(["one", "two"]);
   });
@@ -266,6 +282,7 @@ describe("a counterpart that goes away forever", () => {
 
     const started = Date.now();
     const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
       fetch: hangingFetch,
       timeoutMs: 50,
     });
@@ -281,16 +298,18 @@ describe("a counterpart that goes away forever", () => {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: async () => ({ key_history: { current: { public_key: KEY_A } } }),
+        text: async () =>
+          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
       } as unknown as Response);
     }) as unknown as typeof fetch;
 
-    await verifyCrossReference(ref(), { fetch: spyFetch });
+    await verifyCrossReference(ref(), { ...ALLOW_ALL, fetch: spyFetch });
     expect(sawSignal).toBe(true);
   });
 
   it("keeps a permanently dead domain to one unverified line", async () => {
     const checks = await verifyCrossReferences([ref()], {
+      ...ALLOW_ALL,
       fetch: (async () => {
         throw new Error("getaddrinfo ENOTFOUND zooid.fund");
       }) as unknown as typeof fetch,
@@ -312,6 +331,7 @@ describe("what a passing check does NOT claim", () => {
      * of them merely named a key the other owns.
      */
     const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
       fetch: keyDocFetch({ key_history: { current: { public_key: KEY_A } } }),
     });
     expect(check.verified).toBe(true);
@@ -371,5 +391,201 @@ describe("the signature covers it", () => {
     expect(await certificateSignatureForm(tampered, signature, publicKey)).toBe(
       "invalid",
     );
+  });
+});
+
+describe("RED TEAM: the allowlist ends the URL-filter arms race", () => {
+  /**
+   * Every clever hostname filter is a game of catching the next
+   * bypass, and the defender loses that game eventually. So the real
+   * control is that /api/verify does not fetch a host we did not
+   * deliberately add — the filters below are the belt to that braces.
+   */
+  it("refuses to fetch a host that is not on the list, at all", async () => {
+    let fetched = false;
+    const check = await verifyCrossReference(ref(), {
+      fetch: (async () => {
+        fetched = true;
+        return { ok: true, status: 200, text: async () => "{}" } as unknown as Response;
+      }) as unknown as typeof fetch,
+    });
+    expect(fetched, "an unlisted host was contacted").toBe(false);
+    expect(check.verified).toBe(false);
+    expect(check.reason).toContain("not a counterpart this store resolves");
+  });
+
+  it("says absence from the list is not a judgment about them", () => {
+    // Otherwise the reason string becomes an accusation we cannot back.
+    expect(COUNTERPARTS).toEqual([]);
+    expect(isAllowedCounterpart("zooid.fund")).toBe(false);
+  });
+
+  it("rejects wildcard-DNS hosts that resolve to internal addresses", () => {
+    /**
+     * These all pass a naive bare-hostname regex because they end in a
+     * real TLD, and every one of them resolves to loopback or a
+     * private range. This is the bypass class the allowlist exists for.
+     */
+    for (const host of [
+      "127.0.0.1.nip.io",
+      "10.0.0.1.sslip.io",
+      "192.168.1.1.nip.io",
+      "169.254.169.254.nip.io",
+      "127-0-0-1.nip.io",
+    ]) {
+      expect(counterpartKeyUrl(host), `${host} was allowed`).toBeNull();
+    }
+  });
+
+  it("rejects internal-only suffixes including cloud metadata names", () => {
+    for (const host of [
+      "metadata.google.internal",
+      "printer.local",
+      "foo.localhost",
+      "thing.home.arpa",
+      "box.lan",
+      "app.corp",
+    ]) {
+      expect(counterpartKeyUrl(host), `${host} was allowed`).toBeNull();
+    }
+  });
+
+  it("rejects hostnames long enough to be a payload", () => {
+    expect(counterpartKeyUrl(`${"a".repeat(300)}.com`)).toBeNull();
+    expect(counterpartKeyUrl(`${"a".repeat(64)}.com`)).toBeNull();
+    expect(counterpartKeyUrl("a..b.com")).toBeNull();
+  });
+});
+
+describe("RED TEAM: resource exhaustion and amplification", () => {
+  it("caps how many references one certificate can fan out to", async () => {
+    let calls = 0;
+    const counting = (async () => {
+      calls += 1;
+      return {
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
+      } as unknown as Response;
+    }) as unknown as typeof fetch;
+
+    const many = Array.from({ length: 50 }, (_unused, i) =>
+      ref({ counterpart_artifact_id: `row_${i}` }),
+    );
+    const checks = await verifyCrossReferences(many, {
+      ...ALLOW_ALL,
+      fetch: counting,
+    });
+    expect(calls).toBeLessThanOrEqual(MAX_CROSS_REFS);
+    // And the truncation is REPORTED, never silent.
+    const note = checks[checks.length - 1]!;
+    expect(note.reason).toContain("only the first");
+    expect(note.reason).toContain("NOT verified");
+  });
+
+  it("collapses duplicate references to one lookup", async () => {
+    let calls = 0;
+    const counting = (async () => {
+      calls += 1;
+      return {
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
+      } as unknown as Response;
+    }) as unknown as typeof fetch;
+    await verifyCrossReferences([ref(), ref(), ref()], {
+      ...ALLOW_ALL,
+      fetch: counting,
+    });
+    expect(calls).toBe(1);
+  });
+
+  it("refuses an oversized key document instead of parsing it", async () => {
+    const huge = (async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => "x".repeat(MAX_KEY_DOC_BYTES + 1),
+      }) as unknown as Response) as unknown as typeof fetch;
+    const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: huge,
+    });
+    expect(check.verified).toBe(false);
+    expect(check.reason).toContain("exceeds");
+  });
+
+  it("does not re-hit a counterpart on every public verification", async () => {
+    /**
+     * The amplification case: /api/verify is free and unlimited, so
+     * without memoisation a stranger could loop one URL and make this
+     * store hammer whoever that certificate names.
+     */
+    let calls = 0;
+    const counting = (async () => {
+      calls += 1;
+      return {
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
+      } as unknown as Response;
+    }) as unknown as typeof fetch;
+    for (let i = 0; i < 10; i += 1) {
+      await verifyCrossReference(ref(), { ...ALLOW_ALL, fetch: counting });
+    }
+    expect(calls).toBe(1);
+  });
+
+  it("remembers a FAILURE too, so a dead host is not re-dialled per request", async () => {
+    let calls = 0;
+    const failing = (async () => {
+      calls += 1;
+      throw new Error("ECONNREFUSED");
+    }) as unknown as typeof fetch;
+    for (let i = 0; i < 5; i += 1) {
+      const check = await verifyCrossReference(ref(), {
+        ...ALLOW_ALL,
+        fetch: failing,
+      });
+      expect(check.verified).toBe(false);
+    }
+    expect(calls).toBe(1);
+  });
+});
+
+describe("RED TEAM: redirects and key spelling", () => {
+  it("refuses to follow a redirect", async () => {
+    /**
+     * An allowed host answering 302 to a link-local address would hand
+     * back the exact bypass the allowlist removes. `redirect: "error"`
+     * makes the fetch itself fail rather than chase it.
+     */
+    let sawRedirectMode: string | undefined;
+    const spy = ((_url: string, init?: RequestInit) => {
+      sawRedirectMode = init?.redirect;
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        text: async () =>
+          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
+      } as unknown as Response);
+    }) as unknown as typeof fetch;
+    await verifyCrossReference(ref(), { ...ALLOW_ALL, fetch: spy });
+    expect(sawRedirectMode).toBe("error");
+  });
+
+  it("treats 0x-prefixed keys as the same key, not as a mismatch", async () => {
+    // Failing this way would be a false accusation dressed as a
+    // security finding: their key IS ours, spelled differently.
+    const check = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: keyDocFetch({
+        key_history: { current: { public_key: `0x${KEY_A.toUpperCase()}` } },
+      }),
+    });
+    expect(check.verified).toBe(true);
   });
 });

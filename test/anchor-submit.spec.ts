@@ -356,6 +356,22 @@ describe("the daily interval", () => {
   });
 
   it("keeps the chain intact across many cron passes with a flaky calendar", async () => {
+    /**
+     * ONE CLOCK, and it has to be the injected one on BOTH sides.
+     *
+     * This test read the fake clock for the cron's due-check and the
+     * REAL clock for the entry it appended, so whether it passed
+     * depended on the wall time when it ran — green all evening on
+     * 2026-08-01, red the moment real time crossed midnight into the
+     * fixture's own start date, because the gap between the fake day-1
+     * clock and a real `taken_at` fell under 24 hours. Caught by a
+     * suite run at 01:07 that had passed at 00:46 with no code between
+     * them touching anchors at all.
+     *
+     * A test whose verdict moves with the hour is not a test. The fix
+     * is not a wider tolerance — it is that appendAnchor already takes
+     * a clock, and this was not handing it one.
+     */
     let call = 0;
     const flaky = (async () => {
       call += 1;
@@ -368,7 +384,7 @@ describe("the daily interval", () => {
       await runAnchorCron(
         testEnv,
         await listAnchors(testEnv),
-        () => appendAnchor(testEnv),
+        () => appendAnchor(testEnv, clock),
         { fetch: flaky, calendars: CALENDARS, now: clock },
       );
       clock = new Date(clock.getTime() + 25 * 3600 * 1000);

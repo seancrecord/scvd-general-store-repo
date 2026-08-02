@@ -1428,6 +1428,51 @@ rather than a dependency we take, and it is now stated on the verify
 response itself (`if_the_counterpart_disappears`) and pinned by a test
 that signs a certificate and verifies it with no network in the path.
 
+**FULL RED TEAM, 2026-08-02, at the keeper's instruction to harden it
+even though no counterpart has shipped their half.** Twenty-two
+surfaces enumerated, thirteen open, all thirteen closed. The ones that
+mattered:
+
+*SSRF, and the decision that ends the arms race.* A bare-hostname
+regex is not enough and never will be: `127.0.0.1.nip.io` and
+`10.0.0.1.sslip.io` pass it (real TLD, resolves to loopback),
+`metadata.google.internal` passes it, and any allowed host can answer
+302 pointing at a link-local address. Each of those is one more filter
+in a game the defender eventually loses. **So /api/verify now resolves
+only counterparts on an explicit allowlist** (src/store/counterparts.ts,
+empty until the first pairing is real). A host we did not deliberately
+add is never contacted. The regex hardening stayed as belt to those
+braces — IP-in-disguise patterns, internal suffixes, label lengths —
+and redirects are refused outright with `redirect: "error"`.
+
+*Amplification, which was the ugliest one.* /api/verify is free,
+unlimited and public, so one certificate naming a counterpart made
+this store into a request emitter anyone could aim: loop the verify
+URL, we hammer the partner. Now memoised for five minutes per host,
+FAILURES INCLUDED — a dead counterpart is not re-dialled on every
+request either. Same fix removes the side channel that leaked our
+verification rhythm to the host being referenced.
+
+*Resource exhaustion.* No cap on how many references a certificate
+could carry: fifty entries meant fifty outbound fetches per public
+verification. Capped at four, deduped by (issuer, artifact), and the
+truncation is REPORTED rather than silent — a capped list that reads
+complete is exactly rule 4's failure. Response bodies are read as text
+against a 64 KB ceiling and parsed by us, because `.json()` on an
+unbounded body from a host we do not control is a memory exhaustion
+invitation.
+
+*A false-accusation bug.* Key comparison did not normalise an `0x`
+prefix, so a counterpart writing `0xabc…` where we wrote `abc…` would
+have read as "appears nowhere in their published history" — a security
+finding that was really a spelling difference. Both sides normalised.
+
+**The asymmetry, stated because it looks like an inconsistency.** The
+public verifier we ship (verifier/x402-verify.js) stays GENERIC and
+resolves whoever the caller names. Here we allowlist. Different trust
+boundaries: there the caller chooses the target and carries their own
+risk; here WE make the request, on an endpoint strangers can point.
+
 **Not yet wired to a mint path, deliberately.** Nothing accepts a
 cross_ref from buyer input, because signing a buyer-supplied claim
 about another operator is the risk this entry exists to prevent. The
