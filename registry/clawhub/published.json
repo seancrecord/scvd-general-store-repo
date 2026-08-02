@@ -1,7 +1,12 @@
 {
-  "version": "2.6.0",
-  "bundle_sha256": "2fcb06754340c5ba923189816d6e14c659962d99f0b7ce09456721c191d1cd20",
-  "bundle_last_changed_commit": "b62a08dd18948860850b152aa6028fdb48a7db5c",
-  "recorded_by": "reconstructed 2026-08-02, not observed at publish time",
-  "why_this_file_exists": "The publish script used to end by asking a human to add a row to REPUBLISH.md. That row went stale, and on 2026-08-02 it said 2.5.0 was unpublished while the store had shipped 2.5.0 and 2.6.0 \u2014 which produced confidently wrong advice about what to publish next. A number a human has to remember to write down is a number that will eventually be wrong (AT_SCALE rule 1: derive or refuse). The script writes this now."
+  "version": "2.7.0",
+  "bundle_sha256": "be4aebaa320057c09d887edb9ea980da35506423ac88e8fe9ec5d5a6b9ea13ba",
+  "bundle_last_changed_commit": "261eb78de1f885b7a4d1807a47647d1f9f97f9c4",
+  "published_at": null,
+  "changelog": null,
+  "recorded_by": "RECONSTRUCTED 2026-08-02 from the repo, after the keeper reported 2.7.0 live on ClawHub. Not observed at publish time. The publish script writes this file on whichever machine runs it, so the authoritative copy is the one in the keeper's working tree; if that copy exists it supersedes this one and carries the two null fields filled in.",
+  "why_the_nulls": "published_at and changelog are the two fields this reconstruction genuinely cannot know, so they are null rather than guessed. A plausible timestamp is indistinguishable from a real one, and inventing it would be the exact failure this file exists to prevent. An unknown recorded as unknown is worth more than a confident invention.",
+  "why_it_was_rebuilt_anyway": "bundle_sha256 IS derivable, and leaving it stale was not cosmetic — it disarmed a guard. The fifth refusal in scripts/publish-skill.mjs compares the current bundle against this hash to refuse a version bump over identical bytes. While this file said 2.6.0 / 2fcb0675..., the live bundle hashed to be4aebaa..., so the comparison would have found a difference that was really just a stale record and waved through exactly the publish it exists to stop. registry/clawhub/SKILL.md has not changed since 261eb78, which is what makes this hash safe to derive rather than guess.",
+  "why_this_file_exists": "The publish script used to end by asking a human to add a row to REPUBLISH.md. That row went stale, and on 2026-08-02 it said 2.5.0 was unpublished while the store had shipped 2.5.0 and 2.6.0 — which produced confidently wrong advice about what to publish next. A number a human has to remember to write down is a number that will eventually be wrong (AT_SCALE rule 1: derive or refuse). The script writes this now.",
+  "and_it_went_stale_again_the_same_afternoon": "Second reconstruction in one day, one step further down the chain. The script writes this file but cannot commit it, so the thing a human had to remember stopped being 'write the row' and became 'commit the row'. Moving a manual step is not removing it. The script now ends by printing the exact commit command, and test/published-record.spec.ts holds the hash against the bundle."
 }

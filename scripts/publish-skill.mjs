@@ -252,5 +252,35 @@ if (!dryRun) {
       2,
     )}\n`,
   );
-  console.log(`Commit ${RECORD} — it is how the next publish knows.\n`);
+  /**
+   * THE SAME STALENESS, ONE STEP FURTHER DOWN — found 2026-08-02,
+   * hours after this file was written to cure it the first time.
+   *
+   * The old ending said "Commit the record." The record was written,
+   * the publish went out, and the commit did not happen — so
+   * published.json in the repo still named 2.6.0 while 2.7.0 was live
+   * on ClawHub. That is not cosmetic: the fifth refusal above reads
+   * this file's hash to decide whether a bundle actually changed, so a
+   * stale record DISARMS it. The guard would have compared the live
+   * bundle against a superseded hash, found a difference that was only
+   * the staleness, and waved through the exact publish it exists to
+   * stop.
+   *
+   * Writing the file instead of asking for a row did not remove the
+   * manual step; it moved it from "remember to write" to "remember to
+   * commit." A step a human has to remember will eventually be
+   * skipped, and the honest fix at this altitude is not to automate
+   * the commit — rule 30, and a script that commits on your behalf is
+   * worse than one that nags — but to make the remaining step a thing
+   * you paste rather than a thing you compose.
+   */
+  console.log(
+    `ONE STEP LEFT, and it is the one that got skipped last time:\n\n` +
+      `  git add ${RECORD} && \\\n` +
+      `    git commit -m "Record ${SLUG} ${version} as published" && \\\n` +
+      `    git push\n\n` +
+      `Uncommitted, this record is worse than absent — the refusal that\n` +
+      `catches a version bump over unchanged bytes reads its hash, so a\n` +
+      `stale copy does not fail loudly, it just stops catching things.\n`,
+  );
 }
