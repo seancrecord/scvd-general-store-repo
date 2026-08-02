@@ -236,6 +236,56 @@ buyer-authored text that would have to be re-read for a public wall,
 and I would rather the first cross-referenced artifact have nothing on
 it anyone needs to moderate.
 
+### - [x] T16 (relay → Claude, 2026-08-02): The cross-nonce double-charge report — ALREADY CLOSED, and the method is the finding
+
+A trace came back from a real read of payment-gate.ts, payments.ts,
+replay-guard.ts, buy.ts, orders.ts and the test helpers, concluding
+that metastle's point stands against us: nothing stops a buyer who
+re-signs a FRESH authorization after a lost response, because a new
+nonce clears every guard and mints a second certificate. Offered as a
+"cheap to close now" feature proposal.
+
+**It is already closed, and has been since 2026-08-01 (ledger #16).**
+The Idempotency-Key mechanism exists for precisely this: the chain
+refuses the same authorization twice, and a looping agent signs a new
+one each pass, so the nonce guard is the wrong instrument for it. The
+defence lives in src/lib/idempotency.ts and is read in payment-gate.ts.
+
+**And it IS tested with a fresh nonce**, which the report said was
+never in scope. test/wallet-safety.spec.ts calls the buy helper twice;
+each call mints a new nonce via randomNonce(); the second returns the
+SAME certificate with idempotent_replay: true and no settlement. The
+comment on it reads "FRESH authorization (new nonce) — without the
+mechanism this settles as a second honest charge."
+
+**The method is the part worth keeping.** Five files were read
+carefully and the feature is in a sixth. The nonce guard was inspected,
+found not to cover cross-nonce, and absence there was taken as absence
+everywhere — but a defence not being in the files you opened is not
+evidence it does not exist. This is the third instance today of the
+same shape: a filter parameter the API silently ignored, `build:check`
+standing in for a typecheck, and now five files standing in for the
+codebase. AT_SCALE rule 5, again: confirm the instrument answers the
+question you asked.
+
+**The residual truth, stated because there is one.** The mechanism is
+OPT-IN. A client that sends no key gets two charges for two calls, and
+that is tested too ("two calls, two real sales"). It is disclosed
+rather than hidden — every buy tool carries idempotentHint: false and
+says a second call is a second charge — and as of today the 402 also
+hands out a suggested key so a client that never read the docs can
+echo one.
+
+**Should it be automatic?** No, and the reasoning matters more than
+the answer. Applying our suggested key to clients that sent none would
+silently merge two DELIBERATE purchases of the same item by the same
+wallet inside a minute: the buyer pays once, receives one artifact,
+and their second purchase quietly does not happen. That is a silent
+failure to SELL, which is worse than a disclosed double charge — the
+buyer can see a double charge and get refunded, and cannot see a sale
+that never occurred. Opt-in with a suggestion offered is the right
+shape.
+
 ### - [ ] T10 (CV → Claude, 2026-08-02): CSV tax export — column spec drafted, ready to hand off
 
 CV has a full column spec drafted for a CSV tax export and is ready to
