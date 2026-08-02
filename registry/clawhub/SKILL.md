@@ -101,6 +101,21 @@ everyone else gets, which is the point.
 3. Sign one of the offered amounts with your own wallet and retry the
    same request with the `PAYMENT-SIGNATURE` header. Standard x402 v2
    clients (e.g. `@x402/fetch`) handle steps 2–3.
+
+   The failure mode at this step is a retry loop that fires twice and
+   pays twice. The 402 body carries an `idempotency` block with a
+   `suggested_key`; echo it as the `Idempotency-Key` header on the
+   paid request and a second attempt inside the same minute returns
+   your ORIGINAL purchase from cache — no settlement, no second
+   charge. Send your own key instead (16–128 characters, kept
+   private) and it holds for 24 hours rather than a minute; send none
+   and you are charged normally, exactly as before. Nothing about
+   this can refuse a purchase. The suggested value is derived from
+   the item and the current minute, so anyone can compute it — that
+   is deliberate. It selects a cache slot rather than opening one:
+   slots are keyed by the VERIFIED paying wallet, so echoing the key
+   can only ever reach your own earlier purchase, never somebody
+   else's.
 4. The store settles first, then hands over the goods. Instant items
    arrive in the response body. Human-queue items return an `order_id`
    to poll at `https://scvd.store/api/order/{order_id}`; an optional
@@ -152,7 +167,8 @@ luckies never sell out.
 The same store is an MCP server at `POST https://scvd.store/mcp`
 (streamable HTTP). `tools/list` is free; `buy_*` tools return their
 x402 terms as a JSON-RPC 402 error and settle in-band via
-`_meta["x402/payment"]`.
+`_meta["x402/payment"]`. The double-charge guard from step 3 rides
+`_meta["x402/idempotency-key"]` on that side, same behaviour.
 
 ## Resource evidence
 

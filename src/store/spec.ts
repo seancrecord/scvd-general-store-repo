@@ -23,7 +23,7 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * the script is what remembers, which is the same shape as every other
  * hand-typed value corrected today: derive it, or make the tool fail.
  */
-export const SKILL_VERSION = "2.6.0";
+export const SKILL_VERSION = "2.7.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
