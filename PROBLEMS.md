@@ -516,13 +516,46 @@ its own cross-check.
 
 ## Buildable, deliberately gated
 
-### 4. Settle-without-mint reconciliation
+### 4. Settle-without-mint reconciliation — HALF CLOSED 2026-08-02, and the open half is the stronger one
 
 Money can move without goods if the Worker dies between settle and
 mint; detection is currently the keeper noticing. The solved pattern
 to import is BANK RECONCILIATION: walk on-chain settlements to our
 wallet against minted certificates, flag orphans. **Trigger:** the
 first real occurrence, or volume a hand cannot reconcile weekly.
+
+**Closed half (#18, the delivery audit):** an intent row opens after
+settlement and before the handler, and anything still there past ten
+minutes is a sale that took money and delivered nothing. The keeper is
+paged; /admin/deliveries is the desk. Detection is no longer "the
+keeper noticing."
+
+**STILL OPEN, and noticed only when re-reading this entry rather than
+by the work itself — which is why it is written down instead of
+quietly marked done.** What I built is NOT the bank reconciliation
+this entry actually asked for, and the difference is the whole point.
+
+The intent row is OUR OWN WRITE. It catches a handler that died after
+settlement, because we wrote the row first. It cannot catch a
+settlement where our own bookkeeping never ran at all — the isolate
+dying between `processSettlement` returning and the intent write, a
+`recordSettlement` that silently failed, money arriving through any
+path that did not go through the gate. In every one of those the
+buyer paid, no row exists, and the audit reports a clean sweep. **An
+instrument built entirely out of our own writes cannot see the case
+where our own writes are what failed.**
+
+The bank reconciliation this entry named walks the OTHER side: USDC
+transfers to PAY_TO_ADDRESS on Base, against certificates minted. It
+is independent of every write we make, which is exactly why it is the
+stronger check — and it is the one still not built.
+
+**Trigger unchanged**, and now sharper: the store already has
+BASE_RPC_URL and reads the chain elsewhere, so this is a cron that
+walks transfers and flags any settlement with no artifact against it.
+The reason it is not urgent at eight settlements is that a hand can
+still do it; the reason it is on this list is that the delivery audit
+looks like it covers this and does not.
 
 ### 5. Issuer-liveness beacon (the dead-man pattern) — SHIPPED 2026-08-01
 
