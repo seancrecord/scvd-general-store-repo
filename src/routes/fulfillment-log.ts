@@ -110,5 +110,23 @@ fulfillmentLogRoutes.get("/fulfillment-log", async (c) => {
       "Order ids (an order URL serves the buyer's own deliverable), buyer-written text, buyer names, and payer addresses. This log is evidence about the store's conduct, not a window into its buyers.",
     empty_is_honest:
       "A short log is a young store, not a hidden one. The numbers above cannot be edited without editing the orders they are computed from — the same records fulfillment runs on.",
+    /**
+     * THE BLIND SPOT ON THE TRACK-RECORD SURFACE, named because a page
+     * that exists to evidence conduct is the worst possible place for
+     * an unstated one.
+     *
+     * Every figure here is computed from ORDERS, which are our own
+     * writes. A sale that settled and never created an order does not
+     * appear as a failure — it does not appear AT ALL, and this log
+     * would read as a clean record while a buyer got nothing. That is
+     * not hypothetical; it is precisely the case ledger #4 and #18
+     * were built for.
+     *
+     * So the limit is stated and the instruments that cover it are
+     * named. A reader can then ask us about those rather than
+     * discovering the gap themselves.
+     */
+    what_this_log_cannot_see:
+      "Every number here is computed from ORDERS, which are records this store writes. A payment that settled and never produced an order would not show up as a failed delivery — it would not show up at all, and this log would look clean while a buyer got nothing. Two checks exist for exactly that case and neither is fed by this log: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which does not depend on any write we make. Anything either finds goes on /corrections with a date. A track record built only from its own bookkeeping is worth stating the limits of, and this is them.",
   });
 });
