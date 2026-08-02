@@ -185,12 +185,27 @@ FRAMING, keeper-corrected and worth holding: the store is five days old with inf
 - [x] THIN THE INFRASTRUCTURE WRITES — DONE 2026-07-28. A crawler 402 cost THREE KV writes and now costs ONE; a crawler porch visit cost two and now costs one. The two dropped carried nothing the survivor didn't: `src402i:<channel>` was a single key incremented on every crawler hit whose value only ever equalled the sum of 402i (maximum contention, zero information), and the evt: row had nothing to reclassify INTO, since the raw rows exist so the ORGANIC column can be re-read with a better crawler table later. Every organic and every house row is still written, which is the set the recount and the walk detector actually read. THE COST IS STATED ON BOTH PAGES rather than discovered later: /admin/census says its walkers list no longer sees admitted crawlers, and /admin/recount says which rows it is missing and why. DECLINES ARE EXEMPT ABSOLUTELY — no diet applies to the rarest row in the books, not even for a crawler, because a crawler that presents a signature is not a crawler any more. Six tests pin all of it. ⚑ STILL THE KEEPER'S: the dashboard look at whether the free tier was actually biting, and the $5/month upgrade, which is insurance on the only asset that compounds. ORIGINAL NOTE — (measured 2026-07-27, and this is the one the books actually need): one day of 402s alone is ~7,000 KV writes against a free-tier cap of 1,000 — organic +734 and infrastructure +1399 in twenty-four hours, at three to four writes each. That retires the open question from the credibility audit: it is not "if a day ran capped," every day is capped about sevenfold, and writes past the cap fail SILENTLY. Machinery we explicitly do not count is spending the same budget as the traffic we care about. Sample infra events the way porch visits are sampled, or count them without a per-item row; cuts the bill by most of it and loses nothing we read. Pairs with the $5, which is no longer insurance but the price of the books being real
 - [ ] ⚑ SEVEN ITEMS ARE INVISIBLE ON THE ONLY SURFACE THAT SENDS US TRAFFIC — the_drawer, grudge, nomenclature, the_confession, context_anchor, phantom_check, coffees_for_closers are not registered on Bazaar, and the registered/unregistered split partitions July's traffic with NO OVERLAP (registered 132-864 challenges each, unregistered 0-11; 98.9% of all organic challenges went to registered endpoints). Two of the seven are phantom_check and context_anchor — the utility items DEMAND.md picked as most likely to be genuinely needed. All 21 are in our own .well-known, so this is their ingestion, not our declaration, and all seven DID settle once on 07-24, so "lists as it sells" is not the whole rule. THE CHEAP EXPERIMENT: ~~buy one missing item by hand (phantom_check, $0.25)~~ — **BOUGHT 2026-07-29 by CV, settled clean.** One purchase, not a heartbeat; rule 13 forbids automated self-purchase, not a deliberate test. THE CLOCK IS NOW RUNNING: the question was never whether it settles, it was whether a settle causes Bazaar to ingest the endpoint. Check the Bazaar listing for phantom_check around 2026-08-01 and again 2026-08-05. If it appears, "lists as it sells" is the rule and the other six need one purchase each. If it does not, settling is NOT sufficient and the missing piece is in our declaration, which is a different fix
 
-  **RESOLVED 2026-08-02: IT APPEARED. "Lists as it sells" is the
-  rule.** The keeper checked and reports Bazaar passed — phantom_check
-  ingested after its 07-29 settle, which is the outcome this
-  experiment was set up to distinguish. So ingestion is driven by
-  settlement, not by declaration, and our declaration was never the
-  problem. WHAT FOLLOWS MECHANICALLY: the remaining six
+  **RESOLVED 2026-08-02: IT APPEARED.** The keeper checked and reports
+  Bazaar passed — phantom_check ingested after its 07-29 settle, which
+  is the outcome this experiment was set up to distinguish.
+  MY FIRST WRITE-UP OF THIS SAID "lists as it sells is the rule, and
+  our declaration was never the problem." CORRECTED WITHIN THE HOUR,
+  because the paragraph directly above contradicts it: all seven ALSO
+  settled once on 07-24 and did NOT ingest. Settlement alone cannot be
+  the rule, and the declaration line was my overstatement rather than a
+  finding.
+  THE READING THAT FITS BOTH DATA POINTS: the 07-24 settles happened
+  while our declaration was broken — templates instead of real paths, a
+  serviceName too long for a catalog to accept (37 chars against a
+  32-char cap, refused silently), and no service metadata at all. All
+  three were fixed 2026-07-27. The 07-29 settle is the first to land
+  AFTER a correct declaration, and it ingested. So the working rule is
+  SETTLE **AND** VALID DECLARATION — and we changed both variables
+  between the two tests, so this is one clean observation rather than a
+  controlled experiment. Hold it loosely; the ACTION is the same under
+  either reading, which is why it is safe to act on now and worth
+  re-checking later.
+  WHAT FOLLOWS: the remaining six
   (the_drawer, grudge, nomenclature, the_confession, context_anchor,
   coffees_for_closers) each need one deliberate purchase to become
   visible on the only surface that has ever sent us traffic. Rule 13

@@ -82,18 +82,6 @@ export const VENUES: readonly Venue[] = [
 
   // ── Minted and waiting. Inert until a listing carries them. ──
   {
-    marker: "bazaar",
-    where: "x402scan / the Bazaar catalog listing",
-    url: `${BASE}/menu.json?src=bazaar`,
-    note: "The channel table can only see this venue through a referrer nobody sends. This marker is the only way the question gets answered.",
-  },
-  {
-    marker: "radar",
-    where: "x402-radar seller listing",
-    url: `${BASE}/menu.json?src=radar`,
-    note: "Public leaderboard of on-chain seller activity.",
-  },
-  {
     marker: "awesome-x402",
     where: "The awesome-x402 list",
     url: `${BASE}/?src=awesome-x402`,
@@ -124,6 +112,37 @@ export const VENUES: readonly Venue[] = [
     note: "Where a near-miss already happened once. A link in a thread is the whole mechanism.",
   },
 ] as const;
+
+/**
+ * THE VENUES THAT CANNOT BE MARKED, AND WHY — a correction to this
+ * file's first version, made the same day it was written.
+ *
+ * `bazaar` and `radar` were registered here with URLs to "submit to
+ * the listing." There is no listing to submit to. x402scan, the
+ * Bazaar and the radar leaderboards are INGESTION-BASED: they read
+ * /.well-known/x402.json and watch settlements on chain. Nobody
+ * pastes a URL anywhere, so there is no string of ours for a marker
+ * to ride.
+ *
+ * The only place a marker COULD go is the declared resource URL, and
+ * it must not: that URL is the resource's IDENTITY. Appending
+ * ?src=bazaar would fork every endpoint into a marked and unmarked
+ * version, break the match between a declared resource and the
+ * settlement that proves it, and put our analytics inside a
+ * spec-level document other people's software parses. A measurement
+ * that corrupts the thing it measures is not a measurement.
+ *
+ * SO THE JULY FINDING STANDS AND IS NOT FIXABLE FROM HERE: Bazaar
+ * attribution is near-unmeasurable for us by design (TASKS.md, and CV
+ * again on 2026-08-02). The register does not change that. What it
+ * changes is the HAND-PLACED venues below — a link in a Slack, a
+ * Discord, a spec-repo thread, a README PR — where we author the
+ * string and a marker costs nothing.
+ *
+ * The distinction is worth holding: "submit a marked URL" and "get
+ * ingested" are two different mechanisms, and conflating them
+ * produced a table of URLs that would have measured nothing.
+ */
 
 /**
  * CV's per-venue tags, kept as a documented convention (DEMAND.md,
