@@ -21,6 +21,24 @@ const TIER_3_FULL = "Sean-Claude Van Damme's General Store";
  *
  * These tests are the enforcement. A future surface that reaches for
  * a name by taste in the moment fails here rather than shipping.
+ *
+ * THE LAW ITSELF IS DOCUMENTED IN src/lib/identity.ts, which now
+ * enumerates every governed surface and points back here. The two
+ * files did not reference each other until 2026-08-02, and the cost
+ * of that showed up exactly as you would expect: a review read the
+ * law, saw only the outbound pair enumerated, and reported
+ * openapi.info.title / site.webmanifest name / mcp serverInfo.title as
+ * an untested gap. All three were already asserted in this file — see
+ * "files us under the display name on every metadata surface" and
+ * "keeps the tier-1 identifier and tier-2 title side by side on MCP".
+ *
+ * If you are adding a name-bearing surface: assert it HERE, and add
+ * it to the enumeration THERE. One without the other is how the next
+ * person loses an afternoon proving something that was already true.
+ *
+ * THE OUTBOUND PAIR (OUTBOUND_USER_AGENT, STORE_HEADER) is covered in
+ * test/breadcrumbs.spec.ts rather than here, because those are the
+ * store speaking as a client rather than as a catalog entry.
  */
 describe("the naming law", () => {
   it("keeps the three strings exactly as pinned", () => {

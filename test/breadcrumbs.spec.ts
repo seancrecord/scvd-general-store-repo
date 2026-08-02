@@ -21,6 +21,15 @@ const BASE = "https://scvd.store";
  * And ONE STRING ACROSS ALL CALL SITES. A user-agent that varies by
  * caller is worse than none — it fragments the citation it exists to
  * accumulate, so nobody grepping a log ever sees the whole of us.
+ *
+ * SCOPE, so the split between spec files is findable rather than
+ * inferred: this file covers the OUTBOUND pair — the store speaking as
+ * a client. Every INBOUND name-bearing surface (openapi info.title,
+ * site.webmanifest, MCP serverInfo, the discovery documents, the
+ * JSON-LD entity) is asserted in test/naming-law.spec.ts, and
+ * src/lib/identity.ts enumerates all of them in one place. Added
+ * 2026-08-02, after a review read the law, found only this pair
+ * documented, and reported three already-covered surfaces as a gap.
  */
 describe("the store says who it is", () => {
   it("uses the tier 1 slug in the outbound user-agent, a machine field", () => {
