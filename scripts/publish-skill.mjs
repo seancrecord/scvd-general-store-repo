@@ -25,9 +25,11 @@
  *   npm run skill:publish -- 2.5.0 "..." --dry-run
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 
 const BUNDLE = "registry/clawhub/SKILL.md";
+const RECORD = "registry/clawhub/published.json";
 const BUNDLE_DIR = "registry/clawhub";
 const SLUG = "scvd-general-store";
 /** THE NAMING LAW, tier 2: the display name, and never the full one. */
@@ -127,6 +129,44 @@ try {
   );
 }
 
+/**
+ * THE FIFTH REFUSAL: THE BUNDLE HAS NOT CHANGED SINCE THE LAST PUBLISH.
+ *
+ * Added 2026-08-02, after an evening spent working out by hand that a
+ * requested 2.7.0 would have shipped bytes identical to 2.6.0 under a
+ * changelog naming four features none of which were in the file. The
+ * script's own header already called that the worst outcome — "the
+ * changelog then claims a fix that did not ship" — and had no check
+ * for it. The version guard above compares a number to a number and
+ * cannot see this.
+ *
+ * A NEW VERSION NUMBER IS A CLAIM THAT SOMETHING CHANGED. If nothing
+ * did, the honest act is not to publish.
+ */
+let previous = null;
+try {
+  previous = JSON.parse(readFileSync(RECORD, "utf8"));
+} catch {
+  // No record yet: the check cannot run, and says so rather than
+  // passing silently. An absent record is not a clean bill of health.
+  console.log(
+    `No ${RECORD} yet, so "has the bundle changed?" cannot be answered.\n` +
+      `This publish will write one; the next will be checked.`,
+  );
+}
+const bundleHash = createHash("sha256")
+  .update(readFileSync(BUNDLE))
+  .digest("hex");
+if (previous && previous.bundle_sha256 === bundleHash) {
+  die(
+    `the bundle is byte-identical to what ${previous.version} published`,
+    `Publishing ${version} would ship the same file under a new number,`,
+    `with a changelog claiming a change nobody can find in it.`,
+    `Either edit ${BUNDLE} first, or do not publish — an unchanged`,
+    `bundle is not a release.`,
+  );
+}
+
 // The bundle is a static file and the shelf is code; nothing ties them
 // together except this suite, so it runs before the bytes leave.
 console.log("Checking the bundle against the shelf…");
@@ -193,6 +233,24 @@ if (!dryRun) {
       `\`latest\` lags it — a new version goes through a moderation scan\n` +
       `before the tag moves, so inspect can show the previous version for\n` +
       `several minutes. Publish once, read the line, walk away.\n\n` +
-      `Then add the row to REPUBLISH.md: ${version}, today, "${changelog}".\n`,
+      `The record in ${RECORD} has been updated for you — no row to\n` +
+      `remember to write, because the row somebody had to remember is\n` +
+      `exactly the one that went stale and produced wrong advice about\n` +
+      `what to publish next.\n`,
   );
+  writeFileSync(
+    RECORD,
+    `${JSON.stringify(
+      {
+        version,
+        bundle_sha256: bundleHash,
+        published_at: new Date().toISOString(),
+        commit: head,
+        changelog,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  console.log(`Commit ${RECORD} — it is how the next publish knows.\n`);
 }

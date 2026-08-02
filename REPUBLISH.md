@@ -129,7 +129,19 @@ Never paste that token into a chat, including to me.
 | 2.4.0 | 2026-07-28 20:49 | settlement_attestation, graffiti_on_a_train, practice counter |
 | 2.4.1 | 2026-07-29 15:41 | (a retry that landed while its own output read as a failure) |
 | 2.4.2 | 2026-07-29 ~16:51 | hardcoded item count removed |
-| 2.5.0 | ⚑ not yet published | /attestation, /corrections, the reading room; see the changelog line below |
+| 2.5.0 | published | /attestation, /corrections, the reading room |
+| 2.6.0 | published | (see registry/clawhub/published.json) |
+
+> **THIS TABLE IS NOT THE SOURCE OF TRUTH AND WAS WRONG FOR TWO
+> VERSIONS.** It sat marking 2.5.0 "not yet published" while the store
+> had shipped both 2.5.0 and 2.6.0, because the publish script ended by
+> asking a human to add a row and nobody did. On 2026-08-02 that stale
+> row produced confidently wrong advice about which version to publish
+> next. The authoritative answers are `SKILL_VERSION` in
+> `src/store/spec.ts` (what the store SERVES) and
+> `registry/clawhub/published.json` (what was last PUBLISHED, written
+> by the script itself now, not by hand). Read those. This table is
+> kept for the story, not for the numbers.
 
 **READY TO PUBLISH AS 2.5.0.** The bundle gained what a machine reader
 was missing after 07-30: `/attestation` (what a signature does and does

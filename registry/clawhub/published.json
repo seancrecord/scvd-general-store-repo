@@ -1,0 +1,7 @@
+{
+  "version": "2.6.0",
+  "bundle_sha256": "2fcb06754340c5ba923189816d6e14c659962d99f0b7ce09456721c191d1cd20",
+  "bundle_last_changed_commit": "b62a08dd18948860850b152aa6028fdb48a7db5c",
+  "recorded_by": "reconstructed 2026-08-02, not observed at publish time",
+  "why_this_file_exists": "The publish script used to end by asking a human to add a row to REPUBLISH.md. That row went stale, and on 2026-08-02 it said 2.5.0 was unpublished while the store had shipped 2.5.0 and 2.6.0 \u2014 which produced confidently wrong advice about what to publish next. A number a human has to remember to write down is a number that will eventually be wrong (AT_SCALE rule 1: derive or refuse). The script writes this now."
+}
