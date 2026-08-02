@@ -1,6 +1,10 @@
 import { Hono } from "hono";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
+import {
+  IDEMPOTENCY_TTL_SECONDS,
+  SUGGESTED_KEY_BUCKET_SECONDS,
+} from "@/lib/idempotency";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
@@ -137,6 +141,10 @@ practiceCounterRoutes.get("/try", (c) => {
           ${flowHtml}
           <p class="menu-desc">${escapeHtml(COPY.stepsNote)}</p>
         </section>
+        <section>
+          <h2>${escapeHtml(COPY.retryHead)}</h2>
+          ${list(COPY.retry)}
+        </section>
         <section id="hand-rolling">
           <h2>${escapeHtml(HAND_ROLLING.heading)}</h2>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.standfirst)}</p>
@@ -213,6 +221,22 @@ practiceCounterRoutes.get("/try", (c) => {
         }
       : undefined,
     flow,
+    /**
+     * BESIDE THE FLOW, not in a footnote. An agent reading this
+     * payload top to bottom meets the guard immediately after the
+     * three steps it is a guard on — which is before it writes the
+     * loop, and that ordering is the whole point of the block.
+     */
+    retrying_safely: {
+      head: COPY.retryHead,
+      notes: COPY.retry,
+      header: "Idempotency-Key",
+      mcp_meta_key: "x402/idempotency-key",
+      where_the_key_comes_from:
+        "The idempotency.suggested_key field in the 402 body. Nothing to fetch first.",
+      suggested_key_window_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+      own_key_window_seconds: IDEMPOTENCY_TTL_SECONDS,
+    },
     cheap_door: shelf.map((row) => ({
       ...row,
       buy: `${base}/api/buy/${row.id}?src=try`,

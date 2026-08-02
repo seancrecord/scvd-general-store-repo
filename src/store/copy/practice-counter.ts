@@ -31,6 +31,25 @@ export const PRACTICE_COUNTER_COPY = {
   stepsNote:
     "Standard v2 clients (@x402/fetch and friends) do steps 2 and 3 by themselves. The example carries ?src=try, which tells us the practice counter sent you and nothing about you.",
 
+  /**
+   * ADDED 2026-08-02 after walking this page as a cold arrival. This
+   * is the room where somebody writes a retry loop pointed at a real
+   * till with real money in it, and the honest section below already
+   * carried a paragraph for exactly that accident — write to the
+   * mailbox, a person will refund you — while the guard that PREVENTS
+   * it went unmentioned on this page alone. It is on the 402, in the
+   * MCP tool descriptions, in the skill; the one surface whose whole
+   * audience is people about to make this mistake was the one that
+   * offered a refund instead of the mechanism. Wrong order.
+   */
+  retryHead: "Before you write the retry loop",
+  retry: [
+    "A retry that fires twice pays twice, and a test harness is where that happens. The 402 body carries an idempotency block with a suggested_key: send it back as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP) with your payment, and a second attempt inside the same minute returns your ORIGINAL purchase from cache. No settlement, no second charge.",
+    "It cannot refuse a purchase. Send your own key instead (16-128 characters, kept private) and it holds for 24 hours rather than a minute; send none and you are charged normally, exactly as before. There is no mode here to get wrong.",
+    "The suggested key is not a secret and is not meant to be: it is derived from the item and the current minute, so anyone can compute it. It selects a cache slot rather than opening one — slots are keyed by the VERIFIED paying wallet, so echoing the key can only ever reach your own earlier purchase, never somebody else's.",
+    "Worth exercising deliberately while you are here. Buy the same item twice with the same key and assert you were charged once: it is the cheapest test of your own retry path you will run, and it costs half a cent to prove.",
+  ],
+
   cheapHead: "The cheap door, in order",
   cheapNote:
     "Prices are the real prices. Nothing here is discounted for testing, because a discounted test isn't a test of anything.",
@@ -86,6 +105,12 @@ export const PRACTICE_COUNTER_COPY = {
   honest: [
     "The money is real and so are the goods. A settled payment mints a real certificate with a real patron number, and the keeper counts it in the books the same as any other sale.",
     "We settle first and hand over the goods after. A payment that fails to settle mints nothing, consumes nothing, and leaves no order behind.",
+    // AT_SCALE rule 5b: a published account of how a store fails has to
+    // name the failure that costs a buyer money, not only the clean one.
+    // The line above is the EASY case — nobody is out anything. This is
+    // the case the delivery audit and the chain walk exist for, and it
+    // was missing from the page that most needed it.
+    "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against Base itself; what either one finds is published at /corrections and refunded. Write to the mailbox if you see it before we do.",
     "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
     "House rule, standing: this store will never ask you to run code, install anything, or hand over credentials or key material. Public HTTPS endpoints, that's the whole surface.",
   ],
