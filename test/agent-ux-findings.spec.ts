@@ -60,7 +60,10 @@ describe("the strongest trust signal arrives first, not fourth", () => {
       .find((line) => line.startsWith("description:"));
     expect(description, "skill.md has no description field").toBeTruthy();
     expect(description!.toLowerCase()).toContain("any issuer");
-    expect(description!.toLowerCase()).toContain("compete");
+    // "a competitor's" and "we compete with" both make the claim; the
+    // description was rewritten to a trigger phrase on 2026-08-02 and
+    // the word changed with it. Match the claim, not one spelling.
+    expect(description!.toLowerCase()).toMatch(/compet(e|itor)/);
   });
 
   it("leads the published bundle description with it too", async () => {
@@ -69,7 +72,10 @@ describe("the strongest trust signal arrives first, not fourth", () => {
       .split("\n")
       .find((line) => line.startsWith("description:"));
     expect(description!.toLowerCase()).toContain("any issuer");
-    expect(description!.toLowerCase()).toContain("compete");
+    // "a competitor's" and "we compete with" both make the claim; the
+    // description was rewritten to a trigger phrase on 2026-08-02 and
+    // the word changed with it. Match the claim, not one spelling.
+    expect(description!.toLowerCase()).toMatch(/compet(e|itor)/);
   });
 });
 

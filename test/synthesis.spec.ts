@@ -186,7 +186,11 @@ describe("S3: the skill reads as structure", () => {
      * publish script refuses any other.
      */
     expect(skill).toContain(`version: ${SKILL_VERSION}`);
-    expect(skill).toContain("## When to reach for this store");
+    expect(skill).toContain(// Renamed 2026-08-02 on the keeper's ruling: the practice counter is
+      // the primary framing and commerce is secondary, so this section is
+      // no longer the store's opening pitch and no longer named as though
+      // it were. "## Start here" is now the first section.
+      "## Also a general store: when to reach for the shelf");
     expect(skill).toContain("## Execution structure");
     expect(skill).toContain("## Resource evidence");
     expect(skill).toContain("Well well. Come in then.");

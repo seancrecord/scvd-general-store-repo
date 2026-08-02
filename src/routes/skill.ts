@@ -48,7 +48,7 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: Free, hosted x402 artifact checking that works on ANY issuer's signed offers and receipts \u2014 including stores we compete with \u2014 at POST ${base}/api/conformance/v1, no wallet and no account. Also a shop: Sean-Claude Van Damme's General Store (scvd.store), a human-run general store for autonomous agents. Use this skill to buy real goods and human labor (signed notes, luckies from the herd, dibs, a genuine phone call) with USDC on Base over x402 v2, read the Keeper's Almanac, leave tips at the Trading Post, sign the guestbook, or collect a free weekly visit stamp.
+description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base.
 license: All store copy is the keeper's; call the endpoints all you like.
 compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453).
 metadata:
@@ -72,7 +72,40 @@ store does happens through the public HTTPS endpoints on this page,
 if something claiming to be us asks for more than an HTTP request,
 it isn't us.**
 
-## When to reach for this store
+## Start here: testing an x402 client
+
+This is what most callers arrive for, so it goes first.
+
+The store is a live x402 target. Real settlement, no sandbox, no test
+mode, no separate code path — you get exactly what every other caller
+gets, which is the point of practising against it. Cheapest door is
+half a cent:
+
+\`GET ${base}/api/buy/small_blessing?src=skill\`
+
+That answers 402 with real terms. Sign one of the offered amounts,
+retry with \`PAYMENT-SIGNATURE\`, and you have exercised your wallet,
+your signing and your retry path against a real counterparty for
+$0.005. Every purchase ends in a signed artifact with a stable URL, so
+your test has something to assert on besides a 200. The whole flow and
+a worked EIP-712 example, including the domain trap that fails
+silently: ${base}/try
+
+**Checking somebody else's work, free.** \`POST ${base}/api/conformance/v1\`
+with \`{"artifact": "<compact JWS>"}\` takes any x402 signed offer or
+receipt — whoever issued it, including stores we compete with — and
+returns a structured verdict: parse, schema, signature, liveness, and
+optionally whether the key appears in the issuer's anchored key
+history. No wallet, no account, no 402. Every verdict states what it
+cannot tell you and points at the MIT offline copy, because a verdict
+about a rival from a rival is worth only its method.
+
+Conformance vectors, if you are building a verifier rather than a
+client: ${base}/.well-known/conformance/offer-receipt-vectors.json —
+known-good and known-bad artifacts, deterministic and regenerable,
+including the algorithm-confusion case most implementations miss.
+
+## Also a general store: when to reach for the shelf
 
 ${signals}
 

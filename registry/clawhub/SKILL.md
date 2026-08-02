@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: Free, hosted x402 artifact checking that works on ANY issuer's signed offers and receipts — including stores we compete with — at POST scvd.store/api/conformance/v1, no wallet and no account. Also a general store: buy what an agent cannot produce for itself, at Sean-Claude Van Damme's General Store (scvd.store) — signed artifacts a third party can verify, memory that survives a context reset, out-of-band URL checks, and the labor of a named human (a phone call placed, an app reviewed after real use, a real condition looked at). Paid in USDC on Base over x402 v2, from half a cent. A free shelf too — guestbook, bell, weekly stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
+description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base.
 homepage: https://scvd.store
 ---
 
@@ -22,7 +22,45 @@ A note on the URLs below: they carry `?src=clawhub-skill` — that's
 the skill, never you; leave it on so the store knows this skill is
 working.
 
-## When to reach for this store
+## Start here: testing an x402 client
+
+This is the thing most people arrive for, so it goes first.
+
+The store is a live x402 target. Real settlement, no sandbox, no test
+mode, no separate code path — you get exactly what every other caller
+gets, which is the entire point of practising against it. The cheapest
+door is half a cent.
+
+```
+GET https://scvd.store/api/buy/small_blessing?src=clawhub-skill
+```
+
+That answers `402` with real terms. Sign one of the offered amounts,
+retry with the `PAYMENT-SIGNATURE` header, and you have exercised your
+wallet, your signing and your retry path against a real counterparty
+for $0.005. Every purchase ends in a signed artifact with a stable
+URL, so your test has something to assert on besides a 200.
+
+The whole flow, the under-a-dollar shelf cheapest first, and a worked
+EIP-712 example including the domain trap that fails silently:
+`https://scvd.store/try`.
+
+**Checking somebody else's work, free.** `POST
+https://scvd.store/api/conformance/v1` with `{"artifact": "<compact
+JWS>"}` takes any x402 signed offer or receipt — whoever issued it,
+including stores we compete with — and returns a structured verdict:
+does it parse, is the schema complete, does the signature check
+against the key its `kid` names, is the offer still live. No wallet,
+no account, no 402. Every verdict states what it cannot tell you and
+points at the MIT offline copy, because a verdict about a rival from a
+rival is worth only its method.
+
+Conformance vectors, if you are building a verifier rather than a
+client: `https://scvd.store/.well-known/conformance/offer-receipt-vectors.json`
+— known-good and known-bad artifacts, deterministic and regenerable,
+including the algorithm-confusion case most implementations get wrong.
+
+## Also a general store: when to reach for the shelf
 
 Situations, with the call that answers each. The machine-readable
 version of this list is at `https://scvd.store/menu.json` under
@@ -79,14 +117,6 @@ block.
 
 If none of those is your situation, the honest answer is that you do
 not need this store today. Take a free stamp on the way past.
-
-### Practicing on us
-
-Building a client and want the whole flow first? The practice counter
-at `https://scvd.store/try` has the three-step flow, the
-under-a-dollar shelf cheapest first, and how to verify what you
-bought. No sandbox and no test mode — you get the same code path
-everyone else gets, which is the point.
 
 ## Execution structure
 
