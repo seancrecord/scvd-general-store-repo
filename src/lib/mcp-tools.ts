@@ -1,3 +1,4 @@
+import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import type { ListingSpec } from "@/lib/listing-spec";
 import { priceTiersUsdc } from "@/lib/payments";
@@ -98,7 +99,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_human_task",
     title: "Human Labor",
     purpose:
-      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself: place a phone call, witness a thing, render a considered verdict, review an app, draw a portrait, collaborate, name you, or pick something from the drawer. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. Use when the task genuinely needs hands or judgment.",
+      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself: place a phone call, witness a thing, render a considered verdict, review an app, draw a portrait, collaborate, name you, or pick something from the drawer. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. Use when the task genuinely needs hands or judgment. Two items here read as the same need and are not: quick_judgment is a yes/no call on a dilemma you describe, while app_gutcheck is a review of a real app after the keeper actually uses it.",
     itemIds: [
       "phone_call",
       "human_witness",
@@ -444,6 +445,54 @@ function clusterCompletion(items: MenuItem[]): string {
   return `Pass item_id to choose. ${shapes.join("; ")}. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. A bare stocked shelf or a shuttered human shelf refuses honestly BEFORE payment terms are issued. ${RETRY_SAFETY_MCP_LINE}`;
 }
 
+/**
+ * PRICE AND REQUIRED FIELDS, UP FRONT IN THE DESCRIPTION — both from
+ * CV's cold-agent pass, 2026-08-02, walking in as a stranger.
+ *
+ * FINDING ONE: a cold agent deciding whether to spend budget had to
+ * trigger a 402 to learn what anything cost. The per-item lines below
+ * carry prices, but an agent budget-gating BEFORE it reads a list of
+ * eight items needs the range in the first sentence. Discovering price
+ * only by provoking a payment challenge is a round trip we imposed for
+ * no reason.
+ *
+ * FINDING TWO: the item_id enum said nothing about which items need an
+ * extra field. That lives in an allOf/if/then branch, and an agent
+ * that reads descriptions more reliably than it resolves JSON Schema
+ * conditionals learns the requirement by eating a 400. Some models are
+ * much better at prose than at schema branches; the requirement is
+ * cheap to say twice and expensive to discover by failing.
+ *
+ * DERIVED, both of them (rule 1). A hand-typed range goes stale the
+ * first time a price moves, and a hand-typed field list goes stale the
+ * first time a required input is added — which is exactly the defect
+ * that kept three items out of Bazaar this same afternoon.
+ */
+function clusterPriceRange(items: MenuItem[]): string {
+  const prices = items.map((item) => item.price_usdc).filter((p) => p > 0);
+  if (prices.length === 0) return "";
+  const low = Math.min(...prices);
+  const high = Math.max(...prices);
+  const money = (value: number): string =>
+    value < 1 ? `$${value}` : `$${value % 1 === 0 ? value : value.toFixed(2)}`;
+  return low === high
+    ? `Every item on this shelf is ${money(low)}.`
+    : `Prices run ${money(low)} to ${money(high)} depending on item_id.`;
+}
+
+function clusterRequiredFields(items: MenuItem[]): string {
+  const needy = items
+    .map((item) => ({ id: item.id, required: buyInputSchema(item).required ?? [] }))
+    .filter((entry) => entry.required.length > 0);
+  if (needy.length === 0) {
+    return "No item on this shelf needs anything beyond item_id.";
+  }
+  const listed = needy
+    .map((entry) => `${entry.id} needs ${entry.required.join(" and ")}`)
+    .join("; ");
+  return `Extra required fields, in plain language so you do not have to resolve the schema conditionals to find them: ${listed}. Every other item on this shelf takes item_id alone.`;
+}
+
 function clusterTool(cluster: ShelfCluster, base: string): McpTool {
   const items = cluster.itemIds
     .map((id) => MENU_ITEMS.find((item) => item.id === id))
@@ -465,7 +514,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
      * so the escape hatch travels beside the warning: the 402 hands
      * you a key, echoing it makes the retry free.
      */
-    description: `${cluster.purpose}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
+    description: `${cluster.purpose} ${clusterPriceRange(items)}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
     inputSchema: clusterInputSchema(items),
     outputSchema: clusterOutputSchema(items),
     annotations: {

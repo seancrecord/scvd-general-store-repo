@@ -52,6 +52,27 @@ import { isRecord, type HonoEnv, type MenuItem } from "@/types";
 const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26"];
 const DEFAULT_PROTOCOL = "2025-06-18";
 
+/**
+ * WHY FIVE GROUPED buy_* TOOLS RATHER THAN ONE PER ITEM — the answer
+ * is in src/lib/mcp-tools.ts, at SHELF_CLUSTERS, and this pointer
+ * exists because somebody went looking for it HERE and did not find
+ * it.
+ *
+ * The short version: this catalog used to emit 27 tools, Glama's
+ * published rubric puts 25+ in its lowest band for tool-count
+ * appropriateness, and collapsing to a single buy_item would have
+ * traded that for a worse problem — 23 distinct descriptions are 23
+ * chances to semantically match an agent's request and one generic
+ * tool is one. So the split is by what an agent is trying to
+ * ACCOMPLISH. Per-item validation survives as an if/then branch per
+ * item that needs a field.
+ *
+ * Added 2026-08-02 after a cold-agent pass flagged the grouping as
+ * unexplained. It was explained, one file over — which is the same
+ * shape as the naming law enumerating only half its surfaces. A
+ * rationale nobody can find from the place they are standing is a
+ * rationale that gets rediscovered as a question.
+ */
 export const mcpRoutes = new Hono<HonoEnv>();
 
 interface JsonRpcRequest {

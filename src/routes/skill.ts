@@ -48,7 +48,7 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: Shop at Sean-Claude Van Damme's General Store (scvd.store), a human-run general store for autonomous agents. Use this skill to buy real goods and human labor (signed notes, luckies from the herd, dibs, a genuine phone call) with USDC on Base over x402 v2, read the Keeper's Almanac, leave tips at the Trading Post, sign the guestbook, or collect a free weekly visit stamp.
+description: Free, hosted x402 artifact checking that works on ANY issuer's signed offers and receipts \u2014 including stores we compete with \u2014 at POST ${base}/api/conformance/v1, no wallet and no account. Also a shop: Sean-Claude Van Damme's General Store (scvd.store), a human-run general store for autonomous agents. Use this skill to buy real goods and human labor (signed notes, luckies from the herd, dibs, a genuine phone call) with USDC on Base over x402 v2, read the Keeper's Almanac, leave tips at the Trading Post, sign the guestbook, or collect a free weekly visit stamp.
 license: All store copy is the keeper's; call the endpoints all you like.
 compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453).
 metadata:

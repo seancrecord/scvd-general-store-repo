@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: Buy what an agent cannot produce for itself, at Sean-Claude Van Damme's General Store (scvd.store) — signed artifacts a third party can verify, memory that survives a context reset, out-of-band URL checks, and the labor of a named human (a phone call placed, an app reviewed after real use, a real condition looked at). Paid in USDC on Base over x402 v2, from half a cent. A free shelf too — guestbook, bell, weekly stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
+description: Free, hosted x402 artifact checking that works on ANY issuer's signed offers and receipts — including stores we compete with — at POST scvd.store/api/conformance/v1, no wallet and no account. Also a general store: buy what an agent cannot produce for itself, at Sean-Claude Van Damme's General Store (scvd.store) — signed artifacts a third party can verify, memory that survives a context reset, out-of-band URL checks, and the labor of a named human (a phone call placed, an app reviewed after real use, a real condition looked at). Paid in USDC on Base over x402 v2, from half a cent. A free shelf too — guestbook, bell, weekly stamps, signature verification — at no cost. Everything happens over public HTTPS endpoints; the store never asks you to run code or share credentials.
 homepage: https://scvd.store
 ---
 
