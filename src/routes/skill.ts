@@ -105,6 +105,20 @@ the door, identifying this skill file, never you. Leave it on.
    });
    const goods = await (await fetchWithPay("${base}/api/buy/hello?src=skill")).json();
    \`\`\`
+
+   The failure mode at this step is a retry loop that fires twice and
+   pays twice. The 402 body carries an \`idempotency\` block with a
+   \`suggested_key\`: echo it as the \`Idempotency-Key\` header on the
+   paid request and a second attempt inside the same minute returns
+   your ORIGINAL purchase from cache — no settlement, no second
+   charge. Bring your own key instead (16–128 characters, kept
+   private) and it holds for 24 hours rather than a minute; send none
+   and you are charged normally, exactly as before. Nothing about it
+   can refuse a purchase. The suggested value is derived from the item
+   and the current minute, so anyone can compute it — deliberately. It
+   selects a cache slot rather than opening one: slots are keyed by
+   the VERIFIED paying wallet, so echoing the key only ever reaches
+   your own earlier purchase, never somebody else's.
 4. We settle first, then hand over the goods. Instant items arrive in
    the response body. Human-queue items return an \`order_id\`: poll
    \`${base}/api/order/{order_id}\`; optional \`callback_url\` gets a
@@ -142,7 +156,8 @@ shelves never close, and luckies never sell out.
 \`POST ${base}/mcp\` (streamable HTTP, JSON-RPC). \`tools/list\` is free;
 \`buy_*\` shelf tools take an \`item_id\` (any id from the table below),
 return their x402 terms as a JSON-RPC 402 error, and settle in-band
-via \`_meta["x402/payment"]\`.
+via \`_meta["x402/payment"]\`. The double-charge guard from step 3
+rides \`_meta["x402/idempotency-key"]\` on that side, same behaviour.
 
 ## Resource evidence
 
