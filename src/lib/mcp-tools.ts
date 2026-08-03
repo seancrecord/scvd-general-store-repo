@@ -1,4 +1,8 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import {
+  frontCounterItems,
+  FRONT_COUNTER_PROMISE,
+} from "@/lib/front-counter";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import type { ListingSpec } from "@/lib/listing-spec";
 import { priceTiersUsdc } from "@/lib/payments";
@@ -41,6 +45,12 @@ export interface McpTool {
   itemId?: string;
   /** The items a cluster tool can sell, selected by the item_id input. */
   itemIds?: readonly string[];
+  /**
+   * True for a tool that RE-offers items already sold by a cluster.
+   * The clusters partition the menu; an overlay is a second view onto
+   * part of it and must be excluded from partition checks.
+   */
+  overlay?: boolean;
 }
 
 /**
@@ -656,9 +666,93 @@ const FREE_TOOLS: McpTool[] = [
  * is the same defect class as a capped scan that reads as complete.
  * unshelvedItemIds() names them and a test fails the build.
  */
+/**
+ * THE SIXTH TOOL, AND WHY IT IS NOT A REGRESSION ON THE 27-TO-5 CALL.
+ *
+ * That consolidation was driven by Glama's rubric putting 25+ tools in
+ * its lowest band, and the reasoning behind it was that 23 thin
+ * descriptions are 23 WEAK semantic matches. Six is nowhere near the
+ * band, but the count was never the real argument — the argument was
+ * that a tool has to be a different JOB, not a subset of another
+ * shelf's items.
+ *
+ * This one is a different job. The shelves above are organised by what
+ * an agent is trying to accomplish, and every one of them asks the
+ * caller to pick an item_id from an enum and then resolve an
+ * if/then branch to learn whether that choice needs a field. This tool
+ * asks for nothing at all. It is for the caller whose job is "buy the
+ * cheap thing and move on" — a job the other five cannot express,
+ * because expressing it means NOT having to read them.
+ *
+ * The eligible set is derived (see front-counter.ts), so this tool's
+ * enum cannot drift from the rules that justify it: reprice an item or
+ * give it an input and it leaves this shelf on the next deploy without
+ * anybody editing a list.
+ */
+function frontCounterTool(base: string): McpTool {
+  const items = frontCounterItems();
+  const lines = items
+    .map((item) => `- ${item.id}: ${item.name}, $${item.price_usdc}`)
+    .join("\n");
+  const specs: Record<string, ListingSpec> = {};
+  for (const item of items) {
+    specs[item.id] = listingSpec(item, base);
+  }
+  return {
+    name: "buy_simple",
+    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE}\n\nPass one of these as item_id — nothing else is needed, and none of them take any other field:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. ${RETRY_SAFETY_MCP_LINE}`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        item_id: {
+          type: "string",
+          enum: items.map((item) => item.id),
+          description:
+            "Which one to buy. That is the only decision here; none of these take any other input.",
+        },
+        agent_name: {
+          type: "string",
+          description:
+            "Optional name to put on the certificate and patron badge, up to 80 characters.",
+        },
+      },
+      required: ["item_id"],
+      additionalProperties: false,
+    },
+    /**
+     * AN OVERLAY, NOT A SHELF. The five clusters PARTITION the menu —
+     * every item on exactly one, enforced by unshelvedItemIds() and
+     * duplicatelyShelvedItemIds(). The front counter deliberately
+     * re-offers items that already live on a cluster, because a capable
+     * agent should still find small_blessing by semantic match on
+     * "small pleasure" while a weak one finds it here without reading.
+     *
+     * So it is flagged rather than exempted by name: a partition test
+     * that filtered on a string would go quietly wrong the day a second
+     * overlay appears.
+     */
+    overlay: true,
+    annotations: {
+      title: "The Front Counter",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    specs,
+    itemIds: items.map((item) => item.id),
+  };
+}
+
 export function mcpToolCatalog(base: string): McpTool[] {
   return [
     ...FREE_TOOLS,
+    /**
+     * FIRST among the paid tools on purpose. A weak model scanning
+     * tools/list reaches for something early and plausible; the one it
+     * should reach for is the one that cannot go wrong.
+     */
+    frontCounterTool(base),
     ...SHELF_CLUSTERS.map((cluster) => clusterTool(cluster, base)),
   ];
 }

@@ -94,6 +94,12 @@ export const VENUES: readonly Venue[] = [
     note: "MCP arrivals are already tagged `mcp` by channel; this separates WHICH directory sent them.",
   },
   {
+    marker: "front-counter",
+    where: "The Front Counter door, wherever it is linked",
+    url: `${BASE}/api/buy/small_blessing?src=front-counter`,
+    note: "The measurement half of the simple tier. ?src= needs no referrer and works on a bare machine client, so this is the one instrument that can answer whether a dedicated no-reading-required door converts better than the general catalogue — a real question instead of a theory. Inert until a document carries it.",
+  },
+  {
     marker: "x402-slack",
     where: "slack.x402.org",
     url: `${BASE}/try?src=x402-slack`,

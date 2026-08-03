@@ -1,7 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
-import { mcpToolCatalog } from "@/lib/mcp-tools";
+import { SHELF_CLUSTERS, mcpToolCatalog } from "@/lib/mcp-tools";
 import { TAG_CAP } from "@/services/train";
 import { isRecord } from "@/types";
 
@@ -178,7 +178,10 @@ describe("boundary language (the DR3 retrieval lever)", () => {
 describe("purpose lines", () => {
   it("every shelf opens by answering what calling it accomplishes", () => {
     const shelves = mcpToolCatalog(BASE).filter((t) => t.itemIds);
-    expect(shelves.length).toBe(5);
+    // Derived rather than pinned to a number: SHELF_CLUSTERS plus the
+    // front counter, which is a shelf too. A hard-coded 5 turned every
+    // new door into a test edit and taught nothing when it failed.
+    expect(shelves.length).toBe(SHELF_CLUSTERS.length + 1);
     for (const shelf of shelves) {
       expect(shelf.description.startsWith("Purpose:"), shelf.name).toBe(true);
       // And still names each item it sells, with price — the semantic

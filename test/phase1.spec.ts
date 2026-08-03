@@ -74,11 +74,17 @@ describe("the MCP door", () => {
     expect(names).toContain("buy_signed_record");
     expect(names).toContain("buy_memory_anchor");
     expect(names).toContain("buy_observation");
-    // 4 free + 5 shelves. The buy tools were grouped by what an agent
-    // is trying to accomplish on 2026-08-02 (23 per-item tools -> 5
-    // shelves); see SHELF_CLUSTERS for why one generic buy_item was
-    // the wrong fix.
-    expect(tools.length).toBe(9);
+    // The buy tools were grouped by what an agent is trying to
+    // accomplish on 2026-08-02 (23 per-item tools -> 5 shelves); see
+    // SHELF_CLUSTERS for why one generic buy_item was the wrong fix.
+    // A sixth was added 2026-08-03 — the front counter, for a caller
+    // that should not have to read the other five.
+    //
+    // Counted rather than pinned. The number is not the property worth
+    // guarding; what matters is that every shelf reaches the door, and
+    // a literal here made the sixth tool look like a regression.
+    expect(tools.length).toBe(new Set(names).size);
+    expect(names).toContain("buy_simple");
     /**
      * Single source of truth, reconciled both directions: every menu
      * item is sold by exactly one shelf, and no shelf sells an item
@@ -90,11 +96,31 @@ describe("the MCP door", () => {
     const menuIds = (menu["items"] as Array<{ id: string }>)
       .map((item) => item.id)
       .sort();
+    /**
+     * PARTITION TESTS EXCLUDE OVERLAYS. The five clusters partition the
+     * menu — every item on exactly one. The front counter added
+     * 2026-08-03 deliberately RE-offers items that already live on a
+     * cluster, so a capable agent still finds small_blessing by
+     * semantic match while a weak one finds it without reading.
+     * Including it here would report the duplication as a defect.
+     */
     const shelvedIds = tools
-      .filter((tool) => Array.isArray(tool["itemIds"]))
+      .filter((tool) => Array.isArray(tool["itemIds"]) && !tool["overlay"])
       .flatMap((tool) => tool["itemIds"] as string[])
       .sort();
     expect(shelvedIds).toEqual(menuIds);
+
+    // And the overlay may only ever re-offer items the shelves already
+    // sell. A door offering something the partition does not carry
+    // would be a second catalogue, which is the thing this design
+    // exists to avoid.
+    const overlayIds = tools
+      .filter((tool) => tool["overlay"])
+      .flatMap((tool) => tool["itemIds"] as string[]);
+    expect(overlayIds.length).toBeGreaterThan(0);
+    for (const id of overlayIds) {
+      expect(menuIds, `the front counter offers ${id}, which is not on the menu`).toContain(id);
+    }
     expect(unshelvedItemIds()).toEqual([]);
     expect(duplicatelyShelvedItemIds()).toEqual([]);
     const records = tools.find(
