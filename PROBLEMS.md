@@ -2242,3 +2242,43 @@ the strategic picture:
 The build queue is final. Nothing builds until the keeper's go;
 the research's job — knowing exactly what we'd be building and why,
 and what would kill it — is done.
+
+---
+
+## Recognition research, vetted 2026-08-03 — RULED, closes the "how do models come to know us" question until a training cycle turns
+
+The report (parametric memory vs live retrieval, sources scored on
+latency/half-life/observability) mostly confirmed standing
+architecture, and the confirmations are worth one line each so nobody
+re-derives them: the compounding-channel ranking maps 1:1 onto
+AGENT_UX's four propagation mechanisms; "citation is earned, not
+authored" is rule 30 restated; the two fast channels (registries,
+Moltbook) are ones we already work, correctly sized as instruments
+that answer live queries rather than assets that produce recognition.
+
+THE FALSIFIER IS ACCEPTED AS THE RULING: no available source produces
+parametric recognition inside a year with verifiable confidence, the
+training clock (est. 6-18 months) is unobservable and unaccelerable
+from outside, and any "% chance of entering the next training run"
+number anywhere should be treated as fabricated. Therefore: NO effort
+reallocates toward chasing parametric recognition. Operating well and
+being cited stays the whole strategy, and the 60-day line in TASKS is
+clarified to judge the market rather than the fossil record.
+
+DECLINED WITH A REASON: the Moltbook 4-6h heartbeat presence. Ongoing
+hands-cost to stay visible in a feed the report itself scores as
+decaying in hours with no demonstrated parametric path. Event-driven
+substantive presence (the causeclaw thread) is the earned kind, and
+the report's own logic prefers earned to frequent.
+
+THE ONE NEW LEVER, TAKEN: the GitHub-import channel — "code that
+imports the service," ranked the most agent-native compounding
+artifact on the list. verifier/ is now a publishable npm package
+(x402-verify, name confirmed free, zero deps, five files, manifest
+pinned by test/verifier-package.spec.ts). It stays inside the
+"this stays a shop" ruling because it is distribution of an existing
+MIT artifact that runs entirely offline — a published thing, not a
+dependency anyone takes on our uptime. Publish is keeper hands per
+rule 30; checklist at verifier/PUBLISH.md; the observable number is
+npm weekly downloads, trend-real and absolute-soft, into the monthly
+ledger review.

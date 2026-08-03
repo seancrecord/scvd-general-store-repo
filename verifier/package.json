@@ -1,0 +1,48 @@
+{
+  "name": "x402-verify",
+  "version": "1.0.0",
+  "description": "Zero-dependency verifier for x402 Signed Offers & Receipts: JWS (EdDSA/Ed25519), did:web resolution, schema conformance, and externally anchored key history. Works on any issuer's artifacts.",
+  "type": "module",
+  "main": "./x402-verify.js",
+  "types": "./x402-verify.d.ts",
+  "exports": {
+    ".": {
+      "types": "./x402-verify.d.ts",
+      "default": "./x402-verify.js"
+    }
+  },
+  "files": [
+    "x402-verify.js",
+    "x402-verify.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "keywords": [
+    "x402",
+    "payments",
+    "receipts",
+    "offers",
+    "verification",
+    "ed25519",
+    "eddsa",
+    "jws",
+    "did-web",
+    "usdc",
+    "agent-payments",
+    "opentimestamps"
+  ],
+  "license": "MIT",
+  "author": "scvd.store",
+  "homepage": "https://scvd.store/api/conformance/v1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "directory": "verifier"
+  },
+  "bugs": {
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/issues"
+  }
+}

@@ -4,7 +4,16 @@ A zero-dependency verifier for **x402 Signed Offers & Receipts**,
 `did:web` identity, and key history. Works on any store's artifacts,
 including ours, with nothing privileged about ours.
 
-MIT. Copy the file, vendor it, fork it — that is what it is for.
+MIT. Install it, copy the file, vendor it, fork it — that is what it
+is for.
+
+```
+npm install x402-verify
+```
+
+It is one file with no dependencies, so vendoring the file is exactly
+as legitimate as installing the package; the package exists so your
+`package.json` can say what your code relies on.
 
 ## Why it exists
 
@@ -27,7 +36,7 @@ against those vectors and asserts it fails for the right reason.
 ## Use
 
 ```js
-import { verifyArtifact, formatResult } from "./x402-verify.js";
+import { verifyArtifact, formatResult } from "x402-verify";
 
 // Resolve the key from the artifact's did:web kid over the network:
 const result = await verifyArtifact(jwsFromThePaymentHeader);
@@ -140,8 +149,28 @@ to go and look is a different kind of thing entirely.
 
 ## Tested against
 
-`../conformance/offer-receipt-vectors.json` — 2 valid and 3 invalid
-artifacts, deterministic, regenerable byte-for-byte, signed with a
-published test key that has never signed anything real. If this library
-and those vectors ever disagree, one of them is wrong and the suite
-fails before a stranger has to find out.
+The published conformance vectors at
+<https://scvd.store/.well-known/conformance/offer-receipt-vectors.json>
+— deterministic, regenerable byte-for-byte, signed with a published
+test key that has never signed anything real, and including the
+teaching cases (a valid signature over an invalid schema; a genuine
+HS256 MAC forged with the public key) that real implementations get
+wrong. The set carries its own counts and expectations, so this
+README does not repeat a number that would rot. If this library and
+those vectors ever disagree, one of them is wrong and the suite fails
+before a stranger has to find out.
+
+## Reference deployment
+
+This library is developed and battle-tested at
+[scvd.store](https://scvd.store), a live x402 store that signs every
+artifact it sells and runs this same code behind its free conformance
+desk — `POST https://scvd.store/api/conformance/v1` accepts any
+issuer's signed offer or receipt (including its competitors') and
+returns the same structured verdict this library produces, with the
+store's conflict of interest declared in the response. Useful as a
+second opinion on your implementation, or as a live counterpart whose
+402 responses carry real signed offers to test against
+(`GET https://scvd.store/api/buy/hello`). No account, no wallet, no
+call home in this file — the store is a deployment of this library,
+not a dependency of it.
