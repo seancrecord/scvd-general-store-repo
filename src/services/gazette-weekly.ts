@@ -1,4 +1,5 @@
 import { listKeys } from "@/lib/kv-list";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { isHouseWallet } from "@/lib/channel";
 import { currentWeekKey, KV_KEYS } from "@/lib/kv-keys";
 import { signMessage } from "@/lib/signing";
@@ -15,7 +16,13 @@ import { listFailedItems } from "@/services/requests";
 import { listTips } from "@/services/tips";
 import { seasonWeekFor } from "@/services/zodiac";
 import { MENU_ITEMS } from "@/store";
-import type { Env, GazetteDraft, GazetteState, TownEdition } from "@/types";
+import type {
+  Env,
+  GazetteDraft,
+  GazetteSnapshot,
+  GazetteState,
+  TownEdition,
+} from "@/types";
 
 /** Ceiling on a weekly event rows scan. An unnamed cap is a silent one. */
 const WEEKLY_SCAN_CAP = 1000;
@@ -80,6 +87,17 @@ interface EditionFacts {
   confessionLine?: string;
   confessionId?: string;
   organicEvents: number;
+  /**
+   * The event scan hit WEEKLY_SCAN_CAP and there were more rows behind
+   * it. Event keys sort newest-first, so a truncated scan sees the
+   * RECENT end of the period and misses the early end — which makes
+   * every count in this edition a floor rather than a total.
+   *
+   * kv-list.ts exists because "a silent limit reads as completeness."
+   * This call site named its cap and then dropped the flag on the
+   * floor, which is the same defect wearing the fix's clothes.
+   */
+  scanTruncated: boolean;
 }
 
 const PRINTABLE_ITEM = /^[a-z0-9_\-.]{1,40}$/;
@@ -125,9 +143,21 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
   const settledByItem: Record<string, number> = {};
   const dayTally: Record<string, number> = {};
   let porchCrossings = 0;
+  /**
+   * ONE SUBREQUEST PER HUNDRED ROWS, NOT ONE PER ROW.
+   *
+   * This was the last list-then-read-each in the store still calling
+   * `.get` in a loop — every other one went through kv-bulk when the
+   * admin page fell over on 2026-07-23. At the cap that is a thousand
+   * individual reads against a per-request subrequest ceiling of a
+   * thousand, so the weekly press was one busy period away from
+   * throwing on the way to the keeper's desk, and the failure would
+   * have arrived as "no draft" rather than as an error.
+   */
   const listed = await listKeys(env.COUNTERS, { prefix: "evt:", cap: WEEKLY_SCAN_CAP });
+  const rows = await bulkGetJson<MetricEvent>(env.COUNTERS, listed.names);
   for (const name of listed.names) {
-    const event = await env.COUNTERS.get<MetricEvent>(name, "json");
+    const event = rows.get(name) ?? null;
     if (!event || event.house || event.at < since) {
       continue;
     }
@@ -200,6 +230,7 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
     treatsLeft: await treatsThisWeek(env),
     organicEvents:
       settleCount + signatures.length + lettersReceived + tipsReceived,
+    scanTruncated: listed.truncated,
   };
   if (busiestDay) {
     facts.busiestDay = busiestDay;
@@ -243,7 +274,7 @@ export function renderEdition(facts: EditionFacts, editionNumber: number): strin
       ([item, count]) =>
         `"${item}" was asked for ${count === 1 ? "once" : `${count} times`}. Store had none.`,
     );
-  return `# The Gazette � Edition No. ${editionNumber}
+  return `# The Gazette · Edition No. ${editionNumber}
 
 *The shop's paper of record, covering the period since ${facts.periodStart.slice(0, 10)}. Set from the store's own books.*
 
@@ -258,7 +289,11 @@ ${facts.rogerLine ?? ""}
 
 ## THIS WEEK'S LEDGER
 
-${settles === 0 ? "No purchases settled. Shelves kept their arrangement." : `${settles} purchase${settles === 1 ? "" : "s"} settled: ${list(facts.settledByItem)}.`}
+${settles === 0 ? "No purchases settled. Shelves kept their arrangement." : `${settles} purchase${settles === 1 ? "" : "s"} settled: ${list(facts.settledByItem)}.`}${
+  facts.scanTruncated
+    ? `\nThe books ran longer than one reading. These counts are floors: the period's early end went unread.`
+    : ""
+}
 
 ## NEW FACES
 
@@ -308,6 +343,127 @@ ${lookingAhead().join("\n")}
 `;
 }
 
+function snapshotOf(facts: EditionFacts): GazetteSnapshot {
+  return {
+    settles: Object.values(facts.settledByItem).reduce((a, b) => a + b, 0),
+    porchCrossings: facts.porchCrossings,
+    bellRings: facts.bellRings,
+    newFaces: facts.newFaces,
+    signatures: facts.signatures.length,
+    lettersReceived: facts.lettersReceived,
+    triedTheDoor: Object.values(facts.triedTheDoor).reduce((a, b) => a + b, 0),
+    corrections: facts.corrections.length,
+    shelfChanges: facts.shelvesAdded.length + facts.shelvesRetired.length,
+    scanTruncated: facts.scanTruncated,
+  };
+}
+
+/**
+ * WHAT MOVED, IN THE KEEPER'S WORDS RATHER THAN AS A DIFF.
+ *
+ * "stale: true" tells him to re-assemble and nothing else. He needs to
+ * know WHETHER IT MATTERS — a settlement that would change the ledger
+ * line is not the same event as one more porch crossing — so every
+ * drift reads as a sentence naming the thing and the count.
+ *
+ * Only INCREASES are reported for the tallies that only ever climb.
+ * Counters in this store are read-modify-write against KV and lose
+ * increments under contention, and KV is eventually consistent, so a
+ * re-count that comes back LOWER is an artifact of the instrument
+ * rather than a fact about the week (LEDGER_READINGS, 2026-07-26). A
+ * gate that fired on those would cry wolf until nobody read it.
+ */
+const DRIFT_LINES: ReadonlyArray<{
+  key: keyof GazetteSnapshot;
+  one: string;
+  many: string;
+}> = [
+  { key: "settles", one: "purchase has settled", many: "purchases have settled" },
+  { key: "newFaces", one: "new patron wallet has arrived", many: "new patron wallets have arrived" },
+  { key: "signatures", one: "guestbook signature landed", many: "guestbook signatures landed" },
+  { key: "lettersReceived", one: "letter arrived", many: "letters arrived" },
+  { key: "corrections", one: "correction was filed", many: "corrections were filed" },
+  { key: "shelfChanges", one: "shelf change happened", many: "shelf changes happened" },
+  { key: "triedTheDoor", one: "request for something we don't stock came in", many: "requests for things we don't stock came in" },
+  { key: "porchCrossings", one: "front-step crossing", many: "front-step crossings" },
+  { key: "bellRings", one: "bell ring", many: "bell rings" },
+];
+
+export function describeDrift(
+  before: GazetteSnapshot,
+  after: GazetteSnapshot,
+): string[] {
+  const changes: string[] = [];
+  for (const { key, one, many } of DRIFT_LINES) {
+    const delta = Number(after[key]) - Number(before[key]);
+    if (delta > 0) {
+      changes.push(`${delta} ${delta === 1 ? one : many} since this draft was assembled.`);
+    }
+  }
+  if (after.scanTruncated && !before.scanTruncated) {
+    changes.push(
+      "The event scan now runs past its cap, so a fresh draft would read the period differently.",
+    );
+  }
+  return changes;
+}
+
+export interface DraftFreshness {
+  /** True when this draft must not be published as it stands. */
+  stale: boolean;
+  /** Named, countable movements. Empty when nothing material moved. */
+  changes: string[];
+  /** Set when the draft predates snapshotting and cannot be checked. */
+  unverifiable: boolean;
+}
+
+export const FRESH: DraftFreshness = {
+  stale: false,
+  changes: [],
+  unverifiable: false,
+};
+
+/**
+ * RE-COUNT THE BOOKS AND COMPARE THEM TO WHAT THE DRAFT COUNTED.
+ *
+ * Deliberately re-collects rather than trusting anything cached: the
+ * whole failure being closed is a number that was true when it was
+ * written down, so a cached comparison would reproduce the bug inside
+ * the check for it.
+ */
+export async function draftFreshness(
+  env: Env,
+  draft: GazetteDraft | null,
+): Promise<DraftFreshness> {
+  if (!draft) {
+    return FRESH;
+  }
+  if (!draft.snapshot) {
+    return {
+      stale: true,
+      changes: [
+        "This draft was assembled before the press recorded what it counted, so nothing can confirm it still matches the books.",
+      ],
+      unverifiable: true,
+    };
+  }
+  const changes = describeDrift(draft.snapshot, snapshotOf(await collectFacts(env)));
+  return { stale: changes.length > 0, changes, unverifiable: false };
+}
+
+/**
+ * Thrown rather than returned, because the caller that matters is a
+ * form POST and a silent no-op there looks exactly like a success.
+ */
+export class StaleDraftError extends Error {
+  readonly changes: string[];
+  constructor(changes: string[]) {
+    super("The books moved since this draft was set.");
+    this.name = "StaleDraftError";
+    this.changes = changes;
+  }
+}
+
 /**
  * Assemble a draft into the keeper queue. Auto-assembly (the cron)
  * honors THE_NINETY gate; the keeper's hand-set lever does not.
@@ -328,6 +484,7 @@ export async function assembleDraft(
     created_at: new Date().toISOString(),
     markdown: renderEdition(facts, nextEdition),
     organic_events: facts.organicEvents,
+    snapshot: snapshotOf(facts),
   };
   if (facts.confessionId) {
     draft.confession_id = facts.confessionId;
@@ -357,6 +514,28 @@ export async function publishEdition(
   markdown: string,
 ): Promise<TownEdition> {
   const draft = await getDraft(env);
+
+  /**
+   * REFUSE, NEVER SILENTLY REFRESH — and the reason is stronger than
+   * house style.
+   *
+   * This function does not publish the draft. It publishes the
+   * MARKDOWN IT WAS HANDED, which is the keeper's edited text out of
+   * the admin form; the draft is read only for its period and its
+   * confession. So "just re-run assembleDraft before publishing" would
+   * throw away his edits and print the machine's prose under his pen —
+   * the one thing rule 7 exists to prevent. Refusing is not the tidier
+   * option here, it is the only correct one.
+   *
+   * A missing draft is NOT a refusal. Hand-setting an edition with no
+   * draft on the desk is a documented keeper capability under
+   * THE_NINETY, and a snapshot nobody took cannot be contradicted.
+   */
+  const freshness = await draftFreshness(env, draft);
+  if (freshness.stale) {
+    throw new StaleDraftError(freshness.changes);
+  }
+
   const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
   const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const printed = stripKeeperSlots(markdown);
@@ -366,7 +545,7 @@ export async function publishEdition(
     issue_number: issueNumber,
     signature,
     public_key: publicKey,
-    title: `The Gazette � Edition No. ${issueNumber}`,
+    title: `The Gazette · Edition No. ${issueNumber}`,
     date: new Date().toISOString(),
     week: currentWeekKey(),
     period_start: draft?.period_start ?? PAPER_FOUNDED,

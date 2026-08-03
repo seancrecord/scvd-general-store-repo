@@ -80,8 +80,11 @@ import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
 import {
   addCorrection,
   assembleDraft,
+  draftFreshness,
+  FRESH,
   getDraft,
   publishEdition,
+  StaleDraftError,
 } from "@/services/gazette-weekly";
 import {
   listCommissions,
@@ -200,6 +203,21 @@ adminRoutes.get("/admin/counter", async (c) => {
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
   }
+  /**
+   * THE FRESHNESS CHECK RUNS WHERE THE KEEPER'S EYES ARE. Publish
+   * refuses a stale draft on its own, but a refusal he first learns
+   * about after editing twenty minutes of copy is a refusal that
+   * arrived late — the drift belongs on the desk, beside the draft,
+   * before the pen comes out. A failed check degrades to "fresh"
+   * with a load note, same as every other shelf on this page.
+   */
+  const draftOnDesk = shelf(gazetteDraft, null, "gazette draft", notes);
+  const gazetteFreshness = await draftFreshness(c.env, draftOnDesk).catch(
+    () => {
+      notes.push("gazette freshness check failed to load");
+      return FRESH;
+    },
+  );
   return c.html(
     renderCounterPage({
       notice: stockNotice(c.req.query("stocked"), c.req.query("shelf")),
@@ -220,7 +238,8 @@ adminRoutes.get("/admin/counter", async (c) => {
         (entry) => entry.record,
       ),
       alerts: shelf(alerts, [], "alerts", notes),
-      gazetteDraft: shelf(gazetteDraft, null, "gazette draft", notes),
+      gazetteDraft: draftOnDesk,
+      gazetteFreshness,
       trainTags: shelf(trainTags, [], "the train", notes).map(
         (entry) => entry.record,
       ),
@@ -445,7 +464,28 @@ adminRoutes.post("/admin/gazette/edition/publish", async (c) => {
   if (!markdown) {
     return c.text("An edition needs its pages.", 400);
   }
-  await publishEdition(c.env, markdown);
+  try {
+    await publishEdition(c.env, markdown);
+  } catch (error) {
+    /**
+     * The press refused a stale draft. Named movements, then the way
+     * out — re-assemble — spelled beside the refusal, because a
+     * refusal without the next step is a wall rather than a gate.
+     * 409: the draft conflicts with the current state of the books.
+     */
+    if (error instanceof StaleDraftError) {
+      return c.text(
+        [
+          "Not printed. The books moved since this draft was set:",
+          ...error.changes.map((change) => `  - ${change}`),
+          "",
+          "Re-assemble the draft from the back shelf (or the desk's re-assemble button), re-apply any edits worth keeping, and publish that.",
+        ].join("\n"),
+        409,
+      );
+    }
+    throw error;
+  }
   return c.redirect("/admin");
 });
 

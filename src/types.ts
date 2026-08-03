@@ -651,6 +651,40 @@ export interface TownEdition extends GazetteIssue {
 }
 
 /** The assembled draft awaiting the keeper's pen. One at a time. */
+/**
+ * THE COUNTABLE STATE OF THE BOOKS AT THE MOMENT A DRAFT WAS SET.
+ *
+ * A draft is a SNAPSHOT, and the store had no way to tell whether the
+ * snapshot still resembled the thing it was a snapshot of. Found live
+ * 2026-08-03: a draft assembled 02:37 UTC said "No purchases settled"
+ * while a real organic settlement had landed at 02:39 — two minutes
+ * after the shutter clicked — and the draft sat on the desk for two
+ * days still saying it.
+ *
+ * The paper of record cannot print a number that was true once. So the
+ * assembly stores what it counted, and publish re-counts and compares.
+ * Every field here is a TOTAL rather than a list, because the question
+ * is only ever "has this moved", and a total answers it at a fraction
+ * of the size.
+ */
+export interface GazetteSnapshot {
+  settles: number;
+  porchCrossings: number;
+  bellRings: number;
+  newFaces: number;
+  signatures: number;
+  lettersReceived: number;
+  triedTheDoor: number;
+  corrections: number;
+  shelfChanges: number;
+  /**
+   * Whether the event scan hit its cap. Carried so a draft assembled
+   * from a partial read is never compared as though it were a whole
+   * one — and so the edition can say so (rule 5b).
+   */
+  scanTruncated: boolean;
+}
+
 export interface GazetteDraft {
   week: string;
   period_start: string;
@@ -659,6 +693,13 @@ export interface GazetteDraft {
   organic_events: number;
   /** The approved confession slated for COUNTER NOTES; printed at publish. */
   confession_id?: string;
+  /**
+   * Optional because drafts written before 2026-08-03 have none. A
+   * draft with no snapshot cannot be proven fresh, and is therefore
+   * treated as stale rather than as clean — absence of evidence is not
+   * a passing grade on the one surface that publishes.
+   */
+  snapshot?: GazetteSnapshot;
 }
 
 /** Snapshot taken at each publish so the next edition reports deltas. */

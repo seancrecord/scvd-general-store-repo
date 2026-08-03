@@ -1,6 +1,7 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import type { CloserEntry } from "@/services/closers";
+import type { DraftFreshness } from "@/services/gazette-weekly";
 import type { GrudgeEntry } from "@/services/grudges";
 import type { ListedEntry } from "@/services/guestbook";
 import { STOCK_DEFINITIONS } from "@/services/stock";
@@ -43,6 +44,7 @@ export interface CounterPageData {
   failedItems: Record<string, number>;
   guestbook: ListedEntry[];
   gazetteDraft: GazetteDraft | null;
+  gazetteFreshness: DraftFreshness;
   loadNotes: string[];
 }
 
@@ -381,12 +383,33 @@ function guestbookHtml(entries: ListedEntry[]): string {
     .join("\n");
 }
 
-function pressHtml(draft: GazetteDraft | null): string {
+/**
+ * THE DRIFT NOTICE SITS ABOVE THE TEXTAREA, NOT AFTER THE SUBMIT.
+ * The press already refuses a stale draft at publish; this is the
+ * same fact delivered before the keeper spends twenty minutes editing
+ * copy the refusal will send him back through. Found live 2026-08-03:
+ * a draft said "No purchases settled" for two days while a settlement
+ * that landed two minutes after assembly sat in the books unmentioned.
+ */
+function freshnessHtml(freshness: DraftFreshness): string {
+  if (!freshness.stale) {
+    return "";
+  }
+  return `<p><strong>${freshness.unverifiable ? "This draft predates the freshness check and cannot be verified against the books." : "The books have moved since this draft was set:"}</strong></p>
+    <ul>${freshness.changes.map((change) => `<li>${escapeHtml(change)}</li>`).join("")}</ul>
+    <p>The press will refuse to print it. Re-assemble below, then re-apply any edits worth keeping.</p>`;
+}
+
+function pressHtml(draft: GazetteDraft | null, freshness: DraftFreshness): string {
   const draftHtml = draft
     ? `<p>Draft assembled ${escapeHtml(draft.created_at)}, ${draft.organic_events} organic event${draft.organic_events === 1 ? "" : "s"} in the period. Bracketed lines are resident/keeper slots; anything left in brackets is stripped at publish.</p>
+      ${freshnessHtml(freshness)}
       <form method="POST" action="/admin/gazette/edition/publish">
         <textarea name="markdown" rows="20" cols="80">${escapeHtml(draft.markdown)}</textarea>
         <br><button type="submit">Publish this edition (a penny a copy, on the rack)</button>
+      </form>
+      <form method="POST" action="/admin/gazette/edition/assemble">
+        <button type="submit">Re-assemble from the books as they stand (replaces this draft; unsent edits above are lost)</button>
       </form>`
     : `<p>No draft on the desk. The Sunday press drafts one when the week clears 3 organic events, or hand-set one from the back shelf.</p>`;
   return `${draftHtml}
@@ -560,7 +583,7 @@ export function renderCounterPage(data: CounterPageData): string {
 
   <section>
     <h2>The Gazette press</h2>
-    ${pressHtml(data.gazetteDraft)}
+    ${pressHtml(data.gazetteDraft, data.gazetteFreshness)}
   </section>
 
   <section>
