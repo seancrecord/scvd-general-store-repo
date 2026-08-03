@@ -339,10 +339,50 @@ export async function recordPorchVisit(
 }
 
 /** Somebody re-checked one of our signatures. Re-verification is demand. */
+/**
+ * HOW OLD THE ARTIFACT WAS WHEN SOMEBODY CHECKED IT, bucketed.
+ *
+ * THE QUESTION THIS ANSWERS, and it was called unanswerable earlier
+ * tonight. Three pathways could bring an agent here unprompted: it
+ * recognises a need and goes shopping (rare — needs an operator who
+ * granted both open search AND spending autonomy), it knows us from
+ * training data (closed; an unknown brand surfaces ~6% of the time
+ * against a recognised one), or an artifact of ours travels and a
+ * LATER agent acts on it. PROBLEMS.md #3 records the third as "no
+ * prior art found, positive or negative" — genuinely unmeasured.
+ *
+ * We cannot measure it directly. /api/verify is an unauthenticated
+ * GET, so we do not know who is asking and are not going to start
+ * asking: no IPs, no cookies, no wallet on a read. That constraint is
+ * not negotiable and it rules out attributing a caller.
+ *
+ * What we CAN see without identifying anybody is TIME. A certificate
+ * checked minutes after minting is almost certainly its buyer looking
+ * at what it just bought. A certificate checked three weeks later is
+ * being read by somebody whose session did not mint it — the buying
+ * context is long gone. That is artifact travel, observed without
+ * knowing a single thing about who travelled with it.
+ *
+ * FOUR BUCKETS, so the key space is bounded no matter the volume, and
+ * a proxy rather than a proof — stated as such wherever it is read.
+ */
+export function verifyAgeBucket(mintedIso: string, nowMs: number): string {
+  const minted = Date.parse(mintedIso);
+  if (!Number.isFinite(minted)) {
+    return "unknown_age";
+  }
+  const hours = (nowMs - minted) / 3_600_000;
+  if (hours < 1) return "under_1h";
+  if (hours < 24) return "under_1d";
+  if (hours < 24 * 7) return "under_1w";
+  return "over_1w";
+}
+
 export async function recordVerifyCall(
   env: Env,
   artifactItem: string,
   signals: EventSignals = {},
+  mintedIso?: string,
 ): Promise<void> {
   const event = buildEvent(env, "verify", artifactItem, signals);
   await bump(
@@ -353,6 +393,21 @@ export async function recordVerifyCall(
       event.item,
     ),
   );
+  /**
+   * Organic only, and never for house traffic: our own re-checks would
+   * be indistinguishable from a stranger's and would be the loudest
+   * voice in a signal this quiet.
+   */
+  if (mintedIso && !event.house) {
+    await bump(
+      env,
+      KV_KEYS.metric(
+        metricsMonth(),
+        "verifyage",
+        verifyAgeBucket(mintedIso, Date.now()),
+      ),
+    );
+  }
   await writeEvent(env, event);
 }
 

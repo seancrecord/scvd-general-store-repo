@@ -183,7 +183,18 @@ const HOW_TO_VERIFY =
   "signed_payload is the exact UTF-8 string this signature covers. What this store signs, who holds the key and whose word you are taking is declared per artifact class at /attestation, including where the trust model is the weakest available. Check it yourself: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Then compare the fields inside signed_payload against the artifact above — if a field is shown but absent from signed_payload, the signature does not cover it, and this response says so out loud rather than leaving you to discover it. The key is also at /.well-known/scvd-signing-key, so you never have to take ours from this response.";
 
 /** Re-verification is a demand signal; the ledger counts it per item. */
-async function noteVerify(c: Context<HonoEnv>, item: string): Promise<void> {
+async function noteVerify(
+  c: Context<HonoEnv>,
+  item: string,
+  /**
+   * When the artifact was minted, where the record carries it. Feeds
+   * the age bucket in metrics.ts — the one honest proxy available for
+   * whether an artifact TRAVELLED, given that /api/verify is an
+   * unauthenticated GET and we are not going to start identifying
+   * callers to find out.
+   */
+  mintedIso?: string,
+): Promise<void> {
   const signals: EventSignals = {};
   const userAgent = c.req.header("User-Agent");
   if (userAgent) {
@@ -200,7 +211,7 @@ async function noteVerify(c: Context<HonoEnv>, item: string): Promise<void> {
   if (c.req.header("X-SCVD-Channel") === "mcp") {
     signals.viaMcp = true;
   }
-  await recordVerifyCall(c.env, item, signals).catch(() => {
+  await recordVerifyCall(c.env, item, signals, mintedIso).catch(() => {
     // The count is a courtesy; verification itself never waits on it.
   });
 }
@@ -210,7 +221,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
 
   const record = await getCertificate(c.env, id);
   if (record) {
-    await noteVerify(c, record.certificate.item);
+    await noteVerify(c, record.certificate.item, record.certificate.date);
     const form = await certificateSignatureForm(
       record.certificate,
       record.signature,
