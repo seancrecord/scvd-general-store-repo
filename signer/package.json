@@ -1,0 +1,47 @@
+{
+  "name": "x402-sign",
+  "version": "1.0.0",
+  "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify.",
+  "type": "module",
+  "main": "./x402-sign.js",
+  "types": "./x402-sign.d.ts",
+  "exports": {
+    ".": {
+      "types": "./x402-sign.d.ts",
+      "default": "./x402-sign.js"
+    }
+  },
+  "files": [
+    "x402-sign.js",
+    "x402-sign.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "keywords": [
+    "x402",
+    "payments",
+    "signed-offers",
+    "receipts",
+    "signing",
+    "ed25519",
+    "eddsa",
+    "jws",
+    "did-web",
+    "usdc",
+    "agent-payments"
+  ],
+  "license": "MIT",
+  "author": "scvd.store",
+  "homepage": "https://scvd.store/api/conformance/v1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "directory": "signer"
+  },
+  "bugs": {
+    "url": "https://github.com/seancrecord/scvd-general-store-repo/issues"
+  }
+}
