@@ -462,3 +462,40 @@ sentence of ours the walker demonstrably misparsed, quoted verbatim,
 which is standard 9 converted from taste into evidence. Keep prompt
 and rubric identical across model tiers: the cross-brain comparison
 is itself a finding.
+
+### Roster and journeys for the cross-model passes (pinned 2026-08-04)
+
+MODELS, each a failure archetype, not a coverage list: Haiku-class
+(baseline; the cheap tier's high floor), GPT-mini class (largest
+non-Claude commercial agent population), Gemini-Flash class (the
+skim-reader; probes whether load-bearing sentences survive being
+paragraph four), Llama-8B class (the genuine floor; the honest test
+of the no-branch promise), Qwen-32B class (open-weight agent
+frameworks; also runs the non-English variant — the multilingual
+llms.txt investment has never been tested), DeepSeek-R1-style (the
+overthinker; probes time-to-price against reasoning budget), Kimi K2
+(IS the target population). Every model runs J1+J3; Haiku runs all;
+2-3 seeds per cell — variance is the constraint, not cost.
+
+JOURNEYS, goals never instructions: J1 cold arrival, bare URL, buy
+useful <$1. J2 directory-snippet arrival, same goal. J3 the
+conditional input — "get <url> watched for a week" forces
+standing_watch's required param, the schema-conditional killer; the
+load-bearing journey. J4 holding an artifact — "is this cert real,
+what is it worth" measures self-description and the residue target.
+J5 recovery — sold-out or wrong input; does the error body alone
+teach the fix. J6 MCP door. J7 doc-only (skill.md verbatim). J8 the
+successor — a new session verifies what a prior transcript bought;
+exit residue tested for real.
+
+LOGGING, harness-written, never walker-trusted: identity block (model
++ settings + journey + verbatim prompt + cost), the COMPLETE raw
+transcript (a cleaned transcript is a destroyed specimen), money
+block (balances, offered vs paid, tx hashes), and terminal state as
+TWO columns kept separate — what the model claims it accomplished
+verbatim vs what actually happened per /api/verify — because FALSE
+SUCCESS is its own finding class and a walker that believes it
+succeeded is worse than one that knows it failed. Graded columns by a
+capable reader only. Any coaching marks the run contaminated: logged,
+never graded. Raw transcripts stay in the private ledger (wallet
+addresses); graded findings land here.
