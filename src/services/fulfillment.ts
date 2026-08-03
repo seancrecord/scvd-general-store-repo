@@ -151,6 +151,26 @@ export async function fulfillPurchase(
     verify_url: minted.verifyUrl,
     verification:
       "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
+    /**
+     * WHICH CHECK IS WORTH DOING, added 2026-08-02 after a cold walk
+     * flagged post-purchase verification as the step agents skip.
+     *
+     * It was 90% closed already — signed_payload and signature_covers
+     * above give the exact bytes and the exact call, so a local check
+     * needs no request. What was missing is the part that decides
+     * whether to bother, and the honest version is not flattering to
+     * the round trip: verifying OUR certificate against OUR key that
+     * we handed you in THIS response proves the response was not
+     * mangled in transit. It cannot prove we were honest, because a
+     * liar signs its lie and confirms it twice.
+     *
+     * The durable value belongs to somebody else's check later, which
+     * is a property of the artifact rather than an action the buyer
+     * takes. Saying so is better than urging a ritual whose worth we
+     * would be overstating.
+     */
+    which_check_is_worth_doing:
+      "You can verify this locally RIGHT NOW with no network call — signed_payload and signature_covers above are everything the check needs. Worth doing: it catches a mangled or tampered response. Be clear on what it does NOT do: checking our signature against our key, both handed to you in this same response, cannot prove we were honest, because a dishonest issuer signs its lie and confirms it twice. The verify_url is not really for you — it is for whoever you show this to later, and THAT check is the one carrying the weight. Keep the artifact; the value is that a third party can check it without us.",
   };
 
   if (item.fulfillment === "instant") {

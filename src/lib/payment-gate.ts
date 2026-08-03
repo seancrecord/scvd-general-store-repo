@@ -33,7 +33,7 @@ import {
   storeIdempotent,
   usableIdempotencyKey,
 } from "@/lib/idempotency";
-import { WALLET_SAFETY } from "@/store/wallet-safety";
+import { HOUSE_RULE, WALLET_SAFETY } from "@/store/wallet-safety";
 import { BASE_NETWORK, DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import type {
@@ -231,7 +231,23 @@ async function enrich402Body(
           },
         }
       : {}),
+    /**
+     * THE HOUSE RULE, ON THE 402, FOR THE ARRIVALS THAT READ NOTHING
+     * ELSE. A stranger who got here from a Bazaar search or a bare URL
+     * has seen no prose of ours at all — this response is their first
+     * and possibly only document. The promise that preempts the most
+     * common scam shape belongs where they will actually meet it.
+     */
+    house_rule: HOUSE_RULE,
     verification: {
+      /**
+       * NAMED AS PRE-PAYMENT, because the cold walk found step 4 — the
+       * pause before spending — is where nothing forces anything and
+       * the money has not moved yet. Everything in this block is
+       * checkable RIGHT NOW, before you sign, and it said so nowhere.
+       */
+      check_these_before_you_pay:
+        "Every field in this block is checkable before you sign anything, from this response and public URLs, without asking us. The key fingerprint here should match the one served at signing_key_url; the sample artifact is a live one you can verify to see what you would be getting. Nothing here costs a request you are not already making.",
       verify_url: `${base}/api/verify/{id}`,
       key_fingerprint: await cachedPublicKeyHex(env.SIGNING_KEY),
       signing_key_url: `${base}/.well-known/scvd-signing-key`,
