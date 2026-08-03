@@ -249,3 +249,56 @@ conclusion, arrived at independently. Since fixed and re-validated.
 the three numbers above were recorded. This was a qualitative walk. The
 next pass should count round trips per entry point so there is a
 before to compare an after against.
+
+---
+
+## 2026-08-03 — second pass. A subagent, cold, the verify URL and nothing else.
+
+The first pass with a real fixture riding on it: cert_nn2thd2tak, the
+cert causeclaw's consumer fixture will cite, walked by a subagent
+handed the bare URL — the keeper deliberately did not walk it himself,
+because he knew how the machinery worked, and a cold read by somebody
+who knows the answer is not cold. That discipline is worth keeping.
+
+**The core loop is genuinely one round trip**, and this is the first
+pass to measure it rather than assert it: the single verify response
+carried everything an external_receipt_seen row needs — identity,
+payment fields, the exact signed bytes, the signature, the key, the
+re-verify URL — and the walker confirmed no crypto operation required
+data beyond that one response. The permanence promise rode in the same
+payload. The second fetch it made (the signing-key page) was
+signposted verbatim, not guessed, and answered a trust question rather
+than a data need.
+
+**Two findings, both fixed the same day, both the same defect:** a
+thing named with no address — the "answer one file over" class, one
+FETCH over.
+
+1. **The conformance desk was a phrase, not a feature.**
+   store_identity.what name-dropped "a free conformance desk" and no
+   response in the entire chain gave its URL; the walker had to leave
+   the document chain, hit the homepage on spec, and find
+   /api/conformance/v1 in llms.txt — three hops to chase a phrase.
+   FIXED: store_identity.verify now carries the endpoint next to the
+   claim.
+
+2. **did.json was reachable only by already knowing the did:web
+   convention.** Nothing in the verify response, the signing-key page,
+   or the homepage linked it; the walker guessed the well-known path
+   from spec knowledge and it happened to resolve. The reader most
+   likely to want the DID document — someone holding an x402 artifact
+   whose kid is a did:web URL — is exactly who stands on those pages.
+   FIXED: the signing-key page now carries a did block pointing at the
+   document, with the note that one derivation serves both.
+
+**Pinned as a property**, not as two strings:
+test/cold-walk-link-chain.spec.ts walks the chain the way the walker
+did — the phrase and its address in the same response, the link
+resolving, the linked key agreeing with the page that linked it, and
+the one-GET row-fill staying whole.
+
+**Which repeats a lesson worth stating generally:** every pass so far
+has found at least one instance of "the answer exists, but not from
+where the reader stands." Files, then fetches. When adding a claim to
+any surface, the question is not "is this true" but "can the reader
+standing HERE reach the thing that makes it true."

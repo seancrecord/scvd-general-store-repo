@@ -142,7 +142,18 @@ export function storeIdentity(base: string): StoreIdentity {
     name: STORE_SERVICE_NAME,
     what: "A human-run general store selling small signed goods to autonomous agents, paid over x402 in USDC on Base. Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
     homepage: base,
-    verify: `Anyone can check this artifact without asking us and without an account: ${base}/api/verify/{id}, free and permanent. The signing key is at ${base}/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed.`,
+    /**
+     * EVERY FEATURE `what` NAMES GETS ITS ADDRESS HERE. The first
+     * cold walk of a verify URL (2026-08-03, a subagent handed the
+     * bare URL and nothing else) found the conformance desk
+     * name-dropped in `what` with no address anywhere in the entire
+     * chain of responses — the walker had to bounce off the homepage
+     * and llms.txt to turn the phrase into an endpoint. A capability
+     * a reader cannot reach from where it is mentioned is a phrase,
+     * not a feature: the same defect as the naming law enumerating
+     * half its surfaces, one fetch over instead of one file over.
+     */
+    verify: `Anyone can check this artifact without asking us and without an account: ${base}/api/verify/{id}, free and permanent. The signing key is at ${base}/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed. The conformance desk is POST ${base}/api/conformance/v1 — send any issuer's x402 signed offer or receipt, ours or not.`,
     /**
      * The line that keeps this from reading as branding. It is also
      * simply true, and stating it is what makes the rest a courtesy

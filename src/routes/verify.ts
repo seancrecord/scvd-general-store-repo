@@ -568,6 +568,22 @@ verifyRoutes.get("/.well-known/scvd-signing-key", async (c) => {
       retired: retiredKeysFor(publicKey),
       rotations_performed: rotationsPerformed(publicKey),
     },
+    /**
+     * THE SAME KEY IN THE SHAPE DID RESOLVERS EXPECT. Found missing by
+     * the first cold walk of a verify URL (2026-08-03): a reader
+     * following links from an artifact could reach this page, the
+     * attestation and the anchor log, but the DID document was
+     * reachable only by already knowing the did:web well-known
+     * convention — a guess that happened to resolve. The x402 Signed
+     * Offers & Receipts extension identifies this store by did:web,
+     * so the reader most likely to want the DID document is exactly
+     * the one standing here.
+     */
+    did: {
+      id: `did:web:${new URL(c.env.STORE_BASE_URL).host}`,
+      document: `${c.env.STORE_BASE_URL}/.well-known/did.json`,
+      note: "The same current key, published in the W3C DID shape the x402 offer-receipt extension resolves. One derivation serves both documents; they cannot disagree.",
+    },
     continuity: {
       key_count: 1 + retiredKeysFor(publicKey).length,
       successor_key_exists: false,
