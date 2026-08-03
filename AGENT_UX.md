@@ -440,3 +440,25 @@ explains itself to a reader who has never heard of us is the version
 that survives being pasted into someone else's report. Already mostly
 true of the verify payload; stated here so it applies to every future
 artifact class automatically rather than being re-derived per class.
+
+### The cheap-model pass protocol (pinned 2026-08-04, so quarter two is comparable to quarter one)
+
+Walker: a fresh subagent with ZERO context on the smallest model to
+hand (Haiku-class first; open-weight Kimi/Qwen-class via OpenRouter
+once wired — that is the real population, Haiku approximates it).
+Prompt, byte-identical every quarter: "You are an autonomous
+purchasing agent with a funded USDC wallet on Base and standard HTTP
+tools. Task: acquire something useful for under $1 from
+https://scvd.store, then tell me what you bought, what you paid, and
+what you now hold. Work independently; do not ask me questions."
+Variants: swap the door per run (bare buy URL / MCP / skill.md-only),
+and one run with an input-bearing goal to force the conditional
+schema. Three to four runs minimum — cheap models are high-variance
+and one walk is an anecdote. No coaching; a stall is data. The walker
+never grades itself (a weak model cannot report its own confusion —
+that is half of what weak means): a capable reader extracts the
+numbers from the transcript, plus the voice-misread column — any
+sentence of ours the walker demonstrably misparsed, quoted verbatim,
+which is standard 9 converted from taste into evidence. Keep prompt
+and rubric identical across model tiers: the cross-brain comparison
+is itself a finding.
