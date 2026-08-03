@@ -293,6 +293,28 @@ for (const [index, entry] of candidates.entries()) {
 
 writeFileSync(RESULTS_FILE, JSON.stringify(results, null, 2));
 
+/**
+ * THE COVERAGE CHECK — the census's population diffed against hosts
+ * known from OTHER sources (scripts/census-seeds.json, each entry
+ * sourced and dated). Both directions are findings:
+ *   - a seed absent from the discovery list = real activity that
+ *     isn't bothering to list in the Bazaar;
+ *   - discovery rows absent from any volume index (once seeds carry
+ *     x402scan's top-by-settlements) = listings with no observed money.
+ */
+let seeds = [];
+try {
+  seeds = JSON.parse(
+    readFileSync(new URL("./census-seeds.json", import.meta.url), "utf8"),
+  ).seeds ?? [];
+} catch {
+  // A missing seeds file is reported below rather than silently skipped.
+}
+const listedHosts = new Set([...seen, ...nonGet.hosts]);
+const missingFromDiscovery = seeds.filter(
+  (seed) => !listedHosts.has(String(seed.host).toLowerCase()),
+);
+
 const tally = {};
 for (const row of results) {
   tally[row.verdict] = (tally[row.verdict] ?? 0) + 1;
@@ -324,6 +346,20 @@ for (const [name, count] of Object.entries(failures).sort((a, b) => b[1] - a[1])
 console.log("Advisories:");
 for (const [name, count] of Object.entries(advisoryTally).sort((a, b) => b[1] - a[1])) {
   console.log(`  ${name}: ${count}`);
+}
+console.log("\n──── METHODOLOGY (publish beside any number) ────");
+console.log(`Population: hosts declaring x402 resources on the CDP discovery list (${rows.length} rows fetched${complete ? ", pagination complete" : ", COVERAGE CAVEAT above"}), one row per host, ranked by the list's own lastCalledAt where present.`);
+console.log(`Stated exclusions: our own host (self-grading is not a census); ${nonGet.count} declared non-GET resources across ${nonGet.hosts.size} hosts (this probe only GETs); non-https rows.`);
+console.log(`Probe: one GET per host via the public POST ${STORE_URL}/api/preflight/v1 — reproducible by anyone against the same free endpoint.`);
+if (seeds.length === 0) {
+  console.log("Coverage check: EMPTY — scripts/census-seeds.json has no sourced seeds yet. Until it carries x402scan's top-by-settlements list, this census can only claim the Bazaar's population, not the ecosystem's.");
+} else if (missingFromDiscovery.length === 0) {
+  console.log(`Coverage check: all ${seeds.length} sourced seed hosts appear on the discovery list.`);
+} else {
+  console.log(`Coverage check: ${missingFromDiscovery.length} of ${seeds.length} sourced seed hosts are NOT on the discovery list — known activity that isn't listed in the Bazaar:`);
+  for (const seed of missingFromDiscovery) {
+    console.log(`  ${seed.host} (source: ${seed.source})`);
+  }
 }
 console.log(`
 Per-host rows: ${RESULTS_FILE} (gitignored — keeper's eyes; outreach

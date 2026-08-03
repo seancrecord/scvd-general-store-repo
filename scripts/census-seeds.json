@@ -1,0 +1,24 @@
+{
+  "what_this_is": "The census's coverage check: hosts known to matter from sources OTHER than the CDP discovery list. The census script diffs its probe list against these and reports who is missing in which direction — a high-volume seller absent from the Bazaar and a Bazaar listing absent from the volume index are both findings. Every entry must name its source and date; an entry nobody can source gets removed, not defended.",
+  "how_to_fill": "CV or the keeper, from a machine with network: x402scan's top hosts by settled transaction count (their leaderboard), last 30 days. One entry per host. Do not add hosts from memory or vibes — the whole point of this file is that inclusion is sourced.",
+  "seeds": [
+    {
+      "host": "api.exa.ai",
+      "source": "cdp-discovery 2026-08-03 (first census run); API-company scale",
+      "note": "Declared resources may be POST-method; excluded from GET probing, still counts for coverage."
+    },
+    {
+      "host": "x402.tavily.com",
+      "source": "cdp-discovery 2026-08-03 (first census run); API-company scale",
+      "note": "Same POST caveat as exa."
+    },
+    {
+      "host": "agi.apify.com",
+      "source": "cdp-discovery 2026-08-03 (first census run)"
+    },
+    {
+      "host": "api.bitrefill.com",
+      "source": "cdp-discovery 2026-08-03 (first census run); established commerce operator"
+    }
+  ]
+}
