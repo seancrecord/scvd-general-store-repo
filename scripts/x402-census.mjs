@@ -67,12 +67,58 @@ function loadDevVars() {
 }
 loadDevVars();
 
+/**
+ * CDP_KEY_FILE — read the portal's downloaded JSON whole, same as
+ * bazaar-check: the secret is shown once at key creation, and reading
+ * the file beats copying values through a shell (or, worse, a chat —
+ * a transcript is forever and cannot be rotated).
+ */
+function loadKeyFile() {
+  const path = process.env.CDP_KEY_FILE;
+  if (!path) return;
+  const resolved = path.replace(/^~/, process.env.HOME ?? "~");
+  let raw;
+  try {
+    raw = readFileSync(resolved, "utf8");
+  } catch {
+    console.error(`No readable file at ${resolved}. Find the real one:`);
+    console.error("  ls -t ~/Downloads | head -20");
+    console.error(
+      "  find ~ -maxdepth 4 \\( -iname '*cdp*' -o -iname '*api*key*.json' \\) 2>/dev/null",
+    );
+    process.exit(2);
+  }
+  if (raw.trimStart().startsWith("{")) {
+    const parsed = JSON.parse(raw);
+    const id = parsed.id ?? parsed.name ?? parsed.apiKeyId;
+    const secret = parsed.privateKey ?? parsed.privateKeySecret ?? parsed.secret;
+    if (id) process.env.CDP_API_KEY_ID ||= String(id);
+    if (secret) process.env.CDP_API_KEY_SECRET ||= String(secret);
+  }
+}
+loadKeyFile();
+
 const apiKeyId = process.env.CDP_API_KEY_ID;
-const apiKeySecret = process.env.CDP_API_KEY_SECRET;
+const rawSecret = process.env.CDP_API_KEY_SECRET;
+// A PEM copied out of JSON carries literal backslash-n; put the
+// newlines back before the SDK sees them (bazaar-check's lesson).
+const apiKeySecret = rawSecret?.includes("\\n")
+  ? rawSecret.replace(/\\n/g, "\n")
+  : rawSecret;
 if (!apiKeyId || !apiKeySecret) {
-  console.error(
-    "CDP_API_KEY_ID / CDP_API_KEY_SECRET required (env or .dev.vars) — same keys bazaar-check uses.",
-  );
+  console.error("CDP keys required, by file — never by chat. Three ways, pick one:");
+  console.error("");
+  console.error("  1. CDP_KEY_FILE=~/Downloads/cdp_api_key.json npm run census");
+  console.error("     (the JSON the CDP portal handed you when the key was made)");
+  console.error("  2. A .dev.vars file in the repo root (gitignored), two lines:");
+  console.error("     CDP_API_KEY_ID=...");
+  console.error("     CDP_API_KEY_SECRET=...");
+  console.error("  3. Env vars for one run, same names, inline before the command.");
+  console.error("");
+  console.error("No key file anywhere? The secret is shown once and never again —");
+  console.error("make a fresh key at portal.cdp.coinbase.com (API keys → Create →");
+  console.error("Secret API key → download JSON). Keys are additive; the Worker's");
+  console.error("own keys keep working untouched.");
   process.exit(2);
 }
 
