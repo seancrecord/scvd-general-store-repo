@@ -4,7 +4,6 @@ import readme from "../verifier/README.md";
 import license from "../verifier/LICENSE?raw";
 import verifierSource from "../verifier/x402-verify.js?raw";
 import typesSource from "../verifier/x402-verify.d.ts?raw";
-import publishDoc from "../verifier/PUBLISH.md";
 
 /**
  * THE PACKAGE MANIFEST IS A SET OF CLAIMS, AND CLAIMS GET TESTS.
@@ -80,9 +79,13 @@ describe("the npm package tells the truth about itself", () => {
     expect(readme.replace(/\s+/g, " ")).toContain("no call home");
   });
 
-  it("PUBLISH.md is keeper docs, not package contents", () => {
-    expect(publishDoc).toContain("keeper's hands only");
+  it("nothing ships beyond the four files — no process docs in the tarball", () => {
+    // PUBLISH.md lived here briefly and was deleted 2026-08-03 after
+    // the first publish (keeper's call): an internal process doc in a
+    // public repo describes key handling to strangers for no reader's
+    // benefit. The publish record and versioning policy live in
+    // TASKS.md; the files array staying exactly four is the guard.
     const files = manifest["files"] as string[];
-    expect(files).not.toContain("PUBLISH.md");
+    expect(files).toHaveLength(4);
   });
 });

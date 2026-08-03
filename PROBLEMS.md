@@ -2367,3 +2367,49 @@ first-party version of the quoted "57% dead listings" number, with
 our name and our reproduction path on it, plus a private list of
 exactly the operators who need the products. Publishing the aggregate
 writeup and any outreach: keeper hands, rule 30, always.
+
+---
+
+## L1-landscape research (Kite / Tempo / Skyfire), vetted 2026-08-03 — RULED
+
+The strongest-verified report of the three, and both load-bearing
+findings point at where we already stand: the only audited-quality
+number in the sector is the x402 Foundation's ~75M payments/~$24M in
+one month under the generic `exact` scheme, while Kite's headline
+metrics are testnet-era and Tempo's self-reported $3B run-rate sits
+beside independently measured ~2.5 TPS and a 77% new-wallet collapse.
+Our stack — x402 exact, USDC, Base, CDP Bazaar — is on the verified
+side of every ledger in the report. No repositioning.
+
+RULINGS:
+- Kite typeform (keeper's hand, submitted): correct and correctly
+  sized — free listing, zero code; their ksearch filters x402_http +
+  USDC, which we serve as-is. NO gokite-aa scheme support gets built:
+  proprietary identifier, no verified mainnet volume, no buyer has
+  asked. Reconsider only if their catalog sends a paying customer.
+- Stripe account: parked deliberately; a free option, not a plan.
+- MPP: DECISION DEFERRED with named triggers, not vibes — revisit
+  when CV's writeup lands AND either a real buyer/decline asks for
+  MPP or the ward round shows dual-railing spreading through the top
+  of the seeds list (three seed sellers already advertise x402+MPP:
+  molty.cash, WURK, OneSource — signal exists, demand at OUR counter
+  does not, and rule 19 gates on the latter). MPP would be a second
+  payment gate and second receipt semantics while every
+  differentiator we own is x402-shaped; the independent throughput
+  data says there is no rush.
+- BUILT from the report, same day: the preflight's
+  `nonstandard-scheme` advisory — an accepts scheme other than
+  "exact" is named to the caller before payment, not after (advisory,
+  never a failure; their own ecosystem's clients may be fine). The
+  ward round records advisories weekly, so the store now collects its
+  OWN time series on scheme fragmentation — the exact instrument the
+  deferred MPP/Kite decisions should be read against, first-party,
+  instead of anyone's press release.
+- One skepticism filed against a widely-quoted number: AWS docs'
+  "10,000+ paid MCP tools" on the Bazaar sits next to our own census
+  finding 100 listed resources across 35 distinct active hosts. The
+  10k figure likely counts tools/endpoints or is stale marketing;
+  our first-party number is the one we cite.
+- verifier/PUBLISH.md deleted post-publish (keeper's call): an
+  internal key-handling process doc in a public repo serves no
+  reader; the publish record and versioning policy live in TASKS.md.

@@ -257,6 +257,28 @@ export function runChecks(
   );
 
   for (const entry of accepts) {
+    /**
+     * SCHEME DRIFT, flagged since 2026-08-03. The L1 landscape
+     * research found the ecosystem quietly forking at the scheme
+     * identifier: Kite's reference implementation answers
+     * "gokite-aa", Tempo's MPP is a different protocol entirely,
+     * while the only independently verified volume (the x402
+     * Foundation's ~75M payments/month) settles under the generic
+     * "exact" scheme. An agent built against the vanilla spec cannot
+     * pay a proprietary-scheme merchant without custom handling, and
+     * nothing anywhere told it that before it burned the call.
+     * Advisory, not a failure: the endpoint may be exactly what its
+     * own ecosystem's clients expect — but a generic caller deserves
+     * to know before paying, and the ward round recording this
+     * weekly is the store's own time series on fragmentation.
+     */
+    const scheme = String(entry["scheme"] ?? "");
+    if (scheme && scheme !== "exact") {
+      advisories.push({
+        name: "nonstandard-scheme",
+        detail: `accepts offers scheme "${scheme}" rather than the spec's "exact". A generic x402 client will not recognize it without scheme-specific handling — fine for clients built to this vendor's stack, a silent dead end for everyone else.`,
+      });
+    }
     const network = String(entry["network"] ?? "");
     const testnet = KNOWN_TESTNETS[network];
     if (testnet) {

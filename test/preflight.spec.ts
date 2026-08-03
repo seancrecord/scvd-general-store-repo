@@ -215,3 +215,42 @@ describe("the route holds its boundaries", () => {
     expect(doc).toContain("PAYMENT-SIGNATURE");
   });
 });
+
+describe("scheme drift is named before anyone pays into it", () => {
+  it("a proprietary scheme earns the advisory without failing the shape", () => {
+    const { checks, advisories } = runChecks(
+      new Response("{}", {
+        status: 402,
+        headers: {
+          "PAYMENT-REQUIRED": btoa(
+            JSON.stringify({
+              x402Version: 2,
+              accepts: [
+                {
+                  scheme: "gokite-aa",
+                  network: "eip155:8453",
+                  amount: "5000",
+                  asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                  payTo: "0x1111111111111111111111111111111111111111",
+                },
+              ],
+            }),
+          ),
+        },
+      }),
+      false,
+    );
+    // Structurally fine — their own clients may be happy.
+    expect(checks.every((check) => check.ok)).toBe(true);
+    // But a generic caller is told before paying, not after.
+    const drift = advisories.find((a) => a.name === "nonstandard-scheme");
+    expect(drift?.detail).toContain('"gokite-aa"');
+    expect(drift?.detail).toContain('"exact"');
+  });
+
+  it("our own 402 earns no scheme advisory, which is the claim that matters", async () => {
+    const challenge = await SELF.fetch(`${BASE}/api/buy/hello`);
+    const { advisories } = runChecks(challenge, false);
+    expect(advisories.map((a) => a.name)).not.toContain("nonstandard-scheme");
+  });
+});
