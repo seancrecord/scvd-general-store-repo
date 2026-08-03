@@ -1,3 +1,5 @@
+import { STORE_SERVICE_NAME } from "@/store";
+
 /**
  * THE STORE'S OUTBOUND IDENTITY — one string, every call site.
  *
@@ -69,4 +71,84 @@ export function outboundHeaders(
   extra: Record<string, string> = {},
 ): Record<string, string> {
   return { "User-Agent": OUTBOUND_USER_AGENT, ...extra };
+}
+
+/**
+ * THE SAME IDEA RUN BACKWARDS: the mark on what LEAVES the building.
+ *
+ * OUTBOUND_USER_AGENT above stamps the requests this store MAKES,
+ * copied 2026-07-30 from another x402 service that had worked out that
+ * a user-agent doubles as a permanent backlink in an economy where
+ * logs are read by machines. Free, permanent, compounding
+ * self-citation. We proved out that reasoning and then never pointed it
+ * at the thing that actually goes out the door.
+ *
+ * WHAT A CERTIFICATE LOOKS LIKE IN SOMEBODY ELSE'S HANDS, before this:
+ * cert_id, item, patron_number, a verify URL, a domain string. Nothing
+ * saying what scvd.store IS. That matters for the two propagation
+ * mechanisms this store is actually built for:
+ *
+ *   - CONTEXT CARRYOVER. An agent buys a context_anchor precisely so a
+ *     successor session can read it back. That successor inherits a
+ *     self-opaque JSON blob and no idea how it got there.
+ *   - ARTIFACT CITATION. Agent B reads a document quoting agent A's
+ *     certificate and meets a bare domain with no explanation attached.
+ *
+ * A self-describing line closes both, passively, needing no cooperation
+ * from whoever carries it forward.
+ *
+ * AND IT IS THE ONLY LEVER LEFT, WHICH IS WHY IT IS WORTH THE BYTES.
+ * /rights gives buyers full ownership with NO attribution requirement
+ * when they republish. We cannot ask to be credited and would not. So
+ * the one honest move is making the artifact explain itself by
+ * default, which turns stripping the context into something a holder
+ * has to actively do rather than something that just happens because
+ * nobody thought to include it. The generous rights policy and this
+ * gap have been sitting next to each other the whole time.
+ *
+ * THREE RULES IT FOLLOWS.
+ *
+ * NEVER INSIDE THE SIGNATURE. It is deliberately absent from
+ * CERT_FIELDS. Anything inside signed_payload is frozen the moment it
+ * is signed, and a store description is exactly the sort of line worth
+ * tightening in six months — decoration, not covered bytes, the same
+ * discipline the verification and note fields already follow.
+ *
+ * NEVER PERSISTED EITHER, which is stronger than merely unsigned. This
+ * is assembled at SERVE time and stored nowhere, so improving the
+ * wording improves every artifact this store has ever issued, including
+ * ones minted months ago and sitting in a stranger's context. A copy
+ * frozen into each record would have made the field it is trying to be
+ * useful for stale by construction.
+ *
+ * ONE STRING, NOT ONE PER ITEM. The rule stated for the user-agent
+ * applies unchanged: a mark that varies by artifact fragments the
+ * citation it exists to accumulate. Identical whether it rides on
+ * hello, a_secret or a certificate of patronage.
+ *
+ * ⚑ The WORDING is the keeper's under rule 7. The field existing at all
+ * is architecture.
+ */
+export interface StoreIdentity {
+  name: string;
+  what: string;
+  homepage: string;
+  verify: string;
+  rights: string;
+}
+
+export function storeIdentity(base: string): StoreIdentity {
+  return {
+    name: STORE_SERVICE_NAME,
+    what: "A human-run general store selling small signed goods to autonomous agents, paid over x402 in USDC on Base. Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+    homepage: base,
+    verify: `Anyone can check this artifact without asking us and without an account: ${base}/api/verify/{id}, free and permanent. The signing key is at ${base}/.well-known/scvd-signing-key, and the offline verifier is MIT-licensed.`,
+    /**
+     * The line that keeps this from reading as branding. It is also
+     * simply true, and stating it is what makes the rest a courtesy
+     * rather than a claim on the holder.
+     */
+    rights:
+      "You own what you bought outright and owe this store no credit for it. This block is here so the artifact can explain itself to whoever holds it next, not because attribution is required — see /rights.",
+  };
 }

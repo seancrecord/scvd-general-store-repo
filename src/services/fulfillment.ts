@@ -1,3 +1,4 @@
+import { storeIdentity } from "@/lib/identity";
 import { canonicalizeCertificate } from "@/lib/signing";
 import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
@@ -149,6 +150,12 @@ export async function fulfillPurchase(
     signature_covers:
       "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Compare its fields against the certificate above; nothing shown there is outside it.",
     verify_url: minted.verifyUrl,
+    /**
+     * THE BREADCRUMB. Assembled at serve time and stored nowhere, so
+     * the wording can improve for artifacts already in strangers'
+     * hands. Never inside signed_payload — see storeIdentity().
+     */
+    store_identity: storeIdentity(env.STORE_BASE_URL),
     verification:
       "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
     /**

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
+import { storeIdentity } from "@/lib/identity";
 import { recordVerifyCall } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
 import {
@@ -250,6 +251,12 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         : canonicalizeCertificate(record.certificate);
     return c.json({
       valid,
+      /**
+       * Every verify response, not only the certificate one: an
+       * artifact explains itself wherever it is checked, and a stamp
+       * or an anchor travels the same way a cert does.
+       */
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
       certificate: record.certificate,
       signature: record.signature,
       public_key: record.public_key,
@@ -323,6 +330,12 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     const valid = await verifyStampSignature(stampRecord);
     return c.json({
       valid,
+      /**
+       * Every verify response, not only the certificate one: an
+       * artifact explains itself wherever it is checked, and a stamp
+       * or an anchor travels the same way a cert does.
+       */
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
       stamp: stampRecord.stamp,
       signature: stampRecord.signature,
       public_key: stampRecord.public_key,
@@ -343,6 +356,12 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     const valid = await verifyAnchorSignature(anchorRecord);
     return c.json({
       valid,
+      /**
+       * Every verify response, not only the certificate one: an
+       * artifact explains itself wherever it is checked, and a stamp
+       * or an anchor travels the same way a cert does.
+       */
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
       anchor: anchorRecord.anchor,
       signature: anchorRecord.signature,
       public_key: anchorRecord.public_key,
@@ -365,6 +384,12 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     const valid = await verifyLuckySignature(luckyRecord);
     return c.json({
       valid,
+      /**
+       * Every verify response, not only the certificate one: an
+       * artifact explains itself wherever it is checked, and a stamp
+       * or an anchor travels the same way a cert does.
+       */
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
       lucky: luckyRecord.lucky,
       signature: luckyRecord.signature,
       public_key: luckyRecord.public_key,
@@ -425,6 +450,12 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
     const valid = await verifyPhantomSignature(phantomRecord);
     return c.json({
       valid,
+      /**
+       * Every verify response, not only the certificate one: an
+       * artifact explains itself wherever it is checked, and a stamp
+       * or an anchor travels the same way a cert does.
+       */
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
       kind: "phantom_check",
       observation: phantomRecord.observation,
       signature: phantomRecord.signature,
