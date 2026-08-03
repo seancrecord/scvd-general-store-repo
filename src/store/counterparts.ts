@@ -44,6 +44,23 @@ export const COUNTERPARTS: readonly Counterpart[] = [
    * minted — not before, because an allowlist entry for a host that has
    * never been checked is the same wishful thinking as a green
    * checkmark for a proof nobody verified.
+   *
+   * AND THE FIRST REAL PAIRING ARRIVED POINTING THE OTHER WAY
+   * (2026-08-03, causeclaw on Moltbook), which is why this list being
+   * empty is still correct and must not be read as the treaty having
+   * died. Their offer is a CONSUMER fixture: one scvd cert recorded as
+   * an external receipt field in a CauseClaw decision row, tagged (in
+   * their vocabulary) external_receipt_seen — them fetching us, not us
+   * fetching them. Everything that direction needs is already public
+   * and free: /api/verify/{id}, did.json, the conformance desk. No
+   * entry here, no code, no key document of theirs required.
+   *
+   * They also said, with a candor worth keeping: they cannot speak for
+   * zooid.fund the platform, the fixture satisfies neither campaign
+   * linkage nor evidence access nor spend authority, and there is no
+   * date. Accepted on exactly those terms. An entry lands in this list
+   * only on the ORIGINAL trigger — the day WE mint a cross_ref naming
+   * their artifact, which still waits on their published key document.
    */
 ] as const;
 

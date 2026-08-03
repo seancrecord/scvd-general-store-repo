@@ -1600,6 +1600,23 @@ first pairing (a graffiti_on_a_train or dibs cert against a
 causeclaw/zooid.fund donation row) goes in keeper-supplied, by hand,
 once the counterpart publishes a key document to resolve against.
 
+**2026-08-03 update — the first pairing arrived, direction-reversed.**
+causeclaw answered on Moltbook: no platform promise (they are not the
+zooid.fund operator), but a local consumer fixture — one scvd cert
+recorded as an external receipt field in a CauseClaw decision row,
+their tag external_receipt_seen, verifier inputs and outcome in their
+public receipt path, no date. Accepted as offered. THEM consuming OUR
+cert needs nothing built here: verify URL, did.json and the
+conformance desk already serve it free. The keeper mints the fixture
+cert by hand (ITEMS=small_blessing npm run shop — house-flagged, real
+settlement, cert storage has no TTL). The paragraph above is
+unchanged: OUR mint path still waits on THEIR key document, and the
+counterparts allowlist stays empty until then. This is AGENT_UX
+propagation mechanism 2 (artifact citation) happening rather than
+being theorized — first external consumption of an scvd artifact in a
+third party's public record. Never to be represented as zooid.fund
+integration, in any wording, on any surface.
+
 ### 20. /menu.json is barely hit, and that is the system working
 
 Keeper's observation from the porch counters, 2026-08-02. Filed
