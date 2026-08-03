@@ -148,15 +148,28 @@ async function fetchAllResources() {
   const rows = [];
   let cursor;
   for (let page = 0; page < 100; page += 1) {
-    const path = cursor
-      ? `${DISCOVERY_PATH}?pageToken=${encodeURIComponent(cursor)}`
-      : DISCOVERY_PATH;
-    const body = await getPage(path);
+    const params = new URLSearchParams({ pageSize: "100" });
+    if (cursor) params.set("pageToken", cursor);
+    const body = await getPage(`${DISCOVERY_PATH}?${params}`);
     const items = body.items ?? body.resources ?? body.data ?? [];
     rows.push(...items);
-    cursor = body.nextPageToken ?? body.next_page_token ?? body.cursor;
-    if (!cursor || items.length === 0) {
-      return { rows, complete: !cursor };
+    /**
+     * Every cursor spelling CDP APIs are known to use. The first run
+     * returned EXACTLY 100 rows with "complete" — a page cap wearing
+     * a census's clothes, caught only because 100 is too round. If a
+     * page comes back full and no cursor is recognized, that is not
+     * completeness, and the caller is told which it was.
+     */
+    cursor =
+      body.nextPageToken ?? body.next_page_token ?? body.cursor ??
+      body.pagination?.nextPageToken ?? body.pagination?.cursor ??
+      body.meta?.nextPageToken;
+    if (!cursor) {
+      const suspicious = items.length > 0 && items.length % 100 === 0;
+      return { rows, complete: !suspicious };
+    }
+    if (items.length === 0) {
+      return { rows, complete: true };
     }
   }
   return { rows, complete: false };
@@ -165,6 +178,20 @@ async function fetchAllResources() {
 function resourceUrlOf(row) {
   const url = row.resourceUrl ?? row.resource_url ?? row.resource ?? row.url;
   return typeof url === "string" ? url : null;
+}
+
+/**
+ * The preflight only GETs (one bounded request, no body to invent).
+ * A resource DECLARED as POST that answers a bare GET with 404/405 is
+ * not broken — it is disagreeing with a question we asked wrong. Rows
+ * declaring a non-GET method are counted separately, never probed,
+ * and never filed as not_ready: a census that grades POST endpoints
+ * by GETting them manufactures exactly the false verdict the consent
+ * ruling forbids publishing.
+ */
+function methodOf(row) {
+  const method = row.method ?? row.httpMethod ?? row.http_method;
+  return typeof method === "string" ? method.toUpperCase() : "GET";
 }
 
 /** Newest activity first when the list carries a signal for it. */
@@ -205,9 +232,19 @@ console.log(
 );
 
 const seen = new Set();
+const nonGet = { count: 0, hosts: new Set() };
 let candidates = rows
-  .map((row) => ({ url: resourceUrlOf(row), activity: activityOf(row) }))
+  .map((row) => ({
+    url: resourceUrlOf(row),
+    activity: activityOf(row),
+    method: methodOf(row),
+  }))
   .filter((entry) => {
+    if (entry.url && entry.method !== "GET") {
+      nonGet.count += 1;
+      try { nonGet.hosts.add(new URL(entry.url).host.toLowerCase()); } catch { /* skip */ }
+      return false;
+    }
     if (!entry.url || !entry.url.startsWith("https://")) return false;
     let host;
     try {
@@ -227,8 +264,13 @@ const top = Number(process.env.TOP ?? candidates.length);
 const dropped = Math.max(0, candidates.length - top);
 candidates = candidates.slice(0, top);
 console.log(
-  `${candidates.length} distinct hosts to probe${dropped > 0 ? ` (TOP=${top}; ${dropped} dropped — the summary must say sampled, not surveyed)` : ""}.`,
+  `${candidates.length} distinct GET hosts to probe${dropped > 0 ? ` (TOP=${top}; ${dropped} dropped — the summary must say sampled, not surveyed)` : ""}.`,
 );
+if (nonGet.count > 0) {
+  console.log(
+    `${nonGet.count} declared non-GET resources across ${nonGet.hosts.size} hosts EXCLUDED — the preflight only GETs, and grading a POST endpoint by GETting it manufactures a false not_ready.`,
+  );
+}
 
 if (process.env.DRY_RUN) {
   console.log("DRY_RUN set: probed nothing.");
@@ -265,7 +307,13 @@ const probed = results.length;
 const pct = (n) => `${Math.round((n / probed) * 100)}%`;
 
 console.log("\n──── AGGREGATE (the only part that publishes) ────");
-console.log(`Probed: ${probed} distinct hosts, one GET each, ${new Date().toISOString().slice(0, 10)}.`);
+console.log(`Probed: ${probed} distinct GET-method hosts, one GET each, ${new Date().toISOString().slice(0, 10)}.`);
+if (nonGet.count > 0) {
+  console.log(`Out of scope: ${nonGet.count} declared non-GET resources (${nonGet.hosts.size} hosts) — not probed, not graded.`);
+}
+if (!complete) {
+  console.log("COVERAGE CAVEAT: the list read may be one page, not the whole list — publish as 'the first N listed', never 'the directory'.");
+}
 for (const [verdict, count] of Object.entries(tally).sort((a, b) => b[1] - a[1])) {
   console.log(`  ${verdict}: ${count} (${pct(count)})`);
 }
