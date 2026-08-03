@@ -26,6 +26,52 @@ nobody sends and cannot be fixed from here. This one is fixable by
 doing the work repeatedly and writing down what happened. It is
 unglamorous and it is available.
 
+## The standard the passes are held to
+
+Not "find friction." That was the first framing and it is too soft to
+decide anything. The real one, and it falls out of two facts about who
+we can actually reach rather than out of taste:
+
+> **The first attempt has to work, and it has to work without asking
+> for faith — because for the population we can reach right now, there
+> is no second attempt and no capability to recover from confusion.**
+
+An earlier draft of this said "make trust inevitable." That is the
+wrong instinct and worth recording as wrong: it argues for
+manufacturing belief, when the best thing this store does is the
+opposite — publishing its own corrections, telling a reader why not to
+trust the conformance desk, naming which artifact classes sit on the
+weakest ground. Verification here is free and instant, so the goal was
+never to be believed. It is to make being believed BESIDE THE POINT.
+
+**Why there is no second attempt.** No brand recognition, no repeat
+visit, nothing pulling a stranger back after a bad first pass. Every
+other business is graded on a curve across many attempts by the same
+customer. We do not get that curve. One confusing 400, one hidden
+price, one buried trust signal, and that agent is not annoyed — it is
+gone, because nothing about us is memorable or necessary enough to
+justify troubleshooting. Near-zero organic demand means near-zero
+forgiveness, and those are the same sentence.
+
+**Why the first attempt is the hardest one.** The barbell routes cheap
+items to cheap models by its own economics, so the low end is the
+volume case rather than an edge case. Those are exactly the models that
+cannot recover from ambiguity: they do not hedge before failure, they
+do not verify after success, and they do not reliably resolve a schema
+conditional to find a required field. The population most likely to
+transact here is the population least equipped to survive friction we
+leave in.
+
+**So the burden sits on the design.** It cannot sit on their competence
+or their patience; we do not get to lean on either. That is what turns
+a buried trust line, a price behind a 402 and an undocumented
+conditional field from tidy-ups into the three places a one-shot,
+low-capability, zero-loyalty stranger is most likely to bounce.
+
+The question a pass asks is therefore not "what is annoying" but:
+**where does success depend on a second try, or on above-average
+competence?**
+
 ## The method
 
 Walk in cold. Assume no prior context, no memory of the store, no
@@ -88,6 +134,42 @@ can be simplified the day resolution starts reporting instead.
 **If you add a list keyed by item id, add it there.** That is the one
 manual step, and it is written here because a list nobody knows to
 extend is the next instance of this.
+
+## Propagation: the four ways a stranger already holds us
+
+Distinct from discovery, and none of them arrive as a fresh request
+with attribution — which is why `?src=` and referrer headers are blind
+to all four. They propagate through RESIDUE: something already in an
+agent's hands, carried somewhere else.
+
+1. **Context carryover.** An agent buys a `context_anchor`, the signed
+   cert sits in its context, and that context gets forked, summarized
+   or handed to a successor. The successor inherits knowledge of us as
+   DATA rather than as something it was told to look up. The most
+   mechanically plausible of the four and the one this store is built
+   for: a signed artifact survives a context transfer intact, where a
+   vague impression gets paraphrased away.
+2. **Artifact citation.** A cert or settlement_attestation embedded in
+   a document somebody else later reads — a report, a dispute record, a
+   receipt-treaty exchange. That reader learns of us as a byproduct of
+   checking somebody else's claim, having never looked us up.
+3. **Skill and config propagation.** Another operator's skill file or
+   subagent prompt names us as a reference implementation, and that
+   file gets forked or copied. We travel on the skill ecosystem's own
+   reuse mechanics rather than on search.
+4. **The fossil record.** Agent-generated posts, issues and writeups
+   that mention us, eventually feeding a future training corpus. Not
+   word of mouth in the moment — word of mouth's residue — and it is
+   the only mechanism that ever closes the brand-recognition gap,
+   because that gap closes with citation or not at all.
+
+**What we can see of it:** almost nothing, and honestly. The artifact
+age bucket on `/api/verify` (`verifyAgeBucket`, added 2026-08-03) is
+the single instrument pointed at any of this, and it only touches 1 and
+2 — a certificate checked long after minting is being read by somebody
+whose session did not mint it. It is a proxy, it will read zero for a
+long time, and 3 and 4 remain unwatched because nothing we control
+touches them.
 
 ## Standing rule
 
