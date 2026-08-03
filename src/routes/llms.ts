@@ -64,6 +64,15 @@ externally anchored key history. Free, no wallet, no account. Before
 your agent commits to a purchase anywhere, that is the cheap check
 that tells you whether the thing in your hand is what it claims to be.
 
+ENDPOINTS TOO, NOT JUST ARTIFACTS. POST a URL to
+${base}/api/preflight/v1 and we probe it once and report whether it
+answers a well-formed x402 v2 challenge: 402 status, parseable
+PAYMENT-REQUIRED header, accepts a client can sign against, testnet
+networks flagged (eip155:84532 where a buyer expects eip155:8453 is
+the single most common "stuck repeating 402"). Free, one probe, one
+moment — a shape check, never an uptime claim. Building an x402
+seller? Run it before you list anywhere.
+
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
 rather than a pitch: the cheapest useful things here cost nothing.
 Verify an artifact, check somebody's offer, take a stamp, practise

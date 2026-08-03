@@ -2282,3 +2282,53 @@ dependency anyone takes on our uptime. Publish is keeper hands per
 rule 30; checklist at verifier/PUBLISH.md; the observable number is
 npm weekly downloads, trend-real and absolute-soft, into the monthly
 ledger review.
+
+---
+
+## Buyer's-journey research (failure moments), vetted 2026-08-03 — RULED, and the preflight is the outcome
+
+The second report mapped eight x402 failure moments to their literal
+surfaces and owners. Its narrowing is accepted: moments 2/3/6/7
+dropped (raw JSON contracts, developer-process failures, gaps whose
+real fix is an SDK contribution — a reference there is adjacency, not
+cure); moments 1/8 occupied or weak. Two targets survived, and they
+got different answers:
+
+MOMENT 4 (CDP validate docs link) — ACCEPTED, gated on honesty: the
+report oversold what the desk did (it checked artifacts; CDP's
+validate checks endpoints), so the missing half was built the same
+day rather than pitched around. /api/preflight/v1: free, one bounded
+probe per call, checks derived from the same constants the till
+enforces on itself, dogfooded in CI (the store's own 402 passes its
+own preflight — the self-fetch refusal message cites that fact and
+test/preflight.spec.ts is that fact). The CDP conversation (keeper
+hands, already queued) is now scoped to exactly this: a linkable tool
+that runs their preflight's checks, no "mention us" ask.
+
+MOMENT 5 (badge inside the Bazaar UI) — DECLINED IN THAT FORM, kept
+in the considered pile per the keeper's instruction that rules get
+weighed, not obeyed blind. Operating a live scoring feed CDP renders
+is uptime-critical infrastructure racing funded trust-layer startups
+(ScoutScore, AgentTrust, Crest per the report) — the exact shape the
+stays-a-shop ruling exists for, and its REASON (nobody's directory
+should break when one keeper naps) survives re-examination. WHAT
+SURVIVES INSTEAD is the seller-pays inversion: signed standing-watch
+attestations a seller buys about THEIR OWN endpoint — same probes,
+inverted consent, no defamation surface, degrades to one customer's
+pause rather than an ecosystem's. That is phantom_check's grown-up
+sibling and the customer matches the one this file already named
+(the seller bearing reputational risk). PARKED behind the existing
+kill-metric: built when ≥2 unsolicited requests arrive, and the free
+preflight is the funnel most likely to carry them here. Probe
+infra cost measured and immaterial (~292k fetches/month to probe one
+directory hourly, within plan); the binding cost is the freshness
+obligation and keeper attention, which is why consent-first wins.
+
+AEO/SEO, done where it counts: the preflight's GET doc and the npm
+README both carry the LITERAL failure strings a stuck developer
+pastes into a search box or an assistant (eip155:84532, "listed but
+functionally absent", invalid_exact_evm_payload_signature, atomic
+units) — the moment of failure is the only moment this tool is for,
+so the document is written to be found at it. The breadcrumb rides
+the preflight response like every other artifact: the report travels
+into issues and CI logs, and it explains itself wherever it lands.

@@ -160,6 +160,39 @@ README does not repeat a number that would rot. If this library and
 those vectors ever disagree, one of them is wrong and the suite fails
 before a stranger has to find out.
 
+## Common x402 integration failures, and which tool catches them
+
+Written from the literal error strings developers actually hit,
+because the moment of failure is when anyone searches for any of this.
+
+- **Stuck returning 402 even after attaching `PAYMENT-SIGNATURE`** —
+  usually the wrong network: the endpoint's `accepts` offers
+  `eip155:84532` (Base Sepolia) or points at a testnet-only
+  facilitator while the buyer pays on Base mainnet (`eip155:8453`).
+  A free endpoint probe flags this:
+  `POST https://scvd.store/api/preflight/v1` with `{"url": "..."}`.
+- **"Invalid payment header format" / "No X-PAYMENT header provided"**
+  — the challenge or payment header is malformed. The preflight
+  checks the challenge half (is `PAYMENT-REQUIRED` base64 JSON with
+  signable `accepts`); this library checks the signed-offer half.
+- **A directory lists the endpoint but probing it finds nothing** —
+  the "listed but functionally absent" failure (a majority of one
+  directory's listings, per independent probing). The preflight's
+  first check is exactly this.
+- **`invalid_exact_evm_payload_signature`,
+  `invalid_exact_evm_payload_recipient_mismatch`,
+  `settle_exact_failed_onchain`** — facilitator verify/settle
+  failures. These belong to a specific payment attempt (wallet state,
+  signature, chain conditions) and **no conformance tool can catch
+  them in advance** — a tool that claims to is selling adjacency.
+  What CAN be checked beforehand is whether the signed offer you're
+  paying against verifies: that is this library, offline, or the
+  conformance desk hosted.
+- **Amounts off by a factor of a million** — x402 amounts are atomic
+  units (USDC has 6 decimals: `$0.005` is `"5000"`). A decimal point
+  in an `accepts` amount is almost always dollar-typed pricing; the
+  preflight flags it.
+
 ## Reference deployment
 
 This library is developed and battle-tested at

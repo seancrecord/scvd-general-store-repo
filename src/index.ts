@@ -42,6 +42,7 @@ import {
   fulfillmentLogRoutes,
   claimsRoutes,
   conformanceRoutes,
+  preflightRoutes,
   anchorLogRoutes,
   rightsRoutes,
   windDownRoutes,
@@ -193,6 +194,7 @@ app.route("/", livenessRoutes);
 app.route("/", fulfillmentLogRoutes);
 app.route("/", claimsRoutes);
 app.route("/", conformanceRoutes);
+app.route("/", preflightRoutes);
 app.route("/", anchorLogRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);

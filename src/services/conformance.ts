@@ -388,7 +388,7 @@ function limitsFor(keyResolution: string): string[] {
   return limits;
 }
 
-const CONFLICT =
+export const CONFLICT =
   "WE COMPETE WITH SOME OF THE ISSUERS YOU MIGHT SEND US. This store sells x402 goods; a verdict about a rival's artifact from us is worth exactly as much as the method behind it. That method is MIT-licensed, zero-dependency and identical to the file this endpoint runs — so the correct amount of trust to place in this response is none, and the correct thing to do with a verdict that matters is reproduce it offline.";
 
 const RUN_IT_YOURSELF =
