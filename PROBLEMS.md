@@ -2388,15 +2388,24 @@ RULINGS:
   proprietary identifier, no verified mainnet volume, no buyer has
   asked. Reconsider only if their catalog sends a paying customer.
 - Stripe account: parked deliberately; a free option, not a plan.
-- MPP: DECISION DEFERRED with named triggers, not vibes — revisit
-  when CV's writeup lands AND either a real buyer/decline asks for
-  MPP or the ward round shows dual-railing spreading through the top
-  of the seeds list (three seed sellers already advertise x402+MPP:
-  molty.cash, WURK, OneSource — signal exists, demand at OUR counter
-  does not, and rule 19 gates on the latter). MPP would be a second
-  payment gate and second receipt semantics while every
-  differentiator we own is x402-shaped; the independent throughput
-  data says there is no rush.
+- MPP: RE-RULED same day on the keeper's correction, which stands
+  and is the better lens: "no buyer has asked" was measured by an
+  instrument structurally deaf to it — a buyer on a rail we don't
+  support filters us out at the directory layer and never reaches
+  the counter, so the decline desk records a zero that means CANNOT
+  SEE, not IS NOT THERE (the Bazaar-referrer error class, again, in
+  a strategy decision this time). In a nascent market the decision
+  rule for a new rail is DOOR-COST VERSUS OPTION VALUE, not observed
+  demand: a door that costs a day to a week with no ongoing
+  obligation gets opened; only ongoing-obligation doors wait for
+  data. What survives of the deferral is sizing, not demand-gating:
+  CV's MPP writeup is the sizing input (what a second challenge
+  flow, credential path and receipt semantics actually cost against
+  our x402-shaped differentiators), and x402-exact-on-Solana should
+  be sized in the same pass — likely a CHEAPER door serving the
+  dual-rail pattern already visible across the census (Base+Solana
+  is the commonest pairing in the seeds by far, more common than
+  MPP). Doors get a cost inventory; cheap ones open.
 - BUILT from the report, same day: the preflight's
   `nonstandard-scheme` advisory — an accepts scheme other than
   "exact" is named to the caller before payment, not after (advisory,
