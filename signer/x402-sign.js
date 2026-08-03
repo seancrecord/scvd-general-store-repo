@@ -154,7 +154,10 @@ export function didDocument({ domain, publicKeyJwk, keyNumber = 1 }) {
   if (!domain || !publicKeyJwk) {
     throw new Error("didDocument needs { domain, publicKeyJwk }");
   }
-  const did = `did:web:${domain}`;
+  // did:web requires a port's colon percent-encoded (the bare colon
+  // is the method's path separator). The well-known URL keeps the raw
+  // host; only the DID string encodes.
+  const did = `did:web:${String(domain).replace(/:/g, "%3A")}`;
   const kid = `${did}#key-${keyNumber}`;
   return {
     "@context": [
@@ -186,6 +189,22 @@ function assertComplete(payload, requiredFields, kind) {
     throw new Error(
       `${kind} amount must be a STRING of atomic units (USDC has 6 decimals: $0.005 is "5000") — a number invites the million-fold dollar-typing mistake`,
     );
+  }
+  /**
+   * MIRROR THE VERIFIER'S TYPE RULES, found by red-teaming before
+   * first publish: the sibling verifier requires validUntil/issuedAt
+   * to be NUMBERS, and this signer originally checked presence only —
+   * so validUntil:"2100-01-01" would sign cleanly and then fail its
+   * own sibling's schema check. A signer that can mint artifacts its
+   * verifier rejects is the one bug this package must never have.
+   * (Being STRICTER than the verifier is fine and deliberate —
+   * issuance strict, consumption tolerant.)
+   */
+  if (kind === "offer" && typeof payload.validUntil !== "number") {
+    throw new Error("offer validUntil must be a NUMBER (unix seconds), not a date string");
+  }
+  if (kind === "receipt" && typeof payload.issuedAt !== "number") {
+    throw new Error("receipt issuedAt must be a NUMBER (unix seconds), not a date string");
   }
 }
 

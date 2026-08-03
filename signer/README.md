@@ -50,8 +50,34 @@ const { extension, skipped } = await offersForAccepts(acceptsArray, {
 // body: { ...challenge, extensions: { ...challenge.extensions, ...extension } }
 ```
 
-Receipts after settlement are `signReceipt({...})` with the payer,
-transaction and settledAt added.
+## Receipts, the higher-stakes half
+
+A receipt carries a SETTLEMENT claim — who paid you, against what,
+when — which makes it the artifact a dispute actually turns on. Same
+sixty seconds:
+
+```js
+import { signReceipt } from "x402-sign";
+
+const receipt = await signReceipt(
+  {
+    version: 1,
+    network: "eip155:8453",
+    resourceUrl: "https://your-domain/api/buy/thing",
+    payer: settledPayerAddress,
+    issuedAt: Math.floor(Date.now() / 1000),
+    transaction: settlementTxHash,   // welcome, not required
+  },
+  { seedHex, kid },
+);
+// Return it with the goods: extensions["offer-receipt"].info.receipt
+```
+
+The required set is deliberately smaller than the offer's (version,
+network, resourceUrl, payer, issuedAt — the terms live in the offer
+it answers); extra fields like `transaction` and `amount` are welcome.
+Receipts get the same byte-parity proof against the published vectors
+as offers do — both halves proven, not one.
 
 ## What it refuses, on purpose
 
@@ -83,10 +109,31 @@ conformant verifier built from the vectors.
 - `generateKeypair({ seedHex })` is deterministic, so you can
   re-derive the public half from a backed-up seed with no state.
 - Publish the DID document, or your `kid` is a name nobody can
-  resolve. Rotating keys? Keep the old public key published forever —
-  artifacts signed under it still deserve to verify — and consider an
-  externally anchored key history; the reference deployment's is at
+  resolve.
+- **Rotation is where well-meaning operators break everything, so
+  plainly: dropping an old public key ORPHANS every artifact you ever
+  signed with it.** Each offer and receipt you issued verifies against
+  the key that signed it, forever — remove that key from everything
+  you publish and those artifacts don't become invalid, they become
+  unattributable, which for a receipt is worse. Rotate by ADDING a new
+  key (`#key-2`) and keeping every retired public key published
+  alongside its service dates. If holders need proof your key history
+  wasn't quietly rewritten, an externally anchored log is the strong
+  form; the reference deployment's is at
   `https://scvd.store/.well-known/anchor-log.json`, method included.
+
+## Why not a generic JWS library?
+
+Use one if you like — the wire format is standard JWS and any
+compliant signer can produce it. What this package adds is the
+x402-shaped guardrails a generic library cannot: the spec's exact
+required-field lists (shared, tested, with its sibling verifier),
+refusal of holes and dollar-typed amounts at mint, the accepts-array
+→ offers mapping in the extension's exact wire shape, a resolvable
+DID document, and CI proof of byte-parity with the published
+conformance vectors. The crypto is the easy part; signing the wrong
+shape correctly is how the one prior attempt in the ecosystem ended
+up with offers no verifier accepts.
 
 ## Runtime
 

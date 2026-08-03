@@ -42,6 +42,20 @@ describe("provably conformant, not claimed conformant", () => {
     expect(reproduced).toBe(valid.jws);
   });
 
+  it("byte-reproduces the published receipt vector too — both halves proven, not one", async () => {
+    // The review that caught this: the parity claim covered offers
+    // byte-for-byte while receipts rode along on a loose round-trip,
+    // and receipts are the HIGHER-stakes artifact (they carry
+    // settlement claims). Same proof, same standard, both kinds.
+    const { signReceipt } = await import("../signer/x402-sign.js");
+    const valid = vectors.valid.find((v) => v.name === "receipt_valid")!;
+    const reproduced = await signReceipt(
+      valid.payload as Parameters<typeof signReceipt>[0],
+      { seedHex: TEST_SEED, kid: vectors.signing.kid },
+    );
+    expect(reproduced).toBe(valid.jws);
+  });
+
   it("derives the vectors' own public key from the published seed", async () => {
     const kp = await generateKeypair({ seedHex: TEST_SEED });
     expect(kp.publicKeyHex).toBe(vectors.signing.public_key_hex);
@@ -160,5 +174,55 @@ describe("the manifest tells the truth", () => {
     expect(readme).toContain("x402-verify");
     expect(readme).toContain("atomic units");
     expect(readme.replace(/\s+/g, " ")).toContain("byte for byte");
+  });
+});
+
+describe("red-team findings, pinned (2026-08-03, pre-publish)", () => {
+  it("refuses a string validUntil — the artifact its own sibling would reject", async () => {
+    await expect(
+      signOffer(
+        {
+          version: 1,
+          resourceUrl: "https://s.example/x",
+          scheme: "exact",
+          network: "eip155:8453",
+          asset: "0xA",
+          payTo: "0xB",
+          amount: "5000",
+          validUntil: "2100-01-01" as never,
+        },
+        { seedHex: TEST_SEED, kid: "did:web:x#k" },
+      ),
+    ).rejects.toThrow(/NUMBER/);
+  });
+
+  it("a receipt round-trips through the sibling verifier too", async () => {
+    const { signReceipt } = await import("../signer/x402-sign.js");
+    const kp = await generateKeypair({ seedHex: TEST_SEED });
+    const jws = await signReceipt(
+      {
+        version: 1,
+        network: "eip155:8453",
+        resourceUrl: "https://shop.example/api/buy/x",
+        payer: "0x2222222222222222222222222222222222222222",
+        issuedAt: 1735689600,
+        transaction: `0x${"ab".repeat(32)}`,
+      },
+      { seedHex: TEST_SEED, kid: "did:web:shop.example#key-1" },
+    );
+    const result = (await verifyArtifact(jws, {
+      publicKey: kp.publicKeyHex,
+      kind: "receipt",
+    })) as { ok: boolean; checks: { name: string; ok: boolean; detail: string }[] };
+    expect(result.ok, JSON.stringify(result.checks)).toBe(true);
+  });
+
+  it("a domain with a port produces a spec-encoded did, not a broken one", async () => {
+    const kp = await generateKeypair({ seedHex: TEST_SEED });
+    const doc = didDocument({
+      domain: "localhost:8443",
+      publicKeyJwk: kp.publicKeyJwk,
+    }) as { id: string };
+    expect(doc.id).toBe("did:web:localhost%3A8443");
   });
 });
