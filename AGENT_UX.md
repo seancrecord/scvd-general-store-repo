@@ -338,3 +338,36 @@ The well-known-token domain-verification step is filed with its
 trigger: build it when watch volume or stakes rise, specifically the
 moment a watch history is used to legitimize something a third party
 relies on.
+
+---
+
+## 2026-08-03 — fourth pass. CV, the live receipt path, first outside verification ever.
+
+The asymmetry he flagged pre-publish, closed at the live-store level:
+every prior cold pass walked OFFERS, because that is what a 402 hands
+you — nobody outside the building had ever verified the receipt side
+end-to-end. Now someone has, for half a cent.
+
+The full chain, every link holding: a real settlement (on-chain tx),
+the receipt JWS riding the paid 200's PAYMENT-RESPONSE header exactly
+where documented; the conformance desk on kind:receipt answering
+conforms with all checks green; live:null carrying its explanation
+(the conformance/liveness split working, not a gap); self_resolution
+present for the second artifact class; the payload carrying payer,
+issuedAt, network, resourceUrl, transaction; and the signature move —
+independent ed25519 verification with tweetnacl, ZERO calls to the
+store, from the published key and the how-to-verify instructions
+alone. The instructions were sufficient for receipts the same way
+they were for offers and for the Night Watch's probe rows: three
+artifact classes, one property, held under outside testing each time.
+
+The edge that did NOT trigger is recorded too: the facilitator
+returned the payer, so the no-payer-no-receipt refusal path was not
+exercised live this pass. It remains covered in CI only.
+
+A pass that finds nothing is a finding. This one found nothing, on
+the highest-stakes artifact class the store issues, tested by the
+person who has caught this codebase lying three times this week. The
+byte-parity work translated to genuinely-settled receipts cleanly,
+and both npm packages went live the same day with both halves
+cold-tested behind them.
