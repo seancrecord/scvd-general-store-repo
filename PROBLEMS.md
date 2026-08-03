@@ -2351,3 +2351,19 @@ be watched. ⚑ Keeper's pen still owed on the item copy (flagged in
 menu-utility.ts). If it becomes cumbersome: delist from the shelf,
 leave the sweep running until the last sold watch completes its week
 — sold watches are promises, delisting only stops new ones.
+SECOND AMENDMENT, same evening — THE CENSUS, because a product nobody
+can find is reliant on being found. scripts/x402-census.mjs (npm run
+census, keeper's machine, same CDP keys as bazaar-check): probes
+every host on the discovery list ONCE through the public preflight —
+dogfooding, and it makes the whole census reproducible by any skeptic
+with the same free endpoint. The consent line is drawn in the script
+header before the first probe: a declared x402 resource invites
+exactly one shape of GET; what publishes is AGGREGATE ONLY (counts,
+failure modes, method line, dated); per-host rows land gitignored for
+the keeper's eyes, because outreach to a failing operator is help and
+publishing their name is a verdict nobody asked us for. This is the
+demand bootstrap for preflight and standing_watch: our own
+first-party version of the quoted "57% dead listings" number, with
+our name and our reproduction path on it, plus a private list of
+exactly the operators who need the products. Publishing the aggregate
+writeup and any outreach: keeper hands, rule 30, always.

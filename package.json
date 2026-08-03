@@ -21,7 +21,8 @@
     "audit": "node scripts/audit.mjs",
     "skill:publish": "node scripts/publish-skill.mjs",
     "build:check": "wrangler deploy --dry-run --outdir .build-check",
-    "bazaar:validate": "node scripts/bazaar-validate.mjs"
+    "bazaar:validate": "node scripts/bazaar-validate.mjs",
+    "census": "node scripts/x402-census.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

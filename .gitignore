@@ -6,4 +6,5 @@ dist/
 *.local
 .DS_Store
 shopping-run-receipts.json
+x402-census-results.json
 .build-check/
