@@ -202,3 +202,26 @@ describe("the shelf name is the keeper's pick", () => {
     expect(item.description).toContain("Day shift included");
   });
 });
+
+describe("the ward's dead-man check", () => {
+  it("a stale round alarms; a fresh one and an empty book stay quiet", async () => {
+    const { wardDeadMan } = await import("@/services/health");
+    const { KV_KEYS } = await import("@/lib/kv-keys");
+    const { listAlerts } = await import("@/lib/alerts");
+
+    // Empty book: quiet — nothing can be stale before the first round.
+    await testEnv.COUNTERS.delete(KV_KEYS.wardRoundLatest);
+    await wardDeadMan(testEnv);
+
+    // Stale round: the alarm names the week and the hand-crank.
+    const stale = fakeRound("2026-W25", { "old.example": "ready" });
+    stale.at = new Date(Date.now() - 9 * 24 * 3600_000).toISOString();
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(stale));
+    await wardDeadMan(testEnv);
+    const alerts = await listAlerts(testEnv, 10);
+    expect(
+      alerts.some((alert) => alert.detail.includes("ward round is stale")),
+      "a cron that silently stopped must not read as a healthy ecosystem",
+    ).toBe(true);
+  });
+});

@@ -19,13 +19,19 @@ export function renderWardPage(
   previous: WardRound | null,
   delta: WardDelta | null,
 ): string {
+  const runButton = `<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
+    <button type="submit">Walk the ward now</button>
+    <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round.</span>
+  </form>`;
+
   if (!round) {
     return renderAdminShell(
       "ward",
       `<section>
         <h2>The ward round</h2>
         <p>No round on the books yet. The first one runs with the Sunday
-        press (11:00 UTC), or trigger it from the back shelf.</p>
+        press (11:00 UTC), or walk it now:</p>
+        ${runButton}
       </section>`,
     );
   }
@@ -71,6 +77,7 @@ export function renderWardPage(
     "ward",
     `<section>
       <h2>The ward round</h2>
+      ${runButton}
       ${summary}
       ${deltaHtml}
       <h3>Every door on the ward</h3>

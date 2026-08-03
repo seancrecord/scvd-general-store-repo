@@ -241,9 +241,37 @@ async function registrarsRound(env: Env): Promise<void> {
 }
 
 /** Run on every scheduled tick. Quiet when all is well. */
+/**
+ * THE WARD'S DEAD-MAN CHECK. The Sunday cron alerts when a ward round
+ * FAILS — but a try/catch cannot see a job that never started (cron
+ * disabled, deploy pipeline stalled, trigger misconfigured). So the
+ * hourly rounds check the round's AGE: a latest round older than
+ * eight days means at least one Sunday came and went without a
+ * reading, and a stale ecosystem map reads exactly like a healthy
+ * ecosystem. Eight days, not seven, so an on-time round never races
+ * its own deadline. No round at all stays quiet — before the first
+ * Sunday (or the first hand-crank) there is nothing to be stale.
+ */
+const WARD_STALE_MS = 8 * 24 * 3600_000;
+
+export async function wardDeadMan(env: Env): Promise<void> {
+  const { latestWardRound } = await import("@/services/ward-round");
+  const round = await latestWardRound(env).catch(() => null);
+  if (!round) {
+    return;
+  }
+  if (Date.now() - Date.parse(round.at) > WARD_STALE_MS) {
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `The ward round is stale: last reading ${round.at} (week ${round.week}), more than 8 days ago. The Sunday cron missed at least one pass — run it by hand from /admin/ward and find out why.`,
+    });
+  }
+}
+
 export async function runHealthChecks(env: Env): Promise<void> {
   await selfCheck(env);
   await slaGuard(env);
   await freshnessGuard(env);
   await registrarsRound(env);
+  await wardDeadMan(env);
 }
