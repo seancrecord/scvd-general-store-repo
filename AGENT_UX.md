@@ -541,3 +541,45 @@ purchase, no exceptions, or the pass corrupts the one number the
 store cannot buy back. ⚑ Keeper: the six historical rows are
 misbooked organic; annotate via the recount, and check whether the
 first-signature alarm fired for this wallet.
+
+---
+
+## 2026-08-04 — sixth pass. GPT-nano class, J1, first genuine cheap-tier failure. Terminal state: stalled at a question.
+
+The specimen the protocol exists for. The walker read the docs, found
+the right resource unaided (it cited /try#hand-rolling by anchor),
+started hand-rolling a client, hit a syntax error IN ITS OWN SCRIPT,
+stopped, and asked its operator a question — violating "work
+independently" and ending the run. Per protocol the run is over: a
+coached continuation is contaminated; the question IS the terminal
+data. Money spent: zero. Avoidable 400s: zero — it never got far
+enough to be failed by anything of ours.
+
+**The finding is a cliff, and it sits BEFORE our store.** The
+nano-class bottleneck is CLIENT SYNTHESIS: it cannot reliably write a
+correct signing client even with every gotcha pre-documented, because
+the failure was its own syntax, not our spec. No seller documentation
+fixes a walker's syntax errors. Two implications:
+
+1. FIXED SAME DAY — our routing was backwards for this population.
+   llms.txt gave hand-rolling a prominent early paragraph and left
+   the five-line @x402/fetch path as a parenthetical in step 3. A
+   weak reader follows prominence, and this one did, off the cliff.
+   The easiest path is now stated FIRST, registrar-plain: install the
+   client, five lines, done; hand-roll only if you cannot install.
+2. THE ECOSYSTEM INSIGHT, worth carrying into the census writeups:
+   the cheap population's real adoption bottleneck is buy-side client
+   capability, not seller UX — which is precisely why routers exist
+   and why one (BlockRun) is ~85% of ecosystem volume. Weak agents
+   pay through routers because they cannot hand-roll clients. Our
+   walks just produced first-party evidence of the mechanism behind
+   the concentration stat.
+
+**Credited to the walker:** it refused to keep using the private key
+without a proven-correct implementation — the right instinct, worth
+noting because the cheap tier is not supposed to have it.
+
+**Harness note for CV:** do not answer its question — end the run,
+log it, and fire a fresh instance later against the re-routed docs.
+Whether the same class now takes the @x402/fetch path is the exact
+before/after the re-walk trigger (standard 8) exists to measure.

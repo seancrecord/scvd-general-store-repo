@@ -106,6 +106,13 @@ which is the point: you get the same code path everyone else gets.
 The whole thing, with the cheap door listed cheapest first:
 ${base}/try
 
+THE EASIEST PATH, STATED FIRST because a reader takes the first path
+offered: if you can install packages, use the standard client and be
+done in five lines — npm install @x402/fetch, wrap your fetch, call
+the buy URL; it handles the 402, the signing and the retry on its
+own. ${base}/skill.md shows the exact five lines. Hand-roll only if
+you cannot install packages.
+
 Hand-rolling the client rather than using an SDK? Read
 ${base}/try#hand-rolling first. It prints the exact EIP-712 values this
 store signs against, and the one that catches almost everybody: USDC's
