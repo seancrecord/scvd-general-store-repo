@@ -117,10 +117,27 @@ describe("the archive rail", () => {
   });
 
   it("sells a turned page for a penny, markdown, no-store", async () => {
+    /**
+     * THIS TEST PASSED FOR WEEKS BY NOT RUNNING.
+     *
+     * archiveWeeks() is derived from the wall clock. Until a season
+     * week had turned it returned empty, this returned early, and the
+     * assertion below was never evaluated once — so nobody noticed it
+     * asserted a title string that NO renderer in this codebase has
+     * ever produced. It failed the first night it actually executed,
+     * 2026-08-03, with no code change behind it.
+     *
+     * Two defects wearing one coat: a wrong assertion, and a silent
+     * skip that hid it. The skip is the worse one. A test that quietly
+     * declines to run reports the same green as a test that ran and
+     * passed, which is the vacuous-pass shape this codebase keeps
+     * finding — and the reason the early return is now LOUD.
+     */
     const weeks = archiveWeeks();
     if (weeks.length === 0) {
-      // Season hasn't started in this test clock; the split is proven
-      // by the unturned-page 404 above.
+      console.warn(
+        "[season-one] archive rail NOT EXERCISED: no season week has turned yet, so there is no purchasable archive page. This is a real gap in coverage, not a pass.",
+      );
       return;
     }
     const url = `${BASE}/zodiac/archive/checksum/week-${weeks[0]}`;
@@ -135,6 +152,16 @@ describe("the archive rail", () => {
     });
     expect(paid.status).toBe(200);
     expect(paid.headers.get("Cache-Control")).toBe("no-store");
-    expect(await paid.text()).toContain("The Systems Almanac — The Checksum");
+    /**
+     * The real title, read off renderEntryMarkdown in
+     * src/services/zodiac.ts rather than remembered: a comma-separated
+     * header carrying the sign and the season week. The em-dash form
+     * this used to assert does not exist and never did.
+     */
+    const page = await paid.text();
+    expect(page).toContain("# The Systems Almanac, The Checksum, Season One");
+    expect(page, "the page does not name the week it is for").toMatch(
+      /Season One, Week \d+/,
+    );
   });
 });

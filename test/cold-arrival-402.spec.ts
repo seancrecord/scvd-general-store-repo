@@ -118,3 +118,87 @@ describe("the purchase response says which check is worth doing", () => {
     expect(minted.verifyUrl).toContain("/api/verify/");
   });
 });
+
+/**
+ * WHAT A WEAKER MODEL MEETS, which is closer to the target user than a
+ * frontier model testing with full reasoning on.
+ *
+ * CV's model-strength pass, 2026-08-02, and the economic argument is
+ * the part that makes it not an edge case: the sub-dollar half of this
+ * shelf is exactly the traffic a rational operator routes to a cheap,
+ * fast, low-capability model. "Does this hold up for weak models" is
+ * arguably the main case.
+ *
+ * Most weak-model failures here are LOUD and therefore safe — a
+ * malformed signature bounces, a missing field 400s, nothing moves.
+ * Exactly one is silent, and these tests are about that one.
+ */
+describe("the amount cannot be misread by a million", () => {
+  it("states both units and the conversion between them", async () => {
+    const body = await challenge();
+    const check = body["amount_check"];
+    expect(check, "the 402 does not state its units at all").toBeTruthy();
+    expect(Array.isArray(check["usdc"])).toBe(true);
+    expect(Array.isArray(check["atomic"])).toBe(true);
+    expect(String(check["these_are_the_same_number"])).toContain("6 decimals");
+  });
+
+  it("derives the atomic figures from the offered prices rather than restating them", async () => {
+    // If these two ever disagree, the body is telling a buyer one price
+    // and the header another — which is the confusion this block exists
+    // to remove, arriving from our own side.
+    const body = await challenge();
+    const check = body["amount_check"];
+    const usdc = check["usdc"] as number[];
+    const atomic = check["atomic"] as string[];
+    expect(atomic.length).toBe(usdc.length);
+    usdc.forEach((value, index) => {
+      expect(Number(atomic[index])).toBe(Math.round(value * 1_000_000));
+    });
+  });
+
+  it("says plainly that this is the mistake nothing will catch", async () => {
+    // The whole reason it earns space in the body: every other error in
+    // the flow is refused before money moves. A signature over the
+    // wrong amount is a VALID signature.
+    const body = await challenge();
+    const warning = String(body["amount_check"]["before_you_sign"]);
+    expect(warning).toContain("does not bounce");
+    expect(warning.toLowerCase()).toContain("valid signature");
+  });
+});
+
+describe("the retry path instructs rather than describes", () => {
+  /**
+   * Weak models are reactive: they do not pre-compute a safety key
+   * against a retry that has not happened yet. They retry after the
+   * bounce. The idempotency block was already reachable on this
+   * response — it hangs off the item, not off the absence of a decline
+   * — but it read as a feature description at the exact moment it
+   * needed to read as an instruction.
+   */
+  it("tells a bounced caller what to do on the next attempt", async () => {
+    const declined = await SELF.fetch(`${BASE}/api/buy/hello`, {
+      headers: { "PAYMENT-SIGNATURE": "not-a-real-payment" },
+    });
+    const body = (await declined.json()) as Record<string, any>;
+    // Top-level, beside payment_declined rather than inside it.
+    const instruction = String(body["before_you_retry"]);
+    expect(
+      instruction,
+      "a bounced caller is not told to carry the idempotency key into the retry",
+    ).toContain("Idempotency-Key");
+    expect(instruction).toContain("second charge");
+  });
+
+  it("still hands the key itself on the declined response", async () => {
+    const declined = await SELF.fetch(`${BASE}/api/buy/hello`, {
+      headers: { "PAYMENT-SIGNATURE": "not-a-real-payment" },
+    });
+    const body = (await declined.json()) as Record<string, any>;
+    expect(
+      body["idempotency"]?.["suggested_key"],
+      "the instruction names a key the response does not carry",
+    ).toBeTruthy();
+  });
+});

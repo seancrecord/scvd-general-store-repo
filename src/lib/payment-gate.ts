@@ -58,6 +58,8 @@ import { isRecord } from "@/types";
 import type { Env } from "@/types";
 import {
   atomicToUsdc,
+  priceTiersUsdc,
+  usdcToAtomic,
   getPaymentStack,
   minimumUsdcForPath,
   tipFromPaid,
@@ -198,6 +200,24 @@ async function enrich402Body(
                 }
               : {}),
           },
+          /**
+           * IMPERATIVE, HERE, BECAUSE THIS IS THE REACTIVE MOMENT.
+           *
+           * From CV's model-strength pass: weaker models are reactive
+           * rather than anticipatory. They do not pre-compute a safety
+           * key against a retry that has not happened — that is
+           * forward-looking speculation about a failure mode, and it
+           * scales hard with capability. They retry AFTER the bounce.
+           *
+           * The idempotency block below already rides on this response
+           * (it hangs off `item`, not off the absence of a decline), so
+           * the mechanism was reachable. What was missing is that it
+           * read as a feature description at the one moment it needed
+           * to read as an instruction. A weak model acts on "do this
+           * now"; it does not reliably act on "this facility exists."
+           */
+          before_you_retry:
+            "You are about to retry. Do this on the next attempt: copy idempotency.suggested_key from this response and send it as the Idempotency-Key header (or _meta['x402/idempotency-key'] over MCP). If your first attempt actually settled and you did not see the answer, that one header is what stops the retry becoming a second charge. It cannot refuse your purchase and costs nothing.",
           // A signature that did not clear is the exact moment the
           // domain trap costs somebody a night, so the whole block
           // rides in the response rather than a link to it.
@@ -228,6 +248,36 @@ async function enrich402Body(
             not_a_secret:
               "This value is derived from the item and the current minute, so anyone can compute it — that is fine and deliberate. It selects a cache slot; it does not open one. Slots are keyed by the VERIFIED paying wallet, so echoing this key only ever reaches your own earlier purchase, never somebody else's.",
             stable_for_seconds: SUGGESTED_KEY_BUCKET_SECONDS,
+          },
+        }
+      : {}),
+    /**
+     * THE UNITS, SPELLED OUT, BECAUSE THIS IS THE ONE MISREADING THAT
+     * COSTS MONEY WITHOUT BOUNCING.
+     *
+     * CV's model-strength pass, 2026-08-02: a weaker model pulling the
+     * amount out of a base64 PAYMENT-REQUIRED header meets an integer
+     * in ATOMIC units — "5000" for half a cent — and unit confusion is
+     * exactly the class small models get wrong. Every other weak-model
+     * failure in the flow is loud: a malformed signature bounces, a
+     * missing field 400s, nothing moves. This one is silent, because a
+     * signature over the WRONG AMOUNT is still a valid signature. It is
+     * the only step where getting it wrong produces a technically
+     * correct payment for a number nobody meant.
+     *
+     * So both numbers are stated together, in the body, labelled, with
+     * the conversion written out. Derived from the same tiers the
+     * accepts are built from, never retyped.
+     */
+    ...(item
+      ? {
+          amount_check: {
+            usdc: priceTiersUsdc(item),
+            atomic: priceTiersUsdc(item).map(usdcToAtomic),
+            these_are_the_same_number:
+              "The PAYMENT-REQUIRED header and the accepts array carry ATOMIC units: USDC has 6 decimals, so 5000 atomic is $0.005 and $5000 would be 5000000000 atomic. If you read an amount and it looks a million times too large, you are holding atomic units and should not convert twice.",
+            before_you_sign:
+              "Check the amount you are about to sign against the usdc list above. This is the only step in this flow where a mistake does not bounce: a signature over the wrong amount is still a VALID signature, so nothing here will catch it for you. Every other error — bad field, malformed payload, wrong network — is refused before money moves.",
           },
         }
       : {}),
