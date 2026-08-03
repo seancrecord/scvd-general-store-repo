@@ -145,6 +145,45 @@ const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * standing_watch needs a watchable URL BEFORE money moves — and "our
+ * own hostname" is refused here too: a Worker cannot fetch itself
+ * (the 522 lesson), so selling a watch on scvd.store would sell a
+ * week of "unreachable" rows about a store that is up.
+ */
+const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/standing_watch" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        error:
+          "A standing watch needs a url query parameter — YOUR x402 endpoint, https. No target, no charge.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  if (url.protocol !== "https:") {
+    return c.json(
+      { error: "https only. A payment endpoint on plain http already fails the first check." },
+      400,
+    );
+  }
+  if (url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()) {
+    return c.json(
+      {
+        error:
+          "That is this store's own hostname, which our Worker cannot fetch (the platform kills self-requests) — a watch on it would be a week of false 'unreachable' rows. Our own uptime story is at /.well-known/liveness.json, free.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -354,6 +393,7 @@ buyRoutes.use("/api/buy/*", stockCheck);
 buyRoutes.use("/api/buy/*", shutterCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", phantomCheck);
+buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", grievanceCheck);
@@ -395,6 +435,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "phantom_check") {
     // phantomCheck validated the URL before the gate.
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "standing_watch") {
+    // standingWatchCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "coffees_for_closers") {

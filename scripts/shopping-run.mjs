@@ -75,6 +75,10 @@ const ITEM_PARAMS = {
   human_witness: { detail: "House test: witness the store's own front door." },
   app_gutcheck: { detail: "House test: review the store itself." },
   nomenclature: {},
+  // A house watch needs a real, non-self host (the Worker cannot fetch
+  // its own hostname). The protocol's public site, one week, hourly —
+  // negligible traffic, and the history doubles as a live demo.
+  standing_watch: { url: "https://www.x402.org/" },
 };
 
 function fail(message) {

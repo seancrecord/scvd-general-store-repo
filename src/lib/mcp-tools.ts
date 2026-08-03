@@ -127,7 +127,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     title: "Third-Party Observation",
     purpose:
       "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer.",
-    itemIds: ["phantom_check", "settlement_attestation"],
+    itemIds: ["phantom_check", "settlement_attestation", "standing_watch"],
   },
   {
     name: "buy_memory_anchor",
@@ -225,6 +225,12 @@ function purchaseInputSchema(item: MenuItem): Schema {
   if (item.id === "phantom_check") {
     properties["url"] = str(
       "The http(s) URL the store walks past ~6 hours from now.",
+    );
+    required.push("url");
+  }
+  if (item.id === "standing_watch") {
+    properties["url"] = str(
+      "Your own x402 endpoint, https, probed hourly for seven days; each look signed.",
     );
     required.push("url");
   }

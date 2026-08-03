@@ -44,6 +44,10 @@ export function phantomCheckNote(target: string, dueAt: string): string {
   return `Paid and noted. We'll walk past ${target} around ${dueAt} and write down what we saw. That's it. That's the product.`;
 }
 
+export function standingWatchNote(url: string, endsAt: string): string {
+  return `Paid and posted. We'll walk past ${url} every hour until ${endsAt}, write down what we saw, and sign each entry. The history is free to read forever, and the hours we miss are counted against us in it.`;
+}
+
 /** Pinned verbatim by the confession spec and its test. */
 export const CONFESSION_ABSOLUTION =
   "The store heard it. The store keeps it. Go and retry with backoff.";

@@ -59,6 +59,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
    * listing said was optional. Found 2026-07-26 while fixing the probe
    * rule; the listing and the behaviour agree again.
    */
+  if (item.id === "standing_watch") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 endpoint, https. The store probes it hourly for seven days and signs each observation. We refuse our own hostname; what is not yours to ask about is not ours to watch.",
+    };
+    required.push("url");
+  }
   if (item.id === "phantom_check") {
     properties["url"] = {
       type: "string",
@@ -188,6 +197,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   // deciding what to put in the field.
   if (item.id === "phantom_check") {
     example["url"] = "https://example.com/status";
+  }
+  if (item.id === "standing_watch") {
+    example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "the_confession") {
     example["confession"] =

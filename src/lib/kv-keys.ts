@@ -53,6 +53,8 @@ export const KV_KEYS = {
   trainTag: (ts: string, id: string): string => `train:${ts}:${id}`,
   trainTagPrefix: "train:",
   phantomCheck: (checkId: string): string => `phantom:${checkId}`,
+  standingWatch: (watchId: string): string => `watch:${watchId}`,
+  standingWatchPrefix: "watch:",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,

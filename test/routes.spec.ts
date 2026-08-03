@@ -77,6 +77,7 @@ describe("the storefront", () => {
       "hello",
       "context_anchor",
       "graffiti_on_a_train",
+      "standing_watch",
       "human_witness",
       "recurring_patronage",
       "quick_judgment",

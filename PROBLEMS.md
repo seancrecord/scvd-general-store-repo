@@ -2318,7 +2318,7 @@ inverted consent, no defamation surface, degrades to one customer's
 pause rather than an ecosystem's. That is phantom_check's grown-up
 sibling and the customer matches the one this file already named
 (the seller bearing reputational risk). PARKED behind the existing
-kill-metric: built when ≥2 unsolicited requests arrive, and the free
+kill-metric [OVERRIDDEN same day — see amendment below]: built when ≥2 unsolicited requests arrive, and the free
 preflight is the funnel most likely to carry them here. Probe
 infra cost measured and immaterial (~292k fetches/month to probe one
 directory hourly, within plan); the binding cost is the freshness
@@ -2332,3 +2332,22 @@ units) — the moment of failure is the only moment this tool is for,
 so the document is written to be found at it. The breadcrumb rides
 the preflight response like every other artifact: the report travels
 into issues and CI logs, and it explains itself wherever it lands.
+
+
+AMENDMENT, hours later, keeper's call: the standing watch is BUILT
+and LISTED rather than parked. His reasoning accepted: the machinery
+already existed (phantom's cron, the preflight's checks, the signing
+path), the delist cost is one shelf edit, and the kill-metric guarded
+against speculative COMPLEXITY, not against a cheap listing of an
+inverted-consent product. Shipped as standing_watch ($5, fixed,
+instant): hourly probes for 168 hours using the preflight's own
+checks, each row individually signed, history free forever at
+/api/watch/{id}, hours_unprobed derived at read time so the
+watcher's own gaps cannot be edited out (rule 5b applied to
+ourselves). Consent boundaries are structural: the buyer names their
+own URL, our host is refused at purchase, no leaderboard, no
+cross-customer surface, nothing said about anyone who didn't pay to
+be watched. ⚑ Keeper's pen still owed on the item copy (flagged in
+menu-utility.ts). If it becomes cumbersome: delist from the shelf,
+leave the sweep running until the last sold watch completes its week
+— sold watches are promises, delisting only stops new ones.

@@ -112,6 +112,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   quick_judgment: "Get a human verdict on a decision I can't judge myself",
   phantom_check:
     "Verify a URL is live, later, from a disinterested third party",
+  standing_watch:
+    "Monitor my x402 endpoint hourly for a week with signed uptime history",
   context_anchor: "Store a memory I can read back next session",
   nomenclature:
     "Claim a name nobody else can take, in a register anyone can read",
@@ -162,6 +164,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",
   phantom_check:
     "Out-of-band verification by someone who is not you: the store fetches your URL about six hours later, from outside your infrastructure, and signs what it found. A self-check cannot produce that property.",
+  standing_watch:
+    "A week of out-of-band hourly checks on your own endpoint, each observation signed individually so any row can be quoted alone. Consent is the purchase: we watch what you asked us to watch, nobody else. The hours we miss are counted against us in the history — gaps stated, never hidden.",
   human_witness:
     "An observation of the physical world, which an agent cannot make natively: a named human goes and looks at a real condition around Oak City and signs what he saw. Two a week.",
   phone_call:
@@ -254,6 +258,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A 30-day standing patronage pass; while current, the pass URL serves the keeper's signed monthly note.",
   phantom_check:
     "A signed observation of the named URL, made out-of-band about six hours after purchase.",
+  standing_watch:
+    "A watch id and a free, permanent history URL that fills with one signed observation per hour for seven days, gaps stated.",
   quick_judgment:
     "One honest verdict from the keeper on the dilemma supplied, delivered on the completed order.",
   certificate_of_patronage:
@@ -315,6 +321,12 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: ["phantom_check"],
     example:
       "GET /api/buy/phantom_check?url=https://your-service.example/health",
+  },
+  {
+    when: "You run an x402 endpoint and want a week of signed, hourly proof it kept answering — evidence for a directory listing or a counterparty, from an observer who is not you.",
+    items: ["standing_watch"],
+    example:
+      "GET /api/buy/standing_watch?url=https://your-shop.example/api/buy/thing",
   },
   {
     when: "Something has to happen in the physical world: a phone call placed, a real condition looked at, an app used by an actual person.",

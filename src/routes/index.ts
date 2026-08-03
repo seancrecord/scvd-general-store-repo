@@ -43,6 +43,7 @@ export { fulfillmentLogRoutes } from "@/routes/fulfillment-log";
 export { claimsRoutes } from "@/routes/claims";
 export { conformanceRoutes } from "@/routes/conformance";
 export { preflightRoutes } from "@/routes/preflight";
+export { watchRoutes } from "@/routes/watch";
 export { anchorLogRoutes } from "@/routes/anchor-log";
 export { rightsRoutes } from "@/routes/rights";
 export { windDownRoutes } from "@/routes/wind-down";

@@ -43,6 +43,7 @@ import {
   claimsRoutes,
   conformanceRoutes,
   preflightRoutes,
+  watchRoutes,
   anchorLogRoutes,
   rightsRoutes,
   windDownRoutes,
@@ -63,6 +64,7 @@ import { STORE_HEADER } from "@/lib/identity";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
+import { sweepStandingWatches } from "@/services/standing-watch";
 import { recomputeCorrections } from "@/services/reclassify";
 import { assembleDraft } from "@/services/gazette-weekly";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
@@ -195,6 +197,7 @@ app.route("/", fulfillmentLogRoutes);
 app.route("/", claimsRoutes);
 app.route("/", conformanceRoutes);
 app.route("/", preflightRoutes);
+app.route("/", watchRoutes);
 app.route("/", anchorLogRoutes);
 app.route("/", rightsRoutes);
 app.route("/", windDownRoutes);
@@ -285,6 +288,22 @@ const worker: ExportedHandler<Env> = {
           condition: "worker_health",
           detail: `Phantom sweep failed: ${String(error)}`,
         }),
+      ),
+    );
+    /**
+     * THE STANDING WATCH ROUNDS. Same walk as the phantom sweep, once
+     * an hour; a failed sweep alerts rather than silently skipping,
+     * because a skipped hour becomes an hours_unprobed row in a
+     * customer's history — our gap, on their record.
+     */
+    ctx.waitUntil(
+      sweepStandingWatches(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Standing watch sweep failed: ${String(error)}`,
+          }),
       ),
     );
     ctx.waitUntil(runHealthChecks(env));

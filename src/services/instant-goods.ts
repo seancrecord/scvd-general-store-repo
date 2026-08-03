@@ -8,6 +8,7 @@ import { createLucky, drawLuckyParts } from "@/services/luckies";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
+import { startWatch } from "@/services/standing-watch";
 import {
   anchorNote,
   coffeeNote,
@@ -22,6 +23,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   phantomCheckNote,
+  standingWatchNote,
 } from "@/store/copy/deliverables";
 import type { Env, MenuItem } from "@/types";
 
@@ -130,6 +132,22 @@ export async function deliverInstantGoods(
           check_id: scheduled.record.check_id,
           due_at: scheduled.record.due_at,
           pickup_url: scheduled.pickupUrl,
+        },
+      };
+    }
+    case "standing_watch": {
+      const watch = await startWatch(env, input.targetUrl ?? "");
+      return {
+        deliverable: standingWatchNote(
+          watch.record.url,
+          watch.record.ends_at,
+        ),
+        extras: {
+          watch_id: watch.record.watch_id,
+          ends_at: watch.record.ends_at,
+          history_url: watch.historyUrl,
+          first_probe_by:
+            "the top of the next hour, on the store's rounds; the history URL is readable now and fills in as the week goes",
         },
       };
     }

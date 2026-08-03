@@ -11,6 +11,7 @@ export {
   luckyNote,
   patronagePassNote,
   phantomCheckNote,
+  standingWatchNote,
   patronageCertificateNote,
   CONFESSION_ABSOLUTION,
   CONFESSION_COUNTER_SIGN,
