@@ -1,24 +1,226 @@
 {
-  "what_this_is": "The census's coverage check: hosts known to matter from sources OTHER than the CDP discovery list. The census script diffs its probe list against these and reports who is missing in which direction — a high-volume seller absent from the Bazaar and a Bazaar listing absent from the volume index are both findings. Every entry must name its source and date; an entry nobody can source gets removed, not defended.",
-  "how_to_fill": "CV or the keeper, from a machine with network: x402scan's top hosts by settled transaction count (their leaderboard), last 30 days. One entry per host. Do not add hosts from memory or vibes — the whole point of this file is that inclusion is sourced.",
+  "what_this_is": "The census's coverage check: hosts known to matter from sources OTHER than the CDP discovery list. The census script diffs its probe list against these and reports who is missing in which direction \u2014 a high-volume seller absent from the Bazaar and a Bazaar listing absent from the volume index are both findings. Every entry must name its source and date; an entry nobody can source gets removed, not defended.",
+  "how_to_fill": "CV or the keeper, from a machine with network: x402scan's top hosts by settled transaction count (their leaderboard), last 30 days. One entry per host. Do not add hosts from memory or vibes \u2014 the whole point of this file is that inclusion is sourced.",
   "seeds": [
     {
+      "host": "blockrun.ai",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "BlockRun \u2014 routing/payment layer, 9.28M txns, ~85% of ecosystem volume"
+    },
+    {
+      "host": "claw402.ai",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "claw402 \u2014 745.87K txns"
+    },
+    {
+      "host": "x402.ottoai.services",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Otto AI \u2014 144.82K txns, 632 buyers; the ONE other host attempting signed offers (unparseable)"
+    },
+    {
+      "host": "x402.twit.sh",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "twit.sh \u2014 128.5K txns"
+    },
+    {
+      "host": "api.syraa.fun",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Syra \u2014 59.46K txns, Solana-first"
+    },
+    {
+      "host": "stableenrich.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "StableEnrich \u2014 47.29K txns, 579 buyers"
+    },
+    {
+      "host": "api.onesource.io",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "OneSource \u2014 46.68K txns, 1.28K buyers"
+    },
+    {
+      "host": "x402.agentutility.ai",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "agentutility \u2014 29.34K txns, ERC-8004 identity"
+    },
+    {
+      "host": "2s.io",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "2s \u2014 26.52K txns"
+    },
+    {
+      "host": "sol.blockrun.ai",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "BlockRun Solana \u2014 20.66K txns"
+    },
+    {
+      "host": "x402.dtelecom.org",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "dTelecom \u2014 13.96K txns, $29.96K volume"
+    },
+    {
+      "host": "surf.cascade.fyi",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "glim.sh alt host \u2014 8.58K txns"
+    },
+    {
+      "host": "api.jarvisclaw.ai",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "JarvisClaw \u2014 8.46K txns"
+    },
+    {
+      "host": "agent402.tools",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Agent402 \u2014 6.74K txns"
+    },
+    {
       "host": "api.exa.ai",
-      "source": "cdp-discovery 2026-08-03 (first census run); API-company scale",
-      "note": "Declared resources may be POST-method; excluded from GET probing, still counts for coverage."
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Exa \u2014 6.63K txns, 145 buyers"
     },
     {
-      "host": "x402.tavily.com",
-      "source": "cdp-discovery 2026-08-03 (first census run); API-company scale",
-      "note": "Same POST caveat as exa."
+      "host": "socialx402.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "StableSocial \u2014 6.47K txns"
     },
     {
-      "host": "agi.apify.com",
-      "source": "cdp-discovery 2026-08-03 (first census run)"
+      "host": "api.nansen.ai",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Nansen \u2014 5.94K txns; major analytics brand"
     },
     {
-      "host": "api.bitrefill.com",
-      "source": "cdp-discovery 2026-08-03 (first census run); established commerce operator"
+      "host": "api.cn402.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "cn402 \u2014 5.69K txns, 236 buyers"
+    },
+    {
+      "host": "stabletravel.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "StableTravel \u2014 5.69K txns"
+    },
+    {
+      "host": "defi.hugen.tokyo",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "hugen.tokyo defi \u2014 5.08K txns, 496 buyers"
+    },
+    {
+      "host": "x402engine.app",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "x402engine \u2014 4.27K txns"
+    },
+    {
+      "host": "glim.sh",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "glim.sh \u2014 3.92K txns, 431 buyers"
+    },
+    {
+      "host": "stablestudio.io",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "StableStudio \u2014 3.19K txns (NB: census saw stablestudio.dev, different host)"
+    },
+    {
+      "host": "api.printmoneylab.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "PrintMoneyLab \u2014 3.17K txns"
+    },
+    {
+      "host": "apinow.fun",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "APINow.fun \u2014 2.85K txns"
+    },
+    {
+      "host": "api.molty.cash",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "molty.cash \u2014 2.73K txns; Moltbook-adjacent tipping/gigs"
+    },
+    {
+      "host": "clawhunter.fun",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Claw Hunter \u2014 2.47K txns"
+    },
+    {
+      "host": "api.x402node.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "x402node \u2014 2.35K txns"
+    },
+    {
+      "host": "x402stock.vercel.app",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "x402stock \u2014 2.16K txns"
+    },
+    {
+      "host": "api.anchor-x402.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "anchor-x402 \u2014 2K txns; anchoring/attestation services, nearest neighbor to our trust niche"
+    },
+    {
+      "host": "stable-deepline.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Deepline GTM \u2014 1.92K txns"
+    },
+    {
+      "host": "screenshot-pdf-x402-production.up.railway.app",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "screenshot-pdf \u2014 1.89K txns"
+    },
+    {
+      "host": "netintel-production-440c.up.railway.app",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "NetIntel \u2014 1.72K txns; fair-trade-aligned copy"
+    },
+    {
+      "host": "wurkapi.fun",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "WURK \u2014 1.56K txns; agent-to-human hiring, adjacent to our human-queue shelf"
+    },
+    {
+      "host": "padelmaps.org",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Padel Maps \u2014 1.56K txns"
+    },
+    {
+      "host": "readx.1x402.sh",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "ReadX \u2014 1.35K txns"
+    },
+    {
+      "host": "stableupload.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "StableUpload \u2014 1.29K txns"
+    },
+    {
+      "host": "api.linkedpanda.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Linked Panda \u2014 1.28K txns"
+    },
+    {
+      "host": "x402.shizu.me",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "scrape402 \u2014 1.21K txns"
+    },
+    {
+      "host": "stablepeopledata.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "People Data Labs \u2014 1.19K txns"
+    },
+    {
+      "host": "api.strale.io",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Strale \u2014 1.13K txns"
+    },
+    {
+      "host": "www.x402scan.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "x402scan itself \u2014 1.13K txns"
+    },
+    {
+      "host": "api.xona-agent.com",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "Xona Agent \u2014 1.08K txns"
+    },
+    {
+      "host": "api.orcatrace.dev",
+      "source": "x402scan top by settled txns, 30d (== all-time; ecosystem is young), keeper pull 2026-08-03",
+      "note": "OrcaTrace \u2014 1.05K txns"
     }
   ]
 }
