@@ -302,3 +302,39 @@ has found at least one instance of "the answer exists, but not from
 where the reader stands." Files, then fetches. When adding a claim to
 any surface, the question is not "is this true" but "can the reader
 standing HERE reach the thing that makes it true."
+
+---
+
+## 2026-08-03 — third pass. CV, adversarial, the whole ladder.
+
+The preflight and the Night Watch, black-box, including deliberate
+abuse attempts. The system's honesty language held under adversarial
+testing — every refusal and every failure verdict stayed inside what
+one GET can know, including the slow-endpoint timeout reporting
+itself as "a fact about the network path, not proof the endpoint is
+down." The docs answered before they explained. The purchase test
+passed at full depth: a real $5 watch bought against a live 402
+(watch_524u5f2f6q5k, patron #47), and the signature verified
+INDEPENDENTLY — tweetnacl installed fresh, zero network calls to us,
+straight from the response's own how-to-verify instructions. The
+instructions were sufficient alone, which is the property they exist
+for. Watch history checks continue on his cron through the 7-day mark.
+
+**The one real miss, fixed same day: the rate limit did not fire.**
+40 concurrent probes, zero 429s. The budget was a per-isolate counter
+— documented as such, but per-isolate is nearly no ceiling when the
+platform spreads load across isolates, and a free no-auth endpoint
+that makes outbound GETs to caller-chosen hosts is a probe relay with
+no meter. His fix-before-market call was accepted: a global KV bucket
+(60/minute, eventually-consistent, slightly generous never tighter)
+now backstops the per-isolate one, the GET doc discloses both
+ceilings, and a test spends the global bucket and expects the 429.
+
+**Consent boundary, his read, adopted:** "consent is the purchase" is
+defensible at today's stakes but is a RULE, not a CHECK — nothing
+verifies the buyer owns the watched URL. The Night Watch's copy now
+says exactly that instead of implying enforcement that isn't there.
+The well-known-token domain-verification step is filed with its
+trigger: build it when watch volume or stakes rise, specifically the
+moment a watch history is used to legitimize something a third party
+relies on.

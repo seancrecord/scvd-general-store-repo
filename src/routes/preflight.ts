@@ -33,6 +33,8 @@ function doc(base: string) {
     request: {
       url: "REQUIRED. The https URL a buyer would GET expecting your 402 — your buy endpoint, not your homepage.",
     },
+    rate_limit:
+      "Two ceilings, both ours: a strict per-isolate bucket and a global best-effort cap of 60 probes/minute across all callers. Past either you get a 429 that says the budget is our cost bound, not a fact about your endpoint. The global cap is eventually-consistent, so it can run slightly generous — never tighter than stated. This endpoint makes one outbound GET per call to a host you chose; the cap is what keeps it a checker rather than a relay.",
     what_it_checks: [
       "The endpoint answers 402 Payment Required (a 200 is the 'listed but functionally absent' failure; a redirect is refused, because payment clients refuse it too).",
       "PAYMENT-REQUIRED header present and base64-JSON parseable — x402 v2 clients read the challenge there, not from the body.",

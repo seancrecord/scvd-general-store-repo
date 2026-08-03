@@ -66,12 +66,27 @@ const PROBE_TIMEOUT_MS = 8000;
 const MAX_BODY_BYTES = 256 * 1024;
 
 /**
- * Cheaper per call than did:web resolution (one fetch, no crypto),
- * but the connection can be held to the timeout, so the budget is
- * tighter than the desk's. Per-isolate, cost bound not fairness —
- * same honest limit as the desk's bucket.
+ * TWO CEILINGS, because one of them turned out to be nearly none.
+ *
+ * The per-isolate bucket shipped first, with its per-isolate nature
+ * documented as an honest limit — and CV's black-box pass (2026-08-03)
+ * showed what that honesty was worth as an abuse ceiling: 40
+ * concurrent probes, ZERO 429s, because Cloudflare spread them across
+ * isolates and every isolate held a fresh bucket of 30. For an
+ * ordinary endpoint that is a cost quirk; for a free, no-auth
+ * endpoint that makes outbound requests to caller-chosen hosts it is
+ * a probe relay with no meter. His verdict — the one finding that
+ * argues fix-before-market — is accepted:
+ *
+ *   - The per-isolate bucket stays: strict, free, catches the common
+ *     case without a KV read.
+ *   - A GLOBAL KV bucket backstops it: read-modify-write per minute,
+ *     eventually consistent, so the ceiling is approximate — lost
+ *     increments make it slightly generous, never tighter than
+ *     stated. An approximate ceiling beats an imaginary one.
  */
 const PROBES_PER_MINUTE = 30;
+const GLOBAL_PROBES_PER_MINUTE = 60;
 let probeMinute = "";
 let probesUsed = 0;
 
@@ -85,6 +100,17 @@ function takeProbeBudget(): boolean {
     return false;
   }
   probesUsed += 1;
+  return true;
+}
+
+async function takeGlobalProbeBudget(env: Env): Promise<boolean> {
+  const minute = new Date().toISOString().slice(0, 16);
+  const key = `preflight_budget:${minute}`;
+  const used = parseInt((await env.COUNTERS.get(key)) ?? "0", 10);
+  if (used >= GLOBAL_PROBES_PER_MINUTE) {
+    return false;
+  }
+  await env.COUNTERS.put(key, String(used + 1), { expirationTtl: 120 });
   return true;
 }
 
@@ -421,7 +447,7 @@ export async function preflightUrl(
       },
     };
   }
-  if (!takeProbeBudget()) {
+  if (!takeProbeBudget() || !(await takeGlobalProbeBudget(env))) {
     return {
       status: 429,
       body: {

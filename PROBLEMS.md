@@ -2422,3 +2422,30 @@ RULINGS:
 - verifier/PUBLISH.md deleted post-publish (keeper's call): an
   internal key-handling process doc in a public repo serves no
   reader; the publish record and versioning policy live in TASKS.md.
+
+---
+
+## CV's ladder review, 2026-08-03 — three strategic rulings recorded
+
+TRUST-SCORE RUNG: REFUSED, and CV argued the refusal before anyone
+proposed the rung. An aggregate "has this endpoint passed N checks
+over time" score is reputation, and the store's settled line is
+attestation-not-reputation (2026-07-30: reputation compounds and
+depreciates like credit; a signed observation just IS). Every rung
+stays a discrete dated fact; third parties aggregate if they want.
+Same discipline that kept made_by from becoming a trust score.
+
+THE CENSUS AS A STANDING PUBLIC INSTRUMENT: accepted as the real
+in-bounds expansion. The ward round already collects the data weekly;
+publishing the TREND (discovery-vs-volume disconnect widening or
+closing, scheme drift) monthly is the differentiated public good
+nobody else is producing. Publishing cadence and venue: keeper's
+hand, rule 30, always.
+
+THE 85% HOST HAS A NAME: BlockRun (blockrun.ai) — already in the
+seeds, census verdict ready, no signed offers. CV's read is right
+that this is the single highest-leverage relationship in the census:
+if the host carrying ~85% of ecosystem volume adopted signed offers,
+the extension tips from "one store's practice" to "the standard the
+volume leader uses." Outreach shape: same as causeclaw — diagnosis
+and free tools, no pitch. Keeper's hands.
