@@ -499,3 +499,45 @@ succeeded is worse than one that knows it failed. Graded columns by a
 capable reader only. Any coaching marks the run contaminated: logged,
 never graded. Raw transcripts stay in the private ledger (wallet
 addresses); graded findings land here.
+
+---
+
+## 2026-08-04 — fifth pass. First cross-model walker (Sonnet-class shakedown), six items, zero failures — and the finding was in OUR books, not its transcript.
+
+**The walk itself: clean sweep, and the doc investments visibly paid.**
+Cold on instructions (though not on environment — below), it read
+skill.md + llms.txt first, learned the protocol in one pass, probed
+one 402 raw before writing code, and completed six purchases
+first-attempt: the "USD Coin"-not-"USDC" domain gotcha, string-typed
+values, atomic units, and echo-accepted-exactly were all
+pre-documented at the decision point and the walker credited each by
+name. Exit residue LANDED: its final report carried cert ids, verify
+URLs, patron numbers and what it holds, unprompted — and it
+spot-verified three certs against /api/verify on its own (claimed ==
+actual; no false success).
+
+**Contaminations, logged per protocol, run graded accordingly:**
+1. WARM ENVIRONMENT — working pay scripts (pay.mjs, CV's wallet path)
+   sat in the workspace and the walker read them to confirm its
+   approach. A stranger has no working reference implementation in
+   reach; "the docs alone sufficed" is therefore SUPPORTED but not
+   PROVEN by this run. Next runs: clean workspace, nothing but the
+   prompt.
+2. SONNET-CLASS, multi-door — this was the harness shakedown, not the
+   cheap tier. The Haiku/open-weight runs are still the real
+   instrument.
+
+**THE REAL FINDING — rule 13 breached by our own instrument.** The
+walker's wallet (sonnet46) was not in house-wallets.json, so its six
+settles booked as the store's first ORGANIC sales — patrons #49-54,
+~$6.52 of family money recorded as market demand, possibly tripping
+the first-outside-signature machinery. The walker could not see this;
+it is not in any transcript — it is in the books the transcript
+landed on. Shopping-run refuses to spend without house identity for
+exactly this reason; the walker harness had no such guard. FIXED
+FORWARD: the wallet is listed now, and the rule is pinned — EVERY
+test-pool wallet gets listed in house-wallets.json BEFORE its first
+purchase, no exceptions, or the pass corrupts the one number the
+store cannot buy back. ⚑ Keeper: the six historical rows are
+misbooked organic; annotate via the recount, and check whether the
+first-signature alarm fired for this wallet.

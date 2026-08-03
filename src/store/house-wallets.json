@@ -12,6 +12,12 @@
       "who": "CV",
       "since": "2026-07-28",
       "why": "runs the store's live buy tests; his settles are house tests, not first sales"
+    },
+    {
+      "address": "0xe582b04c02f05Ccf3C81C0e0cBbD3053312405d5",
+      "who": "cheap-model pass walker (sonnet46)",
+      "since": "2026-08-04",
+      "why": "AGENT_UX cross-model walker wallet from the test-wallet pool; its purchases are UX passes, never organic demand. LESSON ATTACHED: this was added AFTER its first six settles booked as organic (patrons 49-54, ~$6.52) \u2014 every test-pool wallet must be listed here BEFORE its first purchase, the same guard shopping-run enforces for itself."
     }
   ]
 }
