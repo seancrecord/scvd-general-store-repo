@@ -346,6 +346,30 @@ adminRoutes.get("/admin", async (c) => {
 adminRoutes.get("/admin/books", (c) => c.redirect("/admin"));
 
 /**
+ * The ward round's readout, and a hand-crank for it: the Sunday cron
+ * runs it on schedule, and the lever exists for the week the keeper
+ * wants a fresh reading now (or the first reading, before any Sunday
+ * has come).
+ */
+adminRoutes.get("/admin/ward", async (c) => {
+  const { latestWardRound, previousWardRound, wardDelta } = await import(
+    "@/services/ward-round"
+  );
+  const { renderWardPage } = await import("@/pages/admin/ward-page");
+  const round = await latestWardRound(c.env);
+  const previous = await previousWardRound(c.env);
+  return c.html(
+    renderWardPage(round, previous, round ? wardDelta(round, previous) : null),
+  );
+});
+
+adminRoutes.post("/admin/ward/run", async (c) => {
+  const { runWardRound } = await import("@/services/ward-round");
+  await runWardRound(c.env);
+  return c.redirect("/admin/ward");
+});
+
+/**
  * The back shelf. Every reading is optional and independent: the levers
  * are what you reach for when something is wrong, so a failed read must
  * never take the page down — and must never render as a confident

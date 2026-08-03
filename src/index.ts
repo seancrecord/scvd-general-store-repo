@@ -276,6 +276,25 @@ const worker: ExportedHandler<Env> = {
   // Hourly: phantom walk + the health rounds. Sundays 7am ET: the digest.
   scheduled: async (event, env, ctx) => {
     if (event.cron === "0 11 * * SUN") {
+      /**
+       * THE WARD ROUND rides the Sunday press: the weekly ecosystem
+       * census (services/ward-round.ts) that keeps the outreach data
+       * from going stale by nobody remembering a script. Failure
+       * alerts rather than skipping silently — a stale round reads
+       * exactly like a healthy ecosystem.
+       */
+      ctx.waitUntil(
+        import("@/services/ward-round").then(({ runWardRound }) =>
+          runWardRound(env).then(
+            () => undefined,
+            (error) =>
+              sendAlert(env, {
+                condition: "worker_health",
+                detail: `Ward round failed: ${String(error)}`,
+              }),
+          ),
+        ),
+      );
       ctx.waitUntil(compileDigest(env));
       // THE_NINETY gate: the Gazette drafts itself only when the week
       // earned an edition (3+ organic events); the keeper's pen

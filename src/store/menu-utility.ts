@@ -8,23 +8,23 @@ import type { MenuItem } from "@/types";
  */
 export const UTILITY_ITEMS: readonly MenuItem[] = [
   /**
-   * ⚑ KEEPER'S PEN on name, description and note_402 — drafted by the
-   * agent 2026-08-03 with the build (his standing instruction to list
-   * it); rule 7 makes the wording his. Mechanics are settled:
-   * services/standing-watch.ts, probes are the preflight's own checks,
-   * gaps derived at read, nothing said about anyone but the buyer.
+   * NAME KEEPER-CONFIRMED 2026-08-03 ("yeah thats the name"); the
+   * description and note carry his chosen register — rule 7 keeps
+   * final wording his to amend. Mechanics are settled:
+   * services/standing-watch.ts (the id predates the name and stays —
+   * ids are API surface), probes are the preflight's own checks, gaps
+   * derived at read, nothing said about anyone but the buyer.
    */
   {
     id: "standing_watch",
     listed_week: "2026-W32",
-    name: "The Standing Watch",
+    name: "The Night Watch",
     price_usdc: 5,
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "A week of somebody checking. Name your own x402 endpoint (the url query parameter — yours, not a stranger's; we don't watch people who didn't ask) and every hour for seven days the store walks past and runs the same checks our own till lives under: answers 402, challenge parses, accepts are signable. Each look is signed on its own, the full history sits at a free URL forever, and the hours we miss are counted against us in the record — a watch that hides the watcher's naps is vouching for hours nobody watched. One look is a phantom_check; this is the week.",
-    note_402:
-      "That'll be $5, friend. A hundred and sixty-eight walks past your door, each one written down and signed.",
+      "The Night Watch. Day shift included; we just liked the name. Your door, on our rounds: every hour for seven days we walk past the x402 endpoint you name (the url query parameter — yours, we don't watch anyone who didn't ask) and try the handle: answers 402, challenge parses, a buyer could pay. Each pass is written down and signed where anyone can check it, free, forever. The passes we miss go in the book too, counted against us — a watchman who leaves his naps out of the log isn't one. One look is a phantom_check; this is the week.",
+    note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
   {
     id: "context_anchor",

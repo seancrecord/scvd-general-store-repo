@@ -42,6 +42,7 @@ export type AdminTab =
   | "referrals"
   | "bell"
   | "digest"
+  | "ward"
   | "cv"
   /**
    * The per-item lookup. Deliberately matches no nav entry, so every
@@ -70,6 +71,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "bell", href: "/admin/bell", label: "Bell" },
   { tab: "digest", href: "/admin/digest", label: "Digest" },
+  { tab: "ward", href: "/admin/ward", label: "The ward" },
 ];
 
 /**
