@@ -256,7 +256,24 @@ export async function fulfillPurchase(
     orderOptions.referrer = input.referrer;
   }
   const order = await createOrder(env, orderOptions);
-  await recordInventorySale(env, item);
+  const soldNow = await recordInventorySale(env, item);
+  /**
+   * THE OVERSELL BACKSTOP (Part A, A.2). The stock race cannot be
+   * prevented on KV; it can be refused silence. A sale that lands
+   * past the ceiling alerts with the order id and the refund
+   * instruction — the keeper's hand settles it (refund one, or fill
+   * it anyway if his week allows; his call, but never unknowing).
+   */
+  if (
+    soldNow !== null &&
+    item.weekly_inventory !== undefined &&
+    soldNow > item.weekly_inventory
+  ) {
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `OVERSOLD: ${item.id} sale #${soldNow} against a ceiling of ${item.weekly_inventory} (order ${order.order_id}). Two buyers passed the stock gate concurrently — settle it by hand: refund one via /admin, or fulfill it if the week allows. This alert exists so an oversell is never silent.`,
+    }).catch(() => undefined);
+  }
 
   // Stocked shelves (the drawer, the name pool): the unit is
   // keeper-made already; the order completes itself. Bare shelves

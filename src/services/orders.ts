@@ -163,16 +163,35 @@ export async function remainingInventory(
   return Math.max(0, item.weekly_inventory - (sold ? parseInt(sold, 10) : 0));
 }
 
+/**
+ * Returns the post-sale sold count (null for unstocked items) so the
+ * caller can notice an oversell. THE RACE THIS CANNOT PREVENT, said
+ * plainly (Part A audit, 2026-08-03, CV's predicted finding confirmed
+ * by code read): this is a read-modify-write against KV with no
+ * coordination, and the stock gate runs BEFORE the payment gate — two
+ * concurrent buyers at remaining=1 both pass the check, both settle,
+ * both land here. KV has no transactions, so the honest design is not
+ * pretending to prevent the race but refusing to let it be SILENT:
+ * the caller compares the returned count against the ceiling and
+ * flags the oversold order for the keeper's refund hand. Money taken
+ * past the ceiling becomes a loud, tracked event instead of a quiet
+ * (N+1)th order in the queue. The count itself can also UNDERCOUNT
+ * under the same race (lost increment), which makes the returned
+ * number a floor — one more reason detection lives at the caller
+ * with the ceiling in hand, not buried in a counter nobody rereads.
+ */
 export async function recordInventorySale(
   env: Env,
   item: MenuItem,
-): Promise<void> {
+): Promise<number | null> {
   if (item.weekly_inventory === undefined) {
-    return;
+    return null;
   }
   const key = KV_KEYS.inventory(item.id, currentWeekKey());
   const sold = await env.COUNTERS.get(key);
-  await env.COUNTERS.put(key, String((sold ? parseInt(sold, 10) : 0) + 1));
+  const now = (sold ? parseInt(sold, 10) : 0) + 1;
+  await env.COUNTERS.put(key, String(now));
+  return now;
 }
 
 export async function resetWeeklyInventory(env: Env): Promise<void> {
