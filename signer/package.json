@@ -1,6 +1,6 @@
 {
   "name": "x402-sign",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify.",
   "type": "module",
   "main": "./x402-sign.js",

@@ -4,6 +4,10 @@ Mint spec-conformant **x402 Signed Offers & Receipts** for your 402s:
 JWS compact, EdDSA over Ed25519, the extension's exact wire shape.
 Zero dependencies, no call home, your seed never leaves your process.
 
+**x402 v2** — this is tooling for the current protocol (the
+`@x402/core` v2 ecosystem). Unscoped name, current spec: not related
+to the deprecated v1 `x402-fetch`/`x402-axios` family.
+
 The issuing half of [`x402-verify`](https://www.npmjs.com/package/x402-verify)
 — different codebases on purpose, so neither vouches for the other.
 

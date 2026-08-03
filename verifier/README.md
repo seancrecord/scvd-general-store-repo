@@ -4,6 +4,10 @@ A zero-dependency verifier for **x402 Signed Offers & Receipts**,
 `did:web` identity, and key history. Works on any store's artifacts,
 including ours, with nothing privileged about ours.
 
+**x402 v2** — this is tooling for the current protocol (the
+`@x402/core` v2 ecosystem). Unscoped name, current spec: not related
+to the deprecated v1 `x402-fetch`/`x402-axios` family.
+
 MIT. Install it, copy the file, vendor it, fork it — that is what it
 is for.
 
