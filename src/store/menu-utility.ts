@@ -23,7 +23,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "The Night Watch. Day shift included; we just liked the name. Your door, on our rounds: every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, a buyer could pay. Name your own door — that's the rule of the house, and honestly it's a rule, not a check: we can't verify the door is yours, only refuse to pretend we can. What we watch is public and the watching is one polite GET an hour. Each pass is written down and signed where anyone can check it, free, forever. The passes we miss go in the book too, counted against us — a watchman who leaves his naps out of the log isn't one. One look is a phantom_check; this is the week.",
+      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, a buyer could pay. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. One look is a phantom_check; this is the week.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
   {
