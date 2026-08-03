@@ -351,14 +351,37 @@ async function fetchKeyDoc(
     const response = await fetchImpl(url, {
       signal: AbortSignal.timeout(options.timeoutMs ?? COUNTERPART_TIMEOUT_MS),
       /**
-       * NO REDIRECTS. Following one hands back the bypass the
-       * allowlist exists to remove: an allowed host answering 302
-       * pointing anywhere turns our verifier into a request emitter
-       * aimed at a target we never approved.
+       * NO REDIRECTS — and it must be "manual" rather than "error".
+       *
+       * Workers never implemented redirect: "error"; it throws
+       * TypeError("Invalid redirect value") before a single byte goes
+       * out. Shipped 2026-08-02 and broke every did:web resolution
+       * silently, because the throw was caught by the resolver and
+       * reported as "unreachable" — indistinguishable from a host that
+       * really was down. The store's headline free feature answered
+       * does_not_conform on its own live, valid offers, 100% of the
+       * happy path, for a day.
+       *
+       * "manual" hands back the 3xx as a response instead of following
+       * it, so the refusal below is OURS and explicit. That is strictly
+       * better than relying on a runtime to throw: the security
+       * property is identical and the failure is legible.
        */
-      redirect: "error",
+      redirect: "manual",
       headers: { Accept: "application/json" },
     });
+    /**
+     * A 3xx is refused explicitly now that redirect is "manual" —
+     * `!response.ok` already covers it, but naming the case keeps the
+     * reason legible in the failure string rather than reporting a
+     * redirect as a generic bad status.
+     */
+    if (response.status >= 300 && response.status < 400) {
+      return {
+        doc: null,
+        failure: `counterpart key document answered ${response.status}; redirects are not followed, because an allowed host pointing elsewhere is the bypass the allowlist exists to remove`,
+      };
+    }
     if (!response.ok) {
       return {
         doc: null,

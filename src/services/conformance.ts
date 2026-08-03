@@ -223,13 +223,37 @@ function guardedFetch(): typeof fetch {
       ...init,
       signal: AbortSignal.timeout(DID_DOC_TIMEOUT_MS),
       /**
-       * NO REDIRECTS. A host answering 302 turns a fixed-path fetch
-       * back into an arbitrary one, which is the exact property that
-       * made this safe to offer without an allowlist.
+       * NO REDIRECTS — and it must be "manual" rather than "error".
+       *
+       * Workers never implemented redirect: "error"; it throws
+       * TypeError("Invalid redirect value") before a single byte goes
+       * out. Shipped 2026-08-02 and broke every did:web resolution
+       * silently, because the throw was caught by the resolver and
+       * reported as "unreachable" — indistinguishable from a host that
+       * really was down. The store's headline free feature answered
+       * does_not_conform on its own live, valid offers, 100% of the
+       * happy path, for a day.
+       *
+       * "manual" hands back the 3xx as a response instead of following
+       * it, so the refusal below is OURS and explicit. That is strictly
+       * better than relying on a runtime to throw: the security
+       * property is identical and the failure is legible.
        */
-      redirect: "error",
+      redirect: "manual",
       headers: { Accept: "application/json" },
     });
+    /**
+     * THE REFUSAL "error" USED TO DO FOR US, done explicitly. With
+     * "manual" a 3xx comes back as an opaque-redirect response rather
+     * than being followed, so this is where the allowlist bypass gets
+     * closed: a host answering 302 must not turn a fixed-path fetch
+     * back into an arbitrary one.
+     */
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error(
+        `did document answered ${response.status}; redirects are not followed`,
+      );
+    }
     const declared = Number(response.headers.get("content-length") ?? "");
     if (Number.isFinite(declared) && declared > MAX_DID_DOC_BYTES) {
       throw new Error("did document is over the size ceiling and was not read");

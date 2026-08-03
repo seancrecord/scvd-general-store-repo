@@ -560,21 +560,45 @@ describe("RED TEAM: redirects and key spelling", () => {
   it("refuses to follow a redirect", async () => {
     /**
      * An allowed host answering 302 to a link-local address would hand
-     * back the exact bypass the allowlist removes. `redirect: "error"`
-     * makes the fetch itself fail rather than chase it.
+     * back the exact bypass the allowlist removes.
+     *
+     * THIS TEST USED TO ASSERT `redirect === "error"` — the MECHANISM
+     * rather than the PROPERTY — and in doing so it pinned a value
+     * that never worked. Workers refuses to construct a request with
+     * redirect: "error" (TypeError, "won't be implemented"), so the
+     * option this test was guarding would have thrown on every real
+     * call. Found 2026-08-03 when the same option broke the conformance
+     * desk's did:web resolution in production.
+     *
+     * A test that asserts HOW something is done cannot notice that the
+     * how does not work. So this asserts WHAT must be true: a 3xx is
+     * refused and never chased, whichever mechanism gets us there.
      */
     let sawRedirectMode: string | undefined;
     const spy = ((_url: string, init?: RequestInit) => {
       sawRedirectMode = init?.redirect;
       return Promise.resolve({
-        ok: true,
-        status: 200,
-        text: async () =>
-          JSON.stringify({ key_history: { current: { public_key: KEY_A } } }),
+        ok: false,
+        status: 302,
+        headers: { get: () => null },
+        text: async () => "",
       } as unknown as Response);
     }) as unknown as typeof fetch;
-    await verifyCrossReference(ref(), { ...ALLOW_ALL, fetch: spy });
-    expect(sawRedirectMode).toBe("error");
+    const result = await verifyCrossReference(ref(), {
+      ...ALLOW_ALL,
+      fetch: spy,
+    });
+
+    // The property: a redirect is not followed, and the reference is
+    // reported unverified with the reason named.
+    expect(result.verified).toBe(false);
+    expect(String(result.reason ?? "")).toMatch(/redirect|302/i);
+
+    // And the mechanism is one this runtime will actually construct.
+    expect(
+      ["manual", "follow"],
+      `redirect: "${sawRedirectMode}" is not constructible in Workers`,
+    ).toContain(sawRedirectMode);
   });
 
   it("treats 0x-prefixed keys as the same key, not as a mismatch", async () => {
