@@ -31,6 +31,20 @@ import { argv, exit } from "node:process";
 
 const MENU_URL = "https://scvd.store/menu.json";
 const VALIDATE_URL = "https://api.cdp.coinbase.com/platform/v2/x402/validate";
+
+// Same optional key loading as bazaar-check, for the auth attempt.
+import { readFileSync } from "node:fs";
+try {
+  const text = readFileSync(new URL("../.dev.vars", import.meta.url), "utf8");
+  for (const line of text.split("\n")) {
+    const match = /^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/.exec(line);
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = match[2].replace(/^["']|["']$/g, "");
+    }
+  }
+} catch {
+  // No .dev.vars is fine; unauthenticated worked for weeks.
+}
 const asJson = argv.includes("--json");
 
 function log(...args) {
@@ -63,27 +77,90 @@ function readVerdict(payload) {
   };
 }
 
-async function validate(url) {
+/**
+ * 2026-08-03: every item came back HTTP 400 UNIFORMLY — including
+ * items that validated clean two days earlier — and the 200-char
+ * detail slice cut the body exactly before CDP's errorType and
+ * errorMessage, so the output showed a correlationId and nothing
+ * actionable. A uniform 400 across the whole shelf is the REQUEST
+ * SHAPE being refused, not 24 listings going bad at once. So:
+ *
+ *   - The first failing body prints IN FULL, once, before the table.
+ *   - If CDP keys are around (.dev.vars / env, same as bazaar-check),
+ *     a Bearer JWT rides along — a public endpoint quietly moving
+ *     behind auth is the least surprising API change there is.
+ *   - Two request spellings are tried ({url} then {resourceUrl}),
+ *     and the summary names which one the API answered to.
+ */
+let firstFailureShown = false;
+let workingShape = null;
+
+async function maybeAuthHeaders(requestPath) {
+  const apiKeyId = process.env.CDP_API_KEY_ID;
+  const apiKeySecret = process.env.CDP_API_KEY_SECRET;
+  if (!apiKeyId || !apiKeySecret) return {};
   try {
-    const response = await fetch(VALIDATE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
+    const { generateJwt } = await import("@coinbase/cdp-sdk/auth");
+    const token = await generateJwt({
+      apiKeyId,
+      apiKeySecret,
+      requestMethod: "POST",
+      requestHost: "api.cdp.coinbase.com",
+      requestPath,
     });
-    const text = await response.text();
-    if (!response.ok) {
-      return {
-        state: "probe_failed",
-        detail: `HTTP ${response.status}: ${text.slice(0, 200)}`,
-      };
+    return { Authorization: `Bearer ${token}` };
+  } catch {
+    return {};
+  }
+}
+
+async function validate(url) {
+  const requestPath = new URL(VALIDATE_URL).pathname;
+  const auth = await maybeAuthHeaders(requestPath);
+  const shapes = workingShape
+    ? [workingShape]
+    : [
+        { label: "{url}", body: { url } },
+        { label: "{resourceUrl}", body: { resourceUrl: url } },
+      ];
+  let last = null;
+  try {
+    for (const shape of shapes) {
+      const body = workingShape
+        ? { ...shape.body, ...(shape.body.url !== undefined ? { url } : { resourceUrl: url }) }
+        : shape.body;
+      const response = await fetch(VALIDATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...auth },
+        body: JSON.stringify(body),
+      });
+      const text = await response.text();
+      if (response.ok) {
+        if (!workingShape) {
+          workingShape = shape;
+          console.error(`(the API answered to ${shape.label}${auth.Authorization ? ", authenticated" : ""})`);
+        }
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          return { state: "unreadable", detail: `not JSON: ${text.slice(0, 200)}` };
+        }
+        return readVerdict(payload);
+      }
+      last = { status: response.status, text };
     }
-    let payload;
-    try {
-      payload = JSON.parse(text);
-    } catch {
-      return { state: "unreadable", detail: `not JSON: ${text.slice(0, 200)}` };
+    if (last && !firstFailureShown) {
+      firstFailureShown = true;
+      console.error(`
+FIRST FAILING BODY, IN FULL (HTTP ${last.status}${auth.Authorization ? ", authenticated" : ", unauthenticated"}):`);
+      console.error(last.text);
+      console.error("");
     }
-    return readVerdict(payload);
+    return {
+      state: "probe_failed",
+      detail: `HTTP ${last.status}: ${last.text.slice(0, 400)}`,
+    };
   } catch (error) {
     return { state: "probe_failed", detail: String(error) };
   }
