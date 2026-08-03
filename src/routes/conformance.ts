@@ -52,7 +52,13 @@ async function handleCheck(c: Context<HonoEnv>) {
     );
   }
 
-  const result = await checkConformance(body as ConformanceRequest);
+  /**
+   * env rides along so the desk can resolve OUR OWN did:web without a
+   * network round-trip Cloudflare would kill — a Worker cannot fetch
+   * its own hostname (522), and the issuer that hits that wall is the
+   * one every happy-path caller checks first: us.
+   */
+  const result = await checkConformance(body as ConformanceRequest, c.env);
   if (result.error) {
     return c.json({ error: result.error }, result.status as 400);
   }

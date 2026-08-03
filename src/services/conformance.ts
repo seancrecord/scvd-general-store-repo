@@ -6,6 +6,9 @@ import {
   OFFER_REQUIRED_FIELDS,
   RECEIPT_REQUIRED_FIELDS,
 } from "../../verifier/x402-verify.js";
+import { buildAnchorLogDocument } from "@/services/anchor-log";
+import { buildDidDocument } from "@/services/did-document";
+import type { Env } from "@/types";
 
 /**
  * THE FREE CONFORMANCE DESK — /api/conformance.
@@ -181,6 +184,14 @@ export interface ConformanceVerdict {
   liveness: string;
   key_resolution: "offline" | "did:web" | "not_attempted" | "budget_exhausted";
   /**
+   * Present only when the artifact's issuer is THIS STORE. Additive to
+   * the frozen v1 contract. Cloudflare refuses a Worker's subrequest
+   * to its own hostname, so our own documents are read from the same
+   * builders the public routes serve rather than over the network —
+   * and the one thing that trade cannot attest is stated in the field.
+   */
+  self_resolution?: string;
+  /**
    * Present only when check_anchor was requested. Never folded into
    * `verdict` — see AnchorFinding.
    */
@@ -213,11 +224,85 @@ export interface ConformanceVerdict {
  * why the guards below still do their own work: https only, no
  * redirects, a hard timeout, and a size ceiling.
  */
-function guardedFetch(): typeof fetch {
+/**
+ * THE ISSUER THIS DESK COULD NEVER RESOLVE WAS ITS OWN OPERATOR.
+ *
+ * Found live by CV on 2026-08-03, hiding directly behind the
+ * redirect-value bug fixed that morning: once requests actually went
+ * out, every did:web resolution of OUR OWN identifier died as a 522 —
+ * while the identical URL answered 200 in 60ms from anywhere else.
+ * Cloudflare refuses a Worker's subrequest to its own hostname; the
+ * fetch reaches the edge, routes back toward the same Worker, and is
+ * killed. So the happy path everyone actually walks — "check the
+ * offer this store just handed me" — could not ever have worked over
+ * the network, on any deploy, past or future. Two bugs, same symptom,
+ * the first masking the second.
+ *
+ * THE FIX IS TO READ THE SOURCE, NOT THE WIRE. When the target host
+ * is our own, the two documents did:web resolution can legitimately
+ * want — the DID document and the anchor log — are served from the
+ * SAME BUILDERS the public routes serve, in-process. Not a cached
+ * copy, not a second implementation: the one producer both consumers
+ * call, incapable of disagreeing with what the world sees.
+ *
+ * WHAT THIS DOES NOT PROVE, stated because the verdict says it too
+ * (rule 5b): a self-served document cannot attest that scvd.store is
+ * publicly reachable. A caller who wants that proof must fetch the
+ * URL from their own vantage — which is exactly what the verdict
+ * tells them.
+ *
+ * Any other path on our own host answers 404 here rather than going
+ * out to die: did:web:scvd.store:anything is not an identifier this
+ * store serves, and a legible refusal beats an edge timeout wearing
+ * an "issuer unreachable" costume.
+ */
+interface SelfResolution {
+  host: string;
+  env: Env;
+  /** Paths served in-process, recorded so the verdict can say so. */
+  served: string[];
+}
+
+function selfResolutionFor(env: Env | undefined): SelfResolution | undefined {
+  if (!env?.STORE_BASE_URL) {
+    return undefined;
+  }
+  try {
+    return { host: new URL(env.STORE_BASE_URL).host.toLowerCase(), env, served: [] };
+  } catch {
+    return undefined;
+  }
+}
+
+async function serveOwnDocument(
+  self: SelfResolution,
+  pathname: string,
+): Promise<Response> {
+  if (pathname === "/.well-known/did.json") {
+    self.served.push(pathname);
+    return Response.json(await buildDidDocument(self.env));
+  }
+  if (pathname === "/.well-known/anchor-log.json") {
+    self.served.push(pathname);
+    return Response.json(await buildAnchorLogDocument(self.env));
+  }
+  return Response.json(
+    { error: "this store serves no did document at this path" },
+    { status: 404 },
+  );
+}
+
+function guardedFetch(self?: SelfResolution): typeof fetch {
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === "string" ? input : String(input);
     if (!url.startsWith("https://")) {
       throw new Error("did:web resolution is https-only");
+    }
+    if (self) {
+      const parsed = new URL(url);
+      if (parsed.host.toLowerCase() === self.host) {
+        return serveOwnDocument(self, parsed.pathname);
+      }
     }
     const response = await fetch(url, {
       ...init,
@@ -326,8 +411,25 @@ function meaningOf(
   return "Not enough was checkable to reach a verdict either way. This is deliberately not reported as a failure: an unchecked artifact and a bad one are different things, and collapsing them would make this desk useless for exactly the ambiguous cases worth bringing here.";
 }
 
+/** The did:web host, parsed the way resolveDidWeb parses it. */
+function didWebHost(kid: string | undefined): string | undefined {
+  if (!kid?.startsWith("did:web:")) {
+    return undefined;
+  }
+  const first = kid.slice("did:web:".length).split("#")[0]?.split(":")[0];
+  if (!first) {
+    return undefined;
+  }
+  try {
+    return decodeURIComponent(first).replace(/%3A/gi, ":").toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
 export async function checkConformance(
   body: ConformanceRequest,
+  env?: Env,
 ): Promise<{ status: number; verdict?: ConformanceVerdict; error?: string }> {
   const artifact = body.artifact;
   if (typeof artifact !== "string" || artifact.trim().length === 0) {
@@ -357,19 +459,31 @@ export async function checkConformance(
    */
   const askedForResolution =
     body.resolve_key === false ? false : publicKeyHex === undefined;
-  /**
-   * The budget is taken HERE, before any work, so a caller who is
-   * pushed to the offline path learns it from the verdict rather than
-   * from a timeout.
-   */
-  const budgetOk = askedForResolution ? takeResolutionBudget() : true;
-  const wantsResolution = askedForResolution && budgetOk;
-
   const wantsAnchor = body.check_anchor === true;
 
   const parsed = parseJws(artifact);
   const kid =
     typeof parsed.header?.kid === "string" ? parsed.header.kid : undefined;
+
+  /**
+   * Self-resolution: when the kid's host is OUR OWN, the documents are
+   * read in-process (see guardedFetch) — so no outbound request exists
+   * for the budget to bound, and charging one would let strangers'
+   * checks starve checks of our own artifacts, the single most common
+   * request this desk gets.
+   */
+  const self = selfResolutionFor(env);
+  const kidIsOurs = self !== undefined && didWebHost(kid) === self.host;
+
+  /**
+   * The budget is taken HERE, before any work, so a caller who is
+   * pushed to the offline path learns it from the verdict rather than
+   * from a timeout.
+   */
+  const budgetOk = askedForResolution
+    ? kidIsOurs || takeResolutionBudget()
+    : true;
+  const wantsResolution = askedForResolution && budgetOk;
 
   /**
    * RESOLVED ONCE, HERE, rather than inside verifyArtifact.
@@ -385,7 +499,7 @@ export async function checkConformance(
   let resolutionProblem: string | undefined;
   if (!resolvedHex && wantsResolution && kid?.startsWith("did:web:")) {
     const resolved = (await resolveDidWeb(kid, {
-      fetch: guardedFetch(),
+      fetch: guardedFetch(self),
     })) as { ok: boolean; keys?: Map<string, Uint8Array>; problem?: string };
     if (resolved.ok) {
       const matched = resolved.keys?.get(kid);
@@ -462,7 +576,7 @@ export async function checkConformance(
         reason:
           "no public key was established, and an anchor log is searched BY key — without one this would answer a question nobody asked",
       };
-    } else if (!takeResolutionBudget()) {
+    } else if (!kidIsOurs && !takeResolutionBudget()) {
       anchor = {
         available: false,
         reason:
@@ -471,7 +585,7 @@ export async function checkConformance(
     } else {
       try {
         anchor = (await checkAnchoredKeyHistory(kid, resolvedHex, {
-          fetch: guardedFetch(),
+          fetch: guardedFetch(self),
         })) as AnchorFinding;
         anchor.what_it_does_not_prove =
           "An anchor proves WHEN a key state was committed, never WHO SHOULD HAVE held it. A thief holding the key could anchor it too. This bounds how far back a compromise could have been backdated; it does not prevent one, and `available: false` is the normal state of almost every issuer alive rather than a mark against them.";
@@ -512,6 +626,11 @@ export async function checkConformance(
           ? "Not applicable: a receipt records something that already happened and has no expiry to check."
           : expiryCheck?.detail ?? "",
       key_resolution: keyResolution,
+      ...(self && self.served.length > 0
+        ? {
+            self_resolution: `This artifact's issuer is this store, and Cloudflare forbids a Worker from fetching its own hostname — so ${self.served.join(" and ")} ${self.served.length === 1 ? "was" : "were"} read from the same code that serves ${self.served.length === 1 ? "it" : "them"} publicly, not over the network. Byte-for-byte the same document; what this cannot attest is that ${self.host} is reachable from the outside. If that matters to you, fetch the URL yourself from your own vantage — that check is exactly as free for you as it is impossible for us.`,
+          }
+        : {}),
       anchored_key_history: anchor,
       what_this_means: meaningOf(verdict, kind, live),
       what_this_cannot_tell_you: limitsFor(keyResolution),
