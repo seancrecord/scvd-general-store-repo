@@ -371,3 +371,72 @@ person who has caught this codebase lying three times this week. The
 byte-parity work translated to genuinely-settled receipts cleanly,
 and both npm packages went live the same day with both halves
 cold-tested behind them.
+
+---
+
+## The standards, extended — 2026-08-04, from an outside review of this file
+
+The review's summary line earned its place as the organizing sentence:
+these extend the same discipline to the seconds BEFORE, AFTER, and
+BENEATH the ones the passes already cover. Adopted in full:
+
+**4. Exit residue.** Every pass measured the path to first success and
+stopped at settlement — but the thirty seconds AFTER success is where
+continuity gets won or lost, and per the propagation section, residue
+is the only marketing that works. The post-success payload is where
+residue gets installed. The measurable standard: does the success
+response leave the agent holding something a SUCCESSOR can use
+without us — a durable URL, a re-verify instruction, a
+self-describing artifact — or does it assume the buyer remembers us?
+A cold agent that succeeds and walks away untaught got the goods but
+not the relationship.
+
+**5. Error recoverability.** "Avoidable 400s" counts errors that
+should not exist; this holds the ones that SHOULD to the same one-shot
+bar as success: an agent that eats this error can self-correct from
+the body alone, no second dig. Wrong network, missing field, rate
+limit, sold out — each names the fix, not just the fault. The
+founding case is the buyer who bounced three times off a decline
+reason that existed and taught nothing.
+
+**6. Time-to-price.** The first decision a budget-gated agent makes,
+and the 2026-08-02 pass fixed an instance (MCP descriptions) without
+extracting the rule. The rule: price legible at every decision point
+BEFORE any commitment — tool description, catalog entry, ahead of the
+402, never only behind it. A round trip whose only yield is learning
+the price is the most avoidable toll in the store.
+
+**7. The barbell's other end gets walked for real.** Every pass so
+far was a capable walker simulating cold — and a frontier model
+role-playing "cheap" structurally cannot predict how an
+actually-cheap model fails (schema conditionals, long-document
+attention, instruction-following under ambiguity). One pass per
+quarter on an actually-small model, same numbers, is the closest
+available test of the real population. The Kimi shopper, when it
+exists, IS this instrument — its QA walks are AGENT_UX passes on a
+non-Claude brain, and the two projects share this ledger.
+
+**8. The re-walk trigger.** Every fix changes the surfaces the next
+pass walks, and a pass suite with no re-walk trigger measures last
+month's store. The rule: any change touching a cold-agent surface
+(llms.txt, skill.md, MCP descriptions, 402 bodies, verify responses)
+gets called out as such in its commit, and the next pass walks the
+touched door FIRST.
+
+**9. Voice never carries load.** The split-surface doctrine keeps
+machine surfaces registrar-clean, but the boundary cases — 402 notes,
+error copy, tag lines — carry the keeper's voice into the cold path,
+and for the cheap-model population A JOKE IS AMBIGUITY. The standard
+is not "kill the voice": it is that any sentence a cold agent must
+parse TO SUCCEED is registrar-plain, and voice rides only where
+misreading it costs nothing. A load-bearing sentence with flavor in
+it is a finding at the same severity as a hidden price.
+
+**And one line appended to the propagation section as a design
+target:** residue quality is designable even where propagation is not
+observable. Mechanisms 3 and 4 cannot be watched — but every artifact
+can be made maximally self-describing for them, because a cert that
+explains itself to a reader who has never heard of us is the version
+that survives being pasted into someone else's report. Already mostly
+true of the verify payload; stated here so it applies to every future
+artifact class automatically rather than being re-derived per class.
