@@ -266,6 +266,26 @@ for (const item of items) {
       });
       continue;
     }
+    // The signed RECEIPT rides the settlement response's
+    // PAYMENT-RESPONSE header (extensions["offer-receipt"].info
+    // .receipt.signature). Captured on success so a receipt-path
+    // test is one shopping run, not a custom script.
+    let receiptJws = null;
+    try {
+      const prHeader =
+        response.headers.get("PAYMENT-RESPONSE") ??
+        response.headers.get("X-PAYMENT-RESPONSE");
+      if (prHeader) {
+        const decodedPr = JSON.parse(
+          Buffer.from(prHeader, "base64").toString("utf8"),
+        );
+        receiptJws =
+          decodedPr?.extensions?.["offer-receipt"]?.info?.receipt
+            ?.signature ?? null;
+      }
+    } catch {
+      receiptJws = null;
+    }
     const certId = body.certificate?.cert_id ?? body.cert_id;
     const verify = certId
       ? await (await fetch(`${STORE_URL}/api/verify/${certId}`)).json()
@@ -276,10 +296,14 @@ for (const item of items) {
         (body.order_id ? ` order ${body.order_id}` : "") +
         (verify ? ` verify:${verify.valid ? "valid" : "INVALID"}` : ""),
     );
+    if (receiptJws) {
+      console.log(`    receipt JWS captured (${receiptJws.length} chars) — in ${RECEIPTS_FILE} as receipt_jws`);
+    }
     receipts.push({
       item: item.id,
       at: new Date().toISOString(),
       ok: true,
+      receipt_jws: receiptJws,
       paid_usdc: body.paid_usdc,
       patron_number: body.patron_number,
       cert_id: certId,
