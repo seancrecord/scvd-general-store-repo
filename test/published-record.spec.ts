@@ -72,8 +72,15 @@ describe("the published record can be trusted by the guard that reads it", () =>
     if (observed) {
       return;
     }
+    // Read defensively rather than as a typed property: the SCRIPT
+    // writes {version, bundle_sha256, published_at, commit, changelog}
+    // and a reconstruction adds recorded_by. Typing against whichever
+    // shape happens to be committed breaks the build the next time the
+    // other one lands — which is exactly what it did when the real
+    // publish record replaced the reconstruction.
+    const record = PUBLISHED as Record<string, unknown>;
     expect(
-      String(PUBLISHED.recorded_by).toLowerCase(),
+      String(record["recorded_by"] ?? "").toLowerCase(),
       "the record is missing the fields only a live publish can supply, and does not admit it was reconstructed",
     ).toContain("reconstructed");
   });
