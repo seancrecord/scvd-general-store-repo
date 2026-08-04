@@ -35,6 +35,13 @@ export interface OfficePageData {
   allTime: { organic: number; house: number } | null;
   /** Settle counters against payer rows, all-time on both sides. */
   reconciliation: SettleReconciliation | null;
+  /**
+   * This month's slice of the house-reclassification ledger, derived
+   * from certificates (earliest N per frozen wallet). Applied at read
+   * to the month line — the raw counters stay exactly as written, and
+   * the adjustment shows itself instead of hiding in the arithmetic.
+   */
+  monthReclass: { settles: number; usdc: number } | null;
   bazaarLedger: BazaarLedgerEntry[];
   gazetteIssues: GazetteIssue[];
   /** Pending work counts for the strip. */
@@ -165,25 +172,37 @@ function trendHtml(ledger: MonthLedger): string {
 
 function glanceHtml(data: OfficePageData): string {
   const ledger = data.monthLedger;
-  const organicSettles = Object.values(ledger.items).reduce(
+  const reclass = data.monthReclass;
+  const rawSettles = Object.values(ledger.items).reduce(
     (sum, row) => sum + row.settled,
     0,
   );
+  // The reclassification ledger, applied at read — the same correction
+  // /stats carries, sliced to this month. Raw counters stay as
+  // written; the note under the line shows the move in the open.
+  const organicSettles = Math.max(0, rawSettles - (reclass?.settles ?? 0));
+  const revenueUsdc = Math.max(0, ledger.revenueUsdc - (reclass?.usdc ?? 0));
+  const revenueHouseUsdc = ledger.revenueHouseUsdc + (reclass?.usdc ?? 0);
   const organic402s = Object.values(ledger.items).reduce(
     (sum, row) => sum + row.challenges,
     0,
   );
+  const reclassNote =
+    reclass && reclass.settles > 0
+      ? `<p><small>After the reclassification ledger: ${reclass.settles} settle${reclass.settles === 1 ? "" : "s"} and $${reclass.usdc.toFixed(2)} this month moved organic → house (walker wallets listed late; story at /corrections). The raw counters are untouched — this line does the subtraction in the open.</small></p>`
+      : "";
   return `
     <p style="font-size:1.15em">
       <strong>${escapeHtml(ledger.month)}:</strong>
-      <strong>$${ledger.revenueUsdc.toFixed(2)}</strong> organic revenue
-      <small>(+$${ledger.revenueHouseUsdc.toFixed(2)} house)</small> \u00B7
+      <strong>$${revenueUsdc.toFixed(2)}</strong> organic revenue
+      <small>(+$${revenueHouseUsdc.toFixed(2)} house)</small> \u00B7
       <strong>${organicSettles}</strong> organic settle${organicSettles === 1 ? "" : "s"} \u00B7
       <strong>${organic402s}</strong> organic 402s \u00B7
       <strong>${data.payers.length}</strong> paying wallet${data.payers.length === 1 ? "" : "s"} <small>(all-time)</small> \u00B7
       <strong>${data.porchLedger.organicVisits}</strong> organic porch visits
       ${data.porchLedger.porchToPurchase !== null ? `\u00B7 porch-to-purchase <strong>${data.porchLedger.porchToPurchase}</strong>` : ""}
     </p>
+    ${reclassNote}
     ${
       data.allTime
         ? `<p style="font-size:1.05em"><strong>All-time:</strong> <strong>${data.allTime.organic}</strong> organic settle${data.allTime.organic === 1 ? "" : "s"} <small>(+${data.allTime.house} house)</small> \u2014 the number the storefront and /stats publish. The month line above resets when the calendar turns; this one never does.</p>`

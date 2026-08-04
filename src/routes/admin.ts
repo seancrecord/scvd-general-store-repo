@@ -14,6 +14,7 @@ import {
   readMonthLedger,
   readPorchLedger,
   emptyMonthLedger,
+  metricsMonth,
   reconcileSettles,
 } from "@/lib/metrics";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
@@ -269,6 +270,7 @@ adminRoutes.get("/admin", async (c) => {
     alerts,
     reconciliation,
     allTimeStats,
+    monthReclass,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -284,6 +286,9 @@ adminRoutes.get("/admin", async (c) => {
     listAlerts(c.env, 5),
     reconcileSettles(c.env),
     computeStats(c.env),
+    import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
+      monthReclassAdjustments(c.env),
+    ),
   ]);
   const emptyLedger = emptyMonthLedger();
   const pendingReviews =
@@ -313,6 +318,16 @@ adminRoutes.get("/admin", async (c) => {
       payers: shelf(payers, [], "payers", notes),
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
       reconciliation: shelf(reconciliation, null, "reconciliation", notes),
+      monthReclass: (() => {
+        const adjustments = shelf(monthReclass, null, "reclass ledger", notes);
+        const current = adjustments?.months[metricsMonth()];
+        if (adjustments?.truncated) {
+          notes.push(
+            "the reclassification cert scan hit its cap; the month adjustment may be partial",
+          );
+        }
+        return current ?? null;
+      })(),
       allTime: (() => {
         const stats = shelf(allTimeStats, null, "all-time stats", notes);
         return stats

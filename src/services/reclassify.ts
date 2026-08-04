@@ -323,3 +323,75 @@ export async function totalReclassified(env: Env): Promise<number> {
   const rows = await listReclassifications(env);
   return rows.reduce((sum, row) => sum + row.settles, 0);
 }
+
+export interface MonthReclassAdjustment {
+  settles: number;
+  usdc: number;
+}
+
+/**
+ * THE MONTH LINE'S SHARE OF THE CORRECTION, derived from certificates.
+ *
+ * The ledger rows freeze a COUNT per wallet and nothing else — no
+ * dollars, no dates — because that is all the lever needed. But the
+ * office's "month so far" line reads the raw monthly counters, which
+ * still carry the misbooked settles as organic revenue in whatever
+ * month they landed. The honest source for the split is the artifacts
+ * themselves: every paid certificate names its payer, its date, and
+ * its settled amount. A reclassified wallet's misbooked settles are
+ * its EARLIEST ones (the listing postdates them by construction —
+ * purchases after listing book house at the till and were never in
+ * the correction), so: take each reclassified wallet's certs oldest
+ * first, count off the frozen number, and group what they paid by
+ * month. Applied at read, beside the raw counters, like every other
+ * correction in this file.
+ *
+ * Bounded by the same cap as the chain reconciliation's cert scan; if
+ * the shelf ever outgrows it, the walk truncates VISIBLY via the
+ * returned flag rather than quietly under-adjusting.
+ */
+export async function monthReclassAdjustments(
+  env: Env,
+): Promise<{ months: Record<string, MonthReclassAdjustment>; truncated: boolean }> {
+  const rows = await listReclassifications(env);
+  const months: Record<string, MonthReclassAdjustment> = {};
+  if (rows.length === 0) {
+    return { months, truncated: false };
+  }
+  const { listKeys } = await import("@/lib/kv-list");
+  const { KV_KEYS } = await import("@/lib/kv-keys");
+  const CAP = 2000;
+  const listed = await listKeys(env.PATRONS, {
+    prefix: KV_KEYS.certPrefix,
+    cap: CAP,
+  });
+  const values = await bulkGetJson<import("@/types").CertificateRecord>(
+    env.PATRONS,
+    listed.names,
+  );
+  const byPayer = new Map<
+    string,
+    { date: string; usdc: number }[]
+  >();
+  for (const record of values.values()) {
+    const cert = record?.certificate;
+    const payer = cert?.payer?.toLowerCase();
+    if (!cert || !payer) continue;
+    const bucket = byPayer.get(payer) ?? [];
+    bucket.push({ date: cert.date, usdc: cert.paid_usdc ?? 0 });
+    byPayer.set(payer, bucket);
+  }
+  for (const row of rows) {
+    const certs = (byPayer.get(row.address) ?? []).sort((a, b) =>
+      a.date.localeCompare(b.date),
+    );
+    for (const cert of certs.slice(0, row.settles)) {
+      const month = cert.date.slice(0, 7);
+      const entry = months[month] ?? { settles: 0, usdc: 0 };
+      entry.settles += 1;
+      entry.usdc += cert.usdc;
+      months[month] = entry;
+    }
+  }
+  return { months, truncated: listed.names.length >= CAP };
+}

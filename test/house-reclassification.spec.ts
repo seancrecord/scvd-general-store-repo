@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
+  monthReclassAdjustments,
   reclassifyHousePayer,
   totalReclassified,
 } from "@/services/reclassify";
@@ -97,6 +98,70 @@ describe("the reclassification ledger", () => {
     if (right.ok) {
       expect(right.record.settles).toBe(5);
     }
+  });
+
+  it("slices the correction per month from certificates, earliest first", async () => {
+    /**
+     * The office's month line reads raw monthly counters, so the
+     * correction has to be derived for it: a reclassified wallet's
+     * misbooked settles are its EARLIEST certs (listing postdates
+     * them; later purchases book house at the till and were never in
+     * the correction). Here the haiku-walker stand-in has 5 frozen
+     * settles across two months of certs plus one post-listing cert
+     * that must NOT be counted.
+     */
+    const walker = "0x007cA504E06C98d8580A061F1099da8BE02f8765".toLowerCase();
+    const certs = [
+      { id: "cert_july_1", date: "2026-07-30", usdc: 0.5 },
+      { id: "cert_aug_1", date: "2026-08-03", usdc: 1 },
+      { id: "cert_aug_2", date: "2026-08-03", usdc: 0.25 },
+      { id: "cert_aug_3", date: "2026-08-04", usdc: 0.01 },
+      { id: "cert_aug_4", date: "2026-08-04", usdc: 2 },
+      // The sixth: bought AFTER listing, booked house at the till,
+      // outside the frozen count of 5.
+      { id: "cert_aug_5", date: "2026-08-05", usdc: 100 },
+    ];
+    for (const cert of certs) {
+      await testEnv.PATRONS.put(
+        KV_KEYS.cert(cert.id),
+        JSON.stringify({
+          certificate: {
+            cert_id: cert.id,
+            item: "hello",
+            patron_number: 1,
+            date: cert.date,
+            paid_usdc: cert.usdc,
+            payer: walker,
+          },
+          signature: "aa",
+          public_key: "bb",
+        }),
+      );
+    }
+    // The frozen row (5 settles) — written directly so this test does
+    // not depend on the lever test's ordering.
+    await testEnv.COUNTERS.put(
+      `house_reclass:${walker}`,
+      JSON.stringify({
+        address: walker,
+        settles: 5,
+        at: "2026-08-04T02:00:00.000Z",
+        reason: "test",
+      }),
+    );
+
+    const { months, truncated } = await monthReclassAdjustments(testEnv);
+    expect(truncated).toBe(false);
+    expect(months["2026-07"]).toEqual({ settles: 1, usdc: 0.5 });
+    expect(months["2026-08"]!.settles).toBe(4);
+    expect(months["2026-08"]!.usdc).toBeCloseTo(3.26, 6);
+    // The post-listing $100 cert stayed out of the adjustment.
+    expect(months["2026-08"]!.usdc).toBeLessThan(10);
+
+    for (const cert of certs) {
+      await testEnv.PATRONS.delete(KV_KEYS.cert(cert.id));
+    }
+    await testEnv.COUNTERS.delete(`house_reclass:${walker}`);
   });
 
   it("the admin lever needs auth and a listed wallet", async () => {
