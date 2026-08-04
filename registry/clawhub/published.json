@@ -1,7 +1,7 @@
 {
-  "version": "2.8.0",
-  "bundle_sha256": "cf11d4242cb994fbfa2809a3eb5699a1641d6aec89d86798e678b31b93ce044a",
-  "published_at": "2026-08-03T00:25:19.919Z",
-  "commit": "b003f3228571eacd5e6e5f4e4f54e848a651125b",
-  "changelog": "Practice-counter-first framing; description cut to a trigger phrase; conformance desk and vectors surfaced up top."
+  "version": "2.9.0",
+  "bundle_sha256": "fb393a60ee457fd804f5f2a32e56636915ab719ea9c923edc0c7b13284797720",
+  "published_at": "2026-08-04T13:43:52.188Z",
+  "commit": "c201614b003c33e1b06e45a20eb96815eab94cde",
+  "changelog": "the npm pair (x402-verify, x402-sign) joins the conformance desk; v2 namespace warning"
 }
