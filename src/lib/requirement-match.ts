@@ -211,6 +211,17 @@ function keysOf(value: unknown): string[] {
 const ENVELOPE =
   'The v2 envelope is { x402Version: 2, accepted: <one of the offered accepts entries, verbatim>, payload: { signature, authorization: { from, to, value, validAfter, validBefore, nonce } } }.';
 
+const SVM_ENVELOPE =
+  'For a solana:* network the v2 envelope is { x402Version: 2, accepted: <one of the offered accepts entries, verbatim>, payload: { transaction: <base64-encoded signed Solana transaction> } } — there is no EIP-3009 authorization on Solana.';
+
+/** Which rail the payload claims, read from its own accepted echo. */
+function acceptedNetworkOf(paymentPayload: Record<string, unknown>): string {
+  const accepted = paymentPayload.accepted;
+  return isRecord(accepted) && typeof accepted.network === "string"
+    ? accepted.network
+    : "";
+}
+
 export function describePayloadShape(
   paymentPayload: unknown,
 ): PayloadShapeProblem | undefined {
@@ -238,6 +249,30 @@ export function describePayloadShape(
     };
   }
   if (!isRecord(inner.authorization)) {
+    /**
+     * THE SECOND RAIL'S SHAPE, learned the expensive way on
+     * 2026-08-04: a Solana exact payload carries a signed TRANSACTION,
+     * not an EIP-3009 authorization — that rail has no such object.
+     * This branch used to demand `authorization` unconditionally, so
+     * when the SDK refused eight Solana payments pre-verify for some
+     * OTHER reason, the diagnosis relabeled every one of them
+     * "payload_missing_authorization" — an instrument overwriting the
+     * evidence it existed to surface. A correctly-shaped SVM payload
+     * now passes through so the SDK's true refusal reaches the buyer.
+     */
+    if (acceptedNetworkOf(paymentPayload).startsWith("solana:")) {
+      if (
+        typeof inner.transaction !== "string" ||
+        inner.transaction.length === 0
+      ) {
+        return {
+          code: "local:payload_missing_transaction",
+          says: `Your inner \`payload\` carried no \`transaction\` string. ${SVM_ENVELOPE}`,
+          keys_seen: keysOf(inner),
+        };
+      }
+      return undefined;
+    }
     return {
       code: "local:payload_missing_authorization",
       says: `Your inner \`payload\` carried no \`authorization\` object. ${ENVELOPE}`,

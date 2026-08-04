@@ -371,3 +371,64 @@ describe("a refusal before the facilitator", () => {
     );
   });
 });
+
+describe("the second rail's envelope is not the first rail's (2026-08-04)", () => {
+  /**
+   * Eight consecutive Solana payments refused pre-verify were all
+   * relabeled "payload_missing_authorization" by our own diagnosis —
+   * an SVM payload correctly carries a signed TRANSACTION, and the
+   * shape check demanded EIP-3009 unconditionally, overwriting the
+   * SDK's true refusal with a wrong one. These pin the repaired
+   * reading for both rails.
+   */
+  it("accepts a correctly-shaped Solana payload, so the true refusal can surface", async () => {
+    const { describePayloadShape } = await import("@/lib/requirement-match");
+    expect(
+      describePayloadShape({
+        x402Version: 2,
+        accepted: {
+          scheme: "exact",
+          network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+          amount: "5000",
+        },
+        payload: { transaction: "AZxTb64…signed-solana-tx…==" },
+      }),
+    ).toBeUndefined();
+  });
+
+  it("names the Solana shape in Solana words when the transaction is missing", async () => {
+    const { describePayloadShape } = await import("@/lib/requirement-match");
+    const problem = describePayloadShape({
+      x402Version: 2,
+      accepted: {
+        scheme: "exact",
+        network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      },
+      payload: { signature: "0xcd" },
+    });
+    expect(problem?.code).toBe("local:payload_missing_transaction");
+    expect(problem?.says).toContain("no EIP-3009 authorization on Solana");
+  });
+
+  it("still demands the authorization object on the EVM rail", async () => {
+    const { describePayloadShape } = await import("@/lib/requirement-match");
+    const problem = describePayloadShape({
+      x402Version: 2,
+      accepted: { scheme: "exact", network: "eip155:8453" },
+      payload: { transaction: "not-how-evm-works" },
+    });
+    expect(problem?.code).toBe("local:payload_missing_authorization");
+  });
+
+  it("keeps the EVM deep-diagnosis off Solana payloads", async () => {
+    // describeExactEvmPayload already gates on eip155:*; pinned so the
+    // gate survives refactors — EVM field rules applied to a Solana
+    // transaction would manufacture nonsense problems.
+    expect(
+      describeExactEvmPayload(
+        { scheme: "exact", network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp" },
+        { transaction: "AZxTb64==" },
+      ),
+    ).toEqual([]);
+  });
+});
