@@ -74,6 +74,39 @@ export function solanaPayTo(env: Env): string | null {
     : null;
 }
 
+/**
+ * THE RECONCILIATION CAP (the ruling PAYMENT_RAILS.md required before
+ * the door opened): the bank reconciliation walks Base RPC only, so
+ * Solana settles are UNRECONCILED until a Solana-side walk ships.
+ * Unwatched money is against the house style; bounded, named, alarmed
+ * money is the house style. When cumulative Solana settles pass this,
+ * the keeper is paged to either ship the Solana reconciliation or
+ * close the door (unset SOLANA_PAY_TO — a secret change redeploys).
+ * The cap alerts; it does not refuse a buyer mid-purchase, because a
+ * paid-and-refused settle would be worse than an unreconciled one.
+ */
+export const SOLANA_UNRECONCILED_CAP_USDC = 10;
+export const SOLANA_SETTLED_TOTAL_KEY = "solana_settled_total_usdc";
+
+export async function recordSolanaSettle(
+  env: Env,
+  paidUsdc: number,
+): Promise<void> {
+  const current = Number(
+    (await env.COUNTERS.get(SOLANA_SETTLED_TOTAL_KEY)) ?? "0",
+  );
+  const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
+  await env.COUNTERS.put(SOLANA_SETTLED_TOTAL_KEY, String(total));
+  if (total > SOLANA_UNRECONCILED_CAP_USDC) {
+    const { sendAlert } = await import("@/lib/alerts");
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `Solana settles have passed the $${SOLANA_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and the Solana-side bank reconciliation does not exist yet. The ruling: ship the Solana reconciliation walk, or close the door (unset SOLANA_PAY_TO). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal.`,
+      key: "solana-unreconciled-cap",
+    }).catch(() => undefined);
+  }
+}
+
 /** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
 const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
 

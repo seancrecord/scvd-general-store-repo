@@ -34,7 +34,13 @@ import {
   usableIdempotencyKey,
 } from "@/lib/idempotency";
 import { HOUSE_RULE, WALLET_SAFETY } from "@/store/wallet-safety";
-import { BASE_NETWORK, DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
+import {
+  BASE_NETWORK,
+  DECLINE_SLOT_KEY,
+  SOLANA_NETWORK,
+  recordSolanaSettle,
+  takeDeclineReason,
+} from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
 import type {
   MismatchReport,
@@ -727,6 +733,11 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   if (settlement.payer) {
     payment.payer = settlement.payer;
+  }
+  if (payment.network === SOLANA_NETWORK) {
+    // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
+    // the seam where money moved, alarmed past the bound, never a refusal.
+    await recordSolanaSettle(c.env, paidUsdc).catch(() => undefined);
   }
   c.set("payment", payment);
 

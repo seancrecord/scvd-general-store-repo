@@ -72,6 +72,34 @@ describe("the flag gate", () => {
   });
 });
 
+describe("the unreconciled cap — bounded, named, alarmed", () => {
+  it("meters Solana settles and pages past the cap, without ever refusing", async () => {
+    const {
+      SOLANA_SETTLED_TOTAL_KEY,
+      SOLANA_UNRECONCILED_CAP_USDC,
+      recordSolanaSettle,
+    } = await import("@/lib/payments");
+    const { listAlerts } = await import("@/lib/alerts");
+    await testEnv.COUNTERS.delete(SOLANA_SETTLED_TOTAL_KEY);
+
+    // Under the cap: counted, quiet.
+    await recordSolanaSettle(testEnv, SOLANA_UNRECONCILED_CAP_USDC - 1);
+    expect(await testEnv.COUNTERS.get(SOLANA_SETTLED_TOTAL_KEY)).toBe(
+      String(SOLANA_UNRECONCILED_CAP_USDC - 1),
+    );
+
+    // Over the cap: still counted (never a refusal), and the page fires.
+    await recordSolanaSettle(testEnv, 2);
+    const alert = (await listAlerts(testEnv, 20)).find((entry) =>
+      entry.detail.includes("unreconciled cap"),
+    );
+    expect(alert, "the cap must page, not sit silent").toBeDefined();
+    expect(alert!.detail).toContain("unset SOLANA_PAY_TO");
+
+    await testEnv.COUNTERS.delete(SOLANA_SETTLED_TOTAL_KEY);
+  });
+});
+
 describe("the cert records which rail settled", () => {
   it("a Solana settle writes the Solana network into the signed artifact", async () => {
     const minted = await mintCertificate(testEnv, {

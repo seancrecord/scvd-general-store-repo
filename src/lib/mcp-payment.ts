@@ -15,7 +15,12 @@ import {
   recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
-import { DECLINE_SLOT_KEY, takeDeclineReason } from "@/lib/payments";
+import {
+  DECLINE_SLOT_KEY,
+  SOLANA_NETWORK,
+  recordSolanaSettle,
+  takeDeclineReason,
+} from "@/lib/payments";
 import type { DeclineSlot } from "@/lib/payments";
 import {
   atomicToUsdc,
@@ -347,6 +352,11 @@ export async function runMcpPayment(
   }
   if (settlement.payer) {
     payment.payer = settlement.payer;
+  }
+  if (payment.network === SOLANA_NETWORK) {
+    // Same unreconciled-cap meter as the HTTP gate; the MCP door is
+    // not a way around the bound.
+    await recordSolanaSettle(env, paidUsdc).catch(() => undefined);
   }
   const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
   return {

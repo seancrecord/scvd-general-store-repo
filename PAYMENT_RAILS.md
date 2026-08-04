@@ -102,10 +102,26 @@ idempotency one cache across rails (C.4 attacks it); cert records
 carry which rail settled, signed at mint. Card/KYC legs stay ruled
 out (fee math: ~$0.30 + 2.9% against a $0.005 floor item).
 
-The Solana-exact door (sized 2026-08-03, PROBLEMS.md) runs through
-THIS SAME order of operations — Part A is now done for both; Solana's
-remaining gates are its two hands-items (key ceremony, supported-kinds
-check) plus the reconciliation-limit ruling.
+The Solana-exact door (sized 2026-08-03, PROBLEMS.md) ran through
+THIS SAME order of operations and CLEARED IT, 2026-08-04:
+supported-kinds confirmed the CDP facilitator settles solana-exact
+(v2, `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`), so the rail reuses
+the existing verify/settle path — the exact "one accepts[] entry"
+shape MPP failed to be. Built flag-gated on SOLANA_PAY_TO (unset =
+byte-identical store); Base stays accepts[0] forever as a
+compatibility promise; certs record which rail settled at mint.
+The receive ceremony ran (Solflare, seed on paper is the keeper's
+still-open homework, public address deployed as the secret).
+
+THE RECONCILIATION-LIMIT RULING, resolved 2026-08-04: the bank
+reconciliation walks Base RPC only, so Solana settles are
+unreconciled until a Solana-side walk ships. The door opens anyway,
+BOUNDED: cumulative Solana settles past $10 page the keeper (ship
+the Solana reconciliation or unset the flag), metered at both doors
+(HTTP gate and MCP), never refusing a buyer mid-purchase — a
+paid-and-refused settle would be worse than an unreconciled one.
+The Solana reconciliation walk is the standing follow-up build that
+retires the cap.
 
 ## Part C — post-ship red team. Unchanged from CV's spec, one addition.
 
