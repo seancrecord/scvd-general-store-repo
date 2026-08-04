@@ -197,3 +197,106 @@ export async function recomputeCorrections(
   await env.COUNTERS.put(CORRECTIONS_KEY, JSON.stringify(set));
   return written.sort((a, b) => b.month.localeCompare(a.month));
 }
+
+
+/**
+ * HOUSE RECLASSIFICATION — the correction mechanism for family money
+ * that booked as organic, built 2026-08-04 after the cross-model UX
+ * walkers spent ~19 settles from unlisted test wallets and the
+ * store's proudest number (organic settlements, honestly 3) read 22.
+ *
+ * Same rules as every correction here: raw counters are NEVER edited
+ * (the adjustment rides beside them and computeStats applies it at
+ * read — an edited counter is an erasure, an adjustment row is a
+ * record); the lever refuses any address not already in
+ * house-wallets.json (family is the register's word to give); the
+ * snapshot freezes the payer's settle count at reclassification time
+ * (purchases after listing book house at the till, so a live count
+ * would double-correct); and it publishes — in the stats field it
+ * creates and in /corrections prose. A correction nobody can see is
+ * an edit wearing a correction's name.
+ */
+
+export interface HouseReclassification {
+  address: string;
+  /** Settles reclassified: the payer's count frozen at this moment. */
+  settles: number;
+  at: string;
+  reason: string;
+}
+
+const RECLASS_PREFIX = "house_reclass:";
+const RECLASS_CAP = 100;
+
+export async function reclassifyHousePayer(
+  env: Env,
+  rawAddress: string,
+  reason: string,
+): Promise<
+  | { ok: true; record: HouseReclassification }
+  | { ok: false; refusal: string }
+> {
+  const { isHouseWallet } = await import("@/lib/channel");
+  const { KV_KEYS } = await import("@/lib/kv-keys");
+  const address = String(rawAddress ?? "").trim().toLowerCase();
+  if (!/^0x[0-9a-f]{40}$/.test(address)) {
+    return { ok: false, refusal: "That is not a full 0x address." };
+  }
+  if (!isHouseWallet(env, address)) {
+    return {
+      ok: false,
+      refusal:
+        "This wallet is not in house-wallets.json. List it there FIRST — reclassification records that family money was misbooked, and family is the register's word to give, not this lever's.",
+    };
+  }
+  const key = `${RECLASS_PREFIX}${address}`;
+  if (await env.COUNTERS.get(key)) {
+    return {
+      ok: false,
+      refusal:
+        "Already reclassified. The snapshot is frozen on purpose — purchases after listing book house at the till, and correcting twice is over-correcting.",
+    };
+  }
+  const payer = await env.COUNTERS.get<import("@/types").PayerRecord>(
+    KV_KEYS.payer(address),
+    "json",
+  );
+  if (!payer || payer.purchases === 0) {
+    return {
+      ok: false,
+      refusal:
+        "No payer record for this address — nothing was booked, so there is nothing to reclassify.",
+    };
+  }
+  const record: HouseReclassification = {
+    address,
+    settles: payer.purchases,
+    at: new Date().toISOString(),
+    reason: reason.trim() || "family wallet misbooked organic before listing",
+  };
+  await env.COUNTERS.put(key, JSON.stringify(record));
+  return { ok: true, record };
+}
+
+export async function listReclassifications(
+  env: Env,
+): Promise<HouseReclassification[]> {
+  const { listKeys } = await import("@/lib/kv-list");
+  const listed = await listKeys(env.COUNTERS, {
+    prefix: RECLASS_PREFIX,
+    cap: RECLASS_CAP,
+  });
+  const rows = await bulkGetJson<HouseReclassification>(
+    env.COUNTERS,
+    listed.names,
+  );
+  return listed.names
+    .map((name) => rows.get(name))
+    .filter((row): row is HouseReclassification => Boolean(row));
+}
+
+/** The total computeStats subtracts from organic and adds to house. */
+export async function totalReclassified(env: Env): Promise<number> {
+  const rows = await listReclassifications(env);
+  return rows.reduce((sum, row) => sum + row.settles, 0);
+}

@@ -363,6 +363,30 @@ adminRoutes.get("/admin/ward", async (c) => {
   );
 });
 
+/**
+ * The house-reclassification lever: family money that booked organic
+ * before its wallet was listed. Refuses unlisted wallets, freezes the
+ * snapshot, publishes through /stats and /corrections. Curl-able:
+ *   curl -u keeper:PASS -X POST .../admin/reclassify -d address=0x...
+ */
+adminRoutes.post("/admin/reclassify", async (c) => {
+  const form = await c.req.parseBody();
+  const address = typeof form["address"] === "string" ? form["address"] : "";
+  const reason =
+    typeof form["reason"] === "string"
+      ? form["reason"]
+      : "cross-model UX walker wallet; settles booked organic before listing";
+  const { reclassifyHousePayer } = await import("@/services/reclassify");
+  const result = await reclassifyHousePayer(c.env, address, reason);
+  if (!result.ok) {
+    return c.text(result.refusal, 400);
+  }
+  return c.json({
+    reclassified: result.record,
+    note: "Frozen snapshot; organic count corrects at next /stats read. The register (house-wallets.json) plus this ledger plus /corrections is the whole story.",
+  });
+});
+
 adminRoutes.post("/admin/ward/run", async (c) => {
   const { runWardRound } = await import("@/services/ward-round");
   await runWardRound(c.env);

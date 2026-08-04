@@ -23,6 +23,13 @@ export interface StoreStats {
   settled_purchases_total: number;
   organic_settlements: number;
   house_settlements: number;
+  /**
+   * Family settles that booked organic before their wallets were
+   * listed, corrected at read from the reclassification ledger —
+   * subtracted from organic, added to house, raw counters untouched.
+   * Story at /corrections. Zero is the normal state.
+   */
+  reclassified_house: number;
   /** Settles from before the channel meter existed; counted, attributed to nobody. */
   pre_meter_settlements: number;
   computed_at: string;
@@ -60,11 +67,23 @@ export async function computeStats(env: Env): Promise<StoreStats> {
       }
     }
   }
+  /**
+   * THE RECLASSIFICATION LEDGER, applied at read (2026-08-04): family
+   * settles that booked organic before their wallets were listed
+   * (the cross-model UX walkers) are subtracted here and added to
+   * house, with the raw counters untouched and the whole story on
+   * /corrections. The organic number is the store's proudest claim,
+   * and a proud number that quietly includes family money is the one
+   * lie this store cannot afford.
+   */
+  const { totalReclassified } = await import("@/services/reclassify");
+  const reclassified = await totalReclassified(env);
   return {
     operating_since: OPERATING_SINCE,
     settled_purchases_total: total,
-    organic_settlements: organic,
-    house_settlements: house,
+    organic_settlements: Math.max(0, organic - reclassified),
+    house_settlements: house + reclassified,
+    reclassified_house: reclassified,
     pre_meter_settlements: Math.max(0, total - organic - house),
     computed_at: new Date().toISOString(),
   };
