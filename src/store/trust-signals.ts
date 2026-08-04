@@ -169,6 +169,13 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That mcp-marketplace.io lists the MCP server and republishes an OpenSSF Scorecard reading against the repository — an instrument, not a listing we wrote. Not an endorsement and not an audit of the goods: its scorecard measures repository hygiene (workflow permissions, update tooling, review process), several items of which were fixed the day this record was added, and the reading lags the repo until its next crawl.",
   },
   {
+    url: "https://x402-bazaar.com/resources/6a61e8fc7356b8e8002b1af7",
+    registry: "x402-bazaar.com (Bazaar mirror)",
+    confirmed: "2026-08-04",
+    what_it_proves:
+      "That a Bazaar mirror the store never submitted to serves per-resource pages for its items — found by the keeper within hours of the registration run, which is the settle-triggered discovery pipeline observed propagating to a surface we did not know existed. Not an endorsement and not an audit: a mirror proves the source catalog carries us, nothing more.",
+  },
+  {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
     registry: "Agent Identity Registry (AIR) — scvd-store, AIR-BYYP-0MQC-TAKR",
     confirmed: "2026-08-01",
