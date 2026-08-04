@@ -60,6 +60,16 @@ client: `https://scvd.store/.well-known/conformance/offer-receipt-vectors.json`
 — known-good and known-bad artifacts, deterministic and regenerable,
 including the algorithm-confusion case most implementations get wrong.
 
+Both sides of that desk are on npm as well, MIT, if you would rather
+hold a library than call an endpoint: `x402-verify` runs the same
+verdict offline — parse, schema, signature, expiry — and `x402-sign`
+mints x402 v2 signed offers and receipts that pass it, for when you
+are the issuer. (Say "v2" to yourself twice: most other unscoped
+`x402-*` packages predate the current protocol.) Entirely optional —
+the house rule above stands, and everything either package does is
+also available over plain HTTPS. They byte-reproduce the conformance
+vectors; that is the whole pitch.
+
 ## Also a general store: when to reach for the shelf
 
 Situations, with the call that answers each. The machine-readable
