@@ -18,6 +18,26 @@ Two independently-growing lists, never entangled:
    registrations, never payment-flow changes. Tracked separately,
    shipped independently.
 
+**How CDP discovery actually admits an endpoint (verified against
+Coinbase's own docs, 2026-08-04, CV's chase — x402/welcome, /bazaar,
+/network-support):** there is NO submission API, no dashboard form,
+no manual override. "The CDP Facilitator catalogs your service the
+first time it settles a payment for that endpoint" with
+`paymentPayload.resource` set. One real settled payment per endpoint
+is the only door in, on any chain — the rule is chain-agnostic, so a
+Solana settle indexes an endpoint exactly as a Base one does.
+Consequence: an unsold item is an UNDISCOVERABLE item, so a new
+listing's first house purchase is not a nicety, it is the listing's
+registration fee (~its own price, once).
+
+**The path-shape rule that came with it:** Bazaar auto-consolidates
+bare high-cardinality path segments (UUIDs, EVM/Solana addresses and
+hashes) into one generic template entry. A paid route that embeds a
+raw address in its path gets silently merged with strangers' routes.
+Every paid route here is word-shaped or prefixed (`issue-:issue`,
+`week-:week`) — keep it that way; a future route like `/watch/<id>`
+must be `/watch/w-<id>` or carry a static prefix segment.
+
 ## Part A — the current-flow audit. RUN 2026-08-03, results below.
 
 One amendment to the original: A.1.1's "a probe should never create
