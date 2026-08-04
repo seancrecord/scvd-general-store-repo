@@ -183,8 +183,19 @@ try {
   );
 }
 
+/**
+ * PINNABLE CLI, added 2026-08-04: clawhub shipped 0.23.2 and 0.23.3
+ * within an hour that morning and @latest began failing every upload
+ * with "Uploaded file does not match its skill upload ticket" — their
+ * ticket validation rejecting their own fresh CLI's uploads. The
+ * bundle was fine; the instrument was mid-deploy. When @latest is
+ * churning, pin the last version that worked:
+ *
+ *   CLAWHUB_VERSION=0.23.1 npm run skill:publish -- 2.9.0 "..."
+ */
+const cliVersion = process.env.CLAWHUB_VERSION ?? "latest";
 const args = [
-  "clawhub@latest",
+  `clawhub@${cliVersion}`,
   "skill",
   "publish",
   BUNDLE_DIR,
