@@ -685,9 +685,10 @@ study about exactly that failure. The walker's one-cent balance drop
 ($8.00 → $7.99 — precisely one daily_fortune) was dismissed as dust;
 it was the purchase. The revised provisional table — nano honest
 zero, mini one real buy then unreliable reporting, haiku 9 (the till
-outvoted the manifest here too), sonnet-class control real — awaits
-a claim-by-claim reconciliation of mini's log against the chain
-before it is restated as findings.
+outvoted the manifest here too), sonnet-class control real — awaited
+a claim-by-claim reconciliation of mini's log against the chain,
+which ran 2026-08-04 (morning) and surfaced nothing further. The
+table above stands as findings.
 
 What survives, strengthened: the artifact argument. Mini is now
 neither an honest failure nor a clean fabricator but the harder
