@@ -36,10 +36,12 @@ export function renderWardPage(
     );
   }
 
-  const ready = round.hosts.filter((entry) => entry.verdict === "ready").length;
+  const probed = round.hosts.filter((entry) => entry.verdict !== "not_probed");
+  const listedOnly = round.hosts.length - probed.length;
+  const ready = probed.filter((entry) => entry.verdict === "ready").length;
   const summary = `<ul>
-    <li><strong>${round.hosts.length} hosts</strong> probed ${escapeHtml(round.at.slice(0, 16))}Z (week ${escapeHtml(round.week)}); ${round.listed_resources} resources listed.</li>
-    <li><strong>${ready} ready (${round.hosts.length > 0 ? Math.round((ready / round.hosts.length) * 100) : 0}%)</strong>, ${round.hosts.length - ready} not.</li>
+    <li><strong>${probed.length} doors probed</strong>${listedOnly > 0 ? ` (+${listedOnly} leaderboard-listed, population only — homepages carry no 402 to judge)` : ""} ${escapeHtml(round.at.slice(0, 16))}Z (week ${escapeHtml(round.week)}); ${round.listed_resources} resources listed.</li>
+    <li><strong>${ready} ready (${probed.length > 0 ? Math.round((ready / probed.length) * 100) : 0}% of probed)</strong>, ${probed.length - ready} not.</li>
     <li>Our search-index presence: <strong>${
       round.our_search_presence === null
         ? "could not check (never read as absent)"

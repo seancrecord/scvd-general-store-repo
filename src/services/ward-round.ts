@@ -62,7 +62,15 @@ export interface WardVolumeClaim {
 export interface WardHostResult {
   host: string;
   url: string;
-  verdict: "ready" | "not_ready" | "unreachable";
+  /**
+   * "not_probed" (2026-08-04, the first two-feed round's lesson): a
+   * leaderboard row's origin is a HOMEPAGE, not a paid resource URL —
+   * probing it for a 402 manufactured ~160 false not_readys in one
+   * round. Leaderboard-only hosts are population, listed with their
+   * claims, excluded from the ready arithmetic and the delta until
+   * discovery hands us a real door to knock on.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "not_probed";
   failed: string[];
   advisories: string[];
   /** Which feed(s) named this host. Absent on pre-feed rounds = discovery. */
@@ -235,6 +243,15 @@ export function mapLeaderboard(
       window,
       source: "agent402.tools",
     };
+    /**
+     * ONE ORIGIN PER SELLER (the first round's other lesson): rows
+     * list every origin a seller ever settled from — Vercel preview
+     * deploys, a ninety-subdomain farm — all sharing one claim.
+     * Walking them all repeated the same claim ninety times and told
+     * us nothing the first origin didn't. Our own host anywhere in
+     * the row still claims the rank.
+     */
+    let taken = false;
     for (const origin of origins) {
       if (typeof origin !== "string" || !origin.startsWith("https://")) {
         continue;
@@ -249,8 +266,9 @@ export function mapLeaderboard(
         ourRank = typeof row["rank"] === "number" ? row["rank"] : ourRank;
         continue;
       }
-      if (!byHost.has(host)) {
+      if (!taken && !byHost.has(host)) {
         byHost.set(host, { url: origin, claim });
+        taken = true;
       }
     }
   }
@@ -325,12 +343,18 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   const results: WardHostResult[] = [];
   for (const entry of probeList.slice(0, WARD_CAP)) {
     const claim = leaderboard?.byHost.get(entry.host)?.claim;
+    // A leaderboard origin is a homepage, not a door — listed with
+    // its claim, never knocked on for a 402 it was never built to give.
+    const probe =
+      entry.source === "leaderboard"
+        ? { verdict: "not_probed" as const, failed: [], advisories: [] }
+        : await probeHost(entry.url);
     results.push({
       host: entry.host,
       url: entry.url,
       source: entry.source,
       ...(claim ? { volume_claim: claim } : {}),
-      ...(await probeHost(entry.url)),
+      ...probe,
     });
   }
   const presence = await ourSearchPresence(env);
@@ -403,6 +427,12 @@ export function wardDelta(
   for (const [host, now] of after) {
     const was = before.get(host);
     if (!was) continue;
+    // A host that was or is merely listed-not-probed has no verdict
+    // to change; feeding those pairs into the delta would report the
+    // instrument's coverage changing as the ecosystem changing.
+    if (was.verdict === "not_probed" || now.verdict === "not_probed") {
+      continue;
+    }
     if (was.verdict !== now.verdict) {
       delta.flappers.push(host);
       if (now.verdict === "ready") {

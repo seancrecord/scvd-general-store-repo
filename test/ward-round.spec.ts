@@ -270,6 +270,8 @@ describe("the leaderboard feed (agent402.tools, shape captured 2026-08-04)", () 
       unique_buyers: 262,
       source: "agent402.tools",
     });
+    // ONE origin per seller: the preview-deploy second origin stays out.
+    expect(read!.byHost.has("blockrun-web-vbsbhh7lea-uc.a.run.app")).toBe(false);
   });
 
   it("finds our own rank and keeps us out of the probe population", async () => {
@@ -277,6 +279,39 @@ describe("the leaderboard feed (agent402.tools, shape captured 2026-08-04)", () 
     const read = mapLeaderboard(CAPTURED, "scvd.store");
     expect(read!.ourRank).toBe(40);
     expect(read!.byHost.has("scvd.store")).toBe(false);
+  });
+
+  it("keeps not_probed hosts out of the delta — coverage change is not ecosystem change", async () => {
+    const last = fakeRound("2026-W31", { "steady.example": "ready" });
+    const now = fakeRound("2026-W32", { "steady.example": "ready" });
+    now.hosts.push({
+      host: "listed-only.example",
+      url: "https://listed-only.example",
+      verdict: "not_probed",
+      failed: [],
+      advisories: [],
+    });
+    last.hosts.push({
+      host: "was-probed.example",
+      url: "https://was-probed.example/api/x",
+      verdict: "ready",
+      failed: [],
+      advisories: [],
+    });
+    now.hosts.push({
+      host: "was-probed.example",
+      url: "https://was-probed.example",
+      verdict: "not_probed",
+      failed: [],
+      advisories: [],
+    });
+    const delta = wardDelta(now, last);
+    // Newly listed-only host is "new" (population fact, fine)...
+    expect(delta.new_hosts).toEqual(["listed-only.example"]);
+    // ...but a probed→not_probed transition is OUR coverage moving,
+    // never a failure or a flap.
+    expect(delta.newly_failing).toEqual([]);
+    expect(delta.flappers).toEqual([]);
   });
 
   it("refuses a body that does not declare the spec — a shape guess is not a reading", async () => {
