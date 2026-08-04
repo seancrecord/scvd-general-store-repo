@@ -129,6 +129,17 @@ if (process.env.CDP_API_KEY_ID && process.env.CDP_API_KEY_SECRET) {
           .map((row) => row.resource ?? row.resourceUrl ?? row.url ?? "")
           .filter(Boolean);
         console.log(`CDP discovery: ${cdpUrls.length} resources for scvd.store (?${param}=)`);
+        // INSTRUMENT HONESTY: the first run showed small_blessing ON
+        // the mirror but "missing" from the source it mirrors — an
+        // impossibility that means this extraction read the wrong
+        // field. DEBUG=1 prints raw rows so the real shape can be
+        // seen instead of guessed at.
+        if (process.env.DEBUG) {
+          console.log("First raw CDP rows:");
+          for (const row of rows.slice(0, 3)) {
+            console.log(JSON.stringify(row, null, 2));
+          }
+        }
         break;
       }
     } catch {
