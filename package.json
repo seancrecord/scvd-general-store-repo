@@ -37,7 +37,7 @@
     "hono": "^4.12.31"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.18.7",
+    "@cloudflare/vitest-pool-workers": "^0.20.1",
     "@cloudflare/workers-types": "^5.20260721.1",
     "@types/node": "^26.1.1",
     "@x402/fetch": "^2.19.0",
