@@ -53,7 +53,16 @@
     // Settlement attestation reads Base once per purchase. The public
     // endpoint is fine at this volume; swap it the day it isn't. Not a
     // secret — it is a public RPC URL, and the store reads only.
-    "BASE_RPC_URL": "https://mainnet.base.org"
+    "BASE_RPC_URL": "https://mainnet.base.org",
+    // The second rail's receive address (PAYMENT_RAILS.md). A PUBLIC
+    // value on purpose, and in this file on purpose: it is printed in
+    // the runbook and on-chain the moment anyone pays it, and a var
+    // the repo owns survives every deploy — unlike the dash-added
+    // text var that git builds silently wiped for a whole afternoon
+    // (wrangler deploy replaces plaintext vars with this file's).
+    // Unset/empty = the Solana door is closed; the code treats a
+    // malformed value the same way.
+    "SOLANA_PAY_TO": "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE"
   }
   // Secrets (never in this file — set via `wrangler secret put <NAME>`):
   //   PAY_TO_ADDRESS      Base wallet that receives USDC
@@ -61,5 +70,4 @@
   //   CDP_API_KEY_SECRET  Coinbase Developer Platform key secret
   //   SIGNING_KEY         ed25519 private key seed, 64 hex chars (npm run keys:generate)
   //   ADMIN_PASSWORD      Basic Auth password for /admin
-  //   SOLANA_PAY_TO       Solana wallet that receives USDC (second rail; unset = rail closed)
 }

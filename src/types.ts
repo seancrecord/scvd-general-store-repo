@@ -15,8 +15,11 @@ export interface Env {
    * Solana wallet that receives USDC on the second rail (base58
    * pubkey). Optional and FLAG-GATING: unset, no 402 offers Solana
    * and the store behaves exactly as before the rail existed. A
-   * public address, but set as a secret like PAY_TO_ADDRESS — where
-   * money lands is config the dash should own, not the repo.
+   * PUBLIC value carried in wrangler.jsonc vars deliberately — it is
+   * printed in the runbook and on-chain the moment anyone pays it,
+   * and a repo-owned var survives every deploy, unlike the
+   * dash-added text var that git builds silently wiped for an
+   * afternoon (wrangler deploy replaces plaintext vars wholesale).
    */
   SOLANA_PAY_TO?: string;
   /** Coinbase Developer Platform facilitator credentials. Secrets. */
