@@ -637,3 +637,14 @@ answer is, or write the pointer.
 Representative open-weight round (DeepSeek/MiniMax/Gemini/Qwen) still
 parked on an OpenRouter key — the round that tests whether
 honest-failure vs. fabricated-success generalizes past one vendor.
+
+**Postscript, from the reclassification that followed: the manifest
+was memory, the till is the record.** The walk-runner's wallet
+manifest recalled 5 haiku settles; the store's own payer row said 9.
+The undercount was caught not by anyone's recollection but by the
+admin page's paying-wallets list — address, first-seen, purchase
+count, straight from the till. Same instrument-fidelity lesson as the
+mock facilitator and the per-isolate rate buckets, pointed at
+ourselves: when correcting the books, the only admissible count is
+the one the books wrote at settle time. An agent's post-hoc manifest
+is testimony; the payer row is evidence.

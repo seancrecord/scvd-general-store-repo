@@ -23,7 +23,13 @@
       "address": "0x007cA504E06C98d8580A061F1099da8BE02f8765",
       "who": "cheap-model pass walker (haiku)",
       "since": "2026-08-04",
-      "why": "AGENT_UX cross-model walker; 5 settles (patrons 60/61/63/64/65) booked organic before listing \u2014 reclassified via the ledger, story at /corrections."
+      "why": "AGENT_UX cross-model walker; 9 settles booked organic before listing \u2014 reclassified via the ledger, story at /corrections. The walker's own manifest recalled 5 (patrons 60/61/63/64/65); the till's payer row said 9. The manifest was memory, the till is the record \u2014 counts come from payer rows, never from an agent's recollection."
+    },
+    {
+      "address": "0x654c14cf62528823a163be7bf7878124b6522ca8",
+      "who": "cheap-model pass walker (gpt54mini)",
+      "since": "2026-08-04",
+      "why": "AGENT_UX cross-model walker; 1 settle (the daily_fortune milestone buy, cert_3cxdc7ak2c) booked organic before listing \u2014 reclassified via the ledger. Identified from the till itself: a wallet first seen on walk day with exactly the walker's purchase, cross-checkable against the cert's receipt, which names its payer."
     }
   ]
 }
