@@ -60,6 +60,17 @@ export const ALERT_CONDITIONS = [
    * being told about it (problem ledger #18).
    */
   "undelivered_sale",
+  /**
+   * Sub-price USDC arrived on chain: it CANNOT be a purchase (no 402
+   * settles under the cheapest listing) and is probably an
+   * address-poisoning lure hoping to be copied out of transaction
+   * history. Pages so the keeper knows NOT to touch it — the risk it
+   * carries is entirely in the response it invites, which is exactly
+   * why it must not ride an alert whose subject says "undelivered
+   * sale" and whose body says "refund by hand". First live instance
+   * 2026-08-04, a lookalike of CV's wallet.
+   */
+  "chain_dust",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];

@@ -1,6 +1,8 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import {
+  cheapestListingUsdc,
+  findLookalike,
   knownSettlementHashes,
   reconcileAgainstChain,
   runChainReconciliation,
@@ -230,6 +232,80 @@ describe("the cursor", () => {
     const result = await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
     expect(result.ran).toBe(false);
     expect(result.reason).toContain("no new blocks");
+  });
+});
+
+describe("dust and the address-poisoning profile (live case, 2026-08-04)", () => {
+  /**
+   * 0.00003 USDC arrived from 0x843bc0df…88a4a7 — an address ground
+   * to mimic CV's 0x843b544b…C98cc4a7 (same leading and trailing
+   * characters). The alert said "fulfil or refund by hand", which is
+   * exactly wrong: refunding dust is interacting with the lure. A
+   * transfer below the cheapest listing cannot be a purchase, so it
+   * must never ride the undelivered-sale alert.
+   */
+  const POISONER = "0x843bc0df0bd43bcf1939224bee9ef3623b88a4a7";
+  const CV_WALLET = "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7";
+
+  it("classifies a sub-price transfer as dust, never a lost sale", async () => {
+    const result = await reconcileAgainstChain(
+      envWith(
+        rpcFetch({
+          logs: [{ tx: "0xdust", from: POISONER, units: 30n, block: HEAD - 2 }],
+        }),
+      ),
+    );
+    expect(result.orphans).toHaveLength(1);
+    expect(result.orphans![0]!.classification).toBe("dust");
+    // 30 atomic units is 0.00003 USDC — far under the shelf floor.
+    expect(result.orphans![0]!.usdc).toBeLessThan(cheapestListingUsdc());
+  });
+
+  it("names the mimicked counterparty, and never accuses the real one", () => {
+    expect(findLookalike(POISONER, [CV_WALLET])).toBe(CV_WALLET);
+    // The genuine wallet is itself, not a lookalike of itself.
+    expect(findLookalike(CV_WALLET, [CV_WALLET])).toBeNull();
+    // An unrelated stranger matches nobody.
+    expect(
+      findLookalike("0x9f00000000000000000000000000000000000abc", [CV_WALLET]),
+    ).toBeNull();
+  });
+
+  it("pages DO-NOT-TOUCH for dust instead of fulfil-or-refund", async () => {
+    await runChainReconciliation(
+      envWith(
+        rpcFetch({
+          logs: [{ tx: "0xpoison", from: POISONER, units: 30n, block: HEAD - 2 }],
+        }),
+      ),
+    );
+    const alert = (await listAlerts(testEnv, 50)).find((a) =>
+      a.detail.includes("0xpoison"),
+    );
+    expect(alert).toBeDefined();
+    expect(alert!.condition).toBe("chain_dust");
+    expect(alert!.detail).toContain("DO NOT refund");
+    expect(alert!.detail).toContain("MIMICS");
+    // The instruction that must never reach a poisoning lure.
+    expect(alert!.detail).not.toContain("refund by hand");
+  });
+
+  it("a sale-sized orphan keeps the fulfil-or-refund instruction", async () => {
+    await runChainReconciliation(
+      envWith(
+        rpcFetch({
+          logs: [
+            { tx: "0xrealsale", from: "0x7777", units: 5_000_000n, block: HEAD - 2 },
+          ],
+        }),
+      ),
+    );
+    const alert = (await listAlerts(testEnv, 50)).find((a) =>
+      a.detail.includes("0xrealsale"),
+    );
+    expect(alert).toBeDefined();
+    expect(alert!.condition).toBe("undelivered_sale");
+    expect(alert!.detail).toContain("fulfil or refund by hand");
   });
 });
 

@@ -3,6 +3,9 @@ import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
+import { listPayers } from "@/lib/metrics";
+import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
+import { MENU_ITEMS } from "@/store";
 import type { CertificateRecord, Env } from "@/types";
 
 /**
@@ -53,6 +56,57 @@ export interface OrphanTransfer {
   from: string;
   usdc: number;
   block: number;
+  /**
+   * "possible_sale" is the case this instrument was built for: money
+   * that might be an undelivered purchase. "dust" is a transfer BELOW
+   * every price on the shelf — no 402 flow can settle under the
+   * cheapest listing, so it cannot be a purchase that lost its
+   * certificate, and the mechanical "fulfil or refund" advice is
+   * WRONG for it (refunding dust is interacting with a probable
+   * address-poisoning attempt, which is its goal).
+   */
+  classification: "possible_sale" | "dust";
+  /**
+   * Set when the sender's address visually mimics a known
+   * counterparty (same leading and trailing characters, different
+   * address) — the address-poisoning profile. First seen live
+   * 2026-08-04: 0x843bc0df…88a4a7 imitating CV's 0x843b544b…C98cc4a7,
+   * dust-sized, hoping to be copied out of transaction history later.
+   */
+  lookalike_of?: string;
+}
+
+/** No 402 settles below the cheapest listing; under this is dust. */
+export function cheapestListingUsdc(): number {
+  return Math.min(...MENU_ITEMS.map((item) => item.price_usdc));
+}
+
+/**
+ * Address-poisoning check: same first four and last two hex
+ * characters as a known counterparty, but not actually them. Odds of
+ * a legitimate stranger matching by chance are ~16^-6 per known
+ * address — when this fires, it is a grinder, not a coincidence.
+ */
+export function findLookalike(
+  sender: string,
+  known: Iterable<string>,
+): string | null {
+  const s = sender.toLowerCase();
+  for (const candidate of known) {
+    const k = candidate.toLowerCase();
+    if (k === s) continue;
+    if (k.slice(0, 6) === s.slice(0, 6) && k.slice(-2) === s.slice(-2)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/** Every address the store knows: the register plus the payer rows. */
+async function knownCounterparties(env: Env): Promise<string[]> {
+  const registered = HOUSE_WALLET_FILE.wallets.map((entry) => entry.address);
+  const payers = await listPayers(env, 200).catch(() => []);
+  return [...registered, ...payers.map((payer) => payer.address)];
 }
 
 export interface ChainReconciliation {
@@ -147,14 +201,27 @@ export async function reconcileAgainstChain(
 
   const { hashes, truncated } = await knownSettlementHashes(env);
   const orphans: OrphanTransfer[] = [];
+  const floor = cheapestListingUsdc();
+  let counterparties: string[] | null = null;
   for (const transfer of transfers) {
     if (hashes.has(transfer.txHash)) continue;
-    orphans.push({
+    const usdc = usdcFromUnits(transfer.amount);
+    const orphan: OrphanTransfer = {
       tx_hash: transfer.txHash,
       from: transfer.from,
-      usdc: usdcFromUnits(transfer.amount),
+      usdc,
       block: transfer.block,
-    });
+      classification: usdc < floor ? "dust" : "possible_sale",
+    };
+    if (orphan.classification === "dust") {
+      // Only reach for the payer rows when there is dust to explain.
+      counterparties ??= await knownCounterparties(env);
+      const mimicked = findLookalike(transfer.from, counterparties);
+      if (mimicked) {
+        orphan.lookalike_of = mimicked;
+      }
+    }
+    orphans.push(orphan);
   }
 
   /**
@@ -186,13 +253,22 @@ export async function runChainReconciliation(
 ): Promise<ChainReconciliation> {
   const result = await reconcileAgainstChain(env, options);
   for (const orphan of result.orphans ?? []) {
+    const detail =
+      orphan.classification === "dust"
+        ? `${orphan.usdc} USDC of DUST arrived from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}). Below every price on the shelf, so it cannot be a purchase that lost its certificate — no 402 settles under the cheapest listing. ${
+            orphan.lookalike_of
+              ? `The sender MIMICS ${orphan.lookalike_of} (same leading and trailing characters, different address): the address-poisoning profile. Its goal is to sit in transaction history and be copied later. `
+              : ""
+          }DO NOT refund it and DO NOT copy the sender's address for anything — addresses come from the register and the payer rows, never from transaction history. No action needed; this is recorded.`
+        : `${orphan.usdc} USDC arrived from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.${
+            result.cert_scan_truncated
+              ? " NOTE: the certificate scan hit its cap, so this may be a false alarm from a partial read."
+              : ""
+          }`;
     await sendAlert(env, {
-      condition: "undelivered_sale",
-      detail: `${orphan.usdc} USDC arrived from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.${
-        result.cert_scan_truncated
-          ? " NOTE: the certificate scan hit its cap, so this may be a false alarm from a partial read."
-          : ""
-      }`,
+      condition:
+        orphan.classification === "dust" ? "chain_dust" : "undelivered_sale",
+      detail,
       key: orphan.tx_hash,
     }).catch(() => {
       // The alert is the courtesy; the finding is recomputed next pass.
