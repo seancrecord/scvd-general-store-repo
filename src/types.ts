@@ -30,6 +30,12 @@ export interface Env {
    * and swappable the day it isn't.
    */
   BASE_RPC_URL?: string;
+  /**
+   * Solana JSON-RPC endpoint for the second rail's bank
+   * reconciliation. Optional: falls back to the public mainnet
+   * endpoint, fine at this volume, swappable the day it isn't.
+   */
+  SOLANA_RPC_URL?: string;
   /** Basic Auth password for the keeper's back room. Secret. */
   ADMIN_PASSWORD: string;
   /** Public base URL, e.g. https://scvd.store */

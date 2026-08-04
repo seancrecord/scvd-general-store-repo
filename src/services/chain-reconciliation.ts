@@ -243,25 +243,27 @@ export async function reconcileAgainstChain(
 }
 
 /**
- * The cron pass. Alerts per orphan, keyed by hash so a standing
- * problem pages once per window rather than hourly, and a SECOND
- * orphan is its own news.
+ * Alerts per orphan, keyed by hash so a standing problem pages once
+ * per window rather than hourly, and a SECOND orphan is its own news.
+ * Shared by both rails' passes — the wording does not care which
+ * chain the money arrived on, only whether a certificate names it.
  */
-export async function runChainReconciliation(
+async function alertOrphans(
   env: Env,
-  options: { now?: Date } = {},
-): Promise<ChainReconciliation> {
-  const result = await reconcileAgainstChain(env, options);
-  for (const orphan of result.orphans ?? []) {
+  orphans: OrphanTransfer[],
+  chainLabel: string,
+  certScanTruncated: boolean,
+): Promise<void> {
+  for (const orphan of orphans) {
     const detail =
       orphan.classification === "dust"
-        ? `${orphan.usdc} USDC of DUST arrived from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}). Below every price on the shelf, so it cannot be a purchase that lost its certificate — no 402 settles under the cheapest listing. ${
+        ? `${orphan.usdc} USDC of DUST arrived on ${chainLabel} from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}). Below every price on the shelf, so it cannot be a purchase that lost its certificate — no 402 settles under the cheapest listing. ${
             orphan.lookalike_of
               ? `The sender MIMICS ${orphan.lookalike_of} (same leading and trailing characters, different address): the address-poisoning profile. Its goal is to sit in transaction history and be copied later. `
               : ""
           }DO NOT refund it and DO NOT copy the sender's address for anything — addresses come from the register and the payer rows, never from transaction history. No action needed; this is recorded.`
-        : `${orphan.usdc} USDC arrived from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.${
-            result.cert_scan_truncated
+        : `${orphan.usdc} USDC arrived on ${chainLabel} from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.${
+            certScanTruncated
               ? " NOTE: the certificate scan hit its cap, so this may be a false alarm from a partial read."
               : ""
           }`;
@@ -274,5 +276,134 @@ export async function runChainReconciliation(
       // The alert is the courtesy; the finding is recomputed next pass.
     });
   }
+}
+
+export async function runChainReconciliation(
+  env: Env,
+  options: { now?: Date } = {},
+): Promise<ChainReconciliation> {
+  const result = await reconcileAgainstChain(env, options);
+  await alertOrphans(
+    env,
+    result.orphans ?? [],
+    "Base",
+    result.cert_scan_truncated ?? false,
+  );
+  return result;
+}
+
+/**
+ * THE SOLANA SIDE OF THE BOOKS (2026-08-04, the walk that retires the
+ * second rail's unreconciled cap). Same question as the Base pass —
+ * is there an artifact for this money — asked of the other chain.
+ *
+ * The cursor is a transaction SIGNATURE, not a slot: Solana's
+ * getSignaturesForAddress takes `until` and stops exactly where the
+ * last pass ended, no block-boundary fencepost to get wrong. It moves
+ * only on a clean pass, same as the Base cursor, so a failed read is
+ * retried rather than skipped. Certificates store a Solana settle's
+ * signature in settlement_tx, so knownSettlementHashes covers both
+ * rails already (lowercased on both sides; base58 loses its case
+ * there, which cannot collide in practice and keeps one code path).
+ */
+export const SOLANA_RECONCILE_CURSOR_KEY = "solana_reconcile_cursor";
+/** Stamped on every clean pass; recordSolanaSettle's cap reads it. */
+export const SOLANA_RECONCILE_OK_KEY = "solana_reconcile_last_ok";
+
+export async function reconcileSolanaAgainstChain(
+  env: Env,
+): Promise<ChainReconciliation> {
+  const { solanaPayTo } = await import("@/lib/payments");
+  const owner = solanaPayTo(env);
+  if (!owner) {
+    return { ran: false, reason: "no SOLANA_PAY_TO configured — the rail is closed" };
+  }
+  const { usdcTokenAccountsOf, signaturesForAddress, usdcIncomingIn } =
+    await import("@/lib/solana-rpc");
+  const { usdcFromUnits } = await import("@/lib/base-rpc");
+
+  let accounts: string[];
+  try {
+    accounts = await usdcTokenAccountsOf(env, owner);
+  } catch (error) {
+    return { ran: false, reason: `could not read token accounts: ${String(error)}` };
+  }
+  if (accounts.length === 0) {
+    // No USDC has ever arrived; there is genuinely nothing to walk.
+    await env.COUNTERS.put(SOLANA_RECONCILE_OK_KEY, new Date().toISOString());
+    return { ran: true, transfers_seen: 0, orphans: [] };
+  }
+
+  const cursor =
+    (await env.COUNTERS.get(SOLANA_RECONCILE_CURSOR_KEY)) ?? undefined;
+  const { hashes, truncated } = await knownSettlementHashes(env);
+  const orphans: OrphanTransfer[] = [];
+  const floor = cheapestListingUsdc();
+  let counterparties: string[] | null = null;
+  let seen = 0;
+  let newestSignature: string | undefined;
+
+  for (const account of accounts) {
+    let infos;
+    try {
+      infos = await signaturesForAddress(env, account, cursor);
+    } catch (error) {
+      return { ran: false, reason: `signature walk failed: ${String(error)}` };
+    }
+    if (!newestSignature && infos.length > 0) {
+      newestSignature = infos[0]!.signature;
+    }
+    for (const info of infos) {
+      if (info.err) continue; // Failed transactions moved no money.
+      let incoming;
+      try {
+        incoming = await usdcIncomingIn(env, info.signature, owner);
+      } catch (error) {
+        return { ran: false, reason: `transaction read failed: ${String(error)}` };
+      }
+      if (!incoming) continue;
+      seen += 1;
+      if (hashes.has(info.signature.toLowerCase())) continue;
+      const usdc = usdcFromUnits(incoming.amount);
+      const orphan: OrphanTransfer = {
+        tx_hash: info.signature,
+        from: incoming.from,
+        usdc,
+        block: info.slot,
+        classification: usdc < floor ? "dust" : "possible_sale",
+      };
+      if (orphan.classification === "dust") {
+        counterparties ??= await knownCounterparties(env);
+        const mimicked = findLookalike(incoming.from, counterparties);
+        if (mimicked) {
+          orphan.lookalike_of = mimicked;
+        }
+      }
+      orphans.push(orphan);
+    }
+  }
+
+  if (newestSignature) {
+    await env.COUNTERS.put(SOLANA_RECONCILE_CURSOR_KEY, newestSignature);
+  }
+  await env.COUNTERS.put(SOLANA_RECONCILE_OK_KEY, new Date().toISOString());
+  return {
+    ran: true,
+    transfers_seen: seen,
+    orphans,
+    cert_scan_truncated: truncated,
+  };
+}
+
+export async function runSolanaReconciliation(
+  env: Env,
+): Promise<ChainReconciliation> {
+  const result = await reconcileSolanaAgainstChain(env);
+  await alertOrphans(
+    env,
+    result.orphans ?? [],
+    "Solana",
+    result.cert_scan_truncated ?? false,
+  );
   return result;
 }

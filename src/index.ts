@@ -70,7 +70,10 @@ import { assembleDraft } from "@/services/gazette-weekly";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
 import { runDeliveryAudit } from "@/services/delivery-audit";
-import { runChainReconciliation } from "@/services/chain-reconciliation";
+import {
+  runChainReconciliation,
+  runSolanaReconciliation,
+} from "@/services/chain-reconciliation";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -346,6 +349,22 @@ const worker: ExportedHandler<Env> = {
           sendAlert(env, {
             condition: "worker_health",
             detail: `Chain reconciliation failed: ${String(error)}`,
+          }),
+      ),
+    );
+    /**
+     * THE SAME QUESTION, ASKED OF THE SECOND RAIL. Skips itself with a
+     * stated reason while SOLANA_PAY_TO is unset; once money can
+     * arrive on Solana, this is the walk that retires the
+     * unreconciled cap (PAYMENT_RAILS.md ruling, 2026-08-04).
+     */
+    ctx.waitUntil(
+      runSolanaReconciliation(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Solana reconciliation failed: ${String(error)}`,
           }),
       ),
     );

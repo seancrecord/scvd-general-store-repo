@@ -98,10 +98,29 @@ export async function recordSolanaSettle(
   const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
   await env.COUNTERS.put(SOLANA_SETTLED_TOTAL_KEY, String(total));
   if (total > SOLANA_UNRECONCILED_CAP_USDC) {
+    /**
+     * SELF-RETIRING: the cap exists because unreconciled money is
+     * against the house style, so it stands down exactly when the
+     * Solana reconciliation walk is demonstrably alive — a clean pass
+     * inside the last 24h (the walk runs hourly; 24h of slack keeps a
+     * flaky RPC from crying wolf). A walk that stops passing brings
+     * the cap back on its own, which makes this the walk's backstop
+     * rather than a rule someone has to remember to delete.
+     */
+    const { SOLANA_RECONCILE_OK_KEY } = await import(
+      "@/services/chain-reconciliation"
+    );
+    const lastOk = await env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY);
+    const walkAlive =
+      lastOk !== null &&
+      Date.now() - new Date(lastOk).getTime() < 24 * 60 * 60 * 1000;
+    if (walkAlive) {
+      return;
+    }
     const { sendAlert } = await import("@/lib/alerts");
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `Solana settles have passed the $${SOLANA_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and the Solana-side bank reconciliation does not exist yet. The ruling: ship the Solana reconciliation walk, or close the door (unset SOLANA_PAY_TO). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal.`,
+      detail: `Solana settles have passed the $${SOLANA_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and the Solana-side bank reconciliation has not completed a pass in the last 24h. Either the walk is broken (check the cron) or it never ran — fix it, or close the door (unset SOLANA_PAY_TO). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal.`,
       key: "solana-unreconciled-cap",
     }).catch(() => undefined);
   }
