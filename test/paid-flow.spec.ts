@@ -56,19 +56,46 @@ describe("the 402 challenge (x402 v2)", () => {
 
     const required = decodePaymentRequired(response);
     expect(required.x402Version).toBe(2);
-    // Three pay-what-it-deserves tiers: $8, $16, $40 in USDC atomic units.
-    expect(required.accepts.map((a) => a.amount)).toEqual([
+    /**
+     * Two rails since 2026-08-04, Base entries FIRST (accepts[0] is a
+     * compatibility promise — clients that blindly sign the first
+     * offer predate the second rail). Three pay-what-it-deserves
+     * tiers per rail: $8, $16, $40 in USDC atomic units.
+     */
+    const baseEntries = required.accepts.filter(
+      (a) => a.network === "eip155:8453",
+    );
+    const solanaEntries = required.accepts.filter((a) =>
+      a.network.startsWith("solana:"),
+    );
+    expect(baseEntries.length + solanaEntries.length).toBe(
+      required.accepts.length,
+    );
+    expect(required.accepts[0]!.network).toBe("eip155:8453");
+    expect(baseEntries.map((a) => a.amount)).toEqual([
       "8000000",
       "16000000",
       "40000000",
     ]);
-    for (const requirement of required.accepts) {
+    expect(solanaEntries.map((a) => a.amount)).toEqual([
+      "8000000",
+      "16000000",
+      "40000000",
+    ]);
+    for (const requirement of baseEntries) {
       expect(requirement.scheme).toBe("exact");
-      expect(requirement.network).toBe("eip155:8453");
       expect(requirement.payTo).toBe(testEnv.PAY_TO_ADDRESS);
       // USDC on Base mainnet.
       expect(requirement.asset).toBe(
         "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      );
+    }
+    for (const requirement of solanaEntries) {
+      expect(requirement.scheme).toBe("exact");
+      expect(requirement.payTo).toBe(testEnv.SOLANA_PAY_TO);
+      // USDC's SPL mint on Solana mainnet.
+      expect(requirement.asset).toBe(
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
       );
     }
 

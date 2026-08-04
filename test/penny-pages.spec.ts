@@ -85,10 +85,11 @@ describe("dibs (fixed, instant)", () => {
     const challenge = await SELF.fetch(url);
     expect(challenge.status).toBe(402);
     const required = decodePaymentRequired(challenge);
-    // $2 fixed: exactly one tier.
-    expect(required.accepts.map((accept) => accept.amount)).toEqual([
-      "2000000",
-    ]);
+    // $2 fixed: exactly one tier per rail (Base first since 2026-08-04).
+    for (const accept of required.accepts) {
+      expect(accept.amount).toBe("2000000");
+    }
+    expect(required.accepts[0]!.network).toBe("eip155:8453");
 
     const paid = await payFor(url);
     expect(paid.status).toBe(200);

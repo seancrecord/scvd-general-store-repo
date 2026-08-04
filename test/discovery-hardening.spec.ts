@@ -139,7 +139,11 @@ describe("the Penny Shelf", () => {
   it("offers half a cent in atomic units on the 402", async () => {
     const challenge = await SELF.fetch(`${BASE}/api/buy/small_blessing`);
     const required = decodePaymentRequired(challenge);
-    expect(required.accepts.map((accept) => accept.amount)).toEqual(["5000"]);
+    // One half-cent tier per rail since 2026-08-04, Base first.
+    for (const accept of required.accepts) {
+      expect(accept.amount).toBe("5000");
+    }
+    expect(required.accepts[0]!.network).toBe("eip155:8453");
   });
 
   it("serves the same fortune to everyone all day", async () => {

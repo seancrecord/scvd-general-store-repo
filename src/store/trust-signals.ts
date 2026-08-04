@@ -123,6 +123,45 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) — a third party testing the endpoints rather than repeating a listing — and that the store verified domain ownership with the directory on 2026-08-02. Not an endorsement and not an audit of the goods.",
   },
   {
+    url: "https://glama.ai/mcp/connectors/store.scvd/general-store",
+    registry: "Glama MCP connectors",
+    confirmed: "2026-08-04",
+    what_it_proves:
+      "That Glama also carries this store as a connector page, distinct from its earlier auto-crawled server index entry. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service.",
+  },
+  {
+    url: "https://mcpindex.ai/server/store-scvd-general-store",
+    registry: "mcpindex.ai",
+    confirmed: "2026-08-04",
+    what_it_proves:
+      "That mcpindex.ai lists the MCP server with its own live verdict page. Not an endorsement and not an audit: their verdict is their instrument, read on their page — this record only proves the listing exists.",
+  },
+  {
+    url: "https://mcpservers.org/servers/scvd-store-llms-txt",
+    registry: "mcpservers.org (llms.txt entry)",
+    confirmed: "2026-08-04",
+    what_it_proves:
+      "That mcpservers.org carries a second, llms.txt-derived entry beside the claimed server listing above — the store's own machine-readable front door, independently ingested. Not an endorsement and not an audit.",
+  },
+  {
+    url: "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp",
+    registry: "m8ven.ai",
+    confirmed: "2026-08-04",
+    /**
+     * A SCANNER, NOT A MIRROR — the class of entry worth having even
+     * when its current readings are unflattering, and the readings are
+     * recorded here honestly: on 2026-08-04 it flagged one high CVE
+     * (wrangler, a devDependency that never ships in the Worker;
+     * upgraded the same day) and listed the shopping script's env
+     * knobs as if the MCP required them (the stdio bridge reads no
+     * env at all). Third parties that run checks are the ones that
+     * catch real things eventually; the wrong readings get fixed at
+     * the source, not argued with.
+     */
+    what_it_proves:
+      "That a third-party scanner audits this repository's declared dependencies against OSV and republishes its findings — an instrument pointed at us, not a listing we wrote. Not an endorsement and not an audit of the goods. Its readings can lag or misattribute (its 2026-08-04 CVE flag was a dev-only tool, upgraded same day; its env-var table describes a test script, not the MCP bridge, which needs none), and this record claims only that the scanner watches, not that its current score is right.",
+  },
+  {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
     registry: "Agent Identity Registry (AIR) — scvd-store, AIR-BYYP-0MQC-TAKR",
     confirmed: "2026-08-01",

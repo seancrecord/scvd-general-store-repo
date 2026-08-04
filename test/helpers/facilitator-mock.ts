@@ -112,8 +112,24 @@ export function installFacilitatorMock(): FacilitatorMockState {
     const url = requestUrl(input);
 
     if (url.endsWith("/x402/supported")) {
+      // Mirrors the REAL facilitator's list (npm run supported:kinds,
+      // verified 2026-08-04): both rails, v2 exact. The day this fell
+      // behind reality, every payment test failed on route
+      // construction — the SDK validates offered networks against
+      // this response, so a mock that under-declares breaks routes
+      // the real facilitator accepts.
       return Response.json({
-        kinds: [{ x402Version: 2, scheme: "exact", network: "eip155:8453" }],
+        kinds: [
+          { x402Version: 2, scheme: "exact", network: "eip155:8453" },
+          {
+            x402Version: 2,
+            scheme: "exact",
+            network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+            // The real kind carries the facilitator's fee-payer
+            // address; the mock's is just a well-formed pubkey.
+            extra: { feePayer: "DGxcPrAHL9YM3hW7iXuHFJmr87Zr6AMA4jCYHBpuvMgE" },
+          },
+        ],
         extensions: [],
         signers: {},
       });

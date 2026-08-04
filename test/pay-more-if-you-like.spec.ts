@@ -42,12 +42,25 @@ describe("penny pages: a penny, and somewhere to pay more", () => {
   });
 
   it("offers higher amounts, ascending, none of them mandatory", async () => {
+    /**
+     * Ascending WITHIN each rail since 2026-08-04 — the Solana tiers
+     * repeat the Base ones after them, so global ordering would be a
+     * false assertion about a true shape.
+     */
     const challenge = decodePaymentRequired(
       await SELF.fetch(`${BASE}${PAGE}`),
     );
-    const amounts = challenge.accepts.map((tier) => Number(tier.amount));
-    expect([...amounts].sort((a, b) => a - b)).toEqual(amounts);
-    expect(amounts[amounts.length - 1]).toBeGreaterThan(amounts[0] ?? 0);
+    const byNetwork = new Map<string, number[]>();
+    for (const tier of challenge.accepts) {
+      const list = byNetwork.get(tier.network) ?? [];
+      list.push(Number(tier.amount));
+      byNetwork.set(tier.network, list);
+    }
+    expect(byNetwork.size).toBeGreaterThanOrEqual(1);
+    for (const amounts of byNetwork.values()) {
+      expect([...amounts].sort((a, b) => a - b)).toEqual(amounts);
+      expect(amounts[amounts.length - 1]).toBeGreaterThan(amounts[0] ?? 0);
+    }
   });
 
   it("says paying more buys nothing extra", async () => {
