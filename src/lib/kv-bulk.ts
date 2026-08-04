@@ -12,6 +12,43 @@ type Namespace = Env["ORDERS"];
 const CHUNK = 100;
 
 /**
+ * TRANSIENT SERVER ERRORS GET RETRIES; PERSISTENT ONES GET THROWN.
+ *
+ * Added 2026-08-04 after a live "KV GET_BULK failed: 500 Internal
+ * Server Error" killed a whole corrections walk. The fallback below
+ * was built for DATA-shaped failures (one non-JSON row fails the
+ * batch with a 400; re-read as text, null the bad row). A SERVER
+ * -shaped failure (a transient 500) threw on the JSON attempt and
+ * then again on the unguarded text fallback — one blip blinding the
+ * instrument this file's own comment promises never to blind.
+ *
+ * The failure that remains after retries still THROWS, deliberately:
+ * silently nulling a failed chunk would let a correction publish
+ * while missing up to 100 rows — a wrong number wearing a
+ * correction's authority. Loud failure plus the cron's next pass is
+ * the honest degradation; the retry only absorbs the blip.
+ */
+const RETRIES = 3;
+const BACKOFF_MS = [150, 600];
+
+async function withRetry<T>(read: () => Promise<T>): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < RETRIES; attempt += 1) {
+    try {
+      return await read();
+    } catch (error) {
+      lastError = error;
+      if (attempt < RETRIES - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, BACKOFF_MS[attempt] ?? 600),
+        );
+      }
+    }
+  }
+  throw lastError;
+}
+
+/**
  * ONE BAD ROW MUST NOT BLIND A WHOLE INSTRUMENT.
  *
  * KV's bulk JSON read fails the ENTIRE batch — 400, "at least one of
@@ -45,7 +82,14 @@ export async function bulkGetJson<T>(
       try {
         result.set(only, await kv.get<T>(only, "json"));
       } catch {
-        result.set(only, null);
+        // A non-JSON row surfaces here too; text-read it (with retries
+        // for server blips) and null only what genuinely won't parse.
+        const raw = await withRetry(() => kv.get(only));
+        try {
+          result.set(only, raw === null ? null : (JSON.parse(raw) as T));
+        } catch {
+          result.set(only, null);
+        }
       }
       continue;
     }
@@ -55,7 +99,7 @@ export async function bulkGetJson<T>(
         result.set(name, value);
       }
     } catch {
-      const raw = await kv.get(chunk, "text");
+      const raw = await withRetry(() => kv.get(chunk, "text"));
       for (const [name, value] of raw) {
         if (value === null) {
           result.set(name, null);
@@ -80,10 +124,10 @@ export async function bulkGetText(
   for (let start = 0; start < names.length; start += CHUNK) {
     const chunk = names.slice(start, start + CHUNK);
     if (chunk.length === 1) {
-      result.set(chunk[0]!, await kv.get(chunk[0]!));
+      result.set(chunk[0]!, await withRetry(() => kv.get(chunk[0]!)));
       continue;
     }
-    const got = await kv.get(chunk, "text");
+    const got = await withRetry(() => kv.get(chunk, "text"));
     for (const [name, value] of got) {
       result.set(name, value);
     }

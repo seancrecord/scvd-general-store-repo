@@ -78,6 +78,50 @@ describe("bulkGetJson", () => {
   });
 });
 
+describe("transient server errors — the 2026-08-04 GET_BULK 500", () => {
+  /**
+   * A live Cloudflare-side 500 on a bulk read killed a whole
+   * corrections walk: the JSON attempt threw, and the text fallback —
+   * built for data-shaped 400s, not server-shaped blips — threw the
+   * same 500 uncaught. These pin the repaired shape with a fake
+   * namespace, since real KV cannot be told to fail on cue.
+   */
+  function flakyKv(failures: number, rows: Record<string, string>) {
+    let remaining = failures;
+    const get = async (
+      keys: string | string[],
+      _type?: string,
+    ): Promise<unknown> => {
+      if (remaining > 0) {
+        remaining -= 1;
+        throw new Error("KV GET_BULK failed: 500 Internal Server Error");
+      }
+      if (Array.isArray(keys)) {
+        return new Map(keys.map((k) => [k, rows[k] ?? null]));
+      }
+      return rows[keys] ?? null;
+    };
+    return { get } as unknown as Env["ORDERS"];
+  }
+
+  it("absorbs a blip: fails twice, succeeds on the retry", async () => {
+    // Both the JSON attempt and the first text fallback throw; the
+    // retried text read lands. Before the fix this threw.
+    const kv = flakyKv(2, { a: JSON.stringify({ n: 1 }), b: JSON.stringify({ n: 2 }) });
+    const got = await bulkGetJson<{ n: number }>(kv, ["a", "b"]);
+    expect(got.get("a")?.n).toBe(1);
+    expect(got.get("b")?.n).toBe(2);
+  });
+
+  it("still throws when the failure outlasts the retries — loud, never partial", async () => {
+    // Silently nulling a failed chunk would let a correction publish
+    // while missing up to 100 rows: a wrong number wearing a
+    // correction's authority. Persistent failure must stay an error.
+    const kv = flakyKv(99, { a: JSON.stringify({ n: 1 }) });
+    await expect(bulkGetJson(kv, ["a", "b"])).rejects.toThrow("500");
+  });
+});
+
 describe("bulkGetText", () => {
   it("returns raw strings, corrupt or not, because text cannot be corrupt", async () => {
     await testEnv.ORDERS.put(`${PREFIX}t1`, "not json at all");
