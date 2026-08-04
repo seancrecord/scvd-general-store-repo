@@ -6,6 +6,7 @@ import {
 } from "@x402/core/server";
 import type { PaymentOption, RouteConfig, RoutesConfig } from "@x402/core/http";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { ExactSvmScheme } from "@x402/svm/exact/server";
 import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
 import {
   buyDiscoveryExtensions,
@@ -44,8 +45,34 @@ import type { Env, MenuItem } from "@/types";
  */
 
 export const BASE_NETWORK = "eip155:8453";
+/**
+ * THE SECOND RAIL (2026-08-04): USDC on Solana mainnet, CAIP-2 form —
+ * the genesis-hash network id the CDP facilitator's own supported
+ * list names. Gate history in PAYMENT_RAILS.md: Part A audit passed
+ * for both rails, `npm run supported:kinds` confirmed the facilitator
+ * the store ALREADY trusts settles solana-exact, so this rail reuses
+ * the whole existing verify/settle path — one more accepts[] entry,
+ * zero new buyer-facing branches, exactly the shape MPP failed to be.
+ *
+ * FLAG-GATED ON SOLANA_PAY_TO: with the var unset, nothing about any
+ * 402 changes. Set it (the keeper's receive-address ceremony: key
+ * generated offline, seed on paper, only the PUBLIC address deployed)
+ * and every priced route offers both rails, Base entries first so a
+ * client that blindly signs accepts[0] behaves exactly as before.
+ */
+export const SOLANA_NETWORK = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 export const PENNY_PAGE_USDC = 0.01;
 const USDC_DECIMALS = 6;
+
+/** Base58, 32-44 chars: the only shape a Solana pubkey comes in. A
+ * malformed address stays OUT of the 402 rather than minting offers
+ * nobody can pay. */
+export function solanaPayTo(env: Env): string | null {
+  const address = env.SOLANA_PAY_TO?.trim();
+  return address && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
+    ? address
+    : null;
+}
 
 /** Tier multipliers for pay-what-it-deserves items: minimum, generous, patron-of-the-arts. */
 const PWID_TIER_MULTIPLIERS = [1, 2, 5] as const;
@@ -131,14 +158,35 @@ function storeServiceMetadata(
   };
 }
 
-function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
-  const payTo = env.PAY_TO_ADDRESS;
-  const accepts: PaymentOption[] = priceTiersUsdc(item).map((tierUsdc) => ({
+/**
+ * Every rail's entries for one set of price tiers, Base first. Order
+ * is a compatibility promise: accepts[0] stays the Base minimum tier
+ * forever, because clients that sign the first offer without reading
+ * the rest exist and were working before the second rail did.
+ */
+export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
+  const accepts: PaymentOption[] = tiersUsdc.map((tierUsdc) => ({
     scheme: "exact",
     network: BASE_NETWORK,
     price: `$${tierUsdc}`,
-    payTo,
+    payTo: env.PAY_TO_ADDRESS,
   }));
+  const solana = solanaPayTo(env);
+  if (solana) {
+    for (const tierUsdc of tiersUsdc) {
+      accepts.push({
+        scheme: "exact",
+        network: SOLANA_NETWORK,
+        price: `$${tierUsdc}`,
+        payTo: solana,
+      });
+    }
+  }
+  return accepts;
+}
+
+function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
+  const accepts = railAccepts(env, priceTiersUsdc(item));
   return {
     accepts,
     description: buyRouteDescription(item, env),
@@ -203,12 +251,12 @@ function pennyPageRouteConfig(
    * distinction matters enough to be a test.
    */
   const config: RouteConfig = {
-    accepts: PWID_TIER_MULTIPLIERS.map((multiplier) => ({
-      scheme: "exact",
-      network: BASE_NETWORK,
-      price: `$${Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100}`,
-      payTo: env.PAY_TO_ADDRESS,
-    })),
+    accepts: railAccepts(
+      env,
+      PWID_TIER_MULTIPLIERS.map(
+        (multiplier) => Math.round(PENNY_PAGE_USDC * multiplier * 100) / 100,
+      ),
+    ),
     description,
     mimeType: "text/markdown",
     ...storeServiceMetadata(env),
@@ -401,6 +449,13 @@ export function getPaymentStack(env: Env): PaymentStack {
       BASE_NETWORK,
       new ExactEvmScheme(),
     );
+    if (solanaPayTo(env)) {
+      // The scheme server maps "$X" to the USDC mint and carries the
+      // facilitator's feePayer through — the buyer stays gasless on
+      // this rail too. Registered only when the door is open, so an
+      // unset flag is byte-identical to the store before the rail.
+      resourceServer.register(SOLANA_NETWORK, new ExactSvmScheme());
+    }
     resourceServer.registerExtension(bazaarResourceServerExtension);
     // The decline instrument: keep the facilitator's verdict so the
     // gate can put WHY into the 402 body and the books, instead of
@@ -498,6 +553,13 @@ export interface SettledPayment {
   tipUsdc: number;
   payer?: string;
   transaction: string;
+  /**
+   * Which rail settled, from the facilitator's settle response —
+   * recorded at settle time, never reconstructed (PAYMENT_RAILS.md).
+   * Absent means the settlement predates the second rail; readers
+   * fall back to Base, which is what every such settle was.
+   */
+  network?: string;
   /** PAYMENT-RESPONSE header to attach to the final response. */
   settleHeaders: Record<string, string>;
 }

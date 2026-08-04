@@ -98,6 +98,9 @@ export async function fulfillPurchase(
   if (payment.transaction) {
     mintOptions.settlementTx = payment.transaction;
   }
+  if (payment.network) {
+    mintOptions.network = payment.network;
+  }
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
   }

@@ -722,6 +722,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     transaction: settlement.transaction,
     settleHeaders: settlement.headers,
   };
+  if (settlement.network) {
+    payment.network = settlement.network;
+  }
   if (settlement.payer) {
     payment.payer = settlement.payer;
   }
@@ -781,7 +784,8 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const outHeaders = await withReceiptHeader(c.env, settlement.headers, {
     resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`,
     ...(payer ? { payer } : {}),
-    network: BASE_NETWORK,
+    // The rail that actually settled; Base only as the pre-second-rail fallback.
+    network: settlement.network ?? BASE_NETWORK,
     ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
     nowSeconds: Math.floor(Date.now() / 1000),
   });

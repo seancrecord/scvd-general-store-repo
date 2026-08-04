@@ -100,6 +100,12 @@ export interface MintOptions {
   paidUsdc?: number;
   payer?: string;
   settlementTx?: string;
+  /**
+   * Which rail settled, from the settle response at mint time. Absent
+   * on pre-second-rail settles; the fallback below writes Base, which
+   * is what every such settle was.
+   */
+  network?: string;
 }
 
 /** Shelf witness mark. Catalog history, not a trophy. */
@@ -143,7 +149,10 @@ export async function mintCertificate(
   if (options.paidUsdc !== undefined && options.paidUsdc > 0) {
     certificate.paid_usdc = options.paidUsdc;
     certificate.asset = "USDC";
-    certificate.network = BASE_NETWORK;
+    // The rail that settled, never reconstructed (PAYMENT_RAILS.md):
+    // the gate passes the settle response's network through, and only
+    // a settle that predates the second rail falls back to Base.
+    certificate.network = options.network ?? BASE_NETWORK;
   }
   if (options.payer) {
     certificate.payer = options.payer;

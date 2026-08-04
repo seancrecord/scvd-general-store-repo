@@ -61,4 +61,5 @@
   //   CDP_API_KEY_SECRET  Coinbase Developer Platform key secret
   //   SIGNING_KEY         ed25519 private key seed, 64 hex chars (npm run keys:generate)
   //   ADMIN_PASSWORD      Basic Auth password for /admin
+  //   SOLANA_PAY_TO       Solana wallet that receives USDC (second rail; unset = rail closed)
 }

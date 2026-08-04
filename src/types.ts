@@ -11,6 +11,14 @@ export interface Env {
   PATRONS: KVNamespace;
   /** Base wallet that receives USDC. Secret. */
   PAY_TO_ADDRESS: string;
+  /**
+   * Solana wallet that receives USDC on the second rail (base58
+   * pubkey). Optional and FLAG-GATING: unset, no 402 offers Solana
+   * and the store behaves exactly as before the rail existed. A
+   * public address, but set as a secret like PAY_TO_ADDRESS — where
+   * money lands is config the dash should own, not the repo.
+   */
+  SOLANA_PAY_TO?: string;
   /** Coinbase Developer Platform facilitator credentials. Secrets. */
   CDP_API_KEY_ID: string;
   CDP_API_KEY_SECRET: string;

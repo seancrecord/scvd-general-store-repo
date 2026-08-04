@@ -342,6 +342,9 @@ export async function runMcpPayment(
     transaction: settlement.transaction,
     settleHeaders: settlement.headers,
   };
+  if (settlement.network) {
+    payment.network = settlement.network;
+  }
   if (settlement.payer) {
     payment.payer = settlement.payer;
   }
