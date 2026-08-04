@@ -72,6 +72,33 @@ describe("the reclassification ledger", () => {
     expect(again.ok).toBe(false);
   });
 
+  it("an explicit count caps at the payer record — the CV-wallet over-correction, refused", async () => {
+    // A wallet listed for weeks has most settles CORRECTLY booked
+    // house; freezing its whole purchase count would subtract correct
+    // bookings from organic. The keeper states the misbooked count;
+    // the record caps it; more-than-ever-happened refuses.
+    const other = "0x007cA504E06C98d8580A061F1099da8BE02f8765".toLowerCase();
+    await testEnv.COUNTERS.put(
+      KV_KEYS.payer(other),
+      JSON.stringify({
+        address: other,
+        first_seen: "2026-08-04T00:00:00.000Z",
+        last_seen: "2026-08-04T01:00:00.000Z",
+        purchases: 5,
+      }),
+    );
+    const tooMany = await reclassifyHousePayer(testEnv, other, "walker", 9);
+    expect(tooMany.ok).toBe(false);
+    if (!tooMany.ok) {
+      expect(tooMany.refusal).toContain("more than ever happened");
+    }
+    const right = await reclassifyHousePayer(testEnv, other, "walker", 5);
+    expect(right.ok).toBe(true);
+    if (right.ok) {
+      expect(right.record.settles).toBe(5);
+    }
+  });
+
   it("the admin lever needs auth and a listed wallet", async () => {
     const noAuth = await SELF.fetch(`${BASE}/admin/reclassify`, {
       method: "POST",

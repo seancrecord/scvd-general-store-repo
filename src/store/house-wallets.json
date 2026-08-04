@@ -18,6 +18,12 @@
       "who": "cheap-model pass walker (sonnet46)",
       "since": "2026-08-04",
       "why": "AGENT_UX cross-model walker wallet from the test-wallet pool; its purchases are UX passes, never organic demand. LESSON ATTACHED: this was added AFTER its first six settles booked as organic (patrons 49-54, ~$6.52) \u2014 every test-pool wallet must be listed here BEFORE its first purchase, the same guard shopping-run enforces for itself."
+    },
+    {
+      "address": "0x007cA504E06C98d8580A061F1099da8BE02f8765",
+      "who": "cheap-model pass walker (haiku)",
+      "since": "2026-08-04",
+      "why": "AGENT_UX cross-model walker; 5 settles (patrons 60/61/63/64/65) booked organic before listing \u2014 reclassified via the ledger, story at /corrections."
     }
   ]
 }

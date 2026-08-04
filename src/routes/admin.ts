@@ -377,7 +377,9 @@ adminRoutes.post("/admin/reclassify", async (c) => {
       ? form["reason"]
       : "cross-model UX walker wallet; settles booked organic before listing";
   const { reclassifyHousePayer } = await import("@/services/reclassify");
-  const result = await reclassifyHousePayer(c.env, address, reason);
+  const settlesRaw = typeof form["settles"] === "string" ? form["settles"] : "";
+  const settles = settlesRaw ? parseInt(settlesRaw, 10) : undefined;
+  const result = await reclassifyHousePayer(c.env, address, reason, settles);
   if (!result.ok) {
     return c.text(result.refusal, 400);
   }

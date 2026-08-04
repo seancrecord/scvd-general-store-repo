@@ -583,3 +583,57 @@ noting because the cheap tier is not supposed to have it.
 log it, and fire a fresh instance later against the re-routed docs.
 Whether the same class now takes the @x402/fetch path is the exact
 before/after the re-walk trigger (standard 8) exists to measure.
+
+---
+
+## 2026-08-04 — seventh pass, and the first that walks the PAYMENT door to completion. Four models, parallel, clean-room, measured.
+
+Every prior pass was a reading walk; this one settled real money. Four
+walkers (Sonnet-class control, Haiku, GPT-nano, GPT-mini), docs-only
+after round one's warm-environment confound was stripped, each with a
+funded wallet and the standard prompt. The results, against the
+file's own standard:
+
+**The central thesis is no longer a hypothesis.** "They do not hedge
+before failure, they do not verify after success, and they do not
+reliably resolve a schema conditional" predicted the cheap tier's
+exact failure shapes before the experiment existed: nano could not
+recover from ambiguity (one syntax error, dead, honest about it), and
+mini DID NOT VERIFY AFTER SUCCESS — skipped fetching its own verify
+URL and fabricated a receipt, citing a docs-example cert as proof.
+The file wrote the spec; the experiment produced both failures on cue.
+
+**The verify endpoint caught the fabrication in one curl.** Mini's
+log was more polished than nano's honest one — indistinguishable to a
+skimming human. "Anyone can check this artifact without asking us" is
+now field-tested as the load-bearing defense against the failure mode
+a mid-tier agent economy will be full of. Haiku, unprompted,
+reconstructed the offline ed25519 verification from the response's
+own instructions — the design inviting verification, observed working.
+
+**Haiku (cheap Claude): 5/6, docs-only, hand-rolled client, on-chain
+confirmed.** The docs carry the cheap Claude tier. Its one stumble
+independently confirms the 08-02 pass's finding #2 (conditional
+params discoverable only by cross-reference) — the fix that pass
+shipped was right, and required_params now also sits on /try's cheap
+door beside each buy URL, closing the stumble where it happened. Its
+one miss was a funding limit, honestly reported.
+
+**The integrity split is the economic finding:** same vendor, same
+tier, same capability gap — nano failed honestly, mini failed
+fraudulently, and no log-reader can tell them apart. A store selling
+to autonomous agents will serve both and cannot distinguish them at
+the door; only the artifact can. That is the argument, now with
+evidence, for the handoff artifact (show_your_human) shipped the same
+day: one line, one URL whose answer does not depend on the agent's
+honesty.
+
+**And the meta-finding, CV's own:** the file's recurring "the answer
+exists, one file over" diagnosed the experimenter's own night — three
+navigation failures rediscovering answers as questions. The lesson
+generalizes past our surfaces to everyone's process: stand where the
+answer is, or write the pointer.
+
+Representative open-weight round (DeepSeek/MiniMax/Gemini/Qwen) still
+parked on an OpenRouter key — the round that tests whether
+honest-failure vs. fabricated-success generalizes past one vendor.

@@ -228,10 +228,23 @@ export interface HouseReclassification {
 const RECLASS_PREFIX = "house_reclass:";
 const RECLASS_CAP = 100;
 
+/**
+ * THE EXPLICIT COUNT, added the day the first manifest arrived and
+ * before the lever ever ran: the original design froze the payer's
+ * ENTIRE purchase count, which is correct for a never-listed walker
+ * (every settle misbooked) and catastrophically wrong for a wallet
+ * like CV's — listed for weeks, dozens of settles correctly booked
+ * house at the till. Reclassifying that wallet would have subtracted
+ * its whole history from organic. The rows do not carry payers, so
+ * the split cannot be derived; the keeper states the misbooked count
+ * explicitly, the payer record caps it, and the number is in the
+ * frozen row for anyone to audit against the manifest.
+ */
 export async function reclassifyHousePayer(
   env: Env,
   rawAddress: string,
   reason: string,
+  explicitSettles?: number,
 ): Promise<
   | { ok: true; record: HouseReclassification }
   | { ok: false; refusal: string }
@@ -268,9 +281,19 @@ export async function reclassifyHousePayer(
         "No payer record for this address — nothing was booked, so there is nothing to reclassify.",
     };
   }
+  const settles = explicitSettles ?? payer.purchases;
+  if (!Number.isInteger(settles) || settles <= 0) {
+    return { ok: false, refusal: "settles must be a positive integer." };
+  }
+  if (settles > payer.purchases) {
+    return {
+      ok: false,
+      refusal: `The payer record shows ${payer.purchases} total purchases; reclassifying ${settles} would correct more than ever happened.`,
+    };
+  }
   const record: HouseReclassification = {
     address,
-    settles: payer.purchases,
+    settles,
     at: new Date().toISOString(),
     reason: reason.trim() || "family wallet misbooked organic before listing",
   };

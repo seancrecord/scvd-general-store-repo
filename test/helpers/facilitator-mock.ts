@@ -27,6 +27,15 @@ export interface FacilitatorMockState {
    */
   settleOmitsPayer: boolean;
   webhookCalls: WebhookCall[];
+  /**
+   * EIP-3009 nonces this mock has already settled. The chain enforces
+   * nonce-once (TransferWithAuthorization reverts on reuse); a mock
+   * that settles the same authorization twice is LOOSER than reality,
+   * and the store's KV replay guard alone can race (read-modify-write,
+   * two isolates both pass before either records). The A.2.b
+   * concurrent same-key test was flaky for exactly that reason.
+   */
+  settledNonces: Set<string>;
 }
 
 function requestUrl(input: RequestInfo | URL): string {
@@ -39,12 +48,61 @@ function requestUrl(input: RequestInfo | URL): string {
   return input.url;
 }
 
+async function requestBodyJson(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<unknown> {
+  try {
+    if (typeof init?.body === "string") {
+      return JSON.parse(init.body) as unknown;
+    }
+    if (input instanceof Request) {
+      return (await input.clone().json()) as unknown;
+    }
+  } catch {
+    // Not JSON, or unreadable — the caller treats null as "no nonce".
+  }
+  return null;
+}
+
+/**
+ * The settle body's wrapping belongs to @coinbase/x402 and has shifted
+ * between versions; the nonce's POSITION is not our contract, its
+ * PRESENCE is. Deep-search instead of coupling to the wrapper.
+ */
+function findNonce(value: unknown): string | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const found = findNonce(entry);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record["nonce"] === "string" && record["nonce"].length > 0) {
+    return record["nonce"];
+  }
+  for (const entry of Object.values(record)) {
+    const found = findNonce(entry);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
+
 export function installFacilitatorMock(): FacilitatorMockState {
   const state: FacilitatorMockState = {
     settleShouldFail: false,
     verifyShouldFail: false,
     settleOmitsPayer: false,
     webhookCalls: [],
+    settledNonces: new Set(),
   };
 
   const mockFetch = async (
@@ -79,6 +137,23 @@ export function installFacilitatorMock(): FacilitatorMockState {
           network: "eip155:8453",
           payer: TEST_PAYER,
         });
+      }
+      // Nonce-once, like the chain: TransferWithAuthorization reverts
+      // when an authorization's nonce was already used. Without this
+      // the mock settles a replayed signature twice — a success no
+      // real facilitator can produce.
+      const nonce = findNonce(await requestBodyJson(input, init));
+      if (nonce) {
+        if (state.settledNonces.has(nonce)) {
+          return Response.json({
+            success: false,
+            errorReason: "nonce_already_used",
+            transaction: "",
+            network: "eip155:8453",
+            payer: TEST_PAYER,
+          });
+        }
+        state.settledNonces.add(nonce);
       }
       // The CDP facilitator reports extension outcomes (e.g. Bazaar
       // discovery) in this header; the store's observer captures it.
