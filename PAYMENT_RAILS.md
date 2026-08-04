@@ -143,6 +143,22 @@ paid-and-refused settle would be worse than an unreconciled one.
 The Solana reconciliation walk is the standing follow-up build that
 retires the cap.
 
+**THE REGISTRATION RUN, COMPLETED 2026-08-04 (same day the rail
+shipped):** all 14 instant/queue shelf items settled over the Solana
+rail, house-flagged, every artifact verify:valid — patrons #69–86
+across four batches. Each settle is also its endpoint's discovery
+registration (the only admission mechanism; see the intake note
+above), so the whole shelf entered the source catalog in one
+afternoon. The run's failures were worth as much as its successes:
+it surfaced the EVM-only decline diagnosis mislabeling Solana
+refusals, the default Solana RPC rate-limiting the bank walk into
+silence, and the delivery audit's missing by-hand resolution lever —
+all fixed and tested the same day, none reachable by any test that
+stays inside the store. Two spurious settlement_attestation settles
+(fulfillment crashed on a flaky Base RPC read, post-settle) were
+caught by the delivery audit within the hour and resolved
+house_absorbed via the new lever.
+
 ## Part C — post-ship red team. Unchanged from CV's spec, one addition.
 
 C.1 (naive x402-only agent unaffected) is the load-bearing test, run
