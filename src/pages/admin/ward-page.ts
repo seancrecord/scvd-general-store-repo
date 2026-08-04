@@ -49,6 +49,11 @@ export function renderWardPage(
     }</strong>.</li>
     ${round.coverage_suspect ? "<li>Coverage suspect: the list read may be one page. Treat totals as floors.</li>" : ""}
     ${round.capped ? "<li>The round hit its host cap; the tail went unprobed and this line is the record of that.</li>" : ""}
+    <li>Leaderboard feed (agent402.tools): <strong>${
+      round.leaderboard_sellers == null
+        ? "could not check this round (says nothing about anybody)"
+        : `${round.leaderboard_sellers} sellers, window ${escapeHtml(round.leaderboard_window ?? "?")}; our rank ${round.our_leaderboard_rank ?? "— not on it (expected at our volume)"}`
+    }</strong>. Volume figures are claims for population, not importance — ~98% of ecosystem volume measured non-organic (Artemis, 2026-08).</li>
   </ul>`;
 
   const deltaHtml = delta
@@ -65,10 +70,15 @@ export function renderWardPage(
   const rows = round.hosts
     .map(
       (entry) => `<tr>
-      <td>${escapeHtml(entry.host)}</td>
+      <td>${escapeHtml(entry.host)}${entry.source === "leaderboard" ? " <small>(leaderboard-only)</small>" : ""}</td>
       <td>${escapeHtml(entry.verdict)}</td>
       <td>${escapeHtml(entry.failed.join(", ") || "—")}</td>
       <td>${escapeHtml(entry.advisories.join(", ") || "—")}</td>
+      <td>${
+        entry.volume_claim
+          ? `$${Math.round(entry.volume_claim.usd).toLocaleString("en-US")} · ${entry.volume_claim.calls.toLocaleString("en-US")} calls · ${entry.volume_claim.unique_buyers} buyers <small>(${escapeHtml(entry.volume_claim.window)}, their count)</small>`
+          : "—"
+      }</td>
     </tr>`,
     )
     .join("\n");
@@ -82,7 +92,7 @@ export function renderWardPage(
       ${deltaHtml}
       <h3>Every door on the ward</h3>
       <table>
-        <thead><tr><th>Host</th><th>Verdict</th><th>Failed checks</th><th>Advisories</th></tr></thead>
+        <thead><tr><th>Host</th><th>Verdict</th><th>Failed checks</th><th>Advisories</th><th>Volume claim</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p>One GET per host per week, same as any indexer. Verdicts here

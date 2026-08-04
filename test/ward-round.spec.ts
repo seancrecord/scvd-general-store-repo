@@ -225,3 +225,63 @@ describe("the ward's dead-man check", () => {
     ).toBe(true);
   });
 });
+
+describe("the leaderboard feed (agent402.tools, shape captured 2026-08-04)", () => {
+  const CAPTURED = {
+    spec: "x402-leaderboard/1",
+    windowRequested: "24h",
+    windowServed: "7d",
+    totalSellers: 771,
+    leaderboard: [
+      {
+        rank: 1,
+        name: "BlockRun.AI",
+        origins: ["https://blockrun.ai", "https://blockrun-web-vbsbhh7lea-uc.a.run.app"],
+        homepage: "https://blockrun.ai",
+        endpoints: 136,
+        wallet: "0xe9030014f5dae217d0a152f02a043567b16c1abf",
+        network: "base",
+        callsSettled: 1082089,
+        totalUsd: 23115.402624,
+        uniqueBuyers: 262,
+      },
+      {
+        rank: 40,
+        name: "SCVD General Store",
+        origins: ["https://scvd.store"],
+        callsSettled: 60,
+        totalUsd: 30.5,
+        uniqueBuyers: 4,
+      },
+    ],
+  };
+
+  it("maps rows to labeled claims, keyed by host, with the served window", async () => {
+    const { mapLeaderboard } = await import("@/services/ward-round");
+    const read = mapLeaderboard(CAPTURED, "scvd.store");
+    expect(read).not.toBeNull();
+    expect(read!.sellers).toBe(771);
+    // The window is what was SERVED, not what was asked — the feed's
+    // own honesty about its cache, carried through.
+    expect(read!.window).toBe("7d");
+    const blockrun = read!.byHost.get("blockrun.ai");
+    expect(blockrun?.claim).toMatchObject({
+      calls: 1082089,
+      unique_buyers: 262,
+      source: "agent402.tools",
+    });
+  });
+
+  it("finds our own rank and keeps us out of the probe population", async () => {
+    const { mapLeaderboard } = await import("@/services/ward-round");
+    const read = mapLeaderboard(CAPTURED, "scvd.store");
+    expect(read!.ourRank).toBe(40);
+    expect(read!.byHost.has("scvd.store")).toBe(false);
+  });
+
+  it("refuses a body that does not declare the spec — a shape guess is not a reading", async () => {
+    const { mapLeaderboard } = await import("@/services/ward-round");
+    expect(mapLeaderboard({ leaderboard: [] }, "scvd.store")).toBeNull();
+    expect(mapLeaderboard("nonsense", "scvd.store")).toBeNull();
+  });
+});

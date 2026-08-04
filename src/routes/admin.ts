@@ -404,6 +404,38 @@ adminRoutes.post("/admin/reclassify", async (c) => {
   });
 });
 
+/**
+ * The delivery-audit resolution lever: tell the audit a caught sale
+ * was handled by hand, so it stops paging about it. A record, not an
+ * erasure — the intent becomes a resolution row naming the outcome.
+ *
+ *   curl -u keeper -X POST .../admin/delivery/resolve \
+ *     -d "transaction=<settlement tx from the alert>" \
+ *     -d "outcome=fulfilled_by_hand|refunded|house_absorbed"
+ */
+adminRoutes.post("/admin/delivery/resolve", async (c) => {
+  const form = await c.req.parseBody();
+  const transaction = typeof form["transaction"] === "string" ? form["transaction"] : "";
+  const outcomeRaw = typeof form["outcome"] === "string" ? form["outcome"] : "";
+  const outcomes = ["fulfilled_by_hand", "refunded", "house_absorbed"] as const;
+  const outcome = outcomes.find((entry) => entry === outcomeRaw);
+  if (!outcome) {
+    return c.json(
+      { refused: `outcome must be one of: ${outcomes.join(", ")}` },
+      400,
+    );
+  }
+  const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+  const result = await resolveDeliveryIntent(c.env, transaction, outcome);
+  if (!result.ok) {
+    return c.json({ refused: result.refusal }, 404);
+  }
+  return c.json({
+    resolved: { transaction, outcome },
+    note: "The intent row is now a resolution row; the audit stops paging about this sale. The record keeps the original intent inside it.",
+  });
+});
+
 adminRoutes.post("/admin/ward/run", async (c) => {
   const { runWardRound } = await import("@/services/ward-round");
   await runWardRound(c.env);

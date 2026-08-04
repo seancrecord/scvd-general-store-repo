@@ -155,6 +155,51 @@ export async function auditDeliveries(
 }
 
 /**
+ * THE KEEPER'S RESOLUTION, added 2026-08-04 when the audit caught its
+ * first two real catches (settlement_attestation settled, fulfillment
+ * crashed — house money, batch-1 of the Solana registration run) and
+ * there was no way to tell it "handled": the row only cleared on
+ * automatic delivery, so a by-hand refund or fulfilment left the
+ * keeper paged every six hours about a sale he had already settled.
+ *
+ * A resolution is a RECORD, not an erasure: the intent row is
+ * replaced by a resolution row naming the outcome and the hand, kept
+ * on the same 90-day clock as the event rows.
+ */
+export type DeliveryOutcome = "fulfilled_by_hand" | "refunded" | "house_absorbed";
+
+export async function resolveDeliveryIntent(
+  env: Env,
+  transaction: string,
+  outcome: DeliveryOutcome,
+): Promise<{ ok: true } | { ok: false; refusal: string }> {
+  const id = transaction.trim();
+  if (!id) {
+    return { ok: false, refusal: "A settlement transaction id is required." };
+  }
+  const key = KV_KEYS.deliveryIntent(id);
+  const intent = await env.ORDERS.get(key);
+  if (!intent) {
+    return {
+      ok: false,
+      refusal:
+        "No open delivery intent for that transaction — either already delivered/resolved, or the id is not the one from the alert.",
+    };
+  }
+  await env.ORDERS.put(
+    `delivery_resolved:${id}`,
+    JSON.stringify({
+      outcome,
+      at: new Date().toISOString(),
+      intent: JSON.parse(intent) as unknown,
+    }),
+    { expirationTtl: 90 * 86400 },
+  );
+  await env.ORDERS.delete(key);
+  return { ok: true };
+}
+
+/**
  * The cron pass. Alerts per sale rather than in a batch, keyed so a
  * standing failure pages once every six hours instead of hourly — but
  * a SECOND undelivered sale is its own news and gets its own page.

@@ -211,3 +211,38 @@ describe("the cron pass", () => {
     expect(audit.undelivered).toEqual([]);
   });
 });
+
+describe("the keeper's resolution (2026-08-04, the audit's first real catches)", () => {
+  it("turns an intent into a resolution record and stops the paging", async () => {
+    const { openDeliveryIntent, auditDeliveries, resolveDeliveryIntent } =
+      await import("@/services/delivery-audit");
+    const tx = "4pUYtest" + Math.random().toString(36).slice(2, 8);
+    await openDeliveryIntent(testEnv, {
+      path: "/api/buy/settlement_attestation",
+      item_id: "settlement_attestation",
+      settled_at: new Date(Date.now() - 60 * 60000).toISOString(),
+      paid_usdc: 0.004,
+      transaction: tx,
+      payer: "GUhrGGnu8fcaGpV7iL1XjA4P3XoM31auicMxd58NkL4J",
+    } as never);
+
+    const before = await auditDeliveries(testEnv);
+    expect(before.undelivered.some((sale) => sale.transaction === tx)).toBe(true);
+
+    const result = await resolveDeliveryIntent(testEnv, tx, "house_absorbed");
+    expect(result.ok).toBe(true);
+
+    const after = await auditDeliveries(testEnv);
+    expect(after.undelivered.some((sale) => sale.transaction === tx)).toBe(false);
+    // A record, not an erasure: the resolution row keeps the intent.
+    const record = await testEnv.ORDERS.get(`delivery_resolved:${tx}`, "json") as Record<string, unknown>;
+    expect(record?.outcome).toBe("house_absorbed");
+    expect((record?.intent as Record<string, unknown>)?.paid_usdc).toBe(0.004);
+  });
+
+  it("refuses an unknown transaction rather than inventing a resolution", async () => {
+    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+    const result = await resolveDeliveryIntent(testEnv, "0xnobody", "refunded");
+    expect(result.ok).toBe(false);
+  });
+});

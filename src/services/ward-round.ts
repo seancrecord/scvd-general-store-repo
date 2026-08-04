@@ -41,12 +41,33 @@ const SEARCH_PATH = "/platform/v2/x402/discovery/search";
 const WARD_CAP = 200;
 const PROBE_TIMEOUT_MS = 8000;
 
+/**
+ * A VOLUME CLAIM, labeled as one. The agent402.tools leaderboard
+ * ranks sellers by chain-scanned Base USDC volume — the good kind of
+ * source mechanically, BUT Artemis classified ~78% of the ecosystem's
+ * peak transactions and ~98% of volume as non-organic (recorded
+ * 2026-08-04), so in this ecosystem a volume ranking largely ranks
+ * wash. The ward uses the feed for POPULATION (who exists, who to
+ * probe) and records volume as testimony with its source and window
+ * attached — never as importance. Our conformance probe is the till.
+ */
+export interface WardVolumeClaim {
+  calls: number;
+  usd: number;
+  unique_buyers: number;
+  window: string;
+  source: "agent402.tools";
+}
+
 export interface WardHostResult {
   host: string;
   url: string;
   verdict: "ready" | "not_ready" | "unreachable";
   failed: string[];
   advisories: string[];
+  /** Which feed(s) named this host. Absent on pre-feed rounds = discovery. */
+  source?: "discovery" | "leaderboard" | "both";
+  volume_claim?: WardVolumeClaim;
 }
 
 export interface WardRound {
@@ -57,6 +78,16 @@ export interface WardRound {
   coverage_suspect: boolean;
   capped: boolean;
   our_search_presence: boolean | null;
+  /**
+   * Leaderboard feed health, could-not-check kept distinct from
+   * absent: sellers null = the FEED was unreachable this round (say
+   * nothing about anybody); sellers set with our rank null = the feed
+   * answered and we are not on it (expected at our volume; recorded,
+   * never alarmed).
+   */
+  leaderboard_sellers?: number | null;
+  leaderboard_window?: string | null;
+  our_leaderboard_rank?: number | null;
   hosts: WardHostResult[];
 }
 
@@ -157,6 +188,98 @@ async function probeHost(url: string): Promise<Omit<WardHostResult, "host" | "ur
   }
 }
 
+const LEADERBOARD_URL = "https://agent402.tools/api/leaderboard";
+
+export interface LeaderboardRead {
+  sellers: number;
+  window: string;
+  ourRank: number | null;
+  /** host -> claim + example origin URL, for probing and labeling. */
+  byHost: Map<string, { url: string; claim: WardVolumeClaim }>;
+}
+
+/**
+ * Shape verified against a live response 2026-08-04 (spec
+ * "x402-leaderboard/1"): rows carry name, origins[], rank,
+ * callsSettled, totalUsd, uniqueBuyers; top-level windowServed admits
+ * when the cache served a wider window than asked. Pure so tests can
+ * feed it captured bodies.
+ */
+export function mapLeaderboard(
+  body: unknown,
+  ownHost: string,
+): LeaderboardRead | null {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    typeof (body as Record<string, unknown>)["spec"] !== "string" ||
+    !String((body as Record<string, unknown>)["spec"]).startsWith(
+      "x402-leaderboard/",
+    )
+  ) {
+    return null;
+  }
+  const record = body as Record<string, unknown>;
+  const rows = Array.isArray(record["leaderboard"])
+    ? (record["leaderboard"] as Record<string, unknown>[])
+    : [];
+  const window = String(record["windowServed"] ?? record["windowLabel"] ?? "?");
+  const byHost = new Map<string, { url: string; claim: WardVolumeClaim }>();
+  let ourRank: number | null = null;
+  for (const row of rows) {
+    const origins = Array.isArray(row["origins"]) ? row["origins"] : [];
+    const claim: WardVolumeClaim = {
+      calls: Number(row["callsSettled"] ?? 0),
+      usd: Number(row["totalUsd"] ?? 0),
+      unique_buyers: Number(row["uniqueBuyers"] ?? 0),
+      window,
+      source: "agent402.tools",
+    };
+    for (const origin of origins) {
+      if (typeof origin !== "string" || !origin.startsWith("https://")) {
+        continue;
+      }
+      let host: string;
+      try {
+        host = new URL(origin).host.toLowerCase();
+      } catch {
+        continue;
+      }
+      if (host === ownHost) {
+        ourRank = typeof row["rank"] === "number" ? row["rank"] : ourRank;
+        continue;
+      }
+      if (!byHost.has(host)) {
+        byHost.set(host, { url: origin, claim });
+      }
+    }
+  }
+  return {
+    sellers: Number(record["totalSellers"] ?? rows.length),
+    window,
+    ourRank,
+    byHost,
+  };
+}
+
+/** Best-effort read; an unreachable feed is null, never an empty world. */
+async function readAgent402Leaderboard(
+  ownHost: string,
+): Promise<LeaderboardRead | null> {
+  try {
+    const response = await fetch(LEADERBOARD_URL, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return mapLeaderboard(await response.json(), ownHost);
+  } catch {
+    return null;
+  }
+}
+
 /** Search decides presence; a list miss says nothing (bazaar-check's law). */
 async function ourSearchPresence(env: Env): Promise<boolean | null> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
@@ -175,11 +298,40 @@ async function ourSearchPresence(env: Env): Promise<boolean | null> {
 }
 
 export async function runWardRound(env: Env): Promise<WardRound> {
+  const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const { hosts, listed, coverageSuspect } = await readDiscoveryList(env);
-  const capped = hosts.length > WARD_CAP;
+  /**
+   * THE SECOND FEED (2026-08-04): the agent402 leaderboard, used for
+   * POPULATION — a host it names that discovery does not is still a
+   * live door worth a probe. Its volume figures ride each host as a
+   * labeled claim, never as a ranking we repeat (see WardVolumeClaim
+   * on why: ~98% of ecosystem volume measured non-organic).
+   */
+  const leaderboard = await readAgent402Leaderboard(ownHost);
+  const discoveryHosts = new Set(hosts.map((entry) => entry.host));
+  const probeList: { host: string; url: string; source: "discovery" | "leaderboard" | "both" }[] =
+    hosts.map((entry) => ({
+      ...entry,
+      source: leaderboard?.byHost.has(entry.host) ? "both" : "discovery",
+    }));
+  if (leaderboard) {
+    for (const [host, entry] of leaderboard.byHost) {
+      if (!discoveryHosts.has(host)) {
+        probeList.push({ host, url: entry.url, source: "leaderboard" });
+      }
+    }
+  }
+  const capped = probeList.length > WARD_CAP;
   const results: WardHostResult[] = [];
-  for (const entry of hosts.slice(0, WARD_CAP)) {
-    results.push({ ...entry, ...(await probeHost(entry.url)) });
+  for (const entry of probeList.slice(0, WARD_CAP)) {
+    const claim = leaderboard?.byHost.get(entry.host)?.claim;
+    results.push({
+      host: entry.host,
+      url: entry.url,
+      source: entry.source,
+      ...(claim ? { volume_claim: claim } : {}),
+      ...(await probeHost(entry.url)),
+    });
   }
   const presence = await ourSearchPresence(env);
   const round: WardRound = {
@@ -189,6 +341,9 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     coverage_suspect: coverageSuspect,
     capped,
     our_search_presence: presence,
+    leaderboard_sellers: leaderboard ? leaderboard.sellers : null,
+    leaderboard_window: leaderboard ? leaderboard.window : null,
+    our_leaderboard_rank: leaderboard ? leaderboard.ourRank : null,
     hosts: results,
   };
   const previous = await latestWardRound(env);
