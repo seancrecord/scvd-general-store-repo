@@ -1,0 +1,36 @@
+# SAST (OpenSSF Scorecard's word for it): CodeQL over the TypeScript,
+# on every push to main, every PR, and a weekly sweep — a second
+# reader of the code that is not us and not our tests. The suite
+# proves the store does what it claims; this hunts for the class of
+# defect nobody wrote a claim about.
+#
+# Actions here are version tags rather than the commit-SHA pinning
+# the other workflows use: this session's tooling cannot resolve SHAs
+# for repositories outside its scope. Pin them when hands allow —
+# Scorecard's Pinned-Dependencies check will name them until then.
+name: CodeQL
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "30 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v3

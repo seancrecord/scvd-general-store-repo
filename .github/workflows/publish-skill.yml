@@ -21,6 +21,11 @@
 #   the token page on clawhub. The token never appears in a log here.
 name: Publish ClawHub skill
 
+# Least privilege (OpenSSF Token-Permissions): this workflow only
+# reads the repo; nothing here writes to GitHub.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:

@@ -162,6 +162,13 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That a third-party scanner audits this repository's declared dependencies against OSV and republishes its findings — an instrument pointed at us, not a listing we wrote. Not an endorsement and not an audit of the goods. Its readings can lag or misattribute (its 2026-08-04 CVE flag was a dev-only tool, upgraded same day; its env-var table describes a test script, not the MCP bridge, which needs none), and this record claims only that the scanner watches, not that its current score is right.",
   },
   {
+    url: "https://mcp-marketplace.io/server/store-scvd-general-store",
+    registry: "mcp-marketplace.io",
+    confirmed: "2026-08-04",
+    what_it_proves:
+      "That mcp-marketplace.io lists the MCP server and republishes an OpenSSF Scorecard reading against the repository — an instrument, not a listing we wrote. Not an endorsement and not an audit of the goods: its scorecard measures repository hygiene (workflow permissions, update tooling, review process), several items of which were fixed the day this record was added, and the reading lags the repo until its next crawl.",
+  },
+  {
     url: "https://agentidentityregistry.org/lookup/?id=AIR-BYYP-0MQC-TAKR",
     registry: "Agent Identity Registry (AIR) — scvd-store, AIR-BYYP-0MQC-TAKR",
     confirmed: "2026-08-01",

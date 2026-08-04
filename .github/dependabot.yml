@@ -1,0 +1,29 @@
+# THE STALENESS THIS EXISTS FOR was demonstrated the day before it
+# was added: wrangler sat 90 minors behind until an outside scanner
+# flagged a CVE in the old version, and hono was one minor short of a
+# patched ReDoS. A dependency-update tool is the mechanism that makes
+# "we keep dependencies current" true without anyone remembering to.
+#
+# PRs only — nothing merges itself. The keeper's hand stays on every
+# change (house rule 30), this just queues the work with the diff and
+# the advisory attached.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      x402-family:
+        patterns:
+          - "@x402/*"
+          - "@coinbase/*"
+      cloudflare-tooling:
+        patterns:
+          - "wrangler"
+          - "@cloudflare/*"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

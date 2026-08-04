@@ -48,6 +48,7 @@
     "wrangler": "^4.118.0"
   },
   "overrides": {
-    "axios": "^1.19.0"
+    "axios": "^1.19.0",
+    "undici": "^7.29.0"
   }
 }
