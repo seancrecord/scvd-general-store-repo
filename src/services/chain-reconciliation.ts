@@ -395,10 +395,28 @@ export async function reconcileSolanaAgainstChain(
   };
 }
 
+/**
+ * The walk's last word, stored so its quiet failures are not
+ * invisible: a ran:false return does not throw, so the cron's
+ * failure alert never fires for it — all afternoon of rate-limited
+ * passes left no trace anywhere until the cap paged with no WHY.
+ * The cap alert now quotes this.
+ */
+export const SOLANA_RECONCILE_LAST_RESULT_KEY = "solana_reconcile_last_result";
+
 export async function runSolanaReconciliation(
   env: Env,
 ): Promise<ChainReconciliation> {
   const result = await reconcileSolanaAgainstChain(env);
+  await env.COUNTERS.put(
+    SOLANA_RECONCILE_LAST_RESULT_KEY,
+    JSON.stringify({
+      ran: result.ran,
+      ...(result.reason ? { reason: result.reason } : {}),
+      ...(result.ran ? { transfers_seen: result.transfers_seen ?? 0 } : {}),
+      at: new Date().toISOString(),
+    }),
+  ).catch(() => undefined);
   await alertOrphans(
     env,
     result.orphans ?? [],

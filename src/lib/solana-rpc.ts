@@ -16,8 +16,18 @@ import { outboundHeaders } from "@/lib/identity";
 /** USDC's mint on Solana mainnet. The only asset this store prices in. */
 export const SOLANA_USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
-/** Public mainnet RPC unless the keeper points us somewhere better. */
-const DEFAULT_RPC = "https://api.mainnet-beta.solana.com";
+/**
+ * Public mainnet RPC unless the keeper points us somewhere better.
+ * PublicNode rather than api.mainnet-beta.solana.com, learned live
+ * 2026-08-04: Solana Labs' public endpoint aggressively rate-limits
+ * datacenter IPs — every hourly walk quietly returned ran:false all
+ * afternoon until the unreconciled cap paged, which was the backstop
+ * doing its job about the default doing its worst. If PublicNode
+ * throttles too, SOLANA_RPC_URL takes a dedicated endpoint (Helius
+ * free tier is a one-minute signup) — set it as a secret, the URL
+ * carries the key.
+ */
+const DEFAULT_RPC = "https://solana-rpc.publicnode.com";
 
 function rpcUrl(env: Env): string {
   return env.SOLANA_RPC_URL && env.SOLANA_RPC_URL.length > 0

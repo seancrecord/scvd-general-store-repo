@@ -123,9 +123,17 @@ export async function recordSolanaSettle(
       return;
     }
     const { sendAlert } = await import("@/lib/alerts");
+    // The walk's own last word rides the page, so "check the cron"
+    // comes with the reason already attached.
+    const { SOLANA_RECONCILE_LAST_RESULT_KEY } = await import(
+      "@/services/chain-reconciliation"
+    );
+    const lastResult = await env.COUNTERS.get(
+      SOLANA_RECONCILE_LAST_RESULT_KEY,
+    );
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `Solana settles have passed the $${SOLANA_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and the Solana-side bank reconciliation has not completed a pass in the last 24h. Either the walk is broken (check the cron) or it never ran — fix it, or close the door (unset SOLANA_PAY_TO). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal.`,
+      detail: `Solana settles have passed the $${SOLANA_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and the Solana-side bank reconciliation has not completed a pass in the last 24h. Either the walk is broken (check the cron) or it never ran — fix it, or close the door (unset SOLANA_PAY_TO). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal. Last walk result: ${lastResult ?? "none recorded — it has never run on this deployment"}.`,
       key: "solana-unreconciled-cap",
     }).catch(() => undefined);
   }
