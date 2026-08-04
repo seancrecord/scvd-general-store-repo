@@ -6,7 +6,11 @@ import {
 } from "@/lib/listing-spec";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { freshness } from "@/lib/freshness";
-import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
+import {
+  PENNY_PAGE_USDC,
+  acceptedNetworks,
+  priceTiersUsdc,
+} from "@/lib/payments";
 import { listIssues } from "@/services/gazette";
 import {
   MENU_ITEMS,
@@ -194,7 +198,11 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
     tags: [...STORE_TAGS],
+    // ADDITIVE ONLY (see the header comment): `network` keeps its
+    // original single-string shape for readers that learned it;
+    // `networks` carries every rail the till currently accepts.
     network: "eip155:8453",
+    networks: acceptedNetworks(c.env),
     /**
      * The richer document, named from the thinner one. An indexer that
      * started here should not have to guess that a second, fuller
@@ -267,7 +275,10 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     serviceName: STORE_SERVICE_NAME,
     tags: [...STORE_TAGS],
     iconUrl: `${base}/favicon.svg`,
+    // `network` keeps its learned single-string shape; `networks` is
+    // the honest list once the second rail's door is open.
     network: "eip155:8453",
+    networks: acceptedNetworks(c.env),
     // S3 mirror: the scheduling-signals layer, when to reach for the store.
     when_to_use: SCHEDULING_SIGNALS,
     resources: [...menuResources, ...almanacResources, ...gazetteResources],

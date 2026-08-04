@@ -74,6 +74,11 @@ export function solanaPayTo(env: Env): string | null {
     : null;
 }
 
+/** Every rail the till currently accepts, for the discovery documents. */
+export function acceptedNetworks(env: Env): string[] {
+  return solanaPayTo(env) ? [BASE_NETWORK, SOLANA_NETWORK] : [BASE_NETWORK];
+}
+
 /**
  * THE RECONCILIATION CAP (the ruling PAYMENT_RAILS.md required before
  * the door opened): the bank reconciliation walks Base RPC only, so
