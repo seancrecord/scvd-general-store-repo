@@ -28,6 +28,8 @@ const ERC20_BALANCE_ABI = [
  *
  * Usage:
  *   BUYER_PRIVATE_KEY=0x... HOUSE_SECRET=... node scripts/shopping-run.mjs
+ * Over the Solana rail (registration runs; see PAYMENT_RAILS.md):
+ *   RAIL=solana SOLANA_BUYER_KEY=<base58 secret> node scripts/shopping-run.mjs
  * Options (env):
  *   STORE_URL   default https://scvd.store
  *   ITEMS       comma-separated item ids (default: THE WHOLE MENU —
@@ -86,28 +88,73 @@ function fail(message) {
   process.exit(1);
 }
 
+/**
+ * THE RAIL SWITCH (2026-08-04): RAIL=solana buys over the second rail
+ * — same store, same 402, the Solana entries in accepts[]. Because
+ * discovery indexing is settlement-triggered and chain-agnostic (one
+ * settle per endpoint admits it, PAYMENT_RAILS.md), a Solana
+ * registration run tests the new rail AND registers endpoints in one
+ * purchase each.
+ *
+ * Key formats accepted, because wallets export differently:
+ *   SOLANA_BUYER_KEY       base58 secret key (Solflare/Phantom export)
+ *   SOLANA_BUYER_KEY_FILE  JSON byte-array file (solana-keygen output)
+ */
+const RAIL = process.env.RAIL === "solana" ? "solana" : "base";
+const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+
 const privateKey = process.env.BUYER_PRIVATE_KEY;
 const houseSecret = process.env.HOUSE_SECRET;
-if (!process.env.DRY_RUN && !privateKey) {
+if (!process.env.DRY_RUN && RAIL === "base" && !privateKey) {
   fail(
     "BUYER_PRIVATE_KEY is required (0x-prefixed). Use the funded burner, never the till.",
   );
 }
+if (
+  !process.env.DRY_RUN &&
+  RAIL === "solana" &&
+  !process.env.SOLANA_BUYER_KEY &&
+  !process.env.SOLANA_BUYER_KEY_FILE
+) {
+  fail(
+    "RAIL=solana needs SOLANA_BUYER_KEY (base58 secret, the wallet app's export) or SOLANA_BUYER_KEY_FILE (solana-keygen JSON). Use the funded test wallet, never the till.",
+  );
+}
+
+let solanaSigner = null;
+if (!process.env.DRY_RUN && RAIL === "solana") {
+  const { createKeyPairSignerFromBytes, getBase58Encoder } = await import(
+    "@solana/kit"
+  );
+  const rawBytes = process.env.SOLANA_BUYER_KEY
+    ? new Uint8Array(getBase58Encoder().encode(process.env.SOLANA_BUYER_KEY))
+    : Uint8Array.from(
+        JSON.parse(readFileSync(process.env.SOLANA_BUYER_KEY_FILE, "utf8")),
+      );
+  solanaSigner = await createKeyPairSignerFromBytes(rawBytes);
+}
+
 /**
  * A listed house wallet is family by its own address, so the secret is
  * belt-and-braces rather than the only strap. This exists because a
  * buy that books as ORGANIC would be recorded as the store's first
  * outside sale, which would be false, and rule 13 does not bend for
- * convenience.
+ * convenience. Base58 is case-sensitive, so the Solana comparison is
+ * exact where the EVM one lowercases.
  */
 const houseWallets = JSON.parse(
   readFileSync(new URL("../src/store/house-wallets.json", import.meta.url)),
 ).wallets;
-const buyerAddress = privateKey
-  ? privateKeyToAccount(privateKey).address.toLowerCase()
-  : null;
-const listedHouseWallet = houseWallets.find(
-  (entry) => entry.address.toLowerCase() === buyerAddress,
+const buyerAddress =
+  RAIL === "solana"
+    ? (solanaSigner?.address ?? null)
+    : privateKey
+      ? privateKeyToAccount(privateKey).address.toLowerCase()
+      : null;
+const listedHouseWallet = houseWallets.find((entry) =>
+  RAIL === "solana"
+    ? entry.address === buyerAddress
+    : entry.address.toLowerCase() === buyerAddress,
 );
 if (!process.env.DRY_RUN && !houseSecret && !listedHouseWallet) {
   fail(
@@ -145,7 +192,9 @@ for (const item of items) {
     `  ${item.id.padEnd(26)} $${String(item.price_usdc).padEnd(6)} ${item.fulfillment}${params}`,
   );
 }
-console.log(`\n  Total: $${total.toFixed(3)} USDC on Base, all house-flagged.`);
+console.log(
+  `\n  Total: $${total.toFixed(3)} USDC on ${RAIL === "solana" ? "Solana" : "Base"}, all house-flagged.`,
+);
 console.log(
   "  Human-queue items will stack orders at /admin/counter for you to self-fulfill\n  (that IS the other half of the test: work the counter like a stranger paid).\n",
 );
@@ -156,23 +205,57 @@ if (process.env.DRY_RUN) {
 }
 
 // Know thy wallet before the till does: whose key, and is it funded?
-const buyerAccount = privateKeyToAccount(privateKey);
-const publicClient = createPublicClient({ chain: base, transport: http() });
-const balanceRaw = await publicClient
-  .readContract({
-    address: USDC_ADDRESS,
-    abi: ERC20_BALANCE_ABI,
-    functionName: "balanceOf",
-    args: [buyerAccount.address],
+const buyerAccount = RAIL === "base" ? privateKeyToAccount(privateKey) : null;
+let balanceUsdc = null;
+if (RAIL === "base") {
+  const publicClient = createPublicClient({ chain: base, transport: http() });
+  const balanceRaw = await publicClient
+    .readContract({
+      address: USDC_ADDRESS,
+      abi: ERC20_BALANCE_ABI,
+      functionName: "balanceOf",
+      args: [buyerAccount.address],
+    })
+    .catch(() => null);
+  balanceUsdc = balanceRaw === null ? null : Number(formatUnits(balanceRaw, 6));
+} else {
+  // SPL balance: sum the wallet's USDC token accounts, public RPC.
+  const SOLANA_USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+  const rpcUrl =
+    process.env.SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com";
+  balanceUsdc = await fetch(rpcUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "getTokenAccountsByOwner",
+      params: [
+        buyerAddress,
+        { mint: SOLANA_USDC_MINT },
+        { encoding: "jsonParsed" },
+      ],
+    }),
   })
-  .catch(() => null);
-const balanceUsdc =
-  balanceRaw === null ? null : Number(formatUnits(balanceRaw, 6));
-console.log(`  Buyer wallet: ${buyerAccount.address}`);
+    .then((r) => r.json())
+    .then((body) =>
+      (body.result?.value ?? []).reduce(
+        (sum, acct) =>
+          sum +
+          Number(
+            acct.account?.data?.parsed?.info?.tokenAmount?.uiAmount ?? 0,
+          ),
+        0,
+      ),
+    )
+    .catch(() => null);
+}
+const railLabel = RAIL === "solana" ? "Solana" : "Base";
+console.log(`  Buyer wallet: ${buyerAddress} (${railLabel})`);
 console.log(
   balanceUsdc === null
-    ? "  USDC balance on Base: (couldn't read; RPC hiccup, proceeding blind)"
-    : `  USDC balance on Base: $${balanceUsdc.toFixed(3)}`,
+    ? `  USDC balance on ${railLabel}: (couldn't read; RPC hiccup, proceeding blind)`
+    : `  USDC balance on ${railLabel}: $${balanceUsdc.toFixed(3)}`,
 );
 if (
   balanceUsdc !== null &&
@@ -180,8 +263,8 @@ if (
   !process.env.SKIP_BALANCE_CHECK
 ) {
   fail(
-    `That wallet holds $${balanceUsdc.toFixed(3)} USDC on Base but the run needs $${total.toFixed(3)}. ` +
-      "Check: is this the wallet you funded, and is the USDC on the BASE network (not mainnet/other chains)?",
+    `That wallet holds $${balanceUsdc.toFixed(3)} USDC on ${railLabel} but the run needs $${total.toFixed(3)}. ` +
+      `Check: is this the wallet you funded, and is the USDC on ${railLabel} (not another chain)?`,
   );
 }
 
@@ -210,12 +293,25 @@ const houseFetch = (input, init) => {
   lastRequestPaid = request.headers.has("PAYMENT-SIGNATURE");
   return fetch(request);
 };
-// x402 v2.19 client shape: schemes registered per network, EVM signer inside.
-const fetchWithPay = wrapFetchWithPaymentFromConfig(houseFetch, {
-  schemes: [
-    { network: "eip155:8453", client: new ExactEvmScheme(buyerAccount) },
-  ],
-});
+// x402 v2.19 client shape: schemes registered per network, signer inside.
+// Registering ONLY the chosen rail's scheme is what selects the rail: the
+// client can only satisfy accepts[] entries whose network it holds a
+// scheme for, so RAIL=solana pays the Solana offer or fails loudly —
+// never silently falls back to Base.
+const schemes = [];
+if (RAIL === "base") {
+  schemes.push({
+    network: "eip155:8453",
+    client: new ExactEvmScheme(buyerAccount),
+  });
+} else {
+  const { ExactSvmScheme } = await import("@x402/svm/exact/client");
+  schemes.push({
+    network: SOLANA_MAINNET,
+    client: new ExactSvmScheme(solanaSigner),
+  });
+}
+const fetchWithPay = wrapFetchWithPaymentFromConfig(houseFetch, { schemes });
 
 const receipts = existsSync(RECEIPTS_FILE)
   ? JSON.parse(readFileSync(RECEIPTS_FILE, "utf8"))
