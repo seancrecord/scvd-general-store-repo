@@ -500,6 +500,26 @@ capable reader only. Any coaching marks the run contaminated: logged,
 never graded. Raw transcripts stay in the private ledger (wallet
 addresses); graded findings land here.
 
+TWO RULES ADDED 2026-08-04, after the night both were violated at
+once and the books needed three corrections in an hour:
+
+1. **No verdict without the two instruments.** A walker verdict is
+   not recorded until every claimed purchase is checked against its
+   cert (the certificate OBJECT — payer and settlement_tx — not the
+   page's identity block) and against the payer row's count on
+   /admin. Both were right every time the night this rule was earned;
+   every recollection, manifest, and partial chain scan was wrong at
+   least once.
+2. **Verification is a task, not a subtask.** The night's errors did
+   not come from a careless agent; they came from ONE agent running
+   walks, grading logs, scanning chains, and answering the keeper
+   simultaneously — verification done as a side dish to four other
+   dishes. The operator rule: grading and chain-verification get
+   their own dedicated pass with nothing else on the plate. Asking
+   one agent to do too much at once does not produce five mediocre
+   results; it produces four fine ones and one confident wrong one,
+   and no way to tell which.
+
 ---
 
 ## 2026-08-04 — fifth pass. First cross-model walker (Sonnet-class shakedown), six items, zero failures — and the finding was in OUR books, not its transcript.
