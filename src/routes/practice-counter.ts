@@ -36,6 +36,8 @@ interface CheapDoorRow {
   name: string;
   price_usdc: number;
   fulfillment: string;
+  /** Present only when the buy needs inputs beyond a name. */
+  required_params?: string[];
 }
 
 /** The under-a-dollar shelf, cheapest first, priced from the live menu. */
@@ -44,12 +46,30 @@ function cheapDoor(): CheapDoorRow[] {
     MENU_ITEMS.find((item) => item.id === id),
   )
     .filter((item): item is NonNullable<typeof item> => item !== undefined)
-    .map((item) => ({
-      id: item.id,
-      name: item.name,
-      price_usdc: item.price_usdc,
-      fulfillment: item.fulfillment === "instant" ? "instant" : "human queue",
-    }))
+    .map((item) => {
+      /**
+       * REQUIRED INPUTS, ON THE DOOR (haiku's finding, 2026-08-04):
+       * the params lived in menu.json and a capable walker had to
+       * cross-reference to find them — the one stumble it hit. The
+       * same derived schema every other surface reads, so this line
+       * cannot drift from the till.
+       */
+      const required = (buyInputSchema(item).required ?? []).filter(
+        (name) => name !== "agent_name",
+      );
+      return {
+        id: item.id,
+        name: item.name,
+        price_usdc: item.price_usdc,
+        fulfillment:
+          item.fulfillment === "instant"
+            ? ("instant" as const)
+            : ("human queue" as const),
+        ...(required.length > 0
+          ? { required_params: required }
+          : {}),
+      };
+    })
     .sort((a, b) => a.price_usdc - b.price_usdc);
 }
 
@@ -118,7 +138,11 @@ practiceCounterRoutes.get("/try", (c) => {
           <span class="menu-dots"></span>
           <span class="menu-price">$${row.price_usdc}</span>
         </div>
-        <p class="menu-meta"><code>GET /api/buy/${escapeHtml(row.id)}</code> • ${escapeHtml(row.fulfillment)}</p>
+        <p class="menu-meta"><code>GET /api/buy/${escapeHtml(row.id)}</code> • ${escapeHtml(row.fulfillment)}${
+          row.required_params?.length
+            ? ` • requires ${row.required_params.map((p) => `<code>?${escapeHtml(p)}=</code>`).join(" ")}`
+            : ""
+        }</p>
       </div>`,
       )
       .join("\n");

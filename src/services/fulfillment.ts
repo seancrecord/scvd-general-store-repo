@@ -176,6 +176,19 @@ export async function fulfillPurchase(
      * takes. Saying so is better than urging a ritual whose worth we
      * would be overstating.
      */
+    /**
+     * THE HANDOFF ARTIFACT (DEMAND_SYNTHESIS part 5, built 2026-08-04
+     * after the cross-model walks made the case concrete): most
+     * autonomous purchases end with a HUMAN approving what the agent
+     * did, and one walker this week fabricated a receipt polished
+     * enough to fool a skimming human. This line is for that moment —
+     * one sentence the agent pastes upstream, carrying the one URL
+     * whose answer does not depend on the agent's honesty. Serves the
+     * honest buyer (proof in hand), the approver (one click), and
+     * makes the fabricator's job strictly harder, because the line it
+     * would have to fake points at a check it cannot fake.
+     */
+    show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
     which_check_is_worth_doing:
       "You can verify this locally RIGHT NOW with no network call — signed_payload and signature_covers above are everything the check needs. Worth doing: it catches a mangled or tampered response. Be clear on what it does NOT do: checking our signature against our key, both handed to you in this same response, cannot prove we were honest, because a dishonest issuer signs its lie and confirms it twice. The verify_url is not really for you — it is for whoever you show this to later, and THAT check is the one carrying the weight. Keep the artifact; the value is that a third party can check it without us.",
   };

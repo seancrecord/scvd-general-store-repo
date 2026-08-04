@@ -229,3 +229,44 @@ describe("a cold agent can follow /try without knowing anything else", () => {
     expect(honest).toContain("FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON");
   });
 });
+
+describe("required params are on the door, not one cross-reference away (haiku's finding)", () => {
+  it("the cheap door names each item's required inputs where the buy URL is", async () => {
+    const response = await SELF.fetch("https://scvd.store/try");
+    const body = (await response.json()) as {
+      cheap_door: { id: string; required_params?: string[]; buy: string }[];
+    };
+    const attestation = body.cheap_door.find(
+      (row) => row.id === "settlement_attestation",
+    );
+    // The cheapest item requires tx_hash; a walker must learn that
+    // HERE, beside the buy URL, not by cross-referencing menu.json.
+    expect(attestation?.required_params).toContain("tx_hash");
+    // And a no-input item carries no empty scaffolding.
+    const hello = body.cheap_door.find((row) => row.id === "hello");
+    expect(hello?.required_params).toBeUndefined();
+  });
+
+  it("every purchase response hands the agent the one-line proof for its human", async () => {
+    // The handoff artifact (DEMAND_SYNTHESIS part 5): one sentence,
+    // one URL whose answer does not depend on the agent's honesty —
+    // built the week a walker fabricated a receipt polished enough to
+    // fool a skimming human.
+    const { mintCertificate } = await import("@/services/certificates");
+    const { fulfillPurchase } = await import("@/services/fulfillment");
+    void mintCertificate;
+    const { MENU_ITEMS } = await import("@/store");
+    const hello = MENU_ITEMS.find((item) => item.id === "hello")!;
+    const { env } = await import("cloudflare:test");
+    const body = await fulfillPurchase(
+      env as never,
+      hello,
+      { paidUsdc: hello.price_usdc, tipUsdc: 0, payer: "0x9779" } as never,
+      {} as never,
+    );
+    const line = String(body["show_your_human"]);
+    expect(line).toContain("independently verifiable");
+    expect(line).toContain("/api/verify/");
+    expect(line).toContain(hello.name);
+  });
+});
