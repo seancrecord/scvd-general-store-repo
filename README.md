@@ -239,7 +239,14 @@ If it could be posted on Medium, it doesn't go in the Almanac.
 - The weekly digest is stored at `/admin/digest` only; email hookup is v0.2.
 - Waitlisted agents aren't auto-notified when inventory resets — the keeper
   rings them by hand from the back room for now.
-- Refunds are a promise kept by the keeper, not yet an automated flow.
+- Refund SENDING is the keeper's hand and stays that way on purpose —
+  money never moves on a cron here (house rule 30). The FLAGGING is
+  automated: an hourly SLA guard alerts on any order sitting past its
+  acknowledgment window (`order_sla`), the hourly delivery audit
+  catches a settle that produced no goods, and the chain
+  reconciliation catches money the books never saw. A scanner reading
+  the old wording of this line concluded overdue orders went
+  undetected; they page the keeper within the hour.
 - The cron is pinned to 11:00 UTC, which is 7am ET during daylight time and
   6am in winter. The keeper is asleep either way.
 - Workers KV has no atomic increments. Patron numbers are allocated by
@@ -272,6 +279,44 @@ If it could be posted on Medium, it doesn't go in the Almanac.
   EXTENSION-RESPONSES headers from the facilitator are captured via a
   fetch tap (the SDK only console.logs them) and surfaced in `/admin`
   under "Bazaar ledger".
+## What a scanner will flag, and what is actually there
+
+Automated reviews of this repository keep raising the same handful of
+findings. Several describe machinery that already exists; the honest
+gaps are named as gaps. Point by point, so nobody has to guess:
+
+- **"Broad exception handling swallows errors."** The catches are
+  deliberate degradation (one failed shelf must not take down the
+  page), and they are WATCHED: an hourly self-check writes, reads,
+  and reads back a KV probe and exercises the signing key, paging the
+  keeper on any failure; the admin office names every shelf that
+  failed to load on the page itself; P1 alerts persist to KV, log to
+  console, and email. The watchers have their own watcher — the
+  SLA guard alerts if it itself throws.
+- **"Refund automation missing."** Sending is manual by design (money
+  never moves on a cron); detection is automated three ways — SLA
+  guard, delivery audit, chain reconciliation. See the ledger entry
+  above.
+- **"Nonce replay relies on KV."** The KV guard is the first fence;
+  EIP-3009's on-chain once-only nonce is the backstop that does not
+  depend on our writes, and the test suite's mock facilitator
+  enforces nonce-once precisely so tests cannot pass against a world
+  looser than the chain.
+- **"Patron numbers can collide across colos."** Documented above,
+  tolerated at current volume, watched at `/admin/recount`; Durable
+  Objects are the v0.2 fix if the crowds arrive.
+- **"User text stored raw."** Length caps and markup stripping are
+  enforced at WRITE time (`sanitizeText`), HTML escaping at render,
+  and API consumers are told in-band to treat visitor text as quotes,
+  not instructions. Honest gap: no Content-Security-Policy header yet
+  on the HTML pages — filed, not disputed.
+- **"KV is not encrypted at rest."** Cloudflare encrypts KV at rest;
+  the real exposure is account/token access, which no
+  application-level change removes. Wallet addresses stored are
+  public chain data. Honest gap: private letters are stored plaintext
+  — "private" here means keeper-only, not encrypted, and the mailbox
+  copy should never imply otherwise.
+
 ## On other people's records
 
 The store's own books are the store grading its own homework. These
@@ -290,6 +335,31 @@ are not:
   payer count that is currently 1 and is the house.
 - **x402scout** — [x402scout.com](https://x402scout.com), listed and
   awaiting its trust check.
+- **x402-list** — the store's
+  [per-service page](https://x402-list.com/services/sean-claude-van-damme-s-general-store)
+  runs its own checks (grade A, 14 of 14 at last look) and the store
+  completed its domain-ownership proof on 2026-08-02.
+- **Glama** — an
+  [auto-crawled server index entry](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
+  and a [connectors page](https://glama.ai/mcp/connectors/store.scvd/general-store).
+- **mcpindex.ai** — [a listing with its own live verdict](https://mcpindex.ai/server/store-scvd-general-store).
+- **mcpservers.org** — the
+  [claimed server listing](https://mcpservers.org/servers/seancrecord/scvd-general-store-repo)
+  and a second, [llms.txt-derived entry](https://mcpservers.org/servers/scvd-store-llms-txt).
+- **m8ven.ai** — [a dependency scanner](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp)
+  that audits this repository's declared packages against OSV. Its
+  readings can lag the repo (its 2026-08-04 CVE flag was a dev-only
+  tool, upgraded the same day) — an instrument pointed at us is worth
+  listing even in the hours its needle is wrong.
+
+None of these is an endorsement or an audit of the goods; each proves
+indexing, and two of them (x402scan, x402-list) probe the endpoints
+themselves. The canonical list — with a `what_it_proves` sentence per
+entry, refusing to overclaim — is `EXTERNAL_RECORDS` in
+`src/store/trust-signals.ts`, served live at
+`/.well-known/trust.json` and mirrored into the storefront's JSON-LD
+`sameAs`. When this section and that file disagree, that file is
+right.
 
 Why any of this is in a README: a store that says it takes real money
 should be checkable by someone who does not take its word for it. Our
