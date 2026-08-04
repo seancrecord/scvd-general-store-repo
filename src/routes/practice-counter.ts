@@ -191,6 +191,15 @@ practiceCounterRoutes.get("/try", (c) => {
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.read_the_challenge)}</p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.practice)}</p>
           <p class="menu-meta">${escapeHtml(HAND_ROLLING.honest_limit)}</p>
+          <h3>${escapeHtml(HAND_ROLLING.solana.heading)}</h3>
+          <p class="menu-desc"><strong>${escapeHtml(HAND_ROLLING.solana.envelope_warning)}</strong></p>
+          <pre class="menu-desc"><code>${escapeHtml(JSON.stringify(HAND_ROLLING.solana.values, null, 2))}</code></pre>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.network_id_warning)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.fee_payer)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.base58_warning)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.settlement_id)}</p>
+          <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.client_shortcut)}</p>
+          <p class="menu-meta">${escapeHtml(HAND_ROLLING.solana.everything_else_unchanged)}</p>
         </section>
         <section>
           <h2>${escapeHtml(COPY.cheapHead)}</h2>

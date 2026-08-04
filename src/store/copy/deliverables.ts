@@ -5,7 +5,7 @@
  * src/services/instant-goods.ts and never needs touching for a
  * wording change. Read a line out loud before shipping it.
  *
- * Heads-up: a few phrases are pinned by tests (see CONTENT_GUIDE.md);
+ * Heads-up: a few phrases are pinned by tests (see docs/archive/CONTENT_GUIDE.md);
  * change the phrase and the test together, deliberately.
  */
 

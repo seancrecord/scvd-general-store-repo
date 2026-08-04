@@ -151,8 +151,8 @@ export const VENUES: readonly Venue[] = [
  */
 
 /**
- * CV's per-venue tags, kept as a documented convention (DEMAND.md,
- * READINESS.md, TASKS.md) and now bounded.
+ * CV's per-venue tags, kept as a documented convention (docs/archive/DEMAND.md,
+ * docs/archive/READINESS.md, TASKS.md) and now bounded.
  *
  * THE TRADEOFF, STATED RATHER THAN HIDDEN. The convention was
  * `?src=cv-<venue>` with the venue part free-form, which is precisely

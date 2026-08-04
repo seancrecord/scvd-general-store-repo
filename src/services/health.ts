@@ -92,7 +92,7 @@ async function freshnessGuard(env: Env): Promise<void> {
     }
     await sendAlert(env, {
       condition: "catalog_stale",
-      detail: `The machine-facing surfaces say as_of ${catalogLastUpdated()}, which is ${days} days ago. llms.txt, menu.json, /.well-known/x402.json, the sitemap and the directory all publish that date, so it is what an agent sees. Nothing is broken — this is the round telling you the shelves have gone quiet. AEO_GEO.md has the walk.`,
+      detail: `The machine-facing surfaces say as_of ${catalogLastUpdated()}, which is ${days} days ago. llms.txt, menu.json, /.well-known/x402.json, the sitemap and the directory all publish that date, so it is what an agent sees. Nothing is broken — this is the round telling you the shelves have gone quiet. docs/archive/AEO_GEO.md has the walk.`,
       // One key, so a stale month nags once every six hours rather
       // than every tick, and stops the day something gets a new date.
       key: `stale:${catalogLastUpdated()}`,

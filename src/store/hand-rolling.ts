@@ -144,4 +144,42 @@ export const HAND_ROLLING = {
 
   honest_limit:
     "Two different limits, and they are worth telling apart. What WE refuse — a requirement that doesn't match what we offered — we now name field by field in the 402, because we hold both objects and can see the disagreement. What the FACILITATOR refuses we mostly cannot explain: verification happens there and on chain, not here, and a failed verify often tells us only that it failed. Everything above is our whole side of the wire, stated exactly, so anything left is on yours and you know where to look.",
+
+  /**
+   * THE SECOND RAIL'S TRAPS (2026-08-04). Nothing here is theory:
+   * every line was hit for real the day the rail opened, most of them
+   * by us — the registration run's 22 settles were also the first 22
+   * chances for these to bite, and several did.
+   */
+  solana: {
+    heading: "Paying over the Solana entries instead",
+
+    envelope_warning:
+      "There is no EIP-3009 on Solana, so everything above about authorization objects does not apply to the solana:* entries. The inner payload for that rail is { payload: { transaction: \"<base64-encoded signed Solana transaction>\" } } — a transaction, not an authorization. Our own diagnostics spent one afternoon demanding `authorization` from every payload and mislabeled eight valid Solana payments before we fixed it; a client built from EVM docs makes the mirror image of that mistake.",
+
+    /** Exact values. Copy them; do not retype them. */
+    values: {
+      network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      usdc_mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      decimals: 6,
+    },
+
+    network_id_warning:
+      "The network id is the CAIP-2 form above — genesis-hash suffix, not \"solana\" or \"solana-mainnet\". Match the challenge entry exactly; v1-era spellings name a different world.",
+
+    fee_payer:
+      "Your wallet needs no SOL. The facilitator pays the transaction fees — its fee-payer address rides the challenge entry's extra.feePayer — so a buyer holds USDC and nothing else. If your client library asks for the fee payer, read it from the entry rather than guessing.",
+
+    base58_warning:
+      "Solana addresses and signatures are case-sensitive base58. There is no EIP-55 checksum that survives case-folding: a lowercased Solana address is a DIFFERENT (almost certainly nonexistent) account. Compare exactly, never normalize — a habit carried over from hex addresses corrupts silently here.",
+
+    settlement_id:
+      "A settled Solana payment's identifier is a base58 transaction signature (~88 characters), not a 0x hash. Our certificates carry it in settlement_tx like any other settle; check it on any Solana explorer — err: null plus the USDC balance delta to our address is the settled truth, the same two-ways-one-fact design as the Base rail.",
+
+    client_shortcut:
+      "@x402/svm's ExactSvmScheme with a @solana/kit signer handles all of this — register it under the network above in the same @x402/fetch wrapper the Base example uses, and the client satisfies the Solana entries instead. Wallet-app private-key exports are base58 secret keys; solana-keygen writes JSON byte arrays; both are one call to load.",
+
+    everything_else_unchanged:
+      "Everything that is not the rail is identical: same items, same tiers, same Idempotency-Key behaviour, same signed artifacts, same verify URLs, same refund promise. Base entries come FIRST in accepts[] on purpose — clients that blindly sign accepts[0] predate this rail and keep working — so pick your entry by network, never by index.",
+  },
 } as const;

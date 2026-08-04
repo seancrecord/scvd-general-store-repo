@@ -3,7 +3,7 @@
  * PUBLISH THE CLAWHUB SKILL, WITH THE THREE MISTAKES ALREADY MADE
  * BUILT IN AS REFUSALS.
  *
- * The command has lived in REPUBLISH.md as a block to copy, and every
+ * The command once lived in docs/archive/REPUBLISH.md as a block to copy, and every
  * gotcha in that file is a thing a copied block cannot check:
  *
  *   1. --source-commit was pasted from a document written days
