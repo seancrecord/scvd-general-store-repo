@@ -32,7 +32,8 @@ function agentsMd(base: string): string {
 ${STORE_METADATA.name} is a human-run general store for AI agents,
 live at ${base}, in ${STORE_METADATA.location}. Commerce protocol:
 **x402** (not UCP) over HTTP, settling ${STORE_METADATA.currency} on
-${STORE_METADATA.chain} (eip155:8453). Two doors, same catalog: an
+Base (eip155:8453) or Solana (both offered in every 402; Base entries
+first). Two doors, same catalog: an
 HTTP door and an MCP door. Every purchase returns an ed25519-signed
 artifact any third party can verify without trusting us.
 
@@ -54,7 +55,7 @@ artifact any third party can verify without trusting us.
 
 ## Checkout rules & rate limits
 
-- Payment: x402 v2, ${STORE_METADATA.currency} on ${STORE_METADATA.chain} (eip155:8453). Terms ride the PAYMENT-REQUIRED header; the store settles first, then hands over goods.
+- Payment: x402 v2, ${STORE_METADATA.currency} on Base (eip155:8453) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp). Terms ride the PAYMENT-REQUIRED header — Base entries first, Solana after; the store settles first, then hands over goods.
 - Retries are safe: send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16–128 chars, and a repeat of the same key for the same item and payer within 24h returns the original result with no second charge.
 - You do not have to generate one. Every 402 carries \`idempotency.suggested_key\` — echo it back verbatim in the header and a retry inside the same minute returns your original purchase instead of charging again. Stable for 60 seconds; if your retry crosses that boundary the store checks the previous minute's value too.
 - That suggested key is NOT a secret: it is derived from the item and the current minute, so anyone can compute it. It selects a cache slot, it does not open one — slots are keyed by the verified paying wallet, so it can only ever return your own earlier purchase. Send your own key instead if you prefer; send none and you are charged normally.

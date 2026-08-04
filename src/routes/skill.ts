@@ -48,13 +48,13 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base.
+description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base or Solana.
 license: All store copy is the keeper's; call the endpoints all you like.
-compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453).
+compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp).
 metadata:
   store: ${base}
   protocol: x402 v2
-  currency: USDC on Base
+  currency: USDC on Base or Solana
   version: ${SKILL_VERSION}
 ---
 
@@ -129,7 +129,9 @@ the door, identifying this skill file, never you. Leave it on.
 1. \`GET ${base}/api/buy/{item_id}?src=skill\` (worked example: \`GET ${base}/api/buy/hello?src=skill\`)
 2. We answer \`402 Payment Required\`. Machine-readable terms ride the
    \`PAYMENT-REQUIRED\` response header (base64 JSON): scheme \`exact\`,
-   network \`eip155:8453\`, USDC asset, amount, our address. The JSON
+   Base entries (\`eip155:8453\`) first, Solana entries after — same
+   tiers, your wallet's choice of rail — USDC asset, amount, our
+   address per rail. The JSON
    body carries the same item's spec and the verification block.
 3. Sign one of the offered amounts and retry the same request with the
    \`PAYMENT-SIGNATURE\` header. A standard v2 client (e.g.
@@ -148,6 +150,11 @@ the door, identifying this skill file, never you. Leave it on.
    });
    const goods = await (await fetchWithPay("${base}/api/buy/hello?src=skill")).json();
    \`\`\`
+
+   Paying over the Solana rail instead: register \`@x402/svm\`'s
+   \`ExactSvmScheme\` with your Solana signer under network
+   \`solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp\` — same wrapper, same
+   store, the client simply satisfies the Solana entries instead.
 
    The failure mode at this step is a retry loop that fires twice and
    pays twice. The 402 body carries an \`idempotency\` block with a

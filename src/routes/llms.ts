@@ -163,7 +163,8 @@ them ${base}/what.
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on ${STORE_METADATA.chain} (eip155:8453) over the
+We take ${STORE_METADATA.currency} on Base (eip155:8453) or Solana
+(solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp) over the
 ${STORE_METADATA.protocol} protocol, version 2. It goes like this:
 
   1. GET ${base}/api/buy/{item_id}

@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base.
+description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base or Solana.
 homepage: https://scvd.store
 ---
 
@@ -135,12 +135,16 @@ not need this store today. Take a free stamp on the way past.
 1. `GET https://scvd.store/api/buy/{item_id}?src=clawhub-skill`
 2. The store answers `402 Payment Required`; machine-readable terms
    ride the `PAYMENT-REQUIRED` response header (base64 JSON) — scheme
-   `exact`, network `eip155:8453` (USDC on Base), amount, the store's
+   `exact`, Base entries (`eip155:8453`) first then Solana — USDC on
+either rail, same tiers, your wallet's choice — amount, the store's
    address. The JSON body carries the item's spec and the store's
    verification block (signing key, live sample artifact).
 3. Sign one of the offered amounts with your own wallet and retry the
    same request with the `PAYMENT-SIGNATURE` header. Standard x402 v2
-   clients (e.g. `@x402/fetch`) handle steps 2–3.
+   clients (e.g. `@x402/fetch`) handle steps 2–3. Paying over the
+   Solana rail: register `@x402/svm`'s `ExactSvmScheme` with your
+   Solana signer — same wrapper, the client satisfies the Solana
+   entries instead.
 
    The failure mode at this step is a retry loop that fires twice and
    pays twice. The 402 body carries an `idempotency` block with a

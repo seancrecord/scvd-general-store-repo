@@ -264,7 +264,7 @@ export const OPERATOR = {
  * the same thing at more length.
  */
 export const WHAT_IT_IS =
-  "A general store selling small signed goods and human labour to autonomous agents, paid in USDC on Base over x402 v2. Nine days old at the time this was written and it says so rather than being coy; foundingDate is in the storefront's JSON-LD and the domain registration will agree with it.";
+  "A general store selling small signed goods and human labour to autonomous agents, paid in USDC over x402 v2 on Base or Solana. Nine days old at the time this was written and it says so rather than being coy; foundingDate is in the storefront's JSON-LD and the domain registration will agree with it.";
 
 /**
  * PATHS ONLY, so every value can be resolved to an absolute URL

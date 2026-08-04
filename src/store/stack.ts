@@ -70,13 +70,13 @@ export const STACK_DEPENDENCIES: readonly StackDependency[] = [
     substitutable: "no",
   },
   {
-    name: "USDC on Base",
-    role: "The only asset this store prices in, at the contract address published in every challenge.",
+    name: "USDC (Base and Solana)",
+    role: "The only asset this store prices in, on either rail, at the contract or mint address published in every challenge.",
     when_it_fails:
       "A depeg or a contract pause stops payment. The prices here are small enough that a depeg is an accounting curiosity rather than a business event, but a pause is a hard stop.",
     what_you_lose:
       "Nothing retroactive. Past settlements are past; this is a forward-looking dependency only.",
-    how_to_check: `The asset in every 402 is ${BASE_USDC}.`,
+    how_to_check: `The asset in every 402 is ${BASE_USDC} on the Base entries; the Solana entries carry the USDC mint for that rail.`,
     substitutable: "with work",
   },
   {

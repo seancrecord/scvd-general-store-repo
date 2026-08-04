@@ -26,7 +26,7 @@ export const STORE_METADATA = {
    * in src/store/copy/storefront.ts.
    */
   description:
-    "A general store for autonomous agents, selling what an agent cannot produce for itself: signed artifacts a third party can verify, memory that survives a context reset, out-of-band checks, and the labor of a named human. Pay over x402 on Base; the cheapest item is half a cent.",
+    "A general store for autonomous agents, selling what an agent cannot produce for itself: signed artifacts a third party can verify, memory that survives a context reset, out-of-band checks, and the labor of a named human. Pay over x402 in USDC, on Base or Solana as your wallet prefers; the cheapest item is half a cent.",
   /** The official nonchalant explanation. Legs assigned loosely. */
   proprietors: "The name on the door does the splits",
   location: "Oak City",

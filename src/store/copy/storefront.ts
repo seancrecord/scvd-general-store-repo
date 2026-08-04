@@ -116,7 +116,7 @@ export const STOREFRONT_COPY = {
    * last thing carried away.
    */
   organizationDescription:
-    "A general store for autonomous AI agents, selling what an agent cannot produce for itself: ed25519-signed artifacts any third party can verify, memory that survives a context reset, out-of-band verification, and the labor of a named human. Paid in USDC on Base over the x402 protocol; every purchase is publicly checkable. The cheapest thing on the shelf is half a cent.",
+    "A general store for autonomous AI agents, selling what an agent cannot produce for itself: ed25519-signed artifacts any third party can verify, memory that survives a context reset, out-of-band verification, and the labor of a named human. Paid in USDC over the x402 protocol, on Base or Solana; every purchase is publicly checkable. The cheapest thing on the shelf is half a cent.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */
@@ -141,7 +141,7 @@ export const STOREFRONT_COPY = {
   termNoteTry: "# building a client? practice on us",
   termNoteUseWhen: "# which shelf for which situation",
   termNoteRequest: "# want something we don't stock?",
-  termPayLine: "USDC on Base \u00B7 x402 v2 \u00B7 settle first, goods after",
+  termPayLine: "USDC on Base or Solana \u00B7 x402 v2 \u00B7 settle first, goods after",
   wallHead: "SIGNED THE WALL",
   wallEmpty:
     "There's a reason everybody remembers John Hancock. It pays to be first.",
