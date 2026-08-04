@@ -47,23 +47,60 @@ against production on a stocked item (expect: both settle at worst,
 OVERSOLD alert fires, keeper refunds one — the documented outcome,
 not a silent one).
 
-## Part B — MPP (evm.charge, crypto-only). GATED, unchanged from CV's spec.
+## Part B — MPP (evm.charge, crypto-only). GATES RUN 2026-08-04. GATE 1 FAILED — RE-SCOPED TO WAIT-AND-SEE.
 
-Hard gate, evidence not assumption, CV's lane (needs live web):
-1. Is `evm.charge` a drop-in `accepts[]` entry or a structurally
-   different 402 body? Read `paymentauth.org/draft-evm-charge-00`
-   directly.
-2. Is crypto-only truly registration-free? Confirm against
-   `mpp.dev/quickstart/server`, not the client example. If any
-   Stripe/Tempo registration surfaces: STOP and report to the keeper.
+The gates as originally posed, and what CV's primary-source read
+(paymentauth.org/draft-evm-charge-00 and mpp.dev/quickstart/server +
+/advanced/security, the documents themselves, not summaries) returned:
 
-Architecture as agreed: one 402, existing exact entry untouched, new
-entry appended, zero new buyer-facing branches. Idempotency MUST be
-one cache across rails (same wallet + item + window = same slot) —
-flagged for code review explicitly, C.4 attacks it. Cert records
-carry which rail settled, signed at mint, never reconstructed.
-Card/KYC legs: ruled out (fee math: ~$0.30 + 2.9% against a $0.005
-floor item).
+**Gate 1 — is `evm.charge` a drop-in `accepts[]` entry? NO. It is
+not x402 at all.** `evm.charge` is the EVM payment method for the
+IETF-track "Payment HTTP Authentication Scheme"
+(I-D.httpauth-payment) — a separate parent protocol. The offer rides
+a `WWW-Authenticate` challenge header (base64url, JCS-canonicalized
+JSON — draft §4 ¶1), the client answers with `Authorization: Payment
+<credential>`, and the flow (§1.4) contains no `accepts[]` and no
+payment-signature header anywhere. Its credential negotiation
+(§4.2.2: permit2/authorization/transaction/hash) is its own. Building
+it is standing up a SECOND challenge/credential protocol beside x402
+— new headers, new encoding, new security surface, coupled
+idempotency across two protocols — not appending an array entry.
+
+**Gate 2 — is crypto-only registration-free? PASSED, as far as two
+pages can confirm.** The Direct signing path is a self-generated key;
+`MPP_SECRET_KEY` is self-generated HMAC root-of-trust material (their
+security doc's own language), not an issued API key; no
+account-creation step exists on either page. The only
+registration-flavored line is optional DISCOVERY listing (MPPScan /
+MPP Services directory), which gates nothing. Honest bound stated by
+the auditor: "didn't find one across two pages," not "confirmed
+absent system-wide"; the `Mppx.create` SDK reference is the next
+document if this ever needs to be airtight.
+
+**The wrinkle that connects them:** every server-quickstart example
+is `tempo.charge()` — Tempo (Paradigm/Stripe's chain, pathUSD) —
+and `evm.charge` appears nowhere on MPP's server docs. MPP appears
+to implement the same PARENT scheme but ship a Tempo-specific
+credential. So "build evm.charge, get MPP crypto-only for free" is
+likely TWO code paths under one spec, not one deliverable.
+
+**THE RULING, via the standing intake rule at the top of this file:**
+an accepted payment scheme grows by one entry only when a real,
+named counterparty proves the existing entry doesn't serve them. No
+buyer has asked for httpauth-payment, MPP, or Tempo; the build is a
+parallel protocol, not a door that takes a day (so the door-cost
+lens, which rightly overrode demand-gating for CHEAP doors, does not
+override here — both lenses point the same way for once). MPP moves
+to WAIT-AND-SEE behind Solana. What reopens it: a named counterparty
+asking to pay via this scheme, OR the scheme showing up in ward-round
+drift data as ecosystem-adopted (C.9 already tracks scheme drift, so
+the watch is automatic, not a memory).
+
+Architecture notes preserved for whenever it reopens: one 402,
+existing exact entry untouched, zero new buyer-facing branches;
+idempotency one cache across rails (C.4 attacks it); cert records
+carry which rail settled, signed at mint. Card/KYC legs stay ruled
+out (fee math: ~$0.30 + 2.9% against a $0.005 floor item).
 
 The Solana-exact door (sized 2026-08-03, PROBLEMS.md) runs through
 THIS SAME order of operations — Part A is now done for both; Solana's
