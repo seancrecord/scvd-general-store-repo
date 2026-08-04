@@ -30,6 +30,12 @@
       "who": "cheap-model pass walker (gpt54mini)",
       "since": "2026-08-04",
       "why": "AGENT_UX cross-model walker; 1 settle (the daily_fortune milestone buy, cert_3cxdc7ak2c) booked organic before listing \u2014 reclassified via the ledger. Identified from the till itself: a wallet first seen on walk day with exactly the walker's purchase, cross-checkable against the cert's receipt, which names its payer."
+    },
+    {
+      "address": "GUhrGGnu8fcaGpV7iL1XjA4P3XoM31auicMxd58NkL4J",
+      "who": "CV's Solana-rail buyer (registration runs)",
+      "since": "2026-08-04",
+      "why": "The second rail's house test wallet: runs the registration settles (REGISTRATION_RUN.md) that admit endpoints to CDP discovery and live-test the Solana door. Listed BEFORE its first purchase \u2014 the first wallet in this file to arrive the way the rule was always meant to run. Base58 is case-sensitive; compare exactly."
     }
   ]
 }

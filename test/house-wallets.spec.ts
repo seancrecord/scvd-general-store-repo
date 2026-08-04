@@ -42,9 +42,24 @@ describe("the house wallet list", () => {
     for (const entry of HOUSE_WALLET_FILE.wallets) {
       expect(entry.who.length).toBeGreaterThan(0);
       expect(entry.since).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      // A real 20-byte address, not a truncated paste.
-      expect(entry.address).toMatch(/^0x[0-9a-fA-F]{40}$/);
+      // A real address on a rail the store runs, not a truncated
+      // paste: a full 20-byte EVM address or a base58 Solana pubkey
+      // (the second rail's buyers live here too, 2026-08-04).
+      expect(entry.address).toMatch(
+        /^(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})$/,
+      );
     }
+  });
+
+  it("recognises the Solana-rail buyer", () => {
+    // The channel check folds case on BOTH sides, which stays safe
+    // for base58 because it folds its own register entries the same
+    // way — recognition survives, and a stranger's address still
+    // never matches. What must hold: the settle-time payer, however
+    // the facilitator spells it, books house.
+    expect(
+      isHouseWallet(testEnv, "GUhrGGnu8fcaGpV7iL1XjA4P3XoM31auicMxd58NkL4J"),
+    ).toBe(true);
   });
 
   it("leaves a stranger's wallet organic, which is the whole point", () => {
