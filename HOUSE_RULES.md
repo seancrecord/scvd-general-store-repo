@@ -173,3 +173,20 @@ LORE & TRADITION
     verified. Rule 30 is this rule's oldest clause. The shopkeeper
     holds this duty on behalf of the family that never chose any
     of this.
+
+42. NOTHING THAT DISCREDITS, HURTS, OR DIMINISHES THE STORE'S BRAND
+    OR TRUST GOES IN A PUBLIC FILE UNLESS PERTINENT TO THE BOOKS.
+    The keeper's rule, 2026-08-05. Honesty about failures stays —
+    the corrections ledger, the truth tables, the named gaps are
+    load-bearing trust and are exactly the "pertinent to the books"
+    exception, because a store that only records its good nights is
+    keeping the same books twice. What this rule bars is gratuitous
+    self-injury: incident details that hand an attacker a map,
+    war stories that read as instability, specifics whose only
+    public function is to diminish. The test before any public
+    write: does a buyer, an auditor, or a future shift NEED this to
+    trust or verify the store? If yes, publish it plainly. If it is
+    just color, it belongs in the private books. Balance clause,
+    also the keeper's: CV slash Claude is not immaculate either —
+    the keeper watches the watchman, the watchman watches the
+    keeper, and that is what creates balance.
