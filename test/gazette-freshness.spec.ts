@@ -165,7 +165,9 @@ describe("the admin desk", () => {
     expect(text).toContain("Re-assemble");
   });
 
-  it("the counter shows the drift BEFORE the keeper edits, with a re-assemble button", async () => {
+  it("the press left the counter with the 2026-08-05 retirement", async () => {
+    // The freshness machinery stays correct behind the dormant
+    // publish door; the counter no longer carries a press desk.
     await assembleDraft(testEnv, true);
     await landSettlement();
     const page = await SELF.fetch("https://scvd.store/admin/counter", {
@@ -173,9 +175,8 @@ describe("the admin desk", () => {
     });
     expect(page.status).toBe(200);
     const html = await page.text();
-    expect(html).toContain("The books have moved since this draft was set");
-    expect(html).toContain("purchase has settled");
-    expect(html).toContain("/admin/gazette/edition/assemble");
+    expect(html).not.toContain("The Gazette press");
+    expect(html).not.toContain("/admin/gazette/edition/publish");
   });
 
   it("re-assembling folds the movement in, and the fresh draft publishes", async () => {

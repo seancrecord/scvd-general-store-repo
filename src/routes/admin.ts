@@ -206,7 +206,6 @@ adminRoutes.get("/admin/counter", async (c) => {
     tips,
     letters,
     alerts,
-    gazetteDraft,
     confessions,
     trainTags,
     refunds,
@@ -223,7 +222,6 @@ adminRoutes.get("/admin/counter", async (c) => {
     listTips(c.env),
     listLetters(c.env),
     listAlerts(c.env, 5),
-    getDraft(c.env),
     listConfessions(c.env),
     listTags(c.env),
     listRefunds(c.env),
@@ -249,21 +247,8 @@ adminRoutes.get("/admin/counter", async (c) => {
   for (const order of unseen) {
     order.acknowledged_at = seenAt;
   }
-  /**
-   * THE FRESHNESS CHECK RUNS WHERE THE KEEPER'S EYES ARE. Publish
-   * refuses a stale draft on its own, but a refusal he first learns
-   * about after editing twenty minutes of copy is a refusal that
-   * arrived late — the drift belongs on the desk, beside the draft,
-   * before the pen comes out. A failed check degrades to "fresh"
-   * with a load note, same as every other shelf on this page.
-   */
-  const draftOnDesk = shelf(gazetteDraft, null, "gazette draft", notes);
-  const gazetteFreshness = await draftFreshness(c.env, draftOnDesk).catch(
-    () => {
-      notes.push("gazette freshness check failed to load");
-      return FRESH;
-    },
-  );
+  // The Gazette press left the counter with the 2026-08-05
+  // retirement; the freshness check went with it.
   return c.html(
     renderCounterPage({
       notice: stockNotice(c.req.query("stocked"), c.req.query("shelf")),
@@ -283,8 +268,6 @@ adminRoutes.get("/admin/counter", async (c) => {
         (entry) => entry.record,
       ),
       alerts: shelf(alerts, [], "alerts", notes),
-      gazetteDraft: draftOnDesk,
-      gazetteFreshness,
       trainTags: shelf(trainTags, [], "the train", notes).map(
         (entry) => entry.record,
       ),
