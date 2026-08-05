@@ -546,6 +546,7 @@ const FREE_TOOLS: McpTool[] = [
     annotations: {
       title: "Store Guide",
       readOnlyHint: true,
+      destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -641,6 +642,7 @@ const FREE_TOOLS: McpTool[] = [
     annotations: {
       title: "Verify an Artifact",
       readOnlyHint: true,
+      destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false,
     },

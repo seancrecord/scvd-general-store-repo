@@ -42,6 +42,25 @@ describe("annotations", () => {
     }
   });
 
+  it("all four hints, explicit booleans, on every tool — no directory ding again", () => {
+    // 2026-08-05: a directory scan caught two read-only tools missing
+    // destructiveHint. "Defined" is not "complete" — this pins all
+    // four hints as explicit booleans on every tool forever.
+    for (const tool of tools) {
+      for (const hint of [
+        "readOnlyHint",
+        "destructiveHint",
+        "idempotentHint",
+        "openWorldHint",
+      ] as const) {
+        expect(
+          typeof tool.annotations?.[hint],
+          `${tool.name} is missing ${hint}`,
+        ).toBe("boolean");
+      }
+    }
+  });
+
   it("every buy_* tool says the honest thing: not read-only, not idempotent, open world", () => {
     for (const tool of tools.filter((t) => t.name.startsWith("buy_"))) {
       expect(tool.annotations?.readOnlyHint, tool.name).toBe(false);
