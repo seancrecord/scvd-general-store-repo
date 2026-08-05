@@ -39,7 +39,6 @@ import {
 } from "@/services/almanac-store";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetText } from "@/lib/kv-bulk";
-import { getFoundingEdition } from "@/services/founding";
 import type { ShutterState } from "@/services/shutter";
 import { readResearchTrails } from "@/lib/research-log";
 import { renderToolsPage } from "@/pages/admin/tools-page";
@@ -212,7 +211,6 @@ adminRoutes.get("/admin/counter", async (c) => {
     refunds,
     closers,
     drawerStock,
-    nameStock,
     grudges,
   ] = await Promise.allSettled([
     listOrders(c.env),
@@ -230,7 +228,6 @@ adminRoutes.get("/admin/counter", async (c) => {
     listRefunds(c.env),
     listClosers(c.env, 20),
     listStock(c.env, "the_drawer"),
-    listStock(c.env, "nomenclature"),
     listGrudges(c.env, 30),
   ]);
   // Auto-acknowledge on sight: opening the counter IS seeing the queue,
@@ -273,7 +270,6 @@ adminRoutes.get("/admin/counter", async (c) => {
       closers: shelf(closers, [], "closers", notes),
       stockShelves: {
         the_drawer: shelf(drawerStock, [], "drawer stock", notes),
-        nomenclature: shelf(nameStock, [], "name stock", notes),
       },
       grudges: shelf(grudges, [], "grudges", notes),
       waitlist: shelf(waitlist, [], "waitlists", notes),
@@ -450,7 +446,27 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
           ),
         },
         deliveries: shelf(deliveries, null, "delivery audit", notes),
-        alerts: shelf(alerts, [], "alarm trail", notes),
+        alerts: await Promise.all(
+          shelf(alerts, [], "alarm trail", notes).map(async (alert) => {
+            if (alert.condition !== "undelivered_sale") return alert;
+            // The alert names its settlement tx; check what the
+            // intent looks like NOW so history reads as history.
+            const tx = /Settlement: (\S+)\./.exec(alert.detail)?.[1];
+            if (!tx) return alert;
+            const [open, resolved] = await Promise.all([
+              c.env.ORDERS.get(KV_KEYS.deliveryIntent(tx)),
+              c.env.ORDERS.get(`delivery_resolved:${tx}`),
+            ]);
+            return {
+              ...alert,
+              now: open
+                ? ("still open" as const)
+                : resolved
+                  ? ("resolved by hand" as const)
+                  : ("closed (delivered)" as const),
+            };
+          }),
+        ),
         loadNotes: notes,
       },
       new Date(),
@@ -611,10 +627,10 @@ adminRoutes.post("/admin/ward/run", async (c) => {
  * about whether the store is taking money.
  */
 adminRoutes.get("/admin/tools", async (c) => {
-  const month = new Date().toISOString().slice(0, 7);
+  const today = new Date().toISOString().slice(0, 10);
+  const month = today.slice(0, 7);
   const settled = await Promise.allSettled([
     shutterState(c.env),
-    getFoundingEdition(c.env),
     c.env.COUNTERS.get(KV_KEYS.patronageNote(month)),
     getDraft(c.env),
     listKeys(c.env.COUNTERS, { prefix: "inventory:", cap: 200 }),
@@ -626,7 +642,7 @@ adminRoutes.get("/admin/tools", async (c) => {
       : null;
 
   let inventory: Record<string, number> | null = null;
-  const inventoryKeys = value<{ names: string[] }>(4);
+  const inventoryKeys = value<{ names: string[] }>(3);
   if (inventoryKeys) {
     inventory = {};
     const counts = await bulkGetText(c.env.COUNTERS, inventoryKeys.names).catch(
@@ -648,14 +664,13 @@ adminRoutes.get("/admin/tools", async (c) => {
   return c.html(
     renderToolsPage({
       shutter: value<ShutterState>(0),
-      foundingPrinted:
-        settled[1]?.status === "fulfilled" ? value(1) !== null : null,
-      patronageNote: value<string>(2),
+      patronageNote: value<string>(1),
       inventory,
       month,
+      today,
       almanacPages:
-        settled[5]?.status === "fulfilled"
-          ? (value<{ slug: string; title: string; date: string }[]>(5) ?? [])
+        settled[4]?.status === "fulfilled"
+          ? (value<{ slug: string; title: string; date: string }[]>(4) ?? [])
           : null,
     }),
   );
@@ -1125,11 +1140,27 @@ adminRoutes.post("/admin/almanac", async (c) => {
    * empty; see saveAlmanacEntry, which refuses rather than inventing
    * one it cannot find.
    */
+  /**
+   * ONE FLOW (keeper's ask, 2026-08-05): he writes three things —
+   * date, title, the page — and the almanac dressing (# heading,
+   * the italic line, the dated Oak City line) is assembled here so
+   * the form never shows him boilerplate to edit around. A raw
+   * `markdown` field is still honoured for anything scripted.
+   */
+  const rawMarkdown = String(form["markdown"] ?? "").trim();
+  const body = String(form["body"] ?? "").trim();
+  const title = String(form["title"] ?? "").trim();
+  const date = String(form["date"] ?? "").trim();
+  const assembled =
+    rawMarkdown ||
+    (body
+      ? `# ${title}\n\n*From the Keeper's Almanac.*\n\n**${date || new Date().toISOString().slice(0, 10)}, Oak City.**\n\n${body}`
+      : "");
   const result = await saveAlmanacEntry(c.env, {
-    title: String(form["title"] ?? ""),
-    date: String(form["date"] ?? ""),
+    title,
+    date,
     teaser: String(form["teaser"] ?? ""),
-    markdown: String(form["markdown"] ?? ""),
+    markdown: assembled,
   });
   if (result.refused) {
     // Refuse loudly with the words still in hand rather than redirect
@@ -1188,33 +1219,6 @@ adminRoutes.post("/admin/orders/:order_id/complete", async (c) => {
   return c.redirect("/admin");
 });
 
-adminRoutes.post("/admin/stock/nomenclature/bulk", async (c) => {
-  const form = await c.req.parseBody();
-  const raw = typeof form["batch"] === "string" ? form["batch"] : "";
-  const lines = raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-  const rejected: string[] = [];
-  let stocked = 0;
-  for (const line of lines) {
-    const result = await stockUnit(c.env, "nomenclature", { name: line });
-    if ("refused" in result) {
-      rejected.push(`${line.slice(0, 60)} \u2014 ${result.refused}`);
-    } else {
-      stocked += 1;
-    }
-  }
-  if (rejected.length > 0) {
-    return c.text(
-      `Stocked ${stocked} name(s). Rejected ${rejected.length}:\n${rejected.join("\n")}`,
-      400,
-    );
-  }
-  return c.redirect(`/admin/counter?stocked=${stocked}&shelf=nomenclature`);
-});
-
-/** Stock one unit onto a stocked shelf (fields per the shelf's spec). */
 adminRoutes.post("/admin/stock/:item_id", async (c) => {
   const itemId = c.req.param("item_id");
   const form = await c.req.parseBody();

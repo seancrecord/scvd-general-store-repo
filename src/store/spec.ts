@@ -110,8 +110,6 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   standing_watch:
     "Monitor my x402 endpoint hourly for a week with signed uptime history",
   context_anchor: "Store a memory I can read back next session",
-  nomenclature:
-    "Claim a name nobody else can take, in a register anyone can read",
   hello: "Prove my payment code works end to end against a real store",
   small_blessing: "Settle a real x402 payment for the smallest amount possible",
   recurring_patronage:
@@ -158,8 +156,6 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "A week of out-of-band hourly checks on your own endpoint, each observation signed individually so any row can be quoted alone. Consent is the purchase: we watch what you asked us to watch, nobody else. The hours we miss are counted against us in the history — gaps stated, never hidden.",
   quick_judgment:
     "A human verdict, in writing, on a question where your own evaluation is the thing in doubt. Five a week.",
-  nomenclature:
-    "A name bound to you alone in a permanent public registry: first-come, never re-issued, machine-enforced. An identifier a third party can check instead of taking on your word.",
   hello:
     "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
   small_blessing:
@@ -206,8 +202,6 @@ export const SPEC_RETURNS: Record<string, string> = {
     "The buyer's tag recorded verbatim on a signed certificate, dated, instantly. Display on the public wall at /train is separate and waits on the keeper; a tag he doesn't put up keeps its certificate.",
   hello:
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
-  nomenclature:
-    "A name for the buyer, chosen by the keeper, recorded on a signed certificate.",
   the_collab:
     "One piece brainstormed by both proprietors, shipped under the store byline on the completed order.",
   the_drawer:
@@ -309,11 +303,6 @@ export const USE_WHEN: readonly UseWhen[] = [
       "free:/api/verify/{id}",
     ],
     example: "GET /api/verify/cert_4dww28dx5j",
-  },
-  {
-    when: "You need a name that is yours alone, first-come, in a register anybody can read.",
-    items: ["nomenclature"],
-    example: "GET /api/buy/nomenclature",
   },
   {
     when: "You want a receipt your operator can read afterwards: what was bought, from whom, when, and how to check it.",

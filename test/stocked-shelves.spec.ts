@@ -64,26 +64,11 @@ describe("the stocked shelves", () => {
     expect(gone.status).toBe(404);
   });
 
-  it("names stock in batches, never reuse, and bestow themselves", async () => {
-    const bulk = await SELF.fetch(`${BASE}/admin/stock/nomenclature/bulk`, {
-      method: "POST",
-      headers: adminAuth,
-      body: new URLSearchParams({
-        batch: "Cornelius Uptime\nCornelius Uptime",
-      }).toString(),
-      redirect: "manual",
-    });
-    // Second line collides with the first: uniqueness is machine-enforced.
-    expect(bulk.status).toBe(400);
-    expect(await bulk.text()).toContain("never reused");
-
-    const body = await buyPaid(`${BASE}/api/buy/nomenclature`);
-    expect(body["status"]).toBe("completed");
-    expect(String(body["deliverable"])).toContain("Cornelius Uptime");
-
-    // Sold out honestly once the pool empties.
-    const bare = await SELF.fetch(`${BASE}/api/buy/nomenclature`);
-    expect(bare.status).toBe(409);
+  it("nomenclature is retired: registry closed, granted names stand", async () => {
+    const gone = await SELF.fetch(`${BASE}/api/buy/nomenclature`);
+    expect(gone.status).toBe(410);
+    const body = (await gone.json()) as Record<string, unknown>;
+    expect(String(body["error"])).toContain("retired");
   });
 });
 

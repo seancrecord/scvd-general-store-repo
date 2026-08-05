@@ -41,11 +41,8 @@ export const STOCK_DEFINITIONS: Record<string, StockDefinition> = {
       { key: "does", label: "What it does, as listed", cap: 300 },
     ],
   },
-  nomenclature: {
-    itemId: "nomenclature",
-    fields: [{ key: "name", label: "A considered name", cap: 80 }],
-    uniqueField: "name",
-  },
+  // nomenclature retired 2026-08-05: the registry closed to new
+  // claims; names already granted stay granted and never re-issue.
 };
 
 export interface StockUnit {

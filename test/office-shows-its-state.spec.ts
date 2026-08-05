@@ -58,11 +58,6 @@ describe("every lever on the back shelf states its condition", () => {
     expect(away).toContain("no visit is on record yet");
   });
 
-  it("says whether the founding edition has already printed", async () => {
-    const page = await tools();
-    expect(page).toMatch(/Not printed yet|Already printed/);
-  });
-
   it("says whether this month's patronage note is already inked", async () => {
     const month = new Date().toISOString().slice(0, 7);
     await testEnv.COUNTERS.delete(KV_KEYS.patronageNote(month));
@@ -123,7 +118,6 @@ describe("the office shows the state it lets him change", () => {
     for (const [what, marker] of [
       ["the shutter", /OPEN —|CLOSED —/],
       ["the patronage note", /inked for/],
-      ["the founding press", /printed/],
     ] as const) {
       expect(page, `the back shelf does not show ${what}`).toMatch(marker);
     }

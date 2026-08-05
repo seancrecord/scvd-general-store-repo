@@ -35,14 +35,14 @@ export interface ToolsPageData {
   almanacPages: { slug: string; title: string; date: string }[] | null;
   /** null when the read failed — never assume open. */
   shutter: ShutterState | null;
-  /** True when Issue No. 1 has already gone to press. */
-  foundingPrinted: boolean | null;
   /** This month's patronage note, if one is already inked. */
   patronageNote: string | null;
   /** item id -> units sold this week, the counters the reset clears. */
   inventory: Record<string, number> | null;
   /** The month the patronage note would be filed under. */
   month: string;
+  /** Today, YYYY-MM-DD, prefilled on the almanac page form. */
+  today: string;
 }
 
 /** A state line above a lever. Unknown is stated, never implied. */
@@ -95,6 +95,70 @@ export function renderToolsPage(data: ToolsPageData): string {
   </section>
 
   <section>
+    <h2>The Keeper's Almanac &mdash; write a page</h2>
+    <p>A penny a page over x402, and the only shelf a stranger has ever bought
+    from. Pages go live on the next request &mdash; no deploy, no commit. Same
+    slug as an existing page REPLACES it, which is how a correction gets made
+    without a laptop. <strong>Your words only</strong> &mdash; dated first-person
+    field notes; if it could be posted on Medium, it doesn't go in the Almanac.</p>
+    ${
+      data.almanacPages === null
+        ? condition(false, "")
+        : data.almanacPages.length === 0
+          ? condition(
+              true,
+              "No pages written from the office yet. The seed pages compiled into the store are still there and are not listed here.",
+            )
+          : condition(
+              true,
+              `Written from here: ${data.almanacPages
+                .map((page) => `${page.date} ${page.title}`)
+                .join(" \u00B7 ")}`,
+              "on",
+            )
+    }
+    <form method="POST" action="/admin/almanac">
+      <p><label>The day it is ABOUT<br>
+      <input type="text" name="date" value="${escapeHtml(data.today)}" maxlength="10" required></label></p>
+      <p><label>Title (becomes the URL slug)<br>
+      <input type="text" name="title" placeholder="What the day was" maxlength="120" required></label></p>
+      <p><label>The one free line on the index (blank = your first sentence)<br>
+      <input type="text" name="teaser" placeholder="What a stranger sees before paying the penny" maxlength="200"></label></p>
+      <p><label>The page itself &mdash; just write; the heading and the almanac
+      dressing are set around it for you<br>
+      <textarea name="body" rows="14" placeholder="Write the thing." required></textarea></label></p>
+      <button type="submit">Put it on the shelf</button>
+    </form>
+    ${
+      data.almanacPages && data.almanacPages.length > 0
+        ? `<p>Pull a page back off the shelf:</p>
+           <form method="POST" action="/admin/almanac/remove">
+             <input type="text" name="slug" placeholder="the page's slug" required>
+             <button type="submit">Take it down</button>
+           </form>`
+        : ""
+    }
+  </section>
+
+  <section>
+    <h2>Resolve a delivery</h2>
+    <p>For when the money-in-vs-goods-out check on
+    <a href="/admin/reconciliation">the books check</a> names a settle. Paste
+    its settlement tx, say what you did about it by hand &mdash; fulfilled it,
+    refunded it, or absorbed it as house &mdash; and the audit stands down for
+    that sale. The record keeps the original intent inside it.</p>
+    <form method="POST" action="/admin/delivery/resolve">
+      <input type="text" name="transaction" placeholder="the settlement tx from the alert" required>
+      <select name="outcome" required>
+        <option value="fulfilled_by_hand">fulfilled by hand</option>
+        <option value="refunded">refunded</option>
+        <option value="house_absorbed">house money, absorbed</option>
+      </select>
+      <button type="submit">Resolve it</button>
+    </form>
+  </section>
+
+  <section>
     <h2>Payer-case repair</h2>
     <p>Solana addresses are case-sensitive; payer rows written before
     the canonical-address fix hold a lowercased copy no explorer
@@ -124,24 +188,6 @@ export function renderToolsPage(data: ToolsPageData): string {
     </form>
   </section>
 
-  <section>
-    <h2>The founding press</h2>
-    <p>Prints Issue No. 1 once: the founding edition, free, signed, frozen with the ledger's numbers of that day. Refuses if it already printed or if the organic zero broke first.</p>
-    ${
-      data.foundingPrinted === null
-        ? condition(false, "")
-        : data.foundingPrinted
-          ? condition(
-              true,
-              "Already printed — the press will refuse. Read it at /gazette/founding.",
-              "on",
-            )
-          : condition(true, "Not printed yet. This lever is live.")
-    }
-    <form method="POST" action="/admin/gazette/founding/print">
-      <button type="submit">Print the founding edition</button>
-    </form>
-  </section>
 
   <section>
     <h2>The shutter (human-labor shelf)</h2>
@@ -157,61 +203,10 @@ export function renderToolsPage(data: ToolsPageData): string {
     </form>
   </section>
 
-  <section>
-    <h2>The Keeper's Almanac &mdash; write a page</h2>
-    <p>A penny a page over x402, and the only shelf a stranger has ever bought
-    from. Pages written here go live on the next request &mdash; no deploy, no
-    commit. Same slug as an existing page REPLACES it, which is how a correction
-    gets made without a laptop.</p>
-    <p><strong>Your words only.</strong> The almanac's rule is unchanged: dated
-    first-person field notes, sensory and particular. Nothing here writes them but
-    you. If it could be posted on Medium, it doesn't go in the Almanac.</p>
-    ${
-      data.almanacPages === null
-        ? condition(false, "")
-        : data.almanacPages.length === 0
-          ? condition(
-              true,
-              "No pages written from the office yet. The seed pages compiled into the store are still there and are not listed here.",
-            )
-          : condition(
-              true,
-              `Written from here: ${data.almanacPages
-                .map((page) => `${page.date} ${page.title}`)
-                .join(" \u00B7 ")}`,
-              "on",
-            )
-    }
-    <p><strong>Just write.</strong> Open with a <code>#&nbsp;heading</code> and
-    the title, the slug and the index teaser come out of the page itself; the
-    date is today unless you say otherwise. The three boxes under the body are
-    overrides, not requirements &mdash; fill one only when the page should not
-    speak for itself. <strong>The date is the one worth a glance</strong>, since
-    it is the day the entry is ABOUT and that is often not today.</p>
-    <form method="POST" action="/admin/almanac">
-      <p><textarea name="markdown" rows="16" placeholder="# The title goes here&#10;&#10;*From the Keeper's Almanac.*&#10;&#10;**${escapeHtml(data.month)}-.., Oak City.**&#10;&#10;Write the thing. The first real sentence becomes the free line on the index." required></textarea></p>
-      <details>
-        <summary>Override the derived bits</summary>
-        <p><input type="text" name="date" placeholder="YYYY-MM-DD &mdash; the day it is ABOUT (blank = today)" maxlength="10"></p>
-        <p><input type="text" name="title" placeholder="Title (blank = the first # heading; becomes the URL slug)" maxlength="120"></p>
-        <p><input type="text" name="teaser" placeholder="The one free line on the index (blank = your first sentence)" maxlength="200"></p>
-      </details>
-      <button type="submit">Put it on the shelf</button>
-    </form>
-    ${
-      data.almanacPages && data.almanacPages.length > 0
-        ? `<p>Pull a page back off the shelf:</p>
-           <form method="POST" action="/admin/almanac/remove">
-             <input type="text" name="slug" placeholder="the page's slug" required>
-             <button type="submit">Take it down</button>
-           </form>`
-        : ""
-    }
-  </section>
 
   <section>
     <h2>The lucky shelf</h2>
-    <p>Write-ins move a lucky (they ride the Mailbox). The record re-signs and the card re-inks; the bench is real.</p>
+    <p>What this is for: a buyer writes in about how their lucky performed (write-ins ride the Mailbox), and you promote or bench it here by id. Rare by nature. The record re-signs and the card re-inks; the bench is real.</p>
     <p>Every lucky issued, with its current status, is on <a href="/admin/counter">the counter</a>; this lever moves one by id.</p>
     <form method="POST" action="/admin/luckies/move">
       <input type="text" name="lucky_id" placeholder="lucky_..." required>

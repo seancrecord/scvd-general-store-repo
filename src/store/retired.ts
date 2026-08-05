@@ -68,6 +68,12 @@ export const RETIRED_ITEMS: readonly RetiredItem[] = [
     note: "Folded into The Collab: name the shape you want the keeper's time to take.",
     folded_into: "the_collab",
   },
+  {
+    id: "nomenclature",
+    name: "Nomenclature",
+    retired_on: "2026-08-05",
+    note: "The name registry closed to new claims. Names already granted are never re-issued and their certificates verify forever.",
+  },
 ] as const;
 
 export function getRetiredItem(id: string): RetiredItem | undefined {

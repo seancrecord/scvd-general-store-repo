@@ -80,7 +80,6 @@ describe("the storefront", () => {
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",
-      "nomenclature",
       "the_collab",
       "the_drawer",
       "luckies",

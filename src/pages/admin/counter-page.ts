@@ -72,16 +72,6 @@ function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
           `<input type="text" name="${escapeHtml(field.key)}" placeholder="${escapeHtml(field.label)}" maxlength="${field.cap}"${field.label.includes("(optional)") ? "" : " required"}>`,
       )
       .join("\n      ");
-    const bulkBox =
-      definition.itemId === "nomenclature"
-        ? `<details>
-      <summary>Stock a batch of names (one per line; never-reused is machine-enforced)</summary>
-      <form method="POST" action="/admin/stock/nomenclature/bulk">
-        <textarea name="batch" rows="6" cols="50" placeholder="one considered name per line"></textarea>
-        <button type="submit">Stock the batch</button>
-      </form>
-    </details>`
-        : "";
     const shelfNote =
       definition.itemId === "the_drawer"
         ? "<p><em>The real-oddities shelf: a real thing of yours plus what it does, as listed. Describe-only; the object never ships and the shirt never gets named in public code.</em></p>"
@@ -94,7 +84,7 @@ function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
       ${inputs}
       <button type="submit">Stock it</button>
     </form>
-    ${bulkBox}
+    
   </section>`;
   });
   return sections.join("\n\n");

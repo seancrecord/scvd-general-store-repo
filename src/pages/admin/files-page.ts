@@ -30,6 +30,14 @@ export function renderFilesPage(loadNotes: string[] = []): string {
   </section>
 
   <section>
+    <h2>The founding edition</h2>
+    <p><a href="/gazette/founding">Issue No. 1</a> — printed once, free,
+    frozen with the ledger's numbers of its day. A record now, not a lever;
+    the press that made it fired its one shot and its button left the
+    back shelf.</p>
+  </section>
+
+  <section>
     <h2>The Sunday digest</h2>
     <p><a href="/admin/digest">The digest</a> — the week's numbers as JSON,
     same content the Sunday mail carries.</p>

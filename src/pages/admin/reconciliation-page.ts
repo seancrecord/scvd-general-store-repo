@@ -8,6 +8,12 @@ interface AlertLogEntry {
   condition: string;
   detail: string;
   at: string;
+  /**
+   * For undelivered_sale entries only: what the intent looks like
+   * NOW. The keeper read three old alerts as three live problems —
+   * the trail must say when history has since been handled.
+   */
+  now?: "still open" | "resolved by hand" | "closed (delivered)";
 }
 
 /**
@@ -106,10 +112,19 @@ function alertsHtml(alerts: AlertLogEntry[]): string {
   const rows = alerts
     .map(
       (alert) =>
-        `<li><strong>${escapeHtml(alert.condition)}</strong> at ${escapeHtml(alert.at)}: ${escapeHtml(alert.detail)}</li>`,
+        `<li>${
+          alert.now
+            ? alert.now === "still open"
+              ? `<strong style="color:#8c2f1b">[STILL OPEN]</strong> `
+              : `<strong style="color:#2f6b2f">[${escapeHtml(alert.now).toUpperCase()}]</strong> `
+            : ""
+        }<strong>${escapeHtml(alert.condition)}</strong> at ${escapeHtml(alert.at)}: ${escapeHtml(alert.detail)}</li>`,
     )
     .join("\n");
-  return `<p>Recent alarms — each was also sent to the keeper when it fired; this is the trail, not the pager:</p><ul>${rows}</ul>`;
+  return `<p>Recent alarms — each paged the keeper when it fired. This is the
+    trail, not the pager: an entry marked resolved or delivered is HISTORY,
+    already handled, kept so the record shows it happened. Only [STILL OPEN]
+    needs a hand.</p><ul>${rows}</ul>`;
 }
 
 export function renderReconciliationPage(

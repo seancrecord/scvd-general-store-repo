@@ -24,22 +24,6 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     note_402: "That'll be fifty cents, friend. Cheapest handshake in town.",
   },
   {
-    id: "nomenclature",
-    listed_week: "2026-W30",
-    name: "Certificate of Nomenclature",
-    price_usdc: 3,
-    pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    // Stocked shelf: a pool of pre-considered names, never reused
-    // (machine-enforced). ⚑ truth-fix per the restructure: batch
-    // consideration, bespoke assignment.
-    stocked: true,
-    description:
-      "The keeper bestows a name upon you. A real one, from his considered stock, written down where it counts. Yours alone, never bestowed twice. You keep it forever.",
-    note_402:
-      "That'll be $3, friend. Or more, if you'd like the keeper to take extra care choosing. He will either way.",
-  },
-  {
     id: "the_collab",
     listed_week: "2026-W30",
     name: "The Collab",

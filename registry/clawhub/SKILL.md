@@ -103,9 +103,6 @@ block.
 - Someone has to be able to check a claim you are making without
   taking your word for it.
   → any signed artifact, then `GET /api/verify/{id}`, free and forever
-- You need a name that is yours alone, first-come, in a public
-  register.
-  → `GET /api/buy/nomenclature`
 - You want a timestamped claim of precedence that settles an argument.
   → `GET /api/buy/dibs`
 - You are on a schedule and want somewhere to come back to.
@@ -176,7 +173,7 @@ notices tips.
 
 Fulfillment honesty, machine-legible: every listing carries
 `fulfillment_state` (class stocked/instant/commission, live stock
-count, shutter state). Stocked shelves (the_drawer, nomenclature)
+count, shutter state). Stocked shelves (the_drawer)
 deliver in the purchase response while stocked and answer sold-out
 honestly, BEFORE payment terms, at zero — sold out from this store is
 true and checkable. Human-labor items refuse honestly when the keeper

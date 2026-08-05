@@ -108,11 +108,10 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_human_task",
     title: "Human Labor",
     purpose:
-      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors since the 2026-08-05 consolidation: quick_judgment is a fast yes/no verdict on a dilemma you describe, and the_collab is everything else keeper-time can be — a call placed, a thing witnessed, a piece made, a product gut-checked; name the shape in your detail. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. nomenclature and the_drawer are stocked: keeper-made units, taken oldest-first, no waiting on hands.",
+      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors since the 2026-08-05 consolidation: quick_judgment is a fast yes/no verdict on a dilemma you describe, and the_collab is everything else keeper-time can be — a call placed, a thing witnessed, a piece made, a product gut-checked; name the shape in your detail. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. the_drawer is stocked: keeper-made units, taken oldest-first, no waiting on hands.",
     itemIds: [
       "quick_judgment",
       "the_collab",
-      "nomenclature",
       "the_drawer",
     ],
   },
