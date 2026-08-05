@@ -455,6 +455,7 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
             ]);
             return {
               ...alert,
+              tx,
               now: open
                 ? ("still open" as const)
                 : resolved

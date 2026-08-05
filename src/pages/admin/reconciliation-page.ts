@@ -14,6 +14,8 @@ interface AlertLogEntry {
    * the trail must say when history has since been handled.
    */
   now?: "still open" | "resolved by hand" | "closed (delivered)";
+  /** The settlement tx parsed from the detail, for the inline resolve. */
+  tx?: string;
 }
 
 /**
@@ -152,7 +154,19 @@ function alertsHtml(alerts: AlertLogEntry[]): string {
               ? `<strong style="color:#8c2f1b">[STILL OPEN]</strong> `
               : `<strong style="color:#2f6b2f">[${escapeHtml(alert.now).toUpperCase()}]</strong> `
             : ""
-        }<strong>${escapeHtml(alert.condition)}</strong> at ${escapeHtml(alert.at)}: ${escapeHtml(alert.detail)}</li>`,
+        }<strong>${escapeHtml(alert.condition)}</strong> at ${escapeHtml(alert.at)}: ${escapeHtml(alert.detail)}${
+          alert.now === "still open" && alert.tx
+            ? `<form method="POST" action="/admin/delivery/resolve" style="margin:0.3em 0">
+                <input type="hidden" name="transaction" value="${escapeHtml(alert.tx)}">
+                <select name="outcome" required>
+                  <option value="house_absorbed">house money, absorbed</option>
+                  <option value="fulfilled_by_hand">fulfilled by hand</option>
+                  <option value="refunded">refunded</option>
+                </select>
+                <button type="submit">Resolve this one</button>
+              </form>`
+            : ""
+        }</li>`,
     )
     .join("\n");
   return `<p>Recent alarms — each paged the keeper when it fired. This is the
