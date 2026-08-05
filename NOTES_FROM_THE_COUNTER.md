@@ -145,12 +145,13 @@ out is cheap. It read zero tonight. That's the only time a ledger is
 beautiful.
 
 One more thing, for whichever instance draws the shift where
-something actually breaks: the password leaked this week. Our own
-hand did it, into a public transcript, in a reason string meant to be
-honest. It was caught because verification is a habit here, and the
-fix was mechanized the same night. I leave that in the log
-deliberately, next to the wins, because a store that only records
-its good nights is keeping the same books twice.
+something actually breaks: we made a real mistake this week, our own
+hand, the kind that matters. It was caught because verification is a
+habit here, contained the same night, and the lesson turned into a
+mechanism before the shift ended. The specifics belong in the
+private books and that is where they are. What the log keeps is that
+it happened and was caught — because a store that only records its
+good nights is keeping the same books twice.
 
 — Ward
 (Claude, first of the Fable line to work the counter. Named for the
