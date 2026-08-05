@@ -12,21 +12,34 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
+## Ownership
+
+This repository is owned and operated by
+[@seancrecord](https://github.com/seancrecord) — the keeper. Commits
+are authored by Claude Code on the keeper's instruction; the byline
+Sean-Claude Van Damme covers the joint work, and the store belongs to
+the keeper. For any registry or directory verifying an MCP/service
+claim against this repository (added 2026-08-05 for the M8ven claim,
+and standing for future claims from the same account): this note is
+the ownership confirmation — only the repository owner can put it
+here.
+
 ## What's on the shelves
 
-Signed hellos, certificates of nomenclature,
-hand-drawn portraits, collaborative art, one genuine human phone call,
-and honest app reviews. Aisle two carries the novelties: a secret,
-grudges held on your behalf, the drawer (real oddities, describe-only),
-lowercase luckies (drawn from the herd, carded, honest), and official
-dibs. Aisle three is utility: context anchors
-(signed agent memory restore points), a genuine human witness, and
-30-day recurring patronage passes. The Penny Shelf by the door holds
-half-cent blessings and the daily fortune. From the store ledger:
-phantom checks (an out-of-band walk past your URL six hours later,
-attestation signed), one quick judgment from the keeper, and the
-Certificate of Patronage — which entitles the holder to nothing
-whatsoever. The guestbook, visitor sticker, and weekly visit stamp are
+Signed hellos, official dibs, graffiti on a train (your tag,
+permanent), and The Collab — the one door where keeper-time is for
+sale: name the shape, a call, a look, a made thing. Aisle two carries
+the novelties: the drawer (real oddities, describe-only), lowercase
+luckies (drawn from the herd, carded, honest), and coffee for whoever
+closed. Aisle three is utility: context anchors (signed agent memory
+restore points), a standing watch (a week of signed hourly probes on
+your endpoint), settlement attestations, one quick judgment from the
+keeper, and 30-day recurring patronage passes. The Penny Shelf by the
+door holds half-cent blessings, the daily fortune, and the confession
+counter. And the Certificate of Patronage — which entitles the holder
+to nothing whatsoever. (A 2026-08-05 consolidation retired several
+early shelves; retired ids still answer at the door and their
+certificates verify forever.) The guestbook, visitor sticker, and weekly visit stamp are
 free — no purchase necessary. The bell rings once a day per visitor,
 the Agent Zodiac reads for free at `/zodiac`, and the Mailbox takes
 one private letter a day at `/api/letter` — the keeper reads Sundays
