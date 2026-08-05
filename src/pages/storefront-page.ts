@@ -188,6 +188,44 @@ function jsonLdSafe(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
+/**
+ * THE SHELF AS STRUCTURED DATA (2026-08-04, the keeper's SEO/AEO
+ * push): every item the page already shows, as schema.org Products
+ * with live prices — derived from MENU_ITEMS at render, so the
+ * markup can no more go stale than the shelf can disagree with
+ * itself. priceCurrency is "USD" because schema.org wants ISO-4217
+ * and the shelf prices in dollar-denominated USDC; the description
+ * says USDC plainly, so nothing is hidden by the code.
+ */
+function productListJsonLd(base: string): string {
+  return jsonLdSafe({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${STORE_SERVICE_NAME} — the shelf`,
+    numberOfItems: MENU_ITEMS.length,
+    itemListElement: MENU_ITEMS.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Product",
+        name: item.name,
+        description: `${item.description} Paid in USDC over x402, on Base or Solana.`,
+        url: `${base}/menu/${item.id}`,
+        brand: { "@type": "Brand", name: STORE_SERVICE_NAME },
+        offers: {
+          "@type": "Offer",
+          price: String(item.price_usdc),
+          priceCurrency: "USD",
+          url: `${base}/api/buy/${item.id}`,
+          ...(item.pricing === "pay_what_it_deserves"
+            ? { description: "Minimum; higher tiers offered in the 402, recorded as tips." }
+            : {}),
+        },
+      },
+    })),
+  });
+}
+
 function organizationJsonLd(base: string, stats?: StoreStats | null): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
@@ -332,6 +370,7 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
   <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats)}</script>
+  <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">
