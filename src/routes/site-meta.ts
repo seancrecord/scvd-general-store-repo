@@ -1,3 +1,4 @@
+import { OG_IMAGE_PNG_BASE64 } from "@/store/og-image";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
@@ -38,6 +39,21 @@ export const HUMAN_SURFACES: readonly string[] = [
   "/",
   ...ROOMS.map((room) => room.path),
 ];
+
+/**
+ * The social card: the keeper's dino, pixel-drawn by
+ * scripts/generate-og-image.mjs into a committed module — the same
+ * bytes forever, no asset pipeline, cacheable hard.
+ */
+siteMetaRoutes.get("/og.png", (c) => {
+  const raw = atob(OG_IMAGE_PNG_BASE64);
+  const bytes = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i += 1) bytes[i] = raw.charCodeAt(i);
+  return c.body(bytes, 200, {
+    "Content-Type": "image/png",
+    "Cache-Control": "public, max-age=86400",
+  });
+});
 
 siteMetaRoutes.get("/robots.txt", (c) => {
   const base = c.env.STORE_BASE_URL;

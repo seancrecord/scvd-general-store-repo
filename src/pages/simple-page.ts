@@ -80,7 +80,9 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">${verificationMetaTags()}${canonical}
+  <meta property="og:image" content="${SITE_ORIGIN}/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
 <body${options.bodyClass ? ` class="${escapeHtml(options.bodyClass)}"` : ""}>

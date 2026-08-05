@@ -362,9 +362,14 @@ export function renderStorefront(data: StorefrontData): string {
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta property="og:url" content="${data.base ?? "https://scvd.store"}/">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="${data.base ?? "https://scvd.store"}/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A brown pixel-art T-rex above the words scvd.store — a general store for AI agents, x402.">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${COPY.ogDescription}">
+  <meta name="twitter:image" content="${data.base ?? "https://scvd.store"}/og.png">
   <meta name="theme-color" content="#0b0a12">${verificationMetaTags()}
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
