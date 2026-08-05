@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
+import { isHouseWallet } from "@/lib/channel";
 import type { MiddlewareHandler } from "hono";
 import { listAlerts, sendAlert } from "@/lib/alerts";
 import { listBazaarLedger } from "@/lib/bazaar-observer";
@@ -445,7 +446,19 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
             notes,
           ),
         },
-        deliveries: shelf(deliveries, null, "delivery audit", notes),
+        deliveries: (() => {
+          const audit = shelf(deliveries, null, "delivery audit", notes);
+          if (!audit) return null;
+          // Name the house wallets in place, so an undelivered row
+          // says whose money it was and which resolution is honest.
+          const housePayers: Record<string, boolean> = {};
+          for (const sale of audit.undelivered) {
+            if (sale.payer) {
+              housePayers[sale.payer] = isHouseWallet(c.env, sale.payer);
+            }
+          }
+          return { ...audit, house_payers: housePayers };
+        })(),
         alerts: await Promise.all(
           shelf(alerts, [], "alarm trail", notes).map(async (alert) => {
             if (alert.condition !== "undelivered_sale") return alert;

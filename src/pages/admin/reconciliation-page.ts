@@ -75,7 +75,16 @@ const CHAIN_STALE_MS = 3 * 60 * 60 * 1000;
 function chainHtml(chain: ReconciliationPageData["chain"], now: Date): string {
   const solana = (() => {
     if (!chain.solanaLastOk) {
-      return `<p>${ATTENTION} — no clean Solana pass recorded yet. Until one lands, the unreconciled cap stays conservative by design.</p>`;
+      const last = chain.solanaLastResult;
+      // The WHY lives in the last-result record — showing it only on
+      // success was exactly inverted (the keeper asked "why" and the
+      // page was sitting on the answer).
+      const why = last
+        ? last.ran
+          ? `The last attempt DID complete (${last.transfers_seen ?? 0} transfers seen, at ${escapeHtml(last.at)}) but no clean-pass stamp landed — that combination is a bug worth reporting.`
+          : `Last attempt at ${escapeHtml(last.at)}: <strong>${escapeHtml(last.reason ?? "no reason recorded")}</strong>. A failed pass retries next hour and never advances the cursor; nothing is lost, but the cap stays on until one completes.`
+        : `No attempt has recorded a result yet — if the hourly cron is running, the next result lands within the hour.`;
+      return `<p>${ATTENTION} — no clean Solana pass recorded yet. Until one lands, the unreconciled cap stays conservative by design. ${why}</p>`;
     }
     const age = now.getTime() - new Date(chain.solanaLastOk).getTime();
     const stale = !Number.isFinite(age) || age > CHAIN_STALE_MS;
@@ -89,19 +98,44 @@ function chainHtml(chain: ReconciliationPageData["chain"], now: Date): string {
   return `${base}${solana}`;
 }
 
-function deliveriesHtml(audit: DeliveryAudit | null): string {
+function deliveriesHtml(
+  audit: (DeliveryAudit & { house_payers?: Record<string, boolean> }) | null,
+): string {
   if (!audit) return `<p>${ATTENTION} — the delivery audit didn't load. Reload to retry.</p>`;
   if (audit.undelivered.length === 0) {
     return `<p>${PASS} — every settle either delivered its goods or is in flight
       (${audit.in_flight} in flight, ${audit.checked} checked${audit.truncated ? "; scan capped, count is a floor" : ""}).</p>`;
   }
   const rows = audit.undelivered
-    .map(
-      (sale) =>
-        `<li>${escapeHtml(sale.path)} — $${sale.paid_usdc} settled ${escapeHtml(sale.settled_at)}${sale.transaction ? `, tx ${escapeHtml(sale.transaction)}` : ""}</li>`,
-    )
+    .map((sale) => {
+      const house = sale.payer
+        ? (audit.house_payers?.[sale.payer] ?? false)
+        : false;
+      return `<li>${escapeHtml(sale.path)} — $${sale.paid_usdc} settled ${escapeHtml(sale.settled_at)}${sale.transaction ? `, tx ${escapeHtml(sale.transaction)}` : ""}${
+        house
+          ? ` <strong>[HOUSE WALLET]</strong> — the store's own money bought this and the artifact never minted; nobody outside is owed anything. "House money, absorbed" closes it honestly.`
+          : sale.payer
+            ? ` — paid by ${escapeHtml(sale.payer)}, a real buyer: fulfill or refund, never absorb.`
+            : ""
+      }
+      <form method="POST" action="/admin/delivery/resolve" style="margin:0.3em 0">
+        <input type="hidden" name="transaction" value="${escapeHtml(sale.transaction ?? "")}">
+        <select name="outcome" required>
+          ${house ? `<option value="house_absorbed">house money, absorbed</option>` : ""}
+          <option value="fulfilled_by_hand">fulfilled by hand</option>
+          <option value="refunded">refunded</option>
+          ${house ? "" : `<option value="house_absorbed">house money, absorbed</option>`}
+        </select>
+        <button type="submit">Resolve this one</button>
+      </form></li>`;
+    })
     .join("\n");
-  return `<p>${ATTENTION} — ${audit.undelivered.length} settle${audit.undelivered.length === 1 ? "" : "s"} took money without recorded goods. Resolve each by hand: fulfill it, refund it, or absorb it — the resolve door is on <a href="/admin/tools">the back shelf</a>.</p>
+  return `<p>${ATTENTION} — ${audit.undelivered.length} settle${audit.undelivered.length === 1 ? "" : "s"} took money without recorded goods.
+    <small>What this means mechanically: the settle succeeded and then the
+    fulfillment step — the certificate, the recorded goods — never wrote,
+    so the buyer paid and holds nothing. For an instant item that is a
+    half-finished purchase, not a missing shipment. Resolve inline below;
+    the record keeps the original intent inside it.</small></p>
     <ul>${rows}</ul>`;
 }
 
