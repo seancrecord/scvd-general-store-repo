@@ -199,10 +199,13 @@ function takeHtml(take: TakeSummary | null): string {
     )
     .join("\n");
   const t = take.total;
+  const rail = (slice: { sales: number; usdc: number }, label: string): string =>
+    `<strong>${slice.sales}</strong> on ${label} for <strong>${money(slice.usdc)}</strong>`;
   return `
     <p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic, all-time
     <small>(+${money(t.house_usdc)} house)</small> ·
     <strong>${t.organic_sales}</strong> organic sale${t.organic_sales === 1 ? "" : "s"}</p>
+    <p>${rail(take.rails.base, "Base")} · ${rail(take.rails.solana, "Solana")}${take.rails.unknown.sales > 0 ? ` · ${rail(take.rails.unknown, "an unrecorded rail")}` : ""} <small>(organic only, by each certificate's network)</small></p>
     <table border="1" cellpadding="4">
       <tr><th>shelf</th><th>organic (sales)</th><th>house (sales)</th></tr>
       ${rows}
@@ -289,7 +292,7 @@ function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
           .slice(0, 15)
           .map(
             (payer) =>
-              `<li>${escapeHtml(payer.address)}, first seen ${escapeHtml(payer.first_seen.slice(0, 10))}, ${payer.purchases} purchase${payer.purchases === 1 ? "" : "s"}</li>`,
+              `<li><strong>[${payer.address.startsWith("0x") ? "base" : "sol"}]</strong> ${escapeHtml(payer.address)}, first seen ${escapeHtml(payer.first_seen.slice(0, 10))}, ${payer.purchases} purchase${payer.purchases === 1 ? "" : "s"}</li>`,
           )
           .join("\n");
   return `
@@ -548,6 +551,12 @@ export function renderOfficePage(data: OfficePageData): string {
 
   <section>
     <h2>The trend</h2>
+    <p><small>Raw day counters, as written at the till. The
+    reclassification ledger applies at the month line and the
+    all-time figures, NOT here — a day that later moved organic →
+    house (the 8/03 rail-testing runs, for instance) still shows its
+    original booking in this table. That is the raw record doing its
+    job, not a discrepancy.</small></p>
     ${trendHtml(data.monthLedger)}
   </section>
 

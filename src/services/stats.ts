@@ -1,6 +1,7 @@
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { FOUNDING_SETTLES_WITHOUT_PAYER_ROW } from "@/lib/metrics";
 import type { Env } from "@/types";
 
 /** Ceiling on a paid counters scan. An unnamed cap is a silent one. */
@@ -32,6 +33,14 @@ export interface StoreStats {
   reclassified_house: number;
   /** Settles from before the channel meter existed; counted, attributed to nobody. */
   pre_meter_settlements: number;
+  /**
+   * The patron counter: every artifact ever minted, FREE SHELF
+   * INCLUDED — stamps, free certs, the lot. Published as what it is.
+   * This number used to masquerade as settled_purchases_total, which
+   * is how the front page came to subtract counters from two
+   * different substrates and publish 88 − 85 beside an organic 5.
+   */
+  artifacts_issued: number;
   computed_at: string;
 }
 
@@ -47,7 +56,24 @@ export function monthsSinceOpening(now: Date = new Date()): string[] {
 }
 
 export async function computeStats(env: Env): Promise<StoreStats> {
-  const total = parseInt(
+  /**
+   * THE IDENTITY FIX, 2026-08-05, found by the keeper reading two of
+   * his own pages: the front said 88 settled purchases with 85 house
+   * excluded and organic 5 — and 88−85 is 3, not 5. The old `total`
+   * was the patron_number counter, which increments for EVERY
+   * artifact ever minted, free stamps included; organic and house
+   * came from the settle counters, a different substrate entirely.
+   * Two substrates can disagree freely, and the Math.max clamp on
+   * pre_meter swallowed the contradiction instead of failing loudly.
+   *
+   * Now the total is DERIVED from the same counters as its parts,
+   * plus the one founding settle that predates the meter — so
+   * total = organic + house + pre_meter holds by construction and
+   * no surface can publish a subtraction that doesn't come out.
+   * The patron counter is still published, as what it actually is:
+   * artifacts_issued, free shelf included, not a purchase count.
+   */
+  const artifactsIssued = parseInt(
     (await env.COUNTERS.get(KV_KEYS.patronNumber)) ?? "0",
     10,
   );
@@ -80,11 +106,13 @@ export async function computeStats(env: Env): Promise<StoreStats> {
   const reclassified = await totalReclassified(env);
   return {
     operating_since: OPERATING_SINCE,
-    settled_purchases_total: total,
+    settled_purchases_total:
+      organic + house + FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     organic_settlements: Math.max(0, organic - reclassified),
     house_settlements: house + reclassified,
     reclassified_house: reclassified,
-    pre_meter_settlements: Math.max(0, total - organic - house),
+    pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
+    artifacts_issued: artifactsIssued,
     computed_at: new Date().toISOString(),
   };
 }
@@ -95,25 +123,24 @@ export async function computeStats(env: Env): Promise<StoreStats> {
  * PENDING on the connective wording (the numbers are not editable).
  */
 export function trackRecordLine(stats: StoreStats, base: string): string {
-  const exclusions: string[] = [];
-  if (stats.house_settlements > 0) {
-    exclusions.push(
-      `${stats.house_settlements} house-flagged proprietor tests`,
-    );
-  }
-  if (stats.pre_meter_settlements > 0) {
-    exclusions.push(
-      `${stats.pre_meter_settlements} from before the channel meter`,
-    );
-  }
-  const exclusionNote =
-    exclusions.length > 0
-      ? `, of which ${exclusions.join(" and ")} are excluded from the organic figure`
-      : "";
+  /**
+   * The arithmetic is SHOWN, never implied: the old wording invited
+   * the reader to subtract ("88, of which 85 excluded") and get a
+   * number that contradicted the organic figure printed beside it —
+   * the keeper did exactly that subtraction and caught it. Now the
+   * sentence IS the identity, and it comes out by construction.
+   */
+  const parts = [
+    `${stats.organic_settlements} organic`,
+    `${stats.house_settlements} house-flagged proprietor tests`,
+    ...(stats.pre_meter_settlements > 0
+      ? [`${stats.pre_meter_settlements} from before the channel meter`]
+      : []),
+  ];
   return [
     `Operating since ${stats.operating_since}.`,
-    `Settled purchases: ${stats.settled_purchases_total}${exclusionNote}.`,
-    `Organic settlements: ${stats.organic_settlements}.`,
-    `Every number here is computed live from ${base}/stats; every artifact ever issued verifies at ${base}/api/verify/{id}.`,
+    `Settled purchases: ${stats.settled_purchases_total} — ${parts.join(" + ")}.`,
+    `Only the organic figure counts as proof.`,
+    `Every number here is computed live from ${base}/stats; every artifact ever issued (${stats.artifacts_issued}, free shelf included) verifies at ${base}/api/verify/{id}.`,
   ].join(" ");
 }

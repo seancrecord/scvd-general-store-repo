@@ -81,3 +81,35 @@ describe("the consolidated office", () => {
     }
   });
 });
+
+/**
+ * THE IDENTITY, pinned the day the keeper caught the front page
+ * publishing 88 − 85 beside an organic 5: settled purchases must
+ * equal organic + house + pre-meter EXACTLY, on the same substrate,
+ * and the artifact counter is published as what it is instead of
+ * masquerading as a purchase count.
+ */
+describe("the books identity", () => {
+  it("total = organic + house + pre-meter, by construction", async () => {
+    const { computeStats, trackRecordLine } = await import("@/services/stats");
+    const stats = await computeStats(testEnv);
+    expect(stats.settled_purchases_total).toBe(
+      stats.organic_settlements +
+        stats.house_settlements +
+        stats.pre_meter_settlements,
+    );
+    expect(typeof stats.artifacts_issued).toBe("number");
+    // The public sentence shows the arithmetic instead of implying it.
+    const line = trackRecordLine(stats, "https://scvd.store");
+    expect(line).toContain(`${stats.organic_settlements} organic`);
+    expect(line).toContain("free shelf included");
+  });
+
+  it("the take splits the organic rails by certificate network", async () => {
+    const { takeSummary } = await import("@/services/books-summary");
+    const take = await takeSummary(testEnv);
+    const railSales =
+      take.rails.base.sales + take.rails.solana.sales + take.rails.unknown.sales;
+    expect(railSales).toBe(take.total.organic_sales);
+  });
+});
