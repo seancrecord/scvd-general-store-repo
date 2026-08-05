@@ -103,12 +103,59 @@ import type { HonoEnv } from "@/types";
  */
 export const adminRoutes = new Hono<HonoEnv>();
 
+/**
+ * ADMIN AUTH, AND WHAT WATCHES IT (2026-08-04, a scanner's "not
+ * enough around the passcode").
+ *
+ * The rock that IS worth pushing: hono's basicAuth already compares
+ * with timingSafeEqual, so the timing side-channel is closed — that
+ * is the usual finding, and it is already handled.
+ *
+ * The real gap it named without naming: a brute-force attempt was
+ * INVISIBLE. The store's answer is never a hard lockout — a
+ * single-user panel that any stranger can lock is a denial-of-service
+ * foothold, not a defense — but the store's whole discipline is
+ * "page the keeper," and a run of failed admin logins is exactly the
+ * event worth a page. Counted in a window, alerted once past a
+ * threshold, keyed so a standing attack pages once rather than
+ * hourly. A correct login clears the count.
+ */
+const ADMIN_FAIL_WINDOW_SECONDS = 15 * 60;
+const ADMIN_FAIL_ALERT_AT = 6;
+
+async function noteAdminAuthFailure(env: HonoEnv["Bindings"]): Promise<void> {
+  const key = "admin_auth_fails";
+  const count = Number((await env.COUNTERS.get(key)) ?? "0") + 1;
+  await env.COUNTERS.put(key, String(count), {
+    expirationTtl: ADMIN_FAIL_WINDOW_SECONDS,
+  });
+  if (count >= ADMIN_FAIL_ALERT_AT) {
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `${count} failed /admin logins in the last ${ADMIN_FAIL_WINDOW_SECONDS / 60} minutes. Not a lockout (that would let a stranger bar the keeper's own door) — a page, because a run of failures on a single-user panel is either you fat-fingering or someone guessing. If it wasn't you, rotate ADMIN_PASSWORD.`,
+      key: "admin-auth-bruteforce",
+    }).catch(() => undefined);
+  }
+}
+
 const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const gate = basicAuth({
     username: "keeper",
     password: c.env.ADMIN_PASSWORD,
   });
-  return gate(c, next);
+  try {
+    const result = await gate(c, next);
+    // A clean pass clears the window: the alarm is for RUNS of
+    // failure, not a single mistyped character on the way in.
+    await c.env.COUNTERS.delete("admin_auth_fails").catch(() => undefined);
+    return result;
+  } catch (error) {
+    const status = (error as { status?: number })?.status;
+    if (status === 401) {
+      await noteAdminAuthFailure(c.env).catch(() => undefined);
+    }
+    throw error;
+  }
 };
 
 adminRoutes.use("/admin", adminGate);

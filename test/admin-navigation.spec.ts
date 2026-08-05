@@ -84,3 +84,46 @@ describe("the office nav", () => {
     expect(scripted.headers.get("Content-Type")).toContain("application/json");
   });
 });
+
+describe("admin auth is watched, never barred (2026-08-04)", () => {
+  it("pages after a run of failures but never locks the door", async () => {
+    await testEnv.COUNTERS.delete("admin_auth_fails");
+    const bad = { Authorization: `Basic ${btoa("keeper:wrong-password")}` };
+
+    // A run of wrong passwords.
+    for (let i = 0; i < 6; i += 1) {
+      const res = await SELF.fetch(`${BASE}/admin`, { headers: bad });
+      expect(res.status).toBe(401);
+    }
+    // The failures were counted...
+    const count = Number(await testEnv.COUNTERS.get("admin_auth_fails"));
+    expect(count).toBeGreaterThanOrEqual(6);
+
+    // ...and the door is STILL OPEN to the real password. No lockout:
+    // a single-user panel a stranger can bar is a DoS, not a defense.
+    const good = await SELF.fetch(`${BASE}/admin`, {
+      headers: {
+        Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+        Accept: "text/html",
+      },
+    });
+    expect(good.status).toBe(200);
+    // A clean login clears the window.
+    expect(await testEnv.COUNTERS.get("admin_auth_fails")).toBeNull();
+  });
+
+  it("the alert fired for the brute-force run", async () => {
+    await testEnv.COUNTERS.delete("admin_auth_fails");
+    await testEnv.COUNTERS.delete("alert_sent:worker_health:admin-auth-bruteforce");
+    const bad = { Authorization: `Basic ${btoa("keeper:nope")}` };
+    for (let i = 0; i < 6; i += 1) {
+      await SELF.fetch(`${BASE}/admin`, { headers: bad });
+    }
+    const { listAlerts } = await import("@/lib/alerts");
+    const alert = (await listAlerts(testEnv, 20)).find((a) =>
+      a.detail.includes("failed /admin logins"),
+    );
+    expect(alert).toBeDefined();
+    expect(alert!.detail).toContain("rotate ADMIN_PASSWORD");
+  });
+});
