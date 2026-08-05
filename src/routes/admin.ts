@@ -318,6 +318,7 @@ adminRoutes.get("/admin", async (c) => {
     reconciliation,
     allTimeStats,
     monthReclass,
+    take,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -335,6 +336,9 @@ adminRoutes.get("/admin", async (c) => {
     computeStats(c.env),
     import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
       monthReclassAdjustments(c.env),
+    ),
+    import("@/services/books-summary").then(({ takeSummary }) =>
+      takeSummary(c.env),
     ),
   ]);
   const emptyLedger = emptyMonthLedger();
@@ -365,6 +369,7 @@ adminRoutes.get("/admin", async (c) => {
       payers: shelf(payers, [], "payers", notes),
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
       reconciliation: shelf(reconciliation, null, "reconciliation", notes),
+      take: shelf(take, null, "the take", notes),
       monthReclass: (() => {
         const adjustments = shelf(monthReclass, null, "reclass ledger", notes);
         const current = adjustments?.months[metricsMonth()];
@@ -402,6 +407,86 @@ adminRoutes.get("/admin", async (c) => {
       loadNotes: notes,
     }),
   );
+});
+
+/**
+ * THE BOOKS CHECK: every money audit on one page, verdicts first —
+ * settle recount, both chain rails, deliveries, the alarm trail.
+ */
+adminRoutes.get("/admin/reconciliation", async (c) => {
+  const notes: string[] = [];
+  const { renderReconciliationPage } = await import(
+    "@/pages/admin/reconciliation-page"
+  );
+  const { SOLANA_RECONCILE_OK_KEY, SOLANA_RECONCILE_LAST_RESULT_KEY } =
+    await import("@/services/chain-reconciliation");
+  const { auditDeliveries } = await import("@/services/delivery-audit");
+  const [settles, baseCursor, solanaLastOk, solanaLastResult, deliveries, alerts] =
+    await Promise.allSettled([
+      reconcileSettles(c.env),
+      c.env.COUNTERS.get(KV_KEYS.reconcileCursor),
+      c.env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY),
+      c.env.COUNTERS.get<{
+        ran: boolean;
+        reason?: string;
+        transfers_seen?: number;
+        at: string;
+      }>(SOLANA_RECONCILE_LAST_RESULT_KEY, "json"),
+      auditDeliveries(c.env),
+      listAlerts(c.env, 10),
+    ]);
+  return c.html(
+    renderReconciliationPage(
+      {
+        settles: shelf(settles, null, "settle recount", notes),
+        chain: {
+          baseCursor: shelf(baseCursor, null, "base cursor", notes),
+          solanaLastOk: shelf(solanaLastOk, null, "solana last pass", notes),
+          solanaLastResult: shelf(
+            solanaLastResult,
+            null,
+            "solana last result",
+            notes,
+          ),
+        },
+        deliveries: shelf(deliveries, null, "delivery audit", notes),
+        alerts: shelf(alerts, [], "alarm trail", notes),
+        loadNotes: notes,
+      },
+      new Date(),
+    ),
+  );
+});
+
+/** KEEPER'S FILES: downloadable records, nothing that changes the store. */
+adminRoutes.get("/admin/files", async (c) => {
+  const { renderFilesPage } = await import("@/pages/admin/files-page");
+  return c.html(renderFilesPage());
+});
+
+/** THE TEST DRAWER: prove-the-machinery levers, off the daily shelf. */
+adminRoutes.get("/admin/testing", async (c) => {
+  const { renderTestingPage } = await import("@/pages/admin/testing-page");
+  // The reset lever's condition line travels with the lever.
+  let inventory: Record<string, number> | null = null;
+  try {
+    const keys = await listKeys(c.env.COUNTERS, {
+      prefix: "inventory:",
+      cap: 200,
+    });
+    inventory = {};
+    const counts = await bulkGetText(c.env.COUNTERS, keys.names);
+    for (const name of keys.names) {
+      const item = name.split(":")[1] ?? name;
+      const sold = Number.parseInt(counts.get(name) ?? "0", 10);
+      if (Number.isFinite(sold) && sold > 0) {
+        inventory[item] = sold;
+      }
+    }
+  } catch {
+    inventory = null;
+  }
+  return c.html(renderTestingPage({ inventory }));
 });
 
 // Old bookmark; the books merged into the desk.

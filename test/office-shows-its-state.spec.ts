@@ -83,7 +83,12 @@ describe("every lever on the back shelf states its condition", () => {
   });
 
   it("says what the inventory reset would actually clear", async () => {
-    const page = await tools();
+    // The lever moved to the test drawer (2026-08-05 consolidation);
+    // its condition line moved with it — that pairing is the rule.
+    const response = await SELF.fetch(`${BASE}/admin/testing`, {
+      headers: adminAuth,
+    });
+    const page = await response.text();
     expect(page).toMatch(/Nothing sold against a weekly cap|This week:/);
   });
 
@@ -116,14 +121,15 @@ describe("every lever on the back shelf states its condition", () => {
  * the office is lying about the store again.
  */
 describe("the office shows the state it lets him change", () => {
-  it("shows shutter, patronage, press, draft and inventory in one place", async () => {
+  it("shows shutter, patronage, press and draft in one place", async () => {
+    // Weekly inventory moved to the test drawer with its lever
+    // (2026-08-05); the daily-shelf states stay together here.
     const page = await tools();
     for (const [what, marker] of [
       ["the shutter", /OPEN —|CLOSED —/],
       ["the patronage note", /inked for/],
       ["the founding press", /printed/],
       ["the weekly draft", /draft/i],
-      ["weekly inventory", /weekly cap|This week:/],
     ] as const) {
       expect(page, `the back shelf does not show ${what}`).toMatch(marker);
     }

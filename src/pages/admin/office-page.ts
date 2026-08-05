@@ -9,6 +9,7 @@ import { registeredMarkers, UNREGISTERED_VENUE } from "@/store/venues";
 import { readWindowShopping } from "@/lib/window-shopping";
 import { renderAdminShell } from "@/pages/admin/layout";
 import { isRecord } from "@/types";
+import type { TakeSummary } from "@/services/books-summary";
 import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
 
 /**
@@ -24,6 +25,13 @@ export interface OfficePageData {
   porchLedger: PorchLedger;
   payers: PayerRecord[];
   recentChallenges: MetricEvent[];
+  /**
+   * THE TAKE: all-time real money off the certificates, split by
+   * shelf kind, rolling up to a total. First on the page because the
+   * keeper kept reading the month number first and thinking the
+   * books were wrong — the month is a slice; this is the number.
+   */
+  take: TakeSummary | null;
   /**
    * All-time organic/house settle counts, same computation the public
    * pages use. Beside the month numbers because on 2026-08-01 the
@@ -170,6 +178,47 @@ function trendHtml(ledger: MonthLedger): string {
     </table>`;
 }
 
+/**
+ * The all-time money table, by shelf kind, total at the bottom.
+ * Certificates are the source (same rows as the tax drawer), so
+ * every dollar here is chain-verifiable — and the same caveats
+ * apply, stated under the table rather than assumed known.
+ */
+function takeHtml(take: TakeSummary | null): string {
+  if (!take) {
+    return "<p>The take didn't load. Reload to retry.</p>";
+  }
+  const money = (value: number): string => `$${value.toFixed(2)}`;
+  const rows = take.lines
+    .map(
+      (line) => `<tr>
+        <td>${escapeHtml(line.label)}</td>
+        <td><strong>${money(line.organic_usdc)}</strong> (${line.organic_sales})</td>
+        <td>${money(line.house_usdc)} (${line.house_sales})</td>
+      </tr>`,
+    )
+    .join("\n");
+  const t = take.total;
+  return `
+    <p style="font-size:1.25em"><strong>${money(t.organic_usdc)}</strong> organic, all-time
+    <small>(+${money(t.house_usdc)} house)</small> ·
+    <strong>${t.organic_sales}</strong> organic sale${t.organic_sales === 1 ? "" : "s"}</p>
+    <table border="1" cellpadding="4">
+      <tr><th>shelf</th><th>organic (sales)</th><th>house (sales)</th></tr>
+      ${rows}
+      <tr>
+        <td><strong>Total</strong></td>
+        <td><strong>${money(t.organic_usdc)}</strong> (${t.organic_sales})</td>
+        <td><strong>${money(t.house_usdc)}</strong> (${t.house_sales})</td>
+      </tr>
+    </table>
+    <p><small>Off the certificates — every dollar verifiable by its tx in
+    <a href="/admin/files">the keeper's files</a>. Tips counted with their
+    sales; ${take.refund_usdc > 0 ? `$${take.refund_usdc.toFixed(2)} of refunds netted out` : "no refunds to net"};
+    ${take.unknown_wallet_sales > 0 ? `${take.unknown_wallet_sales} sale${take.unknown_wallet_sales === 1 ? "" : "s"} arrived without a wallet address and count as organic` : "every sale carries its wallet"}.
+    Penny pages (Almanac) mint no certificates and are not in this table.${take.truncated ? " <strong>Cert scan hit its cap; totals are a floor.</strong>" : ""}</small></p>`;
+}
+
 function glanceHtml(data: OfficePageData): string {
   const ledger = data.monthLedger;
   const reclass = data.monthReclass;
@@ -209,43 +258,6 @@ function glanceHtml(data: OfficePageData): string {
         : ""
     }
     <p><small>Revenue counts from this deploy forward (the founding fifty cents predates the meter). House money is real money; it just doesn't count as proof.</small></p>`;
-}
-
-/**
- * Settle counters against payer rows. The gap is expected and named:
- * the founding settle predates the instrument, and a settle whose
- * facilitator returned no payer address has nothing to write a row
- * for. What is left over is a counter that moved without its row,
- * which is the bug that would otherwise surface as "the books say 12,
- * the wallet says 11" some month when it costs something.
- */
-function reconciliationHtml(
-  reconciliation: SettleReconciliation | null,
-  ledger: MonthLedger,
-): string {
-  if (!reconciliation) {
-    return "<p>The reconciliation didn't load. Reload to retry.</p>";
-  }
-  const r = reconciliation;
-  const verdict =
-    r.unexplained === 0
-      ? "<strong>The books reconcile.</strong> Every settle the counters know is either on a payer row, the founding settle, or a settle that arrived without a wallet address."
-      : r.unexplained > 0
-        ? `<strong style="color:#8c2f1b">${r.unexplained} settle${r.unexplained === 1 ? "" : "s"} unexplained.</strong> A counter moved without writing its payer row. This is the one to chase.`
-        : `<strong style="color:#8c2f1b">${-r.unexplained} more purchase${r.unexplained === -1 ? "" : "s"} on the payer rows than the counters admit.</strong> A payer row was written without its counter, or a counter increment was lost to contention.`;
-  const unattributedItems = Object.entries(ledger.settlesWithoutPayer)
-    .map(([item, count]) => `${escapeHtml(item)}: ${count}`)
-    .join(" \u00B7 ");
-  return `
-    <table border="1" cellpadding="4">
-      <tr><td>settles on the counters</td><td>${r.counter_settles}</td></tr>
-      <tr><td>purchases on the payer rows</td><td>${r.payer_purchases}</td></tr>
-      <tr><td>the founding settle (predates the instrument)</td><td>${r.founding}</td></tr>
-      <tr><td>settles with no payer address returned</td><td>${r.unattributed}</td></tr>
-      <tr><td><strong>unexplained</strong></td><td><strong>${r.unexplained}</strong></td></tr>
-    </table>
-    <p>${verdict}</p>
-    <p><small>All-time on both sides: payer rows carry no month, so comparing them to one month of counters would manufacture a discrepancy every time the calendar turned. Unattributed this month${unattributedItems ? `: ${unattributedItems}` : ": none"}.</small></p>`;
 }
 
 function ledgerAnswersHtml(ledger: MonthLedger, payers: PayerRecord[]): string {
@@ -516,9 +528,17 @@ export function renderOfficePage(data: OfficePageData): string {
          ${work.alerts > 0 ? `\u00B7 <strong style="color:#8c2f1b">${work.alerts} alarm${work.alerts === 1 ? "" : "s"}</strong>` : ""}</p>`;
   const body = `
   <section>
-    <h2>The month so far, ${escapeHtml(data.monthLedger.month)}</h2>
-    ${glanceHtml(data)}
+    <h2>The take — all-time</h2>
+    ${takeHtml(data.take)}
     ${workStrip}
+  </section>
+
+  <section>
+    <h2>This month's slice, ${escapeHtml(data.monthLedger.month)}</h2>
+    <p><small>A window, not the total. It resets when the calendar
+    turns; when it looks smaller than the take above, that is the
+    calendar, not a missing sale.</small></p>
+    ${glanceHtml(data)}
   </section>
 
   <section>
@@ -548,7 +568,11 @@ export function renderOfficePage(data: OfficePageData): string {
 
   <section>
     <h2>Do the books agree with themselves</h2>
-    ${reconciliationHtml(data.reconciliation, data.monthLedger)}
+    ${
+      data.reconciliation && data.reconciliation.unexplained === 0
+        ? `<p><strong style="color:#2f6b2f">They do.</strong> Full verdicts — counters, chain, deliveries, alarms — at <a href="/admin/reconciliation">the books check</a>.</p>`
+        : `<p><strong style="color:#8c2f1b">Something to chase.</strong> Verdicts and arithmetic at <a href="/admin/reconciliation">the books check</a>.</p>`
+    }
   </section>
 
   <section>

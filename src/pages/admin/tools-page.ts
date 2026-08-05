@@ -89,31 +89,11 @@ function shutterCondition(state: ShutterState | null): string {
 }
 
 export function renderToolsPage(data: ToolsPageData): string {
-  const inventoryLine =
-    data.inventory === null
-      ? condition(false, "")
-      : Object.keys(data.inventory).length === 0
-        ? condition(true, "Nothing sold against a weekly cap this week.")
-        : condition(
-            true,
-            `This week: ${Object.entries(data.inventory)
-              .map(([item, sold]) => `${escapeHtml(item)} ${sold}`)
-              .join(" · ")}`,
-          );
-
   const body = `
   <section>
-    <h2>The tax drawer</h2>
-    <p><a href="/admin/export/tax.csv">Download the money ledger as CSV</a> —
-    every certificate-backed sale (date, amount, tip, payer, settlement tx,
-    house flag) plus refunds as their own negative rows. Hand it to a
-    crypto-aware accountant as-is; every row verifies independently on a
-    chain explorer by its tx.</p>
-    <p><small>What it deliberately does NOT contain: penny-page settles
-    (Almanac, Gazette, zodiac archive) mint no certificates and are not
-    itemized — the chain record on the receive wallets is the backstop
-    for those. House rows are flagged, never omitted: whether a
-    self-purchase is income is the accountant's call, not an export's.</small></p>
+    <p><small>Downloads moved to <a href="/admin/files">keeper's files</a>;
+    test levers to <a href="/admin/testing">the test drawer</a>. This
+    shelf is for running the store.</small></p>
   </section>
 
   <section>
@@ -271,16 +251,6 @@ export function renderToolsPage(data: ToolsPageData): string {
     </form>
   </section>
 
-  <section>
-    <h2>Test levers</h2>
-    <form method="POST" action="/admin/alerts/test">
-      <button type="submit">Fire a test alert (confirms email delivery once)</button>
-    </form>
-    ${inventoryLine}
-    <form method="POST" action="/admin/inventory/reset">
-      <button type="submit">Reset weekly inventory counts</button>
-    </form>
-  </section>
 
   <section>
     <h2>Key handover</h2>

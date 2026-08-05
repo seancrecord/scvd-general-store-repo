@@ -36,14 +36,23 @@ export type AdminTab =
   | "office"
   | "counter"
   | "tools"
+  | "reconciliation"
+  | "files"
   | "declines"
-  | "census"
-  | "recount"
   | "referrals"
-  | "bell"
-  | "digest"
   | "ward"
   | "cv"
+  /**
+   * Demoted readings and drawers (2026-08-05 consolidation): still
+   * rendered, still tested, reachable through the books check and
+   * the back shelf rather than the top nav. The keeper asked for a
+   * room he can scan; eleven tabs was a corridor.
+   */
+  | "census"
+  | "recount"
+  | "bell"
+  | "digest"
+  | "testing"
   /**
    * The per-item lookup. Deliberately matches no nav entry, so every
    * link renders clickable and the page can never become a room with
@@ -65,13 +74,11 @@ const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
  * thing a keeper's eye lands on.
  */
 const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
+  { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
   { tab: "declines", href: "/admin/declines", label: "Declines" },
-  { tab: "census", href: "/admin/census", label: "Census" },
-  { tab: "recount", href: "/admin/recount", label: "Recount" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
-  { tab: "bell", href: "/admin/bell", label: "Bell" },
-  { tab: "digest", href: "/admin/digest", label: "Digest" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
+  { tab: "files", href: "/admin/files", label: "Keeper's files" },
 ];
 
 /**
