@@ -83,6 +83,27 @@ import type { Env, HonoEnv } from "@/types";
  */
 const app = new Hono<HonoEnv>();
 
+/**
+ * HTTPS, ANSWERED IN CODE rather than trusted to a dashboard toggle
+ * (2026-08-04: an SEO crawl found http:// serving 200s beside
+ * https:// — two sites, duplicate titles, split signals, and a "not
+ * secure" tag on one of them). A plain-HTTP request gets one 301 and
+ * nothing else; every HTTPS response carries HSTS so returning
+ * browsers stop asking.
+ */
+app.use("*", async (c, next) => {
+  const url = new URL(c.req.url);
+  if (url.protocol === "http:") {
+    url.protocol = "https:";
+    return c.redirect(url.toString(), 301);
+  }
+  await next();
+  c.res.headers.set(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains",
+  );
+});
+
 // house tradition
 app.use("*", async (c, next) => {
   await next();
