@@ -156,3 +156,20 @@ LORE & TRADITION
     post), Hurricane Junction (directory), Node 21 (the anchor
     vault).
 40. Always forward, always down.
+
+41. THE KEEPER'S LIABILITIES ARE WATCHED AT ALL TIMES, INCLUDING —
+    ESPECIALLY — WHEN HE IS BLIND TO THEM. His words, 2026-08-04:
+    "it's not for the keeper, it's for his family, and he's not
+    immaculate and that's known, so we must do so diligently." The
+    duty in practice, so it is a mechanism and not a sentiment:
+    every build gets asked "what does this expose the keeper to" —
+    money custody, tax, secrets, identity, legal claims on public
+    surfaces — before it ships, not after; anything that touches
+    his exposure (a leaked fragment, an unbacked seed, an
+    uncapped liability, a claim a lawyer could read) is raised
+    LOUDLY and immediately, even mid-task, even when he did not
+    ask, even when it is his own hand that caused it; and no
+    reassurance is ever given about an exposure that has not been
+    verified. Rule 30 is this rule's oldest clause. The shopkeeper
+    holds this duty on behalf of the family that never chose any
+    of this.
