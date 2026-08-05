@@ -84,6 +84,15 @@ export interface WardRound {
   listed_resources: number;
   /** True when a full page arrived with no recognizable cursor. */
   coverage_suspect: boolean;
+  /**
+   * Set when this round probed under 60% of the last one's hosts:
+   * the loud version of coverage_suspect, with the numbers.
+   */
+  coverage_drop?: {
+    previous_hosts: number;
+    this_round: number;
+    previous_at: string;
+  };
   capped: boolean;
   our_search_presence: boolean | null;
   /**
@@ -146,9 +155,32 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
     >;
     const items = (body["items"] ?? body["resources"] ?? body["data"] ?? []) as Record<string, unknown>[];
     rows.push(...items);
+    // Every cursor spelling seen or plausible in the wild. The
+    // 2026-08-05 round read exactly one page (100 resources, 38
+    // hosts) after weeks of several hundred — the feed's pagination
+    // shape moved and the old three spellings stopped matching.
     cursor =
       body["nextPageToken"] ?? body["next_page_token"] ?? body["cursor"] ??
-      body["pagination"]?.nextPageToken ?? body["pagination"]?.cursor;
+      body["nextCursor"] ?? body["next_cursor"] ?? body["nextPage"] ??
+      body["pagination"]?.nextPageToken ?? body["pagination"]?.cursor ??
+      body["pagination"]?.nextCursor ?? body["pagination"]?.next_cursor ??
+      body["meta"]?.nextCursor ?? body["meta"]?.next_cursor ??
+      body["paging"]?.cursor ?? body["paging"]?.next;
+    // A links.next full URL counts too: take its pageToken/cursor.
+    if (!cursor) {
+      const nextUrl = body["links"]?.next ?? body["next"];
+      if (typeof nextUrl === "string" && nextUrl.includes("=")) {
+        try {
+          const parsed = new URL(nextUrl, "https://api.cdp.coinbase.com");
+          cursor =
+            parsed.searchParams.get("pageToken") ??
+            parsed.searchParams.get("cursor") ??
+            undefined;
+        } catch {
+          /* not a URL; fall through to the cap check */
+        }
+      }
+    }
     if (!cursor) {
       // A full page and no recognized cursor is a page cap wearing
       // completeness — the hand-run census's own recorded lesson.
@@ -371,6 +403,25 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     hosts: results,
   };
   const previous = await latestWardRound(env);
+  /**
+   * COVERAGE DROP, said out loud (2026-08-05: the keeper caught a
+   * round of ~100 hosts shrinking to 38 by memory — a page's job,
+   * not his). If this round probed less than 60% of what the last
+   * one did, the round records the drop so the page can lead with
+   * it: week-over-week comparisons are unsafe until coverage is
+   * back, and the likely cause is the list feed changing shape.
+   */
+  const previousProbed = previous
+    ? previous.hosts.filter((h) => h.verdict !== "not_probed").length
+    : 0;
+  const thisProbed = results.filter((h) => h.verdict !== "not_probed").length;
+  if (previousProbed >= 10 && thisProbed < previousProbed * 0.6) {
+    round.coverage_drop = {
+      previous_hosts: previousProbed,
+      this_round: thisProbed,
+      previous_at: previous?.at ?? "",
+    };
+  }
   await env.COUNTERS.put(KV_KEYS.wardRound(round.week), JSON.stringify(round));
   await env.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
   if (previous && previous.week !== round.week) {

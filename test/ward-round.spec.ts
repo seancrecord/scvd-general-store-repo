@@ -320,3 +320,36 @@ describe("the leaderboard feed (agent402.tools, shape captured 2026-08-04)", () 
     expect(mapLeaderboard("nonsense", "scvd.store")).toBeNull();
   });
 });
+
+describe("coverage drop is loud", () => {
+  it("a shrunken round leads with the drop, not a shrug", async () => {
+    const { renderWardPage } = await import("@/pages/admin/ward-page");
+    const html = renderWardPage(
+      {
+        week: "2026-W32",
+        at: "2026-08-05T13:21:00.000Z",
+        listed_resources: 100,
+        coverage_suspect: true,
+        coverage_drop: {
+          previous_hosts: 98,
+          this_round: 38,
+          previous_at: "2026-08-04T12:00:00.000Z",
+        },
+        capped: false,
+        our_search_presence: true,
+        hosts: [],
+      },
+      null,
+      {
+        new_hosts: [],
+        gone_hosts: [],
+        newly_failing: [],
+        newly_fixed: [],
+        flappers: [],
+      },
+    );
+    expect(html).toContain("COVERAGE DROPPED");
+    expect(html).toContain("98");
+    expect(html).toContain("comparisons are unsafe");
+  });
+});

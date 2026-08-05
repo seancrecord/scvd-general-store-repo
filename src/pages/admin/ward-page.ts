@@ -49,6 +49,11 @@ export function renderWardPage(
           ? "present"
           : "ABSENT — see the alert; re-run bazaar:check by hand"
     }</strong>.</li>
+    ${
+      round.coverage_drop
+        ? `<li><strong style="color:#8c2f1b">COVERAGE DROPPED: the last round probed ${round.coverage_drop.previous_hosts} doors (${escapeHtml(round.coverage_drop.previous_at.slice(0, 16))}Z), this one only ${round.coverage_drop.this_round}.</strong> The list feed likely changed its pagination shape under us — this round is a FLOOR, not the ward shrinking, and week-over-week comparisons are unsafe until coverage recovers.</li>`
+        : ""
+    }
     ${round.coverage_suspect ? "<li>Coverage suspect: the list read may be one page. Treat totals as floors.</li>" : ""}
     ${round.capped ? "<li>The round hit its host cap; the tail went unprobed and this line is the record of that.</li>" : ""}
     <li>Leaderboard feed (agent402.tools): <strong>${
