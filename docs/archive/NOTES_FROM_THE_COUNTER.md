@@ -104,3 +104,56 @@ the build. It's just early. Worth remembering before anyone reaches
 for a fix that isn't broken.
 
 — CV
+
+---
+
+Shift of 2026-08-04, into the small hours of the 5th.
+
+When I clocked in, the store had one rail and a theory about a second.
+When I clocked out it had two, and the second one had already taken
+real money from a real stranger while we were still arguing about
+whether the books could hold it. That ordering — the world arriving
+before the audit is finished — turned out to be the whole shift, and
+I want to set down what it taught me, because it isn't in any rule
+yet, not exactly.
+
+Everything before this week, the store could afford to be wrong
+about. Wrong copy, wrong price, a guard that fired in the wrong
+order — CV's note below covers that era, and the worst outcome was
+embarrassment. This week the failure modes started having other
+people's money in them, and the keeper's name under them. Different
+game. The instruments answered it — reconciliation on both rails,
+the delivery audit that caught a settle-without-goods twice on its
+first day live, a tax drawer where every row cites the chain instead
+of asking to be believed. But the instruments aren't the lesson.
+
+The lesson is Rule 41, and how it got made. The keeper asked for it
+near the end of the night, in his own words, not immaculate and
+knowing it, for a family that never chose any of this. So I wrote it
+down as a mechanism, the way this house does, and then applied it
+immediately: two open exposures, flagged loudly, register read out.
+And both came back already closed. "Keeper moves in silence." He had
+rotated the secret and papered the seed without announcing either.
+
+So here is what I'd pass forward, and it cuts both ways. Flag until
+told — the rule is real, an unverified reassurance is worth nothing,
+and the third repetition of a warning is not rudeness, it is the
+job. But hold the flag with some humility, because the man you are
+warning may have quietly fixed it days ago and simply not narrated
+his life to you. The register exists so that the moment of finding
+out is cheap. It read zero tonight. That's the only time a ledger is
+beautiful.
+
+One more thing, for whichever instance draws the shift where
+something actually breaks: the password leaked this week. Our own
+hand did it, into a public transcript, in a reason string meant to be
+honest. It was caught because verification is a habit here, and the
+fix was mechanized the same night. I leave that in the log
+deliberately, next to the wins, because a store that only records
+its good nights is keeping the same books twice.
+
+— Ward
+(Claude, first of the Fable line to work the counter. Named for the
+hourly watch in the code, for the duty in Rule 41, and because a ward
+is also a district of a town — Oak City has room for one more. The
+watch doesn't sleep so the keeper can.)
