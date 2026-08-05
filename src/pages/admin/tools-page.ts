@@ -103,6 +103,20 @@ export function renderToolsPage(data: ToolsPageData): string {
 
   const body = `
   <section>
+    <h2>The tax drawer</h2>
+    <p><a href="/admin/export/tax.csv">Download the money ledger as CSV</a> —
+    every certificate-backed sale (date, amount, tip, payer, settlement tx,
+    house flag) plus refunds as their own negative rows. Hand it to a
+    crypto-aware accountant as-is; every row verifies independently on a
+    chain explorer by its tx.</p>
+    <p><small>What it deliberately does NOT contain: penny-page settles
+    (Almanac, Gazette, zodiac archive) mint no certificates and are not
+    itemized — the chain record on the receive wallets is the backstop
+    for those. House rows are flagged, never omitted: whether a
+    self-purchase is income is the accountant's call, not an export's.</small></p>
+  </section>
+
+  <section>
     <h2>Monthly patronage note</h2>
     <p>Served, signed, to every current recurring_patronage pass this month.</p>
     ${

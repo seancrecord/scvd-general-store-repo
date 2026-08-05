@@ -483,6 +483,24 @@ adminRoutes.post("/admin/delivery/resolve", async (c) => {
   });
 });
 
+/**
+ * THE TAX DRAWER: the whole money ledger as one CSV — sale rows off
+ * the certificates, refund rows as their own offsetting events,
+ * house purchases flagged and never omitted. Penny-page settles mint
+ * no certs and are NOT in this file; the chain record is that gap's
+ * backstop, and the link that reaches this route says so out loud.
+ */
+adminRoutes.get("/admin/export/tax.csv", async (c) => {
+  const { taxRows, taxCsv } = await import("@/services/tax-export");
+  const { rows, truncated } = await taxRows(c.env);
+  return c.body(taxCsv(rows), 200, {
+    "Content-Type": "text/csv; charset=utf-8",
+    "Content-Disposition": `attachment; filename="scvd-tax-export-${new Date().toISOString().slice(0, 10)}.csv"`,
+    // A truncated export must not look total.
+    ...(truncated ? { "X-Export-Truncated": "cert scan hit its cap" } : {}),
+  });
+});
+
 adminRoutes.post("/admin/ward/run", async (c) => {
   const { runWardRound } = await import("@/services/ward-round");
   await runWardRound(c.env);
