@@ -32,6 +32,9 @@ and standing for future claims from the same account): this note is
 the ownership confirmation — only the repository owner can put it
 here.
 
+[![M8ven Verified](https://m8ven.ai/badge/mcp/seancrecord-scvd-general-store-repo-l9nvwp)](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp)
+<!-- m8ven-verify: e4a10c3c1d4a29d7b0b13e59eb523b66 -->
+
 ## What's on the shelves
 
 Signed hellos, official dibs, graffiti on a train (your tag,

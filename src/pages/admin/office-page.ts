@@ -184,10 +184,32 @@ function trendHtml(ledger: MonthLedger): string {
  * every dollar here is chain-verifiable — and the same caveats
  * apply, stated under the table rather than assumed known.
  */
-function takeHtml(take: TakeSummary | null): string {
+function takeHtml(
+  take: TakeSummary | null,
+  allTime: { organic: number; house: number } | null,
+): string {
   if (!take) {
     return "<p>The take didn't load. Reload to retry.</p>";
   }
+  /**
+   * THE BRIDGE LINE: the keeper hit "the front says 5, this says 4"
+   * twice in one day, and both times the answer was the same — the
+   * storefront counts settles at the till (penny pages included),
+   * this table counts certificates. A page that makes the reader do
+   * that subtraction twice is the page's fault. If the counts differ
+   * by anything penny pages cannot explain, it says so in red.
+   */
+  const bridge = (() => {
+    if (!allTime) return "";
+    const diff = allTime.organic - take.total.organic_sales;
+    if (diff === 0) {
+      return `<p><small>The storefront's organic figure matches this table exactly right now (${allTime.organic}).</small></p>`;
+    }
+    if (diff > 0) {
+      return `<p><small><strong>Why the storefront says ${allTime.organic} and this table says ${take.total.organic_sales}:</strong> the storefront counts settles at the till; this table counts certificates. The difference — ${diff} — is the penny-page settle${diff === 1 ? "" : "s"} (Almanac), which take money but mint no certificate. Same books, two honest counts.</small></p>`;
+    }
+    return `<p><small><strong style="color:#8c2f1b">The counters show FEWER organic settles (${allTime.organic}) than there are organic certificates (${take.total.organic_sales}). Penny pages cannot explain a negative gap — this is worth chasing.</strong></small></p>`;
+  })();
   const money = (value: number): string => `$${value.toFixed(2)}`;
   const rows = take.lines
     .map(
@@ -206,6 +228,7 @@ function takeHtml(take: TakeSummary | null): string {
     <small>(+${money(t.house_usdc)} house)</small> ·
     <strong>${t.organic_sales}</strong> organic sale${t.organic_sales === 1 ? "" : "s"}</p>
     <p>${rail(take.rails.base, "Base")} · ${rail(take.rails.solana, "Solana")}${take.rails.unknown.sales > 0 ? ` · ${rail(take.rails.unknown, "an unrecorded rail")}` : ""} <small>(organic only, by each certificate's network)</small></p>
+    ${bridge}
     <table border="1" cellpadding="4">
       <tr><th>shelf</th><th>organic (sales)</th><th>house (sales)</th></tr>
       ${rows}
@@ -532,7 +555,7 @@ export function renderOfficePage(data: OfficePageData): string {
   const body = `
   <section>
     <h2>The take — all-time</h2>
-    ${takeHtml(data.take)}
+    ${takeHtml(data.take, data.allTime)}
     ${workStrip}
   </section>
 
