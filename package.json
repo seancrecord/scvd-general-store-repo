@@ -2,6 +2,7 @@
   "name": "scvd-general-store",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {

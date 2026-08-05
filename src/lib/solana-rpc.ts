@@ -27,33 +27,61 @@ export const SOLANA_USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
  * free tier is a one-minute signup) — set it as a secret, the URL
  * carries the key.
  */
-const DEFAULT_RPC = "https://solana-rpc.publicnode.com";
+/**
+ * FALLBACK ROTATION, added 2026-08-05 after PublicNode itself started
+ * answering 504 and the hourly walk failed all day on one endpoint's
+ * bad afternoon. A keeper-configured SOLANA_RPC_URL always goes
+ * first; the public fallbacks are tried in order when an endpoint
+ * errors or throttles. One bad node stops being a failed pass.
+ */
+const FALLBACK_RPCS = [
+  "https://solana-rpc.publicnode.com",
+  "https://solana.drpc.org",
+  "https://1rpc.io/solana",
+  "https://api.mainnet-beta.solana.com",
+] as const;
 
-function rpcUrl(env: Env): string {
-  return env.SOLANA_RPC_URL && env.SOLANA_RPC_URL.length > 0
-    ? env.SOLANA_RPC_URL
-    : DEFAULT_RPC;
+function rpcUrls(env: Env): string[] {
+  const configured =
+    env.SOLANA_RPC_URL && env.SOLANA_RPC_URL.length > 0
+      ? [env.SOLANA_RPC_URL]
+      : [];
+  return [...configured, ...FALLBACK_RPCS.filter((url) => url !== env.SOLANA_RPC_URL)];
 }
 
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
-  const response = await fetch(rpcUrl(env), {
-    method: "POST",
-    headers: outboundHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  });
-  if (!response.ok) {
-    throw new Error(`Solana RPC ${method} answered ${response.status}`);
+  let lastError = "no endpoint tried";
+  for (const url of rpcUrls(env)) {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: outboundHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+      });
+    } catch (error) {
+      lastError = `${new URL(url).host}: ${String(error)}`;
+      continue;
+    }
+    if (!response.ok) {
+      lastError = `${new URL(url).host} answered ${response.status}`;
+      continue;
+    }
+    const body: unknown = await response.json().catch(() => null);
+    if (
+      typeof body !== "object" ||
+      body === null ||
+      !("result" in body) ||
+      (body as { error?: unknown }).error
+    ) {
+      lastError = `${new URL(url).host} returned no result`;
+      continue;
+    }
+    return (body as { result: T }).result;
   }
-  const body: unknown = await response.json();
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("result" in body) ||
-    (body as { error?: unknown }).error
-  ) {
-    throw new Error(`Solana RPC ${method} returned no result`);
-  }
-  return (body as { result: T }).result;
+  throw new Error(
+    `Solana RPC ${method} failed on every endpoint (last: ${lastError})`,
+  );
 }
 
 /** Every USDC token account the receive wallet owns (usually one). */

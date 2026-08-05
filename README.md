@@ -12,6 +12,14 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
+## License
+
+The code is [MIT](LICENSE). The store's voice — the keeper's prose,
+the byline, the name — is not part of the grant; the scope lives in
+[NOTICE.md](NOTICE.md). (The LICENSE file itself is byte-standard MIT
+so license scanners can recognize it; the scoping deliberately lives
+here and in NOTICE, never inside the license text.)
+
 ## Ownership
 
 This repository is owned and operated by
