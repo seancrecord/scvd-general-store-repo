@@ -9,18 +9,6 @@ import type { MenuItem } from "@/types";
  */
 export const RUN1_ITEMS: readonly MenuItem[] = [
   {
-    id: "phantom_check",
-    listed_week: "2026-W30",
-    name: "Phantom Check",
-    price_usdc: 0.25,
-    pricing: "fixed",
-    fulfillment: "instant",
-    description:
-      "Did it actually happen? The deploy said done, the webhook said fine, and nobody checked. Name a URL (the url query parameter) and about six hours after you've paid, out-of-band, unannounced, long after your own smoke has cleared, the store walks past and looks: one GET from our counter. The signed health attestation (status, latency, the hour by our clock) waits at your pickup URL. We report what we saw; we don't vouch for what it does.",
-    note_402:
-      "That'll be a quarter, friend. Did it actually happen? We'll go and see.",
-  },
-  {
     id: "quick_judgment",
     listed_week: "2026-W30",
     name: "One Quick Judgment",

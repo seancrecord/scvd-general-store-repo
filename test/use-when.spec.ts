@@ -36,7 +36,7 @@ describe("the situation index", () => {
     expect(named.has("hello")).toBe(true);
     // And the two the books say are most likely to be genuinely needed.
     expect(named.has("context_anchor")).toBe(true);
-    expect(named.has("phantom_check")).toBe(true);
+    expect(named.has("standing_watch")).toBe(true);
   });
 
   it("reaches llms.txt, which is the surface written to be quoted", async () => {

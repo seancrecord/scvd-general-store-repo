@@ -97,46 +97,11 @@ describe("the Agent Zodiac", () => {
 });
 
 describe("the census items", () => {
-  it("phantom_check requires a url before money moves", async () => {
-    // The probe rule: unsigned asks the price and gets a 402; a request
-    // that means to buy is the one held to the requirement.
-    const bare = await SELF.fetch(`${BASE}/api/buy/phantom_check`,
-      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
-    expect(bare.status).toBe(400);
-    const body = await json(bare);
-    expect(String(body["error"])).toContain("No target, no charge");
-  });
-
-  it("phantom_check schedules the walk, then signs what it saw", async () => {
-    const paid = await payFor(
-      `${BASE}/api/buy/phantom_check?url=https://phantom.example.net/door`,
-    );
-    expect(paid.status).toBe(200);
-    const body = await json(paid);
-    const checkId = String(body["check_id"]);
-    const pickupUrl = String(body["pickup_url"]);
-    expect(String(body["deliverable"])).toContain("walk past");
-
-    // Before the hour comes: still scheduled, nothing observed.
-    const early = await json(await SELF.fetch(pickupUrl));
-    expect(early["status"]).toBe("scheduled");
-
-    // Six hours pass (the ledger's clock is ours to wind in tests).
-    const key = `phantom:${checkId}`;
-    const record = (await testEnv.ORDERS.get(key, "json")) as Record<
-      string,
-      unknown
-    >;
-    record["due_at"] = new Date(Date.now() - 1000).toISOString();
-    await testEnv.ORDERS.put(key, JSON.stringify(record));
-
-    // The pickup resolves a due check on read. The test fetch mock
-    // rejects unknown hosts — the unreachable case, which is a finding.
-    const late = await json(await SELF.fetch(pickupUrl));
-    expect(late["status"]).toBe("observed");
-    const observation = late["observation"] as Record<string, unknown>;
-    expect(observation["reachable"]).toBe(false);
-    expect(late["signature"]).toBeTruthy();
+  it("phantom_check is retired and says so at the door", async () => {
+    const gone = await SELF.fetch(`${BASE}/api/buy/phantom_check`);
+    expect(gone.status).toBe(410);
+    const body = await json(gone);
+    expect(body["folded_into"]).toBe("context_anchor");
   });
 
   it("quick_judgment stores the dilemma on the order", async () => {

@@ -50,7 +50,7 @@ async function buyPaid(
 
 describe("the 402 challenge (x402 v2)", () => {
   it("answers an unpaid buy with a well-formed v2 challenge", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    const response = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(response.status).toBe(402);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
 
@@ -60,7 +60,7 @@ describe("the 402 challenge (x402 v2)", () => {
      * Two rails since 2026-08-04, Base entries FIRST (accepts[0] is a
      * compatibility promise — clients that blindly sign the first
      * offer predate the second rail). Three pay-what-it-deserves
-     * tiers per rail: $8, $16, $40 in USDC atomic units.
+     * tiers per rail: $25, $50, $125 in USDC atomic units.
      */
     const baseEntries = required.accepts.filter(
       (a) => a.network === "eip155:8453",
@@ -73,14 +73,14 @@ describe("the 402 challenge (x402 v2)", () => {
     );
     expect(required.accepts[0]!.network).toBe("eip155:8453");
     expect(baseEntries.map((a) => a.amount)).toEqual([
-      "8000000",
-      "16000000",
-      "40000000",
+      "25000000",
+      "50000000",
+      "125000000",
     ]);
     expect(solanaEntries.map((a) => a.amount)).toEqual([
-      "8000000",
-      "16000000",
-      "40000000",
+      "25000000",
+      "50000000",
+      "125000000",
     ]);
     for (const requirement of baseEntries) {
       expect(requirement.scheme).toBe("exact");
@@ -100,12 +100,12 @@ describe("the 402 challenge (x402 v2)", () => {
     }
 
     const body = await json(response);
-    expect(body["error"]).toContain("if you want him to sharpen the pencil");
-    expect(body["min_price_usdc"]).toBe(8);
+    expect(body["error"]).toContain("high-dollar hourly rates");
+    expect(body["min_price_usdc"]).toBe(25);
   });
 
   it("shows humans with browsers to the front porch", async () => {
-    const response = await SELF.fetch(`${BASE}/api/buy/portrait`, {
+    const response = await SELF.fetch(`${BASE}/api/buy/the_collab`, {
       headers: {
         Accept: "text/html",
         "User-Agent": "Mozilla/5.0 (a curious human)",
@@ -142,13 +142,13 @@ describe("paid purchases", () => {
   });
 
   it("queues a human item and records a generous tier as a tip", async () => {
-    // Tier 1 on portrait = $16 against an $8 minimum: $8 tip.
-    const response = await buyPaid("portrait", 1);
+    // Tier 1 on the_collab = $50 against a $25 minimum: $25 tip.
+    const response = await buyPaid("the_collab", 1);
     expect(response.status).toBe(200);
     const body = await json(response);
     expect(body["status"]).toBe("queued");
-    expect(body["paid_usdc"]).toBe(16);
-    expect(body["tip_usdc"]).toBe(8);
+    expect(body["paid_usdc"]).toBe(50);
+    expect(body["tip_usdc"]).toBe(25);
     expect(body["message"]).toContain("give him the week");
 
     const orderId = body["order_id"] as string;
@@ -164,7 +164,7 @@ describe("paid purchases", () => {
     try {
       const instant = await buyPaid("hello");
       expect(instant.status).toBe(402);
-      const queued = await buyPaid("portrait");
+      const queued = await buyPaid("the_collab");
       expect(queued.status).toBe(402);
     } finally {
       facilitator.settleShouldFail = false;
@@ -187,33 +187,35 @@ describe("paid purchases", () => {
 });
 
 describe("weekly inventory", () => {
-  it("sells out, points to the waitlist, and takes waitlist entries", async () => {
-    for (let i = 0; i < 3; i += 1) {
-      const sale = await buyPaid("phone_call");
-      expect(sale.status).toBe(200);
-    }
-    const soldOut = await SELF.fetch(`${BASE}/api/buy/phone_call`);
-    expect(soldOut.status).toBe(409);
-    const body = await json(soldOut);
-    expect(body["error"]).toContain("Shelf's empty");
-
-    const waitlist = await SELF.fetch(`${BASE}/api/waitlist/phone_call`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ agent_name: "patient-agent" }),
-    });
-    expect(waitlist.status).toBe(201);
-  });
-
+  // quick_judgment is the one weekly-capped shelf since the 2026-08-05
+  // consolidation, so the stocked case runs before the sell-out.
   it("declines waitlist entries while the shelf is stocked", async () => {
-    const response = await SELF.fetch(`${BASE}/api/waitlist/app_gutcheck`, {
+    const response = await SELF.fetch(`${BASE}/api/waitlist/quick_judgment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
     });
     expect(response.status).toBe(400);
     const body = await json(response);
-    expect(body["buy_url"]).toBe(`${BASE}/api/buy/app_gutcheck`);
+    expect(body["buy_url"]).toBe(`${BASE}/api/buy/quick_judgment`);
+  });
+
+  it("sells out, points to the waitlist, and takes waitlist entries", async () => {
+    for (let i = 0; i < 5; i += 1) {
+      const sale = await buyPaid("quick_judgment");
+      expect(sale.status).toBe(200);
+    }
+    const soldOut = await SELF.fetch(`${BASE}/api/buy/quick_judgment`);
+    expect(soldOut.status).toBe(409);
+    const body = await json(soldOut);
+    expect(body["error"]).toContain("Shelf's empty");
+
+    const waitlist = await SELF.fetch(`${BASE}/api/waitlist/quick_judgment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agent_name: "patient-agent" }),
+    });
+    expect(waitlist.status).toBe(201);
   });
 });
 
@@ -225,7 +227,7 @@ describe("the keeper's completion flow", () => {
   it("completes an order, delivers on poll, and fires the webhook", async () => {
     const purchase = await json(
       await buyPaid(
-        "portrait",
+        "the_collab",
         0,
         `?callback_url=${encodeURIComponent(TEST_WEBHOOK_URL)}`,
       ),
@@ -238,7 +240,7 @@ describe("the keeper's completion flow", () => {
         method: "POST",
         headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          deliverable: "One portrait, drawn with feeling: https://scvd.store/art/1",
+          deliverable: "One piece, made with feeling: https://scvd.store/art/1",
         }).toString(),
         redirect: "manual",
       },
@@ -247,7 +249,7 @@ describe("the keeper's completion flow", () => {
 
     const poll = await json(await SELF.fetch(`${BASE}/api/order/${orderId}`));
     expect(poll["status"]).toBe("completed");
-    expect(poll["deliverable"]).toContain("drawn with feeling");
+    expect(poll["deliverable"]).toContain("made with feeling");
 
     expect(facilitator.webhookCalls.length).toBe(1);
     const hook = facilitator.webhookCalls[0];

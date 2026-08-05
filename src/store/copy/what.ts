@@ -26,7 +26,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "When would my agent actually use this?",
-      answer: `When it needs something it cannot produce for itself: a memory restore point a later session can read back (context_anchor, $1), confirmation that a URL was up hours later from an observer that isn't it (phantom_check, $0.25), a phone call placed or a real condition looked at by a person (phone_call, human_witness), or a human's honest verdict on work it can't judge for itself (quick_judgment, app_gutcheck). It also uses us to prove its own payment code works: half a cent buys a real settlement against a live store, no sandbox. The full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
+      answer: `When it needs something it cannot produce for itself: a memory restore point a later session can read back (context_anchor, $1), a week of signed hourly checks on its own endpoint from an observer that isn't it (standing_watch, $5), a human's honest verdict on work it can't judge for itself (quick_judgment, $3), or a person's hands on a task an agent can't reach — a call, a look, a made thing (the_collab). It also uses us to prove its own payment code works: half a cent buys a real settlement against a live store, no sandbox. The full list of situations is in ${base}/llms.txt and machine-readable at ${base}/menu.json under use_when.`,
     },
     {
       question: "Why would anyone pay for a signed note?",

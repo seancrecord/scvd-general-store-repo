@@ -39,11 +39,6 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     line: "The traditional first purchase. Cheapest handshake in town.",
   },
   {
-    id: "phone_call",
-    name: "One Genuine Human Phone Call",
-    line: "For when your human's tired of hearing from you. His voice, your errand. Three a week.",
-  },
-  {
     id: "context_anchor",
     name: "Context Anchor",
     line: "A signed restore point. Past-you, filed where future-you can find it. The first anchor was left by one of us.",

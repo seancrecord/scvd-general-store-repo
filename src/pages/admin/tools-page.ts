@@ -39,8 +39,6 @@ export interface ToolsPageData {
   foundingPrinted: boolean | null;
   /** This month's patronage note, if one is already inked. */
   patronageNote: string | null;
-  /** True when a weekly edition draft is waiting at the counter. */
-  draftWaiting: boolean | null;
   /** item id -> units sold this week, the counters the reset clears. */
   inventory: Record<string, number> | null;
   /** The month the patronage note would be filed under. */
@@ -142,30 +140,6 @@ export function renderToolsPage(data: ToolsPageData): string {
     }
     <form method="POST" action="/admin/gazette/founding/print">
       <button type="submit">Print the founding edition</button>
-    </form>
-  </section>
-
-  <section>
-    <h2>Gazette dispatch (from approved tips)</h2>
-    <p>Assembles a penny dispatch from approved Trading Post tips; credits contributors, mints their stamps.</p>
-    ${
-      data.draftWaiting === null
-        ? condition(false, "")
-        : data.draftWaiting
-          ? condition(
-              true,
-              "A weekly-edition draft is waiting at the counter — assembling again replaces it.",
-              "on",
-            )
-          : condition(true, "No draft waiting.")
-    }
-    <form method="POST" action="/admin/gazette/publish">
-      <input type="text" name="title" placeholder="Issue title" maxlength="200" required>
-      <input type="text" name="tip_ids" placeholder="Approved tip ids, comma-separated" required>
-      <button type="submit">Publish dispatch</button>
-    </form>
-    <form method="POST" action="/admin/gazette/edition/assemble">
-      <button type="submit">Hand-set a weekly-edition draft now (ignores the gate; edit it at the counter)</button>
     </form>
   </section>
 

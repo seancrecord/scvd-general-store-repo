@@ -203,7 +203,7 @@ describe("the MCP door", () => {
   it("refuses a paid tool without required args before money moves", async () => {
     const reply = await rpc("tools/call", {
       name: "buy_observation",
-      arguments: { item_id: "phantom_check" },
+      arguments: { item_id: "standing_watch" },
     });
     const error = reply["error"] as Record<string, unknown>;
     expect(error["code"]).toBe(-32602);
@@ -269,7 +269,7 @@ describe("the four alarms", () => {
   });
 
   it("pages once for a queued order nobody acknowledged in 24h", async () => {
-    const item = getMenuItem("portrait") as MenuItem;
+    const item = getMenuItem("the_collab") as MenuItem;
     const order = await createOrder(testEnv, {
       item,
       paidUsdc: 5,

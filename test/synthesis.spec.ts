@@ -207,7 +207,7 @@ describe("S3: the skill reads as structure", () => {
     // (the situations reach the discovery doc) rather than one phrase.
     expect(signals.length).toBeGreaterThanOrEqual(USE_WHEN.length);
     expect(signals.join(" ")).toContain("context_anchor");
-    expect(signals.join(" ")).toContain("phantom_check");
+    expect(signals.join(" ")).toContain("standing_watch");
     const resources = discovery["resources"] as Array<Record<string, unknown>>;
     const hello = resources.find((resource) =>
       String(resource["resourceUrl"]).endsWith("/api/buy/hello"),

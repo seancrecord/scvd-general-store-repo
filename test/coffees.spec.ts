@@ -105,7 +105,7 @@ describe("coffee's for closers", () => {
     const { getMenuItem } = await import("@/store");
     const { env } = await import("cloudflare:test");
     const testEnv = env as unknown as import("@/types").Env;
-    const item = getMenuItem("portrait");
+    const item = getMenuItem("the_collab");
     if (!item) {
       throw new Error("portrait fell off the shelf");
     }

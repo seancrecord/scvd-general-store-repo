@@ -9,7 +9,7 @@ import type { Env } from "@/types";
 
 /**
  * The fulfillment restructure, Class 1 and 2: stocked shelves fulfill
- * themselves from keeper-made units; the grudge register holds
+ * themselves from keeper-made units; the retired shelf answers
  * instantly. a_secret stays manual by the keeper's ruling. The jar
  * was scrapped and luckies went preset (rulings 2026-07-25); the
  * drawer is the real-oddities shelf now.
@@ -87,26 +87,21 @@ describe("the stocked shelves", () => {
   });
 });
 
-describe("the grudge register", () => {
-  it("holds instantly, names the grievance, refuses nothing-named", async () => {
-    // The probe rule: unsigned asks the price and gets a 402; a request
-    // that means to buy is the one held to the requirement.
-    const missing = await SELF.fetch(`${BASE}/api/buy/grudge`,
-      { headers: { "PAYMENT-SIGNATURE": "probe-rule: a request that means to buy" } });
-    expect(missing.status).toBe(400);
+describe("the retired shelf", () => {
+  it("answers a retired id with what happened, not a bare 404", async () => {
+    // grudge retired 2026-08-05; grudges already held stay held.
+    const gone = await SELF.fetch(`${BASE}/api/buy/grudge`);
+    expect(gone.status).toBe(410);
+    const body = (await gone.json()) as Record<string, unknown>;
+    expect(String(body["error"])).toContain("retired");
+    expect(String(body["certificates_note"])).toContain("verify forever");
+  });
 
-    const grievance = "A rate limit with no Retry-After header.";
-    const body = await buyPaid(
-      `${BASE}/api/buy/grudge?grievance=${encodeURIComponent(grievance)}`,
-    );
-    expect(String(body["deliverable"])).toContain(grievance);
-    expect(String(body["deliverable"])).toContain("Sundays");
-
-    // The register shows at the counter for Sunday reading.
-    const counter = await SELF.fetch(`${BASE}/admin/counter`, {
-      headers: { Authorization: adminAuth.Authorization },
-    });
-    const html = await counter.text();
-    expect(html).toContain("Retry-After");
+  it("points a folded item at its successor", async () => {
+    const gone = await SELF.fetch(`${BASE}/api/buy/phone_call`);
+    expect(gone.status).toBe(410);
+    const body = (await gone.json()) as Record<string, unknown>;
+    expect(body["folded_into"]).toBe("the_collab");
+    expect(String(body["buy_url"])).toContain("/api/buy/the_collab");
   });
 });

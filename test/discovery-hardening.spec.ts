@@ -224,7 +224,7 @@ describe("settlement finality on the new shelves", () => {
         `${BASE}/api/buy/small_blessing`,
         `${BASE}/api/buy/daily_fortune`,
         `${BASE}/api/buy/context_anchor?summary=state`,
-        `${BASE}/api/buy/human_witness`,
+        `${BASE}/api/buy/the_collab`,
         `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`,
       ]) {
         const response = await payFor(url);
@@ -252,7 +252,7 @@ describe("discovery surfaces", () => {
     const full = await json(await SELF.fetch(`${BASE}/.well-known/x402.json`));
     expect(full["x402Version"]).toBe(2);
     expect(full["network"]).toBe("eip155:8453");
-    expect((full["resources"] as unknown[]).length).toBeGreaterThan(19);
+    expect((full["resources"] as unknown[]).length).toBeGreaterThan(15);
   });
 
   it("serves OpenAPI 3.1 and links it from the homepage", async () => {

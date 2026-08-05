@@ -55,14 +55,14 @@ function doc(base: string) {
       after_verify_failures: `Facilitator codes like invalid_exact_evm_payload_signature or settle_exact_failed_onchain happen AFTER the challenge stage, at verify/settle time, and depend on the specific payment attempt — a preflight cannot catch them and this one does not pretend to. For the artifact half (do the signed offers verify against the issuer's published key), use POST ${base}/api/conformance/v1.`,
     },
     what_it_cannot_check: [
-      "Delivery. Whether anything real happens after payment is a fact about the world; the paid behavioral rung of this ladder is phantom_check.",
+      "Delivery. Whether anything real happens after payment is a fact about the world; the paid behavioral rung of this ladder is standing_watch.",
       "Reliability. One probe is one moment; this is not a monitor and its output is not an uptime claim.",
       "Verify/settle-time failures — wallet state, signatures over a specific payment, on-chain conditions. Those belong to the payment attempt, not the endpoint's shape.",
     ],
     the_ladder: {
       artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
       endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool.`,
-      behavior: `${base}/api/buy/phantom_check — a paid, signed, out-of-band probe attestation, for evidence rather than a readout.`,
+      behavior: `${base}/api/buy/standing_watch — a paid, signed week of out-of-band hourly probes, for evidence rather than a readout.`,
     },
     try_it_against_a_live_endpoint:
       "Any of this store's own buy URLs is a permanent, free, working example of what a passing challenge looks like — GET one and compare. We cannot probe our own hostname from inside the Worker (the platform forbids self-fetch), so CI proves the store passes these exact checks on every build instead, and you are encouraged to probe us from your side rather than take that on faith.",

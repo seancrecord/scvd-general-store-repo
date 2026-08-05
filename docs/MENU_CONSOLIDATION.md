@@ -1,4 +1,18 @@
-# Menu consolidation — a proposal, not a verdict
+# Menu consolidation — ENACTED 2026-08-05
+
+The keeper ruled on this the same day, with amendments, and the cuts
+below shipped. His amendments to the original proposal: a_secret cut
+too (his call to make); the_drawer KEPT as the home of unique custom
+oddities; luckies stays preset-herd-only and the legacy hand-carding
+machinery (complete-lucky) was removed outright; the weekly Gazette
+retired as a maintained surface — founding edition stays printed,
+archive stays served, dispatch machinery stays in the codebase
+dormant, nothing schedules it. Retired ids answer 410 at every door
+with what happened and where the job went (src/store/retired.ts);
+certificates verify forever. Shelf: 24 listings -> 16.
+
+The original proposal, kept for the record:
+
 
 Drafted 2026-08-05, the morning after the store's first real demand
 data: one Bazaar-routed wallet that walked every shelf (21 settles),

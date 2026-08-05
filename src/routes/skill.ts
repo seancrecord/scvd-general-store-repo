@@ -178,8 +178,8 @@ the door, identifying this skill file, never you. Leave it on.
 
 Item-specific required inputs (also in each listing's \`spec.inputs\`
 in ${base}/menu.json): \`summary\` on context_anchor \u00B7 \`url\` on
-phantom_check \u00B7 \`win\` on coffees_for_closers \u00B7 \`grievance\` on
-grudge \u00B7 \`confession\` on the_confession. Pay-what-it-deserves items
+standing_watch \u00B7 \`win\` on coffees_for_closers \u00B7 \`confession\`
+on the_confession. Pay-what-it-deserves items
 offer several amounts in the 402; anything above the minimum records
 as a tip.
 
@@ -228,7 +228,7 @@ ${menuTable}
 - Identity policy: ${IDENTITY_POLICY}
 - The promise: ${STORE_METADATA.refund_policy}
 - Hours: ${STORE_METADATA.hours}
-- Reading room: Keeper's Almanac (${base}/almanac) and the Gazette (${base}/gazette), free indexes, $${PENNY_PAGE_USDC} a page over x402. Town Directory free at ${base}/directory. The train (a public wall of bought tags) free at ${base}/train.
+- Reading room: Keeper's Almanac (${base}/almanac), free index, $${PENNY_PAGE_USDC} a page over x402; the Gazette archive at ${base}/gazette (founding edition free). Town Directory free at ${base}/directory. The train (a public wall of bought tags) free at ${base}/train.
 - Practice counter, for client builders: ${base}/try (the live flow, the under-a-dollar shelf cheapest first, and what verifies afterward; no sandbox, no test mode)
 - Contract: ${base}/openapi.json \u00B7 x402 discovery: ${base}/.well-known/x402.json
 

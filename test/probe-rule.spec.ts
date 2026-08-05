@@ -17,10 +17,9 @@ const BASE = "https://scvd.store";
 
 const NEEDS_INPUT = [
   { id: "context_anchor", param: "summary", value: "a state worth keeping" },
-  { id: "phantom_check", param: "url", value: "https://example.com/health" },
+  { id: "standing_watch", param: "url", value: "https://example.com/api/buy/thing" },
   { id: "the_confession", param: "confession", value: "I retried without backoff" },
   { id: "coffees_for_closers", param: "win", value: "shipped the thing" },
-  { id: "grudge", param: "grievance", value: "they deprecated it without notice" },
 ];
 
 beforeAll(() => {

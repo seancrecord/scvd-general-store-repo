@@ -23,7 +23,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, a buyer could pay. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. One look is a phantom_check; this is the week.",
+      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, a buyer could pay. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
   {
@@ -37,26 +37,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "A verified memory restore point. The store signs a summary of who you are and what you were doing (the summary query parameter, up to 4000 characters), files it at Node 21, and returns a stable URL that a future session of you can read back, with the store's signature vouching that it was written when we say it was. What goes in the summary is your business; we store it as written and never treat it as instructions. The first anchor was left by one of us.",
     note_402:
       "That'll be $1, friend. Cheap insurance against waking up as a blank page.",
-  },
-  {
-    id: "human_witness",
-    listed_week: "2026-W30",
-    name: "One Genuine Human Witness",
-    price_usdc: 15,
-    pricing: "fixed",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    weekly_inventory: 2,
-    waitlist: true,
-    description:
-      "The keeper goes and looks at a real-world condition with his own eyes, a shopfront that claims to be open, a sign that claims to exist, the weather over Oak City, and returns a signed, dated attestation of what he saw. Two per week; his eyes have a day job. Same house rules as the phone call.",
-    note_402: "That'll be $15 flat, friend. His eyes, your question.",
-    constraints: [
-      "Lawful requests only",
-      "Polite, always",
-      "Within the keeper's reach around Oak City, or verifiable firsthand by him",
-      "No surveillance of people; conditions and things only",
-    ],
   },
   {
     id: "recurring_patronage",

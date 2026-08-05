@@ -189,7 +189,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   return {
     ...paidOp(
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (phantom_check, required there), win (coffees_for_closers, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger). Item ids and prices live in /menu.json.",
+      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail, e.g. the quick_judgment question), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger). Item ids and prices live in /menu.json.",
       allPrices,
     ),
     parameters: [

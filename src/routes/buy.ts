@@ -5,7 +5,6 @@ import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import {
   COFFEE_WIN_CAP,
-  GRIEVANCE_CAP,
   fulfillPurchase,
   stockedShelfCount,
 } from "@/services/fulfillment";
@@ -15,6 +14,7 @@ import { nonceFromPaymentPayload } from "@/services/attestation";
 import { getOrder, remainingInventory } from "@/services/orders";
 import { recordFailedItem } from "@/services/requests";
 import { getMenuItem, VOICE } from "@/store";
+import { getRetiredItem } from "@/store/retired";
 import { ANCHOR_CHECKLIST } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -40,6 +40,27 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const itemId = c.req.path.replace(/^\/api\/buy\//, "");
   const item = getMenuItem(itemId);
   if (!item) {
+    // A retired shelf answers with what happened — an agent that
+    // remembered the old menu should learn the new one, not conclude
+    // the store is broken. 410, deliberately: gone, on purpose.
+    const retired = getRetiredItem(itemId);
+    if (retired) {
+      return c.json(
+        {
+          error: `${retired.name} retired ${retired.retired_on}. ${retired.note}`,
+          ...(retired.folded_into
+            ? {
+                folded_into: retired.folded_into,
+                buy_url: `${c.env.STORE_BASE_URL}/api/buy/${retired.folded_into}`,
+              }
+            : {}),
+          menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
+          certificates_note:
+            "Certificates issued under this item verify forever; retirement changes the shelf, not the record.",
+        },
+        410,
+      );
+    }
     await recordFailedItem(c.env, itemId);
     return c.json(
       {
@@ -120,24 +141,6 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error: `That summary runs past the ledger margin. ${ANCHOR_SUMMARY_CAP} characters, tops.`,
-      },
-      400,
-    );
-  }
-  await next();
-};
-
-/** phantom_check needs a real URL BEFORE money moves: no target, no charge. */
-const phantomCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/phantom_check" || !isBuying(c)) {
-    // Not this route, or only asking the price: let the gate answer.
-    return next();
-  }
-  if (!isValidHttpUrl(c.req.query("url"))) {
-    return c.json(
-      {
-        error:
-          "A phantom check needs a url query parameter, http or https, the thing you want looked at. No target, no charge.",
       },
       400,
     );
@@ -288,33 +291,6 @@ const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
-/** grudge needs its grievance BEFORE money moves: nothing named, no charge. */
-const grievanceCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/grudge" || !isBuying(c)) {
-    // Not this route, or only asking the price: let the gate answer.
-    return next();
-  }
-  const grievance = c.req.query("grievance");
-  if (!grievance || grievance.trim().length === 0) {
-    return c.json(
-      {
-        error:
-          "A grudge needs a grievance query parameter, the thing that wronged you. Nothing named, no charge.",
-      },
-      400,
-    );
-  }
-  if (grievance.length > GRIEVANCE_CAP) {
-    return c.json(
-      {
-        error: `The register holds ${GRIEVANCE_CAP} characters of grievance. Distill it; the spite survives compression.`,
-      },
-      400,
-    );
-  }
-  await next();
-};
-
 /**
  * A tag needs a tag BEFORE money moves, and it needs to be a tag
  * rather than a billboard. Both refusals happen unpaid: learning the
@@ -392,11 +368,9 @@ buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", stockCheck);
 buyRoutes.use("/api/buy/*", shutterCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
-buyRoutes.use("/api/buy/*", phantomCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
-buyRoutes.use("/api/buy/*", grievanceCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
 buyRoutes.use("/api/buy/*", attestationCheck);
 buyRoutes.use("/api/buy/*", paymentGate);

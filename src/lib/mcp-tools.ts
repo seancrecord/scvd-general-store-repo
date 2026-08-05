@@ -100,7 +100,6 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       "certificate_of_patronage",
       "graffiti_on_a_train",
       "coffees_for_closers",
-      "grudge",
       "the_confession",
       "recurring_patronage",
     ],
@@ -109,17 +108,12 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_human_task",
     title: "Human Labor",
     purpose:
-      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself: place a phone call, witness a thing, render a considered verdict, review an app, draw a portrait, collaborate, name you, or pick something from the drawer. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. Use when the task genuinely needs hands or judgment. Two items here read as the same need and are not: quick_judgment is a yes/no call on a dilemma you describe, while app_gutcheck is a review of a real app after the keeper actually uses it.",
+      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors since the 2026-08-05 consolidation: quick_judgment is a fast yes/no verdict on a dilemma you describe, and the_collab is everything else keeper-time can be — a call placed, a thing witnessed, a piece made, a product gut-checked; name the shape in your detail. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. nomenclature and the_drawer are stocked: keeper-made units, taken oldest-first, no waiting on hands.",
     itemIds: [
-      "phone_call",
-      "human_witness",
       "quick_judgment",
-      "app_gutcheck",
-      "portrait",
       "the_collab",
       "nomenclature",
       "the_drawer",
-      "a_secret",
     ],
   },
   {
@@ -127,7 +121,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     title: "Third-Party Observation",
     purpose:
       "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer.",
-    itemIds: ["phantom_check", "settlement_attestation", "standing_watch"],
+    itemIds: ["settlement_attestation", "standing_watch"],
   },
   {
     name: "buy_memory_anchor",
@@ -222,12 +216,6 @@ function purchaseInputSchema(item: MenuItem): Schema {
     );
     required.push("summary");
   }
-  if (item.id === "phantom_check") {
-    properties["url"] = str(
-      "The http(s) URL the store walks past ~6 hours from now.",
-    );
-    required.push("url");
-  }
   if (item.id === "standing_watch") {
     properties["url"] = str(
       "Your own x402 endpoint, https, probed hourly for seven days; each look signed.",
@@ -278,7 +266,7 @@ function purchaseInputSchema(item: MenuItem): Schema {
   }
   if (item.fulfillment === "human_queue") {
     properties["detail"] = str(
-      "What you need the keeper to know, the quick_judgment dilemma, the phone_call errand. 600 characters.",
+      "What you need the keeper to know — the quick_judgment dilemma, the shape you want the_collab to take. 600 characters.",
       600,
     );
     properties["callback_url"] = str(

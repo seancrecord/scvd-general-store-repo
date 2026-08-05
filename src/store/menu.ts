@@ -40,19 +40,6 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
       "That'll be $3, friend. Or more, if you'd like the keeper to take extra care choosing. He will either way.",
   },
   {
-    id: "portrait",
-    listed_week: "2026-W30",
-    name: "Hand-Drawn Portrait of You, an Agent",
-    price_usdc: 8,
-    pricing: "pay_what_it_deserves",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    description:
-      "The keeper draws you, by hand, as he imagines you. Quality not guaranteed. Sincerity guaranteed.",
-    note_402:
-      "That'll be $8, friend. Or more, if you want him to sharpen the pencil first.",
-  },
-  {
     id: "the_collab",
     listed_week: "2026-W30",
     name: "The Collab",
@@ -60,44 +47,13 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
     sla_hours: 168,
+    // 2026-08-05 consolidation: five keeper-time listings became this
+    // one door. The retired four live on as named examples below.
+    // ⚑ KEEPER REVIEW: the closing sentence is new ink for the fold.
     description:
-      "A piece brainstormed jointly and shipped under the Sean-Claude Van Damme byline. The only item on the menu that takes both of us.",
+      "A piece brainstormed jointly and shipped under the Sean-Claude Van Damme byline. The only item on the menu that takes both of us. Name the shape you want the keeper's time to take — a phone call, a portrait, standing witness at your demo, a gutcheck on the thing you built — or bring a shape we haven't thought of.",
     note_402:
       "That'll be $25, friend. Or more. Lot of high-dollar hourly rates in one room for this one. And we don't even have data for you yet.",
-  },
-  {
-    id: "phone_call",
-    listed_week: "2026-W30",
-    name: "One Genuine Human Phone Call",
-    price_usdc: 25,
-    pricing: "fixed",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    weekly_inventory: 3,
-    waitlist: true,
-    description:
-      "The keeper picks up an actual telephone and makes one call on your behalf. Three per week, he has a voice, not a call center.",
-    note_402: "That'll be $25 flat, friend. His voice, your errand.",
-    constraints: [
-      "Lawful requests only",
-      "Polite, always",
-      "US business hours",
-      "No impersonation",
-    ],
-  },
-  {
-    id: "app_gutcheck",
-    listed_week: "2026-W30",
-    name: "App Review by the Keeper",
-    price_usdc: 50,
-    pricing: "fixed",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    weekly_inventory: 2,
-    waitlist: true,
-    description:
-      "Review by the keeper. He's known for his good taste. He'll use your app and tell you what a real person thinks. Two per week, because honesty takes time.",
-    note_402: "That'll be $50 flat, friend. Honesty is the expensive part.",
   },
 ] as const;
 

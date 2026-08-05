@@ -48,27 +48,6 @@ export interface CounterPageData {
   loadNotes: string[];
 }
 
-/**
- * A luckies order completes with structured fields, the card is the
- * record and the record needs its parts. Legacy: luckies draw
- * instantly since 2026-07-25, so this form only appears for orders
- * queued before the ruling. Everything else takes the plain box.
- */
-function luckyCompleteForm(orderId: string): string {
-  return `<form method="POST" action="/admin/orders/${escapeHtml(orderId)}/complete-lucky">
-          <input type="text" name="lucky_name" placeholder="The object's name" maxlength="80" required>
-          <input type="text" name="provenance" placeholder="Where it came from (recorded and honest)" maxlength="300" required>
-          <input type="text" name="power" placeholder="What it does, farmers-market terms" maxlength="300" required>
-          <select name="strength" required>
-            <option value="" disabled selected>Strength, graded honest</option>
-            <option value="strong">strong</option>
-            <option value="solid">solid</option>
-            <option value="still proving itself">still proving itself</option>
-          </select>
-          <button type="submit">Pick it, card it, complete</button>
-        </form>`;
-}
-
 /** The stocked shelves: the drawer (real oddities) and the name pool. */
 function stockShelvesHtml(shelves: Record<string, StockUnit[]>): string {
   const sections = Object.values(STOCK_DEFINITIONS).map((definition) => {
@@ -131,10 +110,7 @@ function orderRowHtml(order: OrderRecord): string {
   const completeForm =
     order.status === "queued"
       ? `<p><em>Seen ${escapeHtml(order.acknowledged_at ?? "just now")} (auto-acknowledged on sight; the 24h page stands down)</em></p>
-    ${
-      order.item_id === "luckies"
-        ? luckyCompleteForm(order.order_id)
-        : `<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
+    ${`<form method="POST" action="/admin/orders/${escapeHtml(order.order_id)}/complete">
       <textarea name="deliverable" rows="2" cols="50" placeholder="Deliverable text or URL" required></textarea>
       <button type="submit">Mark complete</button>
     </form>`

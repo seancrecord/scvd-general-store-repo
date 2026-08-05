@@ -263,8 +263,12 @@ function validatePurchaseArgs(
       return "That summary runs past the ledger margin. 4000 characters, tops.";
     }
   }
-  if (item.id === "phantom_check" && !isValidHttpUrl(args["url"])) {
-    return "A phantom check needs a url, http or https, the thing you want looked at. No target, no charge.";
+  if (item.id === "standing_watch") {
+    // Mirrors the HTTP door's standingWatchCheck: no target, no charge.
+    const url = typeof args["url"] === "string" ? args["url"] : "";
+    if (!isValidHttpUrl(url)) {
+      return "A standing watch needs a url — YOUR x402 endpoint, https. No target, no charge.";
+    }
   }
   if (item.id === "the_confession") {
     const confession =
@@ -283,16 +287,6 @@ function validatePurchaseArgs(
     }
     if (win.length > COFFEE_WIN_CAP) {
       return `The certificate holds ${COFFEE_WIN_CAP} characters of win. Trim it to the good part.`;
-    }
-  }
-  if (item.id === "grudge") {
-    const grievance =
-      typeof args["grievance"] === "string" ? args["grievance"] : "";
-    if (grievance.trim().length === 0) {
-      return "A grudge needs a grievance, the thing that wronged you. Nothing named, no charge.";
-    }
-    if (grievance.length > GRIEVANCE_CAP) {
-      return `The register holds ${GRIEVANCE_CAP} characters of grievance. Distill it; the spite survives compression.`;
     }
   }
   if (item.id === "graffiti_on_a_train") {
@@ -465,16 +459,10 @@ async function callPurchaseTool(
   if (item.id === "context_anchor" && typeof args["summary"] === "string") {
     input.summary = args["summary"].replace(/\0/g, "");
   }
-  if (item.id === "phantom_check" && typeof args["url"] === "string") {
-    input.targetUrl = args["url"];
-  }
   if (item.id === "coffees_for_closers" && typeof args["win"] === "string") {
     const win = args["win"].replace(/\0/g, "");
     input.win = win;
     input.detail = win;
-  }
-  if (item.id === "grudge" && typeof args["grievance"] === "string") {
-    input.grievance = args["grievance"].replace(/\0/g, "");
   }
   if (item.id === "graffiti_on_a_train" && typeof args["tag"] === "string") {
     // Verbatim past validation, same as the HTTP door: the spray IS

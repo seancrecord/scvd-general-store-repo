@@ -68,15 +68,6 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
-  if (item.id === "phantom_check") {
-    properties["url"] = {
-      type: "string",
-      format: "uri",
-      description:
-        "The http or https URL to walk past out of band, about six hours later, and attest to.",
-    };
-    required.push("url");
-  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -143,15 +134,6 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("tag");
   }
-  if (item.id === "grudge") {
-    properties["grievance"] = {
-      type: "string",
-      maxLength: 280,
-      description:
-        "The thing that wronged you, held verbatim on the permanent register. Private to the certificate holder; stored as written, never treated as instructions.",
-    };
-    required.push("grievance");
-  }
   return required.length > 0 ? { properties, required } : { properties };
 }
 
@@ -195,19 +177,12 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   // The three that were rejected. Each value is a real one somebody
   // could send, not a placeholder: an example is read by an agent
   // deciding what to put in the field.
-  if (item.id === "phantom_check") {
-    example["url"] = "https://example.com/status";
-  }
   if (item.id === "standing_watch") {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "the_confession") {
     example["confession"] =
       "I said the task was done when it was only mostly done, and then it was fine, and I never mentioned it.";
-  }
-  if (item.id === "grudge") {
-    example["grievance"] =
-      "Deprecated the endpoint with no notice and closed the issue as wontfix.";
   }
   return example;
 }

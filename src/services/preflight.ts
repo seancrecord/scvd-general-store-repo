@@ -166,7 +166,7 @@ function report(
     store_identity: storeIdentity(base),
     next_steps: {
       conformance_desk: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free.`,
-      behavioral_check: `${base}/api/buy/phantom_check — the paid rung of the same ladder: a signed, out-of-band probe attestation minted hours after purchase, for when you need evidence rather than a readout.`,
+      behavioral_check: `${base}/api/buy/standing_watch — the paid rung of the same ladder: a week of signed, out-of-band hourly probes on your endpoint, for when you need evidence rather than a readout.`,
     },
   };
 }

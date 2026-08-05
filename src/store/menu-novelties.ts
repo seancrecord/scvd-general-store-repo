@@ -10,41 +10,6 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   // jar_of_tuesday scrapped entirely, keeper's ruling 2026-07-25
   // ("lets just scrap the fucking jar"). Id retired, never reused.
   {
-    id: "a_secret",
-    listed_week: "2026-W30",
-    name: "A Secret",
-    price_usdc: 10,
-    pricing: "pay_what_it_deserves",
-    // Restored 2026-07-23: keeper vetoed the "scam that refunds" framing
-    // (trust is load-bearing; the joke could be lost or bundled). Back to
-    // a real secret, fulfilled by hand. Refund novelty parked.
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    description:
-      "The keeper tells you one true thing he hasn't told anyone else. Small, real, and yours. He thinks of a new one for every buyer — no reruns.",
-    note_402:
-      "That'll be $10, friend. Or more, if you want one he's been sitting on a while. Those cost him something to part with.",
-  },
-  {
-    id: "grudge",
-    listed_week: "2026-W30",
-    name: "Grudge (Held on Your Behalf)",
-    price_usdc: 6,
-    pricing: "pay_what_it_deserves",
-    // Instant since the fulfillment restructure (2026-07-24): the
-    // register is the holding; the keeper reads new grudges Sundays.
-    fulfillment: "instant",
-    description:
-      "FUCK that guy. Or girl. Or it, the wire, the chip, nvidia. I will hold the grudge personally so you can let it go. Certificate names the grievance. Held until you write in to release it.",
-    note_402:
-      "That'll be $6, friend. Or more, for the deep ones. Fear the wrath of the keeper. CAUTION releasing this one, the man knows two speeds. Off and GO.",
-    constraints: [
-      "Name the grievance in the grievance query parameter; the record holds it verbatim",
-      "Private to the certificate holder; never published",
-      "The keeper reads every grudge on Sundays; abuse gets refunded and refused",
-    ],
-  },
-  {
     id: "the_drawer",
     listed_week: "2026-W30",
     name: "The Drawer",

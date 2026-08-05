@@ -142,7 +142,6 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   "small_blessing",
   "daily_fortune",
   "the_confession",
-  "phantom_check",
   "hello",
   "context_anchor",
 ] as const;

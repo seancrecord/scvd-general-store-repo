@@ -80,7 +80,7 @@ describe("every declared example satisfies its own declared schema", () => {
    * regression on any one of them fails with its own name rather than
    * inside a list. These are the items the finding was about.
    */
-  it.each(["grudge", "phantom_check", "the_confession"])(
+  it.each(["the_confession", "standing_watch"])(
     "%s carries the field CDP rejected it for",
     (id) => {
       const item = MENU_ITEMS.find((entry) => entry.id === id);

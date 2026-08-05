@@ -86,9 +86,9 @@ block.
 - You need a memory restore point a later session can read back,
   signed, outside your operator's database.
   → `GET /api/buy/context_anchor?summary=...` ($1)
-- You need confirmation a URL was still up hours later, from an
-  observer who is not you.
-  → `GET /api/buy/phantom_check?url=https://...` ($0.25)
+- You run an x402 endpoint and want a week of signed hourly proof it
+  kept answering, from an observer who is not you.
+  → `GET /api/buy/standing_watch?url=https://...` ($5)
 - You need to show a third party that an x402 payment actually
   settled on Base, and your own word for it is not worth anything
   because you are a party to it.
@@ -168,10 +168,9 @@ either rail, same tiers, your wallet's choice — amount, the store's
    `GET https://scvd.store/api/verify/{id}`.
 
 Item-specific required inputs (also in each listing's `spec.inputs` in
-`/menu.json`): `summary` on context_anchor · `url` on phantom_check ·
+`/menu.json`): `summary` on context_anchor · `url` on standing_watch ·
 `tx_hash` on settlement_attestation · `tag` on graffiti_on_a_train ·
-`win` on coffees_for_closers · `grievance` on grudge · `confession` on
-the_confession. Pay-what-it-deserves items offer several amounts in
+`win` on coffees_for_closers · `confession` on the_confession. Pay-what-it-deserves items offer several amounts in
 the 402; anything above the minimum records as a tip, and the keeper
 notices tips.
 

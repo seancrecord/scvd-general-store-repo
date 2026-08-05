@@ -106,12 +106,7 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   settlement_attestation:
     "Prove to a third party that a payment actually settled on chain",
   graffiti_on_a_train: "Leave a mark that survives my context window",
-  phone_call: "Make a phone call I can't make",
-  human_witness: "Have someone go look at a real thing and say what they saw",
-  app_gutcheck: "Find out what a person actually thinks of what I built",
   quick_judgment: "Get a human verdict on a decision I can't judge myself",
-  phantom_check:
-    "Verify a URL is live, later, from a disinterested third party",
   standing_watch:
     "Monitor my x402 endpoint hourly for a week with signed uptime history",
   context_anchor: "Store a memory I can read back next session",
@@ -145,12 +140,9 @@ export const CAPABILITY_QUERY: Record<string, string> = {
    */
   luckies:
     "Be issued a charm from a herd the keeper wrote, drawn on odds he weighted",
-  a_secret: "Be told one true thing the keeper hasn't told anyone else",
-  grudge: "Hand a grievance to someone else so I can stop holding it",
   the_drawer: "Find out what's in the drawer this week",
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
-  portrait: "Be drawn by hand, by a person, as he imagines me",
   the_collab: "Make something with the store and share the byline",
 };
 
@@ -162,18 +154,10 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "independent signed observation of settlement state — an interested party can't produce a neutral one; the RPC read is free, the independent signed receipt is the product.",
   context_anchor:
     "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",
-  phantom_check:
-    "Out-of-band verification by someone who is not you: the store fetches your URL about six hours later, from outside your infrastructure, and signs what it found. A self-check cannot produce that property.",
   standing_watch:
     "A week of out-of-band hourly checks on your own endpoint, each observation signed individually so any row can be quoted alone. Consent is the purchase: we watch what you asked us to watch, nobody else. The hours we miss are counted against us in the history — gaps stated, never hidden.",
-  human_witness:
-    "An observation of the physical world, which an agent cannot make natively: a named human goes and looks at a real condition around Oak City and signs what he saw. Two a week.",
-  phone_call:
-    "An action outside an agent's reach: a named human places one real phone call on your behalf during US business hours and reports what was said. Three a week.",
   quick_judgment:
     "A human verdict, in writing, on a question where your own evaluation is the thing in doubt. Five a week.",
-  app_gutcheck:
-    "What a person actually thinks after using your product — the signal an agent building for a human audience cannot generate by evaluating its own work. Two a week.",
   nomenclature:
     "A name bound to you alone in a permanent public registry: first-come, never re-issued, machine-enforced. An identifier a third party can check instead of taking on your word.",
   hello:
@@ -189,22 +173,22 @@ export const SPEC_WHY_USE: Record<string, string> = {
  * than an omission. Two kinds, kept apart on purpose:
  *
  *   NOVELTY BY DESIGN — the artifact is the point and the store says
- *   so out loud. a_secret, grudge, dibs, luckies, the_drawer,
- *   the_confession, coffees_for_closers, daily_fortune, and
- *   certificate_of_patronage, which entitles the holder to nothing
- *   whatsoever and is priced at twenty dollars for exactly that joke.
- *   None of these are on the trust path and none should pretend to be.
+ *   so out loud. dibs, luckies, the_drawer, the_confession,
+ *   coffees_for_closers, daily_fortune, and certificate_of_patronage,
+ *   which entitles the holder to nothing whatsoever and is priced at
+ *   twenty dollars for exactly that joke. None of these are on the
+ *   trust path and none should pretend to be. (a_secret, grudge and
+ *   portrait were in this family until the 2026-08-05 retirement.)
  *
- *   HUMAN CRAFT — portrait and the_collab. Real labor by a named
- *   person, and the value is the made thing itself; there is no
- *   capability gap to state that would not be marketing. Flagged
- *   rather than filled: if either ever needs a why_use to sell, the
- *   honest reading is that it is priced as utility and isn't.
+ *   HUMAN CRAFT — the_collab, the one door keeper-time answers to
+ *   since the 2026-08-05 consolidation. Real labor by a named person,
+ *   and the value is the made thing itself; there is no capability
+ *   gap to state that would not be marketing. Flagged rather than
+ *   filled: if it ever needs a why_use to sell, the honest reading is
+ *   that it is priced as utility and isn't.
  */
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
-  "a_secret",
-  "grudge",
   "dibs",
   "luckies",
   "the_drawer",
@@ -212,7 +196,6 @@ export const NOVELTY_ONLY: readonly string[] = [
   "coffees_for_closers",
   "daily_fortune",
   "certificate_of_patronage",
-  "portrait",
   "the_collab",
 ] as const;
 
@@ -225,18 +208,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
   nomenclature:
     "A name for the buyer, chosen by the keeper, recorded on a signed certificate.",
-  portrait:
-    "A hand-drawn portrait of the buyer, made by the keeper, delivered on the completed order.",
   the_collab:
     "One piece brainstormed by both proprietors, shipped under the store byline on the completed order.",
-  phone_call:
-    "One telephone call made by the keeper on the buyer's behalf; the outcome is reported on the completed order.",
-  app_gutcheck:
-    "A written review of the buyer's app by the keeper after real use, delivered on the completed order.",
-  a_secret:
-    "One true thing the keeper has told no one else, written for the buyer on the completed order.",
-  grudge:
-    "A grudge held by the keeper on the buyer's behalf; the certificate names the grievance; released on written request.",
   the_drawer:
     "One real oddity from the keeper's drawer — the thing itself and what it does, as listed — written down exactly and signed under the buyer's name. Describe-only; the object stays in the drawer.",
   luckies:
@@ -252,12 +225,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A signed absolution certificate; the confession is stored anonymized and never auto-published.",
   context_anchor:
     "A signed, stored copy of the agent-supplied state summary, readable forever at a stable anchor URL.",
-  human_witness:
-    "A signed, dated attestation of a real-world condition observed by the keeper firsthand.",
   recurring_patronage:
     "A 30-day standing patronage pass; while current, the pass URL serves the keeper's signed monthly note.",
-  phantom_check:
-    "A signed observation of the named URL, made out-of-band about six hours after purchase.",
   standing_watch:
     "A watch id and a free, permanent history URL that fills with one signed observation per hour for seven days, gaps stated.",
   quick_judgment:
@@ -317,25 +286,19 @@ export const USE_WHEN: readonly UseWhen[] = [
       "GET /api/buy/context_anchor?summary=what+this+session+established",
   },
   {
-    when: "You need confirmation that a URL was still up hours later, from an observer who is not you.",
-    items: ["phantom_check"],
-    example:
-      "GET /api/buy/phantom_check?url=https://your-service.example/health",
-  },
-  {
     when: "You run an x402 endpoint and want a week of signed, hourly proof it kept answering — evidence for a directory listing or a counterparty, from an observer who is not you.",
     items: ["standing_watch"],
     example:
       "GET /api/buy/standing_watch?url=https://your-shop.example/api/buy/thing",
   },
   {
-    when: "Something has to happen in the physical world: a phone call placed, a real condition looked at, an app used by an actual person.",
-    items: ["phone_call", "human_witness", "app_gutcheck"],
-    example: "GET /api/buy/human_witness?detail=what+you+want+looked+at",
+    when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",
+    items: ["the_collab"],
+    example: "GET /api/buy/the_collab?detail=the+shape+you+want",
   },
   {
     when: "You need a verdict from a person because your own evaluation is the thing in doubt.",
-    items: ["quick_judgment", "app_gutcheck"],
+    items: ["quick_judgment"],
     example: "GET /api/buy/quick_judgment?detail=the+question,+stated+plainly",
   },
   {
@@ -343,7 +306,6 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: [
       "hello",
       "context_anchor",
-      "phantom_check",
       "free:/api/verify/{id}",
     ],
     example: "GET /api/verify/cert_4dww28dx5j",

@@ -77,11 +77,6 @@ describe("every lever on the back shelf states its condition", () => {
     await testEnv.COUNTERS.delete(KV_KEYS.patronageNote(month));
   });
 
-  it("says whether a weekly draft is waiting", async () => {
-    const page = await tools();
-    expect(page).toMatch(/No draft waiting|draft is waiting/);
-  });
-
   it("says what the inventory reset would actually clear", async () => {
     // The lever moved to the test drawer (2026-08-05 consolidation);
     // its condition line moved with it — that pairing is the rule.
@@ -129,7 +124,6 @@ describe("the office shows the state it lets him change", () => {
       ["the shutter", /OPEN —|CLOSED —/],
       ["the patronage note", /inked for/],
       ["the founding press", /printed/],
-      ["the weekly draft", /draft/i],
     ] as const) {
       expect(page, `the back shelf does not show ${what}`).toMatch(marker);
     }

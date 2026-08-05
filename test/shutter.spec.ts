@@ -55,7 +55,7 @@ describe("the shutter", () => {
     // Fresh KV, nobody seen at the counter yet.
     await testEnv.COUNTERS.delete("keeper_last_seen");
     await testEnv.COUNTERS.delete("shutter_override");
-    const refused = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    const refused = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(refused.status).toBe(503);
     expect(String((await json(refused))["error"])).toContain("keeper is away");
   });
@@ -63,7 +63,7 @@ describe("the shutter", () => {
   it("refuses human labor before money moves; machine shelves never close", async () => {
     await throwShutter("closed");
 
-    const humanItem = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    const humanItem = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(humanItem.status).toBe(503);
     const refusal = await json(humanItem);
     expect(String(refusal["error"])).toContain("keeper is away");
@@ -79,7 +79,7 @@ describe("the shutter", () => {
     expect(String(store["human_shelf"])).toContain("shuttered");
 
     await throwShutter("open");
-    const reopened = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    const reopened = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(reopened.status).toBe(402);
   });
 
@@ -99,7 +99,7 @@ describe("the shutter", () => {
     const staleDate = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
     await testEnv.COUNTERS.put("keeper_last_seen", staleDate);
 
-    const refused = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    const refused = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(refused.status).toBe(503);
 
     // Opening the counter is proof of presence; the window restarts.
@@ -107,7 +107,7 @@ describe("the shutter", () => {
       headers: { Authorization: adminAuth.Authorization },
     });
     expect(counter.status).toBe(200);
-    const reopened = await SELF.fetch(`${BASE}/api/buy/portrait`);
+    const reopened = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(reopened.status).toBe(402);
   });
 });

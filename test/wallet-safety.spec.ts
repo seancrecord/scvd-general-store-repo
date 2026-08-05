@@ -160,7 +160,7 @@ describe("the claims door", () => {
   }
 
   it("returns the wallet's own orders to the key that paid, and only to it", async () => {
-    const item = getMenuItem("phone_call")!;
+    const item = getMenuItem("the_collab")!;
     const order = await createOrder(testEnv, {
       item,
       paidUsdc: 5,

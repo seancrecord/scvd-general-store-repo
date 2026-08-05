@@ -66,7 +66,6 @@ import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
 import { sweepStandingWatches } from "@/services/standing-watch";
 import { recomputeCorrections } from "@/services/reclassify";
-import { assembleDraft } from "@/services/gazette-weekly";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
 import { runDeliveryAudit } from "@/services/delivery-audit";
@@ -320,10 +319,9 @@ const worker: ExportedHandler<Env> = {
         ),
       );
       ctx.waitUntil(compileDigest(env));
-      // THE_NINETY gate: the Gazette drafts itself only when the week
-      // earned an edition (3+ organic events); the keeper's pen
-      // decides whether it prints. Hand-set issues bypass via /admin.
-      ctx.waitUntil(assembleDraft(env).then(() => undefined));
+      // Weekly Gazette self-drafting retired 2026-08-05 (keeper's
+      // ruling: duplicative of the Almanac, standing maintenance the
+      // rack never earned). The machinery stays; nothing schedules it.
     }
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>

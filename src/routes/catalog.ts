@@ -21,6 +21,7 @@ import {
 import { GUARANTEED, NOT_GUARANTEED } from "@/store/spec";
 import { ANCHOR_WRITING_GUIDE } from "@/store/copy/anchor-writing";
 import type { HonoEnv, MenuItem } from "@/types";
+import { getRetiredItem } from "@/store/retired";
 
 /**
  * GET /menu.json, the machine-readable catalog (markdown on request).
@@ -164,7 +165,7 @@ catalogRoutes.get("/menu.json", async (c) => {
       },
       gazette: {
         url: `${base}/gazette`,
-        note: "Dispatches assembled from reviewed Trading Post tips. Free index; a penny a copy. The founding edition is free at /gazette/founding, take one.",
+        note: "The archive. Past issues a penny a copy; the founding edition is free at /gazette/founding, take one. New editions retired 2026-08-05 — the paper of record is the Almanac.",
       },
       directory: {
         url: `${base}/directory`,
@@ -212,6 +213,19 @@ catalogRoutes.get("/menu/:item_id", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const item = getMenuItem(c.req.param("item_id"));
   if (!item) {
+    const retired = getRetiredItem(c.req.param("item_id"));
+    if (retired) {
+      return c.json(
+        {
+          error: `${retired.name} retired ${retired.retired_on}. ${retired.note}`,
+          ...(retired.folded_into
+            ? { folded_into: `${base}/menu/${retired.folded_into}` }
+            : {}),
+          menu_url: `${base}/menu.json`,
+        },
+        410,
+      );
+    }
     return c.json(
       {
         error: "No item by that id on the shelf. The whole menu is one page:",

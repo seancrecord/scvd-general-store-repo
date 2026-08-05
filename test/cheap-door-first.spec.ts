@@ -50,7 +50,7 @@ describe("the cheap door leads", () => {
     expect(new Set(MENU_ITEMS.map((item) => item.id)).size).toBe(
       MENU_ITEMS.length,
     );
-    for (const id of ["hello", "small_blessing", "app_gutcheck", "luckies"]) {
+    for (const id of ["hello", "small_blessing", "the_collab", "luckies"]) {
       expect(MENU_ITEMS.some((item) => item.id === id), id).toBe(true);
     }
   });

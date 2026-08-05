@@ -73,22 +73,15 @@ describe("the storefront", () => {
       "small_blessing",
       "daily_fortune",
       "the_confession",
-      "phantom_check",
       "hello",
       "context_anchor",
       "graffiti_on_a_train",
       "standing_watch",
-      "human_witness",
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",
       "nomenclature",
-      "portrait",
       "the_collab",
-      "phone_call",
-      "app_gutcheck",
-      "a_secret",
-      "grudge",
       "the_drawer",
       "luckies",
       "dibs",
@@ -184,7 +177,7 @@ describe("the bell", () => {
 
 describe("waitlist and requests", () => {
   it("points a waitlist request at the shelf while stock remains", async () => {
-    const response = await SELF.fetch(`${BASE}/api/waitlist/phone_call`, {
+    const response = await SELF.fetch(`${BASE}/api/waitlist/quick_judgment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -195,7 +188,7 @@ describe("waitlist and requests", () => {
     // Inventory is full this week, so the store says buy instead.
     expect(response.status).toBe(400);
     const body = await json(response);
-    expect(body["buy_url"]).toBe(`${BASE}/api/buy/phone_call`);
+    expect(body["buy_url"]).toBe(`${BASE}/api/buy/quick_judgment`);
   });
 
   it("declines waitlists for items that never run out", async () => {

@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
-import { createOrder, getOrder } from "@/services/orders";
+import { createOrder } from "@/services/orders";
+import { createLucky } from "@/services/luckies";
 import { getMenuItem } from "@/store";
 import { HERD, HERD_PROVENANCE, LUCKY_NOTES } from "@/store/luckies";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -134,53 +135,31 @@ describe("the lucky shelf", () => {
     expect(svg).not.toContain("/api/verify/");
   });
 
-  it("picks, cards, and verifies a real lucky", async () => {
+  it("hand-carding is retired: the custom-lucky door is gone", async () => {
+    // 2026-08-05, keeper's ruling: the herd is preset and draws at
+    // purchase; the legacy hand-carding path was standing maintenance
+    // for a flow that no longer exists.
     const orderId = await queueLuckiesOrder();
-    const completed = await completeLucky(orderId, {
+    const response = await completeLucky(orderId, {
       lucky_name: "the brass washer",
       provenance: "Found heads-up in the gravel lot, kept since.",
       power: "Keeps deploys boring on Fridays.",
       strength: "strong",
     });
-    expect([200, 302]).toContain(completed.status);
-
-    const order = await getOrder(testEnv, orderId);
-    expect(order?.status).toBe("completed");
-    const luckyId = order?.deliverable?.match(/lucky_[a-z0-9]+/)?.[0];
-    expect(luckyId).toBeDefined();
-    expect(order?.deliverable).toContain(`${BASE}/luckies/${luckyId}.svg`);
-
-    const card = await SELF.fetch(`${BASE}/luckies/${luckyId}.svg`);
-    expect(card.status).toBe(200);
-    const svg = await card.text();
-    expect(svg).toContain("the brass washer");
-    expect(svg).toContain("STRONG");
-    expect(svg).toContain("IN SERVICE");
-    expect(svg).not.toContain("SPECIMEN");
-
-    const record = await json(await SELF.fetch(`${BASE}/api/lucky/${luckyId}`));
-    const lucky = record["lucky"] as Record<string, unknown>;
-    expect(lucky["name"]).toBe("the brass washer");
-    expect(lucky["strength"]).toBe("strong");
-    expect(record["card_url"]).toBe(`${BASE}/luckies/${luckyId}.svg`);
-
-    const verified = await json(
-      await SELF.fetch(`${BASE}/api/verify/${luckyId}`),
-    );
-    expect(verified["valid"]).toBe(true);
-    expect(String(verified["note"])).toContain("Genuine lucky");
+    expect(response.status).toBe(404);
   });
 
   it("benches for real: re-signed record, re-inked card", async () => {
-    const orderId = await queueLuckiesOrder();
-    await completeLucky(orderId, {
-      lucky_name: "the acorn cap",
+    const record = await createLucky(testEnv, {
+      name: "the acorn cap",
       provenance: "Off the porch rail, autumn before last.",
       power: "Settles flaky tests when held nearby.",
       strength: "still proving itself",
+      orderId: "instant",
+      certId: "cert_testlucky2",
+      patronNumber: 78,
     });
-    const order = await getOrder(testEnv, orderId);
-    const luckyId = order?.deliverable?.match(/lucky_[a-z0-9]+/)?.[0] ?? "";
+    const luckyId = record.lucky.lucky_id;
 
     const moved = await SELF.fetch(`${BASE}/admin/luckies/move`, {
       method: "POST",
@@ -204,17 +183,6 @@ describe("the lucky shelf", () => {
     expect(verified["valid"]).toBe(true);
     const lucky = verified["lucky"] as Record<string, unknown>;
     expect(lucky["status"]).toBe("benched");
-  });
-
-  it("refuses a lucky without its parts", async () => {
-    const orderId = await queueLuckiesOrder();
-    const response = await completeLucky(orderId, {
-      lucky_name: "the unnamed",
-      provenance: "Nowhere yet.",
-      power: "",
-      strength: "strong",
-    });
-    expect(response.status).toBe(400);
   });
 
   it("tells the truth about cards that don't exist", async () => {

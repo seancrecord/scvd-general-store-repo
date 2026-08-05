@@ -130,7 +130,7 @@ describe("security.txt (RFC 9116)", () => {
 
 describe("the fulfillment log", () => {
   it("derives its rows from real order records and keeps buyer detail out", async () => {
-    const item = getMenuItem("phone_call");
+    const item = getMenuItem("the_collab");
     expect(item).toBeDefined();
     const order = await createOrder(testEnv, {
       item: item!,
@@ -154,7 +154,7 @@ describe("the fulfillment log", () => {
     expect(Number(summary["refunds_paid"])).toBeGreaterThanOrEqual(1);
 
     const rows = log["orders"] as Array<Record<string, unknown>>;
-    const row = rows.find((r) => r["item"] === "phone_call");
+    const row = rows.find((r) => r["item"] === "the_collab");
     expect(row).toBeDefined();
     expect(typeof row!["hours_taken"]).toBe("number");
     expect(row!["on_time"]).toBe(true);
