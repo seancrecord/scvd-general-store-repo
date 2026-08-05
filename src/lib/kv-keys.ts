@@ -17,6 +17,8 @@
  *            stamp_card:<nameSlug> (append-only visit-week log)
  * COUNTERS   stamp_condition:<week> (write-once, same week only)
  */
+import { canonicalAddress } from "@/lib/addresses";
+
 export const KV_KEYS = {
   order: (orderId: string): string => `order:${orderId}`,
   waitlist: (itemId: string, timestamp: number): string =>
@@ -115,7 +117,11 @@ export const KV_KEYS = {
   metric: (month: string, kind: string, rest: string): string =>
     `metric:${month}:${kind}:${rest}`,
   metricMonthPrefix: (month: string): string => `metric:${month}:`,
-  payer: (address: string): string => `payer:${address.toLowerCase()}`,
+  // Canonical, not lowercased: base58 Solana addresses are
+  // case-sensitive and a lowercased key orphans the true address.
+  // See lib/addresses.ts; legacy lowercased rows are merged by
+  // recordPayerSeen and the payer-case repair.
+  payer: (address: string): string => `payer:${canonicalAddress(address)}`,
   payerPrefix: "payer:",
 
   patron: (patronNumber: number): string => `patron:${patronNumber}`,

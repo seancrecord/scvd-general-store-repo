@@ -1,3 +1,4 @@
+import { canonicalAddress } from "@/lib/addresses";
 import { listKeys } from "@/lib/kv-list";
 import { sendAlert } from "@/lib/alerts";
 import { inferChannel, isHouseTraffic } from "@/lib/channel";
@@ -491,13 +492,40 @@ export async function recordSettlement(
 }
 
 async function recordPayerSeen(env: Env, address: string): Promise<void> {
-  const key = KV_KEYS.payer(address);
+  const canonical = canonicalAddress(address);
+  const key = KV_KEYS.payer(canonical);
   const now = new Date().toISOString();
-  const existing = await env.COUNTERS.get<PayerRecord>(key, "json");
+  let existing = await env.COUNTERS.get<PayerRecord>(key, "json");
+  // Self-heal: rows written before the canonical-address fix live
+  // under a lowercased key that, for a base58 address, is not the
+  // real wallet. Fold that history into the canonical row and
+  // delete the corrupted one, so one wallet never shows as two.
+  const legacyKey = `${KV_KEYS.payerPrefix}${address.trim().toLowerCase()}`;
+  if (legacyKey !== key) {
+    const legacy = await env.COUNTERS.get<PayerRecord>(legacyKey, "json");
+    if (legacy) {
+      existing = existing
+        ? {
+            ...existing,
+            purchases: existing.purchases + legacy.purchases,
+            first_seen:
+              legacy.first_seen < existing.first_seen
+                ? legacy.first_seen
+                : existing.first_seen,
+          }
+        : legacy;
+      await env.COUNTERS.delete(legacyKey);
+    }
+  }
   const record: PayerRecord = existing
-    ? { ...existing, last_seen: now, purchases: existing.purchases + 1 }
+    ? {
+        ...existing,
+        address: canonical,
+        last_seen: now,
+        purchases: existing.purchases + 1,
+      }
     : {
-        address: address.toLowerCase(),
+        address: canonical,
         first_seen: now,
         last_seen: now,
         purchases: 1,

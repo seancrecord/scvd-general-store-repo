@@ -484,6 +484,17 @@ adminRoutes.post("/admin/delivery/resolve", async (c) => {
 });
 
 /**
+ * THE PAYER-CASE REPAIR: one button, fixes payer rows whose base58
+ * address a legacy .toLowerCase() corrupted, using the certificates
+ * as the source of true case. Idempotent — safe to press twice.
+ */
+adminRoutes.post("/admin/repair/payer-case", async (c) => {
+  const { repairPayerCase } = await import("@/services/payer-repair");
+  const result = await repairPayerCase(c.env);
+  return c.json(result);
+});
+
+/**
  * THE TAX DRAWER: the whole money ledger as one CSV — sale rows off
  * the certificates, refund rows as their own offsetting events,
  * house purchases flagged and never omitted. Penny-page settles mint

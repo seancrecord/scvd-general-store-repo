@@ -117,6 +117,18 @@ export function renderToolsPage(data: ToolsPageData): string {
   </section>
 
   <section>
+    <h2>Payer-case repair</h2>
+    <p>Solana addresses are case-sensitive; payer rows written before
+    the canonical-address fix hold a lowercased copy no explorer
+    resolves. This walks the certificates (which kept the true case)
+    and rewrites the rows. Idempotent — pressing it twice finds
+    nothing the second time.</p>
+    <form method="post" action="/admin/repair/payer-case" style="margin:0.5em 0">
+      <button type="submit">Repair payer rows from certificates</button>
+    </form>
+  </section>
+
+  <section>
     <h2>Monthly patronage note</h2>
     <p>Served, signed, to every current recurring_patronage pass this month.</p>
     ${
