@@ -6,6 +6,7 @@ import {
   GUESTBOOK_MESSAGE_CAP,
   NAME_CAP,
   sanitizeText,
+  scrubBrokenText,
 } from "@/lib/sanitize";
 import { verifyMessageSignature } from "@/lib/signing";
 import type { Env, GuestbookEntry } from "@/types";
@@ -117,7 +118,20 @@ export async function listGuestbook(
   for (const name of listed.names) {
     const entry = values.get(name);
     if (entry) {
-      entries.push({ ...entry, kv_key: name });
+      /**
+       * SCRUBBED AT READ, not just at write. The input path has caught
+       * broken bytes since scrubBrokenText shipped; the entry that put
+       * a U+FFFD on the front page was written before it, and rewriting
+       * a visitor's stored words to fix our own display is not
+       * something this store does. So the wall renders it clean and the
+       * record keeps what arrived — display hygiene, not history.
+       */
+      entries.push({
+        ...entry,
+        name: scrubBrokenText(entry.name),
+        message: scrubBrokenText(entry.message),
+        kv_key: name,
+      });
     }
   }
   return entries;

@@ -91,6 +91,14 @@ export const KV_KEYS = {
   keeperLastSeen: "keeper_last_seen",
   shutterOverride: "shutter_override",
   firstDollar: "first_dollar",
+  /**
+   * The rail split snapshot: organic sales counted by the chain they
+   * settled on, walked off the certificates on the cron and read as ONE
+   * key by the front of the store. The walk itself is a scan of every
+   * certificate; doing it on each storefront render would put ninety KV
+   * reads behind a page a crawler hits for free.
+   */
+  railSplit: "rail_split",
   /** Fires the outside-signature alarm exactly once, ever. */
   firstSignature: "first_outside_signature",
   latestDigest: "digest:latest",

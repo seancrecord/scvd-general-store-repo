@@ -141,7 +141,16 @@ body.night {
   text-shadow: 0 0 10px rgba(255,180,94,0.55), 0 0 30px rgba(255,120,60,0.25);
 }
 .proprietors { position: relative; z-index: 2; margin-top: 0.6rem; font-style: italic; font-size: 0.9rem; color: var(--night-faded); }
-.track-record { position: relative; z-index: 2; margin: 0.7rem auto 0; max-width: 560px; font-size: 0.72rem; color: var(--night-faded); }
+/* The claim, at the size a claim deserves — it used to be a paragraph
+   of 0.72rem grey nobody read, this store's own keeper included. */
+.track-record {
+  position: relative; z-index: 2; margin: 0.9rem auto 0; max-width: 560px;
+  font-size: 0.92rem; letter-spacing: 0.02em; color: #d9cfe0;
+}
+.pay-rails {
+  position: relative; z-index: 2; margin: 0.35rem auto 0; max-width: 560px;
+  font-size: 0.72rem; color: var(--night-faded);
+}
 
 /* ---- the instruments: nixie odometer + mailbox LED ---- */
 .gauges {
@@ -337,27 +346,112 @@ body.night {
 .term-note { color: var(--teal-dim); }
 .term-pay { margin-top: 0.8rem; color: var(--teal); font-size: 0.72rem; letter-spacing: 0.08em; }
 
-/* ---- the wall ---- */
+/* ---- the wall: cards pinned to the boards, in somebody else's hand ----
+   The one section of this page written by visitors. It used to be set
+   in the same face and the same grey as the copy we write, and read as
+   more of ours. Own panel, own paper, own hand. */
 .wall { margin-top: 2.6rem; }
-.guest-slip {
-  border-left: 2px solid var(--line); padding: 0.5rem 0 0.5rem 0.9rem;
-  margin-bottom: 0.6rem;
-  transition: border-color 200ms ease;
+.wall-slips {
+  display: grid; gap: 0.9rem;
+  padding: 1.15rem 1rem 1.25rem;
+  border: 1px solid #2f2740; border-radius: 5px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 6px, rgba(255,255,255,0.012) 6px 7px),
+    linear-gradient(180deg, rgba(28,22,38,0.85), rgba(14,11,21,0.85));
+  box-shadow: inset 0 0 38px rgba(0,0,0,0.7);
 }
-.guest-slip:hover { border-color: var(--teal-dim); }
-.guest-who { font-weight: bold; color: #efe6f4; }
-.guest-when { font-size: 0.72rem; color: var(--night-faded); margin-left: 0.5rem; font-family: ui-monospace, monospace; }
-.guest-said { font-size: 0.9rem; color: var(--night-faded); margin-top: 0.15rem; }
+.guest-slip {
+  position: relative;
+  padding: 0.85rem 1rem 0.7rem;
+  background: linear-gradient(168deg, rgba(244,234,216,0.055), rgba(244,234,216,0.02));
+  border: 1px solid #3a3050; border-left: 2px solid var(--teal-dim);
+  border-radius: 3px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.guest-slip:nth-child(odd) { transform: rotate(-0.35deg); }
+.guest-slip:nth-child(even) { transform: rotate(0.4deg); }
+.guest-slip:hover {
+  transform: rotate(0deg) translateY(-2px);
+  border-color: var(--teal-dim);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 16px rgba(93,230,200,0.1);
+}
+/* A tack in the top corner of each card. */
+.guest-pin {
+  position: absolute; top: -5px; right: 12px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffd9a8, var(--neon) 55%, #8a4a17);
+  box-shadow: 0 2px 3px rgba(0,0,0,0.55), 0 0 7px rgba(255,180,94,0.35);
+}
+/* Palatino, deliberately NOT the Georgia the rest of the page is set in. */
+.guest-said {
+  font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  font-size: 0.94rem; line-height: 1.5; color: #c9bed3;
+}
+.guest-sig {
+  display: flex; align-items: baseline; justify-content: flex-end;
+  gap: 0.55rem; margin-top: 0.5rem;
+}
+/* A signature, in whatever script face the reader's machine keeps.
+   Every fallback lands somewhere legible; the last is the page's own. */
+.guest-who {
+  font-family: 'Snell Roundhand', 'Segoe Script', 'Bradley Hand',
+    'Brush Script MT', 'Apple Chancery', cursive, Georgia, serif;
+  font-size: 1.16rem; line-height: 1.1; color: #f0e4d6;
+  text-shadow: 0 0 12px rgba(240,228,214,0.18);
+}
+.guest-when {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.66rem; letter-spacing: 0.1em; color: var(--night-faded);
+}
 .empty-night { text-align: center; font-style: italic; color: var(--night-faded); }
+/* The two doors off the wall: the whole register, and the train. */
+.wall .menu-meta {
+  margin-top: 0.9rem; text-align: center;
+  font-size: 0.78rem; color: var(--night-faded);
+}
+.wall .menu-meta a { text-decoration: none; border-bottom: 1px solid rgba(93,230,200,0.22); }
+.wall .menu-meta a:hover { border-bottom-color: var(--neon-hot); }
+@media (prefers-reduced-motion: reduce) {
+  .guest-slip, .guest-slip:hover { transform: none; }
+}
 
-/* ---- fine print ---- */
+/* ---- fine print: one line of voice, the verify address, the doors ---- */
 .porch-print {
   margin-top: 3rem; padding-top: 1.4rem;
   border-top: 1px solid var(--line);
   text-align: center; font-size: 0.8rem; color: var(--night-faded);
 }
 .porch-print p + p { margin-top: 0.5rem; }
-.porch-est { letter-spacing: 0.2em; font-size: 0.68rem; text-transform: uppercase; }
+.porch-dare { color: var(--night-text); }
+.porch-rooms-label {
+  margin-top: 1.5rem !important;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--night-faded);
+}
+/* The links are the footer's job. A full underline on every room in the
+   store, one after another, reads as a wall of static; a hairline that
+   lights on hover does the same work and lets the names be read as
+   names. (Kept free of any spelled-out tally — this stylesheet is
+   SERVED, and the derived-not-typed guard reads what we serve.) */
+.porch-rooms {
+  max-width: 640px; margin-left: auto; margin-right: auto;
+  margin-top: 0.6rem !important; line-height: 2.1;
+  color: var(--line);
+}
+.porch-rooms a {
+  display: inline-block; white-space: nowrap;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(93,230,200,0.22);
+  padding-bottom: 1px;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+.porch-rooms a:hover { border-bottom-color: var(--neon-hot); }
+.porch-est {
+  margin-top: 1.4rem !important;
+  letter-spacing: 0.2em; font-size: 0.68rem; text-transform: uppercase;
+}
 
 a { color: var(--teal); }
 a:hover { color: var(--neon-hot); }

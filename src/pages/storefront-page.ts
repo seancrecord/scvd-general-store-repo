@@ -43,8 +43,13 @@ export interface StorefrontData {
   patronCount: number;
   /** Live books, for the structured data. Absent rather than stale. */
   stats?: StoreStats | null;
-  /** C2: the honest track-record line, computed live, never hand-edited. */
-  trackRecord?: string;
+  /**
+   * C2, at shopfront length: the organic count and the rail it came in
+   * on, computed live and never hand-edited. The four-sentence version
+   * still exists — it is what /stats, /skill.md and the catalog print,
+   * and it is one click away from here.
+   */
+  ledgerLine?: string;
   /** The empty frame by the register. Null means "It's waiting." */
   firstDollar?: FirstDollar | null;
 }
@@ -115,20 +120,37 @@ function nixieHtml(count: number): string {
     .join("");
 }
 
+/**
+ * THE WALL, SET LIKE A WALL RATHER THAN LIKE A LIST.
+ *
+ * Three signed slips used to render in the page's own body face, the
+ * same Georgia as the shelf copy, in the same grey — so the one part
+ * of this store written by visitors rather than by us looked exactly
+ * like the parts we wrote. It read as more of our own prose, which is
+ * the opposite of what a guestbook is for.
+ *
+ * Now it is a panel of pinned cards in their own hand: names in a
+ * script face, what they said in a different serif from everything
+ * around it, dates in the same mono the instruments use. Nothing is
+ * loaded from anywhere — system stacks only, each falling back to a
+ * face the page already uses, because a wall that waits on a font
+ * download is a wall that flashes blank on a slow phone.
+ */
 function guestbookHtml(entries: GuestbookEntry[]): string {
   if (entries.length === 0) {
     return `<p class="empty-night">${COPY.wallEmpty}</p>`;
   }
-  return entries
+  const slips = entries
     .slice(0, 3)
     .map(
       (entry) => `<div class="guest-slip">
-      <span class="guest-who">${escapeHtml(entry.name)}</span>
-      <span class="guest-when">${escapeHtml(entry.date.slice(0, 10))}</span>
+      <span class="guest-pin" aria-hidden="true"></span>
       <p class="guest-said">${escapeHtml(entry.message)}</p>
+      <p class="guest-sig"><span class="guest-who">${escapeHtml(entry.name)}</span><span class="guest-when">${escapeHtml(entry.date.slice(0, 10))}</span></p>
     </div>`,
     )
     .join("\n");
+  return `<div class="wall-slips">\n${slips}\n    </div>`;
 }
 
 /**
@@ -390,7 +412,8 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>
       <p class="proprietors">${COPY.intentLine}</p>
-      ${data.trackRecord ? `<p class="track-record">${escapeHtml(data.trackRecord)}</p>` : ""}
+      ${data.ledgerLine ? `<p class="track-record">${escapeHtml(data.ledgerLine)}</p>` : ""}
+      <p class="pay-rails">${COPY.payRails} ${COPY.booksLink} <a href="/stats">/stats</a>.</p>
     </header>
 
     <div class="gauges">
@@ -449,14 +472,10 @@ export function renderStorefront(data: StorefrontData): string {
     </section>
 
     <footer class="porch-print">
-      <p>${escapeHtml(STORE_METADATA.refund_policy)}</p>
-      <p>${escapeHtml(STORE_METADATA.hours)}</p>
-      <p><em>${escapeHtml(dareForDay(new Date().toISOString().slice(0, 10)))}</em></p>
+      <p class="porch-dare"><em>${escapeHtml(dareForDay(new Date().toISOString().slice(0, 10)))}</em></p>
       <p>${COPY.finePrintVerify}</p>
-      <p>${COPY.finePrintFounding}</p>
-      <p>${COPY.finePrintHouseLucky}</p>
-      <p>${COPY.finePrintPorch}</p>
-      <p class="porch-rooms">Every room, all free to read: ${roomsFooterHtml()}</p>
+      <p class="porch-rooms-label">Every room, all free to read</p>
+      <p class="porch-rooms">${roomsFooterHtml()}</p>
       <p class="porch-est">${COPY.footerAddress}</p>
     </footer>
 

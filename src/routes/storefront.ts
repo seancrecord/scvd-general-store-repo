@@ -4,7 +4,7 @@ import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
 import { listGuestbook } from "@/services/guestbook";
 import { letterCounts } from "@/services/letters";
-import { computeStats, trackRecordLine } from "@/services/stats";
+import { computeStats, storefrontLedgerLine } from "@/services/stats";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -42,9 +42,7 @@ storefrontRoutes.get("/", async (c) => {
       lettersAnswered: letters.answered,
       patronCount: patronRaw ? parseInt(patronRaw, 10) : 0,
       stats,
-      trackRecord: stats
-        ? trackRecordLine(stats, c.env.STORE_BASE_URL)
-        : undefined,
+      ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
       firstDollar,
     }),
   );

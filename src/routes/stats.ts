@@ -28,6 +28,18 @@ statsRoutes.get("/stats", async (c) => {
     listing_spec_schema: `${base}${SPEC_SCHEMA_PATH}`,
     note: "Computed from the same counters the keeper reads. No hand edits; the line rewrites itself as the ledger grows.",
     /**
+     * WHERE THE RAIL SPLIT COMES FROM, said here rather than left for
+     * somebody to infer, because it is the ONE figure on this page
+     * whose substrate is not the settle counters. Only present when
+     * there is a split to explain.
+     */
+    ...(stats.organic_by_rail
+      ? {
+          rail_split_method:
+            "organic_by_rail divides the organic figure by the chain the money arrived on. It is read off the certificates — every paid purchase mints one carrying its settlement network — and not off the settle counters, which have never recorded a rail. The two substrates are reconciled against each other before publishing: base + solana + unattributed always equals organic_settlements, and `unattributed` is what the certificates could not place (penny pages settle real money and mint no certificate; a facilitator can return a network we don't recognise). The walk runs on the hour, so a sale minutes old counts as unattributed until it does.",
+        }
+      : {}),
+    /**
      * AT_SCALE rule 5b. Every number above comes from counters this
      * store writes, which makes them our BOOKS and not the chain. The
      * failure they cannot see is the one that matters: a payment that

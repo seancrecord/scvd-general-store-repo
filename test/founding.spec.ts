@@ -88,9 +88,23 @@ describe("the founding edition", () => {
     expect(founding["price_usdc"]).toBe(0);
     expect(founding["url"]).toBe(`${BASE}/gazette/founding`);
 
-    // The storefront points at it.
+    /**
+     * THE STOREFRONT NO LONGER POINTS AT IT, and that is the keeper's
+     * call rather than a regression (2026-08-06): the footer had grown
+     * to eight paragraphs, of which the free founding edition was one,
+     * and the whole rack came off the front of the store with it.
+     *
+     * The room is not hidden — it is reachable, free and named on every
+     * surface an agent reads, which is what this test now holds. A page
+     * that only a crawler can find is the defect; a page the shopfront
+     * chooses not to advertise is copy, and copy is his (rule 7).
+     */
     const storefront = await (await SELF.fetch(`${BASE}/`)).text();
-    expect(storefront).toContain("/gazette/founding");
+    expect(storefront).not.toContain("/gazette/founding");
+    const llms = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    expect(llms).toContain("/gazette");
+    const sitemap = await (await SELF.fetch(`${BASE}/sitemap.xml`)).text();
+    expect(sitemap).toContain("/gazette");
 
     // Rack numbering starts after Issue No. 1.
     const counter = await testEnv.COUNTERS.get("gazette_issue_count");
