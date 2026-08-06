@@ -1,3 +1,4 @@
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
 import { outboundHeaders } from "@/lib/identity";
 import { newCheckId } from "@/lib/ids";
@@ -156,12 +157,23 @@ export async function verifyPhantomSignature(
   );
 }
 
-/** The hourly walk: resolve every check that has come due. */
+/**
+ * The hourly walk: resolve every check that has come due.
+ *
+ * The ROWS are read in bulk; the OBSERVATIONS still happen one at a
+ * time, and that difference is the point. Reading a scheduled check
+ * tells us nothing we need before reading the next one, so those go
+ * together in a single subrequest. Observing one is an outbound probe
+ * with a result to record, which is per-record work by nature and
+ * stays sequential — bulk-reading the list does not make this a
+ * parallel sweep, and it was never meant to be one.
+ */
 export async function sweepPhantomChecks(env: Env): Promise<number> {
   const listed = await listKeys(env.ORDERS, { prefix: KV_KEYS.phantomPrefix, cap: PHANTOM_CAP });
+  const rows = await bulkGetJson<PhantomCheckRecord>(env.ORDERS, listed.names);
   let observed = 0;
   for (const name of listed.names) {
-    const record = await env.ORDERS.get<PhantomCheckRecord>(name, "json");
+    const record = rows.get(name);
     if (
       record &&
       record.status === "scheduled" &&

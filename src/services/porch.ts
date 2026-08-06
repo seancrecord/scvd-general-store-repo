@@ -1,3 +1,4 @@
+import { bulkGetText } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   PORCH_AMBIENCE,
@@ -84,18 +85,31 @@ export async function leaveTreat(
   return { reaction: treatReaction(date), treatsToday };
 }
 
-/** Treats left over the trailing week, for the Gazette's aggregate line. */
+/**
+ * Treats left over the trailing week, for the Gazette's aggregate line.
+ *
+ * SEVEN KEYS, ONE SUBREQUEST. The days are known before any of them is
+ * read — no key here depends on what the previous one said — so the
+ * loop that fetched them one at a time was seven round trips for an
+ * aggregate that could be a single bulk read. The keys are computed
+ * first and read together; the sum is unchanged, a missing day still
+ * counts as nothing, and the Gazette's line is the same number it
+ * always was.
+ */
 export async function treatsThisWeek(
   env: Env,
   date: Date = new Date(),
 ): Promise<number> {
-  let total = 0;
+  const keys: string[] = [];
   for (let daysBack = 0; daysBack < 7; daysBack += 1) {
     const day = new Date(date);
     day.setUTCDate(day.getUTCDate() - daysBack);
-    const count = await env.COUNTERS.get(
-      KV_KEYS.porchTreats(day.toISOString().slice(0, 10)),
-    );
+    keys.push(KV_KEYS.porchTreats(day.toISOString().slice(0, 10)));
+  }
+  const counts = await bulkGetText(env.COUNTERS, keys);
+  let total = 0;
+  for (const key of keys) {
+    const count = counts.get(key);
     total += count ? parseInt(count, 10) : 0;
   }
   return total;
