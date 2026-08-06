@@ -1,59 +1,70 @@
+import { bulkGetText } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { listKeys } from "@/lib/kv-list";
+import { monthsSinceOpening } from "@/lib/metrics";
 import type { Env } from "@/types";
 
 /**
- * WHICH CHAIN THE MONEY CAME IN ON — the one fact the front of the
- * store was missing, and the keeper's ask: this shop takes USDC on two
- * rails and said so nowhere a human would look, in a line ("USDC on
- * Base or Solana") that only ever appeared inside the agent door.
+ * WHICH CHAIN THE MONEY CAME IN ON — two records, one seam, no sale
+ * counted twice and none counted on neither side.
  *
- * WHERE THE NUMBERS COME FROM. Certificates. Every paid purchase mints
- * one carrying the network it settled on, which makes them the only
- * all-time record of the split — the settle counters have never known
- * a rail, so a counter added at the till today would report zeroes for
- * every sale this store has already made, and a zero that means "not
- * measured" is the exact shape of lie this store keeps hunting.
+ * THE TILL IS THE RECORD, from the moment it started keeping one.
+ * recordSettlement writes the rail beside the sale, and it is the same
+ * call that produces the organic count, so a sale that has one has the
+ * other. Penny pages — the Almanac, the Gazette's issues, the zodiac
+ * archive — take real money and mint no certificate; they are exactly
+ * why this cannot be read off certificates, and exactly what the till
+ * catches for free.
  *
- * WHY IT IS A SNAPSHOT. That walk reads every certificate in the
- * drawer. The storefront is the page a crawler hits for free and a
- * buyer hits before deciding anything; it gets one KV read, and the
- * cron does the walking. A snapshot that fails to refresh goes STALE
- * rather than wrong, carries the timestamp that proves it, and the
- * front of the store simply drops the split when there is none —
- * the organic count stands on its own, as it did before.
+ * CERTIFICATES ARE THE RECORD FOR EVERYTHING BEFORE IT. The store sold
+ * for weeks before the meter existed, and a certificate carries the
+ * network it settled on, so the history is recoverable — for sales
+ * that minted one. The walk stops at KV_KEYS.railMeterStart, the
+ * instant the till took over, so no sale is counted on both sides.
  *
- * WHY IT NEVER OVERRULES THE ORGANIC FIGURE. Two substrates: the
- * organic count comes from the settle counters, the split from the
- * certificates, and this store has already published one subtraction
- * that didn't come out. So the split is rendered against the counter
- * total and the remainder is NAMED — penny pages settle real money and
- * mint no certificate, and a facilitator can return a network we don't
- * recognise. Base + Solana + unattributed always equals the organic
- * figure printed beside it, because the last term is computed to make
- * it so, and it is labelled rather than hidden.
+ * WHAT STAYS UNPLACEABLE, and it is a closed set: a penny page sold
+ * BEFORE the meter started. No certificate, no till row, and nothing
+ * else ever wrote the rail down. That number can never grow — the till
+ * catches every sale now — and it is published as what it is rather
+ * than hidden, or worse, guessed at.
+ *
+ * WHY THE CERT SIDE IS A SNAPSHOT. It walks every certificate in the
+ * drawer. The storefront is a page a crawler hits for free; it gets
+ * one KV read of a snapshot the cron writes. The till counters are
+ * cheap counters and are read live.
  */
 
 export interface RailSplit {
-  /** Organic sales whose certificate says an eip155 (Base) network. */
+  /** Pre-meter, certificate-backed: settled on an eip155 (Base) network. */
   base: number;
-  /** Organic sales whose certificate says a solana network. */
+  /** Pre-meter, certificate-backed: settled on a Solana network. */
   solana: number;
-  /** Organic, certificate-backed, network unrecognised. */
+  /** Pre-meter, certificate-backed, network unrecognised. */
   unknown: number;
   /** True when the cert scan hit its cap: the split is a floor, not a total. */
   truncated: boolean;
+  /** The seam this walk stopped at, carried so the snapshot explains itself. */
+  meter_start?: string;
   computed_at: string;
 }
 
-/** Walks the certificates. Cron work, never a page render. */
+export interface RailCounts {
+  base: number;
+  solana: number;
+  other: number;
+}
+
+/** Walks the certificates, up to the seam. Cron work, never a page render. */
 export async function computeRailSplit(env: Env): Promise<RailSplit> {
+  const meterStart = (await env.COUNTERS.get(KV_KEYS.railMeterStart)) ?? undefined;
   const { takeSummary } = await import("@/services/books-summary");
-  const summary = await takeSummary(env);
+  const summary = await takeSummary(env, meterStart ? { before: meterStart } : undefined);
   return {
     base: summary.rails.base.sales,
     solana: summary.rails.solana.sales,
     unknown: summary.rails.unknown.sales,
     truncated: summary.truncated,
+    ...(meterStart ? { meter_start: meterStart } : {}),
     computed_at: new Date().toISOString(),
   };
 }
@@ -75,4 +86,34 @@ export async function readRailSplit(env: Env): Promise<RailSplit | null> {
     return null;
   }
   return stored;
+}
+
+/**
+ * The till's own rails, organic only, all months. Same scan shape as the
+ * paid counters in computeStats — `rail:` is organic, `railh:` is house,
+ * and house never reaches a public figure.
+ */
+export async function readRailCounters(env: Env): Promise<RailCounts> {
+  const counts: RailCounts = { base: 0, solana: 0, other: 0 };
+  for (const month of monthsSinceOpening()) {
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: `metric:${month}:rail`,
+      cap: 100,
+    });
+    const values = await bulkGetText(env.COUNTERS, listed.names);
+    for (const name of listed.names) {
+      if (name.includes(":railh:")) {
+        continue; // Family doesn't make the paper.
+      }
+      const rail = name.slice(name.lastIndexOf(":") + 1);
+      const value = parseInt(values.get(name) ?? "", 10);
+      if (!Number.isFinite(value)) {
+        continue;
+      }
+      if (rail === "base" || rail === "solana" || rail === "other") {
+        counts[rail] += value;
+      }
+    }
+  }
+  return counts;
 }

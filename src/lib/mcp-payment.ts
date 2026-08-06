@@ -333,6 +333,12 @@ export async function runMcpPayment(
     paidUsdc,
     minimumUsdc,
   };
+  // Same till, same meter: the MCP door books a rail exactly as the
+  // HTTP door does, or the split would quietly depend on which door a
+  // buyer came through.
+  if (settlement.network) {
+    settlementSignals.network = settlement.network;
+  }
   // Same fallback as the HTTP door: a settle with no payer would book
   // as organic, and the house flag is decided by wallet.
   const payer = settlement.payer ?? payerFromPaymentHeader(paymentHeader);

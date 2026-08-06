@@ -36,6 +36,30 @@ export function metricsMonth(date: Date = new Date()): string {
   return date.toISOString().slice(0, 7);
 }
 
+/**
+ * Every month the store has been open, oldest first — the loop bound
+ * for any all-time counter scan.
+ *
+ * IT LIVES HERE, next to the counters it enumerates, rather than in
+ * services/stats where it was born. Moving it broke a cycle rather than
+ * tidied one: services/rails needs this bound to scan the rail
+ * counters, services/stats imports rails to publish the split, and
+ * rails importing stats back closed a loop that showed up as an
+ * unrelated test timing out under load — a module graph deadlock
+ * wearing a five-second timeout. lib/ does not import services/, which
+ * is the rule that keeps that from happening again.
+ */
+export function monthsSinceOpening(now: Date = new Date()): string[] {
+  const months: string[] = [];
+  const cursor = new Date(Date.UTC(2026, 6, 1));
+  const end = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
+  while (cursor.getTime() <= end) {
+    months.push(cursor.toISOString().slice(0, 7));
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+  }
+  return months;
+}
+
 /** Collapses a gated path to a stable per-item metric key. */
 export function itemKeyFromPath(path: string): string {
   if (path.startsWith("/api/buy/")) {
@@ -424,6 +448,55 @@ function tierLabel(paidUsdc: number, minimumUsdc: number): string {
 export interface SettlementSignals extends EventSignals {
   paidUsdc: number;
   minimumUsdc: number;
+  /**
+   * The chain the money actually arrived on, as the facilitator
+   * reported it. Optional because a settle can come back without one;
+   * an absent rail counts as a settle with no rail rather than as a
+   * guess, same rule as an absent payer.
+   */
+  network?: string;
+}
+
+/**
+ * THE RAIL METER, and why it lives at the till instead of on the
+ * certificates where it started.
+ *
+ * The first cut of the storefront's Base/Solana split read the rail off
+ * the certificates, because a certificate carries the settlement
+ * network and is the only all-time record of it. That worked for every
+ * sale that mints a certificate — and PENNY PAGES MINT NONE. The
+ * Almanac, the Gazette's issues and the zodiac archive take real money
+ * through this exact till and deliberately issue no artifact, so each
+ * one landed in a third bucket on the front of the store labelled
+ * "unattributed", which reads to a stranger like a chain we can't name
+ * or money we lost. It was neither: it was a page we sold and did not
+ * write the rail down for.
+ *
+ * A wording fix would have been a lie with a nicer font, and the hole
+ * would have reopened the next time this store sold something that
+ * mints nothing. So the measurement moved to the one place every
+ * settle passes: this function, which is what PRODUCES the organic
+ * count. The count and the rail are now written by the same call on
+ * the same substrate — a sale that skipped this would not be an
+ * organic sale either — so the two cannot come apart.
+ *
+ * Rails are collapsed to base/solana/other rather than stored raw: the
+ * counter key is derived from a facilitator-supplied string, and an
+ * unbounded key is one a stranger could mint without limit. "other"
+ * is a real answer and gets its own counter rather than being dropped.
+ */
+export type SettlementRail = "base" | "solana" | "other";
+
+export function railOf(network: string | undefined): SettlementRail | null {
+  if (!network) {
+    return null;
+  }
+  if (network.startsWith("solana")) {
+    return "solana";
+  }
+  return network.startsWith("eip155") || network.startsWith("base")
+    ? "base"
+    : "other";
 }
 
 /** Money settled: count it, tier it, attribute it, remember the wallet. */
@@ -451,6 +524,23 @@ export async function recordSettlement(
     env,
     KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel),
   );
+  /**
+   * The rail, counted beside the sale rather than inferred from an
+   * artifact the sale may not mint. The meter's start instant is
+   * stamped by whichever settle gets here first and never moved: it is
+   * the seam the certificate walk stops at, so no sale is counted on
+   * both sides of it.
+   */
+  const rail = railOf(signals.network);
+  if (rail) {
+    if (!(await env.COUNTERS.get(KV_KEYS.railMeterStart))) {
+      await env.COUNTERS.put(KV_KEYS.railMeterStart, event.at);
+    }
+    await bump(
+      env,
+      KV_KEYS.metric(month, `rail${bucketSuffix(event, false)}`, rail),
+    );
+  }
   // Revenue, organic and house apart, in integer millionths of USDC.
   await bumpBy(
     env,

@@ -36,7 +36,7 @@ statsRoutes.get("/stats", async (c) => {
     ...(stats.organic_by_rail
       ? {
           rail_split_method:
-            "organic_by_rail divides the organic figure by the chain the money arrived on. It is read off the certificates — every paid purchase mints one carrying its settlement network — and not off the settle counters, which have never recorded a rail. The two substrates are reconciled against each other before publishing: base + solana + unattributed always equals organic_settlements, and `unattributed` is what the certificates could not place (penny pages settle real money and mint no certificate; a facilitator can return a network we don't recognise). The walk runs on the hour, so a sale minutes old counts as unattributed until it does.",
+            "organic_by_rail divides the organic figure by the chain the money arrived on. It comes from two records covering disjoint sets of sales, so nothing is counted twice: the TILL, which writes the rail in the same call that produces the organic count and therefore catches every settle including the penny pages that mint no certificate; and, for everything settled before the till started recording rails, the CERTIFICATES, whose walk stops at exactly the instant the till took over. base + solana + rail_not_recorded always equals organic_settlements. rail_not_recorded is a closed and shrinking set — sales from before the meter that also minted no certificate, so neither record holds the answer — and nothing can join it. Those are recoverable from the chain by hand (the receiving wallets are public and every settle is a transfer into one of them); each one identified is entered against its transaction hash and moves to its real rail.",
         }
       : {}),
     /**
