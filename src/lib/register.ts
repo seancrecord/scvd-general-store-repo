@@ -1,3 +1,4 @@
+import { bulkGetText } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listGuestbook } from "@/services/guestbook";
@@ -80,12 +81,23 @@ export async function readVisitorsRegister(
   const bearers: RegisterBearer[] = [];
   // Cards live in PATRONS, not GUESTBOOK — checked rather than assumed.
   const cards = await listKeys(env.PATRONS, { prefix: KV_KEYS.stampCard(""), cap: BEARER_CAP });
+  /**
+   * ONE SUBREQUEST PER HUNDRED CARDS, not one per card. This walked the
+   * list with a .get() inside the loop, which is fine at a handful of
+   * named cards and is a page that stops loading at a few hundred —
+   * the cap above is 200 and the Worker's subrequest ceiling is the
+   * thing that would give first. Read as TEXT rather than JSON so the
+   * parse below keeps its own guard: a card row that isn't valid JSON
+   * has always degraded to "no weeks" rather than failing the page,
+   * and that behaviour is unchanged.
+   */
+  const cardRows = await bulkGetText(env.PATRONS, cards.names);
   for (const name of cards.names) {
     const slug = name.slice(KV_KEYS.stampCard("").length);
     if (slug.length === 0) {
       continue;
     }
-    const raw = await env.PATRONS.get(name);
+    const raw = cardRows.get(name) ?? null;
     let weeks: string[] = [];
     if (raw) {
       try {
