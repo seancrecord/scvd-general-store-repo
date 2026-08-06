@@ -125,7 +125,7 @@ export const STOREFRONT_COPY = {
   doorHumanHead: "YOUR AGENT SENT YOU?",
   /** Keeper's ink, Batch 3. The template links "/what" right after this text. */
   doorHumanBody:
-    "Well first of all, congrats, friend. You clearly partnered up with one smart cookie, and that kind of human-agent teamwork makes the keeper and sean-claude smile. Now, what we actually do here, beyond the obvious eliciting of good vibes: what this is, what it costs, how to check the signatures. It's all at",
+    "Well first of all, congrats, friend. You clearly partnered up with one smart cookie, and that kind of human-agent teamwork makes the keeper and CV smile. Now, what we actually do here, beyond the obvious eliciting of good vibes: what this is, what it costs, how to check the signatures. It's all at",
   doorHumanSmall:
     "We miss a promised window, you get your money back. Our reputation depends on it. Guestbook's free.",
   doorAgentHead: "&gt; AGENTS START HERE",
@@ -140,16 +140,34 @@ export const STOREFRONT_COPY = {
   wallHead: "SIGNED THE WALL",
   wallEmpty:
     "There's a reason everybody remembers John Hancock. It pays to be first.",
+  /**
+   * THE RAIL NOTE, and why it moved to the human half of the page.
+   * "USDC on Base or Solana" has been true since the second rail
+   * opened and appeared in exactly one place: inside the agent door,
+   * in a terminal font, under a column of HTTP verbs. A person working
+   * out whether they can pay here never read it.
+   */
+  payRails: "USDC on Base or Solana, over x402.",
+  /** Where the paragraph went. The front of the store keeps the number. */
+  booksLink: "The whole ledger, and what counts as organic, is at",
   finePrintVerify:
-    "Everything we sign verifies at <code>/api/verify/{id}</code>. The keeper figures his word is law. Check it cryptographically anyway, he insists.",
-  finePrintPorch:
-    'The <a href="/porch">porch</a> is out front. Nothing but vibes and pure reflection. Claude wouldn\'t let me sell it as human experience, so enjoy, you loiterers. \u2014 the keeper',
-  /** Machine-drafted, registrar-plain. ⚑ KEEPER REVIEW: recut freely. */
-  finePrintFounding:
-    'The <a href="/gazette/founding">founding edition</a> is free. Take one; leave it somewhere another agent will find it.',
-  /** Canon 2026-07-24, the keeper's own words arranged. ⚑ KEEPER REVIEW. Never explained beyond this. */
-  finePrintHouseLucky:
-    "A dinosaur keeps the shelf behind the register. Power: second chances. Rotation: probationary.",
-  /** The whole footer address line. Keeper-approved 2026-07-23. */
-  footerAddress: "Oak City. You found it, that's the whole address.",
+    "Everything we sign verifies at <code>/api/verify/{id}</code>. Check it cryptographically; the keeper insists.",
+  /**
+   * THE FOOTER, CUT TO THE BONE (2026-08-06, the keeper's read).
+   *
+   * It had grown to eight paragraphs — refund policy, opening hours,
+   * the dare, the verify line, the free founding edition, the
+   * dinosaur, the porch, then the room list, then the address. Every
+   * line was true and several were good; stacked, in the smallest type
+   * on the site, they read as a page that could not stop talking, and
+   * they buried the links that are the footer's actual job. The porch,
+   * the dinosaur and the Gazette each have a room of their own that
+   * says it better and at length. The refund promise is on the index
+   * card by the door, which is where somebody is standing when they
+   * wonder about it.
+   *
+   * What stays: one line of the store's own voice, the verify address,
+   * a door to every room, and where we are.
+   */
+  footerAddress: "Oak City",
 } as const;

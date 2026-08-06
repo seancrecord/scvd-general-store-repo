@@ -50,7 +50,15 @@ export interface Room {
 export const ROOMS: readonly Room[] = [
   { path: "/what", name: "What is this?" },
   { path: "/try", name: "The Practice Counter" },
-  { path: "/gazette", name: "The Gazette" },
+  /**
+   * OFF THE FRONT OF THE STORE 2026-08-06, the keeper's call: the
+   * footer stopped linking the Gazette. The rack is still open, still
+   * free, still in the sitemap, llms.txt, the x402 document and the
+   * contract — every surface an agent reads. It just stopped taking a
+   * slot on the one surface a person reads, now that weekly
+   * self-drafting is retired and the Almanac carries the writing.
+   */
+  { path: "/gazette", name: "The Gazette", on_storefront: false },
   { path: "/almanac", name: "The Keeper's Almanac" },
   { path: "/directory", name: "Town Directory" },
   { path: "/train", name: "The train" },

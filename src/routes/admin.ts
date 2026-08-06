@@ -320,6 +320,18 @@ adminRoutes.get("/admin", async (c) => {
     import("@/services/books-summary").then(({ takeSummary }) =>
       takeSummary(c.env),
     ),
+    /**
+     * The rail split snapshot, refreshed here as well as on the cron.
+     * The desk is already paying for the certificate walk to build the
+     * take; this writes what it learned into the one key the front of
+     * the store reads, so the keeper opening his own office is enough
+     * to bring the shopfront's Base/Solana split current instead of
+     * waiting out the hour. Never blocks the desk: a failure here
+     * leaves the last snapshot standing.
+     */
+    import("@/services/rails").then(({ refreshRailSplit }) =>
+      refreshRailSplit(c.env).catch(() => null),
+    ),
   ]);
   const emptyLedger = emptyMonthLedger();
   const pendingReviews =

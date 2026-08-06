@@ -441,6 +441,27 @@ const worker: ExportedHandler<Env> = {
           }),
       ),
     );
+    /**
+     * THE RAIL SPLIT, walked here so the storefront never walks it.
+     * The front of the store prints how many organic sales came in on
+     * Base and how many on Solana; the answer lives on the
+     * certificates, and reading every certificate is not something a
+     * page render gets to do. This writes one key an hour. A failure
+     * leaves the last snapshot standing and the storefront prints the
+     * count without the split — stale-then-absent, never invented.
+     */
+    ctx.waitUntil(
+      import("@/services/rails").then(({ refreshRailSplit }) =>
+        refreshRailSplit(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Rail split refresh failed: ${String(error)}`,
+            }),
+        ),
+      ),
+    );
   },
 };
 

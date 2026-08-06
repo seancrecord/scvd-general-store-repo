@@ -41,6 +41,27 @@ export interface StoreStats {
    * different substrates and publish 88 − 85 beside an organic 5.
    */
   artifacts_issued: number;
+  /**
+   * THE RAIL SPLIT: the organic figure above, divided by the chain the
+   * money actually arrived on. Absent — never zeroed — when the
+   * snapshot has not been written yet or when it cannot be reconciled
+   * against the counters, because "0 on Solana" and "we haven't
+   * measured Solana" are different claims and only one of them is
+   * true today.
+   *
+   * base + solana + unattributed === organic_settlements, always, by
+   * construction: the last term is what the certificates could not
+   * account for (penny pages mint no certificate; a facilitator can
+   * return a network we don't know), and it is printed rather than
+   * absorbed. This store has published one subtraction that did not
+   * come out; it does not get to publish a second.
+   */
+  organic_by_rail?: {
+    base: number;
+    solana: number;
+    unattributed: number;
+    computed_at: string;
+  };
   computed_at: string;
 }
 
@@ -104,15 +125,28 @@ export async function computeStats(env: Env): Promise<StoreStats> {
    */
   const { totalReclassified } = await import("@/services/reclassify");
   const reclassified = await totalReclassified(env);
+  const organicSettlements = Math.max(0, organic - reclassified);
+  const { readRailSplit } = await import("@/services/rails");
+  const split = await readRailSplit(env).catch(() => null);
   return {
     operating_since: OPERATING_SINCE,
     settled_purchases_total:
       organic + house + FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
-    organic_settlements: Math.max(0, organic - reclassified),
+    organic_settlements: organicSettlements,
     house_settlements: house + reclassified,
     reclassified_house: reclassified,
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
+    ...(split && split.base + split.solana <= organicSettlements
+      ? {
+          organic_by_rail: {
+            base: split.base,
+            solana: split.solana,
+            unattributed: organicSettlements - split.base - split.solana,
+            computed_at: split.computed_at,
+          },
+        }
+      : {}),
     computed_at: new Date().toISOString(),
   };
 }
@@ -141,6 +175,47 @@ export function trackRecordLine(stats: StoreStats, base: string): string {
     `Operating since ${stats.operating_since}.`,
     `Settled purchases: ${stats.settled_purchases_total} — ${parts.join(" + ")}.`,
     `Only the organic figure counts as proof.`,
+    ...(stats.organic_by_rail ? [railSentence(stats.organic_by_rail)] : []),
     `Every number here is computed live from ${base}/stats; every artifact ever issued (${stats.artifacts_issued}, free shelf included) verifies at ${base}/api/verify/{id}.`,
   ].join(" ");
+}
+
+/** The rail split as one sentence, remainder named. Machine surfaces. */
+function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string {
+  const tail =
+    rail.unattributed > 0
+      ? ` and ${rail.unattributed} the certificates can't place on a rail (penny pages settle real money and mint no certificate)`
+      : "";
+  return `Of the organic figure, ${rail.base} settled in USDC on Base, ${rail.solana} in USDC on Solana${tail}.`;
+}
+
+/**
+ * THE SAME BOOKS, AT THE LENGTH A SHOPFRONT CAN CARRY.
+ *
+ * The front of the store used to print trackRecordLine whole: four
+ * sentences, six figures, two URLs and the house-flagging policy, set
+ * in 0.72rem grey under the neon. It is the right paragraph — for
+ * /stats, for the skill, for the catalog, where a reader arrived
+ * wanting the ledger. On the storefront it was a wall of small type
+ * between the sign and the shelves, and the keeper read it the way
+ * everybody else did: not at all.
+ *
+ * So the shopfront gets the one number that is the claim — organic
+ * sales, the figure this whole store is built to earn — split by the
+ * rail the money came in on, and the paragraph stays one click away.
+ * Same source, same instant, no second copy to drift: this function
+ * takes the same StoreStats the long line does.
+ */
+export function storefrontLedgerLine(stats: StoreStats): string {
+  const sales = `${stats.organic_settlements} organic ${stats.organic_settlements === 1 ? "sale" : "sales"}`;
+  const rail = stats.organic_by_rail;
+  if (!rail || rail.base + rail.solana === 0) {
+    return `${sales}, from wallets we don't control.`;
+  }
+  const parts = [
+    ...(rail.base > 0 ? [`${rail.base} on Base`] : []),
+    ...(rail.solana > 0 ? [`${rail.solana} on Solana`] : []),
+    ...(rail.unattributed > 0 ? [`${rail.unattributed} unattributed`] : []),
+  ];
+  return `${sales} — ${parts.join(", ")}.`;
 }
