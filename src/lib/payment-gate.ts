@@ -706,6 +706,11 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     paidUsdc,
     minimumUsdc,
   };
+  // The rail, recorded at the till. Everything gated passes here,
+  // including the penny pages that mint no certificate to carry it.
+  if (settlement.network) {
+    settlementSignals.network = settlement.network;
+  }
   // The payer, from the facilitator if it returned one and from the
   // signed authorization if it did not. THIS MATTERS MORE THAN IT
   // LOOKS: the house flag is decided by wallet address, so a settle

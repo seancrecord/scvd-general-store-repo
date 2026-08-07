@@ -1,7 +1,10 @@
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { FOUNDING_SETTLES_WITHOUT_PAYER_ROW } from "@/lib/metrics";
+import {
+  FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
+  monthsSinceOpening,
+} from "@/lib/metrics";
 import type { Env } from "@/types";
 
 /** Ceiling on a paid counters scan. An unnamed cap is a silent one. */
@@ -15,6 +18,36 @@ const PAID_METRIC_CAP = 2000;
  */
 
 export const OPERATING_SINCE = "2026-07-22";
+
+/**
+ * PRE-METER SALES WHOSE RAIL WAS IDENTIFIED BY HAND, and the only
+ * hand-typed figures in this file.
+ *
+ * A sale settled before the till recorded rails, that also minted no
+ * certificate to carry one, cannot be placed from our own books — the
+ * store's records simply do not contain the answer. The CHAIN does:
+ * the store's Base and Solana receiving wallets are public, every
+ * settle is a USDC transfer into one of them, and a transfer with no
+ * certificate against it is precisely what the bank reconciliation
+ * already hunts for. So the answer is recoverable; it is just
+ * recoverable by a person reading a block explorer rather than by this
+ * code.
+ *
+ * THE BAR FOR ADDING TO THIS, because a hand-typed number in a public
+ * figure is a liability the moment it stops being evidence: name the
+ * transaction in the commit that changes it. Not "I think that one was
+ * Solana" — the tx hash, on the chain, for the amount, at the time.
+ * Same standard as the founding settle in metrics.ts, which carries
+ * its own hash in the comment above it.
+ *
+ * Zero is the honest starting state and the set is closed: nothing can
+ * join it, because every sale from the meter's start is counted at the
+ * till.
+ */
+export const RAILS_ENTERED_BY_HAND: { base: number; solana: number } = {
+  base: 0,
+  solana: 0,
+};
 
 export const HOUSE_FLAG_POLICY =
   "House traffic (the proprietors' own wallets and tests) is flagged at the till and excluded from every organic figure. Family doesn't make the paper.";
@@ -43,38 +76,34 @@ export interface StoreStats {
   artifacts_issued: number;
   /**
    * THE RAIL SPLIT: the organic figure above, divided by the chain the
-   * money actually arrived on. Absent — never zeroed — when the
-   * snapshot has not been written yet or when it cannot be reconciled
-   * against the counters, because "0 on Solana" and "we haven't
-   * measured Solana" are different claims and only one of them is
-   * true today.
+   * money actually arrived on. Absent — never zeroed — when there is
+   * nothing to divide it by yet, because "0 on Solana" and "we haven't
+   * measured Solana" are different claims.
    *
-   * base + solana + unattributed === organic_settlements, always, by
-   * construction: the last term is what the certificates could not
-   * account for (penny pages mint no certificate; a facilitator can
-   * return a network we don't know), and it is printed rather than
-   * absorbed. This store has published one subtraction that did not
-   * come out; it does not get to publish a second.
+   * base + solana + rail_not_recorded === organic_settlements, always,
+   * by construction. The last term is a CLOSED SET and shrinking: sales
+   * settled before the till started recording rails that also minted no
+   * certificate to carry one — in practice a penny page, which takes
+   * real money and issues no artifact by design. Nothing joins it, so
+   * it can only go down, and it goes down by hand as the keeper
+   * identifies each one against the chain.
    */
   organic_by_rail?: {
     base: number;
     solana: number;
-    unattributed: number;
+    rail_not_recorded: number;
     computed_at: string;
   };
   computed_at: string;
 }
 
-export function monthsSinceOpening(now: Date = new Date()): string[] {
-  const months: string[] = [];
-  const cursor = new Date(Date.UTC(2026, 6, 1));
-  const end = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
-  while (cursor.getTime() <= end) {
-    months.push(cursor.toISOString().slice(0, 7));
-    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
-  }
-  return months;
-}
+/**
+ * Re-exported, not redefined: the implementation moved to lib/metrics
+ * beside the counters it enumerates, so services/rails could use it
+ * without importing this file and closing a cycle. Callers that always
+ * asked stats for it keep asking stats for it.
+ */
+export { monthsSinceOpening };
 
 export async function computeStats(env: Env): Promise<StoreStats> {
   /**
@@ -100,6 +129,10 @@ export async function computeStats(env: Env): Promise<StoreStats> {
   );
   let organic = 0;
   let house = 0;
+  /** Organic settles from the months the store was single-rail. */
+  let organicBeforeSecondRail = 0;
+  const { monthsBeforeSecondRail } = await import("@/services/rails");
+  const singleRailMonths = new Set(monthsBeforeSecondRail());
   for (const month of monthsSinceOpening()) {
     const listed = await listKeys(env.COUNTERS, { prefix: `metric:${month}:paid`, cap: PAID_METRIC_CAP });
     const names = listed.names;
@@ -111,6 +144,9 @@ export async function computeStats(env: Env): Promise<StoreStats> {
         house += count;
       } else {
         organic += count;
+        if (singleRailMonths.has(month)) {
+          organicBeforeSecondRail += count;
+        }
       }
     }
   }
@@ -126,8 +162,43 @@ export async function computeStats(env: Env): Promise<StoreStats> {
   const { totalReclassified } = await import("@/services/reclassify");
   const reclassified = await totalReclassified(env);
   const organicSettlements = Math.max(0, organic - reclassified);
-  const { readRailSplit } = await import("@/services/rails");
-  const split = await readRailSplit(env).catch(() => null);
+  /**
+   * THE TWO RAIL RECORDS, added rather than chosen between, because
+   * they cover disjoint sets of sales: the till counts everything from
+   * the moment it started, the certificate walk stops at exactly that
+   * instant. Neither can see the other's sales, so nothing is counted
+   * twice and the sum is the whole of what we know.
+   */
+  const { readRailSplit, readRailCounters } = await import("@/services/rails");
+  const [split, till] = await Promise.all([
+    readRailSplit(env).catch(() => null),
+    readRailCounters(env).catch(() => null),
+  ]);
+  /**
+   * THE THIRD RECORD, and the strongest of the three: what the store
+   * was CAPABLE of accepting. Every organic settle from the months
+   * before the Solana door was built had exactly one rail available to
+   * it, so a pre-rail sale that neither ledger placed is not unknown —
+   * it is Base, necessarily. This is the keeper's argument, and it
+   * beats a block explorer: an explorer tells you where a payment
+   * landed, this tells you where it COULD have landed, and there was
+   * one answer.
+   *
+   * Only the ones the certificates did not already place are added, or
+   * a July sale with a certificate would be counted twice.
+   */
+  const singleRailUnplaced = Math.max(
+    0,
+    organicBeforeSecondRail - (split?.placed_before_second_rail ?? 0),
+  );
+  const railBase =
+    (split?.base ?? 0) +
+    (till?.base ?? 0) +
+    singleRailUnplaced +
+    RAILS_ENTERED_BY_HAND.base;
+  const railSolana =
+    (split?.solana ?? 0) + (till?.solana ?? 0) + RAILS_ENTERED_BY_HAND.solana;
+  const haveRails = split !== null || till !== null;
   return {
     operating_since: OPERATING_SINCE,
     settled_purchases_total:
@@ -137,13 +208,15 @@ export async function computeStats(env: Env): Promise<StoreStats> {
     reclassified_house: reclassified,
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
-    ...(split && split.base + split.solana <= organicSettlements
+    ...(haveRails &&
+    railBase + railSolana > 0 &&
+    railBase + railSolana <= organicSettlements
       ? {
           organic_by_rail: {
-            base: split.base,
-            solana: split.solana,
-            unattributed: organicSettlements - split.base - split.solana,
-            computed_at: split.computed_at,
+            base: railBase,
+            solana: railSolana,
+            rail_not_recorded: organicSettlements - railBase - railSolana,
+            computed_at: split?.computed_at ?? new Date().toISOString(),
           },
         }
       : {}),
@@ -183,8 +256,8 @@ export function trackRecordLine(stats: StoreStats, base: string): string {
 /** The rail split as one sentence, remainder named. Machine surfaces. */
 function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string {
   const tail =
-    rail.unattributed > 0
-      ? ` and ${rail.unattributed} the certificates can't place on a rail (penny pages settle real money and mint no certificate)`
+    rail.rail_not_recorded > 0
+      ? ` and ${rail.rail_not_recorded} settled before this store recorded the rail at the till, on a page that mints no certificate to carry one — a closed set that nothing can join`
       : "";
   return `Of the organic figure, ${rail.base} settled in USDC on Base, ${rail.solana} in USDC on Solana${tail}.`;
 }
@@ -212,10 +285,20 @@ export function storefrontLedgerLine(stats: StoreStats): string {
   if (!rail || rail.base + rail.solana === 0) {
     return `${sales}, from wallets we don't control.`;
   }
+  /**
+   * "unattributed" was the first word here and it was the wrong one on
+   * a shopfront: beside a page that says it takes two chains, it reads
+   * as a third chain we can't name, or as money we lost track of. It
+   * was neither — it was a penny page sold before the till wrote the
+   * rail down. The count says what happened to the RECORD, not to the
+   * money, and it cannot grow.
+   */
   const parts = [
     ...(rail.base > 0 ? [`${rail.base} on Base`] : []),
     ...(rail.solana > 0 ? [`${rail.solana} on Solana`] : []),
-    ...(rail.unattributed > 0 ? [`${rail.unattributed} unattributed`] : []),
+    ...(rail.rail_not_recorded > 0
+      ? [`${rail.rail_not_recorded} from before we logged the rail`]
+      : []),
   ];
   return `${sales} — ${parts.join(", ")}.`;
 }

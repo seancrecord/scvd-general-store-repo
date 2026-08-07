@@ -74,8 +74,8 @@ describe("the front of the store, trimmed", () => {
     expect(rail, "a written snapshot never reached the books").toBeTruthy();
     expect(rail?.base).toBe(3);
     expect(rail?.solana).toBe(1);
-    expect(rail?.unattributed).toBe(1);
-    expect(rail!.base + rail!.solana + rail!.unattributed).toBe(
+    expect(rail?.rail_not_recorded).toBe(1);
+    expect(rail!.base + rail!.solana + rail!.rail_not_recorded).toBe(
       stats.organic_settlements,
     );
   });
@@ -122,7 +122,7 @@ describe("the front of the store, trimmed", () => {
       organic_by_rail: {
         base: 4,
         solana: 2,
-        unattributed: 0,
+        rail_not_recorded: 0,
         computed_at: "2026-08-06T00:00:00.000Z",
       },
       computed_at: "2026-08-06T00:00:00.000Z",
@@ -130,7 +130,7 @@ describe("the front of the store, trimmed", () => {
     expect(line).toBe("6 organic sales — 4 on Base, 2 on Solana.");
   });
 
-  it("prints what the certificates could not place, rather than absorbing it", () => {
+  it("prints what neither record could place, rather than absorbing it", () => {
     const line = storefrontLedgerLine({
       operating_since: "2026-07-22",
       settled_purchases_total: 92,
@@ -142,7 +142,7 @@ describe("the front of the store, trimmed", () => {
       organic_by_rail: {
         base: 4,
         solana: 1,
-        unattributed: 1,
+        rail_not_recorded: 1,
         computed_at: "2026-08-06T00:00:00.000Z",
       },
       computed_at: "2026-08-06T00:00:00.000Z",
@@ -150,7 +150,14 @@ describe("the front of the store, trimmed", () => {
     // 4 + 1 + 1 = 6, and a reader can do that subtraction and have it
     // come out. The last time this store printed a split that did not,
     // the keeper found it before anybody else did.
-    expect(line).toContain("1 unattributed");
+    //
+    // The WORDS matter as much as the number. "1 unattributed" was the
+    // first cut and it read, next to a page advertising two chains, as
+    // a third chain we couldn't name or as money we'd lost. This says
+    // what actually happened: the sale is fine, the bookkeeping was
+    // late.
+    expect(line).toContain("1 from before we logged the rail");
+    expect(line).not.toContain("unattributed");
   });
 });
 

@@ -99,6 +99,19 @@ export const KV_KEYS = {
    * reads behind a page a crawler hits for free.
    */
   railSplit: "rail_split",
+  /**
+   * WHEN THE TILL STARTED WRITING DOWN THE RAIL. Set once, by the
+   * first settle that records one, and never again.
+   *
+   * This is the seam between two records and it has to be a stored
+   * instant rather than a date in the source, or the two would overlap
+   * and one sale would be counted on two rails. Certificates are the
+   * only rail record for anything settled BEFORE this moment; the till
+   * is the record for everything at or after it. A cert dated on the
+   * far side of this line is skipped by the walk, because the till
+   * already counted that sale.
+   */
+  railMeterStart: "rail_meter_start",
   /** Fires the outside-signature alarm exactly once, ever. */
   firstSignature: "first_outside_signature",
   latestDigest: "digest:latest",
