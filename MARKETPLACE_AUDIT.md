@@ -12,6 +12,44 @@ ENABLES the marketplace, every place it COLLIDES with it, and every
 GAP where the marketplace era needs a rule that does not exist yet.
 Each collision ends in a ⚑ decision that is the keeper's alone.
 
+=====================================================================
+THE RULINGS (2026-08-07, same day — the keeper answered)
+=====================================================================
+
+THE ETHOS, his words, verbatim, now atop HOUSE_RULES: "scvd.store is
+the trust layer of the x402 economy: we verify what's correct, we
+badge what's safe, and we sell what agents need — and every product
+we sell makes every other product more valuable because they all run
+on the same reputation."
+
+- DECISION 1 (23a carve-out): AGREED. Amended in HOUSE_RULES 23a —
+  bounded, prepaid, gap-published watches are observation.
+- DECISION 2 (money flow): referral-first per the recommendation
+  stands unless the keeper rules otherwise; nothing resold yet.
+- DECISION 3 (infrastructure): REVERSED, in the open. "We validated
+  six payments and two payment rails; we are evolving the store with
+  the evolving technology so we can open our gates to provide the
+  service our loving agents need." /becoming quotes the old answer
+  and dates the new one; /attestation's limit rewritten with the
+  facts kept and the superseded promise retired.
+- DECISION 4 (barbell): AGREED, restated as "distrust the middle
+  without a demand tag" — and rule 19 gains the ANTICIPATED DEMAND
+  tag class, the Gretzky rule: likelihood of need → viability →
+  human interaction and who funds the agent → what's funded and
+  where → ease of payment → scalability. Improvable, and says so.
+- DECISION 5 (evidence rule stands): AGREED as written.
+- DECISION 6 (reputation): AGREED with the distinction — verify the
+  good rather than mark the bad; dated, signed, criteria-published,
+  scalable, transparent, improvable; artifacts, never actors. Now
+  rule 43, and NOT_CLAIMED amended to match.
+- ON COUNSEL: the keeper ruled no lawyers. Rule 41's duty is
+  discharged STRUCTURALLY instead, worked into each build: badge
+  copy observation-shaped, never warranty-shaped (rule 8's
+  tradition); criteria published before any badge ships; exposure
+  named per build as a mechanism, not a sentiment. This raises the
+  bar on the copy rather than lowering it — the words are the only
+  shield, so the words get the engineering.
+
 The one-line finding, up front: **the pivot is not a reversal of the
 canon — it is rule 23a applied at scale.** "The store's one real
 product is INDEPENDENT SIGNED OBSERVATION; every serious item is that
@@ -320,8 +358,10 @@ PART 6 — THE ORDER OF OPERATIONS, RECOMMENDED.
    first.
 4. The standing_watch-shaped conformance watch (after Decision 1).
 5. Verified referral for Browser Use (after Decisions 2 and 3).
-6. Verified Skills (after Decisions 1, 6, Gap 1, and the rule 41
-   counsel pass). Highest margin, highest liability, last.
+6. Verified Skills (after Gap 1 and the structural rule 41 pass —
+   the keeper ruled no counsel, so the badge copy carries the whole
+   shield and is engineered accordingly). Highest margin, highest
+   liability, last.
 
 The memo's instinct that the store stocked the wrong shelves is
 half right. The candy was never the problem — rule 23a already knew

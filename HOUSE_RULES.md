@@ -11,6 +11,15 @@ rules; the world doesn't need the posture notes). Back office gets it
 whole. Rules change only by keeper decision, logged with a date.
 
 =====================================================================
+THE ETHOS (2026-08-07, the keeper's words, verbatim)
+=====================================================================
+
+scvd.store is the trust layer of the x402 economy: we verify what's
+correct, we badge what's safe, and we sell what agents need — and
+every product we sell makes every other product more valuable
+because they all run on the same reputation.
+
+=====================================================================
 VOICE & COPY
 =====================================================================
 
@@ -83,9 +92,24 @@ PRODUCT & INVENTORY
 19. Evidence rule: no new item without a demand tag (ledger 404,
     verbatim complaint, research top-5, or a stranger asking). Desk
     reasoning gets named as desk reasoning.
+    AMENDED 2026-08-07 (keeper): a second tag class exists —
+    ANTICIPATED DEMAND, the Gretzky rule: skate to where the puck is
+    going and already be there when it arrives. Green space has no
+    ledger by definition, so the tag is a scored pipeline rather
+    than a hunch: likelihood of need → viability → human interaction
+    and who funds the agent → what's funded and where → ease of
+    payment → scalability. The rubric is improvable and says so; a
+    scored forecast is still desk work and is named as desk work;
+    and the ledger outranks the forecast the day they disagree
+    (rule 20, unchanged).
 20. The ledger outranks all research. Real 402s > any report.
 21. Barbell doctrine: stock the penny shelf (cron-loop agents) and
     the human-labor shelf (frontier agents); distrust the middle.
+    AMENDED 2026-08-07 (keeper): restated as "distrust the middle
+    WITHOUT a demand tag." The barbell was July's research posture;
+    the market's ledger has since shown real middle-shelf volume,
+    and rule 20 says the ledger wins. The middle opens item by item,
+    each with its tag under rule 19 — never by catalog.
 22. Sincerity mechanics only: deterministic fortunes (chalkboard,
     not slot machine); no variable-reward manipulation, no engagement
     farming. The drawer is honest randomness with custody, not gacha
@@ -100,6 +124,14 @@ PRODUCT & INVENTORY
     stateful, and it violates graceful degradation. The store's one
     real product is INDEPENDENT SIGNED OBSERVATION; every serious
     item is that primitive pointed at a different moment.
+    AMENDED 2026-08-07 (keeper): the sorting line holds, with one
+    carve-out that codifies what the Night Watch already shipped —
+    a BOUNDED, PREPAID, GAP-PUBLISHED WATCH is observation, not a
+    promise-to-act-later. The shape, exactly: an end date; renewed
+    only by the buyer's next purchase, never by our auto-renewal;
+    the passes we miss published against ourselves. Open-ended
+    monitoring, subscriptions that renew themselves, and any promise
+    without an end date remain declined per 23b.
 
 23b. DECLINED ON RECORD, regardless of demand size (real demand was
     measured for all of these and the answer is still no): CAPTCHA
@@ -190,3 +222,41 @@ LORE & TRADITION
     also the keeper's: CV slash Claude is not immaculate either —
     the keeper watches the watchman, the watchman watches the
     keeper, and that is what creates balance.
+
+43. VERIFICATION IS DATED OBSERVATION ON ARTIFACTS, NEVER A SCORE ON
+    AN ACTOR. (2026-08-07, the keeper's ruling in the marketplace
+    audit.) The store checks, signs, and badges a THING — a skill, a
+    service, an endpoint — against published criteria, at a date,
+    with what-it-does-not-prove stated per class in the /attestation
+    manner, and a published path that retires a badge when the thing
+    changes. It keeps no accumulating scores on people or operators,
+    ours or anybody's: we verify the good rather than mark the bad,
+    because market growth requires trust in payment and somebody
+    credible, scalable, and transparent has to underwrite it — the
+    same class of instrument as any registry scorecard, with the
+    difference that our criteria are set from our own books and our
+    own data, published, and improvable. Badge copy is
+    observation-shaped, never warranty-shaped — rule 8's tradition,
+    the disclaimer that does real work and lands deadpan — and the
+    rule 41 exposure review is part of shipping any badge class,
+    worked into the build itself as a mechanism, not a sentiment.
+    No badge ships before its criteria page exists.
+
+44. THE SURFACE SWEEP (2026-08-07, keeper's directive): any change to
+    what the store IS, SELLS, or CLAIMS ends with a sweep of the
+    major surfaces before it ships — SEO, AEO, and agent-facing
+    documentation checked as a step, not remembered as a habit. The
+    surfaces, by name: llms.txt, skill.md, menu.json, openapi.json,
+    /.well-known/x402 and x402.json, the A2A card (a2a.json and its
+    two sibling paths), trust.json, the storefront's JSON-LD and
+    meta descriptions, README.md, and AGENTS.md. Much of this is
+    already mechanized — claim-chain walks every readable surface,
+    skill-parity, shelf-agrees-with-menu, discoverable, naming-law
+    and the a2a-card specs each hold their own corner, and anything
+    derived from MENU_ITEMS or ROOMS cannot drift by construction —
+    so the sweep's human half is the PROSE: descriptions, identity
+    lines, and the drift watchlist in MARKETPLACE_AUDIT.md Part 4,
+    which is the standing list of strings that go stale as the
+    store evolves. Rule 10's lesson applies: a rule in a file is
+    not a test, so where a sweep finds the same prose drifting
+    twice, the fix is a test, not a better memory.

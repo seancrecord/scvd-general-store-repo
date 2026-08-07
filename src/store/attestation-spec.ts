@@ -240,5 +240,17 @@ export const HELD_AGAINST_US =
 export const WHY_SIGNED_PAYLOAD =
   "Most real signature-verification failures are canonicalization mismatches: the verifier rebuilds what it thinks was signed, gets a byte different, and the check fails — or passes when it should not. Publishing a canonicalization recipe moves that risk onto you. Serving the exact signed string removes it: there is nothing to rebuild. Compare the fields inside it against the artifact shown, and any gap between what is signed and what is displayed becomes visible rather than theoretical.";
 
+/**
+ * AMENDED 2026-08-07, the keeper's reversal, made in the open. This
+ * limit opened with "THIS IS A SHOP, NOT INFRASTRUCTURE" from
+ * 2026-07-30, and included the promise to keep saying it. The store's
+ * direction changed — the trust layer of the x402 economy, decided
+ * and dated at /becoming with the old answer quoted — and a limit
+ * page that kept a superseded promise standing would be the exact
+ * claim-drift this page exists to prevent. What did NOT change is
+ * every fact in the sentence: the key count, the holder count, the
+ * absence of an audit. Those stay until the facts change, and the
+ * warning they add up to stays with them.
+ */
 export const ATTESTATION_HONEST_LIMIT =
-  "THIS IS A SHOP, NOT INFRASTRUCTURE. Nothing here is offered as a standard for other systems to build on: there is one key in service, one holder, one rotation on the record, no chain, no bundle format and no audit, all listed above in their own words. What is offered is that every claim on this page is checkable against the artifacts themselves in about a minute, and that the weakest trust model is named as the weakest rather than left for a reader to work out. If you find a signature that does not verify, or a field shown but not signed, the mailbox is free and it goes on /corrections with your name on it.";
+  "ONE KEY IN SERVICE, ONE HOLDER, ONE ROTATION ON THE RECORD, no chain, no bundle format and no audit, all listed above in their own words — weigh anything load-bearing against that before building on it. The store is evolving toward verifying more than its own shelf; that direction is tracked at /becoming with its triggers, and nothing here claims it early. What is offered today is that every claim on this page is checkable against the artifacts themselves in about a minute, and that the weakest trust model is named as the weakest rather than left for a reader to work out. If you find a signature that does not verify, or a field shown but not signed, the mailbox is free and it goes on /corrections with your name on it.";

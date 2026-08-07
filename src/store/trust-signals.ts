@@ -298,7 +298,7 @@ export const NOT_CLAIMED: readonly string[] = [
   "No insurance, no bonding, no regulator, and nothing here is offered as a financial service.",
   "One ed25519 signing key and one operator. That is the wrong root of trust for compliance, dispute resolution, or anything load-bearing, and /attestation says so on its own page rather than leaving you to work it out.",
   "No post-quantum signatures — Ed25519 everywhere, the assumption named on /attestation, and the migration path (a key handover under the succession protocol) already published rather than improvised later.",
-  "No reputation score, ours or anybody's. In its place: a dated record of every claim we got wrong, at /corrections.",
+  "No accumulating reputation score on any actor, ours or anybody's, ever. What the store is building instead (direction decided 2026-08-07, tracked at /becoming, nothing shipped yet): dated, signed checks on artifacts against published criteria — a thing verified at a moment, never a person scored over time. Until that exists, what stands in a score's place is a dated record of every claim we got wrong, at /corrections.",
   "No independent audit of the books. /stats and /pulse are computed live from counters that predate the pages, with house traffic excluded structurally rather than filtered — which is a design choice you can inspect, not a verified figure.",
 ];
 
