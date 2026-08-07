@@ -147,8 +147,17 @@ for (const path of sourceFiles(SRC)) {
  * phantoms. A false positive in a budgeted audit is worse than a
  * missing rule — it spends the budget, teaches the reader to discount
  * the tool, and the only available fix is to raise a number.
+ *
+ * RATCHETED 10 -> 7 on 2026-08-07, the keeper's "pay one down" call
+ * made when the budget hit its ceiling: the referral counters' two
+ * read loops went to bulk reads (they aggregate, they never decide
+ * per record), which retired three warnings at once. The seven that
+ * remain are all per-record DECISIONS — sweeps that update only the
+ * rows that want it, repairs that judge each key — which is the shape
+ * the rule itself exempts; converting those would be motion, not
+ * improvement. Zero slack again, on purpose.
  */
-const WARN_BUDGET = 10;
+const WARN_BUDGET = 7;
 
 const errors = findings.filter((f) => f.severity === "error");
 const warns = findings.filter((f) => f.severity === "warn");
