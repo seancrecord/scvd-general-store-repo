@@ -14,8 +14,13 @@ the file — no other process writes to it.
 ⚑ KEEPER, still open on this document:
   - The NAME. "Ledger" is already load-bearing in-store (rule 20's
     ledger, the books, /house-ledger) — a second ledger dilutes the
-    word that currently means OUR record of what happened. v0.2 keeps
-    the working name and flags it.
+    word that currently means OUR record of what happened.
+    RECOMMENDED: **The Tab** — general-store native ("put it on my
+    tab"), and it means the thing: the running account of what
+    you're signed up for and what it costs. Server name `scvd-tab`.
+    Alternates: The Toolshed (warmer, less about money), The
+    Manifest (machine-legible, colder). Rule 7: this line flags,
+    the keeper kills.
   - Layer 3's trust-model line (see "The pooled layer's debt").
 
 ## Changelog from v0.1 (the keeper's pass, 2026-08-07, all eight)
@@ -59,6 +64,40 @@ Also folded, from the outline review: `payment_method` stays optional
 free text and is documented as the builder's own label ("the business
 card"), never parsed, never contributed — it is the one field that
 would be financial PII, and no read needs it.
+
+## Addendum — the keeper's day-one tracking call (2026-08-08)
+
+Outcome-only deltas cannot see adoption: the pool would hear about a
+tool only when commitments END, so a hot tool everyone is mid-trial
+on stays invisible for weeks. The keeper's ruling: we track from day
+one. Two additions, both consent-gated like everything else:
+
+9. THE OPENED DELTA. `contribute_anonymized_delta` takes a `kind`:
+   `"opened"` (tool_name, category, week — three fields, nothing
+   else) fired at `trial_started`/`paid_started`, or `"outcome"`
+   (the existing shape) fired at resolution. Opened and outcome
+   deltas are DELIBERATELY UNLINKED — no contributor id ties one to
+   the other, because linkage is where anonymity starts unwinding.
+   Aggregate rates still compute across the population, and the
+   corpus is non-backfillable either way: every week the endpoint
+   runs before a competitor's is a week nobody else can ever have.
+10. THE CONTRIBUTION SUGGESTION. When `log_tool_event` records a
+    contributable event and consent is on, the write response
+    carries `contribution_suggestion` — the exact delta that WOULD
+    be sent, for the agent to file in the same breath. The ledger
+    stays passive (no sweep ever scans the file for unsent deltas);
+    the agent stays the only actor; the natural moment does the
+    remembering.
+
+What the pool can then see: conversion rates, post-pay churn and the
+weeks-held distribution, adoption volume by week (opened deltas),
+and the REPLACEMENT GRAPH — `replaced_with` as directional edges,
+quietly the strongest signal in the design: when five tools' deltas
+all point at the same successor, that is the market talking and
+nobody editorialized. What it still cannot see, said plainly on
+every published figure: unresolved commitments (survivorship),
+non-contributing builders (population bias), and any single report's
+truth (gaming — sample sizes ride every number).
 
 ## Design principles (read first)
 
@@ -113,7 +152,10 @@ Category vocabulary (v0.2, extensible): `llm`, `agent-framework`,
 `storage`, `domain`, `other`.
 
 Returns: `{logged: true, entry_id, trial_warning_date}` — warning
-date is `trial_ends` minus 3 days.
+date is `trial_ends` minus 3 days. When the event is contributable
+and consent is on, the response also carries
+`contribution_suggestion`: the exact delta that would be sent
+(addendum #10), so the agent can file it in the same breath.
 
 Validation that rejects the write:
 - `trial_started` without `trial_ends`
@@ -211,16 +253,18 @@ kept rates and sample sizes, no prices, no identities, no advice.
 
 ### 6. `contribute_anonymized_delta` — the opt-in feed (layer 3)
 
-Called deliberately when a commitment resolves, only with consent on
-record (a `consent_changed{contribute: true}` event in the log, not
-revoked since).
+Called deliberately, only with consent on record (a
+`consent_changed{contribute: true}` event in the log, not revoked
+since). Two kinds (addendum #9), deliberately unlinked:
 
 | field | type | required | notes |
 |---|---|---|---|
+| kind | enum | yes | `"opened"` or `"outcome"` |
 | tool_name | string | yes | |
 | category | string | yes | |
-| outcome | enum | yes | `kept_past_conversion`, `canceled_pre_conversion`, `canceled_post_conversion`, `replaced` |
-| weeks_held | int | yes | rounded to weeks (changelog #6) |
+| week | ISO week | kind=opened | the signup week; the whole of an opened delta |
+| outcome | enum | kind=outcome | `kept_past_conversion`, `canceled_pre_conversion`, `canceled_post_conversion`, `replaced` |
+| weeks_held | int | kind=outcome | rounded to weeks (changelog #6) |
 | replaced_with | string | no | for `replaced` |
 
 Explicitly NOT included: price, payment method, problem text, notes,
