@@ -388,17 +388,33 @@ describe("the desk is bounded before anybody finds it", () => {
   });
 
   it("says the budget was ours, not a fact about their artifact", async () => {
-    // Spend the minute's resolution budget, then confirm the caller is
-    // told plainly that nothing is wrong with what they sent.
+    /**
+     * Spend the minute's resolution budget, then confirm the caller is
+     * told plainly that nothing is wrong with what they sent.
+     *
+     * THE ATTEMPT CEILING RACES A CLOCK, so it is generous rather than
+     * tight. The budget is 60 per WALL-CLOCK MINUTE and resets on the
+     * boundary, so a loop of 70 that happens to straddle :00 can spend
+     * 40 in one minute and 30 in the next and never bind — which is
+     * exactly how this failed on a loaded CI runner while passing on
+     * the identical commit a job earlier. A flaky test is worse than no
+     * test: it teaches everybody to disbelieve a red light, and this
+     * repo spent today learning what that costs.
+     *
+     * The ceiling now survives one reset with room to spare. The claim
+     * is unchanged — the budget must still BIND — and a budget that
+     * genuinely stopped bounding still fails here, which is the whole
+     * point of the assertion.
+     */
     const { jws } = await foreignOffer();
     let exhausted: any = null;
-    for (let attempt = 0; attempt < 70 && !exhausted; attempt += 1) {
+    for (let attempt = 0; attempt < 200 && !exhausted; attempt += 1) {
       const { json } = await post({ artifact: jws });
       if (json.key_resolution === "budget_exhausted") exhausted = json;
     }
     expect(
       exhausted,
-      "the resolution budget never bound after 70 requests; it is not bounding anything",
+      "the resolution budget never bound across 200 requests, which is more than three full minutes' worth; it is not bounding anything",
     ).not.toBeNull();
     const limits = exhausted.what_this_cannot_tell_you.join(" ");
     expect(limits).toContain("OUR LIMIT RATHER THAN YOUR REQUEST");
