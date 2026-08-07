@@ -120,7 +120,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     title: "Third-Party Observation",
     purpose:
       "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer.",
-    itemIds: ["settlement_attestation", "standing_watch"],
+    itemIds: ["settlement_attestation", "attestation_bundle", "standing_watch"],
   },
   {
     name: "buy_memory_anchor",

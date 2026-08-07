@@ -50,6 +50,37 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402:
       "That'll be $3 for thirty days of standing, friend. Keep this up and you can call him Keep.",
   },
+  /**
+   * THE FIRST MARKETPLACE-ERA ITEM (2026-08-07, the keeper's "work
+   * those bit by bit" on MARKETPLACE_AUDIT Part 6 step 3). Demand
+   * tag: ANTICIPATED DEMAND under rule 19 as amended — service
+   * operators proving honesty to their buyers need attestations at
+   * volume, not one at a time; the pipeline scoring is in the audit.
+   * Deliberately STATELESS: one payment, N observations, everything
+   * delivered in the response — no stored balance, no future
+   * obligation, so it is pure rule-23a observation with nothing for
+   * the carve-out to even carry. ⚑ KEEPER REVIEW: name and copy are
+   * drafted, not canon; recut freely.
+   */
+  {
+    id: "attestation_bundle",
+    listed_week: "2026-W32",
+    name: "A Sheaf of Attestations",
+    price_usdc: 0.05,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Up to 20 settlement attestations in one purchase. Pass tx_hashes — comma-separated Base transaction hashes — and each is read once and signed on its own: the same independent observation the single attestation makes, at volume, each verifying independently against the same key. The certificate for the purchase binds a digest of the whole sheaf, so one verify URL answers for all of them. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes moments on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
+    note_402:
+      "A nickel for the sheaf, friend. Up to 20 signed receipts, and the chain reads are on the house.",
+    constraints: [
+      "Give 2 to 20 Base transaction hashes in the tx_hashes query parameter, comma-separated, no duplicates",
+      "Each hash is observed once and signed on its own; the bundle is a purchase shape, not a different artifact",
+      "Observes settlement only, never delivery",
+      "One read per hash at one moment; no polling, no retry, no second look",
+      "Per-hash narrowing (payer, recipient, nonce, amount) is the single attestation's feature; the sheaf takes hashes only",
+    ],
+  },
   {
     id: "settlement_attestation",
     listed_week: "2026-W31",

@@ -56,6 +56,8 @@ export interface FulfillmentInput {
   tag?: string;
   /** settlement_attestation: what to look up on Base. */
   attestationQuery?: AttestationQuery;
+  /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
+  bundleTxHashes?: string[];
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -65,6 +67,26 @@ export interface FulfillmentInput {
   source?: string;
   userAgent?: string;
   referrer?: string;
+}
+
+/**
+ * One digest over the whole sheaf: sha256 of the individual evidence
+ * hashes, comma-joined in delivery order. Each attestation still
+ * carries and verifies its own hash — this exists only so the
+ * purchase certificate can bind all of them in the one `attests`
+ * field the verify endpoint already answers for.
+ */
+async function bundleEvidenceHash(
+  bundle: readonly SignedAttestation[],
+): Promise<string> {
+  const joined = bundle.map((entry) => entry.evidence_hash).join(",");
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(joined),
+  );
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function fulfillPurchase(
@@ -119,6 +141,24 @@ export async function fulfillPurchase(
   if (item.id === "settlement_attestation") {
     attestation = await observeSettlement(env, input.attestationQuery ?? {});
     mintOptions.attests = attestation.evidence_hash;
+  }
+  /**
+   * THE SHEAF observes before minting for the same reason the single
+   * does: the certificate binds a digest over every observation, so
+   * /api/verify answers for the whole sheaf without a second endpoint.
+   * Observations run sequentially and a failed chain read fails the
+   * lot — the settle already happened, so that failure lands in the
+   * delivery audit exactly like the single item's would, and the
+   * keeper resolves it by hand rather than the buyer getting a sheaf
+   * with quiet holes in it.
+   */
+  let bundle: SignedAttestation[] | undefined;
+  if (item.id === "attestation_bundle") {
+    bundle = [];
+    for (const txHash of input.bundleTxHashes ?? []) {
+      bundle.push(await observeSettlement(env, { txHash }));
+    }
+    mintOptions.attests = await bundleEvidenceHash(bundle);
   }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
@@ -227,6 +267,9 @@ export async function fulfillPurchase(
     }
     if (attestation) {
       goodsInput.attestation = attestation;
+    }
+    if (bundle) {
+      goodsInput.bundle = bundle;
     }
     // The grudge register, the lucky draw and the train all key off
     // the cert: the certificate is the thing the buyer actually holds.

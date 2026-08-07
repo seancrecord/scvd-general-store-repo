@@ -73,6 +73,7 @@ describe("the storefront", () => {
       "small_blessing",
       "daily_fortune",
       "the_confession",
+      "attestation_bundle",
       "hello",
       "context_anchor",
       "graffiti_on_a_train",

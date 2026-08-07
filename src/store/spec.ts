@@ -105,6 +105,8 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
 export const CAPABILITY_QUERY: Record<string, string> = {
   settlement_attestation:
     "Prove to a third party that a payment actually settled on chain",
+  attestation_bundle:
+    "Prove a whole run of payments settled, one signed receipt per transaction",
   graffiti_on_a_train: "Leave a mark that survives my context window",
   quick_judgment: "Get a human verdict on a decision I can't judge myself",
   standing_watch:
@@ -145,6 +147,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  attestation_bundle:
+    "the single attestation's neutrality at volume: a service operator proving a run of settlements to its own buyers needs the disinterested receipts in one purchase, not twenty round trips — each observation still signed on its own so any one can be quoted alone.",
   // Verbatim from DEMAND_SYNTHESIS Part 7, Move 1. The second clause
   // is the load-bearing one: the read is free, the INDEPENDENT signed
   // receipt is the product.
@@ -196,6 +200,8 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  attestation_bundle:
+    "Two to twenty signed JSON observations, one per Base transaction hash supplied, each carrying the same fields and independent signature as the single settlement attestation — plus a certificate binding a sha256 digest of the sheaf's evidence hashes, so one verify URL answers for all of them. Instant.",
   settlement_attestation:
     "A signed JSON observation of one Base transaction — status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height, confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
   graffiti_on_a_train:
