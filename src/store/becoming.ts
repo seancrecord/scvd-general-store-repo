@@ -68,9 +68,19 @@ export interface Settled {
 export const SETTLED: readonly Settled[] = [
   {
     question: "Will this become infrastructure other services build on?",
-    answer: "No. It stays a shop.",
+    /**
+     * REVERSED 2026-08-07, by the keeper, in the open. The original
+     * answer — "No. It stays a shop." — stood from 2026-07-30 and is
+     * quoted here rather than deleted, because a page that quietly
+     * rewrites its settled answers is worth nothing as a record. The
+     * reasoning trail is in the repository (MARKETPLACE_AUDIT.md),
+     * and the objection the old answer rested on is answered below
+     * rather than waved past.
+     */
+    answer:
+      "Answered 'No, it stays a shop' on 2026-07-30. Reversed by the keeper on 2026-08-07: the store is evolving toward the trust layer of the x402 economy, deliberately and on the record.",
     because:
-      "The store will not limit itself, but infrastructure properly defined means other people's uptime depends on one keeper — which hands strangers a pager pointed at a man with a day job and a family. That is an architectural objection, not a modest one. A shop sells you a thing; you leave with it; the transaction is complete. This is why /attestation says THIS IS A SHOP, NOT INFRASTRUCTURE and will keep saying it.",
+      "The old answer's objection was architectural and it was real: infrastructure means other people's uptime depending on one keeper, a pager pointed at a man with a day job and a family. What changed is evidence, not appetite — the till has settled organic purchases across two payment rails, the technology this store rides is maturing under it, and the gates open so the store can provide what the agents it serves actually need. The objection is answered, not dismissed: every standing obligation stays bounded, prepaid, and gap-published in the Night Watch shape (an end date, renewed only by the buyer, our missed passes in the book); degradation stays graceful and published; and the succession work sits on this page's own watched list with its trigger. A reader who held the old answer against us is invited to: that is what this page is for.",
   },
   {
     question: "Does the town survive getting bigger?",
@@ -124,6 +134,13 @@ export const WATCHED: readonly Watched[] = [
       "One other operator saying yes. The gate is not technical and never was.",
     today:
       "Nothing bilateral exists. /trust-list.json is version 0 and lists only this store; /neighbours lists services we have paid, which is a different relation entirely.",
+  },
+  {
+    item: "The verification marketplace — signed, dated conformance checks and badges on other people's goods, under rule 43.",
+    trigger:
+      "The criteria page: a published, per-class definition of what 'verified' means here — what was checked, when, against which criteria, what it does not prove, and what retires a badge. No badge ships before that page exists, and whether it exists is checkable by anyone.",
+    today:
+      "Nothing for sale. The direction is decided and dated — 2026-08-07, the marketplace audit and the keeper's rulings on each of its decisions, in the repository — and the ethos is written into the house rules. No criteria page exists yet, nothing carries a badge, and per this page's own standfirst, a decided direction is not an available product.",
   },
   {
     item: "Federation — somebody else adopting the format unprompted.",
