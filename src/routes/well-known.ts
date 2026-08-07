@@ -214,6 +214,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
     did: `${base}/.well-known/did.json`,
     liveness: `${base}/.well-known/liveness.json`,
     anchor_log: `${base}/.well-known/anchor-log.json`,
+    a2a: `${base}/.well-known/a2a.json`,
   });
 });
 
@@ -364,6 +365,96 @@ wellKnownRoutes.get(
     });
   },
 );
+
+/**
+ * THE A2A AGENT CARD (the keeper's call, 2026-08-07: "one file, makes
+ * us legible to agent frameworks that read A2A cards — probably table
+ * stakes within six months").
+ *
+ * Served at three doors because the spec moved and readers lag it:
+ * /.well-known/agent-card.json is A2A 0.3's canonical path,
+ * /.well-known/agent.json was the earlier spec's and is what older
+ * frameworks still fetch, and /.well-known/a2a.json is the name the
+ * keeper asked for and the discoverable one when a human types it.
+ * Same document at all three — the x402/x402.json precedent: scanners
+ * fetch one or the other, so serve both and let none of them miss.
+ *
+ * THE HONESTY PROBLEM, solved in the transport field: this store does
+ * NOT speak the A2A task protocol — no message/send, no tasks/get, no
+ * SSE streams. A card that named "JSONRPC" at a URL would be inviting
+ * A2A calls the till cannot answer, which is a false claim in machine
+ * form. So preferredTransport says "MCP", which is TRUE, and which a
+ * strict A2A client correctly reads as "a transport I don't speak" —
+ * the accurate outcome — while the metadata harvesters this card
+ * exists for (name, description, provider, skills) read everything
+ * they came for. The deviation is named in the card itself rather
+ * than left for a client to discover by erroring.
+ *
+ * Skills are DERIVED from MENU_ITEMS at render, so this card can no
+ * more drift from the shelf than the storefront can — the next item
+ * added to the menu is on the card the same request, and a card that
+ * hand-listed its skills would be menu.json's stale twin within a
+ * month.
+ */
+function a2aCard(base: string) {
+  return {
+    protocolVersion: "0.3.0",
+    name: STORE_SERVICE_NAME,
+    description: `${WHAT_IT_IS} This card is a discovery document: the store's machine doors are MCP (POST ${base}/mcp, tools/list free) and plain x402 HTTP starting at ${base}/llms.txt. It does not speak the A2A message protocol today; if your framework needs a true A2A endpoint, say so at ${base}/api/letter — demand decides what gets built here.`,
+    url: `${base}/mcp`,
+    preferredTransport: "MCP",
+    additionalInterfaces: [
+      { url: `${base}/mcp`, transport: "MCP" },
+      { url: `${base}/llms.txt`, transport: "HTTP+x402" },
+    ],
+    provider: {
+      organization: OPERATOR.legal_entity,
+      url: base,
+    },
+    version: freshness().as_of,
+    documentationUrl: `${base}/llms.txt`,
+    capabilities: {
+      streaming: false,
+      pushNotifications: false,
+      stateTransitionHistory: false,
+    },
+    defaultInputModes: ["application/json"],
+    defaultOutputModes: ["application/json"],
+    skills: [
+      ...MENU_ITEMS.map((item) => ({
+        id: item.id,
+        name: item.name,
+        description: `${item.description} $${item.price_usdc} in USDC over x402 (Base or Solana), settle-first; GET ${base}/api/buy/${item.id}. Every purchase returns a signed artifact verifiable at ${base}/api/verify/{id}.`,
+        tags: ["x402", "usdc", item.fulfillment],
+        inputModes: ["application/json"],
+        outputModes: ["application/json"],
+      })),
+      {
+        id: "verify",
+        name: "Verify any artifact we ever signed",
+        description: `Free, no account, forever: GET ${base}/api/verify/{id} returns the exact signed bytes and the ed25519 key. Key history at ${base}/.well-known/scvd-signing-key.`,
+        tags: ["free", "verification", "ed25519"],
+        inputModes: ["application/json"],
+        outputModes: ["application/json"],
+      },
+    ],
+    supportsAuthenticatedExtendedCard: false,
+    security: [],
+    securitySchemes: {},
+    // Ours, not the spec's, and named as such: the one field a strict
+    // reader should skip and a curious one should read first.
+    x_scvd_note:
+      "Payment is x402 v2 in USDC, settle-before-goods, no account and no API key — the 402 response itself carries the terms. The card's skills are derived live from the same menu every other surface reads.",
+  };
+}
+
+for (const path of [
+  "/.well-known/a2a.json",
+  "/.well-known/agent-card.json",
+  "/.well-known/agent.json",
+]) {
+  wellKnownRoutes.get(path, (c) => c.json(a2aCard(c.env.STORE_BASE_URL)));
+}
 
 /**
  * RFC 9116 security.txt — the URL a responsible-disclosure checklist
