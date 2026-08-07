@@ -134,6 +134,18 @@ export interface SolanaIncoming {
   from: string;
   /** Raw USDC units (six decimals on Solana too). */
   amount: bigint;
+  /**
+   * True when the receive wallet itself SIGNED the transaction. A
+   * store settle never carries our signature — the buyer signs the
+   * transfer and the facilitator pays the fee; we only receive — so
+   * our own key on an inbound transfer means our own hand moved the
+   * money. First live case 2026-08-04: two Jupiter swaps run from
+   * the keeper's Solflare, whose output lands in the connected
+   * wallet's own USDC account — which IS the store's. Signers are
+   * always static account keys, so the check survives versioned
+   * transactions and address-table lookups.
+   */
+  self_signed: boolean;
 }
 
 interface TokenBalance {
@@ -149,6 +161,12 @@ interface ParsedTransaction {
     preTokenBalances?: TokenBalance[];
     postTokenBalances?: TokenBalance[];
   } | null;
+  transaction?: {
+    message?: {
+      /** jsonParsed shape: each static key says whether it signed. */
+      accountKeys?: Array<{ pubkey: string; signer?: boolean }>;
+    };
+  };
 }
 
 /**
@@ -211,5 +229,12 @@ export async function usdcIncomingIn(
   if (incoming <= 0n) {
     return null;
   }
-  return { from: sender || "(sender unknown)", amount: incoming };
+  const selfSigned = (tx.transaction?.message?.accountKeys ?? []).some(
+    (key) => key.signer === true && key.pubkey === receiveOwner,
+  );
+  return {
+    from: sender || "(sender unknown)",
+    amount: incoming,
+    self_signed: selfSigned,
+  };
 }

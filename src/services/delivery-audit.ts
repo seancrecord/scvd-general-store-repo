@@ -180,11 +180,38 @@ export async function resolveDeliveryIntent(
   const key = KV_KEYS.deliveryIntent(id);
   const intent = await env.ORDERS.get(key);
   if (!intent) {
-    return {
-      ok: false,
-      refusal:
-        "No open delivery intent for that transaction — either already delivered/resolved, or the id is not the one from the alert.",
-    };
+    /**
+     * NO INTENT ROW is not always a typo: a CHAIN ORPHAN — money the
+     * bank walk found on-chain with no certificate — never had one,
+     * because it never went through the buy flow. The walk's cursor
+     * has moved past it, so nothing will ever revisit it; the alert
+     * trail is its only record and this lever its only closer. The
+     * typo guard survives by asking the trail: a tx no alert ever
+     * named still gets the refusal. (Live case 2026-08-05: two
+     * Jupiter swaps of the keeper's own money, unresolvable for two
+     * days because this branch refused everything without an intent.)
+     */
+    const { listAlerts } = await import("@/lib/alerts");
+    const trail = await listAlerts(env, 200);
+    const named = trail.some((entry) => entry.detail.includes(id));
+    if (!named) {
+      return {
+        ok: false,
+        refusal:
+          "No open delivery intent and no alert names that transaction — either already delivered/resolved, or the id is not the one from the alert.",
+      };
+    }
+    await env.ORDERS.put(
+      `delivery_resolved:${id}`,
+      JSON.stringify({
+        outcome,
+        at: new Date().toISOString(),
+        source: "chain_reconciliation",
+        note: "No delivery intent ever existed: the chain walk found this money outside the buy flow. Resolved from its alert.",
+      }),
+      { expirationTtl: 90 * 86400 },
+    );
+    return { ok: true };
   }
   await env.ORDERS.put(
     `delivery_resolved:${id}`,

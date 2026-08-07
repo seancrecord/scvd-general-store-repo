@@ -459,7 +459,17 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
             if (alert.condition !== "undelivered_sale") return alert;
             // The alert names its settlement tx; check what the
             // intent looks like NOW so history reads as history.
-            const tx = /Settlement: (\S+)\./.exec(alert.detail)?.[1];
+            // Two wordings name a tx: the delivery audit's
+            // "Settlement: <tx>." and the chain walk's "in
+            // transaction <tx> (block …)". The second went unmatched
+            // until 2026-08-07, so chain orphans sat in the trail
+            // with no stamp and no lever — $52.09 of the keeper's
+            // own money read as two open mysteries for two days.
+            const settlementTx = /Settlement: (\S+)\./.exec(alert.detail)?.[1];
+            const chainTx = settlementTx
+              ? undefined
+              : /in transaction (\S+) /.exec(alert.detail)?.[1];
+            const tx = settlementTx ?? chainTx;
             if (!tx) return alert;
             const [open, resolved] = await Promise.all([
               c.env.ORDERS.get(KV_KEYS.deliveryIntent(tx)),
@@ -468,11 +478,17 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
             return {
               ...alert,
               tx,
+              // A chain orphan has no intent row to clear — the walk
+              // found the money, not the buy flow — so for it the
+              // resolution record is the only closer; absent one it
+              // is still open, never "closed (delivered)".
               now: open
                 ? ("still open" as const)
                 : resolved
                   ? ("resolved by hand" as const)
-                  : ("closed (delivered)" as const),
+                  : chainTx
+                    ? ("still open" as const)
+                    : ("closed (delivered)" as const),
             };
           }),
         ),

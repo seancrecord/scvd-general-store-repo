@@ -64,8 +64,22 @@ export interface OrphanTransfer {
    * certificate, and the mechanical "fulfil or refund" advice is
    * WRONG for it (refunding dust is interacting with a probable
    * address-poisoning attempt, which is its goal).
+   *
+   * "self_initiated" is money the store's own key moved: the receive
+   * wallet SIGNED the transaction, which no purchase ever involves
+   * (the buyer signs, the facilitator pays the fee, we only receive).
+   * First live case 2026-08-04: two Jupiter swaps ($24.79 + $27.30)
+   * from the keeper's Solflare — the wallet app that holds the
+   * store's Solana key — whose swap output lands in the connected
+   * wallet's own USDC account. Two days of "$52.09 unbooked" later,
+   * the lesson: a transfer we signed can never be somebody else's
+   * lost purchase, and paging it as one sends the keeper hunting a
+   * buyer who is himself. Currently detected on the Solana walk only,
+   * where the signer list rides the transaction read we already make;
+   * the Base walk would need an extra RPC per orphan for the same
+   * answer, deferred until the case exists there.
    */
-  classification: "possible_sale" | "dust";
+  classification: "possible_sale" | "dust" | "self_initiated";
   /**
    * Set when the sender's address visually mimics a known
    * counterparty (same leading and trailing characters, different
@@ -262,14 +276,20 @@ async function alertOrphans(
               ? `The sender MIMICS ${orphan.lookalike_of} (same leading and trailing characters, different address): the address-poisoning profile. Its goal is to sit in transaction history and be copied later. `
               : ""
           }DO NOT refund it and DO NOT copy the sender's address for anything — addresses come from the register and the payer rows, never from transaction history. No action needed; this is recorded.`
-        : `${orphan.usdc} USDC arrived on ${chainLabel} from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.${
-            certScanTruncated
-              ? " NOTE: the certificate scan hit its cap, so this may be a false alarm from a partial read."
-              : ""
-          }`;
+        : orphan.classification === "self_initiated"
+          ? `${orphan.usdc} USDC arrived on ${chainLabel} in transaction ${orphan.tx_hash} (block ${orphan.block}) — and the store's own wallet SIGNED that transaction. No purchase involves our signature (the buyer signs, the facilitator pays the fee), so this is the house's own hand: a swap output, a consolidation, the keeper funding something from the wallet app. Recorded as house money; nobody outside is owed anything. IF THE KEEPER DOES NOT RECOGNIZE THIS TRANSACTION, that is a different and much worse story — a signature nobody remembers making means the key has left the paper. Check the wallet app's activity; unrecognized means rotate the wallet now.`
+          : `${orphan.usdc} USDC arrived on ${chainLabel} from ${orphan.from} in transaction ${orphan.tx_hash} (block ${orphan.block}) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.${
+              certScanTruncated
+                ? " NOTE: the certificate scan hit its cap, so this may be a false alarm from a partial read."
+                : ""
+            }`;
     await sendAlert(env, {
       condition:
-        orphan.classification === "dust" ? "chain_dust" : "undelivered_sale",
+        orphan.classification === "dust"
+          ? "chain_dust"
+          : orphan.classification === "self_initiated"
+            ? "chain_self_transfer"
+            : "undelivered_sale",
       detail,
       key: orphan.tx_hash,
     }).catch(() => {
@@ -370,7 +390,13 @@ export async function reconcileSolanaAgainstChain(
         from: incoming.from,
         usdc,
         block: info.slot,
-        classification: usdc < floor ? "dust" : "possible_sale",
+        // Self-signed outranks the price test: a transfer our own key
+        // authorized is our own hand whatever its size.
+        classification: incoming.self_signed
+          ? "self_initiated"
+          : usdc < floor
+            ? "dust"
+            : "possible_sale",
       };
       if (orphan.classification === "dust") {
         counterparties ??= await knownCounterparties(env);

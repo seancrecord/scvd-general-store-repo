@@ -30,6 +30,10 @@ interface FakeTx {
   err?: unknown;
   /** USDC units into the owner; sender wallet. */
   incoming?: { from: string; units: bigint };
+  /** The receive wallet itself signed this tx (the keeper's own hand). */
+  selfSigned?: boolean;
+  /** Answer without accountKeys, like an RPC shape we did not expect. */
+  noAccountKeys?: boolean;
 }
 
 function solanaRpc(handlers: {
@@ -82,6 +86,29 @@ function solanaRpc(handlers: {
         return respond(null);
       }
       return respond({
+        ...(tx.noAccountKeys
+          ? {}
+          : {
+              transaction: {
+                message: {
+                  // Real settles: the buyer signs, the facilitator
+                  // pays the fee — the store's key never appears as
+                  // a signer unless the keeper's own hand moved.
+                  accountKeys: [
+                    {
+                      pubkey: tx.selfSigned
+                        ? OWNER
+                        : "FaciliFeePayer111111111111111111111111111",
+                      signer: true,
+                    },
+                    { pubkey: tx.incoming.from, signer: false },
+                    ...(tx.selfSigned
+                      ? []
+                      : [{ pubkey: OWNER, signer: false }]),
+                  ],
+                },
+              },
+            }),
         meta: {
           err: tx.err ?? null,
           preTokenBalances: [
@@ -238,6 +265,114 @@ describe("walking the chain", () => {
     );
     expect(result.transfers_seen).toBe(0);
     expect(result.orphans).toEqual([]);
+  });
+});
+
+describe("the keeper's own hand (live case, 2026-08-04)", () => {
+  /**
+   * Two Jupiter swaps run from the keeper's Solflare — the wallet app
+   * that holds the store's Solana key — landed 24.794126 then
+   * 27.300538 USDC in the store's own token account. The store's
+   * wallet SIGNED both transactions, which no purchase ever involves,
+   * and the walk still read them as two undelivered sales: $52.09 of
+   * the keeper's own money spent two days as an open mystery. A
+   * transfer our key authorized is our own hand, whatever its size.
+   */
+  it("classifies a transfer the store's wallet signed as self_initiated, never a lost sale", async () => {
+    const result = await reconcileSolanaAgainstChain(
+      envWith(
+        solanaRpc({
+          txs: [
+            {
+              signature: "4bUdv3tSwapTwo",
+              slot: 437235011,
+              selfSigned: true,
+              incoming: { from: "EPUHjseDexVault111111111111111111111111111", units: 27_300538n },
+            },
+            {
+              signature: "Fdz41bSwapOne1",
+              slot: 437207739,
+              selfSigned: true,
+              incoming: { from: "EPUHjseDexVault111111111111111111111111111", units: 24_794126n },
+            },
+          ],
+        }),
+      ),
+    );
+    expect(result.orphans).toHaveLength(2);
+    for (const orphan of result.orphans!) {
+      expect(orphan.classification).toBe("self_initiated");
+    }
+  });
+
+  it("pages chain_self_transfer with the compromise caveat, and never undelivered_sale", async () => {
+    const sig = "SelfSwap" + Math.random().toString(36).slice(2, 8);
+    await runSolanaReconciliation(
+      envWith(
+        solanaRpc({
+          txs: [
+            {
+              signature: sig,
+              slot: 600,
+              selfSigned: true,
+              incoming: { from: "EPUHjseDexVault111111111111111111111111111", units: 24_794126n },
+            },
+          ],
+        }),
+      ),
+    );
+    const alerts = await listAlerts(testEnv, 50);
+    const self = alerts.find(
+      (entry) => entry.condition === "chain_self_transfer" && entry.detail.includes(sig),
+    );
+    expect(self).toBeDefined();
+    expect(self!.detail).toContain("SIGNED");
+    // The honest edge of the quiet classification: a signature the
+    // keeper does not recognize is the key off the paper.
+    expect(self!.detail.toLowerCase()).toContain("rotate");
+    expect(
+      alerts.some(
+        (entry) =>
+          entry.condition === "undelivered_sale" && entry.detail.includes(sig),
+      ),
+      "our own hand must not page as somebody else's lost purchase",
+    ).toBe(false);
+  });
+
+  it("self-signed outranks the dust test — our own hand at any size", async () => {
+    const result = await reconcileSolanaAgainstChain(
+      envWith(
+        solanaRpc({
+          txs: [
+            {
+              signature: "SelfDust111111",
+              slot: 700,
+              selfSigned: true,
+              incoming: { from: "SomeVault1111111111111111111111111111111111", units: 30n },
+            },
+          ],
+        }),
+      ),
+    );
+    expect(result.orphans![0]!.classification).toBe("self_initiated");
+  });
+
+  it("an answer without account keys stays a possible sale — absence of proof is not proof of our hand", async () => {
+    const result = await reconcileSolanaAgainstChain(
+      envWith(
+        solanaRpc({
+          txs: [
+            {
+              signature: "NoKeysShape111",
+              slot: 800,
+              noAccountKeys: true,
+              incoming: { from: "Stranger1111111111111111111111111111111111", units: 20_000_000n },
+            },
+          ],
+        }),
+      ),
+    );
+    expect(result.orphans![0]!.classification).toBe("possible_sale");
   });
 });
 

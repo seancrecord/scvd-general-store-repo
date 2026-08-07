@@ -71,6 +71,18 @@ export const ALERT_CONDITIONS = [
    * 2026-08-04, a lookalike of CV's wallet.
    */
   "chain_dust",
+  /**
+   * USDC arrived in the store's wallet in a transaction the store's
+   * OWN KEY signed — which no purchase ever involves, so it is the
+   * house's own hand (a swap output, a consolidation) and must not
+   * page as an undelivered sale. First live instance 2026-08-04: two
+   * Jupiter swaps from the keeper's Solflare sat two days as "$52.09
+   * unbooked" because the walk had no name for our own money
+   * arriving. Pages once so the record exists — and because a
+   * self-signed transaction the keeper does NOT recognize is the key
+   * off the paper, which is the loudest alarm this store has.
+   */
+  "chain_self_transfer",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];

@@ -246,3 +246,47 @@ describe("the keeper's resolution (2026-08-04, the audit's first real catches)",
     expect(result.ok).toBe(false);
   });
 });
+
+describe("closing a chain orphan (live case, 2026-08-05)", () => {
+  /**
+   * The bank walk finds money OUTSIDE the buy flow — no intent row
+   * ever existed, the cursor has moved past it, and the alert trail
+   * is its only record. The lever refused everything without an
+   * intent, so two Jupiter swaps of the keeper's own money sat
+   * unresolvable for two days. The trail now vouches for the tx the
+   * way the intent row used to.
+   */
+  it("resolves a tx the walk alerted on, though no intent row ever existed", async () => {
+    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+    const { sendAlert } = await import("@/lib/alerts");
+    const sig = "FdzOrphan" + Math.random().toString(36).slice(2, 8);
+    await sendAlert(testEnv, {
+      condition: "undelivered_sale",
+      detail: `24.794126 USDC arrived on Solana from EPUHjseDexVault111111111111111111111111111 in transaction ${sig} (block 437207739) and NO certificate names it. The chain says we were paid; our own records do not. Check whether an artifact was minted under a different hash, then fulfil or refund by hand.`,
+      key: sig,
+    });
+
+    const result = await resolveDeliveryIntent(testEnv, sig, "house_absorbed");
+    expect(result.ok).toBe(true);
+
+    const record = (await testEnv.ORDERS.get(
+      `delivery_resolved:${sig}`,
+      "json",
+    )) as Record<string, unknown>;
+    expect(record?.outcome).toBe("house_absorbed");
+    // The record says which instrument found the money — and that no
+    // intent ever existed, so nobody later reads it as an erasure.
+    expect(record?.source).toBe("chain_reconciliation");
+  });
+
+  it("still refuses a tx that neither an intent nor the trail ever named", async () => {
+    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+    const result = await resolveDeliveryIntent(
+      testEnv,
+      "SigNobodyEverAlertedOn",
+      "house_absorbed",
+    );
+    expect(result.ok).toBe(false);
+    expect((result as { refusal: string }).refusal).toContain("no alert");
+  });
+});
