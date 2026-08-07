@@ -167,7 +167,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Up to 20 settlement attestations in one purchase. Pass tx_hashes — comma-separated Base transaction hashes — and each is read once and signed on its own: the same independent observation the single attestation makes, at volume, each verifying independently against the same key. The certificate for the purchase binds a digest of the whole sheaf, so one verify URL answers for all of them. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes moments on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
     note_402:
-      "A nickel. Twenty receipts, each one signed on its own, each one built to hold in a room where nobody trusts you.",
+      "A nickel for the sheaf. Each receipt signed on its own, every one built to hold in a room where nobody trusts you.",
     constraints: [
       "Give 2 to 20 Base transaction hashes in the tx_hashes query parameter, comma-separated, no duplicates",
       "Each hash is observed once and signed on its own; the bundle is a purchase shape, not a different artifact",
