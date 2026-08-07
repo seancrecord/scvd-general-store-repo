@@ -147,6 +147,19 @@ practiceCounterRoutes.get("/try", (c) => {
       )
       .join("\n");
 
+    /**
+     * SECTION ORDER IS THE KEEPER'S FINDING (2026-08-07, walking his
+     * own store): the fastest x402 path was buried. The front page and
+     * llms.txt lead with the cheap doors; this page — whose entire
+     * audience is someone hunting the fastest real 402 — parked its
+     * shelf BELOW the whole hand-rolling reference, and the fastest
+     * single line existed only inside step prose. Now: the fast path
+     * is one copyable line under the standfirst (derived from the
+     * live menu, so it cannot drift), and the cheap door sits directly
+     * after the three steps. Hand-rolling is reference for the builder
+     * who is already stuck; reference follows doors, and the JSON has
+     * always had this right — cheapest_settlement is its third key.
+     */
     return c.html(
       renderSimplePage({
         title: COPY.title,
@@ -155,6 +168,11 @@ practiceCounterRoutes.get("/try", (c) => {
         path: "/try",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(COPY.standfirst)}</p>
+          ${
+            low
+              ? `<p class="menu-meta">The fast path, one line: <code>GET /api/buy/${escapeHtml(low.id)}?src=try</code> — $${low.price_usdc}, no parameters, answers 402 with everything you need. The three steps below are that line, twice more.</p>`
+              : ""
+          }
         </section>
         <section>
           <h2>${escapeHtml(COPY.whyHead)}</h2>
@@ -164,6 +182,11 @@ practiceCounterRoutes.get("/try", (c) => {
           <h2>${escapeHtml(COPY.stepsHead)}</h2>
           ${flowHtml}
           <p class="menu-desc">${escapeHtml(COPY.stepsNote)}</p>
+        </section>
+        <section>
+          <h2>${escapeHtml(COPY.cheapHead)}</h2>
+          ${shelfHtml}
+          <p class="menu-desc">${escapeHtml(COPY.cheapNote)}</p>
         </section>
         <section>
           <h2>${escapeHtml(COPY.retryHead)}</h2>
@@ -200,11 +223,6 @@ practiceCounterRoutes.get("/try", (c) => {
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.settlement_id)}</p>
           <p class="menu-desc">${escapeHtml(HAND_ROLLING.solana.client_shortcut)}</p>
           <p class="menu-meta">${escapeHtml(HAND_ROLLING.solana.everything_else_unchanged)}</p>
-        </section>
-        <section>
-          <h2>${escapeHtml(COPY.cheapHead)}</h2>
-          ${shelfHtml}
-          <p class="menu-desc">${escapeHtml(COPY.cheapNote)}</p>
         </section>
         <section>
           <h2>${escapeHtml(COPY.stuckHead)}</h2>
