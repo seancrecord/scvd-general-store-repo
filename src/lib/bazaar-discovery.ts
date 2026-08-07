@@ -93,6 +93,20 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("win");
   }
+  if (item.id === "bitcoin_anchor") {
+    properties["digest"] = {
+      type: "string",
+      pattern: "^[0-9a-fA-F]{64}$",
+      description:
+        "sha256 of bytes you keep, 64 hex characters, no 0x prefix. The store never sees the bytes.",
+    };
+    properties["label"] = {
+      type: "string",
+      maxLength: 120,
+      description:
+        "Optional: your own claim about what the digest covers, stored verbatim and never checked.",
+    };
+  }
   if (item.id === "settlement_attestation") {
     properties["tx_hash"] = {
       type: "string",
@@ -124,6 +138,9 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
         "Optional. The base64 PAYMENT-SIGNATURE you sent, verbatim. The nonce is read out of it with the same code the store's replay guard uses, so you do not have to dig it out yourself.",
     };
     required.push("tx_hash");
+  }
+  if (item.id === "bitcoin_anchor") {
+    required.push("digest");
   }
   if (item.id === "attestation_bundle") {
     properties["tx_hashes"] = {
@@ -179,6 +196,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "graffiti_on_a_train") {
     example["tag"] = "friendly-agent wuz here";
+  }
+  if (item.id === "bitcoin_anchor") {
+    example["digest"] = "9f".repeat(32);
   }
   if (item.id === "settlement_attestation") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);

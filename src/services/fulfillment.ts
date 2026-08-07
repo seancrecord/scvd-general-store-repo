@@ -59,6 +59,10 @@ export interface FulfillmentInput {
   attestationQuery?: AttestationQuery;
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
   bundleTxHashes?: string[];
+  /** bitcoin_anchor: the buyer's sha256, pre-validated. Opaque to us. */
+  anchorDigest?: string;
+  /** bitcoin_anchor: the buyer's claim about the digest. UNTRUSTED. */
+  anchorLabel?: string;
   /** recurring_patronage: pass to extend. */
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
@@ -177,6 +181,17 @@ export async function fulfillPurchase(
     }
     mintOptions.attests = await bundleEvidenceHash(bundle);
   }
+  /**
+   * THE BITCOIN ANCHOR binds the buyer's digest the same way the
+   * attestations bind their evidence hashes: through `attests`, so
+   * /api/verify answers for "this store certified THIS digest at THIS
+   * time" with no new endpoint. The OTS submission happens after the
+   * mint, in instant goods, where a calendar outage can fail soft
+   * without costing the certificate.
+   */
+  if (item.id === "bitcoin_anchor" && input.anchorDigest) {
+    mintOptions.attests = input.anchorDigest.toLowerCase();
+  }
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
     mintOptions.witness = true;
@@ -287,6 +302,12 @@ export async function fulfillPurchase(
     }
     if (bundle) {
       goodsInput.bundle = bundle;
+    }
+    if (input.anchorDigest) {
+      goodsInput.anchorDigest = input.anchorDigest;
+      if (input.anchorLabel) {
+        goodsInput.anchorLabel = input.anchorLabel;
+      }
     }
     // The grudge register, the lucky draw and the train all key off
     // the cert: the certificate is the thing the buyer actually holds.

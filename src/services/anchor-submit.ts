@@ -145,44 +145,57 @@ export async function submitToOts(
  * as a failure would turn the ordinary case into noise and teach the
  * keeper to ignore this log, which is how a canary dies.
  */
+/**
+ * The upgrade, digest-in / OtsAnchor-out, shared with the patron
+ * anchors for the same reason as the submitter: one implementation of
+ * "404 is the normal answer, network trouble is a nothing-happened."
+ * Returns null when nothing changed, so callers write nothing.
+ */
+export async function upgradeDigestOts(
+  digestHex: string,
+  ots: OtsAnchor,
+  options: SubmitOptions = {},
+): Promise<OtsAnchor | null> {
+  if (ots.status !== "pending") return null;
+  const fetchImpl = options.fetch ?? globalThis.fetch;
+  const now = options.now ?? new Date();
+  const calendar = ots.calendar ?? OTS_CALENDARS[0];
+  try {
+    const response = await fetchImpl(`${calendar}/timestamp/${digestHex}`, {
+      headers: { Accept: "application/vnd.opentimestamps.v1" },
+    });
+    if (response.status === 404) {
+      // Still waiting on a Bitcoin block. Unchanged, not failed.
+      return null;
+    }
+    if (!response.ok) {
+      return null;
+    }
+    const proof = new Uint8Array(await response.arrayBuffer());
+    if (proof.length === 0) return null;
+    return {
+      ...ots,
+      status: "complete",
+      proof_base64: toBase64(proof),
+      upgraded_at: now.toISOString(),
+    };
+  } catch {
+    // Network trouble is a nothing-happened, not a state change.
+    return null;
+  }
+}
+
 export async function upgradeOtsProof(
   env: Env,
   record: AnchorRecord,
   options: SubmitOptions = {},
 ): Promise<AnchorRecord> {
   if (record.ots?.status !== "pending") return record;
-  const fetchImpl = options.fetch ?? globalThis.fetch;
-  const now = options.now ?? new Date();
-  const calendar = record.ots.calendar ?? OTS_CALENDARS[0];
-  try {
-    const response = await fetchImpl(
-      `${calendar}/timestamp/${record.digest}`,
-      { headers: { Accept: "application/vnd.opentimestamps.v1" } },
-    );
-    if (response.status === 404) {
-      // Still waiting on a Bitcoin block. Unchanged, not failed.
-      return record;
-    }
-    if (!response.ok) {
-      return record;
-    }
-    const proof = new Uint8Array(await response.arrayBuffer());
-    if (proof.length === 0) return record;
-    const upgraded: AnchorRecord = {
-      ...record,
-      ots: {
-        ...record.ots,
-        status: "complete",
-        proof_base64: toBase64(proof),
-        upgraded_at: now.toISOString(),
-      },
-    };
-    await saveAnchor(env, upgraded);
-    return upgraded;
-  } catch {
-    // Network trouble is a nothing-happened, not a state change.
-    return record;
-  }
+  const upgraded = await upgradeDigestOts(record.digest, record.ots, options);
+  if (!upgraded) return record;
+  const next: AnchorRecord = { ...record, ots: upgraded };
+  await saveAnchor(env, next);
+  return next;
 }
 
 /**

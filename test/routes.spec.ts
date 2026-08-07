@@ -75,6 +75,9 @@ describe("the storefront", () => {
       "the_confession",
       "attestation_bundle",
       "hello",
+      // $1 ties hold LADDER order (stable sort): the anchor was listed
+      // above the context anchor on the utility shelf, so it leads.
+      "bitcoin_anchor",
       "context_anchor",
       "graffiti_on_a_train",
       "standing_watch",

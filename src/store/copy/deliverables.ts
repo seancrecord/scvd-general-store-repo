@@ -108,6 +108,15 @@ export function attestationNote(status: string): string {
 }
 
 /** Same register as the single, at volume. Statuses named, not summarized. */
+/** bitcoin_anchor. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function bitcoinAnchorNote(otsStatus: string): string {
+  return otsStatus === "pending"
+    ? "Your digest is in the calendar's hands and on its way into a Bitcoin block — typically confirmed within a few hours. The proof URL is yours forever; check back once and it'll say complete."
+    : otsStatus === "failed"
+      ? "The calendars didn't answer just now, so the store will keep knocking on the hour until one does — your certificate already binds the digest either way, and the proof URL will fill in. Bitcoin is patient and so are we."
+      : "Anchored. The proof stands on Bitcoin's memory now, which outlasts everybody's.";
+}
+
 export function bundleNote(statuses: readonly string[]): string {
   return `Read the chain once per hash and signed each of the ${statuses.length}: ${statuses.join(", ")}. Every attestation in the sheaf is signed on its own, so each one checks independently without asking us — and the certificate for this purchase binds a digest over the lot. It says what Base said at those moments; not whether anything was delivered, and not what happens next.`;
 }
