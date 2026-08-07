@@ -26,6 +26,7 @@ import {
   atomicToUsdc,
   getPaymentStack,
   minimumUsdcForPath,
+  processSettlementWithRetry,
   tipFromPaid,
 } from "@/lib/payments";
 import type { SettledPayment } from "@/lib/payments";
@@ -295,7 +296,10 @@ export async function runMcpPayment(
 
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {
-    settlement = await stack.httpServer.processSettlement(
+    // Same one-retry-on-5xx as the HTTP door: the MCP till must not
+    // lose a sale the other door would have saved.
+    settlement = await processSettlementWithRetry(
+      stack.httpServer,
       result.paymentPayload,
       result.paymentRequirements,
       result.declaredExtensions,

@@ -27,6 +27,9 @@ export interface DeclinesPageData {
 const FAULT_LABEL: Record<string, string> = {
   buyer: "theirs",
   ours: "OURS",
+  // Not "theirs" — that label already means the buyer on this page,
+  // and a facilitator outage is the one fault that is neither side's.
+  facilitator: "the rail's",
   unknown: "unknown",
 };
 

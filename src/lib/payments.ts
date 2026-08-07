@@ -612,6 +612,55 @@ export function getPaymentStack(env: Env): PaymentStack {
   return cachedStack;
 }
 
+/**
+ * ONE SETTLE RETRY ON A FACILITATOR 5xx — because on 2026-08-07 a real
+ * buyer's first three purchases all died on the settle endpoint's own
+ * 502s inside one minute, with the signature already verified. That is
+ * the worst decline there is: intent proven, wallet good, payload
+ * good, and the sale lost to somebody else's blip.
+ *
+ * WHY THIS IS SAFE TO RETRY. The authorization is EIP-3009: its nonce
+ * can move money AT MOST ONCE on-chain, so re-submitting the same
+ * settle cannot double-charge. Better, the retry converts the 5xx's
+ * ambiguity into knowledge: a 5xx never says whether the transfer was
+ * broadcast before the origin died, and the retry's answer settles it
+ * — success means it had not (and the sale is saved), "already used"
+ * means it HAD (and the decline books that, which the reconciliation
+ * walk can then match to the on-chain transfer).
+ *
+ * ONE retry, not a loop: a rail that is down stays down, and a buyer
+ * waiting on a 402 deserves an answer more than we deserve a third
+ * try. Only the exact "Facilitator settle failed (5xx)" shape retries
+ * — a facilitator that ANSWERED (success:false with a verdict) was not
+ * a blip and is not second-guessed. Money fails closed; this narrows
+ * nothing and can only turn a transport failure into a verdict.
+ */
+export const SETTLE_RETRY_DELAY_MS = 1500;
+
+/**
+ * The @x402/core client's own wording for "the settle endpoint
+ * returned a non-OK HTTP status": transport failed, no verdict exists.
+ * Everything after the status is the raw response body and is not
+ * matched on.
+ */
+export function isTransientSettleFailure(errorReason: string | undefined): boolean {
+  return /facilitator settle failed \(5\d\d\)/i.test(errorReason ?? "");
+}
+
+type SettlementArgs = Parameters<x402HTTPResourceServer["processSettlement"]>;
+
+export async function processSettlementWithRetry(
+  httpServer: x402HTTPResourceServer,
+  ...args: SettlementArgs
+): Promise<Awaited<ReturnType<x402HTTPResourceServer["processSettlement"]>>> {
+  const first = await httpServer.processSettlement(...args);
+  if (first.success || !isTransientSettleFailure(first.errorReason)) {
+    return first;
+  }
+  await new Promise((resolve) => setTimeout(resolve, SETTLE_RETRY_DELAY_MS));
+  return httpServer.processSettlement(...args);
+}
+
 /** What the payment gate hands to the buy handler once money has settled. */
 export interface SettledPayment {
   paidUsdc: number;

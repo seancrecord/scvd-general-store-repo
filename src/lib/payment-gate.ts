@@ -68,6 +68,7 @@ import {
   usdcToAtomic,
   getPaymentStack,
   minimumUsdcForPath,
+  processSettlementWithRetry,
   tipFromPaid,
 } from "@/lib/payments";
 import type { SettledPayment } from "@/lib/payments";
@@ -655,7 +656,11 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     ReturnType<typeof stack.httpServer.processSettlement>
   >;
   try {
-    settlement = await stack.httpServer.processSettlement(
+    // One retry on a facilitator 5xx — the transport-failed shape,
+    // never a verdict. Safe because the EIP-3009 nonce settles at most
+    // once on-chain; rationale at processSettlementWithRetry.
+    settlement = await processSettlementWithRetry(
+      stack.httpServer,
       result.paymentPayload,
       result.paymentRequirements,
       result.declaredExtensions,

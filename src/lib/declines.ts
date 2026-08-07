@@ -33,10 +33,13 @@ const LIST_PAGE = 1000;
 export type DeclineStage = "verify" | "settle";
 
 /**
- * Whose problem it is. Deliberately coarse — three buckets a keeper
- * can act on, not a taxonomy.
+ * Whose problem it is. Deliberately coarse — buckets a keeper can act
+ * on, not a taxonomy. "facilitator" earned its place 2026-08-07, when
+ * three verified payments died on the facilitator's own 502s and the
+ * desk could only say "unknown": an upstream outage is not the buyer's
+ * problem, not ours, and NOT unknown — it is known and it is theirs.
  */
-export type DeclineFault = "buyer" | "ours" | "unknown";
+export type DeclineFault = "buyer" | "ours" | "facilitator" | "unknown";
 
 export interface DeclineRow {
   at: string;
@@ -137,6 +140,27 @@ export function readReason(raw: string): {
       fault: "unknown",
       reading:
         "The x402 SDK refused this before the facilitator saw it, and its own words are in the message beside this reading. No hook fires on that path, so this line exists to keep the reason from vanishing.",
+    };
+  }
+  /**
+   * BEFORE the substring guesses below, deliberately: everything after
+   * "(5xx):" is the facilitator's raw HTTP response body, which is
+   * arbitrary text — Cloudflare's canned "error code: 502" today,
+   * anything tomorrow — and must not be allowed to trip a rule written
+   * for a real verdict string.
+   *
+   * First seen live 2026-08-07: a verified buyer, three settles, three
+   * 502s in one minute, and the desk read "unknown". The signature had
+   * already cleared, so the payload, the amount, and the buyer's wallet
+   * are all known-good — the facilitator's settle endpoint simply did
+   * not answer. The @x402/core client builds this exact string when
+   * POST /settle returns a non-OK status (the number in parentheses).
+   */
+  if (/facilitator settle failed \(5\d\d\)/.test(reason)) {
+    return {
+      fault: "facilitator",
+      reading:
+        "The facilitator's own settle endpoint errored (the 5xx in parentheses is its HTTP status; the text after the colon is its raw response body). The signature had already VERIFIED, so the buyer and the payload are fine and there is nothing to fix on either side — the payment rail was down. Transient: the till now retries one settle on this shape before booking the decline. One caveat: a 5xx is an AMBIGUOUS outcome, so if one recurs, check the bank reconciliation for an orphan transfer around this timestamp — the rare settle that landed on-chain while its response died would surface there.",
     };
   }
   if (reason.includes("insufficient") || reason.includes("balance")) {

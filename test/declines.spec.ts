@@ -88,6 +88,47 @@ describe("reading a decline", () => {
     expect(row?.fault).toBe("buyer");
   });
 
+  it("reads a facilitator 5xx as the rail's fault, not the buyer's and not unknown", async () => {
+    // Byte-for-byte the three declines of 2026-08-07: verify cleared,
+    // the settle endpoint 502'd, and the desk could only say "unknown".
+    await seedRow(
+      decline({
+        user_agent: "declines-spec-rail/1",
+        note: "settle:Facilitator settle failed (502): error code: 502",
+      }),
+    );
+    const report = await readDeclines(testEnv);
+    const row = report.declines.find(
+      (entry) => entry.user_agent === "declines-spec-rail/1",
+    );
+    expect(row?.stage).toBe("settle");
+    expect(row?.reason).toBe(
+      "settle:Facilitator settle failed (502): error code: 502",
+    );
+    expect(row?.fault).toBe("facilitator");
+    // The reading tells the keeper the buyer was fine and where to
+    // look for the rare 5xx that settled anyway.
+    expect(row?.reading.toLowerCase()).toContain("rail was down");
+    expect(row?.reading.toLowerCase()).toContain("reconciliation");
+  });
+
+  it("never lets a 5xx response body trip a verdict rule", async () => {
+    // Everything after the status is the facilitator's raw response
+    // body — arbitrary text. A body that happens to say "insufficient"
+    // must still read as a rail failure, not a short wallet.
+    await seedRow(
+      decline({
+        user_agent: "declines-spec-rail/2",
+        note: "settle:Facilitator settle failed (503): insufficient capacity",
+      }),
+    );
+    const report = await readDeclines(testEnv);
+    const row = report.declines.find(
+      (entry) => entry.user_agent === "declines-spec-rail/2",
+    );
+    expect(row?.fault).toBe("facilitator");
+  });
+
   it("counts a reasonless decline as an instrument gap, not a buyer signal", async () => {
     const before = (await readDeclines(testEnv)).unspecified;
     await seedRow(

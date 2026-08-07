@@ -19,6 +19,18 @@ export interface FacilitatorMockState {
   settleShouldFail: boolean;
   verifyShouldFail: boolean;
   /**
+   * Consecutive settle calls that die the way the real facilitator
+   * died on 2026-08-07: a bare HTTP 502 with Cloudflare's plain-text
+   * body, no JSON, no verdict. Each such call decrements the counter,
+   * so `1` models a blip (retry saves the sale) and `2` an outage
+   * (retry burns too, decline books). Distinct from settleShouldFail,
+   * which is the facilitator ANSWERING no — that shape must never
+   * trigger a retry.
+   */
+  settleTransient502s: number;
+  /** Every settle call, verdicts and 502s alike — the retry counter. */
+  settleCalls: number;
+  /**
    * A successful settle that comes back with no payer address. Not
    * hypothetical: the store's `nopayer` counter exists because real
    * settles have arrived this way, and the house flag is decided by
@@ -100,6 +112,8 @@ export function installFacilitatorMock(): FacilitatorMockState {
   const state: FacilitatorMockState = {
     settleShouldFail: false,
     verifyShouldFail: false,
+    settleTransient502s: 0,
+    settleCalls: 0,
     settleOmitsPayer: false,
     webhookCalls: [],
     settledNonces: new Set(),
@@ -145,6 +159,14 @@ export function installFacilitatorMock(): FacilitatorMockState {
       return Response.json({ isValid: true, payer: TEST_PAYER });
     }
     if (url.endsWith("/x402/settle")) {
+      state.settleCalls += 1;
+      if (state.settleTransient502s > 0) {
+        state.settleTransient502s -= 1;
+        // Byte-for-byte the live shape: Cloudflare's canned error body,
+        // not JSON, which is what makes @x402/core throw the
+        // "Facilitator settle failed (502): ..." string the retry keys on.
+        return new Response("error code: 502", { status: 502 });
+      }
       if (state.settleShouldFail) {
         return Response.json({
           success: false,
