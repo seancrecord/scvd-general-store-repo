@@ -3,7 +3,7 @@ import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
-import { listPayers } from "@/lib/metrics";
+import { listPayers, metricsMonth } from "@/lib/metrics";
 import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
 import { MENU_ITEMS } from "@/store";
 import type { CertificateRecord, Env } from "@/types";
@@ -101,6 +101,64 @@ export function findLookalike(
   }
   return null;
 }
+
+/**
+ * THE INFLOW METER (the net-by-chain statement's chain side), and why
+ * it rides these walks instead of getting a walk of its own.
+ *
+ * The statement wants "USDC that actually arrived on this chain this
+ * month" — and both reconciliation passes already read every incoming
+ * transfer, hourly, behind cursors that move only on a clean pass.
+ * That cursor discipline is exactly the idempotency an accumulator
+ * needs: a failed pass writes nothing and is re-read whole, so no
+ * transfer is ever added twice and none is skipped. A second walk
+ * would double the RPC bill to learn the same numbers with none of
+ * that already-proven machinery.
+ *
+ * The sums are staged locally and written ONLY beside the cursor
+ * write, never mid-loop — the Solana pass can fail halfway through
+ * its signature list, and an accumulator that had already banked half
+ * a pass would double-count the retry.
+ *
+ * HONEST LIMITS, carried in the method note the statement publishes:
+ * a transfer is booked to the month the WALK saw it, which trails the
+ * chain by up to an hour at month boundaries; a Base pass that fell
+ * more than RECONCILE_MAX_SPAN behind skips blocks (already this
+ * walk's named behavior) and their inflow with it; and the meter
+ * starts counting at first deploy, so months before it exist on the
+ * chain and not here. Dust is accumulated separately so the statement
+ * can name it instead of blending a poisoning lure into revenue.
+ */
+async function bankInflow(
+  env: Env,
+  chain: "base" | "solana",
+  totals: { microUsdc: number; dustMicroUsdc: number },
+): Promise<void> {
+  if (totals.microUsdc <= 0) {
+    return;
+  }
+  const month = metricsMonth();
+  const add = async (kind: string, amount: number): Promise<void> => {
+    if (amount <= 0) return;
+    const key = KV_KEYS.metric(month, kind, chain);
+    const current = await env.COUNTERS.get(key);
+    await env.COUNTERS.put(
+      key,
+      String((current ? parseInt(current, 10) : 0) + amount),
+    );
+  };
+  await add("inflow", totals.microUsdc);
+  await add("inflowdust", totals.dustMicroUsdc);
+  if (!(await env.COUNTERS.get(KV_KEYS.inflowMeterStart(chain)))) {
+    await env.COUNTERS.put(
+      KV_KEYS.inflowMeterStart(chain),
+      new Date().toISOString(),
+    );
+  }
+}
+
+/** USDC stored as integer millionths, same convention as the till. */
+const INFLOW_MICRO = 1_000_000;
 
 /** Every address the store knows: the register plus the payer rows. */
 async function knownCounterparties(env: Env): Promise<string[]> {
@@ -203,9 +261,15 @@ export async function reconcileAgainstChain(
   const orphans: OrphanTransfer[] = [];
   const floor = cheapestListingUsdc();
   let counterparties: string[] | null = null;
+  const inflow = { microUsdc: 0, dustMicroUsdc: 0 };
   for (const transfer of transfers) {
+    const transferUsdc = usdcFromUnits(transfer.amount);
+    inflow.microUsdc += Math.round(transferUsdc * INFLOW_MICRO);
+    if (transferUsdc < floor) {
+      inflow.dustMicroUsdc += Math.round(transferUsdc * INFLOW_MICRO);
+    }
     if (hashes.has(transfer.txHash)) continue;
-    const usdc = usdcFromUnits(transfer.amount);
+    const usdc = transferUsdc;
     const orphan: OrphanTransfer = {
       tx_hash: transfer.txHash,
       from: transfer.from,
@@ -228,8 +292,11 @@ export async function reconcileAgainstChain(
    * THE CURSOR MOVES ONLY ON A CLEAN READ. Every early return above
    * leaves it where it was, so a failed pass is retried rather than
    * skipped — a reconciliation that walked past a window it never
-   * actually read would be worse than one that fell behind.
+   * actually read would be worse than one that fell behind. The inflow
+   * meter banks at the same moment and under the same rule: the sum
+   * and the cursor describe the same window, or neither is written.
    */
+  await bankInflow(env, "base", inflow);
   await env.COUNTERS.put(KV_KEYS.reconcileCursor, String(toBlock));
 
   return {
@@ -342,6 +409,7 @@ export async function reconcileSolanaAgainstChain(
   let counterparties: string[] | null = null;
   let seen = 0;
   let newestSignature: string | undefined;
+  const inflow = { microUsdc: 0, dustMicroUsdc: 0 };
 
   for (const account of accounts) {
     let infos;
@@ -363,8 +431,13 @@ export async function reconcileSolanaAgainstChain(
       }
       if (!incoming) continue;
       seen += 1;
+      const incomingUsdc = usdcFromUnits(incoming.amount);
+      inflow.microUsdc += Math.round(incomingUsdc * INFLOW_MICRO);
+      if (incomingUsdc < floor) {
+        inflow.dustMicroUsdc += Math.round(incomingUsdc * INFLOW_MICRO);
+      }
       if (hashes.has(info.signature.toLowerCase())) continue;
-      const usdc = usdcFromUnits(incoming.amount);
+      const usdc = incomingUsdc;
       const orphan: OrphanTransfer = {
         tx_hash: info.signature,
         from: incoming.from,
@@ -383,6 +456,10 @@ export async function reconcileSolanaAgainstChain(
     }
   }
 
+  // Banked only on a clean pass, same rule as the cursor: an error
+  // return above discarded the staged sum, so a retried pass cannot
+  // double-count what a failed one already read.
+  await bankInflow(env, "solana", inflow);
   if (newestSignature) {
     await env.COUNTERS.put(SOLANA_RECONCILE_CURSOR_KEY, newestSignature);
   }

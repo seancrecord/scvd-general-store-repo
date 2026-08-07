@@ -485,6 +485,20 @@ the chain carries no flag for "this one was the keeper testing his own
 till." Subtract those addresses and score what's left. The document
 says plainly that it is a declaration rather than a proof.
 
+## The books, checked against the chain
+
+${base}/stats carries net_by_chain: for each rail and month, the USDC
+our hourly reconciliation walk actually saw arrive at the receiving
+wallet, beside what the till booked as settled on that chain, with the
+difference published and its legitimate contents named (dust, keeper
+transfers between declared wallets, month-edge timing). The two sides
+are written by different machinery and neither copies the other; a
+completed month where the books claim more than the chain shows pages
+the keeper rather than sitting in the table. Every published identity
+— the settle counters against the payer rows, the rail split against
+the organic count — is re-checked hourly against the live counters by
+the same sweep.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every

@@ -112,6 +112,13 @@ export const KV_KEYS = {
    * already counted that sale.
    */
   railMeterStart: "rail_meter_start",
+  /**
+   * When the chain-side inflow meter started counting, per chain. Set
+   * once by the first reconciliation pass that banks an inflow sum;
+   * published on the net statement so "no inflow recorded" before this
+   * instant reads as "not yet metered" rather than "no money arrived".
+   */
+  inflowMeterStart: (chain: string): string => `inflow_meter_start:${chain}`,
   /** Fires the outside-signature alarm exactly once, ever. */
   firstSignature: "first_outside_signature",
   latestDigest: "digest:latest",
