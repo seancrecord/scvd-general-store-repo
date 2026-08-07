@@ -155,7 +155,20 @@ describe("the sheaf, paid for", () => {
             : input instanceof URL
               ? input.toString()
               : input.url;
-        if (url.startsWith("https://mainnet.base.org")) {
+        /**
+         * Exact origin, never a prefix — CodeQL's high finding on the
+         * first cut of this test, and it was right even in test code:
+         * "https://mainnet.base.org.evil.example" passes a startsWith
+         * check, and a routing habit copied out of a test is how a
+         * routing habit reaches production.
+         */
+        let origin = "";
+        try {
+          origin = new URL(url).origin;
+        } catch {
+          origin = "";
+        }
+        if (origin === "https://mainnet.base.org") {
           const body = JSON.parse(String(init?.body ?? "null")) as
             | { id: number; method: string }
             | Array<{ id: number; method: string }>;
