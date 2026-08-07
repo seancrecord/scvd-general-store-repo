@@ -57,27 +57,8 @@ function shelfKindOf(itemId: string): ShelfKind {
   return item.fulfillment === "human_queue" ? "queue" : "instant";
 }
 
-export interface TakeWindow {
-  /**
-   * ISO instant. Rows dated at or after it are skipped.
-   *
-   * Used by exactly one caller, the rail split, and for one reason:
-   * from the moment the till started recording the settlement rail
-   * itself, the certificates are the SECOND record of the same sale.
-   * Counting both would put one purchase on two rails. The desk passes
-   * nothing and sees the whole book, which is what a desk is for.
-   */
-  before: string;
-}
-
-export async function takeSummary(
-  env: Env,
-  window?: TakeWindow,
-): Promise<TakeSummary> {
-  const { rows: allRows, truncated } = await taxRows(env);
-  const rows = window
-    ? allRows.filter((row) => row.date < window.before)
-    : allRows;
+export async function takeSummary(env: Env): Promise<TakeSummary> {
+  const { rows, truncated } = await taxRows(env);
   const lines = new Map<ShelfKind, TakeLine>();
   const line = (kind: ShelfKind): TakeLine => {
     let existing = lines.get(kind);

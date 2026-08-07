@@ -17,8 +17,10 @@ const testEnv = env as unknown as Env;
  * and failed in order, which is the more useful failure to have had.
  */
 async function sweepTheMeter(): Promise<void> {
-  const month = new Date().toISOString().slice(0, 7);
-  const listed = await testEnv.COUNTERS.list({ prefix: `metric:${month}:` });
+  // EVERY month, not just this one: these tests write July counters to
+  // exercise the single-rail deduction, and a sweep scoped to the
+  // current month left them standing for the next test to trip over.
+  const listed = await testEnv.COUNTERS.list({ prefix: "metric:" });
   await Promise.all(
     listed.keys.map((key) => testEnv.COUNTERS.delete(key.name)),
   );
@@ -136,6 +138,69 @@ describe("the rail is recorded where the sale is counted", () => {
     expect(railOf(undefined)).toBeNull();
     // An unrecognised network is its own answer, not a silent Base.
     expect(railOf("cosmos:something")).toBe("other");
+  });
+});
+
+describe("a sale from the single-rail weeks can only have been Base", () => {
+  it("places a pre-Solana sale nothing else recorded, without a block explorer", async () => {
+    // A penny page sold in July: real money, no certificate, and no rail
+    // counter because the till did not write them yet. Under the two
+    // -ledger design this was unplaceable forever. It never was: the
+    // Solana door was not built until 2026-08-04, so in July this store
+    // was physically incapable of taking anything but Base.
+    await testEnv.COUNTERS.put("metric:2026-07:paid:almanac:the-first-week", "1");
+    await testEnv.COUNTERS.put(
+      KV_KEYS.railSplit,
+      JSON.stringify({
+        base: 0,
+        solana: 0,
+        unknown: 0,
+        placed_before_second_rail: 0,
+        truncated: false,
+        computed_at: new Date().toISOString(),
+      }),
+    );
+
+    const stats = await computeStats(testEnv);
+    expect(stats.organic_settlements).toBe(1);
+    expect(stats.organic_by_rail?.base).toBe(1);
+    expect(stats.organic_by_rail?.rail_not_recorded).toBe(0);
+  });
+
+  it("never counts a July sale twice when a certificate already placed it", async () => {
+    await testEnv.COUNTERS.put("metric:2026-07:paid:hello", "1");
+    await testEnv.COUNTERS.put(
+      KV_KEYS.railSplit,
+      JSON.stringify({
+        base: 1,
+        solana: 0,
+        unknown: 0,
+        // The certificates already account for that July sale. The
+        // deduction must add nothing on top of it, or one purchase
+        // becomes two on the front of the store.
+        placed_before_second_rail: 1,
+        truncated: false,
+        computed_at: new Date().toISOString(),
+      }),
+    );
+
+    const stats = await computeStats(testEnv);
+    expect(stats.organic_by_rail?.base).toBe(1);
+    expect(stats.organic_by_rail?.rail_not_recorded).toBe(0);
+  });
+
+  it("claims nothing about the month the second rail opened", async () => {
+    // 2026-08 contains both single-rail days and two-rail days, and the
+    // paid counters are monthly. Claiming the whole month for Base
+    // would be a guess dressed as a deduction, so the month is left
+    // alone and an unplaced August sale stays unplaced.
+    const { monthsBeforeSecondRail, SECOND_RAIL_OPENED } = await import(
+      "@/services/rails"
+    );
+    expect(monthsBeforeSecondRail()).toContain("2026-07");
+    expect(monthsBeforeSecondRail()).not.toContain(
+      SECOND_RAIL_OPENED.slice(0, 7),
+    );
   });
 });
 

@@ -129,6 +129,10 @@ export async function computeStats(env: Env): Promise<StoreStats> {
   );
   let organic = 0;
   let house = 0;
+  /** Organic settles from the months the store was single-rail. */
+  let organicBeforeSecondRail = 0;
+  const { monthsBeforeSecondRail } = await import("@/services/rails");
+  const singleRailMonths = new Set(monthsBeforeSecondRail());
   for (const month of monthsSinceOpening()) {
     const listed = await listKeys(env.COUNTERS, { prefix: `metric:${month}:paid`, cap: PAID_METRIC_CAP });
     const names = listed.names;
@@ -140,6 +144,9 @@ export async function computeStats(env: Env): Promise<StoreStats> {
         house += count;
       } else {
         organic += count;
+        if (singleRailMonths.has(month)) {
+          organicBeforeSecondRail += count;
+        }
       }
     }
   }
@@ -167,8 +174,28 @@ export async function computeStats(env: Env): Promise<StoreStats> {
     readRailSplit(env).catch(() => null),
     readRailCounters(env).catch(() => null),
   ]);
+  /**
+   * THE THIRD RECORD, and the strongest of the three: what the store
+   * was CAPABLE of accepting. Every organic settle from the months
+   * before the Solana door was built had exactly one rail available to
+   * it, so a pre-rail sale that neither ledger placed is not unknown —
+   * it is Base, necessarily. This is the keeper's argument, and it
+   * beats a block explorer: an explorer tells you where a payment
+   * landed, this tells you where it COULD have landed, and there was
+   * one answer.
+   *
+   * Only the ones the certificates did not already place are added, or
+   * a July sale with a certificate would be counted twice.
+   */
+  const singleRailUnplaced = Math.max(
+    0,
+    organicBeforeSecondRail - (split?.placed_before_second_rail ?? 0),
+  );
   const railBase =
-    (split?.base ?? 0) + (till?.base ?? 0) + RAILS_ENTERED_BY_HAND.base;
+    (split?.base ?? 0) +
+    (till?.base ?? 0) +
+    singleRailUnplaced +
+    RAILS_ENTERED_BY_HAND.base;
   const railSolana =
     (split?.solana ?? 0) + (till?.solana ?? 0) + RAILS_ENTERED_BY_HAND.solana;
   const haveRails = split !== null || till !== null;
