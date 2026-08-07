@@ -17,6 +17,16 @@ export const statsRoutes = new Hono<HonoEnv>();
 statsRoutes.get("/stats", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const stats = await computeStats(c.env);
+  /**
+   * The net-by-chain statement rides the same response rather than a
+   * new room: an agent doing diligence is already reading this JSON,
+   * and "our books, checked against the chain" belongs on the page
+   * whose honest limit has always been "our books, not the chain".
+   * Absent on failure rather than a page error — the stats above are
+   * older machinery and should not die of the newer instrument.
+   */
+  const { computeNetStatement } = await import("@/services/net-statement");
+  const netByChain = await computeNetStatement(c.env).catch(() => null);
   return c.json({
     ...stats,
     track_record: trackRecordLine(stats, base),
@@ -55,6 +65,7 @@ statsRoutes.get("/stats", async (c) => {
      */
     what_these_numbers_are:
       "OUR BOOKS, NOT THE CHAIN. Every figure here is computed from counters this store writes, so a settlement that landed on Base and never bumped one would not appear as a discrepancy — it would not appear at all, and this page would look clean while a payment went unrecorded. 'Computed live, no hand edits' means nobody typed these numbers; it does not mean anybody outside checked them.",
+    ...(netByChain ? { net_by_chain: netByChain } : {}),
     how_to_check_it_without_us:
       "An hourly walk compares USDC transfers to our pay-to address against the settlement_tx recorded on every certificate, and a mismatch raises an alert that a person writes up at /corrections. You do not have to take our word for that walk: the pay-to address is public in the 402 terms and at /.well-known/x402.json, every certificate carries its own settlement_tx, and Base is readable by anyone. Walk it yourself and tell us if the two disagree — the mailbox at /api/letter is free.",
   });

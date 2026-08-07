@@ -63,3 +63,75 @@ jobs:
       # ships.
       - name: Build
         run: npm run build:check
+
+  # THE RED LIGHT THAT TELLS SOMEBODY (2026-08-07, the keeper's ask for
+  # enforcement that costs him nothing per push). main sat red for two
+  # days on a real audit failure and no one was told: the store pages
+  # its keeper about undelivered sales and chain dust, and said nothing
+  # about its own CI. These two jobs are that alert, using the only
+  # channel a workflow gets without new secrets — an issue that opens
+  # when a push to main goes red and closes itself on the next green.
+  # An open issue titled "CI is red on main" IS the state, visible to
+  # every session and agent that reads the repo, which is more than an
+  # email is.
+  #
+  # Least privilege holds: only these two jobs get issues:write; the
+  # check job keeps contents:read and nothing else changed.
+  red-main:
+    needs: check
+    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const title = "CI is red on main";
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: "open", labels: "ci-red",
+            });
+            const body = [
+              `Push \`${context.sha.slice(0, 7)}\` failed CI on main: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              "",
+              "This issue closes itself on the next green push to main. If it has been open more than a day, the books' own rule applies: a red light nobody answers teaches everybody to disbelieve red lights.",
+            ].join("\n");
+            const existing = open.data.find((issue) => issue.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ["ci-red"],
+              });
+            }
+
+  green-main:
+    needs: check
+    if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: "open", labels: "ci-red",
+            });
+            for (const issue of open.data) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Green again at \`${context.sha.slice(0, 7)}\`. Closing.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number, state: "closed",
+              });
+            }

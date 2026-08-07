@@ -2,6 +2,21 @@
 
 Anti-shuffle file. When you ship something, move it to DONE with a date. Never delete ideas — ICEBOX with a reason.
 
+## BACKLOG (keeper-approved "not yet", 2026-08-07)
+
+- **THE REFUND-WINDOW DETECTOR.** The card by the door promises "we
+  miss a promised window, you get your money back — and you won't have
+  to argue for it." The delivery audit catches settled-but-never-
+  delivered; nothing catches delivered-late against the 168-hour queue
+  SLA or window-breached-with-no-refund-row. Build: a sweep that finds
+  orders past their promised window with no fulfillment and no pending
+  refund, pages the keeper (`order_sla` condition already exists),
+  and — because the promise says the buyer won't have to argue — files
+  the breach where the buyer can see it. This is the store's loudest
+  money promise and it is currently enforced by the keeper remembering.
+  Approved as backlog, not yet, in the 2026-08-07 enforcement round
+  (items 1, 2, 4, 5 of that round shipped; this is item 3).
+
 ## KEEPER'S NEXT SESSION (written 2026-07-28 for tomorrow)
 
 ### A. SCREENSHOT THESE — four things nobody here can see

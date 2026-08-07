@@ -462,6 +462,27 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    /**
+     * THE BOOKS INVARIANT SWEEP: the published identities, re-checked
+     * against the production counters every hour. Every books defect
+     * in this store's history was cross-substrate drift found by the
+     * keeper reading his own pages; this is the machine doing that
+     * reading on the clock. A sweep that cannot RUN is itself worth a
+     * page — an invariant checker that fails silently is a smoke
+     * detector with the battery out.
+     */
+    ctx.waitUntil(
+      import("@/services/books-invariants").then(({ sweepBooksInvariants }) =>
+        sweepBooksInvariants(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Books invariant sweep failed to run: ${String(error)}`,
+            }),
+        ),
+      ),
+    );
   },
 };
 

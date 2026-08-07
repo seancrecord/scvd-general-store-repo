@@ -71,6 +71,17 @@ export const ALERT_CONDITIONS = [
    * 2026-08-04, a lookalike of CV's wallet.
    */
   "chain_dust",
+  /**
+   * A published identity stopped holding on the production counters —
+   * settle counters vs payer rows, the rail tally vs the organic
+   * count, or a completed month booking more on a chain than the
+   * chain shows. The public surfaces are built to drop or derive
+   * rather than print a contradiction, which means the CONTRADICTION
+   * ITSELF would otherwise be silent: every prior books defect was
+   * found by the keeper reading his own pages against each other.
+   * This condition is the machine doing that reading, hourly.
+   */
+  "books_invariant",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];
