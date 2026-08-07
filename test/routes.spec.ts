@@ -81,9 +81,11 @@ describe("the storefront", () => {
       "context_anchor",
       "graffiti_on_a_train",
       "standing_watch",
-      // $5 ties hold LADDER order too: the audit is listed right
-      // after the watch on the utility shelf — same ladder, one rung.
+      // $5 ties hold LADDER order too: the audit and the conformance
+      // watch are listed right after the Night Watch on the utility
+      // shelf — same ladder, adjacent rungs.
       "service_audit",
+      "conformance_watch",
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",

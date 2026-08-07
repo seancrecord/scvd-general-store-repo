@@ -68,6 +68,7 @@ import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
 import { sweepPhantomChecks } from "@/services/phantom";
 import { sweepStandingWatches } from "@/services/standing-watch";
+import { sweepConformanceWatches } from "@/services/conformance-watch";
 import { recomputeCorrections } from "@/services/reclassify";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
@@ -362,6 +363,20 @@ const worker: ExportedHandler<Env> = {
      * because a skipped hour becomes an hours_unprobed row in a
      * customer's history — our gap, on their record.
      */
+    // The conformance watch rides the same rounds and paces itself
+    // daily (23-hour floor per record) — a failed sweep alerts for
+    // the same reason: a skipped day becomes a days_unchecked row in
+    // a customer's history. Our gap, on their record.
+    ctx.waitUntil(
+      sweepConformanceWatches(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Conformance watch sweep failed: ${String(error)}`,
+          }),
+      ),
+    );
     ctx.waitUntil(
       sweepStandingWatches(env).then(
         () => undefined,

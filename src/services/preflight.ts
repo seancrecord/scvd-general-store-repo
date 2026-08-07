@@ -166,6 +166,8 @@ function report(
     store_identity: storeIdentity(base),
     next_steps: {
       conformance_desk: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free.`,
+      signed_report: `${base}/api/buy/service_audit — this exact readout, signed, bound into a certificate and served at a permanent URL, for when you need to hand it to somebody rather than run it yourself.`,
+      across_a_week: `${base}/api/buy/conformance_watch — this exact battery once a day for seven days, each day signed alone, for catching a deploy that breaks the challenge mid-week. Our missed days are published against us.`,
       behavioral_check: `${base}/api/buy/standing_watch — the paid rung of the same ladder: a week of signed, out-of-band hourly probes on your endpoint, for when you need evidence rather than a readout.`,
     },
   };

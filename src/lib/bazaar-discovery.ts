@@ -77,6 +77,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "conformance_watch") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 endpoint: https, default port. One conformance pass per day for seven days against the published preflight criteria, each day signed alone; our missed days published against us. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -224,6 +233,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "service_audit") {
+    example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "conformance_watch") {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "the_confession") {

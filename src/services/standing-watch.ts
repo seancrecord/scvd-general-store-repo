@@ -1,8 +1,7 @@
-import { listKeys } from "@/lib/kv-list";
-import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { runChecks } from "@/services/preflight";
+import { sweepWatches } from "@/services/watch-sweep";
 import type { Env } from "@/types";
 
 /**
@@ -181,30 +180,19 @@ async function probeOnce(
 /**
  * The hourly walk. One probe per active watch per tick, at most —
  * the 55-minute floor keeps a doubled cron tick from double-billing
- * the hour, and an ended watch is left exactly as it finished.
+ * the hour, and an ended watch is left exactly as it finished. The
+ * walk itself is the store's one shared watch sweep (2026-08-07):
+ * this file supplies the shelf, the spacing and the observation.
  */
 export async function sweepStandingWatches(env: Env): Promise<number> {
-  const listed = await listKeys(env.ORDERS, {
+  return sweepWatches<StandingWatchRecord, WatchProbe>({
+    kv: env.ORDERS,
     prefix: KV_KEYS.standingWatchPrefix,
-    cap: WATCH_SCAN_CAP,
+    scanCap: WATCH_SCAN_CAP,
+    minSpacingMs: 55 * 60_000,
+    entriesOf: (record) => record.probes,
+    observe: (record) => probeOnce(env, record),
   });
-  const rows = await bulkGetJson<StandingWatchRecord>(env.ORDERS, listed.names);
-  const now = Date.now();
-  let probed = 0;
-  for (const name of listed.names) {
-    const record = rows.get(name) ?? null;
-    if (!record || now > Date.parse(record.ends_at)) {
-      continue;
-    }
-    const last = record.probes[record.probes.length - 1];
-    if (last && now - Date.parse(last.at) < 55 * 60_000) {
-      continue;
-    }
-    record.probes.push(await probeOnce(env, record));
-    await env.ORDERS.put(name, JSON.stringify(record));
-    probed += 1;
-  }
-  return probed;
 }
 
 export interface WatchHistory {

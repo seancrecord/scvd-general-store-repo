@@ -57,6 +57,8 @@ export const KV_KEYS = {
   phantomCheck: (checkId: string): string => `phantom:${checkId}`,
   standingWatch: (watchId: string): string => `watch:${watchId}`,
   standingWatchPrefix: "watch:",
+  conformanceWatch: (watchId: string): string => `cwatch:${watchId}`,
+  conformanceWatchPrefix: "cwatch:",
   wardRound: (week: string): string => `ward:${week}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",

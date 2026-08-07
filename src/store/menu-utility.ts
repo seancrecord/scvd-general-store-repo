@@ -60,6 +60,38 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * MARKETPLACE-ERA ITEM FOUR (Part 6 step 4; keeper-approved
+   * 2026-08-07: seven days, five dollars, daily, this name): the
+   * Night Watch's shape pointed at conformance drift, under the 23a
+   * carve-out the keeper codified — bounded, prepaid, gaps published.
+   * The Once-Over is one look; the Night Watch is hourly liveness;
+   * this is whether the door STAYED conformant across a week of
+   * deploys. Demand tag: ANTICIPATED DEMAND under amended rule 19
+   * (same pipeline as the audit: operators proving a door to
+   * directories and buyers, now across time).
+   * ⚑ KEEPER REVIEW: copy is drafted, not canon.
+   */
+  {
+    id: "conformance_watch",
+    listed_week: "2026-W32",
+    name: "The Conformance Watch",
+    price_usdc: 5,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the full published preflight battery against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
+    note_402:
+      "Five dollars for the week — about seventy-one cents a day. One look each day, signed, and our missed days go on the record too.",
+    constraints: [
+      "The url query parameter (https, default port, the URL a buyer would GET expecting a 402)",
+      "One pass per day for seven days, each signed alone; first pass on the store's next hourly rounds",
+      "The checks are the free preflight's published battery (GET /api/preflight/v1) — same law, daily",
+      "Days the store misses are derived at read time and published against us in the history",
+      "We refuse our own hostname; the watch ends after seven days and never renews itself",
+      "The history URL is free to read forever",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the

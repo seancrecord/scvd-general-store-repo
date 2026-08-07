@@ -78,10 +78,86 @@ function flag(severity, file, line, rule, detail) {
   findings.push({ severity, file: relative(ROOT, file), line, rule, detail });
 }
 
+/**
+ * WHAT COUNTS AS A KV CALL, and why this is not `env.X.get` any more.
+ *
+ * These matched a literal `await env.SOMETHING.get/put` until
+ * 2026-08-07, when factoring the two watch sweeps into one shared
+ * function (services/watch-sweep.ts) made its per-record write
+ * invisible: the shared sweep writes through an INJECTED namespace,
+ * `options.kv.put`, which the old pattern did not match. The
+ * refactor was right and the audit went quiet about a real write —
+ * an instrument that stops seeing the thing it exists to see, which
+ * is the exact failure class this repo keeps catching in itself.
+ *
+ * So the namespace may now be any dotted expression. The `await` is
+ * what keeps this honest rather than noisy: a Map's `.get` inside a
+ * loop is everywhere in this codebase and is never awaited, so it
+ * does not match, while every KV call is.
+ *
+ * THE `[<(]` IS LOAD-BEARING and was learned the hard way in the
+ * same sitting: KV reads in this codebase are typed —
+ * `env.PATRONS.get<PatronRecord>(...)` — so a pattern demanding an
+ * open paren immediately after `.get` matched NOTHING and silently
+ * switched the per-key-read rule off across every file. A rule that
+ * finds nothing reads exactly like a codebase with nothing to find,
+ * which is why the canary below fires both rules at known samples
+ * before this script is allowed to report a count.
+ */
+const KV_READ = /await [\w.]+\.get[<(]/;
+const KV_WRITE = /await [\w.]+\.put[<(]/;
+
+/**
+ * THE CANARY. Both repairs above were silent failures — the rules
+ * kept running and found less, which reads exactly like a codebase
+ * that improved. So the patterns are checked against known samples
+ * before the audit is allowed to report anything, and a rule that
+ * stops matching what it exists to match takes the whole run down
+ * instead of quietly lowering a number.
+ *
+ * It lives here rather than in the vitest suite on purpose: that
+ * pool runs inside a Worker with no filesystem, and a copy of these
+ * patterns over there would be a second source of truth for the one
+ * fact this file is about.
+ */
+const CANARY = [
+  [KV_READ, 'const row = await env.PATRONS.get<PatronRecord>(key, "json");'],
+  [KV_READ, "const raw = await env.COUNTERS.get(name);"],
+  [KV_READ, "const row = await options.kv.get(name);"],
+  [KV_WRITE, "await env.ORDERS.put(name, JSON.stringify(record));"],
+  [KV_WRITE, "await options.kv.put(name, JSON.stringify(record));"],
+];
+for (const [pattern, sample] of CANARY) {
+  if (!pattern.test(sample)) {
+    console.error(
+      `\nAudit self-check FAILED: ${pattern} no longer matches\n  ${sample}\n\nA rule that matches nothing reports a clean codebase. Fix the pattern before trusting any count from this run.`,
+    );
+    process.exit(1);
+  }
+}
+// And the other direction: an unawaited Map read is not a KV read.
+if (KV_READ.test("const row = rows.get(name);")) {
+  console.error(
+    "\nAudit self-check FAILED: KV_READ now matches a plain Map read, which would flood the budget with phantoms.",
+  );
+  process.exit(1);
+}
+
 for (const path of sourceFiles(SRC)) {
   const text = readFileSync(path, "utf8");
   const lines = text.split("\n");
-  const isHelper = path.endsWith("kv-list.ts");
+  /**
+   * THE PRIMITIVES THEMSELVES ARE EXEMPT, because they are what the
+   * rules point everybody else toward. kv-list.ts is the capped list
+   * (rule 1's destination); kv-bulk.ts is the bulk read (rules 3 and
+   * 4's destination) — and its loop walks CHUNKS OF A HUNDRED, with
+   * a single-key branch inside that exists precisely to avoid the
+   * N+1 the rule is hunting. Flagging the cure as the disease spends
+   * the budget and teaches the reader to discount the tool, which
+   * this file's own comment says is worse than a missing rule.
+   */
+  const isHelper =
+    path.endsWith("kv-list.ts") || path.endsWith("kv-bulk.ts");
 
   lines.forEach((line, i) => {
     const n = i + 1;
@@ -109,16 +185,16 @@ for (const path of sourceFiles(SRC)) {
     //    exist to avoid it. Reported, not banned — a couple are
     //    deliberate, and the point is to keep the count from growing
     //    quietly.
-    if (/^\s*for \(/.test(line)) {
-      if (deeperLinesAfter(lines, i).some((l) => /await env\.\w+\.get/.test(l))) {
+    if (!isHelper && /^\s*for \(/.test(line)) {
+      if (deeperLinesAfter(lines, i).some((l) => KV_READ.test(l))) {
         flag("warn", path, n, "per-key-read", "A KV read per key inside a loop. Prefer a bulk read unless the loop must decide per record.");
       }
     }
 
     // 4. A write per key inside a loop, which spends the write budget
     //    in a way that is invisible until a bill or a cap says so.
-    if (/^\s*for \(/.test(line)) {
-      if (deeperLinesAfter(lines, i).some((l) => /await env\.\w+\.put/.test(l))) {
+    if (!isHelper && /^\s*for \(/.test(line)) {
+      if (deeperLinesAfter(lines, i).some((l) => KV_WRITE.test(l))) {
         flag("warn", path, n, "per-key-write", "A KV write per key inside a loop.");
       }
     }
@@ -156,6 +232,30 @@ for (const path of sourceFiles(SRC)) {
  * rows that want it, repairs that judge each key — which is the shape
  * the rule itself exempts; converting those would be motion, not
  * improvement. Zero slack again, on purpose.
+ *
+ * RAISED 7 -> 8 on 2026-08-07 for the conformance watch's sweep, and
+ * REVERSED THE SAME DAY on the keeper's ruling, which was the right
+ * reading of the finding: the audit was not saying "this loop is
+ * fine," it was saying "this loop exists twice." The two watch
+ * sweeps were the same function with three constants changed, so
+ * they became one (services/watch-sweep.ts) and took a warning with
+ * them. Raising the number was the cheap answer to a finding that
+ * had a real one.
+ *
+ * Two instrument repairs came out of that same reversal, both of the
+ * class this budget exists to catch:
+ *   - The shared sweep writes through an injected namespace, which
+ *     the old `env.X.put` pattern could not see. The patterns now
+ *     match any dotted expression, so the refactor did not buy
+ *     quiet.
+ *   - Typed reads (`get<T>(`) had never matched a paren-anchored
+ *     pattern; fixing the first repair exposed it. See KV_READ.
+ * Both are held by the canary beside KV_READ now, because a count is
+ * only as honest as the rules producing it.
+ *
+ * RATCHETED 8 -> 7 with that consolidation, and kv-bulk.ts joined
+ * kv-list.ts as an exempt primitive: flagging the bulk helper's own
+ * chunk loop is flagging the cure as the disease.
  */
 const WARN_BUDGET = 7;
 
