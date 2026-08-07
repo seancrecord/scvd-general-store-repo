@@ -337,6 +337,61 @@ const tagCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  */
 const TX_HASH = /^0x[0-9a-fA-F]{64}$/;
 
+/** The sheaf's bounds. Named beside the check that enforces them. */
+export const BUNDLE_MIN_HASHES = 2;
+export const BUNDLE_MAX_HASHES = 20;
+
+/**
+ * The sheaf's pre-gate check: every refusal here costs the buyer
+ * nothing, same contract as every other pre-gate validator — the money
+ * only moves once the input could actually be fulfilled. Duplicates
+ * are refused rather than quietly deduplicated, because a silent
+ * dedupe charges for twenty and delivers fifteen with no way to tell
+ * the buyer which five were their own repetition.
+ */
+const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/attestation_bundle" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("tx_hashes");
+  if (!raw) {
+    return c.json(
+      {
+        error: `Nothing to look up. Give tx_hashes — ${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} Base transaction hashes, comma-separated — and we read each once and sign what is there. No hashes, no charge. One hash wants the single attestation at /api/buy/settlement_attestation.`,
+      },
+      400,
+    );
+  }
+  const hashes = raw.split(",").map((hash) => hash.trim()).filter(Boolean);
+  if (hashes.length < BUNDLE_MIN_HASHES || hashes.length > BUNDLE_MAX_HASHES) {
+    return c.json(
+      {
+        error: `The sheaf takes ${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} hashes; you sent ${hashes.length}. ${hashes.length < BUNDLE_MIN_HASHES ? "One hash wants the single attestation at /api/buy/settlement_attestation, four tenths of a cent." : "Split it into two purchases."} Nothing charged.`,
+      },
+      400,
+    );
+  }
+  const bad = hashes.find((hash) => !TX_HASH.test(hash));
+  if (bad) {
+    return c.json(
+      {
+        error: `"${bad.slice(0, 80)}" is not a transaction hash. Base wants 0x followed by 64 hex characters, for every hash in the sheaf. Nothing charged; fix it and resend.`,
+      },
+      400,
+    );
+  }
+  if (new Set(hashes.map((hash) => hash.toLowerCase())).size !== hashes.length) {
+    return c.json(
+      {
+        error:
+          "The sheaf has a duplicate hash in it. Refused rather than quietly deduplicated — you would be paying for observations you already had. Nothing charged; send each hash once.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/settlement_attestation" || !isBuying(c)) {
     return next();
@@ -373,6 +428,7 @@ buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
 buyRoutes.use("/api/buy/*", attestationCheck);
+buyRoutes.use("/api/buy/*", bundleCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -448,6 +504,13 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     const amount = Number.parseFloat(c.req.query("amount_usdc") ?? "");
     if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
     input.attestationQuery = query;
+  }
+  if (item.id === "attestation_bundle") {
+    // bundleCheck validated count, shape and uniqueness before the gate.
+    input.bundleTxHashes = (c.req.query("tx_hashes") ?? "")
+      .split(",")
+      .map((hash) => hash.trim())
+      .filter(Boolean);
   }
   if (item.id === "graffiti_on_a_train") {
     // tagCheck validated presence, length and link-spam before the gate.

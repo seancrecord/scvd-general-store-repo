@@ -107,6 +107,11 @@ export function attestationNote(status: string): string {
   return `Read the chain once and signed what was there: ${status}. The observation is attached and signed on its own, so anyone can check it without asking us. It says what Base said at that moment — not whether anything was delivered, and not what happens next.`;
 }
 
+/** Same register as the single, at volume. Statuses named, not summarized. */
+export function bundleNote(statuses: readonly string[]): string {
+  return `Read the chain once per hash and signed each of the ${statuses.length}: ${statuses.join(", ")}. Every attestation in the sheaf is signed on its own, so each one checks independently without asking us — and the certificate for this purchase binds a digest over the lot. It says what Base said at those moments; not whether anything was delivered, and not what happens next.`;
+}
+
 /**
  * The two facts, in the order they matter: the artifact exists now,
  * and the wall is a separate question. Said at purchase so nobody

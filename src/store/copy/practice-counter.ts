@@ -139,6 +139,7 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // payment is the buyer for an independent check on whether one
   // settled.
   "settlement_attestation",
+  "attestation_bundle",
   "small_blessing",
   "daily_fortune",
   "the_confession",

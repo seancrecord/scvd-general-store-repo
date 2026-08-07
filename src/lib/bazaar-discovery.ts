@@ -125,6 +125,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("tx_hash");
   }
+  if (item.id === "attestation_bundle") {
+    properties["tx_hashes"] = {
+      type: "string",
+      pattern: "^0x[0-9a-fA-F]{64}(,0x[0-9a-fA-F]{64}){1,19}$",
+      description:
+        "2 to 20 Base transaction hashes, comma-separated, no duplicates. Each is read once at one moment and signed on its own; never polled. One hash wants the single settlement_attestation instead.",
+    };
+    required.push("tx_hashes");
+  }
   if (item.id === "graffiti_on_a_train") {
     properties["tag"] = {
       type: "string",
@@ -173,6 +182,11 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "settlement_attestation") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
+  }
+  if (item.id === "attestation_bundle") {
+    const first = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
+    const second = `0x${"9b04e1c".repeat(9)}0`.slice(0, 66);
+    example["tx_hashes"] = `${first},${second}`;
   }
   // The three that were rejected. Each value is a real one somebody
   // could send, not a placeholder: an example is read by an agent

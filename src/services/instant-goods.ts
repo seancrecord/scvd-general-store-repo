@@ -13,6 +13,7 @@ import {
   anchorNote,
   coffeeNote,
   attestationNote,
+  bundleNote,
   graffitiNote,
   grudgeNote,
   CONFESSION_ABSOLUTION,
@@ -51,6 +52,8 @@ export interface InstantGoodsInput {
   tag?: string;
   /** settlement_attestation only: the observation, already made. */
   attestation?: SignedAttestation;
+  /** attestation_bundle only: the sheaf, every observation already made. */
+  bundle?: SignedAttestation[];
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -191,6 +194,23 @@ export async function deliverInstantGoods(
           attestation,
           verify_note:
             "Two ways to check this, neither of which requires trusting us. The attestation is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into the certificate for this purchase, so /api/verify/{cert_id} answers for the observation too — the endpoint that already existed, not a new one.",
+        },
+      };
+    }
+    case "attestation_bundle": {
+      // Every observation already made and signed, upstream, so the
+      // sheaf's digest could be bound into the certificate — the same
+      // observe-first order as the single, for the same reason.
+      const bundle = input.bundle;
+      if (!bundle || bundle.length === 0) {
+        throw new Error("attestation_bundle reached goods with no sheaf");
+      }
+      return {
+        deliverable: bundleNote(bundle.map((entry) => entry.status)),
+        extras: {
+          attestations: bundle,
+          verify_note:
+            "Each attestation verifies on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And the certificate for this purchase binds a sha256 digest of the sheaf's evidence_hash values, comma-joined in delivery order, so /api/verify/{cert_id} answers for the whole sheaf — the endpoint that already existed, not a new one.",
         },
       };
     }
