@@ -427,6 +427,21 @@ const worker: ExportedHandler<Env> = {
      * failure inside is already recorded on its own entry — this catch
      * is for the unexpected kind.
      */
+    // The patron anchors' sweep rides the same hour: resubmit what a
+    // down calendar refused, upgrade what Bitcoin has since confirmed.
+    // Bounded per pass; completing delivery, not monitoring (rule 23a).
+    ctx.waitUntil(
+      import("@/services/patron-anchors").then(({ sweepPatronAnchors }) =>
+        sweepPatronAnchors(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Patron anchor sweep failed: ${String(error)}`,
+            }),
+        ),
+      ),
+    );
     ctx.waitUntil(
       listAnchors(env)
         .then((records) =>

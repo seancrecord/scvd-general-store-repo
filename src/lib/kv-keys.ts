@@ -140,6 +140,14 @@ export const KV_KEYS = {
    */
   corpusPrefix: "corpus_log:",
   /**
+   * A patron's purchased Bitcoin anchor: their digest, their label
+   * (untrusted), the OTS proof state. PATRONS namespace beside the
+   * certificate the purchase minted. Independent records, no chain —
+   * a stranger's proof should not be coupled to our bookkeeping.
+   */
+  patronAnchor: (anchorId: string): string => `patron_anchor:${anchorId}`,
+  patronAnchorPrefix: "patron_anchor:",
+  /**
    * A settled sale whose goods have not gone out yet. Exists only
    * between settlement and delivery — a row that outlives the grace
    * period is money taken without delivery (problem ledger #18).

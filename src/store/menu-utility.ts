@@ -26,6 +26,36 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, a buyer could pay. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
+  /**
+   * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
+   * Bitcoin anchor for anybody else's digest — the key-history
+   * anchoring machinery this store built for itself, sold as the
+   * bounded observation it is. Demand tag: ANTICIPATED DEMAND under
+   * amended rule 19 (service operators proving key-rotation history
+   * are the audit's persona 2; the pipeline scoring is in the
+   * marketplace audit). Rule 23a-clean by shape: one payment, one
+   * digest, one submission — the proof upgrade is completing delivery
+   * of a bounded purchase, not monitoring, and the listing says so.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "bitcoin_anchor",
+    listed_week: "2026-W32",
+    name: "A Bitcoin Anchor",
+    price_usdc: 1,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Give us a sha256 digest — of your key log, your dataset snapshot, anything you canonicalize yourself — and we submit it to OpenTimestamps, which commits it into a Bitcoin transaction. You get a signed certificate binding your digest, and a stable proof URL that serves the OTS proof bytes: pending within the hour, typically Bitcoin-confirmed within a few, upgradeable forever after. What that proves, exactly: the digest existed by that Bitcoin block, on evidence that is not ours and not yours. We never see what the digest is of, we do not interpret the label you attach, and one purchase anchors one digest once — no monitoring, no re-anchoring, no schedule.",
+    note_402:
+      "A dollar, friend. Bitcoin remembers what both of us might not.",
+    constraints: [
+      "Give the digest in the digest query parameter: 64 hex characters, a sha256 you computed over bytes you keep",
+      "Optional label query parameter, up to 120 characters, stored verbatim as your claim about what the digest covers — never checked, never interpreted",
+      "One digest, one submission, one proof URL; nothing recurs",
+      "The proof upgrades to Bitcoin-confirmed on our next passes automatically; the certificate is yours from the moment of purchase either way",
+    ],
+  },
   {
     id: "context_anchor",
     listed_week: "2026-W30",

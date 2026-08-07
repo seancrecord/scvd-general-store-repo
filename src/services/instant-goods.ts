@@ -1,4 +1,5 @@
 import { createAnchor } from "@/services/anchors";
+import { createPatronAnchor } from "@/services/patron-anchors";
 import { recordCloser } from "@/services/closers";
 import { hearConfession } from "@/services/confessions";
 import { recordGrudge } from "@/services/grudges";
@@ -11,6 +12,7 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import { startWatch } from "@/services/standing-watch";
 import {
   anchorNote,
+  bitcoinAnchorNote,
   coffeeNote,
   attestationNote,
   bundleNote,
@@ -54,6 +56,9 @@ export interface InstantGoodsInput {
   attestation?: SignedAttestation;
   /** attestation_bundle only: the sheaf, every observation already made. */
   bundle?: SignedAttestation[];
+  /** bitcoin_anchor only: the digest and its untrusted label. */
+  anchorDigest?: string;
+  anchorLabel?: string;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -175,6 +180,38 @@ export async function deliverInstantGoods(
       return {
         deliverable: coffeeNote(win),
         extras: { win_recorded: win },
+      };
+    }
+    case "bitcoin_anchor": {
+      const digest = input.anchorDigest;
+      if (!digest) {
+        throw new Error("bitcoin_anchor reached goods with no digest");
+      }
+      /**
+       * Submission happens HERE, after the mint, so a calendar outage
+       * costs a retry and never the certificate: the cert already
+       * binds the digest via `attests`, and the sweep finishes what a
+       * down calendar started. The record is the deliverable's spine;
+       * the proof URL serves it forever.
+       */
+      const anchorInput: Parameters<typeof createPatronAnchor>[1] = {
+        digest,
+        certId: input.certId ?? "",
+      };
+      if (input.anchorLabel) {
+        anchorInput.label = input.anchorLabel;
+      }
+      const record = await createPatronAnchor(env, anchorInput);
+      return {
+        deliverable: bitcoinAnchorNote(record.ots.status),
+        extras: {
+          anchor_id: record.anchor_id,
+          digest: record.digest,
+          ots_status: record.ots.status,
+          proof_url: `/api/bitcoin-anchor/${record.anchor_id}`,
+          verify_note:
+            "The certificate for this purchase binds your digest in its `attests` field, so /api/verify/{cert_id} vouches that this store certified this digest at this time. The proof URL serves the OpenTimestamps proof bytes: pending means a calendar accepted it, complete means it upgraded to a Bitcoin-confirmed proof you check with the standard `ots` tool against Bitcoin headers — no calendar, no us. If the first submission failed, the store's hourly pass retries until it lands; the record says which state it is in, plainly.",
+        },
       };
     }
     case "settlement_attestation": {

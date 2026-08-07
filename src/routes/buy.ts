@@ -392,6 +392,35 @@ const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/** sha256 hex: what the Bitcoin anchor takes and all it ever takes. */
+const SHA256_HEX = /^[0-9a-fA-F]{64}$/;
+
+const anchorDigestCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/bitcoin_anchor" || !isBuying(c)) {
+    return next();
+  }
+  const digest = c.req.query("digest");
+  if (!digest) {
+    return c.json(
+      {
+        error:
+          "Nothing to anchor. Give a digest query parameter — 64 hex characters, a sha256 you computed over bytes you keep — and it goes to a Bitcoin-anchored timestamp. No digest, no charge. If you want the store to hash something FOR you, that is not this item: we deliberately never see your bytes.",
+      },
+      400,
+    );
+  }
+  if (!SHA256_HEX.test(digest)) {
+    return c.json(
+      {
+        error:
+          "That is not a sha256 digest. 64 hex characters, no 0x prefix. Nothing charged; hash your bytes and send the digest itself.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/settlement_attestation" || !isBuying(c)) {
     return next();
@@ -429,6 +458,7 @@ buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
 buyRoutes.use("/api/buy/*", attestationCheck);
 buyRoutes.use("/api/buy/*", bundleCheck);
+buyRoutes.use("/api/buy/*", anchorDigestCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);
 
@@ -504,6 +534,12 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     const amount = Number.parseFloat(c.req.query("amount_usdc") ?? "");
     if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
     input.attestationQuery = query;
+  }
+  if (item.id === "bitcoin_anchor") {
+    // anchorDigestCheck validated the digest shape before the gate.
+    input.anchorDigest = c.req.query("digest") ?? "";
+    const label = sanitizeText(c.req.query("label"), 120);
+    if (label) input.anchorLabel = label;
   }
   if (item.id === "attestation_bundle") {
     // bundleCheck validated count, shape and uniqueness before the gate.

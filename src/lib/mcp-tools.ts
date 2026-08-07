@@ -119,8 +119,16 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_observation",
     title: "Third-Party Observation",
     purpose:
-      "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer.",
-    itemIds: ["settlement_attestation", "attestation_bundle", "standing_watch"],
+      "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
+    itemIds: [
+      "settlement_attestation",
+      "attestation_bundle",
+      "standing_watch",
+      // The anchor rides this shelf because it is the same primitive
+      // pointed at time: a commitment (your digest, Bitcoin's clock)
+      // that neither party could fabricate after the fact.
+      "bitcoin_anchor",
+    ],
   },
   {
     name: "buy_memory_anchor",

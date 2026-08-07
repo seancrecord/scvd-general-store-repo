@@ -103,6 +103,8 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * ⚑ Keeper's pen; the plumbing derives the summaries from this.
  */
 export const CAPABILITY_QUERY: Record<string, string> = {
+  bitcoin_anchor:
+    "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
     "Prove to a third party that a payment actually settled on chain",
   attestation_bundle:
@@ -147,6 +149,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  bitcoin_anchor:
+    "a commitment that cannot be made after the fact: a Bitcoin-anchored timestamp on the buyer's own digest — a key log, a snapshot, any record that must provably have existed now. The mechanism this store anchors its own key history with; the bytes stay the buyer's.",
   attestation_bundle:
     "the single attestation's neutrality at volume: a service operator proving a run of settlements to its own buyers needs the disinterested receipts in one purchase, not twenty round trips — each observation still signed on its own so any one can be quoted alone.",
   // Verbatim from DEMAND_SYNTHESIS Part 7, Move 1. The second clause
@@ -200,6 +204,8 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  bitcoin_anchor:
+    "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:
     "Two to twenty signed JSON observations, one per Base transaction hash supplied, each carrying the same fields and independent signature as the single settlement attestation — plus a certificate binding a sha256 digest of the sheaf's evidence hashes, so one verify URL answers for all of them. Instant.",
   settlement_attestation:
