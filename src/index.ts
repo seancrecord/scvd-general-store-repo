@@ -34,6 +34,7 @@ import {
   siteMetaRoutes,
   skillRoutes,
   statsRoutes,
+  corpusRoutes,
   pulseRoutes,
   attestationRoutes,
   conventionalRoutes,
@@ -211,6 +212,7 @@ app.route("/", storefrontRoutes);
 app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
+app.route("/", corpusRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
 app.route("/", conventionalRoutes);
@@ -308,14 +310,33 @@ const worker: ExportedHandler<Env> = {
        */
       ctx.waitUntil(
         import("@/services/ward-round").then(({ runWardRound }) =>
-          runWardRound(env).then(
-            () => undefined,
-            (error) =>
-              sendAlert(env, {
-                condition: "worker_health",
-                detail: `Ward round failed: ${String(error)}`,
-              }),
-          ),
+          runWardRound(env)
+            .then(
+              /**
+               * THE CORPUS SNAPSHOT rides the round that produced it:
+               * the week's observations frozen into the signed,
+               * hash-chained, OTS-stamped record the moment they
+               * exist, so the corpus can never lag the instrument it
+               * keeps. Idempotent per week — a re-fired cron re-takes
+               * nothing.
+               */
+              () =>
+                import("@/services/corpus").then(({ takeCorpusSnapshot }) =>
+                  takeCorpusSnapshot(env).then(
+                    () => undefined,
+                    (error) =>
+                      sendAlert(env, {
+                        condition: "worker_health",
+                        detail: `Corpus snapshot failed: ${String(error)}. The round itself succeeded; the week's observations are in KV and the snapshot can be re-taken next pass.`,
+                      }),
+                  ),
+                ),
+              (error) =>
+                sendAlert(env, {
+                  condition: "worker_health",
+                  detail: `Ward round failed: ${String(error)}`,
+                }),
+            ),
         ),
       );
       ctx.waitUntil(compileDigest(env));

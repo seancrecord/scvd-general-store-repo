@@ -503,6 +503,16 @@ the keeper rather than sitting in the table. Every published identity
 the organic count — is re-checked hourly against the live counters by
 the same sweep.
 
+## The corpus
+
+${base}/corpus.json: the public x402 ecosystem as this store's weekly
+round observed it, one signed snapshot per round — hash-chained, each
+digest submitted to OpenTimestamps for Bitcoin anchoring, verification
+steps published on the document itself. Dated observations of moments,
+never a score on anybody: a continuous record kept because it cannot
+be backfilled later, and checkable precisely so you do not have to
+take that sentence on faith.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every

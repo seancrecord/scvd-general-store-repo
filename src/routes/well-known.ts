@@ -155,6 +155,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
        * heading that says "independently".
        */
       key_history_over_time: `${base}/.well-known/anchor-log.json — an append-only hash chain over the signing-key state, digests submitted to OpenTimestamps and anchored into Bitcoin. Re-hash any snapshot yourself and check the links; one confirmed anchor vouches for the whole history behind it. It proves WHEN, never WHO SHOULD HAVE.`,
+      the_ecosystem_record: `${base}/corpus.json — the public x402 ecosystem as this store's weekly round observed it, one signed snapshot per round, hash-chained and OTS-stamped, verification steps on the document. It proves the record was not rewritten after the fact; it never scores an operator, ours included.`,
     },
     limit: TRUST_LIMIT,
   });

@@ -420,7 +420,16 @@ describe("the desk is bounded before anybody finds it", () => {
     expect(limits).toContain("OUR LIMIT RATHER THAN YOUR REQUEST");
     expect(limits).toContain("NOTHING IS WRONG WITH YOUR ARTIFACT");
     expect(limits).toContain("public_key_hex");
-  });
+    /**
+     * 30s, not the 5s default: the widened attempt ceiling fixed the
+     * minute-boundary race and promptly introduced a TIMEOUT race —
+     * 200 sequential requests on a loaded CI runner can take longer
+     * than five seconds, and the same commit went green on one runner
+     * and red on its twin. The loop exits the moment the budget binds
+     * (~request 61 in the normal case), so this ceiling is slack for
+     * the slow path, never a cost on the fast one.
+     */
+  }, 30_000);
 });
 
 /**

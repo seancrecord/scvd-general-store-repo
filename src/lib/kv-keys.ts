@@ -133,6 +133,13 @@ export const KV_KEYS = {
   /** The external-anchor hash chain; keys sort by zero-padded sequence. */
   anchorLogPrefix: "anchor_log:",
   /**
+   * The corpus chain: weekly ward-round observations frozen, signed,
+   * hash-linked and OTS-stamped. Its own prefix, its own chain —
+   * never grafted into the key-history anchor log, whose schema
+   * outside verifiers reproduce byte for byte.
+   */
+  corpusPrefix: "corpus_log:",
+  /**
    * A settled sale whose goods have not gone out yet. Exists only
    * between settlement and delivery — a row that outlives the grace
    * period is money taken without delivery (problem ledger #18).

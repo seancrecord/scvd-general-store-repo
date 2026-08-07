@@ -1,4 +1,4 @@
-import { saveAnchor, type AnchorRecord } from "@/services/anchor-log";
+import { saveAnchor, type AnchorRecord, type OtsAnchor } from "@/services/anchor-log";
 import type { Env } from "@/types";
 
 /**
@@ -63,28 +63,29 @@ function toBase64(bytes: Uint8Array): string {
  * failure is a recorded state, not a thrown one, because the next run
  * needs to know this entry still wants a stamp.
  */
-export async function submitToOts(
-  env: Env,
-  record: AnchorRecord,
+/**
+ * The calendar loop on its own, digest in, OtsAnchor out — extracted
+ * 2026-08-07 when the corpus chain became the second hash chain that
+ * anchors here. One implementation of "try each calendar, store the
+ * pending proof, overclaim nothing," shared by both chains, because a
+ * second copy of anchoring code is a second place for the overclaim
+ * bug to grow back.
+ */
+export async function submitDigestToOts(
+  digestHex: string,
   options: SubmitOptions = {},
-): Promise<AnchorRecord> {
+): Promise<OtsAnchor> {
   const fetchImpl = options.fetch ?? globalThis.fetch;
   const calendars = options.calendars ?? OTS_CALENDARS;
   const now = options.now ?? new Date();
-  const digestBytes = hexToBytes(record.digest);
+  const digestBytes = hexToBytes(digestHex);
   if (!digestBytes || digestBytes.length !== 32) {
-    const failed: AnchorRecord = {
-      ...record,
-      ots: {
-        status: "failed",
-        submitted_at: now.toISOString(),
-        error: `digest is not 32 bytes of hex (${record.digest.length} chars)`,
-      },
+    return {
+      status: "failed",
+      submitted_at: now.toISOString(),
+      error: `digest is not 32 bytes of hex (${digestHex.length} chars)`,
     };
-    await saveAnchor(env, failed);
-    return failed;
   }
-
   const errors: string[] = [];
   for (const calendar of calendars) {
     try {
@@ -105,35 +106,35 @@ export async function submitToOts(
         errors.push(`${calendar}: empty proof`);
         continue;
       }
-      const stamped: AnchorRecord = {
-        ...record,
-        ots: {
-          // PENDING, not complete: the calendar has accepted it, and
-          // Bitcoin has not confirmed it yet. Saying "complete" here
-          // would be the overclaim this whole log exists to avoid.
-          status: "pending",
-          submitted_at: now.toISOString(),
-          proof_base64: toBase64(proof),
-          calendar,
-        },
+      return {
+        // PENDING, not complete: the calendar has accepted it, and
+        // Bitcoin has not confirmed it yet. Saying "complete" here
+        // would be the overclaim this whole log exists to avoid.
+        status: "pending",
+        submitted_at: now.toISOString(),
+        proof_base64: toBase64(proof),
+        calendar,
       };
-      await saveAnchor(env, stamped);
-      return stamped;
     } catch (error) {
       errors.push(`${calendar}: ${String(error)}`);
     }
   }
-
-  const failed: AnchorRecord = {
-    ...record,
-    ots: {
-      status: "failed",
-      submitted_at: now.toISOString(),
-      error: errors.join("; ") || "no calendars configured",
-    },
+  return {
+    status: "failed",
+    submitted_at: now.toISOString(),
+    error: errors.join("; ") || "no calendars configured",
   };
-  await saveAnchor(env, failed);
-  return failed;
+}
+
+export async function submitToOts(
+  env: Env,
+  record: AnchorRecord,
+  options: SubmitOptions = {},
+): Promise<AnchorRecord> {
+  const ots = await submitDigestToOts(record.digest, options);
+  const stamped: AnchorRecord = { ...record, ots };
+  await saveAnchor(env, stamped);
+  return stamped;
 }
 
 /**
