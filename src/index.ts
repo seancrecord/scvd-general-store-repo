@@ -35,6 +35,7 @@ import {
   skillRoutes,
   statsRoutes,
   corpusRoutes,
+  serviceAuditRoutes,
   pulseRoutes,
   attestationRoutes,
   conventionalRoutes,
@@ -246,6 +247,7 @@ app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
 app.route("/", anchorRoutes);
+app.route("/", serviceAuditRoutes);
 app.route("/", patronageRoutes);
 app.route("/", phantomRoutes);
 app.route("/", letterRoutes);

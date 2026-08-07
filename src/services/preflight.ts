@@ -171,6 +171,34 @@ function report(
   };
 }
 
+export interface ProbeOutcome {
+  response: Response;
+  bodyOverLimit: boolean;
+}
+
+/**
+ * THE ONE GUARDED OUTBOUND REQUEST, factored out so the paid service
+ * audit runs EXACTLY the fetch the free preflight runs — same hard
+ * timeout, same refusal to follow redirects, same bounded read. One
+ * battery, two doors; the paid door must never quietly grow a longer
+ * leash than the free one. Throws on network failure: the caller
+ * decides what an unreachable moment means for its artifact.
+ */
+export async function probeOnce(
+  url: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ProbeOutcome> {
+  const response = await fetchImpl(url, {
+    method: "GET",
+    redirect: "manual",
+    signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    headers: { Accept: "application/json" },
+  });
+  // Bound the read before anything parses it.
+  const raw = await response.text();
+  return { response, bodyOverLimit: raw.length > MAX_BODY_BYTES };
+}
+
 /**
  * Every post-fetch check, factored off the fetch so CI can aim it at
  * the store's OWN 402 — the test that keeps this tool honest about
@@ -457,14 +485,9 @@ export async function preflightUrl(
     };
   }
 
-  let response: Response;
+  let outcome: ProbeOutcome;
   try {
-    response = await fetch(url.toString(), {
-      method: "GET",
-      redirect: "manual",
-      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-      headers: { Accept: "application/json" },
-    });
+    outcome = await probeOnce(url.toString());
   } catch (error) {
     return {
       status: 200,
@@ -478,11 +501,10 @@ export async function preflightUrl(
     };
   }
 
-  // Bound the read before anything parses it.
-  const raw = await response.text();
-  const bodyOverLimit = raw.length > MAX_BODY_BYTES;
-
-  const { checks, advisories } = runChecks(response, bodyOverLimit);
+  const { checks, advisories } = runChecks(
+    outcome.response,
+    outcome.bodyOverLimit,
+  );
   const verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
   return { status: 200, body: report(base, verdict, checks, advisories) };
 }

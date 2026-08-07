@@ -27,6 +27,39 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
   /**
+   * MARKETPLACE-ERA ITEM THREE (Part 6 step 3; the first Tier 3
+   * product): the point-in-time x402 service audit — the free
+   * preflight's exact battery, signed, certificate-bound, and served
+   * at a stable report URL forever. Demand tag: ANTICIPATED DEMAND
+   * under amended rule 19 (operators proving their door works to
+   * directories and buyers; buyers checking a door before paying it).
+   * Rule 23a compliant AS-IS per the audit: one GET, one moment,
+   * terminal at write — nothing recurs, so not even the bounded-watch
+   * carve-out is needed. Rule 43: a dated observation on an artifact
+   * (the 402 response), never a score on an actor; the criteria page
+   * (GET /api/preflight/v1) existed before this shipped.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "service_audit",
+    listed_week: "2026-W32",
+    name: "The Once-Over",
+    price_usdc: 5,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the same published battery the free preflight runs, and signs the whole readout: verdict, every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
+    note_402:
+      "Five dollars, friend. The look is free any day — the signed, dated record of it is what you're buying.",
+    constraints: [
+      "Give the endpoint in the url query parameter: https, default port, the URL a buyer would GET expecting a 402",
+      "One GET at one moment, signed; never a monitor — the week-long look is The Night Watch",
+      "The criteria are the free preflight's published battery (GET /api/preflight/v1); the audit runs those checks and no others",
+      "We refuse our own hostname — an audit of ourselves signed by ourselves would be the instrument vouching for itself",
+      "The report URL is free to read forever",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the

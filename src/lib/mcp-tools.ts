@@ -124,6 +124,9 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       "settlement_attestation",
       "attestation_bundle",
       "standing_watch",
+      // The point-in-time audit is the shelf's namesake shape: one
+      // look at one endpoint, signed, servable to a third party.
+      "service_audit",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

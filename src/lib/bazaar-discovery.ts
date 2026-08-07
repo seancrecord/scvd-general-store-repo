@@ -68,6 +68,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "service_audit") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "The x402 endpoint to audit: https, default port, the URL a buyer would GET expecting a 402. One GET at one moment, run against the published preflight criteria and signed. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -212,6 +221,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   // could send, not a placeholder: an example is read by an agent
   // deciding what to put in the field.
   if (item.id === "standing_watch") {
+    example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "service_audit") {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "the_confession") {

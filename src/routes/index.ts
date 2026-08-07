@@ -21,6 +21,7 @@ export { trustListRoutes } from "@/routes/trust-list";
 export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
 export { anchorRoutes } from "@/routes/anchors";
+export { serviceAuditRoutes } from "@/routes/service-audit";
 export { patronageRoutes } from "@/routes/patronage";
 export { almanacRoutes } from "@/routes/almanac";
 export { directoryRoutes } from "@/routes/directory";

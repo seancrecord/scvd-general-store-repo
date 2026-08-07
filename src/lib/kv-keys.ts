@@ -148,6 +148,13 @@ export const KV_KEYS = {
   patronAnchor: (anchorId: string): string => `patron_anchor:${anchorId}`,
   patronAnchorPrefix: "patron_anchor:",
   /**
+   * A purchased point-in-time service audit: the signed report, the
+   * certificate that bound its evidence hash, nothing else. PATRONS
+   * namespace beside the cert. No prefix scan anywhere touches these
+   * (no sweep, no upgrade pass — the record is terminal at write).
+   */
+  serviceAudit: (auditId: string): string => `service_audit:${auditId}`,
+  /**
    * A settled sale whose goods have not gone out yet. Exists only
    * between settlement and delivery — a row that outlives the grace
    * period is money taken without delivery (problem ledger #18).
