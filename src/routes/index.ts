@@ -34,6 +34,7 @@ export { requestRoutes } from "@/routes/requests";
 export { faviconRoutes } from "@/routes/favicon";
 export { schemaRoutes } from "@/routes/schemas";
 export { statsRoutes } from "@/routes/stats";
+export { corpusRoutes } from "@/routes/corpus";
 export { pulseRoutes } from "@/routes/pulse";
 export { attestationRoutes } from "@/routes/attestation";
 export { conventionalRoutes } from "@/routes/conventional";

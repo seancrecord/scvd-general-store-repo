@@ -97,10 +97,22 @@ describe("the trust document answers a diligence check", () => {
      * it is a deliberate act with a defence, which is why this
      * assertion is a whitelist and not a `toContain`.
      */
+    /**
+     * the_ecosystem_record ADMITTED 2026-08-07, with its defence: the
+     * corpus's snapshots are signed by our key (our word), but each
+     * digest is submitted to OpenTimestamps and anchored into Bitcoin
+     * — the identical mechanism and the identical claim as
+     * key_history_over_time, which has always been on this list. What
+     * a reader checks without us is that the record existed by a
+     * Bitcoin block height and was not rewritten after; the content
+     * being honest is still our word, and the corpus document says
+     * that itself under honest_limits.
+     */
     expect(Object.keys(body.independently_checkable).sort()).toEqual([
       "key_history_over_time",
       "settlement",
       "signatures",
+      "the_ecosystem_record",
     ]);
     expect(body.limit).toMatch(/weakest possible evidence/i);
   });
