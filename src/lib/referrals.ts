@@ -1,4 +1,5 @@
 import { listKeys } from "@/lib/kv-list";
+import { bulkGetText } from "@/lib/kv-bulk";
 import { isHouseWallet } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
@@ -131,12 +132,17 @@ export async function readReferrals(
   for (const stage of ["a", "s"] as const) {
     const prefix = `metric:${month}:ref${stage}:`;
     const listed = await listKeys(env.COUNTERS, { prefix, cap: REFERRAL_KEY_CAP });
+    // One bulk read per stage, not one read per referrer (2026-08-07,
+    // the audit-budget paydown): the loop only aggregates, it never
+    // decides per record, which is exactly the shape the audit's
+    // per-key-read rule says to bulk.
+    const values = await bulkGetText(env.COUNTERS, listed.names);
     for (const name of listed.names) {
       const marker = parseReferralMarker(name.slice(prefix.length));
       if (marker === undefined) {
         continue;
       }
-      const raw = await env.COUNTERS.get(name);
+      const raw = values.get(name);
       const count = raw ? Number.parseInt(raw, 10) : 0;
       const row = rows.get(marker) ?? { marker, arrived: 0, settled: 0 };
       if (stage === "a") {
@@ -230,13 +236,17 @@ export async function readReferrerHosts(
       limit: 1000,
       ...(cursor ? { cursor } : {}),
     });
-    for (const key of listed.keys) {
-      const name = key.name;
-      if (scanned >= scanCap) {
-        break;
-      }
+    // Bulk-read the page (2026-08-07, the audit-budget paydown): ten
+    // subrequests per thousand rows instead of a thousand. The scan
+    // cap is applied to the NAME list before the read, so the bulk
+    // fetch never pulls rows the loop would have skipped.
+    const names = listed.keys
+      .map((key) => key.name)
+      .slice(0, scanCap - scanned);
+    const values = await bulkGetText(env.COUNTERS, names);
+    for (const name of names) {
       scanned += 1;
-      const raw = await env.COUNTERS.get(name);
+      const raw = values.get(name) ?? null;
       if (!raw) {
         continue;
       }
