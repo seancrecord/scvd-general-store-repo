@@ -33,20 +33,24 @@ export const OPERATING_SINCE = "2026-07-22";
  * recoverable by a person reading a block explorer rather than by this
  * code.
  *
- * THE BAR FOR ADDING TO THIS, because a hand-typed number in a public
- * figure is a liability the moment it stops being evidence: name the
- * transaction in the commit that changes it. Not "I think that one was
- * Solana" — the tx hash, on the chain, for the amount, at the time.
- * Same standard as the founding settle in metrics.ts, which carries
- * its own hash in the comment above it.
+ * THE BAR FOR ADDING TO THIS is now the SHAPE, not a comment asking
+ * nicely: each entry IS its transaction hash, and the count the books
+ * use is the length of the list. A hand-placed sale without its
+ * evidence is unrepresentable — there is no integer to bump — and a
+ * test holds each entry to its chain's hash format. Same standard as
+ * the founding settle in metrics.ts, which carries its own hash;
+ * here the hash is the value rather than the comment beside it.
  *
- * Zero is the honest starting state and the set is closed: nothing can
- * join it, because every sale from the meter's start is counted at the
- * till.
+ * Empty is the honest starting state and the set is closed: nothing
+ * can join it, because every sale from the meter's start is counted
+ * at the till.
  */
-export const RAILS_ENTERED_BY_HAND: { base: number; solana: number } = {
-  base: 0,
-  solana: 0,
+export const RAILS_ENTERED_BY_HAND: {
+  base: readonly string[];
+  solana: readonly string[];
+} = {
+  base: [],
+  solana: [],
 };
 
 export const HOUSE_FLAG_POLICY =
@@ -105,7 +109,29 @@ export interface StoreStats {
  */
 export { monthsSinceOpening };
 
+/**
+ * The same computation, with its self-doubt attached. computeStats
+ * publishes; this also reports what publishing chose to omit — today,
+ * a rail tally that overshoots the organic count, which the public
+ * path drops (an absent split is honest) and the invariant sweep must
+ * hear about (a dropped split means two substrates disagree, and that
+ * is a defect wherever it is quiet). One computation, two readers;
+ * the diagnostic can no more drift from the page than the page from
+ * itself.
+ */
+export interface BooksDiagnostics {
+  stats: StoreStats;
+  /** Set when the rail records claim more sales than the counters know. */
+  rail_overshoot: { rail_total: number; organic: number } | null;
+}
+
 export async function computeStats(env: Env): Promise<StoreStats> {
+  return (await computeStatsDiagnosed(env)).stats;
+}
+
+export async function computeStatsDiagnosed(
+  env: Env,
+): Promise<BooksDiagnostics> {
   /**
    * THE IDENTITY FIX, 2026-08-05, found by the keeper reading two of
    * his own pages: the front said 88 settled purchases with 85 house
@@ -195,11 +221,12 @@ export async function computeStats(env: Env): Promise<StoreStats> {
     (split?.base ?? 0) +
     (till?.base ?? 0) +
     singleRailUnplaced +
-    RAILS_ENTERED_BY_HAND.base;
+    RAILS_ENTERED_BY_HAND.base.length;
   const railSolana =
-    (split?.solana ?? 0) + (till?.solana ?? 0) + RAILS_ENTERED_BY_HAND.solana;
+    (split?.solana ?? 0) + (till?.solana ?? 0) + RAILS_ENTERED_BY_HAND.solana.length;
   const haveRails = split !== null || till !== null;
-  return {
+  const overshoot = railBase + railSolana > organicSettlements;
+  const stats: StoreStats = {
     operating_since: OPERATING_SINCE,
     settled_purchases_total:
       organic + house + FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
@@ -208,9 +235,7 @@ export async function computeStats(env: Env): Promise<StoreStats> {
     reclassified_house: reclassified,
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
-    ...(haveRails &&
-    railBase + railSolana > 0 &&
-    railBase + railSolana <= organicSettlements
+    ...(haveRails && railBase + railSolana > 0 && !overshoot
       ? {
           organic_by_rail: {
             base: railBase,
@@ -221,6 +246,12 @@ export async function computeStats(env: Env): Promise<StoreStats> {
         }
       : {}),
     computed_at: new Date().toISOString(),
+  };
+  return {
+    stats,
+    rail_overshoot: overshoot
+      ? { rail_total: railBase + railSolana, organic: organicSettlements }
+      : null,
   };
 }
 

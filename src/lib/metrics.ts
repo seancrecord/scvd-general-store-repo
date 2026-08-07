@@ -540,6 +540,16 @@ export async function recordSettlement(
       env,
       KV_KEYS.metric(month, `rail${bucketSuffix(event, false)}`, rail),
     );
+    // The MONEY per rail, not just the count — the booked side of the
+    // net-by-chain statement. House rides its own suffix as always,
+    // but the statement reads both: chain inflow cannot tell family
+    // money from a stranger's, so the side that faces it must not
+    // either.
+    await bumpBy(
+      env,
+      KV_KEYS.metric(month, `revrail${bucketSuffix(event, false)}`, rail),
+      Math.round(signals.paidUsdc * USDC_MICRO),
+    );
   }
   // Revenue, organic and house apart, in integer millionths of USDC.
   await bumpBy(
