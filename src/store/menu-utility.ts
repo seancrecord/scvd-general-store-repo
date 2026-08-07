@@ -81,9 +81,9 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the full published preflight battery against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
     note_402:
-      "Five dollars for the week, friend. One look a day, signed daily, and our missed days go on the record too.",
+      "Five dollars for the week — about seventy-one cents a day. One look each day, signed, and our missed days go on the record too.",
     constraints: [
-      "Give the endpoint in the url query parameter: https, default port, the URL a buyer would GET expecting a 402",
+      "The url query parameter (https, default port, the URL a buyer would GET expecting a 402)",
       "One pass per day for seven days, each signed alone; first pass on the store's next hourly rounds",
       "The checks are the free preflight's published battery (GET /api/preflight/v1) — same law, daily",
       "Days the store misses are derived at read time and published against us in the history",

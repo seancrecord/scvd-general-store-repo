@@ -50,7 +50,7 @@ export function standingWatchNote(url: string, endsAt: string): string {
 
 /** conformance_watch. ⚑ KEEPER REVIEW: drafted, recut freely. */
 export function conformanceWatchNote(url: string, endsAt: string): string {
-  return `Paid and posted. Once a day until ${endsAt.slice(0, 10)} we'll run the full published battery against ${url}, write down every check and advisory, and sign that day's page on its own. If your door drifts mid-week, the history shows the day it happened — and the days WE miss go on the same record, counted against us.`;
+  return `Paid and posted. Once a day until ${endsAt.slice(0, 10)} we'll run the full published battery against ${url}, write down every check and advisory, and sign that day's page on its own. If your door drifts mid-week, the history shows the day it happened — and the days WE miss go on the same record, counted against us in the same arithmetic.`;
 }
 
 /** Pinned verbatim by the confession spec and its test. */

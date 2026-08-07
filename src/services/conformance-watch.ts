@@ -1,8 +1,7 @@
-import { listKeys } from "@/lib/kv-list";
-import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { probeOnce, runChecks } from "@/services/preflight";
+import { sweepWatches } from "@/services/watch-sweep";
 import type { Env } from "@/types";
 
 /**
@@ -160,33 +159,19 @@ async function passOnce(
  * Rides the hourly rounds; passes daily. The 23-hour floor keeps a
  * doubled tick from double-billing the day and lets the pass drift to
  * whatever hour the cron actually fires — a day with two passes would
- * be over-delivering into a record whose honesty is its cadence.
+ * be over-delivering into a record whose honesty is its cadence. The
+ * walk itself is the store's one shared watch sweep (2026-08-07):
+ * this file supplies the shelf, the spacing and the observation.
  */
 export async function sweepConformanceWatches(env: Env): Promise<number> {
-  const listed = await listKeys(env.ORDERS, {
+  return sweepWatches<ConformanceWatchRecord, ConformancePass>({
+    kv: env.ORDERS,
     prefix: KV_KEYS.conformanceWatchPrefix,
-    cap: CWATCH_SCAN_CAP,
+    scanCap: CWATCH_SCAN_CAP,
+    minSpacingMs: MIN_PASS_SPACING_MS,
+    entriesOf: (record) => record.passes,
+    observe: (record) => passOnce(env, record),
   });
-  const rows = await bulkGetJson<ConformanceWatchRecord>(
-    env.ORDERS,
-    listed.names,
-  );
-  const now = Date.now();
-  let passed = 0;
-  for (const name of listed.names) {
-    const record = rows.get(name) ?? null;
-    if (!record || now > Date.parse(record.ends_at)) {
-      continue;
-    }
-    const last = record.passes[record.passes.length - 1];
-    if (last && now - Date.parse(last.at) < MIN_PASS_SPACING_MS) {
-      continue;
-    }
-    record.passes.push(await passOnce(env, record));
-    await env.ORDERS.put(name, JSON.stringify(record));
-    passed += 1;
-  }
-  return passed;
 }
 
 export interface ConformanceWatchHistory {

@@ -4,6 +4,7 @@ import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import {
   canonicalizeConformancePass,
+  CONFORMANCE_WATCH_DURATION_DAYS,
   readConformanceWatch,
   startConformanceWatch,
   sweepConformanceWatches,
@@ -84,6 +85,29 @@ describe("the conformance watch", () => {
     expect(item?.description.toLowerCase()).toContain("renews only if you buy");
     const schema = buyInputSchema(item!);
     expect(schema.required).toContain("url");
+  });
+
+  it("keeps the per-day price in the 402 note true to the arithmetic", () => {
+    const item = MENU_ITEMS.find((entry) => entry.id === "conformance_watch")!;
+    /**
+     * The note spells the per-day cost in words, which makes an
+     * agent's cost-benefit trivial and makes the copy a claim that
+     * can go stale. This is the tripwire: move the price or the
+     * duration and the number below changes, this fails, and the
+     * words have to be rewritten with it. Nothing derives prose
+     * automatically — it just cannot drift quietly.
+     */
+    const centsPerDay =
+      (item.price_usdc * 100) / CONFORMANCE_WATCH_DURATION_DAYS;
+    expect(
+      Math.floor(centsPerDay),
+      "the 402 note says 'about seventy-one cents a day' — that number moved, so the copy is now false",
+    ).toBe(71);
+    expect(item.note_402).toContain("about seventy-one cents a day");
+    // "about", because 71.43 rounded flat to 71 would price the week
+    // in our favour — three cents over seven days, and this store
+    // does not round toward itself in its own sales copy.
+    expect(centsPerDay).toBeGreaterThan(71);
   });
 
   const buying = { "PAYMENT-SIGNATURE": "not-a-real-signature" };
