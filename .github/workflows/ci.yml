@@ -42,6 +42,11 @@ jobs:
       # something it cannot do.
       - name: Tests
         run: npm test
+      # THE TAB'S OWN TESTS — a filesystem product cannot run in the
+      # Workers pool (no fs in an isolate), so scvd-tab tests ride
+      # Node's own runner. Zero framework, same as zero dependencies.
+      - name: The Tab (scvd-tab MCP server)
+        run: npm run tab:test
       # THE SCALABILITY AUDIT — the same idea pointed forward instead of
       # backward. The tests catch a claim that is false NOW; this catches
       # a shape that will quietly become false as the store grows. Its
