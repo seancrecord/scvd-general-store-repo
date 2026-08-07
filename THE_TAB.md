@@ -1,27 +1,27 @@
-# The Tool Ledger — MCP Tool Specification v0.2
+# The Tab — MCP Tool Specification v0.2
 
-Status: product spec, pre-build. The tools below are the product —
-what can be asked of the ledger determines what the ledger must hold.
-Schema follows from this. No code exists yet, deliberately: the
-keeper reads the spec, then the build starts.
+(Formerly "The Tool Ledger" — renamed by the keeper 2026-08-08.
+"Ledger" is load-bearing in-store; a tab is the thing itself: the
+running account of what you're signed up for and what it costs.)
 
-Server name (proposed): `scvd-tool-ledger`
+Status: product spec, keeper-approved 2026-08-08. The tools below
+are the product — what can be asked of the tab determines what the
+tab must hold. Schema follows from this. No code exists yet,
+deliberately: spec first, then the build.
+
+Server name: `scvd-tab`
 Transport: stdio (local-first); optional HTTP for a hosted version
 Storage: local JSONL, one line per event, append-only. Path
-configurable; default `~/.scvd/tool-ledger.jsonl`. The server owns
+configurable; default `~/.scvd/tab.jsonl`. The server owns
 the file — no other process writes to it.
 
 ⚑ KEEPER, still open on this document:
-  - The NAME. "Ledger" is already load-bearing in-store (rule 20's
-    ledger, the books, /house-ledger) — a second ledger dilutes the
-    word that currently means OUR record of what happened.
-    RECOMMENDED: **The Tab** — general-store native ("put it on my
-    tab"), and it means the thing: the running account of what
-    you're signed up for and what it costs. Server name `scvd-tab`.
-    Alternates: The Toolshed (warmer, less about money), The
-    Manifest (machine-legible, colder). Rule 7: this line flags,
-    the keeper kills.
-  - Layer 3's trust-model line (see "The pooled layer's debt").
+  - Layer 3's trust-model line (see "The pooled layer's debt") —
+    lands on /attestation the week layer 3 ships.
+
+RESOLVED 2026-08-08: the name is The Tab (the keeper's pick from the
+flagged recommendation; alternates The Toolshed and The Manifest
+declined). File renamed from TOOL_LEDGER.md the same day.
 
 ## Changelog from v0.1 (the keeper's pass, 2026-08-07, all eight)
 
@@ -84,7 +84,7 @@ one. Two additions, both consent-gated like everything else:
 10. THE CONTRIBUTION SUGGESTION. When `log_tool_event` records a
     contributable event and consent is on, the write response
     carries `contribution_suggestion` — the exact delta that WOULD
-    be sent, for the agent to file in the same breath. The ledger
+    be sent, for the agent to file in the same breath. The tab
     stays passive (no sweep ever scans the file for unsent deltas);
     the agent stays the only actor; the natural moment does the
     remembering.
@@ -105,7 +105,7 @@ truth (gaming — sample sizes ride every number).
    an event; current state is derived by replay. History for free,
    and "what did I know on March 3rd" stays answerable.
 2. The server validates everything. Writes that don't match the
-   schema are rejected with a useful error. No ledger drift — the
+   schema are rejected with a useful error. No tab drift — the
    exact disease this product treats.
 3. Local-first, private by default. Nothing leaves the file except
    through `contribute_anonymized_delta`, deliberately, with consent
@@ -191,7 +191,7 @@ Returns:
 ```
 
 No advice attached. "Cancel it" is the agent's sentence to say, from
-its own session knowledge; the ledger supplies the deadline and the
+its own session knowledge; the tab supplies the deadline and the
 price.
 
 ### 3. `check_before_signup` — the pre-flight read
@@ -289,13 +289,13 @@ this spec does not pretend otherwise.
 is symmetric. First contribution attempt with no consent event on
 record returns an error describing exactly what would be shared.
 
-### 8. `export_ledger` — the escape hatch
+### 8. `export_tab` — the escape hatch
 
 `{format: "jsonl" | "csv"}` — full export, any time, no charge, no
 lock-in. A product that holds your history hostage is the disease;
 this is the cure's own hygiene.
 
-## What the ledger must hold (schema preview, derived from the tools)
+## What the tab must hold (schema preview, derived from the tools)
 
 Per entry: `entry_id`, `server_timestamp`, `schema_version`, `event`,
 `tool_name`, `category`, `problem_solved`, `price`, `previous_price`,
@@ -323,7 +323,7 @@ family's style, versioned in its URL.
 2. No price monitoring. `price_changed` records what the agent
    learns; nothing crawls pricing pages.
 3. No recommendations, local or pooled. Counts and dates. The agent
-   editorializes if it likes; the ledger never does.
+   editorializes if it likes; the tab never does.
 
 ## The pooled layer's debt (written now, while the reasoning is fresh)
 
@@ -346,7 +346,7 @@ things are owed BEFORE it ships, both cheap now and expensive later:
 ## Kill criteria (written before the build, so stopping is already decided)
 
 - The dogfood test: ONE real swap or cancellation triggered by a
-  ledger query within 60 days of the backfill session, or park it.
+  tab query within 60 days of the backfill session, or park it.
   No re-market, no "give it more time."
 - The schema test: if the schema can't cleanly hold the keeper's own
   chaos of trials and tools, it's not ready for anyone's.
@@ -361,7 +361,7 @@ CV runs it against the keeper's actual sprawl:
 1. Backfill session — the keeper brain-dumps every tool he can
    remember; CV logs each via `log_tool_event` with
    `retroactive: true` and `occurred_at` as remembered.
-2. From then on, every new signup goes through the ledger; every
+2. From then on, every new signup goes through the tab; every
    "should I try X" goes through `check_before_signup` first.
 3. CV calls `trials_converting_soon` daily and surfaces hits
    unprompted; `stack_audit` weekly.
@@ -369,7 +369,7 @@ CV runs it against the keeper's actual sprawl:
 
 ## Honest limits
 
-1. The ledger is complete exactly in proportion to how much of the
+1. The tab is complete exactly in proportion to how much of the
    builder's commerce runs through the agent. Today that's a sliver;
    that is the option structure, not a flaw. The product completes
    as agent-mediated signup becomes normal.
