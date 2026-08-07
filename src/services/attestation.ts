@@ -268,12 +268,31 @@ export async function observeSettlement(
     txHash ? getReceipt(env, txHash) : Promise.resolve(null),
     getBlockNumber(env),
   ]);
+  return observeWithFacts(env, query, receipt, head);
+}
 
+/**
+ * The observation with its chain facts already in hand — the seam the
+ * sheaf reads through (2026-08-07, the red team's subrequest finding).
+ * The sheaf fetches every receipt in ONE batched call and the chain
+ * head ONCE, then attests each hash against that shared head. The
+ * shared head is self-describing rather than hidden: every observation
+ * in a sheaf carries the same chain_head value, which says plainly
+ * that the sheaf was read against one moment — a more coherent claim
+ * for a batch than twenty heads drifting across twenty sequential
+ * reads, not a lesser one.
+ */
+export async function observeWithFacts(
+  env: Env,
+  query: AttestationQuery,
+  receipt: Awaited<ReturnType<typeof getReceipt>>,
+  head: number,
+): Promise<SignedAttestation> {
   const verdict = classify(receipt, query, head);
   const core = {
     observed_at: new Date().toISOString(),
     chain: BASE_CHAIN,
-    tx_hash: txHash,
+    tx_hash: query.txHash ?? null,
     recipient: verdict.recipient,
     payer: verdict.payer,
     amount_usdc: verdict.amountUsdc,

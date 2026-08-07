@@ -84,6 +84,98 @@ export async function getReceipt(
 }
 
 /**
+ * MANY RECEIPTS, ONE SUBREQUEST — the red team's finding on the
+ * attestation sheaf (2026-08-07). Twenty per-hash reads inside
+ * fulfillment meant ~40 chain subrequests AFTER money had settled,
+ * brushing the Workers per-request budget on the worst path; a request
+ * that dies there is an undelivered sale the keeper resolves by hand.
+ * JSON-RPC has had batching since 1.0 — an array of requests in one
+ * POST — so the whole sheaf reads in a single subrequest.
+ *
+ * FALLS BACK to per-hash reads when the provider answers a batch with
+ * anything but an array, because a configured BASE_RPC_URL is the
+ * operator's choice and some gateways refuse batches: the fallback is
+ * exactly yesterday's behavior, so the worst case is the one we
+ * already lived with, never a new one.
+ */
+export async function getReceiptsBatch(
+  env: Env,
+  txHashes: readonly string[],
+): Promise<Map<string, RpcReceipt | null>> {
+  const receipts = new Map<string, RpcReceipt | null>();
+  if (txHashes.length === 0) {
+    return receipts;
+  }
+  const response = await fetch(rpcUrl(env), {
+    method: "POST",
+    headers: outboundHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(
+      txHashes.map((txHash, index) => ({
+        jsonrpc: "2.0",
+        id: index,
+        method: "eth_getTransactionReceipt",
+        params: [txHash],
+      })),
+    ),
+  });
+  if (!response.ok) {
+    throw new Error(`Base RPC batch answered ${response.status}`);
+  }
+  const body: unknown = await response.json();
+  if (!Array.isArray(body)) {
+    for (const txHash of txHashes) {
+      receipts.set(txHash, await getReceipt(env, txHash));
+    }
+    return receipts;
+  }
+  for (const entry of body) {
+    if (
+      typeof entry === "object" &&
+      entry !== null &&
+      "id" in entry &&
+      typeof (entry as { id: unknown }).id === "number"
+    ) {
+      const index = (entry as { id: number }).id;
+      const txHash = txHashes[index];
+      if (txHash === undefined) {
+        continue;
+      }
+      /**
+       * AN ERROR ENTRY THROWS, IT NEVER BECOMES A VERDICT. result:null
+       * is the chain saying "no such transaction" — an honest
+       * NOT_FOUND somebody paid for. An error member is the PROVIDER
+       * failing, and mapping that to NOT_FOUND would sign a false
+       * negative about a payment that may have settled — the exact
+       * bug class test/attestation-not-found.spec.ts names as the
+       * most expensive one this item can have. The single-hash path
+       * throws on provider failure; the batch holds the same line.
+       */
+      if ("error" in entry) {
+        throw new Error(
+          `Base RPC batch errored for ${txHash}: ${JSON.stringify((entry as { error: unknown }).error).slice(0, 200)}`,
+        );
+      }
+      receipts.set(
+        txHash,
+        "result" in entry
+          ? (entry as { result: RpcReceipt | null }).result
+          : null,
+      );
+    }
+  }
+  // Same line for a hash the provider's answer simply omitted: absent
+  // from the response is a provider fault, not a chain verdict.
+  for (const txHash of txHashes) {
+    if (!receipts.has(txHash)) {
+      throw new Error(
+        `Base RPC batch answered without an entry for ${txHash}`,
+      );
+    }
+  }
+  return receipts;
+}
+
+/**
  * Every USDC Transfer INTO one address over a block range.
  *
  * The only call in this file that looks at the chain rather than at a

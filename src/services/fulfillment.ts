@@ -4,7 +4,8 @@ import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
 import type { SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
-import { observeSettlement } from "@/services/attestation";
+import { observeSettlement, observeWithFacts } from "@/services/attestation";
+import { getBlockNumber, getReceiptsBatch } from "@/lib/base-rpc";
 import type {
   AttestationQuery,
   SignedAttestation,
@@ -154,9 +155,25 @@ export async function fulfillPurchase(
    */
   let bundle: SignedAttestation[] | undefined;
   if (item.id === "attestation_bundle") {
+    /**
+     * TWO CHAIN SUBREQUESTS FOR THE WHOLE SHEAF, however many hashes
+     * (the red team's finding): every receipt in one batched call,
+     * the head read once and shared. Post-settle work has a
+     * subrequest budget, and forty reads after money moved was a
+     * delivery failure waiting for a busy day. The shared head means
+     * the sheaf is attested against one moment, and says so — every
+     * observation carries the same chain_head.
+     */
+    const hashes = input.bundleTxHashes ?? [];
+    const [receipts, head] = await Promise.all([
+      getReceiptsBatch(env, hashes),
+      getBlockNumber(env),
+    ]);
     bundle = [];
-    for (const txHash of input.bundleTxHashes ?? []) {
-      bundle.push(await observeSettlement(env, { txHash }));
+    for (const txHash of hashes) {
+      bundle.push(
+        await observeWithFacts(env, { txHash }, receipts.get(txHash) ?? null, head),
+      );
     }
     mintOptions.attests = await bundleEvidenceHash(bundle);
   }
