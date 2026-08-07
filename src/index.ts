@@ -36,6 +36,7 @@ import {
   statsRoutes,
   corpusRoutes,
   serviceAuditRoutes,
+  namespaceSpecRoutes,
   pulseRoutes,
   attestationRoutes,
   conventionalRoutes,
@@ -248,6 +249,7 @@ app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
 app.route("/", anchorRoutes);
 app.route("/", serviceAuditRoutes);
+app.route("/", namespaceSpecRoutes);
 app.route("/", patronageRoutes);
 app.route("/", phantomRoutes);
 app.route("/", letterRoutes);
