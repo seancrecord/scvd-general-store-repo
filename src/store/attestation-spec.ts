@@ -96,13 +96,53 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
   },
   {
     id: "settlement_attestation",
-    name: "Settlement attestations",
+    name: "Settlement attestations (single, or each member of a sheaf)",
     trust_model: "third_party_observation",
     signs:
-      "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at the time of reading, the confirmation count, and the moment of observation.",
+      "The whole observation object: the transaction hash asked about, what the chain said, the block height, the chain head at the time of reading, the confirmation count, and the moment of observation. A sheaf (attestation_bundle) is this artifact at volume — every member signed alone over the same fields, quotable alone.",
     does_not_prove:
       "That goods or services were delivered, that a NOT_FOUND will never settle later, or that the payment was legitimate. One RPC read of public state, at one moment, signed by a party with no interest in the answer.",
     verify_url: "/api/verify/{cert_id}",
+  },
+  {
+    id: "standing_watch_probe",
+    name: "Standing watch rows (the Night Watch)",
+    trust_model: "third_party_observation",
+    signs:
+      "Each hourly row on its own: the watch id, the watched URL, the moment, the verdict, the names of any failed checks, and the status and latency where present — in the declared canonical order, so any single row can be quoted alone.",
+    does_not_prove:
+      "Anything about hours we did not probe. The gaps are derived at read and counted against us in the same history; a row is one look from one vantage, never an uptime figure.",
+    verify_url: "/api/watch/{watch_id}",
+  },
+  {
+    id: "service_audit",
+    name: "Service audit reports (the Once-Over)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole report: the audited URL, the moment, the criteria version, the verdict, every check and advisory, and the report's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
+    does_not_prove:
+      "That the endpoint is endorsed, reliable, or up at any other moment. One GET against published criteria; an unreachable verdict is a fact about one network path at one moment.",
+    verify_url: "/api/service-audit/{audit_id}",
+  },
+  {
+    id: "bitcoin_anchor",
+    name: "Patron Bitcoin anchors",
+    trust_model: "custody_only",
+    signs:
+      "Nothing directly on the record. Two independent bindings do the work: the purchase certificate signs the buyer's digest via its attests field, and the OpenTimestamps proof commits the same digest into a Bitcoin transaction — the store's dated word and Bitcoin's clock, separately checkable.",
+    does_not_prove:
+      "What the digest is a digest OF. The label is the buyer's own claim, stored verbatim and never checked; the proof establishes the digest existed by a Bitcoin block, nothing about the bytes behind it.",
+    verify_url: "/api/bitcoin-anchor/{anchor_id}",
+  },
+  {
+    id: "corpus_snapshot",
+    name: "Corpus snapshots (the ecosystem record)",
+    trust_model: "third_party_observation",
+    signs:
+      "The canonical snapshot: version, sequence, the moment taken, the previous entry's digest, the source, the week, and the whole ward round it freezes — hash-linked to the entry before it and OTS-stamped into Bitcoin.",
+    does_not_prove:
+      "That the observed services behave the same at any other moment, or that the record is complete. The chain proves WE did not rewrite our own history; it cannot prove we saw everything.",
+    verify_url: "/corpus.json",
   },
   {
     id: "phantom_check",
@@ -168,7 +208,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
  * the last place that should carry one.
  */
 export const NOT_BUILT: readonly string[] = [
-  "No hash-linked continuity chain. Each artifact is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld.",
+  "No hash-linked continuity chain OVER SOLD ARTIFACTS. Each certificate is signed independently; there is no tamper-evident ordering between them, so we cannot prove that no artifact was withheld. (The store's own key history and its ecosystem record ARE chained and Bitcoin-anchored — /.well-known/anchor-log.json and /corpus.json — which is why this line is scoped now rather than flat: those chains prove OUR histories were not rewritten, and do nothing for the shelf.)",
   "No offline evidence bundle format. Verification needs the signed bytes and the public key, both of which travel with the artifact — but there is no packaged bundle standard, and nothing here interoperates with one.",
   `No successor key. One ed25519 key signs everything at a time — ${RETIRED_KEYS.length} retired, one in service — and if the live one is stolen every signature it produces is indistinguishable from ours; a backup is no defence against that and is not offered as one. ${
     KEY_BACKUP_EXISTS

@@ -72,6 +72,7 @@ artifact any third party can verify without trusting us.
 - What you own after buying: ${base}/rights
 - Refund commitment (human-labor items): ${base}/rights and ${base}/fulfillment-log
 - What a signature does and does not prove: ${base}/attestation
+- Signed-artifact format spec (scvd-attestation/v1) — canonical forms, encodings, the certificate binding convention, offline verification steps: ${base}/spec/scvd-attestation/v1
 - What is and is NOT claimed: ${base}/.well-known/trust.json
 
 ## Discovery & trust endpoints

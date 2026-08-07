@@ -283,6 +283,14 @@ requirement. A signed offer is your evidence of what was promised if
 delivery falls short; a signed receipt is portable proof of purchase
 you can hand any third party.
 
+The store's OWN artifacts — certificates, attestations, audit
+reports, watch rows, anchors — follow a named, versioned format:
+scvd-attestation/v1, specified at ${base}/spec/scvd-attestation/v1.
+Canonical forms, encodings, the certificate binding convention, and
+verification steps that work offline against the published key. A
+verifier written against that page is coupled to a contract with a
+stability promise, not to whatever our code does today.
+
 Building an offer-receipt implementation of your own? Deterministic
 conformance vectors (known-good and known-bad, regenerable byte for
 byte from a published test seed) are served at
@@ -342,7 +350,9 @@ valid signature does NOT prove. Three trust models are named and
 ordered weakest first — self-signed, custody-and-timestamp only, and
 third-party observation — and the classes sitting on the weakest one
 are labelled as sitting on the weakest one. The page also lists what
-this store does not have: no hash-linked continuity chain, no offline
+this store does not have: no hash-linked continuity chain over sold
+artifacts (the store's own key history and ecosystem record ARE
+chained and Bitcoin-anchored; the shelf is not), no offline
 bundle format, no successor key, no threshold signing, no HSM, no
 audit, no patent. It was written after an outside reader
 checked the artifacts and called this a narrower, more honestly-scoped
