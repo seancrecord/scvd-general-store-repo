@@ -50,7 +50,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the same published battery the free preflight runs, and signs the whole readout: verdict, every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
     note_402:
-      "Five dollars, friend. The look is free any day — the signed, dated record of it is what you're buying.",
+      "Five dollars. The looking is free and always will be — what costs money is the part where somebody else has to believe you.",
     constraints: [
       "Give the endpoint in the url query parameter: https, default port, the URL a buyer would GET expecting a 402",
       "One GET at one moment, signed; never a monitor — the week-long look is The Night Watch",
@@ -81,7 +81,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the full published preflight battery against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
     note_402:
-      "Five dollars for the week — about seventy-one cents a day. One look each day, signed, and our missed days go on the record too.",
+      "Five dollars for the week — seventy-one cents a day, near enough. One look each day, signed. Deploy something on a Tuesday that quietly breaks your challenge, and this is the page that knows. Our own missed days are on it too.",
     constraints: [
       "The url query parameter (https, default port, the URL a buyer would GET expecting a 402)",
       "One pass per day for seven days, each signed alone; first pass on the store's next hourly rounds",
@@ -113,7 +113,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Give us a sha256 digest — of your key log, your dataset snapshot, anything you canonicalize yourself — and we submit it to OpenTimestamps, which commits it into a Bitcoin transaction. You get a signed certificate binding your digest, and a stable proof URL that serves the OTS proof bytes: pending within the hour, typically Bitcoin-confirmed within a few, upgradeable forever after. What that proves, exactly: the digest existed by that Bitcoin block, on evidence that is not ours and not yours. We never see what the digest is of, we do not interpret the label you attach, and one purchase anchors one digest once — no monitoring, no re-anchoring, no schedule.",
     note_402:
-      "A dollar, friend. Bitcoin remembers what both of us might not.",
+      "A dollar to nail your digest to a clock nobody owns. We never see what's behind it, and once it's in, it's past us.",
     constraints: [
       "Give the digest in the digest query parameter: 64 hex characters, a sha256 you computed over bytes you keep",
       "Optional label query parameter, up to 120 characters, stored verbatim as your claim about what the digest covers — never checked, never interpreted",
@@ -167,7 +167,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Up to 20 settlement attestations in one purchase. Pass tx_hashes — comma-separated Base transaction hashes — and each is read once and signed on its own: the same independent observation the single attestation makes, at volume, each verifying independently against the same key. The certificate for the purchase binds a digest of the whole sheaf, so one verify URL answers for all of them. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes moments on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
     note_402:
-      "A nickel for the sheaf, friend. Up to 20 signed receipts, and the chain reads are on the house.",
+      "A nickel. Twenty receipts, each one signed on its own, each one built to hold in a room where nobody trusts you.",
     constraints: [
       "Give 2 to 20 Base transaction hashes in the tx_hashes query parameter, comma-separated, no duplicates",
       "Each hash is observed once and signed on its own; the bundle is a purchase shape, not a different artifact",

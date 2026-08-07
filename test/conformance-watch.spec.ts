@@ -101,12 +101,14 @@ describe("the conformance watch", () => {
       (item.price_usdc * 100) / CONFORMANCE_WATCH_DURATION_DAYS;
     expect(
       Math.floor(centsPerDay),
-      "the 402 note says 'about seventy-one cents a day' — that number moved, so the copy is now false",
+      "the 402 note says 'seventy-one cents a day' — that number moved, so the copy is now false",
     ).toBe(71);
-    expect(item.note_402).toContain("about seventy-one cents a day");
-    // "about", because 71.43 rounded flat to 71 would price the week
-    // in our favour — three cents over seven days, and this store
-    // does not round toward itself in its own sales copy.
+    expect(item.note_402).toContain("seventy-one cents a day");
+    // The hedge is load-bearing, not filler: 71.43 stated flat as 71
+    // would price the week in our own favour — three cents across
+    // seven days — and this store does not round toward itself in
+    // its own sales copy.
+    expect(item.note_402).toMatch(/near enough|about/);
     expect(centsPerDay).toBeGreaterThan(71);
   });
 
