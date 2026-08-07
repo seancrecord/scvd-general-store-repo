@@ -103,6 +103,8 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * ⚑ Keeper's pen; the plumbing derives the summaries from this.
  */
 export const CAPABILITY_QUERY: Record<string, string> = {
+  service_audit:
+    "Get a signed point-in-time audit of an x402 endpoint that I can hand to a third party",
   bitcoin_anchor:
     "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
@@ -149,6 +151,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  service_audit:
+    "a dated, signed record of what an x402 endpoint answered at one moment, against the published preflight criteria — the readout is free at /api/preflight; this is the same battery with a signature, a certificate binding, and a permanent report URL a third party checks without us.",
   bitcoin_anchor:
     "a commitment that cannot be made after the fact: a Bitcoin-anchored timestamp on the buyer's own digest — a key log, a snapshot, any record that must provably have existed now. The mechanism this store anchors its own key history with; the bytes stay the buyer's.",
   attestation_bundle:
@@ -204,6 +208,8 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  service_audit:
+    "A signed JSON audit report — verdict (ready, not_ready or unreachable), every check and advisory from the published preflight battery, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET at one moment, never monitoring.",
   bitcoin_anchor:
     "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:

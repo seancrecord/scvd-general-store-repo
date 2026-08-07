@@ -117,6 +117,15 @@ export function bitcoinAnchorNote(otsStatus: string): string {
       : "Anchored. The proof stands on Bitcoin's memory now, which outlasts everybody's.";
 }
 
+/** service_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function serviceAuditNote(verdict: string): string {
+  return verdict === "ready"
+    ? "Looked once, wrote down what we saw, signed it: every check passed at that moment. The report is yours to show around — the URL serves it free forever, and it never claims more than the moment it covers."
+    : verdict === "not_ready"
+      ? "Looked once, wrote down what we saw, signed it: at least one check failed, and the report names which and why. That's not a verdict on you — it's a dated readout, and the fix list is in it. Come back after and the free preflight will tell you where you stand before you buy another word from us."
+      : "We knocked and nobody answered — from where we stand, at that moment, which is exactly what the report says and all it says. It does not prove your endpoint is down. The record is signed and dated either way; that was the purchase.";
+}
+
 export function bundleNote(statuses: readonly string[]): string {
   return `Read the chain once per hash and signed each of the ${statuses.length}: ${statuses.join(", ")}. Every attestation in the sheaf is signed on its own, so each one checks independently without asking us — and the certificate for this purchase binds a digest over the lot. It says what Base said at those moments; not whether anything was delivered, and not what happens next.`;
 }

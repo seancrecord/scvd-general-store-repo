@@ -11,6 +11,8 @@ import type {
   SignedAttestation,
 } from "@/services/attestation";
 import { deliverInstantGoods } from "@/services/instant-goods";
+import { performServiceAudit } from "@/services/service-audit";
+import type { SignedServiceAudit } from "@/services/service-audit";
 import {
   completeOrder,
   createOrder,
@@ -47,7 +49,7 @@ export interface FulfillmentInput {
   callbackUrl?: string;
   /** context_anchor: pre-validated summary. */
   summary?: string;
-  /** phantom_check: pre-validated URL. */
+  /** phantom_check, standing_watch, service_audit: pre-validated URL. */
   targetUrl?: string;
   /** coffees_for_closers: the win, pre-validated, recorded verbatim. */
   win?: string;
@@ -182,6 +184,21 @@ export async function fulfillPurchase(
     mintOptions.attests = await bundleEvidenceHash(bundle);
   }
   /**
+   * THE SERVICE AUDIT observes first and mints second, for the same
+   * reason the attestations do: the certificate binds the report's
+   * evidence hash, so /api/verify answers "THIS report is the one
+   * that purchase bought" with no new endpoint. The probe wears the
+   * free preflight's exact guards; a network failure becomes a signed
+   * "unreachable" verdict rather than a throw, because a dated
+   * did-not-answer is itself the observation — the artifact frames
+   * what that can and cannot prove.
+   */
+  let serviceAudit: SignedServiceAudit | undefined;
+  if (item.id === "service_audit") {
+    serviceAudit = await performServiceAudit(env, input.targetUrl ?? "");
+    mintOptions.attests = serviceAudit.evidence_hash;
+  }
+  /**
    * THE BITCOIN ANCHOR binds the buyer's digest the same way the
    * attestations bind their evidence hashes: through `attests`, so
    * /api/verify answers for "this store certified THIS digest at THIS
@@ -302,6 +319,9 @@ export async function fulfillPurchase(
     }
     if (bundle) {
       goodsInput.bundle = bundle;
+    }
+    if (serviceAudit) {
+      goodsInput.serviceAudit = serviceAudit;
     }
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;

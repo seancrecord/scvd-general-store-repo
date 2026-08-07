@@ -187,6 +187,60 @@ const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * service_audit needs an auditable URL BEFORE money moves. Every
+ * refusal the probe would make post-settle is made here for free
+ * instead: https only, default port only, never our own hostname (an
+ * audit of ourselves signed by ourselves would be the instrument
+ * vouching for itself — and the platform kills self-fetch anyway).
+ */
+const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/service_audit" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        error:
+          "An audit needs a url query parameter — the https endpoint a buyer would GET expecting a 402. No target, no charge. The same look is free, unsigned, at POST /api/preflight.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  if (url.protocol !== "https:") {
+    return c.json(
+      {
+        error:
+          "https only. A payment endpoint on plain http is already failing a check no probe needs to run. Nothing charged.",
+      },
+      400,
+    );
+  }
+  if (url.port !== "" && url.port !== "443") {
+    return c.json(
+      {
+        error:
+          "Default https port only — this probe does not dial custom ports. Nothing charged.",
+      },
+      400,
+    );
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        error:
+          "That is this store's own hostname. We do not sell audits of ourselves — a report we sign about our own door is the instrument vouching for itself, worth exactly nothing to whoever you would show it to. Our 402s pass these same checks in CI on every build, and you should not take our word for that either: GET any /api/buy/{item} yourself and look.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -453,6 +507,7 @@ buyRoutes.use("/api/buy/*", stockCheck);
 buyRoutes.use("/api/buy/*", shutterCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
+buyRoutes.use("/api/buy/*", serviceAuditCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
@@ -499,6 +554,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "standing_watch") {
     // standingWatchCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "service_audit") {
+    // serviceAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "coffees_for_closers") {

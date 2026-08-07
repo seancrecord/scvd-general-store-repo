@@ -9,6 +9,8 @@ import { createLucky, drawLuckyParts } from "@/services/luckies";
 import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
+import { storeServiceAudit } from "@/services/service-audit";
+import type { SignedServiceAudit } from "@/services/service-audit";
 import { startWatch } from "@/services/standing-watch";
 import {
   anchorNote,
@@ -26,6 +28,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   phantomCheckNote,
+  serviceAuditNote,
   standingWatchNote,
 } from "@/store/copy/deliverables";
 import type { Env, MenuItem } from "@/types";
@@ -59,6 +62,8 @@ export interface InstantGoodsInput {
   /** bitcoin_anchor only: the digest and its untrusted label. */
   anchorDigest?: string;
   anchorLabel?: string;
+  /** service_audit only: the report, already made and signed. */
+  serviceAudit?: SignedServiceAudit;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -211,6 +216,28 @@ export async function deliverInstantGoods(
           proof_url: `/api/bitcoin-anchor/${record.anchor_id}`,
           verify_note:
             "The certificate for this purchase binds your digest in its `attests` field, so /api/verify/{cert_id} vouches that this store certified this digest at this time. The proof URL serves the OpenTimestamps proof bytes: pending means a calendar accepted it, complete means it upgraded to a Bitcoin-confirmed proof you check with the standard `ots` tool against Bitcoin headers — no calendar, no us. If the first submission failed, the store's hourly pass retries until it lands; the record says which state it is in, plainly.",
+        },
+      };
+    }
+    case "service_audit": {
+      // Already observed and signed, upstream, so its evidence hash
+      // could be bound into the certificate. Storage happens HERE,
+      // after the mint, so the envelope carries the cert id — the
+      // binding runs one direction, through `attests`.
+      const audit = input.serviceAudit;
+      if (!audit) {
+        throw new Error("service_audit reached goods with no report");
+      }
+      await storeServiceAudit(env, audit, input.certId ?? "");
+      return {
+        deliverable: serviceAuditNote(audit.verdict),
+        extras: {
+          audit_id: audit.audit_id,
+          verdict: audit.verdict,
+          audit,
+          report_url: `/api/service-audit/${audit.audit_id}`,
+          verify_note:
+            "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The report is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into the certificate for this purchase, so /api/verify/{cert_id} answers for the report too — the endpoint that already existed, not a new one. The report URL serves the record free, forever.",
         },
       };
     }
