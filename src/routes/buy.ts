@@ -188,14 +188,20 @@ const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 /**
- * service_audit needs an auditable URL BEFORE money moves. Every
- * refusal the probe would make post-settle is made here for free
- * instead: https only, default port only, never our own hostname (an
- * audit of ourselves signed by ourselves would be the instrument
- * vouching for itself — and the platform kills self-fetch anyway).
+ * service_audit and conformance_watch need a probeable URL BEFORE
+ * money moves — the same battery behind both doors, so the same
+ * refusals, made here for free: https only, default port only, never
+ * our own hostname (an audit of ourselves signed by ourselves would
+ * be the instrument vouching for itself — and the platform kills
+ * self-fetch anyway).
  */
+const PROBE_ITEM_PATHS = [
+  "/api/buy/service_audit",
+  "/api/buy/conformance_watch",
+];
+
 const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/service_audit" || !isBuying(c)) {
+  if (!PROBE_ITEM_PATHS.includes(c.req.path) || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("url");
@@ -203,7 +209,7 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "An audit needs a url query parameter — the https endpoint a buyer would GET expecting a 402. No target, no charge. The same look is free, unsigned, at POST /api/preflight.",
+          "This needs a url query parameter — the https endpoint a buyer would GET expecting a 402. No target, no charge. A single unsigned look is free at POST /api/preflight.",
       },
       400,
     );
@@ -556,7 +562,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // standingWatchCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
-  if (item.id === "service_audit") {
+  if (item.id === "service_audit" || item.id === "conformance_watch") {
     // serviceAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }

@@ -12,10 +12,12 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import { storeServiceAudit } from "@/services/service-audit";
 import type { SignedServiceAudit } from "@/services/service-audit";
 import { startWatch } from "@/services/standing-watch";
+import { startConformanceWatch } from "@/services/conformance-watch";
 import {
   anchorNote,
   bitcoinAnchorNote,
   coffeeNote,
+  conformanceWatchNote,
   attestationNote,
   bundleNote,
   graffitiNote,
@@ -161,6 +163,22 @@ export async function deliverInstantGoods(
           history_url: watch.historyUrl,
           first_probe_by:
             "the top of the next hour, on the store's rounds; the history URL is readable now and fills in as the week goes",
+        },
+      };
+    }
+    case "conformance_watch": {
+      const watch = await startConformanceWatch(env, input.targetUrl ?? "");
+      return {
+        deliverable: conformanceWatchNote(
+          watch.record.url,
+          watch.record.ends_at,
+        ),
+        extras: {
+          watch_id: watch.record.watch_id,
+          ends_at: watch.record.ends_at,
+          history_url: watch.historyUrl,
+          first_pass_by:
+            "the store's next hourly rounds; one pass a day after that, and the history URL is readable now and fills in as the week goes",
         },
       };
     }

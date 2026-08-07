@@ -121,7 +121,7 @@ function doc(base: string) {
       verify_url: `${base}${entry.verify_url}`,
     })),
     watch_row_canonical_form:
-      "Standing watch rows sign JSON.stringify({watch_id, url, at, verdict, status, latency_ms, failed}) — the one artifact family where absent optional fields serialize as null (status, latency_ms) rather than being omitted, so every row is the same shape and any row is quotable alone. Stated here because it is the exception to the omission rule above.",
+      "The watch families are the exception to the omission rule above: absent optional fields serialize as null rather than being omitted, so every row is the same shape and any row is quotable alone. Standing watch rows sign JSON.stringify({watch_id, url, at, verdict, status, latency_ms, failed}); conformance watch passes sign JSON.stringify({watch_id, url, at, verdict, status, failed, advisories}) — exactly those keys, exactly that order, null for an absent status or latency.",
     key_surfaces: {
       public_key: `${base}${KEY_ARCHITECTURE.public_key_url}`,
       did_web: `${base}/.well-known/did.json`,

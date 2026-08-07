@@ -156,8 +156,16 @@ for (const path of sourceFiles(SRC)) {
  * rows that want it, repairs that judge each key — which is the shape
  * the rule itself exempts; converting those would be motion, not
  * improvement. Zero slack again, on purpose.
+ *
+ * RAISED 7 -> 8 on 2026-08-07, argued for as the ratchet demands:
+ * the conformance watch's sweep (services/conformance-watch.ts) is
+ * the same deliberate shape as its hourly sibling one line below it
+ * in this list — bulk-read the lot, then write ONLY the records that
+ * earned a pass this tick. The write is the per-record decision the
+ * rule exempts; KV has no bulk write to convert it to. Eighth loop,
+ * eighth argument, still zero slack.
  */
-const WARN_BUDGET = 7;
+const WARN_BUDGET = 8;
 
 const errors = findings.filter((f) => f.severity === "error");
 const warns = findings.filter((f) => f.severity === "warn");

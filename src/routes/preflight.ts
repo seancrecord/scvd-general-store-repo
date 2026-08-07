@@ -62,6 +62,8 @@ function doc(base: string) {
     the_ladder: {
       artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
       endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool.`,
+      this_moment_signed: `${base}/api/buy/service_audit — these exact checks, signed and bound into a certificate, served at a permanent report URL: for when you need to hand somebody the readout rather than run it.`,
+      across_a_week: `${base}/api/buy/conformance_watch — these exact checks once a day for seven days, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week.`,
       behavior: `${base}/api/buy/standing_watch — a paid, signed week of out-of-band hourly probes, for evidence rather than a readout.`,
     },
     try_it_against_a_live_endpoint:

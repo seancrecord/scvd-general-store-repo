@@ -103,6 +103,8 @@ export const GUARANTEE_BLOCK_TEXT = `Guaranteed: ${GUARANTEED.join("; ")}. Not g
  * ⚑ Keeper's pen; the plumbing derives the summaries from this.
  */
 export const CAPABILITY_QUERY: Record<string, string> = {
+  conformance_watch:
+    "Catch a deploy quietly breaking my x402 endpoint's payment challenge during the week",
   service_audit:
     "Get a signed point-in-time audit of an x402 endpoint that I can hand to a third party",
   bitcoin_anchor:
@@ -151,6 +153,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  conformance_watch:
+    "a week of daily signed conformance readouts on your own endpoint — the drift one audit cannot see: whether a mid-week deploy broke what Monday's buyer could parse. Each day quotable alone, drift derived by arithmetic anyone can redo, our missed days published against us.",
   service_audit:
     "a dated, signed record of what an x402 endpoint answered at one moment, against the published preflight criteria — the readout is free at /api/preflight; this is the same battery with a signature, a certificate binding, and a permanent report URL a third party checks without us.",
   bitcoin_anchor:
@@ -208,6 +212,8 @@ export const NOVELTY_ONLY: readonly string[] = [
 ] as const;
 
 export const SPEC_RETURNS: Record<string, string> = {
+  conformance_watch:
+    "A watch id and a permanent history URL, readable immediately and filling in daily for seven days: one signed pass per day carrying the verdict, every failed check and advisory by name, plus a summary deriving the days the store missed and whether the readout drifted between passes. Bounded and prepaid; ends after seven days, renews only by repurchase.",
   service_audit:
     "A signed JSON audit report — verdict (ready, not_ready or unreachable), every check and advisory from the published preflight battery, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET at one moment, never monitoring.",
   bitcoin_anchor:

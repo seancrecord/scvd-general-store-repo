@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { readWatch } from "@/services/standing-watch";
+import { readConformanceWatch } from "@/services/conformance-watch";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -17,6 +18,23 @@ watchRoutes.get("/api/watch/:watch_id", async (c) => {
   if (!history) {
     return c.json(
       { error: "No watch by that id. Watch ids start with watch_ and come from the purchase response." },
+      404,
+    );
+  }
+  return c.json(history, 200, { "Cache-Control": "no-store" });
+});
+
+/**
+ * GET /api/conformance-watch/:watch_id — a conformance watch's week,
+ * same contract as its hourly sibling: free forever, each daily pass
+ * signed alone, the days WE missed derived at read and counted
+ * against us, and drift stated as recomputable arithmetic.
+ */
+watchRoutes.get("/api/conformance-watch/:watch_id", async (c) => {
+  const history = await readConformanceWatch(c.env, c.req.param("watch_id"));
+  if (!history) {
+    return c.json(
+      { error: "No conformance watch by that id. Ids start with cwatch_ and come from the purchase response." },
       404,
     );
   }

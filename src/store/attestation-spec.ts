@@ -115,6 +115,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/watch/{watch_id}",
   },
   {
+    id: "conformance_watch_pass",
+    name: "Conformance watch passes (the Conformance Watch)",
+    trust_model: "third_party_observation",
+    signs:
+      "Each daily pass on its own: the watch id, the watched URL, the moment, the verdict, the names of failed checks and of advisories — in the declared canonical order, so any single day can be quoted alone.",
+    does_not_prove:
+      "Anything about the hours between passes, or about days nobody checked — those are derived at read and counted against us. One pass a day is conformance cadence, never uptime.",
+    verify_url: "/api/conformance-watch/{watch_id}",
+  },
+  {
     id: "service_audit",
     name: "Service audit reports (the Once-Over)",
     trust_model: "third_party_observation",
