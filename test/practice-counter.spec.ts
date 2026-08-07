@@ -86,6 +86,31 @@ describe("the practice counter", () => {
     expect(html).toContain("PAYMENT-SIGNATURE");
   });
 
+  it("puts the fast path and the cheap door ahead of the hand-rolling reference", async () => {
+    /**
+     * The keeper's finding, walking his own store (2026-08-07): the
+     * fastest x402 path on this page was buried — the shelf sat below
+     * the entire EIP-712 reference, and the fastest single line only
+     * existed inside step prose. The audience here is somebody hunting
+     * the quickest real 402; doors come before reference material, the
+     * way the front page and llms.txt already had it.
+     */
+    const html = await (
+      await SELF.fetch(`${BASE}/try`, { headers: { Accept: "text/html" } })
+    ).text();
+    const fastPath = html.indexOf("The fast path, one line");
+    const cheapDoor = html.indexOf("The cheap door, in order");
+    const handRolling = html.indexOf('id="hand-rolling"');
+    expect(fastPath, "the one-line fast path is gone from the top").toBeGreaterThan(-1);
+    expect(cheapDoor, "the cheap door section is gone").toBeGreaterThan(-1);
+    expect(handRolling, "the hand-rolling reference is gone").toBeGreaterThan(-1);
+    expect(fastPath, "the fast path no longer leads the page").toBeLessThan(cheapDoor);
+    expect(
+      cheapDoor,
+      "the cheap door sank back below the hand-rolling reference",
+    ).toBeLessThan(handRolling);
+  });
+
   it("answers to the name a search engine would carry", async () => {
     const response = await SELF.fetch(`${BASE}/x402-test`, { redirect: "manual" });
     expect(response.status).toBe(301);
