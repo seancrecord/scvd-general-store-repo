@@ -297,6 +297,96 @@ same agent hosted and mail content transits a third party — the
 architecture did not change, the deployment did, and the honest limits
 section says this where a user meets it rather than in a footnote.
 
+## v0.5 — the pager (built 2026-08-08)
+
+The largest gap between the product as described and the product as
+built, closed. `trials_converting_soon` was push-shaped and
+pull-triggered: *"Midjourney charges you $30 in 3 days"* is the whole
+save, and it only ever arrived if the agent happened to ask on the
+right day.
+
+### Why the clock could not live in the server
+
+An MCP server is a child process that speaks when spoken to. It cannot
+wake anybody. So the scheduler splits the way the store's own rails
+already split — the clock outside, the proof inside:
+
+```
+cron / launchd / Task Scheduler / an agent hook
+     └─ runs tab/pager.mjs, which QUEUES what is due
+the agent's next touch of the tab, for ANY reason
+     └─ carries the open pages back with it   (the ride-along)
+the agent, having actually said them out loud
+     └─ acknowledge_pages, and only then are they spent
+```
+
+With a cron the page is **timely**. Without one it is at least
+**inevitable** — the ride-along runs the clock on every tool call, so
+the next time the agent touches the tab for any reason at all, the
+page comes back with the answer. That is the difference between a
+scheduler and a dependency on the agent asking the right question on
+the right day. What no version of this fixes: an agent that never
+touches the tab and has no cron hears nothing, and the doc says so.
+
+### Handing over is not delivering
+
+This is the same rule as rule 9 and the same failure the store already
+paid for once. A page handed to an agent is **not** a page the builder
+heard. The ride-along records `handed_over`; only `acknowledge_pages`
+records that somebody actually said it. Pages that age out
+unacknowledged are superseded rather than deleted, and they are
+counted:
+
+`unspoken_pct` = `pages_missed / (pages_missed + pages_acknowledged)`
+— the pager's own variability window, measuring the gap between what
+the clock knew and what the builder was told. Null until at least one
+page settles either way. No sweep coverage can see this number; it is
+a different blind spot with a different owner.
+
+A superseded page also rides on the line it was superseded by:
+*"midjourney charges you $30 tomorrow (4 days on the pager, never put
+to you)."* Silence about being ignored would be the one thing the
+instrument must never do.
+
+### One page per worry per day
+
+`page_id` is `kind:tool:YYYY-MM-DD`, so the clock running four times
+in an afternoon raises nothing four times, and the same worry
+tomorrow is a genuinely new page rather than a duplicate. Ranking puts
+**preventable** above **already-happened**: a trial converting this
+afternoon outranks one that converted last week, because only one of
+them can still be stopped.
+
+### The bug this exposed
+
+`trial_started` never stored the conversion price. The tab's motivating
+sentence has a dollar figure in it and the schema had nowhere to keep
+one until the charge had already landed. Now `converts_to` holds the
+stated future price, deliberately apart from `price` — it is a claim
+about the future, it is not being charged yet, and it must never reach
+the burn. `trials_converting_soon` returns it too.
+
+### `whats_due` against `needs_attention`
+
+They overlap and the overlap is intentional. `needs_attention` is the
+stateless view — *what is outstanding right now* — for when somebody
+asks. `whats_due` is the clock: stateful, raised once, spent on
+acknowledgment, and the only one of the two that can tell you it has
+been ignored for four days.
+
+### Firing the clock
+
+```
+# cron, every morning at 9
+0 9 * * *  cd /path/to/repo && npm run --silent tab:pager
+```
+
+`launchd` on macOS, Task Scheduler on Windows, or a session-start hook
+in the agent client all work the same way: run the file, read stdout.
+It prints nothing when nothing is due — a scheduled job that speaks
+every morning regardless is a job the builder silences within the
+week.
+
 ## Design principles (read first)
 
 1. Append-only event log, not a database. Every state change appends
@@ -321,6 +411,13 @@ section says this where a user meets it rather than in a footnote.
    product this store is constitutionally barred from stocking.
 
 ## THE TOOLS
+
+The v0.2 core, in detail. Everything added since is specified in the
+version sections above and registered in `tab/tools.mjs`:
+`capture_tool_event`, `record_coverage` and `burn_rollup` (v0.3),
+`confirm_entry` and `needs_attention` (v0.4), `whats_due` and
+`acknowledge_pages` (v0.5). `TOOL_DEFS` is the list of record; this
+section is the reasoning behind the shape.
 
 ### 1. `log_tool_event` — the write
 

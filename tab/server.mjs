@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createInterface } from "node:readline";
-import { TOOL_DEFS } from "./tools.mjs";
+import { attachPending, TOOL_DEFS } from "./tools.mjs";
 import { defaultTabPath } from "./store.mjs";
 
 /**
@@ -53,7 +53,7 @@ async function handle(message) {
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "scvd-tab", version: VERSION },
         instructions:
-          "The Tab: the builder's running account of every tool they sign up for. Log lifecycle events as they happen; call trials_converting_soon daily and surface hits unprompted; call check_before_signup before any new signup. Facts and counts only — the tab never advises.",
+          "The Tab: the builder's running account of every tool they sign up for. Call whats_due at the start of every session and on every round — say the lines it returns, unprompted, then acknowledge_pages. Log lifecycle events as they happen; call check_before_signup before any new signup. Any tool result may carry pending_pages: say those too. Facts and counts only — the tab never advises.",
       });
     case "ping":
       return respond(id, {});
@@ -72,8 +72,20 @@ async function handle(message) {
       }
       try {
         const result = await tool.handler(params?.arguments ?? {}, PATH);
+        /*
+         * THE RIDE-ALONG. Every result carries the open pages back,
+         * so a trial converting tomorrow reaches the agent on ANY
+         * touch of the tab rather than only on the one call that
+         * happens to ask about trials. The pager's own tools are
+         * exempt — they already report the queue, and doubling it
+         * would make one page look like two.
+         */
+        const carried =
+          tool.name === "whats_due" || tool.name === "acknowledge_pages"
+            ? result
+            : attachPending(result, PATH);
         return respond(id, {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(carried, null, 2) }],
           isError: result?.logged === false || result?.accepted === false || Boolean(result?.error),
         });
       } catch (error) {

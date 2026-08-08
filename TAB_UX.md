@@ -21,7 +21,7 @@ One config block, any MCP client:
   "args": ["/path/to/tab/server.mjs"] } } }
 ```
 
-Restart. Eleven tools appear. Nothing else happens — no account, no
+Restart. The tab's tools appear. Nothing else happens — no account, no
 onboarding wizard, no email asked for. The tab is empty and useful
 the moment you say your first sentence to it.
 
@@ -86,16 +86,33 @@ remember.
 
 ## Every day — the pager
 
-`trials_converting_soon`, called on the agent's rounds and surfaced
-**unprompted**:
-
 > Midjourney charges you $30 in 3 days.
 
-That is the save. It is also the honest gap in the current build:
-**the tab has no scheduler.** This line only arrives if the agent has
-rounds. `trials_converting_soon` is push-shaped and pull-triggered,
-and until something fires it on a clock, a perfect sweep still waits
-for you to ask. Largest open item in the product.
+That is the save, and it now arrives three ways rather than one.
+
+**With a cron** (`npm run tab:pager`, one line in crontab), the clock
+runs whether or not anybody is talking to the agent. It prints nothing
+on a quiet morning, because a job that speaks every day regardless is
+a job you silence within the week.
+
+**Without a cron**, the clock still runs — on any tool call. Mention a
+tool, log a receipt, ask what you're paying: the answer comes back
+with the page attached. Timely becomes merely inevitable, which is a
+real downgrade and a survivable one.
+
+**Never**, if the agent has no rounds and you installed no cron. That
+case is not fixed and is not pretended away.
+
+**Saying it is not the same as sending it.** The page is handed to the
+agent; only `acknowledge_pages` records that the agent actually put it
+to you. Pages that age out unspoken are counted, not deleted, and the
+count rides on the next line:
+
+> Midjourney charges you $30 tomorrow (4 days on the pager, never put
+> to you).
+
+That parenthesis is the instrument reporting on its own failure, which
+is the only reason to trust the rest of what it says.
 
 ---
 
@@ -214,12 +231,17 @@ like everything else.
 
 ## Open, and named as open
 
-1. **No scheduler.** The pager and the drip both depend on the agent
-   having rounds. This is the biggest gap between the product as
-   built and the product as described.
-2. **The sweep is not built.** Manual and `/log` work today; mail is
-   spec'd and unwritten.
-3. **No ground truth for burn.** Card reconciliation is the only
+1. **The sweep is not built.** Manual and `/log` work today; mail is
+   spec'd and unwritten. Largest remaining gap.
+2. **No ground truth for burn.** Card reconciliation is the only
    thing that can prove the number, and it does not exist yet — which
    is why `variability_pct` reads `null` rather than a flattering
    zero.
+3. **The pager still needs somebody to run the clock.** A cron makes
+   it timely, an agent with rounds makes it inevitable, and neither
+   makes it certain. `unspoken_pct` is how you find out which one you
+   actually have.
+4. **`problem_solved` is the hole in the quarantine.** Every other
+   field a mail sweep writes is closed vocabulary, numbers or dates.
+   That one is free text, and no schema rule can tell your words from
+   a vendor's.

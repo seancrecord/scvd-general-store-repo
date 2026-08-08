@@ -569,6 +569,13 @@ export function derive(events, now = new Date()) {
       category: event.category,
       problem_solved: event.problem_solved,
       price: null,
+      // What the trial SAYS it will cost when it converts. Kept apart
+      // from `price` on purpose: it is a claim about the future, it is
+      // not being charged yet, and it must never reach the burn. But
+      // without it the pager's one load-bearing line — "midjourney
+      // charges you $30 in 3 days" — has no number in it, which is
+      // most of why anybody would run this.
+      converts_to: null,
       trial_ends: null,
       signup_friction: null,
       sources: new Set(),
@@ -603,6 +610,7 @@ export function derive(events, now = new Date()) {
       case "trial_started":
         tool.status = "active_trial";
         tool.trial_ends = event.trial_ends;
+        tool.converts_to = event.price ?? tool.converts_to;
         tool.since = at;
         tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
         if (reopening) tool.ever_paid = false;
@@ -774,6 +782,7 @@ export function trialsConvertingSoon(state, days = 7) {
         0,
         Math.ceil((Date.parse(t.trial_ends) - state.now.getTime()) / (24 * 3600_000)),
       ),
+      converts_to: t.converts_to,
       problem_solved: t.problem_solved,
     }))
     .sort((a, b) => a.days_left - b.days_left);

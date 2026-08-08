@@ -26,7 +26,8 @@
     "census": "node scripts/x402-census.mjs",
     "supported:kinds": "node scripts/supported-kinds.mjs",
     "agentic:check": "node scripts/agentic-market-check.mjs",
-    "tab:test": "node --test tab/tab.test.mjs"
+    "tab:test": "node --test tab/tab.test.mjs",
+    "tab:pager": "node tab/pager.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",

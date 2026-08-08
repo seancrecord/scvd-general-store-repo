@@ -12,6 +12,15 @@ import {
   validateEvent,
 } from "./store.mjs";
 import {
+  acknowledgePages,
+  openPages,
+  pagerCoverage,
+  queueDue,
+  runPager,
+} from "./pager.mjs";
+import {
+  acknowledge,
+  attachPending,
   burnRollup,
   captureToolEvent,
   checkBeforeSignup,
@@ -24,6 +33,7 @@ import {
   setConsent,
   stackAudit,
   trialsConverting,
+  whatsDue,
 } from "./tools.mjs";
 
 /**
@@ -872,4 +882,128 @@ test("a letter's own words never enter the tab", () => {
     appendEvent(path, { ...base, source: "capture", captured_text: "ahrefs $29 the 15th" }).logged,
     true,
   );
+});
+
+test("the pager raises what is due, once, worth most first", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: soon(3), price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "jasper", event: "paid_started", problem_solved: "copy", category: "other",
+      price: { amount: 49, currency: "USD", period: "month" }, source: "mail_sweep" },
+    path,
+  );
+  const first = queueDue(path);
+  assert.equal(first.queued.length, 2);
+  // Preventable outranks already-happened: the trial that can still be
+  // stopped is the line that gets said if only one does.
+  const { open, total } = openPages(path, { limit: 1 });
+  assert.equal(total, 2);
+  assert.equal(open[0].kind, "trial_converting");
+  assert.equal(open[0].line, "midjourney charges you $30 in 3 days.");
+  assert.equal(open[1].kind, "unconfirmed");
+  // The clock running twice in a day raises nothing twice.
+  assert.equal(queueDue(path).queued.length, 0);
+});
+
+test("a page handed to an agent is not a page the builder heard", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: soon(2), price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  // The ride-along hands it over. That is a handover, not a delivery —
+  // the same distinction as a settled rail against delivered goods.
+  const carried = attachPending(stackAudit({}, path), path);
+  assert.equal(carried.pending_pages.length, 1);
+  assert.equal(carried.pending_pages[0].handovers, 0);
+  const stillOpen = openPages(path).open[0];
+  assert.equal(stillOpen.handovers, 1);
+  assert.equal(pagerCoverage(path).pages_acknowledged, 0);
+  assert.equal(pagerCoverage(path).unspoken_pct, null);
+  // Only saying it out loud spends it.
+  const spent = acknowledge({ page_ids: [stillOpen.page_id] }, path);
+  assert.deepEqual(spent.acknowledged, [stillOpen.page_id]);
+  assert.equal(openPages(path).total, 0);
+  assert.equal(pagerCoverage(path).pages_acknowledged, 1);
+  assert.equal(pagerCoverage(path).unspoken_pct, 0);
+  // Acknowledging something that was never raised is refused, not
+  // quietly counted as spoken.
+  assert.deepEqual(acknowledge({ page_ids: ["trial_converting:ghost:2026-01-01"] }, path).unknown,
+    ["trial_converting:ghost:2026-01-01"]);
+});
+
+test("a page that ages out unspoken is counted, not forgotten", () => {
+  const path = freshPath();
+  const ends = soon(4);
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: ends, price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  // Three days of a clock nobody answered. Each day supersedes the
+  // last so the pager holds one worry rather than three...
+  const days = [0, 1, 2].map((n) => new Date(Date.now() + n * 24 * 3600_000));
+  for (const now of days) queueDue(path, { now });
+  const { open, total } = openPages(path);
+  assert.equal(total, 1);
+  // ...but the two it retired are evidence, and they ride on the line.
+  assert.equal(open[0].days_unspoken, 2);
+  const coverage = pagerCoverage(path);
+  assert.equal(coverage.pages_missed, 2);
+  assert.equal(coverage.pages_acknowledged, 0);
+  assert.equal(coverage.unspoken_pct, 100);
+  assert.ok(runPager(["--path", path]).includes("2 days on the pager, never put to you"));
+});
+
+test("the pager says nothing when there is nothing to say", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  assert.equal(runPager(["--path", path]), "");
+  assert.equal(whatsDue({}, path).say_now.length, 0);
+  assert.ok(whatsDue({}, path).note.startsWith("Nothing due"));
+  // And a result carries no pending block rather than an empty one.
+  assert.equal(attachPending(stackAudit({}, path), path).pending_pages, undefined);
+});
+
+test("a page that aged out cannot be acknowledged back into the record", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: soon(5), price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  const day0 = queueDue(path).queued[0];
+  queueDue(path, { now: new Date(Date.now() + 24 * 3600_000) });
+  // Yesterday's page is superseded, and superseded is the raw material
+  // of unspoken_pct. Letting the party being measured edit it away
+  // after the fact would make the number worth nothing.
+  const late = acknowledge({ page_ids: [day0.page_id] }, path);
+  assert.deepEqual(late.acknowledged, []);
+  assert.deepEqual(late.already_settled, [{ page_id: day0.page_id, state: "superseded" }]);
+  assert.equal(pagerCoverage(path).pages_missed, 1);
+  // The open one for the same worry is the honest thing to answer.
+  const open = openPages(path).open[0];
+  assert.notEqual(open.page_id, day0.page_id);
+  assert.deepEqual(acknowledge({ page_ids: [open.page_id] }, path).acknowledged, [open.page_id]);
+  assert.equal(pagerCoverage(path).unspoken_pct, 50);
+});
+
+test("a mistyped flag never reads as 'nothing is due'", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: soon(3), price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  assert.ok(runPager(["--path", path, "--days", "banana"]).includes("midjourney"));
+  assert.ok(runPager(["--path", path, "--days"]).includes("midjourney"));
 });
