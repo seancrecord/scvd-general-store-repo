@@ -219,6 +219,39 @@ export async function getBlockNumber(env: Env): Promise<number> {
   return Number.parseInt(hex, 16);
 }
 
+/**
+ * DID THIS AUTHORIZATION BURN? — the ambiguous-settle rescue's one
+ * question (incident 2026-08-07: three settles 502'd on BOTH attempts
+ * and were booked as declines while every one of them had landed
+ * on-chain; refunded by hand, tx 0xa6819600a1f141783d7a463046a0a62e
+ * 45a8f18e5a21c9b577721001a3669c19). An EIP-3009 nonce moves money at
+ * most once and emits AuthorizationUsed(authorizer, nonce) when it
+ * does — both indexed, so the node answers the exact question and
+ * nothing else. One bounded look over a recent window, never a poll:
+ * either the transfer already landed or the decline stands.
+ */
+export async function findAuthorizationUse(
+  env: Env,
+  authorizer: string,
+  nonce: string,
+  blockWindow = 300,
+): Promise<{ txHash: string } | null> {
+  const head = await getBlockNumber(env);
+  const padded = `0x${authorizer.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+  const logs = await rpc<Array<{ transactionHash: string }>>(env, "eth_getLogs", [
+    {
+      address: BASE_USDC,
+      fromBlock: `0x${Math.max(0, head - blockWindow).toString(16)}`,
+      toBlock: "latest",
+      topics: [AUTHORIZATION_USED_TOPIC, padded, nonce.toLowerCase()],
+    },
+  ]);
+  const found = (logs ?? [])[0];
+  return found?.transactionHash
+    ? { txHash: String(found.transactionHash).toLowerCase() }
+    : null;
+}
+
 /** 32-byte topic word -> lowercase 20-byte address. */
 export function addressFromTopic(topic: string): string {
   return `0x${topic.slice(-40)}`.toLowerCase();

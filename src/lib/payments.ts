@@ -14,7 +14,8 @@ import {
   requiredParamsNote,
 } from "@/lib/bazaar-discovery";
 import { installBazaarObserver } from "@/lib/bazaar-observer";
-import { extractPaymentNonce } from "@/lib/replay-guard";
+import { extractPaymentNonce, payerOfVerifiedPayload } from "@/lib/replay-guard";
+import { BASE_CHAIN, findAuthorizationUse } from "@/lib/base-rpc";
 import {
   getMenuItem,
   MENU_ITEMS,
@@ -659,6 +660,82 @@ export async function processSettlementWithRetry(
   }
   await new Promise((resolve) => setTimeout(resolve, SETTLE_RETRY_DELAY_MS));
   return httpServer.processSettlement(...args);
+}
+
+/**
+ * THE AMBIGUOUS-SETTLE RESCUE — when the retry ALSO 5xx's, ask the
+ * chain instead of guessing.
+ *
+ * The retry above closes the blip case; 2026-08-07 13:05 was the
+ * OUTAGE case: both attempts 502'd, three declines booked — and all
+ * three settles had broadcast and landed before the facilitator's
+ * origin died. The buyer was told no three times and paid three
+ * times; the store found out ten hours later from reconciliation and
+ * refunded by hand (tx 0xa6819600a1f141783d7a463046a0a62e45a8f18e5a
+ * 21c9b577721001a3669c19).
+ *
+ * The till was holding the resolving fact the whole time: the
+ * payment's own EIP-3009 nonce. Burning it emits AuthorizationUsed
+ * on-chain, so ONE bounded getLogs answers what two dead HTTP
+ * responses could not — did the money move? If it did, the sale is a
+ * sale: deliver it. If it did not, the decline stands exactly as
+ * before. Money still fails closed; this can only turn a transport
+ * failure into a delivered purchase, never a non-payment into one.
+ *
+ * Base rail only: the question is an EIP-3009 event. A Solana settle
+ * that dies this way still books a decline for reconciliation to
+ * catch — same as every settle did before today.
+ *
+ * The delay: the broadcast (if it happened) went out seconds ago and
+ * Base mines in ~2s; by the time the retry's 1.5s pause and both
+ * round trips have passed, a landed transfer is already in a block.
+ * One short wait absorbs the stragglers; then one look, no polling.
+ */
+export const RESCUE_DELAY_MS = 2500;
+
+export interface RescuedSettle {
+  transaction: string;
+  payer: string;
+  network: string;
+}
+
+export async function rescueAmbiguousSettle(
+  env: Env,
+  options: {
+    errorReason: string | undefined;
+    paymentHeader: string | undefined;
+    network: string | undefined;
+  },
+): Promise<RescuedSettle | null> {
+  if (!isTransientSettleFailure(options.errorReason)) {
+    return null;
+  }
+  if (options.network !== BASE_CHAIN) {
+    return null;
+  }
+  let payload: unknown;
+  try {
+    payload = JSON.parse(atob(options.paymentHeader ?? ""));
+  } catch {
+    return null;
+  }
+  const nonce = extractPaymentNonce(payload);
+  const payer = payerOfVerifiedPayload(payload);
+  if (!nonce || !payer) {
+    return null;
+  }
+  await new Promise((resolve) => setTimeout(resolve, RESCUE_DELAY_MS));
+  try {
+    const used = await findAuthorizationUse(env, payer, nonce);
+    if (!used) {
+      return null;
+    }
+    return { transaction: used.txHash, payer, network: BASE_CHAIN };
+  } catch {
+    // The RPC being down too resolves nothing; the decline stands and
+    // reconciliation remains the backstop it has always been.
+    return null;
+  }
 }
 
 /** What the payment gate hands to the buy handler once money has settled. */
