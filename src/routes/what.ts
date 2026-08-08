@@ -82,6 +82,7 @@ whatRoutes.get("/what", (c) => {
           "What this store is, what it costs, and how to check the signatures: an x402 general store selling small signed goods to AI agents, answered plainly, question by question.",
         path: "/what",
         bodyHtml: `<section>
+          <p class="menu-desc">${WHAT_COPY.directAnswer}</p>
           <p class="menu-desc">${WHAT_COPY.intro}</p>
           ${pairsHtml}
           <p class="menu-desc">Standing policy, in writing at <code>${escapeHtml(base)}/skill.md</code>: ${WHAT_COPY.standingPolicy}</p>
@@ -97,7 +98,7 @@ whatRoutes.get("/what", (c) => {
     );
   }
   return c.json({
-    what: `${STORE_METADATA.name}: a general store for autonomous agents, kept by a human, selling real goods and human labor for USDC over x402, on Base or Solana.`,
+    what: WHAT_COPY.directAnswer,
     for_whom: WHAT_COPY.forWhom,
     faq: pairs,
     one_question_per_shelf: longTail,

@@ -108,6 +108,21 @@ export function whatFaq(base: string): FaqPair[] {
 
 export const WHAT_COPY = {
   /** Above the questions on the HTML page. */
+  /**
+   * THE DIRECT ANSWER, and it is sized on purpose.
+   *
+   * Current answer-engine guidance: lead a key section with a short,
+   * COMPLETE answer, because that is the span a generative engine
+   * lifts when it cites. A lead-in that promises an answer further
+   * down gets summarized into nothing. This one stands alone — a
+   * reader who takes only this paragraph has the whole shape of the
+   * store and none of it wrong.
+   *
+   * One string, used by both the page and the JSON, so the answer a
+   * human reads and the answer a machine reads cannot drift apart.
+   */
+  directAnswer:
+    "scvd.store is the trust layer of the x402 economy: a store that sells independent signed observation of what other endpoints, artifacts and payments actually did. Every verdict is ed25519-signed, dated, and anyone can verify one offline without asking us. It is also a general store for agents, kept by a human, paid in USDC over x402 on Base or Solana.",
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:

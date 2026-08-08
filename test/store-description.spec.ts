@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
+import { WHAT_COPY } from "@/store/copy/what";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -48,5 +49,42 @@ describe("the store describes itself", () => {
     expect(text).toContain("x402");
     expect(text).toContain("verify");
     expect(text).toContain("half a cent");
+  });
+});
+
+/**
+ * THE DIRECT ANSWER.
+ *
+ * Answer-engine guidance: lead a key section with a short, COMPLETE
+ * answer, because that is the span a generative engine lifts. A
+ * lead-in that promises an answer further down gets summarized into
+ * nothing.
+ *
+ * Guarded rather than trusted, because the failure mode is silent —
+ * copy drifts long, or the page and the JSON get edited apart and
+ * nobody notices they now say different things to different readers.
+ */
+describe("/what leads with an answer that stands alone", () => {
+  it("is sized for the span an engine lifts, and carries the position", () => {
+    const words = WHAT_COPY.directAnswer.trim().split(/\s+/).length;
+    expect(words, "the direct answer has drifted outside the 40-60 word band").
+      toBeGreaterThanOrEqual(40);
+    expect(words).toBeLessThanOrEqual(60);
+    expect(WHAT_COPY.directAnswer).toContain("trust layer of the x402 economy");
+    // Complete on its own: what it sells, what proves it, how you pay.
+    expect(WHAT_COPY.directAnswer).toContain("signed observation");
+    expect(WHAT_COPY.directAnswer).toContain("verify");
+    expect(WHAT_COPY.directAnswer).toContain("x402");
+  });
+
+  it("says the same thing to a human and to a machine", async () => {
+    const json = (await (
+      await SELF.fetch(`${BASE}/what`, { headers: { Accept: "application/json" } })
+    ).json()) as Record<string, unknown>;
+    const html = await (
+      await SELF.fetch(`${BASE}/what`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(json.what).toBe(WHAT_COPY.directAnswer);
+    expect(html).toContain("trust layer of the x402 economy");
   });
 });
