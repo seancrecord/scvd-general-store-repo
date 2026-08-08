@@ -69,6 +69,7 @@ import {
   getPaymentStack,
   minimumUsdcForPath,
   processSettlementWithRetry,
+  rescueAmbiguousSettle,
   tipFromPaid,
 } from "@/lib/payments";
 import type { SettledPayment } from "@/lib/payments";
@@ -675,30 +676,68 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     throw error;
   }
   await persistBazaarObservations(c.env, c.req.path);
-  if (!settlement.success) {
-    // Verified but didn't settle: same instrument, settle-side reason.
-    await recordPaymentDecline(
-      c.env,
-      c.req.path,
-      `settle:${settlement.errorReason}`,
-      gateSignals(c),
-    ).catch(() => undefined);
-    if (!settlement.response.isHtml && isRecord(settlement.response.body)) {
-      return respondWithInstructions(c, {
-        ...settlement.response,
-        body: {
-          ...settlement.response.body,
-          payment_declined: {
-            reason: settlement.errorReason,
-            ...(settlement.errorMessage
-              ? { message: settlement.errorMessage }
-              : {}),
-            note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+  /**
+   * One settled outcome for both roads in. The facilitator's success
+   * fills it directly; a transport-dead settle gets ONE chance at the
+   * ambiguous-settle rescue (payments.ts) — the chain is asked whether
+   * the authorization actually burned, because on 2026-08-07 three
+   * "declines" turned out to be landed transfers and a real buyer paid
+   * three times for nothing. A rescued settle carries no facilitator
+   * headers (there is no signed PAYMENT-RESPONSE to relay — the origin
+   * died); the certificate in the body, naming the found transaction,
+   * is the receipt that survives.
+   */
+  let settled: {
+    transaction: string;
+    network?: string;
+    payer?: string;
+    headers: Record<string, string>;
+  } | null = null;
+  if (settlement.success) {
+    settled = {
+      transaction: settlement.transaction,
+      headers: settlement.headers,
+      ...(settlement.network ? { network: settlement.network } : {}),
+      ...(settlement.payer ? { payer: settlement.payer } : {}),
+    };
+  } else {
+    const rescued = await rescueAmbiguousSettle(c.env, {
+      errorReason: settlement.errorReason,
+      paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
+      network: result.paymentRequirements.network,
+    });
+    if (!rescued) {
+      // Verified but didn't settle — and the chain agrees, or the
+      // question didn't apply. Same instrument, settle-side reason.
+      await recordPaymentDecline(
+        c.env,
+        c.req.path,
+        `settle:${settlement.errorReason}`,
+        gateSignals(c),
+      ).catch(() => undefined);
+      if (!settlement.response.isHtml && isRecord(settlement.response.body)) {
+        return respondWithInstructions(c, {
+          ...settlement.response,
+          body: {
+            ...settlement.response.body,
+            payment_declined: {
+              reason: settlement.errorReason,
+              ...(settlement.errorMessage
+                ? { message: settlement.errorMessage }
+                : {}),
+              note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+            },
           },
-        },
-      });
+        });
+      }
+      return respondWithInstructions(c, settlement.response);
     }
-    return respondWithInstructions(c, settlement.response);
+    settled = {
+      transaction: rescued.transaction,
+      network: rescued.network,
+      payer: rescued.payer,
+      headers: {},
+    };
   }
   if (nonce) {
     await recordSpentNonce(c.env, nonce, c.req.path);
@@ -713,8 +752,8 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   };
   // The rail, recorded at the till. Everything gated passes here,
   // including the penny pages that mint no certificate to carry it.
-  if (settlement.network) {
-    settlementSignals.network = settlement.network;
+  if (settled.network) {
+    settlementSignals.network = settled.network;
   }
   // The payer, from the facilitator if it returned one and from the
   // signed authorization if it did not. THIS MATTERS MORE THAN IT
@@ -726,7 +765,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // authorization is the account that signed and is about to be
   // debited; when both are present they are the same address.
   const payer =
-    settlement.payer ?? payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
+    settled.payer ?? payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
   if (payer) {
     settlementSignals.payer = payer;
   }
@@ -735,14 +774,14 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const payment: SettledPayment = {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
-    transaction: settlement.transaction,
-    settleHeaders: settlement.headers,
+    transaction: settled.transaction,
+    settleHeaders: settled.headers,
   };
-  if (settlement.network) {
-    payment.network = settlement.network;
+  if (settled.network) {
+    payment.network = settled.network;
   }
-  if (settlement.payer) {
-    payment.payer = settlement.payer;
+  if (settled.payer) {
+    payment.payer = settled.payer;
   }
   if (payment.network === SOLANA_NETWORK) {
     // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
@@ -768,7 +807,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    */
   const deliveryKey = await openDeliveryIntent(c.env, {
     path: c.req.path,
-    ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
+    ...(settled.transaction ? { transaction: settled.transaction } : {}),
     ...(payer ? { payer } : {}),
     paid_usdc: paidUsdc,
     settled_at: new Date().toISOString(),
@@ -802,12 +841,12 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * to attach a receipt would break the buyer's proof of payment in
    * order to decorate it.
    */
-  const outHeaders = await withReceiptHeader(c.env, settlement.headers, {
+  const outHeaders = await withReceiptHeader(c.env, settled.headers, {
     resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`,
     ...(payer ? { payer } : {}),
     // The rail that actually settled; Base only as the pre-second-rail fallback.
-    network: settlement.network ?? BASE_NETWORK,
-    ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
+    network: settled.network ?? BASE_NETWORK,
+    ...(settled.transaction ? { transaction: settled.transaction } : {}),
     nowSeconds: Math.floor(Date.now() / 1000),
   });
   for (const [key, value] of Object.entries(outHeaders)) {
@@ -831,7 +870,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             idempotencyPayer,
             idempotencyKey,
             parsed,
-            settlement.transaction,
+            settled.transaction,
           );
         }
       } catch {
