@@ -16,7 +16,14 @@ import { randomBytes } from "node:crypto";
  * deliberately.
  */
 
-export const SCHEMA_VERSION = "0.2";
+/**
+ * The vocabulary an entry was written under, so a reader can tell
+ * which fields COULD be present without probing for them. It moves on
+ * additive growth too, not only on breaks — a frozen string while the
+ * field set triples tells a reader nothing. Old values are accepted
+ * forever; anything that would break an existing reader is a v1.
+ */
+export const SCHEMA_VERSION = "0.6";
 
 export const EVENTS = [
   "trial_started",

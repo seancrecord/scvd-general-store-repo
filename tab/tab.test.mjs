@@ -1104,3 +1104,26 @@ test("the rescue lane is not a way around the quarantine", () => {
   const mine = captureEvent(path, { tool_name: `x${"y".repeat(200)}`, captured_text: "ahrefs $29 the 15th" });
   assert.equal(mine.entry.captured_text, "ahrefs $29 the 15th");
 });
+
+test("the burn number never ships bare — including when the file is torn", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  appendFileSync(path, "{ this is not json\n", "utf8");
+  // stack_audit already said so. burn_rollup did not — and the rollup
+  // is the surface whose whole stated discipline is that the figure
+  // arrives with what fed it AND what it cannot see. A torn line is
+  // precisely the second thing.
+  assert.equal(stackAudit({}, path).bad_lines, 1);
+  const coverage = burnRollup({}, path).coverage;
+  assert.equal(coverage.bad_lines, 1);
+  assert.ok(coverage.bad_lines_note.includes("skipped, not silently repaired"));
+  // And a clean file says nothing about it rather than reporting zero
+  // — an absent problem is not a statistic.
+  assert.equal(burnRollup({}, freshPath()).coverage.bad_lines, undefined);
+  // The entry itself carries the vocabulary it was written under.
+  assert.equal(readEvents(path).events[0].schema_version, "0.6");
+});
