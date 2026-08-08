@@ -52,7 +52,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402:
       "Five dollars. The looking is free and always will be — what costs money is the part where somebody else has to believe you.",
     constraints: [
-      "Give the endpoint in the url query parameter: https, default port, the URL a buyer would GET expecting a 402",
+      "Give the endpoint in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
       "One GET at one moment, signed; never a monitor — the week-long look is The Night Watch",
       "The criteria are the free preflight's published battery (GET /api/preflight/v1); the audit runs those checks and no others",
       "We refuse our own hostname — an audit of ourselves signed by ourselves would be the instrument vouching for itself",
@@ -83,7 +83,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402:
       "Five dollars for the week — seventy-one cents a day, near enough. One look each day, signed. Deploy something on a Tuesday that quietly breaks your challenge, and this is the page that knows. Our own missed days are on it too.",
     constraints: [
-      "The url query parameter (https, default port, the URL a buyer would GET expecting a 402)",
+      "The url query parameter (https, default port, on the public internet, the URL a buyer would GET expecting a 402)",
       "One pass per day for seven days, each signed alone; first pass on the store's next hourly rounds",
       "The checks are the free preflight's published battery (GET /api/preflight/v1) — same law, daily",
       "Days the store misses are derived at read time and published against us in the history",

@@ -73,7 +73,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       format: "uri",
       description:
-        "The x402 endpoint to audit: https, default port, the URL a buyer would GET expecting a 402. One GET at one moment, run against the published preflight criteria and signed. We refuse our own hostname.",
+        "The x402 endpoint to audit: https, default port, on the public internet, the URL a buyer would GET expecting a 402. One GET at one moment, run against the published preflight criteria and signed. We refuse our own hostname.",
     };
     required.push("url");
   }
@@ -82,7 +82,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       format: "uri",
       description:
-        "Your own x402 endpoint: https, default port. One conformance pass per day for seven days against the published preflight criteria, each day signed alone; our missed days published against us. We refuse our own hostname.",
+        "Your own x402 endpoint: https, default port, on the public internet. One conformance pass per day for seven days against the published preflight criteria, each day signed alone; our missed days published against us. We refuse our own hostname.",
     };
     required.push("url");
   }

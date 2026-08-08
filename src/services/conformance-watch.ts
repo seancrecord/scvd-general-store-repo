@@ -1,6 +1,8 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { probeOnce, runChecks } from "@/services/preflight";
+import { ProbeTargetRefused } from "@/lib/probe-target";
+import { REFUSED_CHECK } from "@/services/standing-watch";
 import { sweepWatches } from "@/services/watch-sweep";
 import type { Env } from "@/types";
 
@@ -43,7 +45,11 @@ const MIN_PASS_SPACING_MS = 23 * 3600_000;
 
 export interface ConformancePass {
   at: string;
-  verdict: "ready" | "not_ready" | "unreachable";
+  /**
+   * `refused` is OURS, not theirs — see standing-watch. No request was
+   * made, so there is nothing to say about the endpoint.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "refused";
   /** HTTP status seen, absent when unreachable. */
   status?: number;
   /** Names of failed checks, empty when ready. */
@@ -134,8 +140,20 @@ async function passOnce(
     failed = ran.checks.filter((check) => !check.ok).map((check) => check.name);
     advisories = ran.advisories.map((advisory) => advisory.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
-  } catch {
-    verdict = "unreachable";
+  } catch (error) {
+    /*
+     * REFUSED IS NOT UNREACHABLE. probeOnce carries this store's own
+     * probe-target law and throws before dialling a private, loopback
+     * or link-local target. Filing that under "unreachable" would
+     * print our policy as a fact about the buyer's endpoint, on a row
+     * we then sign and they may show to somebody.
+     */
+    if (error instanceof ProbeTargetRefused) {
+      verdict = "refused";
+      failed = [REFUSED_CHECK];
+    } else {
+      verdict = "unreachable";
+    }
   }
   const body: Pick<
     ConformancePass,
@@ -191,6 +209,8 @@ export interface ConformanceWatchHistory {
     ready: number;
     not_ready: number;
     unreachable: number;
+    /** Passes this store declined to make. Ours, not theirs. */
+    refused: number;
     /**
      * The product's one derived judgment, and it is arithmetic, not
      * opinion: did the set of failed checks CHANGE between reachable
@@ -231,7 +251,7 @@ export async function readConformanceWatch(
     0,
     Math.floor((end - Date.parse(record.started_at)) / (24 * 3600_000)),
   );
-  const tally = { ready: 0, not_ready: 0, unreachable: 0 };
+  const tally = { ready: 0, not_ready: 0, unreachable: 0, refused: 0 };
   // Drift is plain set arithmetic over the signed rows — a reader can
   // recompute it without trusting this summary: sort each reachable
   // pass's failed names and compare across the week. Unreachable
@@ -239,7 +259,7 @@ export async function readConformanceWatch(
   const readouts = new Set<string>();
   for (const pass of record.passes) {
     tally[pass.verdict] += 1;
-    if (pass.verdict !== "unreachable") {
+    if (pass.verdict !== "unreachable" && pass.verdict !== "refused") {
       readouts.add(JSON.stringify([...pass.failed].sort()));
     }
   }

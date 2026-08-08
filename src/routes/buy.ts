@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
+import { checkProbeTarget } from "@/lib/probe-target";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import {
   COFFEE_WIN_CAP,
@@ -169,11 +170,15 @@ const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     );
   }
   const url = new URL(raw);
-  if (url.protocol !== "https:") {
-    return c.json(
-      { error: "https only. A payment endpoint on plain http already fails the first check." },
-      400,
-    );
+  /*
+   * The shared law, which this door was missing entirely: it checked
+   * https and our own hostname and nothing else — not even the port,
+   * which both other probe doors have always refused. Nothing is
+   * charged for a refusal here.
+   */
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
   }
   if (url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()) {
     return c.json(
@@ -215,23 +220,9 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     );
   }
   const url = new URL(raw);
-  if (url.protocol !== "https:") {
-    return c.json(
-      {
-        error:
-          "https only. A payment endpoint on plain http is already failing a check no probe needs to run. Nothing charged.",
-      },
-      400,
-    );
-  }
-  if (url.port !== "" && url.port !== "443") {
-    return c.json(
-      {
-        error:
-          "Default https port only — this probe does not dial custom ports. Nothing charged.",
-      },
-      400,
-    );
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
   }
   if (
     url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()

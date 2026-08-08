@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
+import { ProbeTargetRefused } from "@/lib/probe-target";
 import {
   PREFLIGHT_VERSION,
   probeOnce,
@@ -67,7 +68,13 @@ export interface ServiceAuditObservation {
   url: string;
   observed_at: string;
   criteria: string;
-  verdict: "ready" | "not_ready" | "unreachable";
+  /**
+   * `refused` is a statement about US: the target failed this store's
+   * published probe-target law and no request was made. It is in the
+   * union so a paid, signed report can never call our own refusal a
+   * fact about the buyer's network.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "refused";
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   /** Stable digest of the observed facts above. */
@@ -129,14 +136,37 @@ export async function performServiceAudit(
     advisories = ran.advisories;
     verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
   } catch (error) {
-    verdict = "unreachable";
-    checks = [
-      {
-        name: "reachable",
-        ok: false,
-        detail: `the probe could not complete: ${String(error)}. A fact about the network path between us and that host at this moment — it does not prove the endpoint is down, and a buyer elsewhere may reach it fine.`,
-      },
-    ];
+    /*
+     * THIS IS THE ARTIFACT THAT MOST HAD TO STOP SAYING "UNREACHABLE".
+     * A service audit is paid, signed, and bought precisely so it can
+     * be handed to somebody else. Writing "a fact about the network
+     * path" over a target WE declined to dial would put a false
+     * sentence under this store's own key, in the one artifact whose
+     * whole value is that a stranger can trust it.
+     *
+     * The buy door refuses these before money moves, so this branch
+     * should never run. It is here so that if it ever does, the report
+     * is still true.
+     */
+    if (error instanceof ProbeTargetRefused) {
+      verdict = "refused";
+      checks = [
+        {
+          name: "probe-target-refused",
+          ok: false,
+          detail: `no request was made: ${error.message} This is a statement about this store's published probe-target law, NOT an observation about that endpoint — we did not look, so we report nothing about what is there.`,
+        },
+      ];
+    } else {
+      verdict = "unreachable";
+      checks = [
+        {
+          name: "reachable",
+          ok: false,
+          detail: `the probe could not complete: ${String(error)}. A fact about the network path between us and that host at this moment — it does not prove the endpoint is down, and a buyer elsewhere may reach it fine.`,
+        },
+      ];
+    }
     advisories = [];
   }
 
