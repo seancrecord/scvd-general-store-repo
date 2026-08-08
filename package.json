@@ -45,7 +45,7 @@
     "@types/node": "^26.1.1",
     "@x402/fetch": "^2.19.0",
     "dotenv": "^17.4.2",
-    "typescript": "^5.8.3",
+    "typescript": "^7.0.2",
     "viem": "^2.55.8",
     "vitest": "^4.1.0",
     "wrangler": "^4.118.0"
