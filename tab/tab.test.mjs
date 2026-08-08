@@ -610,29 +610,92 @@ test("the rollup groups, annualizes, and replays the trajectory", () => {
   }
 });
 
-test("the variability window is computed from money seen but not attributed", () => {
+test("the variability window divides like with like, and keeps its history", () => {
   const path = freshPath();
   logToolEvent(
     { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
       price: { amount: 90, currency: "USD", period: "month" }, source: "mail_sweep" },
     path,
   );
-  // Before any sweep reports, the tab says it does not know.
-  assert.equal(burnRollup({}, path).coverage.variability_pct, null);
+  // Before any sweep: null, never a fabricated zero.
+  const cold = burnRollup({}, path).coverage;
+  assert.equal(cold.variability_pct, null);
+  assert.ok(cold.variability_basis.includes("Null, not zero"));
+
+  /**
+   * RED TEAM F1: the first cut divided monthly BURN (a rate) by a sum
+   * of absolute charges over an arbitrary span, and the old test hid
+   * it by picking numbers that looked plausible. Both sides now come
+   * from the SWEEP'S OWN WINDOW: $270 placed, $30 not, over the same
+   * three months → 10%, and it means what it says.
+   */
   recordCoverage(
     {
       addresses_swept: ["keeper@example.com"],
-      matched: 1,
-      unmatched_transactional: [{ amount: 10, currency: "USD", sender: "noreply@unknown.io" }],
+      window_from: "2026-05-01T00:00:00.000Z",
+      window_to: "2026-08-01T00:00:00.000Z",
+      matched: 3,
+      attributed_amount: 270,
+      unmatched_transactional: [{ amount: 30, currency: "USD", sender: "noreply@unknown.io" }],
     },
     path,
   );
   const coverage = burnRollup({}, path).coverage;
-  // 10 unattributed against 90 attributed = 10%.
   assert.equal(coverage.variability_pct, 10);
+  assert.ok(coverage.variability_basis.includes("Same window, same units"));
   assert.equal(coverage.unmatched_transactional_count, 1);
   assert.equal(coverage.sweep_stale, "no");
   assert.ok(coverage.what_this_cannot_see.length >= 3);
+
+  // F2: a second sweep does not erase the first — the number has to
+  // be watchable over time or it cannot be chased toward 2%.
+  recordCoverage(
+    {
+      window_from: "2026-08-01T00:00:00.000Z",
+      window_to: "2026-08-08T00:00:00.000Z",
+      attributed_amount: 396,
+      unmatched_transactional: [{ amount: 4, currency: "USD", sender: "noreply@unknown.io" }],
+    },
+    path,
+  );
+  const after = burnRollup({}, path).coverage;
+  assert.equal(after.variability_pct, 1);
+  assert.equal(after.variability_history.length, 2);
+  assert.deepEqual(after.variability_history.map((h) => h.pct), [10, 1]);
+});
+
+test("coverage records on a fresh install, before anything is logged", () => {
+  // F4: recordCoverage used a bare writeFileSync while appendEvent
+  // made its directory — so reporting coverage first threw ENOENT.
+  const path = join(mkdtempSync(join(tmpdir(), "tab-fresh-")), "nested", "tab.jsonl");
+  const result = recordCoverage({ attributed_amount: 0, unmatched_transactional: [] }, path);
+  assert.equal(result.recorded, true);
+});
+
+test("capture's last resort keeps every failure, distinctly", () => {
+  const path = freshPath();
+  // F3/F5: two unshapeable captures in one day used to collide on a
+  // derived dedupe key — the second silently dropped by the lane
+  // whose whole contract is that nothing is lost — and both wore the
+  // same name, collapsing distinct failures into one pseudo-tool.
+  const a = captureToolEvent({ tool_name: "x".repeat(200), captured_text: "first" }, path);
+  const b = captureToolEvent({ tool_name: "y".repeat(200), captured_text: "second" }, path);
+  assert.equal(a.logged, true);
+  assert.equal(b.logged, true);
+  const { events } = readEvents(path);
+  const rescued = events.filter((e) => e.source === "capture" && e.captured_text);
+  assert.equal(rescued.length, 2);
+  assert.equal(new Set(rescued.map((e) => e.dedupe_key)).size, 2);
+  assert.deepEqual(rescued.map((e) => e.captured_text), ["first", "second"]);
+});
+
+test("the escape hatch takes the coverage record too", () => {
+  const path = freshPath();
+  logToolEvent({ ...BASE, event: "trial_started", trial_ends: soon(7) }, path);
+  recordCoverage({ attributed_amount: 1, unmatched_transactional: [] }, path);
+  // F6: a partial export is a partial escape.
+  const out = exportTab({ format: "jsonl" }, path);
+  assert.ok(out.coverage_jsonl.includes("attributed_amount"));
 });
 
 test("silence is a question only where the heartbeat was seen first", () => {

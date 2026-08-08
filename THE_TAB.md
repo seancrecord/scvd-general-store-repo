@@ -143,11 +143,21 @@ the residue is MEASURED rather than disclaimed.
 
 ### The variability window
 
-`unattributed_amount / (observed + unattributed)`, published on every
-rollup. Computable from the sweep ALONE — you do not need to know
-what was missed, only how much money moved that could not be placed.
-Null until a sweep has ever reported, because a made-up zero would be
-the worst answer available. The keeper's target is **< 2%**.
+`unattributed / (attributed + unattributed)`, **both measured inside
+the sweep's own window**, published on every rollup and kept as a
+history so it can be watched moving. Computable from the sweep ALONE
+— you do not need to know what was missed, only how much money moved
+that could not be placed. Null until a sweep has ever reported,
+because a made-up zero would be the worst answer available. The
+keeper's target is **< 2%**.
+
+CORRECTED 2026-08-08 (red team, second pass): the first cut divided
+monthly BURN — a rate — by a sum of absolute charges over an
+arbitrary span, so a six-month sweep finding $600 against $300/mo
+read "67%" and measured nothing. The test shipped alongside it
+enshrined the error with numbers chosen to look plausible. Both sides
+now come from one window in one unit, and the sweep reports the
+window it covered.
 
 ### Structurally unaccountable, stated in their own words
 

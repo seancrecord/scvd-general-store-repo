@@ -408,20 +408,43 @@ export function captureEvent(path, input) {
     draft.incomplete = incomplete;
   }
   const result = appendEvent(path, draft);
-  return result.logged || result.duplicate
-    ? { ...result, incomplete }
-    : // Last resort: something still refused it. Record the raw text
-      // so the words survive even when the shape did not.
-      appendEvent(path, {
-        tool_name: "unparsed-capture",
-        event: "adopted",
-        problem_solved: "(capture could not be shaped; raw text kept)",
-        category: "other",
-        source: "capture",
-        captured_text: String(input?.captured_text ?? JSON.stringify(input)).slice(0, 2000),
-        incomplete: ["everything"],
-        notes: result.problems?.join(" "),
-      });
+  if (result.logged || result.duplicate) {
+    return { ...result, incomplete };
+  }
+  /**
+   * LAST RESORT — and the two bugs the red team found here, because
+   * "never refuses" was false in exactly this branch (F3, F5).
+   *
+   * F3: the fallback derived its dedupe key from tool+event+DAY, so
+   * the SECOND unparseable capture in a day collided with the first
+   * and was dropped as a duplicate — silently, by the one lane whose
+   * whole contract is that nothing is ever lost.
+   *
+   * F5: every fallback shared the name "unparsed-capture", so all of
+   * them replayed into a single pseudo-tool and distinct failures
+   * became one indistinguishable blob.
+   *
+   * Both fixed by giving each rescue its own identity: a unique
+   * dedupe key, and a name carrying the fragment that produced it.
+   */
+  const raw = String(input?.captured_text ?? JSON.stringify(input ?? {})).slice(0, 2000);
+  const slug = String(input?.tool_name ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  return appendEvent(path, {
+    tool_name: slug ? `unparsed-${slug}` : "unparsed-capture",
+    event: "adopted",
+    problem_solved: "(capture could not be shaped; raw text kept)",
+    category: "other",
+    source: "capture",
+    captured_text: raw,
+    dedupe_key: `unparsed:${randomBytes(8).toString("hex")}`,
+    incomplete: ["everything"],
+    notes: result.problems?.join(" ")?.slice(0, 2000),
+  });
 }
 
 /** The date an event claims for itself: the retroactive claim when
@@ -616,8 +639,13 @@ export function quietTools(state, cyclesAllowed = 2) {
  * posture is to convert uncertainty into a cheap question rather
  * than a confident wrong answer.
  */
+const ALIAS_SCAN_CAP = 200;
+
 export function possibleAliases(state) {
-  const names = [...state.tools.keys()];
+  // Capped (F7): O(n^2) edit distance on every audit is fine at a
+  // builder's scale and is not fine unbounded. An unnamed cap is a
+  // silent one, so it is named and reported when it binds.
+  const names = [...state.tools.keys()].slice(0, ALIAS_SCAN_CAP);
   const pairs = [];
   for (let i = 0; i < names.length; i += 1) {
     for (let j = i + 1; j < names.length; j += 1) {

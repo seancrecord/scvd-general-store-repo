@@ -1,4 +1,10 @@
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+} from "node:fs";
+import { dirname } from "node:path";
 import {
   appendEvent,
   burnAt,
@@ -126,14 +132,26 @@ export function captureToolEvent(input, path = defaultTabPath()) {
  * sweep look like a cancelled tool.
  */
 export function recordCoverage(input, path = defaultTabPath()) {
-  const coveragePath = `${path}.coverage.json`;
+  /**
+   * APPENDED, NOT OVERWRITTEN (red team F2). The first cut kept a
+   * single slot — a gauge with no history, which cannot answer the
+   * only question the keeper asked of it: is the number moving toward
+   * 2%? Coverage is a time series or it is decoration.
+   */
   const record = {
     at: new Date().toISOString(),
     addresses_swept: Array.isArray(input?.addresses_swept)
       ? input.addresses_swept
       : [],
-    swept_through: input?.swept_through ?? null,
+    /**
+     * The sweep's WINDOW, which F1 proved load-bearing: unattributed
+     * money means nothing without the span it was seen over.
+     */
+    window_from: input?.window_from ?? null,
+    window_to: input?.window_to ?? new Date().toISOString(),
     matched: Number.isFinite(input?.matched) ? input.matched : 0,
+    /** Attributed spend IN THIS WINDOW, for a like-for-like ratio. */
+    attributed_amount: Number(input?.attributed_amount) || 0,
     unmatched_transactional: Array.isArray(input?.unmatched_transactional)
       ? input.unmatched_transactional.map((row) => ({
           amount: Number(row?.amount) || 0,
@@ -142,20 +160,58 @@ export function recordCoverage(input, path = defaultTabPath()) {
         }))
       : [],
   };
-  writeFileSync(coveragePath, JSON.stringify(record, null, 2), "utf8");
+  mkdirSync(dirname(path), { recursive: true }); // F4: fresh install
+  appendFileSync(`${path}.coverage.jsonl`, `${JSON.stringify(record)}\n`, "utf8");
   return {
     recorded: true,
     unattributed_count: record.unmatched_transactional.length,
-    note: "Coverage is the instrument's own record, kept beside the tab and never mixed into it.",
+    note: "Coverage is the instrument's own record — appended beside the tab, never mixed into it, so the gap can be watched over time.",
   };
 }
 
-function readCoverage(path) {
+/** Every sweep ever reported, oldest first. */
+function readCoverageHistory(path) {
   try {
-    return JSON.parse(readFileSync(`${path}.coverage.json`, "utf8"));
+    return readFileSync(`${path}.coverage.jsonl`, "utf8")
+      .split("\n")
+      .filter((line) => line.trim() !== "")
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
   } catch {
-    return null;
+    return [];
   }
+}
+
+/**
+ * THE VARIABILITY WINDOW, in units that divide (red team F1).
+ *
+ * The first cut divided a monthly RATE by a sum of ABSOLUTE charges
+ * over an arbitrary span — a six-month sweep finding $600 against
+ * $300/mo produced "67%", which measures nothing. Worse, the test
+ * enshrined it with numbers chosen to look plausible.
+ *
+ * Both sides are now normalized to dollars-per-month across the
+ * sweep's own window: unattributed money the sweep saw, over all
+ * money the sweep saw. Same window, same units, and the ratio finally
+ * means what the name claims — the share of observed spend the tab
+ * could not place.
+ */
+function variabilityOf(sweep) {
+  if (!sweep) return null;
+  const unattributed = (sweep.unmatched_transactional ?? []).reduce(
+    (sum, row) => sum + (row.amount || 0),
+    0,
+  );
+  const attributed = sweep.attributed_amount || 0;
+  const total = attributed + unattributed;
+  if (total === 0) return null;
+  return Math.round((unattributed / total) * 1000) / 10;
 }
 
 export function checkBeforeSignup({ tool_name, category }, path = defaultTabPath()) {
@@ -312,12 +368,12 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
  * decline desk.
  */
 function coverageBlock(current, path) {
-  const swept = readCoverage(path);
+  const history = readCoverageHistory(path);
+  const swept = history[history.length - 1] ?? null;
   const unattributed = (swept?.unmatched_transactional ?? []).reduce(
     (sum, row) => sum + (row.amount || 0),
     0,
   );
-  const observed = current.monthly_burn.amount;
   const incompleteEntries = current.active.filter(
     (tool) => tool.history.some((h) => h.incomplete),
   ).length;
@@ -341,12 +397,15 @@ function coverageBlock(current, path) {
      * know WHAT was missed, only how much moved that could not be
      * placed. Null until a sweep has ever reported.
      */
-    variability_pct:
+    variability_pct: variabilityOf(swept),
+    variability_basis:
       swept === null
-        ? null
-        : observed + unattributed === 0
-          ? 0
-          : Math.round((unattributed / (observed + unattributed)) * 1000) / 10,
+        ? "No sweep has ever reported. Null, not zero — a fabricated zero would be the worst answer available."
+        : `Unattributed money over all money the sweep saw, both within ${swept.window_from ?? "the sweep's start"} → ${swept.window_to}. Same window, same units.`,
+    variability_history: history.slice(-12).map((entry) => ({
+      at: entry.at,
+      pct: variabilityOf(entry),
+    })),
     what_this_cannot_see: [
       "A tool that never emailed, never billed, and was never mentioned.",
       "A seat somebody else pays for.",
@@ -598,8 +657,16 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
     return { format, content: "", note: "The tab is empty — nothing logged yet." };
   }
   const raw = readFileSync(path, "utf8");
+  // F6: the escape hatch takes everything, including the instrument's
+  // own record. A partial export is a partial escape.
+  let coverage = null;
+  try {
+    coverage = readFileSync(`${path}.coverage.jsonl`, "utf8");
+  } catch {
+    coverage = null;
+  }
   if (format === "jsonl") {
-    return { format, content: raw };
+    return { format, content: raw, ...(coverage ? { coverage_jsonl: coverage } : {}) };
   }
   const { events } = readEvents(path);
   const columns = [
