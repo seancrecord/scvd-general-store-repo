@@ -99,6 +99,21 @@ export async function closeDeliveryIntent(
 }
 
 /**
+ * Is this settle's delivery still owed? The paid retry's gate
+ * question (2026-08-08): an OPEN row means money moved and goods
+ * never left, which is the one state where a spent nonce should buy
+ * something instead of a refusal.
+ */
+export async function getOpenDeliveryIntent(
+  env: Env,
+  transaction: string,
+): Promise<{ key: string; intent: DeliveryIntent } | null> {
+  const key = KV_KEYS.deliveryIntent(transaction);
+  const intent = await env.ORDERS.get<DeliveryIntent>(key, "json");
+  return intent ? { key, intent } : null;
+}
+
+/**
  * Walk the open intents and separate "still in flight" from "took the
  * money and delivered nothing".
  *
