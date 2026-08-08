@@ -119,6 +119,66 @@ published figure: unresolved commitments (survivorship),
 non-contributing builders (population bias), and any single report's
 truth (gaming — sample sizes ride every number).
 
+## v0.3 — the coverage pass (built 2026-08-08)
+
+The keeper's ruling: *"'some will be missed' is not an acceptable
+answer. the question is 'what is missed and why' then how do we
+account for it."* Correct, and the same discipline the store applies
+to `unexplained: 0` on books that balanced while a buyer got nothing.
+So the failure modes are enumerated, each with its mitigation, and
+the residue is MEASURED rather than disclaimed.
+
+### The chain, and its eight break points
+
+| # | Break | Why | Accounted for by |
+|---|---|---|---|
+| 1 | Vendor never emits | OAuth-only signup, API-key tools, free tiers, a colleague's team seat | OAuth grant list; password-manager inventory; card reconciliation for anything paid |
+| 2 | Emits to a channel we don't read | Second address, `+tag` aliases, in-app only, SMS | `addresses_swept` is published; the ones not covered are nameable |
+| 3 | Destroyed before sweep | Hard-deleted, spam-purged, retention rules | Recurring receipts re-announce anything that bills, next cycle |
+| 4 | Sweep doesn't run | Agent down, token expired, cron missed | `last_sweep_age_days` + `sweep_stale` on every audit |
+| 5 | Sweep runs, query misses | Unusual sender, foreign language, odd subject | `unmatched_transactional_count` — the self-measuring blind spot |
+| 6 | Extraction lies | Price in an image, "ends soon", **annual read as monthly** | `confidence: inferred`; the annual/monthly slip is a 12x error in the only number that matters |
+| 7 | Write is wrong | Dedupe failure; "openai" vs "openai-llc" | `dedupe_key` on write; `possible_aliases` surfaced, never auto-merged |
+| 8 | No signal exists | Stopped using but still paying; terms changed at same price | Nothing can see it. Stated, not mitigated |
+
+### The variability window
+
+`unattributed_amount / (observed + unattributed)`, published on every
+rollup. Computable from the sweep ALONE — you do not need to know
+what was missed, only how much money moved that could not be placed.
+Null until a sweep has ever reported, because a made-up zero would be
+the worst answer available. The keeper's target is **< 2%**.
+
+### Structurally unaccountable, stated in their own words
+
+A tool that never emailed, never billed, and was never mentioned · a
+seat somebody else pays for · paying for something you stopped using.
+
+### What v0.3 shipped
+
+`adopted` (free tools — v0.2 forced a fake trial with a phantom
+conversion) · the always-succeeds capture lane with gaps named, never
+invented · `dedupe_key` so a re-found receipt is not a second charge ·
+the coverage block's countable facts · the silence detector (only
+where a heartbeat was seen first — elsewhere silence says nothing) ·
+`possible_aliases` · and the rollup: category subtotals, annualized,
+idle share, trajectory replayed from the event log, and an anonymized
+shareable badge that names counts and never vendors.
+
+### Still open, and whose
+
+- **The mail sweep itself** — an agent routine over a connector the
+  agent already holds; the tab needs no mail code, which is the point.
+  Owner: CV.
+- **Card reconciliation** — the `unexplained_charge` analogue of
+  `undelivered_sale`, and the only true ground truth for burn.
+  Owner: keeper's call on the source.
+- **The historical six-month pass** — the tab supports it today
+  (retroactive entries, dedupe); the sweep that drives it does not
+  exist yet. Owner: CV.
+- Until a sweep reports, `variability_pct` is `null` and the burn
+  figure is honest about resting on hand-logged entries alone.
+
 ## Design principles (read first)
 
 1. Append-only event log, not a database. Every state change appends

@@ -11,7 +11,10 @@ import {
   validateEvent,
 } from "./store.mjs";
 import {
+  burnRollup,
+  captureToolEvent,
   checkBeforeSignup,
+  recordCoverage,
   contributeDelta,
   exportTab,
   logToolEvent,
@@ -494,4 +497,181 @@ test("a corrupt line is counted, not fatal, and the audit says so", () => {
   const audit = stackAudit({}, path);
   assert.equal(audit.bad_lines, 1);
   assert.ok(audit.bad_lines_note.includes("yours"));
+});
+
+/**
+ * v0.3 — the gap-closing pass. Each test below is one row of the
+ * coverage enumeration made mechanical.
+ */
+
+test("adopted logs a free tool, keeps it out of burn, and refuses a price", () => {
+  const path = freshPath();
+  const ok = logToolEvent(
+    {
+      tool_name: "scvd-tab",
+      event: "adopted",
+      problem_solved: "keeping track of every tool I sign up for",
+      category: "mcp-server",
+      signup_friction: "agent_native",
+    },
+    path,
+  );
+  assert.equal(ok.logged, true);
+  const audit = stackAudit({}, path);
+  // Free means free: no phantom conversion warning, no burn.
+  assert.equal(audit.monthly_burn.amount, 0);
+  assert.equal(audit.trials_converting_soon.length, 0);
+  // A priced "adopted" would lie to the pooled index.
+  const priced = logToolEvent(
+    {
+      tool_name: "notfree",
+      event: "adopted",
+      problem_solved: "x",
+      category: "other",
+      price: { amount: 9, currency: "USD", period: "month" },
+    },
+    path,
+  );
+  assert.equal(priced.logged, false);
+  assert.ok(priced.problems.join(" ").includes("paid_started"));
+});
+
+test("a re-found receipt does not become a second charge", () => {
+  const path = freshPath();
+  const receipt = {
+    tool_name: "vercel",
+    event: "paid_started",
+    problem_solved: "hosting",
+    category: "hosting",
+    price: { amount: 20, currency: "USD", period: "month" },
+    source: "mail_sweep",
+    dedupe_key: "<msg-abc123@mail.vercel.com>",
+  };
+  assert.equal(logToolEvent(receipt, path).logged, true);
+  const second = logToolEvent(receipt, path);
+  assert.equal(second.logged, false);
+  assert.equal(second.duplicate, true);
+  // The burn saw it once.
+  assert.equal(stackAudit({}, path).monthly_burn.amount, 20);
+});
+
+test("capture never refuses, and names what it did not invent", () => {
+  const path = freshPath();
+  const bare = captureToolEvent({ tool_name: "Seedance " }, path);
+  assert.equal(bare.logged, true);
+  assert.deepEqual(bare.incomplete, ["event", "problem_solved", "category"]);
+  // A trial with no end date cannot warn anybody — so it is not
+  // recorded as a trial with an invented date.
+  const noEnd = captureToolEvent(
+    { tool_name: "midjourney", event: "trial_started", category: "image-gen" },
+    path,
+  );
+  assert.ok(noEnd.incomplete.includes("trial_ends"));
+  assert.equal(trialsConverting({}, path).converting.length, 0);
+});
+
+test("the rollup groups, annualizes, and replays the trajectory", () => {
+  const path = freshPath();
+  const old = new Date(Date.now() - 200 * 24 * 3600_000).toISOString();
+  logToolEvent(
+    { tool_name: "midjourney", event: "paid_started", problem_solved: "art", category: "image-gen",
+      price: { amount: 30, currency: "USD", period: "month" }, retroactive: true, occurred_at: old },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "leonardo", event: "paid_started", problem_solved: "art", category: "image-gen",
+      price: { amount: 24, currency: "USD", period: "month" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 240, currency: "USD", period: "year" } },
+    path,
+  );
+  const roll = burnRollup({ since_days: 90 }, path);
+  // 30 + 24 + 20 = 74
+  assert.equal(roll.monthly, 74);
+  assert.equal(roll.annualized, 888);
+  // The grouping is what stings: image-gen is 54 across two tools.
+  const imageGen = roll.by_category.find((row) => row.category === "image-gen");
+  assert.equal(imageGen.monthly, 54);
+  assert.equal(imageGen.tools.length, 2);
+  // Trajectory: 90 days ago only midjourney existed.
+  assert.equal(roll.trajectory.then, 30);
+  assert.equal(roll.trajectory.change, 44);
+  assert.deepEqual(
+    roll.trajectory.arrived_since.map((t) => t.tool_name).sort(),
+    ["leonardo", "vercel"],
+  );
+  // The shareable form names counts, never vendors.
+  assert.ok(roll.anonymized_badge.includes("$74/mo"));
+  for (const vendor of ["midjourney", "leonardo", "vercel"]) {
+    assert.ok(!roll.anonymized_badge.includes(vendor), vendor);
+  }
+});
+
+test("the variability window is computed from money seen but not attributed", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 90, currency: "USD", period: "month" }, source: "mail_sweep" },
+    path,
+  );
+  // Before any sweep reports, the tab says it does not know.
+  assert.equal(burnRollup({}, path).coverage.variability_pct, null);
+  recordCoverage(
+    {
+      addresses_swept: ["keeper@example.com"],
+      matched: 1,
+      unmatched_transactional: [{ amount: 10, currency: "USD", sender: "noreply@unknown.io" }],
+    },
+    path,
+  );
+  const coverage = burnRollup({}, path).coverage;
+  // 10 unattributed against 90 attributed = 10%.
+  assert.equal(coverage.variability_pct, 10);
+  assert.equal(coverage.unmatched_transactional_count, 1);
+  assert.equal(coverage.sweep_stale, "no");
+  assert.ok(coverage.what_this_cannot_see.length >= 3);
+});
+
+test("silence is a question only where the heartbeat was seen first", () => {
+  const path = freshPath();
+  const long = new Date(Date.now() - 100 * 24 * 3600_000).toISOString();
+  // Never renewed: silence says nothing, so nothing is claimed.
+  logToolEvent(
+    { tool_name: "quietone", event: "paid_started", problem_solved: "x", category: "other",
+      price: { amount: 5, currency: "USD", period: "month" }, retroactive: true, occurred_at: long },
+    path,
+  );
+  assert.equal(stackAudit({}, path).quiet_past_cycle.length, 0);
+  // Heartbeat seen, then stopped: that is a real question.
+  logToolEvent(
+    { tool_name: "jasper", event: "paid_started", problem_solved: "x", category: "design",
+      price: { amount: 49, currency: "USD", period: "month" }, retroactive: true, occurred_at: long },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "jasper", event: "renewed", problem_solved: "x", category: "design",
+      price: { amount: 49, currency: "USD", period: "month" }, retroactive: true, occurred_at: long },
+    path,
+  );
+  const quiet = stackAudit({}, path).quiet_past_cycle;
+  assert.equal(quiet.length, 1);
+  assert.equal(quiet[0].tool_name, "jasper");
+});
+
+test("near-duplicate names are surfaced, never merged", () => {
+  const path = freshPath();
+  for (const name of ["openai", "openai-llc"]) {
+    logToolEvent(
+      { tool_name: name, event: "paid_started", problem_solved: "models", category: "llm",
+        price: { amount: 20, currency: "USD", period: "month" } },
+      path,
+    );
+  }
+  const audit = stackAudit({}, path);
+  assert.equal(audit.possible_aliases.length, 1);
+  // Not merged: the burn still counts both, honestly, until told.
+  assert.equal(audit.monthly_burn.amount, 40);
 });
