@@ -357,7 +357,32 @@ wellKnownRoutes.get(
   (c) => {
     const base = c.env.STORE_BASE_URL;
     return c.json({
+      /*
+       * A DATASET, because that is what a regenerable set of
+       * known-good and known-bad fixtures is — and because the people
+       * who most need to find these are implementers asking a model
+       * "what can I test my x402 verifier against." `Dataset` is the
+       * vocabulary that question gets answered in.
+       *
+       * The spread comes FIRST and no `description` is set here: the
+       * file already carries one, and the compiler caught the second
+       * copy before it shipped. One description serving both readers
+       * is the same rule the four store descriptions follow — a second
+       * copy is a copy free to drift.
+       */
       ...conformanceVectors,
+      "@context": "https://schema.org",
+      "@type": "Dataset",
+      name: "x402 offer-receipt conformance vectors",
+      url: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
+      creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+      isAccessibleForFree: true,
+      conditionsOfAccess: "Free to fetch. No account, no key.",
+      distribution: {
+        "@type": "DataDownload",
+        encodingFormat: "application/json",
+        contentUrl: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
+      },
       live_counterpart: `${base}/api/buy/hello — a real 402 whose PAYMENT-REQUIRED header carries live signed offers under extensions['offer-receipt'], signed by the production key at ${base}/.well-known/did.json (never the test key in these vectors).`,
       verifier_guidance:
         "Allow a few seconds of clock-skew leeway when comparing validUntil against your own clock — issuance is strict, consumption should be tolerant, and NTP drift on your side against a 300-second window makes small leeway harmless.",

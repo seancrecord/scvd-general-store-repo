@@ -248,6 +248,37 @@ function productListJsonLd(base: string): string {
   });
 }
 
+/**
+ * THE CORPUS AS ITS OWN ENTITY.
+ *
+ * Marking /corpus.json as a Dataset is half the move; a Dataset
+ * nothing points at is one a crawler has to stumble onto. schema.org
+ * has no "organization publishes dataset" edge — the relationship runs
+ * the other way, `creator`, which /corpus.json already declares. So the
+ * Dataset gets its own top-level node here, where the storefront is
+ * crawled, and the two halves join up through the shared identity.
+ *
+ * Deliberately thin: the full record lives at /corpus.json and this is
+ * a pointer to it. A second copy of the description here would be free
+ * to drift from the first, which is the defect this store keeps
+ * finding in its own work.
+ */
+function corpusDatasetJsonLd(base: string): string {
+  return jsonLdSafe({
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "The scvd corpus — weekly observations of the public x402 ecosystem",
+    url: `${base}/corpus.json`,
+    creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    isAccessibleForFree: true,
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}/corpus.json`,
+    },
+  });
+}
+
 function organizationJsonLd(base: string, stats?: StoreStats | null): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
@@ -398,6 +429,7 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="manifest" href="/site.webmanifest">
   <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats)}</script>
   <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
+  <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
 </head>
 <body class="night">
