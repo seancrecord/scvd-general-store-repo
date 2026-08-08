@@ -23,7 +23,7 @@ import { randomBytes } from "node:crypto";
  * field set triples tells a reader nothing. Old values are accepted
  * forever; anything that would break an existing reader is a v1.
  */
-export const SCHEMA_VERSION = "0.6";
+export const SCHEMA_VERSION = "0.7";
 
 export const EVENTS = [
   "trial_started",
@@ -185,6 +185,26 @@ function isIsoDate(value) {
   return typeof value === "string" && !Number.isNaN(Date.parse(value));
 }
 
+/**
+ * THE BILLING CLOCKS. One list, exported, so the validator, the two
+ * error messages and every schema that names them cannot drift apart
+ * — the first cut spelled the vocabulary out in four places, which is
+ * four chances to add a period and forget one.
+ *
+ * `quarter` arrived after a real stack was logged by hand and hit the
+ * refusal (2026-08-08). Quarterly billing is common and the shape is
+ * identical to the others — a fixed amount on a fixed clock — so the
+ * refusal was buying nothing and costing an agent silent arithmetic,
+ * which is the inferred-arithmetic class `confidence` exists to flag.
+ *
+ * The two shapes still NOT here are the ones that are not clocks at
+ * all: usage-based, and a free tier with a paid path. Neither is a
+ * missing period; both are "there is no fixed number", and forcing
+ * them onto a clock would put a guess inside the burn with nothing
+ * marking which part was guessed. Recorded in SCHEMA.md, not patched.
+ */
+export const PERIODS = ["month", "quarter", "year", "week", "once"];
+
 function isPrice(value) {
   return (
     value !== null &&
@@ -193,7 +213,7 @@ function isPrice(value) {
     Number.isFinite(value.amount) &&
     value.amount >= 0 &&
     typeof value.currency === "string" &&
-    ["month", "year", "week", "once"].includes(value.period)
+    PERIODS.includes(value.period)
   );
 }
 
@@ -316,7 +336,7 @@ export function validateEvent(input) {
   }
   if ((event === "paid_started" || event === "renewed") && !isPrice(input?.price)) {
     problems.push(
-      `${event} requires price: {amount, currency, period: month|year|week|once}.`,
+      `${event} requires price: {amount, currency, period: ${PERIODS.join("|")}}.`,
     );
   }
   if (event === "price_changed") {
@@ -341,7 +361,7 @@ export function validateEvent(input) {
     }
   }
   if (input?.price !== undefined && !isPrice(input.price)) {
-    problems.push("price must be {amount, currency, period: month|year|week|once}.");
+    problems.push(`price must be {amount, currency, period: ${PERIODS.join("|")}}.`);
   }
   if (event === "adopted" && input?.price !== undefined) {
     problems.push(
@@ -592,6 +612,7 @@ export function eventDate(event) {
 export function monthlyOf(price) {
   if (!price) return 0;
   if (price.period === "month") return price.amount;
+  if (price.period === "quarter") return price.amount / 3;
   if (price.period === "year") return price.amount / 12;
   if (price.period === "week") return (price.amount * 52) / 12;
   return 0; // "once" is not a burn.

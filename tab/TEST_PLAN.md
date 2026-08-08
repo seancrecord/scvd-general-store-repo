@@ -34,7 +34,7 @@ Two checks that catch a stale tree in ten seconds:
 
 | check | current answer |
 |---|---|
-| `npm run tab:test` test count | 45 |
+| `npm run tab:test` test count | 46 |
 | `ls tab/` | `pager.mjs` and `SWEEP.md` both present |
 
 If either disagrees, you are not on current main. Pull before doing
@@ -238,14 +238,12 @@ Not urgent. Worth knowing before somebody's tab has a year in it.
 
 ## Known holes — already found, do not file again
 
-**1. The price vocabulary misses three real billing shapes** —
-quarterly (refused outright), usage-based (representable but a number
-has to be invented), and free-tier-with-a-paid-path (the price it
-WOULD cost has nowhere to live). Confirmed by hand against a real
-stack. They are probably one hole rather than three: `price` assumes a
-fixed amount on a fixed clock. Full write-up and the verbatim refusal
-are in `SCHEMA.md` under Known Holes. Keeper decision, and one to rule
-on as a set.
+**1. The price vocabulary assumes a fixed amount on a fixed clock.**
+`quarter` was the third clock and is now supported (÷ 3). The two that
+remain are not periods: usage-based and free-tier-with-a-paid-path
+both mean "there is no fixed number", and forcing them onto a clock
+would hide a guess inside the burn. Write-up in `SCHEMA.md` under
+Known Holes; keeper decision, still open.
 
 **2. `bad_lines` is reported by `stack_audit` and NOT by
 `burn_rollup`.** The rollup's whole stated discipline is that the burn

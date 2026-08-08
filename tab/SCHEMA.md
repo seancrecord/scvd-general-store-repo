@@ -1,4 +1,4 @@
-# The Tab — storage schema, v0.6
+# The Tab — storage schema, v0.7
 
 The contract for `~/.scvd/tab.jsonl`: one JSON object per line,
 append-only, written by the server alone. This document is the
@@ -47,7 +47,7 @@ envelope. Every other event carries the tool fields below.
 | tool_name | string | yes | lowercase, no surrounding whitespace; rejected otherwise with the fix in the error |
 | category | enum | yes | the controlled vocabulary in THE_TAB.md; a miss suggests the closest match |
 | problem_solved | string | yes | the builder's words — and on a swept entry it must be exactly `(not said yet)` |
-| price | object | `paid_started`, `renewed`, `price_changed` | `{amount ≥ 0, currency, period: month\|year\|week\|once}` |
+| price | object | `paid_started`, `renewed`, `price_changed` | `{amount ≥ 0, currency, period: month\|quarter\|year\|week\|once}` |
 | previous_price | object | `price_changed` | same shape — a change with one price is a number |
 | trial_ends | ISO date | `trial_started` | the warning date is the point |
 | replaced_with | string | `replaced` | the successor; logged against the OUTGOING tool |
@@ -149,7 +149,7 @@ file ever lying about what it knew when.
 ## Derived at read, never stored
 
 Active set and status (`active_trial`, `active_paid`, `active_free`,
-`inactive`), monthly burn (month as-is, year ÷ 12, week × 52⁄12,
+`inactive`), monthly burn (month as-is, quarter ÷ 3, year ÷ 12, week × 52⁄12,
 `once` is not burn), `converts_to`, trial warning dates and trials
 past their end, idle-day counts, category overlap sets, price drift,
 the friction summary, near-duplicate name candidates, quiet tools,
@@ -206,35 +206,30 @@ readout rather than a silence.
 
 ## Known holes
 
-### The price vocabulary does not cover three real billing shapes
+### The price vocabulary assumes a fixed amount on a fixed clock
 
 Found by hand, logging a real stack of two dozen tools (2026-08-08).
-Recorded together because they look like three holes and are probably
-one: `price` assumes **a fixed amount on a fixed clock**, and a good
-share of the builder-tool market does not bill that way.
+Three shapes did not fit. One is now fixed and two are open, and the
+split between them is the useful part.
 
-| shape | what happens today | why it matters |
+**Fixed: `quarter`.** Quarterly billing was refused outright. It is
+the same shape as every other member — a fixed amount on a fixed
+clock — so the refusal bought nothing and cost an agent silent
+arithmetic. Added to `PERIODS`, converts at ÷ 3.
+
+**Still open, and not periods at all:**
+
+| shape | today | why a period does not fix it |
 |---|---|---|
-| **quarterly** | refused — `period` is `month\|year\|week\|once` | has to be hand-converted to monthly, silently. That is the inferred-arithmetic class `confidence` exists to flag, done invisibly |
-| **usage-based** | representable but imprecise — a number has to be invented for a bill that varies | the burn figure quietly gains a made-up component, and nothing marks which part was guessed |
-| **free tier with a paid path** | representable but imprecise — `adopted` says free, and the price it *would* cost has nowhere to live | the same gap `converts_to` closed for trials, still open for free tiers |
+| **usage-based** | representable but imprecise — a number has to be invented for a bill that varies | there is no fixed amount to store. Forcing one puts a guess inside the burn with nothing marking which part was guessed |
+| **free tier with a paid path** | representable but imprecise — `adopted` says free, and the price it *would* cost has nowhere to live | the same gap `converts_to` closed for trials, still open here |
 
-The confirmed refusal, verbatim:
-
-```
-price must be {amount, currency, period: month|year|week|once}.
-```
-
-Which is the honest behavior — the schema refuses rather than
-guessing, and the message names the fix. That is the hole working as
-designed, not failing.
-
-Growing the vocabulary changes the contract, so all three are a keeper
-decision and worth ruling on **together** rather than patching one at
-a time. The shape of the answer matters more than any single period:
-whether `price` gains members, or gains a `basis` (`fixed`,
-`metered`, `free_with_paid_path`) that says what kind of number it is
-holding.
+Both are *"there is no fixed number"*, which is a different problem
+from *"the clock is missing"*. The candidate answer is a `basis`
+marker (`fixed`, `metered`, `free_with_paid_path`) saying what kind of
+number `price` is holding — but that is a decision about whether the
+burn total is allowed to contain an estimate at all, which is bigger
+than a schema field. Keeper's, and open.
 
 ### Other
 
