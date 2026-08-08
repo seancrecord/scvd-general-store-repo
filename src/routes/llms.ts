@@ -244,7 +244,11 @@ commerce: the tools its builder signs up for. It keeps a local,
 append-only account of every trial, price, cancel and replacement —
 warns before a trial converts, reports the monthly burn, and records
 what each signup path demanded of a human (agent_native through
-human_only, the signup-friction vocabulary). Local JSONL, zero
+human_only, the signup-friction vocabulary). The warning runs on a
+clock the builder installs, or failing that on the agent's next touch
+of the tab for any reason; a warning handed to an agent that never
+passed it along is counted as unspoken rather than assumed delivered.
+Local JSONL, zero
 dependencies, facts and counts only, never advice; nothing leaves
 the file without explicit consent recorded in the file itself. Free,
 MIT, spec and code at

@@ -23,6 +23,13 @@ import {
   trialsConvertingSoon,
   trialsPastEnd,
 } from "./store.mjs";
+import {
+  acknowledgePages,
+  openPages,
+  pagerCoverage,
+  queueDue,
+  recordHandover,
+} from "./pager.mjs";
 
 /**
  * THE TAB's eight tools — THE_TAB.md made callable. Every read
@@ -634,6 +641,70 @@ export function needsAttention({ limit = 3 } = {}, path = defaultTabPath()) {
   };
 }
 
+/**
+ * THE PAGER, pulled. Runs the clock and hands back what is open, so
+ * the tab works with no cron installed at all — it simply cannot
+ * SPEAK FIRST without one, and says so rather than pretending.
+ */
+export function whatsDue({ limit = 3, days = 7 } = {}, path = defaultTabPath()) {
+  queueDue(path, { horizonDays: days });
+  const { shown, total } = openPages(path, { limit });
+  recordHandover(path, shown);
+  return {
+    say_now: shown,
+    total_open: total,
+    coverage: pagerCoverage(path),
+    note: shown.length === 0
+      ? "Nothing due. Silence here is a real answer, not a failure to look."
+      : "Put these to the builder in their own words, then call acknowledge_pages with the page_ids. A page handed to you is not a page they heard, and the tab counts the difference.",
+  };
+}
+
+/** The agent says it actually said them. Only now are they spent. */
+export function acknowledge({ page_ids }, path = defaultTabPath()) {
+  const ids = Array.isArray(page_ids) ? page_ids.map(String) : [];
+  if (ids.length === 0) {
+    return { acknowledged: [], error: "page_ids is required: the ids of the pages you actually put to the builder." };
+  }
+  const result = acknowledgePages(path, ids);
+  return {
+    ...result,
+    note: result.unknown.length > 0
+      ? "Some ids matched nothing on the pager. The rest are spent; acknowledge only what you really said."
+      : "Spent. They will not come back.",
+  };
+}
+
+/**
+ * THE RIDE-ALONG. Attached to EVERY tool result, which is the part
+ * that matters: a page rides back on whatever the agent happened to
+ * call, so the save no longer depends on the agent remembering to ask
+ * the right question on the right day. It still depends on the agent
+ * touching the tab at all — that is what the cron is for.
+ */
+export function attachPending(result, path) {
+  if (!result || typeof result !== "object") return result;
+  try {
+    // The clock runs here too, not only in cron. With a cron the page
+    // is TIMELY; without one it is at least INEVITABLE — the next
+    // touch of the tab, for any reason at all, raises and carries it.
+    // That is the difference between a scheduler and a dependency on
+    // the agent asking the right question on the right day.
+    queueDue(path);
+    const { shown, total } = openPages(path, { limit: 2 });
+    if (shown.length === 0) return result;
+    recordHandover(path, shown);
+    return {
+      ...result,
+      pending_pages: shown,
+      pending_note: `${total} on the pager. Say these to the builder now, then acknowledge_pages — they are time-bound and nothing else will raise them.`,
+    };
+  } catch {
+    // The pager must never be the reason a write or a read fails.
+    return result;
+  }
+}
+
 export function setConsent({ contribute }, path = defaultTabPath()) {
   const result = appendEvent(path, {
     event: "consent_changed",
@@ -995,6 +1066,30 @@ export const TOOL_DEFS = [
     inputSchema: {
       type: "object",
       properties: { limit: { type: "integer", minimum: 1 } },
+    },
+  },
+  {
+    name: "whats_due",
+    description:
+      "THE PAGER. Runs the clock and returns what should be said to the builder RIGHT NOW, worth most first: trials converting, trials past their end, unconfirmed sweep findings, quiet tools, gaps. Cheap. Call it on every round and at the start of a session. Say the lines, then acknowledge_pages.",
+    handler: whatsDue,
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "integer", minimum: 1 },
+        days: { type: "integer", minimum: 1, description: "conversion horizon, default 7" },
+      },
+    },
+  },
+  {
+    name: "acknowledge_pages",
+    description:
+      "You put these pages to the builder in their own words. Marks them spent so they stop coming back. Only acknowledge what you actually said — the tab counts pages that aged out unspoken, and a false acknowledgment is the one lie that makes the count useless.",
+    handler: acknowledge,
+    inputSchema: {
+      type: "object",
+      properties: { page_ids: { type: "array", items: { type: "string" } } },
+      required: ["page_ids"],
     },
   },
   {
