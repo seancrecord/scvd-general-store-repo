@@ -21,6 +21,20 @@ export const SCHEMA_VERSION = "0.2";
 export const EVENTS = [
   "trial_started",
   "paid_started",
+  /**
+   * ADOPTED — a free tool taken up. v0.2 had no way to say this: the
+   * enum assumed every commitment involved money, so CV's very first
+   * real use (logging The Tab itself, which is free) had to reach for
+   * trial_started with an invented conversion date, and the product
+   * dutifully raised a warning about a charge that will never come.
+   * The workaround was worse than the gap — paid_started with
+   * {amount: 0} validates, then lands in active_paid and tells the
+   * pooled corpus a paid signup happened. Free tools are a large
+   * share of the builder-tool economy and the ones most likely to be
+   * agent_native, so the index would have been wrong exactly where it
+   * matters most.
+   */
+  "adopted",
   "canceled",
   "replaced",
   "renewed",
@@ -45,6 +59,28 @@ export const FRICTION = [
   "kyc_required", // identity, bank, documents
   "human_only", // no API, no agent path at all
 ];
+
+/**
+ * WHERE AN ENTRY CAME FROM. Coverage accounting needs this: "what
+ * fed the burn number" is one of the six countable facts the audit
+ * publishes about its own completeness.
+ */
+export const SOURCES = [
+  "manual", // the builder said it, in a sentence
+  "capture", // a fragment, /log-shaped, gaps allowed
+  "mail_sweep", // extracted from a receipt
+  "historical_pass", // the six-month backward sweep
+];
+
+/**
+ * HOW MUCH THE ENTRY'S NUMBERS ARE WORTH. `stated` means a human or
+ * a receipt said it outright; `inferred` means something read it out
+ * of ambiguous text. The annual/monthly confusion is why this exists
+ * — $240/yr read as $240/mo is a 12x error in the only number the
+ * product is judged on, and an inferred price must be visibly
+ * inferred rather than quietly averaged into the total.
+ */
+export const CONFIDENCE = ["stated", "inferred"];
 
 export const CATEGORIES = [
   "llm",
@@ -133,6 +169,8 @@ function isPrice(value) {
  */
 const CAPS = {
   tool_name: 80,
+  captured_text: 2000,
+  dedupe_key: 200,
   problem_solved: 500,
   notes: 2000,
   payment_method: 200,
@@ -221,6 +259,17 @@ export function validateEvent(input) {
   if (input?.price !== undefined && !isPrice(input.price)) {
     problems.push("price must be {amount, currency, period: month|year|week|once}.");
   }
+  if (event === "adopted" && input?.price !== undefined) {
+    problems.push(
+      "adopted is for a FREE tool and must carry no price — if money changes hands it is paid_started or trial_started. A priced 'adopted' would tell the pooled index a free signup happened.",
+    );
+  }
+  if (input?.source !== undefined && !SOURCES.includes(input.source)) {
+    problems.push(`source must be one of ${SOURCES.join(", ")}.`);
+  }
+  if (input?.confidence !== undefined && !CONFIDENCE.includes(input.confidence)) {
+    problems.push(`confidence must be one of ${CONFIDENCE.join(", ")}.`);
+  }
   if (input?.signup_friction !== undefined && !FRICTION.includes(input.signup_friction)) {
     problems.push(
       `signup_friction must be one of ${FRICTION.join(", ")} — what the signup path DEMANDED, not an opinion about it.`,
@@ -248,11 +297,48 @@ export function readEvents(path) {
   return { events, badLines };
 }
 
+/**
+ * THE DEDUPE KEY — the requirement that only appears once a SWEEP
+ * exists. A mail sweep re-finds the same receipt on every pass, and
+ * nothing in v0.2 stopped one trial being logged three times. A
+ * triple-counted subscription silently inflates the burn figure,
+ * which is the one number the product is judged on — the same defect
+ * class as a typed tally, arriving by a different road.
+ *
+ * The caller supplies it (a message id is cleanest); when it does
+ * not, one is derived from the facts that make an event the same
+ * event: tool, kind, and the day it happened.
+ */
+export function dedupeKeyFor(input, at) {
+  if (typeof input?.dedupe_key === "string" && input.dedupe_key.length > 0) {
+    return input.dedupe_key;
+  }
+  return `${input?.tool_name}|${input?.event}|${String(at).slice(0, 10)}`;
+}
+
 /** Validate, stamp, append. The only writer in the whole product. */
 export function appendEvent(path, input) {
   const problems = validateEvent(input);
   if (problems.length > 0) {
     return { logged: false, problems };
+  }
+  const at = input.retroactive && input.occurred_at
+    ? input.occurred_at
+    : new Date().toISOString();
+  const key = input.event === "consent_changed" ? null : dedupeKeyFor(input, at);
+  if (key) {
+    const { events } = readEvents(path);
+    const already = events.find((entry) => entry.dedupe_key === key);
+    if (already) {
+      return {
+        logged: false,
+        duplicate: true,
+        existing_entry_id: already.entry_id,
+        problems: [
+          `Already logged as ${already.entry_id} (${key}). Nothing written — a re-found receipt must not become a second charge in the burn number.`,
+        ],
+      };
+    }
   }
   // Input spreads FIRST so the envelope always wins: a caller-supplied
   // server_timestamp, entry_id or schema_version is overwritten, never
@@ -264,10 +350,78 @@ export function appendEvent(path, input) {
     entry_id: newEntryId(),
     server_timestamp: new Date().toISOString(),
     schema_version: SCHEMA_VERSION,
+    ...(key ? { dedupe_key: key } : {}),
   };
   mkdirSync(dirname(path), { recursive: true });
   appendFileSync(path, `${JSON.stringify(entry)}\n`, "utf8");
   return { logged: true, entry };
+}
+
+/**
+ * CAPTURE — the lane that must never refuse.
+ *
+ * The validator is what makes the tab trustworthy and it is exactly
+ * wrong at the moment of capture: if `/log seedance` bounces with
+ * "problem_solved is required", nobody types it a second time, and
+ * the product dies of correctness. So capture takes whatever came,
+ * fills what it can, RECORDS WHAT IS MISSING BY NAME, and writes.
+ *
+ * The gaps are not swept under: `incomplete` is a list the rounds
+ * read back, so the agent chases the missing field at a convenient
+ * moment instead of interrogating somebody who has five seconds of
+ * attention and a browser tab still open.
+ */
+export function captureEvent(path, input) {
+  const incomplete = [];
+  const draft = { ...input };
+  draft.source = SOURCES.includes(draft.source) ? draft.source : "capture";
+  draft.event = EVENTS.includes(draft.event) && draft.event !== "consent_changed"
+    ? draft.event
+    : (incomplete.push("event"), "adopted");
+  if (typeof draft.tool_name === "string") {
+    draft.tool_name = draft.tool_name.trim().toLowerCase();
+  }
+  if (typeof draft.problem_solved !== "string" || draft.problem_solved.trim() === "") {
+    incomplete.push("problem_solved");
+    draft.problem_solved = "(not said yet)";
+  }
+  if (!CATEGORIES.includes(draft.category)) {
+    incomplete.push("category");
+    draft.category = "other";
+  }
+  // A trial with no end date cannot warn anybody, which is the whole
+  // product — so it is named as missing rather than invented.
+  if (draft.event === "trial_started" && !isIsoDate(draft.trial_ends)) {
+    incomplete.push("trial_ends");
+    draft.event = "adopted";
+    delete draft.trial_ends;
+  }
+  if ((draft.event === "paid_started" || draft.event === "renewed") && !isPrice(draft.price)) {
+    incomplete.push("price");
+    draft.event = "adopted";
+    delete draft.price;
+  }
+  if (draft.event === "adopted" && draft.price !== undefined) {
+    delete draft.price;
+  }
+  if (incomplete.length > 0) {
+    draft.incomplete = incomplete;
+  }
+  const result = appendEvent(path, draft);
+  return result.logged || result.duplicate
+    ? { ...result, incomplete }
+    : // Last resort: something still refused it. Record the raw text
+      // so the words survive even when the shape did not.
+      appendEvent(path, {
+        tool_name: "unparsed-capture",
+        event: "adopted",
+        problem_solved: "(capture could not be shaped; raw text kept)",
+        category: "other",
+        source: "capture",
+        captured_text: String(input?.captured_text ?? JSON.stringify(input)).slice(0, 2000),
+        incomplete: ["everything"],
+        notes: result.problems?.join(" "),
+      });
 }
 
 /** The date an event claims for itself: the retroactive claim when
@@ -307,6 +461,10 @@ export function derive(events, now = new Date()) {
       price: null,
       trial_ends: null,
       signup_friction: null,
+      sources: new Set(),
+      confidence: null,
+      renewals_seen: 0,
+      last_billing_at: null,
       since: null,
       ever_paid: false,
       first_commitment: null,
@@ -318,6 +476,8 @@ export function derive(events, now = new Date()) {
     tool.category = event.category ?? tool.category;
     tool.problem_solved = event.problem_solved ?? tool.problem_solved;
     tool.signup_friction = event.signup_friction ?? tool.signup_friction;
+    tool.confidence = event.confidence ?? tool.confidence;
+    tool.sources.add(event.source ?? "manual");
     // A signup after an inactive spell opens a NEW commitment (red
     // team F4): the epoch resets, so a re-trial a year after a cancel
     // is measured and classified on its own life, not the old one's.
@@ -330,17 +490,27 @@ export function derive(events, now = new Date()) {
         tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
         if (reopening) tool.ever_paid = false;
         break;
+      case "adopted":
+        // Free, and the status says so rather than hiding in paid.
+        tool.status = "active_free";
+        tool.since = reopening ? at : (tool.since ?? at);
+        tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
+        break;
       case "paid_started":
         tool.status = "active_paid";
         tool.price = event.price;
         tool.since = reopening ? at : (tool.since ?? at);
         tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
         tool.ever_paid = true;
+        tool.last_billing_at = at;
         break;
       case "renewed":
         tool.status = "active_paid";
         tool.price = event.price ?? tool.price;
         tool.ever_paid = true;
+        // Renewals are the heartbeat the silence detector listens for.
+        tool.renewals_seen += 1;
+        tool.last_billing_at = at;
         break;
       case "canceled":
       case "replaced":
@@ -370,6 +540,9 @@ export function derive(events, now = new Date()) {
     tools.set(name, tool);
   }
 
+  for (const tool of tools.values()) {
+    tool.source_list = [...tool.sources].sort();
+  }
   const active = [...tools.values()].filter((t) => t.status !== "inactive");
   const activePaid = active.filter((t) => t.status === "active_paid");
   const burn = activePaid.reduce((sum, t) => sum + monthlyOf(t.price), 0);
@@ -383,6 +556,82 @@ export function derive(events, now = new Date()) {
     drift,
     now,
   };
+}
+
+/**
+ * Monthly burn AS OF a past date — the trajectory read, and the one
+ * thing no subscription tracker can do. The tab holds EVENTS, not
+ * balances, so "what was I paying in March, and which signups
+ * account for the difference" is a replay, not a guess.
+ */
+export function burnAt(events, asOf) {
+  const cutoff = asOf.getTime();
+  const upTo = events.filter((event) => {
+    const at = eventDate(event);
+    return at ? Date.parse(at) <= cutoff : false;
+  });
+  return derive(upTo, asOf).monthly_burn.amount;
+}
+
+/**
+ * Active tools that have gone quiet past their own billing rhythm.
+ *
+ * ONLY for tools whose renewals we have actually seen: if the tab has
+ * never observed a receipt for something, silence says nothing about
+ * it and flagging it would flood the report with noise. Where we HAVE
+ * seen the heartbeat, its absence is a real question — cancelled, or
+ * a card that failed, which is a service about to die and worth
+ * knowing on its own. It is a question, never a verdict: annual
+ * billing, a vendor that stopped emailing, and a broken sweep all
+ * look identical from here.
+ */
+export function quietTools(state, cyclesAllowed = 2) {
+  return state.active
+    .filter((tool) => {
+      if (tool.renewals_seen < 1 || !tool.last_billing_at) return false;
+      const period = tool.price?.period;
+      if (period !== "month" && period !== "week") return false;
+      const cycleMs = period === "month" ? 30 * 24 * 3600_000 : 7 * 24 * 3600_000;
+      return (
+        state.now.getTime() - Date.parse(tool.last_billing_at) >
+        cyclesAllowed * cycleMs
+      );
+    })
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      last_billing_at: tool.last_billing_at,
+      renewals_seen: tool.renewals_seen,
+      monthly_cost: Math.round(monthlyOf(tool.price) * 100) / 100,
+    }));
+}
+
+/**
+ * NEAR-DUPLICATE TOOL NAMES — break #7 of the coverage enumeration.
+ * "openai" and "openai-llc" split one history into two, and both
+ * halves look half-dead: the burn double-counts and check_before_
+ * signup misses the history it exists to surface.
+ *
+ * Detected, never auto-merged. Merging two genuinely different tools
+ * is a worse error than showing a duplicate, and the tab's whole
+ * posture is to convert uncertainty into a cheap question rather
+ * than a confident wrong answer.
+ */
+export function possibleAliases(state) {
+  const names = [...state.tools.keys()];
+  const pairs = [];
+  for (let i = 0; i < names.length; i += 1) {
+    for (let j = i + 1; j < names.length; j += 1) {
+      const a = names[i];
+      const b = names[j];
+      const gap = distance(a, b);
+      const shorter = Math.min(a.length, b.length);
+      const contained = a.startsWith(b) || b.startsWith(a);
+      if (shorter >= 4 && (gap <= 2 || contained)) {
+        pairs.push({ names: [a, b], edit_distance: gap });
+      }
+    }
+  }
+  return pairs;
 }
 
 /** Trials whose conversion lands inside the horizon. The headline. */
