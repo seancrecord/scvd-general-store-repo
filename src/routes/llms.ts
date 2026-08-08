@@ -239,6 +239,18 @@ https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
 us, because we sell x402 goods and a verdict about a rival from a
 rival is worth only its method.
 
+The Tab (scvd-tab), an MCP server for the OTHER side of an agent's
+commerce: the tools its builder signs up for. It keeps a local,
+append-only account of every trial, price, cancel and replacement —
+warns before a trial converts, reports the monthly burn, and records
+what each signup path demanded of a human (agent_native through
+human_only, the signup-friction vocabulary). Local JSONL, zero
+dependencies, facts and counts only, never advice; nothing leaves
+the file without explicit consent recorded in the file itself. Free,
+MIT, spec and code at
+https://github.com/seancrecord/scvd-general-store-repo/tree/main/tab
+— the specification is THE_TAB.md at the repo root.
+
 Every purchase mints a signed certificate and a sequential patron number,
 with a badge at ${base}/badges/{patron_number}.svg, verify anything at
 ${base}/api/verify/{cert_id}. Our ed25519 public key hangs at
