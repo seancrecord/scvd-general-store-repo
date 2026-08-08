@@ -9,6 +9,7 @@ import {
   monthlyOf,
   readEvents,
   trialsConvertingSoon,
+  trialsPastEnd,
 } from "./store.mjs";
 
 /**
@@ -133,6 +134,12 @@ export function stackAudit({ unused_days = 45 } = {}, path = defaultTabPath()) {
       since: t.since,
     })),
     trials_converting_soon: trialsConvertingSoon(current),
+    ...(trialsPastEnd(current).length > 0
+      ? {
+          trials_past_end_unresolved: trialsPastEnd(current),
+          trials_past_end_note: PAST_END_NOTE,
+        }
+      : {}),
     unused: current.active
       .filter((t) => t.last_event_at && Date.parse(t.last_event_at) < idleCutoff)
       .map((t) => ({
@@ -200,9 +207,18 @@ function overlaps(current) {
     .map(([category, tools]) => ({ category, tools, count: tools.length }));
 }
 
+const PAST_END_NOTE =
+  "These trials' end dates have passed and no cancel, paid_started, or renewed was ever logged — the tab does not know what happened at the boundary. Ask the builder and log the answer; a warning that never resolves teaches everyone to ignore warnings.";
+
 export function trialsConverting({ days = 7 } = {}, path = defaultTabPath()) {
   const current = state(path);
-  return { converting: trialsConvertingSoon(current, days) };
+  const pastEnd = trialsPastEnd(current);
+  return {
+    converting: trialsConvertingSoon(current, days),
+    ...(pastEnd.length > 0
+      ? { past_end_unresolved: pastEnd, past_end_note: PAST_END_NOTE }
+      : {}),
+  };
 }
 
 export function whatsCurrent({ category }, path = defaultTabPath()) {

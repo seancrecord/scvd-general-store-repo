@@ -393,6 +393,7 @@ export function trialsConvertingSoon(state, days = 7) {
       (t) =>
         t.status === "active_trial" &&
         t.trial_ends &&
+        Date.parse(t.trial_ends) >= state.now.getTime() &&
         Date.parse(t.trial_ends) <= horizon,
     )
     .map((t) => ({
@@ -405,6 +406,32 @@ export function trialsConvertingSoon(state, days = 7) {
       problem_solved: t.problem_solved,
     }))
     .sort((a, b) => a.days_left - b.days_left);
+}
+
+/**
+ * Trials whose end date has PASSED with no resolution logged. The
+ * first cut left these in the converting list at days_left 0 forever
+ * — a warning that never resolves teaches the reader to ignore
+ * warnings. Split out instead, with the honest framing: the tab does
+ * not know what happened at the boundary; only a logged event does.
+ */
+export function trialsPastEnd(state) {
+  return state.active
+    .filter(
+      (t) =>
+        t.status === "active_trial" &&
+        t.trial_ends &&
+        Date.parse(t.trial_ends) < state.now.getTime(),
+    )
+    .map((t) => ({
+      tool_name: t.tool_name,
+      trial_ends: t.trial_ends,
+      days_since_end: Math.floor(
+        (state.now.getTime() - Date.parse(t.trial_ends)) / (24 * 3600_000),
+      ),
+      problem_solved: t.problem_solved,
+    }))
+    .sort((a, b) => b.days_since_end - a.days_since_end);
 }
 
 export function weeksBetween(fromIso, to) {

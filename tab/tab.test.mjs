@@ -168,6 +168,45 @@ test("trials_converting_soon is the headline: horizon respected, days counted", 
   assert.ok(inWeek.converting[0].days_left <= 3);
 });
 
+test("a trial past its end leaves the warning list and lands in unresolved, honestly framed", () => {
+  const path = freshPath();
+  // Test-plan item 11, fixed rather than left as a soft spot: a
+  // warning that never resolves teaches the reader to ignore
+  // warnings, so ended-and-silent trials get their own list.
+  logToolEvent(
+    {
+      ...BASE,
+      tool_name: "midjourney",
+      category: "image-gen",
+      event: "trial_started",
+      trial_ends: "2026-08-14",
+      retroactive: true,
+      occurred_at: "2026-08-07",
+    },
+    path,
+  );
+  // Rewind the end into the past by logging with a past trial_ends.
+  const path2 = freshPath();
+  logToolEvent(
+    {
+      ...BASE,
+      tool_name: "jasper",
+      category: "design",
+      event: "trial_started",
+      trial_ends: "2026-01-10",
+      retroactive: true,
+      occurred_at: "2026-01-03",
+    },
+    path2,
+  );
+  const result = trialsConverting({}, path2);
+  assert.equal(result.converting.length, 0);
+  assert.equal(result.past_end_unresolved.length, 1);
+  assert.equal(result.past_end_unresolved[0].tool_name, "jasper");
+  assert.ok(result.past_end_unresolved[0].days_since_end > 100);
+  assert.ok(result.past_end_note.includes("does not know what happened"));
+});
+
 test("check_before_signup states facts, renders no verdict, remembers the wall", () => {
   const path = freshPath();
   logToolEvent(
