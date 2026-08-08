@@ -439,3 +439,129 @@ Then: `town_papers` · `anniversary_artifact` · referral certificate ·
 Polygon · Algorand · the cold-read test on remaining artifact classes
 (hardening, cheap, high value per hour) · replay guard under
 concurrency.
+
+---
+
+## RANKING HELD (keeper's call, 2026-08-08)
+
+Draft specs coming for items discussed yesterday. Nothing below is
+ordered until the whole set is on the table. What follows is the
+problem list and the prior-art scan — the inputs to a ranking, not the
+ranking.
+
+---
+
+## ⚠ CORRECTION — the prior-art scan moved my #1 pick
+
+Two hours ago I ranked **"publish the index"** first, partly on the
+belief that per-subject observation of x402 endpoints was substantially
+unclaimed. **It is not.** First pass of the scan, and the field is far
+more crowded than I assumed:
+
+| what exists | why it matters to us |
+|---|---|
+| ~59,818 x402 endpoints monitored by provider — uptime, latency, 402-envelope compliance, on-chain settlement, updated continuously | our ward walks ~35 hosts weekly. That is roughly three orders of magnitude of coverage against us |
+| `x402.fuchss.app/providers` — a providers directory with **reliability & trust scores** | the payability/mortality product, shipped, with scores |
+| `402index.io` | literally named "402 Index" |
+| `x402-validator` (PyPI) — audits and monitors against x402 strict-v2, conformance engine, manifest discovery, CAIP-2, Bazaar features | our preflight battery, as a package anyone can pip install |
+| `draft-hopley-x402-compliance-receipt` — IETF Independent Submission, JSON Schema, plus a compliance-attestation extension referencing it by URL and byte-anchor | **a competing namespace to `scvd-attestation/v1`** |
+
+**Confidence: these are search summaries, not verified reads.** The
+numbers and the "no conformance suite" claim both need checking before
+anyone acts. Verification is the next step, not a build.
+
+### What survives, and it is a better story than the one it replaces
+
+**We cannot out-cover 59,818 endpoints with a weekly walk of 35.** The
+index-as-coverage play is dead on arrival and I should not have ranked
+it first without scanning.
+
+What the incumbents appear NOT to have — and this needs verifying, not
+assuming — is **the artifact.** Scraping uptime is easy. What is hard,
+and what this store's entire architecture already is:
+
+- **signed**, verifiable offline against a published key, no "trust our
+  verifier" step
+- **hash-chained and Bitcoin-anchored**, so the record cannot be
+  quietly revised after the fact
+- **gap-honest** — `days_unchecked`, `hours_unprobed`, `unclassified`
+  counted against us on the same page as the finding
+- **artifacts not actors** (rule 43). A "trust score" on a provider is
+  the thing we deliberately refuse to produce. That is not us losing a
+  feature race; it is a different product
+
+So the play is **not** to be the index. It is to be **the artifact
+layer on top of any index** — including theirs. Read from the big
+monitors, sell the signed portable verdict they do not produce.
+
+Which is the same conclusion the four responses reached for F
+(sanctions: *"add the format layer they don't have"*) — now applied to
+what I had assumed was our home turf.
+
+**The uncomfortable half, stated:** "ours is signed" is a feature
+claim with zero market evidence behind it, competing against products
+with real coverage. It stays a thesis until a stranger pays for a
+signature.
+
+### The find that most supports the keeper's frame
+
+**ERC-8183** — co-developed by Virtuals Protocol and the Ethereum
+Foundation's dAI team, published 2026-03-10. Defines a Job primitive:
+client posts requirements and funds escrow, provider executes and
+submits verifiable deliverables on-chain, and **evaluators attest to
+completion** to trigger release or refund.
+
+There is a formal, standardized role for a third party who attests
+that delivery happened. That is precisely the store's position, named
+in someone else's standard. "Customer, not rival" stops being a
+posture and becomes a slot to fill.
+
+**Needs a real read of the spec before it is trusted.** If it holds,
+it is the strongest single piece of evidence for the index/attestor
+framing that exists.
+
+### Also in the escrow lane (all "absorb the risk", none "observe it")
+
+- **x402Resolve** (kamiyo-ai) — trustless escrow, oracle-verified
+  quality, sliding-scale refunds, $2–8/dispute, 2–48h, Solana
+- **PayCrow** — trust-informed escrow; releases on **2xx status codes
+  and JSON schema**. That verification is thin — a 2xx carrying
+  garbage passes it. Our preflight battery is far richer, and that gap
+  is a partnership shape
+- **Nevermined** — escrow with milestone / SLA / dispute-window
+  conditions
+
+Every one of them needs an answer to *"did delivery actually happen,
+and says who?"* None of them signs a portable artifact about it.
+
+---
+
+## The problems, named (an item without one is a desk idea)
+
+Rule 19 discipline applied to our own list. **Prior art column is
+deliberately incomplete** — the scan has had one pass.
+
+| # | problem | evidence it is real | prior art found so far |
+|---|---|---|---|
+| P1 | a buyer pays and receives nothing | three `undelivered_sale` alerts, ours | escrow (PayCrow, Nevermined, x402Resolve) absorbs it; nobody signs an observation of it |
+| P2 | authorized amount ≠ settled amount | x402 upto/deferred semantics | *not yet scanned* |
+| P3 | a published money promise with no enforcing check | rule 10's founding incident, five days live | n/a — internal debt |
+| P4 | you cannot ask what was observed about one subject over time | verified today: `/corpus.json` enumerates, never queries | **heavily claimed** — see correction above |
+| P5 | every signed artifact dies with the key | no successor published; `/becoming` promises one | *not yet scanned* |
+| P6 | "verified" is undefined, so nothing can be badged | rule 43 gate; `/becoming` says so publicly | *not yet scanned* |
+| P7 | endpoint payability/mortality is unsigned and scattered | directories are unsigned | **claimed** — fuchss, 402index, x402-validator |
+| P8 | you cannot prove what an AI answered | TLSNotary is heavy | TLSNotary; *lightweight lane not yet scanned* |
+| P9 | WebMCP implementations are unverified | early standard | *not yet scanned* |
+| P13 | per-order labor creates unbounded SLA exposure | the 168h queue | n/a — internal |
+| P14 | sanctions/KYT has no signed portable artifact | Chainalysis/TRM/Elliptic produce reports, not artifacts | incumbents hold the data, not the format |
+
+**Items on our list with NO named problem** — flagged rather than
+quietly carried: `town_papers`, `anniversary_artifact`, the referral
+certificate. Each may be a fine shelf item; none currently has a
+demand tag, and rule 19 says that is the bar.
+
+### Next on the scan
+
+P2, P5, P6, P8, P9 unscanned. And two reads that change decisions
+rather than inform them: **ERC-8183's evaluator role**, and
+**draft-hopley-x402-compliance-receipt** against `scvd-attestation/v1`.
