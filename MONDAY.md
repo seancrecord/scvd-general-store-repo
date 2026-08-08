@@ -926,3 +926,70 @@ the work. The same prose feeds `read_store_guide` over MCP, and the
 structured data feeds the resolvers. The fix is that all of them say
 the same thing — which is what "consistent" means here and what this
 sweep is for.
+
+
+---
+
+## AEO audit against August 2026 practice
+
+Checked our surfaces against current GEO/AEO guidance rather than
+against what I already believed. **The basics are already in place** —
+we emit `Organization`, `Product`, `Offer`, `ItemList`, `Review`,
+`Brand`, `WebPage`, `InteractionCounter`, and `FAQPage` on `/what`.
+Headings run h1 → h2 → h3 in order, which the research puts at ~2.8x
+citation odds. Fact consistency across surfaces was today's whole
+sweep.
+
+Three real gaps, in order of how much they are worth.
+
+### 1. THE CORPUS IS NOT MARKED AS A DATASET — and it is the biggest miss
+
+Current guidance is blunt about this: **first-party data earns
+brand-specific citations that third-party statistics cannot, because
+AI engines cite the original source.** The corpus is precisely that —
+weekly signed observations of the x402 ecosystem, hash-chained,
+Bitcoin-anchored, publicly downloadable, and held by nobody else in
+that form.
+
+`/corpus.json` currently serves as bare JSON with **no schema.org
+markup at all**. To a citing system it is a file. As
+`schema.org/Dataset` — with `distribution`, `temporalCoverage`,
+`license`, `creator`, `isAccessibleForFree` — it becomes an *entity of
+the kind those systems cite by name.*
+
+Same argument applies to `/house-ledger.json` and `/stats`: our own
+books, first-party, unavailable anywhere else.
+
+This is also the single AEO move most aligned with the index framing.
+A `Dataset` entity says "this is a data source" to exactly the
+machinery that decides what a data source is.
+
+### 2. No 40–60 word direct answer opening the key sections
+
+Guidance: lead each key section with a short, complete answer, because
+that is the span a generative engine lifts. Our prose is long-form and
+good, and I would not gut the voice for this — but a leading sentence
+that stands alone before the paragraph earns the citation and costs
+nothing.
+
+Applies to `/what`, `/attestation`, `/becoming`, and the top of
+`llms.txt`.
+
+### 3. FAQPage exists on one page only
+
+`/what` has it. `USE_WHEN` is already Q&A-shaped ("when you'd use this
+store") and appears on `llms.txt` and in the menu without the markup —
+and without it, per current guidance, Q&A content is *structurally
+invisible* to many retrieval paths. Worth extending, carefully: mark
+what is genuinely a question, not everything.
+
+### Not a gap, worth noting
+
+**Attributed quotes and inline citations** are recommended and we are
+unusually well positioned: every claim here already ships with a
+verify URL, and `/corrections` is a dated record of us being wrong in
+public. That is the authority signal the guidance is reaching for, and
+it is already built — it just is not marked up as such.
+
+Sources consulted: airops, HubSpot, digidop, o8, WRITER, Percepture,
+Enrich Labs, Progress Sitefinity, Surmado (all 2026 AEO/GEO guides).
