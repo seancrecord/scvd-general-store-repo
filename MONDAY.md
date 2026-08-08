@@ -664,3 +664,101 @@ us because gap-honesty is already the architecture, and it is the
 entire difference between a signed artifact and a scraped number.
 
 **Added to the list, unranked** pending the keeper's draft specs.
+
+---
+
+## On the strategy doc (2026-08-08) — checked against the code
+
+### Item 5 is already shipped
+
+**Corpus snapshots are already Bitcoin-anchored.** `corpus.ts:197`:
+`record.ots = await submitDigestToOts(digest, options)`, and the
+suite covers both the pending and the failed path. Each round is
+frozen, hash-chained to the one before it, signed, and its digest
+submitted to OpenTimestamps. Two chains, one shared submitter,
+each verifiable alone. Nothing to extend.
+
+### The storage decision was already made — and the coverage work just triggered it
+
+Also on record, deliberately, in `corpus.ts`:
+
+> *"STORAGE: KV, deliberately, for now… The named graduation trigger
+> is full-universe crawling at its own cadence — when snapshots stop
+> being weekly-and-small, they move to R2."*
+
+The doc's proposed answer (off-chain storage, on-chain anchors) is
+what we already do, plus a trigger the doc does not have.
+
+**But here is the connection worth catching:** the enumeration fix
+proposed above — union of every public directory as the denominator,
+on the order of 59,818 hosts — **is** full-universe crawling. Doing
+the coverage work trips the KV→R2 trigger by definition. Those are no
+longer two decisions; they are one, and taking the coverage fix means
+taking the storage move with it. Better to know that before starting
+than to discover it at the KV limit.
+
+### ⚑ "Staples (resold)" reverses DECISION 2 — name it, do not slip it
+
+The shelf model reads well and three of its four tiers are already
+what we are. **Staples is different**: reselling means being *in the
+money flow between buyer and upstream*, which the keeper ruled against
+on 2026-08-07 ("referral-first stands unless the keeper rules
+otherwise; nothing resold yet") and narrowed again yesterday.
+
+It reintroduces every collision the audit named: money transmission,
+refund liability that scales with volume, upstream failure with our
+sticker on it, and the infrastructure pager. With no counsel, by the
+keeper's own ruling.
+
+**The reason behind it is right, though, and worth rescuing:**
+*margin optional, observations mandatory.* Reselling as a **sensor**,
+not a revenue line. That is a good idea trapped in the wrong vehicle.
+
+**A vehicle that keeps it: be the BUYER, not the reseller.** The store
+buys from an endpoint itself, occasionally, and signs an observation
+of the real settlement. Same sensor — a genuine paid transaction,
+observed end to end — with no money flow, no custody, no refund
+liability, and no sticker on anybody's product. The machinery already
+exists (`npm run shop`, the census, the shopping-run scripts). It is
+the cheapest instrumentation available and it is doctrine-clean.
+
+**Tools shelf: blocked, not open.** Skills with signed safety
+attestations is issuer-pays, which is now handled correctly by the
+immunity clause shipped in #78 — good consistency. But rule 43 gates
+it: no badge ships before its criteria page exists, and it does not.
+
+### The scout loop — about 60% of it is generalizing the ward
+
+Right instrument. Note what is already built before anyone specs it
+fresh:
+
+| section | status |
+|---|---|
+| **1. Tripwire board** — watchlist with pre-planned responses | genuinely new, cheap, and the best part of the doc |
+| **2. Shelf candidates** — diff registries against last week | this is the ward's `newly_failing` / `newly_fixed` / `flappers` delta logic pointed at registries instead of hosts. Generalize, do not rebuild |
+| **3. Corpus stats** — coverage of the known universe | this is `population_known` vs `population_walked` from the section above. Same work |
+
+### "The shelf is the survey" — yes, with one correction
+
+Strong, and it resolves cleanly against rule 19 only if the listing
+*is* the demand test. But **listing cost here is low, not near-zero.**
+Every SKU carries copy, a spec entry, tests, and five parity guards
+(why_use under 320 chars, menu order, claim-chain, routes.spec,
+shelf-agrees-with-menu). Hours, not minutes — and permanently wider
+surface for every guard to check. That cost is *why* the quality
+holds, so it is not worth optimizing away.
+
+**Cheaper tier first, and it already exists:** `/api/request` plus a
+candidate page with a counter. The audit already named this as the
+lighter instrument rule 19 does not define. Run candidates through it
+before spending a SKU.
+
+### The assumption the doc skips, and it is upstream of all three
+
+**Assumption 0: that anyone will pay for a signed observation at all.**
+
+The three named assumptions are good and cheaply testable. But all
+three presume the base case, and the base case has **zero evidence** —
+the verification tier has never earned an outside dollar. If
+assumption 0 is false, the other three do not matter. Its test is the
+same first paying stranger everything else is waiting on.
