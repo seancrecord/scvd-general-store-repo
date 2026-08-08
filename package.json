@@ -42,7 +42,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.18.7",
     "@cloudflare/workers-types": "^5.20260721.1",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.1.2",
     "@x402/fetch": "^2.19.0",
     "dotenv": "^17.4.2",
     "typescript": "^5.8.3",
