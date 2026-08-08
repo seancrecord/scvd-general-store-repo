@@ -865,3 +865,64 @@ audited against the post-2026-08-07 position.
 The rule to hold: **rule 44 says the sweep is a stop after changes,
 not a chore for later.** We shipped a positioning reversal and six
 PRs without running it, which is how the gap opened.
+
+---
+
+## The AEO refresh — scope, and one flag on forward-looking copy
+
+### ⚑ The flag, first, because it collides with canon
+
+The keeper is comfortable with some forward-looking copy — things not
+fully built. **The store already solved this and the solution is
+better than a caveat.**
+
+Claiming an unbuilt thing collides with rule 10 (*a claim ships with
+the check that fails when it stops being true*), rule 13, and
+`/becoming`'s own standfirst (*a decided direction is not an available
+product*). But there is an existing register for exactly this: dated
+direction, quoted next to what it replaced, never presented as stock.
+
+**And the AEO argument runs the same way, which is the useful part.** A
+model that reads a claim and later cannot verify it learns this source
+is unreliable — permanently, in a corpus we cannot edit. A model that
+reads *"decided, dated, not yet built"* and later finds it built
+learns this source is **accurate about its own state**, which is worth
+more than any single feature claim. Being captured in a dataset as
+precise beats being captured as ambitious.
+
+**So: forward-looking content ships in the `/becoming` register**, on
+every surface, marked and dated. That is not a smaller version of what
+the keeper asked for — it is the version that compounds.
+
+### Done in this pass
+
+| surface | what changed |
+|---|---|
+| `llms.txt` | the position, below the guarded free-forever verify promise |
+| **schema.org `organizationDescription`** | the highest-leverage AEO string in the codebase — what an entity resolver files us under. Was "a general store"; now leads with the trust layer and keeps every long-tail hook (conformance audit, settlement attestation, Bitcoin-anchored, ed25519, x402, USDC, Base, Solana) |
+| `README.md` | GitHub is a RAG surface; the first paragraph now carries position and the not-an-escrow line |
+| `AGENTS.md` | same, for coding agents reading the repo |
+| `registry/clawhub/SKILL.md` | position + the whole trust tier + The Tab + corpus + namespace spec |
+
+### Still to do — the rest of the sweep
+
+- [ ] `/what` and `trust-signals.ts` — the whitelist is exact; check the position lands without inventing a signal
+- [ ] `.well-known/trust.json`
+- [ ] `.well-known/a2a.json` — the A2A card's description
+- [ ] `menu.json` / `openapi.json` top-level descriptions
+- [ ] `/agents.md` served route (distinct from the repo file)
+- [ ] MCP `serverInfo` + `instructions`, **both servers** — the store's `/mcp` and `scvd-tab`
+- [ ] `/directory.ts` and `/schemas.ts` JSON-LD
+- [ ] `security.txt`, `did.json` — check nothing contradicts
+
+### Two notes for the keeper
+
+**The store's MCP is already on Glama** — the badge is in `README.md`
+line 3. `scvd-tab` is not, and that is a Monday item: a second server,
+free, MIT, and pure distribution.
+
+**On llms.txt being lightly used:** likely right, and it does not change
+the work. The same prose feeds `read_store_guide` over MCP, and the
+structured data feeds the resolvers. The fix is that all of them say
+the same thing — which is what "consistent" means here and what this
+sweep is for.
