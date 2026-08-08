@@ -1079,3 +1079,116 @@ the Foundation's discovery index; the prior-art scan found ~59,818
 endpoints monitored by provider. Different sources, different dates,
 possibly different definitions of "resource." Neither should be quoted
 as ours until somebody checks.
+
+---
+
+## Three more specs, reviewed against the tree (2026-08-08)
+
+### ⚑ The pattern across all three, and it matters most
+
+Each spec invents its own namespace: `scvd-payability/v1`,
+`scvd-reconciliation/v1`, `scvd-skill-safety/v1`. That is **four
+namespaces**, and the entire namespace play depends on there being
+**one** vocabulary others adopt. Four is not a land grab, it is
+confetti.
+
+They also all place it under `/.well-known/`. Ours is served at
+**`/spec/scvd-attestation/v1`** and already declares twelve artifact
+classes, each with `trust_model`, `signs` and `does_not_prove`, behind
+a type-level check that fails the build if a signed field is ever
+added without being signed.
+
+**All three should be new artifact classes inside the existing
+namespace.** That is what "extends the SCVD Attestation Format v1.0.0"
+means, and two of the specs say that sentence and then contradict it
+in the next line.
+
+---
+
+### A — Settlement-Reconciliation (34/35). Strongest, one load-bearing flaw.
+
+**Genuinely new here.** We have never touched `upto` or `deferred` —
+the store speaks `exact` only. Observing a scheme we have never
+implemented is real work, and the ~1 CV-week estimate may not carry
+it. The flip side is that this is why first-mover is plausible.
+
+**THE FLAW: `authorized_max` is buyer-supplied.** The spec's own
+gotcha admits the payment ref "may require the client to provide the
+authorization proof." If we sign `within_cap: true` from a cap the
+buyer handed us, we have signed the buyer's arithmetic and put our key
+on their claim.
+
+That is the exact defect already recorded against the referral
+certificate: *"the attestation is sourced from untrusted input… signing
+puts our key on a claim the buyer authored. Same class as the `from`
+field on a decline, which we already refuse to trust for exactly this
+reason."*
+
+**The fix, and it is cheap:** attest the cap only where it is
+CHAIN-DERIVABLE. An EIP-3009 authorization is payer-signed and carries
+its value, so the cap is observable. Where it is not, the receipt says
+the cap was **declared**, not observed — two verdicts, never one.
+
+One more, so the product does not read thin: `within_cap` is
+arithmetic two numbers anyone can do. The value is that a NEUTRAL
+PARTY saw both numbers. Say that on the artifact, or a reader works
+out the arithmetic is free and wonders what they bought.
+
+---
+
+### B — AI-Answer Attestor (33/35). Two real problems.
+
+**SSRF, and this is the one to fix before anything else.**
+`GET /api/attest?url=…` fetches arbitrary caller-supplied URLs from our
+Worker. `probeOnce` already carries the guards — https-only, no
+redirects, hard timeout, 256KB ceiling, per-minute budget — and was
+extracted so exactly this kind of thing shares them. But preflight
+does **not** block private or link-local addresses, because it only
+ever probes declared x402 endpoints. An arbitrary-URL fetcher must add
+that; cloud metadata endpoints are the classic target.
+
+**The claim hierarchy is still unaddressed** — the keeper flagged it
+and the spec does not answer it. `content_hash` + `fetched_at` + our
+signature proves **scvd saw these bytes**, not **the origin served
+them**. CDN variants, geo-routing, A/B tests and a MITM all break the
+origin reading, and TLSNotary exists to close precisely that gap. The
+artifact must carry the distinction in `does_not_prove` shape, which is
+already the house pattern and turns the weakness into the honest part.
+
+**And it contradicts itself.** Gotcha #6 says "we're not a proxy
+service" while the response shape is `{content, receipt}` — which is a
+proxy response. "If the content is paywalled or copyrighted we
+shouldn't be fetching it at all" cannot be honoured by a service that
+learns what it fetched by fetching it. Either own that it is a
+fetching service with published bounds (robots, UA, size, no auth
+headers, never a paywalled origin) or return hash-only and let the
+caller fetch.
+
+---
+
+### C — Skill-Safety Attestation. Blocked, and warranty-shaped.
+
+**Blocked by rule 43:** no badge ships before its criteria page
+exists, and none does. This is a badge program.
+
+**`verdict: "safe"` is the most warranty-shaped word available**, and
+the keeper's ruling was that badge copy is observation-shaped and never
+warranty-shaped — rule 41 discharged structurally, because *"the words
+are the only shield, so the words get the engineering."* Signing
+"safe" about executable code that runs with an operator's permissions
+is the one place that discipline matters most.
+
+**Fix:** `checks_passed` / `checks_failed` / `incomplete`, with the
+findings named. The consumer draws the safety conclusion. Same move
+that made `ready` / `not_ready` right for the audit.
+
+**`sandbox-execution` cannot run here.** The schema specifies docker,
+isolated network, a Linux environment. This store is Cloudflare
+Workers with no ops capacity behind it. A schema that declares checks
+the issuer cannot perform will publish `skipped` forever, which makes
+`confidence: low` the permanent honest answer — and a badge whose
+honest confidence is always low is not a badge.
+
+Either the check comes out of the standard set, or somebody funds the
+infrastructure to run it, and that is a keeper call about carry rather
+than a schema question.
