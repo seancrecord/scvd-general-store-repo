@@ -1,6 +1,7 @@
 import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
 import { storeIdentity } from "@/lib/identity";
+import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import type { Env } from "@/types";
 
 /**
@@ -189,7 +190,19 @@ export interface ProbeOutcome {
 export async function probeOnce(
   url: string,
   fetchImpl: typeof fetch = fetch,
+  ownHost = "",
 ): Promise<ProbeOutcome> {
+  /*
+   * THE BACKSTOP. Every door validates before charging, and a caller
+   * should never see this throw — that is the point. It is here so
+   * that the next door somebody adds inherits the rule instead of
+   * hand-rolling a fourth copy of it, which is exactly how the
+   * private-address hole got in.
+   */
+  const verdict = checkProbeTarget(new URL(url), ownHost);
+  if (!verdict.ok) {
+    throw new ProbeTargetRefused(verdict.reason ?? "refused target");
+  }
   const response = await fetchImpl(url, {
     method: "GET",
     redirect: "manual",
@@ -443,20 +456,15 @@ export async function preflightUrl(
   } catch {
     return { status: 400, body: { error: "That is not a parseable URL." } };
   }
-  if (url.protocol !== "https:") {
-    return {
-      status: 400,
-      body: {
-        error:
-          "https only. A payment endpoint on plain http is already failing a check no probe needs to run.",
-      },
-    };
-  }
-  if (url.port !== "" && url.port !== "443") {
-    return {
-      status: 400,
-      body: { error: "Default https port only — this probe does not dial custom ports." },
-    };
+  /**
+   * ONE LAW, from lib/probe-target: https, default port, no
+   * credentials, and no private, loopback, link-local or
+   * reserved-internal target. The own-host refusal below stays here
+   * because it gets a fuller answer than the shared rule can give.
+   */
+  const target = checkProbeTarget(url, "");
+  if (!target.ok) {
+    return { status: 400, body: { error: target.reason! } };
   }
   /**
    * OUR OWN HOST IS REFUSED WITH THE REASON, not probed. Cloudflare

@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { runChecks } from "@/services/preflight";
+import { checkProbeTarget } from "@/lib/probe-target";
 import { sweepWatches } from "@/services/watch-sweep";
 import type { Env } from "@/types";
 
@@ -51,11 +52,25 @@ export const WATCH_PROBE_TIMEOUT_MS = 8000;
  */
 const WATCH_SCAN_CAP = 500;
 
+/**
+ * The one token that marks a row this store declined to dial. Inside
+ * `failed`, which the signature covers, so the refusal cannot be
+ * edited off the record without breaking the row.
+ */
+export const REFUSED_CHECK = "probe-target-refused";
+
 export interface WatchProbe {
   at: string;
-  /** The preflight verdict this probe produced. */
-  verdict: "ready" | "not_ready" | "unreachable";
-  /** HTTP status seen, absent when unreachable. */
+  /**
+   * The preflight verdict this probe produced.
+   *
+   * `refused` is OURS, not theirs: the target failed this store's own
+   * probe-target law (private, loopback, link-local, reserved-internal)
+   * so no request was made. Recording that as `unreachable` would print
+   * our policy as a fact about somebody's endpoint.
+   */
+  verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  /** HTTP status seen, absent when unreachable or refused. */
   status?: number;
   latency_ms?: number;
   /** Names of failed checks, empty when ready. */
@@ -139,6 +154,40 @@ async function probeOnce(
   let status: number | undefined;
   let latency: number | undefined;
   let failed: string[] = [];
+  /*
+   * THE COMMENT ABOVE USED TO BE FALSE. It promised "the guards stay
+   * up on every probe, not just the first" while this function called
+   * fetch straight on the stored URL with no check at all — the whole
+   * guard lived at the purchase door, and that door was the weakest of
+   * the three (no port check, no private-address check). A week-old
+   * watch bought before this law existed would still be dialled.
+   */
+  const target = checkProbeTarget(new URL(record.url), "");
+  if (!target.ok) {
+    /*
+     * THE REASON GOES IN `failed`, WHICH IS SIGNED — not into a new
+     * field beside it. canonicalizeProbe's field order IS the contract
+     * a verifier reproduces, so adding a key would change the bytes for
+     * every row ever signed and invalidate the lot. A published field
+     * outside the signature would be worse still: alterable without
+     * breaking anything. One stable token, inside the signed set; the
+     * prose behind it lives in lib/probe-target.ts, which is public.
+     */
+    const refusedBody = {
+      at,
+      verdict: "refused" as const,
+      failed: [REFUSED_CHECK],
+    };
+    const { signature: refusedSignature } = await signMessage(
+      canonicalizeProbe(record.watch_id, record.url, refusedBody),
+      env.SIGNING_KEY,
+    );
+    return {
+      ...refusedBody,
+      signature: refusedSignature,
+      public_key: await cachedPublicKeyHex(env.SIGNING_KEY),
+    };
+  }
   try {
     const response = await fetch(record.url, {
       method: "GET",
@@ -245,7 +294,7 @@ export async function readWatch(
     0,
     Math.floor((end - Date.parse(record.started_at)) / 3600_000),
   );
-  const tally = { ready: 0, not_ready: 0, unreachable: 0 };
+  const tally = { ready: 0, not_ready: 0, unreachable: 0, refused: 0 };
   for (const probe of record.probes) {
     tally[probe.verdict] += 1;
   }

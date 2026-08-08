@@ -1426,11 +1426,80 @@ at tens of hosts. **The trigger to watch is the register key
 approaching KV's value ceiling** — that is the graduation arriving on
 schedule, not a surprise. One decision, still not two.
 
-**2. The per-subject history query.** *"What has scvd observed about X
-over time"* — found independently by me and by the payability spec.
-This is the index product, it is a route over data already signed and
-chained, and it must **return the gaps**, which is the thing the large
-monitors do not do.
+**2. The per-subject history query. — BUILT 2026-08-08 (#85).**
+`GET /corpus/host/{host}.json`, `src/services/subject-history.ts`,
+16 tests. Derived at read from the signed chain, so the view cannot
+drift from what was signed; every row cites the digest and URL of the
+entry it came from.
+
+It **returns the gaps**, which was the whole point. Five different
+facts were being written as one blank and now each carries a reason:
+`before_first_sighting`, `not_listed`, `listed_not_walked`,
+`possibly_beyond_cap`, `instrument_degraded`.
+
+Two decisions made in the build:
+
+- **First sighting comes from the chain, not the register.** The
+  register began the day #84 shipped, so reading it from there would
+  stamp "before we met" over every historical round the host was
+  plainly observed in. Same reasoning sets the denominator to rounds
+  *since* first sighting.
+- **No reliability figure, ever.** Ready-in-8-of-12 is one division
+  away and it is an accumulating score on an operator — rule 43 by
+  name. Transitions are published because each is a dated observation;
+  the ratio is withheld and the document says so out loud rather than
+  letting it look like an oversight.
+
+The trust document's `independently_checkable` whitelist **rejected
+this read, correctly.** The view is derived by our code at read time;
+what a stranger checks without us is the corpus entries, already named
+there. A derived view of an anchored record does not inherit the
+anchoring. Reverted rather than widening the whitelist.
+
+---
+
+## TIER 1½ — the gate that turned out to be a live hole
+
+**SSRF / probe-target law. — BUILT 2026-08-08 (#86).**
+Listed on the old ranking only as a prerequisite for answer
+attestation (Tier 2 item 5). It was not a prerequisite. It was an open
+door.
+
+Three surfaces take a URL from a stranger and make the Worker fetch
+it. Each had its own hand-rolled gate; **none refused a private
+address.** `169.254.169.254` — the cloud metadata address — cleared
+all three, being https, default port, and not our hostname. The probe
+reports back, so that is a read primitive, and the paid doors are the
+worst of it: buying a `service_audit` is a documented way to ask this
+Worker to fetch a URL and hand you the answer.
+
+`src/lib/probe-target.ts` is now the single law, enforced at each door
+*and* inside `probeOnce` so the next door inherits it. 38 tests.
+
+Three things worth remembering from it:
+
+- **Two bugs were invisible from outside.** `url.hostname` keeps the
+  brackets on IPv6, so every v6 check silently missed — the private
+  ones were caught by a fallback that was *also* refusing every
+  legitimate public IPv6 endpoint. And the parser rewrites
+  `::ffff:127.0.0.1` to `::ffff:7f00:1`, so text matching cannot see
+  mapped loopback at all.
+- **Refused is not unreachable.** All three doors were filing refusals
+  as "a fact about the network path between us and that host" — our
+  own policy printed as a fact about somebody's endpoint, in an
+  artifact that is paid, signed, and made to be handed to a third
+  party.
+- **The refusal token rides in `failed`, which is already signed.** A
+  new field would have changed `canonicalizeProbe`'s byte contract and
+  invalidated every signature ever issued.
+
+**Still open, and stated in the file:** a public hostname whose DNS
+answer points into private space. A Worker resolves nothing before it
+fetches. The platform's egress behaviour is what covers that class,
+not us, and the code does not claim the credit.
+
+This also unblocks **Tier 2 item 5** (answer attestation), whose first
+gate was exactly this.
 
 ---
 
