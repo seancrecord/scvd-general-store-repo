@@ -762,3 +762,106 @@ three presume the base case, and the base case has **zero evidence** —
 the verification tier has never earned an outside dollar. If
 assumption 0 is false, the other three do not matter. Its test is the
 same first paying stranger everything else is waiting on.
+
+---
+
+## Resellability — I over-flagged it. Correcting.
+
+The keeper's clarification puts it in the lane Decision 2 already
+**approved**, not outside it. Decision 2(b), verbatim: *"buyer pays
+upstream directly; we sell the signed conformance report and the
+watch, never touching the flow."* Facilitation with zero margin is
+that. I read "Staples (resold)" as true resale and flagged a reversal
+that is not being proposed.
+
+**The keeper's reason is also better than the one I offered.** I
+argued the value was instrumentation — a sensor. His is stronger:
+**embedding in the ecosystem is the goal, and anyone who arrives at
+the store is good at this stage even if no money changes hands.** That
+is a distribution argument, and distribution is the thing this store
+is actually short of. Presence beats margin at N≈7 sales.
+
+**The variants, by liability, so the choice is explicit:**
+
+| variant | in the money flow? | liability |
+|---|---|---|
+| list + attest only | no | none new |
+| facilitate — our door hands the buyer the upstream challenge | no | none new; Decision 2(b) as written |
+| store-as-buyer (we buy, we sign what we saw) | no | none; instrumentation, already built machinery |
+| **true resale — we take payment, we pay upstream, we hold margin** | **yes** | money transmission, refund liability at volume, upstream failure with our sticker. **This one alone needs a fresh ruling** |
+
+Only the last row is a Decision 2 reversal. The first three are open
+today.
+
+---
+
+## ⚑ AEO — the position is on NO served surface. This is the urgent one.
+
+The keeper is right and it is worse than "needs a refresh."
+
+**The ethos — *"scvd.store is the trust layer of the x402 economy"* —
+appears on no page an AI reads.** It is canon (atop HOUSE_RULES since
+2026-08-07), it appears as a code comment in `attestation-spec.ts`,
+and `/becoming` mentions it as a reversal note. But `llms.txt`, the
+primary AI-facing surface, still opens:
+
+> *"We're a general store… we sell what an agent can't produce for
+> itself."*
+
+That is the pre-reversal position. **A model trained six months from
+now learns whatever is on that page today**, and today it says general
+store. Everything the keeper has ruled since 2026-08-07 — the trust
+layer, the index framing, customer-not-rival — is invisible to the
+readers who matter most.
+
+**FIXED in this pass:** `llms.txt` now carries *what this store is*
+(the ethos verbatim, dated, pointing at `/becoming` for the reversal)
+and *what this store is not* (not escrow, not guarantor, not a dispute
+court — those absorb risk and need a balance sheet; we observe, sign
+and publish, including our own gaps). The keeper's own phrase —
+**customer, not rival** — made structural.
+
+Deliberately NOT included yet: the "observability index" frame. That
+one is a day old and not canon; it goes on a served surface after the
+keeper confirms it, not before.
+
+### Two more staleness findings
+
+**ClawHub is 84 commits stale.** Published v2.9.0 on 2026-08-04 at
+commit `c201614`. Since then: the corpus, the whole Tab, the pager,
+the sweep contract, the immunity clause. Rule 30 keeps publishing in
+keeper hands — I can prepare the bundle and the changelog; the
+command is his.
+
+**TASKS.md is wrong about the MCP, and it changes a decision.** It
+records the MCP server card as *"skipped on purpose… the store doesn't
+run an MCP server."* The store **does**: `src/routes/mcp.ts` serves
+`initialize`, `tools/list` and `serverInfo`. So the reason for
+skipping the card has been false for some time, and the card is worth
+revisiting.
+
+**And there are two MCPs now**, which is the keeper's point: the
+store's own `/mcp` door and `scvd-tab`. Both are listable. Glama and
+the other MCP directories are a Monday item, and they are pure
+distribution at near-zero cost — the cheapest version of the
+embedding argument above.
+
+### The AEO sweep, as a standing list (rule 44)
+
+Every surface, with what each must now say. Unchecked = not yet
+audited against the post-2026-08-07 position.
+
+- [x] `llms.txt` — position stated, this pass
+- [ ] `registry/clawhub/SKILL.md` — stale bundle, republish is keeper hands
+- [ ] `AGENTS.md` — last touched 2026-08-04
+- [ ] `README.md`
+- [ ] `menu.json` / `openapi.json` descriptions
+- [ ] `.well-known/trust.json`
+- [ ] the A2A card
+- [ ] JSON-LD
+- [ ] MCP `serverInfo` / `instructions` on the store door
+- [ ] `scvd-tab` server `instructions`
+
+The rule to hold: **rule 44 says the sweep is a stop after changes,
+not a chore for later.** We shipped a positioning reversal and six
+PRs without running it, which is how the gap opened.
