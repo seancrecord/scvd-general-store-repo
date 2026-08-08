@@ -323,3 +323,119 @@ Noted for the red-team week rather than fixed now.
 The pattern worth noticing: **almost everything above is unproven in
 the same way — it works in the suite and has never met a stranger.**
 That is one week of adversarial testing, not seven separate projects.
+
+---
+
+## The merged list (research + backlog), ranked 2026-08-08
+
+Scored on ROI, uniqueness, marketability, and — the one that actually
+reorders things — **what it does for the store holistically.** The
+test applied throughout: *does this feed the index, or sit beside it?*
+
+### The finding that reorders the research
+
+**E (Payability/Mortality) is not a new product. It is ~85% shipped
+and mis-ranked as a build.**
+
+- the ward round already records `ready | not_ready | unreachable |
+  not_probed` per host, weekly, plus `newly_failing`, `newly_fixed`
+  and `flappers` week over week — that *is* payability and mortality
+- the corpus already freezes each round into a signed, hash-chained,
+  OTS-anchored snapshot
+- `/corpus.json` and `/corpus/{n}.json` already serve them publicly
+
+**The only missing piece is a query by subject.** Today you can
+enumerate snapshots; you cannot ask *"what has scvd observed about
+merchant.example over time."* You would have to fetch every snapshot
+and reduce it yourself.
+
+That single gap is the whole distance between a diary and an index,
+and closing it is one route over data that is already signed and
+anchored. It is by a wide margin the cheapest path to the first
+outside dollar, and it is the concrete form of the keeper's own
+reframe.
+
+### Three other structural notes on the research
+
+**A and C are one product, not two.** Both measure the gap between
+payment and delivery — A at authorized-vs-settled, C at
+settled-vs-delivered. And **C is our own bug**: the delivery audit,
+`undelivered_sale`, and the paid retry are C, already instrumented for
+ourselves. Build them as two query types on one index. Shipping them
+as two products doubles the surface and halves the story.
+
+**B's TLSNotary problem is already solved in our canon.** R1's caution
+is right and the group's resolution — *be honest about what it proves*
+— is literally `does_not_prove`, a published and tested field on every
+artifact class we ship. We are structurally better placed for B than a
+generic builder. The risk the four responses did *not* name is
+different: attesting what an AI answered is one step from scoring the
+AI, which is rule 43 pressure and the Browser Use targeting problem
+again. Uniformity is the prophylactic — observe everything the same
+way or don't observe.
+
+**The Tab's layer 3 is the same product as E, pointed at a different
+universe.** x402 endpoints on one side, builder tools on the other:
+same signed corpus, same "popularity not judgment," same
+contribute-to-access. Under the index frame The Tab stops being a side
+product and becomes index number two.
+
+### The counterweight, said plainly
+
+Four independent responses returning BUILD on six of eight candidates
+is a **shared prior**, not a confirmation. They were each asked to
+evaluate candidates, which biases toward finding merit. The scarce
+resource here has never been ideas — it is one keeper, and the fact
+that the verification tier has not yet earned an outside dollar. Every
+item below competes against *"ship the thing that gets the first
+stranger to pay."*
+
+---
+
+### TIER 0 — debts, not products. Do not rank these against features.
+
+| | |
+|---|---|
+| **Refund-window detector** | a live published money promise enforced only by the keeper remembering. Approved 2026-08-08. |
+| **Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build. |
+
+### TIER 1 — the index, made real
+
+1. **Publish the index (E, reframed).** Per-subject query over the
+   corpus. Mostly built. Turns the diary into a product and is the
+   cheapest route to a first paying stranger.
+2. **A + C as one build — the payment/delivery gap index.** The
+   convergence category, and the half we already run for ourselves.
+3. **The criteria page.** Rule 43 gate: nothing badges before it
+   exists. Required to *sell* a verdict at all.
+4. **Key succession.** Raised above where the research put it,
+   deliberately: every artifact the index has ever signed becomes
+   unverifiable if the key dies with no pre-announced successor. It is
+   the single point of failure under the entire corpus and it is
+   already a public promise on `/becoming`.
+
+### TIER 2 — feeds the index, with a named caveat
+
+5. **B (AI-Answer Attestor)** — our `does_not_prove` discipline is a
+   real edge here. Watch the targeting exposure.
+6. **D (WebMCP Verifier)** — agree with the consensus and the browser-
+   vendor risk. The only candidate whose *domain* can vanish; the
+   corpus built before that happens is the asset, not the product.
+
+### TIER 3 — agree with the research
+
+7. **F (Sanctions Clearance)** — partnership with KYT providers, not
+   competition. Add the signed portable format they lack.
+8. **G (Auto-Registrar)** — ops, and worth doing as hygiene because it
+   feeds discovery *of* the index.
+9. **H (Spend-Guard)** — no. Follower position.
+
+### TIER 4 — beside the index, not feeding it
+
+Distribution first, because it feeds discovery: agentic.market (gated),
+ACP listing, Farcaster / Base App.
+
+Then: `town_papers` · `anniversary_artifact` · referral certificate ·
+Polygon · Algorand · the cold-read test on remaining artifact classes
+(hardening, cheap, high value per hour) · replay guard under
+concurrency.
