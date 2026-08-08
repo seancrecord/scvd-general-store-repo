@@ -1192,3 +1192,63 @@ honest confidence is always low is not a badge.
 Either the check comes out of the standard set, or somebody funds the
 infrastructure to run it, and that is a keeper call about carry rather
 than a schema question.
+
+---
+
+## The spec checklist — what four reviews kept finding
+
+Written after reviewing payability, reconciliation, answer-attestation
+and skill-safety. Every one of these came up more than once, so it is
+cheaper to write specs against the list than to review them against it.
+
+**1. Is it already built under another name?** Most of the payability
+spec was. Check `ARTIFACT_CLASSES` (twelve of them), `service_audit`,
+`conformance_watch`, the ward round, `preflight`, the corpus. A spec
+written without the tree open costs a review to discover that.
+
+**2. Does it invent a namespace?** It should not. New artifact class
+inside `scvd-attestation/v1`, which is served at **`/spec/scvd-attestation/v1`**
+— not under `/.well-known/`. Three of four specs got both halves wrong.
+Four namespaces is not a land grab.
+
+**3. Does it sign anything the buyer supplied?** If a field arrives
+from the party the receipt benefits, our key ends up on their claim.
+Either derive it independently (chain, probe, our own logs) or label
+it **declared** and never **observed** — two verdicts, not one. This
+is the referral-certificate defect and it recurs.
+
+**4. Is there a `does_not_prove`?** Every artifact class has one and
+it is where the honesty lives. "We saw these bytes" is not "the origin
+served them." If a spec cannot state what its signature fails to
+establish, it is not finished.
+
+**5. Is the verdict observation-shaped or warranty-shaped?** `ready` /
+`not_ready` with the failing checks named, not `safe`. The keeper's
+ruling: badge copy is observation-shaped and never warranty-shaped,
+because the words are the only shield.
+
+**6. Does it assume infrastructure we do not have?** Cloudflare Workers
+and KV. No Postgres, no SQLite, no docker, no ops capacity. A check
+that cannot run publishes `skipped` forever.
+
+**7. What does one unit COST US to produce?** Anything that pays a
+third party, probes at volume, or fetches arbitrary bytes has a real
+cost. The payability spec priced settlement attempts at a cent while
+paying the endpoint's own price — a guaranteed loss that scales with
+how interesting the endpoint is.
+
+**8. Does it spend money?** Then CV's wallet law applies, and its hard
+cap, cap period and ask-first threshold are all still blank by the
+keeper's own choice. That lands first.
+
+**9. What is the attack surface?** Anything taking a caller-supplied
+URL is SSRF until proven otherwise. `probeOnce` carries https-only, no
+redirects, a hard timeout, a 256KB ceiling and a per-minute budget —
+reuse it. It does **not** block private or link-local addresses,
+because preflight only ever probes declared endpoints; an
+arbitrary-URL fetcher has to add that itself.
+
+**And the filter question on top of all nine**, from the strategy
+synthesis and better than anything I offered: *does this create a new
+class of signed observation that will still be valuable after the
+individual receipt has been forgotten?*
