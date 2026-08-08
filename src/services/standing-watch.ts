@@ -217,6 +217,15 @@ export interface WatchHistory {
   probes: WatchProbe[];
   how_to_verify: string;
   what_this_is_not: string;
+  /**
+   * THE ISSUER-PAYS IMMUNITY CLAUSE (the keeper's ruling,
+   * 2026-08-07), written at spec level rather than kept as an
+   * intention. It rides EVERY history because the vocabulary is
+   * the point: a scvd watch means unbought observation, paid for
+   * by the observed, and a reader learns that from the artifact
+   * rather than from us saying so somewhere else.
+   */
+  who_pays_and_what_it_buys: string;
 }
 
 export async function readWatch(
@@ -257,5 +266,7 @@ export async function readWatch(
       "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed (exactly that order, null for absent numbers) against the row's public_key. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
       "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched.",
+    who_pays_and_what_it_buys:
+      "The party being watched is the party paying, which is the rating agency's model and carries its one famous defect: the rated pays the rater, and the rater drifts favorable. So the terms say it before any sale rather than after a dispute — payment buys FREQUENCY AND PERMANENCE, never outcome. The watch publishes what it observes. An endpoint that degrades while its operator is paying gets signed readouts saying so, in public, at the URL the operator paid for, for as long as the watch runs. Nothing here is bought, and a favorable history is worth reading only because an unfavorable one would have been published in the same place.",
   };
 }

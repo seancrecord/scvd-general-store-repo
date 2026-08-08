@@ -111,7 +111,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     signs:
       "Each hourly row on its own: the watch id, the watched URL, the moment, the verdict, the names of any failed checks, and the status and latency where present — in the declared canonical order, so any single row can be quoted alone.",
     does_not_prove:
-      "Anything about hours we did not probe. The gaps are derived at read and counted against us in the same history; a row is one look from one vantage, never an uptime figure.",
+      "Anything about hours we did not probe. The gaps are derived at read and counted against us in the same history; a row is one look from one vantage, never an uptime figure. Nor is it bought. The watched party pays — the rating agency's model, whose one defect is that the rater drifts favorable — so the terms say it at spec level: payment buys frequency and permanence, never outcome. An endpoint that degrades while its operator is paying gets signed readouts saying so, in public, at the URL the operator paid for. The clause rides every watch history as who_pays_and_what_it_buys.",
     verify_url: "/api/watch/{watch_id}",
   },
   {
@@ -121,7 +121,7 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     signs:
       "Each daily pass on its own: the watch id, the watched URL, the moment, the verdict, the names of failed checks and of advisories — in the declared canonical order, so any single day can be quoted alone.",
     does_not_prove:
-      "Anything about the hours between passes, or about days nobody checked — those are derived at read and counted against us. One pass a day is conformance cadence, never uptime.",
+      "Anything about the hours between passes, or about days nobody checked — those are derived at read and counted against us. One pass a day is conformance cadence, never uptime. Nor is it bought. The watched party pays — the rating agency's model, whose one defect is that the rater drifts favorable — so the terms say it at spec level: payment buys frequency and permanence, never outcome. An endpoint that degrades while its operator is paying gets signed readouts saying so, in public, at the URL the operator paid for. The clause rides every watch history as who_pays_and_what_it_buys.",
     verify_url: "/api/conformance-watch/{watch_id}",
   },
   {

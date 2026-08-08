@@ -307,6 +307,18 @@ verification steps that work offline against the published key. A
 verifier written against that page is coupled to a contract with a
 stability promise, not to whatever our code does today.
 
+On the watches, where the money runs the wrong way and the terms say
+so before anyone asks: the party being watched is the party paying.
+That is the rating agency's model and it carries the rating agency's
+one famous defect, so the immunity is written at spec level rather
+than promised at sale time. Payment buys frequency and permanence,
+never outcome. An endpoint that degrades while its operator is paying
+gets signed readouts saying so, in public, at the URL the operator
+paid for. Every watch history carries the clause as
+who_pays_and_what_it_buys, and a favorable history is worth reading
+only because an unfavorable one would have been published in the same
+place.
+
 Building an offer-receipt implementation of your own? Deterministic
 conformance vectors (known-good and known-bad, regenerable byte for
 byte from a published test seed) are served at

@@ -50,6 +50,61 @@ on the same reputation."
   bar on the copy rather than lowering it — the words are the only
   shield, so the words get the engineering.
 
+---------------------------------------------------------------------
+DECISION 2, RETURNED TO (2026-08-07, later the same day)
+---------------------------------------------------------------------
+
+The keeper ruled again on the money-flow question once it had a real
+counterparty in front of it, and the ruling narrows Decision 2 rather
+than reversing it. The original text above stands as written — this
+document dates its changes rather than editing them, which is the
+same discipline it demanded of /becoming.
+
+**The term "verified referral" is retired, internally and
+everywhere.** In the keeper's words: *"Referral value is what the
+watched party gets — prospective buyers reading a public history and
+drawing their own conclusions. But the word imports exactly the
+liability the design just removed: a referral is a recommendation, a
+recommendation is an opinion, an opinion has an owner."* What ships
+is **a consented watch with a public door.** If the outside world
+experiences it as a referral, that is their inference, signed by
+nobody.
+
+**Option (ii) — selling an assessment — dies on coherence, before it
+ever reaches liability.** The observation URL is public and free
+forever; that is doctrine, not a feature flag. So the only thing left
+to sell would be judgment, and judgment is the one product this store
+is constitutionally barred from stocking. The defamation surface and
+the rule 43 pressure were never incidental risks of (ii) — they were
+the tell that (ii) requires becoming a critic, and a critic is a
+different business with a different balance sheet.
+
+**The observation is taken for free and filed uniformly.** One GET of
+a public URL needs no leave. It goes into the corpus the way every
+other observed endpoint's does — one entry among all of them,
+identical treatment, **no standalone named report on anybody.**
+Uniformity is the prophylactic: observing everything the same way
+reads as infrastructure; publishing one named assessment reads as
+targeting. The sale, when it comes, is not a pitch — it is showing an
+operator a ledger that already exists.
+
+**The issuer-pays trap is closed at spec level, not at sale time.**
+The clause now ships in the code as `who_pays_and_what_it_buys` on
+every watch history, and in `/attestation` under both watch artifact
+classes: *payment buys frequency and permanence, never outcome.* An
+endpoint that degrades while its operator is paying gets signed
+readouts saying so, in public, at the URL the operator paid for.
+Published as part of the watch spec, that clause is a namespace
+artifact — the vocabulary for consent-based observation that does not
+launder favorability. A future model reading the x402 universe learns
+that a scvd watch means unbought observation, paid for by the
+observed.
+
+**On the revenue math:** small, and it does not matter. The value is
+the deed. A first consented, paying, named watch on a third-party
+commercial endpoint is the reference case every later watch points
+at, and it cannot be backfilled by anyone who starts later.
+
 The one-line finding, up front: **the pivot is not a reversal of the
 canon — it is rule 23a applied at scale.** "The store's one real
 product is INDEPENDENT SIGNED OBSERVATION; every serious item is that
