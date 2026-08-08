@@ -241,7 +241,8 @@ like everything else.
    it timely, an agent with rounds makes it inevitable, and neither
    makes it certain. `unspoken_pct` is how you find out which one you
    actually have.
-4. **`problem_solved` is the hole in the quarantine.** Every other
-   field a mail sweep writes is closed vocabulary, numbers or dates.
-   That one is free text, and no schema rule can tell your words from
-   a vendor's.
+4. **No ground truth for the pre-filter either.** The sweep now has
+   to state how many messages it read, and anything it read but never
+   classified is published as `unclassified`. That catches filtering
+   by omission. It does not catch a sweep that reports numbers it
+   made up — nothing here can.

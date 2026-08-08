@@ -167,14 +167,56 @@ export function recordCoverage(input, path = defaultTabPath()) {
           sender: String(row?.sender ?? "").slice(0, 120),
         }))
       : [],
+    /**
+     * THE DENOMINATOR, and the reason this pair exists at all.
+     *
+     * A sweep that filters before it counts reports a flattering
+     * gap: drop the unparseable mail on the floor, and
+     * `variability_pct` measures the extractor's confidence rather
+     * than the tab's coverage. The counting obligation was a
+     * paragraph in a doc, which is another way of saying it was
+     * nothing.
+     *
+     * So it becomes arithmetic the sweep has to satisfy:
+     *
+     *   scanned = matched + unmatched_transactional + not_transactional
+     *
+     * Anything left over is `unclassified` — mail the sweep LOOKED AT
+     * and never placed in any bucket. It is published rather than
+     * absorbed, because that residue is exactly the pre-filter hole.
+     * A sweep that declines to report `scanned` gets null, and the
+     * refusal to count is itself the finding.
+     */
+    scanned: Number.isFinite(input?.scanned) ? input.scanned : null,
+    not_transactional: Number.isFinite(input?.not_transactional)
+      ? input.not_transactional
+      : 0,
   };
+  record.unclassified =
+    record.scanned === null
+      ? null
+      : Math.max(
+          0,
+          record.scanned -
+            record.matched -
+            record.unmatched_transactional.length -
+            record.not_transactional,
+        );
   const coveragePath = sidecarPath(path, ".coverage.jsonl");
   mkdirSync(dirname(coveragePath), { recursive: true }); // F4: fresh install
   appendFileSync(coveragePath, `${JSON.stringify(record)}\n`, "utf8");
   return {
     recorded: true,
     unattributed_count: record.unmatched_transactional.length,
-    note: "Coverage is the instrument's own record — appended beside the tab, never mixed into it, so the gap can be watched over time.",
+    scanned: record.scanned,
+    unclassified: record.unclassified,
+    books_balanced: record.scanned !== null && record.unclassified === 0,
+    note:
+      record.scanned === null
+        ? "Recorded, but the sweep did not say how many messages it looked at — so the gap it reports cannot be checked against anything. Pass `scanned` and `not_transactional`: every message the sweep read belongs in exactly one bucket, and a denominator nobody states is a denominator nobody can audit."
+        : record.unclassified > 0
+          ? `Recorded. ${record.unclassified} message${record.unclassified === 1 ? "" : "s"} were read and never placed in any bucket — that residue is published, not absorbed, because it is exactly where a pre-filter hides.`
+          : "Recorded and the books balance: every message the sweep read is accounted for in one bucket. Coverage is appended beside the tab, never mixed into it, so the gap can be watched over time.",
   };
 }
 
@@ -406,6 +448,23 @@ function coverageBlock(current, path) {
       sweepAgeDays === null ? "never run" : sweepAgeDays > 7 ? "yes" : "no",
     unmatched_transactional_count: swept?.unmatched_transactional?.length ?? 0,
     unattributed_amount: Math.round(unattributed * 100) / 100,
+    /**
+     * DID THE SWEEP'S OWN BOOKS BALANCE. `variability_pct` is only
+     * worth reading if the denominator behind it was honestly
+     * counted; a sweep that pre-filtered and never said so produces a
+     * beautiful percentage of nothing. These two travel with it so
+     * the reader can tell those apart.
+     */
+    messages_scanned: swept?.scanned ?? null,
+    unclassified_messages: swept?.unclassified ?? null,
+    counting_note:
+      swept == null
+        ? "No sweep has ever reported."
+        : swept.scanned == null
+          ? "The last sweep did not state how many messages it read, so nothing below can be checked against a denominator. Treat variability_pct as unaudited."
+          : swept.unclassified > 0
+            ? `The last sweep read ${swept.scanned} messages and left ${swept.unclassified} in no bucket at all. That residue is where a pre-filter hides, and it is published rather than absorbed.`
+            : `The last sweep read ${swept.scanned} messages and placed every one of them. The denominator is auditable.`,
     entries_with_gaps: incompleteEntries,
     unconfirmed_tools: current.active.filter((t) => t.confirmed === false).length,
     unconfirmed_monthly:
@@ -954,13 +1013,29 @@ export const TOOL_DEFS = [
   {
     name: "record_coverage",
     description:
-      "The sweep reports what it saw: addresses read, how far it got, and money-shaped mail it could NOT attribute to any tool. That last list is how the tab measures its own blind spot and computes the variability window.",
+      "The sweep reports what it saw: addresses read, the window, and money-shaped mail it could NOT attribute to any tool. THE COUNTING OBLIGATION: every message you read belongs in exactly one bucket — matched, unmatched_transactional, or not_transactional — and `scanned` must be the total you actually looked at, BEFORE any filtering. Mail you dropped as unparseable still counts. A sweep that filters before it counts reports a flattering gap, and the tab publishes the leftover as `unclassified` rather than absorbing it.",
     handler: recordCoverage,
     inputSchema: {
       type: "object",
       properties: {
         addresses_swept: { type: "array", items: { type: "string" } },
-        swept_through: { type: "string" },
+        window_from: { type: "string", description: "ISO date the sweep started from" },
+        window_to: { type: "string", description: "ISO date the sweep read through" },
+        scanned: {
+          type: "integer",
+          minimum: 0,
+          description:
+            "every message read in the window, counted BEFORE filtering — the denominator. Omitting it marks the whole report unaudited.",
+        },
+        not_transactional: {
+          type: "integer",
+          minimum: 0,
+          description: "messages read and classified as carrying no money",
+        },
+        attributed_amount: {
+          type: "number",
+          description: "money in this window the sweep DID place on a tool, in the same units as the unmatched amounts",
+        },
         matched: { type: "integer" },
         unmatched_transactional: {
           type: "array",
