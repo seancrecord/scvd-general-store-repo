@@ -62,12 +62,51 @@ export async function isNonceSpent(env: Env, nonce: string): Promise<boolean> {
   return (await env.COUNTERS.get(KV_KEYS.paymentNonce(nonce))) !== null;
 }
 
+/**
+ * What a spent nonce remembers. `transaction` is the link the paid
+ * retry stands on: nonce → the settle that burned it → the delivery
+ * intent that says whether goods ever left. Rows written before
+ * 2026-08-08 stored the bare path string; getSpentNonce reads both
+ * shapes forever, and an old row (no transaction) simply cannot take
+ * the paid-retry lane — it gets the refusal it always got.
+ */
+export interface SpentNonceRecord {
+  path: string;
+  transaction?: string;
+}
+
+export async function getSpentNonce(
+  env: Env,
+  nonce: string,
+): Promise<SpentNonceRecord | null> {
+  const raw = await env.COUNTERS.get(KV_KEYS.paymentNonce(nonce));
+  if (raw === null) {
+    return null;
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (isRecord(parsed) && typeof parsed["path"] === "string") {
+      const record: SpentNonceRecord = { path: parsed["path"] };
+      if (typeof parsed["transaction"] === "string") {
+        record.transaction = parsed["transaction"];
+      }
+      return record;
+    }
+  } catch {
+    // Pre-upgrade row: the value IS the path.
+  }
+  return { path: raw };
+}
+
 export async function recordSpentNonce(
   env: Env,
   nonce: string,
   path: string,
+  transaction?: string,
 ): Promise<void> {
-  await env.COUNTERS.put(KV_KEYS.paymentNonce(nonce), path, {
-    expirationTtl: NONCE_TTL_SECONDS,
-  });
+  await env.COUNTERS.put(
+    KV_KEYS.paymentNonce(nonce),
+    JSON.stringify({ path, ...(transaction ? { transaction } : {}) }),
+    { expirationTtl: NONCE_TTL_SECONDS },
+  );
 }

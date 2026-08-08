@@ -224,6 +224,38 @@ export async function knownSettlementHashes(
 }
 
 /**
+ * The certificate (if any) that names a settlement — the paid
+ * retry's second question. An open delivery intent plus an EXISTING
+ * certificate means the crash landed between mint and response: the
+ * goods are real, the buyer just never saw them, and re-running the
+ * handler would mint a second artifact against one payment (the
+ * double-count rule 13 exists to make impossible). Same bulk scan as
+ * knownSettlementHashes; the exceptional lane can afford it.
+ */
+export async function certIdForSettlement(
+  env: Env,
+  transaction: string,
+): Promise<string | null> {
+  const listed = await listKeys(env.PATRONS, {
+    prefix: KV_KEYS.certPrefix,
+    cap: CERT_SCAN_CAP,
+  });
+  const values = await bulkGetJson<CertificateRecord>(
+    env.PATRONS,
+    listed.names,
+  );
+  const wanted = transaction.toLowerCase();
+  for (const record of values.values()) {
+    if (!record) continue;
+    const tx = record.certificate?.settlement_tx;
+    if (typeof tx === "string" && tx.toLowerCase() === wanted) {
+      return record.certificate.cert_id;
+    }
+  }
+  return null;
+}
+
+/**
  * Walk the chain forward from where the last pass stopped.
  *
  * INCREMENTAL, with the cursor stored rather than derived, because a

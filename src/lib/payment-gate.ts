@@ -49,8 +49,10 @@ import type {
 import { parseReferralMarker, recordReferral } from "@/lib/referrals";
 import {
   closeDeliveryIntent,
+  getOpenDeliveryIntent,
   openDeliveryIntent,
 } from "@/services/delivery-audit";
+import { certIdForSettlement } from "@/services/chain-reconciliation";
 import { signedOffersForChallenge, withReceiptHeader } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
@@ -75,7 +77,7 @@ import {
 import type { SettledPayment } from "@/lib/payments";
 import {
   extractPaymentNonce,
-  isNonceSpent,
+  getSpentNonce,
   payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
@@ -629,27 +631,97 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
-  // Verified. Refuse a nonce we've already settled once.
+  // Verified. A nonce we've already settled once is refused — unless
+  // the money it moved never became goods, which is the one state
+  // where a spent nonce should buy something instead of a refusal.
   const nonce = extractPaymentNonce(result.paymentPayload);
-  if (nonce && (await isNonceSpent(c.env, nonce))) {
-    // BOOK IT. This path refused a signed payment and recorded nothing
-    // until 2026-07-28, which meant a buyer retrying an authorization
-    // instead of re-signing was invisible in the books — the exact
-    // shape of a real buyer bouncing repeatedly off a fixable wall.
-    await recordPaymentDecline(
-      c.env,
-      c.req.path,
-      "replay:nonce_already_settled",
-      gateSignals(c),
-    ).catch(() => undefined);
-    c.header("Cache-Control", "no-store");
-    return c.json(
-      {
-        error:
-          "That payment authorization has been through this till once already. Sign a fresh one, the register remembers.",
-      },
-      402,
-    );
+  if (nonce) {
+    const spent = await getSpentNonce(c.env, nonce);
+    if (spent) {
+      /**
+       * THE PAID RETRY (2026-08-08, closing class B of "paid and got
+       * nothing"). The delivery audit's ruling stands — no cron can
+       * re-run a handler whose inputs it never had — but the BUYER'S
+       * RETRY carries the inputs, and the 2026-08-07 incident proved
+       * buyers do retry. This branch runs only when: the payload
+       * VERIFIED (we are past the facilitator check, so the caller
+       * holds the buyer's actually-signed authorization — the same
+       * standard the idempotency cache stands on), the retry is for
+       * the SAME path the money bought, and the delivery intent for
+       * that settle is STILL OPEN — money taken, goods never left.
+       *
+       * If a certificate already names the settle, the crash landed
+       * between mint and response: goods are real, the buyer never
+       * saw them. Point at the artifact rather than minting a second
+       * one against the same payment — a re-mint here would be the
+       * double-count rule 13 exists to make impossible.
+       *
+       * Books are deliberately NOT rewritten on this lane: the
+       * original settle already recorded the sale once. Nothing here
+       * settles, charges, or counts — it only stops refusing a buyer
+       * we already charged.
+       */
+      if (spent.transaction && spent.path === c.req.path) {
+        const open = await getOpenDeliveryIntent(c.env, spent.transaction);
+        if (open) {
+          const existingCert = await certIdForSettlement(
+            c.env,
+            spent.transaction,
+          );
+          if (existingCert) {
+            await closeDeliveryIntent(c.env, open.key).catch(() => undefined);
+            c.header("Cache-Control", "no-store");
+            c.header("Paid-Retry", "already-delivered");
+            return c.json({
+              already_delivered: true,
+              settlement_tx: spent.transaction,
+              certificate_id: existingCert,
+              verify_url: `${c.env.STORE_BASE_URL}/api/verify/${existingCert}`,
+              note: "This authorization settled once and its goods DID mint — the response just never reached you. The certificate above is yours; nothing was charged again.",
+            });
+          }
+          const retryMinimum = minimumUsdcForPath(c.req.path);
+          const retryPayment: SettledPayment = {
+            paidUsdc: open.intent.paid_usdc,
+            tipUsdc: tipFromPaid(open.intent.paid_usdc, retryMinimum),
+            transaction: spent.transaction,
+            settleHeaders: {},
+          };
+          const retryPayer = payerOfVerifiedPayload(result.paymentPayload);
+          if (retryPayer) {
+            retryPayment.payer = retryPayer;
+          }
+          c.set("payment", retryPayment);
+          await next();
+          if (c.res.status < 300) {
+            await closeDeliveryIntent(c.env, open.key).catch(() => {
+              // Left open on failure: a false alarm beats a silent loss.
+            });
+          }
+          c.res.headers.set("Paid-Retry", "true");
+          c.res.headers.set("Cache-Control", "no-store");
+          return c.res;
+        }
+      }
+      // BOOK IT. This path refused a signed payment and recorded nothing
+      // until 2026-07-28, which meant a buyer retrying an authorization
+      // instead of re-signing was invisible in the books — the exact
+      // shape of a real buyer bouncing repeatedly off a fixable wall.
+      await recordPaymentDecline(
+        c.env,
+        c.req.path,
+        "replay:nonce_already_settled",
+        gateSignals(c),
+      ).catch(() => undefined);
+      c.header("Cache-Control", "no-store");
+      return c.json(
+        {
+          error:
+            "That payment authorization has been through this till once already. Sign a fresh one, the register remembers. (If your last attempt paid and the goods never arrived, retrying with the SAME authorization within a day delivers them without a second charge — that lane just found nothing owed.)",
+        },
+        402,
+      );
+    }
   }
 
   // Settle now, money first, then the goods.
@@ -740,7 +812,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     };
   }
   if (nonce) {
-    await recordSpentNonce(c.env, nonce, c.req.path);
+    // The transaction rides the spent-nonce row: it is the link the
+    // paid retry stands on (nonce → settle → delivery intent).
+    await recordSpentNonce(c.env, nonce, c.req.path, settled.transaction);
   }
 
   const minimumUsdc = minimumUsdcForPath(c.req.path);
