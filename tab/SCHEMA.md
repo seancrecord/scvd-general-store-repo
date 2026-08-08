@@ -206,11 +206,38 @@ readout rather than a silence.
 
 ## Known holes
 
-- **No `quarter` period.** Quarterly billing is real, and today it has
-  to be converted to monthly by hand — silently, which is exactly the
-  inferred-arithmetic class `confidence` exists to flag. Adding a
-  period grows the vocabulary and so is a keeper decision, recorded
-  here rather than patched.
+### The price vocabulary does not cover three real billing shapes
+
+Found by hand, logging a real stack of two dozen tools (2026-08-08).
+Recorded together because they look like three holes and are probably
+one: `price` assumes **a fixed amount on a fixed clock**, and a good
+share of the builder-tool market does not bill that way.
+
+| shape | what happens today | why it matters |
+|---|---|---|
+| **quarterly** | refused — `period` is `month\|year\|week\|once` | has to be hand-converted to monthly, silently. That is the inferred-arithmetic class `confidence` exists to flag, done invisibly |
+| **usage-based** | representable but imprecise — a number has to be invented for a bill that varies | the burn figure quietly gains a made-up component, and nothing marks which part was guessed |
+| **free tier with a paid path** | representable but imprecise — `adopted` says free, and the price it *would* cost has nowhere to live | the same gap `converts_to` closed for trials, still open for free tiers |
+
+The confirmed refusal, verbatim:
+
+```
+price must be {amount, currency, period: month|year|week|once}.
+```
+
+Which is the honest behavior — the schema refuses rather than
+guessing, and the message names the fix. That is the hole working as
+designed, not failing.
+
+Growing the vocabulary changes the contract, so all three are a keeper
+decision and worth ruling on **together** rather than patching one at
+a time. The shape of the answer matters more than any single period:
+whether `price` gains members, or gains a `basis` (`fixed`,
+`metered`, `free_with_paid_path`) that says what kind of number it is
+holding.
+
+### Other
+
 - **Single-writer-ish.** Atomicity rests on bounded lines under the
   POSIX atomic append size. Two agents hammering one tab is untested;
   `bad_lines` above zero is the symptom to watch for.
