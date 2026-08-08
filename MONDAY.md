@@ -1385,19 +1385,46 @@ the batch is two or three, not eight.
 
 ## TIER 1 — the constraint, and the thing everything else waits on
 
-**1. Enumeration / observation split.** Union of every public directory
-as the denominator, probed subset published against it, `first_seen` /
-`last_seen` at the enumeration layer. Counting is nearly free; probing
-is what costs.
+**1. Enumeration / observation split. — BUILT 2026-08-08.**
+`src/services/population.ts`, wired into the ward round, 12 tests.
+Union of the directories we read as the denominator, probed subset
+published against it, `first_seen` / `last_seen` / `gone_at` at the
+enumeration layer. Counting is nearly free; probing is what costs.
 
-This is the highest-leverage item on the whole list and it is on
-nobody's because it is not a product. It fixes the coverage gap, makes
-mortality measurable at population scale **without paying for probes**,
-and raises corpus volume by orders of magnitude on the axis that is
-cheap. Everything in category two gets closer the day it lands.
+This was the highest-leverage item on the whole list and it is on
+nobody else's because it is not a product. It fixes the coverage gap,
+makes mortality measurable at population scale **without paying for
+probes**, and raises corpus volume on the axis that is cheap.
+Everything in category two got closer the day it landed.
 
-Note: it trips the KV→R2 graduation trigger by definition. One
-decision, not two.
+What shipped, beyond the spec:
+
+- **A census that rides the existing feeds** — no new fetches, so
+  coverage costs nothing on top of the round.
+- **`returned`** — a host listed again after being written off. Not in
+  the plan; it falls out of `gone_at` for free and nothing else we run
+  would notice it.
+- **Three guards against a fabricated mass extinction**, which is the
+  one failure that would be permanent in an append-only corpus: an
+  unreadable source carries its hosts forward; a page-capped discovery
+  read counts as unreadable rather than as a short answer; a union
+  collapsing past the ward's existing 60% floor records no
+  disappearance at all that round.
+
+One decision made in the build that is worth the keeper knowing:
+**the collapse grace lasts exactly one round.** A test caught that
+measuring the floor against the live register instead of the previous
+census makes suppression permanent — the baseline never falls, so a
+genuine contraction could never be recorded. So the instrument gets
+the benefit of the doubt once; a still-small union next round is taken
+as the world. Affordable only because delisting is reversible here and
+a returning host keeps its `first_seen`.
+
+Still true: it trips the KV→R2 graduation trigger by definition, and
+that has NOT been done. The register is one key today, which is right
+at tens of hosts. **The trigger to watch is the register key
+approaching KV's value ceiling** — that is the graduation arriving on
+schedule, not a surprise. One decision, still not two.
 
 **2. The per-subject history query.** *"What has scvd observed about X
 over time"* — found independently by me and by the payability spec.
