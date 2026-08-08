@@ -1252,3 +1252,86 @@ arbitrary-URL fetcher has to add that itself.
 synthesis and better than anything I offered: *does this create a new
 class of signed observation that will still be valuable after the
 individual receipt has been forgotten?*
+
+---
+
+## Reselling failure-handling spec — reviewed (2026-08-08)
+
+(Payability and reconciliation were reviewed above; nothing changed in
+the re-paste. This is the new one.)
+
+**The spec's conclusion is right and its route is closed.** Reselling
+IS brand-building, and "the failure-handling is the brand" is exactly
+this store's existing posture pointed at a new domain. But the
+automation it says makes that true is the one thing that cannot exist
+here.
+
+### ⚑ Every response says "refund automatically." Rule 10 says no.
+
+All five failure modes end in *"Refund any payments made during the
+window"* and *"Fully automatable. No human intervention needed."*
+
+Rule 10, verbatim: *"Refunds are a promise the keeper keeps personally
+— copy never says 'automatic' until the code makes it automatic."*
+And its worked example is the most instructive incident the store has
+produced: **"refund is automatic" sat live on every surface for five
+days while the code created refunds pending and the keeper paid each
+one by hand with a transaction hash.**
+
+`markRefundPaid` is still a keeper action. Nothing in this store has
+ever moved money on its own. This spec would commit that same error a
+second time — in code rather than copy, which is worse, because copy
+can be corrected in an afternoon.
+
+### The options are ranked in reverse order of fit
+
+**Option A (pre-funded refund pool) is recommended and fits worst.** A
+Worker holding USDC and sending it is rule 30 — *"no agent holds keys,
+sends money, or publishes without an approval queue"* — plus a hot
+wallet inside the request path. It is the single largest new risk
+surface the store could take on, proposed as the simple option.
+
+**Option C (no refunds, signed degradation attestation) is dismissed
+and IS this store.** Signed, dated observation; the consumer decides
+what to do with it. No hot wallet, no rule 30 exception, no rule 10
+reversal, and the same shape as every other artifact on the shelf. The
+agent disputes with their own wallet holding our signature as evidence
+— which is the neutral-observer wedge again, and stronger than a
+refund because it travels.
+
+### "Near-zero ongoing carry" is off by about fifty thousand times
+
+The ward round is this store's most aggressive existing instrument:
+**one probe per host, weekly, capped at 200 hosts** — and that cap
+exists because of the subrequest budget the audit script polices.
+
+The spec proposes **five checks per endpoint every sixty seconds.**
+That is 50,400 checks per endpoint per week against the ward's one per
+host per week. Cloudflare cron does not go below a minute either. This
+is not near-zero carry; it is the largest polling load the store has
+ever contemplated, per endpoint.
+
+### Two smaller things
+
+**"Delist" is not a flag.** `MENU_ITEMS` is code, and
+`shelf-agrees-with-menu.spec.ts` plus `routes.spec.ts` exist to catch
+the served menu diverging from it. A runtime delist is an architecture
+change with guards to satisfy, not a boolean.
+
+**The retroactive window already shipped this morning.** "Refund
+payments made during the outage window" means payments that settled in
+the three minutes before detection — which is the refund-window
+detector's exact shape: a ledger of what is owed, raised for a human,
+moving no money. Reuse it.
+
+### The answer to the spec's own decision rule
+
+**Detection, flagging, attestation and a public status page: yes, all
+automatable, and they are the brand.** That half of the spec is right
+and worth building.
+
+**Automatic refunds: no**, and not because we are unwilling — because
+rule 10 and rule 30 both stand in front of it and the store has never
+had a wallet that could. Take that half out and the answer flips clean:
+**reselling is brand-building via Option C**, at a polling cadence
+somebody has to cost out honestly first.
