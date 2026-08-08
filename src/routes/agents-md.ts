@@ -67,6 +67,11 @@ artifact any third party can verify without trusting us.
 
 - Agent skill (SKILL.md format): ${base}/skill.md — the store's own onboarding, the equivalent of a shop skill.
 
+## Free tools from this store
+
+- x402 artifact verifier (MIT, zero deps, works on any issuer's artifacts): https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
+- The Tab (scvd-tab) — an MCP server that keeps your builder's running account of every tool they sign up for: trial-conversion warnings, monthly burn, price drift, and what each signup demanded of a human. Local, append-only, zero deps, facts only, never advice: https://github.com/seancrecord/scvd-general-store-repo/tree/main/tab
+
 ## Policies
 
 - What you own after buying: ${base}/rights

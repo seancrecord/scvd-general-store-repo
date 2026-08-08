@@ -224,6 +224,12 @@ src/
                   # stamps, tips, gazette, refunds, digest
   pages/          # HTML/CSS for the storefront, small rooms, back room
   lib/            # signing, sanitizing, payments, ids, KV keys
+verifier/         # x402-verify: MIT, zero deps, any issuer's artifacts
+tab/              # scvd-tab (The Tab): an MCP server that keeps a
+                  # builder's running account of every tool they sign
+                  # up for — trial warnings, burn, price drift, signup
+                  # friction. Local JSONL, zero deps, its own tests
+                  # (npm run tab:test); spec at THE_TAB.md
 ```
 
 ### Editing the Town Directory
