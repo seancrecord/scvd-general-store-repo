@@ -216,6 +216,34 @@ export function validateEvent(input) {
     }
   }
 
+  /**
+   * THE QUARANTINE, and it is a schema rule rather than a filter.
+   *
+   * The agent speaks stored fields back in chat, so a field holding a
+   * stranger's prose is a stranger addressing the agent — the
+   * markdown-image exfil class, unmodified. Scrubbing that text is the
+   * losing half of the fight; the winning half is giving it no field
+   * to land in. A receipt's wording is the VENDOR's, not the
+   * builder's, so nothing is lost by refusing to keep it: mail-sourced
+   * entries carry the closed vocabulary, numbers and dates, and that
+   * is all.
+   *
+   * `problem_solved` is the residue and is named as such in THE_TAB.md
+   * — it is required, it is free text, and a sweep that fills it from
+   * the letter rather than from the builder puts vendor prose back in
+   * the ledger. Closing it needs the sweep, which is not built.
+   */
+  const swept = input?.source === "mail_sweep" || input?.source === "historical_pass";
+  if (swept) {
+    for (const field of ["captured_text", "notes"]) {
+      if (typeof input?.[field] === "string" && input[field].trim() !== "") {
+        problems.push(
+          `${field} may not be set on a ${input.source} entry: a letter's own words never enter the tab. Keep the numbers, the dates and the closed fields.`,
+        );
+      }
+    }
+  }
+
   if (event === "consent_changed") {
     if (typeof input.contribute !== "boolean") {
       problems.push("consent_changed needs contribute: true|false.");
@@ -476,12 +504,23 @@ export function captureEvent(path, input) {
    * dedupe key, and a name carrying the fragment that produced it.
    */
   const raw = String(input?.captured_text ?? JSON.stringify(input ?? {})).slice(0, 2000);
-  const slug = String(input?.tool_name ?? "")
-    .trim()
+  /*
+   * The slug is built by SPLITTING on runs of non-slug characters
+   * rather than by replacing and then trimming the dashes back off.
+   * `/^-+|-+$/` is quadratic on a long run of dashes — the engine
+   * re-tries the `-+$` branch from every position — and the string it
+   * runs on is a caller's fragment, so a hostile `/log` of ten
+   * thousand hyphens is a free stall in the one lane that must never
+   * refuse. Split-filter-join is a single linear pass and cannot
+   * emit a leading, trailing, or doubled dash in the first place.
+   */
+  let slug = String(input?.tool_name ?? "")
     .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .join("-")
     .slice(0, 40);
+  if (slug.endsWith("-")) slug = slug.slice(0, -1); // the cut can land on one
   return appendEvent(path, {
     tool_name: slug ? `unparsed-${slug}` : "unparsed-capture",
     event: "adopted",
