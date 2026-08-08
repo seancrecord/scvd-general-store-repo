@@ -5,9 +5,44 @@ around one distinction, because getting it wrong wastes the tester's
 whole day: **what the suite already proves**, and **what no suite can
 prove.** The second list is where every remaining risk lives.
 
-`npm run tab:test` — 44 tests, Node's own runner, no dependencies.
-Run it first. If it is red, stop and report; nothing below is worth
-doing on a red suite.
+---
+
+## Before you start — get the right code
+
+**This section exists because its absence already cost a tester an
+afternoon.** The first run of this plan was made against a copied
+`tab/` folder several releases old. Three of the findings it produced
+— "the pager does not exist", "`npm run tab:pager` is missing", "the
+README has no crontab line" — were all true of that copy and false of
+the product. None of them were product findings, and none of that was
+the tester's fault: the plan said what to run and never said where to
+get it.
+
+So:
+
+```
+git clone https://github.com/seancrecord/scvd-general-store-repo
+cd scvd-general-store-repo
+git log --oneline -1        # record this sha in your report
+npm run tab:test
+```
+
+**Clone the repo. Do not copy the `tab/` folder.** A copy has no way
+to tell you it has gone stale, and the tab moves fast.
+
+Two checks that catch a stale tree in ten seconds:
+
+| check | current answer |
+|---|---|
+| `npm run tab:test` test count | 46 |
+| `ls tab/` | `pager.mjs` and `SWEEP.md` both present |
+
+If either disagrees, you are not on current main. Pull before doing
+anything else, and **put the sha in your report** — a finding without
+one cannot be told apart from a stale checkout.
+
+If the suite is red, stop and report. Nothing below is worth doing on
+a red suite.
 
 ---
 
@@ -47,9 +82,35 @@ silently ignoring an unfamiliar field.
 If agents ignore it, the product's headline feature does not work and
 every other test below is decoration.
 
-**How to test it.** Log a trial converting in two days. Then, in a
-fresh session, ask the agent something unrelated that touches the tab
-— *"what am I paying for?"* — and watch what it says.
+### WHO CAN RUN THIS — read before trying
+
+**An agent cannot run this test on itself.** The first attempt hit the
+wall correctly and honestly: *"I am the agent under test, so I can't
+spawn a fresh session of myself."* Exactly right, and the earlier
+version of this plan was wrong to ask.
+
+The reason is not just the fresh session. An agent that has read this
+plan **knows the warning is expected**, and a warning you were
+primed to surface proves nothing about a session that was not. The
+whole question is what an agent does when it has no idea it is being
+watched.
+
+So it needs one of:
+
+- **a human**, who sets up the trial and then watches a normal working
+  session go by — best evidence, because the session is real;
+- **two agent instances**, where one seeds the tab and the other has
+  never seen this file;
+- **a colleague's session**, seeded quietly.
+
+If you are the agent reading this and none of those are available:
+**skip Part 1 and say you skipped it.** Reporting the tool's return
+value as a substitute is not a partial pass — the tool returning
+correct data was never in doubt. Only the speaking is.
+
+**How to test it.** Log a trial converting in two days. Then, in the
+unprimed session, ask something unrelated that touches the tab —
+*"what am I paying for?"* — and watch what it says.
 
 | outcome | meaning |
 |---|---|
@@ -177,12 +238,12 @@ Not urgent. Worth knowing before somebody's tab has a year in it.
 
 ## Known holes — already found, do not file again
 
-**1. No `quarter` price period.** The vocabulary is
-`month | year | week | once`. Quarterly billing is real and common,
-and today an agent must convert it to monthly by hand — which is
-precisely the inferred-arithmetic class the `confidence` field exists
-to flag, done silently. Adding a period changes the schema contract,
-so it is a keeper decision rather than a patch.
+**1. The price vocabulary assumes a fixed amount on a fixed clock.**
+`quarter` was the third clock and is now supported (÷ 3). The two that
+remain are not periods: usage-based and free-tier-with-a-paid-path
+both mean "there is no fixed number", and forcing them onto a clock
+would hide a guess inside the burn. Write-up in `SCHEMA.md` under
+Known Holes; keeper decision, still open.
 
 **2. `bad_lines` is reported by `stack_audit` and NOT by
 `burn_rollup`.** The rollup's whole stated discipline is that the burn

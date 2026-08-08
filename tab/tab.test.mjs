@@ -8,6 +8,7 @@ import {
   captureEvent,
   closestCategory,
   derive,
+  PERIODS,
   readEvents,
   validateEvent,
 } from "./store.mjs";
@@ -1125,5 +1126,32 @@ test("the burn number never ships bare — including when the file is torn", () 
   // — an absent problem is not a statistic.
   assert.equal(burnRollup({}, freshPath()).coverage.bad_lines, undefined);
   // The entry itself carries the vocabulary it was written under.
-  assert.equal(readEvents(path).events[0].schema_version, "0.6");
+  assert.equal(readEvents(path).events[0].schema_version, "0.7");
+});
+
+test("quarterly bills like every other clock, and the two open shapes are not clocks", () => {
+  const path = freshPath();
+  // The refusal a real stack hit by hand. Quarterly is the same shape
+  // as the others — a fixed amount on a fixed clock — so refusing it
+  // bought nothing and made an agent do the division silently, which
+  // is the inferred-arithmetic class `confidence` exists to flag.
+  assert.equal(
+    logToolEvent(
+      { tool_name: "somequarterly", event: "paid_started", problem_solved: "x", category: "other",
+        price: { amount: 90, currency: "USD", period: "quarter" } },
+      path,
+    ).logged,
+    true,
+  );
+  assert.equal(stackAudit({}, path).monthly_burn.amount, 30);
+  // The vocabulary is one list, so the refusal message cannot drift
+  // from what the validator accepts — the old shape spelled it out in
+  // four places, which is four chances to add a period and forget one.
+  const refused = validateEvent({
+    tool_name: "x", event: "paid_started", problem_solved: "x", category: "other",
+    price: { amount: 5, currency: "USD", period: "fortnight" },
+  }).join(" ");
+  for (const period of PERIODS) assert.ok(refused.includes(period), period);
+  // And the entry says which vocabulary it was written under.
+  assert.equal(readEvents(path).events[0].schema_version, "0.7");
 });
