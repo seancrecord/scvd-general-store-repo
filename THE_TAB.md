@@ -179,7 +179,8 @@ shareable badge that names counts and never vendors.
 
 - **The mail sweep itself** — an agent routine over a connector the
   agent already holds; the tab needs no mail code, which is the point.
-  Owner: CV.
+  Owner: CV. **Contract written 2026-08-08: `tab/SWEEP.md`** (v0.6).
+  The routine is still unwritten; what it owes the tab is not.
 - **Card reconciliation** — the `unexplained_charge` analogue of
   `undelivered_sale`, and the only true ground truth for burn.
   Owner: keeper's call on the source.
@@ -227,13 +228,13 @@ The extraction step may read whatever it likes. What it is allowed to
 *write* is enumerated. An instruction embedded in a receipt has no
 field to land in.
 
-**The residue, and it is a real one.** `problem_solved` is required,
-free text, and capped rather than closed. A sweep that fills it from
-the letter instead of from the builder puts vendor prose back in the
-ledger by the front door. Nothing in the schema can tell the two
-apart, so closing it is the sweep's job — which is not built — and
-until then this is the one field where the boundary is a convention
-rather than a check.
+**The residue — closed in v0.6.** `problem_solved` is required and
+free text, so a sweep filling it from the letter walked vendor prose
+back in by the front door with nothing in the schema able to tell the
+two apart. It is now required to be exactly `(not said yet)` on any
+swept entry, and the cost of that is nothing real: a receipt does not
+say what problem it solved for the builder. Only the builder does, and
+the drip asks them.
 
 ### `confirmed` and `private`
 
@@ -386,6 +387,63 @@ in the agent client all work the same way: run the file, read stdout.
 It prints nothing when nothing is due — a scheduled job that speaks
 every morning regardless is a job the builder silences within the
 week.
+
+## v0.6 — the sweep contract (written 2026-08-08)
+
+The counting obligation from v0.4 was a paragraph in a document, which
+is another way of saying it was nothing. It is now arithmetic the
+sweep has to satisfy, and a document that says why.
+
+### The identity
+
+```
+scanned = matched + unmatched_transactional + not_transactional
+```
+
+`scanned` is every message read **before any filtering** — including
+the ones dropped as unparseable, foreign-language, odd sender, no
+price found. `record_coverage` computes the leftover as
+`unclassified` and **publishes it** rather than absorbing it, because
+that residue is exactly where a pre-filter hides.
+
+A sweep that omits `scanned` is not rewarded for its modesty: the
+whole report comes back marked **unaudited**, and the coverage block
+says so where a reader meets the percentage. A denominator nobody
+states is a denominator nobody can check, and `variability_pct`
+against an unstated denominator measures the extractor's confidence
+rather than the tab's coverage.
+
+The plain version, for whoever runs the sweep: a first pass reporting
+40% unattributed is a working instrument. A first pass reporting 2%
+because it quietly discarded everything it could not parse is a broken
+one telling you it is fine.
+
+### The quarantine's last two holes, closed
+
+`problem_solved` was the field the v0.4 boundary could not police, and
+it is now required to be exactly `(not said yet)` on a swept entry.
+
+And writing that turned up the one that mattered more: **the rescue
+lane was a way around the whole quarantine.** A swept fragment too
+broken to validate was relabelled `source: "capture"` and written WITH
+its raw text — so the vendor prose the front door had just refused
+went in through the back, under a source the quarantine does not
+police. A swept fragment now stays swept and keeps nothing but the
+shape of its own failure. The general lesson is worth keeping: the
+stricter the front door, the more traffic through the back one.
+
+### tab/SWEEP.md
+
+The routine itself, written to be handed over: what the sweep is for,
+the bucket rules, the field-by-field extraction (with the
+annual-read-as-monthly slip called out as the 12x error it is), the
+quarantine posture toward message bodies as data rather than
+instructions, the order of operations, and the deployment caveat that
+decides whether "local-first" is true on any given install.
+
+Ownership is unchanged — the tab holds no mail code and never will.
+What changed is that the routine now has a contract it can be held to
+instead of an intention.
 
 ## Design principles (read first)
 

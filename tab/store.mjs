@@ -82,6 +82,14 @@ export const SOURCES = [
  */
 export const CONFIDENCE = ["stated", "inferred"];
 
+/**
+ * The placeholder for a field only the builder can fill. Capture
+ * writes it, the quarantine REQUIRES it on anything a sweep found,
+ * and it lands in `incomplete` so the drip asks at a convenient
+ * moment rather than the extractor guessing.
+ */
+export const UNSAID = "(not said yet)";
+
 export const CATEGORIES = [
   "llm",
   "agent-framework",
@@ -241,6 +249,25 @@ export function validateEvent(input) {
           `${field} may not be set on a ${input.source} entry: a letter's own words never enter the tab. Keep the numbers, the dates and the closed fields.`,
         );
       }
+    }
+    /**
+     * AND THE RESIDUE, CLOSED. `problem_solved` was the one field the
+     * quarantine could not police: required, free text, and a sweep
+     * filling it from the letter puts vendor prose back through the
+     * front door with nothing in the schema able to tell the two
+     * apart.
+     *
+     * So on a swept entry it must be the placeholder, and the cost of
+     * that is nothing real: a receipt does not say what problem it
+     * solved for the builder. Only the builder does. `(not said yet)`
+     * is what capture already writes, it lands in `incomplete`, and
+     * the drip asks at a convenient moment — which was always the
+     * design, now with no way around it.
+     */
+    if (typeof input?.problem_solved === "string" && input.problem_solved !== UNSAID) {
+      problems.push(
+        `problem_solved must be "${UNSAID}" on a ${input.source} entry: it is the builder's own words about what they were trying to do, and a letter does not contain them. Leave it and the rounds will ask.`,
+      );
     }
   }
 
@@ -459,7 +486,7 @@ export function captureEvent(path, input) {
   }
   if (typeof draft.problem_solved !== "string" || draft.problem_solved.trim() === "") {
     incomplete.push("problem_solved");
-    draft.problem_solved = "(not said yet)";
+    draft.problem_solved = UNSAID;
   }
   if (!CATEGORIES.includes(draft.category)) {
     incomplete.push("category");
@@ -503,7 +530,23 @@ export function captureEvent(path, input) {
    * Both fixed by giving each rescue its own identity: a unique
    * dedupe key, and a name carrying the fragment that produced it.
    */
-  const raw = String(input?.captured_text ?? JSON.stringify(input ?? {})).slice(0, 2000);
+  /**
+   * THE QUARANTINE BYPASS THIS LANE WAS, until it was looked at.
+   *
+   * The fallback relabelled everything `source: "capture"` and kept
+   * the raw fragment. So a sweep calling this with a vendor's prose
+   * would have its entry REFUSED for carrying prose — and then the
+   * rescue would write that same prose under a source the quarantine
+   * does not police. The stricter the front door, the more traffic
+   * through the back one.
+   *
+   * A swept fragment now stays swept, and keeps nothing but the shape
+   * of its own failure.
+   */
+  const swept = input?.source === "mail_sweep" || input?.source === "historical_pass";
+  const raw = swept
+    ? null
+    : String(input?.captured_text ?? JSON.stringify(input ?? {})).slice(0, 2000);
   /*
    * The slug is built by SPLITTING on runs of non-slug characters
    * rather than by replacing and then trimming the dashes back off.
@@ -524,13 +567,12 @@ export function captureEvent(path, input) {
   return appendEvent(path, {
     tool_name: slug ? `unparsed-${slug}` : "unparsed-capture",
     event: "adopted",
-    problem_solved: "(capture could not be shaped; raw text kept)",
+    problem_solved: swept ? UNSAID : "(capture could not be shaped; raw text kept)",
     category: "other",
-    source: "capture",
-    captured_text: raw,
+    source: swept ? input.source : "capture",
+    ...(swept ? {} : { captured_text: raw, notes: result.problems?.join(" ")?.slice(0, 2000) }),
     dedupe_key: `unparsed:${randomBytes(8).toString("hex")}`,
     incomplete: ["everything"],
-    notes: result.problems?.join(" ")?.slice(0, 2000),
   });
 }
 

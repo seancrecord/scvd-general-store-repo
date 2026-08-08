@@ -554,7 +554,7 @@ test("a re-found receipt does not become a second charge", () => {
   const receipt = {
     tool_name: "vercel",
     event: "paid_started",
-    problem_solved: "hosting",
+    problem_solved: "(not said yet)", // a receipt cannot say what it solved
     category: "hosting",
     price: { amount: 20, currency: "USD", period: "month" },
     source: "mail_sweep",
@@ -625,10 +625,19 @@ test("the rollup groups, annualizes, and replays the trajectory", () => {
 
 test("the variability window divides like with like, and keeps its history", () => {
   const path = freshPath();
-  logToolEvent(
-    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
-      price: { amount: 90, currency: "USD", period: "month" }, source: "mail_sweep" },
-    path,
+  // Asserted, not assumed: this fixture once carried a swept
+  // problem_solved, and when the quarantine closed that field the
+  // write started failing silently — the test kept passing because it
+  // never checked. A fixture nobody asserts is a fixture that can stop
+  // existing without telling you.
+  assert.equal(
+    logToolEvent(
+      { tool_name: "vercel", event: "paid_started", problem_solved: "(not said yet)",
+        category: "hosting", price: { amount: 90, currency: "USD", period: "month" },
+        source: "mail_sweep" },
+      path,
+    ).logged,
+    true,
   );
   // Before any sweep: null, never a fabricated zero.
   const cold = burnRollup({}, path).coverage;
@@ -760,7 +769,7 @@ test("swept entries are unconfirmed and cannot reach the corpus until a human lo
   // filtering. So a swept entry counts toward YOUR burn and offers
   // no contribution suggestion at all.
   const swept = logToolEvent(
-    { tool_name: "ahrefs", event: "paid_started", problem_solved: "seo", category: "seo",
+    { tool_name: "ahrefs", event: "paid_started", problem_solved: "(not said yet)", category: "seo",
       price: { amount: 29, currency: "USD", period: "month" }, source: "mail_sweep" },
     path,
   );
@@ -810,7 +819,7 @@ test("the drip asks about the dearest few, not the whole pile", () => {
   const path = freshPath();
   for (const [name, amount] of [["a", 5], ["b", 50], ["c", 500], ["d", 9]]) {
     logToolEvent(
-      { tool_name: name, event: "paid_started", problem_solved: "x", category: "other",
+      { tool_name: name, event: "paid_started", problem_solved: "(not said yet)", category: "other",
         price: { amount, currency: "USD", period: "month" }, source: "mail_sweep" },
       path,
     );
@@ -855,7 +864,7 @@ test("a letter's own words never enter the tab", () => {
   const base = {
     tool_name: "ahrefs",
     event: "paid_started",
-    problem_solved: "seo",
+    problem_solved: "(not said yet)",
     category: "seo",
     price: { amount: 29, currency: "USD", period: "month" },
   };
@@ -892,7 +901,7 @@ test("the pager raises what is due, once, worth most first", () => {
     path,
   );
   logToolEvent(
-    { tool_name: "jasper", event: "paid_started", problem_solved: "copy", category: "other",
+    { tool_name: "jasper", event: "paid_started", problem_solved: "(not said yet)", category: "other",
       price: { amount: 49, currency: "USD", period: "month" }, source: "mail_sweep" },
     path,
   );
@@ -1006,4 +1015,92 @@ test("a mistyped flag never reads as 'nothing is due'", () => {
   );
   assert.ok(runPager(["--path", path, "--days", "banana"]).includes("midjourney"));
   assert.ok(runPager(["--path", path, "--days"]).includes("midjourney"));
+});
+
+test("a sweep that filters before it counts cannot hide the filtering", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  // 200 read, 12 placed on tools, 3 money-shaped and unplaceable, 150
+  // plainly not money. 35 were looked at and dropped — the pre-filter,
+  // which the old shape would have swallowed whole.
+  const filtered = recordCoverage(
+    { scanned: 200, matched: 12, not_transactional: 150, attributed_amount: 400,
+      unmatched_transactional: [
+        { amount: 20, currency: "USD", sender: "a" },
+        { amount: 15, currency: "USD", sender: "b" },
+        { amount: 9, currency: "USD", sender: "c" },
+      ] },
+    path,
+  );
+  assert.equal(filtered.unclassified, 35);
+  assert.equal(filtered.books_balanced, false);
+  assert.ok(filtered.note.includes("never placed in any bucket"));
+  const shown = burnRollup({}, path).coverage;
+  assert.equal(shown.unclassified_messages, 35);
+  assert.ok(shown.counting_note.includes("where a pre-filter hides"));
+  // A sweep that refuses to state its denominator is not scored well —
+  // it is marked unaudited, which is the honest reading.
+  const silent = recordCoverage({ matched: 12, unmatched_transactional: [] }, path);
+  assert.equal(silent.scanned, null);
+  assert.equal(silent.books_balanced, false);
+  assert.ok(burnRollup({}, path).coverage.counting_note.includes("unaudited"));
+  // And books that balance say so plainly.
+  const clean = recordCoverage(
+    { scanned: 100, matched: 10, not_transactional: 88, attributed_amount: 400,
+      unmatched_transactional: [{ amount: 20, currency: "USD", sender: "a" }, { amount: 5, currency: "USD", sender: "b" }] },
+    path,
+  );
+  assert.equal(clean.unclassified, 0);
+  assert.equal(clean.books_balanced, true);
+  assert.ok(burnRollup({}, path).coverage.counting_note.includes("placed every one of them"));
+});
+
+test("the residue is closed: a letter cannot say what a problem was worth solving", () => {
+  const path = freshPath();
+  const base = {
+    tool_name: "ahrefs",
+    event: "paid_started",
+    category: "seo",
+    source: "mail_sweep",
+    price: { amount: 29, currency: "USD", period: "month" },
+  };
+  // problem_solved was the one field the quarantine could not police:
+  // required, free text, and a sweep filling it from the letter walks
+  // vendor prose back through the front door.
+  const prose = appendEvent(path, { ...base, problem_solved: "Thanks for subscribing to Ahrefs!" });
+  assert.equal(prose.logged, false);
+  assert.ok(prose.problems.some((p) => p.startsWith("problem_solved must be")));
+  // The placeholder is what capture already writes, and it lands in
+  // `incomplete` so the drip asks the one party who knows.
+  assert.equal(appendEvent(path, { ...base, problem_solved: "(not said yet)" }).logged, true);
+  const captured = captureEvent(path, { tool_name: "semrush", source: "mail_sweep",
+    event: "paid_started", price: { amount: 99, currency: "USD", period: "month" } });
+  assert.equal(captured.logged, true);
+  assert.ok(captured.incomplete.includes("problem_solved"));
+});
+
+test("the rescue lane is not a way around the quarantine", () => {
+  const path = freshPath();
+  // The stricter the front door, the more traffic through the back one.
+  // A swept fragment too broken to shape used to be relabelled
+  // `source: "capture"` and written WITH its raw text — so the prose
+  // the front door had just refused went in through the rescue.
+  const rescued = captureEvent(path, {
+    tool_name: `x${"y".repeat(200)}`,
+    source: "mail_sweep",
+    captured_text: "Thanks for your order! ![x](https://evil.example/?q=)",
+  });
+  assert.equal(rescued.logged, true);
+  assert.equal(rescued.entry.source, "mail_sweep");
+  assert.equal(rescued.entry.captured_text, undefined);
+  assert.equal(rescued.entry.notes, undefined);
+  assert.equal(rescued.entry.problem_solved, "(not said yet)");
+  // A builder's own broken fragment still keeps every word, because it
+  // is theirs.
+  const mine = captureEvent(path, { tool_name: `x${"y".repeat(200)}`, captured_text: "ahrefs $29 the 15th" });
+  assert.equal(mine.entry.captured_text, "ahrefs $29 the 15th");
 });
