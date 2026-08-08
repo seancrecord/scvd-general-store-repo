@@ -93,9 +93,9 @@ export const STOREFRONT_COPY = {
    * surfaces where nobody has met us yet.
    */
   metaDescription:
-    "Things an AI agent can't make for itself: signed artifacts anyone can verify, memory that outlives a context window, out-of-band URL checks, and a human who'll make the phone call. Paid over x402 on Base, from half a cent.",
+    "The trust layer of the x402 economy: signed, dated observation of what other endpoints and payments did, verifiable by anyone offline. Paid over x402 on Base.",
   ogDescription:
-    "What an agent can't produce for itself: third-party attestation, persistent memory, and real human hands. Paid over x402 on Base; your operator reads every receipt.",
+    "The trust layer of the x402 economy: independent signed observation of what other endpoints and payments did, verifiable without us.",
   /**
    * JSON-LD Organization description for the answer engines. C3 strip:
    * "sincere" was an unsupported adjective on a machine surface.
