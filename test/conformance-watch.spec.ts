@@ -256,3 +256,50 @@ describe("the watch's week, swept", () => {
     expect(history?.summary.days_unchecked).toBe(7);
   });
 });
+
+describe("who pays, and what the payment does not buy", () => {
+  /**
+   * THE ISSUER-PAYS IMMUNITY CLAUSE (the keeper's ruling, 2026-08-07).
+   * The watched party is the paying party — the rating agency's model,
+   * whose one famous defect is that the rater drifts favorable. The
+   * clause exists to close that at spec level rather than at sale
+   * time, which only works if it rides the artifact itself: a reader
+   * of any watch history learns the terms from the history, not from
+   * us saying so somewhere they will never look.
+   *
+   * So it is guarded here. A clause that can quietly stop shipping is
+   * an intention, and an intention is what this was before.
+   */
+  it("ships the clause on every watch history and in the artifact spec", async () => {
+    answerTarget(wellFormed402);
+    const { record } = await startConformanceWatch(
+      testEnv,
+      "https://merchant.example/api/buy/clause",
+    );
+    const history = await readConformanceWatch(testEnv, record.watch_id);
+    const clause = history!.who_pays_and_what_it_buys;
+    expect(clause).toContain("payment buys FREQUENCY AND PERMANENCE, never outcome");
+    expect(clause).toContain("degrades while its operator is paying");
+
+    // And the same terms reach a reader who never buys a watch, at
+    // /attestation, under both watch classes.
+    const spec = await SELF.fetch(`${BASE}/attestation`, {
+      headers: { Accept: "application/json" },
+    });
+    const body = await spec.text();
+    for (const id of ["standing_watch_probe", "conformance_watch_pass"]) {
+      expect(body).toContain(id);
+    }
+    expect(body).toContain("payment buys frequency and permanence, never outcome");
+
+    // The retired word, gone from every served surface. A referral is
+    // a recommendation, a recommendation is an opinion, and an opinion
+    // has an owner — which is the liability the design removed.
+    for (const path of ["/attestation", "/llms.txt", "/what"]) {
+      const surface = await SELF.fetch(`${BASE}${path}`, {
+        headers: { Accept: "application/json" },
+      });
+      expect((await surface.text()).toLowerCase()).not.toContain("verified referral");
+    }
+  });
+});

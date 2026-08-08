@@ -220,3 +220,21 @@ describe("the shelf integration is derived, not curated", () => {
     expect(schema.required).toContain("url");
   });
 });
+
+describe("who pays, and what the payment does not buy", () => {
+  /**
+   * The Night Watch runs on the same inverted consent as the
+   * Conformance Watch — the watched party buys it — so it carries the
+   * same immunity clause, guarded in the same way. The clause is only
+   * worth anything if it rides the artifact: a reader learns the terms
+   * from the history in front of them, not from a page they will never
+   * open.
+   */
+  it("ships the clause on the hourly history too", async () => {
+    const { record } = await startWatch(testEnv, "https://merchant.example/api/buy/clause");
+    const history = await readWatch(testEnv, record.watch_id);
+    const clause = history!.who_pays_and_what_it_buys;
+    expect(clause).toContain("payment buys FREQUENCY AND PERMANENCE, never outcome");
+    expect(clause).toContain("degrades while its operator is paying");
+  });
+});
