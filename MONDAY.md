@@ -198,10 +198,14 @@ contribute-to-access — needs consent volume that does not exist. Right
 now `whats_current` honestly reports `pooled: {available: false}`.
 That's correct and it's also the whole revenue story unbuilt.
 
-### 4. August 27 is nineteen days out
+### 4. ~~August 27~~ — RETIRED by the keeper, 2026-08-08
 
-The kill checkpoint is armed. Worth knowing before it arrives what
-answer would trip it, while there's still time to move the number.
+It was a Claude-imposed date, not a keeper one, and what it measured
+has already answered itself: six or seven organic sales across two
+rails, with two more chains likely inside a month. The checkpoint was
+armed for "does anyone buy this at all." Someone does. Struck rather
+than left sitting on the desk, because a dead deadline on a live list
+is the kind of thing that gets obeyed by accident.
 
 ### 5. `unspoken_pct` has never been produced
 
@@ -210,3 +214,112 @@ number is null. First real week of use tells us whether the ride-along
 reaches you or whether agents take pages and never speak them. That is
 the one claim from this whole stretch still untested against reality
 rather than against a suite.
+
+---
+
+## The backlog, pulled (2026-08-08)
+
+Everything deferred, from `TASKS.md`, `/becoming`, `PROBLEMS.md` and
+this session. **Grouped, not yet ranked** — the ranking waits on the
+keeper's research so the two lists get scored together rather than one
+being fitted around the other.
+
+One thing did not wait, because pulling the list is what surfaced it.
+
+### ⚑ The one that should not have been in a backlog
+
+**THE REFUND-WINDOW DETECTOR.** The card by the door promises: *we
+miss a promised window, you get your money back — and you won't have
+to argue for it.* The delivery audit catches settled-but-never-
+delivered. **Nothing catches delivered-late against the 168-hour queue
+SLA, or window-breached-with-no-refund-row.**
+
+That is a live, published money promise whose only enforcement is the
+keeper remembering. It is rule 10's own lesson — *a claim ships with
+the check that fails when it stops being true* — pointed directly at
+the store's loudest money claim, and rule 10 exists **because this
+exact shape already burned us once** ("refund is automatic" live on
+every surface for five days while the code never did it).
+
+It was correctly deferred on 2026-08-07 when the queue was empty. Six
+or seven organic sales later the premise has changed. The
+`order_sla` alert condition already exists; this is a sweep and a
+place to file the breach where the buyer can see it.
+
+I did not build it unasked. But it should not be ranked against
+feature ideas — it is a promise already made.
+
+### Groups
+
+**A. Promises the code does not enforce**
+- Refund-window detector (above)
+- The Commission Desk — retire buy-now for true per-order labor
+  (`phone_call`, `app_gutcheck`, `human_witness`, `portrait`,
+  `the_collab`, `quick_judgment`); request → quote → agreed price →
+  one-off paid link. Kills all standing SLA exposure. Spec before
+  build; interim risk capped by the 48h presence window.
+
+**B. Trust spine**
+- Cold-read test on the remaining artifact classes: the trust list,
+  `/house-ledger.json`, `/stack`, the badge SVG. The method found a
+  real defect in certificates that **446 tests missed**, because every
+  test verified through the same function that signed.
+- Key succession — pre-announced, pre-signed successor key. On
+  `/becoming` as public roadmap.
+- Replay guard under concurrency (CV's #3) — read-then-write against
+  KV; the chain's nonce is the backstop, so resilience not correctness.
+- The criteria page (see Top 3).
+
+**C. Shelves specified but unbuilt**
+- `town_papers` — identity registry, $3 PWID, signed name↔wallet
+  binding, public registry. Attest never authenticate. Fully spec'd.
+- `anniversary_artifact` — approved in principle, needs a one-line
+  spec (whose anniversary, price, what the certificate says).
+- Referral certificate, artifact half — measurement shipped; the
+  certificate is parked until the counter moves, and carries a real
+  forgery surface (we sign a claim the buyer authored).
+- Receipt treaties; federation — both `/becoming` roadmap.
+
+**D. Distribution**
+- Agentic.market submission — draft ready, gated on organic mcp +
+  bazaar settles showing in `/admin` channels.
+- ACP registry listing (verify whether it requires token
+  participation; skip if so).
+- Farcaster frame / Base App miniapp.
+- Gazette auto-assembly — waits for a week with 3+ organic events.
+
+**E. Rails**
+- Polygon — queued, backlogged.
+- Algorand — parked; ruled not credible for current goals.
+
+**F. The Tab**
+- The mail sweep (CV) — contract written, routine unwritten.
+- Card reconciliation — keeper picks the source.
+- Layer 3 / the pooled corpus — the product's actual business model,
+  not started, needs consent volume that does not exist.
+- The two non-clock billing shapes.
+
+**G. Verification tier**
+- First paying outside watch — never happened. Every argument for the
+  pivot is currently good architecture under a thesis.
+
+---
+
+## Needs hardening before it can be trusted
+
+Recent work that is built, green, and **unproven against reality.**
+Noted for the red-team week rather than fixed now.
+
+| thing | what is unproven |
+|---|---|
+| The pager's ride-along | whether an agent *says* `pending_pages`. `unspoken_pct` is null; no page has ever settled either way |
+| The Tab, Parts 2/3/4/6 | client handshake, cron, two-agents-one-tab, the sweep contract dry run |
+| Deliver-first / rule 9 | the property is asserted from a README and our own code comment; no test |
+| Replay guard | concurrency, known and unfixed |
+| Tiered / PWID arithmetic | `graffiti_on_a_train` tiers and `the_drawer` minimum have never been exercised by an outside buyer — every live purchase so far took the fixed-price path |
+| The watches | no third-party endpoint has ever been watched for a full week |
+| The sweep contract | never run against a real inbox, even by hand |
+
+The pattern worth noticing: **almost everything above is unproven in
+the same way — it works in the suite and has never met a stranger.**
+That is one week of adversarial testing, not seven separate projects.
