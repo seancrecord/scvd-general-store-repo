@@ -1335,3 +1335,141 @@ rule 10 and rule 30 both stand in front of it and the store has never
 had a wallet that could. Take that half out and the answer flips clean:
 **reselling is brand-building via Option C**, at a polling cadence
 somebody has to cost out honestly first.
+
+---
+
+# THE RANKING (2026-08-08, everything on one scale)
+
+Synthesizing: the backlog, the research synthesis, four spec reviews,
+the prior-art scan, and what shipped today. Ordered by what it does for
+the store holistically, not standalone.
+
+## Two constraints nobody's list has priced
+
+**1. THE CORPUS'S GROWTH RATE IS THE BINDING CONSTRAINT ON THE ENTIRE
+SECOND CATEGORY.**
+
+The synthesis is right that intelligence products (routing, reputation,
+procurement, insurance) consume facts and compound. But they need
+VOLUME, and the corpus grows at **one probe per host, weekly, capped at
+200** — and today it walks about 35. A year of that is roughly 1,800
+host-observations. Nothing actuarial is possible on 1,800 rows.
+
+So the corpus's velocity is the rate limiter on every product in
+category two, and it is currently set by a cron nobody has costed
+against the ambition. **If intelligence products are the business,
+corpus velocity is the metric** — and it is not on any list because it
+is not a product.
+
+**2. THE 60-DAY TEST DOES NOT SERIALIZE.**
+
+Every spec ends "cheapest test: stock as SKU, watch settlement logs 60
+days." Four specs sequenced is 240 days. Four specs stocked in the same
+week is 60 days and the settlement log tells you which one moved.
+
+That changes the build order from a queue into a **batch**, and it is
+"the shelf is the survey" applied properly. Bounded by the real listing
+cost — copy, spec entry, tests, five parity guards, hours per SKU — so
+the batch is two or three, not eight.
+
+---
+
+## TIER 0 — debts. Do not rank these against features.
+
+| | why |
+|---|---|
+| **`order_id` on `RefundRecord`** | additive, optional, tiny. Turns `owed_usdc` from a floor into a fact. Do it next time refunds are touched |
+| **The Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build |
+
+---
+
+## TIER 1 — the constraint, and the thing everything else waits on
+
+**1. Enumeration / observation split.** Union of every public directory
+as the denominator, probed subset published against it, `first_seen` /
+`last_seen` at the enumeration layer. Counting is nearly free; probing
+is what costs.
+
+This is the highest-leverage item on the whole list and it is on
+nobody's because it is not a product. It fixes the coverage gap, makes
+mortality measurable at population scale **without paying for probes**,
+and raises corpus volume by orders of magnitude on the axis that is
+cheap. Everything in category two gets closer the day it lands.
+
+Note: it trips the KV→R2 graduation trigger by definition. One
+decision, not two.
+
+**2. The per-subject history query.** *"What has scvd observed about X
+over time"* — found independently by me and by the payability spec.
+This is the index product, it is a route over data already signed and
+chained, and it must **return the gaps**, which is the thing the large
+monitors do not do.
+
+---
+
+## TIER 2 — the batch. Stock together, one 60-day window.
+
+**3. Settlement-Reconciliation (A).** Strongest genuinely-new signal on
+the list. Ships with the fix: attest the cap only where it is
+**chain-derivable**; where it is not, the receipt says *declared*, not
+*observed*. Caveat the estimate — we have never touched `upto` or
+`deferred`; the store speaks `exact` only.
+
+**4. The settlement-attempt lane** on the existing `service_audit` —
+the genuinely new half of payability, and the store-as-buyer
+instrumentation play arriving from the other direction. Blocked until
+the wallet law's three blanks are filled.
+
+**5. Answer attestation (B)** — only after SSRF hardening (private and
+link-local blocking, which `probeOnce` does not carry) and the claim
+hierarchy in `does_not_prove` shape. Fix those two and it is a fine
+third SKU.
+
+---
+
+## TIER 3 — gated, and the gates are cheap
+
+**6. The criteria page.** Rule 43 blocks every badge behind it,
+including skill-safety. Mostly derivable from `ARTIFACT_CLASSES`. Needs
+one keeper word: **is a badge a dated observation or a live status?**
+Recommendation on record — dated observation, never retires, always
+shows its age, and the Conformance Watch is what sells currency.
+
+**7. Key succession.** Every artifact the corpus has ever signed becomes
+unverifiable if that key dies with no pre-announced successor. Already a
+public promise on `/becoming`.
+
+**8. Reselling, via Option C.** Detection, flagging, signed degradation
+attestation, public status page. Not Option A — automatic refunds are
+blocked by rule 10 and rule 30 both. And cost the polling honestly
+first: the proposed cadence is ~50,000x the ward's per subject.
+
+---
+
+## TIER 4 — options, ops, and not now
+
+Sanctions clearance (partnership, not competition) · WebMCP verifier
+(the only candidate whose domain can vanish) · auto-registrar (ops,
+worth doing as hygiene because it feeds discovery) · Polygon (queued,
+and the 14.5M-vs-2.1M figure is the demand tag) · Algorand (parked,
+facilitator constraint) · spend-guard (no — follower position) ·
+`town_papers`, `anniversary_artifact`, referral certificate (no demand
+tag; rule 19 says that is the bar).
+
+---
+
+## Forward: the three things that would change this order
+
+**If a stranger pays for anything in the verification tier**, that item
+goes to the top and everything else reorders behind it. Assumption 0 —
+*that anyone pays for a signed observation at all* — has zero evidence
+and sits upstream of every other assumption on the list.
+
+**If ERC-8183's evaluator role reads the way the summary does**, that
+is a standardized slot for exactly what this store is, in someone
+else's standard, and filling it beats anything we would invent. Needs a
+real read of the spec, not a summary.
+
+**If the corpus stays at weekly × 35**, category two never arrives and
+the honest move is to say so rather than keep ranking products that
+depend on it.
