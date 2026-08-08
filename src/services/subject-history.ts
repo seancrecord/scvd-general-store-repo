@@ -1,0 +1,250 @@
+import { listCorpus } from "@/services/corpus";
+import { populationHistory, type PopulationRecord } from "@/services/population";
+import type { WardHostResult } from "@/services/ward-round";
+import type { Env } from "@/types";
+
+/**
+ * WHAT HAS THIS STORE OBSERVED ABOUT ONE HOST, OVER TIME — the index
+ * read, derived by replaying the signed chain rather than stored.
+ *
+ * THE WHOLE PRODUCT IS THE GAPS. Anyone can serve the weeks they
+ * looked; the large monitors do exactly that, and a timeline with the
+ * misses quietly omitted reads as continuous coverage when it is
+ * nothing of the kind. So every round in the chain appears here, and
+ * the ones with no verdict carry a REASON — which is the difference
+ * between "we watched and it was fine" and "we did not look."
+ *
+ * FIVE REASONS A ROUND HAS NO VERDICT, and they are not the same fact:
+ *
+ *   BEFORE_FIRST_SIGHTING — the chain predates our first sight of this
+ *   host. Not a miss; we had not met.
+ *
+ *   NOT_LISTED — no feed we read named it that week. That is a fact
+ *   about the DIRECTORIES, and it is the one most easily misread as a
+ *   fact about the host.
+ *
+ *   LISTED_NOT_WALKED — named, not knocked on. The enumeration and
+ *   observation layers are separate on purpose (see population.ts) and
+ *   this is where that split becomes visible per subject.
+ *
+ *   POSSIBLY_BEYOND_CAP — the round hit its host cap and this host may
+ *   have been in the unwalked tail. We cannot tell, and say so.
+ *
+ *   INSTRUMENT_DEGRADED — the round itself recorded coverage trouble.
+ *   The absence is more plausibly ours than theirs.
+ *
+ * FIRST SIGHTING COMES FROM THE CHAIN, NOT THE REGISTER. The
+ * population register began the day the population layer shipped, so
+ * reading first sight from it would stamp "before_first_sighting" over
+ * every historical round the host was plainly observed in. The chain
+ * is the longer record and is the one asked.
+ *
+ * WHAT THIS REFUSES TO COMPUTE, and it is the obvious feature: an
+ * aggregate. "Ready in 8 of 12 rounds" is one division away and it is
+ * a score on an operator, which rule 43 forbids by name — dated
+ * observations on artifacts, never accumulating judgments on actors.
+ * The transitions are published because each one is itself a dated
+ * observation. The ratio is not, and no amount of it being useful
+ * changes what it would be.
+ */
+
+export type GapReason =
+  | "before_first_sighting"
+  | "not_listed"
+  | "listed_not_walked"
+  | "possibly_beyond_cap"
+  | "instrument_degraded";
+
+export interface SubjectRound {
+  sequence: number;
+  week: string;
+  taken_at: string;
+  /** The corpus digest this sits inside — fetch it and check us. */
+  digest: string;
+  entry_url: string;
+  /** A feed named it that round. */
+  listed: boolean;
+  /** We actually knocked, so there is a verdict. */
+  probed: boolean;
+  verdict?: WardHostResult["verdict"];
+  failed?: string[];
+  advisories?: string[];
+  /** Which feed named it: discovery, leaderboard, or both. */
+  source?: string;
+  gap?: GapReason;
+  /** Plain language, always present, including on observed rounds. */
+  note: string;
+}
+
+export interface VerdictChange {
+  at: string;
+  week: string;
+  from: WardHostResult["verdict"];
+  to: WardHostResult["verdict"];
+}
+
+export interface SubjectHistory {
+  host: string;
+  asked_at: string;
+  /** The enumeration layer's record. Null if never enumerated. */
+  listing: PopulationRecord | null;
+  rounds_in_chain: number;
+  /** Rounds since first sighting — the only fair denominator. */
+  rounds_since_first_sighting: number;
+  rounds_probed: number;
+  rounds_gapped: number;
+  /**
+   * OUR coverage of this subject, not a statement about the subject:
+   * how much of the window since we met it we actually walked.
+   */
+  observation_coverage_pct: number | null;
+  first_observed: string | null;
+  last_observed: string | null;
+  gaps_by_reason: Record<GapReason, number>;
+  verdict_changes: VerdictChange[];
+  timeline: SubjectRound[];
+  what_this_cannot_see: string[];
+}
+
+function emptyGaps(): Record<GapReason, number> {
+  return {
+    before_first_sighting: 0,
+    not_listed: 0,
+    listed_not_walked: 0,
+    possibly_beyond_cap: 0,
+    instrument_degraded: 0,
+  };
+}
+
+export async function subjectHistory(
+  env: Env,
+  rawHost: string,
+  base: string,
+  now: Date = new Date(),
+): Promise<SubjectHistory> {
+  const host = rawHost.trim().toLowerCase();
+  const [records, listing] = await Promise.all([
+    listCorpus(env),
+    populationHistory(env, host),
+  ]);
+
+  /*
+   * First sighting from the chain. Anything before it is not a miss,
+   * and counting it as one would make a host we met last month look
+   * like one we had been failing to watch all year.
+   */
+  const firstSightingIndex = records.findIndex((record) =>
+    record.snapshot.round.hosts.some((entry) => entry.host === host),
+  );
+
+  const timeline: SubjectRound[] = [];
+  const gaps = emptyGaps();
+  const changes: VerdictChange[] = [];
+  let probed = 0;
+  let firstObserved: string | null = null;
+  let lastObserved: string | null = null;
+  let previousVerdict: WardHostResult["verdict"] | null = null;
+
+  for (const [index, record] of records.entries()) {
+    const { snapshot, digest } = record;
+    const round = snapshot.round;
+    const common = {
+      sequence: snapshot.sequence,
+      week: snapshot.week,
+      taken_at: snapshot.taken_at,
+      digest,
+      entry_url: `${base}/corpus/${snapshot.sequence}.json`,
+    };
+    const entry = round.hosts.find((candidate) => candidate.host === host);
+
+    if (entry && entry.verdict !== "not_probed") {
+      probed += 1;
+      firstObserved ??= snapshot.taken_at;
+      lastObserved = snapshot.taken_at;
+      if (previousVerdict !== null && previousVerdict !== entry.verdict) {
+        changes.push({
+          at: snapshot.taken_at,
+          week: snapshot.week,
+          from: previousVerdict,
+          to: entry.verdict,
+        });
+      }
+      previousVerdict = entry.verdict;
+      timeline.push({
+        ...common,
+        listed: true,
+        probed: true,
+        verdict: entry.verdict,
+        failed: entry.failed,
+        advisories: entry.advisories,
+        ...(entry.source ? { source: entry.source } : {}),
+        note:
+          entry.verdict === "ready"
+            ? "One GET at this moment passed every check in the published battery. It says nothing about the minute before or after."
+            : `One GET at this moment: ${entry.verdict}${entry.failed.length > 0 ? ` (${entry.failed.join(", ")})` : ""}.`,
+      });
+      continue;
+    }
+
+    let gap: GapReason;
+    let note: string;
+    if (firstSightingIndex === -1 || index < firstSightingIndex) {
+      gap = "before_first_sighting";
+      note = "This round predates our first sight of this host. Not a miss — we had not met.";
+    } else if (entry) {
+      gap = "listed_not_walked";
+      note =
+        "Named by a feed this round but not knocked on. Enumeration is nearly free and probing is not, so being listed is the cheaper half of what we know.";
+    } else if (round.capped) {
+      gap = "possibly_beyond_cap";
+      note =
+        "The round hit its host cap, so this host may have been in the tail it never reached. We cannot tell which, and will not guess.";
+    } else if (round.coverage_suspect || round.coverage_drop) {
+      gap = "instrument_degraded";
+      note =
+        "The round recorded coverage trouble of its own. An absence here is more plausibly our instrument than this host.";
+    } else {
+      gap = "not_listed";
+      note =
+        "No feed we read named this host that round. That is a fact about the DIRECTORIES — it is not 'went down' and it is not 'stopped taking payment'.";
+    }
+    gaps[gap] += 1;
+    timeline.push({
+      ...common,
+      listed: Boolean(entry),
+      probed: false,
+      ...(entry?.source ? { source: entry.source } : {}),
+      gap,
+      note,
+    });
+  }
+
+  const sinceFirst =
+    firstSightingIndex === -1 ? 0 : records.length - firstSightingIndex;
+  const gapped = sinceFirst - probed;
+
+  return {
+    host,
+    asked_at: now.toISOString(),
+    listing,
+    rounds_in_chain: records.length,
+    rounds_since_first_sighting: sinceFirst,
+    rounds_probed: probed,
+    rounds_gapped: gapped,
+    observation_coverage_pct:
+      sinceFirst === 0 ? null : Math.round((probed / sinceFirst) * 1000) / 10,
+    first_observed: firstObserved,
+    last_observed: lastObserved,
+    gaps_by_reason: gaps,
+    verdict_changes: changes,
+    timeline,
+    what_this_cannot_see: [
+      "Anything between rounds. The cadence is weekly, so a host that broke on Tuesday and was fixed by Saturday is invisible here and always will be.",
+      "Why a verdict changed. We record what a probe saw, never the cause.",
+      "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
+      "A reliability figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed would be a score on an operator, which this store does not keep on anyone. Every dated observation is here; the aggregate is deliberately not.",
+      "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
+      "Listing history before the population register existed. `listing` began with the population layer; the chain is the longer record and the timeline is drawn from it.",
+    ],
+  };
+}

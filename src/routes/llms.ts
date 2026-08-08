@@ -571,6 +571,19 @@ never a score on anybody: a continuous record kept because it cannot
 be backfilled later, and checkable precisely so you do not have to
 take that sentence on faith.
 
+Ask about one host at ${base}/corpus/host/{host}.json. It replays that
+host out of the signed chain, and every round we have NO verdict for
+carries a reason: no feed named it, a feed named it but we did not
+knock, the round hit its cap and it may have been in the tail, or the
+round recorded coverage trouble of its own. The gaps are the point —
+a timeline with the misses left out reads as continuous coverage.
+
+What that read will not give you is a reliability figure. Dividing
+rounds-ready by rounds-probed is one step away and it is an
+accumulating score on an operator, which is the thing this store does
+not keep on anyone. The dated observations are all there; the ratio is
+withheld deliberately, not forgotten.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every

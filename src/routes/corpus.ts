@@ -4,6 +4,7 @@ import {
   listCorpus,
   verifyCorpusChain,
 } from "@/services/corpus";
+import { subjectHistory } from "@/services/subject-history";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -93,6 +94,19 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "The corpus: the public x402 ecosystem as this store's weekly ward round observed it, frozen one snapshot per round — hash-chained, ed25519-signed, and each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, kept because a continuous record cannot be backfilled later at any price.",
     what_this_is_not:
       "Not a rating, not a ranking, not a score on any operator, and never becoming one. Each entry records what a probe saw at a moment. Judgments are a different product with its own published criteria, and accumulating scores on actors is the thing this store's rule 43 forbids by name.",
+    /**
+     * The per-subject read, advertised where a crawler will find it.
+     * A template rather than an enumeration: the corpus can hold
+     * hundreds of hosts and listing them all here would bloat the
+     * index for no reader's benefit.
+     */
+    per_subject: {
+      url_template: `${base}/corpus/host/{host}.json`,
+      what_it_answers:
+        "Everything this store has observed about one host over time, replayed from the signed chain, with every round it was NOT observed carrying a reason: not listed by any feed, listed but not walked, possibly beyond the round's cap, or the instrument itself degraded. The gaps are the point — a timeline with misses omitted reads as continuous coverage.",
+      what_it_will_not_answer:
+        "A reliability figure. Dividing rounds-ready by rounds-probed is one step away and it is a score on an operator, which this store does not keep on anyone. The dated observations are all there; the aggregate is deliberately withheld.",
+    },
     started: first,
     entries: records.length,
     chain,
@@ -117,6 +131,34 @@ corpusRoutes.get("/corpus.json", async (c) => {
       url: `${base}/corpus/${record.snapshot.sequence}.json`,
     })),
   });
+});
+
+/**
+ * GET /corpus/host/{host}.json — everything the chain has recorded
+ * about one host, with the gaps named.
+ *
+ * DERIVED AT READ, never stored. The corpus entries are the record;
+ * this is a view over them, so it cannot drift from what was signed
+ * and every row carries the digest and URL of the entry it came from.
+ * A reader who does not trust the view can fetch the entries and
+ * rebuild it.
+ *
+ * The gaps are the product. Serving only the weeks we looked would
+ * read as continuous coverage, which is the thing this store spends
+ * its whole design budget refusing to imply.
+ */
+corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
+  const host = c.req.param("file").replace(/\.json$/, "");
+  if (!host || host.length > 253 || !/^[a-z0-9.:_-]+$/i.test(host)) {
+    return c.json(
+      {
+        error:
+          "Ask for a host, e.g. /corpus/host/example.com.json. The index of everything observed is at /corpus.json.",
+      },
+      400,
+    );
+  }
+  return c.json(await subjectHistory(c.env, host, c.env.STORE_BASE_URL));
 });
 
 corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {
