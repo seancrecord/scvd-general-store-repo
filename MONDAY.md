@@ -993,3 +993,89 @@ it is already built — it just is not marked up as such.
 
 Sources consulted: airops, HubSpot, digidop, o8, WRITER, Percepture,
 Enrich Labs, Progress Sitefinity, Surmado (all 2026 AEO/GEO guides).
+
+---
+
+## Payability/Mortality spec — reviewed against the tree (2026-08-08)
+
+The reasoning is right and the AgentPay differentiation is the sharpest
+part of it: **the buyer's client has a conflict of interest — it wants
+to sign; we don't.** That is the wedge, it is correct, and it is worth
+keeping in whatever ships.
+
+But the spec was written without the tree in front of it, and most of
+what it describes as a four-week build already exists under different
+names.
+
+### Already shipped
+
+| spec asks for | exists as |
+|---|---|
+| signed observation of what a 402 presented at a moment | **`service_audit`** — signed, dated, `evidence_hash`, permanent report URL, published criteria version, and the evidence hash bound into the purchase certificate |
+| verdict `payable` / `silently-unpayable` | `ready` / `not_ready`, with **the failing checks named** rather than collapsed into a label |
+| verdict `gone` | `unreachable` — and ours is honest that it is a fact about one network path at one moment, not proof the endpoint is down |
+| verdict `changed` (drift since last observation) | **`conformance_watch`** — `drift_detected`, set arithmetic over sorted failed-check sets, recomputable by the reader |
+| mortality across a population | **the ward round** — `newly_failing`, `newly_fixed`, `flappers`, weekly |
+| a non-backfillable corpus of observations | **the corpus** — signed, hash-chained, OTS-anchored, and now a `schema.org/Dataset` |
+| the observation battery | **`/api/preflight`** — free, published, versioned. The audit runs those checks and no others |
+
+`ARTIFACT_CLASSES` already declares twelve classes, `service_audit`
+among them, each with `trust_model`, `signs` and `does_not_prove`.
+
+### Genuinely new, and worth building
+
+**1. The settlement attempt.** Nothing here has ever paid a stranger's
+endpoint to see whether it settles. This is the real content of the
+spec and it is the *store as buyer* — the instrumentation play, arrived
+at from the other direction.
+
+**2. `GET /history/<endpoint>` — the per-subject query.** Exactly the
+gap already named: the corpus enumerates snapshots and cannot answer
+*"what has this store observed about X over time."* This is the index
+product, and the spec found it independently.
+
+### Four problems to fix before anyone builds
+
+**THE ECONOMICS ARE INVERTED.** `attemptSettlement: true` at $0.01 per
+observation means paying the endpoint's own price — which could be a
+dollar or five — to earn a cent. Every observation of anything above a
+penny is a guaranteed loss, and the loss scales with how interesting
+the endpoint is. Either the buyer funds the settlement, or the price is
+pass-through plus a fee, or settlement attempts are house-funded
+instrumentation rather than a priced SKU. It cannot be a cent flat.
+
+**And it spends money at strangers' endpoints**, which is CV's wallet
+law — whose hard cap, cap period and ask-first threshold are all still
+blank by the keeper's own choice. That law has to land before this
+does.
+
+**`silently-unpayable` is an interpretation, not an observation.** The
+observation is *settlement failed, here are the named checks that
+failed*. "Silently unpayable" imputes a state of the world, and
+"silently" edges toward imputing intent. Rule 43 territory. The
+existing vocabulary is already the observation-shaped version and
+should not be traded for a more quotable one.
+
+**A second namespace fragments the play.** The spec says it extends
+`scvd-attestation` v1 and then gives itself a separate URI at
+`/.well-known/scvd-payability/v1`. Those are inconsistent with each
+other, and the served namespace spec is at **`/spec/scvd-attestation/v1`**,
+not under `.well-known`. A new artifact class inside the existing
+namespace is the move; a second namespace splits a land grab in half.
+
+**The stack assumptions are wrong.** "SQLite or Postgres" — this runs
+on Cloudflare Workers with KV, and the corpus's own graduation trigger
+to R2 is already written down.
+
+### Revised estimate
+
+Four CV-weeks is the cost of building what exists. Scoped to what does
+not exist — a settlement-attempt lane on the existing audit, plus the
+per-subject history query over the corpus — it is a fraction of that,
+and both pieces were already on the list from another direction.
+
+**One number worth reconciling:** the spec cites 14,795 resources in
+the Foundation's discovery index; the prior-art scan found ~59,818
+endpoints monitored by provider. Different sources, different dates,
+possibly different definitions of "resource." Neither should be quoted
+as ours until somebody checks.
