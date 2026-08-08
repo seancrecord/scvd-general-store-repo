@@ -474,6 +474,22 @@ function coverageBlock(current, path) {
           .reduce((sum, t) => sum + monthlyOf(t.price), 0) * 100,
       ) / 100,
     private_tools: current.active.filter((t) => t.private === true).length,
+    /**
+     * A TORN FILE IS EXACTLY WHAT THIS BLOCK IS FOR, and it was
+     * missing: stack_audit reported bad_lines and the rollup did not,
+     * while the rollup is the surface whose whole stated discipline is
+     * that the burn figure arrives with what fed it AND what it cannot
+     * see. Absent when zero — a problem that isn't happening is not a
+     * statistic, and a permanent "bad_lines: 0" trains the eye to skip
+     * the line that matters.
+     */
+    ...(current.badLines > 0
+      ? {
+          bad_lines: current.badLines,
+          bad_lines_note:
+            "Lines in the tab file that would not parse were skipped, not silently repaired — so this burn figure is missing whatever they held. The file is yours; look at it.",
+        }
+      : {}),
     quiet_past_cycle: quietTools(current).length,
     /**
      * THE VARIABILITY WINDOW — money seen but not attributable, over
