@@ -149,13 +149,30 @@ function firstHeading(markdown: string): string {
  * standfirst the almanac's own house style opens with, not a bold
  * dateline, not blank. Truncated on a word boundary to the teaser cap.
  */
+/**
+ * Emphasis markers off both ends, by index rather than by regex.
+ * `/^[*_]+|[*_]+$/` retries the trailing branch from every position in
+ * a run of stars, which is quadratic on a line an author supplies —
+ * and the two slugify functions nearby only escape the same shape
+ * because their preceding replace collapses runs to a single
+ * character first. This one has no such collapse in front of it.
+ */
+function trimEmphasis(line: string): string {
+  const marker = (ch: string | undefined) => ch === "*" || ch === "_";
+  let start = 0;
+  let end = line.length;
+  while (start < end && marker(line[start])) start += 1;
+  while (end > start && marker(line[end - 1])) end -= 1;
+  return line.slice(start, end);
+}
+
 function firstProseLine(markdown: string): string {
   for (const raw of markdown.split("\n")) {
     const line = raw.trim();
     if (!line || line.startsWith("#") || line.startsWith(">")) {
       continue;
     }
-    const bare = line.replace(/^[*_]+|[*_]+$/g, "").trim();
+    const bare = trimEmphasis(line).trim();
     // The house dateline — "**2026-07-31, Oak City.**" — is furniture,
     // not the first thing a reader should be sold on.
     if (!bare || /^\d{4}-\d{2}-\d{2}[,.]?\s|^From the Keeper/i.test(bare)) {

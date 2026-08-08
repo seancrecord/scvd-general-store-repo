@@ -143,11 +143,21 @@ the residue is MEASURED rather than disclaimed.
 
 ### The variability window
 
-`unattributed_amount / (observed + unattributed)`, published on every
-rollup. Computable from the sweep ALONE — you do not need to know
-what was missed, only how much money moved that could not be placed.
-Null until a sweep has ever reported, because a made-up zero would be
-the worst answer available. The keeper's target is **< 2%**.
+`unattributed / (attributed + unattributed)`, **both measured inside
+the sweep's own window**, published on every rollup and kept as a
+history so it can be watched moving. Computable from the sweep ALONE
+— you do not need to know what was missed, only how much money moved
+that could not be placed. Null until a sweep has ever reported,
+because a made-up zero would be the worst answer available. The
+keeper's target is **< 2%**.
+
+CORRECTED 2026-08-08 (red team, second pass): the first cut divided
+monthly BURN — a rate — by a sum of absolute charges over an
+arbitrary span, so a six-month sweep finding $600 against $300/mo
+read "67%" and measured nothing. The test shipped alongside it
+enshrined the error with numbers chosen to look plausible. Both sides
+now come from one window in one unit, and the sweep reports the
+window it covered.
 
 ### Structurally unaccountable, stated in their own words
 
@@ -178,6 +188,114 @@ shareable badge that names counts and never vendors.
   exist yet. Owner: CV.
 - Until a sweep reports, `variability_pct` is `null` and the burn
   figure is honest about resting on hand-logged entries alone.
+
+## v0.4 — the trust boundary (built 2026-08-08)
+
+v0.3 asked *what is missed.* v0.4 asks the harder one: **what gets in
+that shouldn't.** The moment mail feeds the tab, a stranger who can
+send you email is writing to your ledger, and the ledger is read back
+to you by a model. That is the whole exposure, and it has a shape the
+literature already named — prompt injection into a tool that renders
+its own storage.
+
+### The rendering problem, which is why the vocabulary is closed
+
+The agent speaks stored fields back in chat. So a field that holds
+attacker prose is an attacker speaking to the agent — the
+markdown-image exfil class (GrafanaGhost), and the zero-click
+retrieval class (EchoLeak, CVE-2025-32711), both land here without
+modification. Filtering the text is the losing half of that fight;
+the dual-LLM/quarantine pattern (Willison, 2023) and CaMeL (DeepMind,
+2025) both win it the same way — untrusted content never becomes
+instructions, because it never becomes free text in the first place.
+
+So the rule is structural rather than a filter:
+
+- **Mail-sourced entries store no free prose.** Closed vocabulary
+  (`CATEGORIES`, `FRICTION`, `SOURCES`, `CONFIDENCE`, event names),
+  numbers, dates, and a message id. A receipt's wording is the
+  vendor's words, not yours — "verbatim" was never promised there and
+  nothing is lost by dropping it. **Enforced in `validateEvent`:**
+  `captured_text` and `notes` are refused outright on a `mail_sweep`
+  or `historical_pass` entry.
+- **Manual and `/log` text stays verbatim**, because it is yours. You
+  are already inside the boundary; quarantining the user from their
+  own sentence buys nothing and costs the fragment lane its reason to
+  exist.
+
+The extraction step may read whatever it likes. What it is allowed to
+*write* is enumerated. An instruction embedded in a receipt has no
+field to land in.
+
+**The residue, and it is a real one.** `problem_solved` is required,
+free text, and capped rather than closed. A sweep that fills it from
+the letter instead of from the builder puts vendor prose back in the
+ledger by the front door. Nothing in the schema can tell the two
+apart, so closing it is the sweep's job — which is not built — and
+until then this is the one field where the boundary is a convention
+rather than a check.
+
+### `confirmed` and `private`
+
+Two booleans, defaulted by source and both sticky.
+
+| Source | `confirmed` on arrival |
+|---|---|
+| `manual` | true — you said it |
+| `capture` | true — you said it, in fewer words |
+| `mail_sweep` | **false** — a stranger's document said it |
+| `historical_pass` | **false** — same, six months late |
+
+`confirmed: false` money still counts toward **your** burn. It is
+probably your money, and a number you can see beats a number withheld
+for tidiness. What it never does is become a published statistic:
+`contribute_anonymized_delta` gates on it, so the pooled corpus is
+fed only by entries a human has actually looked at.
+
+`private: true` excludes a tool from the shareable badge's **count**,
+not merely from its names. A count that moves when you mark something
+private is a count that leaks the thing.
+
+Both flags are read from **derived tool state**, not from the
+incoming event. The test that caught this was worth its keep: `private`
+is set once at signup, and a later cancellation carries no flag of its
+own, so a gate reading only the event happily emitted a delta for a
+tool the builder had marked private. Stickiness has to be consulted,
+not assumed.
+
+### The drip, and why confirmation is the security layer
+
+`needs_attention` — capped at three by default, dearest first,
+covering unconfirmed sweep findings, entries captured with gaps,
+tools gone quiet, and trials past their end.
+
+The cap is not politeness. DKIM checks, schema validation and the
+closed vocabulary are all *filtering*, and filtering is probabilistic.
+The human look is the only step that is not, and it is the step that
+keeps a forged receipt out of the pooled corpus. A person handed two
+hundred rows taps yes two hundred times — that is rubber-stamping,
+which produces the `confirmed: true` flag without producing any of the
+assurance the flag is supposed to carry. Two questions a day is a
+habit; a queue is a chore nobody finishes. Capping the ask is what
+makes the answer mean something.
+
+### The counting obligation on the sweep
+
+A sweep that filters before it counts reports a flattering
+denominator. Anything the sweep **drops** — unparseable, unknown
+sender, foreign-language, no price found — must still be counted as
+unattributed. Otherwise `variability_pct` measures the extractor's
+confidence rather than the tab's coverage, and the number the keeper
+set a < 2% target on becomes unfalsifiable. Break point 5 in the v0.3
+table is precisely this, and it only self-measures if the pre-filter
+is honest about its own discards.
+
+### Local-first is conditional, and the copy must say so
+
+The claim holds when the sweep runs on the builder's machine. Run the
+same agent hosted and mail content transits a third party — the
+architecture did not change, the deployment did, and the honest limits
+section says this where a user meets it rather than in a footnote.
 
 ## Design principles (read first)
 

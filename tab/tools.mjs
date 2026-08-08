@@ -1,4 +1,10 @@
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+} from "node:fs";
+import { dirname } from "node:path";
 import {
   appendEvent,
   burnAt,
@@ -12,6 +18,7 @@ import {
   possibleAliases,
   quietTools,
   readEvents,
+  sidecarPath,
   SOURCES,
   trialsConvertingSoon,
   trialsPastEnd,
@@ -126,14 +133,26 @@ export function captureToolEvent(input, path = defaultTabPath()) {
  * sweep look like a cancelled tool.
  */
 export function recordCoverage(input, path = defaultTabPath()) {
-  const coveragePath = `${path}.coverage.json`;
+  /**
+   * APPENDED, NOT OVERWRITTEN (red team F2). The first cut kept a
+   * single slot — a gauge with no history, which cannot answer the
+   * only question the keeper asked of it: is the number moving toward
+   * 2%? Coverage is a time series or it is decoration.
+   */
   const record = {
     at: new Date().toISOString(),
     addresses_swept: Array.isArray(input?.addresses_swept)
       ? input.addresses_swept
       : [],
-    swept_through: input?.swept_through ?? null,
+    /**
+     * The sweep's WINDOW, which F1 proved load-bearing: unattributed
+     * money means nothing without the span it was seen over.
+     */
+    window_from: input?.window_from ?? null,
+    window_to: input?.window_to ?? new Date().toISOString(),
     matched: Number.isFinite(input?.matched) ? input.matched : 0,
+    /** Attributed spend IN THIS WINDOW, for a like-for-like ratio. */
+    attributed_amount: Number(input?.attributed_amount) || 0,
     unmatched_transactional: Array.isArray(input?.unmatched_transactional)
       ? input.unmatched_transactional.map((row) => ({
           amount: Number(row?.amount) || 0,
@@ -142,20 +161,59 @@ export function recordCoverage(input, path = defaultTabPath()) {
         }))
       : [],
   };
-  writeFileSync(coveragePath, JSON.stringify(record, null, 2), "utf8");
+  const coveragePath = sidecarPath(path, ".coverage.jsonl");
+  mkdirSync(dirname(coveragePath), { recursive: true }); // F4: fresh install
+  appendFileSync(coveragePath, `${JSON.stringify(record)}\n`, "utf8");
   return {
     recorded: true,
     unattributed_count: record.unmatched_transactional.length,
-    note: "Coverage is the instrument's own record, kept beside the tab and never mixed into it.",
+    note: "Coverage is the instrument's own record — appended beside the tab, never mixed into it, so the gap can be watched over time.",
   };
 }
 
-function readCoverage(path) {
+/** Every sweep ever reported, oldest first. */
+function readCoverageHistory(path) {
   try {
-    return JSON.parse(readFileSync(`${path}.coverage.json`, "utf8"));
+    return readFileSync(sidecarPath(path, ".coverage.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim() !== "")
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
   } catch {
-    return null;
+    return [];
   }
+}
+
+/**
+ * THE VARIABILITY WINDOW, in units that divide (red team F1).
+ *
+ * The first cut divided a monthly RATE by a sum of ABSOLUTE charges
+ * over an arbitrary span — a six-month sweep finding $600 against
+ * $300/mo produced "67%", which measures nothing. Worse, the test
+ * enshrined it with numbers chosen to look plausible.
+ *
+ * Both sides are now normalized to dollars-per-month across the
+ * sweep's own window: unattributed money the sweep saw, over all
+ * money the sweep saw. Same window, same units, and the ratio finally
+ * means what the name claims — the share of observed spend the tab
+ * could not place.
+ */
+function variabilityOf(sweep) {
+  if (!sweep) return null;
+  const unattributed = (sweep.unmatched_transactional ?? []).reduce(
+    (sum, row) => sum + (row.amount || 0),
+    0,
+  );
+  const attributed = sweep.attributed_amount || 0;
+  const total = attributed + unattributed;
+  if (total === 0) return null;
+  return Math.round((unattributed / total) * 1000) / 10;
 }
 
 export function checkBeforeSignup({ tool_name, category }, path = defaultTabPath()) {
@@ -262,6 +320,8 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
     .sort((a, b) => b.monthly - a.monthly);
 
   const monthly = current.monthly_burn.amount;
+  // Private never rides the shareable form — not even as a count.
+  const shareable = current.active.filter((tool) => tool.private !== true);
   const agentNative = current.active.filter(
     (tool) => tool.signup_friction === "agent_native" || tool.signup_friction === "email_only",
   ).length;
@@ -296,9 +356,15 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
      * stack" published is the concentration risk squared. Same shape
      * as the pooled layer: counts, no identities.
      */
-    anonymized_badge: `${current.active.length} tools · $${monthly}/mo · ${
+    anonymized_badge: `${shareable.length} tools · $${
+      Math.round(
+        shareable.filter((t) => t.status === "active_paid").reduce((sum, t) => sum + monthlyOf(t.price), 0) * 100,
+      ) / 100
+    }/mo · ${
       frictionKnown > 0 ? Math.round((agentNative / frictionKnown) * 100) : 0
     }% agent-native${frictionKnown < current.active.length ? ` (friction known for ${frictionKnown} of ${current.active.length})` : ""}`,
+    badge_note:
+      "Counts, never vendors — and private tools are excluded from the count itself, not merely unnamed.",
     coverage: coverageBlock(current, path),
   };
 }
@@ -312,12 +378,12 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
  * decline desk.
  */
 function coverageBlock(current, path) {
-  const swept = readCoverage(path);
+  const history = readCoverageHistory(path);
+  const swept = history[history.length - 1] ?? null;
   const unattributed = (swept?.unmatched_transactional ?? []).reduce(
     (sum, row) => sum + (row.amount || 0),
     0,
   );
-  const observed = current.monthly_burn.amount;
   const incompleteEntries = current.active.filter(
     (tool) => tool.history.some((h) => h.incomplete),
   ).length;
@@ -334,6 +400,14 @@ function coverageBlock(current, path) {
     unmatched_transactional_count: swept?.unmatched_transactional?.length ?? 0,
     unattributed_amount: Math.round(unattributed * 100) / 100,
     entries_with_gaps: incompleteEntries,
+    unconfirmed_tools: current.active.filter((t) => t.confirmed === false).length,
+    unconfirmed_monthly:
+      Math.round(
+        current.active
+          .filter((t) => t.confirmed === false)
+          .reduce((sum, t) => sum + monthlyOf(t.price), 0) * 100,
+      ) / 100,
+    private_tools: current.active.filter((t) => t.private === true).length,
     quiet_past_cycle: quietTools(current).length,
     /**
      * THE VARIABILITY WINDOW — money seen but not attributable, over
@@ -341,12 +415,15 @@ function coverageBlock(current, path) {
      * know WHAT was missed, only how much moved that could not be
      * placed. Null until a sweep has ever reported.
      */
-    variability_pct:
+    variability_pct: variabilityOf(swept),
+    variability_basis:
       swept === null
-        ? null
-        : observed + unattributed === 0
-          ? 0
-          : Math.round((unattributed / (observed + unattributed)) * 1000) / 10,
+        ? "No sweep has ever reported. Null, not zero — a fabricated zero would be the worst answer available."
+        : `Unattributed money over all money the sweep saw, both within ${swept.window_from ?? "the sweep's start"} → ${swept.window_to}. Same window, same units.`,
+    variability_history: history.slice(-12).map((entry) => ({
+      at: entry.at,
+      pct: variabilityOf(entry),
+    })),
     what_this_cannot_see: [
       "A tool that never emailed, never billed, and was never mentioned.",
       "A seat somebody else pays for.",
@@ -485,6 +562,78 @@ export function whatsCurrent({ category }, path = defaultTabPath()) {
   };
 }
 
+/**
+ * THE CONFIRMATION — the only load-bearing layer, per the second
+ * stress sweep. Quarantine, schema validation and DKIM are all
+ * filtering; the human look is what keeps a forged receipt out of
+ * the published corpus. Which means the flow has to be one a human
+ * ACTUALLY does: 200 receipts is a chore nobody finishes and
+ * rubber-stamping is not verification.
+ */
+export function confirmEntry({ tool_name, private: isPrivate }, path = defaultTabPath()) {
+  const name = String(tool_name ?? "").trim().toLowerCase();
+  const current = state(path);
+  const tool = current.tools.get(name);
+  if (!tool) {
+    return { confirmed: false, error: `Nothing on the tab named "${name}".` };
+  }
+  const last = tool.history[tool.history.length - 1];
+  const result = appendEvent(path, {
+    tool_name: name,
+    event: last?.event === "canceled" ? "canceled" : "adopted",
+    problem_solved: tool.problem_solved ?? "(confirmed)",
+    category: tool.category ?? "other",
+    source: "manual",
+    confirmed: true,
+    ...(isPrivate === true ? { private: true } : {}),
+    notes: "confirmation",
+    dedupe_key: `confirm:${name}:${new Date().toISOString().slice(0, 10)}`,
+  });
+  return {
+    confirmed: result.logged,
+    tool_name: name,
+    ...(isPrivate === true ? { private: true } : {}),
+    note: isPrivate === true
+      ? "Confirmed and marked private — it stays on your tab and never leaves the box, in a delta or a shared count."
+      : "Confirmed. It can contribute to the pooled corpus now, if contribution is on.",
+  };
+}
+
+/**
+ * THE DRIP — what the rounds should ask about, worth most first.
+ * Deliberately capped: a queue is a chore, two questions is a habit.
+ */
+export function needsAttention({ limit = 3 } = {}, path = defaultTabPath()) {
+  const current = state(path);
+  const unconfirmed = current.active
+    .filter((tool) => tool.confirmed === false)
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      monthly: Math.round(monthlyOf(tool.price) * 100) / 100,
+      sources: tool.source_list,
+      why: "found by a sweep, nobody has looked at it — it counts toward your burn but cannot contribute to the corpus until confirmed",
+    }))
+    .sort((a, b) => b.monthly - a.monthly);
+  const gaps = current.active
+    .filter((tool) => tool.history.some((h) => h.incomplete))
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      missing: [...new Set(tool.history.flatMap((h) => h.incomplete ?? []))],
+      why: "captured in a hurry; nothing was invented to fill it",
+    }));
+  return {
+    ask_now: unconfirmed.slice(0, limit),
+    unconfirmed_total: unconfirmed.length,
+    unconfirmed_monthly: Math.round(
+      unconfirmed.reduce((sum, row) => sum + row.monthly, 0) * 100,
+    ) / 100,
+    gaps: gaps.slice(0, limit),
+    quiet: quietTools(current).slice(0, limit),
+    past_end: trialsPastEnd(current).slice(0, limit),
+    note: "Capped on purpose. The rounds ask about the dearest few; the rest keep until next time. A list nobody finishes gets rubber-stamped, and a rubber stamp is not a confirmation.",
+  };
+}
+
 export function setConsent({ contribute }, path = defaultTabPath()) {
   const result = appendEvent(path, {
     event: "consent_changed",
@@ -598,8 +747,16 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
     return { format, content: "", note: "The tab is empty — nothing logged yet." };
   }
   const raw = readFileSync(path, "utf8");
+  // F6: the escape hatch takes everything, including the instrument's
+  // own record. A partial export is a partial escape.
+  let coverage = null;
+  try {
+    coverage = readFileSync(sidecarPath(path, ".coverage.jsonl"), "utf8");
+  } catch {
+    coverage = null;
+  }
   if (format === "jsonl") {
-    return { format, content: raw };
+    return { format, content: raw, ...(coverage ? { coverage_jsonl: coverage } : {}) };
   }
   const { events } = readEvents(path);
   const columns = [
@@ -814,6 +971,30 @@ export const TOOL_DEFS = [
         signup_friction: { type: "string", enum: FRICTION },
       },
       required: ["kind", "tool_name", "category"],
+    },
+  },
+  {
+    name: "confirm_entry",
+    description:
+      "A human looked at a swept entry and says it is real (or marks it private). Confirmation is the load-bearing layer: machine-found claims never reach the pooled corpus without it.",
+    handler: confirmEntry,
+    inputSchema: {
+      type: "object",
+      properties: {
+        tool_name: { type: "string" },
+        private: { type: "boolean", description: "keep it on the tab, never let it leave the box — not in a delta, not in a shared count" },
+      },
+      required: ["tool_name"],
+    },
+  },
+  {
+    name: "needs_attention",
+    description:
+      "What the rounds should ask about, dearest first and capped: unconfirmed sweep findings, entries captured with gaps, tools gone quiet, trials past their end. Ask two, not two hundred.",
+    handler: needsAttention,
+    inputSchema: {
+      type: "object",
+      properties: { limit: { type: "integer", minimum: 1 } },
     },
   },
   {

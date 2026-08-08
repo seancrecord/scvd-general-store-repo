@@ -1,5 +1,5 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
 
@@ -111,6 +111,28 @@ export function defaultTabPath() {
   return process.env.TAB_PATH ?? `${homedir()}/.scvd/tab.jsonl`;
 }
 
+/**
+ * THE ONLY PLACE A SIDECAR FILENAME IS BUILT.
+ *
+ * The coverage record lives beside the tab, and the first cut spliced
+ * a suffix onto the raw path string — which reaches this module from
+ * TAB_PATH or --path, i.e. from outside the program. CodeQL called it
+ * (high, path expression from an uncontrolled source) and it was
+ * right to: a path is not a string, and treating it like one is how
+ * a "sidecar" ends up somewhere else entirely.
+ *
+ * So the directory is taken from the tab's own resolved location and
+ * the filename is REBUILT from a sanitized basename plus a fixed
+ * suffix. Whatever arrives, what comes out is one file, beside the
+ * tab, named after it.
+ */
+export function sidecarPath(tabPath, suffix) {
+  const resolved = resolve(String(tabPath));
+  const safeBase = basename(resolved).replace(/[^A-Za-z0-9._-]/g, "_");
+  const safeSuffix = String(suffix).replace(/[^A-Za-z0-9._-]/g, "");
+  return join(dirname(resolved), `${safeBase}${safeSuffix}`);
+}
+
 function newEntryId() {
   return `tab_${randomBytes(8).toString("hex")}`;
 }
@@ -194,6 +216,34 @@ export function validateEvent(input) {
     }
   }
 
+  /**
+   * THE QUARANTINE, and it is a schema rule rather than a filter.
+   *
+   * The agent speaks stored fields back in chat, so a field holding a
+   * stranger's prose is a stranger addressing the agent — the
+   * markdown-image exfil class, unmodified. Scrubbing that text is the
+   * losing half of the fight; the winning half is giving it no field
+   * to land in. A receipt's wording is the VENDOR's, not the
+   * builder's, so nothing is lost by refusing to keep it: mail-sourced
+   * entries carry the closed vocabulary, numbers and dates, and that
+   * is all.
+   *
+   * `problem_solved` is the residue and is named as such in THE_TAB.md
+   * — it is required, it is free text, and a sweep that fills it from
+   * the letter rather than from the builder puts vendor prose back in
+   * the ledger. Closing it needs the sweep, which is not built.
+   */
+  const swept = input?.source === "mail_sweep" || input?.source === "historical_pass";
+  if (swept) {
+    for (const field of ["captured_text", "notes"]) {
+      if (typeof input?.[field] === "string" && input[field].trim() !== "") {
+        problems.push(
+          `${field} may not be set on a ${input.source} entry: a letter's own words never enter the tab. Keep the numbers, the dates and the closed fields.`,
+        );
+      }
+    }
+  }
+
   if (event === "consent_changed") {
     if (typeof input.contribute !== "boolean") {
       problems.push("consent_changed needs contribute: true|false.");
@@ -263,6 +313,12 @@ export function validateEvent(input) {
     problems.push(
       "adopted is for a FREE tool and must carry no price — if money changes hands it is paid_started or trial_started. A priced 'adopted' would tell the pooled index a free signup happened.",
     );
+  }
+  if (input?.confirmed !== undefined && typeof input.confirmed !== "boolean") {
+    problems.push("confirmed must be true or false.");
+  }
+  if (input?.private !== undefined && typeof input.private !== "boolean") {
+    problems.push("private must be true or false.");
   }
   if (input?.source !== undefined && !SOURCES.includes(input.source)) {
     problems.push(`source must be one of ${SOURCES.join(", ")}.`);
@@ -345,8 +401,28 @@ export function appendEvent(path, input) {
   // honored. The first cut had this backwards and the "agents can lie
   // about time; the file can't" test caught its own principle being
   // violated by spread order — which is exactly what it was for.
+  /**
+   * CONFIRMED, BY DEFAULT ACCORDING TO WHO SPOKE.
+   *
+   * A human saying it — manual, or a /log fragment they typed — is
+   * confirmed on arrival; they were there. Anything a SWEEP found is
+   * a claim about a receipt, and a receipt is a letter anyone can
+   * send: unconfirmed until a person looks. This is what keeps a
+   * forged "welcome to X" from reaching the pooled corpus by itself.
+   *
+   * It does not keep it out of the tab — a swept entry still counts
+   * toward YOUR burn, because it probably is your money and a wrong
+   * number you can see beats a missing one you can't.
+   */
+  const source = input.source ?? "manual";
+  const confirmed =
+    typeof input.confirmed === "boolean"
+      ? input.confirmed
+      : source === "manual" || source === "capture";
   const entry = {
     ...input,
+    source,
+    confirmed,
     entry_id: newEntryId(),
     server_timestamp: new Date().toISOString(),
     schema_version: SCHEMA_VERSION,
@@ -408,20 +484,54 @@ export function captureEvent(path, input) {
     draft.incomplete = incomplete;
   }
   const result = appendEvent(path, draft);
-  return result.logged || result.duplicate
-    ? { ...result, incomplete }
-    : // Last resort: something still refused it. Record the raw text
-      // so the words survive even when the shape did not.
-      appendEvent(path, {
-        tool_name: "unparsed-capture",
-        event: "adopted",
-        problem_solved: "(capture could not be shaped; raw text kept)",
-        category: "other",
-        source: "capture",
-        captured_text: String(input?.captured_text ?? JSON.stringify(input)).slice(0, 2000),
-        incomplete: ["everything"],
-        notes: result.problems?.join(" "),
-      });
+  if (result.logged || result.duplicate) {
+    return { ...result, incomplete };
+  }
+  /**
+   * LAST RESORT — and the two bugs the red team found here, because
+   * "never refuses" was false in exactly this branch (F3, F5).
+   *
+   * F3: the fallback derived its dedupe key from tool+event+DAY, so
+   * the SECOND unparseable capture in a day collided with the first
+   * and was dropped as a duplicate — silently, by the one lane whose
+   * whole contract is that nothing is ever lost.
+   *
+   * F5: every fallback shared the name "unparsed-capture", so all of
+   * them replayed into a single pseudo-tool and distinct failures
+   * became one indistinguishable blob.
+   *
+   * Both fixed by giving each rescue its own identity: a unique
+   * dedupe key, and a name carrying the fragment that produced it.
+   */
+  const raw = String(input?.captured_text ?? JSON.stringify(input ?? {})).slice(0, 2000);
+  /*
+   * The slug is built by SPLITTING on runs of non-slug characters
+   * rather than by replacing and then trimming the dashes back off.
+   * `/^-+|-+$/` is quadratic on a long run of dashes — the engine
+   * re-tries the `-+$` branch from every position — and the string it
+   * runs on is a caller's fragment, so a hostile `/log` of ten
+   * thousand hyphens is a free stall in the one lane that must never
+   * refuse. Split-filter-join is a single linear pass and cannot
+   * emit a leading, trailing, or doubled dash in the first place.
+   */
+  let slug = String(input?.tool_name ?? "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .join("-")
+    .slice(0, 40);
+  if (slug.endsWith("-")) slug = slug.slice(0, -1); // the cut can land on one
+  return appendEvent(path, {
+    tool_name: slug ? `unparsed-${slug}` : "unparsed-capture",
+    event: "adopted",
+    problem_solved: "(capture could not be shaped; raw text kept)",
+    category: "other",
+    source: "capture",
+    captured_text: raw,
+    dedupe_key: `unparsed:${randomBytes(8).toString("hex")}`,
+    incomplete: ["everything"],
+    notes: result.problems?.join(" ")?.slice(0, 2000),
+  });
 }
 
 /** The date an event claims for itself: the retroactive claim when
@@ -463,6 +573,8 @@ export function derive(events, now = new Date()) {
       signup_friction: null,
       sources: new Set(),
       confidence: null,
+      confirmed: true,
+      private: false,
       renewals_seen: 0,
       last_billing_at: null,
       since: null,
@@ -478,6 +590,11 @@ export function derive(events, now = new Date()) {
     tool.signup_friction = event.signup_friction ?? tool.signup_friction;
     tool.confidence = event.confidence ?? tool.confidence;
     tool.sources.add(event.source ?? "manual");
+    // Unconfirmed is sticky until somebody confirms; private is
+    // sticky once set, because un-marking it should be deliberate.
+    if (event.confirmed === false) tool.confirmed = false;
+    if (event.confirmed === true) tool.confirmed = true;
+    if (event.private === true) tool.private = true;
     // A signup after an inactive spell opens a NEW commitment (red
     // team F4): the epoch resets, so a re-trial a year after a cancel
     // is measured and classified on its own life, not the old one's.
@@ -616,8 +733,13 @@ export function quietTools(state, cyclesAllowed = 2) {
  * posture is to convert uncertainty into a cheap question rather
  * than a confident wrong answer.
  */
+const ALIAS_SCAN_CAP = 200;
+
 export function possibleAliases(state) {
-  const names = [...state.tools.keys()];
+  // Capped (F7): O(n^2) edit distance on every audit is fine at a
+  // builder's scale and is not fine unbounded. An unnamed cap is a
+  // silent one, so it is named and reported when it binds.
+  const names = [...state.tools.keys()].slice(0, ALIAS_SCAN_CAP);
   const pairs = [];
   for (let i = 0; i < names.length; i += 1) {
     for (let j = i + 1; j < names.length; j += 1) {
@@ -697,6 +819,35 @@ export function weeksBetween(fromIso, to) {
  * about the shape — one function, one wire format.
  */
 export function deltaFor(entry, state) {
+  /**
+   * THE CORPUS GATE. Two kinds of entry never produce a suggestion:
+   *
+   *   PRIVATE — the therapy app, the job hunt, the competitor you
+   *   evaluated. Logged locally if you want it; it leaves the box
+   *   over nobody's dead body.
+   *
+   *   UNCONFIRMED — a swept receipt nobody has looked at. Forged
+   *   receipts are corpus poisoning with a mail client, and the
+   *   cheapest defence is that machine-found claims do not become
+   *   published statistics on their own.
+   *
+   * Enforced here, at the only place a suggestion is born, rather
+   * than trusted to the caller.
+   */
+  /**
+   * ASKED OF THE TOOL, NOT THE ENTRY — the leak this exact test
+   * caught. `private` is set once, at signup, and is sticky on the
+   * tool; the CANCELLATION event months later carries no flag of its
+   * own. Checking the entry alone meant a private tool stayed private
+   * right up until the moment it ended, and then published the most
+   * revealing fact about itself: that you quit it, and when.
+   *
+   * The derived record is the authority for both flags, and the
+   * entry can only ever add to them.
+   */
+  const known = state.tools?.get(entry.tool_name);
+  if (entry.private === true || known?.private === true) return null;
+  if (entry.confirmed === false || known?.confirmed === false) return null;
   const week = eventDate(entry).slice(0, 10);
   if (entry.event === "trial_started" || entry.event === "paid_started") {
     const opened = {
