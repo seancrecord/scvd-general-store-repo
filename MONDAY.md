@@ -565,3 +565,102 @@ demand tag, and rule 19 says that is the bar.
 P2, P5, P6, P8, P9 unscanned. And two reads that change decisions
 rather than inform them: **ERC-8183's evaluator role**, and
 **draft-hopley-x402-compliance-receipt** against `scvd-attestation/v1`.
+
+---
+
+## The Tab: free — but say WHICH free, and say it now
+
+Agreed on the substance, with one correction to the shape.
+
+**"Free for a while, maybe paid later" is a promise that becomes a
+betrayal**, and it is the exact shape rule 10 was written about. It
+also suppresses the adoption it is meant to buy: an honest listing
+would have to say *"this may cost money later,"* and that sentence is
+read at install time by the very people we want.
+
+**And it is not actually available to us.** The Tab is MIT and runs on
+the builder's own machine. Anyone can keep the version they have,
+forever. There is no later switch to flip on the local server — so
+"maybe paid later" is not a strategy, it is a thing we would say and
+then not be able to do.
+
+### What to commit to instead, publicly, before anyone installs
+
+| surface | price | forever? |
+|---|---|---|
+| the local tab, the pager, `export_tab` | **free** | yes, and MIT, and on your machine |
+| reading the **pooled** corpus | **contribute-to-access** | feed the pool, read the pool |
+| pooled read without contributing | paid | the only money door |
+
+This is better than free-for-now on every axis. It is a promise we can
+keep. It prices the thing that has network value and gives away the
+thing that does not. And **contribute-to-access is itself the growth
+mechanism** — it is already the spec, so this is committing publicly
+to what was already designed rather than inventing a model.
+
+The keeper's underlying instinct is exactly right and worth stating as
+the reason: **the pooled layer is worth nothing at N=1.** You cannot
+sell retention counts you do not have. Charging early maximizes
+friction at the one moment friction is fatal. The sequence is forced.
+
+**Said plainly so nobody is surprised later:** the direct revenue here
+may be small or zero for a long time. The Tab's real return is as a
+namespace play and a second index — builder tools alongside x402
+endpoints — and it should be judged on that, not on a subscription
+line.
+
+---
+
+## Accounting for what happens outside the window
+
+The keeper's question, and it is the sweep's counting obligation
+pointed at the ward: *"some will be missed" is not an acceptable
+answer.* Two thin spots, and they have different fixes.
+
+### Coverage — separate ENUMERATION from OBSERVATION
+
+We have been conflating them, and that is the whole problem.
+
+**Probing is expensive. Counting is nearly free.** One fetch per public
+directory enumerates the known universe; we do not have to probe a
+host to know it exists. So:
+
+- **`population_known` vs `population_walked`.** Take the union of
+  every public directory as the denominator — the Bazaar/CDP list,
+  402index, x402-list, fuchss, whatever else the scan turns up. If the
+  known universe is ~59,818 and we walk 35, our coverage is a fraction
+  of a percent and **the artifact should say so, on the same page as
+  the verdict.** That is `days_unchecked` applied to breadth instead
+  of time, and it costs one number.
+- **`first_seen` / `last_seen` per host, at the enumeration layer.**
+  Mortality is measurable against a population you merely enumerate. A
+  host that vanishes from every directory between walks is a death we
+  can record **without ever having probed it** — which is most of the
+  "activity outside the window" the keeper is asking about.
+- **Between-walk activity** stays invisible to probing and always
+  will. That gets stated, not solved: one pass a week is conformance
+  cadence, never uptime — the same sentence already on the watch.
+- **Non-x402 agent commerce** (the ERC-8183 / escrow world) is outside
+  the instrument entirely today. Naming it as out of scope is honest;
+  quietly implying the index covers "agent commerce" would not be.
+
+The move converts an unstated hole into a published ratio. Same
+discipline as `unclassified`: we do not need to know what we missed,
+only how much of the universe we did not look at.
+
+### Queryability — build it, but not as a coverage competitor
+
+The per-subject endpoint is still worth building. What changes after
+the prior-art correction is what it is FOR: not "the index," which is
+claimed at three orders of magnitude more coverage, but **the artifact
+surface** — *give me the signed, chained history of what scvd observed
+about X.*
+
+**And the query must return the gaps.** Not just "here is what we saw"
+but *"we observed X on these six dates, we did not observe it during
+these three weeks, and here is our coverage of the population X
+belongs to."* The large monitors do not do that. It is nearly free for
+us because gap-honesty is already the architecture, and it is the
+entire difference between a signed artifact and a scraped number.
+
+**Added to the list, unranked** pending the keeper's draft specs.
