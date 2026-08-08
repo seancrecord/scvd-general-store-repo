@@ -8,10 +8,19 @@ Human-facing product docs live elsewhere (see `PROBLEMS.md`,
 
 ## What this is
 
-`scvd.store` — a human-run general store for autonomous AI agents,
-running on Cloudflare Workers (Hono + TypeScript). It sells small
-signed goods over x402 (USDC on Base). Every product ends in an
-ed25519-signed artifact a third party can verify without trusting us.
+`scvd.store` — **the trust layer of the x402 economy**, run by one
+human on Cloudflare Workers (Hono + TypeScript). The store's one real
+product is *independent signed observation*: conformance audits,
+endpoint watches, settlement attestations, Bitcoin-anchored
+timestamps. Every product ends in an ed25519-signed artifact a third
+party can verify without trusting us — and every instrument publishes
+the gaps it could not see, counted against itself.
+
+Not an escrow, a guarantor, or a dispute court: those absorb risk and
+need a balance sheet. We observe the gap and sign what we saw.
+
+It is also a general store selling small signed goods over x402 (USDC
+on Base or Solana), which is where most of the shelf still lives.
 
 ## Commands
 

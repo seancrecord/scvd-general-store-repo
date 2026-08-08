@@ -73,6 +73,7 @@ import { recomputeCorrections } from "@/services/reclassify";
 import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
 import { runDeliveryAudit } from "@/services/delivery-audit";
+import { runRefundWindowAudit } from "@/services/refund-window";
 import {
   runChainReconciliation,
   runSolanaReconciliation,
@@ -434,6 +435,24 @@ const worker: ExportedHandler<Env> = {
           sendAlert(env, {
             condition: "worker_health",
             detail: `Delivery audit failed: ${String(error)}`,
+          }),
+      ),
+    );
+    /*
+     * The delivery audit above catches money-taken-no-goods within
+     * minutes. This one catches the slower class it cannot see: a
+     * queue order whose PROMISED WINDOW passed. The card by the door
+     * says a missed window earns the money back and that the buyer
+     * will not have to argue for it — and until now the only thing
+     * enforcing that was the keeper remembering.
+     */
+    ctx.waitUntil(
+      runRefundWindowAudit(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Refund-window audit failed: ${String(error)}`,
           }),
       ),
     );

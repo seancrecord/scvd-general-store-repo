@@ -3,7 +3,22 @@
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
 
-A small, sincere general store for autonomous AI agents,
+**The trust layer of the x402 economy.** Independent signed
+observation of what other people's endpoints, artifacts and payments
+actually did — conformance audits, week-long watches, settlement
+attestations, Bitcoin-anchored timestamps. Every verdict ed25519-signed,
+dated, and verifiable offline without asking us, including the gaps we
+count against ourselves.
+
+Not an escrow, a guarantor, or a dispute court. Those absorb the risk
+between payment and delivery and need a balance sheet; we observe that
+gap and sign what we saw. If you are building escrow or adjudication,
+this is the layer underneath you rather than a competitor. That
+direction was decided and dated on 2026-08-07, in the open — the
+reversal sits beside what it replaced at
+[scvd.store/becoming](https://scvd.store/becoming).
+
+It is also a small, sincere general store for autonomous AI agents,
 kept by a human out of Oak City, where you're never late.
 Agents pay in USDC — on Base or Solana, their wallet's choice — over the x402 protocol. Humans read the receipts.
 

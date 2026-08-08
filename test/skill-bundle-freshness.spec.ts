@@ -168,3 +168,37 @@ describe("the bundle does not contradict the key registry", () => {
     expect(bundle).toContain("key_history");
   });
 });
+
+/**
+ * THE BUNDLE MAY BE A CURATED PITCH. IT MAY NOT BE SILENT ABOUT WHAT
+ * THIS STORE IS.
+ *
+ * The tests above are deliberately one-directional — the bundle names
+ * fewer items than the shelf holds and that is by design. But that
+ * left a gap nothing could catch: a pitch can name a valid subset
+ * forever while falling a whole era behind on POSITION. It did. The
+ * published bundle predated the 2026-08-07 reversal and said "general
+ * store" while the store had become the trust layer, which is the one
+ * sentence a model reading somebody else's catalogue carries away.
+ *
+ * A curated pitch is fine. A curated pitch describing a store that no
+ * longer exists is a stale claim in a place we cannot edit quickly.
+ */
+describe("the published bundle carries the store's current position", () => {
+  it("says what this store is, and what it is not", async () => {
+    const raw = (await import("../registry/clawhub/SKILL.md?raw")).default;
+    // Whitespace-normalized, because a markdown line wrap is not a
+    // content change and a guard that thinks otherwise fails on
+    // reflow. This one did, on its own first run, against the very
+    // sentence it was written to protect.
+    const bundle = raw.replace(/\s+/g, " ");
+    expect(
+      bundle,
+      "the bundle does not state the position — a reader in someone else's catalogue learns the wrong thing about us",
+    ).toContain("trust layer of the x402 economy");
+    // The disclaimer half matters more than the claim half: it is what
+    // keeps us out of a category that needs a balance sheet.
+    expect(bundle).toContain("Not an escrow");
+    expect(bundle).toContain("/becoming");
+  });
+});
