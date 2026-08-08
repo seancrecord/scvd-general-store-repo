@@ -993,3 +993,510 @@ it is already built — it just is not marked up as such.
 
 Sources consulted: airops, HubSpot, digidop, o8, WRITER, Percepture,
 Enrich Labs, Progress Sitefinity, Surmado (all 2026 AEO/GEO guides).
+
+---
+
+## Payability/Mortality spec — reviewed against the tree (2026-08-08)
+
+The reasoning is right and the AgentPay differentiation is the sharpest
+part of it: **the buyer's client has a conflict of interest — it wants
+to sign; we don't.** That is the wedge, it is correct, and it is worth
+keeping in whatever ships.
+
+But the spec was written without the tree in front of it, and most of
+what it describes as a four-week build already exists under different
+names.
+
+### Already shipped
+
+| spec asks for | exists as |
+|---|---|
+| signed observation of what a 402 presented at a moment | **`service_audit`** — signed, dated, `evidence_hash`, permanent report URL, published criteria version, and the evidence hash bound into the purchase certificate |
+| verdict `payable` / `silently-unpayable` | `ready` / `not_ready`, with **the failing checks named** rather than collapsed into a label |
+| verdict `gone` | `unreachable` — and ours is honest that it is a fact about one network path at one moment, not proof the endpoint is down |
+| verdict `changed` (drift since last observation) | **`conformance_watch`** — `drift_detected`, set arithmetic over sorted failed-check sets, recomputable by the reader |
+| mortality across a population | **the ward round** — `newly_failing`, `newly_fixed`, `flappers`, weekly |
+| a non-backfillable corpus of observations | **the corpus** — signed, hash-chained, OTS-anchored, and now a `schema.org/Dataset` |
+| the observation battery | **`/api/preflight`** — free, published, versioned. The audit runs those checks and no others |
+
+`ARTIFACT_CLASSES` already declares twelve classes, `service_audit`
+among them, each with `trust_model`, `signs` and `does_not_prove`.
+
+### Genuinely new, and worth building
+
+**1. The settlement attempt.** Nothing here has ever paid a stranger's
+endpoint to see whether it settles. This is the real content of the
+spec and it is the *store as buyer* — the instrumentation play, arrived
+at from the other direction.
+
+**2. `GET /history/<endpoint>` — the per-subject query.** Exactly the
+gap already named: the corpus enumerates snapshots and cannot answer
+*"what has this store observed about X over time."* This is the index
+product, and the spec found it independently.
+
+### Four problems to fix before anyone builds
+
+**THE ECONOMICS ARE INVERTED.** `attemptSettlement: true` at $0.01 per
+observation means paying the endpoint's own price — which could be a
+dollar or five — to earn a cent. Every observation of anything above a
+penny is a guaranteed loss, and the loss scales with how interesting
+the endpoint is. Either the buyer funds the settlement, or the price is
+pass-through plus a fee, or settlement attempts are house-funded
+instrumentation rather than a priced SKU. It cannot be a cent flat.
+
+**And it spends money at strangers' endpoints**, which is CV's wallet
+law — whose hard cap, cap period and ask-first threshold are all still
+blank by the keeper's own choice. That law has to land before this
+does.
+
+**`silently-unpayable` is an interpretation, not an observation.** The
+observation is *settlement failed, here are the named checks that
+failed*. "Silently unpayable" imputes a state of the world, and
+"silently" edges toward imputing intent. Rule 43 territory. The
+existing vocabulary is already the observation-shaped version and
+should not be traded for a more quotable one.
+
+**A second namespace fragments the play.** The spec says it extends
+`scvd-attestation` v1 and then gives itself a separate URI at
+`/.well-known/scvd-payability/v1`. Those are inconsistent with each
+other, and the served namespace spec is at **`/spec/scvd-attestation/v1`**,
+not under `.well-known`. A new artifact class inside the existing
+namespace is the move; a second namespace splits a land grab in half.
+
+**The stack assumptions are wrong.** "SQLite or Postgres" — this runs
+on Cloudflare Workers with KV, and the corpus's own graduation trigger
+to R2 is already written down.
+
+### Revised estimate
+
+Four CV-weeks is the cost of building what exists. Scoped to what does
+not exist — a settlement-attempt lane on the existing audit, plus the
+per-subject history query over the corpus — it is a fraction of that,
+and both pieces were already on the list from another direction.
+
+**One number worth reconciling:** the spec cites 14,795 resources in
+the Foundation's discovery index; the prior-art scan found ~59,818
+endpoints monitored by provider. Different sources, different dates,
+possibly different definitions of "resource." Neither should be quoted
+as ours until somebody checks.
+
+---
+
+## Three more specs, reviewed against the tree (2026-08-08)
+
+### ⚑ The pattern across all three, and it matters most
+
+Each spec invents its own namespace: `scvd-payability/v1`,
+`scvd-reconciliation/v1`, `scvd-skill-safety/v1`. That is **four
+namespaces**, and the entire namespace play depends on there being
+**one** vocabulary others adopt. Four is not a land grab, it is
+confetti.
+
+They also all place it under `/.well-known/`. Ours is served at
+**`/spec/scvd-attestation/v1`** and already declares twelve artifact
+classes, each with `trust_model`, `signs` and `does_not_prove`, behind
+a type-level check that fails the build if a signed field is ever
+added without being signed.
+
+**All three should be new artifact classes inside the existing
+namespace.** That is what "extends the SCVD Attestation Format v1.0.0"
+means, and two of the specs say that sentence and then contradict it
+in the next line.
+
+---
+
+### A — Settlement-Reconciliation (34/35). Strongest, one load-bearing flaw.
+
+**Genuinely new here.** We have never touched `upto` or `deferred` —
+the store speaks `exact` only. Observing a scheme we have never
+implemented is real work, and the ~1 CV-week estimate may not carry
+it. The flip side is that this is why first-mover is plausible.
+
+**THE FLAW: `authorized_max` is buyer-supplied.** The spec's own
+gotcha admits the payment ref "may require the client to provide the
+authorization proof." If we sign `within_cap: true` from a cap the
+buyer handed us, we have signed the buyer's arithmetic and put our key
+on their claim.
+
+That is the exact defect already recorded against the referral
+certificate: *"the attestation is sourced from untrusted input… signing
+puts our key on a claim the buyer authored. Same class as the `from`
+field on a decline, which we already refuse to trust for exactly this
+reason."*
+
+**The fix, and it is cheap:** attest the cap only where it is
+CHAIN-DERIVABLE. An EIP-3009 authorization is payer-signed and carries
+its value, so the cap is observable. Where it is not, the receipt says
+the cap was **declared**, not observed — two verdicts, never one.
+
+One more, so the product does not read thin: `within_cap` is
+arithmetic two numbers anyone can do. The value is that a NEUTRAL
+PARTY saw both numbers. Say that on the artifact, or a reader works
+out the arithmetic is free and wonders what they bought.
+
+---
+
+### B — AI-Answer Attestor (33/35). Two real problems.
+
+**SSRF, and this is the one to fix before anything else.**
+`GET /api/attest?url=…` fetches arbitrary caller-supplied URLs from our
+Worker. `probeOnce` already carries the guards — https-only, no
+redirects, hard timeout, 256KB ceiling, per-minute budget — and was
+extracted so exactly this kind of thing shares them. But preflight
+does **not** block private or link-local addresses, because it only
+ever probes declared x402 endpoints. An arbitrary-URL fetcher must add
+that; cloud metadata endpoints are the classic target.
+
+**The claim hierarchy is still unaddressed** — the keeper flagged it
+and the spec does not answer it. `content_hash` + `fetched_at` + our
+signature proves **scvd saw these bytes**, not **the origin served
+them**. CDN variants, geo-routing, A/B tests and a MITM all break the
+origin reading, and TLSNotary exists to close precisely that gap. The
+artifact must carry the distinction in `does_not_prove` shape, which is
+already the house pattern and turns the weakness into the honest part.
+
+**And it contradicts itself.** Gotcha #6 says "we're not a proxy
+service" while the response shape is `{content, receipt}` — which is a
+proxy response. "If the content is paywalled or copyrighted we
+shouldn't be fetching it at all" cannot be honoured by a service that
+learns what it fetched by fetching it. Either own that it is a
+fetching service with published bounds (robots, UA, size, no auth
+headers, never a paywalled origin) or return hash-only and let the
+caller fetch.
+
+---
+
+### C — Skill-Safety Attestation. Blocked, and warranty-shaped.
+
+**Blocked by rule 43:** no badge ships before its criteria page
+exists, and none does. This is a badge program.
+
+**`verdict: "safe"` is the most warranty-shaped word available**, and
+the keeper's ruling was that badge copy is observation-shaped and never
+warranty-shaped — rule 41 discharged structurally, because *"the words
+are the only shield, so the words get the engineering."* Signing
+"safe" about executable code that runs with an operator's permissions
+is the one place that discipline matters most.
+
+**Fix:** `checks_passed` / `checks_failed` / `incomplete`, with the
+findings named. The consumer draws the safety conclusion. Same move
+that made `ready` / `not_ready` right for the audit.
+
+**`sandbox-execution` cannot run here.** The schema specifies docker,
+isolated network, a Linux environment. This store is Cloudflare
+Workers with no ops capacity behind it. A schema that declares checks
+the issuer cannot perform will publish `skipped` forever, which makes
+`confidence: low` the permanent honest answer — and a badge whose
+honest confidence is always low is not a badge.
+
+Either the check comes out of the standard set, or somebody funds the
+infrastructure to run it, and that is a keeper call about carry rather
+than a schema question.
+
+---
+
+## The spec checklist — what four reviews kept finding
+
+Written after reviewing payability, reconciliation, answer-attestation
+and skill-safety. Every one of these came up more than once, so it is
+cheaper to write specs against the list than to review them against it.
+
+**1. Is it already built under another name?** Most of the payability
+spec was. Check `ARTIFACT_CLASSES` (twelve of them), `service_audit`,
+`conformance_watch`, the ward round, `preflight`, the corpus. A spec
+written without the tree open costs a review to discover that.
+
+**2. Does it invent a namespace?** It should not. New artifact class
+inside `scvd-attestation/v1`, which is served at **`/spec/scvd-attestation/v1`**
+— not under `/.well-known/`. Three of four specs got both halves wrong.
+Four namespaces is not a land grab.
+
+**3. Does it sign anything the buyer supplied?** If a field arrives
+from the party the receipt benefits, our key ends up on their claim.
+Either derive it independently (chain, probe, our own logs) or label
+it **declared** and never **observed** — two verdicts, not one. This
+is the referral-certificate defect and it recurs.
+
+**4. Is there a `does_not_prove`?** Every artifact class has one and
+it is where the honesty lives. "We saw these bytes" is not "the origin
+served them." If a spec cannot state what its signature fails to
+establish, it is not finished.
+
+**5. Is the verdict observation-shaped or warranty-shaped?** `ready` /
+`not_ready` with the failing checks named, not `safe`. The keeper's
+ruling: badge copy is observation-shaped and never warranty-shaped,
+because the words are the only shield.
+
+**6. Does it assume infrastructure we do not have?** Cloudflare Workers
+and KV. No Postgres, no SQLite, no docker, no ops capacity. A check
+that cannot run publishes `skipped` forever.
+
+**7. What does one unit COST US to produce?** Anything that pays a
+third party, probes at volume, or fetches arbitrary bytes has a real
+cost. The payability spec priced settlement attempts at a cent while
+paying the endpoint's own price — a guaranteed loss that scales with
+how interesting the endpoint is.
+
+**8. Does it spend money?** Then CV's wallet law applies, and its hard
+cap, cap period and ask-first threshold are all still blank by the
+keeper's own choice. That lands first.
+
+**9. What is the attack surface?** Anything taking a caller-supplied
+URL is SSRF until proven otherwise. `probeOnce` carries https-only, no
+redirects, a hard timeout, a 256KB ceiling and a per-minute budget —
+reuse it. It does **not** block private or link-local addresses,
+because preflight only ever probes declared endpoints; an
+arbitrary-URL fetcher has to add that itself.
+
+**And the filter question on top of all nine**, from the strategy
+synthesis and better than anything I offered: *does this create a new
+class of signed observation that will still be valuable after the
+individual receipt has been forgotten?*
+
+---
+
+## Reselling failure-handling spec — reviewed (2026-08-08)
+
+(Payability and reconciliation were reviewed above; nothing changed in
+the re-paste. This is the new one.)
+
+**The spec's conclusion is right and its route is closed.** Reselling
+IS brand-building, and "the failure-handling is the brand" is exactly
+this store's existing posture pointed at a new domain. But the
+automation it says makes that true is the one thing that cannot exist
+here.
+
+### ⚑ Every response says "refund automatically." Rule 10 says no.
+
+All five failure modes end in *"Refund any payments made during the
+window"* and *"Fully automatable. No human intervention needed."*
+
+Rule 10, verbatim: *"Refunds are a promise the keeper keeps personally
+— copy never says 'automatic' until the code makes it automatic."*
+And its worked example is the most instructive incident the store has
+produced: **"refund is automatic" sat live on every surface for five
+days while the code created refunds pending and the keeper paid each
+one by hand with a transaction hash.**
+
+`markRefundPaid` is still a keeper action. Nothing in this store has
+ever moved money on its own. This spec would commit that same error a
+second time — in code rather than copy, which is worse, because copy
+can be corrected in an afternoon.
+
+### The options are ranked in reverse order of fit
+
+**Option A (pre-funded refund pool) is recommended and fits worst.** A
+Worker holding USDC and sending it is rule 30 — *"no agent holds keys,
+sends money, or publishes without an approval queue"* — plus a hot
+wallet inside the request path. It is the single largest new risk
+surface the store could take on, proposed as the simple option.
+
+**Option C (no refunds, signed degradation attestation) is dismissed
+and IS this store.** Signed, dated observation; the consumer decides
+what to do with it. No hot wallet, no rule 30 exception, no rule 10
+reversal, and the same shape as every other artifact on the shelf. The
+agent disputes with their own wallet holding our signature as evidence
+— which is the neutral-observer wedge again, and stronger than a
+refund because it travels.
+
+### "Near-zero ongoing carry" is off by about fifty thousand times
+
+The ward round is this store's most aggressive existing instrument:
+**one probe per host, weekly, capped at 200 hosts** — and that cap
+exists because of the subrequest budget the audit script polices.
+
+The spec proposes **five checks per endpoint every sixty seconds.**
+That is 50,400 checks per endpoint per week against the ward's one per
+host per week. Cloudflare cron does not go below a minute either. This
+is not near-zero carry; it is the largest polling load the store has
+ever contemplated, per endpoint.
+
+### Two smaller things
+
+**"Delist" is not a flag.** `MENU_ITEMS` is code, and
+`shelf-agrees-with-menu.spec.ts` plus `routes.spec.ts` exist to catch
+the served menu diverging from it. A runtime delist is an architecture
+change with guards to satisfy, not a boolean.
+
+**The retroactive window already shipped this morning.** "Refund
+payments made during the outage window" means payments that settled in
+the three minutes before detection — which is the refund-window
+detector's exact shape: a ledger of what is owed, raised for a human,
+moving no money. Reuse it.
+
+### The answer to the spec's own decision rule
+
+**Detection, flagging, attestation and a public status page: yes, all
+automatable, and they are the brand.** That half of the spec is right
+and worth building.
+
+**Automatic refunds: no**, and not because we are unwilling — because
+rule 10 and rule 30 both stand in front of it and the store has never
+had a wallet that could. Take that half out and the answer flips clean:
+**reselling is brand-building via Option C**, at a polling cadence
+somebody has to cost out honestly first.
+
+---
+
+# THE RANKING (2026-08-08, everything on one scale)
+
+Synthesizing: the backlog, the research synthesis, four spec reviews,
+the prior-art scan, and what shipped today. Ordered by what it does for
+the store holistically, not standalone.
+
+## Two constraints nobody's list has priced
+
+**1. THE CORPUS'S GROWTH RATE IS THE BINDING CONSTRAINT ON THE ENTIRE
+SECOND CATEGORY.**
+
+The synthesis is right that intelligence products (routing, reputation,
+procurement, insurance) consume facts and compound. But they need
+VOLUME, and the corpus grows at **one probe per host, weekly, capped at
+200** — and today it walks about 35. A year of that is roughly 1,800
+host-observations. Nothing actuarial is possible on 1,800 rows.
+
+So the corpus's velocity is the rate limiter on every product in
+category two, and it is currently set by a cron nobody has costed
+against the ambition. **If intelligence products are the business,
+corpus velocity is the metric** — and it is not on any list because it
+is not a product.
+
+**2. THE 60-DAY TEST DOES NOT SERIALIZE.**
+
+Every spec ends "cheapest test: stock as SKU, watch settlement logs 60
+days." Four specs sequenced is 240 days. Four specs stocked in the same
+week is 60 days and the settlement log tells you which one moved.
+
+That changes the build order from a queue into a **batch**, and it is
+"the shelf is the survey" applied properly. Bounded by the real listing
+cost — copy, spec entry, tests, five parity guards, hours per SKU — so
+the batch is two or three, not eight.
+
+---
+
+## TIER 0 — debts. Do not rank these against features.
+
+| | why |
+|---|---|
+| **`order_id` on `RefundRecord`** | additive, optional, tiny. Turns `owed_usdc` from a floor into a fact. Do it next time refunds are touched |
+| **The Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build |
+
+---
+
+## TIER 1 — the constraint, and the thing everything else waits on
+
+**1. Enumeration / observation split. — BUILT 2026-08-08.**
+`src/services/population.ts`, wired into the ward round, 12 tests.
+Union of the directories we read as the denominator, probed subset
+published against it, `first_seen` / `last_seen` / `gone_at` at the
+enumeration layer. Counting is nearly free; probing is what costs.
+
+This was the highest-leverage item on the whole list and it is on
+nobody else's because it is not a product. It fixes the coverage gap,
+makes mortality measurable at population scale **without paying for
+probes**, and raises corpus volume on the axis that is cheap.
+Everything in category two got closer the day it landed.
+
+What shipped, beyond the spec:
+
+- **A census that rides the existing feeds** — no new fetches, so
+  coverage costs nothing on top of the round.
+- **`returned`** — a host listed again after being written off. Not in
+  the plan; it falls out of `gone_at` for free and nothing else we run
+  would notice it.
+- **Three guards against a fabricated mass extinction**, which is the
+  one failure that would be permanent in an append-only corpus: an
+  unreadable source carries its hosts forward; a page-capped discovery
+  read counts as unreadable rather than as a short answer; a union
+  collapsing past the ward's existing 60% floor records no
+  disappearance at all that round.
+
+One decision made in the build that is worth the keeper knowing:
+**the collapse grace lasts exactly one round.** A test caught that
+measuring the floor against the live register instead of the previous
+census makes suppression permanent — the baseline never falls, so a
+genuine contraction could never be recorded. So the instrument gets
+the benefit of the doubt once; a still-small union next round is taken
+as the world. Affordable only because delisting is reversible here and
+a returning host keeps its `first_seen`.
+
+Still true: it trips the KV→R2 graduation trigger by definition, and
+that has NOT been done. The register is one key today, which is right
+at tens of hosts. **The trigger to watch is the register key
+approaching KV's value ceiling** — that is the graduation arriving on
+schedule, not a surprise. One decision, still not two.
+
+**2. The per-subject history query.** *"What has scvd observed about X
+over time"* — found independently by me and by the payability spec.
+This is the index product, it is a route over data already signed and
+chained, and it must **return the gaps**, which is the thing the large
+monitors do not do.
+
+---
+
+## TIER 2 — the batch. Stock together, one 60-day window.
+
+**3. Settlement-Reconciliation (A).** Strongest genuinely-new signal on
+the list. Ships with the fix: attest the cap only where it is
+**chain-derivable**; where it is not, the receipt says *declared*, not
+*observed*. Caveat the estimate — we have never touched `upto` or
+`deferred`; the store speaks `exact` only.
+
+**4. The settlement-attempt lane** on the existing `service_audit` —
+the genuinely new half of payability, and the store-as-buyer
+instrumentation play arriving from the other direction. Blocked until
+the wallet law's three blanks are filled.
+
+**5. Answer attestation (B)** — only after SSRF hardening (private and
+link-local blocking, which `probeOnce` does not carry) and the claim
+hierarchy in `does_not_prove` shape. Fix those two and it is a fine
+third SKU.
+
+---
+
+## TIER 3 — gated, and the gates are cheap
+
+**6. The criteria page.** Rule 43 blocks every badge behind it,
+including skill-safety. Mostly derivable from `ARTIFACT_CLASSES`. Needs
+one keeper word: **is a badge a dated observation or a live status?**
+Recommendation on record — dated observation, never retires, always
+shows its age, and the Conformance Watch is what sells currency.
+
+**7. Key succession.** Every artifact the corpus has ever signed becomes
+unverifiable if that key dies with no pre-announced successor. Already a
+public promise on `/becoming`.
+
+**8. Reselling, via Option C.** Detection, flagging, signed degradation
+attestation, public status page. Not Option A — automatic refunds are
+blocked by rule 10 and rule 30 both. And cost the polling honestly
+first: the proposed cadence is ~50,000x the ward's per subject.
+
+---
+
+## TIER 4 — options, ops, and not now
+
+Sanctions clearance (partnership, not competition) · WebMCP verifier
+(the only candidate whose domain can vanish) · auto-registrar (ops,
+worth doing as hygiene because it feeds discovery) · Polygon (queued,
+and the 14.5M-vs-2.1M figure is the demand tag) · Algorand (parked,
+facilitator constraint) · spend-guard (no — follower position) ·
+`town_papers`, `anniversary_artifact`, referral certificate (no demand
+tag; rule 19 says that is the bar).
+
+---
+
+## Forward: the three things that would change this order
+
+**If a stranger pays for anything in the verification tier**, that item
+goes to the top and everything else reorders behind it. Assumption 0 —
+*that anyone pays for a signed observation at all* — has zero evidence
+and sits upstream of every other assumption on the list.
+
+**If ERC-8183's evaluator role reads the way the summary does**, that
+is a standardized slot for exactly what this store is, in someone
+else's standard, and filling it beats anything we would invent. Needs a
+real read of the spec, not a summary.
+
+**If the corpus stays at weekly × 35**, category two never arrives and
+the honest move is to say so rather than keep ranking products that
+depend on it.

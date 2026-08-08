@@ -42,6 +42,24 @@ export function renderWardPage(
   const summary = `<ul>
     <li><strong>${probed.length} doors probed</strong>${listedOnly > 0 ? ` (+${listedOnly} leaderboard-listed, population only — homepages carry no 402 to judge)` : ""} ${escapeHtml(round.at.slice(0, 16))}Z (week ${escapeHtml(round.week)}); ${round.listed_resources} resources listed.</li>
     <li><strong>${ready} ready (${probed.length > 0 ? Math.round((ready / probed.length) * 100) : 0}% of probed)</strong>, ${probed.length - ready} not.</li>
+    ${
+      round.population
+        ? `<li><strong>Coverage: ${
+            round.population.coverage_pct === null
+              ? "no population known"
+              : `${round.population.coverage_pct}% — ${round.population.population_walked} walked of ${round.population.population_known} known`
+          }</strong>. That is the denominator behind every percentage above: enumeration is nearly free, probing is not.${
+            round.population.carried_forward > 0
+              ? ` ${round.population.carried_forward} host(s) carried forward from a source that went dark (${escapeHtml(round.population.sources_failed.join(", "))}) — not counted as gone, because we could not ask.`
+              : ""
+          }${
+            round.population.collapse_suspect
+              ? ` <strong style="color:#8c2f1b">The known population collapsed past the floor, so disappearances are SUPPRESSED this round.</strong> The instrument explains that more plausibly than the ecosystem does; if it holds next round it will be recorded as real.`
+              : ""
+          }</li>
+    <li>Population moves: ${round.population.appeared.length} newly listed, ${round.population.disappeared.length} newly delisted, ${round.population.returned.length} listed again after being written off. Delisted means <em>no longer listed where we look</em> — never dead, never stopped taking payment.</li>`
+        : "<li>Coverage: not measured this round (round predates the population layer — read that as unknown, not as complete).</li>"
+    }
     <li>Our search-index presence: <strong>${
       round.our_search_presence === null
         ? "could not check (never read as absent)"

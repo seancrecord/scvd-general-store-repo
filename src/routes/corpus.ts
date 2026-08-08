@@ -72,6 +72,8 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "conformance verdict: ready, not_ready, unreachable or not_probed",
       "named failing checks and advisories",
       "week-over-week delta: newly failing, newly fixed, flappers",
+      "population known versus walked, and the coverage percentage between them",
+      "listing lifecycle: first seen, last seen, newly delisted, listed again",
     ],
     distribution: [
       {
