@@ -183,3 +183,55 @@ describe("the corpus, published", () => {
     expect(body.error).toContain("/corpus.json");
   });
 });
+
+/**
+ * THE CORPUS AS A CITABLE ENTITY.
+ *
+ * Current answer-engine guidance is blunt on one point: first-party
+ * data earns citations that third-party statistics cannot, because a
+ * citing system names the original source. The corpus is exactly that
+ * and was being served as bare JSON — which to a crawler is a file,
+ * not a source.
+ *
+ * These pin the markup rather than the prose, because the markup is
+ * the part a machine reads and the part most likely to be dropped by
+ * someone tidying the response shape.
+ */
+describe("the corpus declares itself a dataset", () => {
+  it("is JSON-LD and JSON at once, without moving anything that was there", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/corpus.json`)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(body["@context"]).toBe("https://schema.org");
+    expect(body["@type"]).toBe("Dataset");
+    expect(body.isAccessibleForFree).toBe(true);
+    // The store's own shape survives alongside the vocabulary.
+    expect(body.what_this_is).toBeTruthy();
+    expect(body.how_to_verify).toBeTruthy();
+    expect(body.chain).toBeTruthy();
+  });
+
+  it("asserts no licence, because inventing legal terms is the wrong reflex here", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/corpus.json`)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(body.license).toBeUndefined();
+    // What a reader actually needs is the fact, not a licence name.
+    expect(String(body.conditionsOfAccess)).toContain("Free to read");
+  });
+
+  it("is reachable as its own entity from the storefront, not only by guessing the URL", async () => {
+    const html = await (await SELF.fetch(`${BASE}/`)).text();
+    const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    const types = blocks.map((block) => {
+      try {
+        return (JSON.parse(block[1]!) as { "@type"?: string })["@type"];
+      } catch {
+        return null;
+      }
+    });
+    expect(types, "the storefront emits no Dataset node").toContain("Dataset");
+  });
+});
