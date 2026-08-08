@@ -89,13 +89,33 @@ one. Two additions, both consent-gated like everything else:
     the agent stays the only actor; the natural moment does the
     remembering.
 
+11. SIGNUP FRICTION — the agent-readiness index (the keeper's
+    meta-pain, 2026-08-08: "why do I have to create the Twitter
+    account?"). Every tool event MAY carry `signup_friction`, a
+    controlled vocabulary of what the signup path DEMANDED:
+    `agent_native` (API key, no human), `email_only`,
+    `phone_required`, `kyc_required`, `human_only`. Observation-
+    shaped by construction — it records the door's demands, never
+    whether the tool deserves them. Locally: `stack_audit` counts
+    the builder's stack by friction and lists the tools where a
+    human is the door; `check_before_signup` warns BEFORE an
+    agent-driven signup dead-ends on a wall a human already hit.
+    Pooled: `signup_friction` rides OPENED deltas only (a
+    signup-time fact about the tool, carrying nothing about the
+    builder) — which makes the pool a third non-backfillable
+    corpus: the agent-readiness index of the builder-tool economy.
+    Which doors open to agents, which demand a human, and which
+    direction each is moving. Nobody else is collecting it, and
+    every week it runs first is a week nobody else can ever have.
+
 What the pool can then see: conversion rates, post-pay churn and the
 weeks-held distribution, adoption volume by week (opened deltas),
-and the REPLACEMENT GRAPH — `replaced_with` as directional edges,
-quietly the strongest signal in the design: when five tools' deltas
-all point at the same successor, that is the market talking and
-nobody editorialized. What it still cannot see, said plainly on
-every published figure: unresolved commitments (survivorship),
+the agent-readiness index (friction by tool, over time), and the
+REPLACEMENT GRAPH — `replaced_with` as directional edges, quietly
+the strongest signal in the design: when five tools' deltas all
+point at the same successor, that is the market talking and nobody
+editorialized. What it still cannot see, said plainly on every
+published figure: unresolved commitments (survivorship),
 non-contributing builders (population bias), and any single report's
 truth (gaming — sample sizes ride every number).
 
@@ -138,10 +158,11 @@ cancels, renews, replaces, or learns of a price change on a tool.
 | price | object | see validation | `{amount, currency, period}` |
 | previous_price | object | see validation | required for `price_changed` |
 | trial_ends | ISO date | see validation | required for `trial_started` |
-| replaces | string | see validation | required for `replaced` |
+| replaced_with | string | see validation | required for `replaced`; the successor tool. Logged against the OUTGOING tool — same vocabulary as the delta's `replaced_with`, one name for one edge |
 | retroactive | bool | no | default false; true marks a backfilled entry |
 | occurred_at | ISO date | no | allowed only when `retroactive`; the claim about when it really happened |
 | payment_method | string | no | the builder's own label, free text; never parsed, never contributed |
+| signup_friction | enum | no | what the signup path demanded: `agent_native`, `email_only`, `phone_required`, `kyc_required`, `human_only` (addendum #11) |
 | source_url | string | no | where the signup happened |
 | notes | string | no | anything else worth remembering |
 
@@ -160,7 +181,7 @@ and consent is on, the response also carries
 Validation that rejects the write:
 - `trial_started` without `trial_ends`
 - `paid_started` or `renewed` without `price`
-- `replaced` without `replaces`
+- `replaced` without `replaced_with`
 - `price_changed` without BOTH `price` and `previous_price`
 - `occurred_at` without `retroactive: true`
 - category not in vocabulary (error suggests closest match)
@@ -262,7 +283,8 @@ since). Two kinds (addendum #9), deliberately unlinked:
 | kind | enum | yes | `"opened"` or `"outcome"` |
 | tool_name | string | yes | |
 | category | string | yes | |
-| week | ISO week | kind=opened | the signup week; the whole of an opened delta |
+| week | ISO week | kind=opened | the signup week |
+| signup_friction | enum | no, kind=opened only | the door's demands — a signup-time fact about the TOOL, carrying nothing about the builder (addendum #11) |
 | outcome | enum | kind=outcome | `kept_past_conversion`, `canceled_pre_conversion`, `canceled_post_conversion`, `replaced` |
 | weeks_held | int | kind=outcome | rounded to weeks (changelog #6) |
 | replaced_with | string | no | for `replaced` |
@@ -299,7 +321,7 @@ this is the cure's own hygiene.
 
 Per entry: `entry_id`, `server_timestamp`, `schema_version`, `event`,
 `tool_name`, `category`, `problem_solved`, `price`, `previous_price`,
-`trial_ends`, `replaces`, `retroactive`, `occurred_at`,
+`trial_ends`, `replaced_with`, `retroactive`, `occurred_at`,
 `payment_method`, `source_url`, `notes` — plus `consent_changed`
 events carrying `{contribute}`.
 

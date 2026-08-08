@@ -3,6 +3,17 @@ import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  test: {
+    /**
+     * The store's suite ONLY. The Tab (tab/) is a filesystem product
+     * tested on Node's own runner (npm run tab:test, its own CI
+     * step) — vitest's default glob matched tab/tab.test.mjs and
+     * tried to run `node:test` inside a Worker isolate, which has
+     * neither node:test nor a filesystem. Two runtimes, two runners,
+     * stated here rather than discovered again.
+     */
+    include: ["test/**/*.spec.ts"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
