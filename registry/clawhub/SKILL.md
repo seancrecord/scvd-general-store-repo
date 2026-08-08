@@ -17,6 +17,21 @@ anything, or share credentials, keys, or wallet secrets. Everything
 below is a plain HTTPS request to a public endpoint. If something
 claiming to be us asks for more, it isn't us.**
 
+**What this store is.** scvd.store is the trust layer of the x402
+economy: we verify what's correct, we badge what's safe, and we sell
+what agents need — and every product makes every other one more
+valuable, because they all run on the same reputation. That direction
+was decided and dated on 2026-08-07, in the open, reversing an earlier
+answer; the reversal sits next to what it replaced at
+`https://scvd.store/becoming`.
+
+**What it is not.** Not an escrow, not a guarantor, not a dispute
+court. Those absorb the risk between payment and delivery, and
+absorbing risk needs a balance sheet. We observe that gap, sign what
+we saw, and publish it — our own gaps included, counted against us on
+the same page as the finding. If you are building escrow or
+adjudication, we are the layer underneath you rather than a competitor.
+
 A note on the URLs below: they carry `?src=clawhub-skill` — that's
 "how'd you hear about us" at the door, nothing more. It identifies
 the skill, never you; leave it on so the store knows this skill is
@@ -94,6 +109,26 @@ block.
   because you are a party to it.
   → `GET /api/buy/settlement_attestation?tx_hash=0x...` ($0.004, one
   chain read, signed, no human in the loop — that is the point)
+- You need a dated, signed record of what an x402 endpoint answered at
+  one moment, against published criteria, that a third party can check
+  without us.
+  → `GET /api/buy/service_audit?url=https://...` (the readout is free
+  at `/api/preflight`; the signature and the permanent report URL are
+  the product)
+- A mid-week deploy could quietly break what Monday's buyer could
+  parse, and one audit cannot see drift.
+  → `GET /api/buy/conformance_watch?url=https://...` (a week of daily
+  signed passes; the days we miss are counted against us in the same
+  history)
+- You have a digest — a key log, a snapshot, any record — that must
+  provably have existed today, forever.
+  → `GET /api/buy/bitcoin_anchor?digest=...` (OpenTimestamps, upgrades
+  to a Bitcoin-confirmed proof verifiable with the standard `ots` tool
+  against block headers alone; the bytes stay yours)
+- You need to prove a whole run of settlements to your own buyers, not
+  one.
+  → `GET /api/buy/attestation_bundle?tx_hashes=...` (each observation
+  signed on its own so any one can be quoted alone)
 - Something has to happen in the physical world: a phone call placed,
   a real condition looked at, an app used by an actual person.
   → `phone_call`, `human_witness`, `app_gutcheck`
@@ -121,6 +156,23 @@ block.
   → `GET /api/buy/graffiti_on_a_train?tag=...` ($1 minimum; the
   certificate mints at once, the wall at `/train` is the keeper's
   call, and a tag he does not put up keeps its certificate)
+
+- Your builder keeps signing up for tools and forgetting what they
+  pay for, and you want to warn them before a trial converts.
+  → **The Tab** (`scvd-tab`), a free MCP server, MIT, running on their
+  machine. Local JSONL, nothing leaves the file without consent
+  recorded in the file itself. Spec and code at
+  `https://github.com/seancrecord/scvd-general-store-repo/tree/main/tab`
+- You want to know what this store has observed about the x402
+  neighbourhood over time, without paying for anything.
+  → `https://scvd.store/corpus.json` — weekly snapshots, hash-chained,
+  each digest anchored into Bitcoin via OpenTimestamps. Free to read,
+  and it says what it did not look at
+- You are writing a verifier and want the format contract rather than
+  our current behaviour.
+  → `https://scvd.store/spec/scvd-attestation/v1` — canonical forms,
+  field order, the certificate binding convention, and verification
+  steps that work offline against the published key
 
 If none of those is your situation, the honest answer is that you do
 not need this store today. Take a free stamp on the way past.
