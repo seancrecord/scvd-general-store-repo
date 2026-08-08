@@ -2,6 +2,7 @@ import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
+import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import type { Env } from "@/types";
 
 /**
@@ -105,6 +106,14 @@ export interface WardRound {
   leaderboard_sellers?: number | null;
   leaderboard_window?: string | null;
   our_leaderboard_rank?: number | null;
+  /**
+   * THE DENOMINATOR. Enumeration is nearly free and probing is not, so
+   * the round counts every host its feeds NAME and probes as many as
+   * the cap allows. Absent on rounds recorded before the population
+   * layer existed — a reader must treat missing as "not measured",
+   * never as 100% coverage.
+   */
+  population?: PopulationCensus;
   hosts: WardHostResult[];
 }
 
@@ -390,6 +399,36 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     });
   }
   const presence = await ourSearchPresence(env);
+  const walked = results.filter((entry) => entry.verdict !== "not_probed").length;
+  /**
+   * THE CENSUS RIDES THE FEEDS THIS ROUND ALREADY READ — no extra
+   * fetches, so counting the population costs nothing on top of
+   * walking it.
+   *
+   * A discovery read that looked page-capped is handed over as
+   * UNREADABLE rather than as a short answer. A truncated listing
+   * cannot tell "gone" from "on page two", and writing that guess into
+   * an append-only record is the exact failure the population layer
+   * exists to refuse.
+   *
+   * The leaderboard contributes ONE host per seller, not per origin —
+   * mapLeaderboard's deliberate choice, kept here. So this counts
+   * sellers on that feed and hosts on discovery, which is the honest
+   * reading of what each feed actually enumerates.
+   */
+  const sources: SourceResult[] = [
+    {
+      source: "discovery",
+      hosts: coverageSuspect ? null : hosts.map((entry) => entry.host),
+    },
+    {
+      source: "leaderboard",
+      hosts: leaderboard ? [...leaderboard.byHost.keys()] : null,
+    },
+  ];
+  // The probe results are the expensive part of this round; a census
+  // that cannot write must not take them down with it.
+  const population = await takeCensus(env, sources, walked).catch(() => null);
   const round: WardRound = {
     week: currentWeekKey(),
     at: new Date().toISOString(),
@@ -400,6 +439,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     leaderboard_sellers: leaderboard ? leaderboard.sellers : null,
     leaderboard_window: leaderboard ? leaderboard.window : null,
     our_leaderboard_rank: leaderboard ? leaderboard.ourRank : null,
+    ...(population ? { population } : {}),
     hosts: results,
   };
   const previous = await latestWardRound(env);
@@ -414,11 +454,10 @@ export async function runWardRound(env: Env): Promise<WardRound> {
   const previousProbed = previous
     ? previous.hosts.filter((h) => h.verdict !== "not_probed").length
     : 0;
-  const thisProbed = results.filter((h) => h.verdict !== "not_probed").length;
-  if (previousProbed >= 10 && thisProbed < previousProbed * 0.6) {
+  if (previousProbed >= 10 && walked < previousProbed * 0.6) {
     round.coverage_drop = {
       previous_hosts: previousProbed,
-      this_round: thisProbed,
+      this_round: walked,
       previous_at: previous?.at ?? "",
     };
   }

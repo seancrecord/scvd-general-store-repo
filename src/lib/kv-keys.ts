@@ -62,6 +62,18 @@ export const KV_KEYS = {
   wardRound: (week: string): string => `ward:${week}`,
   wardRoundLatest: "ward_latest",
   wardRoundPrevious: "ward_previous",
+  /**
+   * THE POPULATION REGISTER: every host any directory has ever listed,
+   * with first_seen / last_seen / gone_at. ONE key holding the whole
+   * register, because at tens of hosts a key per host is waste and the
+   * census reads all of them every round anyway.
+   *
+   * When this stops fitting comfortably in one value it is the corpus's
+   * already-named R2 graduation trigger arriving — enumerating the whole
+   * universe IS "snapshots stop being weekly-and-small". The storage move
+   * travels with that growth rather than surprising us at the ceiling.
+   */
+  populationRegister: "population_register",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,
