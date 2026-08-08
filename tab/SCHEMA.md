@@ -36,6 +36,16 @@ envelope. Every other event carries the tool fields below.
 | source_url | string | no | |
 | notes | string | no | |
 
+## Field caps (red team, 2026-08-08)
+
+`tool_name` 80 · `replaced_with` 80 · `payment_method` 200 ·
+`problem_solved` 500 · `source_url` 500 · `notes` 2000. An unbounded
+free-text field is how a metric becomes a bill — and bounded lines
+are what make append atomicity real on POSIX, which is what makes
+"the server owns the file" an honest sentence. `tool_name` is
+lowercase with no surrounding whitespace, enforced: a near-duplicate
+key splits one history into two lies.
+
 ## Two timestamps, two jobs
 
 `server_timestamp` is the file's truth about when the write happened.

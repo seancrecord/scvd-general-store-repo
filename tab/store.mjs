@@ -125,6 +125,22 @@ function isPrice(value) {
 }
 
 /**
+ * Field caps (red team F5, 2026-08-08): an unbounded free-text field
+ * is how a metric becomes a bill — the outline's own warning — and
+ * bounded lines are also what makes append atomicity REAL on POSIX
+ * (one write under the atomic size), which is what makes "the server
+ * owns the file" an honest sentence rather than a hope.
+ */
+const CAPS = {
+  tool_name: 80,
+  problem_solved: 500,
+  notes: 2000,
+  payment_method: 200,
+  source_url: 500,
+  replaced_with: 80,
+};
+
+/**
  * Validation is the whole reason writes go through tools. Returns a
  * list of human-useful problems; empty means the write may append.
  * The messages are for an AGENT to read and repair from, so each one
@@ -133,6 +149,12 @@ function isPrice(value) {
 export function validateEvent(input) {
   const problems = [];
   const event = input?.event;
+
+  for (const [field, cap] of Object.entries(CAPS)) {
+    if (typeof input?.[field] === "string" && input[field].length > cap) {
+      problems.push(`${field} runs past ${cap} characters. Trim it to the good part.`);
+    }
+  }
 
   if (event === "consent_changed") {
     if (typeof input.contribute !== "boolean") {
@@ -143,9 +165,11 @@ export function validateEvent(input) {
 
   if (!input || typeof input.tool_name !== "string" || input.tool_name.trim() === "") {
     problems.push("tool_name is required: the tool's canonical lowercase name.");
-  } else if (input.tool_name !== input.tool_name.toLowerCase()) {
+  } else if (input.tool_name !== input.tool_name.trim().toLowerCase()) {
+    // Trim AND case: " Ahrefs" and "ahrefs" must never become two
+    // tools — a near-duplicate key splits one history into two lies.
     problems.push(
-      `tool_name must be lowercase: "${input.tool_name.toLowerCase()}".`,
+      `tool_name must be lowercase with no surrounding whitespace: "${input.tool_name.trim().toLowerCase()}".`,
     );
   }
   if (!EVENTS.includes(event) || event === "consent_changed") {
@@ -252,7 +276,7 @@ export function eventDate(event) {
   return (event.retroactive && event.occurred_at) || event.server_timestamp;
 }
 
-function monthly(price) {
+export function monthlyOf(price) {
   if (!price) return 0;
   if (price.period === "month") return price.amount;
   if (price.period === "year") return price.amount / 12;
@@ -294,18 +318,23 @@ export function derive(events, now = new Date()) {
     tool.category = event.category ?? tool.category;
     tool.problem_solved = event.problem_solved ?? tool.problem_solved;
     tool.signup_friction = event.signup_friction ?? tool.signup_friction;
+    // A signup after an inactive spell opens a NEW commitment (red
+    // team F4): the epoch resets, so a re-trial a year after a cancel
+    // is measured and classified on its own life, not the old one's.
+    const reopening = tool.status === "inactive" && tool.history.length > 0;
     switch (event.event) {
       case "trial_started":
         tool.status = "active_trial";
         tool.trial_ends = event.trial_ends;
         tool.since = at;
-        tool.first_commitment = tool.first_commitment ?? at;
+        tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
+        if (reopening) tool.ever_paid = false;
         break;
       case "paid_started":
         tool.status = "active_paid";
         tool.price = event.price;
-        tool.since = tool.since ?? at;
-        tool.first_commitment = tool.first_commitment ?? at;
+        tool.since = reopening ? at : (tool.since ?? at);
+        tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
         tool.ever_paid = true;
         break;
       case "renewed":
@@ -343,7 +372,7 @@ export function derive(events, now = new Date()) {
 
   const active = [...tools.values()].filter((t) => t.status !== "inactive");
   const activePaid = active.filter((t) => t.status === "active_paid");
-  const burn = activePaid.reduce((sum, t) => sum + monthly(t.price), 0);
+  const burn = activePaid.reduce((sum, t) => sum + monthlyOf(t.price), 0);
 
   return {
     tools,
@@ -420,8 +449,13 @@ export function deltaFor(entry, state) {
       tool_name: entry.tool_name,
       category: entry.category,
       outcome,
+      // Measured to the EVENT's own date, never to now (red team F3):
+      // a retroactive cancel backfilled months later must report the
+      // weeks the commitment actually ran — the dogfood's first
+      // session is exactly this shape, and now-based math would have
+      // corrupted the first corpus entries ever written.
       weeks_held: tool?.first_commitment
-        ? weeksBetween(tool.first_commitment, state.now)
+        ? weeksBetween(tool.first_commitment, new Date(eventDate(entry)))
         : 0,
     };
     if (entry.event === "replaced") {

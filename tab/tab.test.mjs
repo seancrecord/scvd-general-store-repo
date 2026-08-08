@@ -238,9 +238,12 @@ test("consent is an event; contribution refuses without it and explains exactly 
   assert.ok(notLive.error.includes("not live"));
 });
 
-test("the delta never carries what the privacy sentence forbids", () => {
+test("the delta is an allowlist: unknown fields are refused BY NAME, and the wire gets a projection", () => {
   const path = freshPath();
   setConsent({ contribute: true }, path);
+  // Red team F2: the first cut blocklisted five fields and forwarded
+  // everything else. Now ANY undeclared field is refused — including
+  // ones no blocklist author thought of.
   const rejected = contributeDelta(
     {
       kind: "outcome",
@@ -249,12 +252,15 @@ test("the delta never carries what the privacy sentence forbids", () => {
       outcome: "canceled_pre_conversion",
       weeks_held: 2,
       price: { amount: 29, currency: "USD", period: "month" },
+      builder_email: "keeper@example.com",
     },
     path,
   );
   assert.equal(rejected.accepted, false);
-  assert.ok(rejected.problems.join(" ").includes("price must never ride a delta"));
-  // And friction is a signup-time fact: opened only.
+  const said = rejected.problems.join(" ");
+  assert.ok(said.includes('"price"'));
+  assert.ok(said.includes('"builder_email"'));
+  // Friction is signup-time: not in the outcome allowlist.
   const wrongKind = contributeDelta(
     {
       kind: "outcome",
@@ -267,7 +273,110 @@ test("the delta never carries what the privacy sentence forbids", () => {
     },
     path,
   );
-  assert.ok(wrongKind.problems.join(" ").includes("opened deltas only"));
+  assert.ok(wrongKind.problems.join(" ").includes('"signup_friction"'));
+  // And a clean delta's would_send is the projection, nothing more.
+  const clean = contributeDelta(
+    { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
+    path,
+  );
+  assert.deepEqual(Object.keys(clean.would_send).sort(), [
+    "category",
+    "kind",
+    "tool_name",
+    "week",
+  ]);
+});
+
+test("consent has one door: the logging tool refuses consent_changed", () => {
+  const path = freshPath();
+  // Red team F1: without this gate, any caller could flip consent
+  // through log_tool_event and skip set_consent's explainer entirely.
+  const result = logToolEvent({ event: "consent_changed", contribute: true }, path);
+  assert.equal(result.logged, false);
+  assert.ok(result.problems.join(" ").includes("set_consent"));
+  // And nothing was written: the file stays consentless.
+  const refused = contributeDelta(
+    { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
+    path,
+  );
+  assert.equal(refused.accepted, false);
+});
+
+test("weeks_held measures the commitment's own life, not the distance to now", () => {
+  const path = freshPath();
+  setConsent({ contribute: true }, path);
+  // Red team F3, the backfill shape: a March trial canceled two weeks
+  // later, logged retroactively months after the fact, must report
+  // TWO weeks — not the months between March and today.
+  logToolEvent(
+    {
+      ...BASE,
+      event: "trial_started",
+      trial_ends: "2026-03-21",
+      retroactive: true,
+      occurred_at: "2026-03-14",
+    },
+    path,
+  );
+  const canceled = logToolEvent(
+    { ...BASE, event: "canceled", retroactive: true, occurred_at: "2026-03-28" },
+    path,
+  );
+  assert.equal(canceled.contribution_suggestion.weeks_held, 2);
+});
+
+test("a re-trial after a cancel is a new commitment: epoch and conversion reset", () => {
+  const path = freshPath();
+  setConsent({ contribute: true }, path);
+  // Red team F4: pay, cancel, then re-trial much later and cancel
+  // fast — the second outcome must be pre-conversion and short, not
+  // post-conversion and a year long.
+  logToolEvent(
+    {
+      ...BASE,
+      event: "paid_started",
+      price: { amount: 29, currency: "USD", period: "month" },
+      retroactive: true,
+      occurred_at: "2025-08-01",
+    },
+    path,
+  );
+  logToolEvent(
+    { ...BASE, event: "canceled", retroactive: true, occurred_at: "2025-09-01" },
+    path,
+  );
+  logToolEvent(
+    {
+      ...BASE,
+      event: "trial_started",
+      trial_ends: "2026-08-14",
+      retroactive: true,
+      occurred_at: "2026-08-01",
+    },
+    path,
+  );
+  const second = logToolEvent(
+    { ...BASE, event: "canceled", retroactive: true, occurred_at: "2026-08-08" },
+    path,
+  );
+  assert.equal(second.contribution_suggestion.outcome, "canceled_pre_conversion");
+  assert.equal(second.contribution_suggestion.weeks_held, 1);
+});
+
+test("field caps hold, and near-duplicate tool names are refused with the fix", () => {
+  const path = freshPath();
+  const tooLong = logToolEvent(
+    { ...BASE, event: "trial_started", trial_ends: soon(7), problem_solved: "x".repeat(501) },
+    path,
+  );
+  assert.equal(tooLong.logged, false);
+  assert.ok(tooLong.problems.join(" ").includes("500"));
+  const padded = logToolEvent(
+    { ...BASE, tool_name: " Ahrefs", event: "trial_started", trial_ends: soon(7) },
+    path,
+  );
+  assert.equal(padded.logged, false);
+  assert.ok(padded.problems.join(" ").includes('"ahrefs"'));
 });
 
 test("the contribution suggestion appears with consent, carries friction, and classifies the cancel", () => {
@@ -325,6 +434,17 @@ test("export hands the whole file back, and csv escapes the builder's own words"
   assert.equal(jsonl.content, readFileSync(path, "utf8"));
   const csv = exportTab({ format: "csv" }, path);
   assert.ok(csv.content.includes('"said ""maybe"", we\'ll see"'));
+});
+
+test("csv export defuses spreadsheet formulas in the builder's own text", () => {
+  const path = freshPath();
+  logToolEvent(
+    { ...BASE, event: "trial_started", trial_ends: soon(7), notes: "=SUM(A1:A9)" },
+    path,
+  );
+  const csv = exportTab({ format: "csv" }, path);
+  // Red team F8: opens as text, never executes.
+  assert.ok(csv.content.includes("\"'=SUM(A1:A9)\""));
 });
 
 test("a corrupt line is counted, not fatal, and the audit says so", () => {
