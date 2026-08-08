@@ -155,7 +155,20 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
        * heading that says "independently".
        */
       key_history_over_time: `${base}/.well-known/anchor-log.json — an append-only hash chain over the signing-key state, digests submitted to OpenTimestamps and anchored into Bitcoin. Re-hash any snapshot yourself and check the links; one confirmed anchor vouches for the whole history behind it. It proves WHEN, never WHO SHOULD HAVE.`,
-      the_ecosystem_record: `${base}/corpus.json — the public x402 ecosystem as this store's weekly round observed it, one signed snapshot per round, hash-chained and OTS-stamped, verification steps on the document. It proves the record was not rewritten after the fact; it never scores an operator, ours included.`,
+      /*
+       * ONE HOST OVER TIME IS DELIBERATELY NOT ON THIS LIST, and the
+       * whitelist guard in trust-signals.spec is what stopped it from
+       * quietly getting on.
+       *
+       * /corpus/host/{host}.json replays a single host out of the
+       * chain, and it is genuinely useful — but it is DERIVED AT READ
+       * by our own code. What a stranger can check without us is the
+       * corpus ENTRIES, and those are already named right here. A
+       * derived view of an anchored record does not inherit the
+       * anchoring; the view names each entry's digest so a reader can
+       * go check the real thing, which is the honest arrangement.
+       */
+      the_ecosystem_record: `${base}/corpus.json — the public x402 ecosystem as this store's weekly round observed it, one signed snapshot per round, hash-chained and OTS-stamped, verification steps on the document. It proves the record was not rewritten after the fact; it never scores an operator, ours included. Per host: ${base}/corpus/host/{host}.json, a read-time view over these same entries — it cites the digest of each one so you can check them rather than the view.`,
     },
     limit: TRUST_LIMIT,
   });
