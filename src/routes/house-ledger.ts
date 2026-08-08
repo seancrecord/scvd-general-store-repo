@@ -48,6 +48,30 @@ houseLedgerRoutes.get(HOUSE_LEDGER_PATH, async (c) => {
   const stats = await computeStats(c.env);
 
   const body = {
+    /*
+     * A DATASET TOO, and this one is the sharpest case for the
+     * markup. An outside risk-scorer read this store's payment
+     * address and returned `review` — few distinct payers, many
+     * settlements, concentration indistinguishable from self-dealing.
+     * This document is the correction. It only works if the machines
+     * doing that reading can FIND it, and a bare JSON file is not a
+     * thing they look for. `Dataset` is.
+     *
+     * No `description` here: `declares` below already says what this
+     * is, and a second copy is a copy free to drift.
+     */
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "scvd.store house wallets and settlement split",
+    url: `${base}${HOUSE_LEDGER_PATH}`,
+    creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    isAccessibleForFree: true,
+    conditionsOfAccess: "Free to fetch. No account, no key.",
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}${HOUSE_LEDGER_PATH}`,
+    },
     version: HOUSE_LEDGER_VERSION,
     issuer: STORE_SERVICE_NAME,
     issuer_origin: base,

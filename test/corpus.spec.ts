@@ -235,3 +235,40 @@ describe("the corpus declares itself a dataset", () => {
     expect(types, "the storefront emits no Dataset node").toContain("Dataset");
   });
 });
+
+/**
+ * THE OTHER TWO FIRST-PARTY SOURCES.
+ *
+ * Guidance says a citing system names the ORIGINAL source, which is
+ * why first-party data outperforms borrowed statistics. This store has
+ * three such sources and was serving all three as bare JSON. The house
+ * ledger is the sharpest case: it exists because a risk-scorer read
+ * our payment address and returned `review`, and a correction only
+ * works if the machines doing that reading can find it.
+ */
+describe("the other first-party sources declare themselves too", () => {
+  it("the house ledger is a dataset, and keeps its own words", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/house-ledger.json`)).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(body["@type"]).toBe("Dataset");
+    expect(body.isAccessibleForFree).toBe(true);
+    // No second description: `declares` was already saying it.
+    expect(body.description).toBeUndefined();
+    expect(String(body.declares)).toContain("Every wallet this store controls");
+    expect(body.house_wallets).toBeTruthy();
+  });
+
+  it("the conformance vectors are a dataset, with the file's own description intact", async () => {
+    const body = (await (
+      await SELF.fetch(`${BASE}/.well-known/conformance/offer-receipt-vectors.json`)
+    ).json()) as Record<string, unknown>;
+    expect(body["@type"]).toBe("Dataset");
+    // The compiler caught a second description before it shipped; the
+    // file's own is the one that serves both readers.
+    expect(String(body.description)).toContain("Conformance vectors");
+    expect(body.valid).toBeTruthy();
+    expect(body.invalid).toBeTruthy();
+  });
+});
