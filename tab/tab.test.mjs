@@ -14,6 +14,8 @@ import {
   burnRollup,
   captureToolEvent,
   checkBeforeSignup,
+  confirmEntry,
+  needsAttention,
   recordCoverage,
   contributeDelta,
   exportTab,
@@ -737,4 +739,75 @@ test("near-duplicate names are surfaced, never merged", () => {
   assert.equal(audit.possible_aliases.length, 1);
   // Not merged: the burn still counts both, honestly, until told.
   assert.equal(audit.monthly_burn.amount, 40);
+});
+
+test("swept entries are unconfirmed and cannot reach the corpus until a human looks", () => {
+  const path = freshPath();
+  setConsent({ contribute: true }, path);
+  // The second stress sweep's conclusion: confirmation is the only
+  // load-bearing layer — quarantine, schema checks and DKIM are all
+  // filtering. So a swept entry counts toward YOUR burn and offers
+  // no contribution suggestion at all.
+  const swept = logToolEvent(
+    { tool_name: "ahrefs", event: "paid_started", problem_solved: "seo", category: "seo",
+      price: { amount: 29, currency: "USD", period: "month" }, source: "mail_sweep" },
+    path,
+  );
+  assert.equal(swept.logged, true);
+  assert.equal(swept.contribution_suggestion, undefined);
+  assert.equal(stackAudit({}, path).monthly_burn.amount, 29);
+  assert.equal(burnRollup({}, path).coverage.unconfirmed_tools, 1);
+  assert.equal(burnRollup({}, path).coverage.unconfirmed_monthly, 29);
+  // A human looks; now it may contribute.
+  const ok = confirmEntry({ tool_name: "ahrefs" }, path);
+  assert.equal(ok.confirmed, true);
+  const after = logToolEvent(
+    { tool_name: "ahrefs", event: "canceled", problem_solved: "seo", category: "seo" },
+    path,
+  );
+  assert.ok(after.contribution_suggestion);
+});
+
+test("private never leaves the box — not in a delta, not in a count", () => {
+  const path = freshPath();
+  setConsent({ contribute: true }, path);
+  logToolEvent(
+    { tool_name: "betterhelp", event: "paid_started", problem_solved: "personal", category: "other",
+      price: { amount: 60, currency: "USD", period: "month" }, private: true },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  // Your own burn is complete and honest.
+  assert.equal(stackAudit({}, path).monthly_burn.amount, 80);
+  // The shareable badge excludes it from the COUNT, not just the name.
+  const roll = burnRollup({}, path);
+  assert.ok(roll.anonymized_badge.startsWith("1 tools · $20/mo"));
+  assert.ok(!roll.anonymized_badge.includes("60"));
+  // And no delta is ever suggested for it.
+  const cancel = logToolEvent(
+    { tool_name: "betterhelp", event: "canceled", problem_solved: "personal", category: "other" },
+    path,
+  );
+  assert.equal(cancel.contribution_suggestion, undefined);
+});
+
+test("the drip asks about the dearest few, not the whole pile", () => {
+  const path = freshPath();
+  for (const [name, amount] of [["a", 5], ["b", 50], ["c", 500], ["d", 9]]) {
+    logToolEvent(
+      { tool_name: name, event: "paid_started", problem_solved: "x", category: "other",
+        price: { amount, currency: "USD", period: "month" }, source: "mail_sweep" },
+      path,
+    );
+  }
+  const drip = needsAttention({ limit: 2 }, path);
+  assert.equal(drip.ask_now.length, 2);
+  assert.deepEqual(drip.ask_now.map((r) => r.tool_name), ["c", "b"]);
+  assert.equal(drip.unconfirmed_total, 4);
+  assert.equal(drip.unconfirmed_monthly, 564);
+  assert.ok(drip.note.includes("rubber stamp"));
 });

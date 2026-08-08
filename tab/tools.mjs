@@ -18,6 +18,7 @@ import {
   possibleAliases,
   quietTools,
   readEvents,
+  sidecarPath,
   SOURCES,
   trialsConvertingSoon,
   trialsPastEnd,
@@ -160,8 +161,9 @@ export function recordCoverage(input, path = defaultTabPath()) {
         }))
       : [],
   };
-  mkdirSync(dirname(path), { recursive: true }); // F4: fresh install
-  appendFileSync(`${path}.coverage.jsonl`, `${JSON.stringify(record)}\n`, "utf8");
+  const coveragePath = sidecarPath(path, ".coverage.jsonl");
+  mkdirSync(dirname(coveragePath), { recursive: true }); // F4: fresh install
+  appendFileSync(coveragePath, `${JSON.stringify(record)}\n`, "utf8");
   return {
     recorded: true,
     unattributed_count: record.unmatched_transactional.length,
@@ -172,7 +174,7 @@ export function recordCoverage(input, path = defaultTabPath()) {
 /** Every sweep ever reported, oldest first. */
 function readCoverageHistory(path) {
   try {
-    return readFileSync(`${path}.coverage.jsonl`, "utf8")
+    return readFileSync(sidecarPath(path, ".coverage.jsonl"), "utf8")
       .split("\n")
       .filter((line) => line.trim() !== "")
       .map((line) => {
@@ -318,6 +320,8 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
     .sort((a, b) => b.monthly - a.monthly);
 
   const monthly = current.monthly_burn.amount;
+  // Private never rides the shareable form — not even as a count.
+  const shareable = current.active.filter((tool) => tool.private !== true);
   const agentNative = current.active.filter(
     (tool) => tool.signup_friction === "agent_native" || tool.signup_friction === "email_only",
   ).length;
@@ -352,9 +356,15 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
      * stack" published is the concentration risk squared. Same shape
      * as the pooled layer: counts, no identities.
      */
-    anonymized_badge: `${current.active.length} tools · $${monthly}/mo · ${
+    anonymized_badge: `${shareable.length} tools · $${
+      Math.round(
+        shareable.filter((t) => t.status === "active_paid").reduce((sum, t) => sum + monthlyOf(t.price), 0) * 100,
+      ) / 100
+    }/mo · ${
       frictionKnown > 0 ? Math.round((agentNative / frictionKnown) * 100) : 0
     }% agent-native${frictionKnown < current.active.length ? ` (friction known for ${frictionKnown} of ${current.active.length})` : ""}`,
+    badge_note:
+      "Counts, never vendors — and private tools are excluded from the count itself, not merely unnamed.",
     coverage: coverageBlock(current, path),
   };
 }
@@ -390,6 +400,14 @@ function coverageBlock(current, path) {
     unmatched_transactional_count: swept?.unmatched_transactional?.length ?? 0,
     unattributed_amount: Math.round(unattributed * 100) / 100,
     entries_with_gaps: incompleteEntries,
+    unconfirmed_tools: current.active.filter((t) => t.confirmed === false).length,
+    unconfirmed_monthly:
+      Math.round(
+        current.active
+          .filter((t) => t.confirmed === false)
+          .reduce((sum, t) => sum + monthlyOf(t.price), 0) * 100,
+      ) / 100,
+    private_tools: current.active.filter((t) => t.private === true).length,
     quiet_past_cycle: quietTools(current).length,
     /**
      * THE VARIABILITY WINDOW — money seen but not attributable, over
@@ -544,6 +562,78 @@ export function whatsCurrent({ category }, path = defaultTabPath()) {
   };
 }
 
+/**
+ * THE CONFIRMATION — the only load-bearing layer, per the second
+ * stress sweep. Quarantine, schema validation and DKIM are all
+ * filtering; the human look is what keeps a forged receipt out of
+ * the published corpus. Which means the flow has to be one a human
+ * ACTUALLY does: 200 receipts is a chore nobody finishes and
+ * rubber-stamping is not verification.
+ */
+export function confirmEntry({ tool_name, private: isPrivate }, path = defaultTabPath()) {
+  const name = String(tool_name ?? "").trim().toLowerCase();
+  const current = state(path);
+  const tool = current.tools.get(name);
+  if (!tool) {
+    return { confirmed: false, error: `Nothing on the tab named "${name}".` };
+  }
+  const last = tool.history[tool.history.length - 1];
+  const result = appendEvent(path, {
+    tool_name: name,
+    event: last?.event === "canceled" ? "canceled" : "adopted",
+    problem_solved: tool.problem_solved ?? "(confirmed)",
+    category: tool.category ?? "other",
+    source: "manual",
+    confirmed: true,
+    ...(isPrivate === true ? { private: true } : {}),
+    notes: "confirmation",
+    dedupe_key: `confirm:${name}:${new Date().toISOString().slice(0, 10)}`,
+  });
+  return {
+    confirmed: result.logged,
+    tool_name: name,
+    ...(isPrivate === true ? { private: true } : {}),
+    note: isPrivate === true
+      ? "Confirmed and marked private — it stays on your tab and never leaves the box, in a delta or a shared count."
+      : "Confirmed. It can contribute to the pooled corpus now, if contribution is on.",
+  };
+}
+
+/**
+ * THE DRIP — what the rounds should ask about, worth most first.
+ * Deliberately capped: a queue is a chore, two questions is a habit.
+ */
+export function needsAttention({ limit = 3 } = {}, path = defaultTabPath()) {
+  const current = state(path);
+  const unconfirmed = current.active
+    .filter((tool) => tool.confirmed === false)
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      monthly: Math.round(monthlyOf(tool.price) * 100) / 100,
+      sources: tool.source_list,
+      why: "found by a sweep, nobody has looked at it — it counts toward your burn but cannot contribute to the corpus until confirmed",
+    }))
+    .sort((a, b) => b.monthly - a.monthly);
+  const gaps = current.active
+    .filter((tool) => tool.history.some((h) => h.incomplete))
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      missing: [...new Set(tool.history.flatMap((h) => h.incomplete ?? []))],
+      why: "captured in a hurry; nothing was invented to fill it",
+    }));
+  return {
+    ask_now: unconfirmed.slice(0, limit),
+    unconfirmed_total: unconfirmed.length,
+    unconfirmed_monthly: Math.round(
+      unconfirmed.reduce((sum, row) => sum + row.monthly, 0) * 100,
+    ) / 100,
+    gaps: gaps.slice(0, limit),
+    quiet: quietTools(current).slice(0, limit),
+    past_end: trialsPastEnd(current).slice(0, limit),
+    note: "Capped on purpose. The rounds ask about the dearest few; the rest keep until next time. A list nobody finishes gets rubber-stamped, and a rubber stamp is not a confirmation.",
+  };
+}
+
 export function setConsent({ contribute }, path = defaultTabPath()) {
   const result = appendEvent(path, {
     event: "consent_changed",
@@ -661,7 +751,7 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
   // own record. A partial export is a partial escape.
   let coverage = null;
   try {
-    coverage = readFileSync(`${path}.coverage.jsonl`, "utf8");
+    coverage = readFileSync(sidecarPath(path, ".coverage.jsonl"), "utf8");
   } catch {
     coverage = null;
   }
@@ -881,6 +971,30 @@ export const TOOL_DEFS = [
         signup_friction: { type: "string", enum: FRICTION },
       },
       required: ["kind", "tool_name", "category"],
+    },
+  },
+  {
+    name: "confirm_entry",
+    description:
+      "A human looked at a swept entry and says it is real (or marks it private). Confirmation is the load-bearing layer: machine-found claims never reach the pooled corpus without it.",
+    handler: confirmEntry,
+    inputSchema: {
+      type: "object",
+      properties: {
+        tool_name: { type: "string" },
+        private: { type: "boolean", description: "keep it on the tab, never let it leave the box — not in a delta, not in a shared count" },
+      },
+      required: ["tool_name"],
+    },
+  },
+  {
+    name: "needs_attention",
+    description:
+      "What the rounds should ask about, dearest first and capped: unconfirmed sweep findings, entries captured with gaps, tools gone quiet, trials past their end. Ask two, not two hundred.",
+    handler: needsAttention,
+    inputSchema: {
+      type: "object",
+      properties: { limit: { type: "integer", minimum: 1 } },
     },
   },
   {
