@@ -397,7 +397,7 @@ stranger to pay."*
 | | |
 |---|---|
 | **Refund-window detector** | a live published money promise enforced only by the keeper remembering. Approved 2026-08-08. |
-| **Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build. STILL OPEN — needs the keeper. |
+| **Commission Desk** | SPEC WRITTEN 2026-08-09 → `docs/COMMISSION_DESK.md`. Four decisions waiting on the keeper. |
 | **The bench (open-queue cap)** | BUILT 2026-08-09. The interim floor under the same exposure, and it found a live hole. |
 
 **The bench, 2026-08-09.** Not the Commission Desk — that retires
@@ -435,6 +435,25 @@ away silently is worse than no gate.
 ⚑ **`OPEN_LABOR_CAP = 8` is drafted, not canon.** It is the keeper's
 throughput and nobody else can set it. The argument is that some
 ceiling beats none.
+
+**Commission Desk spec, 2026-08-09 — `docs/COMMISSION_DESK.md`.**
+Two findings worth knowing before reading it:
+
+- **The note's list of six items is stale.** `phone_call`,
+  `human_witness`, `portrait` and `app_gutcheck` were retired
+  2026-08-05 and folded into `the_collab`. Three human_queue items are
+  live. The consolidation already did most of the retiring — and it
+  made `the_collab` the single catch-all for four kinds of bespoke
+  work, which is exactly the item a fixed $25 fits worst.
+- **A one-off price does not fit the payment stack.** `getPaymentStack`
+  builds its route table once and `accepts` is a value, not a function
+  of the request; nothing in the tree prices a route per request. The
+  recommendation is a published price ladder rather than teaching the
+  payment spine to compute prices — that spine is the one place a bug
+  takes money incorrectly.
+
+Four decisions are the keeper's: which items, the rungs, quote expiry,
+and whether a declined request gets a public reply.
 
 ### TIER 1 — the index, made real
 
