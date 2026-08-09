@@ -157,6 +157,28 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("tx_hash");
   }
+  if (item.id === "settlement_reconciliation") {
+    properties["tx_hash"] = {
+      type: "string",
+      pattern: "^0x[0-9a-fA-F]{64}$",
+      description:
+        "The Base transaction hash to reconcile. Read once, at one moment; never polled.",
+    };
+    properties["payer"] = {
+      type: "string",
+      description: "Optional. Narrow the match to transfers from this address.",
+    };
+    properties["recipient"] = {
+      type: "string",
+      description: "Optional. Narrow the match to transfers to this address.",
+    };
+    properties["declared_cap_usdc"] = {
+      type: "number",
+      description:
+        "Optional, and understand what it buys: the ceiling YOU say applied. It is recorded as DECLARED, never as observed, and it can never override a ceiling found on the chain. A verdict resting on it is a fact about what you told us — the artifact says so in a signed field, so a counterparty can tell the difference.",
+    };
+    required.push("tx_hash");
+  }
   if (item.id === "bitcoin_anchor") {
     required.push("digest");
   }
@@ -219,6 +241,13 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
     example["digest"] = "9f".repeat(32);
   }
   if (item.id === "settlement_attestation") {
+    example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
+  }
+  if (item.id === "settlement_reconciliation") {
+    // Hash only, no declared_cap_usdc: an agent reading this example
+    // to learn the field would otherwise learn to send its OWN
+    // ceiling by default, which is the weaker artifact. The strong
+    // one needs no extra input at all.
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
   }
   if (item.id === "attestation_bundle") {

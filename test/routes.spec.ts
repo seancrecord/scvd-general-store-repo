@@ -71,6 +71,10 @@ describe("the storefront", () => {
     expect(items.map((item) => item.id)).toEqual([
       "settlement_attestation",
       "small_blessing",
+      // $0.006, third by price: the reconciliation is the attestation's
+      // question one turn deeper, and lands beside it for the same
+      // persona that made the cheap-door reorder worth doing.
+      "settlement_reconciliation",
       "daily_fortune",
       "the_confession",
       "attestation_bundle",

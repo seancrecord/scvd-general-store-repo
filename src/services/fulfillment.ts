@@ -12,6 +12,11 @@ import type {
 } from "@/services/attestation";
 import { deliverInstantGoods } from "@/services/instant-goods";
 import { performServiceAudit } from "@/services/service-audit";
+import { reconcileSettlement } from "@/services/settlement-reconciliation";
+import type {
+  ReconciliationQuery,
+  SignedReconciliation,
+} from "@/services/settlement-reconciliation";
 import type { SignedServiceAudit } from "@/services/service-audit";
 import {
   completeOrder,
@@ -59,6 +64,7 @@ export interface FulfillmentInput {
   tag?: string;
   /** settlement_attestation: what to look up on Base. */
   attestationQuery?: AttestationQuery;
+  reconciliationQuery?: ReconciliationQuery;
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */
   bundleTxHashes?: string[];
   /** bitcoin_anchor: the buyer's sha256, pre-validated. Opaque to us. */
@@ -199,6 +205,20 @@ export async function fulfillPurchase(
     mintOptions.attests = serviceAudit.evidence_hash;
   }
   /**
+   * THE RECONCILIATION observes first and mints second, same reason as
+   * every artifact above it: the certificate binds the evidence hash,
+   * so /api/verify answers "this is the observation that purchase
+   * bought" without a second endpoint being asked to be trusted.
+   */
+  let reconciliation: SignedReconciliation | undefined;
+  if (item.id === "settlement_reconciliation") {
+    reconciliation = await reconcileSettlement(
+      env,
+      input.reconciliationQuery ?? { txHash: "" },
+    );
+    mintOptions.attests = reconciliation.evidence_hash;
+  }
+  /**
    * THE BITCOIN ANCHOR binds the buyer's digest the same way the
    * attestations bind their evidence hashes: through `attests`, so
    * /api/verify answers for "this store certified THIS digest at THIS
@@ -319,6 +339,9 @@ export async function fulfillPurchase(
     }
     if (bundle) {
       goodsInput.bundle = bundle;
+    }
+    if (reconciliation) {
+      goodsInput.reconciliation = reconciliation;
     }
     if (serviceAudit) {
       goodsInput.serviceAudit = serviceAudit;

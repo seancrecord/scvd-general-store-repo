@@ -135,6 +135,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/service-audit/{audit_id}",
   },
   {
+    id: "settlement_reconciliation",
+    name: "Settlement reconciliations (amount taken against ceiling in force)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole observation: the transaction asked about, the USDC movement found, the ceiling in force, WHERE THAT CEILING CAME FROM, whether it was observed or merely declared, the headroom between the two, the chain head at read time, and the moment. cap_observed is a signed field in its own right, because the difference between a ceiling we read off Base and a ceiling somebody told us is the entire weight of this artifact.",
+    does_not_prove:
+      "That a DECLARED ceiling is real. Where cap_observed is false the number came from whoever commissioned the receipt — generally the party it benefits — and the signature covers only that we were told it, never that it is true. It also cannot see a ceiling granted in an earlier transaction: 'no cap observed' means 'not in this receipt'. And an over_cap on a declared ceiling is a fact about what the caller said, not about the chain.",
+    verify_url: "/api/reconciliation/{reconciliation_id}",
+  },
+  {
     id: "bitcoin_anchor",
     name: "Patron Bitcoin anchors",
     trust_model: "custody_only",

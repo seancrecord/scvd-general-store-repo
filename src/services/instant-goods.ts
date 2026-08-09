@@ -10,6 +10,8 @@ import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
 import { storeServiceAudit } from "@/services/service-audit";
+import { storeReconciliation } from "@/services/settlement-reconciliation";
+import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedServiceAudit } from "@/services/service-audit";
 import { startWatch } from "@/services/standing-watch";
 import { startConformanceWatch } from "@/services/conformance-watch";
@@ -30,6 +32,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   phantomCheckNote,
+  reconciliationNote,
   serviceAuditNote,
   standingWatchNote,
 } from "@/store/copy/deliverables";
@@ -66,6 +69,8 @@ export interface InstantGoodsInput {
   anchorLabel?: string;
   /** service_audit only: the report, already made and signed. */
   serviceAudit?: SignedServiceAudit;
+  /** settlement_reconciliation only: the observation, already signed. */
+  reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
   grievance?: string;
   paidUsdc?: number;
@@ -256,6 +261,34 @@ export async function deliverInstantGoods(
           report_url: `/api/service-audit/${audit.audit_id}`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The report is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into the certificate for this purchase, so /api/verify/{cert_id} answers for the report too — the endpoint that already existed, not a new one. The report URL serves the record free, forever.",
+        },
+      };
+    }
+    case "settlement_reconciliation": {
+      // Observed and signed upstream so its evidence hash could go
+      // into the certificate; filed here, after the mint, so the
+      // envelope carries the cert id.
+      const reconciliation = input.reconciliation;
+      if (!reconciliation) {
+        throw new Error(
+          "settlement_reconciliation reached goods with no observation",
+        );
+      }
+      await storeReconciliation(env, reconciliation, input.certId ?? "");
+      return {
+        deliverable: reconciliationNote(
+          reconciliation.verdict,
+          reconciliation.cap_observed,
+        ),
+        extras: {
+          reconciliation_id: reconciliation.reconciliation_id,
+          verdict: reconciliation.verdict,
+          cap_observed: reconciliation.cap_observed,
+          cap_source: reconciliation.cap_source,
+          reconciliation,
+          reconciliation_url: `/api/reconciliation/${reconciliation.reconciliation_id}`,
+          verify_note:
+            "Two ways to check this without trusting us or whoever commissioned it. The observation is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for it too. Read cap_observed before you read the verdict — it says which of the two numbers we actually saw.",
         },
       };
     }

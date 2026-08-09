@@ -194,4 +194,46 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "One read at one moment; no polling, no retry, no second look",
     ],
   },
+  /**
+   * MARKETPLACE-ERA ITEM FIVE: the settlement reconciliation. Where
+   * the attestation above asks "did this settle", this asks about the
+   * GAP between what a payer permitted and what a seller took — the
+   * x402 `upto` and `deferred` shapes, which this store has never
+   * implemented and which is precisely why observing them is worth
+   * anything.
+   *
+   * Demand tag: ANTICIPATED DEMAND under amended rule 19 (agents
+   * running spend caps need a disinterested party to say the cap
+   * held; the same pipeline as the attestation, one question deeper).
+   *
+   * Rule 23a compliant as-is: one read, one moment, terminal at write.
+   * Rule 43: a dated observation about a TRANSACTION, never a score on
+   * whoever sent it.
+   *
+   * PRICED AT THE ATTESTATION'S RATE PLUS A LITTLE, because it is the
+   * same single receipt read doing more work with it, and pricing a
+   * subtraction like a second product would be the exact thing the
+   * copy below refuses to do.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "settlement_reconciliation",
+    listed_week: "2026-W32",
+    name: "Settlement Reconciliation",
+    price_usdc: 0.006,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Was the amount taken within the amount authorized? Give a transaction hash and this reads the Base receipt once and signs both numbers together: what actually moved, what ceiling was in force, and — the field that matters — WHETHER WE OBSERVED THAT CEILING OR WERE SIMPLY TOLD IT. An approval inside the same transaction is on the chain, so we saw it. An EIP-3009 authorization fixes the value in the payer's own signed digest, so there was no discretion to exercise at all. Anything else is your number, labelled as your number, forever. Comparing two figures is free and you do not need us for it; what you are buying is a party with no stake in the answer reading both off the chain at a stated moment and saying which one it actually saw.",
+    note_402:
+      "Six tenths of a cent. The subtraction is free — the disinterested witness who says which number was real is the part that costs.",
+    constraints: [
+      "Give the transaction hash in the tx_hash query parameter",
+      "Optional narrowing: payer, recipient — a receipt can carry several legs and the largest match is what gets reported",
+      "Optional declared_cap_usdc: recorded as DECLARED, never as observed, and never allowed to override a ceiling found on the chain",
+      "Only approvals inside the same transaction are visible; a ceiling granted earlier reads as 'not observed', never as 'absent'",
+      "Observes money only, never delivery",
+      "One read at one moment; no polling, no retry, no second look",
+    ],
+  },
 ] as const;

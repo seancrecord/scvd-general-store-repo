@@ -169,6 +169,14 @@ export const KV_KEYS = {
    */
   serviceAudit: (auditId: string): string => `service_audit:${auditId}`,
   /**
+   * A purchased settlement reconciliation: the signed observation and
+   * the certificate that bound its evidence hash. PATRONS beside the
+   * cert, terminal at write, same as the service audit — no sweep and
+   * no upgrade pass touches these.
+   */
+  settlementReconciliation: (reconciliationId: string): string =>
+    `settlement_reconciliation:${reconciliationId}`,
+  /**
    * A settled sale whose goods have not gone out yet. Exists only
    * between settlement and delivery — a row that outlives the grace
    * period is money taken without delivery (problem ledger #18).

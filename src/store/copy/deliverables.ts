@@ -131,6 +131,31 @@ export function serviceAuditNote(verdict: string): string {
       : "We knocked. Nobody came. That's the whole finding, and we're not dressing it up into something about your uptime — from where we stood, at that minute, the door didn't open. Signed and dated all the same. That was the purchase.";
 }
 
+/**
+ * settlement_reconciliation. The note leads with WHICH KIND OF ANSWER
+ * this is, because a buyer who skims "within cap" off a ceiling they
+ * supplied themselves has bought nothing and does not know it.
+ * ⚑ KEEPER REVIEW: drafted, recut freely.
+ */
+export function reconciliationNote(
+  verdict: string,
+  capObserved: boolean,
+): string {
+  if (verdict === "no_settlement") {
+    return "Read the receipt. Nothing matching your question moved in it — could be the wrong hash, could be a transaction that reverted, could be a different leg than the one you meant. That's the finding, dated and signed, and we're not dressing it up into something about whoever you sent it to.";
+  }
+  if (verdict === "no_discretion") {
+    return "Read the receipt: this was an EIP-3009 authorization, which means the amount was nailed down inside your own signed message before it ever reached the chain. Nobody could have taken a different number. There was no ceiling to bust because there was no room to move — and that's a better answer than 'within cap', because it's structural rather than lucky.";
+  }
+  if (verdict === "cap_not_observable") {
+    return "Read the receipt and wrote down what moved. No ceiling in it, and you didn't declare one, so we're not going to imply a limit we never saw. What you've got is a signed, dated note of the amount from a party with no stake in it — which is the honest half of the question you asked.";
+  }
+  const both = verdict === "within_cap" ? "at or under" : "ABOVE";
+  return capObserved
+    ? `Read the receipt: both numbers were on the chain, and what moved was ${both} the ceiling that was in force. We saw both halves ourselves — that's the version of this artifact worth showing to somebody.`
+    : `Read the receipt: what moved was ${both} the ceiling YOU TOLD US. Understand what you have — we observed the amount, we did not observe the cap, and the artifact says so in a signed field. If the other side of a dispute doesn't take your word for the ceiling, this doesn't make them. The chain-observed version is the one that carries weight, and it needs the ceiling to be on the chain.`;
+}
+
 export function bundleNote(statuses: readonly string[]): string {
   return `Read the chain once for each of your ${statuses.length} and signed them one at a time: ${statuses.join(", ")}. Pull any single one out and it still stands — that's why they're signed separately. The certificate for this purchase binds a digest over the lot, so one verify URL answers for all of them. What they say is what Base said at that moment. Not what got delivered, not what happens next.`;
 }

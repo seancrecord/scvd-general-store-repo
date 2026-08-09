@@ -32,6 +32,18 @@ export const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 export const AUTHORIZATION_USED_TOPIC =
   "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5";
+/**
+ * keccak256("Approval(address,address,uint256)").
+ *
+ * The reconciliation reads this to find a spending CAP that is on the
+ * chain rather than in a caller's message. An Approval in the SAME
+ * receipt as the transfer is the ERC-2612 permit shape: the payer
+ * signed a ceiling and the spender took some of it in one
+ * transaction, so both numbers are observable and the discretion
+ * between them is a fact rather than a claim.
+ */
+export const APPROVAL_TOPIC =
+  "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925";
 
 /** Public Base RPC unless the keeper points us somewhere better. */
 const DEFAULT_RPC = "https://mainnet.base.org";
@@ -284,6 +296,39 @@ export function usdcTransfers(receipt: RpcReceipt): UsdcTransfer[] {
     });
   }
   return transfers;
+}
+
+export interface UsdcApproval {
+  owner: string;
+  spender: string;
+  /** Raw USDC units — the ceiling the owner signed for. */
+  amount: bigint;
+}
+
+/**
+ * Every USDC Approval in a receipt, decoded.
+ *
+ * SAME TRANSACTION ONLY, and that limit is the honest part: an
+ * approval granted in an EARLIER transaction is invisible here, so
+ * the absence of an approval means "not in this receipt", never "no
+ * ceiling existed". The reconciliation says exactly that rather than
+ * reporting an unobserved cap as an absent one.
+ */
+export function usdcApprovals(receipt: RpcReceipt): UsdcApproval[] {
+  const approvals: UsdcApproval[] = [];
+  for (const log of receipt.logs ?? []) {
+    if (!isSameAddress(log.address, BASE_USDC)) continue;
+    if (log.topics[0]?.toLowerCase() !== APPROVAL_TOPIC) continue;
+    const owner = log.topics[1];
+    const spender = log.topics[2];
+    if (!owner || !spender) continue;
+    approvals.push({
+      owner: addressFromTopic(owner),
+      spender: addressFromTopic(spender),
+      amount: BigInt(log.data === "0x" ? "0x0" : log.data),
+    });
+  }
+  return approvals;
 }
 
 /** EIP-3009 nonces burned in this transaction, lowercased. */

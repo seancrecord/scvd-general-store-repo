@@ -122,6 +122,10 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       "Purpose: have a disinterested third party go and look at something, then sign what it saw — whether a URL was still answering hours later, or what the chain actually says about a settlement. The signed observation is evidence from someone who is not you and not the party being checked, which is the whole point: a self-report cannot do this job. Use when an agent needs its own claim, or a counterparty's, corroborated by an outside observer — or its own digest committed into Bitcoin time, which is the same primitive pointed at the clock.",
     itemIds: [
       "settlement_attestation",
+      // Settlement observed at one turn deeper: not "did it settle"
+      // but "did what moved stay inside the ceiling in force" — and
+      // whether the ceiling was on the chain or merely asserted.
+      "settlement_reconciliation",
       "attestation_bundle",
       "standing_watch",
       // The point-in-time audit is the shelf's namesake shape: one
