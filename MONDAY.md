@@ -1244,9 +1244,13 @@ keeper's own choice. That lands first.
 **9. What is the attack surface?** Anything taking a caller-supplied
 URL is SSRF until proven otherwise. `probeOnce` carries https-only, no
 redirects, a hard timeout, a 256KB ceiling and a per-minute budget —
-reuse it. It does **not** block private or link-local addresses,
-because preflight only ever probes declared endpoints; an
-arbitrary-URL fetcher has to add that itself.
+reuse it. **CORRECTED 2026-08-08 (#86):** this line used to say
+`probeOnce` does not block private or link-local addresses and that an
+arbitrary-URL fetcher has to add that itself. It now does, via
+`lib/probe-target.ts`, enforced at every door and inside the fetch.
+The line was not just stale — the reasoning behind it ("preflight only
+ever probes declared endpoints") was wrong when written, since the
+declared endpoint is whatever a stranger declares.
 
 **And the filter question on top of all nine**, from the strategy
 synthesis and better than anything I offered: *does this create a new
@@ -1505,11 +1509,45 @@ gate was exactly this.
 
 ## TIER 2 — the batch. Stock together, one 60-day window.
 
-**3. Settlement-Reconciliation (A).** Strongest genuinely-new signal on
-the list. Ships with the fix: attest the cap only where it is
-**chain-derivable**; where it is not, the receipt says *declared*, not
-*observed*. Caveat the estimate — we have never touched `upto` or
-`deferred`; the store speaks `exact` only.
+**3. Settlement-Reconciliation (A). — BUILT 2026-08-08.**
+`src/services/settlement-reconciliation.ts`, shelf item at $0.006,
+`GET /api/reconciliation/{id}`, 25 tests. Shipped with the review's fix
+intact: the ceiling is attested as **observed** only where it is on the
+chain, and as **declared** otherwise — `cap_observed` is its own signed
+field, not a footnote.
+
+Three ceilings are chain-derivable, and the third one is the find:
+
+- **An Approval in the same receipt** (ERC-2612 permit shape). Both
+  numbers in the logs, discretion between them a fact.
+- **EIP-3009**, where the value is fixed inside the payer's signed
+  digest. Reported as `no_discretion` rather than `within_cap`, because
+  calling it "within cap" would imply restraint where there was only
+  arithmetic — a structurally better answer than the one asked for.
+- Nothing else. An approval granted in an EARLIER transaction is
+  invisible, so "no cap observed" says *not in this receipt* and never
+  *no ceiling existed*.
+
+A declared cap can never override a chain-observed one, and the query
+is echoed so a disagreement between the two is visible on the artifact.
+
+The review's second point is on the artifact in its own field,
+`why_this_is_not_just_subtraction`: comparing two numbers is free, and
+what is being sold is a party with no stake in the answer reading both
+off the chain and saying which one it actually saw.
+
+**Estimate was right to be caveated.** The build cost more than the
+service — six surfaces had parity guards that caught the new item
+(capability query, why-use, cheap door, front counter, MCP shelf, menu
+order, worked example). Every one of them was the guard doing its job;
+none was a false alarm. Worth knowing for the next SKU: **the service
+is roughly half the work and the shelf is the other half.**
+
+One guard found a real modelling gap rather than a missing list entry:
+the front counter derives eligibility from required inputs, and the
+item looked eligible for the no-required-fields counter until
+`tx_hash` was declared required in the Bazaar schema. The derived
+surface was right and my wiring was incomplete.
 
 **4. The settlement-attempt lane** on the existing `service_audit` —
 the genuinely new half of payability, and the store-as-buyer

@@ -139,6 +139,10 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // payment is the buyer for an independent check on whether one
   // settled.
   "settlement_attestation",
+  // The same audience one question deeper: an agent operating under a
+  // spend cap, wanting a disinterested party to say whether the cap
+  // held — and to say which of the two numbers it actually saw.
+  "settlement_reconciliation",
   "attestation_bundle",
   "small_blessing",
   "daily_fortune",

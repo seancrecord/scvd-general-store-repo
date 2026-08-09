@@ -472,6 +472,43 @@ const anchorDigestCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * The reconciliation needs a real hash BEFORE money moves, same as
+ * the attestation. The DECLARED cap is validated here too — a caller
+ * who sends nonsense should be told so for free, and a cap we cannot
+ * parse must never quietly become "no cap declared", which would turn
+ * a bad input into a different (and cheaper-looking) verdict.
+ */
+const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/settlement_reconciliation" || !isBuying(c)) {
+    return next();
+  }
+  const txHash = c.req.query("tx_hash");
+  if (!txHash || !TX_HASH.test(txHash)) {
+    return c.json(
+      {
+        error:
+          "Give a tx_hash query parameter — 0x followed by 64 hex characters. We read that Base receipt once and sign what moved against what ceiling was in force. No hash, no charge.",
+      },
+      400,
+    );
+  }
+  const rawCap = c.req.query("declared_cap_usdc");
+  if (rawCap !== undefined && rawCap !== "") {
+    const cap = Number.parseFloat(rawCap);
+    if (!Number.isFinite(cap) || cap <= 0) {
+      return c.json(
+        {
+          error:
+            "declared_cap_usdc has to be a positive number of USDC. Leave it off entirely if you have no ceiling to declare — an unparseable one would otherwise read as 'no cap declared', which is a different answer. Nothing charged.",
+        },
+        400,
+      );
+    }
+  }
+  await next();
+};
+
 const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/settlement_attestation" || !isBuying(c)) {
     return next();
@@ -509,6 +546,7 @@ buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
 buyRoutes.use("/api/buy/*", attestationCheck);
+buyRoutes.use("/api/buy/*", reconciliationCheck);
 buyRoutes.use("/api/buy/*", bundleCheck);
 buyRoutes.use("/api/buy/*", anchorDigestCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
@@ -590,6 +628,19 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     const amount = Number.parseFloat(c.req.query("amount_usdc") ?? "");
     if (Number.isFinite(amount) && amount > 0) query.amountUsdc = amount;
     input.attestationQuery = query;
+  }
+  if (item.id === "settlement_reconciliation") {
+    // reconciliationCheck validated the hash and the cap before the gate.
+    const query: Parameters<typeof fulfillPurchase>[3]["reconciliationQuery"] = {
+      txHash: c.req.query("tx_hash") ?? "",
+    };
+    const payer = sanitizeText(c.req.query("payer"), 60);
+    if (payer) query.payer = payer;
+    const recipient = sanitizeText(c.req.query("recipient"), 60);
+    if (recipient) query.recipient = recipient;
+    const cap = Number.parseFloat(c.req.query("declared_cap_usdc") ?? "");
+    if (Number.isFinite(cap) && cap > 0) query.declaredCapUsdc = cap;
+    input.reconciliationQuery = query;
   }
   if (item.id === "bitcoin_anchor") {
     // anchorDigestCheck validated the digest shape before the gate.

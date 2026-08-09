@@ -22,6 +22,7 @@ export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
 export { anchorRoutes } from "@/routes/anchors";
 export { serviceAuditRoutes } from "@/routes/service-audit";
+export { reconciliationRoutes } from "@/routes/reconciliation";
 export { namespaceSpecRoutes } from "@/routes/namespace-spec";
 export { patronageRoutes } from "@/routes/patronage";
 export { almanacRoutes } from "@/routes/almanac";

@@ -36,6 +36,7 @@ import {
   statsRoutes,
   corpusRoutes,
   serviceAuditRoutes,
+  reconciliationRoutes,
   namespaceSpecRoutes,
   pulseRoutes,
   attestationRoutes,
@@ -251,6 +252,7 @@ app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
 app.route("/", anchorRoutes);
 app.route("/", serviceAuditRoutes);
+app.route("/", reconciliationRoutes);
 app.route("/", namespaceSpecRoutes);
 app.route("/", patronageRoutes);
 app.route("/", phantomRoutes);

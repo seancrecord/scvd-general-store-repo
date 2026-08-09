@@ -111,6 +111,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
     "Prove to a third party that a payment actually settled on chain",
+  settlement_reconciliation:
+    "Prove an agent's spend stayed inside the ceiling it was authorized for, with a neutral party saying which of the two numbers it actually saw",
   attestation_bundle:
     "Prove a whole run of payments settled, one signed receipt per transaction",
   graffiti_on_a_train: "Leave a mark that survives my context window",
@@ -166,6 +168,11 @@ export const SPEC_WHY_USE: Record<string, string> = {
   // receipt is the product.
   settlement_attestation:
     "independent signed observation of settlement state — an interested party can't produce a neutral one; the RPC read is free, the independent signed receipt is the product.",
+  // The value is NOT the comparison, which is free. It is that the
+  // artifact distinguishes a ceiling read off the chain from a ceiling
+  // the commissioning party supplied — and signs which is which.
+  settlement_reconciliation:
+    "the gap between what a payer authorized and what a seller took, observed by somebody with no stake in it — and, the part nobody else does, a signed field saying whether the ceiling itself was on the chain or merely asserted by whoever paid for the receipt.",
   context_anchor:
     "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",
   standing_watch:
@@ -220,6 +227,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:
     "Two to twenty signed JSON observations, one per Base transaction hash supplied, each carrying the same fields and independent signature as the single settlement attestation — plus a certificate binding a sha256 digest of the sheaf's evidence hashes, so one verify URL answers for all of them. Instant.",
+  settlement_reconciliation:
+    "A signed JSON observation of one Base transaction reconciling two numbers — the USDC that moved and the ceiling in force — with cap_source and cap_observed naming where the ceiling came from and whether we saw it ourselves. Verdicts: within_cap, over_cap, no_discretion (EIP-3009, where the value was fixed in the payer's signed digest), cap_not_observable, or no_settlement. Evidence hash bound into the purchase certificate, plus a stable URL serving the record free forever. Instant.",
   settlement_attestation:
     "A signed JSON observation of one Base transaction — status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height, confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
   graffiti_on_a_train:
