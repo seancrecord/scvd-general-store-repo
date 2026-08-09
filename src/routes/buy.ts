@@ -530,11 +530,18 @@ const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const rawCap = c.req.query("declared_cap_usdc");
   if (rawCap !== undefined && rawCap !== "") {
     const cap = Number.parseFloat(rawCap);
-    if (!Number.isFinite(cap) || cap <= 0) {
+    /*
+     * BOUNDED, not merely finite. cap * 1_000_000 has to survive
+     * Math.round into a BigInt, and past roughly nine billion USDC the
+     * float stops being able to represent whole units — so a wild
+     * number would not be refused, it would be quietly rounded into a
+     * different one and then signed.
+     */
+    if (!Number.isFinite(cap) || cap <= 0 || cap > 1_000_000_000) {
       return c.json(
         {
           error:
-            "declared_cap_usdc has to be a positive number of USDC. Leave it off entirely if you have no ceiling to declare — an unparseable one would otherwise read as 'no cap declared', which is a different answer. Nothing charged.",
+            "declared_cap_usdc has to be a positive number of USDC below a billion. Leave it off entirely if you have no ceiling to declare — an unparseable one would otherwise read as 'no cap declared', which is a different answer. Nothing charged.",
         },
         400,
       );

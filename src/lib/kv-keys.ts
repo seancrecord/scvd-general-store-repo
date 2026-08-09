@@ -181,6 +181,26 @@ export const KV_KEYS = {
    * between settlement and delivery — a row that outlives the grace
    * period is money taken without delivery (problem ledger #18).
    */
+  /**
+   * AN INDEX OF OPEN LABOR, so the bench can count what is promised
+   * without walking every order the store has ever taken.
+   *
+   * The bench first derived its count from the `order:` prefix, which
+   * grows with EVERY sale forever (instant items included) — so the
+   * scan would truncate on success and the ceiling would quietly stop
+   * binding. This prefix holds one key per unfinished human-labor
+   * order and is deleted on completion, so its size is bounded by the
+   * ceiling itself rather than by the store's lifetime.
+   *
+   * The orders remain the truth. This is only how the bench finds
+   * them, and a rebuild pass reconciles the two.
+   *
+   * ONE KEY, not one per order, for the same reason the population
+   * register is one key: the list is bounded by the ceiling itself, so
+   * a key apiece would be a write loop and a list scan bought for
+   * nothing.
+   */
+  openLaborIndex: "open_labor_index",
   deliveryIntent: (id: string): string => `delivery:${id}`,
   deliveryIntentPrefix: "delivery:",
   bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,

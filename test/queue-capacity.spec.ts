@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import {
   OPEN_LABOR_CAP,
+  QUEUE_SCAN_CAP,
   capacityVerdict,
   queueLoad,
+  rebuildOpenLaborIndex,
 } from "@/services/queue-capacity";
 import { getMenuItem } from "@/store";
 import { markKeeperSeen } from "@/services/shutter";
@@ -34,6 +36,7 @@ const BASE = "https://scvd.store";
 async function clearOrders(): Promise<void> {
   const listed = await testEnv.ORDERS.list({ prefix: KV_KEYS.orderPrefix });
   for (const key of listed.keys) await testEnv.ORDERS.delete(key.name);
+  await testEnv.ORDERS.delete(KV_KEYS.openLaborIndex);
 }
 
 async function putOrder(
@@ -210,4 +213,99 @@ describe("at the door", () => {
     const response = await SELF.fetch(`${BASE}/api/buy/settlement_attestation`);
     expect(response.status).toBe(402);
   });
+});
+
+describe("the count itself, which used to die quietly", () => {
+  it("REFUSES rather than undercounts when it cannot finish the walk", async () => {
+    /*
+     * THE BUG THE RED TEAM FOUND, and it was the dangerous kind: a
+     * safety gate that fails OPEN, silently, on success.
+     *
+     * The bench used to derive its count by walking the `order:`
+     * prefix under a cap. Orders are never deleted and EVERY sale
+     * writes one — instant items included — so past the cap the list
+     * truncates. listKeys said so via `truncated`, and the caller
+     * ignored it. The ceiling would have undercounted and then stopped
+     * binding altogether, with no symptom, as the store grew.
+     *
+     * Here the index has not been built, so the fallback walk runs;
+     * we push it past its cap and the gate must stop selling rather
+     * than trust a partial count.
+     */
+    for (let index = 0; index < QUEUE_SCAN_CAP + 5; index += 1) {
+      await putOrder(`bulk${index}`, "settlement_attestation", "completed");
+    }
+    const load = await queueLoad(testEnv);
+    expect(load.from_fallback_scan).toBe(true);
+    expect(load.scan_capped).toBe(true);
+    // Zero open labor found — and that is exactly when it must NOT sell.
+    expect(load.open_total).toBe(0);
+
+    const verdict = await capacityVerdict(testEnv, getMenuItem("the_collab")!);
+    expect(verdict.ok).toBe(false);
+    if (verdict.ok) throw new Error("unreachable");
+    expect(verdict.reason).toContain("an unknown load is not a low one");
+  }, 120_000);
+
+  it("counts off the index once it is built, and the index cannot truncate", async () => {
+    await putOrder("a", "the_collab");
+    await putOrder("b", "quick_judgment");
+    await putOrder("c", "the_collab", "completed");
+    expect(await rebuildOpenLaborIndex(testEnv)).toBe(2);
+
+    const load = await queueLoad(testEnv);
+    expect(load.from_fallback_scan).toBe(false);
+    // A single key holds the index, so there is no walk to truncate.
+    expect(load.scan_capped).toBe(false);
+    expect(load.open_total).toBe(2);
+    expect(load.open_by_item["the_collab"]).toBe(1);
+  });
+
+  it("adds an order to the index when it is created and drops it when finished", async () => {
+    await rebuildOpenLaborIndex(testEnv);
+    const { createOrder, completeOrder } = await import("@/services/orders");
+    const item = getMenuItem("the_collab")!;
+    const order = await createOrder(testEnv, {
+      item,
+      paidUsdc: 25,
+      tipUsdc: 0,
+      patronNumber: 1,
+      certId: "cert_x",
+    });
+    expect((await queueLoad(testEnv)).open_total).toBe(1);
+    await completeOrder(testEnv, order.order_id, "done");
+    expect((await queueLoad(testEnv)).open_total).toBe(0);
+  });
+
+  it("prunes an index entry whose order finished behind its back", async () => {
+    // Drift toward over-refusing must heal itself, or a missed delete
+    // silently eats bench capacity forever.
+    await putOrder("ghost", "the_collab");
+    await rebuildOpenLaborIndex(testEnv);
+    expect((await queueLoad(testEnv)).open_total).toBe(1);
+
+    await putOrder("ghost", "the_collab", "completed");
+    expect((await queueLoad(testEnv)).open_total).toBe(0);
+    // And the pruning was written back, not recomputed each time.
+    const index = await testEnv.ORDERS.get<{ ids: string[] }>(
+      KV_KEYS.openLaborIndex,
+      "json",
+    );
+    expect(index?.ids).toEqual([]);
+  });
+
+  it("does not trust a truncated rebuild enough to switch off the fallback", async () => {
+    // Marking a partial rebuild authoritative would bake the
+    // undercount in permanently — the original bug in a new hat.
+    for (let index = 0; index < QUEUE_SCAN_CAP + 5; index += 1) {
+      await putOrder(`bulk${index}`, "settlement_attestation", "completed");
+    }
+    await rebuildOpenLaborIndex(testEnv);
+    const index = await testEnv.ORDERS.get<{ built_at?: string }>(
+      KV_KEYS.openLaborIndex,
+      "json",
+    );
+    expect(index?.built_at).toBeUndefined();
+    expect((await queueLoad(testEnv)).from_fallback_scan).toBe(true);
+  }, 120_000);
 });

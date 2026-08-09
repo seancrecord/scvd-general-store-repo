@@ -79,6 +79,34 @@ function receipt(logs: RpcReceipt["logs"], status = "0x1"): RpcReceipt {
   return { status, blockNumber: "0x64", logs };
 }
 
+const rpc = (result: unknown) =>
+  new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result }), {
+    headers: { "content-type": "application/json" },
+  });
+
+function withRpc(receiptBody: RpcReceipt | null, head = "0x80"): Env {
+  const original = globalThis.fetch;
+  let call = 0;
+  globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body ?? "{}")) as { method: string };
+    call += 1;
+    if (body.method === "eth_blockNumber") return rpc(head);
+    return rpc(receiptBody);
+  }) as typeof fetch;
+  // Restored by the caller via restore(); vitest runs these serially.
+  (globalThis as Record<string, unknown>)["__restoreFetch"] = () => {
+    globalThis.fetch = original;
+    return call;
+  };
+  return testEnv;
+}
+
+function restore(): void {
+  (
+    (globalThis as Record<string, unknown>)["__restoreFetch"] as () => number
+  )();
+}
+
 describe("the Approval topic", () => {
   it("is the real event signature, derived rather than trusted", () => {
     // Same discipline as the Transfer and AuthorizationUsed topics: a
@@ -195,34 +223,6 @@ describe("what one receipt can be made to say", () => {
 });
 
 describe("the signed observation", () => {
-  const rpc = (result: unknown) =>
-    new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result }), {
-      headers: { "content-type": "application/json" },
-    });
-
-  function withRpc(receiptBody: RpcReceipt | null, head = "0x80"): Env {
-    const original = globalThis.fetch;
-    let call = 0;
-    globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
-      const body = JSON.parse(String(init?.body ?? "{}")) as { method: string };
-      call += 1;
-      if (body.method === "eth_blockNumber") return rpc(head);
-      return rpc(receiptBody);
-    }) as typeof fetch;
-    // Restored by the caller via restore(); vitest runs these serially.
-    (globalThis as Record<string, unknown>)["__restoreFetch"] = () => {
-      globalThis.fetch = original;
-      return call;
-    };
-    return testEnv;
-  }
-
-  function restore(): void {
-    (
-      (globalThis as Record<string, unknown>)["__restoreFetch"] as () => number
-    )();
-  }
-
   it("says WITHIN CAP and marks the ceiling as observed when it was on the chain", async () => {
     const observation = await reconcileSettlement(
       withRpc(receipt([approvalLog(PAYER, SPENDER, 10), transferLog(PAYER, PAYEE, 3)])),
@@ -430,5 +430,94 @@ describe("the guard, before money moves", () => {
     expect(
       String(((await response.json()) as { error: string }).error),
     ).toContain("/api/buy/settlement_reconciliation");
+  });
+});
+
+describe("what the red team found", () => {
+  it("does NOT credit a payer with somebody else's EIP-3009 authorization", () => {
+    /*
+     * THE BUG, and it produced a false sentence under this store's own
+     * key in a paid artifact. Alice pays 1 via EIP-3009. Bob moves 500
+     * plainly in the same receipt with no authorization at all. Bob's
+     * leg is largest, so it is the one reported — and the old code saw
+     * "some authorization exists in this receipt" and reported that
+     * BOB's amount was fixed inside BOB's signed digest. Bob signed
+     * nothing.
+     *
+     * The approval path had always filtered by owner. This one did not.
+     * Same mistake, made once, in the half nobody looked at twice.
+     */
+    const BOB = "0x4444444444444444444444444444444444444444";
+    const facts = reconcileFacts(
+      receipt([
+        authorizationLog(PAYER),
+        transferLog(PAYER, PAYEE, 1),
+        transferLog(BOB, PAYEE, 500),
+      ]),
+      { txHash: TX },
+      100,
+    );
+    expect(facts.from?.toLowerCase()).toBe(BOB);
+    expect(facts.capSource).toBe("none");
+    expect(facts.capUnits).toBeNull();
+  });
+
+  it("still reads the authorization when it DOES belong to the payer reported", () => {
+    // The filter must not throw away the real case it was added around.
+    const facts = reconcileFacts(
+      receipt([authorizationLog(PAYER), transferLog(PAYER, PAYEE, 5)]),
+      { txHash: TX },
+      100,
+    );
+    expect(facts.capSource).toBe("chain_eip3009_fixed_value");
+  });
+
+  it("flags an ambiguous match at the TOP LEVEL, not in prose", async () => {
+    /*
+     * The caveat existed — inside what_this_cannot_see, an array of
+     * sentences. `verdict` and `settled_usdc` are what a machine reads.
+     * A consumer that never parses English has to be able to see that
+     * the question had more than one answer.
+     */
+    const BOB = "0x4444444444444444444444444444444444444444";
+    const observation = await reconcileSettlement(
+      withRpc(
+        receipt([transferLog(PAYER, PAYEE, 1), transferLog(BOB, PAYEE, 9999)]),
+      ),
+      { txHash: TX },
+    );
+    restore();
+    expect(observation.match_ambiguous).toBe(true);
+    expect(observation.matched_transfers).toBe(2);
+    // And the reading leads with it rather than trailing it.
+    expect(observation.reading.startsWith("2 USDC transfers")).toBe(true);
+    expect(observation.reading).toContain("may not even involve you");
+  });
+
+  it("says plainly when there was no choice to get wrong", async () => {
+    const observation = await reconcileSettlement(
+      withRpc(receipt([transferLog(PAYER, PAYEE, 3)])),
+      { txHash: TX },
+    );
+    restore();
+    expect(observation.match_ambiguous).toBe(false);
+    expect(observation.matched_transfers).toBe(1);
+    expect(observation.what_this_cannot_see.join(" ")).toContain(
+      "exactly one matched, so there was no choice to get wrong",
+    );
+  });
+
+  it("refuses a declared cap large enough to lose whole units to float", async () => {
+    // cap * 1_000_000 has to survive Math.round into a BigInt. Past
+    // roughly nine billion it does not, and the number would be
+    // quietly rounded into a different one and then signed.
+    const response = await SELF.fetch(
+      `https://scvd.store/api/buy/settlement_reconciliation?tx_hash=${TX}&declared_cap_usdc=1e30`,
+      { headers: { "PAYMENT-SIGNATURE": "not-a-real-signature" } },
+    );
+    expect(response.status).toBe(400);
+    expect(
+      String(((await response.json()) as { error: string }).error),
+    ).toContain("below a billion");
   });
 });

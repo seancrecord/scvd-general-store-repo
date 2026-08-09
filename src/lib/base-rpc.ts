@@ -331,16 +331,43 @@ export function usdcApprovals(receipt: RpcReceipt): UsdcApproval[] {
   return approvals;
 }
 
-/** EIP-3009 nonces burned in this transaction, lowercased. */
-export function authorizationNonces(receipt: RpcReceipt): string[] {
-  const nonces: string[] = [];
+export interface UsdcAuthorization {
+  /** The token holder whose signature permitted the transfer. */
+  authorizer: string;
+  nonce: string;
+}
+
+/**
+ * EIP-3009 authorizations burned in this transaction, WITH THE
+ * AUTHORIZER.
+ *
+ * The authorizer used to be dropped on the floor here, and a red team
+ * found what that cost: a reconciliation could see an authorization
+ * belonging to Alice, a larger unrelated transfer from Bob in the same
+ * receipt, and report that BOB's amount was fixed inside his signed
+ * digest. Bob signed nothing. An event says who authorized it, and
+ * throwing that away is what let the claim be attached to the wrong
+ * party.
+ */
+export function usdcAuthorizations(receipt: RpcReceipt): UsdcAuthorization[] {
+  const authorizations: UsdcAuthorization[] = [];
   for (const log of receipt.logs ?? []) {
     if (!isSameAddress(log.address, BASE_USDC)) continue;
     if (log.topics[0]?.toLowerCase() !== AUTHORIZATION_USED_TOPIC) continue;
+    const authorizer = log.topics[1];
     const nonce = log.topics[2];
-    if (nonce) nonces.push(nonce.toLowerCase());
+    if (!authorizer || !nonce) continue;
+    authorizations.push({
+      authorizer: addressFromTopic(authorizer),
+      nonce: nonce.toLowerCase(),
+    });
   }
-  return nonces;
+  return authorizations;
+}
+
+/** EIP-3009 nonces burned in this transaction, lowercased. */
+export function authorizationNonces(receipt: RpcReceipt): string[] {
+  return usdcAuthorizations(receipt).map((entry) => entry.nonce);
 }
 
 /** USDC has six decimals; the attestation reports both. */

@@ -75,6 +75,7 @@ import { appendAnchor, listAnchors } from "@/services/anchor-log";
 import { runAnchorCron } from "@/services/anchor-submit";
 import { runDeliveryAudit } from "@/services/delivery-audit";
 import { runRefundWindowAudit } from "@/services/refund-window";
+import { rebuildOpenLaborIndex } from "@/services/queue-capacity";
 import {
   runChainReconciliation,
   runSolanaReconciliation,
@@ -455,6 +456,28 @@ const worker: ExportedHandler<Env> = {
           sendAlert(env, {
             condition: "worker_health",
             detail: `Refund-window audit failed: ${String(error)}`,
+          }),
+      ),
+    );
+    /**
+     * THE BENCH INDEX REBUILD. The bench counts open labor off an
+     * index so it never has to walk every order the store has ever
+     * taken — a walk that would truncate on success and silently stop
+     * the ceiling from binding. Writes at creation and deletes at
+     * completion keep the index current; this pass is what reconciles
+     * the direction that matters, an order that never got an entry and
+     * would therefore make the bench UNDERCOUNT.
+     *
+     * It also sets the marker that switches the bench off its fallback
+     * walk, so a fresh deploy converges without anybody doing anything.
+     */
+    ctx.waitUntil(
+      rebuildOpenLaborIndex(env).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Open-labor index rebuild failed: ${String(error)}. The bench may undercount promised work until this succeeds.`,
           }),
       ),
     );
