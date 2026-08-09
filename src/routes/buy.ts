@@ -10,6 +10,7 @@ import {
   stockedShelfCount,
 } from "@/services/fulfillment";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
+import { capacityVerdict } from "@/services/queue-capacity";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { nonceFromPaymentPayload } from "@/services/attestation";
 import { getOrder, remainingInventory } from "@/services/orders";
@@ -319,6 +320,39 @@ const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 /**
+ * THE BENCH, which is the other half of the shutter's own promise.
+ *
+ * The shutter asks "is the keeper there." This asks "how much has he
+ * already been sold." Both have to be true for "we never promise labor
+ * nobody is there to do" to mean anything, and only the first was ever
+ * checked — a keeper seen an hour ago could be sold ten weeks of work
+ * in an afternoon, because weekly_inventory bounds the RATE of sales
+ * and nothing bounded the LEVEL of the backlog.
+ *
+ * Before the payment gate, like the shutter: a capacity refusal after
+ * settlement is money taken to be told no.
+ */
+const capacityCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const item = getMenuItem(c.req.path.replace(/^\/api\/buy\//, ""));
+  if (item) {
+    const verdict = await capacityVerdict(c.env, item);
+    if (!verdict.ok) {
+      return c.json(
+        {
+          error: verdict.reason,
+          open_orders: verdict.open,
+          cap: verdict.cap,
+          machine_shelves: `${c.env.STORE_BASE_URL}/menu.json`,
+          leave_a_request: `POST ${c.env.STORE_BASE_URL}/api/request \u2014 free, and read by a human.`,
+        },
+        503,
+      );
+    }
+  }
+  await next();
+};
+
+/**
  * Sold out, honestly: a bare stocked shelf issues no 402 nobody can
  * settle. Real scarcity, checkable, restocked by the keeper's hands.
  */
@@ -539,6 +573,7 @@ buyRoutes.use("/api/buy/*", noStore);
 buyRoutes.use("/api/buy/*", shelfCheck);
 buyRoutes.use("/api/buy/*", stockCheck);
 buyRoutes.use("/api/buy/*", shutterCheck);
+buyRoutes.use("/api/buy/*", capacityCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);

@@ -397,7 +397,44 @@ stranger to pay."*
 | | |
 |---|---|
 | **Refund-window detector** | a live published money promise enforced only by the keeper remembering. Approved 2026-08-08. |
-| **Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build. |
+| **Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build. STILL OPEN — needs the keeper. |
+| **The bench (open-queue cap)** | BUILT 2026-08-09. The interim floor under the same exposure, and it found a live hole. |
+
+**The bench, 2026-08-09.** Not the Commission Desk — that retires
+buy-now for labor entirely and is a product decision the keeper has to
+make. This is the floor underneath it, it changes nothing about how
+anything is sold, and it survives whatever the desk becomes.
+
+**What was actually open.** The shutter's law is *"the store never
+promises labor nobody is there to do"*, and it enforced that by
+PRESENCE only — open within 48 hours of the keeper being seen. It never
+asked how much had already been promised, and those are different
+questions. A keeper seen an hour ago could be sold ten weeks of work in
+an afternoon.
+
+**`weekly_inventory` looked like the cap and is not one.** It is a
+RATE: the counter lives at `inventory:<item>:<week>` and resets every
+Monday. Five judgments bought this week and five more next week, none
+finished, is ten open orders that passed every check the store had. A
+rate cannot bound a level. That case has its own test, named loudly,
+because it is the one somebody would remove the gate over after reading
+the inventory check and concluding it was handled.
+
+**And one item had nothing at all:** `the_collab`, $25, a 168-hour
+promised window, no `weekly_inventory`. Ten bought in an afternoon was
+ten weeks of work owed inside one week — and the refund-window detector
+(#81) would have found every one of them a week later. That is the
+detector working exactly as designed and still being the wrong place to
+catch it.
+
+Refuses before the payment gate, like the shutter. Machine shelves are
+untouched and keep selling with the bench full. The keeper sees
+`Bench: N of 8` on the counter page, because a gate that turns sales
+away silently is worse than no gate.
+
+⚑ **`OPEN_LABOR_CAP = 8` is drafted, not canon.** It is the keeper's
+throughput and nobody else can set it. The argument is that some
+ceiling beats none.
 
 ### TIER 1 — the index, made real
 

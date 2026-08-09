@@ -4,6 +4,10 @@ import type { CloserEntry } from "@/services/closers";
 import type { GrudgeEntry } from "@/services/grudges";
 import type { ListedEntry } from "@/services/guestbook";
 import { STOCK_DEFINITIONS } from "@/services/stock";
+import {
+  LABOR_ITEM_IDS,
+  OPEN_LABOR_CAP,
+} from "@/services/queue-capacity";
 import type { StockUnit } from "@/services/stock";
 import type {
   CommissionRequest,
@@ -125,10 +129,25 @@ function ordersHtml(orders: OrderRecord[]): string {
   }
   const open = orders.filter((order) => order.status === "queued");
   const done = orders.filter((order) => order.status !== "queued");
+  /*
+   * THE BENCH LINE, and it is here rather than buried because a gate
+   * that turns sales away silently is worse than no gate. The keeper
+   * has to be able to see WHY the labor shelf stopped selling, on the
+   * page he already opens to do the work that clears it.
+   */
+  const labor = open.filter((order) => LABOR_ITEM_IDS.has(order.item_id));
+  const benchHtml =
+    labor.length === 0
+      ? ""
+      : `<p><strong>Bench: ${labor.length} of ${OPEN_LABOR_CAP}</strong> pieces of labor promised and unfinished.${
+          labor.length >= OPEN_LABOR_CAP
+            ? ` <strong style="color:#8c2f1b">FULL — the labor shelf is refusing new sales until this drains.</strong> Nobody is being charged; machine shelves are unaffected.`
+            : ""
+        } Finishing one opens the door again.</p>`;
   const openHtml =
     open.length === 0
       ? "<p>Nothing open. The counter is clear.</p>"
-      : `<ul>${open.map(orderRowHtml).join("\n")}</ul>`;
+      : `${benchHtml}<ul>${open.map(orderRowHtml).join("\n")}</ul>`;
   const doneHtml =
     done.length === 0
       ? ""
