@@ -17,6 +17,22 @@
  *   3. The bundle is hand-maintained and drifts from the shelf. The
  *      freshness suite runs before anything leaves.
  *
+ * AND THREE MORE, FOUND IN ONE RUN ON 2026-08-10, all the same shape:
+ * this file telling the keeper something that used to be true.
+ *
+ *   4. A freshness suite that CRASHED was reported as a bundle that
+ *      did not match, sending him to edit a file that was fine.
+ *   5. "Look for ✔ OK. Published" named a line the CLI no longer
+ *      prints, on the screen where the only question is whether it
+ *      worked.
+ *   6. The final `git push` is rejected by `main`'s required status
+ *      check, so the step that exists because a step got skipped was
+ *      itself impossible to follow.
+ *
+ * The lesson is the one already written above about --source-commit:
+ * a value copied out of a document is a value that goes stale, and
+ * prose is a document. What can be derived is derived now.
+ *
  * RULE 30 IS INTACT. This publishes only when a human runs it, exactly
  * like the Actions button. It adds no trigger, no schedule and no
  * hook — it is the same hand, holding a shorter command.
@@ -27,6 +43,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { readSuiteOutcome } from "./lib/suite-verdict.mjs";
 
 const BUNDLE = "registry/clawhub/SKILL.md";
 const RECORD = "registry/clawhub/published.json";
@@ -35,16 +52,37 @@ const SLUG = "scvd-general-store";
 /** THE NAMING LAW, tier 2: the display name, and never the full one. */
 const DISPLAY_NAME = "SCVD General Store";
 const REPO = "seancrecord/scvd-general-store-repo";
+/**
+ * THE BRANCH NOBODY CAN PUSH TO, named here because the last line this
+ * script prints is a git command and that command has to be one the
+ * repository will accept. `main` carries a required `check` status
+ * (the job in .github/workflows/ci.yml); a direct push is rejected
+ * with GH013 no matter how small the change.
+ */
+const PROTECTED_BRANCH = "main";
 
 function git(...args) {
   return execFileSync("git", args, { encoding: "utf8" }).trim();
 }
 
-function die(message, fix) {
+/**
+ * VARIADIC BECAUSE IT ALREADY WAS, IN EVERY WAY BUT THE SIGNATURE.
+ *
+ * Found 2026-08-10. The fifth refusal below calls this with FIVE
+ * arguments and the parameter list took two, so three of its lines
+ * were dropped on the floor — silently, since a JavaScript function
+ * ignores extra arguments without complaint. The refusal that stops a
+ * version bump over unchanged bytes was printing its first sentence
+ * and eating the part that says what to do instead.
+ *
+ * Continuation lines align under the arrow rather than repeating it:
+ * one refusal, one pointer, however many lines it takes to say.
+ */
+function die(message, ...fix) {
   console.error(`\nRefusing to publish: ${message}`);
-  if (fix) {
-    console.error(`  → ${fix}`);
-  }
+  fix.forEach((line, index) => {
+    console.error(`  ${index === 0 ? "→" : " "} ${line}`);
+  });
   process.exit(1);
 }
 
@@ -167,16 +205,58 @@ if (previous && previous.bundle_sha256 === bundleHash) {
   );
 }
 
-// The bundle is a static file and the shelf is code; nothing ties them
-// together except this suite, so it runs before the bytes leave.
+/**
+ * THE BUNDLE CHECK IS TWO OUTCOMES WEARING ONE MESSAGE, AND THE WRONG
+ * ONE SENDS YOU TO EDIT A FILE THAT IS FINE.
+ *
+ * The bundle is a static file and the shelf is code; nothing ties them
+ * together except this suite, so it runs before the bytes leave. Until
+ * 2026-08-10 any non-zero exit from vitest was reported as "the bundle
+ * does not match the shelf" — which is true when the suite RAN and
+ * disagreed, and a fabrication when it never started.
+ *
+ * The live case: a stale node_modules missing @x402/svm, so the suite
+ * failed to import src/lib/payments.ts, collected nothing, and ran no
+ * assertions at all. The keeper was told to fix registry/clawhub/
+ * SKILL.md. Nothing was wrong with SKILL.md. A guard that names the
+ * wrong file is worse than one that says "I could not tell," because
+ * the first sends somebody to change something that was correct.
+ *
+ * SO THE OUTPUT IS READ RATHER THAN JUST THE EXIT CODE, and what it
+ * is read for lives in scripts/lib/suite-verdict.mjs — testable, and
+ * written up there rather than in two places that can disagree.
+ *
+ * The cost is that the run is captured and echoed instead of streamed,
+ * so it appears at once rather than live. It takes about a second.
+ */
 console.log("Checking the bundle against the shelf…");
-try {
-  execFileSync(
-    "npx",
-    ["vitest", "run", "test/skill-bundle-freshness.spec.ts"],
-    { stdio: "inherit" },
-  );
-} catch {
+const suite = (() => {
+  try {
+    return {
+      ok: true,
+      output: execFileSync(
+        "npx",
+        ["vitest", "run", "test/skill-bundle-freshness.spec.ts"],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      ),
+    };
+  } catch (error) {
+    return { ok: false, output: `${error.stdout ?? ""}${error.stderr ?? ""}` };
+  }
+})();
+process.stdout.write(suite.output);
+if (!suite.ok) {
+  const { reachedAVerdict, missingPackage } = readSuiteOutcome(suite.output);
+  if (!reachedAVerdict) {
+    die(
+      "the freshness suite could not run, so the bundle was never checked",
+      missingPackage
+        ? "Something it imports is not installed. Run: npm ci"
+        : "It exited without reporting a single test — read the error above.",
+      `This is NOT a finding about ${BUNDLE}. That file has not been`,
+      `examined either way. Fix the run, then publish.`,
+    );
+  }
   die(
     "the bundle does not match the shelf",
     `Fix ${BUNDLE}, then run this again.`,
@@ -239,11 +319,28 @@ try {
 }
 
 if (!dryRun) {
+  /**
+   * DESCRIBE THE SIGNAL, DO NOT QUOTE IT. This paragraph told the
+   * keeper to look for `✔ OK. Published` — a string the CLI had
+   * stopped printing by 2026-08-10, when a real publish came back
+   * "✔ Update submitted … pending security scans before it becomes
+   * public." The instruction named something that no longer appears,
+   * on the one screen where the whole question is "did that work?"
+   *
+   * A quoted string from somebody else's tool is a hardcoded copy of a
+   * value we do not own, which is the same defect this script exists
+   * to prevent — it just happened to be in prose rather than in an
+   * argument. So: the shape of the signal, and what SUBMITTED means,
+   * neither of which moves when they reword a line.
+   */
   console.log(
-    `\nThe "✔ OK. Published" line above is the authoritative signal.\n` +
-      `\`latest\` lags it — a new version goes through a moderation scan\n` +
-      `before the tag moves, so inspect can show the previous version for\n` +
-      `several minutes. Publish once, read the line, walk away.\n\n` +
+    `\nThe CLI's ✔ line above is the authoritative signal, in whatever\n` +
+      `words it uses today. Read it rather than this script.\n\n` +
+      `SUBMITTED IS NOT YET PUBLIC. A new version goes through their\n` +
+      `moderation and security scan before the \`latest\` tag moves, so\n` +
+      `\`npx clawhub@latest skill inspect ${SLUG}\` can keep showing the\n` +
+      `previous version for several minutes with nothing wrong.\n` +
+      `Publish once, read the line, walk away.\n\n` +
       `The record in ${RECORD} has been updated for you — no row to\n` +
       `remember to write, because the row somebody had to remember is\n` +
       `exactly the one that went stale and produced wrong advice about\n` +
@@ -285,11 +382,43 @@ if (!dryRun) {
    * worse than one that nags — but to make the remaining step a thing
    * you paste rather than a thing you compose.
    */
+  /**
+   * THE LAST STEP HAS TO BE A STEP THAT WORKS.
+   *
+   * It said `git push`, flat, and on 2026-08-10 that was rejected:
+   * GH013, `main` requires the `check` status and a direct push
+   * produces none. So the instruction that exists BECAUSE the previous
+   * instruction got skipped was itself impossible to follow — and it
+   * fails at the end of a publish, which is exactly when somebody
+   * shrugs and leaves the record uncommitted. That is the failure this
+   * paragraph was written to prevent, arrived at by a new road.
+   *
+   * The commands are now derived from the branch you are actually on:
+   * off `main`, commit and push where you stand; on `main`, carry the
+   * record out on a branch, because that is the only way it lands.
+   */
+  const recordBranch = `record-${version}`;
+  const steps =
+    branch === PROTECTED_BRANCH
+      ? [
+          `git switch -c ${recordBranch}`,
+          `git add ${RECORD}`,
+          `git commit -m "Record ${SLUG} ${version} as published"`,
+          `git push -u origin ${recordBranch}`,
+        ]
+      : [
+          `git add ${RECORD}`,
+          `git commit -m "Record ${SLUG} ${version} as published"`,
+          `git push -u origin ${branch}`,
+        ];
   console.log(
     `ONE STEP LEFT, and it is the one that got skipped last time:\n\n` +
-      `  git add ${RECORD} && \\\n` +
-      `    git commit -m "Record ${SLUG} ${version} as published" && \\\n` +
-      `    git push\n\n` +
+      `${steps.map((step) => `  ${step}`).join(" && \\\n")}\n\n` +
+      (branch === PROTECTED_BRANCH
+        ? `Then open the pull request. \`${PROTECTED_BRANCH}\` requires the\n` +
+          `\`check\` status, which a direct push cannot produce; CI runs on\n` +
+          `the push above, so it is green by the time you get there.\n\n`
+        : "") +
       `Uncommitted, this record is worse than absent — the refusal that\n` +
       `catches a version bump over unchanged bytes reads its hash, so a\n` +
       `stale copy does not fail loudly, it just stops catching things.\n`,
