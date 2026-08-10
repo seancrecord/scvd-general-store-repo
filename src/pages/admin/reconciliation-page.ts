@@ -1,6 +1,7 @@
 import type { SettleReconciliation } from "@/lib/metrics";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
+import type { SkippedRangesRecord } from "@/services/chain-reconciliation";
 import type { DeliveryAudit } from "@/services/delivery-audit";
 
 /** Matches listAlerts' inline row shape. */
@@ -51,6 +52,12 @@ export interface ReconciliationPageData {
       transfers_seen?: number;
       at: string;
     } | null;
+    /**
+     * Base block ranges the walk moved past without reading (ledger
+     * #22). A coverage claim over the Base rail is only honest with
+     * these beside it: nothing ever swept them and nothing will.
+     */
+    baseSkipped: SkippedRangesRecord | null;
   };
   deliveries: DeliveryAudit | null;
   alerts: AlertLogEntry[];
@@ -115,7 +122,29 @@ function chainHtml(chain: ReconciliationPageData["chain"], now: Date): string {
   const base = chain.baseCursor
     ? `<p>${PASS} — Base cursor at block ${escapeHtml(chain.baseCursor)}; it only advances on a clean pass, so an advancing cursor IS the verdict. Anything found on-chain that the books can't explain pages the keeper instead of waiting here.</p>`
     : `<p>${ATTENTION} — no clean Base pass recorded yet.</p>`;
-  return `${base}${solana}`;
+  /**
+   * The holes (ledger #22): block ranges the walk moved past without
+   * reading. Rendered even at zero, because "no known holes" is a
+   * claim this page is now entitled to make — before the record
+   * existed, silence here meant nothing at all.
+   */
+  const skippedRecord = chain.baseSkipped;
+  const holes = !skippedRecord
+    ? `<p>${ATTENTION} — the skipped-range record didn't load; Base coverage cannot be stated either way. Reload to retry.</p>`
+    : skippedRecord.total_ranges === 0
+      ? `<p>${PASS} — no skipped Base block ranges on record: every block from the walk's first pass to the cursor was actually read.</p>`
+      : `<p>${ATTENTION} — the Base walk has ${skippedRecord.total_ranges} hole${skippedRecord.total_ranges === 1 ? "" : "s"} on record (${skippedRecord.total_blocks} blocks NEVER read for incoming transfers — a payment in one is invisible to every instrument here unless the range is back-filled by hand):</p>
+        <ul>${skippedRecord.ranges
+          .map(
+            (range) =>
+              `<li>blocks ${range.from_block}\u2013${range.to_block} (${range.blocks} blocks), cursor moved past them ${escapeHtml(range.recorded_at)}</li>`,
+          )
+          .join("\n")}</ul>${
+          skippedRecord.total_ranges > skippedRecord.ranges.length
+            ? `<p><small>Only the most recent ${skippedRecord.ranges.length} ranges are listed; the totals above count every hole ever recorded.</small></p>`
+            : ""
+        }`;
+  return `${base}${holes}${solana}`;
 }
 
 function deliveriesHtml(

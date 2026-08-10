@@ -137,8 +137,9 @@ export function findLookalike(
  * HONEST LIMITS, carried in the method note the statement publishes:
  * a transfer is booked to the month the WALK saw it, which trails the
  * chain by up to an hour at month boundaries; a Base pass that fell
- * more than RECONCILE_MAX_SPAN behind skips blocks (already this
- * walk's named behavior) and their inflow with it; and the meter
+ * more than RECONCILE_MAX_SPAN behind skips blocks and their inflow
+ * with it — since ledger #22 that skip is RECORDED and alerted
+ * (reconcileSkippedRanges) instead of silent; and the meter
  * starts counting at first deploy, so months before it exist on the
  * chain and not here. Dust is accumulated separately so the statement
  * can name it instead of blending a poisoning lure into revenue.
@@ -191,6 +192,71 @@ export interface ChainReconciliation {
   orphans?: OrphanTransfer[];
   /** True when the certificate scan hit its cap and may be partial. */
   cert_scan_truncated?: boolean;
+  /**
+   * Blocks this pass moved past WITHOUT reading (problem ledger #22):
+   * the cursor had fallen more than RECONCILE_MAX_SPAN behind and the
+   * clamp discarded the gap. Present on the result AND recorded in KV,
+   * because the walk only goes forward — this is the last moment the
+   * hole is knowable at all.
+   */
+  skipped?: SkippedBlockRange;
+}
+
+/**
+ * A window of Base nothing ever swept for incoming transfers. An
+ * orphan in it — money taken, no certificate — is invisible to every
+ * instrument the store has, forever, unless the range is back-filled
+ * by hand. The record is what makes the hole a fact with a date and
+ * bounds instead of a silence.
+ */
+export interface SkippedBlockRange {
+  from_block: number;
+  to_block: number;
+  blocks: number;
+  recorded_at: string;
+}
+
+/**
+ * The stored ledger of holes. Ranges beyond the cap fall off the
+ * front, but the TOTALS never lose a block — a coverage claim built
+ * on this can always say exactly how much was never read, even if it
+ * can no longer name every early range. (If the cap ever binds, the
+ * cron has been down often enough that the ranges are not the story.)
+ */
+export interface SkippedRangesRecord {
+  ranges: SkippedBlockRange[];
+  total_ranges: number;
+  total_blocks: number;
+}
+
+export const SKIPPED_RANGES_CAP = 100;
+
+export async function readSkippedRanges(
+  env: Env,
+): Promise<SkippedRangesRecord> {
+  return (
+    (await env.COUNTERS.get<SkippedRangesRecord>(
+      KV_KEYS.reconcileSkippedRanges,
+      "json",
+    )) ?? { ranges: [], total_ranges: 0, total_blocks: 0 }
+  );
+}
+
+async function recordSkippedRange(
+  env: Env,
+  skipped: SkippedBlockRange,
+): Promise<void> {
+  const record = await readSkippedRanges(env);
+  record.ranges.push(skipped);
+  if (record.ranges.length > SKIPPED_RANGES_CAP) {
+    record.ranges = record.ranges.slice(-SKIPPED_RANGES_CAP);
+  }
+  record.total_ranges += 1;
+  record.total_blocks += skipped.blocks;
+  await env.COUNTERS.put(
+    KV_KEYS.reconcileSkippedRanges,
+    JSON.stringify(record),
+  );
 }
 
 /**
@@ -296,6 +362,32 @@ export async function reconcileAgainstChain(
     return { ran: false, reason: "no new blocks since the last pass" };
   }
 
+  /**
+   * THE HOLE THE CLAMP TEARS (problem ledger #22). When the cursor is
+   * more than RECONCILE_MAX_SPAN behind the head, the Math.max above
+   * discards every block between cursor+1 and the floor — and this
+   * walk is the only instrument that reads incoming transfers, and it
+   * only ever walks forward. Bounding the pass is right (a walk that
+   * re-read all of Base would stop running, which is #4); what was
+   * wrong is that the clamp wrote NOTHING when it fired: the pass
+   * returned ran:true and every surface downstream reported a clean
+   * sweep over a range that was never read. Rule 5 — a zero from a
+   * probe that could not observe the range is not evidence the range
+   * is clean. So the skip is computed here, and recorded and alerted
+   * BELOW, beside the cursor write, under the same clean-read rule:
+   * a failed pass writes neither, and the next pass recomputes the
+   * (by then slightly larger) hole rather than double-recording it.
+   */
+  const skipped: SkippedBlockRange | null =
+    Number.isFinite(cursor) && cursor + 1 < fromBlock
+      ? {
+          from_block: cursor + 1,
+          to_block: fromBlock - 1,
+          blocks: fromBlock - cursor - 1,
+          recorded_at: new Date().toISOString(),
+        }
+      : null;
+
   let transfers: Awaited<ReturnType<typeof usdcTransfersTo>>;
   try {
     transfers = await usdcTransfersTo(env, payTo, fromBlock, toBlock);
@@ -341,7 +433,20 @@ export async function reconcileAgainstChain(
    * actually read would be worse than one that fell behind. The inflow
    * meter banks at the same moment and under the same rule: the sum
    * and the cursor describe the same window, or neither is written.
+   * The hole record rides the same seam: written before the cursor
+   * moves past the range, so a hole always has a date and bounds by
+   * the time nothing can ever look there again.
    */
+  if (skipped) {
+    await recordSkippedRange(env, skipped);
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `THE BANK WALK SKIPPED BLOCKS: the Base reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters, and expect more of these while the cursor catches up at ~${RECONCILE_BLOCK_SPAN} blocks per hourly pass.`,
+      key: `${skipped.from_block}-${skipped.to_block}`,
+    }).catch(() => {
+      // The alert is the courtesy; the KV record above is the fact.
+    });
+  }
   await bankInflow(env, "base", inflow);
   await env.COUNTERS.put(KV_KEYS.reconcileCursor, String(toBlock));
 
@@ -352,6 +457,7 @@ export async function reconcileAgainstChain(
     transfers_seen: transfers.length,
     orphans,
     cert_scan_truncated: truncated,
+    ...(skipped ? { skipped } : {}),
   };
 }
 
