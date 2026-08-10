@@ -34,6 +34,20 @@ export interface Env {
    */
   BASE_RPC_URL?: string;
   /**
+   * AN AUTHENTICATED BASE ENDPOINT, as a SECRET because the token
+   * lives in the URL. Tried first; BASE_RPC_URL is the fallback.
+   *
+   * The public endpoint rate-limits, and four items read the chain
+   * after money has settled and before goods go out — a 429 there was
+   * money taken with nothing delivered, repeatedly, through August
+   * 2026. Two independent providers is the fix that does not depend
+   * on either of them behaving.
+   *
+   * Never logged, never put in an error message, never on an
+   * artifact: see redactRpc in lib/base-rpc.
+   */
+  BASE_RPC_URL_PRIMARY?: string;
+  /**
    * Solana JSON-RPC endpoint for the second rail's bank
    * reconciliation. Optional: falls back to the public mainnet
    * endpoint, fine at this volume, swappable the day it isn't.

@@ -108,27 +108,121 @@ export interface AlertInput {
   key?: string;
 }
 
+/**
+ * A STANDING PROBLEM IS ONE ROW, NOT ONE ROW EVERY SIX HOURS.
+ *
+ * THE BUG THIS FIXES, found by the keeper doing forensics at 3am and
+ * having to cross-check six renders against a transaction hash to
+ * learn that nothing new had happened.
+ *
+ * sendAlert used to return EARLY when the page-dedupe key was set, so
+ * an unresolved condition wrote nothing for six hours — and then, the
+ * moment that key expired, minted a BRAND NEW log row with a brand new
+ * `at`. The same undelivered sale therefore appeared at 03:30, then
+ * again at 09:30, then again at 15:30. Not a row changing its date: a
+ * new row for an event that had not moved.
+ *
+ * Log rows live thirty days, so one unresolved event could leave a
+ * hundred and twenty of them, and listAlerts returns the newest N —
+ * which is why the surface also dropped DISTINCT events off the
+ * bottom, and why it got less trustworthy the longer it went unread.
+ * An alarm surface that degrades while you are not looking at it is
+ * worse than none, because it is worst exactly when it is needed.
+ *
+ * Now: one row per condition-and-key, `at` is FIRST seen and never
+ * moves, `last_seen` and `repeats` carry the rest. The six-hour
+ * dedupe still governs the EMAIL, which is a separate question and
+ * was never the broken half.
+ */
+function alertIdentity(input: AlertInput): string {
+  /*
+   * Keyless alerts key off their own text. Collapsing every keyless
+   * worker_health alert into one row would hide distinct failures
+   * behind whichever fired first, which trades this bug for a worse
+   * one. FNV-1a: a dedupe discriminator, not a security primitive.
+   */
+  if (input.key) return `${input.condition}:${input.key}`;
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < input.detail.length; index += 1) {
+    hash ^= input.detail.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return `${input.condition}:d${hash.toString(36)}`;
+}
+
+export interface AlertRow {
+  condition: string;
+  detail: string;
+  /** FIRST seen. This never moves once written. */
+  at: string;
+  /** Most recent time the same condition was raised again. */
+  last_seen?: string;
+  /** How many times it has been raised, first included. */
+  repeats?: number;
+}
+
 export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
-  const dedupeKey = `alert_sent:${input.condition}:${input.key ?? "-"}`;
+  const identity = alertIdentity(input);
+  const pageKey = `alert_sent:${identity}`;
+  const openKey = `alert_open:${identity}`;
+  const detail = input.detail.slice(0, 1000);
+  const now = new Date().toISOString();
   try {
-    if (await env.COUNTERS.get(dedupeKey)) {
-      return;
+    console.error(`[P1 ${input.condition}] ${detail}`);
+
+    // Does this condition already have a row? If so it keeps it.
+    const existingLogKey = await env.COUNTERS.get(openKey);
+    let updated = false;
+    if (existingLogKey) {
+      const row = await env.COUNTERS.get<AlertRow>(existingLogKey, "json");
+      if (row) {
+        await env.COUNTERS.put(
+          existingLogKey,
+          JSON.stringify({
+            ...row,
+            // detail refreshes so the text is current; `at` does not,
+            // because when it STARTED is the fact being reported.
+            detail,
+            last_seen: now,
+            repeats: (row.repeats ?? 1) + 1,
+          } satisfies AlertRow),
+          { expirationTtl: ALERT_LOG_TTL_SECONDS },
+        );
+        await env.COUNTERS.put(openKey, existingLogKey, {
+          expirationTtl: ALERT_LOG_TTL_SECONDS,
+        });
+        updated = true;
+      }
     }
-    await env.COUNTERS.put(dedupeKey, "1", {
+
+    if (!updated) {
+      const logKey = `alert_log:${invertedTimestamp(Date.now())}`;
+      await env.COUNTERS.put(
+        logKey,
+        JSON.stringify({
+          condition: input.condition,
+          detail,
+          at: now,
+          last_seen: now,
+          repeats: 1,
+        } satisfies AlertRow),
+        { expirationTtl: ALERT_LOG_TTL_SECONDS },
+      );
+      await env.COUNTERS.put(openKey, logKey, {
+        expirationTtl: ALERT_LOG_TTL_SECONDS,
+      });
+    }
+
+    /*
+     * THE EMAIL keeps its own six-hour cadence. Paging again about a
+     * problem still standing after six hours is wanted; minting a
+     * second row about it was not.
+     */
+    if (await env.COUNTERS.get(pageKey)) return;
+    await env.COUNTERS.put(pageKey, "1", {
       expirationTtl: DEDUPE_TTL_SECONDS,
     });
-    const record = {
-      condition: input.condition,
-      detail: input.detail.slice(0, 1000),
-      at: new Date().toISOString(),
-    };
-    console.error(`[P1 ${input.condition}] ${record.detail}`);
-    await env.COUNTERS.put(
-      `alert_log:${invertedTimestamp(Date.now())}`,
-      JSON.stringify(record),
-      { expirationTtl: ALERT_LOG_TTL_SECONDS },
-    );
-    await emailKeeper(env, record.condition, record.detail, record.at);
+    await emailKeeper(env, input.condition, detail, now);
   } catch (error) {
     // The alarm must never take down the till it watches.
     console.error("Alert plumbing failed:", error);
@@ -160,20 +254,17 @@ async function emailKeeper(
 }
 
 /** Recent alerts, for the back room. */
-export async function listAlerts(
-  env: Env,
-  limit = 20,
-): Promise<Array<{ condition: string; detail: string; at: string }>> {
+/**
+ * Recent alerts, for the back room. One row per standing condition —
+ * `at` is when it STARTED, `last_seen` and `repeats` say whether it is
+ * still going. A row whose repeats keep climbing is a problem nobody
+ * has fixed, which is a different thing from a problem happening
+ * again, and the surface used to show them identically.
+ */
+export async function listAlerts(env: Env, limit = 20): Promise<AlertRow[]> {
   const listed = await listKeys(env.COUNTERS, { prefix: "alert_log:", cap: limit });
-  const values = await bulkGetJson<{
-    condition: string;
-    detail: string;
-    at: string;
-  }>(
-    env.COUNTERS,
-    listed.names,
-  );
-  const alerts: Array<{ condition: string; detail: string; at: string }> = [];
+  const values = await bulkGetJson<AlertRow>(env.COUNTERS, listed.names);
+  const alerts: AlertRow[] = [];
   for (const record of values.values()) {
     if (record) {
       alerts.push(record);
