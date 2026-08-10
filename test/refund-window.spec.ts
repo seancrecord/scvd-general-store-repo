@@ -1,4 +1,4 @@
-import { env } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   auditRefundWindows,
@@ -130,11 +130,13 @@ describe("the refund-window detector", () => {
     expect(audit.breaches[0]!.refund_status).toBe("refund_pending");
   });
 
-  it("says out loud that the refund join is heuristic, so owed_usdc reads as a floor", async () => {
-    // RefundRecord carries no order_id: two breached orders from the
-    // same payer for the same item are indistinguishable here. The
-    // audit publishes that rather than implying a join the data
-    // cannot support.
+  it("says out loud when the join is a guess, so owed_usdc reads as a floor", async () => {
+    // A refund row written before 2026-08-10 carries no order_id, so
+    // two breached orders from the same payer for the same item are
+    // indistinguishable. The audit publishes that weakness rather
+    // than implying a join the data cannot support. Refunds created
+    // since name their order and do not have this problem — see the
+    // exact-join test below.
     await putOrder({ order_id: "ord_a", payer: "0xddd" });
     await putOrder({ order_id: "ord_b", payer: "0xddd" });
     await testEnv.ORDERS.put(
@@ -153,7 +155,8 @@ describe("the refund-window detector", () => {
     // number is a floor rather than a lie about it.
     expect(audit.owed).toEqual([]);
     expect(audit.join_note).toContain("FLOOR");
-    expect(audit.join_note).toContain("no order_id");
+    expect(audit.join_note).toContain("before refunds carried an order_id");
+    expect(audit.guessed_joins).toBeGreaterThan(0);
   });
 
   it("pages per order, and the page says the money is owed rather than optional", async () => {
@@ -173,5 +176,175 @@ describe("the refund-window detector", () => {
     await putOrder({ order_id: "ord_honest", payer: "0xfff" });
     const audit = await auditRefundWindows(testEnv);
     expect(audit.what_this_cannot_see.join(" ")).toContain("keeper pays it by hand");
+  });
+});
+
+describe("the buyer can see the breach without being told", () => {
+  /**
+   * "You won't have to argue for it" was, until 2026-08-10, enforced
+   * by the check reporting to the KEEPER only. A promise whose only
+   * witness is the person who owes it is a promise the buyer has to
+   * argue for by definition — which is the exact sentence on the card
+   * by the door being false about itself.
+   */
+  it("says so on the order's own page, past the window with nothing delivered", async () => {
+    const orderId = `ord_late_${Math.random().toString(36).slice(2, 8)}`;
+    await testEnv.ORDERS.put(
+      KV_KEYS.order(orderId),
+      JSON.stringify({
+        order_id: orderId,
+        item_id: "the_collab",
+        item_name: "The Collab",
+        status: "queued",
+        created_at: new Date(Date.now() - 200 * 3_600_000).toISOString(),
+        sla_hours: 168,
+        paid_usdc: 25,
+        tip_usdc: 0,
+        patron_number: 91,
+        cert_id: "cert_x",
+      }),
+    );
+
+    const response = await SELF.fetch(`https://scvd.store/api/order/${orderId}`);
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as Record<string, any>;
+    expect(body.window_breached).toBeTruthy();
+    expect(body.window_breached.kind).toBe("still_open");
+    expect(body.window_breached.owed_usdc).toBe(25);
+    // 200 hours against a 168-hour promise.
+    expect(body.window_breached.hours_late).toBeCloseTo(32, 0);
+  });
+
+  it("still says so when the goods eventually arrived, because late is the trigger", async () => {
+    /*
+     * The reading that would quietly gut the promise: "we got there in
+     * the end, so nothing is owed." The card says a MISSED WINDOW earns
+     * the money back. Delivering eventually does not discharge it.
+     */
+    const orderId = `ord_slow_${Math.random().toString(36).slice(2, 8)}`;
+    const created = Date.now() - 300 * 3_600_000;
+    await testEnv.ORDERS.put(
+      KV_KEYS.order(orderId),
+      JSON.stringify({
+        order_id: orderId,
+        item_id: "the_collab",
+        item_name: "The Collab",
+        status: "completed",
+        created_at: new Date(created).toISOString(),
+        completed_at: new Date(created + 250 * 3_600_000).toISOString(),
+        deliverable: "the thing",
+        sla_hours: 168,
+        paid_usdc: 25,
+        tip_usdc: 0,
+        patron_number: 92,
+        cert_id: "cert_y",
+      }),
+    );
+
+    const body = (await (
+      await SELF.fetch(`https://scvd.store/api/order/${orderId}`)
+    ).json()) as Record<string, any>;
+    expect(body.window_breached.kind).toBe("delivered_late");
+    expect(body.deliverable).toBe("the thing");
+  });
+
+  it("promises no automatic payment, because rule 10 says the keeper pays by hand", async () => {
+    // The founding incident, guarded: "refund is automatic" sat live
+    // on every surface for five days while the code never did it.
+    const orderId = `ord_words_${Math.random().toString(36).slice(2, 8)}`;
+    await testEnv.ORDERS.put(
+      KV_KEYS.order(orderId),
+      JSON.stringify({
+        order_id: orderId,
+        item_id: "the_collab",
+        item_name: "The Collab",
+        status: "queued",
+        created_at: new Date(Date.now() - 400 * 3_600_000).toISOString(),
+        sla_hours: 168,
+        paid_usdc: 25,
+        tip_usdc: 0,
+        patron_number: 93,
+        cert_id: "cert_z",
+      }),
+    );
+    const text = await (
+      await SELF.fetch(`https://scvd.store/api/order/${orderId}`)
+    ).text();
+    expect(text).not.toMatch(/automatic(ally)? refund/i);
+    expect(text).toContain("by hand");
+  });
+
+  it("says nothing at all while the window is still open", async () => {
+    const orderId = `ord_fine_${Math.random().toString(36).slice(2, 8)}`;
+    await testEnv.ORDERS.put(
+      KV_KEYS.order(orderId),
+      JSON.stringify({
+        order_id: orderId,
+        item_id: "the_collab",
+        item_name: "The Collab",
+        status: "queued",
+        created_at: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+        sla_hours: 168,
+        paid_usdc: 25,
+        tip_usdc: 0,
+        patron_number: 94,
+        cert_id: "cert_w",
+      }),
+    );
+    const body = (await (
+      await SELF.fetch(`https://scvd.store/api/order/${orderId}`)
+    ).json()) as Record<string, any>;
+    expect(body.window_breached).toBeUndefined();
+  });
+});
+
+describe("the exact refund join", () => {
+  it("matches by order_id and stops calling the total a floor", async () => {
+    /*
+     * Two breached orders, same buyer, same item — the case the old
+     * item+payer join could not tell apart, which is why owed_usdc was
+     * published as a floor. With order_id it is a figure.
+     */
+    const { auditRefundWindows } = await import("@/services/refund-window");
+    const { createRefund } = await import("@/services/refunds");
+    const stale = new Date(Date.now() - 400 * 3_600_000).toISOString();
+    const ids = [
+      `ord_twin_a_${Math.random().toString(36).slice(2, 6)}`,
+      `ord_twin_b_${Math.random().toString(36).slice(2, 6)}`,
+    ];
+    for (const [index, id] of ids.entries()) {
+      await testEnv.ORDERS.put(
+        KV_KEYS.order(id),
+        JSON.stringify({
+          order_id: id,
+          item_id: "the_collab",
+          item_name: "The Collab",
+          status: "queued",
+          created_at: stale,
+          sla_hours: 168,
+          paid_usdc: 25,
+          tip_usdc: 0,
+          payer: "0xtwinbuyer",
+          patron_number: 100 + index,
+          cert_id: `cert_twin_${index}`,
+        }),
+      );
+    }
+    // One of the two is refunded, and the row names WHICH.
+    await createRefund(testEnv, {
+      item: "the_collab",
+      amountUsdc: 25,
+      payer: "0xtwinbuyer",
+      orderId: ids[0]!,
+    });
+
+    const audit = await auditRefundWindows(testEnv);
+    const first = audit.breaches.find((b) => b.order_id === ids[0]);
+    const second = audit.breaches.find((b) => b.order_id === ids[1]);
+    expect(first?.refund_match).toBe("order_id");
+    // The twin is still owed — under the old join it would have
+    // borrowed its sibling's refund and vanished from the total.
+    expect(second?.refund_id).toBeUndefined();
+    expect(audit.owed.some((b) => b.order_id === ids[1])).toBe(true);
   });
 });

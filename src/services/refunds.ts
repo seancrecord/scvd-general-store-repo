@@ -19,6 +19,12 @@ export interface CreateRefundInput {
   item: string;
   amountUsdc: number;
   payer?: string;
+  /**
+   * The order this refund covers, when the caller knows it. Turns the
+   * refund-window detector's item+payer guess into an exact join —
+   * see the note on RefundRecord.order_id.
+   */
+  orderId?: string;
 }
 
 export async function createRefund(
@@ -34,6 +40,9 @@ export async function createRefund(
   };
   if (input.payer) {
     record.payer = input.payer;
+  }
+  if (input.orderId) {
+    record.order_id = input.orderId;
   }
   await env.ORDERS.put(
     KV_KEYS.refund(record.refund_id),

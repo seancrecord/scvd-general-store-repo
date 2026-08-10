@@ -491,6 +491,18 @@ export interface RefundRecord {
   refund_id: string;
   item: string;
   amount_usdc: number;
+  /**
+   * WHICH ORDER THIS COVERS. Additive and optional, because rows
+   * written before 2026-08-10 do not have it and back-filling a fact
+   * we do not know would be worse than the gap.
+   *
+   * Its absence is why the refund-window detector could only match a
+   * refund to an order by item and payer — a join that cannot tell
+   * two breached orders from the same buyer for the same item apart,
+   * which made `owed_usdc` a FLOOR rather than a figure. With this
+   * set the join is exact and the number is the number.
+   */
+  order_id?: string;
   payer?: string;
   status: RefundStatus;
   created_at: string;

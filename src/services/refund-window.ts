@@ -69,9 +69,16 @@ export interface WindowBreach {
   hours_late: number;
   completed_at?: string;
   paid_usdc: number;
-  /** A refund row that plausibly covers this order, if one was found. */
+  /** A refund row that covers this order, if one was found. */
   refund_id?: string;
   refund_status?: string;
+  /**
+   * HOW the refund was matched. `order_id` is exact; `item_and_payer`
+   * is the old guess, kept for rows written before refunds carried an
+   * order id, and it cannot tell two breached orders from the same
+   * buyer for the same item apart.
+   */
+  refund_match?: "order_id" | "item_and_payer";
 }
 
 export interface RefundWindowAudit {
@@ -82,15 +89,19 @@ export interface RefundWindowAudit {
   owed_usdc: number;
   scan_capped: boolean;
   /**
-   * THE JOIN IS HEURISTIC AND SAYS SO. `RefundRecord` carries `item`
-   * and `payer` but no `order_id`, so a refund can only be matched to
-   * the order it covers by those two fields. Two breached orders from
-   * the same payer for the same item are indistinguishable here. New
-   * refunds should carry `order_id` (additive, optional); until the
-   * older rows age out this number is a floor on what is owed, never
-   * a ceiling.
+   * THE JOIN, AND HOW MUCH TO TRUST IT. Refunds created from
+   * 2026-08-10 carry `order_id` and match exactly. Older rows do not,
+   * and fall back to item+payer — which cannot tell two breached
+   * orders from the same buyer for the same item apart. While any
+   * breach is still matched that way, `owed_usdc` is a FLOOR on what
+   * is owed rather than an exact figure, and `exact_joins` below says
+   * how much of the answer rests on the guess.
    */
   join_note: string;
+  /** Breaches matched to a refund by order_id rather than by guess. */
+  exact_joins: number;
+  /** Breaches still resting on the item+payer guess. */
+  guessed_joins: number;
   what_this_cannot_see: string[];
 }
 
@@ -117,13 +128,30 @@ export async function auditRefundWindows(
   const orders = await bulkGetJson<OrderRecord>(env.ORDERS, orderKeys.names);
   const refunds = await bulkGetJson<RefundRecord>(env.ORDERS, refundKeys.names);
 
-  // item|payer → the refund that plausibly covers it. Weak on purpose,
-  // and the audit publishes that weakness rather than implying a join
-  // the data cannot support.
-  const refundBy = new Map<string, RefundRecord>();
+  /*
+   * TWO JOINS, AND THE STORE SAYS WHICH ONE IT USED.
+   *
+   * `order_id` is exact and arrived 2026-08-10. Rows written before
+   * that do not carry it, so the old item|payer guess stays as the
+   * fallback — weak on purpose, and published as weak rather than
+   * implying a join the data cannot support. As the old rows age out
+   * this stops being a floor and becomes a figure.
+   */
+  const refundByOrder = new Map<string, RefundRecord>();
+  const refundByGuess = new Map<string, RefundRecord>();
   for (const refund of refunds.values()) {
     if (!refund) continue;
-    refundBy.set(`${refund.item}|${refund.payer ?? ""}`, refund);
+    if (refund.order_id) {
+      /*
+       * A refund that NAMES its order is spoken for. Leaving it in
+       * the guess map too would let a sibling breach — same buyer,
+       * same item — borrow it and disappear from what is owed, which
+       * is the precise failure the order_id was added to end.
+       */
+      refundByOrder.set(refund.order_id, refund);
+      continue;
+    }
+    refundByGuess.set(`${refund.item}|${refund.payer ?? ""}`, refund);
   }
 
   const graceMs = WINDOW_GRACE_MINUTES * 60_000;
@@ -144,8 +172,11 @@ export async function auditRefundWindows(
       order.status !== "completed" && now.getTime() > due + graceMs;
     if (!deliveredLate && !stillOpen) continue;
 
-    const refund = refundBy.get(`${order.item_id}|${order.payer ?? ""}`)
-      ?? refundBy.get(`${order.item_name}|${order.payer ?? ""}`);
+    const exact = refundByOrder.get(order.order_id);
+    const refund =
+      exact
+      ?? refundByGuess.get(`${order.item_id}|${order.payer ?? ""}`)
+      ?? refundByGuess.get(`${order.item_name}|${order.payer ?? ""}`);
 
     breaches.push({
       order_id: order.order_id,
@@ -159,7 +190,13 @@ export async function auditRefundWindows(
       hours_late: hoursBetween(due, deliveredLate ? completed! : now.getTime()),
       ...(order.completed_at ? { completed_at: order.completed_at } : {}),
       paid_usdc: order.paid_usdc,
-      ...(refund ? { refund_id: refund.refund_id, refund_status: refund.status } : {}),
+      ...(refund
+        ? {
+            refund_id: refund.refund_id,
+            refund_status: refund.status,
+            refund_match: exact ? ("order_id" as const) : ("item_and_payer" as const),
+          }
+        : {}),
     });
   }
 
@@ -173,8 +210,13 @@ export async function auditRefundWindows(
     owed_usdc:
       Math.round(owed.reduce((sum, breach) => sum + (breach.paid_usdc || 0), 0) * 1e6) / 1e6,
     scan_capped: orderKeys.truncated || refundKeys.truncated,
+    exact_joins: breaches.filter((b) => b.refund_match === "order_id").length,
+    guessed_joins: breaches.filter((b) => b.refund_match === "item_and_payer")
+      .length,
     join_note:
-      "A refund is matched to an order by item and payer, because RefundRecord carries no order_id. Two breached orders from the same payer for the same item cannot be told apart here, so owed_usdc is a FLOOR on what is owed rather than an exact figure.",
+      breaches.some((b) => b.refund_match === "item_and_payer")
+        ? "At least one refund was matched to its order by item and payer, because it was created before refunds carried an order_id. That join cannot tell two breached orders from the same buyer for the same item apart, so owed_usdc is a FLOOR rather than an exact figure."
+        : "Every matched refund names the order it covers, so owed_usdc is exact rather than a floor.",
     what_this_cannot_see: [
       "Instant items — they have no promised window to miss.",
       "Whether a late delivery was acceptable to the buyer. The promise does not ask; missing the window is the trigger, and delivering eventually does not discharge it.",
