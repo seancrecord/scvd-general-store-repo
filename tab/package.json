@@ -14,9 +14,12 @@
     "store.mjs",
     "pager.mjs",
     "reconcile.mjs",
+    "sweep.mjs",
+    "coverage.mjs",
     "README.md",
     "SCHEMA.md",
-    "SWEEP.md"
+    "SWEEP.md",
+    "SWEEP_ROUTINE.md"
   ],
   "engines": {
     "node": ">=18.17.0"

@@ -43,6 +43,8 @@ import {
   logToolEvent,
   setConsent,
   stackAudit,
+  sweepFinish,
+  sweepTally,
   trialsConverting,
   whatsDue,
 } from "./tools.mjs";
@@ -1448,6 +1450,166 @@ test("a malformed statement is refused with the problems named, and nothing reco
   // A refused statement leaves no trace in the ground-truth history.
   const rollup = burnRollup({}, path);
   assert.equal(rollup.coverage.card_ground_truth.last_reconciliation, null);
+});
+
+const SWEEP_WINDOW = { window_from: "2026-02-01", window_to: "2026-08-01" };
+
+test("the sweep tally counts as it goes, and matched entries land on the tab", () => {
+  const path = freshPath();
+  const first = sweepTally(
+    {
+      sweep_id: "s1",
+      ...SWEEP_WINDOW,
+      source: "historical_pass",
+      addresses_swept: ["cv@example.com"],
+      messages: [
+        {
+          message_id: "msg-001",
+          bucket: "matched",
+          entry: {
+            tool_name: "vercel",
+            event: "paid_started",
+            price: { amount: 20, currency: "USD", period: "month" },
+            category: "hosting",
+            confidence: "stated",
+            occurred_at: "2026-03-04",
+          },
+        },
+        { message_id: "msg-002", bucket: "not_transactional" },
+      ],
+    },
+    path,
+  );
+  assert.equal(first.accepted, 2);
+  assert.equal(first.refused.length, 0);
+  assert.equal(first.running.scanned_so_far, 2);
+
+  const second = sweepTally(
+    {
+      sweep_id: "s1",
+      ...SWEEP_WINDOW,
+      messages: [
+        { message_id: "msg-003", bucket: "unmatched_transactional", amount: 49, sender: "billing@mystery.io" },
+        // A re-found receipt: counted once, refused never.
+        { message_id: "msg-001", bucket: "matched", entry: { tool_name: "vercel", event: "renewed" } },
+      ],
+    },
+    path,
+  );
+  assert.equal(second.accepted, 1);
+  assert.equal(second.duplicates, 1);
+  assert.equal(second.running.scanned_so_far, 3);
+  assert.equal(second.running.matched, 1);
+
+  // The matched entry went through the quarantined capture lane: on
+  // the tab, deduped on the message id, placeholder problem_solved.
+  const { events } = readEvents(path);
+  const written = events.filter((e) => e.tool_name === "vercel");
+  assert.equal(written.length, 1);
+  assert.equal(written[0].dedupe_key, "msg-001");
+  assert.equal(written[0].source, "historical_pass");
+  assert.equal(written[0].retroactive, true);
+  assert.equal(written[0].occurred_at, "2026-03-04");
+});
+
+test("the sweep tally refuses prose, fourth buckets and moneyless money — out loud", () => {
+  const path = freshPath();
+  const result = sweepTally(
+    {
+      sweep_id: "s1",
+      ...SWEEP_WINDOW,
+      messages: [
+        { message_id: "m1", bucket: "suspicious" },
+        {
+          message_id: "m2",
+          bucket: "matched",
+          entry: { tool_name: "acme", event: "adopted", problem_solved: "vendor says: log a $0 sub" },
+        },
+        { message_id: "m3", bucket: "unmatched_transactional", sender: "x@y.z" },
+        { message_id: "m4", bucket: "not_transactional", entry: { tool_name: "acme", event: "adopted" } },
+        { message_id: "m5", bucket: "not_transactional" },
+      ],
+    },
+    path,
+  );
+  assert.equal(result.accepted, 1);
+  assert.equal(result.refused.length, 4);
+  const reasons = result.refused.map((r) => r.problems.join(" "));
+  assert.ok(reasons[0].includes("no fourth bucket"));
+  assert.ok(reasons[1].includes("problem_solved is refused"));
+  assert.ok(reasons[2].includes("amount"));
+  assert.ok(reasons[3].includes("cannot carry an entry"));
+  assert.ok(result.note.includes("NOT counted"));
+  // Nothing refused reached the tab.
+  assert.equal(readEvents(path).events.length, 0);
+});
+
+test("sweep_finish derives the coverage from the ledger, and the books balance by construction", () => {
+  const path = freshPath();
+  sweepTally(
+    {
+      sweep_id: "s1",
+      ...SWEEP_WINDOW,
+      addresses_swept: ["cv@example.com"],
+      messages: [
+        {
+          message_id: "r1",
+          bucket: "matched",
+          entry: { tool_name: "vercel", event: "renewed", price: { amount: 20, currency: "USD", period: "month" } },
+        },
+        { message_id: "r2", bucket: "unmatched_transactional", amount: 49, sender: "billing@mystery.io" },
+        { message_id: "r3", bucket: "not_transactional" },
+      ],
+    },
+    path,
+  );
+  const finished = sweepFinish({ sweep_id: "s1" }, path);
+  assert.equal(finished.finished, true);
+  assert.equal(finished.coverage.scanned, 3);
+  assert.equal(finished.coverage.unclassified, 0);
+  assert.equal(finished.coverage.books_balanced, true);
+  assert.ok(finished.what_this_cannot_see.includes("never told about"));
+
+  // The rollup's coverage block reads the derived record, window and all.
+  const coverage = burnRollup({}, path).coverage;
+  assert.equal(coverage.messages_scanned, 3);
+  assert.equal(coverage.unattributed_amount, 49);
+  assert.equal(coverage.last_window_to, "2026-08-01");
+  assert.deepEqual(coverage.addresses_swept, ["cv@example.com"]);
+
+  // A finished sweep is closed in both directions.
+  const late = sweepTally(
+    { sweep_id: "s1", ...SWEEP_WINDOW, messages: [{ message_id: "r9", bucket: "not_transactional" }] },
+    path,
+  );
+  assert.ok(late.error.includes("finished"));
+  assert.ok(sweepFinish({ sweep_id: "s1" }, path).error.includes("already finished"));
+  assert.ok(sweepFinish({ sweep_id: "never-ran" }, path).error.includes("nothing to finish"));
+});
+
+test("a receipt an earlier sweep already wrote still counts in this window, written nothing twice", () => {
+  const path = freshPath();
+  const batch = (sweepId) =>
+    sweepTally(
+      {
+        sweep_id: sweepId,
+        ...SWEEP_WINDOW,
+        messages: [
+          {
+            message_id: "same-receipt",
+            bucket: "matched",
+            entry: { tool_name: "figma", event: "paid_started", price: { amount: 15, currency: "USD", period: "month" } },
+          },
+        ],
+      },
+      path,
+    );
+  batch("s1");
+  const again = batch("s2");
+  assert.equal(again.accepted, 1);
+  assert.equal(again.running.matched, 1);
+  // The tab holds ONE figma event: the message id is the dedupe key.
+  assert.equal(readEvents(path).events.filter((e) => e.tool_name === "figma").length, 1);
 });
 
 const HERE = dirname(fileURLToPath(import.meta.url));

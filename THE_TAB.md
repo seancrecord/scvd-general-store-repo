@@ -180,7 +180,12 @@ shareable badge that names counts and never vendors.
 - **The mail sweep itself** — an agent routine over a connector the
   agent already holds; the tab needs no mail code, which is the point.
   Owner: CV. **Contract written 2026-08-08: `tab/SWEEP.md`** (v0.6).
-  The routine is still unwritten; what it owes the tab is not.
+  **Routine written 2026-08-10: `tab/SWEEP_ROUTINE.md`**, with the
+  counting obligation moved into machinery — `sweep_tally` counts
+  verdicts as they arrive and writes the matched entries through the
+  capture lane; `sweep_finish` derives the coverage record from the
+  ledger, so the books balance by construction. Still CV's to run
+  against a real inbox, which it never has been.
 - **Card reconciliation** — the `unexplained_charge` analogue of
   `undelivered_sale`, and the only true ground truth for burn.
   Owner: keeper's call on the source.

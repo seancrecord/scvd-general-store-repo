@@ -207,8 +207,11 @@ The refusals are the finding, not the successes.
 
 ## Part 6 — The sweep contract, dry
 
-The mail sweep does not exist, so `tab/SWEEP.md` has never been run
-against anything. Test the **contract** rather than the code:
+The routine and its tally now exist (`SWEEP_ROUTINE.md`,
+`sweep_tally` / `sweep_finish`, 2026-08-10) but have never met a real
+inbox. The dry test below still stands — it tests the **contract**
+rather than the code, and a human who cannot follow the counting
+obligation by hand has found a contract bug no tally can fix:
 
 Take a real inbox window by hand — one week, one address. Classify
 every message into the three buckets. Then call `record_coverage` with

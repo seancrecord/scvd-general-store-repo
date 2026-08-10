@@ -70,7 +70,12 @@ The tab holds no mail code and never will. The sweep is an agent
 routine over a connector the agent already holds, writing through the
 same validated tools as any other caller. Its contract — including
 the counting obligation that keeps the coverage number honest — is
-[SWEEP.md](./SWEEP.md).
+[SWEEP.md](./SWEEP.md); the step-by-step routine an agent executes is
+[SWEEP_ROUTINE.md](./SWEEP_ROUTINE.md). The counting itself is
+machinery, not diligence: `sweep_tally` counts verdicts as they
+arrive and writes the matched entries, and `sweep_finish` derives the
+coverage record from what was actually reported, so the books balance
+by construction.
 
 ## The tools
 
@@ -87,6 +92,8 @@ the counting obligation that keeps the coverage number honest — is
 | `needs_attention` | the drip: what is outstanding, dearest first and capped |
 | `confirm_entry` | a human looked at a swept entry and says it is real — or marks it private |
 | `record_coverage` | the sweep reports what it read and what it could not place ([SWEEP.md](./SWEEP.md)) |
+| `sweep_tally` | the sweep's running count: verdicts in batches, matched entries written, refusals out loud ([SWEEP_ROUTINE.md](./SWEEP_ROUTINE.md)) |
+| `sweep_finish` | close a sweep; its coverage record is derived from the tally, never restated from memory |
 | `reconcile_card_statement` | ground truth, monthly: the bank's CSV against the tab, both directions — writes nothing, every finding is a question |
 | `whats_current` | the builder's history in a category |
 | `contribute_anonymized_delta` | deliberately send one anonymized delta to the scvd pool (consent required, layer 3) |
