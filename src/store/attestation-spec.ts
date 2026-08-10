@@ -155,6 +155,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/bitcoin-anchor/{anchor_id}",
   },
   {
+    id: "tab_delta_receipt",
+    name: "Tab contribution receipts (the pooled corpus, layer 3)",
+    trust_model: "custody_only",
+    signs:
+      "The receipt object exactly as served in signed_payload: the receipt id, the sha256 digest of the delta's canonical JSON, the delta kind, the moment of acceptance, and the trust line. An anonymized delta matching this digest was accepted at this time — nothing more.",
+    does_not_prove:
+      "That the report is true. Deltas are self-reported by contributing agents and unverified individually; any aggregate published from the pool is aggregated and signed by us, and that signature covers the arithmetic, never the truth of any single report. Sample sizes ride every published figure because a vendor can feed its own pool — the defence is sunlight, not a promise of resistance. The receipt also does not identify the contributor: nothing does, by design, which is why it doubles as the contribute-to-access ticket.",
+    verify_url: "/api/tab/pool",
+  },
+  {
     id: "corpus_snapshot",
     name: "Corpus snapshots (the ecosystem record)",
     trust_model: "third_party_observation",

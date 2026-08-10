@@ -11,6 +11,14 @@ This file is the contract. It is written to be handed to whoever runs
 the sweep, and every rule in it exists because breaking it produces a
 number that looks better than the truth.
 
+The executable procedure is [SWEEP_ROUTINE.md](./SWEEP_ROUTINE.md),
+and since 2026-08-10 the counting obligation below is enforced by
+machinery rather than diligence: report every verdict through
+`sweep_tally` as you read, and close with `sweep_finish`, which
+derives the coverage record from the ledger. The contract still
+binds the part no tally can see — mail read and never reported
+shrinks the denominator from outside.
+
 ---
 
 ## What it is for
@@ -145,13 +153,18 @@ not probabilistic.
 2. **Read the window.** Six months backward on the first run; since
    `window_to` of the last coverage record thereafter.
 3. **Classify every message.** One bucket each. Count as you go, not
-   at the end from memory.
-4. **Write the matches** through `capture_tool_event`, dedupe key set
-   to the message id.
-5. **Call `record_coverage`** with `scanned`, `matched`,
-   `not_transactional`, `attributed_amount`, `window_from`,
-   `window_to`, `addresses_swept`, and the `unmatched_transactional`
-   list with amounts and senders.
+   at the end from memory — which since 2026-08-10 means reporting
+   each batch of verdicts through `sweep_tally`: it counts, dedupes
+   on the message id, and writes the matched entries itself through
+   the quarantined capture lane.
+4. **Resubmit anything the tally refused.** Refused verdicts are not
+   counted, and a verdict dropped on the floor is a pre-filter dug
+   from inside.
+5. **Call `sweep_finish`.** The coverage record — `scanned`,
+   `matched`, `not_transactional`, `attributed_amount`, the window,
+   the addresses, the `unmatched_transactional` list — is derived
+   from the ledger, so the books balance by construction.
+   (`record_coverage` still exists for a sweep run entirely by hand.)
 6. **Say what you found**, including the coverage. The burn number
    never ships bare.
 

@@ -30,7 +30,9 @@ import {
   queueDue,
   recordHandover,
 } from "./pager.mjs";
+import { readCoverageHistory, recordCoverage } from "./coverage.mjs";
 import { readCardHistory, reconcileCardStatement } from "./reconcile.mjs";
+import { sweepFinish, sweepTally } from "./sweep.mjs";
 
 export { reconcileCardStatement } from "./reconcile.mjs";
 
@@ -128,119 +130,13 @@ export function captureToolEvent(input, path = defaultTabPath()) {
   return response;
 }
 
-/**
- * THE COVERAGE LEDGER — how the tab measures what it CANNOT see.
- *
- * The sweep reports back: which addresses it read, how far it got,
- * and — the load-bearing one — money-shaped mail it could not
- * attribute to any tool. That last number is a direct measurement of
- * the blind spot, requiring no bank and no knowledge of what was
- * missed: if fourteen letters carried a price and matched nothing,
- * the gap is fourteen, not a shrug.
- *
- * Stored as a plain KEY, not an event: it describes the INSTRUMENT,
- * not the builder's commerce, and mixing the two would let a broken
- * sweep look like a cancelled tool.
+/*
+ * THE COVERAGE LEDGER moved to coverage.mjs when the sweep tally
+ * arrived — the record and its reader are needed on both sides.
+ * Re-exported here so nothing calling it moved.
  */
-export function recordCoverage(input, path = defaultTabPath()) {
-  /**
-   * APPENDED, NOT OVERWRITTEN (red team F2). The first cut kept a
-   * single slot — a gauge with no history, which cannot answer the
-   * only question the keeper asked of it: is the number moving toward
-   * 2%? Coverage is a time series or it is decoration.
-   */
-  const record = {
-    at: new Date().toISOString(),
-    addresses_swept: Array.isArray(input?.addresses_swept)
-      ? input.addresses_swept
-      : [],
-    /**
-     * The sweep's WINDOW, which F1 proved load-bearing: unattributed
-     * money means nothing without the span it was seen over.
-     */
-    window_from: input?.window_from ?? null,
-    window_to: input?.window_to ?? new Date().toISOString(),
-    matched: Number.isFinite(input?.matched) ? input.matched : 0,
-    /** Attributed spend IN THIS WINDOW, for a like-for-like ratio. */
-    attributed_amount: Number(input?.attributed_amount) || 0,
-    unmatched_transactional: Array.isArray(input?.unmatched_transactional)
-      ? input.unmatched_transactional.map((row) => ({
-          amount: Number(row?.amount) || 0,
-          currency: String(row?.currency ?? "USD"),
-          sender: String(row?.sender ?? "").slice(0, 120),
-        }))
-      : [],
-    /**
-     * THE DENOMINATOR, and the reason this pair exists at all.
-     *
-     * A sweep that filters before it counts reports a flattering
-     * gap: drop the unparseable mail on the floor, and
-     * `variability_pct` measures the extractor's confidence rather
-     * than the tab's coverage. The counting obligation was a
-     * paragraph in a doc, which is another way of saying it was
-     * nothing.
-     *
-     * So it becomes arithmetic the sweep has to satisfy:
-     *
-     *   scanned = matched + unmatched_transactional + not_transactional
-     *
-     * Anything left over is `unclassified` — mail the sweep LOOKED AT
-     * and never placed in any bucket. It is published rather than
-     * absorbed, because that residue is exactly the pre-filter hole.
-     * A sweep that declines to report `scanned` gets null, and the
-     * refusal to count is itself the finding.
-     */
-    scanned: Number.isFinite(input?.scanned) ? input.scanned : null,
-    not_transactional: Number.isFinite(input?.not_transactional)
-      ? input.not_transactional
-      : 0,
-  };
-  record.unclassified =
-    record.scanned === null
-      ? null
-      : Math.max(
-          0,
-          record.scanned -
-            record.matched -
-            record.unmatched_transactional.length -
-            record.not_transactional,
-        );
-  const coveragePath = sidecarPath(path, ".coverage.jsonl");
-  mkdirSync(dirname(coveragePath), { recursive: true }); // F4: fresh install
-  appendFileSync(coveragePath, `${JSON.stringify(record)}\n`, "utf8");
-  return {
-    recorded: true,
-    unattributed_count: record.unmatched_transactional.length,
-    scanned: record.scanned,
-    unclassified: record.unclassified,
-    books_balanced: record.scanned !== null && record.unclassified === 0,
-    note:
-      record.scanned === null
-        ? "Recorded, but the sweep did not say how many messages it looked at — so the gap it reports cannot be checked against anything. Pass `scanned` and `not_transactional`: every message the sweep read belongs in exactly one bucket, and a denominator nobody states is a denominator nobody can audit."
-        : record.unclassified > 0
-          ? `Recorded. ${record.unclassified} message${record.unclassified === 1 ? "" : "s"} were read and never placed in any bucket — that residue is published, not absorbed, because it is exactly where a pre-filter hides.`
-          : "Recorded and the books balance: every message the sweep read is accounted for in one bucket. Coverage is appended beside the tab, never mixed into it, so the gap can be watched over time.",
-  };
-}
-
-/** Every sweep ever reported, oldest first. */
-function readCoverageHistory(path) {
-  try {
-    return readFileSync(sidecarPath(path, ".coverage.jsonl"), "utf8")
-      .split("\n")
-      .filter((line) => line.trim() !== "")
-      .map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
-  } catch {
-    return [];
-  }
-}
+export { recordCoverage } from "./coverage.mjs";
+export { sweepFinish, sweepTally } from "./sweep.mjs";
 
 /**
  * THE VARIABILITY WINDOW, in units that divide (red team F1).
@@ -476,6 +372,8 @@ function coverageBlock(current, path) {
     sources: [...new Set(current.active.flatMap((t) => t.source_list ?? []))].sort(),
     addresses_swept: swept?.addresses_swept ?? [],
     last_sweep: swept?.at ?? null,
+    /** Where the NEXT incremental sweep's window starts (SWEEP.md §order). */
+    last_window_to: swept?.window_to ?? null,
     last_sweep_age_days: sweepAgeDays,
     sweep_stale:
       sweepAgeDays === null ? "never run" : sweepAgeDays > 7 ? "yes" : "no",
@@ -921,12 +819,20 @@ export function contributeDelta(input, path = defaultTabPath()) {
       .filter((key) => input[key] !== undefined)
       .map((key) => [key, input[key]]),
   );
-  const endpoint = process.env.TAB_AGGREGATION_URL;
+  /**
+   * The endpoint went live 2026-08-10: POST /api/tab/delta on the
+   * store, free, returning a signed custody receipt. Overridable for
+   * tests and self-hosters; set EMPTY to switch sending off entirely.
+   * The gates that matter are unchanged — consent on record, a
+   * deliberate call, and the allowlist projection above.
+   */
+  const endpoint =
+    process.env.TAB_AGGREGATION_URL ?? "https://scvd.store/api/tab/delta";
   if (!endpoint) {
     return {
       accepted: false,
       error:
-        "The aggregation endpoint is not live yet (layer 3). The delta validated cleanly and nothing was sent — set TAB_AGGREGATION_URL when the endpoint exists.",
+        "Delta sending is switched off (TAB_AGGREGATION_URL is set empty). The delta validated cleanly and nothing was sent.",
       would_send: delta,
     };
   }
@@ -1130,6 +1036,81 @@ export const TOOL_DEFS = [
             },
           },
         },
+      },
+    },
+  },
+  {
+    name: "sweep_tally",
+    description:
+      "THE SWEEP'S RUNNING COUNT — use this while executing SWEEP.md instead of counting in your head. Report every message you read, in batches, each with its message_id and exactly one bucket: matched (include the entry; it is written to the tab for you, deduped on the message id), unmatched_transactional (include amount and sender), or not_transactional. Refused verdicts are returned with reasons and NOT counted — fix and resubmit them, never drop them. Duplicates are counted once. There is no fourth bucket on purpose.",
+    handler: sweepTally,
+    inputSchema: {
+      type: "object",
+      required: ["sweep_id", "window_from", "window_to", "messages"],
+      properties: {
+        sweep_id: {
+          type: "string",
+          description: "your name for this sweep, same on every batch (e.g. sweep_2026-08)",
+        },
+        window_from: { type: "string", description: "ISO date the window opens" },
+        window_to: { type: "string", description: "ISO date the window closes" },
+        source: {
+          type: "string",
+          enum: ["mail_sweep", "historical_pass"],
+          description: "historical_pass on the six-month backward run; mail_sweep forward",
+        },
+        addresses_swept: { type: "array", items: { type: "string" } },
+        messages: {
+          type: "array",
+          description: "one verdict per message read, up to 200 per call",
+          items: {
+            type: "object",
+            required: ["message_id", "bucket"],
+            properties: {
+              message_id: { type: "string", description: "the letter's own id — the dedupe key" },
+              bucket: {
+                type: "string",
+                enum: ["matched", "unmatched_transactional", "not_transactional"],
+              },
+              entry: {
+                type: "object",
+                description:
+                  "matched only: closed vocabulary, numbers, dates. problem_solved, captured_text and notes are refused — the tab writes '(not said yet)' itself.",
+                properties: {
+                  tool_name: { type: "string", description: "sender domain, normalized lowercase" },
+                  event: {
+                    type: "string",
+                    enum: ["trial_started", "paid_started", "renewed", "canceled", "price_changed", "adopted"],
+                  },
+                  price: {
+                    type: "object",
+                    description: "the STATED amount and period — the annual/monthly slip is a 12x error",
+                  },
+                  trial_ends: { type: "string" },
+                  category: { type: "string" },
+                  confidence: { type: "string", enum: ["stated", "inferred"] },
+                  occurred_at: { type: "string", description: "the letter's date — recorded as a retroactive claim" },
+                },
+              },
+              amount: { type: "number", description: "unmatched_transactional only: the money the letter carried" },
+              currency: { type: "string" },
+              sender: { type: "string" },
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    name: "sweep_finish",
+    description:
+      "Close a sweep and file its coverage record, DERIVED from the tally: scanned, matched, the unmatched list, attributed amount, window and addresses all come off the ledger of what you actually reported, so the books balance by construction and nobody restates a number from memory. A finished sweep refuses further batches — a new window is a new sweep_id.",
+    handler: sweepFinish,
+    inputSchema: {
+      type: "object",
+      required: ["sweep_id"],
+      properties: {
+        sweep_id: { type: "string" },
       },
     },
   },

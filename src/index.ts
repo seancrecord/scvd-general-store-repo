@@ -8,6 +8,7 @@ import {
   bellRoutes,
   buyRoutes,
   commissionRoutes,
+  tabPoolRoutes,
   catalogRoutes,
   directoryRoutes,
   trainRoutes,
@@ -255,6 +256,7 @@ app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
 app.route("/", commissionRoutes);
+app.route("/", tabPoolRoutes);
 app.route("/", anchorRoutes);
 app.route("/", serviceAuditRoutes);
 app.route("/", reconciliationRoutes);

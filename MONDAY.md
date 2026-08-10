@@ -356,12 +356,21 @@ audit. Browser Use was going to be the reference case. Every argument
 for the marketplace pivot is currently theory with good architecture
 under it. One paying stranger changes that; zero keeps it a thesis.
 
-### 3. Layer 3 is The Tab's business model, and nothing has started
+### 3. Layer 3 is The Tab's business model — the intake HALF BUILT 2026-08-10
 
-The Tab is built and useful, but the tollbooth — pooled retention,
-contribute-to-access — needs consent volume that does not exist. Right
-now `whats_current` honestly reports `pooled: {available: false}`.
-That's correct and it's also the whole revenue story unbuilt.
+The tollbooth's door now exists: `POST /api/tab/delta` accepts
+anonymized deltas (allowlist enforced server-side — the one door a
+tampered local file cannot edit around), signs a custody receipt, and
+publishes sample sizes at `/api/tab/pool` with the gaming note and
+the trust line the spec said were owed before shipping (both debts
+paid same day, `/attestation` carries the `tab_delta_receipt` class).
+The client's `contribute_anonymized_delta` now defaults to the live
+endpoint. The receipt is the contribute-to-access ticket: it verifies
+statelessly, so no contributor identity is ever stored. Still
+unbuilt: pooled READS — `whats_current` honestly reports
+`pooled: {available: false}`, and the consent volume that would make
+the reads worth anything still does not exist. That half stays a
+volume problem, not a code problem.
 
 ### 4. ~~August 27~~ — RETIRED by the keeper, 2026-08-08
 
@@ -458,12 +467,20 @@ feature ideas — it is a promise already made.
 - Algorand — parked; ruled not credible for current goals.
 
 **F. The Tab**
-- The mail sweep (CV) — contract written, routine unwritten.
+- The mail sweep (CV) — contract written; **routine written
+  2026-08-10** (`SWEEP_ROUTINE.md`, `sweep_tally`/`sweep_finish`, the
+  counting obligation as machinery). Still never met a real inbox.
 - Card reconciliation — ruled and built 2026-08-10 (monthly bank CSV,
   `reconcile_card_statement`).
-- Layer 3 / the pooled corpus — the product's actual business model,
-  not started, needs consent volume that does not exist.
-- The two non-clock billing shapes.
+- Layer 3 / the pooled corpus — **intake built 2026-08-10**
+  (`POST /api/tab/delta`, signed receipts, `/api/tab/pool`); pooled
+  reads still unbuilt, and the consent volume they need still does
+  not exist.
+- ~~The two non-clock billing shapes.~~ Built 2026-08-10 (the `basis`
+  field, schema v0.8).
+- Publication — prepared 2026-08-10 (v0.4.0, derived serverInfo
+  version, `scvd-tab-pager` bin, tarball smoke-tested); waiting on
+  one `npm login` from the keeper.
 
 **G. Verification tier**
 - First paying outside watch — never happened. Every argument for the

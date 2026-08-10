@@ -14,6 +14,7 @@ Three files, and the separation is deliberate:
 | `tab.jsonl.coverage.jsonl` | what the sweep saw and missed | describes the INSTRUMENT, not the commerce — mixing them would let a broken sweep look like a cancelled tool |
 | `tab.jsonl.pages.jsonl` | what the pager raised and whether anybody said it | same reason, and it measures us rather than the builder |
 | `tab.jsonl.card.jsonl` | reconciliations against the bank's own statement | ground truth about the record, not the record — and a reconciliation must never quietly become an entry |
+| `tab.jsonl.sweep.jsonl` | the sweep tally's running ledger of verdicts | the counting obligation as machinery — the coverage record is derived from this, never restated from memory |
 
 Sidecar names are rebuilt from the tab's own resolved directory and a
 sanitized basename (`sidecarPath`), never spliced onto the raw path
@@ -197,6 +198,18 @@ pair `scanned` / `not_transactional`. `unclassified` is derived:
 than absorbed, because that residue is where a pre-filter hides. A
 record with no `scanned` reads as **unaudited**. Contract:
 `tab/SWEEP.md`.
+
+**`.sweep.jsonl`** — the tally's own ledger (`sweep_tally` /
+`sweep_finish`): one `batch` record per accepted batch of verdicts,
+one `close` record when the sweep finishes. Per-sweep state is
+derived by replay like everything else. Matched verdicts are written
+to the tab through the capture lane as they arrive (dedupe key = the
+message id); the finish derives every number `record_coverage` asks
+for from this file, so `scanned` is the count of verdicts accepted
+and `matched` is the count of entries the tab took — the books
+balance by construction. What no ledger can count: mail read and
+never reported here. That limit is the sweep's to keep, and the
+finish names it every time. Routine: `tab/SWEEP_ROUTINE.md`.
 
 **`.card.jsonl`** — one appended record per card reconciliation
 (`reconcile_card_statement`), the ground-truth counterpart to the

@@ -1,4 +1,11 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+#!/usr/bin/env node
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+} from "node:fs";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
@@ -383,7 +390,25 @@ export function runPager(argv = []) {
   return lines.join("\n");
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+/*
+ * The direct-run check resolves symlinks BEFORE comparing, because an
+ * npm bin install IS a symlink: argv[1] arrives as the link in
+ * node_modules/.bin while import.meta.url is the real file, and a
+ * bare comparison concludes "imported, not run" — a pager that
+ * silently prints nothing forever, which is the one failure mode a
+ * warning system cannot have.
+ */
+function invokedDirectly() {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(entry)).href;
+  } catch {
+    return false;
+  }
+}
+
+if (invokedDirectly()) {
   const out = runPager(process.argv.slice(2));
   if (out !== "") process.stdout.write(`${out}\n`);
 }
