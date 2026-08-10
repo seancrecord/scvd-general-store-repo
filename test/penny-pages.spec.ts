@@ -1,8 +1,13 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
+import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 import { isRecord } from "@/types";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import {
+  installFacilitatorMock,
+  TEST_TRANSACTION,
+  type FacilitatorMockState,
+} from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -16,8 +21,10 @@ import {
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
 
+let facilitator: FacilitatorMockState;
+
 beforeAll(() => {
-  installFacilitatorMock();
+  facilitator = installFacilitatorMock();
 });
 
 async function json(response: Response): Promise<Record<string, unknown>> {
@@ -76,6 +83,40 @@ describe("Almanac penny pages", () => {
     const page = await paid.text();
     expect(page).toContain("Notes from a Tuesday in Oak City");
     expect(page).toContain("2026-07-07");
+  });
+
+  it("records the delivered settlement, so the bank walk knows the money bought a page", async () => {
+    /**
+     * The reconciliation false positive: penny pages mint no
+     * certificate, and the chain walk used to read certificates only —
+     * so a delivered Almanac sale paged the keeper as
+     * possibly-undelivered money. The gate now writes a
+     * delivered-settlement row at the same 2xx seam that closes the
+     * delivery intent, and knownSettlementHashes unions it.
+     */
+    const rowKey = KV_KEYS.settledDelivery(TEST_TRANSACTION.toLowerCase());
+    await testEnv.COUNTERS.delete(rowKey);
+
+    const paid = await payFor(`${BASE}/almanac/notes-from-a-tuesday-in-oak-city`);
+    expect(paid.status).toBe(200);
+    expect(await testEnv.COUNTERS.get(rowKey)).not.toBeNull();
+  });
+
+  it("a REFUSED settle records nothing — the row is proof of delivery, not of attempt", async () => {
+    // Written at settle time, the row would blind the walk to exactly
+    // the case it exists for: money taken, nothing delivered.
+    const rowKey = KV_KEYS.settledDelivery(TEST_TRANSACTION.toLowerCase());
+    await testEnv.COUNTERS.delete(rowKey);
+    facilitator.settleShouldFail = true;
+    try {
+      const refused = await payFor(
+        `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`,
+      );
+      expect(refused.status).toBeGreaterThanOrEqual(400);
+      expect(await testEnv.COUNTERS.get(rowKey)).toBeNull();
+    } finally {
+      facilitator.settleShouldFail = false;
+    }
   });
 });
 

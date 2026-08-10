@@ -239,6 +239,20 @@ export const KV_KEYS = {
    */
   reconcileCursor: "reconcile_cursor",
   /**
+   * A settled sale whose goods went out WITHOUT minting a certificate
+   * — the penny pages (Almanac, Gazette issues, Zodiac archive). The
+   * chain walk answers "is there an artifact for this money" by
+   * reading certificates, so a delivered penny sale used to page the
+   * keeper as possibly-undelivered money. These rows are the penny
+   * shelf's counterpart of the certificate: written at DELIVERY (the
+   * 2xx with the goods in it), never at settle time, so the walk can
+   * still catch money that moved and bought nothing. The hash rides
+   * in the key; TTL-bounded because the walk only ever needs a row
+   * while its block can still come up in a pass.
+   */
+  settledDelivery: (txLower: string): string => `settled_delivery:${txLower}`,
+  settledDeliveryPrefix: "settled_delivery:",
+  /**
    * Block ranges the Base walk moved PAST without reading (problem
    * ledger #22): when the cursor falls more than RECONCILE_MAX_SPAN
    * behind the head, the clamp discards the gap — and the walk only
