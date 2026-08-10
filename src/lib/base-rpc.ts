@@ -2,15 +2,18 @@ import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
 
 /**
- * A very small Base JSON-RPC reader. Two calls, no client library, no
- * retries, no cache.
+ * A very small Base JSON-RPC reader. No client library, no cache.
  *
- * The retry-free part is deliberate and is the product's whole shape:
- * a settlement attestation observes a MOMENT. Retrying until the
- * answer improves would turn an observation into a poll, and a poll
- * into an implied promise that we waited for the right answer. If the
- * chain says NOT_FOUND at the instant we looked, that is the honest
- * finding and it is what gets signed.
+ * NOT RETRY-FREE, AND THE DISTINCTION IS THE WHOLE POINT. A settlement
+ * attestation observes a MOMENT: re-asking the chain until the answer
+ * improves would turn an observation into a poll, and a poll into an
+ * implied promise that we waited for the right answer. So a real
+ * answer — including `result: null`, the chain saying it has never
+ * heard of the hash — is returned the first time, always, and is never
+ * re-asked. That rule is intact.
+ *
+ * A PROVIDER THAT DOES NOT ANSWER AT ALL is a different thing, and
+ * conflating the two cost real money. See the retry block below.
  */
 
 /** USDC on Base. The only asset this store prices in. */
@@ -66,25 +69,82 @@ function rpcUrl(env: Env): string {
     : DEFAULT_RPC;
 }
 
+/**
+ * TRANSPORT RETRIES, AND WHY THEY DO NOT BREAK THE "NO RETRY" RULE.
+ *
+ * attestation.ts states the store's rule plainly: "no polling, no
+ * retry — retrying until the answer improves would turn an observation
+ * into a poll, and a poll into an implied promise that we waited for
+ * the right answer." That rule is about SEMANTICS and it stands.
+ *
+ * This is a different thing. A `result: null` is the chain answering
+ * "no such transaction" — a real answer, returned immediately, NEVER
+ * retried, because retrying it is exactly what the rule forbids. What
+ * is retried here is the provider failing to answer at all: a 429, a
+ * 5xx, a dropped socket. That is not asking the chain a second time.
+ * It is getting the answer a first time.
+ *
+ * WHY IT MATTERS MORE THAN IT LOOKS. Four items read the chain AFTER
+ * the money has settled and BEFORE the certificate is minted —
+ * settlement_attestation, attestation_bundle, service_audit and
+ * settlement_reconciliation. A throw there is money taken with no
+ * goods out, and production runs against the PUBLIC Base RPC, which
+ * rate-limits. That combination fired repeatedly in August 2026: the
+ * same buyer, minutes apart, same rail — small_blessing delivered
+ * (no chain read) and settlement_attestation dropped (two chain
+ * reads). Per-item, not per-buyer and not per-chain, which is exactly
+ * the shape of this dependency.
+ */
+const RPC_ATTEMPTS = 3;
+const RPC_BACKOFF_MS = [150, 450];
+
+async function withTransportRetries<T>(
+  label: string,
+  env: Env,
+  attemptOnce: () => Promise<T>,
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < RPC_ATTEMPTS; attempt += 1) {
+    try {
+      return await attemptOnce();
+    } catch (error) {
+      lastError = error;
+      const wait = RPC_BACKOFF_MS[attempt];
+      if (wait === undefined) break;
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+  throw lastError instanceof Error
+    ? new Error(
+        `${lastError.message} (after ${RPC_ATTEMPTS} attempts against ${rpcUrl(env)})`,
+      )
+    : new Error(`Base RPC ${label} failed after ${RPC_ATTEMPTS} attempts`);
+}
+
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
-  const response = await fetch(rpcUrl(env), {
-    method: "POST",
-    headers: outboundHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  return withTransportRetries(method, env, async () => {
+    const response = await fetch(rpcUrl(env), {
+      method: "POST",
+      headers: outboundHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    });
+    if (!response.ok) {
+      throw new Error(`Base RPC ${method} answered ${response.status}`);
+    }
+    const body: unknown = await response.json();
+    if (
+      typeof body !== "object" ||
+      body === null ||
+      !("result" in body) ||
+      (body as { error?: unknown }).error
+    ) {
+      throw new Error(`Base RPC ${method} returned no result`);
+    }
+    // A well-formed answer, INCLUDING result: null. Returned as-is,
+    // first time, every time. This is the line the semantic rule
+    // protects and nothing above it may re-ask.
+    return (body as { result: T }).result;
   });
-  if (!response.ok) {
-    throw new Error(`Base RPC ${method} answered ${response.status}`);
-  }
-  const body: unknown = await response.json();
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("result" in body) ||
-    (body as { error?: unknown }).error
-  ) {
-    throw new Error(`Base RPC ${method} returned no result`);
-  }
-  return (body as { result: T }).result;
 }
 
 /** null when the chain has never heard of the hash. */
@@ -118,22 +178,34 @@ export async function getReceiptsBatch(
   if (txHashes.length === 0) {
     return receipts;
   }
-  const response = await fetch(rpcUrl(env), {
-    method: "POST",
-    headers: outboundHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify(
-      txHashes.map((txHash, index) => ({
-        jsonrpc: "2.0",
-        id: index,
-        method: "eth_getTransactionReceipt",
-        params: [txHash],
-      })),
-    ),
-  });
-  if (!response.ok) {
-    throw new Error(`Base RPC batch answered ${response.status}`);
-  }
-  const body: unknown = await response.json();
+  /*
+   * The sheaf reads the chain after money has settled too, so the
+   * batch gets the same transport retries the single reader does. A
+   * 429 on the first attempt used to end an attestation_bundle
+   * purchase with the money taken and nothing delivered.
+   */
+  const body = await withTransportRetries(
+    `batch of ${txHashes.length}`,
+    env,
+    async () => {
+      const response = await fetch(rpcUrl(env), {
+        method: "POST",
+        headers: outboundHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(
+          txHashes.map((txHash, index) => ({
+            jsonrpc: "2.0",
+            id: index,
+            method: "eth_getTransactionReceipt",
+            params: [txHash],
+          })),
+        ),
+      });
+      if (!response.ok) {
+        throw new Error(`Base RPC batch answered ${response.status}`);
+      }
+      return (await response.json()) as unknown;
+    },
+  );
   if (!Array.isArray(body)) {
     for (const txHash of txHashes) {
       receipts.set(txHash, await getReceipt(env, txHash));
