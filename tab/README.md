@@ -5,12 +5,25 @@ a trial converts — so you never pay for software you forgot about.
 
 An MCP server from [scvd.store](https://scvd.store). Local JSONL,
 append-only, zero dependencies. The full specification is
-[THE_TAB.md](../THE_TAB.md) at the repo root; the schema contract is
-[SCHEMA.md](./SCHEMA.md).
+[THE_TAB.md](https://github.com/seancrecord/scvd-general-store-repo/blob/main/THE_TAB.md)
+at the repo root; the schema contract is [SCHEMA.md](./SCHEMA.md).
 
 ## Install
 
-One config line, any MCP client:
+One config block, any MCP client:
+
+```json
+{
+  "mcpServers": {
+    "scvd-tab": {
+      "command": "npx",
+      "args": ["-y", "scvd-tab"]
+    }
+  }
+}
+```
+
+Or from a clone of the repo, no npm involved:
 
 ```json
 {
@@ -35,8 +48,10 @@ pager runs from outside:
 
 ```
 # every morning at 9 — prints nothing when nothing is due
-0 9 * * *  cd /path/to/repo && npm run --silent tab:pager
+0 9 * * *  npx -y scvd-tab-pager
 ```
+
+Or from a clone: `cd /path/to/repo && npm run --silent tab:pager`.
 
 Without a cron the clock still runs, on any tool call: the next time
 the agent touches the tab for any reason, the open pages ride back

@@ -1,10 +1,11 @@
 {
   "name": "scvd-tab",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for — trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliberate, consented contribution.",
   "type": "module",
   "bin": {
-    "scvd-tab": "./server.mjs"
+    "scvd-tab": "./server.mjs",
+    "scvd-tab-pager": "./pager.mjs"
   },
   "main": "./tools.mjs",
   "files": [
@@ -14,7 +15,8 @@
     "pager.mjs",
     "reconcile.mjs",
     "README.md",
-    "SCHEMA.md"
+    "SCHEMA.md",
+    "SWEEP.md"
   ],
   "engines": {
     "node": ">=18.17.0"
@@ -29,6 +31,11 @@
     "signup-friction",
     "agent-readiness"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "directory": "tab"
+  },
   "license": "MIT",
   "author": "scvd.store",
   "homepage": "https://scvd.store"

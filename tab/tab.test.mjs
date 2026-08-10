@@ -1,8 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { appendFileSync, mkdtempSync, readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import {
+  appendFileSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   appendEvent,
   BASIS,
@@ -1441,4 +1448,59 @@ test("a malformed statement is refused with the problems named, and nothing reco
   // A refused statement leaves no trace in the ground-truth history.
   const rollup = burnRollup({}, path);
   assert.equal(rollup.coverage.card_ground_truth.last_reconciliation, null);
+});
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+test("the handshake's version is the package's version, never hand-typed", () => {
+  /**
+   * The drift this guards actually shipped: serverInfo said 0.2.0
+   * while package.json said 0.3.0, and the first outside tester
+   * reported the wrong version back. Rule 1: derive it or refuse.
+   */
+  const packaged = JSON.parse(
+    readFileSync(join(HERE, "package.json"), "utf8"),
+  ).version;
+  const server = spawnSync(
+    process.execPath,
+    [join(HERE, "server.mjs"), "--path", freshPath()],
+    {
+      input: `${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} })}\n`,
+      encoding: "utf8",
+      timeout: 10_000,
+    },
+  );
+  const reply = JSON.parse(server.stdout.trim().split("\n")[0]);
+  assert.equal(reply.result.serverInfo.version, packaged);
+});
+
+test("the pager still runs when invoked through a symlink — the npm bin shape", () => {
+  /**
+   * An npm bin install IS a symlink in node_modules/.bin. A direct-run
+   * guard that compares argv[1] verbatim against import.meta.url
+   * concludes "imported, not run" and prints NOTHING, forever, from
+   * cron — the exact failure a warning system cannot have. So the
+   * test invokes the pager the way npm does.
+   */
+  const path = freshPath();
+  logToolEvent(
+    {
+      ...BASE,
+      event: "trial_started",
+      trial_ends: soon(2),
+      price: { amount: 30, currency: "USD", period: "month" },
+    },
+    path,
+  );
+  const link = join(mkdtempSync(join(tmpdir(), "tab-bin-")), "scvd-tab-pager");
+  symlinkSync(join(HERE, "pager.mjs"), link);
+  const run = spawnSync(process.execPath, [link, "--path", path], {
+    encoding: "utf8",
+    timeout: 10_000,
+  });
+  assert.equal(run.status, 0);
+  assert.ok(
+    run.stdout.includes("ahrefs"),
+    `expected the due trial on stdout, got: ${JSON.stringify(run.stdout)}`,
+  );
 });

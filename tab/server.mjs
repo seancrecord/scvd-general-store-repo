@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { attachPending, TOOL_DEFS } from "./tools.mjs";
 import { defaultTabPath } from "./store.mjs";
@@ -18,7 +19,15 @@ import { defaultTabPath } from "./store.mjs";
  * writers; a human reads it whenever they like — it's theirs.
  */
 
-const VERSION = "0.3.0";
+/**
+ * Read from package.json, never hand-typed: the handshake shipped
+ * saying 0.2.0 while the package said 0.3.0, which is exactly the
+ * drift AT_SCALE rule 1 exists for. npm always includes package.json
+ * in the tarball, so this file is guaranteed to be there.
+ */
+const VERSION = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
+).version;
 
 function tabPath() {
   const index = process.argv.indexOf("--path");
