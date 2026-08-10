@@ -3,6 +3,7 @@ import { runChecks } from "@/services/preflight";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
+import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
 import type { Env } from "@/types";
 
 /**
@@ -114,6 +115,13 @@ export interface WardRound {
    * never as 100% coverage.
    */
   population?: PopulationCensus;
+  /**
+   * The directories the round knows exist and could not read, each
+   * with the reason (2026-08-10, the widening ruling). The roster is
+   * only uniform if its gaps are published on the same artifact as
+   * its findings. Absent on pre-widening rounds.
+   */
+  directories_unread?: { source: string; why: string }[];
   hosts: WardHostResult[];
 }
 
@@ -416,6 +424,18 @@ export async function runWardRound(env: Env): Promise<WardRound> {
    * sellers on that feed and hosts on discovery, which is the honest
    * reading of what each feed actually enumerates.
    */
+  /**
+   * THE WIDENING (2026-08-10, the keeper's ruling: every public
+   * directory, uniform, no favourites). The fuchss provider directory
+   * is the largest free full enumeration in the ecosystem (~10k
+   * hosts), and it joins as POPULATION ONLY: it names hosts, not
+   * resource URLs, and the leaderboard already taught this round what
+   * probing a homepage for a 402 manufactures. Its hosts widen the
+   * denominator; the probe list is untouched. The directories that
+   * cannot be read ride the round beside it, with reasons — see
+   * UNREAD_DIRECTORIES for why each one is named instead of read.
+   */
+  const fuchssHosts = await readFuchssProviders(ownHost);
   const sources: SourceResult[] = [
     {
       source: "discovery",
@@ -425,6 +445,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
       source: "leaderboard",
       hosts: leaderboard ? [...leaderboard.byHost.keys()] : null,
     },
+    { source: "fuchss", hosts: fuchssHosts },
   ];
   // The probe results are the expensive part of this round; a census
   // that cannot write must not take them down with it.
@@ -440,6 +461,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     leaderboard_window: leaderboard ? leaderboard.window : null,
     our_leaderboard_rank: leaderboard ? leaderboard.ourRank : null,
     ...(population ? { population } : {}),
+    directories_unread: [...UNREAD_DIRECTORIES],
     hosts: results,
   };
   const previous = await latestWardRound(env);

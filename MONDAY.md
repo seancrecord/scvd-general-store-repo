@@ -73,7 +73,21 @@ an entry. No bank code, same law as the mail sweep.
 targeting, no picking favourites. *If it is on a public list, we watch
 it.* This also answers the Browser Use question without ever having to
 ask it about Browser Use specifically, which was the point.
-**Recorded, not built.**
+**BUILT 2026-08-10** — the fuchss provider directory
+(`x402.fuchss.app`, the largest free full enumeration anywhere, ~10k
+hosts over ~27 bucket pages) joins the census as a population source:
+it widens the denominator, never the probe list, because a provider
+row is a homepage and the leaderboard already taught the round what
+probing a homepage manufactures. A partial read (one bucket page
+failing) is unread, per the population layer's founding law. The two
+directories that gate enumeration behind payment — 402index.io (L402
+CSV) and x402scan.com (paid API) — are NAMED on every round as
+`directories_unread`, with reasons, both dissolving when the wallet
+law is ruled. The census event lists are capped at 250 names with
+exact `_count` fields beside them, so corpus snapshots stay
+weekly-and-small and the KV→R2 graduation trigger deliberately does
+NOT fire — the full enumeration lives in the register, which was
+never the snapshot.
 
 **7. Commission Desk: `the_collab` first, and public replies on
 declined requests.** Transparency is house style. The keeper added
@@ -243,11 +257,12 @@ the tab says so.
 ground-truth counterpart, `card_variability_pct`, in the coverage
 block.
 
-**The ward's population source.** Whether Browser Use is already in
+**The ward's population source.** ~~Whether Browser Use is already in
 the walked universe decides whether their observation is already
-happening or whether the ward needs to widen. I couldn't check —
-network policy here blocks `api.cdp.coinbase.com`. Widening is the
-only move that stays uniform; adding one name is targeting.
+happening or whether the ward needs to widen.~~ Ruled (C7) and built
+2026-08-10: the ward widened to every public directory it can read
+freely, which answers the Browser Use question without ever asking it
+by name — the uniform move, as intended.
 
 **Polygon.** Still backlogged, still queued.
 

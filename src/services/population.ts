@@ -95,11 +95,26 @@ export interface PopulationCensus {
   sources_failed: string[];
   /** Hosts kept alive on the register because their source went dark. */
   carried_forward: number;
+  /**
+   * NAME LISTS ARE CAPPED, COUNTS ARE EXACT. The census rides every
+   * corpus snapshot verbatim, and the snapshot's own graduation
+   * trigger is "when snapshots stop being weekly-and-small". The day
+   * the ward widened to a ten-thousand-host directory (2026-08-10),
+   * the first census would have written every one of them into
+   * `appeared` — one round's event list becoming a permanent
+   * megabyte in an append-only chain. So the lists carry the first
+   * EVENT_LIST_CAP names and the `_count` fields carry the truth;
+   * the register underneath still holds every host in full.
+   */
   appeared: string[];
+  /** Exact totals; the arrays above are capped. Absent on pre-cap rounds. */
+  appeared_count?: number;
   /** Newly delisted this round — an event, raised once. */
   disappeared: string[];
+  disappeared_count?: number;
   /** Listed again after having been written off. */
   returned: string[];
+  returned_count?: number;
   /**
    * Set when the union fell past the floor against the last census.
    * Disappearances are suppressed for the run — see the header.
@@ -114,6 +129,9 @@ export interface PopulationCensus {
  * same idea drift apart, and the ward's has precedent behind it.
  */
 export const COLLAPSE_FLOOR = 0.6;
+
+/** See PopulationCensus: names capped, counts exact. */
+export const EVENT_LIST_CAP = 250;
 
 type Register = Record<string, PopulationRecord>;
 
@@ -305,9 +323,12 @@ export async function takeCensus(
     })),
     sources_failed: failed,
     carried_forward: carriedForward,
-    appeared: appeared.sort(),
-    disappeared: disappeared.sort(),
-    returned: returned.sort(),
+    appeared: appeared.sort().slice(0, EVENT_LIST_CAP),
+    appeared_count: appeared.length,
+    disappeared: disappeared.sort().slice(0, EVENT_LIST_CAP),
+    disappeared_count: disappeared.length,
+    returned: returned.sort().slice(0, EVENT_LIST_CAP),
+    returned_count: returned.length,
     collapse_suspect: collapseSuspect,
     what_this_cannot_see: [
       "Whether a listed host is payable. Enumeration says a host EXISTS; only a probe says anything else, and coverage_pct is the share we probed.",
@@ -319,6 +340,12 @@ export async function takeCensus(
       carriedForward > 0
         ? `${carriedForward} host(s) are on this count by CARRY-FORWARD, not by sighting: their directory went dark and burying them would have been a guess. Their last_seen still reads the last round somebody actually listed them, and carried_since says when we started taking them on trust.`
         : "Nothing on this count is here by carry-forward — every host was listed by a source that answered this round.",
+      ...(Math.max(appeared.length, disappeared.length, returned.length) >
+      EVENT_LIST_CAP
+        ? [
+            `An event list overflowed its ${EVENT_LIST_CAP}-name cap this round. The _count fields are exact and the register holds every host; only the names published on this census are truncated, so the corpus snapshot stays weekly-and-small.`,
+          ]
+        : []),
     ],
   };
 }
