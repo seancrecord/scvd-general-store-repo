@@ -11,6 +11,8 @@
     "server.mjs",
     "tools.mjs",
     "store.mjs",
+    "pager.mjs",
+    "reconcile.mjs",
     "README.md",
     "SCHEMA.md"
   ],

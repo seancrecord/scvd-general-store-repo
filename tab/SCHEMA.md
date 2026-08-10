@@ -13,6 +13,7 @@ Three files, and the separation is deliberate:
 | `tab.jsonl` | the builder's commerce | the record |
 | `tab.jsonl.coverage.jsonl` | what the sweep saw and missed | describes the INSTRUMENT, not the commerce — mixing them would let a broken sweep look like a cancelled tool |
 | `tab.jsonl.pages.jsonl` | what the pager raised and whether anybody said it | same reason, and it measures us rather than the builder |
+| `tab.jsonl.card.jsonl` | reconciliations against the bank's own statement | ground truth about the record, not the record — and a reconciliation must never quietly become an entry |
 
 Sidecar names are rebuilt from the tab's own resolved directory and a
 sanitized basename (`sidecarPath`), never spliced onto the raw path
@@ -196,6 +197,18 @@ pair `scanned` / `not_transactional`. `unclassified` is derived:
 than absorbed, because that residue is where a pre-filter hides. A
 record with no `scanned` reads as **unaudited**. Contract:
 `tab/SWEEP.md`.
+
+**`.card.jsonl`** — one appended record per card reconciliation
+(`reconcile_card_statement`), the ground-truth counterpart to the
+sweep: the sweep measures what mail SAID, a bank statement measures
+what was TAKEN. Holds the window, `statement_total`, `matched_tools`,
+`unmatched_count`/`unmatched_total`, and `card_variability_pct`
+(unmatched money over statement money — `variability_pct` asked of
+ground truth). The reconciliation writes nothing to the tab itself:
+an unmatched charge, a charge on a canceled tool, or an expected
+charge that never landed are all questions for the builder, never
+entries. No bank code lives here and none will — the builder exports
+the CSV by hand, same law as the mail sweep.
 
 **`.pages.jsonl`** — the pager's append-only log, replayed the same
 way the tab is. States: `queued`, `handed_over`, `acknowledged`,

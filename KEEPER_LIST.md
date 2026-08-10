@@ -130,7 +130,7 @@ function that signed.
 | **C3** | Rule 9 flips: deliver first, settle after | rule amended and dated; **the gate is the build** |
 | **C4** | A badge is a dated observation. It never retires, it ages. No chasing holders | built 2026-08-10 (`/criteria`) |
 | **C5** | Yes, the burn may contain an estimate — add a `basis` field | built 2026-08-10 (tab schema v0.8) |
-| **C6** | Card reconciliation: monthly bank CSV, manual for now | queued |
+| **C6** | Card reconciliation: monthly bank CSV, manual for now | built 2026-08-10 (`reconcile_card_statement`, tab v0.3.0) |
 | **C7** | The ward widens to every public directory. Uniform, no favourites | queued |
 | **C2** | Commission Desk: `the_collab` first, public replies on declines | queued |
 

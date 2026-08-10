@@ -60,7 +60,14 @@ fence refuses the contradictions in both directions.
 **5. Card reconciliation: monthly CSV export from the bank.** Manual
 is fine for now. The tab's sweep measures itself; a card statement is
 ground truth. This is what `variability_pct` has been waiting on.
-**Recorded, not built.**
+**BUILT 2026-08-10** — `reconcile_card_statement` (tab v0.3.0):
+takes the parsed statement rows, compares in both directions (charges
+the tab can't place, fixed monthly tools the statement never charged,
+metered actuals against their estimates, charges on canceled tools),
+appends to a `.card.jsonl` sidecar, and surfaces the last
+reconciliation as `card_ground_truth` in the burn rollup's coverage
+block. Writes nothing to the tab — every finding is a question, never
+an entry. No bank code, same law as the mail sweep.
 
 **6. The ward widens to every public directory.** Uniform — no
 targeting, no picking favourites. *If it is on a public list, we watch
@@ -230,9 +237,11 @@ with nothing marking which part was guessed. The real question:
 `price` needs a `basis` marker. If no, they stay unrepresentable and
 the tab says so.
 
-**Card reconciliation.** The only true ground truth for burn. Needs
-you to pick a source. Until then `variability_pct` rests on the sweep
-measuring itself — honest, not proof.
+**Card reconciliation.** ~~Needs you to pick a source.~~ Ruled
+2026-08-10 (monthly bank CSV, manual) and built the same day —
+`reconcile_card_statement` in the tab. `variability_pct` now has a
+ground-truth counterpart, `card_variability_pct`, in the coverage
+block.
 
 **The ward's population source.** Whether Browser Use is already in
 the walked universe decides whether their observation is already
@@ -416,7 +425,8 @@ feature ideas — it is a promise already made.
 
 **F. The Tab**
 - The mail sweep (CV) — contract written, routine unwritten.
-- Card reconciliation — keeper picks the source.
+- Card reconciliation — ruled and built 2026-08-10 (monthly bank CSV,
+  `reconcile_card_statement`).
 - Layer 3 / the pooled corpus — the product's actual business model,
   not started, needs consent volume that does not exist.
 - The two non-clock billing shapes.

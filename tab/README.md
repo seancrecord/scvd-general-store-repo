@@ -72,6 +72,7 @@ the counting obligation that keeps the coverage number honest — is
 | `needs_attention` | the drip: what is outstanding, dearest first and capped |
 | `confirm_entry` | a human looked at a swept entry and says it is real — or marks it private |
 | `record_coverage` | the sweep reports what it read and what it could not place ([SWEEP.md](./SWEEP.md)) |
+| `reconcile_card_statement` | ground truth, monthly: the bank's CSV against the tab, both directions — writes nothing, every finding is a question |
 | `whats_current` | the builder's history in a category |
 | `contribute_anonymized_delta` | deliberately send one anonymized delta to the scvd pool (consent required, layer 3) |
 | `set_consent` | contribution on/off — recorded as an event in the tab itself |

@@ -30,6 +30,9 @@ import {
   queueDue,
   recordHandover,
 } from "./pager.mjs";
+import { readCardHistory, reconcileCardStatement } from "./reconcile.mjs";
+
+export { reconcileCardStatement } from "./reconcile.mjs";
 
 /**
  * THE TAB's eight tools — THE_TAB.md made callable. Every read
@@ -536,6 +539,33 @@ function coverageBlock(current, path) {
       at: entry.at,
       pct: variabilityOf(entry),
     })),
+    /**
+     * GROUND TRUTH, when it has ever been consulted. The sweep's
+     * variability is self-reported — the instrument measuring itself.
+     * A card statement is money that actually left, counted by a
+     * party with no stake in the tab looking complete, and the last
+     * reconciliation against one rides here so the two numbers can
+     * be read side by side. Null-shaped when never run, per the
+     * fabricated-zero rule above.
+     */
+    card_ground_truth: (() => {
+      const cards = readCardHistory(path);
+      const last = cards[cards.length - 1] ?? null;
+      if (!last) {
+        return {
+          last_reconciliation: null,
+          note: "No card statement has ever been reconciled. The sweep's numbers above are self-reported until one is — reconcile_card_statement takes the bank's monthly CSV, parsed.",
+        };
+      }
+      return {
+        last_reconciliation: last.at,
+        window: `${last.window_from} → ${last.window_to}`,
+        statement_total: last.statement_total,
+        unmatched_total: last.unmatched_total,
+        card_variability_pct: last.card_variability_pct,
+        note: "Unmatched statement money over all statement money, from the bank's own export — the same ratio as variability_pct, asked of ground truth.",
+      };
+    })(),
     what_this_cannot_see: [
       "A tool that never emailed, never billed, and was never mentioned.",
       "A seat somebody else pays for.",
@@ -1101,6 +1131,31 @@ export const TOOL_DEFS = [
           },
         },
       },
+    },
+  },
+  {
+    name: "reconcile_card_statement",
+    description:
+      "GROUND TRUTH, monthly, by hand: the builder exports the bank's CSV, you parse every debit row, and this compares statement against tab in BOTH directions — charges the tab cannot place, tools the statement never charged, actuals against metered estimates, and charges on tools the tab holds as canceled. Writes nothing to the tab; every finding is a question for the builder, not an entry. Pass the rows unfiltered — a pre-filtered statement is the mail sweep's counting mistake with money on it.",
+    handler: reconcileCardStatement,
+    inputSchema: {
+      type: "object",
+      properties: {
+        statement_from: { type: "string", description: "ISO date the statement window opens — off the export, not remembered" },
+        statement_to: { type: "string", description: "ISO date the statement window closes" },
+        charges: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              date: { type: "string" },
+              amount: { type: "number", description: "the debit amount; credits and refunds stay off" },
+              descriptor: { type: "string", description: "the merchant string as the bank printed it" },
+            },
+          },
+        },
+      },
+      required: ["statement_from", "statement_to", "charges"],
     },
   },
   {

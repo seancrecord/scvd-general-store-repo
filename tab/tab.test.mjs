@@ -30,6 +30,7 @@ import {
   confirmEntry,
   needsAttention,
   recordCoverage,
+  reconcileCardStatement,
   contributeDelta,
   exportTab,
   logToolEvent,
@@ -1283,4 +1284,161 @@ test("the export carries basis, so a spreadsheet reader sees the estimate marker
   const csv = exportTab({ format: "csv" }, path);
   assert.ok(csv.content.split("\n")[0].includes("price_basis"));
   assert.ok(csv.content.includes("metered"));
+});
+
+/**
+ * v0.8 — card reconciliation (the keeper's ruling, 2026-08-10):
+ * a monthly CSV export from the bank, by hand, is ground truth. The
+ * sweep's variability measures the instrument against itself; the
+ * statement is money that actually left.
+ */
+
+test("a statement reconciles both directions and the gap becomes a ratio", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "figma", event: "paid_started", problem_solved: "design", category: "design",
+      price: { amount: 15, currency: "USD", period: "month" } },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [
+        { date: "2026-07-03", amount: 20, descriptor: "VERCEL INC" },
+        { date: "2026-07-11", amount: 13, descriptor: "SOMESHOP LLC" },
+      ],
+    },
+    path,
+  );
+  assert.equal(report.recorded, true);
+  // Matched, with the tab's expectation beside the observation.
+  assert.deepEqual(report.matched, [
+    { tool_name: "vercel", observed: 20, charges: 1, expected_monthly: 20 },
+  ]);
+  // Money the tab cannot place is a published list, not a footnote.
+  assert.equal(report.unmatched.length, 1);
+  assert.equal(report.unmatched[0].descriptor, "SOMESHOP LLC");
+  // 13 of 33 statement dollars unplaced.
+  assert.equal(report.card_variability_pct, 39.4);
+  // The other direction: figma was expected in a full-month window
+  // and never charged — canceled, or a card about to take a service
+  // down with it. A question, never a verdict.
+  assert.deepEqual(
+    report.expected_not_seen.map((row) => row.tool_name),
+    ["figma"],
+  );
+  // And the rollup's coverage block now carries ground truth.
+  const rollup = burnRollup({}, path);
+  assert.equal(rollup.coverage.card_ground_truth.card_variability_pct, 39.4);
+  assert.equal(rollup.coverage.card_ground_truth.statement_total, 33);
+});
+
+test("a metered estimate meets its actual, and nothing is written back", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "openai-api", event: "paid_started", problem_solved: "llm calls", category: "llm",
+      price: { amount: 40, currency: "USD", period: "month", basis: "metered" } },
+    path,
+  );
+  const before = readEvents(path).events.length;
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-28", amount: 57.3, descriptor: "OPENAI *API" }],
+    },
+    path,
+  );
+  assert.deepEqual(report.metered_actuals, [
+    { tool_name: "openai-api", observed: 57.3, charges: 1, estimated_monthly: 40, delta: 17.3 },
+  ]);
+  // A metered tool has no fixed expectation, so it is never "missing".
+  assert.equal(report.expected_not_seen.length, 0);
+  // Reconciliation reports; the tab file is untouched.
+  assert.equal(readEvents(path).events.length, before);
+});
+
+test("a charge on a canceled tool is the sharpest finding, named apart", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "grammarly", event: "paid_started", problem_solved: "writing", category: "other",
+      price: { amount: 12, currency: "USD", period: "month" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "grammarly", event: "canceled", problem_solved: "writing", category: "other" },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-15", amount: 12, descriptor: "GRAMMARLY" }],
+    },
+    path,
+  );
+  assert.equal(report.inactive_tool_charged.length, 1);
+  assert.equal(report.inactive_tool_charged[0].tool_name, "grammarly");
+  assert.equal(report.matched.length, 0);
+});
+
+test("a short window asserts nothing about missing charges", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-10",
+      charges: [{ date: "2026-07-03", amount: 4, descriptor: "COFFEE" }],
+    },
+    path,
+  );
+  assert.equal(report.expected_not_seen.length, 0);
+  assert.ok(report.expected_not_seen_note.includes("28 days"));
+});
+
+test("the descriptor match takes the most specific tool, never a guess", () => {
+  const path = freshPath();
+  for (const name of ["openai", "openai-api"]) {
+    logToolEvent(
+      { tool_name: name, event: "paid_started", problem_solved: "llm", category: "llm",
+        price: { amount: 10, currency: "USD", period: "month" } },
+      path,
+    );
+  }
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-02", amount: 10, descriptor: "OPENAI API SERVICES" }],
+    },
+    path,
+  );
+  assert.deepEqual(report.matched.map((row) => row.tool_name), ["openai-api"]);
+});
+
+test("a malformed statement is refused with the problems named, and nothing recorded", () => {
+  const path = freshPath();
+  const refused = reconcileCardStatement(
+    { statement_from: "2026-07-01", statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-02", amount: -5, descriptor: "" }] },
+    path,
+  );
+  assert.equal(refused.recorded, false);
+  const text = refused.problems.join(" ");
+  assert.ok(text.includes("amount"));
+  assert.ok(text.includes("descriptor"));
+  // A refused statement leaves no trace in the ground-truth history.
+  const rollup = burnRollup({}, path);
+  assert.equal(rollup.coverage.card_ground_truth.last_reconciliation, null);
 });
