@@ -59,7 +59,20 @@ export interface SourceResult {
 /** What the population layer knows about one host, across all rounds. */
 export interface PopulationRecord {
   first_seen: string;
+  /**
+   * The last round a source ACTUALLY listed this host.
+   *
+   * It used to advance on carry-forward too, which made it a lie: a
+   * host kept alive because its directory went dark would report a
+   * last_seen of this round, on a round where nobody saw it at all.
+   * That field is published — `populationHistory` feeds the `listing`
+   * block on /corpus/host/{host}.json — so the store was serving an
+   * observation that never happened, which is the one thing this
+   * whole file exists to refuse.
+   */
   last_seen: string;
+  /** Set while a host is only on the register by carry-forward. */
+  carried_since?: string;
   /** Every directory that has ever listed it, for provenance. */
   sources: string[];
   /**
@@ -140,8 +153,38 @@ async function readRegister(env: Env): Promise<RegisterFile> {
   };
 }
 
+/**
+ * ONE HOST, ONE ENTRY. Lowercase and trim were not enough, and the gap
+ * was live in our own ingest rather than hypothetical: ward-round
+ * builds its host list from `new URL(url).host`, and `.host` KEEPS THE
+ * PORT and PRESERVES A TRAILING DOT. So one seller reachable at
+ * example.com, example.com. and example.com:8443 became three
+ * register entries — three first_seens, three phantom appearances,
+ * and a denominator inflated by duplicates of a single host.
+ *
+ * A trailing dot is the DNS root, valid and equivalent. A port is not
+ * part of the host's identity for enumeration: we are counting who
+ * exists, not which socket answered.
+ */
 function normalize(host: string): string {
-  return host.trim().toLowerCase();
+  let name = host.trim().toLowerCase();
+  /*
+   * Strip the port, but only where it cannot be part of an IPv6
+   * literal — "[::1]:443" has colons inside the brackets, so the port
+   * is whatever follows the closing one.
+   */
+  if (name.startsWith("[")) {
+    const close = name.indexOf("]");
+    if (close !== -1) name = name.slice(0, close + 1);
+  } else {
+    const colon = name.lastIndexOf(":");
+    if (colon !== -1 && !name.slice(colon + 1).includes(":")) {
+      name = name.slice(0, colon);
+    }
+  }
+  // The DNS root dot is equivalent, never a different host.
+  while (name.endsWith(".")) name = name.slice(0, -1);
+  return name;
 }
 
 /**
@@ -183,11 +226,13 @@ export async function takeCensus(
    * line, while a false death costs the truth of the record.
    */
   const failedSet = new Set(failed);
+  const carriedNow = new Set<string>();
   let carriedForward = 0;
   for (const [host, record] of Object.entries(register)) {
     if (seenNow.has(host) || record.gone_at) continue;
     if (record.sources.some((source) => failedSet.has(source))) {
       carriedForward += 1;
+      carriedNow.add(host);
       seenNow.set(host, new Set(record.sources));
     }
   }
@@ -213,8 +258,19 @@ export async function takeCensus(
       returned.push(host);
       delete existing.gone_at;
     }
-    existing.last_seen = at;
-    existing.sources = [...new Set([...existing.sources, ...sources])].sort();
+    /*
+     * ONLY A REAL SIGHTING MOVES last_seen. A carried-forward host was
+     * not seen — its directory went dark and we declined to bury it —
+     * and stamping today's date on it would turn a conservative guess
+     * into a claimed observation.
+     */
+    if (carriedNow.has(host)) {
+      existing.carried_since ??= at;
+    } else {
+      existing.last_seen = at;
+      delete existing.carried_since;
+      existing.sources = [...new Set([...existing.sources, ...sources])].sort();
+    }
   }
 
   /*
@@ -260,6 +316,9 @@ export async function takeCensus(
         ? "Disappearances this round: SUPPRESSED. The union fell past the floor against the last census, which the instrument explains more plausibly than the ecosystem does."
         : "Why a host stopped being listed. 'disappeared' means NO LONGER LISTED where we look — never 'dead', and never 'stopped taking payment'.",
       "Anything between rounds. Enumeration is as periodic as the probe it rides with.",
+      carriedForward > 0
+        ? `${carriedForward} host(s) are on this count by CARRY-FORWARD, not by sighting: their directory went dark and burying them would have been a guess. Their last_seen still reads the last round somebody actually listed them, and carried_since says when we started taking them on trust.`
+        : "Nothing on this count is here by carry-forward — every host was listed by a source that answered this round.",
     ],
   };
 }

@@ -103,6 +103,12 @@ export const KV_KEYS = {
   almanacEntry: (slug: string): string => `almanac_entry:${slug}`,
   almanacEntryPrefix: "almanac_entry:",
   keeperLastSeen: "keeper_last_seen",
+  /**
+   * Failed /admin logins from ONE address. Per-address on purpose:
+   * see the throttle in routes/admin.ts — a global counter would hand
+   * a stranger the keeper's own front door.
+   */
+  adminFailByIp: (ip: string): string => `admin_fail_ip:${ip}`,
   shutterOverride: "shutter_override",
   firstDollar: "first_dollar",
   /**

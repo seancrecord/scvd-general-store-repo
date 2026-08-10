@@ -217,3 +217,80 @@ describe("what the census refuses to claim", () => {
     expect(census.coverage_pct).toBeNull();
   });
 });
+
+describe("what CV's red team found", () => {
+  it("does NOT advance last_seen for a host nobody actually saw", async () => {
+    /*
+     * The half of the carry-forward finding that made it urgent rather
+     * than a note-for-later: carried-forward hosts landed in seenNow,
+     * and the update loop stamped today's date on everything in
+     * seenNow. So a host kept alive because its directory went dark
+     * reported a last_seen of THIS round — on a round where nobody
+     * listed it at all.
+     *
+     * populationHistory feeds the `listing` block on
+     * /corpus/host/{host}.json, so that was a published claim to have
+     * observed something that did not happen. Exactly what this file
+     * exists to refuse.
+     */
+    await takeCensus(testEnv, [source("discovery", ["a.example"])], 1, T1);
+    await takeCensus(testEnv, [source("discovery", null)], 0, T2);
+    await takeCensus(testEnv, [source("discovery", null)], 0, T3);
+
+    const record = await populationHistory(testEnv, "a.example");
+    // Last actually SEEN at T1, however long we carry it.
+    expect(record?.last_seen).toBe(T1.toISOString());
+    // And the register says since when it has been taken on trust.
+    expect(record?.carried_since).toBe(T2.toISOString());
+    expect(record?.gone_at).toBeUndefined();
+  });
+
+  it("clears carried_since the moment the source answers again", async () => {
+    await takeCensus(testEnv, [source("discovery", ["a.example"])], 1, T1);
+    await takeCensus(testEnv, [source("discovery", null)], 0, T2);
+    await takeCensus(testEnv, [source("discovery", ["a.example"])], 1, T3);
+
+    const record = await populationHistory(testEnv, "a.example");
+    expect(record?.last_seen).toBe(T3.toISOString());
+    expect(record?.carried_since).toBeUndefined();
+  });
+
+  it("says on the census when hosts are being counted on trust", async () => {
+    await takeCensus(testEnv, [source("discovery", ["a.example"])], 1, T1);
+    const census = await takeCensus(testEnv, [source("discovery", null)], 0, T2);
+    expect(census.carried_forward).toBe(1);
+    expect(census.what_this_cannot_see.join(" ")).toContain("by CARRY-FORWARD");
+  });
+
+  it("treats one host as one host however the feed spells it", async () => {
+    /*
+     * Live in our own ingest, not hypothetical: ward-round builds its
+     * list from `new URL(url).host`, which keeps the PORT and
+     * preserves a TRAILING DOT. Three spellings of one seller became
+     * three register entries and inflated the denominator with
+     * duplicates of itself.
+     */
+    const census = await takeCensus(
+      testEnv,
+      [source("d", ["example.com", "example.com.", "example.com:8443", "EXAMPLE.com"])],
+      1,
+      T1,
+    );
+    expect(census.population_known).toBe(1);
+    expect(census.appeared).toEqual(["example.com"]);
+    expect(census.coverage_pct).toBe(100);
+  });
+
+  it("does not mistake an IPv6 literal's colons for a port", async () => {
+    // "[::1]:443" has colons inside the brackets; the port is only
+    // what follows the closing one.
+    const census = await takeCensus(
+      testEnv,
+      [source("d", ["[2606:4700::1111]", "[2606:4700::1111]:8443"])],
+      0,
+      T1,
+    );
+    expect(census.population_known).toBe(1);
+    expect(census.appeared).toEqual(["[2606:4700::1111]"]);
+  });
+});

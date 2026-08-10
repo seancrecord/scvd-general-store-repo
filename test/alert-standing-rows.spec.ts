@@ -155,3 +155,44 @@ describe("problems that are genuinely different", () => {
     expect(alerts[0]!.repeats).toBe(4);
   });
 });
+
+describe("the page cadence, which was nagging", () => {
+  it("backs off instead of mailing the same known problem four times a day", async () => {
+    /*
+     * Six hours flat meant an undelivered sale mailed the keeper four
+     * times a day, forever, saying what he already knew. The cost is
+     * not annoyance: a mailbox full of a known problem is a mailbox
+     * where the NEXT one goes unread.
+     *
+     * The row still says it is standing — that is what the admin page
+     * is for. Email is for telling somebody something they do not
+     * already know.
+     */
+    const pageKeys = async (): Promise<string[]> => {
+      const listed = await testEnv.COUNTERS.list({ prefix: "alert_sent:" });
+      return listed.keys.map((key) => key.name);
+    };
+
+    await sendAlert(testEnv, {
+      condition: "undelivered_sale",
+      detail: "stuck",
+      key: "ord_nag",
+    });
+    const [firstKey] = await pageKeys();
+    expect(firstKey).toBeTruthy();
+
+    // Second page, once the first window lapses: a longer window.
+    await testEnv.COUNTERS.delete(firstKey!);
+    await sendAlert(testEnv, {
+      condition: "undelivered_sale",
+      detail: "still stuck",
+      key: "ord_nag",
+    });
+
+    // Still exactly one row, and it knows it has been raised twice.
+    const [row] = await listAlerts(testEnv, 50);
+    expect(row!.repeats).toBe(2);
+    // And the pager key exists again — a page went out, just later.
+    expect((await pageKeys()).length).toBe(1);
+  });
+});

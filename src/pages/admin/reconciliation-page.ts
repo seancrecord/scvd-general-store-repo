@@ -123,6 +123,18 @@ function deliveriesHtml(
             ? ` — paid by ${escapeHtml(sale.payer)}, a real buyer: fulfill or refund, never absorb.`
             : ""
       }
+      ${
+        /*
+         * CAN THIS ONE ACTUALLY BE FULFILLED? The page offered
+         * "fulfilled by hand" for months on rows where fulfilling was
+         * impossible, because the store had not recorded what the
+         * buyer asked for. Saying so is the difference between a
+         * choice and a trap.
+         */
+        sale.query
+          ? `<div><small><strong>They asked for:</strong> <code>${escapeHtml(sale.query)}</code> — enough to produce the goods, so this one can be FULFILLED.</small></div>`
+          : `<div><small><strong style="color:#8c2f1b">What they asked for was not recorded</strong> — settled before 2026-08-10, when the request stopped being thrown away. There is no way to know what artifact to make, so this one can only be REFUNDED.</small></div>`
+      }
       <form method="POST" action="/admin/delivery/resolve" style="margin:0.3em 0">
         <input type="hidden" name="transaction" value="${escapeHtml(sale.transaction ?? "")}">
         <select name="outcome" required>
