@@ -1654,6 +1654,76 @@ a metric nobody should be reading.
 in llms.txt and the tool descriptions carry more weight than
 menu.json's, so freshness and wording effort belongs there first.
 
+### 22. The bank walk skipped blocks silently when it fell behind — FIXED 2026-08-10, same day
+
+Found 2026-08-10 while scoping what a published settled-vs-delivered
+record could honestly claim about coverage. Same shape as #18: the
+instrument that closed #4 had a failure mode of its own that read as
+a clean sweep.
+
+`reconcileAgainstChain()` walks forward from a stored cursor:
+
+    const fromBlock = Number.isFinite(cursor)
+      ? Math.max(cursor + 1, head - RECONCILE_MAX_SPAN)
+      : Math.max(0, head - RECONCILE_BLOCK_SPAN);
+
+**When the cursor was more than RECONCILE_MAX_SPAN behind the head,
+the clamp discarded every block between the cursor and that floor.**
+The cursor then moved past them and nothing revisits them: the walk
+is the only instrument that reads incoming transfers, and it only
+ever walks forward. An orphan in that window — money taken, no
+certificate — was never found by anything, ever.
+
+**The margin is thinner than it looks.** RECONCILE_BLOCK_SPAN is 2000
+blocks — at Base's ~2s blocks, 66.7 minutes of chain per hourly pass,
+so the walk outruns the chain by about seven minutes an hour and
+recovers from lag at that rate: an hour behind takes ~9 hours to
+close, six hours ~54. RECONCILE_MAX_SPAN is 20000 blocks, about 11.1
+hours — a cron outage past that mark lost those blocks permanently,
+and a long recovery is itself the window where a second outage lands
+over the line.
+
+**The defect was the silence, not the skip.** Bounding a pass is
+right; a walk that re-read all of Base every hour would stop running,
+which is the failure #4 is about. What was wrong is that the clamp
+wrote nothing when it fired: the pass returned `ran: true`, reported
+orphans for the window it did read, and every surface downstream
+reported a clean sweep over a range that was never read. That made it
+the one instrument here that degraded quietly — every sibling
+refuses to (`population.ts` records no disappearance from a capped
+read, `reclassify.ts` will not publish a partial correction,
+`knownSettlementHashes()` sets `cert_scan_truncated`). Rule 5: a zero
+from a probe that could not observe the range is not evidence the
+range is clean.
+
+**Why this one did not wait for its own first occurrence:** a hole
+cannot be detected after the fact. There is no backward audit for
+blocks nothing ever read. Every day without the guard was a day whose
+coverage could never be certified later — delay accrued an
+irreversible cost rather than deferring one.
+
+**The fix, as built (same day):** when the clamp fires, the skipped
+range is computed at the clamp and recorded + alerted at the same
+seam where the cursor moves — under the same clean-read rule, so a
+failed pass writes neither and cannot double-file the hole on retry.
+The record (`reconcile_skipped_ranges`, one key) keeps every range
+with exact bounds and a date, capped at the 100 most recent with
+totals that never lose a block. The alert names the range, the rough
+hours of chain it covers, and the back-fill instruction (one bounded
+`eth_getLogs` by hand). The books check (`/admin/reconciliation`) now
+renders the ledger of holes even at zero — "no known holes" is a
+claim the page is entitled to make only because the record exists.
+Five tests in `test/chain-reconciliation.spec.ts`, shown red without
+the fix (5 failed / 17 passed on stashed source).
+
+**The volume-triggered sibling, filed here so it is not conflated and
+NOT yet built:** `CERT_SCAN_CAP` is 2000. Past 2000 certificates
+`knownSettlementHashes()` truncates, the known-hash set goes
+incomplete, and real sales begin reporting as orphans. That one fails
+safe — noise rather than silence, and it already flags
+`cert_scan_truncated` — but the orphan alert stops being trustworthy
+at that point. **Trigger:** certificate count approaching 2000.
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare

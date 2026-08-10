@@ -4,9 +4,11 @@ import {
   cheapestListingUsdc,
   findLookalike,
   knownSettlementHashes,
+  readSkippedRanges,
   reconcileAgainstChain,
   runChainReconciliation,
   RECONCILE_BLOCK_SPAN,
+  RECONCILE_MAX_SPAN,
 } from "@/services/chain-reconciliation";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listAlerts } from "@/lib/alerts";
@@ -82,6 +84,7 @@ function envWith(fetchImpl: typeof fetch): Env {
 
 async function clear(): Promise<void> {
   await testEnv.COUNTERS.delete(KV_KEYS.reconcileCursor);
+  await testEnv.COUNTERS.delete(KV_KEYS.reconcileSkippedRanges);
   const certs = await testEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix });
   for (const key of certs.keys) await testEnv.PATRONS.delete(key.name);
 }
@@ -232,6 +235,106 @@ describe("the cursor", () => {
     const result = await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
     expect(result.ran).toBe(false);
     expect(result.reason).toContain("no new blocks");
+  });
+});
+
+describe("the hole the clamp tears (problem ledger #22)", () => {
+  /**
+   * When the cursor falls more than RECONCILE_MAX_SPAN behind the
+   * head, the clamp discards the gap — and the walk only ever goes
+   * forward, so nothing revisits it. Bounding the pass is right; the
+   * defect was the SILENCE: the pass returned ran:true and every
+   * surface downstream reported a clean sweep over a range that was
+   * never read. A hole cannot be detected after the fact, so it is
+   * recorded and alerted at the last moment it is knowable at all.
+   */
+  const FAR_BEHIND = HEAD - RECONCILE_MAX_SPAN - 5000;
+
+  it("records the hole with exact bounds before the cursor moves past it", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(FAR_BEHIND));
+    const result = await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
+    expect(result.ran).toBe(true);
+    // The pass itself is clamped to the floor, as before.
+    expect(result.from_block).toBe(HEAD - RECONCILE_MAX_SPAN);
+    // The discarded range is named on the result, exactly.
+    expect(result.skipped).toEqual({
+      from_block: FAR_BEHIND + 1,
+      to_block: HEAD - RECONCILE_MAX_SPAN - 1,
+      blocks: 4999,
+      recorded_at: expect.any(String) as unknown as string,
+    });
+    // And in KV, where a coverage claim can cite it after the cursor
+    // has moved on and nothing else remembers the range existed.
+    const record = await readSkippedRanges(testEnv);
+    expect(record.total_ranges).toBe(1);
+    expect(record.total_blocks).toBe(4999);
+    expect(record.ranges[0]!.from_block).toBe(FAR_BEHIND + 1);
+    expect(record.ranges[0]!.to_block).toBe(HEAD - RECONCILE_MAX_SPAN - 1);
+  });
+
+  it("pages the keeper with the range and the back-fill instruction", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(FAR_BEHIND));
+    await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
+    const alert = (await listAlerts(testEnv, 50)).find((a) =>
+      a.detail.includes("SKIPPED BLOCKS"),
+    );
+    expect(alert).toBeDefined();
+    expect(alert!.detail).toContain(String(FAR_BEHIND + 1));
+    expect(alert!.detail).toContain(String(HEAD - RECONCILE_MAX_SPAN - 1));
+    expect(alert!.detail).toContain("back-fill");
+  });
+
+  it("a cursor merely behind — within the span — tears no hole", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.reconcileCursor,
+      String(HEAD - RECONCILE_MAX_SPAN + 10),
+    );
+    const result = await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
+    expect(result.ran).toBe(true);
+    expect(result.skipped).toBeUndefined();
+    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(0);
+  });
+
+  it("a failed pass records no hole — the record moves with the cursor or not at all", async () => {
+    /**
+     * If the hole were recorded before the read succeeded, a failing
+     * hour would file the same hole again on every retry. The record
+     * rides the clean-read seam beside the cursor: a failed pass
+     * writes neither, and the next clean pass records the recomputed
+     * hole exactly once.
+     */
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(FAR_BEHIND));
+    const failed = await reconcileAgainstChain(
+      envWith(rpcFetch({ fail: "logs" })),
+    );
+    expect(failed.ran).toBe(false);
+    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(0);
+    expect(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor)).toBe(
+      String(FAR_BEHIND),
+    );
+
+    const clean = await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
+    expect(clean.skipped).toBeDefined();
+    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(1);
+  });
+
+  it("accumulates holes with exact totals, and the next healthy pass tears none", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(FAR_BEHIND));
+    await reconcileAgainstChain(envWith(rpcFetch({ logs: [] })));
+    // The chain leaps ahead again — a second outage past the line.
+    const head2 = HEAD + RECONCILE_MAX_SPAN + 10_000;
+    await reconcileAgainstChain(envWith(rpcFetch({ logs: [], head: head2 })));
+    const record = await readSkippedRanges(testEnv);
+    expect(record.total_ranges).toBe(2);
+    expect(record.total_blocks).toBe(
+      record.ranges.reduce((sum, range) => sum + range.blocks, 0),
+    );
+    // Recovery at normal lag adds nothing to the ledger of holes.
+    const after = await reconcileAgainstChain(
+      envWith(rpcFetch({ logs: [], head: head2 + 100 })),
+    );
+    expect(after.skipped).toBeUndefined();
+    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(2);
   });
 });
 

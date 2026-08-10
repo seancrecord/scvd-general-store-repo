@@ -523,12 +523,16 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
   const { renderReconciliationPage } = await import(
     "@/pages/admin/reconciliation-page"
   );
-  const { SOLANA_RECONCILE_OK_KEY, SOLANA_RECONCILE_LAST_RESULT_KEY } =
-    await import("@/services/chain-reconciliation");
+  const {
+    SOLANA_RECONCILE_OK_KEY,
+    SOLANA_RECONCILE_LAST_RESULT_KEY,
+    readSkippedRanges,
+  } = await import("@/services/chain-reconciliation");
   const { auditDeliveries } = await import("@/services/delivery-audit");
   const [
     settles,
     baseCursor,
+    baseSkipped,
     solanaLastOk,
     solanaLastResult,
     deliveries,
@@ -537,6 +541,7 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
   ] = await Promise.allSettled([
     reconcileSettles(c.env),
     c.env.COUNTERS.get(KV_KEYS.reconcileCursor),
+    readSkippedRanges(c.env),
     c.env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY),
     c.env.COUNTERS.get<{
       ran: boolean;
@@ -583,6 +588,9 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
         settles: shelf(settles, null, "settle recount", notes),
         chain: {
           baseCursor: shelf(baseCursor, null, "base cursor", notes),
+          // Null when the read failed — the page then says coverage
+          // cannot be stated, rather than passing on a missing record.
+          baseSkipped: shelf(baseSkipped, null, "base skipped ranges", notes),
           solanaLastOk: shelf(solanaLastOk, null, "solana last pass", notes),
           solanaLastResult: shelf(
             solanaLastResult,

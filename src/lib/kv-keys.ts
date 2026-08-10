@@ -238,6 +238,16 @@ export const KV_KEYS = {
    * check exists to catch (problem ledger #4).
    */
   reconcileCursor: "reconcile_cursor",
+  /**
+   * Block ranges the Base walk moved PAST without reading (problem
+   * ledger #22): when the cursor falls more than RECONCILE_MAX_SPAN
+   * behind the head, the clamp discards the gap — and the walk only
+   * ever goes forward, so nothing revisits it. One key holding every
+   * hole, because a hole cannot be detected after the fact: this
+   * record is the only evidence the range was never swept, and any
+   * published coverage claim either cites it or lies.
+   */
+  reconcileSkippedRanges: "reconcile_skipped_ranges",
   stamp: (stampId: string): string => `stamp:${stampId}`,
   stampCard: (nameSlug: string): string => `stamp_card:${nameSlug}`,
   stampCondition: (weekKey: string): string => `stamp_condition:${weekKey}`,
