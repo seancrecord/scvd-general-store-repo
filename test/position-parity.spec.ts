@@ -86,9 +86,28 @@ describe("nothing still claims the store settles first", () => {
      * when in fact they were never charged. That sends them chasing
      * money nobody took.
      */
+    /*
+     * The hyphenated variants are here because they escaped: the first
+     * version of this list held only the spaced phrases, and the A2A
+     * card sailed through it saying "settle-first" in every skill
+     * description and "settle-before-goods" in its own note — while
+     * llms.txt said "settle before anything ships". A guard that knows
+     * one spelling of a false claim is a guard the other spellings walk
+     * past. (Past-tense "settled first" stays legal on purpose: it is
+     * the historical register — "the store settled first until then" —
+     * and banning it would ban the correction itself.)
+     */
     for (const path of [...MACHINE_SURFACES, "/what", "/try"]) {
       const body = (await text(path)).toLowerCase();
-      for (const stale of ["settles first", "settle first", "we settle first"]) {
+      for (const stale of [
+        "settles first",
+        "settle first",
+        "we settle first",
+        "settle-first",
+        "settles before",
+        "settle before",
+        "settle-before",
+      ]) {
         expect(
           body.includes(stale),
           `${path} still says "${stale}" — the gate has delivered first since 2026-08-10.`,

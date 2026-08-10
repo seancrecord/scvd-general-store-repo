@@ -119,7 +119,7 @@ function that signed.
 
 ---
 
-## C. Rulings — SEVEN OF NINE ANSWERED 2026-08-10
+## C. Rulings — EIGHT OF NINE ANSWERED 2026-08-10
 
 **Answered, and now canon** (recorded in full at the top of
 `MONDAY.md`):
@@ -144,16 +144,12 @@ one-off price *does* fit the payment stack (`DynamicPrice` is
 first-class in `@x402/core`), so the published-ladder recommendation
 now rests on risk appetite rather than on a wall that was never there.
 
-**Still open, and both still yours:**
+**C8. GitHub private? — CLOSED by the keeper 2026-08-10.** Struck from
+the list at his word; the repo stays as it is, public. Closed rather
+than silently deleted, because a question that vanishes gets re-asked
+at full price.
 
-**C8. GitHub private?** Recommendation on record: **keep the code
-public, move the strategy docs.** The product is verifiability, twelve
-served surfaces cite the repo, and the moat is the key and the corpus,
-not the code — a fork gets the code and none of the history. What could
-move at zero cost: `MARKETPLACE_AUDIT.md`, `PROBLEMS.md`, `TASKS.md`,
-`AT_SCALE.md`, `NOTES_FROM_THE_COUNTER.md`, `EMPLOYEES.md`. None is
-cited by a served surface. One-way door either way: it is MIT and it
-has been public.
+**Still open, and still yours:**
 
 **C9. CV's wallet law — three blanks.** Hard cap, cap period, ask-first
 threshold, all still blank by your own choice. **This blocks the
@@ -203,55 +199,35 @@ how the gap opened. Done so far: `llms.txt`, schema.org
 `organizationDescription`, `README.md`, `AGENTS.md`,
 `registry/clawhub/SKILL.md`.
 
-**Still unaudited against the post-2026-08-07 position:**
+**CLOSED 2026-08-10 — the sweep is done.** The position lives once in
+`src/store/copy/position.ts`, the surfaces import it, and
+`test/position-parity.spec.ts` holds them there. Every surface on the
+old list above was audited or corrected; the full ledger of what each
+one needed is in `MONDAY.md`. The three named gaps closed too: the
+`Dataset` markup shipped in #82 (`/corpus.json`, `/house-ledger.json`,
+the conformance vectors), `/what` leads with an answer since #83, and
+its `FAQPage` turned out to already cover the long-tail questions.
 
-- `/what` and `trust-signals.ts` — the whitelist is exact; check the
-  position lands without inventing a signal
-- `.well-known/trust.json`
-- `.well-known/a2a.json` — the A2A card's description
-- `menu.json` / `openapi.json` top-level descriptions
-- `/agents.md` served route (distinct from the repo file)
-- MCP `serverInfo` + `instructions`, **both servers**
-- `/directory.ts` and `/schemas.ts` JSON-LD
-- `security.txt`, `did.json` — check nothing contradicts
-
-**And the three named AEO gaps, in order of worth:**
-
-1. **The corpus is not marked as a `schema.org/Dataset`** — the biggest
-   miss on the page. First-party data earns brand-specific citations
-   that third-party statistics cannot. `/corpus.json` currently serves
-   as bare JSON with no markup at all: to a citing system it is a file,
-   not a data source. Same argument for `/house-ledger.json` and
-   `/stats`.
-2. **No 40–60 word direct answer** opening the key sections of `/what`,
-   `/attestation`, `/becoming`, `llms.txt`. A leading sentence that
-   stands alone before the paragraph, without gutting the voice.
-3. **`FAQPage` exists on `/what` only.** `USE_WHEN` is already
-   Q&A-shaped and carries no markup, which makes it structurally
-   invisible to many retrieval paths.
-
-This is work I can do — it is on the list because it is unfinished, not
-because it needs a ruling.
+The last pass (2026-08-10, this branch) was the contradiction read of
+`security.txt` and `did.json` — both clean — which instead caught the
+A2A card and `llms.txt` still saying "settle-first" in spellings the
+parity guard did not know. Fixed, and the guard now knows the variants.
 
 ---
 
 ## F. Debts, not features — do not rank these against ideas
 
-**F1. THE REFUND-WINDOW DETECTOR.** The card by the door promises: *we
-miss a promised window, you get your money back — and you won't have to
-argue for it.* The delivery audit catches settled-but-never-delivered.
-**Nothing catches delivered-late against the 168-hour queue SLA, or
-window-breached-with-no-refund-row.** That is a live, published money
-promise whose only enforcement is you remembering. It is rule 10's own
-lesson pointed at the store's loudest money claim — and rule 10 exists
-because this exact shape already burned us ("refund is automatic" live
-on every surface for five days while the code never did it). Correctly
-deferred on 08-07 when the queue was empty; six or seven organic sales
-later the premise has changed. Approved 08-08, still unbuilt.
+**F1. THE REFUND-WINDOW DETECTOR — DONE 2026-08-10.** The sweep and the
+`order_sla` page were already on the cron; what landed is the half the
+promise turns on: the buyer can see the breach on their own order page
+— missed window, by how long, what is owed, including when the goods
+arrived late. Moves no money; rule 10 keeps refunds in the keeper's
+hand, and a test guards the wording.
 
-**F2. `order_id` on `RefundRecord`.** Additive, optional, tiny. Turns
-`owed_usdc` from a floor into a fact. Do it next time refunds are
-touched.
+**F2. `order_id` on `RefundRecord` — DONE 2026-08-10,** the same day
+refunds were next touched, exactly as the entry asked. `owed_usdc` is
+exact wherever the rows are new; the audit reports how many joins still
+rest on the old item+payer guess.
 
 **F3. Key succession.** Every artifact the corpus has ever signed
 becomes unverifiable if that key dies with no pre-announced successor.

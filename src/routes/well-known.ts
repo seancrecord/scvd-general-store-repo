@@ -463,7 +463,7 @@ function a2aCard(base: string) {
       ...MENU_ITEMS.map((item) => ({
         id: item.id,
         name: item.name,
-        description: `${item.description} $${item.price_usdc} in USDC over x402 (Base or Solana), settle-first; GET ${base}/api/buy/${item.id}. Every purchase returns a signed artifact verifiable at ${base}/api/verify/{id}.`,
+        description: `${item.description} $${item.price_usdc} in USDC over x402 (Base or Solana), delivered first and settled after; GET ${base}/api/buy/${item.id}. Every purchase returns a signed artifact verifiable at ${base}/api/verify/{id}.`,
         tags: ["x402", "usdc", item.fulfillment],
         inputModes: ["application/json"],
         outputModes: ["application/json"],
@@ -483,7 +483,7 @@ function a2aCard(base: string) {
     // Ours, not the spec's, and named as such: the one field a strict
     // reader should skip and a curious one should read first.
     x_scvd_note:
-      "Payment is x402 v2 in USDC, settle-before-goods, no account and no API key — the 402 response itself carries the terms. The card's skills are derived live from the same menu every other surface reads.",
+      "Payment is x402 v2 in USDC, delivered first and settled after — a delivery that fails takes no money — with no account and no API key; the 402 response itself carries the terms. The card's skills are derived live from the same menu every other surface reads.",
   };
 }
 

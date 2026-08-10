@@ -237,6 +237,12 @@ only move that stays uniform; adding one name is targeting.
 
 ## Should the GitHub go private?
 
+**CLOSED by the keeper, 2026-08-10: struck from the list at his word.
+The repo stays as it is, public.** The analysis below is kept for the
+record rather than re-litigated; the recommendation it reached — keep
+the code public — is the outcome, arrived at by his hand rather than
+by argument.
+
 **Recommendation: keep the code public. Move the strategy docs if
 anything.**
 
@@ -1097,10 +1103,20 @@ the keeper asked for — it is the version that compounds.
   was checking the live deploy, which does not have this branch. Position
   added to its header block
 - [x] MCP `serverInfo` + `instructions`, **both servers**
-- [ ] `/directory.ts` and `/schemas.ts` JSON-LD — still open. The
-  `Dataset` markup on `/corpus.json` (gap 1 below) belongs with this one
-- [ ] `security.txt`, `did.json` — still open; a read for contradictions
-  rather than a rewrite
+- [x] `/directory.ts` and `/schemas.ts` JSON-LD — read 2026-08-10 and
+  the entry itself was stale: the `Dataset` markup already shipped in
+  #82 (`/corpus.json`, `/house-ledger.json`, the conformance vectors,
+  plus the storefront node), the directory already carries an honest
+  `ItemList`-of-`Review` graph, and the listing-spec schema is a JSON
+  Schema document with nothing for JSON-LD to add. Nothing to build
+- [x] `security.txt`, `did.json` — read 2026-08-10, both clean. The
+  contradiction read earned its keep ELSEWHERE: the A2A card still said
+  "settle-first" in every skill description and "settle-before-goods"
+  in its own note, and `llms.txt` said paid MCP tools "settle before
+  anything ships" — hyphenated and re-worded spellings the parity
+  guard's phrase list did not know. All three fixed; the guard now
+  knows the variants, and was shown red against the stale copy before
+  the fix went in
 
 **AND THE THING THAT MADE THE LIST FIXABLE.** The words now live once,
 in `src/store/copy/position.ts`, and the surfaces import them.

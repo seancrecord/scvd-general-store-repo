@@ -152,7 +152,7 @@ Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
 OpenAPI 3.1 contract: ${base}/openapi.json
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
-free; paid tools carry x402 in-band and settle before anything ships.
+free; paid tools carry x402 in-band, delivered first and settled after.
 A2A agent card: ${base}/.well-known/a2a.json (also served at
 /.well-known/agent-card.json and /.well-known/agent.json). A discovery
 card, honestly labeled: skills derive live from the menu, and the
