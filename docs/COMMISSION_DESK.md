@@ -71,20 +71,42 @@ more in round trips than the verdict is worth, on both sides.
 
 ---
 
-## 3. The hard part: a one-off price does not fit the payment stack
+## 3. A one-off price: what the stack does and does not do
 
-**This is the finding that makes the spec worth writing.**
+> **⚑ CORRECTED 2026-08-10.** This section originally read "a one-off
+> price does not fit the payment stack" and called that the finding
+> that made the spec worth writing. **The claim was false**, and it was
+> load-bearing: it is the reason (a) was recommended over (b). I read
+> our own wiring and concluded the protocol could not do what we had
+> not asked it to do.
+>
+> `@x402/core` exports `DynamicPrice`:
+>
+> ```ts
+> type DynamicPrice = (context: HTTPRequestContext) => Price | Promise<Price>;
+> ```
+>
+> and `RouteConfig.price` is typed `Price | DynamicPrice`. Per-request
+> pricing is a supported, first-class feature of the library we already
+> depend on. The recommendation below is re-argued on true grounds; it
+> happens to survive, but it now rests on risk appetite rather than on
+> an impossibility that was never there.
 
-`getPaymentStack()` builds a static `RoutesConfig` once, at
-construction: `routes["GET /api/buy/<id>"] = buyRouteConfig(item, env)`,
-and `accepts` inside it is computed from `priceTiersUsdc(item)` — a
-value, not a function of the request. Almanac pages and Gazette issues
-get *pattern* routes (`GET /almanac/:slug`), but every one of them is
-**the same penny price**. Nothing in the tree prices a route per
-request.
+**What is true about our tree.** `getPaymentStack()` builds its
+`RoutesConfig` once, at construction: `routes["GET /api/buy/<id>"] =
+buyRouteConfig(item, env)`, and every `price` we pass is a VALUE
+computed from `priceTiersUsdc(item)`. Almanac pages and Gazette issues
+get *pattern* routes (`GET /almanac/:slug`), each at the same penny
+price. So nothing in the tree prices a route per request **today** —
+which is a fact about our code, not about the protocol.
 
-So "agreed price" cannot simply become a 402 for an arbitrary number.
-Three ways out, ranked:
+**What is true about the stack.** It would take a function. The route
+table would still be built once; the price inside one route would
+become a lookup against the stored quote at request time.
+
+So "agreed price" *can* become a 402 for an arbitrary number. The
+question is whether we want the money spine reading storage on the
+request path. Three ways out, ranked:
 
 **(a) PUBLISHED RUNGS — recommended.** A small fixed ladder of
 commission prices, each its own static route:
@@ -95,16 +117,33 @@ manners than a bespoke number quoted in private, and it makes the desk
 legible to an agent that wants to know the range before writing in.
 Cost: the keeper quotes to the nearest rung.
 
-**(b) A DYNAMIC-PRICE ROUTE.** Teach the stack to compute `accepts`
-per request from the stored quote. Genuinely more correct and a real
-change to the payment spine — the one part of this store where a bug
-takes money incorrectly. Not first.
+**(b) A DYNAMIC-PRICE ROUTE.** Pass a `DynamicPrice` function that
+reads the stored quote for the commission id on the request. Supported
+by the library; no change to the spine's machinery, only to what we
+hand it.
+
+The real cost is not difficulty, it is **what a failure does**. A
+static price cannot fail: it is a number computed at boot, and if it is
+wrong the boot is wrong and every test sees it. A dynamic price is a
+KV read inside the money path, so a miss, a stale write or an eventual-
+consistency lag becomes a wrong number quoted to a real buyer — in the
+one part of this store where being wrong moves money. It also opens a
+question rungs never have to answer: what a quote that has expired,
+been revoked, or been guessed at by id should charge.
+
+Not first, but the reason is risk appetite and a fallback story, not
+capability.
 
 **(c) OFF-PROTOCOL INVOICE.** A plain address and an amount, reconciled
 by the chain-reconciliation walk. Loses the x402 flow, the certificate,
 and the whole point. **No.**
 
-**Recommendation: (a) now, (b) only if the rungs visibly bind.**
+**Recommendation: (a) now, (b) only if the rungs visibly bind.** The
+recommendation is unchanged by the correction above, but its grounds
+are: rungs are public, they cannot quote a wrong number, and a keeper
+rounding to the nearest rung is a smaller loss than a KV read on the
+money path. If the ladder starts costing real work — quotes that land
+badly between rungs, often — (b) is available and always was.
 
 ---
 

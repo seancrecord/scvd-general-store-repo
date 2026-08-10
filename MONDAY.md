@@ -445,12 +445,16 @@ Two findings worth knowing before reading it:
   live. The consolidation already did most of the retiring — and it
   made `the_collab` the single catch-all for four kinds of bespoke
   work, which is exactly the item a fixed $25 fits worst.
-- **A one-off price does not fit the payment stack.** `getPaymentStack`
-  builds its route table once and `accepts` is a value, not a function
-  of the request; nothing in the tree prices a route per request. The
-  recommendation is a published price ladder rather than teaching the
-  payment spine to compute prices — that spine is the one place a bug
-  takes money incorrectly.
+- ~~**A one-off price does not fit the payment stack.**~~
+  **CORRECTED 2026-08-10 — the claim was false.** `@x402/core` exports
+  `DynamicPrice = (context) => Price | Promise<Price>` and
+  `RouteConfig.price` accepts it. Per-request pricing is first-class in
+  the library we already depend on. What is true is narrower: *our*
+  route table passes values, so nothing in the tree prices per request
+  today. The published-ladder recommendation survives, but on risk
+  appetite — a KV read inside the money path can quote a wrong number
+  to a real buyer, and a static price cannot — not on impossibility.
+  `docs/COMMISSION_DESK.md` §3 carries the correction in full.
 
 Four decisions are the keeper's: which items, the rungs, quote expiry,
 and whether a declined request gets a public reply.
