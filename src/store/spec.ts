@@ -23,7 +23,16 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * the script is what remembers, which is the same shape as every other
  * hand-typed value corrected today: derive it, or make the tool fail.
  */
-export const SKILL_VERSION = "2.10.0";
+/**
+ * 3.0.0 — MAJOR, and the major is not decoration. The bundle live at
+ * 2.10.0 tells readers "The store settles first, then hands over the
+ * goods." That stopped being true on 2026-08-10, hours after 2.10.0
+ * went out. It is not an incomplete claim, it is a false one: it tells
+ * a buyer that a failed delivery leaves them owed a refund, when in
+ * fact they were never charged, and it says so inside somebody else's
+ * catalogue where we cannot correct it.
+ */
+export const SKILL_VERSION = "3.0.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

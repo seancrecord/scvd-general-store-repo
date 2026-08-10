@@ -3,11 +3,19 @@
 Rule 30 keeps publishing in keeper hands. The bundle is ready; the
 command is yours.
 
-**Published now:** v2.9.0, 2026-08-04, commit `c201614`.
-**Prepared:** the bundle in `registry/clawhub/SKILL.md` on this branch.
+**Published now:** v2.10.0, from commit `929d17d`, published by the
+keeper on 2026-08-10. (This file first said 2.9.0 — written before that
+run's record reached main, and corrected once it did.)
 
-Suggested version: **v3.0.0** — a major, because a load-bearing claim
-in the published bundle is now false rather than merely incomplete.
+**Prepared:** the bundle in `registry/clawhub/SKILL.md` on this branch.
+`SKILL_VERSION` in `src/store/spec.ts` is bumped to **3.0.0**, which is
+what the publish script compares against.
+
+**The timing is the point.** 2.10.0 went out on the morning of
+2026-08-10, and the gate flipped that afternoon. So the bundle sitting
+in ClawHub's catalogue right now was correct when it was published and
+became false a few hours later. Nobody did anything wrong; this is just
+what a static document in someone else's catalogue does.
 
 ## Changelog line
 
