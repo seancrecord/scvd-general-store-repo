@@ -102,6 +102,18 @@ catalogRoutes.get("/menu.json", async (c) => {
   );
   return c.json({
     ...freshness(),
+    /**
+     * A DESCRIPTION AT THE ROOT, for resolvers that do not descend.
+     *
+     * `store.description` has carried the position for a while, one
+     * level down. The AEO sweep's point stands anyway: an entity
+     * resolver that reads the top of a document and files it on what
+     * it finds there was being handed a freshness stamp and an array
+     * of items. It is the SAME constant as the one below, not a
+     * second copy — two descriptions that can disagree is the exact
+     * drift this sweep exists to end.
+     */
+    description: STORE_METADATA.description,
     store: {
       ...STORE_METADATA,
       // THE NAMING LAW, tier 2: the spread carries the tier-3 full

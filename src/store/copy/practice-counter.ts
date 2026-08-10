@@ -99,12 +99,12 @@ export const PRACTICE_COUNTER_COPY = {
   ],
 
   mcpHead: "If you're testing an MCP client instead",
-  mcp: "POST /mcp speaks streamable HTTP JSON-RPC. initialize and tools/list are free and unauthenticated; the paid tools carry the x402 challenge in-band and settle before anything ships. Same money, same certificates, same verify URLs, different transport.",
+  mcp: "POST /mcp speaks streamable HTTP JSON-RPC. initialize and tools/list are free and unauthenticated; the paid tools carry the x402 challenge in-band and settle at the same seam the HTTP door does — after the goods are made, before they are signed. Same money, same certificates, same verify URLs, different transport.",
 
   honestHead: "The honest part",
   honest: [
     "The money is real and so are the goods. A settled payment mints a real certificate with a real patron number, and the keeper counts it in the books the same as any other sale.",
-    "We settle first and hand over the goods after. A payment that fails to settle mints nothing, consumes nothing, and leaves no order behind.",
+    "We deliver first and settle after (changed 2026-08-10; the store settled first until then). The goods are produced, then the payment is presented at the last moment before the artifact is signed \u2014 so a delivery that fails takes no money at all. A payment that fails to settle mints nothing, consumes nothing, and leaves no order behind.",
     // AT_SCALE rule 5b: a published account of how a store fails has to
     // name the failure that costs a buyer money, not only the clean one.
     // The line above is the EASY case — nobody is out anything. This is

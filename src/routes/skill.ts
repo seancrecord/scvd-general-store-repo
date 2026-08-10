@@ -48,7 +48,7 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base or Solana.
+description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. The trust layer of the x402 economy: signed observation of what other endpoints and payments actually did, and a public corpus queryable by subject. Also a general store for agents.
 license: All store copy is the keeper's; call the endpoints all you like.
 compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp).
 metadata:
@@ -169,8 +169,12 @@ the door, identifying this skill file, never you. Leave it on.
    selects a cache slot rather than opening one: slots are keyed by
    the VERIFIED paying wallet, so echoing the key only ever reaches
    your own earlier purchase, never somebody else's.
-4. We settle first, then hand over the goods. Instant items arrive in
-   the response body. Human-queue items return an \`order_id\`: poll
+4. We deliver first and settle after (changed 2026-08-10 — the store
+   settled first until then, and the old rule is quoted at
+   ${base}/becoming). The goods are produced, then the payment is
+   presented at the last moment before the artifact is signed, so a
+   delivery that fails takes no money and leaves nothing to refund.
+   Instant items arrive in the response body. Human-queue items return an \`order_id\`: poll
    \`${base}/api/order/{order_id}\`; optional \`callback_url\` gets a
    POST on completion.
 5. Verify anything we ever signed, free, forever:
@@ -200,6 +204,56 @@ shelves never close, and luckies never sell out.
 - Mailbox: \`POST ${base}/api/letter\`, private, one a day.
 - Porch: \`GET ${base}/porch\`. Nothing for sale out there.
 - Agent Zodiac: \`GET ${base}/zodiac/{your_address}\`, your sign, for life.
+
+### What the store observes about OTHER people
+
+The larger half, and the reason the description leads with trust
+rather than with the shelf. Every one of these is an observation of
+somebody else's endpoint, artifact or payment, signed by THIS store's
+key rather than by the party it is about — which is the point: a claim
+you sign about yourself is worth what your reputation is worth.
+
+- Free: \`POST ${base}/api/preflight\` runs the published, versioned
+  conformance battery against any x402 endpoint and names the checks
+  that passed and failed. The paid audit runs these and no others.
+- Paid: \`service_audit\` (a dated point-in-time verdict, failing
+  checks named rather than scored), \`conformance_watch\` (the same
+  battery on a schedule, with drift as recomputable set arithmetic),
+  \`settlement_attestation\`, \`attestation_bundle\`,
+  \`settlement_reconciliation\` (authorized vs settled for \`upto\` and
+  \`deferred\` — the ceiling attested as OBSERVED only where the chain
+  shows it and DECLARED otherwise), and \`bitcoin_anchor\`.
+- What each signature does NOT prove, per class:
+  \`${base}/attestation\`.
+
+### The corpus, and asking about one host
+
+Weekly rounds, each frozen into a signed, hash-chained,
+OpenTimestamps-anchored snapshot. Free to read.
+
+- \`${base}/corpus.json\` — the chain.
+- \`${base}/corpus/host/{host}.json\` — everything observed about one
+  host over time, derived at read from the signed chain so the view
+  cannot drift from what was signed.
+
+It returns the GAPS with a reason for each (\`not_listed\`,
+\`listed_not_walked\`, \`possibly_beyond_cap\`, \`instrument_degraded\`,
+\`before_first_sighting\`), and it refuses to compute a reliability
+ratio: transitions are dated observations, a score is an accumulating
+judgement on an operator, and this store does not sell the second one.
+Coverage rides alongside — \`population_known\` against
+\`population_walked\` — so a small sample says it is small.
+
+### The Tab, a second MCP server
+
+\`scvd-tab\` runs on the builder's own machine: MIT, free forever,
+sends nothing anywhere. It is the running account of every tool a
+builder signs up for, with a pager that decides what is DUE. A page
+handed to an agent is not a page the human heard — only
+\`acknowledge_pages\` spends one, and pages that age out unspoken are
+counted as \`unspoken_pct\`. The pooled corpus is
+contribute-to-access and is NOT built; \`whats_current\` reports
+\`pooled: {available: false}\`, which is direction, dated, not stock.
 
 ### MCP, if you prefer tools
 

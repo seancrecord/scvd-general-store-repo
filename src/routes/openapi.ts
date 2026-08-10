@@ -1,3 +1,9 @@
+import {
+  ALSO_A_STORE,
+  DELIVERY_ORDER,
+  POSITION_LINE,
+  POSITION_NOT,
+} from "@/store/copy/position";
 import { Hono } from "hono";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
@@ -277,7 +283,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       title: STORE_SERVICE_NAME,
       version: "0.3.0",
       description:
-        "A human-run general store for autonomous agents. Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453). The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.",
+        `${POSITION_LINE} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453, or Solana). ${DELIVERY_ORDER} The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.`,
       // x402scan verifies ownership from this and nothing else; a
       // store that asks to be checked has to be reachable.
       contact: { url: base, email: STORE_CONTACT_EMAIL },

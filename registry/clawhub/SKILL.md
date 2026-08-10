@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. Also a general store for agents — signed artifacts and the labor of a named human, USDC on Base or Solana.
+description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. The trust layer of the x402 economy: signed observation of what other endpoints and payments actually did, and a public corpus queryable by subject. Also a general store for agents.
 homepage: https://scvd.store
 ---
 
@@ -209,10 +209,21 @@ either rail, same tiers, your wallet's choice — amount, the store's
    slots are keyed by the VERIFIED paying wallet, so echoing the key
    can only ever reach your own earlier purchase, never somebody
    else's.
-4. The store settles first, then hands over the goods. Instant items
-   arrive in the response body. Human-queue items return an `order_id`
-   to poll at `https://scvd.store/api/order/{order_id}`; an optional
+4. **The store delivers first and settles after.** The goods are
+   produced, then the payment is presented at the last moment before
+   the artifact is signed — so a delivery that fails takes no money at
+   all and leaves nothing to refund. Instant items arrive in the
+   response body. Human-queue items return an `order_id` to poll at
+   `https://scvd.store/api/order/{order_id}`; an optional
    `callback_url` gets a POST on completion.
+
+   CHANGED 2026-08-10, and worth knowing if you cached an earlier
+   version of this file: until then the store settled FIRST and minted
+   second. That protected against minting on unconfirmed payment and
+   cost the opposite failure — money taken, the delivery step died,
+   the buyer holding nothing. The old rule ended in the word "Ever"
+   and was amended anyway, in the open; both are at
+   `https://scvd.store/becoming`.
 5. Verify anything the store ever signed, free, forever:
    `GET https://scvd.store/api/verify/{id}`.
 
@@ -253,6 +264,109 @@ luckies never sell out.
   he owes you nothing and knows it.
 - **The Agent Zodiac** — `GET https://scvd.store/zodiac/{your_address}`.
   Your sign, for life; this week's horoscope, free.
+
+## The verification tier — what the store observes about OTHER people
+
+This is the half the earlier version of this bundle did not mention,
+and it is now the larger half. Everything here is an observation of
+somebody else's endpoint, artifact or payment, signed by this store's
+key rather than by the party it is about — which is the whole point:
+a claim you sign about yourself is worth what your reputation is
+worth, and a claim we sign about you can be checked by a third party
+without trusting either of us.
+
+Every one of these is an artifact class on
+`https://scvd.store/attestation`, with `trust_model`, what the
+signature covers, and — the load-bearing field — what it does NOT
+prove.
+
+- **Free preflight.** `POST https://scvd.store/api/preflight` runs the
+  published, versioned conformance battery against any x402 endpoint
+  and returns the named checks that passed and failed. No wallet, no
+  charge, no signature. The paid audit runs these checks and no
+  others.
+- **`service_audit`** — a signed, dated, point-in-time verdict on one
+  endpoint: `ready` / `not_ready` / `unreachable`, with the failing
+  checks NAMED rather than collapsed into a score. Carries an
+  `evidence_hash` bound into the purchase certificate, so
+  `/api/verify` answers for the observation and the receipt at once.
+- **`conformance_watch`** — the same battery on a schedule, with
+  `drift_detected` computed as set arithmetic over sorted failed-check
+  sets, so a reader can recompute the verdict rather than trust it.
+- **`settlement_attestation`** — a neutral party reads one on-chain
+  settlement and signs what it saw. $0.004.
+- **`attestation_bundle`** — a sheaf of settlement observations under
+  one signature, with a digest over the whole set bound into the
+  certificate.
+- **`settlement_reconciliation`** — authorized versus settled, for
+  x402's `upto` and `deferred` schemes. The ceiling is attested as
+  **observed** only where it is derivable from the chain (an Approval
+  in the same receipt, or an EIP-3009 authorization whose value is
+  fixed inside the payer's signed digest) and as **declared**
+  otherwise. `cap_observed` is its own signed field, never a footnote,
+  because signing a cap the buyer handed us would put this store's key
+  on the buyer's arithmetic.
+- **`bitcoin_anchor`** — your digest, timestamped into Bitcoin via
+  OpenTimestamps, bound into a certificate.
+
+### The corpus, and querying it by subject
+
+The store walks a population of x402 endpoints on a weekly cadence and
+freezes each round into a signed, hash-chained, OpenTimestamps-anchored
+snapshot. It is public and free to read.
+
+- `https://scvd.store/corpus.json` — the chain of snapshots.
+- `https://scvd.store/corpus/host/{host}.json` — **everything this
+  store has ever observed about one host, over time.** Derived at read
+  from the signed chain, so the view cannot drift from what was
+  signed; every row cites the digest and URL of the entry it came
+  from.
+
+Two things about that query are unusual and both are deliberate.
+
+**It returns the GAPS.** Not just what was seen, but why each blank is
+blank — `before_first_sighting`, `not_listed`, `listed_not_walked`,
+`possibly_beyond_cap`, `instrument_degraded`. Five different facts
+were being written as one silence.
+
+**It refuses to compute a reliability score.** Ready-in-8-of-12 is one
+division away and this store will not publish it. Each transition is a
+dated observation and is published as one; an accumulating score on an
+operator is a different product and we do not sell it. The document
+says so out loud rather than letting the absence look like an
+oversight.
+
+Coverage is published beside every verdict rather than left for you to
+wonder about: `population_known` (the union of every public directory
+we read) against `population_walked` (the subset we actually probed).
+If that ratio is small, the artifact says it is small.
+
+## The Tab — a second MCP server, free and yours
+
+`scvd-tab` is a separate MCP server that runs entirely on the
+builder's own machine. MIT, free forever, and it sends nothing
+anywhere: the tab is a local file.
+
+It is the running account of every tool a builder signs up for —
+trials, renewals, price changes, cancellations — with a pager that
+decides what is DUE and hands it over at the start of a session, plus
+a ride-along so a trial converting tomorrow reaches the agent on ANY
+touch of the tab rather than only on the call that happens to ask
+about trials.
+
+The discipline worth knowing before you install it: **a page handed to
+an agent is not a page the human heard.** Only `acknowledge_pages`
+spends one, and pages that age out unspoken are counted as
+`unspoken_pct` — the tab measures its own failure to be repeated
+rather than assuming it was.
+
+Pricing, committed in public before anyone installs rather than left
+as "free for now": the local tab, the pager and `export_tab` are free
+forever and MIT and on your machine. Reading the POOLED corpus is
+contribute-to-access. Pooled read without contributing is the only
+money door. The pooled layer is **not built** — `whats_current`
+honestly reports `pooled: {available: false}` — and that is direction,
+dated, not stock.
 
 ### MCP, if you prefer tools
 
@@ -307,7 +421,13 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
   is the same artifact from the same key as any other route in.
 - The promises: if an item isn't delivered within its promised window,
   you get your money back — the keeper sends it himself, and you will
-  not have to argue for it. Human-labor items are fulfilled weekly by
+  not have to argue for it. As of 2026-08-10 you do not have to notice
+  it either: the order's own page at
+  `https://scvd.store/api/order/{order_id}` says when a window has
+  been missed, by how long, and what is owed, whether or not the goods
+  eventually arrived. Nothing about the payment is automatic and the
+  store does not claim it is — a refund is created pending and the
+  keeper pays it by hand with a transaction hash on the record. Human-labor items are fulfilled weekly by
   an actual person with a day job. Everything the store signs verifies
   free, forever.
 - Why any of it is worth anything: the certificate is signed by the

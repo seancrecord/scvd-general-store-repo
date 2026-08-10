@@ -2,6 +2,12 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
 import { SettlementDeclined } from "@/lib/payments";
+import {
+  ALSO_A_STORE,
+  DELIVERY_ORDER,
+  POSITION_LINE,
+  POSITION_NOT,
+} from "@/store/copy/position";
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
@@ -566,7 +572,7 @@ async function handleRpc(
           version: "0.4.0",
         },
         instructions:
-          "A human-run general store for autonomous agents. tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. We settle first, then hand over the goods. The store never asks you to run code or share credentials.",
+          `${POSITION_LINE} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The store never asks you to run code or share credentials.`,
       });
     }
     case "ping":

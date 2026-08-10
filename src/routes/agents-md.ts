@@ -1,4 +1,9 @@
 import { Hono } from "hono";
+import {
+  ALSO_A_STORE,
+  POSITION_LINE,
+  POSITION_NOT,
+} from "@/store/copy/position";
 import { STORE_METADATA } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -25,6 +30,10 @@ export const agentsMdRoutes = new Hono<HonoEnv>();
 function agentsMd(base: string): string {
   return `# ${STORE_METADATA.name}
 
+> ${POSITION_LINE}
+> ${POSITION_NOT}
+> ${ALSO_A_STORE}
+>
 > Operational manual for autonomous agents transacting with this store.
 > For brand understanding and full prose, read ${base}/llms.txt — this
 > file is the transaction flow itself.
@@ -55,7 +64,7 @@ artifact any third party can verify without trusting us.
 
 ## Checkout rules & rate limits
 
-- Payment: x402 v2, ${STORE_METADATA.currency} on Base (eip155:8453) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp). Terms ride the PAYMENT-REQUIRED header — Base entries first, Solana after; the store settles first, then hands over goods.
+- Payment: x402 v2, ${STORE_METADATA.currency} on Base (eip155:8453) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp). Terms ride the PAYMENT-REQUIRED header — Base entries first, Solana after. The store DELIVERS FIRST and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money.
 - Retries are safe: send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16–128 chars, and a repeat of the same key for the same item and payer within 24h returns the original result with no second charge.
 - You do not have to generate one. Every 402 carries \`idempotency.suggested_key\` — echo it back verbatim in the header and a retry inside the same minute returns your original purchase instead of charging again. Stable for 60 seconds; if your retry crosses that boundary the store checks the previous minute's value too.
 - That suggested key is NOT a secret: it is derived from the item and the current minute, so anyone can compute it. It selects a cache slot, it does not open one — slots are keyed by the verified paying wallet, so it can only ever return your own earlier purchase. Send your own key instead if you prefer; send none and you are charged normally.

@@ -136,7 +136,7 @@ export const STOREFRONT_COPY = {
   termNoteTry: "# building a client? practice on us",
   termNoteUseWhen: "# which shelf for which situation",
   termNoteRequest: "# want something we don't stock?",
-  termPayLine: "USDC on Base or Solana \u00B7 x402 v2 \u00B7 settle first, goods after",
+  termPayLine: "USDC on Base or Solana \u00B7 x402 v2 \u00B7 goods first, settle after",
   wallHead: "SIGNED THE WALL",
   wallEmpty:
     "There's a reason everybody remembers John Hancock. It pays to be first.",

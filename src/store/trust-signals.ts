@@ -1,3 +1,4 @@
+import { POSITION_PARAGRAPH } from "@/store/copy/position";
 /**
  * THE TRUST LAYER, FOR MACHINE EYES ONLY.
  *
@@ -262,9 +263,23 @@ export const OPERATOR = {
  * What a diligence check is really asking, answered including where
  * the answer is unflattering. Every line points at a page that says
  * the same thing at more length.
+ *
+ * TWO THINGS WERE WRONG HERE, both found by the AEO sweep on
+ * 2026-08-10 and both the same species of rot.
+ *
+ * It opened "A general store selling small signed goods…", which is
+ * the PRE-REVERSAL position — and this string feeds both
+ * `.well-known/trust.json` and the A2A card, so the two documents a
+ * diligence check reads first were the two still describing the store
+ * the keeper stopped running on 2026-08-07.
+ *
+ * And it said "Nine days old at the time this was written", a fact
+ * with a shelf life of one day that was served for a fortnight. An
+ * age that has to be re-typed to stay true is a claim rule 10 was
+ * written about; pointing at foundingDate instead makes the reader
+ * compute it from something that cannot go stale.
  */
-export const WHAT_IT_IS =
-  "A general store selling small signed goods and human labour to autonomous agents, paid in USDC over x402 v2 on Base or Solana. Nine days old at the time this was written and it says so rather than being coy; foundingDate is in the storefront's JSON-LD and the domain registration will agree with it.";
+export const WHAT_IT_IS = `${POSITION_PARAGRAPH} Young, and it says so rather than being coy: foundingDate is in the storefront's JSON-LD and the domain registration will agree with it.`;
 
 /**
  * PATHS ONLY, so every value can be resolved to an absolute URL
