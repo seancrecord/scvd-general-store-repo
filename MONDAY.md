@@ -21,7 +21,15 @@ argument: *the failure we suffered (paid, no goods, buyer leaves) is
 worse than the one we take on.* His acceptance test: **fail a handler,
 assert no settle call and no on-chain movement.** Rule 9 in
 `HOUSE_RULES.md` is amended and dated, with the old text quoted rather
-than deleted.
+than deleted. **DONE** — `test/deliver-first.spec.ts` is that
+assertion, written first and red against the old gate; the gate now
+passes it. Not a literal reordering, and the difference matters: the
+signed certificate names the settlement transaction, so settling
+strictly after the handler returns would have bought the ruling by
+gutting the receipt. The handler is handed the AUTHORIZATION and
+presents it at its own last line before the mint, so every chain read
+and probe happens where failure costs the buyer nothing. The MCP door
+flipped with it.
 
 **3. What retires a badge: nothing. It ages.** A badge is a dated
 observation, never a live status — *"as of [date], this endpoint
@@ -30,22 +38,26 @@ it gets old. **No chasing badge-holders to take anything down** — the
 badge carries its own expiry by carrying its own date. The Conformance
 Watch is what sells currency. This unblocks the criteria page, which
 was the rule 43 gate in front of every badge the store might ship.
+**Recorded, not built** — the criteria page is the next move behind
+it.
 
 **4. The burn total may contain an estimate.** Add a `basis` field
 marking which numbers are estimated and which are exact. The keeper's
 reasoning: *leaving them out makes the total incomplete; marking them
 makes it honest.* That settles the two non-clock billing shapes —
 usage-based and free-tier-with-a-paid-path — which were unrepresentable
-under the old reading.
+under the old reading. **Recorded, not built.**
 
 **5. Card reconciliation: monthly CSV export from the bank.** Manual
 is fine for now. The tab's sweep measures itself; a card statement is
 ground truth. This is what `variability_pct` has been waiting on.
+**Recorded, not built.**
 
 **6. The ward widens to every public directory.** Uniform — no
 targeting, no picking favourites. *If it is on a public list, we watch
 it.* This also answers the Browser Use question without ever having to
 ask it about Browser Use specifically, which was the point.
+**Recorded, not built.**
 
 **7. Commission Desk: `the_collab` first, and public replies on
 declined requests.** Transparency is house style. The keeper added
@@ -55,20 +67,36 @@ labor item eventually moves to request → quote → agreed price**, with
 two decisions he did not name (the rungs, quote expiry) should take
 the spec's recommended defaults, those defaults are on record in
 `docs/COMMISSION_DESK.md` and nothing is blocked either way.
+**Recorded, not built.**
 
 **8. Build the refund-window detector.** The card by the door promises
 a refund on a missed window and nothing enforces it. Correctly
 deferred when the queue was empty; six organic sales later the premise
 has changed. Rule 10's own lesson pointed at the store's loudest money
-claim.
+claim. **DONE, and it was two-thirds built already** — the sweep and
+the `order_sla` page existed on the cron. What was missing was the
+half the promise actually turns on: the BUYER could not see the
+breach. "You won't have to argue for it" was enforced by the check
+reporting only to the person who owed the money. The order's own page
+now says when a window was missed, by how long, and what is owed —
+including when the goods eventually arrived late, because the promise
+says a missed window earns the money back and does not say "unless we
+get there eventually." Still moves no money: rule 10 keeps refunds in
+the keeper's hand, and a test guards the wording against the word
+"automatic".
 
 ---
 
 A running file, updated through the day. Written to be read cold after
 a weekend of not thinking about any of it.
 
-**State of main:** green. Suite 1342+ across 160 files, tab suite 46,
+**State of main:** green. Suite 1531 across 173 files, tab suite 46,
 tsc clean, audit 7/7 at budget.
+
+**⚑ THE BRANCH IS AHEAD OF MAIN.** Everything dated 2026-08-10 below —
+the eight rulings, the rule 9 flip, the refund-window work, the AEO
+sweep — is on `claude/homepage-footer-cleanup-eg3l0l` and NOT deployed.
+Anything checked against the live site is checking the old code.
 
 ---
 
@@ -84,6 +112,21 @@ Newest last. Each line is a merged PR on main.
 | #78 | The issuer-pays immunity clause, at spec level |
 | #79 | The test plan; SCHEMA.md caught up to v0.6; `bad_lines` reaches the rollup |
 | #80 | Test-run findings; `quarter` added; SCHEMA_VERSION → 0.7 |
+
+**Since, on main:** #81–#94 — the refund-window detector, the
+population layer, the per-subject query, the SSRF/probe-target law, the
+Settlement-Reconciliation SKU, the chain-read retry and second RPC
+provider, one row per standing alarm, the admin throttle.
+
+**On the branch and NOT merged**, newest last:
+
+| what |
+|---|
+| The unread mark on the alarm trail; a mis-click on a resolution becomes a visible correction rather than a chain orphan |
+| Eight keeper rulings recorded as canon; `OPEN_LABOR_CAP = 7`; the resolution stamp names WHICH outcome |
+| **Rule 9 flipped** — deliver first, settle after, pinned by the keeper's own acceptance test |
+| The buyer can see a missed window on their own order page; `order_id` on `RefundRecord` |
+| The AEO sweep: one position module, eleven surfaces corrected, a parity test, and the ClawHub bundle rewritten |
 
 **The two that would matter most if you only read two:**
 
@@ -378,11 +421,13 @@ Noted for the red-team week rather than fixed now.
 |---|---|
 | The pager's ride-along | whether an agent *says* `pending_pages`. `unspoken_pct` is null; no page has ever settled either way |
 | The Tab, Parts 2/3/4/6 | client handshake, cron, two-agents-one-tab, the sweep contract dry run |
-| Deliver-first / rule 9 | the property is asserted from a README and our own code comment; no test |
+| ~~Deliver-first / rule 9~~ | **CLOSED 2026-08-10.** Ruled, flipped, and pinned by the keeper's own acceptance test (`test/deliver-first.spec.ts`). What is now unproven is the OTHER side: no real buyer has yet hit a delivery that failed before settling, so the no-charge path has met the suite and not a stranger |
 | Replay guard | concurrency, known and unfixed |
 | Tiered / PWID arithmetic | `graffiti_on_a_train` tiers and `the_drawer` minimum have never been exercised by an outside buyer — every live purchase so far took the fixed-price path |
 | The watches | no third-party endpoint has ever been watched for a full week |
 | The sweep contract | never run against a real inbox, even by hand |
+| The refund-window breach, buyer-side | the order page now states a missed window and what is owed. No real buyer has ever seen one, because no window has been missed since it shipped |
+| The unread mark on the alarm trail | the watermark moves on page load. Whether "NEW" actually stops the 3am eyeballing is a keeper question a suite cannot answer |
 
 The pattern worth noticing: **almost everything above is unproven in
 the same way — it works in the suite and has never met a stranger.**
@@ -460,7 +505,7 @@ stranger to pay."*
 
 | | |
 |---|---|
-| **Refund-window detector** | a live published money promise enforced only by the keeper remembering. Approved 2026-08-08. |
+| ~~**Refund-window detector**~~ | **BUILT.** Sweep and page were already on the cron; 2026-08-10 added the half the promise turns on — the buyer can see the breach on their own order page. |
 | **Commission Desk** | SPEC WRITTEN 2026-08-09 → `docs/COMMISSION_DESK.md`. Four decisions waiting on the keeper. |
 | **The bench (open-queue cap)** | BUILT 2026-08-09. The interim floor under the same exposure, and it found a live hole. |
 
@@ -975,16 +1020,23 @@ embedding argument above.
 Every surface, with what each must now say. Unchecked = not yet
 audited against the post-2026-08-07 position.
 
-- [x] `llms.txt` — position stated, this pass
-- [ ] `registry/clawhub/SKILL.md` — stale bundle, republish is keeper hands
-- [ ] `AGENTS.md` — last touched 2026-08-04
-- [ ] `README.md`
-- [ ] `menu.json` / `openapi.json` descriptions
-- [ ] `.well-known/trust.json`
-- [ ] the A2A card
-- [ ] JSON-LD
-- [ ] MCP `serverInfo` / `instructions` on the store door
-- [ ] `scvd-tab` server `instructions`
+- [x] `llms.txt` — position stated
+- [x] `registry/clawhub/SKILL.md` — rewritten 2026-08-10; **republish is
+  still keeper hands** (rule 30). Version and changelog line prepared at
+  `registry/clawhub/CHANGELOG_PENDING.md`
+- [x] `AGENTS.md`
+- [x] `README.md`
+- [x] `menu.json` / `openapi.json` descriptions
+- [x] `.well-known/trust.json` — was opening with the PRE-REVERSAL
+  position, and also claimed the store was "nine days old at the time
+  this was written," served for a fortnight
+- [x] the A2A card — same string, same two faults
+- [x] JSON-LD — `organizationDescription` was done in the earlier pass;
+  `/what`'s FAQPage turned out to already exist, and to cover the
+  derived long-tail questions as well as the twelve
+- [x] MCP `serverInfo` / `instructions` on the store door
+- [x] `scvd-tab` server `instructions` — position second, deliberately:
+  the operating instructions are what an agent needs in sentence one
 
 The rule to hold: **rule 44 says the sweep is a stop after changes,
 not a chore for later.** We shipped a positioning reversal and six
@@ -1030,14 +1082,33 @@ the keeper asked for — it is the version that compounds.
 
 ### Still to do — the rest of the sweep
 
-- [ ] `/what` and `trust-signals.ts` — the whitelist is exact; check the position lands without inventing a signal
-- [ ] `.well-known/trust.json`
-- [ ] `.well-known/a2a.json` — the A2A card's description
-- [ ] `menu.json` / `openapi.json` top-level descriptions
-- [ ] `/agents.md` served route (distinct from the repo file)
-- [ ] MCP `serverInfo` + `instructions`, **both servers** — the store's `/mcp` and `scvd-tab`
-- [ ] `/directory.ts` and `/schemas.ts` JSON-LD
-- [ ] `security.txt`, `did.json` — check nothing contradicts
+- [x] `/what` and `trust-signals.ts` — done, and `WHAT_IT_IS` was the
+  find: one pre-reversal string feeding BOTH `trust.json` and the A2A
+  card, so the two documents a diligence check reads first were the two
+  still describing the store the keeper stopped running on 08-07
+- [x] `.well-known/trust.json`
+- [x] `.well-known/a2a.json`
+- [x] `menu.json` / `openapi.json` top-level descriptions — menu.json's
+  position already lived at `store.description`; a root-level field was
+  added for resolvers that read the top of a document and file on what
+  they find. The SAME constant, not a second copy
+- [x] `/agents.md` served route — **the route was never broken.** It
+  serves the operational manual, not `/what` content; the earlier note
+  was checking the live deploy, which does not have this branch. Position
+  added to its header block
+- [x] MCP `serverInfo` + `instructions`, **both servers**
+- [ ] `/directory.ts` and `/schemas.ts` JSON-LD — still open. The
+  `Dataset` markup on `/corpus.json` (gap 1 below) belongs with this one
+- [ ] `security.txt`, `did.json` — still open; a read for contradictions
+  rather than a rewrite
+
+**AND THE THING THAT MADE THE LIST FIXABLE.** The words now live once,
+in `src/store/copy/position.ts`, and the surfaces import them.
+`test/position-parity.spec.ts` fails if any machine-read surface loses
+the position or regains the old settle-first ordering. Rule 44 says the
+sweep is a stop after changes rather than a chore for later; a test is
+how a stop gets teeth. Eleven hand-typed copies is how this list came to
+exist in the first place.
 
 ### Two notes for the keeper
 
@@ -1506,8 +1577,8 @@ the batch is two or three, not eight.
 
 | | why |
 |---|---|
-| **`order_id` on `RefundRecord`** | additive, optional, tiny. Turns `owed_usdc` from a floor into a fact. Do it next time refunds are touched |
-| **The Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. Spec before build |
+| ~~**`order_id` on `RefundRecord`**~~ | **DONE 2026-08-10**, when refunds were next touched, exactly as written. `owed_usdc` is now exact wherever the rows are new, the audit reports how many joins still rest on the old item+payer guess, and a refund that names its order can no longer be borrowed by a sibling breach — which was the specific way a real debt could vanish from the total |
+| **The Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. RULED 2026-08-10: `the_collab` first, public replies on declines. Spec §3 corrected the same day — a one-off price DOES fit the payment stack. Not built |
 
 ---
 
