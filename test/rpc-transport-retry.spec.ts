@@ -155,3 +155,66 @@ describe("an answer, which is never re-asked", () => {
     expect(observation.signature).toMatch(/^[0-9a-f]+$/);
   });
 });
+
+describe("two providers, and the secret that must never leak", () => {
+  it("tries the authenticated endpoint first and falls back to the public one", async () => {
+    /*
+     * Retrying a rate-limited endpoint against itself helps with a
+     * hiccup and not at all with an outage. Two INDEPENDENT providers
+     * is the part that actually protects a paid delivery.
+     */
+    const seen: string[] = [];
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: unknown) => {
+      const url = String(input);
+      seen.push(new URL(url).host);
+      return url.includes("paid.example")
+        ? new Response("nope", { status: 503 })
+        : ok("0x64");
+    }) as typeof fetch;
+
+    const twoProviders = {
+      ...testEnv,
+      BASE_RPC_URL_PRIMARY: "https://paid.example/rpc/secret-token",
+      BASE_RPC_URL: "https://public.example/rpc",
+    } as unknown as Env;
+
+    expect(await getBlockNumber(twoProviders)).toBe(100);
+    // Three attempts at the paid one, then the public one answers.
+    expect(seen.filter((host) => host === "paid.example")).toHaveLength(3);
+    expect(seen.at(-1)).toBe("public.example");
+  });
+
+  it("NEVER puts the endpoint's token in an error, because errors get published", async () => {
+    /*
+     * A hole I opened in #92 and caught before it met a real secret:
+     * the retry error interpolated the full URL. The token lives IN
+     * that URL, and error text reaches alert emails, console logs and
+     * the service audit's own `unreachable` detail. A credential on a
+     * signed artifact is a disclosure, not a typo.
+     */
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response("nope", { status: 503 })) as typeof fetch;
+
+    const withSecret = {
+      ...testEnv,
+      BASE_RPC_URL_PRIMARY: "https://paid.example/rpc/super-secret-token",
+      BASE_RPC_URL: "https://public.example/rpc",
+    } as unknown as Env;
+
+    const error = await getBlockNumber(withSecret).catch((caught: Error) => caught);
+    const message = String((error as Error).message);
+    expect(message).not.toContain("super-secret-token");
+    expect(message).not.toContain("/rpc/");
+    // It still says enough to debug: which hosts, how many tries.
+    expect(message).toContain("paid.example");
+    expect(message).toContain("public.example");
+  });
+
+  it("uses one endpoint when no authenticated one is configured", async () => {
+    const mock = mockRpc(() => ok("0x64"));
+    expect(await getBlockNumber(testEnv)).toBe(100);
+    expect(mock.calls()).toBe(1);
+  });
+});

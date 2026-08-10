@@ -7,7 +7,10 @@ import type { DeliveryAudit } from "@/services/delivery-audit";
 interface AlertLogEntry {
   condition: string;
   detail: string;
+  /** FIRST seen, and it does not move. See lib/alerts. */
   at: string;
+  last_seen?: string;
+  repeats?: number;
   /**
    * For undelivered_sale entries only: what the intent looks like
    * NOW. The keeper read three old alerts as three live problems —
@@ -154,7 +157,20 @@ function alertsHtml(alerts: AlertLogEntry[]): string {
               ? `<strong style="color:#8c2f1b">[STILL OPEN]</strong> `
               : `<strong style="color:#2f6b2f">[${escapeHtml(alert.now).toUpperCase()}]</strong> `
             : ""
-        }<strong>${escapeHtml(alert.condition)}</strong> at ${escapeHtml(alert.at)}: ${escapeHtml(alert.detail)}${
+        }<strong>${escapeHtml(alert.condition)}</strong> first seen ${escapeHtml(alert.at)}${
+          /*
+           * STANDING, NOT RECURRING, and the difference is the whole
+           * reason this line exists. A row that has been raised forty
+           * times is ONE problem nobody has fixed. Until 2026-08-10 it
+           * rendered as forty separate rows with forty different
+           * timestamps, which is how a keeper doing 3am forensics ends
+           * up cross-checking six page loads against a transaction
+           * hash to learn that nothing new had happened.
+           */
+          (alert.repeats ?? 1) > 1
+            ? ` <em>(still being raised — seen ${alert.repeats} times, last ${escapeHtml(alert.last_seen ?? alert.at)})</em>`
+            : ""
+        }: ${escapeHtml(alert.detail)}${
           alert.now === "still open" && alert.tx
             ? `<form method="POST" action="/admin/delivery/resolve" style="margin:0.3em 0">
                 <input type="hidden" name="transaction" value="${escapeHtml(alert.tx)}">
@@ -172,7 +188,14 @@ function alertsHtml(alerts: AlertLogEntry[]): string {
   return `<p>Recent alarms — each paged the keeper when it fired. This is the
     trail, not the pager: an entry marked resolved or delivered is HISTORY,
     already handled, kept so the record shows it happened. Only [STILL OPEN]
-    needs a hand.</p><ul>${rows}</ul>`;
+    needs a hand.</p>
+    <p><small>ONE ROW PER PROBLEM. The date is when it FIRST fired and it
+    never moves; a condition still standing shows its repeat count instead
+    of appearing again lower down. Before 2026-08-10 an unresolved alarm
+    minted a fresh row every six hours, so the same event read as several,
+    the newest crowded genuinely distinct ones off the list, and the page
+    got less trustworthy the longer it went unread.</small></p>
+    <ul>${rows}</ul>`;
 }
 
 export function renderReconciliationPage(

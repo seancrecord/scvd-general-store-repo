@@ -70,6 +70,41 @@ function rpcUrl(env: Env): string {
 }
 
 /**
+ * EVERY ENDPOINT WE WILL TRY, best first.
+ *
+ * BASE_RPC_URL_PRIMARY is a secret holding an authenticated endpoint;
+ * BASE_RPC_URL is the configured public one. Two INDEPENDENT providers
+ * is the part that matters — retrying a rate-limited endpoint against
+ * itself helps with a hiccup and not at all with an outage, and an
+ * outage on the paid one must not be worse for a buyer than never
+ * having had it.
+ */
+function rpcEndpoints(env: Env): string[] {
+  const primary = env.BASE_RPC_URL_PRIMARY?.trim();
+  const fallback = rpcUrl(env);
+  return primary && primary.length > 0 && primary !== fallback
+    ? [primary, fallback]
+    : [fallback];
+}
+
+/**
+ * WHAT MAY BE SAID ABOUT AN ENDPOINT OUT LOUD, and this is a real
+ * hole I opened yesterday: the retry error interpolated the full URL
+ * into its message. With an authenticated endpoint the token lives IN
+ * that URL, and alert emails, console logs and the service audit's
+ * `unreachable` detail all carry error text. A credential in an
+ * artifact is not a typo, it is a disclosure.
+ */
+export function redactRpc(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return parsed.host;
+  } catch {
+    return "the configured endpoint";
+  }
+}
+
+/**
  * TRANSPORT RETRIES, AND WHY THEY DO NOT BREAK THE "NO RETRY" RULE.
  *
  * attestation.ts states the store's rule plainly: "no polling, no
@@ -101,29 +136,37 @@ const RPC_BACKOFF_MS = [150, 450];
 async function withTransportRetries<T>(
   label: string,
   env: Env,
-  attemptOnce: () => Promise<T>,
+  attemptOnce: (endpoint: string) => Promise<T>,
 ): Promise<T> {
+  const endpoints = rpcEndpoints(env);
   let lastError: unknown;
-  for (let attempt = 0; attempt < RPC_ATTEMPTS; attempt += 1) {
-    try {
-      return await attemptOnce();
-    } catch (error) {
-      lastError = error;
-      const wait = RPC_BACKOFF_MS[attempt];
-      if (wait === undefined) break;
-      await new Promise((resolve) => setTimeout(resolve, wait));
+  let tried = 0;
+  for (const endpoint of endpoints) {
+    for (let attempt = 0; attempt < RPC_ATTEMPTS; attempt += 1) {
+      tried += 1;
+      try {
+        return await attemptOnce(endpoint);
+      } catch (error) {
+        lastError = error;
+        const wait = RPC_BACKOFF_MS[attempt];
+        if (wait === undefined) break;
+        await new Promise((resolve) => setTimeout(resolve, wait));
+      }
     }
+    // Exhausted this provider; the next one is a different network
+    // path, which is the only thing that helps against an outage.
   }
-  throw lastError instanceof Error
-    ? new Error(
-        `${lastError.message} (after ${RPC_ATTEMPTS} attempts against ${rpcUrl(env)})`,
-      )
-    : new Error(`Base RPC ${label} failed after ${RPC_ATTEMPTS} attempts`);
+  const where = endpoints.map(redactRpc).join(" then ");
+  throw new Error(
+    `Base RPC ${label} failed after ${tried} attempts across ${where}${
+      lastError instanceof Error ? `: ${lastError.message}` : ""
+    }`,
+  );
 }
 
 async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
-  return withTransportRetries(method, env, async () => {
-    const response = await fetch(rpcUrl(env), {
+  return withTransportRetries(method, env, async (endpoint) => {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: outboundHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
@@ -187,8 +230,8 @@ export async function getReceiptsBatch(
   const body = await withTransportRetries(
     `batch of ${txHashes.length}`,
     env,
-    async () => {
-      const response = await fetch(rpcUrl(env), {
+    async (endpoint) => {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: outboundHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(
