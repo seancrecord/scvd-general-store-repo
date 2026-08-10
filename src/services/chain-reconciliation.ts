@@ -260,13 +260,62 @@ async function recordSkippedRange(
 }
 
 /**
+ * THE PENNY SHELF'S COUNTERPART OF THE CERTIFICATE (the reconciliation
+ * false positive, fixed 2026-08-10). The penny pages — Almanac,
+ * Gazette issues, the Zodiac archive — deliver markdown and mint
+ * nothing, so the walk's "is there an artifact for this money" found
+ * none and paged every penny sale as possibly-undelivered. The next
+ * Almanac sale would have been an undelivered_sale alarm about a page
+ * that was served.
+ *
+ * WRITTEN AT DELIVERY, NEVER AT SETTLE — this is the whole design.
+ * The gate calls this only after a 2xx went out with the goods in it,
+ * the same seam that closes the delivery intent. A row written at
+ * settle time would blind the walk to exactly the case it exists for:
+ * money taken, delivery died. Written this way, a penny sale whose
+ * response never made it out still pages, which is correct.
+ *
+ * Never fails the sale: a paid customer does not get an error because
+ * a bookkeeping row would not write. The cost of a lost write is one
+ * false alarm the keeper can dismiss — the noisy direction, which is
+ * the safe one.
+ *
+ * TTL-bounded: the walk reads each block once, at most RECONCILE_MAX_SPAN
+ * (~11h on Base) after it was mined — and the Solana walk, cursorless
+ * on a signature, can reach further back after a long outage. Ninety
+ * days covers any plausible catch-up with two orders of margin, and
+ * keeps the scan from growing with the store's lifetime.
+ */
+export const SETTLED_DELIVERY_TTL_SECONDS = 90 * 86400;
+
+/** Ceiling on the settled-delivery scan; truncation flags, like the certs'. */
+export const SETTLED_DELIVERY_SCAN_CAP = 2000;
+
+export async function recordDeliveredSettlement(
+  env: Env,
+  transaction: string | undefined,
+): Promise<void> {
+  const tx = transaction?.trim().toLowerCase();
+  if (!tx) return;
+  await env.COUNTERS.put(
+    KV_KEYS.settledDelivery(tx),
+    new Date().toISOString(),
+    { expirationTtl: SETTLED_DELIVERY_TTL_SECONDS },
+  ).catch(() => undefined);
+}
+
+/**
  * Every settlement hash the store has an artifact for.
  *
  * Reads certificates rather than the delivery rows on purpose: a
  * delivery row is cleared on success, so it is evidence of a PROBLEM,
  * not of a sale. The certificate is the thing a buyer walks away with,
  * which makes "is there a certificate for this money" the question
- * that matters.
+ * that matters — UNIONED with the settled-delivery rows above, which
+ * are the same claim for the shelves that mint no certificate. (The
+ * union also cushions the certificate scan's own cap: a sale whose
+ * cert fell past CERT_SCAN_CAP still matches on its delivery row
+ * while the TTL holds.)
  */
 export async function knownSettlementHashes(
   env: Env,
@@ -286,7 +335,21 @@ export async function knownSettlementHashes(
       hashes.add(tx.toLowerCase());
     }
   }
-  return { hashes, truncated: listed.names.length >= CERT_SCAN_CAP };
+  // The certificate-less sales: the hash rides in the key, so the
+  // list IS the read — no bulk get to pay for.
+  const delivered = await listKeys(env.COUNTERS, {
+    prefix: KV_KEYS.settledDeliveryPrefix,
+    cap: SETTLED_DELIVERY_SCAN_CAP,
+  });
+  for (const name of delivered.names) {
+    hashes.add(name.slice(KV_KEYS.settledDeliveryPrefix.length));
+  }
+  return {
+    hashes,
+    truncated:
+      listed.names.length >= CERT_SCAN_CAP ||
+      delivered.names.length >= SETTLED_DELIVERY_SCAN_CAP,
+  };
 }
 
 /**

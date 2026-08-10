@@ -52,7 +52,10 @@ import {
   getOpenDeliveryIntent,
   openDeliveryIntent,
 } from "@/services/delivery-audit";
-import { certIdForSettlement } from "@/services/chain-reconciliation";
+import {
+  certIdForSettlement,
+  recordDeliveredSettlement,
+} from "@/services/chain-reconciliation";
 import { signedOffersForChallenge, withReceiptHeader } from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
@@ -737,6 +740,10 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             await closeDeliveryIntent(c.env, open.key).catch(() => {
               // Left open on failure: a false alarm beats a silent loss.
             });
+            // The goods finally went out on the retry, so the walk's
+            // delivered-settlement record is written now, not at the
+            // original settle whose delivery died.
+            await recordDeliveredSettlement(c.env, spent.transaction);
           }
           c.res.headers.set("Paid-Retry", "true");
           c.res.headers.set("Cache-Control", "no-store");
@@ -1122,6 +1129,23 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // Left open on failure: a false alarm the keeper can dismiss
       // beats a silent loss he never hears about.
     });
+  }
+
+  /**
+   * The chain walk's record that this money BOUGHT SOMETHING — the
+   * penny shelf's counterpart of the certificate, and the fix for the
+   * reconciliation false positive (a delivered Almanac page paging as
+   * possibly-undelivered money, because the walk read certificates
+   * only). Written here, at the same 2xx seam that closes the intent,
+   * for every settled sale: for the minting shelves it is redundant
+   * with the certificate and costs one KV write; for the penny pages
+   * it is the only artifact there is. Recording ALL sales rather than
+   * a list of penny paths is deliberate — a path list would silently
+   * reopen the false positive the day a new certificate-less shelf is
+   * added.
+   */
+  if (c.res.status < 300) {
+    await recordDeliveredSettlement(c.env, till.settled.transaction);
   }
 
   /**

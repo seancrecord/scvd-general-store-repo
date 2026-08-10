@@ -5,6 +5,7 @@ import {
   findLookalike,
   knownSettlementHashes,
   readSkippedRanges,
+  recordDeliveredSettlement,
   reconcileAgainstChain,
   runChainReconciliation,
   RECONCILE_BLOCK_SPAN,
@@ -87,6 +88,11 @@ async function clear(): Promise<void> {
   await testEnv.COUNTERS.delete(KV_KEYS.reconcileSkippedRanges);
   const certs = await testEnv.PATRONS.list({ prefix: KV_KEYS.certPrefix });
   for (const key of certs.keys) await testEnv.PATRONS.delete(key.name);
+  // The delivered-settlement rows persist across tests like any KV row.
+  const delivered = await testEnv.COUNTERS.list({
+    prefix: KV_KEYS.settledDeliveryPrefix,
+  });
+  for (const key of delivered.keys) await testEnv.COUNTERS.delete(key.name);
 }
 
 beforeEach(clear);
@@ -118,6 +124,59 @@ describe("the known-settlement set", () => {
     expect(hashes.has("0xaabbcc")).toBe(true);
     expect(hashes.has("0xddeeff")).toBe(true);
     expect(hashes.size).toBe(2);
+  });
+
+  it("unions the delivered-settlement rows — the shelves that mint nothing", async () => {
+    // The penny pages' side of the books: no certificate exists, only
+    // the row the gate wrote when the goods went out.
+    await putCert("cert_a", "0xaabbcc");
+    await recordDeliveredSettlement(testEnv, "0xPennyPage01");
+    const { hashes } = await knownSettlementHashes(testEnv);
+    expect(hashes.has("0xaabbcc")).toBe(true);
+    expect(hashes.has("0xpennypage01")).toBe(true);
+    expect(hashes.size).toBe(2);
+  });
+});
+
+describe("the reconciliation false positive (penny pages)", () => {
+  it("a delivered penny sale is NOT paged as possibly-undelivered money", async () => {
+    /**
+     * The case this fix exists for: an Almanac page sold at $0.01 —
+     * above the store's cheapest listing, so classified possible_sale
+     * — delivered its markdown and minted no certificate. Before the
+     * delivered-settlement rows, this walk flagged that money as an
+     * orphan and paged the keeper about a page that was served.
+     */
+    await recordDeliveredSettlement(testEnv, "0xAlmanacSale");
+    const result = await reconcileAgainstChain(
+      envWith(
+        rpcFetch({
+          logs: [
+            // $0.01 in atomic units, straight off the chain.
+            { tx: "0xalmanacsale", from: "0x4444", units: 10_000n, block: HEAD - 4 },
+          ],
+        }),
+      ),
+    );
+    expect(result.ran).toBe(true);
+    expect(result.transfers_seen).toBe(1);
+    expect(result.orphans).toEqual([]);
+  });
+
+  it("money with NO delivery row still flags — the record cannot blind the walk", async () => {
+    // A settle whose delivery died writes no row (the gate records at
+    // the 2xx, not at settle), so the walk still catches it.
+    const result = await reconcileAgainstChain(
+      envWith(
+        rpcFetch({
+          logs: [
+            { tx: "0xdiedserving", from: "0x5555", units: 10_000n, block: HEAD - 4 },
+          ],
+        }),
+      ),
+    );
+    expect(result.orphans).toHaveLength(1);
+    expect(result.orphans![0]!.tx_hash).toBe("0xdiedserving");
   });
 });
 

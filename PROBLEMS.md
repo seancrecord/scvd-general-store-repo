@@ -1724,6 +1724,49 @@ safe — noise rather than silence, and it already flags
 `cert_scan_truncated` — but the orphan alert stops being trustworthy
 at that point. **Trigger:** certificate count approaching 2000.
 
+### 23. The bank walk would have paged every penny sale as possibly-undelivered money — FIXED 2026-08-10, before it ever fired
+
+Latent since the walk shipped, waiting on the next Almanac sale. The
+instrument that closed #4 answers "did this money buy something" by
+reading certificates: `knownSettlementHashes()` collects
+`settlement_tx` from certificate records, and any inbound transfer at
+or above the cheapest listing ($0.004) with no matching hash is a
+`possible_sale` orphan and an `undelivered_sale` page. But the penny
+pages — the Almanac at a cent, Gazette issues, the Zodiac archive —
+deliver markdown and mint nothing ON PURPOSE: a cent buys the page,
+not a place on the wall. To the walk, every delivered penny sale was
+money with no artifact. The next Almanac sale would have paged the
+keeper about a page that was served.
+
+**A false positive is the safe direction, but not a free one.** The
+`undelivered_sale` alert exists to catch real losses; an alarm class
+that cries wolf on every penny sale trains the keeper to dismiss it,
+and a dismissed alarm is a silent one with extra steps.
+
+**The fix, as built (same day):** the shelves that mint nothing get
+their own artifact. At the same 2xx seam where the gate closes the
+delivery intent, it now writes `settled_delivery:<tx>` (COUNTERS,
+90-day TTL — the walk only ever needs a row while its block can still
+come up in a pass) for EVERY settled sale. Recording all sales rather
+than keeping a list of penny paths is deliberate: a path list would
+silently reopen this bug the day a new certificate-less shelf ships,
+while for the minting shelves the row is redundant with the
+certificate, costs one KV write, and cushions `CERT_SCAN_CAP`
+truncation as a side effect. `knownSettlementHashes()` unions the
+rows (the hash rides in the key, so the list is the read), with its
+own scan cap feeding the same truncation flag.
+
+**Written at DELIVERY, never at settle — that is the whole design.**
+A row written at settle time would blind the walk to exactly the case
+it exists for: money taken, delivery died. Written at the 2xx, a
+settle whose response never went out still pages, which is correct;
+the paid-retry lane writes the row when the goods finally do go out.
+The write itself never fails the sale — a lost row costs one false
+alarm the keeper can dismiss, the noisy direction again. Four tests
+across `test/chain-reconciliation.spec.ts` and
+`test/penny-pages.spec.ts`, each shown red without its half of the
+fix.
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare
