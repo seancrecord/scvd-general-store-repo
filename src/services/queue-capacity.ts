@@ -1,6 +1,7 @@
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { sendAlert } from "@/lib/alerts";
 import { MENU_ITEMS } from "@/store";
 import type { Env, MenuItem, OrderRecord } from "@/types";
 
@@ -45,6 +46,28 @@ import type { Env, MenuItem, OrderRecord } from "@/types";
  * IT REFUSES BEFORE THE PAYMENT GATE. A capacity refusal after
  * settlement would be money taken to be told no, which is the failure
  * this exists to prevent, not a smaller version of it.
+ *
+ * HOW IT COUNTS, and the first version got this wrong in a way that
+ * would have killed the gate quietly. It derived the count by walking
+ * the `order:` prefix under a 500-key cap — but orders are NEVER
+ * deleted and EVERY sale writes one, instant items included. Past 500
+ * lifetime sales the list truncates, `listKeys` says so with
+ * `truncated`, and the caller ignored it. The ceiling would have
+ * undercounted and then stopped binding, on success, with no symptom:
+ * exactly the instrument-stops-working failure this store keeps
+ * catching in other people's code.
+ *
+ * Raising the cap only moves the date. So the bench now walks an INDEX
+ * of open labor — one key per unfinished human order, deleted on
+ * completion — whose size is bounded by the ceiling rather than by the
+ * store's lifetime. The orders stay the truth; the index is only how
+ * we find them, it is verified against them on every read, and it is
+ * rebuilt from them on the cron.
+ *
+ * AND IT FAILS CLOSED. If the index scan ever truncates anyway, or the
+ * index has not been built yet and the fallback walk truncates, the
+ * bench refuses labor and pages the keeper. "We cannot tell how much
+ * is promised" must never resolve to "so promise more."
  */
 
 /**
@@ -61,8 +84,12 @@ import type { Env, MenuItem, OrderRecord } from "@/types";
  */
 export const OPEN_LABOR_CAP = 8;
 
-/** Bounded scan, and the verdict says when it hit the cap. */
-export const QUEUE_SCAN_CAP = 500;
+/**
+ * Ceiling on the FALLBACK walk over every order, used only until the
+ * index has been built once. Generous, and truncation here fails
+ * closed rather than silently undercounting.
+ */
+export const QUEUE_SCAN_CAP = 2000;
 
 export interface QueueLoad {
   /** Open (uncompleted) orders on human_queue items, right now. */
@@ -71,7 +98,13 @@ export interface QueueLoad {
   open_by_item: Record<string, number>;
   /** The house ceiling, published rather than implied. */
   cap: number;
+  /**
+   * The count could not be completed. NOTHING may be sold on a true
+   * value here — an unknown load is not a low one.
+   */
   scan_capped: boolean;
+  /** True while still walking every order, before the first rebuild. */
+  from_fallback_scan: boolean;
   /** The oldest open order's age in hours — the queue's real shape. */
   oldest_open_hours: number | null;
 }
@@ -95,22 +128,46 @@ export const LABOR_ITEM_IDS: ReadonlySet<string> = new Set(
  * sweep gaps are: a stored number can drift from the truth it claims
  * to summarise, and this one would drift toward looking emptier.
  */
+interface OpenLaborIndex {
+  ids: string[];
+  /** Set only by a COMPLETE rebuild. Absent means fall back to the walk. */
+  built_at?: string;
+}
+
+async function readIndex(env: Env): Promise<OpenLaborIndex> {
+  return (
+    (await env.ORDERS.get<OpenLaborIndex>(KV_KEYS.openLaborIndex, "json")) ?? {
+      ids: [],
+    }
+  );
+}
+
 export async function queueLoad(
   env: Env,
   now: Date = new Date(),
 ): Promise<QueueLoad> {
-  const keys = await listKeys(env.ORDERS, {
-    prefix: KV_KEYS.orderPrefix,
-    cap: QUEUE_SCAN_CAP,
-  });
-  const orders = await bulkGetJson<OrderRecord>(env.ORDERS, keys.names);
+  const index = await readIndex(env);
+  return index.built_at
+    ? countFromIndex(env, index, now)
+    : countByWalkingEveryOrder(env, now);
+}
+
+/** Shared tallying, so both paths agree on what "open labor" means. */
+function tally(
+  orders: Iterable<OrderRecord | null | undefined>,
+  now: Date,
+): Pick<QueueLoad, "open_total" | "open_by_item" | "oldest_open_hours"> & {
+  openIds: string[];
+} {
   const byItem: Record<string, number> = {};
+  const openIds: string[] = [];
   let total = 0;
   let oldest: number | null = null;
-  for (const order of orders.values()) {
+  for (const order of orders) {
     if (!order || order.status === "completed") continue;
     if (!LABOR_ITEM_IDS.has(order.item_id)) continue;
     total += 1;
+    openIds.push(order.order_id);
     byItem[order.item_id] = (byItem[order.item_id] ?? 0) + 1;
     const created = Date.parse(order.created_at);
     if (!Number.isNaN(created)) {
@@ -121,10 +178,120 @@ export async function queueLoad(
   return {
     open_total: total,
     open_by_item: byItem,
+    oldest_open_hours: oldest === null ? null : Math.round(oldest * 10) / 10,
+    openIds,
+  };
+}
+
+/**
+ * THE NORMAL PATH: one small read for the index, then READ THE ORDERS
+ * IT NAMES and count from those. The index says where to look; the
+ * orders say what is true. An id whose order has finished is pruned as
+ * we go, so drift toward over-refusing heals itself on the next read.
+ */
+async function countFromIndex(
+  env: Env,
+  index: OpenLaborIndex,
+  now: Date,
+): Promise<QueueLoad> {
+  const orders = await bulkGetJson<OrderRecord>(
+    env.ORDERS,
+    index.ids.map((id) => KV_KEYS.order(id)),
+  );
+  const counted = tally(orders.values(), now);
+  if (counted.openIds.length !== index.ids.length) {
+    await env.ORDERS.put(
+      KV_KEYS.openLaborIndex,
+      JSON.stringify({ ...index, ids: counted.openIds } satisfies OpenLaborIndex),
+    ).catch(() => undefined);
+  }
+  return {
+    open_total: counted.open_total,
+    open_by_item: counted.open_by_item,
+    oldest_open_hours: counted.oldest_open_hours,
+    cap: OPEN_LABOR_CAP,
+    // A single key cannot truncate. This path is structurally complete.
+    scan_capped: false,
+    from_fallback_scan: false,
+  };
+}
+
+/** Used only before the first rebuild has run. Truncation fails closed. */
+async function countByWalkingEveryOrder(
+  env: Env,
+  now: Date,
+): Promise<QueueLoad> {
+  const keys = await listKeys(env.ORDERS, {
+    prefix: KV_KEYS.orderPrefix,
+    cap: QUEUE_SCAN_CAP,
+  });
+  const orders = await bulkGetJson<OrderRecord>(env.ORDERS, keys.names);
+  const counted = tally(orders.values(), now);
+  return {
+    open_total: counted.open_total,
+    open_by_item: counted.open_by_item,
+    oldest_open_hours: counted.oldest_open_hours,
     cap: OPEN_LABOR_CAP,
     scan_capped: keys.truncated,
-    oldest_open_hours: oldest === null ? null : Math.round(oldest * 10) / 10,
+    from_fallback_scan: true,
   };
+}
+
+/**
+ * Rebuild the index from the orders. Idempotent, one write, meant for
+ * the cron: it is the only thing that reconciles drift in the direction
+ * that matters — an order that never made it into the index, which
+ * would otherwise make the bench UNDERCOUNT and oversell.
+ */
+export async function rebuildOpenLaborIndex(env: Env): Promise<number> {
+  const keys = await listKeys(env.ORDERS, {
+    prefix: KV_KEYS.orderPrefix,
+    cap: QUEUE_SCAN_CAP,
+  });
+  const orders = await bulkGetJson<OrderRecord>(env.ORDERS, keys.names);
+  const open = tally(orders.values(), new Date()).openIds;
+  /*
+   * built_at is set ONLY when the walk was complete. Marking a
+   * truncated rebuild authoritative would bake the undercount in
+   * permanently — the original bug wearing a new hat.
+   */
+  const index: OpenLaborIndex = keys.truncated
+    ? { ids: open }
+    : { ids: open, built_at: new Date().toISOString() };
+  await env.ORDERS.put(KV_KEYS.openLaborIndex, JSON.stringify(index));
+  return open.length;
+}
+
+/** Called when a labor order is created, and when one is finished. */
+export async function markLaborOpen(
+  env: Env,
+  order: OrderRecord,
+): Promise<void> {
+  if (!LABOR_ITEM_IDS.has(order.item_id)) return;
+  const index = await readIndex(env);
+  if (index.ids.includes(order.order_id)) return;
+  await env.ORDERS.put(
+    KV_KEYS.openLaborIndex,
+    JSON.stringify({
+      ...index,
+      ids: [...index.ids, order.order_id],
+    } satisfies OpenLaborIndex),
+  );
+}
+
+export async function markLaborClosed(
+  env: Env,
+  orderId: string,
+): Promise<void> {
+  const index = await readIndex(env);
+  if (!index.ids.includes(orderId)) return;
+  await env.ORDERS.put(
+    KV_KEYS.openLaborIndex,
+    JSON.stringify({
+      ...index,
+      ids: index.ids.filter((id) => id !== orderId),
+    } satisfies OpenLaborIndex),
+  );
 }
 
 /**
@@ -143,6 +310,28 @@ export async function capacityVerdict(
 ): Promise<CapacityVerdict> {
   if (!isLaborItem(item)) return { ok: true };
   const load = await queueLoad(env, now);
+
+  /*
+   * FAIL CLOSED. kv-list's own contract says the caller decides what to
+   * do about truncation and "the one thing it can no longer do is not
+   * know" — the first version of this gate knew and did nothing, which
+   * is how a ceiling stops binding without anybody noticing. An
+   * unknown load is not a low one.
+   */
+  if (load.scan_capped) {
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `The bench could not finish counting open labor (${load.from_fallback_scan ? "walking every order" : "walking the open-labor index"}), so the labor shelf is refusing sales until it can. Nobody is being charged. Run the open-labor index rebuild and check the order count against QUEUE_SCAN_CAP.`,
+      key: "bench_scan_capped",
+    }).catch(() => undefined);
+    return {
+      ok: false,
+      open: load.open_total,
+      cap: load.cap,
+      reason:
+        "We cannot presently count how much work is already promised, and we will not promise more while that is true — an unknown load is not a low one. Nothing charged, and the keeper has been paged. The machine shelves are all still open and instant.",
+    };
+  }
 
   const perItemCap = item.weekly_inventory;
   const openForItem = load.open_by_item[item.id] ?? 0;

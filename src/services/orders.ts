@@ -1,5 +1,6 @@
 import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
+import { markLaborClosed, markLaborOpen } from "@/services/queue-capacity";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
@@ -70,6 +71,12 @@ export async function createOrder(
     order.referrer = options.referrer;
   }
   await env.ORDERS.put(KV_KEYS.order(order.order_id), JSON.stringify(order));
+  /*
+   * INDEX IT IF IT IS LABOR, so the bench can count what is promised
+   * without walking every order the store has ever taken. The order
+   * above is the truth; this is only how the bench finds it.
+   */
+  await markLaborOpen(env, order);
   return order;
 }
 
@@ -123,6 +130,9 @@ export async function completeOrder(
   order.deliverable = deliverable;
   order.completed_at = new Date().toISOString();
   await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
+  // Finished work stops occupying the bench. A missed delete only ever
+  // over-refuses, and the next bench read sweeps it.
+  await markLaborClosed(env, orderId);
 
   if (order.callback_url) {
     // Best effort, a broken webhook never blocks the keeper's afternoon.

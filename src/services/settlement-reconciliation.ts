@@ -1,5 +1,5 @@
 import {
-  authorizationNonces,
+  usdcAuthorizations,
   BASE_CHAIN,
   getBlockNumber,
   getReceipt,
@@ -114,6 +114,16 @@ export interface ReconciliationObservation {
   chain_head: number | null;
   confirmations: number | null;
 
+  /**
+   * How many USDC transfers in this receipt matched the question, and
+   * whether naming one of them was therefore a CHOICE. Top-level and
+   * machine-readable on purpose: a consumer that reads only `verdict`
+   * and `settled_usdc` must still be able to see that the question was
+   * loose enough to have more than one answer.
+   */
+  matched_transfers: number;
+  match_ambiguous: boolean;
+
   cap_usdc: number | null;
   cap_source: CapSource;
   /** THE FIELD THE WHOLE ARTIFACT TURNS ON. False means: caller's number. */
@@ -188,6 +198,10 @@ interface Facts {
   capSource: CapSource;
   blockHeight: number | null;
   confirmations: number | null;
+  /** How many USDC transfers matched the question. */
+  matched: number;
+  /** True when more than one matched, so "the" transfer is a choice. */
+  ambiguous: boolean;
 }
 
 /**
@@ -207,6 +221,8 @@ export function reconcileFacts(
     capSource: "none",
     blockHeight: null,
     confirmations: null,
+    matched: 0,
+    ambiguous: false,
   };
   if (!receipt) return empty;
 
@@ -238,6 +254,17 @@ export function reconcileFacts(
     null,
   );
   if (!largest) return { ...empty, blockHeight, confirmations };
+  /*
+   * AMBIGUITY IS A TOP-LEVEL FACT, not a footnote. A red team found the
+   * cost of burying it: a caller asks about their own 1 USDC leg, an
+   * unrelated 9,999 leg shares the receipt, and the artifact reports
+   * the stranger's payment — correct per the stated rule, and read by
+   * a machine that only ever looks at `verdict` and `settled_usdc`.
+   * The prose caveat was in `what_this_cannot_see`; nothing consuming
+   * this JSON reads prose.
+   */
+  const matched = transfers.length;
+  const ambiguous = matched > 1;
 
   /*
    * THE CEILING, strongest source first.
@@ -247,7 +274,17 @@ export function reconcileFacts(
    * honest report is that no discretion existed — not that the cap
    * happened to be met exactly.
    */
-  const nonces = authorizationNonces(receipt);
+  /*
+   * THE AUTHORIZATION MUST BELONG TO THE PAYER WE ARE REPORTING ON.
+   * This filter was missing while the approval filter below was
+   * present — the same mistake, made once and caught once. Without
+   * it, an authorization signed by anybody in the receipt was read as
+   * evidence that THIS transfer's amount was fixed in THIS payer's
+   * signed digest, which is a false statement under our own key.
+   */
+  const authorized = usdcAuthorizations(receipt).some((authorization) =>
+    isSameAddress(authorization.authorizer, largest.from),
+  );
   const approvals = usdcApprovals(receipt).filter(
     (approval) => isSameAddress(approval.owner, largest.from),
   );
@@ -265,9 +302,11 @@ export function reconcileFacts(
       capSource: "chain_same_tx_approval",
       blockHeight,
       confirmations,
+      matched,
+      ambiguous,
     };
   }
-  if (nonces.length > 0) {
+  if (authorized) {
     return {
       settledUnits: largest.amount,
       from: largest.from,
@@ -276,6 +315,8 @@ export function reconcileFacts(
       capSource: "chain_eip3009_fixed_value",
       blockHeight,
       confirmations,
+      matched,
+      ambiguous,
     };
   }
   return {
@@ -286,6 +327,8 @@ export function reconcileFacts(
     capSource: "none",
     blockHeight,
     confirmations,
+    matched,
+    ambiguous,
   };
 }
 
@@ -340,6 +383,8 @@ export async function reconcileSettlement(
     block_height: facts.blockHeight,
     chain_head: head,
     confirmations: facts.confirmations,
+    matched_transfers: facts.matched,
+    match_ambiguous: facts.ambiguous,
     cap_usdc: capUnits === null ? null : usdcFromUnits(capUnits),
     cap_source: capSource,
     cap_observed: capObserved,
@@ -350,9 +395,22 @@ export async function reconcileSettlement(
     verdict,
   };
 
+  /*
+   * The ambiguity rides in FRONT of the reading, not after it. A
+   * reader who stops at the first sentence should stop having already
+   * been told the question had more than one answer.
+   */
+  const ambiguityNote = facts.ambiguous
+    ? `${facts.matched} USDC transfers in this receipt matched the question, and the largest is the one reported. ${
+        query.payer || query.recipient
+          ? "Narrow further with both payer and recipient to remove the choice."
+          : "The question named no payer and no recipient, so this may not be the transfer you meant — it may not even involve you."
+      } `
+    : "";
+
   const observation: ReconciliationObservation = {
     ...core,
-    reading: READINGS[verdict],
+    reading: `${ambiguityNote}${READINGS[verdict]}`,
     evidence_hash: await evidenceHash(core),
     scope: SCOPE,
     what_this_cannot_see: [
@@ -362,7 +420,9 @@ export async function reconcileSettlement(
         : "WHETHER THE DECLARED CEILING IS REAL. It came from whoever asked for this artifact, who is generally the party it benefits. Our signature covers the fact that we were told this number, never that it is true.",
       "Anything about delivery. Money moving is not goods arriving, and this reads only the money.",
       "Later. This is one receipt at one moment; a subsequent transaction could move more.",
-      "Whether the transfer named here is the RIGHT one, when the question did not narrow it. A receipt can carry several legs; the largest match is reported and the query is echoed so you can see how loose the question was.",
+      facts.ambiguous
+        ? `WHETHER THIS IS THE TRANSFER YOU MEANT. ${facts.matched} matched, the largest was reported, and match_ambiguous is true for exactly this reason. A receipt can carry a fee split, a refund leg, or an entirely unrelated payment between other parties.`
+        : "Whether the transfer named here is the RIGHT one, when the question did not narrow it. Here exactly one matched, so there was no choice to get wrong.",
     ],
     why_this_is_not_just_subtraction: NOT_SUBTRACTION,
   };
