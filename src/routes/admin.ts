@@ -632,9 +632,35 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
               c.env.ORDERS.get(KV_KEYS.deliveryIntent(tx)),
               c.env.ORDERS.get(`delivery_resolved:${tx}`),
             ]);
+            /*
+             * WHICH RESOLUTION, not just THAT it was resolved.
+             *
+             * The stamp used to read "[RESOLVED BY HAND]" for all three
+             * outcomes, so the page could not tell the keeper whether a
+             * row had been refunded, fulfilled or absorbed. On
+             * 2026-08-10 he read that stamp as the choice he had made
+             * and was unsure afterwards which he had actually clicked —
+             * the page was the reason he could not check. "Refunded"
+             * and "fulfilled by hand" are opposite claims about where
+             * the money went; a surface that collapses them is not a
+             * record of the resolution, only of its existence.
+             */
+            const resolvedAs = ((): string | undefined => {
+              if (!resolved) return undefined;
+              try {
+                const parsed: unknown = JSON.parse(resolved);
+                const outcome = (parsed as { outcome?: unknown }).outcome;
+                const corrected = (parsed as { corrected?: unknown }).corrected;
+                if (typeof outcome !== "string") return undefined;
+                return corrected === true ? `${outcome} (corrected)` : outcome;
+              } catch {
+                return undefined;
+              }
+            })();
             return {
               ...alert,
               tx,
+              ...(resolvedAs ? { resolved_as: resolvedAs } : {}),
               // A chain orphan has no intent row to clear — the walk
               // found the money, not the buy flow — so for it the
               // resolution record is the only closer; absent one it

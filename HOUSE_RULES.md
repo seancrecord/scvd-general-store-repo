@@ -45,8 +45,30 @@ VOICE & COPY
 COMMERCE & TRUST
 =====================================================================
 
-9. Settle before you mint. No certificate, order, or inventory
-   movement on unconfirmed payment. Ever.
+9. Deliver first, settle after. No payment on undelivered goods.
+   AMENDED BY THE KEEPER 2026-08-10. It read, from the founding:
+   "Settle before you mint. No certificate, order, or inventory
+   movement on unconfirmed payment. Ever." Quoted rather than
+   deleted, because a rule that ended in "Ever" and was changed
+   anyway is a thing the store should have to look at.
+   WHY IT TURNED OVER. The old rule bought protection against
+   minting on unconfirmed payment and paid for it in the other
+   currency: money moves, the delivery step dies, and the buyer
+   holds nothing. That is not hypothetical — it fired as
+   `undelivered_sale` on both rails, and the ambiguous-settle
+   rescue, the paid retry and the whole delivery audit exist
+   because of it. The keeper's ruling, in his words: the failure we
+   suffered (paid, no goods, buyer leaves) is worse than the one we
+   take on (goods out, no payment, we lose a penny). Affordable
+   only because our goods cost approximately nothing to make. A
+   shop shipping physical goods should not take this trade.
+   THE FAILURE WE NOW OWN, stated so nobody is surprised: delivery
+   succeeds and settlement then fails. The store eats it. That is
+   the accepted cost, not a bug to be reported.
+   THE TEST IS THE RULE. The keeper set his own acceptance
+   condition: fail a handler, assert no settle call and no on-chain
+   movement. `test/deliver-first.spec.ts` is that assertion, and it
+   is what keeps this rule true after the next reorder.
 10. Refunds are a promise the keeper keeps personally — copy never
     says "automatic" until the code makes it automatic.
     WORKED EXAMPLE, and the most instructive incident the store has

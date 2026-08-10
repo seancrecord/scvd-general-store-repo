@@ -1,5 +1,69 @@
 # Monday — the keeper's desk
 
+---
+
+## ⚖ KEEPER RULINGS, 2026-08-10 — eight of them, all canon
+
+Recorded verbatim in substance before anything was built against
+them, because a ruling that lives only in a chat is a ruling that gets
+re-litigated. Where the code has caught up it says so; where it has
+not, that is stated rather than implied.
+
+**1. `OPEN_LABOR_CAP = 7`. Canon.** Was a drafted 8 with a flag on it
+saying nobody but the keeper could set it. He set it, one lower.
+**DONE** — `src/services/queue-capacity.ts`, and the flag is gone.
+
+**2. Rule 9 flips. Deliver first, settle after.** If delivery fails,
+payment never happens — the buyer does not pay and no refund is
+needed. If settlement fails after delivery, the store eats it: digital
+goods, approximately zero. The keeper's reasoning, which is the whole
+argument: *the failure we suffered (paid, no goods, buyer leaves) is
+worse than the one we take on.* His acceptance test: **fail a handler,
+assert no settle call and no on-chain movement.** Rule 9 in
+`HOUSE_RULES.md` is amended and dated, with the old text quoted rather
+than deleted.
+
+**3. What retires a badge: nothing. It ages.** A badge is a dated
+observation, never a live status — *"as of [date], this endpoint
+passed these checks."* If it stops passing, the badge is not revoked;
+it gets old. **No chasing badge-holders to take anything down** — the
+badge carries its own expiry by carrying its own date. The Conformance
+Watch is what sells currency. This unblocks the criteria page, which
+was the rule 43 gate in front of every badge the store might ship.
+
+**4. The burn total may contain an estimate.** Add a `basis` field
+marking which numbers are estimated and which are exact. The keeper's
+reasoning: *leaving them out makes the total incomplete; marking them
+makes it honest.* That settles the two non-clock billing shapes —
+usage-based and free-tier-with-a-paid-path — which were unrepresentable
+under the old reading.
+
+**5. Card reconciliation: monthly CSV export from the bank.** Manual
+is fine for now. The tab's sweep measures itself; a card statement is
+ground truth. This is what `variability_pct` has been waiting on.
+
+**6. The ward widens to every public directory.** Uniform — no
+targeting, no picking favourites. *If it is on a public list, we watch
+it.* This also answers the Browser Use question without ever having to
+ask it about Browser Use specifically, which was the point.
+
+**7. Commission Desk: `the_collab` first, and public replies on
+declined requests.** Transparency is house style. The keeper added
+*"and let's do all of them this way"* — read here as **every per-order
+labor item eventually moves to request → quote → agreed price**, with
+`the_collab` as the first one through. If he meant instead that the
+two decisions he did not name (the rungs, quote expiry) should take
+the spec's recommended defaults, those defaults are on record in
+`docs/COMMISSION_DESK.md` and nothing is blocked either way.
+
+**8. Build the refund-window detector.** The card by the door promises
+a refund on a missed window and nothing enforces it. Correctly
+deferred when the queue was empty; six organic sales later the premise
+has changed. Rule 10's own lesson pointed at the store's loudest money
+claim.
+
+---
+
 A running file, updated through the day. Written to be read cold after
 a weekend of not thinking about any of it.
 
@@ -432,9 +496,9 @@ untouched and keep selling with the bench full. The keeper sees
 `Bench: N of 8` on the counter page, because a gate that turns sales
 away silently is worse than no gate.
 
-⚑ **`OPEN_LABOR_CAP = 8` is drafted, not canon.** It is the keeper's
-throughput and nobody else can set it. The argument is that some
-ceiling beats none.
+⚑ ~~**`OPEN_LABOR_CAP = 8` is drafted, not canon.**~~ **RULED
+2026-08-10: the cap is 7, and it is canon.** The keeper set his own
+throughput, one below the draft. The flag is off the constant.
 
 **Commission Desk spec, 2026-08-09 — `docs/COMMISSION_DESK.md`.**
 Two findings worth knowing before reading it:

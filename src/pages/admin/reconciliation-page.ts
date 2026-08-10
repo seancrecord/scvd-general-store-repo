@@ -19,6 +19,13 @@ interface AlertLogEntry {
    * the trail must say when history has since been handled.
    */
   now?: "still open" | "resolved by hand" | "closed (delivered)";
+  /**
+   * WHICH resolution was recorded — `refunded`, `fulfilled_by_hand`,
+   * `house_absorbed`, possibly "(corrected)". The stamp said only THAT
+   * a row was resolved until 2026-08-10, and those three outcomes are
+   * opposite claims about where the money went.
+   */
+  resolved_as?: string;
   /** The settlement tx parsed from the detail, for the inline resolve. */
   tx?: string;
 }
@@ -191,7 +198,13 @@ function alertsHtml(
           alert.now
             ? alert.now === "still open"
               ? `<strong style="color:#8c2f1b">[STILL OPEN]</strong> `
-              : `<strong style="color:#2f6b2f">[${escapeHtml(alert.now).toUpperCase()}]</strong> `
+              : `<strong style="color:#2f6b2f">[${escapeHtml(
+                  // Name the outcome. "Resolved by hand" alone cannot
+                  // be checked against the money that actually moved.
+                  alert.now === "resolved by hand" && alert.resolved_as
+                    ? `resolved: ${alert.resolved_as.replace(/_/g, " ")}`
+                    : alert.now,
+                ).toUpperCase()}]</strong> `
             : ""
         }<strong>${escapeHtml(alert.condition)}</strong> first seen ${escapeHtml(alert.at)}${
           /*

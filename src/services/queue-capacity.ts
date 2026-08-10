@@ -74,15 +74,19 @@ import type { Env, MenuItem, OrderRecord } from "@/types";
  * Open labor orders the house will carry at once, across every human
  * item.
  *
- * ⚑ KEEPER REVIEW: this number is drafted, not canon. It is the
- * keeper's actual throughput and nobody else can set it. Eight is one
- * week of judgments plus a little, which is deliberately generous —
- * the argument here is that SOME ceiling beats none, not that this is
- * the right one. If it is wrong it should be wrong in this direction:
- * a cap that never binds still turns an unbounded promise into a
- * bounded one the day the keeper picks a real number.
+ * SEVEN, RULED BY THE KEEPER 2026-08-10, AND NOW CANON. It shipped as
+ * a drafted 8 with a flag on it saying so — nobody but the keeper can
+ * know his own throughput, and a number invented by the person who
+ * does not do the work is a guess wearing a constant's clothes. He
+ * lowered it by one, which is the direction that matters: a cap set by
+ * the hand that has to honour it.
+ *
+ * Do not raise this to make a refusal go away. A full bench is the
+ * instrument working — the store declining labor nobody is there to
+ * do, which is the shutter's law with a level behind it instead of
+ * only a presence check.
  */
-export const OPEN_LABOR_CAP = 8;
+export const OPEN_LABOR_CAP = 7;
 
 /**
  * Ceiling on the FALLBACK walk over every order, used only until the

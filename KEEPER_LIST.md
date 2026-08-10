@@ -28,16 +28,18 @@ Three things changed under it today and the first load is the check:
   load marks nothing and says so; the mark moves every time you load
   the page. If the second load shows old rows as NEW, that is a bug and
   it is the whole feature being wrong.
-- The `[STILL OPEN]` / `[RESOLVED BY HAND]` / `[CLOSED (DELIVERED)]`
-  stamp on each undelivered-sale row is what says whether history is
-  history. Anything stamped STILL OPEN is the only thing that needs a
-  hand.
-- **The mis-click is now fixable.** You clicked "fulfilled by hand" on
-  the refund. Resolve that same tx again as **refunded**: the record
-  will now say refunded, keep the wrong outcome beside it as
-  `superseded`, and note that it was corrected. Before today that second
-  click filed the correction as a chain orphan and stamped "No delivery
-  intent ever existed" on it, which was false.
+- **The stamp now names the outcome.** It used to read
+  `[RESOLVED BY HAND]` for all three choices, so the page told you THAT
+  a row was resolved and never WHICH — and refunded, fulfilled and
+  absorbed are opposite claims about where the money went. That is why
+  you could not check what you clicked: the page was not showing it. It
+  now reads `[RESOLVED: REFUNDED]`, and `(corrected)` if it was changed.
+- **And if it turns out wrong, it is fixable.** Resolving the same tx
+  again records a correction: the new outcome stands, the old one is
+  kept beside it as `superseded`, and a note says which way it moved.
+  Clicking the same outcome twice is a no-op. Before today that second
+  click filed the fix as a chain orphan and stamped "No delivery intent
+  ever existed" on it, which was false.
 
 **A2. Whether the dropped-delivery bug has actually stopped.** The
 cause was four items reading the chain between settle and mint against
@@ -117,53 +119,32 @@ function that signed.
 
 ---
 
-## C. Rulings only you can make — RULE
+## C. Rulings — SEVEN OF NINE ANSWERED 2026-08-10
 
-Nothing here is blocked on me. Each is one decision.
+**Answered, and now canon** (recorded in full at the top of
+`MONDAY.md`):
 
-**C1. `OPEN_LABOR_CAP = 8`.** Drafted, not canon. It is your throughput
-and nobody else can set it. Live on the counter page as `Bench: N of 8`.
-The argument for 8 is only that some ceiling beats none.
+| | ruling | code state |
+|---|---|---|
+| **C1** | `OPEN_LABOR_CAP = 7` | **done** |
+| **C3** | Rule 9 flips: deliver first, settle after | rule amended and dated; **the gate is the build** |
+| **C4** | A badge is a dated observation. It never retires, it ages. No chasing holders | unblocks the criteria page |
+| **C5** | Yes, the burn may contain an estimate — add a `basis` field | queued |
+| **C6** | Card reconciliation: monthly bank CSV, manual for now | queued |
+| **C7** | The ward widens to every public directory. Uniform, no favourites | queued |
+| **C2** | Commission Desk: `the_collab` first, public replies on declines | queued |
 
-**C2. The Commission Desk — four decisions.** `docs/COMMISSION_DESK.md`:
-which items, the rungs, quote expiry, and whether a declined request
-gets a public reply.
+**Two notes on C2.** "Let's do all of them this way" is read as *every
+per-order labor item eventually moves to request → quote → agreed
+price*, with `the_collab` first through the door. If you meant instead
+that the rungs and quote expiry should take the spec's recommended
+defaults, those are on record and nothing is blocked either way — say
+which and it costs nothing. And §3 of the spec was corrected today: a
+one-off price *does* fit the payment stack (`DynamicPrice` is
+first-class in `@x402/core`), so the published-ladder recommendation
+now rests on risk appetite rather than on a wall that was never there.
 
-> **§3 was corrected today and the correction matters to decision 2.**
-> The spec said a one-off price "does not fit the payment stack." That
-> was false — `@x402/core` exports `DynamicPrice` and per-request
-> pricing is first-class. The published-ladder recommendation survives,
-> but now on risk appetite (a KV read on the money path can quote a
-> wrong number; a static price cannot), not on an impossibility that
-> was never there. Decide knowing both doors are open.
-
-**C3. Rule 9 / deliver-first.** Rule 9 ends in "Ever." Amending it is
-yours, in the open and dated — the same discipline you made `/becoming`
-follow. Run B6 first; the test either supports the amendment or ends
-the conversation.
-
-**C4. Badge retirement.** The criteria page is derivable from
-`ARTIFACT_CLASSES` except for one part that is genuinely yours: **what
-retires a badge.** Dated de-badging, reason on record, and whether
-anyone who relied on it gets told. Nothing in canon answers it. And the
-prior question underneath it: **is a badge a dated observation or a
-live status?** (Recommendation on record: dated observation, never
-retires, always shows its age, and the Conformance Watch is what sells
-currency.)
-
-**C5. Is the burn total allowed to contain an estimate?** Usage-based
-and free-tier-with-a-paid-path both mean "there is no fixed number."
-If yes, `price` needs a `basis` marker. If no, they stay
-unrepresentable and the tab says so.
-
-**C6. Card reconciliation — pick a source.** The only true ground truth
-for burn. Until then `variability_pct` rests on the sweep measuring
-itself: honest, not proof.
-
-**C7. The ward's population source.** Whether Browser Use is already in
-the walked universe decides whether their observation is already
-happening or whether the ward needs to widen. Widening is the only move
-that stays uniform; adding one name is targeting.
+**Still open, and both still yours:**
 
 **C8. GitHub private?** Recommendation on record: **keep the code
 public, move the strategy docs.** The product is verifiability, twelve
