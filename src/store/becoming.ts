@@ -140,7 +140,7 @@ export const WATCHED: readonly Watched[] = [
     trigger:
       "The criteria page: a published, per-class definition of what 'verified' means here — what was checked, when, against which criteria, what it does not prove, and what retires a badge. No badge ships before that page exists, and whether it exists is checkable by anyone.",
     today:
-      "Nothing for sale. The direction is decided and dated — 2026-08-07, the marketplace audit and the keeper's rulings on each of its decisions, in the repository — and the ethos is written into the house rules. No criteria page exists yet, nothing carries a badge, and per this page's own standfirst, a decided direction is not an available product.",
+      "Nothing for sale, still — but the trigger fired on 2026-08-10: the criteria page exists at /criteria, published before anything carries a badge, with the keeper's ruling on retirement recorded (nothing retires a badge; it ages, and re-observation answers whether it still holds). Nothing carries a badge yet, and per this page's own standfirst, a decided direction with an open gate is still not an available product.",
   },
   {
     item: "Federation — somebody else adopting the format unprompted.",

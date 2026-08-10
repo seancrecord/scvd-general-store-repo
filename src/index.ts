@@ -40,6 +40,7 @@ import {
   namespaceSpecRoutes,
   pulseRoutes,
   attestationRoutes,
+  criteriaRoutes,
   conventionalRoutes,
   didRoutes,
   livenessRoutes,
@@ -221,6 +222,7 @@ app.route("/", statsRoutes);
 app.route("/", corpusRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
+app.route("/", criteriaRoutes);
 app.route("/", conventionalRoutes);
 app.route("/", didRoutes);
 app.route("/", livenessRoutes);

@@ -408,6 +408,14 @@ system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
 
+What "verified" would mean here is published at ${base}/criteria,
+before anything carries a badge (house rule: no badge ships before its
+criteria page exists). A badge would be a dated observation on a thing
+against the published check battery, never a score on an actor — and
+nothing retires one: it ages, and re-observation is what answers "is
+this still true." Nothing carries a badge today; the page says so
+itself.
+
 ## If the one key is lost, stolen, or handed on
 
 ONE HANDOVER HAS HAPPENED, on 2026-07-31, hours after this protocol

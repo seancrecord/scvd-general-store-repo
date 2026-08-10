@@ -40,6 +40,7 @@ export { statsRoutes } from "@/routes/stats";
 export { corpusRoutes } from "@/routes/corpus";
 export { pulseRoutes } from "@/routes/pulse";
 export { attestationRoutes } from "@/routes/attestation";
+export { criteriaRoutes } from "@/routes/criteria";
 export { conventionalRoutes } from "@/routes/conventional";
 export { didRoutes } from "@/routes/did";
 export { livenessRoutes } from "@/routes/liveness";
