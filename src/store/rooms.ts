@@ -51,6 +51,16 @@ export const ROOMS: readonly Room[] = [
   { path: "/what", name: "What is this?" },
   { path: "/try", name: "The Practice Counter" },
   /**
+   * The two differentiators, given crawlable rooms 2026-08-10. Both
+   * capabilities are older than these pages; what was missing was a
+   * landing an answer engine could read — the desk lived at an API
+   * path and the corpus in a JSON file, and a five-model check found
+   * neither. The rooms carry the prose; the instruments stay where
+   * they were.
+   */
+  { path: "/conformance", name: "The conformance desk" },
+  { path: "/corpus", name: "The corpus" },
+  /**
    * OFF THE FRONT OF THE STORE 2026-08-06, the keeper's call: the
    * footer stopped linking the Gazette. The rack is still open, still
    * free, still in the sitemap, llms.txt, the x402 document and the

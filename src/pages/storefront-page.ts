@@ -11,6 +11,7 @@ import {
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
+import { OPERATED_BY, POSITION_OPENING } from "@/store/copy/position";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
 import { EXTERNAL_RECORDS } from "@/store/trust-signals";
 import type { StoreStats } from "@/services/stats";
@@ -301,7 +302,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
      * sign. It is an answer to a question, not a thing for the sign
      * above the door.
      */
-    legalName: "Record Creative Co. LLC",
+    legalName: OPERATED_BY,
     /**
      * THE FIELD schema.org PROVIDES FOR "here is independent record of
      * us," and the direct answer to an outside model reporting it
@@ -468,6 +469,13 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="board-text">${readerboardHtml(data.weekNote)}</p>
     </section>
 
+    <section class="what-this-is">
+      <h2 class="night-head">${COPY.whatThisIsHead}</h2>
+      <p class="what-line what-lead">${escapeHtml(POSITION_OPENING)}</p>
+      <p class="what-line">${COPY.whatThisIsDoors}</p>
+      <p class="what-line">${escapeHtml(COPY.whatThisIsShop)}</p>
+    </section>
+
     <section class="shelves">
       <h2 class="night-head">${COPY.shelvesHead}</h2>
       <div class="shelf-grid">
@@ -508,7 +516,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p>${COPY.finePrintVerify}</p>
       <p class="porch-rooms-label">Every room, all free to read</p>
       <p class="porch-rooms">${roomsFooterHtml()}</p>
-      <p class="porch-est">${COPY.footerAddress}</p>
+      <p class="porch-est">${COPY.footerAddress} \u00B7 ${escapeHtml(OPERATED_BY)}</p>
     </footer>
 
   </main>

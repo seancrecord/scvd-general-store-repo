@@ -49,6 +49,8 @@ export { livenessRoutes } from "@/routes/liveness";
 export { fulfillmentLogRoutes } from "@/routes/fulfillment-log";
 export { claimsRoutes } from "@/routes/claims";
 export { conformanceRoutes } from "@/routes/conformance";
+export { conformanceLandingRoutes } from "@/routes/conformance-landing";
+export { corpusLandingRoutes } from "@/routes/corpus-landing";
 export { preflightRoutes } from "@/routes/preflight";
 export { watchRoutes } from "@/routes/watch";
 export { anchorLogRoutes } from "@/routes/anchor-log";

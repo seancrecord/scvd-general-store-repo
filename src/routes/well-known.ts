@@ -332,6 +332,17 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * vectors, and the standards block in trust.json that explains
      * how to verify this store with no scvd.store code involved.
      */
+    /**
+     * The two differentiators, beside the key for the same reason
+     * everything else here is: a reader taking our catalog is exactly
+     * the reader who should know the free desk checks ANY issuer's
+     * signed offers and receipts, and that the weekly signed record
+     * of the neighbourhood is free to read.
+     */
+    conformance: `${base}/api/conformance/v1`,
+    conformance_landing: `${base}/conformance`,
+    corpus: `${base}/corpus.json`,
+    corpus_landing: `${base}/corpus`,
     conformance_vectors: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
     /**
      * The dead-man beacon, same reason as the key and the attestation:
