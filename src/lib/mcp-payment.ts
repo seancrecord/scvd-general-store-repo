@@ -55,7 +55,8 @@ import type { Env } from "@/types";
 /**
  * The MCP door to the same till. A tools/call for a paid item is
  * translated into the exact HTTP payment pipeline the buy routes use —
- * same x402 stack, same replay guard, same settle-before-mint order —
+ * same x402 stack, same replay guard, same deliver-first order (rule 9
+ * as amended 2026-08-10) —
  * via a synthetic adapter for GET /api/buy/<item>. Nothing here can
  * fulfill without a verified settle; only the envelope differs.
  *

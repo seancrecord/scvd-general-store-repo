@@ -152,7 +152,7 @@ Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
 OpenAPI 3.1 contract: ${base}/openapi.json
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
-free; paid tools carry x402 in-band and settle before anything ships.
+free; paid tools carry x402 in-band, delivered first and settled after.
 A2A agent card: ${base}/.well-known/a2a.json (also served at
 /.well-known/agent-card.json and /.well-known/agent.json). A discovery
 card, honestly labeled: skills derive live from the menu, and the
@@ -407,6 +407,14 @@ checked the artifacts and called this a narrower, more honestly-scoped
 system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
+
+What "verified" would mean here is published at ${base}/criteria,
+before anything carries a badge (house rule: no badge ships before its
+criteria page exists). A badge would be a dated observation on a thing
+against the published check battery, never a score on an actor — and
+nothing retires one: it ages, and re-observation is what answers "is
+this still true." Nothing carries a badge today; the page says so
+itself.
 
 ## If the one key is lost, stolen, or handed on
 

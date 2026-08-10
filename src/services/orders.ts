@@ -27,6 +27,12 @@ export interface CreateOrderOptions {
   certId: string;
   /** Buyer-supplied task detail (quick_judgment's question). Untrusted. */
   detail?: string;
+  /**
+   * A per-order delivery window, in hours. The Commission Desk's
+   * quotes carry their own promised window (that is most of the desk's
+   * point); everything else inherits the item's listed SLA as before.
+   */
+  slaHours?: number;
   /** Declared discovery channel. Untrusted. */
   source?: string;
   userAgent?: string;
@@ -43,7 +49,7 @@ export async function createOrder(
     item_name: options.item.name,
     status: "queued",
     created_at: new Date().toISOString(),
-    sla_hours: options.item.sla_hours ?? 168,
+    sla_hours: options.slaHours ?? options.item.sla_hours ?? 168,
     paid_usdc: options.paidUsdc,
     tip_usdc: options.tipUsdc,
     patron_number: options.patronNumber,

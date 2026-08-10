@@ -1,6 +1,6 @@
 {
   "name": "scvd-tab",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for — trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliberate, consented contribution.",
   "type": "module",
   "bin": {
@@ -11,6 +11,8 @@
     "server.mjs",
     "tools.mjs",
     "store.mjs",
+    "pager.mjs",
+    "reconcile.mjs",
     "README.md",
     "SCHEMA.md"
   ],

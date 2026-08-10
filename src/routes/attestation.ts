@@ -107,6 +107,13 @@ attestationRoutes.get("/attestation", (c) => {
     marked_items: ITEM_MAKER_MARK,
     not_built: NOT_BUILT,
     held_against_us: HELD_AGAINST_US,
+    /**
+     * Rule 43's gate: this page says what a signature proves; that one
+     * says what "verified" would mean before anything carries a badge.
+     * A reader weighing our signatures is the reader who should find
+     * the badge contract without guessing the URL.
+     */
+    criteria_page: `${base}/criteria`,
     honest_limit: ATTESTATION_HONEST_LIMIT,
   };
   if (!wantsHtml(c.req.header("Accept"))) {

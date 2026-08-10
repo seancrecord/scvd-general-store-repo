@@ -5,11 +5,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   appendEvent,
+  BASIS,
   captureEvent,
   closestCategory,
   derive,
   PERIODS,
   readEvents,
+  SCHEMA_VERSION,
   validateEvent,
 } from "./store.mjs";
 import {
@@ -28,6 +30,7 @@ import {
   confirmEntry,
   needsAttention,
   recordCoverage,
+  reconcileCardStatement,
   contributeDelta,
   exportTab,
   logToolEvent,
@@ -1126,7 +1129,7 @@ test("the burn number never ships bare — including when the file is torn", () 
   // — an absent problem is not a statistic.
   assert.equal(burnRollup({}, freshPath()).coverage.bad_lines, undefined);
   // The entry itself carries the vocabulary it was written under.
-  assert.equal(readEvents(path).events[0].schema_version, "0.7");
+  assert.equal(readEvents(path).events[0].schema_version, SCHEMA_VERSION);
 });
 
 test("quarterly bills like every other clock, and the two open shapes are not clocks", () => {
@@ -1153,5 +1156,289 @@ test("quarterly bills like every other clock, and the two open shapes are not cl
   }).join(" ");
   for (const period of PERIODS) assert.ok(refused.includes(period), period);
   // And the entry says which vocabulary it was written under.
-  assert.equal(readEvents(path).events[0].schema_version, "0.7");
+  assert.equal(readEvents(path).events[0].schema_version, SCHEMA_VERSION);
+});
+
+/**
+ * v0.8 — the `basis` field: the keeper's ruling (2026-08-10) that the
+ * burn total may contain an estimate, provided the number says which
+ * part of itself is one. The two shapes SCHEMA.md carried as open
+ * holes — usage-based, and free-with-a-paid-path — become
+ * representable without lying in either direction.
+ */
+
+test("a metered price enters the burn AND the burn names its estimated share", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "openai-api", event: "paid_started", problem_solved: "llm calls", category: "llm",
+      price: { amount: 40, currency: "USD", period: "month", basis: "metered" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  const audit = stackAudit({}, path);
+  // In the total: leaving it out made the total incomplete.
+  assert.equal(audit.monthly_burn.amount, 60);
+  // Marked: including it unmarked would make the total a guess.
+  assert.equal(audit.monthly_burn.estimated_amount, 40);
+  assert.ok(audit.monthly_burn.estimate_note.includes("estimate"));
+  const rollup = burnRollup({}, path);
+  assert.equal(rollup.estimated.monthly, 40);
+  assert.deepEqual(rollup.estimated.tools, [
+    { tool_name: "openai-api", estimated_monthly: 40 },
+  ]);
+});
+
+test("an all-fixed tab reports estimated_amount 0 and carries no estimate note", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  const burn = stackAudit({}, path).monthly_burn;
+  assert.equal(burn.estimated_amount, 0);
+  assert.equal(burn.estimate_note, undefined);
+});
+
+test("free_with_paid_path rides adopted, lands beside the tool, never in the burn", () => {
+  const path = freshPath();
+  const ok = logToolEvent(
+    { tool_name: "posthog", event: "adopted", problem_solved: "analytics", category: "analytics",
+      price: { amount: 45, currency: "USD", period: "month", basis: "free_with_paid_path" } },
+    path,
+  );
+  assert.equal(ok.logged, true);
+  const audit = stackAudit({}, path);
+  // Free means free, still: the paid path is potential, not spend.
+  assert.equal(audit.monthly_burn.amount, 0);
+  const rollup = burnRollup({}, path);
+  assert.deepEqual(rollup.free_with_paid_path.tools, [
+    { tool_name: "posthog", would_cost_monthly: 45, period: "month" },
+  ]);
+  // And the derived tool holds it apart from price, converts_to-style.
+  const state = derive(readEvents(path).events);
+  assert.equal(state.tools.get("posthog").paid_path.amount, 45);
+  assert.equal(state.tools.get("posthog").price, null);
+});
+
+test("the basis fence holds in both directions", () => {
+  // Money moving cannot claim the free tier's hypothetical.
+  const paying = validateEvent({
+    tool_name: "x", event: "paid_started", problem_solved: "x", category: "other",
+    price: { amount: 5, currency: "USD", period: "month", basis: "free_with_paid_path" },
+  }).join(" ");
+  assert.ok(paying.includes("adopted only"));
+  // A price on adopted still needs the marker; the old refusal stands.
+  const priced = validateEvent({
+    tool_name: "x", event: "adopted", problem_solved: "x", category: "other",
+    price: { amount: 5, currency: "USD", period: "month" },
+  }).join(" ");
+  assert.ok(priced.includes("free_with_paid_path"));
+  // An unknown basis is refused with the vocabulary in the message.
+  const unknown = validateEvent({
+    tool_name: "x", event: "paid_started", problem_solved: "x", category: "other",
+    price: { amount: 5, currency: "USD", period: "month", basis: "vibes" },
+  }).join(" ");
+  for (const basis of BASIS) assert.ok(unknown.includes(basis), basis);
+  // previous_price was charged, so it was never the hypothetical.
+  const previous = validateEvent({
+    tool_name: "x", event: "price_changed", problem_solved: "x", category: "other",
+    price: { amount: 6, currency: "USD", period: "month" },
+    previous_price: { amount: 5, currency: "USD", period: "month", basis: "free_with_paid_path" },
+  }).join(" ");
+  assert.ok(previous.includes("previous_price"));
+});
+
+test("capture keeps a well-formed paid-path price and drops a malformed one", () => {
+  const path = freshPath();
+  captureToolEvent(
+    { tool_name: "grafana", event: "adopted", problem_solved: "dashboards", category: "analytics",
+      price: { amount: 29, currency: "USD", period: "month", basis: "free_with_paid_path" } },
+    path,
+  );
+  const kept = derive(readEvents(path).events);
+  assert.equal(kept.tools.get("grafana").paid_path.amount, 29);
+  // The lane that never refuses still never lies: a bare price on a
+  // free adoption is dropped rather than smuggled into the burn.
+  captureToolEvent(
+    { tool_name: "umami", event: "adopted", problem_solved: "analytics", category: "analytics",
+      price: { amount: 9, currency: "USD", period: "month" } },
+    path,
+  );
+  const dropped = derive(readEvents(path).events);
+  assert.equal(dropped.tools.get("umami").paid_path, null);
+  assert.equal(dropped.monthly_burn.amount, 0);
+});
+
+test("the export carries basis, so a spreadsheet reader sees the estimate marker too", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "openai-api", event: "paid_started", problem_solved: "llm calls", category: "llm",
+      price: { amount: 40, currency: "USD", period: "month", basis: "metered" } },
+    path,
+  );
+  const csv = exportTab({ format: "csv" }, path);
+  assert.ok(csv.content.split("\n")[0].includes("price_basis"));
+  assert.ok(csv.content.includes("metered"));
+});
+
+/**
+ * v0.8 — card reconciliation (the keeper's ruling, 2026-08-10):
+ * a monthly CSV export from the bank, by hand, is ground truth. The
+ * sweep's variability measures the instrument against itself; the
+ * statement is money that actually left.
+ */
+
+test("a statement reconciles both directions and the gap becomes a ratio", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "figma", event: "paid_started", problem_solved: "design", category: "design",
+      price: { amount: 15, currency: "USD", period: "month" } },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [
+        { date: "2026-07-03", amount: 20, descriptor: "VERCEL INC" },
+        { date: "2026-07-11", amount: 13, descriptor: "SOMESHOP LLC" },
+      ],
+    },
+    path,
+  );
+  assert.equal(report.recorded, true);
+  // Matched, with the tab's expectation beside the observation.
+  assert.deepEqual(report.matched, [
+    { tool_name: "vercel", observed: 20, charges: 1, expected_monthly: 20 },
+  ]);
+  // Money the tab cannot place is a published list, not a footnote.
+  assert.equal(report.unmatched.length, 1);
+  assert.equal(report.unmatched[0].descriptor, "SOMESHOP LLC");
+  // 13 of 33 statement dollars unplaced.
+  assert.equal(report.card_variability_pct, 39.4);
+  // The other direction: figma was expected in a full-month window
+  // and never charged — canceled, or a card about to take a service
+  // down with it. A question, never a verdict.
+  assert.deepEqual(
+    report.expected_not_seen.map((row) => row.tool_name),
+    ["figma"],
+  );
+  // And the rollup's coverage block now carries ground truth.
+  const rollup = burnRollup({}, path);
+  assert.equal(rollup.coverage.card_ground_truth.card_variability_pct, 39.4);
+  assert.equal(rollup.coverage.card_ground_truth.statement_total, 33);
+});
+
+test("a metered estimate meets its actual, and nothing is written back", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "openai-api", event: "paid_started", problem_solved: "llm calls", category: "llm",
+      price: { amount: 40, currency: "USD", period: "month", basis: "metered" } },
+    path,
+  );
+  const before = readEvents(path).events.length;
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-28", amount: 57.3, descriptor: "OPENAI *API" }],
+    },
+    path,
+  );
+  assert.deepEqual(report.metered_actuals, [
+    { tool_name: "openai-api", observed: 57.3, charges: 1, estimated_monthly: 40, delta: 17.3 },
+  ]);
+  // A metered tool has no fixed expectation, so it is never "missing".
+  assert.equal(report.expected_not_seen.length, 0);
+  // Reconciliation reports; the tab file is untouched.
+  assert.equal(readEvents(path).events.length, before);
+});
+
+test("a charge on a canceled tool is the sharpest finding, named apart", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "grammarly", event: "paid_started", problem_solved: "writing", category: "other",
+      price: { amount: 12, currency: "USD", period: "month" } },
+    path,
+  );
+  logToolEvent(
+    { tool_name: "grammarly", event: "canceled", problem_solved: "writing", category: "other" },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-15", amount: 12, descriptor: "GRAMMARLY" }],
+    },
+    path,
+  );
+  assert.equal(report.inactive_tool_charged.length, 1);
+  assert.equal(report.inactive_tool_charged[0].tool_name, "grammarly");
+  assert.equal(report.matched.length, 0);
+});
+
+test("a short window asserts nothing about missing charges", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "vercel", event: "paid_started", problem_solved: "hosting", category: "hosting",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-10",
+      charges: [{ date: "2026-07-03", amount: 4, descriptor: "COFFEE" }],
+    },
+    path,
+  );
+  assert.equal(report.expected_not_seen.length, 0);
+  assert.ok(report.expected_not_seen_note.includes("28 days"));
+});
+
+test("the descriptor match takes the most specific tool, never a guess", () => {
+  const path = freshPath();
+  for (const name of ["openai", "openai-api"]) {
+    logToolEvent(
+      { tool_name: name, event: "paid_started", problem_solved: "llm", category: "llm",
+        price: { amount: 10, currency: "USD", period: "month" } },
+      path,
+    );
+  }
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-07-01",
+      statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-02", amount: 10, descriptor: "OPENAI API SERVICES" }],
+    },
+    path,
+  );
+  assert.deepEqual(report.matched.map((row) => row.tool_name), ["openai-api"]);
+});
+
+test("a malformed statement is refused with the problems named, and nothing recorded", () => {
+  const path = freshPath();
+  const refused = reconcileCardStatement(
+    { statement_from: "2026-07-01", statement_to: "2026-07-31",
+      charges: [{ date: "2026-07-02", amount: -5, descriptor: "" }] },
+    path,
+  );
+  assert.equal(refused.recorded, false);
+  const text = refused.problems.join(" ");
+  assert.ok(text.includes("amount"));
+  assert.ok(text.includes("descriptor"));
+  // A refused statement leaves no trace in the ground-truth history.
+  const rollup = burnRollup({}, path);
+  assert.equal(rollup.coverage.card_ground_truth.last_reconciliation, null);
 });

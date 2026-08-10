@@ -30,6 +30,9 @@ import {
   queueDue,
   recordHandover,
 } from "./pager.mjs";
+import { readCardHistory, reconcileCardStatement } from "./reconcile.mjs";
+
+export { reconcileCardStatement } from "./reconcile.mjs";
 
 /**
  * THE TAB's eight tools — THE_TAB.md made callable. Every read
@@ -376,10 +379,40 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
   ).length;
   const frictionKnown = current.active.filter((tool) => tool.signup_friction).length;
 
+  /**
+   * The estimated share (v0.8): metered prices are builder estimates
+   * of bills that vary, in the total per the keeper's ruling, marked
+   * per the same ruling. And the paid paths: free tools whose paid
+   * tier has a known price — potential, not spend, so they ride
+   * BESIDE the total and enter none of the arithmetic.
+   */
+  const metered = current.active_paid
+    .filter((tool) => tool.price?.basis === "metered")
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      estimated_monthly: Math.round(monthlyOf(tool.price) * 100) / 100,
+    }));
+  const paidPaths = current.active
+    .filter((tool) => tool.status === "active_free" && tool.paid_path)
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      would_cost_monthly: Math.round(monthlyOf(tool.paid_path) * 100) / 100,
+      period: tool.paid_path.period,
+    }));
+
   return {
     monthly,
     annualized: Math.round(monthly * 12 * 100) / 100,
     currency: "USD",
+    estimated: {
+      monthly: current.monthly_burn.estimated_amount,
+      tools: metered,
+      note: "The metered share of the total: estimates of usage-based bills. In the number because leaving them out made it incomplete; named here because including them unnamed would make it a guess.",
+    },
+    free_with_paid_path: {
+      tools: paidPaths,
+      note: "Free today; the price the paid path would cost. Potential, not spend — in no total above, same law as a trial's converts_to.",
+    },
     tool_count: current.active.length,
     paid_count: current.active_paid.length,
     free_count: current.active.filter((t) => t.status === "active_free").length,
@@ -506,6 +539,33 @@ function coverageBlock(current, path) {
       at: entry.at,
       pct: variabilityOf(entry),
     })),
+    /**
+     * GROUND TRUTH, when it has ever been consulted. The sweep's
+     * variability is self-reported — the instrument measuring itself.
+     * A card statement is money that actually left, counted by a
+     * party with no stake in the tab looking complete, and the last
+     * reconciliation against one rides here so the two numbers can
+     * be read side by side. Null-shaped when never run, per the
+     * fabricated-zero rule above.
+     */
+    card_ground_truth: (() => {
+      const cards = readCardHistory(path);
+      const last = cards[cards.length - 1] ?? null;
+      if (!last) {
+        return {
+          last_reconciliation: null,
+          note: "No card statement has ever been reconciled. The sweep's numbers above are self-reported until one is — reconcile_card_statement takes the bank's monthly CSV, parsed.",
+        };
+      }
+      return {
+        last_reconciliation: last.at,
+        window: `${last.window_from} → ${last.window_to}`,
+        statement_total: last.statement_total,
+        unmatched_total: last.unmatched_total,
+        card_variability_pct: last.card_variability_pct,
+        note: "Unmatched statement money over all statement money, from the bank's own export — the same ratio as variability_pct, asked of ground truth.",
+      };
+    })(),
     what_this_cannot_see: [
       "A tool that never emailed, never billed, and was never mentioned.",
       "A seat somebody else pays for.",
@@ -913,6 +973,7 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
     "problem_solved",
     "price_amount",
     "price_period",
+    "price_basis",
     "trial_ends",
     "replaced_with",
     "retroactive",
@@ -939,6 +1000,7 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
       event.problem_solved,
       event.price?.amount,
       event.price?.period,
+      event.price?.basis,
       event.trial_ends,
       event.replaced_with,
       event.retroactive,
@@ -956,7 +1018,7 @@ export const TOOL_DEFS = [
   {
     name: "log_tool_event",
     description:
-      "Record a tool lifecycle event on the builder's tab: trial_started, paid_started, canceled, replaced, renewed, or price_changed. Validated; rejected writes explain themselves. Use retroactive:true with occurred_at for backfill.",
+      "Record a tool lifecycle event on the builder's tab: trial_started, paid_started, adopted, canceled, replaced, renewed, or price_changed. Validated; rejected writes explain themselves. Use retroactive:true with occurred_at for backfill.",
     handler: logToolEvent,
     inputSchema: {
       type: "object",
@@ -964,11 +1026,15 @@ export const TOOL_DEFS = [
         tool_name: { type: "string", description: "canonical lowercase name" },
         event: {
           type: "string",
-          enum: ["trial_started", "paid_started", "canceled", "replaced", "renewed", "price_changed"],
+          enum: ["trial_started", "paid_started", "adopted", "canceled", "replaced", "renewed", "price_changed"],
         },
         problem_solved: { type: "string" },
         category: { type: "string", enum: CATEGORIES },
-        price: { type: "object" },
+        price: {
+          type: "object",
+          description:
+            "{amount, currency, period: month|quarter|year|week|once, basis?: fixed|metered|free_with_paid_path}. basis marks what kind of number amount is: absent/fixed = the bill; metered = your ESTIMATE of a usage-based bill (enters the burn, marked as estimate); free_with_paid_path = what a free tool's paid tier would cost (adopted only, never enters the burn).",
+        },
         previous_price: { type: "object" },
         trial_ends: { type: "string" },
         replaced_with: { type: "string" },
@@ -1065,6 +1131,31 @@ export const TOOL_DEFS = [
           },
         },
       },
+    },
+  },
+  {
+    name: "reconcile_card_statement",
+    description:
+      "GROUND TRUTH, monthly, by hand: the builder exports the bank's CSV, you parse every debit row, and this compares statement against tab in BOTH directions — charges the tab cannot place, tools the statement never charged, actuals against metered estimates, and charges on tools the tab holds as canceled. Writes nothing to the tab; every finding is a question for the builder, not an entry. Pass the rows unfiltered — a pre-filtered statement is the mail sweep's counting mistake with money on it.",
+    handler: reconcileCardStatement,
+    inputSchema: {
+      type: "object",
+      properties: {
+        statement_from: { type: "string", description: "ISO date the statement window opens — off the export, not remembered" },
+        statement_to: { type: "string", description: "ISO date the statement window closes" },
+        charges: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              date: { type: "string" },
+              amount: { type: "number", description: "the debit amount; credits and refunds stay off" },
+              descriptor: { type: "string", description: "the merchant string as the bank printed it" },
+            },
+          },
+        },
+      },
+      required: ["statement_from", "statement_to", "charges"],
     },
   },
   {

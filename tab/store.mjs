@@ -23,7 +23,7 @@ import { randomBytes } from "node:crypto";
  * field set triples tells a reader nothing. Old values are accepted
  * forever; anything that would break an existing reader is a v1.
  */
-export const SCHEMA_VERSION = "0.7";
+export const SCHEMA_VERSION = "0.8";
 
 export const EVENTS = [
   "trial_started",
@@ -88,6 +88,30 @@ export const SOURCES = [
  * inferred rather than quietly averaged into the total.
  */
 export const CONFIDENCE = ["stated", "inferred"];
+
+/**
+ * WHAT KIND OF NUMBER `price` IS HOLDING (v0.8, the keeper's ruling
+ * 2026-08-10: the burn total MAY contain an estimate — leaving the
+ * metered bills out made it incomplete; marking them makes it honest).
+ *
+ * The two shapes that were never clocks (SCHEMA.md's known hole,
+ * found logging a real stack by hand): a usage-based bill has no
+ * fixed amount, and a free tier's paid path has a price nobody is
+ * paying. Both were representable only by lying — inventing a fixed
+ * number for one, dropping the number entirely for the other.
+ *
+ *   `fixed`   — the amount is the bill. Absent means fixed, so every
+ *               pre-0.8 entry keeps its meaning unchanged.
+ *   `metered` — the amount is the builder's ESTIMATE of a bill that
+ *               varies with usage. It enters the burn AND the burn
+ *               says how much of itself is estimate.
+ *   `free_with_paid_path` — the tool is free today; the amount is
+ *               what the paid path would cost if engaged. Allowed
+ *               only on `adopted`, never enters the burn — same law
+ *               as `converts_to`: a claim about the future is not a
+ *               charge.
+ */
+export const BASIS = ["fixed", "metered", "free_with_paid_path"];
 
 /**
  * The placeholder for a field only the builder can fill. Capture
@@ -213,7 +237,9 @@ function isPrice(value) {
     Number.isFinite(value.amount) &&
     value.amount >= 0 &&
     typeof value.currency === "string" &&
-    PERIODS.includes(value.period)
+    PERIODS.includes(value.period) &&
+    // Absent means fixed; present must be in the vocabulary.
+    (value.basis === undefined || BASIS.includes(value.basis))
   );
 }
 
@@ -361,11 +387,34 @@ export function validateEvent(input) {
     }
   }
   if (input?.price !== undefined && !isPrice(input.price)) {
-    problems.push(`price must be {amount, currency, period: ${PERIODS.join("|")}}.`);
-  }
-  if (event === "adopted" && input?.price !== undefined) {
     problems.push(
-      "adopted is for a FREE tool and must carry no price — if money changes hands it is paid_started or trial_started. A priced 'adopted' would tell the pooled index a free signup happened.",
+      `price must be {amount, currency, period: ${PERIODS.join("|")}, basis?: ${BASIS.join("|")}}.`,
+    );
+  }
+  /**
+   * THE BASIS FENCE, both directions. free_with_paid_path on a paying
+   * event is a contradiction (money moved, so it is not free), and a
+   * price on `adopted` without it is the old lie the enum refused —
+   * a priced free signup would tell the pooled index money changed
+   * hands. The one legal combination is exactly the gap the keeper's
+   * ruling closed: adopted + the price the paid path WOULD cost.
+   */
+  if (
+    input?.price?.basis === "free_with_paid_path" &&
+    event !== "adopted"
+  ) {
+    problems.push(
+      "basis free_with_paid_path belongs on adopted only: it marks the price a FREE tool's paid path would cost. If money is actually moving, the basis is fixed or metered.",
+    );
+  }
+  if (input?.previous_price?.basis === "free_with_paid_path") {
+    problems.push(
+      "previous_price cannot have basis free_with_paid_path — a price that was charged was never the free tier's hypothetical.",
+    );
+  }
+  if (event === "adopted" && input?.price !== undefined && input?.price?.basis !== "free_with_paid_path") {
+    problems.push(
+      "adopted is for a FREE tool and must carry no price — unless the price marks the paid path with basis: \"free_with_paid_path\", which never enters the burn. If money changes hands it is paid_started or trial_started.",
     );
   }
   if (input?.confirmed !== undefined && typeof input.confirmed !== "boolean") {
@@ -531,7 +580,13 @@ export function captureEvent(path, input) {
     draft.event = "adopted";
     delete draft.price;
   }
-  if (draft.event === "adopted" && draft.price !== undefined) {
+  if (
+    draft.event === "adopted" &&
+    draft.price !== undefined &&
+    !(isPrice(draft.price) && draft.price.basis === "free_with_paid_path")
+  ) {
+    // A price on a free adoption is dropped UNLESS it is a well-formed
+    // paid-path marker — the one combination v0.8 made legal.
     delete draft.price;
   }
   if (incomplete.length > 0) {
@@ -646,6 +701,10 @@ export function derive(events, now = new Date()) {
       // charges you $30 in 3 days" — has no number in it, which is
       // most of why anybody would run this.
       converts_to: null,
+      // What the paid path WOULD cost, on a tool being used free.
+      // Same law as converts_to: a claim about the future, never
+      // the burn. v0.8, the free-with-paid-path half of the ruling.
+      paid_path: null,
       trial_ends: null,
       signup_friction: null,
       sources: new Set(),
@@ -688,6 +747,9 @@ export function derive(events, now = new Date()) {
       case "adopted":
         // Free, and the status says so rather than hiding in paid.
         tool.status = "active_free";
+        // The validator only lets a price through here when it is the
+        // paid-path marker; it lands beside the tool, never in price.
+        tool.paid_path = event.price ?? tool.paid_path;
         tool.since = reopening ? at : (tool.since ?? at);
         tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
         break;
@@ -741,13 +803,33 @@ export function derive(events, now = new Date()) {
   const active = [...tools.values()].filter((t) => t.status !== "inactive");
   const activePaid = active.filter((t) => t.status === "active_paid");
   const burn = activePaid.reduce((sum, t) => sum + monthlyOf(t.price), 0);
+  /**
+   * THE ESTIMATED SHARE, beside the total rather than inside a
+   * footnote. The keeper's ruling lets a metered estimate into the
+   * burn on one condition — that the number says which part of
+   * itself is a guess — so the split rides the figure everywhere the
+   * figure goes, and a reader who ignores it was at least shown it.
+   */
+  const estimated = activePaid
+    .filter((t) => t.price?.basis === "metered")
+    .reduce((sum, t) => sum + monthlyOf(t.price), 0);
 
   return {
     tools,
     consent,
     active,
     active_paid: activePaid,
-    monthly_burn: { amount: Math.round(burn * 100) / 100, currency: "USD" },
+    monthly_burn: {
+      amount: Math.round(burn * 100) / 100,
+      currency: "USD",
+      estimated_amount: Math.round(estimated * 100) / 100,
+      ...(estimated > 0
+        ? {
+            estimate_note:
+              "estimated_amount is the metered share of the total: builder's estimates of bills that vary with usage, included because leaving them out made the total incomplete, marked because including them unmarked would make it a guess.",
+          }
+        : {}),
+    },
     drift,
     now,
   };

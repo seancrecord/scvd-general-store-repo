@@ -7,6 +7,7 @@ import {
   badgeRoutes,
   bellRoutes,
   buyRoutes,
+  commissionRoutes,
   catalogRoutes,
   directoryRoutes,
   trainRoutes,
@@ -40,6 +41,7 @@ import {
   namespaceSpecRoutes,
   pulseRoutes,
   attestationRoutes,
+  criteriaRoutes,
   conventionalRoutes,
   didRoutes,
   livenessRoutes,
@@ -221,6 +223,7 @@ app.route("/", statsRoutes);
 app.route("/", corpusRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
+app.route("/", criteriaRoutes);
 app.route("/", conventionalRoutes);
 app.route("/", didRoutes);
 app.route("/", livenessRoutes);
@@ -251,6 +254,7 @@ app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
+app.route("/", commissionRoutes);
 app.route("/", anchorRoutes);
 app.route("/", serviceAuditRoutes);
 app.route("/", reconciliationRoutes);

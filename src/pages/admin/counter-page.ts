@@ -8,6 +8,8 @@ import {
   LABOR_ITEM_IDS,
   OPEN_LABOR_CAP,
 } from "@/services/queue-capacity";
+import { deskStatusOf } from "@/services/commission-desk";
+import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import type { StockUnit } from "@/services/stock";
 import type {
   CommissionRequest,
@@ -308,6 +310,43 @@ function refundsHtml(refunds: RefundRecord[]): string {
     .join("\n");
 }
 
+/**
+ * One request's Commission Desk standing and levers. The status is
+ * DERIVED (deskStatusOf), never re-implemented here, so the counter
+ * cannot disagree with the pay route about whether a quote is live.
+ */
+function deskHtml(request: CommissionRequest): string {
+  const status = deskStatusOf(request);
+  if (status === "accepted") {
+    return ` \u00B7 <strong>[accepted]</strong> $${request.quote_usdc}${request.order_id ? ` \u00B7 order ${escapeHtml(request.order_id)}` : ""}`;
+  }
+  if (status === "declined") {
+    return ` \u00B7 <strong>[declined]</strong> reply (public): ${escapeHtml(request.decline_reply ?? "")}`;
+  }
+  const standing =
+    status === "quoted"
+      ? ` \u00B7 <strong>[quoted]</strong> $${request.quote_usdc}, ${request.quote_window_hours}h window, expires ${escapeHtml(request.quote_expires_at ?? "")}`
+      : status === "expired"
+        ? ` \u00B7 <strong>[quote expired]</strong> was $${request.quote_usdc} \u2014 re-quote or decline`
+        : "";
+  // The rungs come from the ladder itself; a hand-typed option list
+  // here is exactly the drift AT_SCALE rule 1 exists to prevent.
+  const rungOptions = COMMISSION_RUNGS.map(
+    (rung) => `<option value="${rung}">$${rung}</option>`,
+  ).join("");
+  return `${standing}
+    <form method="POST" action="/admin/commission/${escapeHtml(request.id)}/quote" style="display:inline">
+      <select name="usdc">${rungOptions}</select>
+      <input type="number" name="window_hours" placeholder="window (hours)" min="1" required style="width:8rem">
+      <input type="text" name="note" placeholder="note to requester (optional)">
+      <button type="submit">${status === "quoted" || status === "expired" ? "Re-quote" : "Quote"}</button>
+    </form>
+    <form method="POST" action="/admin/commission/${escapeHtml(request.id)}/decline" style="display:inline">
+      <input type="text" name="reply" placeholder="reply (PUBLIC)" required>
+      <button type="submit">Decline</button>
+    </form>`;
+}
+
 function requestsHtml(requests: CommissionRequest[]): string {
   if (requests.length === 0) {
     return "<p>The ledger is quiet.</p>";
@@ -315,7 +354,7 @@ function requestsHtml(requests: CommissionRequest[]): string {
   return requests
     .map(
       (request) =>
-        `<li><strong>$${request.offer_usdc}</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` \u00B7 <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}</li>`,
+        `<li><strong>$${request.offer_usdc}</strong>, ${escapeHtml(request.description)}, contact: ${escapeHtml(request.contact)}, ${escapeHtml(request.date)}${request.suggest_listing ? ` \u00B7 <em>directory suggestion:</em> ${escapeHtml(request.suggest_listing)}` : ""}${request.verified_identity ? `, claimed identity (unverified): ${escapeHtml(request.verified_identity)}` : ""}${deskHtml(request)}</li>`,
     )
     .join("\n");
 }

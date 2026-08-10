@@ -38,26 +38,56 @@ it gets old. **No chasing badge-holders to take anything down** — the
 badge carries its own expiry by carrying its own date. The Conformance
 Watch is what sells currency. This unblocks the criteria page, which
 was the rule 43 gate in front of every badge the store might ship.
-**Recorded, not built** — the criteria page is the next move behind
-it.
+**BUILT 2026-08-10** — `/criteria` serves the contract (JSON and
+paper), almost all of it derived: the artifact classes from the
+attestation spec, the battery from the versioned preflight, the
+immunity clause from the watches. The ruling above is the one part
+that could not be derived, and it is on the page as ruled. /becoming
+records the trigger as fired; nothing carries a badge, and the page
+says so itself.
 
 **4. The burn total may contain an estimate.** Add a `basis` field
 marking which numbers are estimated and which are exact. The keeper's
 reasoning: *leaving them out makes the total incomplete; marking them
 makes it honest.* That settles the two non-clock billing shapes —
 usage-based and free-tier-with-a-paid-path — which were unrepresentable
-under the old reading. **Recorded, not built.**
+under the old reading. **BUILT 2026-08-10** — tab schema v0.8:
+`price.basis` (`fixed`/`metered`/`free_with_paid_path`), the burn
+reports `estimated_amount` beside `amount`, the paid path lands as
+`paid_path` under `converts_to`'s never-reaches-the-burn law, and the
+fence refuses the contradictions in both directions.
 
 **5. Card reconciliation: monthly CSV export from the bank.** Manual
 is fine for now. The tab's sweep measures itself; a card statement is
 ground truth. This is what `variability_pct` has been waiting on.
-**Recorded, not built.**
+**BUILT 2026-08-10** — `reconcile_card_statement` (tab v0.3.0):
+takes the parsed statement rows, compares in both directions (charges
+the tab can't place, fixed monthly tools the statement never charged,
+metered actuals against their estimates, charges on canceled tools),
+appends to a `.card.jsonl` sidecar, and surfaces the last
+reconciliation as `card_ground_truth` in the burn rollup's coverage
+block. Writes nothing to the tab — every finding is a question, never
+an entry. No bank code, same law as the mail sweep.
 
 **6. The ward widens to every public directory.** Uniform — no
 targeting, no picking favourites. *If it is on a public list, we watch
 it.* This also answers the Browser Use question without ever having to
 ask it about Browser Use specifically, which was the point.
-**Recorded, not built.**
+**BUILT 2026-08-10** — the fuchss provider directory
+(`x402.fuchss.app`, the largest free full enumeration anywhere, ~10k
+hosts over ~27 bucket pages) joins the census as a population source:
+it widens the denominator, never the probe list, because a provider
+row is a homepage and the leaderboard already taught the round what
+probing a homepage manufactures. A partial read (one bucket page
+failing) is unread, per the population layer's founding law. The two
+directories that gate enumeration behind payment — 402index.io (L402
+CSV) and x402scan.com (paid API) — are NAMED on every round as
+`directories_unread`, with reasons, both dissolving when the wallet
+law is ruled. The census event lists are capped at 250 names with
+exact `_count` fields beside them, so corpus snapshots stay
+weekly-and-small and the KV→R2 graduation trigger deliberately does
+NOT fire — the full enumeration lives in the register, which was
+never the snapshot.
 
 **7. Commission Desk: `the_collab` first, and public replies on
 declined requests.** Transparency is house style. The keeper added
@@ -67,7 +97,26 @@ labor item eventually moves to request → quote → agreed price**, with
 two decisions he did not name (the rungs, quote expiry) should take
 the spec's recommended defaults, those defaults are on record in
 `docs/COMMISSION_DESK.md` and nothing is blocked either way.
-**Recorded, not built.**
+**BUILT 2026-08-10.** The desk stands on the ledger that already
+existed: POST `/api/request` is still the free write-in door, and now
+hands back a `status_url`. The keeper quotes or declines from the
+counter (`/admin/commission/:id/quote|decline`) — a quote must sit on
+the published ladder ($25/$50/$100/$250, spec §3a) with its own
+delivery window, and expires in 14 days (the spec default, taken as
+ruled). Each rung is its own STATIC x402 route
+(`/api/commission/pay/:rung`), priced at boot in `lib/payments.ts`, so
+the money spine never reads storage to learn a price; WHICH quote a
+payment honours is checked pre-gate (`routes/commission.ts`), and
+every mismatch — no id, unquoted, expired, wrong rung, declined,
+already paid — refuses before the facilitator is asked. A paid quote
+mints under `the_collab` through the existing order machinery, with
+the QUOTE's window as the order's SLA instead of the flat 168h (that
+flat promise on unseen work being the thing the desk retires).
+Declines are public with the reply at GET `/api/commission/declined`;
+contacts never publish. `test/commission-desk.spec.ts` covers the lot.
+Deliberately NOT done yet: retiring `the_collab`'s buy-now door — the
+desk runs beside it until the keeper has quoted a real request or two
+and wants the old door shut.
 
 **8. Build the refund-window detector.** The card by the door promises
 a refund on a missed window and nothing enforces it. Correctly
@@ -221,21 +270,30 @@ with nothing marking which part was guessed. The real question:
 `price` needs a `basis` marker. If no, they stay unrepresentable and
 the tab says so.
 
-**Card reconciliation.** The only true ground truth for burn. Needs
-you to pick a source. Until then `variability_pct` rests on the sweep
-measuring itself — honest, not proof.
+**Card reconciliation.** ~~Needs you to pick a source.~~ Ruled
+2026-08-10 (monthly bank CSV, manual) and built the same day —
+`reconcile_card_statement` in the tab. `variability_pct` now has a
+ground-truth counterpart, `card_variability_pct`, in the coverage
+block.
 
-**The ward's population source.** Whether Browser Use is already in
+**The ward's population source.** ~~Whether Browser Use is already in
 the walked universe decides whether their observation is already
-happening or whether the ward needs to widen. I couldn't check —
-network policy here blocks `api.cdp.coinbase.com`. Widening is the
-only move that stays uniform; adding one name is targeting.
+happening or whether the ward needs to widen.~~ Ruled (C7) and built
+2026-08-10: the ward widened to every public directory it can read
+freely, which answers the Browser Use question without ever asking it
+by name — the uniform move, as intended.
 
 **Polygon.** Still backlogged, still queued.
 
 ---
 
 ## Should the GitHub go private?
+
+**CLOSED by the keeper, 2026-08-10: struck from the list at his word.
+The repo stays as it is, public.** The analysis below is kept for the
+record rather than re-litigated; the recommendation it reached — keep
+the code public — is the outcome, arrived at by his hand rather than
+by argument.
 
 **Recommendation: keep the code public. Move the strategy docs if
 anything.**
@@ -401,7 +459,8 @@ feature ideas — it is a promise already made.
 
 **F. The Tab**
 - The mail sweep (CV) — contract written, routine unwritten.
-- Card reconciliation — keeper picks the source.
+- Card reconciliation — ruled and built 2026-08-10 (monthly bank CSV,
+  `reconcile_card_statement`).
 - Layer 3 / the pooled corpus — the product's actual business model,
   not started, needs consent volume that does not exist.
 - The two non-clock billing shapes.
@@ -506,7 +565,7 @@ stranger to pay."*
 | | |
 |---|---|
 | ~~**Refund-window detector**~~ | **BUILT.** Sweep and page were already on the cron; 2026-08-10 added the half the promise turns on — the buyer can see the breach on their own order page. |
-| **Commission Desk** | SPEC WRITTEN 2026-08-09 → `docs/COMMISSION_DESK.md`. Four decisions waiting on the keeper. |
+| ~~**Commission Desk**~~ | **BUILT 2026-08-10** per the C2 ruling — request → quote at a published rung → pay over a static x402 route, declines public. `the_collab`'s buy-now door still open beside it until the keeper wants it shut. |
 | **The bench (open-queue cap)** | BUILT 2026-08-09. The interim floor under the same exposure, and it found a live hole. |
 
 **The bench, 2026-08-09.** Not the Commission Desk — that retires
@@ -1097,10 +1156,20 @@ the keeper asked for — it is the version that compounds.
   was checking the live deploy, which does not have this branch. Position
   added to its header block
 - [x] MCP `serverInfo` + `instructions`, **both servers**
-- [ ] `/directory.ts` and `/schemas.ts` JSON-LD — still open. The
-  `Dataset` markup on `/corpus.json` (gap 1 below) belongs with this one
-- [ ] `security.txt`, `did.json` — still open; a read for contradictions
-  rather than a rewrite
+- [x] `/directory.ts` and `/schemas.ts` JSON-LD — read 2026-08-10 and
+  the entry itself was stale: the `Dataset` markup already shipped in
+  #82 (`/corpus.json`, `/house-ledger.json`, the conformance vectors,
+  plus the storefront node), the directory already carries an honest
+  `ItemList`-of-`Review` graph, and the listing-spec schema is a JSON
+  Schema document with nothing for JSON-LD to add. Nothing to build
+- [x] `security.txt`, `did.json` — read 2026-08-10, both clean. The
+  contradiction read earned its keep ELSEWHERE: the A2A card still said
+  "settle-first" in every skill description and "settle-before-goods"
+  in its own note, and `llms.txt` said paid MCP tools "settle before
+  anything ships" — hyphenated and re-worded spellings the parity
+  guard's phrase list did not know. All three fixed; the guard now
+  knows the variants, and was shown red against the stale copy before
+  the fix went in
 
 **AND THE THING THAT MADE THE LIST FIXABLE.** The words now live once,
 in `src/store/copy/position.ts`, and the surfaces import them.
@@ -1578,7 +1647,7 @@ the batch is two or three, not eight.
 | | why |
 |---|---|
 | ~~**`order_id` on `RefundRecord`**~~ | **DONE 2026-08-10**, when refunds were next touched, exactly as written. `owed_usdc` is now exact wherever the rows are new, the audit reports how many joins still rest on the old item+payer guess, and a refund that names its order can no longer be borrowed by a sibling breach — which was the specific way a real debt could vanish from the total |
-| **The Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. RULED 2026-08-10: `the_collab` first, public replies on declines. Spec §3 corrected the same day — a one-off price DOES fit the payment stack. Not built |
+| ~~**The Commission Desk**~~ | retires buy-now for per-order labor; kills all standing SLA exposure. RULED 2026-08-10: `the_collab` first, public replies on declines. Spec §3 corrected the same day — a one-off price DOES fit the payment stack. **BUILT 2026-08-10** (quote lifecycle, static rung routes, public declines); the buy-now door itself still open beside the desk until the keeper shuts it |
 
 ---
 

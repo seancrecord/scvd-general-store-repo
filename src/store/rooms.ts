@@ -70,6 +70,12 @@ export const ROOMS: readonly Room[] = [
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
   { path: "/attestation", name: "What we sign" },
+  /**
+   * Rule 43's gate, opened 2026-08-10 on the keeper's badge ruling.
+   * Held off the storefront pending his nod on giving it a slot — the
+   * sitemap, llms.txt and the room contract all carry it either way.
+   */
+  { path: "/criteria", name: "What 'verified' means", on_storefront: false },
   { path: "/rights", name: "What's yours" },
   { path: "/wind-down", name: "If the lights go off" },
   { path: "/becoming", name: "What this is trying to prove" },

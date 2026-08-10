@@ -77,6 +77,8 @@ export interface FulfillmentInput {
   confessionText?: string;
   /** Human-queue task detail. Untrusted. */
   detail?: string;
+  /** Commission Desk: the quote's own promised window, in hours. */
+  slaHours?: number;
   source?: string;
   userAgent?: string;
   referrer?: string;
@@ -419,6 +421,9 @@ export async function fulfillPurchase(
   }
   if (input.detail) {
     orderOptions.detail = input.detail;
+  }
+  if (input.slaHours) {
+    orderOptions.slaHours = input.slaHours;
   }
   if (input.source) {
     orderOptions.source = input.source;

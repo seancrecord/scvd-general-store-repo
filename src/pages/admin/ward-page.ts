@@ -57,7 +57,7 @@ export function renderWardPage(
               ? ` <strong style="color:#8c2f1b">The known population collapsed past the floor, so disappearances are SUPPRESSED this round.</strong> The instrument explains that more plausibly than the ecosystem does; if it holds next round it will be recorded as real.`
               : ""
           }</li>
-    <li>Population moves: ${round.population.appeared.length} newly listed, ${round.population.disappeared.length} newly delisted, ${round.population.returned.length} listed again after being written off. Delisted means <em>no longer listed where we look</em> — never dead, never stopped taking payment.</li>`
+    <li>Population moves: ${round.population.appeared_count ?? round.population.appeared.length} newly listed, ${round.population.disappeared_count ?? round.population.disappeared.length} newly delisted, ${round.population.returned_count ?? round.population.returned.length} listed again after being written off. Delisted means <em>no longer listed where we look</em> — never dead, never stopped taking payment.</li>`
         : "<li>Coverage: not measured this round (round predates the population layer — read that as unknown, not as complete).</li>"
     }
     <li>Our search-index presence: <strong>${
@@ -79,6 +79,16 @@ export function renderWardPage(
         ? "could not check this round (says nothing about anybody)"
         : `${round.leaderboard_sellers} sellers, window ${escapeHtml(round.leaderboard_window ?? "?")}; our rank ${round.our_leaderboard_rank ?? "— not on it (expected at our volume)"}`
     }</strong>. Volume figures are claims for population, not importance — ~98% of ecosystem volume measured non-organic (Artemis, 2026-08).</li>
+    ${
+      round.directories_unread && round.directories_unread.length > 0
+        ? `<li>Directories the round knows and cannot read: ${round.directories_unread
+            .map(
+              (entry) =>
+                `<strong>${escapeHtml(entry.source)}</strong> <small>(${escapeHtml(entry.why)})</small>`,
+            )
+            .join("; ")}. The widening is only uniform if its gaps ride the same page as its findings.</li>`
+        : ""
+    }
   </ul>`;
 
   const deltaHtml = delta
