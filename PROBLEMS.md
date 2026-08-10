@@ -616,6 +616,79 @@ AT_SCALE.md; write amplification (~4-5 KV writes per settle) and the
 someday storage napkin math (artifacts accumulate forever by design)
 are noted there too.
 
+### 22. The bank walk skips blocks silently when it falls behind
+
+Found 2026-08-10 while scoping what a published settled-vs-delivered
+record could honestly claim about coverage. Same shape as #18: the
+instrument that closed #4 has a failure mode of its own that reads as
+a clean sweep.
+
+`reconcileAgainstChain()` walks forward from a stored cursor:
+
+    const fromBlock = Number.isFinite(cursor)
+      ? Math.max(cursor + 1, head - RECONCILE_MAX_SPAN)
+      : Math.max(0, head - RECONCILE_BLOCK_SPAN);
+    const toBlock = Math.min(head, fromBlock + RECONCILE_BLOCK_SPAN - 1);
+
+**When the cursor is more than RECONCILE_MAX_SPAN behind the head, the
+clamp discards every block between the cursor and that floor.** The
+cursor then moves past them and nothing revisits them: the walk is the
+only instrument that reads incoming transfers, and it only ever walks
+forward. An orphan in that window — money taken, no certificate — is
+never found by anything, ever.
+
+**The margin is thinner than it looks.** RECONCILE_BLOCK_SPAN is 2000
+blocks, which at Base's ~2s blocks is 66.7 minutes of chain per pass.
+The cron is `30 * * * *`, hourly. So the walk outruns the chain by
+about seven minutes an hour, and recovery from any lag is at that
+rate: an hour behind takes ~9 hours to close, six hours behind takes
+~54. RECONCILE_MAX_SPAN is 20000 blocks — about 11.1 hours — so a cron
+outage past that mark loses those blocks permanently, and a long
+recovery is itself the window where a second outage lands over the
+line.
+
+**The defect is the silence, not the skip.** Bounding a pass is right;
+a walk that re-read all of Base every hour would stop running, which
+is the failure this file's #4 is about. What is wrong is that the
+clamp writes nothing when it fires. The pass returns `ran: true`,
+reports orphans for the window it did read, and every surface
+downstream reports a clean sweep over a range that was never read. The
+behaviour is named once, in `bankInflow`'s honest-limits comment — "a
+Base pass that fell more than RECONCILE_MAX_SPAN behind skips blocks
+… and their inflow with it" — and appears nowhere in the artifact the
+skip corrupts.
+
+That makes it the one instrument here that degrades quietly. Every
+sibling refuses to: `population.ts` records no disappearance from a
+capped read, `reclassify.ts` carries `complete` and will not publish a
+partial correction as a correction, `knownSettlementHashes()` sets
+`cert_scan_truncated`. Rule 5 again — a zero from a probe that could
+not observe the range is not evidence the range is clean.
+
+**The fix, and it is small:** when `cursor + 1 < head -
+RECONCILE_MAX_SPAN`, alert with the skipped block range and record it
+before moving the cursor. A hole then has a date and bounds, can be
+back-filled by hand, and any published coverage claim can either say
+there are none or name the ones there are.
+
+**Trigger: before any settled-vs-delivered figure is published.** Not
+volume — this fires on the clock, not the counter, and is exactly as
+likely at nine settlements as at nine thousand. The reason it does not
+wait for its own first occurrence, unlike most entries in this file,
+is that **a hole cannot be detected after the fact.** There is no
+backward audit for blocks nothing ever read. Every day without the
+guard is a day whose coverage can never be certified later, which
+makes delay accrue an irreversible cost rather than merely deferring
+one.
+
+**The volume-triggered sibling, filed here so it is not conflated:**
+`CERT_SCAN_CAP` is 2000. Past 2000 certificates
+`knownSettlementHashes()` truncates, the known-hash set goes
+incomplete, and real sales begin reporting as orphans. That one fails
+safe — noise rather than silence, and it already flags
+`cert_scan_truncated` — but the orphan alert stops being trustworthy
+at that point. **Trigger:** certificate count approaching 2000.
+
 ---
 
 ## Logged, not chased
