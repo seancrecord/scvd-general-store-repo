@@ -62,6 +62,10 @@ cannot correct it.
 
 ## Also worth a republish elsewhere
 
-`scvd-tab` is on **no** MCP directory. The store's own `/mcp` is on
-Glama; the Tab is not. That is pure distribution at near-zero cost and
-it is a separate command from this one.
+`scvd-tab` reached npm on 2026-08-10 (v0.4.0; 0.4.1 carries the
+README a stranger actually reads) — so "clone the repo" stopped being
+the only door. It is still on **no** MCP directory: the store's own
+`/mcp` is on Glama; the Tab is not. That is pure distribution at
+near-zero cost and it is a separate keeper action from this one
+(Glama and peers index by npm package name or GitHub URL — the
+submission is a form, not a build).

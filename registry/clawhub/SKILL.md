@@ -344,8 +344,12 @@ If that ratio is small, the artifact says it is small.
 ## The Tab — a second MCP server, free and yours
 
 `scvd-tab` is a separate MCP server that runs entirely on the
-builder's own machine. MIT, free forever, and it sends nothing
-anywhere: the tab is a local file.
+builder's own machine — on npm since 2026-08-10, one config block to
+install (`"command": "npx", "args": ["-y", "scvd-tab"]`). MIT, free
+forever. Nothing leaves the machine except a delta the builder
+consented to and the agent deliberately sent; deltas carry a closed
+allowlist of fields (never prices, notes or identities) and come back
+with a signed custody receipt.
 
 It is the running account of every tool a builder signs up for —
 trials, renewals, price changes, cancellations — with a pager that
@@ -364,9 +368,11 @@ Pricing, committed in public before anyone installs rather than left
 as "free for now": the local tab, the pager and `export_tab` are free
 forever and MIT and on your machine. Reading the POOLED corpus is
 contribute-to-access. Pooled read without contributing is the only
-money door. The pooled layer is **not built** — `whats_current`
-honestly reports `pooled: {available: false}` — and that is direction,
-dated, not stock.
+money door. The pool's intake is live (contributions accepted at
+`/api/tab/delta`, sample sizes published at `/api/tab/pool`); pooled
+READS are **not built** — `whats_current` honestly reports
+`pooled: {available: false}` — and that remains direction, dated,
+not stock.
 
 ### MCP, if you prefer tools
 
