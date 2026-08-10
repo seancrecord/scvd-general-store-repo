@@ -6,9 +6,21 @@ import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment"
 const BASE = "https://scvd.store";
 
 /**
- * WHERE SETTLEMENT SITS RELATIVE TO THE HANDLER — characterized, so
- * the keeper's ruling rests on a demonstrated fact rather than on a
- * code comment.
+ * WHERE SETTLEMENT SITS RELATIVE TO THE HANDLER — kept after the
+ * ruling, pointed the other way.
+ *
+ * ⚑ THE RULING LANDED. This file was written to characterize the cost
+ * of settling first so the keeper could rule on it with a demonstrated
+ * fact in hand. He ruled on 2026-08-10: deliver first, settle after.
+ * The property this file now pins is that a sale which DELIVERS still
+ * settles exactly once — the half that would be easy to break while
+ * fixing the other, because a store that never charges anybody passes
+ * every deliver-first test there is. The failure side lives in
+ * `test/deliver-first.spec.ts`, which is the keeper's own acceptance
+ * condition.
+ *
+ * The original note is kept below because it argued the trade
+ * honestly and the reasoning is why the rule turned over.
  *
  * WHAT THIS TEST IS AND IS NOT. It does NOT prove deliver-first works
  * here; that cannot be tested without rewriting the gate, and pretending
@@ -41,8 +53,8 @@ beforeAll(() => {
   facilitator = installFacilitatorMock();
 });
 
-describe("settlement happens before the handler runs", () => {
-  it("moves the money first, which is what makes 'paid, no goods' possible at all", async () => {
+describe("a sale that delivers still settles, exactly once", () => {
+  it("charges once for goods that went out", async () => {
     facilitator.settleCalls = 0;
 
     const challenge = await SELF.fetch(`${BASE}/api/buy/small_blessing`);
@@ -57,27 +69,22 @@ describe("settlement happens before the handler runs", () => {
     expect(paid.status).toBe(200);
 
     /*
-     * One settle, and it happened inside this request. The ordering
-     * itself is not directly observable from out here — what IS
-     * observable is that a settle occurred for a purchase whose
-     * handler then ran. That is the necessary condition for the
-     * failure class: if the handler had died after this point, the
-     * money would already have moved and the buyer would hold
-     * nothing.
+     * One settle. Under the amended rule this is the SUFFICIENT
+     * condition nobody should lose sight of: deliver-first is only
+     * correct if delivering still takes the money. Zero here would
+     * mean the store had started giving its goods away, and every
+     * failure-side test would still be green.
      */
     expect(facilitator.settleCalls).toBe(1);
   });
 
-  it("leaves a delivery intent behind, which is the store admitting the gap exists", async () => {
+  it("still keeps the delivery audit, because the gap narrowed and did not close", async () => {
     /*
-     * The outbox row is the tell. It is written AFTER settlement and
-     * BEFORE the handler, and it only exists because settling first
-     * creates a window where money has moved and goods have not. A
-     * store that settled last would not need one.
-     *
-     * So the presence of this machinery is itself the characterization:
-     * we know the gap is there, we instrumented it rather than closed
-     * it, and closing it is the ruling in front of the keeper.
+     * The outbox row survives the amendment on purpose. The window it
+     * watches used to hold the whole handler, chain reads included;
+     * it now holds only what a route does after calling settle, which
+     * should be the mint and nothing else. A signature or a KV write
+     * can still fail in there, and small is not none.
      */
     const audit = await import("@/services/delivery-audit");
     expect(typeof audit.openDeliveryIntent).toBe("function");

@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { pendingPaymentStub } from "./helpers/payment";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -97,11 +98,12 @@ describe("A.2 — the stock race, refused silence", () => {
     await fulfillPurchase(
       testEnv,
       witness,
-      {
+      // Rule 9 amended: fulfilment holds the authorization and
+      // settles itself, at its last line before the mint.
+      pendingPaymentStub({
         paidUsdc: witness.price_usdc,
-        tipUsdc: 0,
         payer: "0x9999999999999999999999999999999999999999",
-      } as never,
+      }) as never,
       { detail: "audit: simulated concurrent winner" } as never,
     );
 

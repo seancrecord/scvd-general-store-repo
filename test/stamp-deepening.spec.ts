@@ -1,4 +1,5 @@
 import { SELF, env } from "cloudflare:test";
+import { pendingPaymentStub } from "./helpers/payment";
 import { beforeAll, describe, expect, it } from "vitest";
 import { inkParamsFromSignature } from "@/lib/ink";
 import { currentWeekKey, KV_KEYS, previousWeekKey } from "@/lib/kv-keys";
@@ -159,7 +160,9 @@ describe("shelf witness marks", () => {
   it("marks purchases in the first listed week, from the data alone", async () => {
     const { fulfillPurchase } = await import("@/services/fulfillment");
     const { verifyCertificateSignature } = await import("@/lib/signing");
-    const payment = { paidUsdc: 0.5, tipUsdc: 0 } as Parameters<
+    // Rule 9 amended: fulfilment takes the authorization and settles
+    // itself, at its own last line before the mint.
+    const payment = pendingPaymentStub({ paidUsdc: 0.5 }) as unknown as Parameters<
       typeof fulfillPurchase
     >[2];
     const freshItem = {

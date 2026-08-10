@@ -2,7 +2,7 @@ import { storeIdentity } from "@/lib/identity";
 import { canonicalizeCertificate } from "@/lib/signing";
 import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
-import type { SettledPayment } from "@/lib/payments";
+import type { PendingPayment, SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
 import { observeSettlement, observeWithFacts } from "@/services/attestation";
 import { getBlockNumber, getReceiptsBatch } from "@/lib/base-rpc";
@@ -102,10 +102,32 @@ async function bundleEvidenceHash(
     .join("");
 }
 
+/**
+ * DELIVER FIRST, SETTLE AFTER (rule 9, amended 2026-08-10).
+ *
+ * `pending` is the buyer's verified authorization, not yet presented.
+ * Everything this function does above the `pending.settle()` call
+ * costs the buyer nothing if it fails — and that is where the
+ * expensive, failure-prone work lives: the chain reads, the probes,
+ * the observations. Below the call, a failure means money taken and
+ * goods not delivered.
+ *
+ * The call therefore sits at the LAST possible line: after every
+ * observation, immediately before the certificate is minted. The mint
+ * needs the settlement transaction to name it, which is why the money
+ * cannot simply move after this function returns.
+ *
+ * The production incident that turned rule 9 over lived exactly in
+ * that gap. Four items read the chain AFTER settling, against a
+ * rate-limited public RPC, with no retry and no catch — so a dropped
+ * read became a paid customer holding nothing, four times on Base and
+ * twice on Solana. Under this ordering the same dropped read costs the
+ * buyer nothing at all: no settle call was ever made.
+ */
 export async function fulfillPurchase(
   env: Env,
   item: MenuItem,
-  payment: SettledPayment,
+  pending: PendingPayment,
   input: FulfillmentInput,
 ): Promise<Record<string, unknown>> {
   const mintOptions: Parameters<typeof mintCertificate>[1] = {
@@ -114,8 +136,8 @@ export async function fulfillPurchase(
   if (input.agentName) {
     mintOptions.agentName = input.agentName;
   }
-  if (payment.tipUsdc > 0) {
-    mintOptions.tipUsdc = payment.tipUsdc;
+  if (pending.tipUsdc > 0) {
+    mintOptions.tipUsdc = pending.tipUsdc;
   }
   /**
    * THE AMOUNT, THE PAYER AND THE CHAIN TRANSACTION, into the signed
@@ -126,16 +148,7 @@ export async function fulfillPurchase(
    * than from in here, which is now the second time that has been the
    * instrument that worked.
    */
-  mintOptions.paidUsdc = payment.paidUsdc;
-  if (payment.payer) {
-    mintOptions.payer = payment.payer;
-  }
-  if (payment.transaction) {
-    mintOptions.settlementTx = payment.transaction;
-  }
-  if (payment.network) {
-    mintOptions.network = payment.network;
-  }
+  mintOptions.paidUsdc = pending.paidUsdc;
   if (item.id === "certificate_of_patronage") {
     mintOptions.patronage = true;
   }
@@ -232,6 +245,27 @@ export async function fulfillPurchase(
   // Shelf witness mark: applies itself from the listing date, no opt-in.
   if (currentWeekKey() === item.listed_week) {
     mintOptions.witness = true;
+  }
+  /**
+   * THE MONEY MOVES HERE, and not one line earlier. Every observation
+   * above this point has completed; everything below is the mint.
+   *
+   * A failure above costs the buyer nothing — no authorization was
+   * presented, so there is nothing to refund and nothing to chase. A
+   * failure at THIS line is a decline: the gate unwinds and serves the
+   * facilitator's reason, and the work above is simply thrown away,
+   * which is the cheap direction. A failure BELOW is the one case the
+   * delivery audit still exists for.
+   */
+  const payment = await pending.settle();
+  if (payment.payer) {
+    mintOptions.payer = payment.payer;
+  }
+  if (payment.transaction) {
+    mintOptions.settlementTx = payment.transaction;
+  }
+  if (payment.network) {
+    mintOptions.network = payment.network;
   }
   let minted: Awaited<ReturnType<typeof mintCertificate>>;
   try {

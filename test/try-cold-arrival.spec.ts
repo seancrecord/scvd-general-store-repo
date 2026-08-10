@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { SELF, env } from "cloudflare:test";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { pendingPaymentStub } from "./helpers/payment";
 import type { Env } from "@/types";
 
 /**
@@ -261,7 +262,10 @@ describe("required params are on the door, not one cross-reference away (haiku's
     const body = await fulfillPurchase(
       env as never,
       hello,
-      { paidUsdc: hello.price_usdc, tipUsdc: 0, payer: "0x9779" } as never,
+      pendingPaymentStub({
+        paidUsdc: hello.price_usdc,
+        payer: "0x9779",
+      }) as never,
       {} as never,
     );
     const line = String(body["show_your_human"]);

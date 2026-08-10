@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
+import { SettlementDeclined } from "@/lib/payments";
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit, recordVerifyCall } from "@/lib/metrics";
@@ -492,7 +493,26 @@ async function callPurchaseTool(
   if (userAgent) {
     input.userAgent = userAgent;
   }
-  const response = await fulfillPurchase(c.env, item, outcome.payment, input);
+  /*
+   * Deliver first (rule 9, amended 2026-08-10). fulfillPurchase takes
+   * the AUTHORIZATION and presents it at its own last line, so a
+   * chain read that dies mid-fulfilment costs this caller nothing.
+   * A decline at that point unwinds here.
+   */
+  let response: Record<string, unknown>;
+  try {
+    response = await fulfillPurchase(c.env, item, outcome.pending, input);
+  } catch (error) {
+    if (error instanceof SettlementDeclined) {
+      const body: unknown = await error.response
+        .clone()
+        .json()
+        .catch(() => ({ error: "payment declined at settlement" }));
+      return rpcResult(id, toolText(isRecord(body) ? body : { error: body }));
+    }
+    throw error;
+  }
+  const settled = outcome.settledSoFar();
   const flat = flattenPurchase(response);
   /**
    * Stored under the VERIFIED payer the pipeline carried out, not the
@@ -501,14 +521,14 @@ async function callPurchaseTool(
    * worth being right about: a cache written under an asserted
    * address would be a cache another wallet could later collect.
    */
-  if (idempotencyKey && outcome.verifiedPayer) {
+  if (idempotencyKey && outcome.verifiedPayer && settled) {
     await storeIdempotent(
       c.env,
       idempotencySurface,
       outcome.verifiedPayer,
       idempotencyKey,
       flat,
-      outcome.payment.transaction,
+      settled?.transaction,
     );
   }
   return rpcResult(id, toolText(flat));

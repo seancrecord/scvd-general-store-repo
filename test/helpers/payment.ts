@@ -1,4 +1,4 @@
-import { TEST_PAYER } from "./facilitator-mock";
+import { TEST_PAYER, TEST_TRANSACTION } from "./facilitator-mock";
 
 /**
  * Builders for x402 v2 payment headers, mirroring what a real client
@@ -64,4 +64,51 @@ export function buildPaymentSignature(
     },
   };
   return btoa(JSON.stringify(payload));
+}
+
+/**
+ * A PendingPayment for tests that call `fulfillPurchase` directly.
+ *
+ * Rule 9 as amended 2026-08-10 hands fulfilment the AUTHORIZATION
+ * rather than a settled payment, so it can do its expensive work
+ * before any money moves. A direct caller has no gate behind it to
+ * provide the settle, so this stands in: it "settles" instantly and
+ * records that it was asked, which is the fact most of these tests
+ * actually care about.
+ */
+export function pendingPaymentStub(
+  overrides: {
+    paidUsdc?: number;
+    tipUsdc?: number;
+    payer?: string;
+    network?: string;
+    transaction?: string;
+  } = {},
+): {
+  paidUsdc: number;
+  tipUsdc: number;
+  payer?: string;
+  network?: string;
+  settleCalls: number;
+  settle: () => Promise<Record<string, unknown>>;
+} {
+  const stub = {
+    paidUsdc: overrides.paidUsdc ?? 0.5,
+    tipUsdc: overrides.tipUsdc ?? 0,
+    ...(overrides.payer ? { payer: overrides.payer } : {}),
+    ...(overrides.network ? { network: overrides.network } : {}),
+    settleCalls: 0,
+    settle: async () => {
+      stub.settleCalls += 1;
+      return {
+        paidUsdc: stub.paidUsdc,
+        tipUsdc: stub.tipUsdc,
+        transaction: overrides.transaction ?? TEST_TRANSACTION,
+        settleHeaders: {},
+        ...(overrides.payer ? { payer: overrides.payer } : {}),
+        ...(overrides.network ? { network: overrides.network } : {}),
+      };
+    },
+  };
+  return stub;
 }

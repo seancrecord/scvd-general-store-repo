@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
+import { SettlementDeclined } from "@/lib/payments";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
@@ -597,8 +598,14 @@ buyRoutes.use("/api/order/*", noStore);
 buyRoutes.get("/api/buy/:item_id", async (c) => {
   // shelfCheck guarantees the item exists by the time we're here.
   const item = getMenuItem(c.req.param("item_id")) as MenuItem;
-  const payment = c.get("payment");
-  if (!payment) {
+  /*
+   * The AUTHORIZATION, not the payment — rule 9 as amended 2026-08-10.
+   * Nothing has been charged yet; `pending.settle()` is what charges,
+   * and fulfillPurchase calls it at the last line before the mint so
+   * that every chain read and probe above it is free to fail.
+   */
+  const pending = c.get("pending");
+  if (!pending) {
     // The gate never lets an unpaid request through; this is belt-and-braces.
     return c.json({ error: "The till hasn't heard from you yet." }, 402);
   }
@@ -724,7 +731,21 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     input.referrer = referrer;
   }
 
-  return c.json(await fulfillPurchase(c.env, item, payment, input));
+  /*
+   * THE DECLINE IS CAUGHT HERE, in the handler's own frame, and not
+   * left to the gate. Hono converts a throw into `onError` on its way
+   * back up, so a settlement decline that escaped this line reached
+   * the buyer as "something fell off a shelf" — the store blaming its
+   * own shelving for a payment that was refused. The gate keeps a
+   * backstop for the same error, but the honest answer is built here,
+   * where we still know what happened.
+   */
+  try {
+    return c.json(await fulfillPurchase(c.env, item, pending, input));
+  } catch (error) {
+    if (error instanceof SettlementDeclined) return error.response;
+    throw error;
+  }
 });
 
 buyRoutes.get("/api/order/:order_id", async (c) => {

@@ -81,7 +81,19 @@ export type Channel =
 
 /** Set by the payment gate once money has actually settled. */
 export interface SettledPaymentVariables {
+  /**
+   * Set only ONCE THE MONEY HAS MOVED. Under rule 9 as amended
+   * 2026-08-10 that is no longer true by the time a handler starts, so
+   * a handler must not gate on this — use `pending` to know it is a
+   * paid request and `pending.settle()` to make it one.
+   */
   payment?: import("@/lib/payments").SettledPayment;
+  /**
+   * The buyer's verified authorization, not yet presented. Its
+   * presence is what says "this request is paid for"; calling its
+   * `settle()` is what takes the money. See PendingPayment.
+   */
+  pending?: import("@/lib/payments").PendingPayment;
 }
 
 export type HonoEnv = {

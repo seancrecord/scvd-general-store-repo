@@ -29,7 +29,20 @@ import {
   processSettlementWithRetry,
   tipFromPaid,
 } from "@/lib/payments";
-import type { SettledPayment } from "@/lib/payments";
+import type { PendingPayment, SettledPayment } from "@/lib/payments";
+import { SettlementDeclined } from "@/lib/payments";
+
+/**
+ * The MCP door speaks JSON-RPC, not HTTP status codes, so a decline
+ * thrown out of `settle` needs a Response to travel in. The route
+ * unwraps it and answers in its own dialect; this is only the vessel.
+ */
+function jsonDeclineResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body ?? { error: "payment declined" }), {
+    status: 402,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 import {
   extractPaymentNonce,
   isNonceSpent,
@@ -89,7 +102,17 @@ export type McpPaymentOutcome =
    * re-derive it from the caller's own unverified meta. It is present
    * even when the facilitator's settle response omits a payer.
    */
-  | { kind: "settled"; payment: SettledPayment; verifiedPayer?: string }
+  | {
+      /**
+       * VERIFIED, NOT CHARGED. Rule 9 as amended: the caller delivers
+       * and then presents `pending.settle()`. `settledSoFar` answers
+       * what actually happened, for the bookkeeping afterwards.
+       */
+      kind: "authorized";
+      pending: PendingPayment;
+      settledSoFar: () => SettledPayment | null;
+      verifiedPayer?: string;
+    }
   /**
    * A cached purchase, returned instead of settling. Reached only from
    * the verified seam below, never from the caller's raw meta.
@@ -294,15 +317,33 @@ export async function runMcpPayment(
     };
   }
 
+  /*
+   * DELIVER FIRST HERE TOO — rule 9 as amended 2026-08-10. The MCP
+   * door must not be the way around a rule the HTTP door keeps: the
+   * same items are sold through both, and the incident that turned
+   * the rule over (chain reads after settling) is item-shaped, not
+   * door-shaped. So this returns the AUTHORIZATION, and everything
+   * below runs only when the caller presents it — which fulfillment
+   * does at its last line before the mint.
+   */
+  const paidUsdcQuoted = atomicToUsdc(result.paymentRequirements.amount);
+  const minimumUsdcQuoted = minimumUsdcForPath(path);
+  const verifiedPayloadForSettle = result.paymentPayload;
+  const verifiedRequirementsForSettle = result.paymentRequirements;
+  const verifiedExtensionsForSettle = result.declaredExtensions;
+  let alreadySettled: SettledPayment | null = null;
+
+  const settle = async (): Promise<SettledPayment> => {
+    if (alreadySettled) return alreadySettled;
   let settlement: Awaited<ReturnType<typeof stack.httpServer.processSettlement>>;
   try {
     // Same one-retry-on-5xx as the HTTP door: the MCP till must not
     // lose a sale the other door would have saved.
     settlement = await processSettlementWithRetry(
       stack.httpServer,
-      result.paymentPayload,
-      result.paymentRequirements,
-      result.declaredExtensions,
+      verifiedPayloadForSettle,
+      verifiedRequirementsForSettle,
+      verifiedExtensionsForSettle,
       { request: context },
     );
   } catch (error) {
@@ -320,18 +361,22 @@ export async function runMcpPayment(
       `settle:${settlement.errorReason}`,
       signals,
     ).catch(() => undefined);
-    return {
-      kind: "payment-required",
-      status: 402,
-      body: settlement.response.body,
-    };
+    /*
+     * Thrown, not returned: by the time this runs the caller is deep
+     * inside fulfillment with its goods built. The MCP route catches
+     * it and answers with the decline, so no fulfillment path has to
+     * carry a decline branch of its own.
+     */
+    throw new SettlementDeclined(
+      jsonDeclineResponse(settlement.response.body),
+    );
   }
   if (nonce) {
     await recordSpentNonce(env, nonce, path);
   }
 
-  const minimumUsdc = minimumUsdcForPath(path);
-  const paidUsdc = atomicToUsdc(result.paymentRequirements.amount);
+  const minimumUsdc = minimumUsdcQuoted;
+  const paidUsdc = paidUsdcQuoted;
   const settlementSignals: Parameters<typeof recordSettlement>[2] = {
     ...signals,
     paidUsdc,
@@ -368,10 +413,24 @@ export async function runMcpPayment(
     // not a way around the bound.
     await recordSolanaSettle(env, paidUsdc).catch(() => undefined);
   }
+  alreadySettled = payment;
+  return payment;
+  };
+
   const verifiedPayer = payerOfVerifiedPayload(result.paymentPayload);
+  const pending: PendingPayment = {
+    paidUsdc: paidUsdcQuoted,
+    tipUsdc: tipFromPaid(paidUsdcQuoted, minimumUsdcQuoted),
+    ...(payerFromPaymentHeader(paymentHeader)
+      ? { payer: payerFromPaymentHeader(paymentHeader) }
+      : {}),
+    settle,
+  };
   return {
-    kind: "settled",
-    payment,
+    kind: "authorized",
+    pending,
+    /** Reads the settled transaction once, and only if it settled. */
+    settledSoFar: () => alreadySettled,
     ...(verifiedPayer ? { verifiedPayer } : {}),
   };
 }

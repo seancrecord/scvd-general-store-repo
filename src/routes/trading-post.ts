@@ -199,7 +199,14 @@ tradingPostRoutes.use(ISSUE_PATTERN, issueCheck);
 tradingPostRoutes.use(ISSUE_PATTERN, paymentGate);
 
 tradingPostRoutes.get(ISSUE_PATTERN, async (c) => {
-  if (!c.get("payment")) {
+  /*
+   * `pending`, not `payment` — rule 9 as amended 2026-08-10. Nothing
+   * is charged when a handler starts now. These pages mint no
+   * certificate and so have no transaction to bind, which means they
+   * never call settle themselves: the gate charges after they return
+   * a 2xx, which is stock x402's own ordering.
+   */
+  if (!c.get("pending")) {
     // The gate never lets an unpaid request through; belt-and-braces.
     return c.json({ error: "The till hasn't heard from you yet." }, 402);
   }

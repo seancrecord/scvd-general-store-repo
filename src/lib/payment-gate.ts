@@ -75,6 +75,7 @@ import {
   tipFromPaid,
 } from "@/lib/payments";
 import type { SettledPayment } from "@/lib/payments";
+import { SettlementDeclined } from "@/lib/payments";
 import {
   extractPaymentNonce,
   getSpentNonce,
@@ -84,10 +85,33 @@ import {
 import type { HonoEnv } from "@/types";
 
 /**
- * The store's own x402 gate. Deliberately settles BEFORE the route handler
- * runs, so a failed settlement can never mint a certificate, create an
- * order, or consume inventory. (The stock middleware settles after the
- * handler, which would leave paid-looking artifacts behind on failure.)
+ * The store's own x402 gate. DELIVERS FIRST AND SETTLES AFTER — rule 9
+ * as amended by the keeper on 2026-08-10.
+ *
+ * It used to say the opposite, and the old comment is worth quoting
+ * because it was right about its own trade and wrong about which side
+ * to take: "Deliberately settles BEFORE the route handler runs, so a
+ * failed settlement can never mint a certificate… (The stock
+ * middleware settles after the handler, which would leave paid-looking
+ * artifacts behind on failure.)"
+ *
+ * What it bought was real. What it cost was worse: money moves, the
+ * delivery step dies, and the buyer holds nothing — four times on
+ * Base and twice on Solana, every one of them an item that read the
+ * chain after settling against a rate-limited public RPC.
+ *
+ * HOW IT WORKS NOW. Verification, the replay guard and the paid-retry
+ * lane are unchanged and still run first. Then the handler is given a
+ * `pending` payment — the buyer's verified authorization, not yet
+ * presented — and `next()` runs. A route that mints calls
+ * `pending.settle()` at its own last line before the mint, so its
+ * chain reads and probes are free to fail. A route that mints nothing
+ * never calls it, and the gate settles for it after a 2xx, which is
+ * stock x402's ordering.
+ *
+ * The gap that remains is the mint itself: signature and KV writes,
+ * local and fast. The delivery audit still watches it, because small
+ * is not none.
  *
  * A KV replay guard turns away already-settled nonces before the
  * facilitator is called; the chain's EIP-3009 nonce remains the source
@@ -692,6 +716,22 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             retryPayment.payer = retryPayer;
           }
           c.set("payment", retryPayment);
+          /*
+           * THE RETRY LANE SETTLES NOTHING, and under rule 9 as
+           * amended that has to be said in the type rather than
+           * implied by the absence of a call. The money moved on the
+           * FIRST attempt; this pass exists only to hand over goods
+           * that were paid for and never delivered. So the pending
+           * payment it gives the handler resolves instantly to the
+           * original settlement — same transaction on the
+           * certificate, and the facilitator is never asked twice.
+           */
+          c.set("pending", {
+            paidUsdc: retryPayment.paidUsdc,
+            tipUsdc: retryPayment.tipUsdc,
+            ...(retryPayer ? { payer: retryPayer } : {}),
+            settle: async () => retryPayment,
+          });
           await next();
           if (c.res.status < 300) {
             await closeDeliveryIntent(c.env, open.key).catch(() => {
@@ -724,7 +764,69 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
   }
 
-  // Settle now, money first, then the goods.
+  /**
+   * DELIVER FIRST, SETTLE AFTER — rule 9, amended by the keeper
+   * 2026-08-10. Everything below used to run HERE, before `next()`.
+   * It now runs inside `settleNow`, which the handler calls at the
+   * last possible moment before it commits goods, and which the gate
+   * calls itself after a 2xx if the handler never did.
+   *
+   * WHY THE CALLBACK RATHER THAN SIMPLY MOVING THE BLOCK BELOW
+   * `next()`. The signed certificate names the settlement transaction
+   * — a field an outside operator's conformance list caught us
+   * missing, and one of the better things on the artifact. Settling
+   * strictly after the handler returns means there is no transaction
+   * to name at mint time, so a literal reordering would have bought
+   * the ruling by quietly gutting the receipt. Handing the handler the
+   * settle instead keeps both: the buyer is not charged until the
+   * goods are ready, and the artifact still cites the payment that
+   * bought it.
+   *
+   * The window this leaves is the mint itself — signature and KV
+   * writes, local and fast — instead of the old window, which included
+   * chain reads against a rate-limited public RPC. That is the whole
+   * production failure, closed. The delivery audit still watches what
+   * remains, because "small" is not "none".
+   */
+  const paidUsdc = atomicToUsdc(result.paymentRequirements.amount);
+  const minimumUsdc = minimumUsdcForPath(c.req.path);
+  /*
+   * Captured out of the narrowed result. `performSettlement` is a
+   * nested function, and a narrowing does not survive into one — so
+   * the verified payload is pulled out here, where TypeScript can
+   * still see that this request has one.
+   */
+  const verifiedPayload = result.paymentPayload;
+  const verifiedRequirements = result.paymentRequirements;
+  const verifiedExtensions = result.declaredExtensions;
+  /*
+   * The till, as one object rather than four loose `let`s. Not style:
+   * `performSettlement` writes these from inside a closure the
+   * compiler cannot see through, and captured locals lose their
+   * narrowing at every call boundary — which read, in practice, as
+   * "this code is unreachable" on the whole tail below.
+   */
+  const till: {
+    payment: SettledPayment | null;
+    settled: {
+      transaction: string;
+      network?: string;
+      payer?: string;
+      headers: Record<string, string>;
+    } | null;
+    deliveryKey: string | null;
+    payer?: string;
+  } = { payment: null, settled: null, deliveryKey: null };
+
+  const settleNow = async (): Promise<SettledPayment> => {
+    // MEMOIZED. Two callers, one charge — a handler that settles and a
+    // gate that settles for handlers which did not must never both
+    // present the same authorization.
+    if (till.payment) return till.payment;
+    return performSettlement();
+  };
+
+  async function performSettlement(): Promise<SettledPayment> {
   let settlement: Awaited<
     ReturnType<typeof stack.httpServer.processSettlement>
   >;
@@ -734,9 +836,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // once on-chain; rationale at processSettlementWithRetry.
     settlement = await processSettlementWithRetry(
       stack.httpServer,
-      result.paymentPayload,
-      result.paymentRequirements,
-      result.declaredExtensions,
+      verifiedPayload,
+      verifiedRequirements,
+      verifiedExtensions,
       { request: context },
     );
   } catch (error) {
@@ -759,14 +861,8 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * died); the certificate in the body, naming the found transaction,
    * is the receipt that survives.
    */
-  let settled: {
-    transaction: string;
-    network?: string;
-    payer?: string;
-    headers: Record<string, string>;
-  } | null = null;
   if (settlement.success) {
-    settled = {
+    till.settled = {
       transaction: settlement.transaction,
       headers: settlement.headers,
       ...(settlement.network ? { network: settlement.network } : {}),
@@ -776,7 +872,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     const rescued = await rescueAmbiguousSettle(c.env, {
       errorReason: settlement.errorReason,
       paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
-      network: result.paymentRequirements.network,
+      network: verifiedRequirements.network,
     });
     if (!rescued) {
       // Verified but didn't settle — and the chain agrees, or the
@@ -787,24 +883,34 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         `settle:${settlement.errorReason}`,
         gateSignals(c),
       ).catch(() => undefined);
+      /*
+       * The decline is thrown rather than returned, because this can
+       * now happen INSIDE a handler that has already done its work.
+       * The gate catches it around `next()` and serves this response;
+       * no handler has to carry decline-handling of its own.
+       */
       if (!settlement.response.isHtml && isRecord(settlement.response.body)) {
-        return respondWithInstructions(c, {
-          ...settlement.response,
-          body: {
-            ...settlement.response.body,
-            payment_declined: {
-              reason: settlement.errorReason,
-              ...(settlement.errorMessage
-                ? { message: settlement.errorMessage }
-                : {}),
-              note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+        throw new SettlementDeclined(
+          respondWithInstructions(c, {
+            ...settlement.response,
+            body: {
+              ...settlement.response.body,
+              payment_declined: {
+                reason: settlement.errorReason,
+                ...(settlement.errorMessage
+                  ? { message: settlement.errorMessage }
+                  : {}),
+                note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+              },
             },
-          },
-        });
+          }),
+        );
       }
-      return respondWithInstructions(c, settlement.response);
+      throw new SettlementDeclined(
+        respondWithInstructions(c, settlement.response),
+      );
     }
-    settled = {
+    till.settled = {
       transaction: rescued.transaction,
       network: rescued.network,
       payer: rescued.payer,
@@ -814,11 +920,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (nonce) {
     // The transaction rides the spent-nonce row: it is the link the
     // paid retry stands on (nonce → settle → delivery intent).
-    await recordSpentNonce(c.env, nonce, c.req.path, settled.transaction);
+    await recordSpentNonce(c.env, nonce, c.req.path, till.settled.transaction);
   }
 
-  const minimumUsdc = minimumUsdcForPath(c.req.path);
-  const paidUsdc = atomicToUsdc(result.paymentRequirements.amount);
   const settlementSignals: Parameters<typeof recordSettlement>[2] = {
     ...gateSignals(c),
     paidUsdc,
@@ -826,8 +930,8 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   };
   // The rail, recorded at the till. Everything gated passes here,
   // including the penny pages that mint no certificate to carry it.
-  if (settled.network) {
-    settlementSignals.network = settled.network;
+  if (till.settled.network) {
+    settlementSignals.network = till.settled.network;
   }
   // The payer, from the facilitator if it returned one and from the
   // signed authorization if it did not. THIS MATTERS MORE THAN IT
@@ -838,24 +942,24 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // in the direction rule 13 exists to prevent. The `from` in the
   // authorization is the account that signed and is about to be
   // debited; when both are present they are the same address.
-  const payer =
-    settled.payer ?? payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
-  if (payer) {
-    settlementSignals.payer = payer;
+  till.payer =
+    till.settled.payer ?? payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
+  if (till.payer) {
+    settlementSignals.payer = till.payer;
   }
   await recordSettlement(c.env, c.req.path, settlementSignals);
-  await recordReferralFor(c, "settled", payer).catch(() => undefined);
+  await recordReferralFor(c, "settled", till.payer).catch(() => undefined);
   const payment: SettledPayment = {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
-    transaction: settled.transaction,
-    settleHeaders: settled.headers,
+    transaction: till.settled.transaction,
+    settleHeaders: till.settled.headers,
   };
-  if (settled.network) {
-    payment.network = settled.network;
+  if (till.settled.network) {
+    payment.network = till.settled.network;
   }
-  if (settled.payer) {
-    payment.payer = settled.payer;
+  if (till.settled.payer) {
+    payment.payer = till.settled.payer;
   }
   if (payment.network === SOLANA_NETWORK) {
     // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
@@ -863,15 +967,23 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     await recordSolanaSettle(c.env, paidUsdc).catch(() => undefined);
   }
   c.set("payment", payment);
+  till.payment = payment;
 
   /**
-   * THE DELIVERY INTENT, opened here because HERE is the seam. Money
-   * has moved and the handler has not run; every counter this store
-   * keeps has already been written. If `next()` throws, returns a
-   * non-2xx, or never finishes because the isolate went away, this row
-   * is the only trace that a buyer paid and got nothing (problem
-   * ledger #18, where the reconciliation we already had reads healthy
-   * through exactly this failure).
+   * THE DELIVERY INTENT, opened here because HERE is still the seam,
+   * even though the seam is now much narrower. Money has moved and the
+   * goods have not been committed: under the old ordering that gap
+   * held the entire handler, chain reads included; under deliver-first
+   * it holds whatever the handler does after calling settle, which
+   * should be the mint and nothing else.
+   *
+   * IT IS NOT ZERO, AND THAT IS WHY THIS STAYS. A signature or a KV
+   * write can still fail between the money and the goods. If the rest
+   * of the request throws, returns a non-2xx, or never finishes
+   * because the isolate went away, this row is the only trace that a
+   * buyer paid and got nothing (problem ledger #18, where the
+   * reconciliation we already had reads healthy through exactly this
+   * failure).
    *
    * NEVER FAILS THE SALE. A paid customer does not get an error
    * because an audit row would not write — that would trade a real
@@ -894,16 +1006,105 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       return undefined;
     }
   })();
-  const deliveryKey = await openDeliveryIntent(c.env, {
+  till.deliveryKey = await openDeliveryIntent(c.env, {
     path: c.req.path,
     ...(askedFor ? { query: askedFor } : {}),
-    ...(settled.transaction ? { transaction: settled.transaction } : {}),
-    ...(payer ? { payer } : {}),
+    ...(till.settled.transaction ? { transaction: till.settled.transaction } : {}),
+    ...(till.payer ? { payer: till.payer } : {}),
     paid_usdc: paidUsdc,
     settled_at: new Date().toISOString(),
   }).catch(() => null);
 
-  await next();
+  return payment;
+  }
+
+  /*
+   * THE HANDLER RUNS FIRST NOW. Everything above happens only if it
+   * asks, or if it succeeds and never asked.
+   */
+  c.set("pending", {
+    paidUsdc,
+    tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
+    ...(payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"))
+      ? { payer: payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE")) }
+      : {}),
+    settle: settleNow,
+  });
+
+  try {
+    await next();
+  } catch (error) {
+    /*
+     * A decline raised inside the handler. The buyer's response is
+     * already built and carries the facilitator's reason; serving it
+     * here is what spares every handler its own decline branch.
+     */
+    if (error instanceof SettlementDeclined) return error.response;
+    /*
+     * Any other throw is a DELIVERY failure, and under this rule a
+     * delivery failure costs the buyer nothing: if the handler never
+     * called settle, no authorization was ever presented and there is
+     * no money to refund. Rethrown so Hono's error handler answers,
+     * exactly as before.
+     */
+    throw error;
+  }
+
+  /*
+   * AND THE OTHER SHAPE THE SAME ERROR ARRIVES IN. Hono does not
+   * always rethrow out of `next()`: when the app registers an
+   * `onError`, a handler's throw is converted downstream and surfaces
+   * as `c.error` with a 500 already built. A decline that reached the
+   * buyer as "something fell off a shelf" would be this store telling
+   * a customer its own shelving collapsed when in fact his card was
+   * refused — so both shapes are checked, and the catch above stays
+   * for the case where it does propagate.
+   */
+  const raised = c.error;
+  if (raised instanceof SettlementDeclined) {
+    c.error = undefined;
+    /*
+     * ASSIGNED, NOT RETURNED. After `next()` has completed, Hono has
+     * already fixed the response; a Response returned from here is
+     * dropped on the floor. That is not a style note — it is how a
+     * DECLINED payment came back to the buyer as a cheerful 200 with
+     * the goods in it, which is the single worst bug this refactor
+     * could have shipped.
+     */
+    c.res = raised.response;
+    return;
+  }
+
+  /**
+   * THE HANDLER DELIVERED AND NEVER ASKED FOR THE MONEY. Every gated
+   * route that mints settles explicitly, at the seam it chooses; the
+   * penny pages have nothing to bind a transaction to and simply serve
+   * their goods. This is where those get charged — stock x402's own
+   * ordering, and the reason a route cannot accidentally give away
+   * goods by forgetting a line.
+   *
+   * Gated on a 2xx, so a 409 SOLD OUT after the fact takes no money.
+   */
+  if (!till.payment && c.res.status < 300) {
+    try {
+      await settleNow();
+    } catch (error) {
+      // Assigned rather than returned — see the note above. A refused
+      // card must not be served as a delivered sale.
+      if (error instanceof SettlementDeclined) {
+        c.res = error.response;
+        return;
+      }
+      throw error;
+    }
+  }
+
+  /*
+   * Nothing was charged: the handler failed, or refused, or the route
+   * simply is not a sale. There is no receipt to attach and no
+   * bookkeeping to do, which is the quiet half of the whole amendment.
+   */
+  if (!till.payment || !till.settled) return;
 
   /**
    * Goods went out, so the intent stops existing. Deliberately gated
@@ -916,8 +1117,8 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * behaviour and the reason the row is opened before rather than
    * cleared in a finally.
    */
-  if (deliveryKey && c.res.status < 300) {
-    await closeDeliveryIntent(c.env, deliveryKey).catch(() => {
+  if (till.deliveryKey && c.res.status < 300) {
+    await closeDeliveryIntent(c.env, till.deliveryKey).catch(() => {
       // Left open on failure: a false alarm the keeper can dismiss
       // beats a silent loss he never hears about.
     });
@@ -931,12 +1132,12 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * to attach a receipt would break the buyer's proof of payment in
    * order to decorate it.
    */
-  const outHeaders = await withReceiptHeader(c.env, settled.headers, {
+  const outHeaders = await withReceiptHeader(c.env, till.settled.headers, {
     resourceUrl: `${c.env.STORE_BASE_URL}${c.req.path}`,
-    ...(payer ? { payer } : {}),
+    ...(till.payer ? { payer: till.payer } : {}),
     // The rail that actually settled; Base only as the pre-second-rail fallback.
-    network: settled.network ?? BASE_NETWORK,
-    ...(settled.transaction ? { transaction: settled.transaction } : {}),
+    network: till.settled.network ?? BASE_NETWORK,
+    ...(till.settled.transaction ? { transaction: till.settled.transaction } : {}),
     nowSeconds: Math.floor(Date.now() / 1000),
   });
   for (const [key, value] of Object.entries(outHeaders)) {
@@ -960,7 +1161,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             idempotencyPayer,
             idempotencyKey,
             parsed,
-            settled.transaction,
+            till.settled.transaction,
           );
         }
       } catch {

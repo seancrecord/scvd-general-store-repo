@@ -21,7 +21,7 @@ const BROWSER = { ...AUTH, Accept: "text/html" };
  * story; this spec refuses to let them drift apart again.
  */
 describe("a chain orphan is open on the page until the keeper's hand closes it", () => {
-  it("shows [STILL OPEN] with a resolve form, then [RESOLVED BY HAND] after the POST", async () => {
+  it("shows [STILL OPEN] with a resolve form, then names the outcome after the POST", async () => {
     const sig = "4bUdvPage" + Math.random().toString(36).slice(2, 8);
     await sendAlert(testEnv, {
       condition: "undelivered_sale",
@@ -66,7 +66,16 @@ describe("a chain orphan is open on the page until the keeper's hand closes it",
       headers: BROWSER,
     });
     const afterRow = rowFor(await after.text());
-    expect(afterRow).toContain("[RESOLVED BY HAND]");
+    /*
+     * NAMES THE OUTCOME, not merely the fact of one. The stamp read
+     * "[RESOLVED BY HAND]" for all three choices until 2026-08-10, so
+     * the page said THAT a row was resolved and never WHICH — and the
+     * keeper, having refunded one and clicked something on the page,
+     * could not check which he had recorded, because the page was not
+     * showing it. Refunded, fulfilled and absorbed are opposite claims
+     * about where the money went.
+     */
+    expect(afterRow).toContain("[RESOLVED: HOUSE ABSORBED]");
     expect(afterRow).not.toContain("[STILL OPEN]");
   });
 });

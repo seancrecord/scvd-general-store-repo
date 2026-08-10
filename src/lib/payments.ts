@@ -755,6 +755,58 @@ export interface SettledPayment {
   settleHeaders: Record<string, string>;
 }
 
+/**
+ * WHAT A HANDLER HOLDS BEFORE THE MONEY MOVES (rule 9, amended
+ * 2026-08-10 — deliver first, settle after).
+ *
+ * Everything here is known from the buyer's signed authorization, so a
+ * handler can do its whole job — read the chain, run the probe, build
+ * the artifact — before anything is charged. The one field that cannot
+ * be known in advance is the settlement transaction, and getting it is
+ * the act of taking the money: `settle()`.
+ *
+ * CALL IT AS LATE AS POSSIBLE. Every line above the call is work that
+ * costs the buyer nothing if it fails; every line below it is work
+ * that, if it fails, leaves money taken and goods undelivered. The
+ * production incident this rule turned over on lived in exactly that
+ * gap — four items read the chain AFTER settling, against a
+ * rate-limited public RPC, and a dropped read became a paid customer
+ * holding nothing.
+ */
+export interface PendingPayment {
+  paidUsdc: number;
+  tipUsdc: number;
+  /** From the signed authorization; the facilitator may name it too. */
+  payer?: string;
+  network?: string;
+  /**
+   * Present the authorization and take the money. MEMOIZED — calling
+   * twice settles once and returns the same result, so a handler need
+   * not thread the payment through its own call graph to avoid a
+   * double charge.
+   *
+   * THROWS `SettlementDeclined` if the money does not move. The gate
+   * catches it and returns the decline; a handler does not have to.
+   */
+  settle: () => Promise<SettledPayment>;
+}
+
+/**
+ * The money did not move, and the buyer's own response is already
+ * built. Thrown out of `PendingPayment.settle` so a handler that has
+ * done its work does not have to carry decline-handling code it would
+ * get wrong; the gate unwinds to this and serves `response`.
+ */
+export class SettlementDeclined extends Error {
+  readonly response: Response;
+
+  constructor(response: Response) {
+    super("payment declined at settlement");
+    this.name = "SettlementDeclined";
+    this.response = response;
+  }
+}
+
 export function tipFromPaid(paidUsdc: number, minimumUsdc: number): number {
   const tip = Math.max(0, paidUsdc - minimumUsdc);
   /**
