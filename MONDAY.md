@@ -38,15 +38,24 @@ it gets old. **No chasing badge-holders to take anything down** — the
 badge carries its own expiry by carrying its own date. The Conformance
 Watch is what sells currency. This unblocks the criteria page, which
 was the rule 43 gate in front of every badge the store might ship.
-**Recorded, not built** — the criteria page is the next move behind
-it.
+**BUILT 2026-08-10** — `/criteria` serves the contract (JSON and
+paper), almost all of it derived: the artifact classes from the
+attestation spec, the battery from the versioned preflight, the
+immunity clause from the watches. The ruling above is the one part
+that could not be derived, and it is on the page as ruled. /becoming
+records the trigger as fired; nothing carries a badge, and the page
+says so itself.
 
 **4. The burn total may contain an estimate.** Add a `basis` field
 marking which numbers are estimated and which are exact. The keeper's
 reasoning: *leaving them out makes the total incomplete; marking them
 makes it honest.* That settles the two non-clock billing shapes —
 usage-based and free-tier-with-a-paid-path — which were unrepresentable
-under the old reading. **Recorded, not built.**
+under the old reading. **BUILT 2026-08-10** — tab schema v0.8:
+`price.basis` (`fixed`/`metered`/`free_with_paid_path`), the burn
+reports `estimated_amount` beside `amount`, the paid path lands as
+`paid_path` under `converts_to`'s never-reaches-the-burn law, and the
+fence refuses the contradictions in both directions.
 
 **5. Card reconciliation: monthly CSV export from the bank.** Manual
 is fine for now. The tab's sweep measures itself; a card statement is

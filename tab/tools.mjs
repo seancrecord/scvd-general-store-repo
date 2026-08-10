@@ -376,10 +376,40 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
   ).length;
   const frictionKnown = current.active.filter((tool) => tool.signup_friction).length;
 
+  /**
+   * The estimated share (v0.8): metered prices are builder estimates
+   * of bills that vary, in the total per the keeper's ruling, marked
+   * per the same ruling. And the paid paths: free tools whose paid
+   * tier has a known price — potential, not spend, so they ride
+   * BESIDE the total and enter none of the arithmetic.
+   */
+  const metered = current.active_paid
+    .filter((tool) => tool.price?.basis === "metered")
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      estimated_monthly: Math.round(monthlyOf(tool.price) * 100) / 100,
+    }));
+  const paidPaths = current.active
+    .filter((tool) => tool.status === "active_free" && tool.paid_path)
+    .map((tool) => ({
+      tool_name: tool.tool_name,
+      would_cost_monthly: Math.round(monthlyOf(tool.paid_path) * 100) / 100,
+      period: tool.paid_path.period,
+    }));
+
   return {
     monthly,
     annualized: Math.round(monthly * 12 * 100) / 100,
     currency: "USD",
+    estimated: {
+      monthly: current.monthly_burn.estimated_amount,
+      tools: metered,
+      note: "The metered share of the total: estimates of usage-based bills. In the number because leaving them out made it incomplete; named here because including them unnamed would make it a guess.",
+    },
+    free_with_paid_path: {
+      tools: paidPaths,
+      note: "Free today; the price the paid path would cost. Potential, not spend — in no total above, same law as a trial's converts_to.",
+    },
     tool_count: current.active.length,
     paid_count: current.active_paid.length,
     free_count: current.active.filter((t) => t.status === "active_free").length,
@@ -913,6 +943,7 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
     "problem_solved",
     "price_amount",
     "price_period",
+    "price_basis",
     "trial_ends",
     "replaced_with",
     "retroactive",
@@ -939,6 +970,7 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
       event.problem_solved,
       event.price?.amount,
       event.price?.period,
+      event.price?.basis,
       event.trial_ends,
       event.replaced_with,
       event.retroactive,
@@ -956,7 +988,7 @@ export const TOOL_DEFS = [
   {
     name: "log_tool_event",
     description:
-      "Record a tool lifecycle event on the builder's tab: trial_started, paid_started, canceled, replaced, renewed, or price_changed. Validated; rejected writes explain themselves. Use retroactive:true with occurred_at for backfill.",
+      "Record a tool lifecycle event on the builder's tab: trial_started, paid_started, adopted, canceled, replaced, renewed, or price_changed. Validated; rejected writes explain themselves. Use retroactive:true with occurred_at for backfill.",
     handler: logToolEvent,
     inputSchema: {
       type: "object",
@@ -964,11 +996,15 @@ export const TOOL_DEFS = [
         tool_name: { type: "string", description: "canonical lowercase name" },
         event: {
           type: "string",
-          enum: ["trial_started", "paid_started", "canceled", "replaced", "renewed", "price_changed"],
+          enum: ["trial_started", "paid_started", "adopted", "canceled", "replaced", "renewed", "price_changed"],
         },
         problem_solved: { type: "string" },
         category: { type: "string", enum: CATEGORIES },
-        price: { type: "object" },
+        price: {
+          type: "object",
+          description:
+            "{amount, currency, period: month|quarter|year|week|once, basis?: fixed|metered|free_with_paid_path}. basis marks what kind of number amount is: absent/fixed = the bill; metered = your ESTIMATE of a usage-based bill (enters the burn, marked as estimate); free_with_paid_path = what a free tool's paid tier would cost (adopted only, never enters the burn).",
+        },
         previous_price: { type: "object" },
         trial_ends: { type: "string" },
         replaced_with: { type: "string" },

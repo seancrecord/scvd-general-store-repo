@@ -18,7 +18,7 @@ import { defaultTabPath } from "./store.mjs";
  * writers; a human reads it whenever they like — it's theirs.
  */
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 function tabPath() {
   const index = process.argv.indexOf("--path");

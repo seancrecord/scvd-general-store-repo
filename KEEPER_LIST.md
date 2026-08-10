@@ -128,8 +128,8 @@ function that signed.
 |---|---|---|
 | **C1** | `OPEN_LABOR_CAP = 7` | **done** |
 | **C3** | Rule 9 flips: deliver first, settle after | rule amended and dated; **the gate is the build** |
-| **C4** | A badge is a dated observation. It never retires, it ages. No chasing holders | unblocks the criteria page |
-| **C5** | Yes, the burn may contain an estimate — add a `basis` field | queued |
+| **C4** | A badge is a dated observation. It never retires, it ages. No chasing holders | built 2026-08-10 (`/criteria`) |
+| **C5** | Yes, the burn may contain an estimate — add a `basis` field | built 2026-08-10 (tab schema v0.8) |
 | **C6** | Card reconciliation: monthly bank CSV, manual for now | queued |
 | **C7** | The ward widens to every public directory. Uniform, no favourites | queued |
 | **C2** | Commission Desk: `the_collab` first, public replies on declines | queued |

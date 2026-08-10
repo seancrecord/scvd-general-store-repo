@@ -1,4 +1,4 @@
-# The Tab — storage schema, v0.7
+# The Tab — storage schema, v0.8
 
 The contract for `~/.scvd/tab.jsonl`: one JSON object per line,
 append-only, written by the server alone. This document is the
@@ -47,7 +47,7 @@ envelope. Every other event carries the tool fields below.
 | tool_name | string | yes | lowercase, no surrounding whitespace; rejected otherwise with the fix in the error |
 | category | enum | yes | the controlled vocabulary in THE_TAB.md; a miss suggests the closest match |
 | problem_solved | string | yes | the builder's words — and on a swept entry it must be exactly `(not said yet)` |
-| price | object | `paid_started`, `renewed`, `price_changed` | `{amount ≥ 0, currency, period: month\|quarter\|year\|week\|once}` |
+| price | object | `paid_started`, `renewed`, `price_changed` | `{amount ≥ 0, currency, period: month\|quarter\|year\|week\|once, basis?: fixed\|metered\|free_with_paid_path}` |
 | previous_price | object | `price_changed` | same shape — a change with one price is a number |
 | trial_ends | ISO date | `trial_started` | the warning date is the point |
 | replaced_with | string | `replaced` | the successor; logged against the OUTGOING tool |
@@ -62,6 +62,24 @@ envelope. Every other event carries the tool fields below.
 | payment_method | string | no | the builder's own label; never parsed, never contributed |
 | source_url | string | no | |
 | notes | string | no | **refused on swept entries** |
+
+### `basis` — what kind of number `price` is holding (v0.8)
+
+The keeper's ruling, 2026-08-10: **the burn total may contain an
+estimate** — leaving the metered bills out made it incomplete; marking
+them makes it honest. `basis` is the marker.
+
+| basis | means | reaches the burn? |
+|---|---|---|
+| absent / `fixed` | the amount is the bill | yes — every pre-0.8 entry keeps its meaning |
+| `metered` | the builder's ESTIMATE of a usage-based bill | yes, and the burn reports `estimated_amount` beside `amount` |
+| `free_with_paid_path` | the tool is free; the amount is what the paid path would cost | **never** — derived as `paid_path` on the tool, `converts_to`'s law |
+
+The fence holds both ways: `free_with_paid_path` is legal on `adopted`
+only (money moving is not free), and a price on `adopted` without that
+basis is still refused (a priced free signup would tell the pooled
+index money changed hands). `previous_price` may never carry it — a
+price that was charged was never the free tier's hypothetical.
 
 ### `price` on a trial
 
@@ -150,7 +168,10 @@ file ever lying about what it knew when.
 
 Active set and status (`active_trial`, `active_paid`, `active_free`,
 `inactive`), monthly burn (month as-is, quarter ÷ 3, year ÷ 12, week × 52⁄12,
-`once` is not burn), `converts_to`, trial warning dates and trials
+`once` is not burn) with its `estimated_amount` (the metered share,
+reported beside the total wherever the total goes), `paid_path` (what
+a free tool's paid tier would cost, never in any total),
+`converts_to`, trial warning dates and trials
 past their end, idle-day counts, category overlap sets, price drift,
 the friction summary, near-duplicate name candidates, quiet tools,
 `confirmed`/`private` stickiness, and consent (the last
@@ -217,19 +238,15 @@ the same shape as every other member — a fixed amount on a fixed
 clock — so the refusal bought nothing and cost an agent silent
 arithmetic. Added to `PERIODS`, converts at ÷ 3.
 
-**Still open, and not periods at all:**
-
-| shape | today | why a period does not fix it |
-|---|---|---|
-| **usage-based** | representable but imprecise — a number has to be invented for a bill that varies | there is no fixed amount to store. Forcing one puts a guess inside the burn with nothing marking which part was guessed |
-| **free tier with a paid path** | representable but imprecise — `adopted` says free, and the price it *would* cost has nowhere to live | the same gap `converts_to` closed for trials, still open here |
-
-Both are *"there is no fixed number"*, which is a different problem
-from *"the clock is missing"*. The candidate answer is a `basis`
-marker (`fixed`, `metered`, `free_with_paid_path`) saying what kind of
-number `price` is holding — but that is a decision about whether the
-burn total is allowed to contain an estimate at all, which is bigger
-than a schema field. Keeper's, and open.
+**Closed in v0.8, both of them.** The decision this hole was waiting
+on — whether the burn total is allowed to contain an estimate at all —
+was the keeper's, and he ruled it on 2026-08-10: yes, marked. The
+`basis` marker (`fixed`, `metered`, `free_with_paid_path`) shipped
+exactly as this entry sketched it; see *`basis` — what kind of number
+`price` is holding* above. Usage-based bills enter the burn as marked
+estimates with the estimated share reported beside the total, and a
+free tier's paid path lands beside the tool as `paid_path`, never in
+the burn — the same law `converts_to` already enforced for trials.
 
 ### Other
 
