@@ -239,6 +239,18 @@ export const KV_KEYS = {
    */
   reconcileCursor: "reconcile_cursor",
   /**
+   * THE TAB's pooled corpus (layer 3): one row per accepted anonymized
+   * delta. Kind and category ride IN THE KEY so sample sizes derive
+   * from a key listing alone — no bulk read to publish a count. The
+   * category segment is sanitized to a safe charset before it joins
+   * the key; the value keeps the delta verbatim.
+   */
+  tabDelta: (kind: string, safeCategory: string, id: string): string =>
+    `tab_delta:${kind}:${safeCategory}:${id}`,
+  tabDeltaPrefix: "tab_delta:",
+  /** The pool's daily intake counter — the flood gate, not a metric. */
+  tabPoolDay: (isoDay: string): string => `tab_pool_day:${isoDay}`,
+  /**
    * A settled sale whose goods went out WITHOUT minting a certificate
    * — the penny pages (Almanac, Gazette issues, Zodiac archive). The
    * chain walk answers "is there an artifact for this money" by

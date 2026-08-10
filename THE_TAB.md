@@ -15,9 +15,12 @@ Storage: local JSONL, one line per event, append-only. Path
 configurable; default `~/.scvd/tab.jsonl`. The server owns
 the file — no other process writes to it.
 
-⚑ KEEPER, still open on this document:
-  - Layer 3's trust-model line (see "The pooled layer's debt") —
-    lands on /attestation the week layer 3 ships.
+RESOLVED 2026-08-10: layer 3's intake shipped — POST /api/tab/delta
+on the store, signed custody receipts, sample sizes at /api/tab/pool
+— and both debts below were paid the same day: the trust-model line
+is on /attestation (artifact class `tab_delta_receipt`) and gaming is
+named on the pool's own page. Pooled READS remain unbuilt; the
+receipt is the contribute-to-access ticket for when they ship.
 
 RESOLVED 2026-08-08: the name is The Tab (the keeper's pick from the
 flagged recommendation; alternates The Toolshed and The Manifest
@@ -186,12 +189,14 @@ shareable badge that names counts and never vendors.
   capture lane; `sweep_finish` derives the coverage record from the
   ledger, so the books balance by construction. Still CV's to run
   against a real inbox, which it never has been.
-- **Card reconciliation** — the `unexplained_charge` analogue of
-  `undelivered_sale`, and the only true ground truth for burn.
-  Owner: keeper's call on the source.
+- **Card reconciliation** — **BUILT 2026-08-10**
+  (`reconcile_card_statement`): the bank's CSV against the tab, both
+  directions, writes nothing, every finding a question. The keeper
+  ruled the source: monthly CSV, by hand.
 - **The historical six-month pass** — the tab supports it today
-  (retroactive entries, dedupe); the sweep that drives it does not
-  exist yet. Owner: CV.
+  (retroactive entries, dedupe), and `SWEEP_ROUTINE.md` now drives it
+  (`source: "historical_pass"`, the letter's date as a retroactive
+  claim). Still CV's to run. Owner: CV.
 - Until a sweep reports, `variability_pct` is `null` and the burn
   figure is honest about resting on hand-logged entries alone.
 
@@ -692,16 +697,18 @@ retention count is a fact about what buyers did, not a verdict on a
 tool, and vendors answer the bell or they don't. Accepted. Two
 things are owed BEFORE it ships, both cheap now and expensive later:
 
-1. A trust-model line on /attestation. Every artifact class declares
-   whose word you're taking. The pooled aggregate's honest line is
-   new to the taxonomy: "self-reported by contributing agents,
-   unverified individually, aggregated and signed by us — the
-   signature covers the arithmetic, never the truth of any single
-   report." Write it the week layer 3 ships, not after.
-2. Gaming, named on the artifact. Contributions are self-reported
-   and anonymous, so a vendor can feed its own pool. Sample sizes
-   ride every figure, and the aggregate's copy says what would make
-   the number lie. Sunlight, not a promise of resistance.
+1. **PAID 2026-08-10, the day the intake shipped.** A trust-model
+   line on /attestation. Every artifact class declares whose word
+   you're taking. The pooled aggregate's honest line is new to the
+   taxonomy: "self-reported by contributing agents, unverified
+   individually, aggregated and signed by us — the signature covers
+   the arithmetic, never the truth of any single report." It rides
+   the `tab_delta_receipt` artifact class and every receipt.
+2. **PAID 2026-08-10, same day.** Gaming, named on the artifact.
+   Contributions are self-reported and anonymous, so a vendor can
+   feed its own pool. Sample sizes ride every figure (they lead the
+   /api/tab/pool page), and the copy says what would make the number
+   lie. Sunlight, not a promise of resistance.
 
 ## Kill criteria (written before the build, so stopping is already decided)
 

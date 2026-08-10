@@ -819,12 +819,20 @@ export function contributeDelta(input, path = defaultTabPath()) {
       .filter((key) => input[key] !== undefined)
       .map((key) => [key, input[key]]),
   );
-  const endpoint = process.env.TAB_AGGREGATION_URL;
+  /**
+   * The endpoint went live 2026-08-10: POST /api/tab/delta on the
+   * store, free, returning a signed custody receipt. Overridable for
+   * tests and self-hosters; set EMPTY to switch sending off entirely.
+   * The gates that matter are unchanged — consent on record, a
+   * deliberate call, and the allowlist projection above.
+   */
+  const endpoint =
+    process.env.TAB_AGGREGATION_URL ?? "https://scvd.store/api/tab/delta";
   if (!endpoint) {
     return {
       accepted: false,
       error:
-        "The aggregation endpoint is not live yet (layer 3). The delta validated cleanly and nothing was sent — set TAB_AGGREGATION_URL when the endpoint exists.",
+        "Delta sending is switched off (TAB_AGGREGATION_URL is set empty). The delta validated cleanly and nothing was sent.",
       would_send: delta,
     };
   }

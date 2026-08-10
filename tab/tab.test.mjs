@@ -297,13 +297,51 @@ test("consent is an event; contribution refuses without it and explains exactly 
   const { events } = readEvents(path);
   assert.equal(events[events.length - 1].event, "consent_changed");
 
-  // Consent on, endpoint not live: validates, sends nothing, says so.
-  const notLive = contributeDelta(
-    { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
-    path,
-  );
-  assert.equal(notLive.accepted, false);
-  assert.ok(notLive.error.includes("not live"));
+  // Consent on, sending switched off: validates, sends nothing, says so.
+  process.env.TAB_AGGREGATION_URL = "";
+  try {
+    const off = contributeDelta(
+      { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
+      path,
+    );
+    assert.equal(off.accepted, false);
+    assert.ok(off.error.includes("switched off"));
+  } finally {
+    delete process.env.TAB_AGGREGATION_URL;
+  }
+});
+
+test("a consented delta goes to the aggregation endpoint and brings back the receipt", async () => {
+  const path = freshPath();
+  setConsent({ contribute: true }, path);
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url, body: JSON.parse(init.body) });
+    return new Response(
+      JSON.stringify({ accepted: true, receipt: { receipt_id: "tabr_x" } }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  };
+  try {
+    const sent = await contributeDelta(
+      { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
+      path,
+    );
+    assert.equal(sent.accepted, true);
+    assert.equal(sent.receipt.receipt.receipt_id, "tabr_x");
+    // The default endpoint is the store's, and the wire object is the
+    // projection — the declared fields and not one more.
+    assert.equal(calls[0].url, "https://scvd.store/api/tab/delta");
+    assert.deepEqual(Object.keys(calls[0].body).sort(), [
+      "category",
+      "kind",
+      "tool_name",
+      "week",
+    ]);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
 
 test("the delta is an allowlist: unknown fields are refused BY NAME, and the wire gets a projection", () => {
@@ -342,11 +380,18 @@ test("the delta is an allowlist: unknown fields are refused BY NAME, and the wir
     path,
   );
   assert.ok(wrongKind.problems.join(" ").includes('"signup_friction"'));
-  // And a clean delta's would_send is the projection, nothing more.
-  const clean = contributeDelta(
-    { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
-    path,
-  );
+  // And a clean delta's would_send is the projection, nothing more —
+  // read off the switched-off branch, so nothing rides the network.
+  process.env.TAB_AGGREGATION_URL = "";
+  let clean;
+  try {
+    clean = contributeDelta(
+      { kind: "opened", tool_name: "ahrefs", category: "seo", week: "2026-W32" },
+      path,
+    );
+  } finally {
+    delete process.env.TAB_AGGREGATION_URL;
+  }
   assert.deepEqual(Object.keys(clean.would_send).sort(), [
     "category",
     "kind",
