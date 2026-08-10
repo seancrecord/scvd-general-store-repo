@@ -119,11 +119,95 @@ export const adminRoutes = new Hono<HonoEnv>();
  * event worth a page. Counted in a window, alerted once past a
  * threshold, keyed so a standing attack pages once rather than
  * hourly. A correct login clears the count.
+ *
+ * WHAT WATCHING ALONE DID NOT DO (2026-08-10, six real failures from
+ * somebody who was not the keeper). Seeing a guesser is not slowing
+ * one. The page told the keeper it was happening and then offered him
+ * the only lever it had — rotate the password — which is reflexive
+ * advice: six failures are proof they did NOT get in, and rotating a
+ * password nobody guessed does not make it harder to guess.
+ *
+ * "NO LOCKOUT" AND "NO THROTTLE" ARE DIFFERENT CHOICES and we had
+ * taken both while only meaning to take the first. The property worth
+ * protecting is that a stranger must never be able to bar the keeper
+ * from his own store. A GLOBAL lockout breaks that. A PER-ADDRESS
+ * throttle does not: a guesser slows only themselves down, and the
+ * keeper on any other connection is untouched — as is the keeper on
+ * the SAME connection, thirty seconds later.
+ *
+ * WHAT IT STILL DOES NOT STOP, said plainly rather than left to be
+ * assumed: an attacker with many addresses. Per-address throttling
+ * raises the cost of guessing from one machine and does nothing about
+ * a botnet. The real defence against that is the entropy of
+ * ADMIN_PASSWORD, which no code here can check on the keeper's
+ * behalf. The throttle buys time and noise; it is not a substitute
+ * for a long password.
  */
 const ADMIN_FAIL_WINDOW_SECONDS = 15 * 60;
-const ADMIN_FAIL_ALERT_AT = 6;
+export const ADMIN_FAIL_ALERT_AT = 6;
 
-async function noteAdminAuthFailure(env: HonoEnv["Bindings"]): Promise<void> {
+/**
+ * Failures from one address before that address starts waiting.
+ *
+ * DELIBERATELY ABOVE ADMIN_FAIL_ALERT_AT, and a test caught why. At
+ * five, the throttle engaged BEFORE the sixth failure that raises the
+ * page — and a throttled request never reaches the counter, so a
+ * single-address run could be slowed and never reported. That is the
+ * wrong order: the keeper hearing about it is worth more than the
+ * attacker being slowed, and there is no reason not to have both.
+ */
+export const ADMIN_THROTTLE_AT = 8;
+/** How long that address waits. Short: it is a speed bump, not a wall. */
+const ADMIN_THROTTLE_SECONDS = 60;
+/**
+ * Ceiling on the wait, however long the run.
+ *
+ * FIVE MINUTES, NOT FIFTEEN, and the reason is the keeper rather than
+ * the attacker. Twelve guesses an hour from one address already makes
+ * guessing pointless; a quarter of an hour locked out of your own
+ * store while you are trying to resolve an undelivered sale is a real
+ * cost paid by the only person who ever legitimately fails.
+ */
+const ADMIN_THROTTLE_MAX_SECONDS = 5 * 60;
+
+/**
+ * The caller's address as Cloudflare saw it. Set at the edge, so a
+ * client cannot forge it; absent only off-platform, where the
+ * throttle degrades to the shared bucket rather than failing open.
+ */
+function callerIp(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): string {
+  return (
+    c.req.header("CF-Connecting-IP") ??
+    c.req.header("X-Forwarded-For")?.split(",")[0]?.trim() ??
+    "unknown"
+  );
+}
+
+/**
+ * How long this address must wait, in seconds. Doubles with each
+ * failure past the threshold and stops at the ceiling — enough to
+ * make guessing pointless, never enough to lock anybody out for long.
+ */
+function throttleSeconds(fails: number): number {
+  if (fails < ADMIN_THROTTLE_AT) return 0;
+  const doublings = fails - ADMIN_THROTTLE_AT;
+  return Math.min(
+    ADMIN_THROTTLE_MAX_SECONDS,
+    ADMIN_THROTTLE_SECONDS * 2 ** Math.min(doublings, 10),
+  );
+}
+
+async function noteAdminAuthFailure(
+  env: HonoEnv["Bindings"],
+  ip: string,
+): Promise<void> {
+  // Per-address, for the throttle. Doubling wait, capped.
+  const ipKey = KV_KEYS.adminFailByIp(ip);
+  const ipFails = Number((await env.COUNTERS.get(ipKey)) ?? "0") + 1;
+  await env.COUNTERS.put(ipKey, String(ipFails), {
+    expirationTtl: ADMIN_THROTTLE_MAX_SECONDS,
+  });
+
   const key = "admin_auth_fails";
   const count = Number((await env.COUNTERS.get(key)) ?? "0") + 1;
   await env.COUNTERS.put(key, String(count), {
@@ -132,27 +216,52 @@ async function noteAdminAuthFailure(env: HonoEnv["Bindings"]): Promise<void> {
   if (count >= ADMIN_FAIL_ALERT_AT) {
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `${count} failed /admin logins in the last ${ADMIN_FAIL_WINDOW_SECONDS / 60} minutes. Not a lockout (that would let a stranger bar the keeper's own door) — a page, because a run of failures on a single-user panel is either you fat-fingering or someone guessing. If it wasn't you, rotate ADMIN_PASSWORD.`,
+      detail: `${count} failed /admin logins in the last ${ADMIN_FAIL_WINDOW_SECONDS / 60} minutes; the most recent address is now being made to wait between tries. Still not a lockout — the throttle is PER ADDRESS, so a guesser slows only themselves and can never bar you from your own store. If this was not you: rotating ADMIN_PASSWORD is only worth doing if it is short, guessable, or used anywhere else, because a run of FAILURES is evidence nobody got in. What the throttle cannot slow is an attacker with many addresses, and the only defence against that is a long password.`,
       key: "admin-auth-bruteforce",
     }).catch(() => undefined);
   }
 }
 
 const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const ip = callerIp(c);
+  /*
+   * THE WAIT COMES BEFORE THE COMPARE. Checking the password first and
+   * then deciding whether to answer would still let a guesser learn
+   * one bit per request at full speed; the point is to make the
+   * REQUEST cost something, not the answer.
+   */
+  const fails = Number(
+    (await c.env.COUNTERS.get(KV_KEYS.adminFailByIp(ip))) ?? "0",
+  );
+  const wait = throttleSeconds(fails);
+  if (wait > 0) {
+    return c.json(
+      {
+        error: `Too many failed logins from this address. Try again in ${wait} seconds — or from any other connection, right now. This is a per-address pause, not a lockout: it slows whoever is guessing, and a stranger can never use it to bar the keeper from his own store.`,
+      },
+      429,
+      { "Retry-After": String(wait) },
+    );
+  }
+
   const gate = basicAuth({
     username: "keeper",
     password: c.env.ADMIN_PASSWORD,
   });
   try {
     const result = await gate(c, next);
-    // A clean pass clears the window: the alarm is for RUNS of
-    // failure, not a single mistyped character on the way in.
-    await c.env.COUNTERS.delete("admin_auth_fails").catch(() => undefined);
+    // A clean pass clears both counters: the alarm is for RUNS of
+    // failure, not a single mistyped character on the way in, and the
+    // keeper who finally types it right should not still be waiting.
+    await Promise.all([
+      c.env.COUNTERS.delete("admin_auth_fails").catch(() => undefined),
+      c.env.COUNTERS.delete(KV_KEYS.adminFailByIp(ip)).catch(() => undefined),
+    ]);
     return result;
   } catch (error) {
     const status = (error as { status?: number })?.status;
     if (status === 401) {
-      await noteAdminAuthFailure(c.env).catch(() => undefined);
+      await noteAdminAuthFailure(c.env, ip).catch(() => undefined);
     }
     throw error;
   }

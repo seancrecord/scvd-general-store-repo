@@ -51,6 +51,26 @@ export const DELIVERY_SCAN_CAP = 500;
 export interface DeliveryIntent {
   /** The route that took the money. */
   path: string;
+  /**
+   * WHAT THE BUYER ACTUALLY ASKED FOR, and it was missing when it
+   * mattered most.
+   *
+   * On 2026-08-10 a settlement_attestation dropped after settling. The
+   * keeper went to fulfil it by hand and could not — because the store
+   * had recorded the path, the payer and the amount, and NOT the
+   * `tx_hash` the buyer wanted attested. The order record did not
+   * exist either: the throw happened before createOrder. So the one
+   * fact needed to produce the artifact was the one fact nobody kept,
+   * and a recoverable failure was forced into a refund.
+   *
+   * The admin page had been offering "fulfilled by hand" the whole
+   * time — an option the data could not support.
+   *
+   * `payment_payload` is stripped: it is the buyer's signed
+   * authorization, it is already spent, and there is no reason to keep
+   * it lying around.
+   */
+  query?: string;
   /** On-chain settlement, when the facilitator returned one. */
   transaction?: string;
   payer?: string;
@@ -258,7 +278,11 @@ export async function runDeliveryAudit(
         sale.transaction ? ` Settlement: ${sale.transaction}.` : ""
       }${
         sale.payer ? ` Payer: ${sale.payer}.` : ""
-      } Paid ${sale.paid_usdc} USDC. This is money taken without delivery — check the order, then refund or fulfil by hand.`,
+      } Paid ${sale.paid_usdc} USDC.${
+        sale.query
+          ? ` THEY ASKED FOR: ${sale.query} — that is enough to produce the goods, so this one can be FULFILLED rather than refunded.`
+          : " WHAT THEY ASKED FOR WAS NOT RECORDED (settled before 2026-08-10), so this one cannot be fulfilled by hand — only refunded."
+      } This is money taken without delivery — check the order, then refund or fulfil by hand.`,
       key: sale.key,
     }).catch(() => {
       // The alert is the courtesy; the row stays either way, and the

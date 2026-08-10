@@ -1,6 +1,7 @@
 import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { ADMIN_PAGES } from "@/pages/admin/layout";
+import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 
 const testEnv = env as unknown as Env;
@@ -67,8 +68,18 @@ describe("the office nav", () => {
   });
 
   it("holds the whole door shut, every page", async () => {
-    for (const page of ADMIN_PAGES) {
-      const response = await SELF.fetch(`${BASE}${page.href}`);
+    /*
+     * A DISTINCT ADDRESS PER PAGE, since 2026-08-10. Seventeen
+     * unauthenticated probes from one address is exactly the shape the
+     * new throttle exists to slow, so sharing an address here would
+     * make the sweep test its own rate limiter rather than the gate.
+     * Asserting 401 specifically still matters: it proves each page
+     * demands AUTH, not merely that something refused it.
+     */
+    for (const [index, page] of ADMIN_PAGES.entries()) {
+      const response = await SELF.fetch(`${BASE}${page.href}`, {
+        headers: { "CF-Connecting-IP": `192.0.2.${index + 1}` },
+      });
       expect(response.status, `${page.href} is not behind the gate`).toBe(401);
     }
   });
@@ -86,24 +97,54 @@ describe("the office nav", () => {
 });
 
 describe("admin auth is watched, never barred (2026-08-04)", () => {
-  it("pages after a run of failures but never locks the door", async () => {
+  it("pages after a run of failures, and a STRANGER still cannot bar the keeper", async () => {
+    /*
+     * THE PROPERTY, SHARPENED 2026-08-10 rather than abandoned.
+     *
+     * This used to assert that a correct password ALWAYS works, on the
+     * reasoning that a single-user panel a stranger can bar is a DoS
+     * and not a defence. That reasoning is right and it still holds —
+     * but watching a guesser is not slowing one, and the store had
+     * accidentally taken BOTH "no lockout" and "no throttle" while
+     * only meaning to take the first.
+     *
+     * A PER-ADDRESS throttle keeps the property that mattered: the
+     * stranger slows only themselves. So the assertion becomes the
+     * thing actually worth defending — a run of failures from one
+     * address leaves the keeper's own access untouched — rather than
+     * the literal wording, which forbade any throttle at all.
+     */
     await testEnv.COUNTERS.delete("admin_auth_fails");
-    const bad = { Authorization: `Basic ${btoa("keeper:wrong-password")}` };
+    const attacker = "203.0.113.200";
+    const keeper = "198.51.100.200";
+    await testEnv.COUNTERS.delete(KV_KEYS.adminFailByIp(attacker));
+    await testEnv.COUNTERS.delete(KV_KEYS.adminFailByIp(keeper));
+    const bad = {
+      Authorization: `Basic ${btoa("keeper:wrong-password")}`,
+      "CF-Connecting-IP": attacker,
+    };
 
-    // A run of wrong passwords.
+    // A run of wrong passwords from one address.
     for (let i = 0; i < 6; i += 1) {
-      const res = await SELF.fetch(`${BASE}/admin`, { headers: bad });
-      expect(res.status).toBe(401);
+      await SELF.fetch(`${BASE}/admin`, { headers: bad });
     }
     // The failures were counted...
     const count = Number(await testEnv.COUNTERS.get("admin_auth_fails"));
     expect(count).toBeGreaterThanOrEqual(6);
+    // ...the page fires BEFORE the throttle engages, which is the
+    // order that matters: hearing about it beats slowing it, and the
+    // throttle threshold sits above the alert threshold so a
+    // single-address run always reports before it starts waiting.
+    for (let i = 0; i < 3; i += 1) {
+      await SELF.fetch(`${BASE}/admin`, { headers: bad });
+    }
+    expect((await SELF.fetch(`${BASE}/admin`, { headers: bad })).status).toBe(429);
 
-    // ...and the door is STILL OPEN to the real password. No lockout:
-    // a single-user panel a stranger can bar is a DoS, not a defense.
+    // ...and the keeper's own door is untouched.
     const good = await SELF.fetch(`${BASE}/admin`, {
       headers: {
         Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+        "CF-Connecting-IP": keeper,
         Accept: "text/html",
       },
     });
@@ -115,7 +156,14 @@ describe("admin auth is watched, never barred (2026-08-04)", () => {
   it("the alert fired for the brute-force run", async () => {
     await testEnv.COUNTERS.delete("admin_auth_fails");
     await testEnv.COUNTERS.delete("alert_sent:worker_health:admin-auth-bruteforce");
-    const bad = { Authorization: `Basic ${btoa("keeper:nope")}` };
+    // Its own address: the throttle is per-address, so a test that
+    // shares one with another test inherits its wait.
+    const alertIp = "203.0.113.201";
+    await testEnv.COUNTERS.delete(KV_KEYS.adminFailByIp(alertIp));
+    const bad = {
+      Authorization: `Basic ${btoa("keeper:nope")}`,
+      "CF-Connecting-IP": alertIp,
+    };
     for (let i = 0; i < 6; i += 1) {
       await SELF.fetch(`${BASE}/admin`, { headers: bad });
     }
@@ -124,6 +172,10 @@ describe("admin auth is watched, never barred (2026-08-04)", () => {
       a.detail.includes("failed /admin logins"),
     );
     expect(alert).toBeDefined();
-    expect(alert!.detail).toContain("rotate ADMIN_PASSWORD");
+    // The advice sharpened 2026-08-10: a run of FAILURES is evidence
+    // nobody got in, so "rotate" is only worth doing if the password
+    // is weak or reused. Reflexive rotation is theatre.
+    expect(alert!.detail).toContain("rotating ADMIN_PASSWORD is only worth doing");
+    expect(alert!.detail).toContain("made to wait between tries");
   });
 });

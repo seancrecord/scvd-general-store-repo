@@ -99,6 +99,35 @@ export const ALERT_CONDITIONS = [
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];
 
 const DEDUPE_TTL_SECONDS = 6 * 60 * 60;
+
+/**
+ * HOW OFTEN THE SAME UNRESOLVED PROBLEM IS ALLOWED TO PAGE.
+ *
+ * Six hours flat meant an undelivered sale mailed the keeper four
+ * times a day, forever, saying the identical thing he already knew.
+ * That is not alerting, it is nagging, and its real cost is that a
+ * mailbox full of a known problem is a mailbox where a NEW one goes
+ * unread.
+ *
+ * So the cadence backs off: the first page is immediate, the second
+ * six hours later, then a day, then three, then weekly. A standing
+ * problem stays visible on the admin page — where looking for it is
+ * the point — and stops competing for attention in email.
+ */
+const PAGE_BACKOFF_SECONDS = [
+  6 * 60 * 60,
+  24 * 60 * 60,
+  3 * 24 * 60 * 60,
+  7 * 24 * 60 * 60,
+] as const;
+
+function pageIntervalFor(repeats: number): number {
+  const index = Math.min(
+    Math.max(repeats - 1, 0),
+    PAGE_BACKOFF_SECONDS.length - 1,
+  );
+  return PAGE_BACKOFF_SECONDS[index] ?? DEDUPE_TTL_SECONDS;
+}
 const ALERT_LOG_TTL_SECONDS = 30 * 86400;
 
 export interface AlertInput {
@@ -173,9 +202,11 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
     // Does this condition already have a row? If so it keeps it.
     const existingLogKey = await env.COUNTERS.get(openKey);
     let updated = false;
+    let repeats = 1;
     if (existingLogKey) {
       const row = await env.COUNTERS.get<AlertRow>(existingLogKey, "json");
       if (row) {
+        repeats = (row.repeats ?? 1) + 1;
         await env.COUNTERS.put(
           existingLogKey,
           JSON.stringify({
@@ -184,7 +215,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
             // because when it STARTED is the fact being reported.
             detail,
             last_seen: now,
-            repeats: (row.repeats ?? 1) + 1,
+            repeats,
           } satisfies AlertRow),
           { expirationTtl: ALERT_LOG_TTL_SECONDS },
         );
@@ -214,13 +245,14 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
     }
 
     /*
-     * THE EMAIL keeps its own six-hour cadence. Paging again about a
-     * problem still standing after six hours is wanted; minting a
-     * second row about it was not.
+     * THE EMAIL BACKS OFF. Paging again about a problem still standing
+     * is wanted; paging four times a day about one the keeper already
+     * knows about is how a mailbox stops being read — and the next
+     * page after that is the one that mattered.
      */
     if (await env.COUNTERS.get(pageKey)) return;
     await env.COUNTERS.put(pageKey, "1", {
-      expirationTtl: DEDUPE_TTL_SECONDS,
+      expirationTtl: pageIntervalFor(repeats),
     });
     await emailKeeper(env, input.condition, detail, now);
   } catch (error) {

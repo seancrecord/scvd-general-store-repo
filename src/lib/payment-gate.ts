@@ -879,8 +879,24 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * sale is invisible to the audit rather than falsely flagged, which
    * is the quieter direction and is recorded as such in the service.
    */
+  /*
+   * The request's own parameters ride along, so a delivery that dies
+   * after settlement can still be finished by hand. Without this the
+   * keeper knows a buyer paid and not what for.
+   */
+  const askedFor = (() => {
+    try {
+      const params = new URL(c.req.url).searchParams;
+      params.delete("payment_payload");
+      const encoded = params.toString();
+      return encoded.length > 0 ? encoded.slice(0, 600) : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
   const deliveryKey = await openDeliveryIntent(c.env, {
     path: c.req.path,
+    ...(askedFor ? { query: askedFor } : {}),
     ...(settled.transaction ? { transaction: settled.transaction } : {}),
     ...(payer ? { payer } : {}),
     paid_usdc: paidUsdc,
