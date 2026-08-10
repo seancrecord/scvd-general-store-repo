@@ -45,7 +45,13 @@ import type { Env } from "@/types";
 
 /** Ceilings on what a stranger can hand us. */
 const MAX_ARTIFACT_CHARS = 16_384;
-const DID_DOC_TIMEOUT_MS = 3_000;
+/**
+ * Exported so the live test can size its own budget off this number
+ * rather than guessing. A test whose ceiling is only marginally above
+ * the operation's own ceiling is a flake waiting for a busy runner —
+ * see test/conformance-resolution-live.spec.ts.
+ */
+export const DID_DOC_TIMEOUT_MS = 3_000;
 const MAX_DID_DOC_BYTES = 64 * 1024;
 
 /**

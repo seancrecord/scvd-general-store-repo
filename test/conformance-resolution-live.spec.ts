@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { DID_DOC_TIMEOUT_MS } from "@/services/conformance";
 import { describe, expect, it } from "vitest";
 
 const BASE = "https://scvd.store";
@@ -101,7 +102,19 @@ describe("did:web resolution can actually be attempted", () => {
       detail.includes("Invalid redirect value"),
       "the desk is reporting our own invalid fetch options as a fact about somebody else's DID document",
     ).toBe(false);
-  });
+    /*
+     * HEADROOM, DERIVED RATHER THAN GUESSED. This test makes a real
+     * resolution attempt against an unreachable host, and the desk
+     * gives that attempt DID_DOC_TIMEOUT_MS. Vitest's default ceiling
+     * is 5s, which left barely two seconds for everything else — and
+     * on 2026-08-09 a loaded CI runner ate it and failed a DOCS-ONLY
+     * commit. A red build that says nothing about the diff is worse
+     * than a slow one: it teaches everybody to re-run and stop
+     * reading.
+     *
+     * Sized off the real budget so the two cannot silently invert.
+     */
+  }, DID_DOC_TIMEOUT_MS * 8);
 
   it("never answers with a 5xx when a stranger's host misbehaves", async () => {
     // CV saw a 522 upstream. A counterpart being unreachable is a
