@@ -212,6 +212,10 @@ describe("S3: the skill reads as structure", () => {
     const hello = resources.find((resource) =>
       String(resource["resourceUrl"]).endsWith("/api/buy/hello"),
     );
-    expect(String(hello?.["description"]).startsWith("Returns:")).toBe(true);
+    // Since 2026-08-10 the fact block leads with the TASK — the job an
+    // agent would search for — and the Returns clause follows. An
+    // importer that keeps one line keeps the first one.
+    expect(String(hello?.["description"]).startsWith("Task:")).toBe(true);
+    expect(String(hello?.["description"])).toContain("Returns:");
   });
 });

@@ -25,8 +25,22 @@
  *   about its own state, which is worth more than any feature claim.
  */
 
+import { STORE_SERVICE_NAME } from "@/store/metadata";
+
 /** When the store stopped calling itself only a shop. */
 export const POSITION_DATED = "2026-08-07";
+
+/**
+ * THE REGISTERED ENTITY, once. It was typed by hand in two places
+ * (the storefront's JSON-LD and OPERATOR in trust-signals) which is
+ * rule 1 territory: two copies of a legal name is two chances for a
+ * diligence check to find a mismatch. The shop's own voice does not
+ * change — a buyer still deals with one person out of Oak City — but
+ * the entity now rides the first-pass surfaces, quietly, because
+ * "who operates this" is the first question an automated reader asks
+ * and an absent answer gets filled in with a guess.
+ */
+export const OPERATED_BY = "Record Creative Co. LLC";
 
 /** When the payment ordering turned over. See HOUSE_RULES rule 9. */
 export const DELIVERY_ORDER_DATED = "2026-08-10";
@@ -38,6 +52,20 @@ export const DELIVERY_ORDER_DATED = "2026-08-10";
  */
 export const POSITION_LINE =
   "scvd.store is the trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did.";
+
+/**
+ * THE OPENING, for the surfaces a stranger meets first (llms.txt, the
+ * OpenAPI contract, the MCP handshake, agents.md). Decided 2026-08-10
+ * after five outside models were asked "what is scvd.store": the two
+ * that read our own pages got it roughly right, the three that read
+ * third-party directories filed us as a novelty shop, and none of the
+ * five found the conformance desk or the corpus — the two things here
+ * that exist nowhere else. An entity resolver files you under your
+ * first clause, so the first clause now carries the infrastructure,
+ * the entity, and both differentiators. The whimsy is the store's
+ * soul and it stays; it goes second, not first.
+ */
+export const POSITION_OPENING = `${STORE_SERVICE_NAME} is the trust layer of the x402 economy, operated by ${OPERATED_BY}. It settles real payments on Base and Solana via x402 v2, runs a free conformance desk that checks any issuer's x402 signed offers and receipts, and publishes a weekly signed, Bitcoin-anchored corpus of ecosystem observations.`;
 
 /**
  * The boundary, which gets louder as the ecosystem fills in around us.

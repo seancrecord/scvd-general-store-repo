@@ -119,6 +119,23 @@ export const STOREFRONT_COPY = {
     "A partner, a friend, a listening ear. At some point we gotta keep the lights on, brother.",
   gaugePatrons: "Patrons served",
   gaugeMailbox: "Mailbox:",
+  /**
+   * WHAT THIS IS, BEFORE WHAT IT SELLS (2026-08-10). Five outside
+   * models were asked "what is scvd.store"; the three that leaned on
+   * third-party directories called it a novelty shop, and none of the
+   * five found the conformance desk or the corpus. The shelves were
+   * the first thing the page said, so the shelves were the answer a
+   * reader carried away. This section states the infrastructure in
+   * plain language before the catalog gets a word in. The first line
+   * is POSITION_OPENING, imported, so the front of the building says
+   * exactly what every machine surface says.
+   */
+  whatThisIsHead: "WHAT THIS PLACE IS",
+  /** Pre-escaped HTML: carries the two landing-page links. */
+  whatThisIsDoors:
+    'Payment infrastructure first, general store second. The conformance desk takes any issuer\u2019s x402 signed offer or receipt and returns a verdict \u2014 free, no account, no wallet \u2014 at <a href="/conformance">/conformance</a>. The corpus, a weekly signed and Bitcoin-anchored record of the x402 ecosystem, reads free at <a href="/corpus">/corpus</a>. What every signature proves, and what it doesn\u2019t, is at <a href="/attestation">/attestation</a>.',
+  whatThisIsShop:
+    "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
     "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",

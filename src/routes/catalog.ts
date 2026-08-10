@@ -8,7 +8,7 @@ import {
   wantsMarkdown,
 } from "@/services/menu-markdown";
 import { stockedShelfCount } from "@/services/fulfillment";
-import { USE_WHEN } from "@/store/spec";
+import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
 import type { ShutterState } from "@/services/shutter";
 import { computeStats, trackRecordLine } from "@/services/stats";
@@ -31,6 +31,12 @@ import { getRetiredItem } from "@/store/retired";
 
 interface CatalogItem extends MenuItem {
   buy_url: string;
+  /**
+   * The job this item does, in the words an agent would search with —
+   * the same CAPABILITY_QUERY the OpenAPI summaries carry. Absent on
+   * novelty items, which have no job to state (see NOVELTY_ONLY).
+   */
+  task?: string;
   /** Amounts offered in the 402 challenge; above-minimum = tip. */
   price_tiers_usdc: number[];
   /** S1: the uniform listing spec, one shape storewide. */
@@ -92,6 +98,7 @@ catalogRoutes.get("/menu.json", async (c) => {
     MENU_ITEMS.map(async (item) => ({
       ...item,
       buy_url: `${base}/api/buy/${item.id}`,
+      ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
       price_tiers_usdc: priceTiersUsdc(item),
       spec: listingSpec(item, base),
       guaranteed: GUARANTEED,
@@ -255,6 +262,7 @@ catalogRoutes.get("/menu/:item_id", async (c) => {
   return c.json({
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
+    ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
     price_tiers_usdc: priceTiersUsdc(item),
     spec: listingSpec(item, base),
     guaranteed: GUARANTEED,

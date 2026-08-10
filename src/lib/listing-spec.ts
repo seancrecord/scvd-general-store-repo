@@ -1,6 +1,11 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { priceTiersUsdc } from "@/lib/payments";
-import { SAMPLE_ARTIFACT_ID, SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
+import {
+  CAPABILITY_QUERY,
+  SAMPLE_ARTIFACT_ID,
+  SPEC_RETURNS,
+  SPEC_WHY_USE,
+} from "@/store/spec";
 import { MAKER_MARKS, makerMarkFor } from "@/store/provenance";
 import type { MenuItem } from "@/types";
 
@@ -187,7 +192,18 @@ export function factBlockText(item: MenuItem): string {
   const constraints = trueConstraints(item);
   const constraintText =
     constraints.length > 0 ? constraints.join("; ") : "none stated";
+  /**
+   * THE TASK LEADS, 2026-08-10. An importer that keeps one line of a
+   * description keeps the first one, and the first line here was a
+   * "Returns:" clause — accurate, and an answer to the second question
+   * a reader asks. The capability query is the job itself, in the
+   * words an agent searches with, and it already existed for exactly
+   * this reason (A1); it was simply not on the descriptions catalogs
+   * copy. Novelty items have no job to state and get none invented.
+   */
+  const task = CAPABILITY_QUERY[item.id];
   return [
+    ...(task ? [`Task: ${task}.`] : []),
     `Returns: ${SPEC_RETURNS[item.id] ?? item.description}`,
     `Price: ${priceText(item)}.`,
     `Latency: ${latencyLine(item)}.`,

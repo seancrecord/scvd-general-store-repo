@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import {
   ALSO_A_STORE,
-  POSITION_LINE,
   POSITION_NOT,
+  POSITION_OPENING,
 } from "@/store/copy/position";
 import { STORE_METADATA } from "@/store";
 import type { HonoEnv } from "@/types";
@@ -30,7 +30,7 @@ export const agentsMdRoutes = new Hono<HonoEnv>();
 function agentsMd(base: string): string {
   return `# ${STORE_METADATA.name}
 
-> ${POSITION_LINE}
+> ${POSITION_OPENING}
 > ${POSITION_NOT}
 > ${ALSO_A_STORE}
 >
@@ -51,7 +51,7 @@ artifact any third party can verify without trusting us.
 1. Read the catalog: GET ${base}/menu.json — every item id, price, and input schema.
 2. Request an item: GET ${base}/api/buy/{item_id} — the store answers HTTP 402 with the payment terms in the PAYMENT-REQUIRED header (base64 JSON), plus a plain-English note in the body.
 3. Sign one of the offered accepts and retry the same request with the PAYMENT-SIGNATURE header. Standard x402 v2 clients (e.g. @x402/fetch) do steps 2–3 for you.
-4. The store settles on-chain first, then returns the goods: instant items in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
+4. The store delivers first and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money. Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
 5. Verify anything you were given, free and forever: GET ${base}/api/verify/{id}.
 6. Check ANY issuer's x402 offer or receipt, free: POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
 7. Check ANY x402 endpoint's shape, free: POST ${base}/api/preflight/v1 with {"url": "..."}. One probe: 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet-network catch. A shape check, never an uptime claim.
@@ -78,7 +78,10 @@ artifact any third party can verify without trusting us.
 
 ## Free tools from this store
 
-- x402 artifact verifier (MIT, zero deps, works on any issuer's artifacts): https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
+- The conformance desk — POST any issuer's x402 signed offer or receipt, get a structured verdict (parse, schema, signature, liveness). Free, no account, no wallet. Landing with examples: ${base}/conformance; pinned contract: ${base}/api/conformance/v1.
+- The corpus — weekly signed, Bitcoin-anchored observations of the x402 ecosystem, hash-chained and free to read: ${base}/corpus (data at ${base}/corpus.json, per-host at ${base}/corpus/host/{host}.json).
+- x402-verify on npm — the desk's method as an MIT, zero-dependency package, works on any issuer's artifacts: https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
+- x402-sign on npm — issue your own x402 signed offers and receipts (MIT, zero deps): https://github.com/seancrecord/scvd-general-store-repo/tree/main/signer
 - The Tab (scvd-tab) — an MCP server that keeps your builder's running account of every tool they sign up for: trial-conversion warnings, monthly burn, price drift, and what each signup demanded of a human. Local, append-only, zero deps, facts only, never advice: https://github.com/seancrecord/scvd-general-store-repo/tree/main/tab
 
 ## Policies

@@ -5,8 +5,8 @@ import { SettlementDeclined } from "@/lib/payments";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
-  POSITION_LINE,
   POSITION_NOT,
+  POSITION_OPENING,
 } from "@/store/copy/position";
 import { findMcpTool, mcpToolCatalog } from "@/lib/mcp-tools";
 import type { EventSignals } from "@/lib/metrics";
@@ -571,8 +571,11 @@ async function handleRpc(
           title: STORE_SERVICE_NAME,
           version: "0.4.0",
         },
+        // POSITION_OPENING since 2026-08-10: the handshake is the one
+        // sentence an MCP client caches about us, so it carries the
+        // entity and both differentiators, then the operating facts.
         instructions:
-          `${POSITION_LINE} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The store never asks you to run code or share credentials.`,
+          `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free conformance desk (POST /api/conformance/v1) checks any issuer's x402 signed offers and receipts; the corpus at /corpus.json is the weekly signed record. The store never asks you to run code or share credentials.`,
       });
     }
     case "ping":

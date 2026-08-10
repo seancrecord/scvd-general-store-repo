@@ -301,6 +301,19 @@ body.night {
 .shelf-line { margin-top: 0.3rem; font-size: 0.88rem; color: var(--night-faded); }
 .shelf-more { text-align: center; margin-top: 1.1rem; font-size: 0.85rem; color: var(--night-faded); }
 
+/* ---- what this place is: the infrastructure, stated before the shelf ---- */
+.what-this-is {
+  max-width: 640px; margin: 0 auto 2.7rem;
+  border: 1px solid var(--line); border-radius: 4px;
+  padding: 1.15rem 1.4rem 1.3rem;
+  background: rgba(255,255,255,0.02);
+  text-align: left;
+}
+.what-this-is .night-head { text-align: center; }
+.what-line { margin-top: 0.65rem; font-size: 0.9rem; line-height: 1.55; color: var(--night-faded); }
+.what-lead { color: #efe6f4; }
+.what-line a { color: var(--teal); }
+
 /* ---- the two doors ---- */
 .doors { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 2.6rem; }
 @media (min-width: 640px) { .doors { grid-template-columns: 1fr 1fr; } }

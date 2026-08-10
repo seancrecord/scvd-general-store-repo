@@ -1,8 +1,8 @@
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
-  POSITION_LINE,
   POSITION_NOT,
+  POSITION_OPENING,
 } from "@/store/copy/position";
 import { Hono } from "hono";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -282,8 +282,11 @@ openapiRoutes.get("/openapi.json", async (c) => {
       // has to match every other discovery surface exactly.
       title: STORE_SERVICE_NAME,
       version: "0.3.0",
+      // POSITION_OPENING rather than POSITION_LINE since 2026-08-10:
+      // the contract's description travels into other people's
+      // catalogs, so it carries the entity and both differentiators.
       description:
-        `${POSITION_LINE} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453, or Solana). ${DELIVERY_ORDER} The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.`,
+        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453, or Solana). ${DELIVERY_ORDER} The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.`,
       // x402scan verifies ownership from this and nothing else; a
       // store that asks to be checked has to be reachable.
       contact: { url: base, email: STORE_CONTACT_EMAIL },
@@ -345,6 +348,34 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: freeOp(
           "Corrections",
           "Every claim this store has made that turned out not to be true, dated, with what found it and what check now catches that class. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
+      /**
+       * The two differentiators were missing from the contract
+       * entirely (found by the 2026-08-10 five-model check): a spec
+       * reader could learn every paid shelf and never learn the free
+       * desk or the corpus existed.
+       */
+      "/api/conformance/v1": {
+        get: freeOp(
+          "The conformance desk, described",
+          "What the free desk is and the exact request shape, as JSON. The readable landing is /conformance.",
+        ),
+        post: freeOp(
+          "Check any issuer's x402 signed offer or receipt",
+          'JSON body: { "artifact": "<compact JWS>", "public_key_hex"?, "resolve_kid"?, "check_anchor"? }. Structured verdict — parse, schema, EdDSA signature against the kid, liveness — free, no wallet, no account. Works on artifacts this store did not issue; supply public_key_hex to keep it fully offline.',
+        ),
+      },
+      "/api/preflight/v1": {
+        post: freeOp(
+          "Check an x402 endpoint's payment challenge shape",
+          'JSON body: { "url": "https://..." }. One probe, one moment: 402 status, parseable PAYMENT-REQUIRED header, signable accepts, testnet networks flagged. A shape check, never an uptime claim. Free.',
+        ),
+      },
+      "/corpus.json": {
+        get: freeOp(
+          "The corpus",
+          "Weekly signed observations of the public x402 ecosystem: hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, with the live chain check and verification steps on the document. Per-host history at /corpus/host/{host}.json. Free. The readable landing is /corpus.",
         ),
       },
       "/mcp": {

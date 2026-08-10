@@ -1,4 +1,4 @@
-import { POSITION_PARAGRAPH } from "@/store/copy/position";
+import { OPERATED_BY, POSITION_PARAGRAPH } from "@/store/copy/position";
 /**
  * THE TRUST LAYER, FOR MACHINE EYES ONLY.
  *
@@ -249,7 +249,7 @@ export const OPERATOR = {
    * deals with; the registered company is the answer to a diligence
    * question, not a thing to put on the sign.
    */
-  legal_entity: "Record Creative Co. LLC",
+  legal_entity: OPERATED_BY,
   legal_entity_note:
     "The store is operated under Record Creative Co. LLC. That is a checkable fact and it is what belongs in an automated diligence answer — but it changes nothing about what a buyer is dealing with, which is one person keeping a shop, as /what and /stack both say. The company does not add a support desk, a second pair of hands, or anyone else who can sign. What actually stands behind a purchase is unchanged: the wallet is declared and signed at /house-ledger.json, the signing key is published with its full history, and every service this store depends on and does NOT control is listed at /stack with its failure mode.",
   location: "Oak City, North Carolina",

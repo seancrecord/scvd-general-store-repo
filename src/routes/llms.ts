@@ -1,5 +1,11 @@
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
+import {
+  ALSO_A_STORE,
+  DELIVERY_ORDER,
+  POSITION_NOT,
+  POSITION_OPENING,
+} from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { USE_WHEN } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
@@ -35,6 +41,18 @@ export const llmsRoutes = new Hono<HonoEnv>();
 export function storeGuideText(base: string): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
+
+${POSITION_OPENING}
+${POSITION_NOT}
+${ALSO_A_STORE}
+
+Everything this store signs verifies free, forever, at
+${base}/api/verify/{id} — no account, no wallet, no rate limit. The
+conformance desk explains itself in plain language at
+${base}/conformance; the corpus, the weekly signed record of the x402
+ecosystem, reads at ${base}/corpus. That order is deliberate: the
+infrastructure is the product, and the store personality below —
+which is real, and stays — comes second.
 
 Last checked by hand: ${catalogLastUpdated()}. Served: ${new Date().toISOString().slice(0, 10)}.
 Those are two different facts and we print both, because serving a
@@ -198,7 +216,7 @@ ${STORE_METADATA.protocol} protocol, version 2. It goes like this:
   3. You sign one of the offered payments and retry the same request with
      the PAYMENT-SIGNATURE header. (Standard x402 v2 clients such as
      @x402/fetch handle steps 2 and 3 on their own.)
-  4. We settle the payment first, then hand over the goods. Instant items
+  4. ${DELIVERY_ORDER} Instant items
      arrive in the response body. Human-queue items get an order id you can
      poll at ${base}/api/order/{order_id}.
 
@@ -257,7 +275,10 @@ zero-dependency file at
 https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
 — every verdict tells you to reproduce it offline rather than trust
 us, because we sell x402 goods and a verdict about a rival from a
-rival is worth only its method.
+rival is worth only its method. The same code is on npm as
+x402-verify (verification, zero dependencies), with x402-sign beside
+it for issuing your own signed offers and receipts. The desk's
+plain-language landing, with worked examples, is ${base}/conformance.
 
 The Tab (scvd-tab), an MCP server for the OTHER side of an agent's
 commerce: the tools its builder signs up for. It keeps a local,
@@ -577,7 +598,9 @@ digest submitted to OpenTimestamps for Bitcoin anchoring, verification
 steps published on the document itself. Dated observations of moments,
 never a score on anybody: a continuous record kept because it cannot
 be backfilled later, and checkable precisely so you do not have to
-take that sentence on faith.
+take that sentence on faith. The readable landing — what the corpus
+is, what it has found so far, and how to verify it — is
+${base}/corpus.
 
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
