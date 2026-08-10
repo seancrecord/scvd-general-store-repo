@@ -14,27 +14,38 @@ binaries, no install specs — the skill is instructions for calling
 public HTTPS endpoints, nothing clever, which is both the honest shape
 and the shape that scans clean.
 
-To publish (after reading it end to end):
+To publish (after reading the bundle end to end):
 
 ```bash
-npx clawhub login             # GitHub account
-npx clawhub skill publish ./registry/clawhub \
-  --slug scvd-general-store \
-  --name "Sean-Claude Van Damme's General Store" \
-  --version 1.0.0 \
-  --changelog "Opening day."
+npx clawhub@latest login      # GitHub account, once per machine
+npm run skill:publish -- <version> "<what changed>"
 ```
+
+**Do not run `clawhub skill publish` by hand.** The raw command lived
+here until 2026-08-10, spelling out a `--name` and a `--version` that
+had both been wrong for months — the display name is now "SCVD General
+Store" per the naming law, and the versions are in the 2.x series. Every
+argument that block asked you to type is one the script derives:
+`scripts/publish-skill.mjs` stamps `--source-commit` from HEAD, reads
+the version from `SKILL_VERSION` in `src/store/spec.ts`, and refuses on
+a dirty tree, an unpushed HEAD, a bundle byte-identical to the last
+release, or a failing freshness suite. A hand-typed publish gets none of
+that, and a copied command block is exactly the stale-value defect the
+script exists to prevent.
+
+The version argument is not a free choice: it must equal `SKILL_VERSION`,
+so bump that constant first and deploy, or the publish is refused. Add
+`--dry-run` to preview. `registry/clawhub/published.json` records what
+went out and must be committed after — a stale record disarms the guard
+that reads its hash.
+
+From a phone: **Actions → Publish ClawHub skill → Run workflow**. Same
+refusals, on a clean runner, `workflow_dispatch` only.
 
 Drift note: the bundle is a static file; prices are deliberately NOT
 enumerated in it — it points agents at /menu.json as the source of
 truth, so the skill stays honest as shelves change. If the store's
 endpoints or promises change, republish a new version.
-
-v1.0.1 (2026-07-22): example URLs now carry ?src=clawhub-skill — the
-skill's self-identification at the door, feeding channel attribution.
-Query param chosen over a custom header because it survives copy-paste
-and minimal HTTP clients that can't set headers. KEEPER: republish
-with --version 1.0.1 --changelog "The skill says where you heard of us."
 
 ## awesome-x402 (`awesome-x402-submission.md`)
 
