@@ -29,6 +29,12 @@ export const VERIFICATION_TAGS: readonly VerificationTag[] = [
     content:
       "2603d9fdb5a400bf88406b3ceb0e0f06bc085da021931ac4d1faf27dece8e1acaf36966e4e0b48444b8ecd87ecae6c2423485134d3214bfb31866725ebd923fb",
   },
+  {
+    issuer: "base (Base app directory ownership check)",
+    added: "2026-08-10",
+    name: "base:app_id",
+    content: "6a7a377832200665f69b0f4d",
+  },
 ];
 
 /** The tags as head markup. Empty string when there are none. */
