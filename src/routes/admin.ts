@@ -92,6 +92,10 @@ import {
   listFailedItems,
   listWaitlist,
 } from "@/services/requests";
+import {
+  declineCommission,
+  quoteCommission,
+} from "@/services/commission-desk";
 import { listRefunds, markRefundPaid } from "@/services/refunds";
 import { listTips, setTipStatus } from "@/services/tips";
 import { DEFAULT_WEEK_NOTE, MENU_ITEMS } from "@/store";
@@ -1148,6 +1152,43 @@ adminRoutes.post("/admin/orders/:order_id/ack", async (c) => {
     return c.text("No order by that number.", 404);
   }
   return c.redirect("/admin");
+});
+
+/**
+ * THE COMMISSION DESK'S TWO LEVERS — both the keeper's hand and only
+ * the keeper's hand (rule 30: no agent prices anything). The quote's
+ * legality (on the ladder, sane window) is the SERVICE's law, not this
+ * form's; a refusal comes back with the reason rather than a redirect,
+ * because a lever that silently did nothing is the counter's oldest bug.
+ */
+adminRoutes.post("/admin/commission/:id/quote", async (c) => {
+  const form = await c.req.parseBody();
+  const terms: Parameters<typeof quoteCommission>[2] = {
+    usdc: Number.parseFloat(String(form["usdc"] ?? "")),
+    windowHours: Number.parseFloat(String(form["window_hours"] ?? "")),
+  };
+  const note = sanitizeText(form["note"], 600);
+  if (note) {
+    terms.note = note;
+  }
+  const result = await quoteCommission(c.env, c.req.param("id"), terms);
+  if ("refused" in result) {
+    return c.text(result.refused, 409);
+  }
+  return c.redirect("/admin/counter");
+});
+
+adminRoutes.post("/admin/commission/:id/decline", async (c) => {
+  const form = await c.req.parseBody();
+  const result = await declineCommission(
+    c.env,
+    c.req.param("id"),
+    form["reply"],
+  );
+  if ("refused" in result) {
+    return c.text(result.refused, 409);
+  }
+  return c.redirect("/admin/counter");
 });
 
 /** The bell ledger: its own page so the deep row scan stays isolated. */

@@ -20,6 +20,7 @@ export { stackRoutes } from "@/routes/stack";
 export { trustListRoutes } from "@/routes/trust-list";
 export { siteMetaRoutes } from "@/routes/site-meta";
 export { buyRoutes } from "@/routes/buy";
+export { commissionRoutes } from "@/routes/commission";
 export { anchorRoutes } from "@/routes/anchors";
 export { serviceAuditRoutes } from "@/routes/service-audit";
 export { reconciliationRoutes } from "@/routes/reconciliation";

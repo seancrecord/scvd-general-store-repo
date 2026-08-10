@@ -97,7 +97,26 @@ labor item eventually moves to request → quote → agreed price**, with
 two decisions he did not name (the rungs, quote expiry) should take
 the spec's recommended defaults, those defaults are on record in
 `docs/COMMISSION_DESK.md` and nothing is blocked either way.
-**Recorded, not built.**
+**BUILT 2026-08-10.** The desk stands on the ledger that already
+existed: POST `/api/request` is still the free write-in door, and now
+hands back a `status_url`. The keeper quotes or declines from the
+counter (`/admin/commission/:id/quote|decline`) — a quote must sit on
+the published ladder ($25/$50/$100/$250, spec §3a) with its own
+delivery window, and expires in 14 days (the spec default, taken as
+ruled). Each rung is its own STATIC x402 route
+(`/api/commission/pay/:rung`), priced at boot in `lib/payments.ts`, so
+the money spine never reads storage to learn a price; WHICH quote a
+payment honours is checked pre-gate (`routes/commission.ts`), and
+every mismatch — no id, unquoted, expired, wrong rung, declined,
+already paid — refuses before the facilitator is asked. A paid quote
+mints under `the_collab` through the existing order machinery, with
+the QUOTE's window as the order's SLA instead of the flat 168h (that
+flat promise on unseen work being the thing the desk retires).
+Declines are public with the reply at GET `/api/commission/declined`;
+contacts never publish. `test/commission-desk.spec.ts` covers the lot.
+Deliberately NOT done yet: retiring `the_collab`'s buy-now door — the
+desk runs beside it until the keeper has quoted a real request or two
+and wants the old door shut.
 
 **8. Build the refund-window detector.** The card by the door promises
 a refund on a missed window and nothing enforces it. Correctly
@@ -546,7 +565,7 @@ stranger to pay."*
 | | |
 |---|---|
 | ~~**Refund-window detector**~~ | **BUILT.** Sweep and page were already on the cron; 2026-08-10 added the half the promise turns on — the buyer can see the breach on their own order page. |
-| **Commission Desk** | SPEC WRITTEN 2026-08-09 → `docs/COMMISSION_DESK.md`. Four decisions waiting on the keeper. |
+| ~~**Commission Desk**~~ | **BUILT 2026-08-10** per the C2 ruling — request → quote at a published rung → pay over a static x402 route, declines public. `the_collab`'s buy-now door still open beside it until the keeper wants it shut. |
 | **The bench (open-queue cap)** | BUILT 2026-08-09. The interim floor under the same exposure, and it found a live hole. |
 
 **The bench, 2026-08-09.** Not the Commission Desk — that retires
@@ -1628,7 +1647,7 @@ the batch is two or three, not eight.
 | | why |
 |---|---|
 | ~~**`order_id` on `RefundRecord`**~~ | **DONE 2026-08-10**, when refunds were next touched, exactly as written. `owed_usdc` is now exact wherever the rows are new, the audit reports how many joins still rest on the old item+payer guess, and a refund that names its order can no longer be borrowed by a sibling breach — which was the specific way a real debt could vanish from the total |
-| **The Commission Desk** | retires buy-now for per-order labor; kills all standing SLA exposure. RULED 2026-08-10: `the_collab` first, public replies on declines. Spec §3 corrected the same day — a one-off price DOES fit the payment stack. Not built |
+| ~~**The Commission Desk**~~ | retires buy-now for per-order labor; kills all standing SLA exposure. RULED 2026-08-10: `the_collab` first, public replies on declines. Spec §3 corrected the same day — a one-off price DOES fit the payment stack. **BUILT 2026-08-10** (quote lifecycle, static rung routes, public declines); the buy-now door itself still open beside the desk until the keeper shuts it |
 
 ---
 

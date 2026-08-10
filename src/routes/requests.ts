@@ -81,5 +81,20 @@ requestRoutes.post("/api/request", async (c) => {
       400,
     );
   }
-  return c.json({ message: VOICE.requestReceived, request }, 201);
+  return c.json(
+    {
+      message: VOICE.requestReceived,
+      request,
+      /**
+       * THE COMMISSION DESK (ruled 2026-08-10): the id above is how a
+       * requester follows their own thread — hold onto it. The keeper
+       * answers by hand: a quote at a published rung with its own
+       * delivery window, or a decline with the reason stated in public.
+       */
+      status_url: `${c.env.STORE_BASE_URL}/api/commission/${request.id}`,
+      how_the_desk_answers:
+        "The keeper reads every request and answers by hand — a quote at a published rung with its own delivery window (check status_url), or a decline with the reason on the public record at /api/commission/declined. Payment only ever happens against a live quote, over x402, at the quoted rung.",
+    },
+    201,
+  );
 });

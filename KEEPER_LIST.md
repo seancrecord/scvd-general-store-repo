@@ -132,7 +132,7 @@ function that signed.
 | **C5** | Yes, the burn may contain an estimate — add a `basis` field | built 2026-08-10 (tab schema v0.8) |
 | **C6** | Card reconciliation: monthly bank CSV, manual for now | built 2026-08-10 (`reconcile_card_statement`, tab v0.3.0) |
 | **C7** | The ward widens to every public directory. Uniform, no favourites | built 2026-08-10 (fuchss joins the census; paid directories named as unread until the wallet law) |
-| **C2** | Commission Desk: `the_collab` first, public replies on declines | queued |
+| **C2** | Commission Desk: `the_collab` first, public replies on declines | built 2026-08-10 (request → quote → pay at a static rung; declines public at `/api/commission/declined`; buy-now door still open beside it) |
 
 **Two notes on C2.** "Let's do all of them this way" is read as *every
 per-order labor item eventually moves to request → quote → agreed

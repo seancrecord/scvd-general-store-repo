@@ -23,6 +23,7 @@ import {
   STORE_TAGS,
 } from "@/store";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
+import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
 import type { Env, MenuItem } from "@/types";
@@ -353,12 +354,63 @@ function pennyPageRouteConfig(
 }
 
 /**
+ * A COMMISSION RUNG: one static x402 route per published price on the
+ * desk's ladder (COMMISSION_DESK.md §3a, ruled 2026-08-10). The price
+ * is a value computed at boot from the ladder, never a lookup — the
+ * quote-forgery surface the spec named is closed by construction,
+ * because the money spine holds no code path on which a stored quote
+ * or a query parameter could become the amount. Which quote a payment
+ * honours is the ROUTE's business (routes/commission.ts, before this
+ * gate); what a rung costs is decided here, once, at boot.
+ */
+function commissionRungRouteConfig(rung: number, env: Env): RouteConfig {
+  return {
+    accepts: railAccepts(env, [rung]),
+    description: `Commission Desk, the $${rung} rung. Pays a LIVE KEEPER QUOTE at this exact price — requires ?commission=<id> naming a request quoted at $${rung}. Without a quote this route sells nothing: write in free at POST /api/request and the keeper answers by hand.`,
+    mimeType: "application/json",
+    resource: `${env.STORE_BASE_URL}/api/commission/pay/${rung}`,
+    ...storeServiceMetadata(env),
+    unpaidResponseBody: async () => ({
+      contentType: "application/json",
+      body: {
+        error: `This is the Commission Desk's $${rung} rung, friend. It takes payment only against a live quote at this exact price — the keeper's terms, not a menu price.`,
+        note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). A payment needs ?commission=<id> for a request the keeper has quoted at this rung; anything else is refused before any money moves.",
+        how_the_desk_works: `POST ${env.STORE_BASE_URL}/api/request with { description, offer_usdc, contact } — free. The keeper reads every one and quotes by hand at a published rung with its own delivery window. Check your request at GET ${env.STORE_BASE_URL}/api/commission/{id}.`,
+        price_usdc: rung,
+        pricing: "quoted",
+      },
+    }),
+    settlementFailedResponseBody: async () => ({
+      contentType: "application/json",
+      body: {
+        error:
+          "The payment didn't clear, so the commission stays open at its quote. No charge, no order. Try again while the quote is live.",
+      },
+    }),
+  };
+}
+
+/** The desk's pay path, parsed: the rung it names, or null off-ladder. */
+export function commissionRungFromPath(path: string): number | null {
+  const match = /^\/api\/commission\/pay\/(\d+)$/.exec(path);
+  if (!match) return null;
+  const rung = Number(match[1]);
+  return COMMISSION_RUNGS.some((published) => published === rung) ? rung : null;
+}
+
+/**
  * The minimum owed for a gated path, so overpayment can be recorded as a
  * tip. Menu purchases look up the item; penny pages are a flat cent.
  */
 export function minimumUsdcForPath(path: string): number {
   if (path.startsWith("/api/buy/")) {
     return getMenuItem(path.replace(/^\/api\/buy\//, ""))?.price_usdc ?? 0;
+  }
+  // A commission payment's minimum is its rung; above it is a tip,
+  // same book-keeping as every pay-what-it-deserves shelf.
+  const rung = commissionRungFromPath(path);
+  if (rung !== null) {
+    return rung;
   }
   if (
     path.startsWith("/almanac/") ||
@@ -603,6 +655,15 @@ export function getPaymentStack(env: Env): PaymentStack {
       "That page of the Almanac has turned, friend. A penny opens the archive.",
       "The Systems Almanac. The Checksum, Season One, Week 1",
     );
+    // The Commission Desk's ladder: one static route per published
+    // rung, prices computed at boot, never read from storage or a
+    // query — see commissionRungRouteConfig on why that is the law.
+    for (const rung of COMMISSION_RUNGS) {
+      routes[`GET /api/commission/pay/${rung}`] = commissionRungRouteConfig(
+        rung,
+        env,
+      );
+    }
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };
     // A failed first sync shouldn't poison the isolate forever.

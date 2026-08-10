@@ -7,6 +7,7 @@ import {
   badgeRoutes,
   bellRoutes,
   buyRoutes,
+  commissionRoutes,
   catalogRoutes,
   directoryRoutes,
   trainRoutes,
@@ -253,6 +254,7 @@ app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
 app.route("/", buyRoutes);
+app.route("/", commissionRoutes);
 app.route("/", anchorRoutes);
 app.route("/", serviceAuditRoutes);
 app.route("/", reconciliationRoutes);

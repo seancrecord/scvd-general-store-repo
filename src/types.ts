@@ -404,6 +404,28 @@ export interface CommissionRequest {
   identity_verified?: boolean;
   /** A suggested Town Directory listing (name + URL, one line). */
   suggest_listing?: string;
+  /**
+   * THE DESK'S LIFECYCLE (2026-08-10), all optional so every pre-desk
+   * row stays valid: absent status reads as `requested`, and `expired`
+   * is never stored — it is derived from `quote_expires_at` at read,
+   * so the verdict cannot go stale in KV while the clock moves.
+   */
+  status?: "quoted" | "declined" | "accepted";
+  /** The KEEPER'S terms — never the requester's offer (spec §5.3). */
+  quote_usdc?: number;
+  /** Per-quote delivery window; the 168-hour default is what the desk retires. */
+  quote_window_hours?: number;
+  quoted_at?: string;
+  /** Required whenever a quote is set: an unexpiring quote binds forever. */
+  quote_expires_at?: string;
+  /** The keeper's words riding the terms. */
+  quote_note?: string;
+  declined_at?: string;
+  /** The public reply on a decline — transparency is house style. */
+  decline_reply?: string;
+  /** Set on payment: the order the desk handed to the existing machinery. */
+  order_id?: string;
+  accepted_at?: string;
 }
 
 /** One dated journal page in the Keeper's Almanac. A penny each. */
