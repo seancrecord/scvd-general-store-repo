@@ -214,6 +214,51 @@ export async function resolveDeliveryIntent(
   }
   const key = KV_KEYS.deliveryIntent(id);
   const intent = await env.ORDERS.get(key);
+
+  /*
+   * A SECOND RESOLUTION IS A CORRECTION, NOT A MYSTERY.
+   *
+   * The first resolution consumes the intent row, so a keeper who
+   * clicks the wrong outcome and comes back to fix it lands in the
+   * no-intent branch below — which would file the fix as a chain
+   * orphan and attach the note "No delivery intent ever existed."
+   * That note would be false, and it would be false on the record of
+   * a correction, which is the worst place for it.
+   *
+   * Live case 2026-08-10: the keeper refunded a dropped attestation
+   * and clicked "fulfilled by hand." The money moved one way and the
+   * record said the other.
+   *
+   * So the prior outcome is KEPT rather than overwritten. This store
+   * publishes its corrections; a record that quietly changes its mind
+   * is worth less than one that shows it did.
+   */
+  const priorRaw = await env.ORDERS.get(`delivery_resolved:${id}`);
+  if (priorRaw) {
+    let prior: unknown = null;
+    try {
+      prior = JSON.parse(priorRaw);
+    } catch {
+      prior = priorRaw;
+    }
+    const priorOutcome = (prior as { outcome?: string } | null)?.outcome;
+    if (priorOutcome === outcome) {
+      return { ok: true };
+    }
+    await env.ORDERS.put(
+      `delivery_resolved:${id}`,
+      JSON.stringify({
+        outcome,
+        at: new Date().toISOString(),
+        corrected: true,
+        superseded: prior,
+        note: `Corrected by hand from "${priorOutcome ?? "unknown"}" to "${outcome}". The earlier record is kept above rather than overwritten.`,
+      }),
+      { expirationTtl: 90 * 86400 },
+    );
+    return { ok: true };
+  }
+
   if (!intent) {
     /**
      * NO INTENT ROW is not always a typo: a CHAIN ORPHAN — money the

@@ -104,6 +104,12 @@ export const KV_KEYS = {
   almanacEntryPrefix: "almanac_entry:",
   keeperLastSeen: "keeper_last_seen",
   /**
+   * When the keeper last LOOKED at the alarm trail. Rows that first
+   * fired after it are marked NEW, so "have I seen this?" stops being
+   * answered by memory and eyeballing.
+   */
+  alarmsLastRead: "alarms_last_read",
+  /**
    * Failed /admin logins from ONE address. Per-address on purpose:
    * see the throttle in routes/admin.ts — a global counter would hand
    * a stranger the keeper's own front door.

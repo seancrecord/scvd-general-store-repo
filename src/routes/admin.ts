@@ -522,20 +522,57 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
   const { SOLANA_RECONCILE_OK_KEY, SOLANA_RECONCILE_LAST_RESULT_KEY } =
     await import("@/services/chain-reconciliation");
   const { auditDeliveries } = await import("@/services/delivery-audit");
-  const [settles, baseCursor, solanaLastOk, solanaLastResult, deliveries, alerts] =
-    await Promise.allSettled([
-      reconcileSettles(c.env),
-      c.env.COUNTERS.get(KV_KEYS.reconcileCursor),
-      c.env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY),
-      c.env.COUNTERS.get<{
-        ran: boolean;
-        reason?: string;
-        transfers_seen?: number;
-        at: string;
-      }>(SOLANA_RECONCILE_LAST_RESULT_KEY, "json"),
-      auditDeliveries(c.env),
-      listAlerts(c.env, 10),
-    ]);
+  const [
+    settles,
+    baseCursor,
+    solanaLastOk,
+    solanaLastResult,
+    deliveries,
+    alerts,
+    lastRead,
+  ] = await Promise.allSettled([
+    reconcileSettles(c.env),
+    c.env.COUNTERS.get(KV_KEYS.reconcileCursor),
+    c.env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY),
+    c.env.COUNTERS.get<{
+      ran: boolean;
+      reason?: string;
+      transfers_seen?: number;
+      at: string;
+    }>(SOLANA_RECONCILE_LAST_RESULT_KEY, "json"),
+    auditDeliveries(c.env),
+    listAlerts(c.env, 10),
+    c.env.COUNTERS.get(KV_KEYS.alarmsLastRead),
+  ]);
+
+  /*
+   * THE WATERMARK. The keeper's complaint, verbatim: "how do i know if
+   * its something ive seen or not without having to like eyeball it
+   * thats too much work for me."
+   *
+   * A row is NEW when it FIRST fired after his last visit. First-fired
+   * and not last-raised, deliberately: a standing problem he has
+   * already read about is not news again every six hours — that is the
+   * re-dating bug in a different costume.
+   *
+   * The mark advances on load, below, and only after a successful
+   * read. If the watermark read failed we would rather mark nothing
+   * than mark everything, so a KV blip cannot manufacture a flood.
+   */
+  const alarmsLastRead = shelf(lastRead, null, "alarm watermark", notes);
+  const markedAt = new Date().toISOString();
+  if (alerts.status === "fulfilled" && lastRead.status === "fulfilled") {
+    /*
+     * Written before the render rather than after: this handler has no
+     * post-response hook, and a mark that only lands on a fully
+     * rendered page would silently stop moving the first time some
+     * other section threw. Worst case here is a page he loaded and did
+     * not read, which is the same thing every unread-marker in the
+     * world gets wrong, and it is recoverable by looking again.
+     */
+    await c.env.COUNTERS.put(KV_KEYS.alarmsLastRead, markedAt);
+  }
+
   return c.html(
     renderReconciliationPage(
       {
@@ -563,8 +600,19 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
           }
           return { ...audit, house_payers: housePayers };
         })(),
+        alertsLastRead: alarmsLastRead,
         alerts: await Promise.all(
-          shelf(alerts, [], "alarm trail", notes).map(async (alert) => {
+          shelf(alerts, [], "alarm trail", notes)
+            /*
+             * ISO-8601 UTC strings sort the same way the instants do,
+             * which is the entire reason the store writes dates this
+             * way; no parsing, no timezone, no clock skew to argue with.
+             */
+            .map((alert) => ({
+              ...alert,
+              is_new: alarmsLastRead !== null && alert.at > alarmsLastRead,
+            }))
+            .map(async (alert) => {
             if (alert.condition !== "undelivered_sale") return alert;
             // The alert names its settlement tx; check what the
             // intent looks like NOW so history reads as history.

@@ -7,6 +7,8 @@ import type { DeliveryAudit } from "@/services/delivery-audit";
 interface AlertLogEntry {
   condition: string;
   detail: string;
+  /** True when this first fired after the keeper's previous visit. */
+  is_new?: boolean;
   /** FIRST seen, and it does not move. See lib/alerts. */
   at: string;
   last_seen?: string;
@@ -45,6 +47,12 @@ export interface ReconciliationPageData {
   };
   deliveries: DeliveryAudit | null;
   alerts: AlertLogEntry[];
+  /**
+   * When the keeper last loaded this page, or null if never. Only used
+   * to word the header honestly — the per-row NEW mark is decided by
+   * the route, which has the watermark in hand when it reads the log.
+   */
+  alertsLastRead: string | null;
   loadNotes: string[];
 }
 
@@ -156,14 +164,30 @@ function deliveriesHtml(
     <ul>${rows}</ul>`;
 }
 
-function alertsHtml(alerts: AlertLogEntry[]): string {
+function alertsHtml(
+  alerts: AlertLogEntry[],
+  lastRead: string | null,
+): string {
   if (alerts.length === 0) {
     return `<p>${PASS} — the alarm log is quiet (30-day window).</p>`;
   }
+  /*
+   * "HAVE I SEEN THIS ONE?" ANSWERED BY THE PAGE, NOT BY MEMORY.
+   *
+   * The keeper's words: eyeballing every row to work out what is new
+   * is too much work, and he is right — a trail you have to
+   * re-read in full to use is a trail that stops getting used, which
+   * is how the 3am forensics happened in the first place.
+   *
+   * The watermark moves when he loads this page, so the marker means
+   * "since you last looked" rather than "since some date you have to
+   * remember."
+   */
+  const fresh = alerts.filter((alert) => alert.is_new).length;
   const rows = alerts
     .map(
       (alert) =>
-        `<li>${
+        `<li>${alert.is_new ? `<strong style="background:#ffe9a8">[NEW]</strong> ` : ""}${
           alert.now
             ? alert.now === "still open"
               ? `<strong style="color:#8c2f1b">[STILL OPEN]</strong> `
@@ -197,7 +221,21 @@ function alertsHtml(alerts: AlertLogEntry[]): string {
         }</li>`,
     )
     .join("\n");
-  return `<p>Recent alarms — each paged the keeper when it fired. This is the
+  return `<p><strong>${
+    lastRead === null
+      ? "First look at this trail — the mark starts now."
+      : fresh === 0
+        ? `Nothing new since you last looked (${escapeHtml(lastRead.slice(0, 16))}Z).`
+        : `${fresh} NEW since you last looked (${escapeHtml(lastRead.slice(0, 16))}Z).`
+  }</strong> Loading this page moves that mark, so next time "new" means new again.
+    ${
+      lastRead === null
+        ? `<small>Nothing is marked NEW on a first look: the store has no idea
+      what you have already read, and flagging all of it would be a lie the
+      size of the whole list.</small>`
+        : ""
+    }</p>
+    <p>Recent alarms — each paged the keeper when it fired. This is the
     trail, not the pager: an entry marked resolved or delivered is HISTORY,
     already handled, kept so the record shows it happened. Only [STILL OPEN]
     needs a hand.</p>
@@ -240,7 +278,7 @@ export function renderReconciliationPage(
 
   <section>
     <h2>The alarm trail</h2>
-    ${alertsHtml(data.alerts)}
+    ${alertsHtml(data.alerts, data.alertsLastRead)}
   </section>
 
   <section>

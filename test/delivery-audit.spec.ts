@@ -290,3 +290,86 @@ describe("closing a chain orphan (live case, 2026-08-05)", () => {
     expect((result as { refusal: string }).refusal).toContain("no alert");
   });
 });
+
+describe("clicking the wrong outcome (live case, 2026-08-10)", () => {
+  /**
+   * The keeper refunded a dropped attestation and then clicked
+   * "fulfilled by hand" on the page. Two things had to be true after
+   * that: the record must end up saying REFUNDED, because that is what
+   * happened to the money — and it must not quietly pretend it always
+   * had. A store that publishes its corrections cannot overwrite one.
+   *
+   * The old path was worse than either: the first resolution consumes
+   * the intent row, so the fix fell through to the chain-orphan branch
+   * and stamped "No delivery intent ever existed" onto the corrected
+   * record. False, and false in the worst possible place.
+   */
+  async function resolvedRow(tx: string): Promise<Record<string, unknown>> {
+    return (await testEnv.ORDERS.get(`delivery_resolved:${tx}`, "json")) as Record<
+      string,
+      unknown
+    >;
+  }
+
+  async function openOne(tx: string): Promise<void> {
+    await openDeliveryIntent(testEnv, {
+      path: "/api/buy/settlement_attestation",
+      item_id: "settlement_attestation",
+      settled_at: new Date(Date.now() - 60 * 60000).toISOString(),
+      paid_usdc: 0.004,
+      transaction: tx,
+      payer: "0x72f6d77a000000000000000000000000000000ab",
+    } as never);
+  }
+
+  it("records the correction and KEEPS the outcome that was wrong", async () => {
+    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+    const tx = "0xmisclick" + Math.random().toString(36).slice(2, 8);
+    await openOne(tx);
+
+    await resolveDeliveryIntent(testEnv, tx, "fulfilled_by_hand");
+    const fix = await resolveDeliveryIntent(testEnv, tx, "refunded");
+    expect(fix.ok).toBe(true);
+
+    const record = await resolvedRow(tx);
+    // What actually happened to the money is what the record says now.
+    expect(record?.outcome).toBe("refunded");
+    expect(record?.corrected).toBe(true);
+    // And the mistake is still in there, not painted over.
+    expect((record?.superseded as Record<string, unknown>)?.outcome).toBe(
+      "fulfilled_by_hand",
+    );
+    expect(String(record?.note)).toContain("fulfilled_by_hand");
+  });
+
+  it("never files a correction as a chain orphan", async () => {
+    // The specific lie the old code told: the intent DID exist, the
+    // first resolution simply consumed it.
+    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+    const tx = "0xnotorphan" + Math.random().toString(36).slice(2, 8);
+    await openOne(tx);
+    await resolveDeliveryIntent(testEnv, tx, "fulfilled_by_hand");
+    await resolveDeliveryIntent(testEnv, tx, "refunded");
+
+    const record = await resolvedRow(tx);
+    expect(record?.source).not.toBe("chain_reconciliation");
+    expect(String(record?.note ?? "")).not.toContain("never existed");
+  });
+
+  it("treats clicking the same outcome twice as the no-op it is", async () => {
+    // Double-submit, back button, impatient reload. None of those are
+    // a correction, and none should manufacture a correction record.
+    const { resolveDeliveryIntent } = await import("@/services/delivery-audit");
+    const tx = "0xdoubleclick" + Math.random().toString(36).slice(2, 8);
+    await openOne(tx);
+    await resolveDeliveryIntent(testEnv, tx, "refunded");
+    expect((await resolveDeliveryIntent(testEnv, tx, "refunded")).ok).toBe(true);
+
+    const record = await resolvedRow(tx);
+    expect(record?.outcome).toBe("refunded");
+    expect(record?.corrected).toBeUndefined();
+    // The original intent survives the second click, which is the
+    // whole reason the no-op returns early instead of rewriting.
+    expect((record?.intent as Record<string, unknown>)?.paid_usdc).toBe(0.004);
+  });
+});
