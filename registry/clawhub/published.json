@@ -1,7 +1,7 @@
 {
-  "version": "2.9.0",
-  "bundle_sha256": "fb393a60ee457fd804f5f2a32e56636915ab719ea9c923edc0c7b13284797720",
-  "published_at": "2026-08-04T13:43:52.188Z",
-  "commit": "c201614b003c33e1b06e45a20eb96815eab94cde",
-  "changelog": "the npm pair (x402-verify, x402-sign) joins the conformance desk; v2 namespace warning"
+  "version": "2.10.0",
+  "bundle_sha256": "0cf66feae94a5addc1edf8b6dbac079814d1a762f67f24308989ef7716d09161",
+  "published_at": "2026-08-10T14:43:17.291Z",
+  "commit": "929d17d474c57e3bfb1adaf7f10e8d4fc8656b71",
+  "changelog": "what changed since 2.9.0"
 }
