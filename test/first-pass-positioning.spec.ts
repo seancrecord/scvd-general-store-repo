@@ -284,6 +284,19 @@ describe("the sideways surfaces carry the position too", () => {
     }
   });
 
+  it("the README carries the Smithery backlink its verification scan looks for", async () => {
+    // Smithery's ownership check scans the README for a link to the
+    // server page (the badge counts as one). Losing it would silently
+    // fail the next verification scan.
+    const readme = (await import("../README.md?raw")).default;
+    expect(readme).toContain(
+      "https://smithery.ai/servers/seancrecord/scvd-general-store",
+    );
+    expect(readme).toContain(
+      "https://smithery.ai/badge/seancrecord/scvd-general-store",
+    );
+  });
+
   it("the README shows the real MCP connection, so extractors stop guessing", async () => {
     // mcp.so's auto-extracted config (seen 2026-08-10) showed a
     // wrangler KV-setup command as the server command — it had grabbed

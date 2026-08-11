@@ -1,6 +1,7 @@
 # Sean-Claude Van Damme's General Store
 
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
+[![smithery badge](https://smithery.ai/badge/seancrecord/scvd-general-store)](https://smithery.ai/servers/seancrecord/scvd-general-store)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
 
 **The trust layer of the x402 economy.** Independent signed
@@ -463,6 +464,13 @@ are not:
   readings can lag the repo (its 2026-08-04 CVE flag was a dev-only
   tool, upgraded the same day) — an instrument pointed at us is worth
   listing even in the hours its needle is wrong.
+- **Smithery** — [a per-server page](https://smithery.ai/servers/seancrecord/scvd-general-store)
+  with its own quality scan: descriptions, parameter descriptions and
+  output schemas at full marks. Its annotations reading (0 of 27)
+  describes the 27-tool catalog this store retired on 2026-08-02 —
+  the live catalog is 10 tools, every one carrying all four MCP
+  behavior hints through `tools/list` — and refreshes on its next
+  scan rather than being argued with.
 
 None of these is an endorsement or an audit of the goods; each proves
 indexing, and two of them (x402scan, x402-list) probe the endpoints

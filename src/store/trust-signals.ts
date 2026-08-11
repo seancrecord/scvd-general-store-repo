@@ -216,6 +216,40 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That mcpmarket.com carries a per-server page for this store. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service — and this one's generated summary paraphrases an earlier README (it leads with the marketplace framing, omits the conformance desk and corpus, and lists a 'zodiac readings' item that has never existed here), so it lags the repository until its next crawl.",
   },
   {
+    url: "https://cursor.directory/plugins/scvd-general-store-repo",
+    registry: "Cursor Directory",
+    confirmed: "2026-08-11",
+    /**
+     * THE FIRST LISTING BUILT FROM THE REPO'S OWN PACKAGE rather than
+     * a crawler's paraphrase: its scanner rejected this repository in
+     * the morning ("No plugin components found in: repo root"), the
+     * Agent Plugins package (plugin.json, mcp.json, skills/) shipped
+     * in answer, and the rescan produced a page that reads correctly
+     * on arrival — both MCP servers with their real connection
+     * configs, the skill, and the trust-layer description leading.
+     * Nothing to correct at the source, for once, because the source
+     * is this repository.
+     */
+    what_it_proves:
+      "That the Cursor Directory carries a plugin page for this store, generated from this repository's own Agent Plugins package (plugin.json, mcp.json, skills/) — so its connection configs and description are the repo's own words rather than a crawler's guess. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service.",
+  },
+  {
+    url: "https://smithery.ai/servers/seancrecord/scvd-general-store",
+    registry: "Smithery",
+    confirmed: "2026-08-11",
+    /**
+     * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
+     * its quality scan grades "Annotations 0/27" against a 27-tool
+     * catalog this store has not served since 2026-08-02 — the live
+     * catalog is 10 tools and every one has carried all four MCP
+     * behavior hints since, asserted through tools/list by
+     * test/mcp-tool-hardening.spec.ts. Stale readings refresh on the
+     * next scan and are not argued with.
+     */
+    what_it_proves:
+      "That Smithery carries a per-server page for this store, submitted by the keeper, with its own quality scan (descriptions, parameter descriptions and output schemas at full marks). Not an endorsement and not an audit: a directory page proves indexing — and this one's annotations reading (0 of 27) describes the pre-2026-08-02 catalog rather than the 10 annotated tools the server has served since, so it lags until its next scan.",
+  },
+  {
     url: "https://mcp.so/servers/scvd-store",
     registry: "mcp.so",
     confirmed: "2026-08-10",
