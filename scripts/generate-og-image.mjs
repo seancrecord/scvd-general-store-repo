@@ -63,6 +63,10 @@ const FONT = {
   f: ["#####", "#....", "#....", "####.", "#....", "#....", "#...."],
   i: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "#####"],
   x: ["#...#", "#...#", ".#.#.", "..#..", ".#.#.", "#...#", "#...#"],
+  h: ["#...#", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+  u: ["#...#", "#...#", "#...#", "#...#", "#...#", "#...#", "#####"],
+  y: ["#...#", "#...#", "#...#", "#####", "..#..", "..#..", "..#.."],
+  m: ["#...#", "##.##", "#.#.#", "#.#.#", "#...#", "#...#", "#...#"],
   "4": ["#..#.", "#..#.", "#..#.", "#####", "...#.", "...#.", "...#."],
   "0": ["#####", "#...#", "#...#", "#...#", "#...#", "#...#", "#####"],
   "2": ["#####", "....#", "....#", "#####", "#....", "#....", "#####"],
@@ -114,9 +118,12 @@ function drawText(text, centerY, cell) {
   }
 }
 
+// Infrastructure first, whimsy second — the same flip every other
+// surface got on 2026-08-10. Both lines stay on the card: the trust
+// layer is what it is, the store line is its soul.
 drawText("scvd.store", 448, 10);
-drawText("a general store for ai agents", 545, 4);
-drawText("x402", 583, 3);
+drawText("the trust layer of the x402 economy", 545, 4);
+drawText("a general store for ai agents", 590, 3);
 
 if (process.env.PREVIEW) {
   console.log(DINO.join("\n"));

@@ -294,6 +294,26 @@ describe("the sideways surfaces carry the position too", () => {
     expect(readme).toContain('"url": "https://scvd.store/mcp"');
   });
 
+  it("the social card leads with the trust layer, and the alt tells the truth", async () => {
+    // The og card is the one surface that renders when anyone shares
+    // the store anywhere. Until 2026-08-10 its pixels said "a general
+    // store for ai agents" and nothing else — the pre-reversal
+    // identity, baked into an image no text sweep could see. The
+    // tagline and the alt text are asserted against the same phrase
+    // so the picture and its description cannot drift apart.
+    const script = (
+      await import("../scripts/generate-og-image.mjs?raw")
+    ).default;
+    expect(script).toContain('drawText("the trust layer of the x402 economy"');
+    expect(script, "the store line must stay on the card, second").toContain(
+      'drawText("a general store for ai agents"',
+    );
+    const page = await text("/", true);
+    const alt =
+      page.match(/<meta property="og:image:alt" content="([^"]*)"/)?.[1] ?? "";
+    expect(alt).toContain("trust layer of the x402 economy");
+  });
+
   it("the README no longer claims settle-then-deliver", async () => {
     // The flow flipped 2026-08-10; llms.txt and agents.md were
     // corrected the same day and the README kept the old claim.
