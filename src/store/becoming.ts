@@ -115,13 +115,6 @@ export interface Watched {
 
 export const WATCHED: readonly Watched[] = [
   {
-    item: "A second chain (Solana).",
-    trigger:
-      "One request through the window asking for it, or one signature presented for a non-EVM network. Either is a fact; neither has happened.",
-    today:
-      "Nothing. Base only, one facilitator, one asset config. Recorded honestly: a Solana-only agent that reads our 402, sees eip155:8453 and leaves is INVISIBLE to us — no decline, no reason code — so 'no evidence of demand' is a weaker statement than it sounds, and it is written down as weaker.",
-  },
-  {
     item: "Key succession — a pre-announced, pre-signed successor key.",
     trigger:
       "A place to keep a second private key that is not beside the first one. That is the whole gate, and it is a physical question rather than a cryptographic one: a successor stored next to the primary is a second way to become us in exchange for nothing.",
@@ -151,8 +144,48 @@ export const WATCHED: readonly Watched[] = [
   },
 ];
 
+export interface Graduated {
+  /** The thing, as the watched list named it. */
+  item: string;
+  /** The trigger as originally written. Quoted, not cleaned up. */
+  trigger: string;
+  /** What actually opened the door — which is not always the trigger. */
+  fired: string;
+  /** What exists now, with its remaining honest gaps. */
+  built: string;
+}
+
+/**
+ * WATCHED, THEN BUILT. A watch list that deletes its hits reads as a
+ * list that never hits — the same reasoning that keeps the reversed
+ * answer quoted in SETTLED above. Entries move here whole, original
+ * trigger included, because the most useful fact this section holds
+ * is WHETHER THE GATE THAT OPENED WAS THE ONE THE PAGE NAMED. For
+ * the first entry it was not, and that is recorded rather than
+ * smoothed over.
+ *
+ * This section found its reason the hard way: the Solana row sat on
+ * the watched list saying "Nothing. Base only" for a week after the
+ * rail shipped (2026-08-04 → 2026-08-11, caught by an outside read
+ * against /stats) — a staleness defect on the one page whose pitch
+ * is that nothing on it goes stale. Moving a built item HERE, with
+ * the date, is the structural fix; editing "today" in place would
+ * just be the same defect waiting to recur.
+ */
+export const GRADUATED: readonly Graduated[] = [
+  {
+    item: "A second chain (Solana).",
+    trigger:
+      "As written here from 2026-07-30: one request through the window asking for it, or one signature presented for a non-EVM network. Either is a fact; neither had happened when the door opened.",
+    fired:
+      "The trigger as written never fired, and this record does not pretend it did. What opened the door on 2026-08-04 was a gate this page had not named: the door-cost lens. The facilitator's supported-kinds turned up solana-exact riding the store's existing verify and settle path — one accepts entry, zero new buyer-facing branches — and the standing ruling that a cheap enough door does not wait on demand evidence overrode the demand gate, the same way it already had for the cheapest shelf items. The demand question this entry was watching stays honestly unanswered: a Solana-only agent who left before the rail existed was invisible to us, and no request ever came through the window.",
+    built:
+      "Live since 2026-08-04, flag-gated: Base stays first in every 402 as a compatibility promise, certificates record which rail settled at mint, and the Solana side of the bank reconciliation walks its chain the same day-counted way as Base. Organic settlements have since arrived on the rail; they are counted at /stats beside the Base ones rather than quoted here, where a number would go stale.",
+  },
+];
+
 export const BECOMING_STANDFIRST =
-  "What this store is trying to prove, what it has already decided, and what it is watching for. Kept apart from everything else deliberately: /what lists only what is running today, and this page holds the part that is not built. Nothing here is a capability — every entry is either a claim with a way to show it false, or a decision waiting on a trigger that has not fired.";
+  "What this store is trying to prove, what it has already decided, and what it is watching for. Kept apart from everything else deliberately: /what lists only what is running today, and this page holds the part that is not built. Nothing here is a capability — every entry is either a claim with a way to show it false, a decision waiting on a trigger that has not fired, or the dated record of a watched item whose gate has since opened, kept here rather than deleted so the watch list's hits stay checkable against its misses.";
 
 export const BECOMING_LIMIT =
   "NOTHING ON THIS PAGE IS AVAILABLE. If you are deciding whether to buy something, the page you want is /what, which lists only what is running now, or /menu.json, which is the shelf. This one exists so that the difference between those two things and this one is never left to a reader to work out — a store whose plans and whose inventory read with the same weight is asking to have both discounted at once.";

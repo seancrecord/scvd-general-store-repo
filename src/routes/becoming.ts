@@ -6,6 +6,7 @@ import {
   BECOMING_DATED,
   BECOMING_LIMIT,
   BECOMING_STANDFIRST,
+  GRADUATED,
   SETTLED,
   THESES,
   WATCHED,
@@ -30,6 +31,7 @@ becomingRoutes.get("/becoming", (c) => {
     theses: THESES,
     settled: SETTLED,
     watching_for: WATCHED,
+    watched_then_built: GRADUATED,
     available_today: `${c.env.STORE_BASE_URL}/what`,
   };
   if (!wantsHtml(c.req.header("Accept"))) {
@@ -61,6 +63,15 @@ becomingRoutes.get("/becoming", (c) => {
     </tr>`,
   ).join("\n");
 
+  const graduated = GRADUATED.map(
+    (entry) => `<tr>
+      <td>${escapeHtml(entry.item)}</td>
+      <td data-label="The trigger as written"><small>${escapeHtml(entry.trigger)}</small></td>
+      <td data-label="What actually opened the door"><small>${escapeHtml(entry.fired)}</small></td>
+      <td data-label="What exists now"><small>${escapeHtml(entry.built)}</small></td>
+    </tr>`,
+  ).join("\n");
+
   return c.html(
     renderSimplePage({
       title: "What this is trying to prove",
@@ -88,6 +99,16 @@ becomingRoutes.get("/becoming", (c) => {
         <table>
           <tr><th>not built</th><th>what would change it</th><th>what exists today</th></tr>
           ${watched}
+        </table>
+        </div>
+      </section>
+      <section>
+        <h2>Watched, then built</h2>
+        <p class="menu-desc">A watch list that deletes its hits reads as a list that never hits, so an item that gets built moves here whole, original trigger included &mdash; and the row says plainly whether the gate that opened was the one this page named. These are the one kind of entry on this page that IS running now; like everything running, they are listed at <a href="/what"><code>/what</code></a>.</p>
+        <div class="ledger-wrap">
+        <table>
+          <tr><th>built</th><th>the trigger as written</th><th>what actually opened the door</th><th>what exists now</th></tr>
+          ${graduated}
         </table>
         </div>
       </section>
