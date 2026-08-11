@@ -33,6 +33,11 @@ export default defineConfig({
           // Test-only ed25519 seed (RFC 8032 test vector). Never a real secret.
           SIGNING_KEY:
             "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+          // A DIFFERENT RFC 8032 vector (TEST 2) for the egress key, so a
+          // test that verifies a Web Bot Auth signature against the artifact
+          // key by mistake fails instead of passing on a shared key.
+          WBA_SIGNING_KEY:
+            "4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb",
           ADMIN_PASSWORD: "test-admin-password",
           STORE_BASE_URL: "https://scvd.store",
           HOUSE_SECRET: "test-house-secret",

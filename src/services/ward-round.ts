@@ -4,6 +4,7 @@ import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
+import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import type { Env } from "@/types";
 
 /**
@@ -224,13 +225,22 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
   return { hosts, listed: rows.length, coverageSuspect };
 }
 
-async function probeHost(url: string): Promise<Omit<WardHostResult, "host" | "url">> {
+async function probeHost(
+  env: WbaEnv,
+  url: string,
+): Promise<Omit<WardHostResult, "host" | "url">> {
   try {
     const response = await fetch(url, {
       method: "GET",
       redirect: "manual",
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-      headers: { Accept: "application/json" },
+      // The census knocks on strangers' doors weekly; since
+      // 2026-08-11 the knock is signed (Web Bot Auth) where the
+      // egress key allows, so a host reading its logs can verify who
+      // asked rather than trust a spoofable user-agent string.
+      headers: await webBotAuthHeaders(env, url, {
+        Accept: "application/json",
+      }),
     });
     await response.body?.cancel().catch(() => undefined);
     const { checks, advisories } = runChecks(response, false);
@@ -397,7 +407,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     const probe =
       entry.source === "leaderboard"
         ? { verdict: "not_probed" as const, failed: [], advisories: [] }
-        : await probeHost(entry.url);
+        : await probeHost(env, entry.url);
     results.push({
       host: entry.host,
       url: entry.url,

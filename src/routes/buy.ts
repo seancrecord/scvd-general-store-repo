@@ -240,6 +240,45 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * signature_agent_card needs a fetchable directory target BEFORE
+ * money moves — the serviceAuditCheck's law with the card's own copy,
+ * because "the URL a buyer would GET expecting a 402" is the wrong
+ * sentence to show somebody naming a key directory.
+ */
+const signatureCardCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/signature_agent_card" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        error:
+          "This needs a url query parameter — your origin, or your key directory's full URL (/.well-known/http-message-signatures-directory). No target, no charge. A single unsigned look is free at POST /api/bot-auth/check.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        error:
+          "That is this store's own hostname. We do not sell cards on our own directory — a report we sign about our own keys is the instrument vouching for itself. Fetch /.well-known/http-message-signatures-directory here yourself and check the proof-of-possession signature; the method is published and your own read is worth more than our word.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -585,6 +624,7 @@ buyRoutes.use("/api/buy/*", capacityCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);
+buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
@@ -642,6 +682,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "service_audit" || item.id === "conformance_watch") {
     // serviceAuditCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "signature_agent_card") {
+    // signatureCardCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "coffees_for_closers") {

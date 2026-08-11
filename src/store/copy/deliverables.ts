@@ -122,6 +122,15 @@ export function bitcoinAnchorNote(otsStatus: string): string {
       : "Anchored. It's in Bitcoin's memory now, which runs longer than yours, ours, and this store's put together.";
 }
 
+/** signature_agent_card. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function signatureCardNote(verdict: string): string {
+  return verdict === "directory_ready"
+    ? "Fetched your directory once, checked every brick, signed the readout: the document serves, the keys are shaped right, and the proof-of-possession holds. Show the card to anyone who wants more than your word — the URL serves it free forever, and it never claims more than the moment it covers."
+    : verdict === "not_ready"
+      ? "Fetched your directory once and wrote down what we saw, signed: at least one check failed, and the card names which and why. Not a verdict on you — a dated readout with the fix list in it. The free desk at POST /api/bot-auth/check will tell you where you stand before you buy another word from us."
+      : "We knocked. Nobody came. From where we stood, at that minute, the directory didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
+}
+
 /** service_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
 export function serviceAuditNote(verdict: string): string {
   return verdict === "ready"

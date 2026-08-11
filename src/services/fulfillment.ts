@@ -12,6 +12,8 @@ import type {
 } from "@/services/attestation";
 import { deliverInstantGoods } from "@/services/instant-goods";
 import { performServiceAudit } from "@/services/service-audit";
+import { performSignatureAgentCard } from "@/services/bot-auth-card";
+import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
 import { reconcileSettlement } from "@/services/settlement-reconciliation";
 import type {
   ReconciliationQuery,
@@ -220,6 +222,20 @@ export async function fulfillPurchase(
     mintOptions.attests = serviceAudit.evidence_hash;
   }
   /**
+   * THE SIGNATURE-AGENT CARD observes first and mints second, the
+   * audit's exact discipline: the certificate binds the card's
+   * evidence hash, so /api/verify answers for the card with no new
+   * endpoint asked to be trusted.
+   */
+  let signatureAgentCard: SignedSignatureAgentCard | undefined;
+  if (item.id === "signature_agent_card") {
+    signatureAgentCard = await performSignatureAgentCard(
+      env,
+      input.targetUrl ?? "",
+    );
+    mintOptions.attests = signatureAgentCard.evidence_hash;
+  }
+  /**
    * THE RECONCILIATION observes first and mints second, same reason as
    * every artifact above it: the certificate binds the evidence hash,
    * so /api/verify answers "this is the observation that purchase
@@ -381,6 +397,9 @@ export async function fulfillPurchase(
     }
     if (serviceAudit) {
       goodsInput.serviceAudit = serviceAudit;
+    }
+    if (signatureAgentCard) {
+      goodsInput.signatureAgentCard = signatureAgentCard;
     }
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;

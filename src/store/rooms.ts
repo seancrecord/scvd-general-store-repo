@@ -61,6 +61,15 @@ export const ROOMS: readonly Room[] = [
   { path: "/conformance", name: "The conformance desk" },
   { path: "/corpus", name: "The corpus" },
   /**
+   * The WBA line's room, 2026-08-11: what signed crawler identity is,
+   * the free directory check, and the paid card. On the front like the
+   * conformance desk it is modeled on. ⚑ KEEPER REVIEW: the storefront
+   * slot is his call; flip on_storefront to false to hold it back —
+   * but note the menu item's own description names /api/bot-auth/check,
+   * so the string reaches the storefront through the shelf either way.
+   */
+  { path: "/bot-auth", name: "The Web Bot Auth desk" },
+  /**
    * OFF THE FRONT OF THE STORE 2026-08-06, the keeper's call: the
    * footer stopped linking the Gazette. The rack is still open, still
    * free, still in the sitemap, llms.txt, the x402 document and the

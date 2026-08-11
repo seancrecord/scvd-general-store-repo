@@ -372,6 +372,29 @@ openapiRoutes.get("/openapi.json", async (c) => {
           'JSON body: { "url": "https://..." }. One probe, one moment: 402 status, parseable PAYMENT-REQUIRED header, signable accepts, testnet networks flagged. A shape check, never an uptime claim. Free.',
         ),
       },
+      "/api/bot-auth/check": {
+        post: freeOp(
+          "Check a Web Bot Auth key directory",
+          'JSON body: { "url": "https://your-agent.example" } — an origin, or the directory\'s full URL. One fetch, every check named: status, media type, JWK Set shape, Ed25519 keys, and the proof-of-possession signature verified against the listed keys. Free. The signed version is /api/buy/signature_agent_card; the readable landing is /bot-auth.',
+        ),
+      },
+      "/api/bot-auth-card/{card_id}": {
+        get: {
+          ...freeOp(
+            "A purchased signature-agent card",
+            "The signed card a signature_agent_card purchase produced, with its cert binding and verification steps. Served free, forever.",
+          ),
+          parameters: [
+            pathParam("card_id", "From the purchase response; starts sacard_."),
+          ],
+        },
+      },
+      "/.well-known/http-message-signatures-directory": {
+        get: freeOp(
+          "This store's own Web Bot Auth key directory",
+          "The ed25519 key the store signs its outbound probes with, as a JWK Set with the directory draft's proof-of-possession signature over its own authority. Answers 404 rather than an empty key set when no egress key is configured — those are different statements.",
+        ),
+      },
       "/corpus.json": {
         get: freeOp(
           "The corpus",
