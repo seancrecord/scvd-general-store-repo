@@ -1,5 +1,6 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
+import { listAlerts } from "@/lib/alerts";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { ADMIN_FAIL_ALERT_AT, ADMIN_THROTTLE_AT } from "@/routes/admin";
 import type { Env } from "@/types";
@@ -105,6 +106,63 @@ describe("the throttle", () => {
   it("does not throttle a first-time visitor", async () => {
     expect((await knock("wrong", "192.0.2.77")).status).toBe(401);
     await clearFails("192.0.2.77");
+  });
+});
+
+describe("the page names the addresses (2026-08-11)", () => {
+  /**
+   * The page said "somebody is guessing" and the keeper's first
+   * question — a scanner, or somebody I know poking a door they have
+   * no key to? — was unanswerable: the per-address rows expire
+   * minutes after the run stops, so by the time the page was read
+   * the evidence was gone. The rows exist at the moment the alert
+   * fires, so the alert quotes them.
+   */
+  const A = "203.0.113.9";
+  const B = "198.51.100.77";
+
+  beforeEach(async () => {
+    // KV persists across tests in a file: clear the whole per-address
+    // prefix, or a stray row from another spec inflates the roster.
+    const rows = await testEnv.COUNTERS.list({
+      prefix: KV_KEYS.adminFailIpPrefix,
+    });
+    for (const row of rows.keys) await testEnv.COUNTERS.delete(row.name);
+  });
+
+  it("quotes every address on the books, so 'who was that' is answerable from the page", async () => {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await knock("wrong", A);
+    }
+    for (let attempt = 0; attempt < ADMIN_FAIL_ALERT_AT - 3; attempt += 1) {
+      await knock("wrong", B);
+    }
+    const alert = (await listAlerts(testEnv, 50)).find((a) =>
+      a.detail.includes("failed /admin logins"),
+    );
+    expect(alert).toBeDefined();
+    expect(alert!.detail).toContain("2 addresses");
+    expect(alert!.detail).toContain(A);
+    expect(alert!.detail).toContain(B);
+    // The one throttled right now is named as such.
+    expect(alert!.detail).toContain(`most recent ${B}`);
+  });
+
+  it("a single-address run says so — one address is one guesser", async () => {
+    for (let attempt = 0; attempt < ADMIN_FAIL_ALERT_AT; attempt += 1) {
+      await knock("wrong", A);
+    }
+    const alert = (await listAlerts(testEnv, 50)).find((a) =>
+      a.detail.includes("failed /admin logins"),
+    );
+    expect(alert!.detail).toContain("ONE address");
+    expect(alert!.detail).toContain(A);
+  });
+
+  it("the per-address key and its prefix cannot drift apart", () => {
+    // The roster is built by slicing the prefix off listed keys; two
+    // hand-typed copies of the literal is rule 1 territory.
+    expect(KV_KEYS.adminFailByIp("x")).toBe(`${KV_KEYS.adminFailIpPrefix}x`);
   });
 });
 
