@@ -30,6 +30,12 @@ Glama; the Tab is not. Glama and peers index by GitHub repo URL or
 npm package name; the submission is a form, not a build, and per
 rule 30 the form is the keeper's to fill.
 
+The claim file is in place: `glama.json` at the repo root names the
+keeper as maintainer, which is the whole of Glama's schema — display
+name, description and category are set in their Admin UI after the
+listing is claimed, not in the file. It also covers claiming the
+store's own listing, which nobody here ever claimed.
+
 ## One-time setup still worth doing
 
 The `CLAWHUB_TOKEN` repository secret is not set, so the
