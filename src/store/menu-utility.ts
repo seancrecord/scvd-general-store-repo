@@ -103,7 +103,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * first, product second. Rule 23a-clean: one GET, one moment,
    * terminal at write. Rule 43: an observation of a DOCUMENT, never
    * an identity claim about who operates the key.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   * Name, price and copy approved by the keeper 2026-08-11, the day
+   * it shipped — The Calling Card, $2, as drafted.
    */
   {
     id: "signature_agent_card",

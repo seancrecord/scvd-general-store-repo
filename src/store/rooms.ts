@@ -63,10 +63,10 @@ export const ROOMS: readonly Room[] = [
   /**
    * The WBA line's room, 2026-08-11: what signed crawler identity is,
    * the free directory check, and the paid card. On the front like the
-   * conformance desk it is modeled on. ⚑ KEEPER REVIEW: the storefront
-   * slot is his call; flip on_storefront to false to hold it back —
-   * but note the menu item's own description names /api/bot-auth/check,
-   * so the string reaches the storefront through the shelf either way.
+   * conformance desk it is modeled on — the keeper's call, same day it
+   * shipped. (Holding it back would be awkward anyway: the menu item's
+   * own description names /api/bot-auth/check, so the string reaches
+   * the storefront through the shelf either way.)
    */
   { path: "/bot-auth", name: "The Web Bot Auth desk" },
   /**
