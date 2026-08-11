@@ -1,6 +1,6 @@
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
-import { outboundHeaders } from "@/lib/identity";
+import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { newCheckId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -43,6 +43,7 @@ export async function schedulePhantomCheck(
 }
 
 async function lookOnce(
+  env: Env,
   target: string,
 ): Promise<NonNullable<PhantomCheckRecord["observation"]>> {
   const checkedAt = new Date().toISOString();
@@ -54,8 +55,9 @@ async function lookOnce(
       method: "GET",
       redirect: "follow",
       signal: controller.signal,
-      // The store says who it is when it walks past somebody's door.
-      headers: outboundHeaders(),
+      // The store says who it is when it walks past somebody's door —
+      // and proves it (Web Bot Auth) where the egress key allows.
+      headers: await webBotAuthHeaders(env, target),
     });
     const latency = Date.now() - started;
     return {
@@ -81,7 +83,7 @@ export async function observePhantomCheck(
   env: Env,
   record: PhantomCheckRecord,
 ): Promise<PhantomCheckRecord> {
-  const observation = await lookOnce(record.target);
+  const observation = await lookOnce(env, record.target);
   const observed: PhantomCheckRecord = {
     ...record,
     status: "observed",

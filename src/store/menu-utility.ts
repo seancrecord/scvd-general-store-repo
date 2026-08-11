@@ -92,6 +92,39 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * THE WBA LINE'S DEMAND TEST (2026-08-11, the agent-web-identity
+   * build): a dated, signed observation of an agent's Web Bot Auth
+   * key directory — the Once-Over's exact shape pointed at the
+   * document the IETF drafts have crawlers publish. Demand tag:
+   * ANTICIPATED DEMAND under amended rule 19 (Cloudflare verifies
+   * these signatures inbound today; agents standing up signed egress
+   * need to show origins the setup is real). The store runs the same
+   * machinery on its own egress (lib/web-bot-auth.ts) — dogfood
+   * first, product second. Rule 23a-clean: one GET, one moment,
+   * terminal at write. Rule 43: an observation of a DOCUMENT, never
+   * an identity claim about who operates the key.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "signature_agent_card",
+    listed_week: "2026-W33",
+    name: "The Calling Card",
+    price_usdc: 2,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "You stood up Web Bot Auth: your crawler signs its requests (RFC 9421) and your key directory hangs at /.well-known/http-message-signatures-directory. This is somebody who is not you saying it actually works. Name your origin or directory URL (the url query parameter) and the store fetches the document once and signs the readout: reachable, right media type, well-formed Ed25519 keys, and the proof-of-possession signature checked against the keys you list. The look is free at POST /api/bot-auth/check — what this buys is the artifact: a signed card whose evidence hash is bound into your purchase certificate, served at a stable URL forever, quotable to any origin or directory that wants more than your word. One fetch, one moment. Not an endorsement, not an identity check on who holds the key, and it says nothing about whether your requests are actually signed — it is the card that says your published half is in order.",
+    note_402:
+      "Two dollars. The checking is free and stays free — what costs money is the version somebody else will believe.",
+    constraints: [
+      "Give your origin or directory URL in the url query parameter: https, default port, on the public internet",
+      "A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given",
+      "One GET at one moment, signed; never a monitor",
+      "We refuse our own hostname — our directory carrying our own card would be the instrument vouching for itself",
+      "The card URL is free to read forever",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the

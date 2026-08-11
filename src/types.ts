@@ -28,6 +28,18 @@ export interface Env {
   /** ed25519 private key seed, 64 hex characters. Secret. */
   SIGNING_KEY: string;
   /**
+   * Web Bot Auth egress key: a SECOND ed25519 seed (64 hex, same
+   * generator as SIGNING_KEY), used only to sign the requests the
+   * store makes as itself (RFC 9421) and to publish the matching
+   * directory at /.well-known/http-message-signatures-directory.
+   * Optional and FLAG-GATING: unset, egress is exactly as unsigned
+   * as it was before 2026-08-11 and the directory answers 404.
+   * Deliberately not SIGNING_KEY — the artifact key has a handover
+   * protocol and a published history; this one should be rotatable
+   * without ceremony.
+   */
+  WBA_SIGNING_KEY?: string;
+  /**
    * Base JSON-RPC endpoint for the settlement attestation. Optional:
    * falls back to the public endpoint, which is fine at this volume
    * and swappable the day it isn't.

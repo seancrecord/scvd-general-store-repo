@@ -86,6 +86,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "signature_agent_card") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your origin, or your key directory's full URL: https, default port, on the public internet. A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given. One GET at one moment, run against the published battery and signed. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -266,6 +275,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "conformance_watch") {
     example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "signature_agent_card") {
+    example["url"] = "https://your-agent.example";
   }
   if (item.id === "the_confession") {
     example["confession"] =

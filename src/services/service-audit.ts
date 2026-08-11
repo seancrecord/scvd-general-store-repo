@@ -130,7 +130,7 @@ export async function performServiceAudit(
   let advisories: PreflightAdvisory[];
   let verdict: ServiceAuditObservation["verdict"];
   try {
-    const outcome = await probeOnce(url, options.fetch ?? fetch);
+    const outcome = await probeOnce(url, options.fetch ?? fetch, "", env);
     const ran = runChecks(outcome.response, outcome.bodyOverLimit);
     checks = ran.checks;
     advisories = ran.advisories;

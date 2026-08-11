@@ -105,12 +105,24 @@ export interface MetricEvent {
   referrer?: string;
   /** Declared ?source= value, recorded verbatim as a claim. */
   declared_source?: string;
+  /**
+   * The visitor's Signature-Agent header, recorded verbatim AS A
+   * CLAIM — the store does not fetch the named directory or verify
+   * the signature, and nothing downstream may present this as
+   * verified. Same posture as the guestbook's verified_identity:
+   * stored as claimed, labeled as unverified. It exists to answer one
+   * census question cheaply — are Web Bot Auth signers showing up at
+   * this door at all — before any verifying machinery earns its keep.
+   */
+  signature_agent_claim?: string;
   /** decline events: the facilitator's reason, kept, not discarded. */
   note?: string;
 }
 
 export interface EventSignals extends ChannelSignals, HouseSignals {
   declaredSource?: string;
+  /** Raw Signature-Agent header, if the visitor sent one. A claim. */
+  signatureAgent?: string;
 }
 
 function buildEvent(
@@ -134,6 +146,9 @@ function buildEvent(
   }
   if (signals.declaredSource) {
     event.declared_source = signals.declaredSource.slice(0, 40);
+  }
+  if (signals.signatureAgent) {
+    event.signature_agent_claim = signals.signatureAgent.slice(0, 200);
   }
   return event;
 }

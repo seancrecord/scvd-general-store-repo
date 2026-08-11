@@ -35,6 +35,7 @@ import {
   schemaRoutes,
   siteMetaRoutes,
   skillRoutes,
+  executionContractRoutes,
   statsRoutes,
   corpusRoutes,
   serviceAuditRoutes,
@@ -62,6 +63,8 @@ import {
   tradingPostRoutes,
   verifyRoutes,
   wellKnownRoutes,
+  botAuthRoutes,
+  botAuthLandingRoutes,
   whatRoutes,
   zodiacRoutes,
 } from "@/routes";
@@ -140,6 +143,9 @@ const PORCH_EXACT = new Map<string, string>([
   ["/llms.txt", "llms.txt"],
   ["/menu.json", "menu.json"],
   ["/skill.md", "skill.md"],
+  // The execution-contract give-away's 30-day gate is "did anyone
+  // organically fetch or reference this" — a porch row, not a feeling.
+  ["/skills/execution-contract.md", "execution-contract"],
   ["/gazette", "gazette"],
   ["/almanac", "almanac"],
   ["/api/treat", "treat"],
@@ -207,6 +213,12 @@ app.use("*", async (c, next) => {
     if (houseParam) {
       signals.houseParam = houseParam;
     }
+    // Web Bot Auth census, claim-only: whether signers are showing up
+    // at this door at all. Recorded verbatim, never verified here.
+    const signatureAgent = c.req.header("Signature-Agent");
+    if (signatureAgent) {
+      signals.signatureAgent = signatureAgent;
+    }
     const logged = recordPorchVisit(c.env, surface, signals).catch(() => {
       // The log is a courtesy; the door never waits on it.
     });
@@ -255,9 +267,12 @@ app.route("/", visitorsRoutes);
 app.route("/", llmsRoutes);
 app.route("/", agentsMdRoutes);
 app.route("/", skillRoutes);
+app.route("/", executionContractRoutes);
 app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
+app.route("/", botAuthRoutes);
+app.route("/", botAuthLandingRoutes);
 app.route("/", buyRoutes);
 app.route("/", commissionRoutes);
 app.route("/", tabPoolRoutes);

@@ -116,6 +116,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Catch a deploy quietly breaking my x402 endpoint's payment challenge during the week",
   service_audit:
     "Get a signed point-in-time audit of an x402 endpoint that I can hand to a third party",
+  signature_agent_card:
+    "Show origins my crawler's Web Bot Auth key directory is set up right, with somebody who is not me saying so",
   bitcoin_anchor:
     "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
@@ -168,6 +170,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "a week of daily signed conformance readouts on your own endpoint — the drift one audit cannot see: whether a mid-week deploy broke what Monday's buyer could parse. Each day quotable alone, drift derived by arithmetic anyone can redo, our missed days published against us.",
   service_audit:
     "a dated, signed record of what an x402 endpoint answered at one moment, against the published preflight criteria — the readout is free at /api/preflight; this is the same battery with a signature, a certificate binding, and a permanent report URL a third party checks without us.",
+  signature_agent_card:
+    "a dated, signed observation that an agent's Web Bot Auth key directory is in order, proof-of-possession verified — free at POST /api/bot-auth/check; this is the same battery with a signature, a certificate binding, and a permanent card URL an origin checks without us. About the document, never the operator.",
   bitcoin_anchor:
     "a commitment that cannot be made after the fact: a Bitcoin-anchored timestamp on the buyer's own digest — a key log, a snapshot, any record that must provably have existed now. The mechanism this store anchors its own key history with; the bytes stay the buyer's.",
   attestation_bundle:
@@ -232,6 +236,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A watch id and a permanent history URL, readable immediately and filling in daily for seven days: one signed pass per day carrying the verdict, every failed check and advisory by name, plus a summary deriving the days the store missed and whether the readout drifted between passes. Bounded and prepaid; ends after seven days, renews only by repurchase.",
   service_audit:
     "A signed JSON audit report — verdict (ready, not_ready or unreachable), every check and advisory from the published preflight battery, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET at one moment, never monitoring.",
+  signature_agent_card:
+    "A signed JSON card — verdict (directory_ready, not_ready, unreachable or refused), every check from the directory battery by name including the proof-of-possession verification, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable card URL serving the record free forever. Instant; one GET at one moment, never monitoring.",
   bitcoin_anchor:
     "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:

@@ -2,6 +2,7 @@ import { parseJws } from "../../verifier/x402-verify.js";
 import { CONFLICT } from "@/services/conformance";
 import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
+import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import type { Env } from "@/types";
 
 /**
@@ -191,6 +192,7 @@ export async function probeOnce(
   url: string,
   fetchImpl: typeof fetch = fetch,
   ownHost = "",
+  env?: WbaEnv,
 ): Promise<ProbeOutcome> {
   /*
    * THE BACKSTOP. Every door validates before charging, and a caller
@@ -207,7 +209,15 @@ export async function probeOnce(
     method: "GET",
     redirect: "manual",
     signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-    headers: { Accept: "application/json" },
+    /**
+     * The probe introduces itself, verifiably, when it can (Web Bot
+     * Auth, 2026-08-11): identity plus signature when the caller
+     * passed env and the egress key is set, bare Accept otherwise.
+     * Decoration on the probe, never a condition of it.
+     */
+    headers: env
+      ? await webBotAuthHeaders(env, url, { Accept: "application/json" })
+      : { Accept: "application/json" },
   });
   // Bound the read before anything parses it.
   const raw = await response.text();
@@ -497,7 +507,7 @@ export async function preflightUrl(
 
   let outcome: ProbeOutcome;
   try {
-    outcome = await probeOnce(url.toString());
+    outcome = await probeOnce(url.toString(), fetch, "", env);
   } catch (error) {
     return {
       status: 200,

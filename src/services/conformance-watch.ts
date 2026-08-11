@@ -135,7 +135,7 @@ async function passOnce(
   let failed: string[] = [];
   let advisories: string[] = [];
   try {
-    const outcome = await probeOnce(record.url);
+    const outcome = await probeOnce(record.url, fetch, "", env);
     status = outcome.response.status;
     const ran = runChecks(outcome.response, outcome.bodyOverLimit);
     failed = ran.checks.filter((check) => !check.ok).map((check) => check.name);

@@ -182,6 +182,14 @@ export const KV_KEYS = {
    */
   serviceAudit: (auditId: string): string => `service_audit:${auditId}`,
   /**
+   * A purchased signature-agent card: the signed directory
+   * observation and the certificate that bound its evidence hash.
+   * PATRONS, terminal at write, never scanned — the Once-Over's
+   * storage shape, pointed at Web Bot Auth directories.
+   */
+  signatureAgentCard: (cardId: string): string =>
+    `signature_agent_card:${cardId}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and

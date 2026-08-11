@@ -2,6 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { runChecks } from "@/services/preflight";
 import { checkProbeTarget } from "@/lib/probe-target";
+import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { sweepWatches } from "@/services/watch-sweep";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
@@ -194,7 +195,12 @@ async function probeOnce(
       method: "GET",
       redirect: "manual",
       signal: AbortSignal.timeout(WATCH_PROBE_TIMEOUT_MS),
-      headers: { Accept: "application/json" },
+      // Identity, signed where the egress key allows (Web Bot Auth):
+      // the party being watched consented to the watching, and the
+      // least we owe them is a probe they can attribute and verify.
+      headers: await webBotAuthHeaders(env, record.url, {
+        Accept: "application/json",
+      }),
     });
     latency = Date.now() - started;
     status = response.status;

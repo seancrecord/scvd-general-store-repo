@@ -10,6 +10,8 @@ import { createOrRenewPass } from "@/services/patronage";
 import { dailyFortune, drawBlessing } from "@/services/penny-shelf";
 import { schedulePhantomCheck } from "@/services/phantom";
 import { storeServiceAudit } from "@/services/service-audit";
+import { storeSignatureAgentCard } from "@/services/bot-auth-card";
+import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
 import { storeReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedServiceAudit } from "@/services/service-audit";
@@ -34,6 +36,7 @@ import {
   phantomCheckNote,
   reconciliationNote,
   serviceAuditNote,
+  signatureCardNote,
   standingWatchNote,
 } from "@/store/copy/deliverables";
 import type { Env, MenuItem } from "@/types";
@@ -69,6 +72,8 @@ export interface InstantGoodsInput {
   anchorLabel?: string;
   /** service_audit only: the report, already made and signed. */
   serviceAudit?: SignedServiceAudit;
+  /** signature_agent_card only: the card, already made and signed. */
+  signatureAgentCard?: SignedSignatureAgentCard;
   /** settlement_reconciliation only: the observation, already signed. */
   reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
@@ -239,6 +244,27 @@ export async function deliverInstantGoods(
           proof_url: `/api/bitcoin-anchor/${record.anchor_id}`,
           verify_note:
             "The certificate for this purchase binds your digest in its `attests` field, so /api/verify/{cert_id} vouches that this store certified this digest at this time. The proof URL serves the OpenTimestamps proof bytes: pending means a calendar accepted it, complete means it upgraded to a Bitcoin-confirmed proof you check with the standard `ots` tool against Bitcoin headers — no calendar, no us. If the first submission failed, the store's hourly pass retries until it lands; the record says which state it is in, plainly.",
+        },
+      };
+    }
+    case "signature_agent_card": {
+      // Observed and signed upstream so its evidence hash could be
+      // bound into the certificate; filed here, after the mint, so
+      // the envelope carries the cert id — the audit's discipline.
+      const card = input.signatureAgentCard;
+      if (!card) {
+        throw new Error("signature_agent_card reached goods with no card");
+      }
+      await storeSignatureAgentCard(env, card, input.certId ?? "");
+      return {
+        deliverable: signatureCardNote(card.verdict),
+        extras: {
+          card_id: card.card_id,
+          verdict: card.verdict,
+          card,
+          card_url: `/api/bot-auth-card/${card.card_id}`,
+          verify_note:
+            "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The card is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the card too. The card URL serves the record free, forever.",
         },
       };
     }

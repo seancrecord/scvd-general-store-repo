@@ -19,6 +19,7 @@
     "keys:check": "node scripts/check-key-transcription.mjs",
     "shop": "node scripts/shopping-run.mjs",
     "bazaar:check": "node scripts/bazaar-check.mjs",
+    "wba:check": "node scripts/wba-check.mjs",
     "audit": "node scripts/audit.mjs",
     "skill:publish": "node scripts/publish-skill.mjs",
     "build:check": "wrangler deploy --dry-run --outdir .build-check",

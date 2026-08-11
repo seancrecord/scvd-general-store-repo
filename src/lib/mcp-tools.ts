@@ -134,6 +134,10 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // And the audit across time: the same battery daily for a week,
       // drift derived from the signed rows.
       "conformance_watch",
+      // The same point-in-time shape aimed at a Web Bot Auth key
+      // directory: the document checked, the proof-of-possession
+      // verified, the readout signed by somebody who is not the agent.
+      "signature_agent_card",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

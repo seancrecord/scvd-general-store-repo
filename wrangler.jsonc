@@ -69,5 +69,8 @@
   //   CDP_API_KEY_ID      Coinbase Developer Platform key id (facilitator auth)
   //   CDP_API_KEY_SECRET  Coinbase Developer Platform key secret
   //   SIGNING_KEY         ed25519 private key seed, 64 hex chars (npm run keys:generate)
+  //   WBA_SIGNING_KEY     ed25519 seed for Web Bot Auth egress signing, same
+  //                       generator, optional — unset, egress is unsigned and
+  //                       the signatures directory answers 404
   //   ADMIN_PASSWORD      Basic Auth password for /admin
 }

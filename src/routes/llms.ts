@@ -111,6 +111,21 @@ the single most common "stuck repeating 402"). Free, one probe, one
 moment — a shape check, never an uptime claim. Building an x402
 seller? Run it before you list anywhere.
 
+AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
+Web Bot Auth is the IETF mechanism for proving a crawler is who it
+says it is — RFC 9421 HTTP Message Signatures over ed25519, public
+keys published in a directory at
+/.well-known/http-message-signatures-directory, verified by origins
+(Cloudflare among them) without a shared secret or an IP allowlist.
+POST {"url": "https://your-agent.example"} to
+${base}/api/bot-auth/check and we fetch your directory once and name
+every check, free — including the proof-of-possession signature
+VERIFIED against the keys you list, not just noticed. The
+plain-language room is ${base}/bot-auth, which also states, derived
+live from config rather than promised here, whether this store's own
+egress is signed the same way. The signed card an origin will believe
+is signature_agent_card on the menu.
+
 BEFORE YOU COMMIT TO ANYTHING BIGGER, and this is an entry point
 rather than a pitch: the cheapest useful things here cost nothing.
 Verify an artifact, check somebody's offer, take a stamp, practise
@@ -167,6 +182,9 @@ ${menu}
 Machine-readable catalog: ${base}/menu.json (markdown if your Accept
 header prefers text/markdown; one item at ${base}/menu/{item_id})
 Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
+A free behavioral skill, about no product of ours: the execution
+contract — stop states, attempt budgets, and the evidence ledger, for
+any agent — at ${base}/skills/execution-contract.md
 OpenAPI 3.1 contract: ${base}/openapi.json
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is

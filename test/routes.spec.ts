@@ -90,6 +90,9 @@ describe("the storefront", () => {
       // shelf — same ladder, adjacent rungs.
       "service_audit",
       "conformance_watch",
+      // The WBA line's demand test rides the same utility shelf,
+      // listed after the conformance watch it sits beside in the file.
+      "signature_agent_card",
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",
