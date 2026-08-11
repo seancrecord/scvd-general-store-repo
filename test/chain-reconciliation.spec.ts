@@ -9,6 +9,7 @@ import {
   reconcileAgainstChain,
   runChainReconciliation,
   RECONCILE_BLOCK_SPAN,
+  RECONCILE_CATCHUP_PASSES,
   RECONCILE_MAX_SPAN,
 } from "@/services/chain-reconciliation";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -468,6 +469,100 @@ describe("dust and the address-poisoning profile (live case, 2026-08-04)", () =>
     expect(alert).toBeDefined();
     expect(alert!.condition).toBe("undelivered_sale");
     expect(alert!.detail).toContain("fulfil or refund by hand");
+  });
+});
+
+describe("the catch-up loop (problem ledger #24)", () => {
+  /**
+   * One pass reads 2000 blocks while Base mints ~1800 an hour, so a
+   * walk that took one pass per run regained ~200 blocks of backlog
+   * per hour: an outage measured in hours took days to walk back,
+   * and the whole recovery was a window where a second stall pushed
+   * the cursor past the clamp and tore a hole (the 2026-08-11 page).
+   * A run now repeats passes until the read stops filling its span.
+   */
+
+  /** rpcFetch that fails eth_getLogs after the first n calls succeed. */
+  function logsFailAfter(n: number): typeof fetch {
+    const inner = rpcFetch({ logs: [] });
+    let calls = 0;
+    return (async (url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { method: string };
+      if (body.method === "eth_getLogs") {
+        calls += 1;
+        if (calls > n) {
+          return { ok: false, status: 429 } as unknown as Response;
+        }
+      }
+      return (inner as (u: string, i: RequestInit) => Promise<Response>)(
+        url,
+        init,
+      );
+    }) as unknown as typeof fetch;
+  }
+
+  it("one run walks a backlog all the way to the head, tearing no hole", async () => {
+    // 15000 behind: inside the clamp, but at one span per hour this
+    // took a full day of clean passes to clear while the chain kept
+    // minting — the regime that produced the skipped-blocks page.
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 15_000));
+    const result = await runChainReconciliation(
+      envWith(rpcFetch({ logs: [] })),
+    );
+    expect(result.ran).toBe(true);
+    expect(result.from_block).toBe(HEAD - 15_000 + 1);
+    expect(result.to_block).toBe(HEAD);
+    expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
+      HEAD,
+    );
+    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(0);
+  });
+
+  it("a clamp-distance backlog records its hole once and still reaches the head", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.reconcileCursor,
+      String(HEAD - RECONCILE_MAX_SPAN - 5000),
+    );
+    const result = await runChainReconciliation(
+      envWith(rpcFetch({ logs: [] })),
+    );
+    expect(result.skipped).toBeDefined();
+    expect((await readSkippedRanges(testEnv)).total_ranges).toBe(1);
+    // The worst backlog the clamp permits clears within the run that
+    // finds it — the pass budget must cover RECONCILE_MAX_SPAN.
+    expect(RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN).toBeGreaterThan(
+      RECONCILE_MAX_SPAN,
+    );
+    expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
+      HEAD,
+    );
+  });
+
+  it("a failure mid-catch-up keeps every span already committed", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 10_000));
+    await runChainReconciliation(envWith(logsFailAfter(2)));
+    // Two clean passes committed their cursors; the third failed and
+    // wrote nothing. Next hour resumes exactly there.
+    expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
+      HEAD - 10_000 + 2 * RECONCILE_BLOCK_SPAN,
+    );
+  });
+
+  it("a run already at the head takes exactly one pass", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 100));
+    const inner = rpcFetch({ logs: [] });
+    let logCalls = 0;
+    const counting = (async (url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { method: string };
+      if (body.method === "eth_getLogs") logCalls += 1;
+      return (inner as (u: string, i: RequestInit) => Promise<Response>)(
+        url,
+        init,
+      );
+    }) as unknown as typeof fetch;
+    const result = await runChainReconciliation(envWith(counting));
+    expect(result.ran).toBe(true);
+    expect(logCalls).toBe(1);
   });
 });
 
