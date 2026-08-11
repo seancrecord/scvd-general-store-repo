@@ -119,6 +119,54 @@ describe("a refusal before the facilitator", () => {
     expect(readReason("local:payload_missing_accepted").fault).toBe("buyer");
   });
 
+  it("recognizes an x402 v1 envelope and says so, instead of 'a field is missing'", async () => {
+    /**
+     * A live outside decline, 2026-08-11: client "node" at
+     * small_blessing, booked local:payload_missing_accepted. A v1
+     * client carries scheme and network at the TOP level and no
+     * accepted echo, so it fails that exact check every time — and
+     * "your payload is missing a field" tells a client faithfully
+     * implementing the old protocol nothing. The disagreement is the
+     * protocol version, and the 402 now names it.
+     */
+    const v1Signature = btoa(
+      JSON.stringify({
+        x402Version: 1,
+        scheme: "exact",
+        network: "base",
+        payload: {
+          signature: `0x${"cd".repeat(65)}`,
+          authorization: {
+            from: TEST_PAYER,
+            to: "0x1111111111111111111111111111111111111111",
+            value: "5000",
+            validAfter: "0",
+            validBefore: "99999999999",
+            nonce: `0x${"33".repeat(32)}`,
+          },
+        },
+      }),
+    );
+    const declined = await SELF.fetch(
+      "https://scvd.store/api/buy/small_blessing",
+      { headers: { "PAYMENT-SIGNATURE": v1Signature } },
+    );
+    expect(declined.status).toBe(402);
+    const body = (await declined.json()) as Record<string, unknown>;
+    const stated = body.payment_declined as Record<string, unknown>;
+    expect(stated.reason).toBe("local:payload_v1_envelope");
+    // The message names the actual disagreement and the way out.
+    expect(String(stated.message)).toContain("v1");
+    expect(String(stated.message)).toContain("@x402/fetch");
+    // And reassures about what is NOT wrong, so nobody debugs a
+    // signature that was never examined.
+    expect(String(stated.message)).toContain("Nothing is wrong");
+    // The keeper's desk names it too, rather than lumping it in.
+    const read = readReason("local:payload_v1_envelope");
+    expect(read.fault).toBe("buyer");
+    expect(read.reading).toContain("v1");
+  });
+
   it("gives an exception one stable code instead of an unbounded family", () => {
     // A slug built from a TypeError is a truncated stack trace wearing
     // a reason code's clothes, and every variant becomes its own row in

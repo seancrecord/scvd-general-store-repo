@@ -41,6 +41,40 @@ describe("what we sign, and whose word you are taking", () => {
     expect(classes.some((c) => c.trust_model === "custody_only")).toBe(true);
   });
 
+  it("states the money path with its check and its limits", async () => {
+    /**
+     * An outside reader, 2026-08-11, asked the right conditional: "if
+     * USDC ever sits in a contract they control before settlement,
+     * that's a bigger trust surface than wallet-to-wallet." It never
+     * does — but a custody model that exists only in the code is the
+     * under-declaring this page was built to end. The same reader's
+     * standard is asserted here: as clear about limits as guarantees.
+     */
+    const body = (await (
+      await SELF.fetch(`${BASE}/attestation`)
+    ).json()) as Record<string, unknown>;
+    const money = body["money_path"] as Record<string, string>;
+    expect(money).toBeTruthy();
+    // The claim: no contract custody, one direct transfer.
+    expect(money.custody).toContain("No smart contract");
+    expect(money.custody).toContain("transferWithAuthorization");
+    // The check: per-settlement, on chain, without trusting us.
+    expect(money.the_check).toContain("settlement_tx");
+    // The limits, beside the guarantee rather than in a footnote:
+    // the facilitator liveness dependency, the issuer's freeze power,
+    // and that none of this is an audit.
+    expect(money.what_this_does_not_cover).toContain("facilitator");
+    expect(money.what_this_does_not_cover).toContain("freeze");
+    expect(money.what_this_does_not_cover).toContain("not an audit");
+    // And the human page renders it.
+    const html = await (
+      await SELF.fetch(`${BASE}/attestation`, {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(html).toContain("Where the money moves");
+  });
+
   it("says what each signature does NOT prove", async () => {
     for (const entry of ARTIFACT_CLASSES) {
       expect(
