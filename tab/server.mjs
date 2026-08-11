@@ -81,10 +81,11 @@ async function handle(message) {
       return respond(id, {});
     case "tools/list":
       return respond(id, {
-        tools: TOOL_DEFS.map(({ name, description, inputSchema }) => ({
+        tools: TOOL_DEFS.map(({ name, description, inputSchema, annotations }) => ({
           name,
           description,
           inputSchema,
+          annotations,
         })),
       });
     case "tools/call": {

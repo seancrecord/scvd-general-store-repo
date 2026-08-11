@@ -177,6 +177,40 @@ describe("the front counter has a door a weak model can find", () => {
     );
   });
 
+  it("says the overlap with the theme shelves is a second door, in both directions", async () => {
+    /**
+     * An outside audit (Glama, 2026-08-11) read the deliberate overlay
+     * as ambiguity: "buy_simple, buy_small_pleasure, and
+     * buy_signed_record all offer the same items like hello and dibs,
+     * making it unclear which tool to choose." The overlap IS the
+     * design — a weak model finds the counter, a capable one finds the
+     * shelf — but a reader who cannot see the design comment can only
+     * see the redundancy. So both doors now carry the sentence, and
+     * the shelf side is derived from the same eligibility predicate
+     * the counter is built on.
+     */
+    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
+    const tools = mcpToolCatalog("https://scvd.store");
+    const simple = tools.find((entry) => entry.name === "buy_simple")!;
+    expect(simple.description).toContain("a second door to the same goods");
+    expect(simple.description).toContain("If unsure which tool to use, use this one");
+    for (const item of frontCounterItems()) {
+      const shelf = tools.find(
+        (entry) => entry.name !== "buy_simple" && entry.itemIds?.includes(item.id),
+      )!;
+      expect(
+        shelf.description,
+        `${shelf.name} sells ${item.id}, which also sits at the counter, and must say the choice is harmless`,
+      ).toContain("also sell");
+      expect(shelf.description).toContain("buy_simple");
+      expect(shelf.description).toContain("either tool is correct");
+    }
+    // And a shelf with no counter items stays quiet about a door that
+    // holds none of its goods.
+    const humanShelf = tools.find((entry) => entry.name === "buy_human_task")!;
+    expect(humanShelf.description).not.toContain("buy_simple");
+  });
+
   it("carries the price in the description, like every other buy tool", async () => {
     const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
