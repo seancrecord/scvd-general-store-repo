@@ -284,6 +284,16 @@ describe("the sideways surfaces carry the position too", () => {
     }
   });
 
+  it("the README shows the real MCP connection, so extractors stop guessing", async () => {
+    // mcp.so's auto-extracted config (seen 2026-08-10) showed a
+    // wrangler KV-setup command as the server command — it had grabbed
+    // the first plausible code block. Give every extractor the real
+    // door in the one shape they all parse.
+    const readme = (await import("../README.md?raw")).default;
+    expect(readme).toContain('"mcpServers"');
+    expect(readme).toContain('"url": "https://scvd.store/mcp"');
+  });
+
   it("the README no longer claims settle-then-deliver", async () => {
     // The flow flipped 2026-08-10; llms.txt and agents.md were
     // corrected the same day and the README kept the old claim.
