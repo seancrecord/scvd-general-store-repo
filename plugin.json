@@ -1,0 +1,25 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "scvd-general-store",
+  "version": "0.2.0",
+  "description": "The trust layer of the x402 economy: free conformance checks, attestation, corpus, agent store.",
+  "author": {
+    "name": "Record Creative Co. LLC",
+    "url": "https://scvd.store"
+  },
+  "homepage": "https://scvd.store",
+  "repository": "https://github.com/seancrecord/scvd-general-store-repo",
+  "license": "MIT",
+  "keywords": [
+    "x402",
+    "signed-artifacts",
+    "verification",
+    "agent-memory",
+    "human-labor",
+    "mcp",
+    "usdc",
+    "payments",
+    "conformance",
+    "attestation"
+  ]
+}
