@@ -48,6 +48,21 @@ export const RECONCILE_BLOCK_SPAN = 2000;
 /** Never walk further back than this in one pass, however far behind. */
 export const RECONCILE_MAX_SPAN = 20000;
 
+/**
+ * Passes one cron run may take toward the head (problem ledger #24).
+ * One pass reads RECONCILE_BLOCK_SPAN blocks while Base mints ~1800
+ * an hour, so a single pass per hour regained only ~200 blocks of any
+ * backlog: an outage measured in hours took DAYS to walk back, and
+ * the whole recovery was a window where a second stall pushed the
+ * cursor past RECONCILE_MAX_SPAN and tore a hole (the 2026-08-11
+ * page). Twelve full spans cover more than RECONCILE_MAX_SPAN, so
+ * the worst backlog the clamp permits clears within the run that
+ * finds it. Each pass keeps its own atomic cursor-and-inflow write:
+ * a failure mid-catch-up keeps every window already read and resumes
+ * exactly where it stopped.
+ */
+export const RECONCILE_CATCHUP_PASSES = 12;
+
 /** Ceiling on the certificate scan that builds the known-tx set. */
 export const CERT_SCAN_CAP = 2000;
 
@@ -394,7 +409,16 @@ export async function certIdForSettlement(
  */
 export async function reconcileAgainstChain(
   env: Env,
-  options: { now?: Date } = {},
+  options: {
+    now?: Date;
+    /**
+     * Preloaded settlement set, so a catch-up run pays the KV scan
+     * once instead of once per pass. Safe to share across passes: the
+     * certificates that could name a transfer in an OLD block already
+     * exist by the time the run starts.
+     */
+    known?: Awaited<ReturnType<typeof knownSettlementHashes>>;
+  } = {},
 ): Promise<ChainReconciliation> {
   const payTo = env.PAY_TO_ADDRESS;
   if (!payTo) {
@@ -458,7 +482,8 @@ export async function reconcileAgainstChain(
     return { ran: false, reason: `chain query failed: ${String(error)}` };
   }
 
-  const { hashes, truncated } = await knownSettlementHashes(env);
+  const { hashes, truncated } =
+    options.known ?? (await knownSettlementHashes(env));
   const orphans: OrphanTransfer[] = [];
   const floor = cheapestListingUsdc();
   let counterparties: string[] | null = null;
@@ -504,7 +529,7 @@ export async function reconcileAgainstChain(
     await recordSkippedRange(env, skipped);
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `THE BANK WALK SKIPPED BLOCKS: the Base reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters, and expect more of these while the cursor catches up at ~${RECONCILE_BLOCK_SPAN} blocks per hourly pass.`,
+      detail: `THE BANK WALK SKIPPED BLOCKS: the Base reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor should be back at the head within the hour; a SECOND one of these means the cron itself stalled past the clamp again.`,
       key: `${skipped.from_block}-${skipped.to_block}`,
     }).catch(() => {
       // The alert is the courtesy; the KV record above is the fact.
@@ -566,18 +591,74 @@ async function alertOrphans(
   }
 }
 
+/** A pass that read its full span may have more chain waiting. */
+function readFullSpan(result: ChainReconciliation): boolean {
+  return (
+    result.from_block !== undefined &&
+    result.to_block !== undefined &&
+    result.to_block - result.from_block + 1 === RECONCILE_BLOCK_SPAN
+  );
+}
+
 export async function runChainReconciliation(
   env: Env,
   options: { now?: Date } = {},
 ): Promise<ChainReconciliation> {
-  const result = await reconcileAgainstChain(env, options);
+  /**
+   * THE CATCH-UP LOOP (problem ledger #24). Passes repeat until the
+   * read stops filling its span — the head, reached — or the pass
+   * budget runs out. Each pass commits its own cursor, inflow and
+   * hole record atomically, so a failure anywhere in the loop keeps
+   * everything already read; the merged report below is only a
+   * summary of what the committed passes saw.
+   */
+  const known = env.PAY_TO_ADDRESS
+    ? await knownSettlementHashes(env)
+    : undefined;
+  let merged = await reconcileAgainstChain(env, { ...options, known });
+  if (!merged.ran) {
+    return merged;
+  }
   await alertOrphans(
     env,
-    result.orphans ?? [],
+    merged.orphans ?? [],
     "Base",
-    result.cert_scan_truncated ?? false,
+    merged.cert_scan_truncated ?? false,
   );
-  return result;
+  let last = merged;
+  for (
+    let pass = 1;
+    pass < RECONCILE_CATCHUP_PASSES && readFullSpan(last);
+    pass += 1
+  ) {
+    const result = await reconcileAgainstChain(env, { ...options, known });
+    if (!result.ran) {
+      // A later pass failing ends the catch-up without erasing what
+      // the earlier passes committed; next hour resumes right here.
+      break;
+    }
+    await alertOrphans(
+      env,
+      result.orphans ?? [],
+      "Base",
+      result.cert_scan_truncated ?? false,
+    );
+    merged = {
+      ...result,
+      from_block: merged.from_block,
+      transfers_seen:
+        (merged.transfers_seen ?? 0) + (result.transfers_seen ?? 0),
+      orphans: [...(merged.orphans ?? []), ...(result.orphans ?? [])],
+      cert_scan_truncated: Boolean(
+        merged.cert_scan_truncated || result.cert_scan_truncated,
+      ),
+      // Only the first pass can tear a hole: after it, the cursor is
+      // within RECONCILE_MAX_SPAN of the head by construction.
+      ...(merged.skipped ? { skipped: merged.skipped } : {}),
+    };
+    last = result;
+  }
+  return merged;
 }
 
 /**

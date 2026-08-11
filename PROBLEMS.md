@@ -1767,6 +1767,40 @@ across `test/chain-reconciliation.spec.ts` and
 `test/penny-pages.spec.ts`, each shown red without its half of the
 fix.
 
+### 24. The bank walk could not outrun its own backlog — FIXED 2026-08-11, the day its first hole was paged
+
+The disease behind #22's symptom. That entry named the margin — one
+pass reads 2000 blocks, Base mints ~1800 an hour, so a walk taking
+one pass per hourly run regains ~200 blocks of any backlog per hour
+— and shipped the recorder for the holes the margin tears. On
+2026-08-11 the recorder fired for real: the cursor had fallen 22411
+blocks behind (~12.5h of chain) and the clamp discarded the range.
+The back-fill was run by hand the same morning — a bounded
+`eth_getLogs` over the full range found ZERO incoming transfers, so
+that particular hole was empty — but the arithmetic that tore it was
+still in place: an outage measured in hours took DAYS to walk back,
+and the whole recovery was a window where one more stall pushed the
+cursor past the clamp again. The alert's own text promised "more of
+these while the cursor catches up," which is an instrument
+predicting its own future failures and doing nothing about them.
+
+**The fix:** one cron run now takes up to `RECONCILE_CATCHUP_PASSES`
+(12) passes, repeating while each read fills its full span, so the
+worst backlog the clamp permits (20000 blocks) clears within the run
+that finds it — a test derives 12 × 2000 > 20000 rather than
+trusting the comment. Nothing about a single pass changed: each one
+still commits its cursor, inflow and hole record atomically, so a
+failure mid-catch-up keeps every window already read and resumes
+exactly there next hour (shown by a fake RPC that rate-limits the
+third `eth_getLogs`: the cursor lands precisely two spans forward).
+The known-settlement scan is paid once per run and shared across
+passes, not once per pass — the certificates that could name a
+transfer in an old block already exist when the run starts. Holes
+are now only possible when the cron itself is down past ~11 hours,
+and the alert says so instead of promising sequels. Three tests in
+`test/chain-reconciliation.spec.ts`, shown red on stashed source
+(3 failed / 26 passed).
+
 ### 0. The reframe that reorders everything below: OBSERVATION, not verification
 
 Logged 2026-08-02 on the keeper's insight, sharpened by a Cloudflare
