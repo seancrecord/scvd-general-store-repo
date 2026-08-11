@@ -197,6 +197,22 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That an agent-identity registry scored this store 470/1000 (grade B) against five weighted dimensions, resolving did:web:scvd.store, at verification level VERIFIED BY USER — self-attested, not organization-verified, and the record says so. Not an endorsement and not an audit of the goods: it is an automated score of posture. Its highest dimension is Transparency (650) — the radical-honesty layer showing — and its two lowest, Security Posture (300) and Peer Attestations (300), are the same two this store already flags itself: the OpenSSF Scorecard's security items, and the fact that no peer has yet cross-attested us (there is no peer-attestation prior art in x402 to have earned one from).",
   },
   {
+    url: "https://mcpmarket.com/server/sean-claude-van-damme-s-general-store",
+    registry: "mcpmarket.com",
+    confirmed: "2026-08-11",
+    /**
+     * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
+     * the page's generated summary paraphrases the pre-repositioning
+     * README — leads with "quaint and sincere digital marketplace",
+     * names no conformance desk or corpus, and invents "zodiac
+     * readings", an item this store has never sold. The source
+     * (README, llms.txt) already says the current thing; the summary
+     * lags until their next crawl and is not argued with.
+     */
+    what_it_proves:
+      "That mcpmarket.com carries a per-server page for this store. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service — and this one's generated summary paraphrases an earlier README (it leads with the marketplace framing, omits the conformance desk and corpus, and lists a 'zodiac readings' item that has never existed here), so it lags the repository until its next crawl.",
+  },
+  {
     url: "https://mcp.so/servers/scvd-store",
     registry: "mcp.so",
     confirmed: "2026-08-10",

@@ -535,7 +535,28 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   );
 });
 
-// x402-list.com domain ownership was verified 2026-08-02; the
-// one-time token that briefly served at /.well-known/x402list.txt has
-// done its job and been removed, as the directory itself invited. A
-// verification nonce that outlives its verification is just litter.
+/**
+ * x402-list.com domain-ownership token, SECOND ROUND. The first token
+ * served here 2026-08-02, verified the listing, and was removed as
+ * the directory invited — a verification nonce that outlives its
+ * verification is just litter. On 2026-08-11 the keeper updated the
+ * listing (category moved to Finance, description brought up to the
+ * current positioning) and the directory demanded a fresh proof, so
+ * the same route returns with the new token. NOT secret material — a
+ * proof-of-control nonce is useless to anyone who does not already
+ * control this domain, which is the entire point of the check.
+ * Removable once x402-list confirms (it expires 72h after issue
+ * regardless).
+ */
+wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
+  c.text(
+    [
+      "# x402-list.com domain-ownership verification for scvd.store.",
+      "# One-time proof-of-control token; not secret. Issued 2026-08-11,",
+      "# expires 72h after issue. Removable once the update is verified.",
+      "x402list-verify-ToUeeSxX7yrQQvL5cORSXK0BAn3JFE364AbCWBNtcLs",
+    ].join("\n"),
+    200,
+    { "content-type": "text/plain; charset=utf-8" },
+  ),
+);
