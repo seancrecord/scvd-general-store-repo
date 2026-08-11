@@ -118,10 +118,13 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
      * A per-service page that RUNS CHECKS rather than just listing —
      * grade A on 14 of 14, and VERIFIED as of 2026-08-02: the keeper
      * completed the directory's domain-ownership proof (one-time token
-     * at /.well-known/x402list.txt, since removed as invited).
+     * at /.well-known/x402list.txt, since removed as invited). Proven
+     * a second time 2026-08-11, same token flow, when the keeper moved
+     * the listing to Finance and updated its description to the
+     * current positioning — an update there requires a fresh proof.
      */
     what_it_proves:
-      "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) — a third party testing the endpoints rather than repeating a listing — and that the store verified domain ownership with the directory on 2026-08-02. Not an endorsement and not an audit of the goods.",
+      "That an x402 directory ran its automated checks against this store's own service page and graded it A (14 of 14) — a third party testing the endpoints rather than repeating a listing — and that the store verified domain ownership with the directory on 2026-08-02 and again on 2026-08-11 when the listing moved to the Finance category with an updated description. Not an endorsement and not an audit of the goods.",
   },
   {
     url: "https://glama.ai/mcp/connectors/store.scvd/general-store",
