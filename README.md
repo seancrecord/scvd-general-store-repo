@@ -471,6 +471,10 @@ are not:
   the live catalog is 10 tools, every one carrying all four MCP
   behavior hints through `tools/list` — and refreshes on its next
   scan rather than being argued with.
+- **DeepWiki** — [a generated wiki of this repository](https://deepwiki.com/seancrecord/scvd-general-store-repo)
+  from Cognition (Devin's index), requested 2026-08-11. A machine's
+  reading of the source, consulted like documentation; where it
+  misreads, the repository beside it is the correction.
 
 None of these is an endorsement or an audit of the goods; each proves
 indexing, and two of them (x402scan, x402-list) probe the endpoints
