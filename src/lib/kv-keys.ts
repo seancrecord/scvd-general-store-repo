@@ -115,6 +115,7 @@ export const KV_KEYS = {
    * a stranger the keeper's own front door.
    */
   adminFailByIp: (ip: string): string => `admin_fail_ip:${ip}`,
+  adminFailIpPrefix: "admin_fail_ip:",
   shutterOverride: "shutter_override",
   firstDollar: "first_dollar",
   /**

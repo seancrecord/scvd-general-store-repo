@@ -218,9 +218,34 @@ async function noteAdminAuthFailure(
     expirationTtl: ADMIN_FAIL_WINDOW_SECONDS,
   });
   if (count >= ADMIN_FAIL_ALERT_AT) {
+    /**
+     * NAME THE ADDRESSES WHILE THEY ARE STILL KNOWABLE (2026-08-11).
+     * The page said "somebody is guessing" and the keeper's first
+     * question — was that a scanner, or somebody I know poking a door
+     * they have no key to? — was unanswerable: the per-address rows
+     * expire minutes after the run stops, so by the time the page was
+     * read the evidence was gone. The rows are on the books at the
+     * moment the alert fires, so the alert quotes them. Addresses
+     * appear FIRST in the text because sendAlert truncates the detail
+     * at 1000 characters, and the list is capped so the fixed prose
+     * behind it can never be pushed off. A failed listing degrades to
+     * naming only the current caller — the page still goes out.
+     */
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: KV_KEYS.adminFailIpPrefix,
+      cap: 8,
+    }).catch(() => ({
+      names: [KV_KEYS.adminFailByIp(ip)],
+      truncated: false,
+    }));
+    const addresses = listed.names.map((name) =>
+      name.slice(KV_KEYS.adminFailIpPrefix.length),
+    );
+    const roster =
+      addresses.join(", ") + (listed.truncated ? ", and more" : "");
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `${count} failed /admin logins in the last ${ADMIN_FAIL_WINDOW_SECONDS / 60} minutes; the most recent address is now being made to wait between tries. Still not a lockout — the throttle is PER ADDRESS, so a guesser slows only themselves and can never bar you from your own store. If this was not you: rotating ADMIN_PASSWORD is only worth doing if it is short, guessable, or used anywhere else, because a run of FAILURES is evidence nobody got in. What the throttle cannot slow is an attacker with many addresses, and the only defence against that is a long password.`,
+      detail: `${count} failed /admin logins in the last ${ADMIN_FAIL_WINDOW_SECONDS / 60} minutes, from ${addresses.length === 1 ? "ONE address" : `${addresses.length} addresses`}: ${roster} — most recent ${ip}, now being made to wait between tries. One address is one guesser; several is a spray. (An address falls off the books ${ADMIN_THROTTLE_MAX_SECONDS / 60} minutes after its last failure — this names what the moment still held.) Still not a lockout — the throttle is PER ADDRESS, so a guesser slows only themselves and can never bar you from your own store. If this was not you: rotating ADMIN_PASSWORD is only worth doing if it is short, guessable, or used anywhere else, because a run of FAILURES is evidence nobody got in. What the throttle cannot slow is an attacker with many addresses, and the only defence against that is a long password.`,
       key: "admin-auth-bruteforce",
     }).catch(() => undefined);
   }
