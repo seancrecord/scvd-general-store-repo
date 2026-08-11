@@ -322,3 +322,57 @@ describe("the sideways surfaces carry the position too", () => {
     expect(readme.toLowerCase()).toContain("settle after");
   });
 });
+
+/**
+ * THE PUBLISH MANIFESTS (2026-08-11). Three static files exist only to
+ * be read by other people's machinery: glama.json (Glama's claim
+ * flow), server.json (the official MCP registry, whose live entry
+ * still carried the pre-reversal description when checked on
+ * 2026-08-11), and tab/server.json (The Tab's own registry entry,
+ * validated against the npm package's mcpName). None is served by the
+ * Worker, so no route test can catch them drifting — these hold them
+ * to the sources they must agree with.
+ */
+describe("the publish manifests agree with what they publish", () => {
+  it("glama.json names the keeper as maintainer", async () => {
+    const glama = JSON.parse((await import("../glama.json?raw")).default) as {
+      maintainers: string[];
+    };
+    expect(glama.maintainers).toContain("seancrecord");
+  });
+
+  it("server.json carries the position within the registry's 100-char cap", async () => {
+    const manifest = JSON.parse(
+      (await import("../server.json?raw")).default,
+    ) as {
+      name: string;
+      description: string;
+      remotes: Array<{ url: string }>;
+    };
+    expect(manifest.name).toBe("store.scvd/general-store");
+    expect(manifest.description).toContain("trust layer");
+    expect(manifest.description.length).toBeLessThanOrEqual(100);
+    expect(manifest.remotes[0]?.url).toBe("https://scvd.store/mcp");
+  });
+
+  it("the Tab's manifest and its npm package cannot disagree", async () => {
+    const manifest = JSON.parse(
+      (await import("../tab/server.json?raw")).default,
+    ) as {
+      name: string;
+      version: string;
+      description: string;
+      packages: Array<{ identifier: string; version: string }>;
+    };
+    const pkg = JSON.parse(
+      (await import("../tab/package.json?raw")).default,
+    ) as { name: string; version: string; mcpName?: string };
+    expect(manifest.name, "registry name must match npm mcpName").toBe(
+      pkg.mcpName,
+    );
+    expect(manifest.packages[0]?.identifier).toBe(pkg.name);
+    expect(manifest.packages[0]?.version).toBe(pkg.version);
+    expect(manifest.version).toBe(pkg.version);
+    expect(manifest.description.length).toBeLessThanOrEqual(100);
+  });
+});

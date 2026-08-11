@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "store.scvd/general-store",
+  "description": "The trust layer of the x402 economy: free conformance checks, attestation, corpus, agent store.",
+  "title": "SCVD General Store",
+  "repository": {
+    "url": "https://github.com/seancrecord/scvd-general-store-repo",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "websiteUrl": "https://scvd.store",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://scvd.store/mcp"
+    }
+  ]
+}
