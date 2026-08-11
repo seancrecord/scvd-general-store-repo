@@ -32,7 +32,7 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * fact they were never charged, and it says so inside somebody else's
  * catalogue where we cannot correct it.
  */
-export const SKILL_VERSION = "3.0.0";
+export const SKILL_VERSION = "3.1.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -332,6 +332,12 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: ["standing_watch"],
     example:
       "GET /api/buy/standing_watch?url=https://your-shop.example/api/buy/thing",
+  },
+  {
+    when: "You crawl the web as an identifiable agent and the origins deciding whether to let you in need somebody who is not you to say your Web Bot Auth key directory is in order.",
+    items: ["signature_agent_card", "free:/api/bot-auth/check"],
+    example:
+      "GET /api/buy/signature_agent_card?url=https://your-agent.example",
   },
   {
     when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",
