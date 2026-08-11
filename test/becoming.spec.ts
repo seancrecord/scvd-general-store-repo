@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { SETTLED, THESES, WATCHED } from "@/store/becoming";
+import { GRADUATED, SETTLED, THESES, WATCHED } from "@/store/becoming";
+import { RAILS_ENTERED_BY_HAND } from "@/services/stats";
 import { MENU_ITEMS } from "@/store";
 import { whatFaq } from "@/store/copy/what";
 
@@ -27,6 +28,9 @@ describe("nothing on the roadmap reads as available", () => {
       ...THESES.map((entry) => `${entry.claim} ${entry.falsified_by}`),
       ...SETTLED.map((entry) => `${entry.question} ${entry.answer} ${entry.because}`),
       ...WATCHED.map((entry) => `${entry.item} ${entry.trigger} ${entry.today}`),
+      ...GRADUATED.map(
+        (entry) => `${entry.item} ${entry.trigger} ${entry.fired} ${entry.built}`,
+      ),
     ].join(" ");
     for (const item of MENU_ITEMS) {
       expect(text, `/becoming names the shelf item ${item.id}`).not.toContain(
@@ -58,6 +62,62 @@ describe("nothing on the roadmap reads as available", () => {
         20,
       );
     }
+  });
+
+  it("does not still watch for a rail the till already settles on", () => {
+    /**
+     * THE STALENESS THIS PAGE'S WHOLE PITCH FORBIDS, caught from
+     * outside 2026-08-11: the Solana row said "Nothing. Base only"
+     * for a week after the rail shipped, on the one page that claims
+     * nothing on it goes stale. The rail list is DERIVED, not typed:
+     * RAILS_ENTERED_BY_HAND's keys are the chains the books
+     * reconcile, so a rail the till settles on cannot sit on the
+     * watched list as unbuilt — and a third rail added someday joins
+     * this guard the moment the books learn its name. The match is
+     * deliberately coarse (rail named anywhere near a nothing-claim
+     * trips it); a false trip costs a human one look, which is the
+     * cheapest thing on this page.
+     */
+    const settledRails = Object.keys(RAILS_ENTERED_BY_HAND);
+    for (const entry of WATCHED) {
+      const text = `${entry.item} ${entry.today}`.toLowerCase();
+      for (const rail of settledRails) {
+        expect(
+          text.includes(rail) && /\bonly\b|\bnothing\b/.test(text),
+          `the watched list still claims ${rail} is unbuilt: "${entry.item}"`,
+        ).toBe(false);
+      }
+    }
+    // And the graduation is recorded rather than the row deleted.
+    const secondChain = GRADUATED.find((entry) =>
+      entry.item.toLowerCase().includes("solana"),
+    );
+    expect(secondChain, "the Solana watch row vanished instead of graduating").toBeTruthy();
+    // The record keeps the part that makes it worth keeping: the gate
+    // that opened was not the trigger as written, said plainly.
+    expect(secondChain?.fired).toContain("never fired");
+    expect(secondChain?.trigger).toContain("2026-07-30");
+    expect(secondChain?.built).toContain("2026-08-04");
+  });
+
+  it("gives every graduated row the full record: trigger, what fired, what exists", () => {
+    for (const entry of GRADUATED) {
+      expect(entry.trigger.length, `${entry.item} lost its original trigger`).toBeGreaterThan(30);
+      expect(entry.fired.length, `${entry.item} does not say what opened the door`).toBeGreaterThan(30);
+      expect(entry.built.length, `${entry.item} does not say what exists now`).toBeGreaterThan(20);
+    }
+  });
+
+  it("serves the graduated section on both dialects", async () => {
+    const page = await (
+      await SELF.fetch(`${BASE}/becoming`, { headers: HTML })
+    ).text();
+    expect(page).toContain("Watched, then built");
+    expect(page).toContain("what actually opened the door");
+    const json = (await (await SELF.fetch(`${BASE}/becoming`)).json()) as {
+      watched_then_built: unknown[];
+    };
+    expect(json.watched_then_built.length).toBe(GRADUATED.length);
   });
 
   it("gives every thesis a way to be shown false", () => {
