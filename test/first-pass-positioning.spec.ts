@@ -232,3 +232,63 @@ describe("the contract and the handshakes carry the new opening", () => {
     expect(robots).toContain(`${BASE}/corpus`);
   });
 });
+
+/**
+ * THE STRAGGLERS (2026-08-10, evening pass). The morning pass fixed
+ * the surfaces the store serves; these are the ones it publishes
+ * sideways — the skill file directories ingest, the meta tags search
+ * snippets quote, and the repo README GitHub and the MCP crawlers
+ * read. The skill description's OPENING is not touched: the keeper's
+ * 2026-08-02 ruling (test/skill-parity.spec.ts) leads it with the
+ * practice counter on purpose, so the entity rides the metadata block
+ * instead, where a directory parser looks for exactly this.
+ */
+describe("the sideways surfaces carry the position too", () => {
+  it("skill.md names the operator in metadata and links both landing rooms", async () => {
+    const skill = await text("/skill.md");
+    expect(skill).toContain(`operator: ${OPERATED_BY}`);
+    expect(skill).toContain(`${BASE}/conformance`);
+    // A bare /corpus link, not just corpus.json or the host view.
+    expect(skill).toMatch(/scvd\.store\/corpus(?![\w./])/);
+  });
+
+  it("the homepage meta and og descriptions name the differentiators", async () => {
+    const page = await text("/", true);
+    const meta =
+      page.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "";
+    expect(meta, "no meta description on the storefront").toBeTruthy();
+    expect(meta).toContain("conformance");
+    expect(meta).toContain("Bitcoin-anchored");
+    expect(meta).toContain("Solana");
+    const og =
+      page.match(/<meta property="og:description" content="([^"]*)"/)?.[1] ??
+      "";
+    expect(og).toContain("conformance");
+    expect(og.toLowerCase()).toContain("corpus");
+  });
+
+  it("the repo README walks a reader to both landings and states the jobs", async () => {
+    const readme = (await import("../README.md?raw")).default;
+    expect(readme).toContain("scvd.store/conformance");
+    expect(readme).toMatch(/scvd\.store\/corpus(?![\w./])/);
+    for (const job of [
+      "endpoint monitoring",
+      "agent memory",
+      "test payment",
+      "x402-verify",
+      "x402-sign",
+    ]) {
+      expect(readme.toLowerCase(), `README never says "${job}"`).toContain(
+        job,
+      );
+    }
+  });
+
+  it("the README no longer claims settle-then-deliver", async () => {
+    // The flow flipped 2026-08-10; llms.txt and agents.md were
+    // corrected the same day and the README kept the old claim.
+    const readme = (await import("../README.md?raw")).default;
+    expect(readme.toLowerCase()).not.toContain("settle first");
+    expect(readme.toLowerCase()).toContain("settle after");
+  });
+});
