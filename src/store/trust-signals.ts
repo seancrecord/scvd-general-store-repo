@@ -196,6 +196,23 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
     what_it_proves:
       "That an agent-identity registry scored this store 470/1000 (grade B) against five weighted dimensions, resolving did:web:scvd.store, at verification level VERIFIED BY USER — self-attested, not organization-verified, and the record says so. Not an endorsement and not an audit of the goods: it is an automated score of posture. Its highest dimension is Transparency (650) — the radical-honesty layer showing — and its two lowest, Security Posture (300) and Peer Attestations (300), are the same two this store already flags itself: the OpenSSF Scorecard's security items, and the fact that no peer has yet cross-attested us (there is no peer-attestation prior art in x402 to have earned one from).",
   },
+  {
+    url: "https://mcp.so/servers/scvd-store",
+    registry: "mcp.so",
+    confirmed: "2026-08-10",
+    /**
+     * ITS WRONG READINGS, recorded on arrival (the m8ven precedent):
+     * the page's auto-extracted install config shows a wrangler
+     * KV-setup command from this README as if it were the server
+     * command — the real door is streamable HTTP at /mcp, and the
+     * README now carries that config where an extractor will find it
+     * — and its overview mirrors a pre-2026-08-10 ClawHub bundle that
+     * still said settle-first. Both get fixed at the source and wait
+     * for its next crawl, not argued with.
+     */
+    what_it_proves:
+      "That mcp.so carries a per-server page for this store whose summary leads with the current positioning. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service — and this one's auto-extracted install config and mirrored skill text lag the repository until its next crawl.",
+  },
 ];
 
 /**

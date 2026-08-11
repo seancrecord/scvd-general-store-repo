@@ -57,6 +57,29 @@ What people arrive here to do, and where each door is:
 Every one of these ends in an ed25519-signed receipt or verdict that
 anyone can verify at `/api/verify/{id}` — free, no account, forever.
 
+## Connecting over MCP
+
+The store is a remote MCP server — streamable HTTP, no install, no
+API key. `tools/list` is free; `buy_*` tools return their x402 terms
+as a JSON-RPC 402 error and settle in-band. This is the whole client
+configuration:
+
+```json
+{
+  "mcpServers": {
+    "scvd-general-store": {
+      "url": "https://scvd.store/mcp"
+    }
+  }
+}
+```
+
+(If your host only speaks stdio, `node ./bin/scvd-mcp-bridge.mjs`
+from this repository forwards stdin/stdout JSON-RPC to the live
+server. It holds no key and keeps no state. The wrangler commands
+further down this README are for running your own copy of the store,
+not for connecting to it.)
+
 ## License
 
 The code is [MIT](LICENSE). The store's voice — the keeper's prose,
@@ -430,6 +453,11 @@ are not:
 - **mcpservers.org** — the
   [claimed server listing](https://mcpservers.org/servers/seancrecord/scvd-general-store-repo)
   and a second, [llms.txt-derived entry](https://mcpservers.org/servers/scvd-store-llms-txt).
+- **mcp.so** — [a per-server page](https://mcp.so/servers/scvd-store)
+  whose summary leads with the current positioning; its auto-extracted
+  install config and mirrored skill text lag the repo until its next
+  crawl, which is noted in the canonical record rather than argued
+  with.
 - **m8ven.ai** — [a dependency scanner](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp)
   that audits this repository's declared packages against OSV. Its
   readings can lag the repo (its 2026-08-04 CVE flag was a dev-only
