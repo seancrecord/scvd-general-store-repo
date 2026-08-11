@@ -120,6 +120,16 @@ block.
   → `GET /api/buy/conformance_watch?url=https://...` (a week of daily
   signed passes; the days we miss are counted against us in the same
   history)
+- You crawl the web as an identifiable agent (Web Bot Auth, RFC 9421)
+  and the origins deciding whether to let you in need somebody who is
+  not you to say your key directory is in order.
+  → free first: `POST https://scvd.store/api/bot-auth/check` with
+  `{"url": "https://your-agent.example"}` names every check, including
+  the proof-of-possession signature VERIFIED against the keys you
+  list rather than just noticed. The signed version an origin will
+  believe is `GET /api/buy/signature_agent_card?url=...` — same
+  battery with a signature, a certificate binding, and a permanent
+  card URL. Plain-language room: `https://scvd.store/bot-auth`.
 - You have a digest — a key log, a snapshot, any record — that must
   provably have existed today, forever.
   → `GET /api/buy/bitcoin_anchor?digest=...` (OpenTimestamps, upgrades
@@ -293,6 +303,15 @@ prove.
 - **`conformance_watch`** — the same battery on a schedule, with
   `drift_detected` computed as set arithmetic over sorted failed-check
   sets, so a reader can recompute the verdict rather than trust it.
+- **`signature_agent_card`** — the audit's point-in-time shape aimed
+  at a Web Bot Auth key directory: the document fetched once, every
+  check named, the proof-of-possession signature verified rather than
+  noticed, the readout signed and bound into the certificate. About
+  the document at one moment, never the operator behind it. The free
+  desk is `POST /api/bot-auth/check`; and the store eats its own
+  cooking — our outbound probes sign their requests the same way,
+  with our directory at
+  `https://scvd.store/.well-known/http-message-signatures-directory`.
 - **`settlement_attestation`** — a neutral party reads one on-chain
   settlement and signs what it saw. $0.004.
 - **`attestation_bundle`** — a sheaf of settlement observations under
