@@ -251,6 +251,26 @@ export const NOT_BUILT: readonly string[] = [
   "No third-party audit of any of the above, and no patent. Both are sometimes offered as evidence of seriousness; neither is evidence that a signature checks out, which is the only thing this page is about.",
 ];
 
+/**
+ * THE MONEY PATH, added 2026-08-11 after an outside reader asked the
+ * right conditional: "if USDC ever sits in a contract they control
+ * before settlement, that's a bigger trust surface than a direct
+ * wallet-to-wallet payment." It never does — and since this page's
+ * whole pitch is that its claims are checkable, the answer is stated
+ * with its check and its limits rather than as reassurance. The
+ * reader also said good trust infrastructure is as clear about its
+ * limits as its guarantees, which is the standard this block is
+ * written to.
+ */
+export const MONEY_PATH = {
+  custody:
+    "No smart contract this store controls ever holds a buyer's USDC, and no balance is kept on anyone's behalf. Settlement is one transfer, the buyer's wallet to the receiving address published inside the 402 offer itself. On Base it is an EIP-3009 transferWithAuthorization: the destination and amount sit inside the digest the BUYER signs, so the facilitator that submits it can fail to settle but cannot redirect or resize it. On Solana the buyer signs the whole transaction; same property, same reason. And delivery comes FIRST — the goods are produced before the payment is presented — so the window between the two is this store's risk, never a buyer's deposit.",
+  the_check:
+    "Every certificate carries settlement_tx and network inside the signature. Pick any one and read the transaction on chain: one USDC transfer, payer to the offered payTo, no intermediate contract of ours. The claim is per-settlement, so there are exactly as many independent checks available as there have been sales.",
+  what_this_does_not_cover:
+    "The facilitator is a liveness dependency: settlement can fail while it is down, and those failures are booked on the decline desk faulted to the facilitator rather than hidden. USDC itself is a contract with an issuer who can freeze funds — true of every USDC payment everywhere, and not improved by us. And a statement about the money path is not an audit; the no-audit line under what this store does not have stands beside this one.",
+} as const;
+
 export const KEY_ARCHITECTURE = {
   algorithm: "ed25519",
   key_count: 1,

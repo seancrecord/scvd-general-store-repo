@@ -121,6 +121,13 @@ export function readReason(raw: string): {
       reading: `The facilitator refused without a legible reason, so this is OUR reading of the payload it judged: ${field} is not in the one legal form that field has. CDP's schema error arrives truncated at 200 characters — the variant list is cut off before it reaches us — so this is the best answer available, and it is a reading rather than its verdict. The 402 carried the full field list under payload_problems.`,
     };
   }
+  if (reason === "local:payload_v1_envelope") {
+    return {
+      fault: "buyer",
+      reading:
+        "The client speaks x402 v1 — scheme and network at the top level, no accepted echo — a protocol-version straggler, not a bug on either side. The 402 told them so and named the upgrade. Nothing to fix here; if this recurs across DIFFERENT clients, the ecosystem still has a v1 tail and the reading is demand arriving ahead of its tooling.",
+    };
+  }
   if (reason.startsWith("local:payload_")) {
     return {
       fault: "buyer",

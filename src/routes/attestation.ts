@@ -8,6 +8,7 @@ import {
   HELD_AGAINST_US,
   KEY_ARCHITECTURE,
   MAKER_MARK_POLICY,
+  MONEY_PATH,
   NOT_BUILT,
   TRUST_MODELS,
   WHY_SIGNED_PAYLOAD,
@@ -102,6 +103,7 @@ attestationRoutes.get("/attestation", (c) => {
       trust_model_name: TRUST_MODELS[entry.trust_model].name,
       verify_url: `${base}${entry.verify_url}`,
     })),
+    money_path: MONEY_PATH,
     maker_marks: MAKER_MARKS,
     maker_mark_policy: MAKER_MARK_POLICY,
     marked_items: ITEM_MAKER_MARK,
@@ -182,6 +184,12 @@ attestationRoutes.get("/attestation", (c) => {
           <tr><th>artifact</th><th>trust model</th><th>what is signed</th><th>what it does not prove</th></tr>
           ${classes}
         </table>
+      </section>
+      <section>
+        <h2>Where the money moves</h2>
+        <p class="menu-desc">${escapeHtml(MONEY_PATH.custody)}</p>
+        <p class="menu-desc"><strong>Check it yourself:</strong> ${escapeHtml(MONEY_PATH.the_check)}</p>
+        <p class="menu-meta">${escapeHtml(MONEY_PATH.what_this_does_not_cover)}</p>
       </section>
       <section>
         <h2>Who made it</h2>

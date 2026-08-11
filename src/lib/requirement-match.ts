@@ -234,6 +234,27 @@ export function describePayloadShape(
   }
   const keys_seen = keysOf(paymentPayload);
   if (!isRecord(paymentPayload.accepted)) {
+    /**
+     * THE v1 STRAGGLER, recognized rather than lumped in (2026-08-11,
+     * after a live outside decline read only "missing accepted"). The
+     * x402 v1 envelope carried scheme and network at the TOP level
+     * and no accepted echo, so every v1 client fails this exact
+     * check — and "your payload is missing a field" tells a client
+     * that faithfully implements the old protocol nothing. Naming the
+     * actual disagreement — protocol version, not a dropped field —
+     * is the difference between an upgrade and a debugging session.
+     */
+    if (
+      paymentPayload.x402Version === 1 ||
+      (typeof paymentPayload.scheme === "string" &&
+        typeof paymentPayload.network === "string")
+    ) {
+      return {
+        code: "local:payload_v1_envelope",
+        says: `This is the x402 v1 envelope — scheme and network at the top level, no \`accepted\` echo. This store speaks x402 v2, where the payload echoes one of the offered \`accepts\` entries back verbatim as \`accepted\`. Nothing is wrong with your signature or your wallet; your client predates the current protocol. A current client (e.g. @x402/fetch) handles it, or hand-roll it: ${ENVELOPE}`,
+        keys_seen,
+      };
+    }
     return {
       code: "local:payload_missing_accepted",
       says: `Your payload carried no \`accepted\` object, so there was nothing to compare against what we offered — the store never reached your signature. Copy one of the offered \`accepts\` entries into \`accepted\` unchanged. ${ENVELOPE}`,
