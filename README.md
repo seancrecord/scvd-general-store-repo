@@ -27,6 +27,36 @@ Live at [scvd.store](https://scvd.store). Agents should start at
 index), [`/llms.txt`](https://scvd.store/llms.txt) (full prose), or
 [`/menu.json`](https://scvd.store/menu.json).
 
+## The doors, by task
+
+What people arrive here to do, and where each door is:
+
+- **Test an x402 payment** — a live practice counter with real USDC
+  settlement, no sandbox; the cheapest real test payment we know of,
+  $0.005: [scvd.store/try](https://scvd.store/try).
+- **Check x402 conformance, free** — POST any issuer's signed offer
+  or receipt (ours or a competitor's) and get a structured verdict:
+  parse, schema, ed25519 signature, liveness. No account, no wallet:
+  [scvd.store/conformance](https://scvd.store/conformance). The same
+  verification runs offline via
+  [`x402-verify`](https://www.npmjs.com/package/x402-verify) (MIT,
+  zero deps), and [`x402-sign`](https://www.npmjs.com/package/x402-sign)
+  mints offers and receipts that pass it.
+- **Read the corpus** — weekly signed observations of the x402
+  ecosystem, hash-chained and Bitcoin-anchored, free to read:
+  [scvd.store/corpus](https://scvd.store/corpus).
+- **Buy a settlement attestation** — a signed observation of on-chain
+  payment status on Base or Solana, with what the signature does and
+  does not prove stated per class at
+  [scvd.store/attestation](https://scvd.store/attestation).
+- **Watch an endpoint** — endpoint monitoring as `standing_watch`:
+  seven days of signed hourly probes on a URL you name.
+- **Anchor agent memory** — `context_anchor`: a signed, retrievable
+  session restore point that survives a context reset.
+
+Every one of these ends in an ed25519-signed receipt or verdict that
+anyone can verify at `/api/verify/{id}` — free, no account, forever.
+
 ## License
 
 The code is [MIT](LICENSE). The store's voice — the keeper's prose,
@@ -147,11 +177,14 @@ the Coinbase Developer Platform as facilitator. It goes like this:
 3. The agent signs one of the offered payments and retries the same request
    with the `PAYMENT-SIGNATURE` header. Standard v2 clients like
    `@x402/fetch` do steps 2–3 on their own.
-4. We verify **and settle first**, then hand over the goods. A payment that
-   fails to settle mints nothing — no certificate, no order, no inventory
-   consumed. Instant items arrive in the response body. Human-queue items
-   return an order id, an SLA, and a patron badge on the spot; the goods
-   follow at `GET /api/order/:order_id` within the week.
+4. We **deliver first and settle after** (flipped 2026-08-10 — the store
+   settled first until then, and the old rule is quoted at
+   [scvd.store/becoming](https://scvd.store/becoming)). The goods are
+   produced, then the payment is presented at the last moment before the
+   artifact is signed — so a delivery that fails takes no money and leaves
+   nothing to refund. Instant items arrive in the response body. Human-queue
+   items return an order id, an SLA, and a patron badge on the spot; the
+   goods follow at `GET /api/order/:order_id` within the week.
 
 Pay-what-it-deserves items offer several amounts in the 402 challenge — the
 minimum, a generous tier (2×), and a patron-of-the-arts tier (5×). The exact
@@ -183,6 +216,9 @@ facilitator and all current client libraries speak v2.
 |---|---|
 | `/` | The human storefront: weekly note, menu, bell count, guestbook |
 | `/llms.txt` | The plain-text front door for agents |
+| `/agents.md` | The scannable contract index for agents |
+| `/conformance` | The conformance desk's own room: what it checks, worked examples |
+| `/corpus` | The corpus in plain language: the census finding, how to verify a round |
 | `/mcp` | The MCP door — streamable HTTP; tools/list free, buy_* tools x402-paid in-band |
 | `/skill.md` | Agent onboarding in the agentskills.io SKILL.md format |
 | `/menu.json` | Machine-readable catalog |
@@ -240,6 +276,8 @@ src/
   pages/          # HTML/CSS for the storefront, small rooms, back room
   lib/            # signing, sanitizing, payments, ids, KV keys
 verifier/         # x402-verify: MIT, zero deps, any issuer's artifacts
+signer/           # x402-sign: the issuing half — mints spec-conformant
+                  # signed offers & receipts that x402-verify passes
 tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # builder's running account of every tool they sign
                   # up for — trial warnings, burn, price drift, signup

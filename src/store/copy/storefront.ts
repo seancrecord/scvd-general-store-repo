@@ -91,11 +91,17 @@ export const STOREFRONT_COPY = {
    * search result or an answer engine is asked. The charm is still
    * everywhere in the store; it just stopped going first on the
    * surfaces where nobody has met us yet.
+   *
+   * 2026-08-10: the two differentiators joined the snippet. The old
+   * line described the trust layer in the abstract and named neither
+   * the free conformance desk nor the corpus — the two searches these
+   * tags exist to answer — and said "on Base" as if Solana had not
+   * been a rail since 2026-08-04.
    */
   metaDescription:
-    "The trust layer of the x402 economy: signed, dated observation of what other endpoints and payments did, verifiable by anyone offline. Paid over x402 on Base.",
+    "The trust layer of the x402 economy: free x402 conformance checks of signed offers and receipts, settlement attestation, endpoint monitoring, and a weekly Bitcoin-anchored corpus. USDC on Base and Solana.",
   ogDescription:
-    "The trust layer of the x402 economy: independent signed observation of what other endpoints and payments did, verifiable without us.",
+    "The trust layer of the x402 economy: free conformance checking for any issuer's x402 signed offers and receipts, a weekly signed Bitcoin-anchored corpus, and attestation you can verify without us.",
   /**
    * JSON-LD Organization description for the answer engines. C3 strip:
    * "sincere" was an unsupported adjective on a machine surface.

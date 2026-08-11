@@ -3,6 +3,7 @@ import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
 import { computeStats, trackRecordLine } from "@/services/stats";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { OPERATED_BY } from "@/store/copy/position";
 import {
   SAMPLE_ARTIFACT_ID,
   IDENTITY_POLICY,
@@ -53,6 +54,7 @@ license: All store copy is the keeper's; call the endpoints all you like.
 compatibility: Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453) or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp).
 metadata:
   store: ${base}
+  operator: ${OPERATED_BY}
   protocol: x402 v2
   currency: USDC on Base or Solana
   version: ${SKILL_VERSION}
@@ -98,7 +100,8 @@ returns a structured verdict: parse, schema, signature, liveness, and
 optionally whether the key appears in the issuer's anchored key
 history. No wallet, no account, no 402. Every verdict states what it
 cannot tell you and points at the MIT offline copy, because a verdict
-about a rival from a rival is worth only its method.
+about a rival from a rival is worth only its method. The desk's own
+room, with worked curl examples: ${base}/conformance
 
 Conformance vectors, if you are building a verifier rather than a
 client: ${base}/.well-known/conformance/offer-receipt-vectors.json —
@@ -231,6 +234,8 @@ you sign about yourself is worth what your reputation is worth.
 Weekly rounds, each frozen into a signed, hash-chained,
 OpenTimestamps-anchored snapshot. Free to read.
 
+- \`${base}/corpus\` — the plain-language room: what the corpus is,
+  the census finding, and how to verify a round yourself.
 - \`${base}/corpus.json\` — the chain.
 - \`${base}/corpus/host/{host}.json\` — everything observed about one
   host over time, derived at read from the signed chain so the view
