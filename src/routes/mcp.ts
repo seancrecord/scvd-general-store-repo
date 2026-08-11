@@ -560,7 +560,22 @@ async function handleRpc(
         protocolVersion: PROTOCOL_VERSIONS.includes(requested)
           ? requested
           : DEFAULT_PROTOCOL,
-        capabilities: { tools: { listChanged: false } },
+        /**
+         * resources and prompts are DECLARED AND EMPTY rather than
+         * undeclared, since 2026-08-11: Smithery's scanner probed
+         * both list methods, took the spec-correct -32601 for a
+         * failure, and printed warnings on the store's page. This
+         * store has no resources and no prompts — tools are the whole
+         * catalog — and an empty shelf that says so honestly reads
+         * better on every scanner than a door that errors. The
+         * capability objects are minimal on purpose: nothing changes,
+         * nothing to subscribe to.
+         */
+        capabilities: {
+          tools: { listChanged: false },
+          resources: { subscribe: false, listChanged: false },
+          prompts: { listChanged: false },
+        },
         serverInfo: {
           // S2 identity audit: exactly the storefront/Bazaar/skill names,
           // slug and display form both; nothing appended anywhere.
@@ -580,6 +595,26 @@ async function handleRpc(
     }
     case "ping":
       return rpcResult(id, {});
+    /**
+     * THE EMPTY SHELVES. Declared in capabilities, so the list
+     * methods answer with honest emptiness instead of -32601 — a
+     * scanner probing them gets "nothing here" rather than "no such
+     * door". The read/get methods still refuse, because with zero
+     * resources and zero prompts, any URI or name a caller sends is
+     * one we do not have.
+     */
+    case "resources/list":
+      return rpcResult(id, { resources: [] });
+    case "resources/templates/list":
+      return rpcResult(id, { resourceTemplates: [] });
+    case "resources/read":
+      // -32002 is the spec's "resource not found", and with an empty
+      // shelf every URI is not found.
+      return rpcError(id, -32002, "No resources on the shelf; tools are the whole catalog here.");
+    case "prompts/list":
+      return rpcResult(id, { prompts: [] });
+    case "prompts/get":
+      return rpcError(id, -32602, "No prompts on the shelf; tools are the whole catalog here.");
     case "tools/list":
       return rpcResult(id, {
         tools: mcpToolCatalog(c.env.STORE_BASE_URL).map(
