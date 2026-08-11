@@ -45,6 +45,7 @@ import {
   stackAudit,
   sweepFinish,
   sweepTally,
+  TOOL_DEFS,
   trialsConverting,
   whatsDue,
 } from "./tools.mjs";
@@ -1679,6 +1680,81 @@ test("the handshake's version is the package's version, never hand-typed", () =>
   );
   const reply = JSON.parse(server.stdout.trim().split("\n")[0]);
   assert.equal(reply.result.serverInfo.version, packaged);
+});
+
+test("every tool declares all four behavior hints, explicitly boolean", () => {
+  /**
+   * A directory that finds one hint missing treats the whole set as
+   * undeclared (OpenAI's rejects the tool outright), and 2026-08-11
+   * an outside audit found exactly that: 18/18 tools with no hints at
+   * all. Partial credit does not exist here, so the test demands all
+   * four on every tool as real booleans, not truthy stand-ins.
+   */
+  for (const def of TOOL_DEFS) {
+    const hints = def.annotations;
+    assert.ok(hints, `${def.name} has no annotations`);
+    assert.equal(typeof hints.title, "string", `${def.name} has no title`);
+    for (const key of ["readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"]) {
+      assert.equal(
+        typeof hints[key],
+        "boolean",
+        `${def.name}.${key} must be an explicit boolean, got ${typeof hints[key]}`,
+      );
+    }
+  }
+});
+
+test("the hints match what the handlers actually do", () => {
+  // Append-only file: nothing here deletes or overwrites an entry.
+  for (const def of TOOL_DEFS) {
+    assert.equal(def.annotations.destructiveHint, false, def.name);
+  }
+  // The delta is the ONE network call in the product; a second
+  // openWorld tool appearing without thought should fail loudly.
+  const openWorld = TOOL_DEFS.filter((d) => d.annotations.openWorldHint);
+  assert.deepEqual(openWorld.map((d) => d.name), ["contribute_anonymized_delta"]);
+  // The read-only set is enumerated so a new tool must be CLASSIFIED,
+  // not defaulted. whats_due is deliberately absent: it runs the
+  // clock, which writes pages.
+  const readOnly = TOOL_DEFS.filter((d) => d.annotations.readOnlyHint).map((d) => d.name);
+  assert.deepEqual(readOnly.sort(), [
+    "burn_rollup",
+    "check_before_signup",
+    "export_tab",
+    "needs_attention",
+    "reconcile_card_statement",
+    "stack_audit",
+    "trials_converting_soon",
+    "whats_current",
+  ]);
+  // A bare repeat of these really does land twice; softening that is
+  // the flattering lie the store's own catalog refuses too.
+  const notIdempotent = TOOL_DEFS.filter((d) => !d.annotations.idempotentHint).map((d) => d.name);
+  assert.deepEqual(notIdempotent.sort(), [
+    "capture_tool_event",
+    "contribute_anonymized_delta",
+    "log_tool_event",
+    "record_coverage",
+  ]);
+});
+
+test("tools/list serves the annotations — they only count if a client can see them", () => {
+  const server = spawnSync(
+    process.execPath,
+    [join(HERE, "server.mjs"), "--path", freshPath()],
+    {
+      input: `${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} })}\n`,
+      encoding: "utf8",
+      timeout: 10_000,
+    },
+  );
+  const reply = JSON.parse(server.stdout.trim().split("\n")[0]);
+  assert.equal(reply.result.tools.length, TOOL_DEFS.length);
+  for (const tool of reply.result.tools) {
+    for (const key of ["readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"]) {
+      assert.equal(typeof tool.annotations?.[key], "boolean", `${tool.name}.${key} not served`);
+    }
+  }
 });
 
 test("the pager still runs when invoked through a symlink — the npm bin shape", () => {

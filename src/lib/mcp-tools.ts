@@ -519,6 +519,17 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
     .map((id) => MENU_ITEMS.find((item) => item.id === id))
     .filter((item): item is MenuItem => item !== undefined);
   const lines = items.map(shelfItemLine).join("\n");
+  // The reciprocal of buy_simple's "second door" sentence, DERIVED
+  // from the same predicate so the two claims cannot drift apart: a
+  // shelf whose items also sit at the front counter says so and says
+  // the choice is harmless, because an auditor who sees the overlap
+  // without this sentence reads it as misselection risk.
+  const counterIds = new Set(frontCounterItems().map((item) => item.id));
+  const shared = items.filter((item) => counterIds.has(item.id));
+  const secondDoor =
+    shared.length > 0
+      ? ` (${shared.map((item) => item.id).join(" and ")} also sell${shared.length === 1 ? "s" : ""} at the front counter, buy_simple — the same item through either door, same price, same certificate; either tool is correct.)`
+      : "";
   const specs: Record<string, ListingSpec> = {};
   for (const item of items) {
     specs[item.id] = listingSpec(item, base);
@@ -535,7 +546,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
      * so the escape hatch travels beside the warning: the 402 hands
      * you a key, echoing it makes the retry free.
      */
-    description: `${cluster.purpose} ${clusterPriceRange(items)}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
+    description: `${cluster.purpose} ${clusterPriceRange(items)}${secondDoor}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
     inputSchema: clusterInputSchema(items),
     outputSchema: clusterOutputSchema(items),
     annotations: {
@@ -713,7 +724,16 @@ function frontCounterTool(base: string): McpTool {
   }
   return {
     name: "buy_simple",
-    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE}\n\nPass one of these as item_id — nothing else is needed, and none of them take any other field:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. ${RETRY_SAFETY_MCP_LINE}`,
+    /**
+     * "A SECOND DOOR, NOT A SECOND PRODUCT" travels in the description
+     * because an outside audit (Glama, 2026-08-11) read the overlap
+     * with the theme shelves as ambiguity — "unclear which tool to
+     * choose". The overlap is the design; what was missing was the
+     * sentence telling a planning model that choosing wrong is not
+     * possible. The reciprocal sentence rides on each overlapping
+     * shelf, derived from the same eligibility predicate.
+     */
+    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE} Every item here also sells on its theme shelf (another buy_* tool); this counter is a second door to the same goods, not a different product — same item_id, same price, same signed certificate through either. If unsure which tool to use, use this one.\n\nPass one of these as item_id — nothing else is needed, and none of them take any other field:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. ${RETRY_SAFETY_MCP_LINE}`,
     inputSchema: {
       type: "object",
       properties: {

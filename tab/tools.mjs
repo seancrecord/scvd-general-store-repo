@@ -919,12 +919,41 @@ export function exportTab({ format = "jsonl" } = {}, path = defaultTabPath()) {
   return { format: "csv", content: [columns.join(","), ...rows].join("\n") };
 }
 
-/** Tool metadata for tools/list — names, one-line purposes, schemas. */
+/**
+ * Tool metadata for tools/list — names, one-line purposes, schemas,
+ * and the four MCP behavior hints, ALL FOUR on EVERY tool, because a
+ * directory that finds one missing treats the whole set as undeclared
+ * (OpenAI's rejects the tool outright). The classifications are
+ * derived from the handlers above, not from what flatters:
+ *
+ * - destructiveHint is false everywhere: the tab is append-only
+ *   JSONL; nothing here deletes or overwrites an entry.
+ * - readOnlyHint: the pager ride-along (attachPending) records a
+ *   handover on every call, and the queries stay marked read-only
+ *   anyway — that write is an access log, not a change to the tab,
+ *   and page state only ever moves on acknowledge_pages. Marking all
+ *   eighteen tools as writers over it would make the hint useless.
+ * - idempotentHint describes a BARE repeat with the same arguments.
+ *   True where the handler dedupes (sweep_tally on message_id,
+ *   confirm_entry on its per-day key, a finished sweep refusing
+ *   batches, spent pages staying spent) and false where a repeat is
+ *   a second row (log, capture, coverage) or a second send (delta).
+ * - openWorldHint is true on exactly one tool, because the delta is
+ *   the one network call in the product, in one place, behind
+ *   consent. Everything else touches only the local file.
+ */
 export const TOOL_DEFS = [
   {
     name: "log_tool_event",
     description:
       "Record a tool lifecycle event on the builder's tab: trial_started, paid_started, adopted, canceled, replaced, renewed, or price_changed. Validated; rejected writes explain themselves. Use retroactive:true with occurred_at for backfill.",
+    annotations: {
+      title: "Log a Tool Event",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
     handler: logToolEvent,
     inputSchema: {
       type: "object",
@@ -963,6 +992,15 @@ export const TOOL_DEFS = [
     name: "capture_tool_event",
     description:
       "QUICK CAPTURE (/log): dump a fragment about a tool the builder just signed up for and it lands, always. Never refuses — missing fields come back named so the rounds can ask later. Use this at the moment of signup; use log_tool_event when you have the full picture.",
+    annotations: {
+      title: "Quick Capture",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // A bare repeat without dedupe_key lands twice; the key is
+      // something the caller must choose to send.
+      idempotentHint: false,
+      openWorldHint: false,
+    },
     handler: captureToolEvent,
     inputSchema: {
       type: "object",
@@ -989,6 +1027,13 @@ export const TOOL_DEFS = [
     name: "burn_rollup",
     description:
       "The monthly number and what it is made of: category subtotals, annualized, the idle share, the trajectory since a past date with the signups that account for the change, an anonymized shareable badge, and the coverage block saying what the figure cannot see. Facts and arithmetic; no advice.",
+    annotations: {
+      title: "Burn Rollup",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: burnRollup,
     inputSchema: {
       type: "object",
@@ -1002,6 +1047,14 @@ export const TOOL_DEFS = [
     name: "record_coverage",
     description:
       "The sweep reports what it saw: addresses read, the window, and money-shaped mail it could NOT attribute to any tool. THE COUNTING OBLIGATION: every message you read belongs in exactly one bucket — matched, unmatched_transactional, or not_transactional — and `scanned` must be the total you actually looked at, BEFORE any filtering. Mail you dropped as unparseable still counts. A sweep that filters before it counts reports a flattering gap, and the tab publishes the leftover as `unclassified` rather than absorbing it.",
+    annotations: {
+      title: "Record Sweep Coverage",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // Each call files another coverage record for its window.
+      idempotentHint: false,
+      openWorldHint: false,
+    },
     handler: recordCoverage,
     inputSchema: {
       type: "object",
@@ -1043,6 +1096,14 @@ export const TOOL_DEFS = [
     name: "sweep_tally",
     description:
       "THE SWEEP'S RUNNING COUNT — use this while executing SWEEP.md instead of counting in your head. Report every message you read, in batches, each with its message_id and exactly one bucket: matched (include the entry; it is written to the tab for you, deduped on the message id), unmatched_transactional (include amount and sender), or not_transactional. Refused verdicts are returned with reasons and NOT counted — fix and resubmit them, never drop them. Duplicates are counted once. There is no fourth bucket on purpose.",
+    annotations: {
+      title: "Sweep Tally",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // Deduped on message_id: the same batch twice counts once.
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: sweepTally,
     inputSchema: {
       type: "object",
@@ -1105,6 +1166,14 @@ export const TOOL_DEFS = [
     name: "sweep_finish",
     description:
       "Close a sweep and file its coverage record, DERIVED from the tally: scanned, matched, the unmatched list, attributed amount, window and addresses all come off the ledger of what you actually reported, so the books balance by construction and nobody restates a number from memory. A finished sweep refuses further batches — a new window is a new sweep_id.",
+    annotations: {
+      title: "Finish a Sweep",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // A finished sweep refuses further calls; a repeat changes nothing.
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: sweepFinish,
     inputSchema: {
       type: "object",
@@ -1118,6 +1187,14 @@ export const TOOL_DEFS = [
     name: "reconcile_card_statement",
     description:
       "GROUND TRUTH, monthly, by hand: the builder exports the bank's CSV, you parse every debit row, and this compares statement against tab in BOTH directions — charges the tab cannot place, tools the statement never charged, actuals against metered estimates, and charges on tools the tab holds as canceled. Writes nothing to the tab; every finding is a question for the builder, not an entry. Pass the rows unfiltered — a pre-filtered statement is the mail sweep's counting mistake with money on it.",
+    annotations: {
+      title: "Reconcile a Card Statement",
+      // "Writes nothing to the tab" is the tool's own promise.
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: reconcileCardStatement,
     inputSchema: {
       type: "object",
@@ -1143,6 +1220,13 @@ export const TOOL_DEFS = [
     name: "trials_converting_soon",
     description:
       "The headline tool: trials whose conversion lands inside the horizon (default 7 days). Cheap; safe to call daily; surface the answer unprompted.",
+    annotations: {
+      title: "Trials Converting Soon",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: trialsConverting,
     inputSchema: {
       type: "object",
@@ -1153,6 +1237,13 @@ export const TOOL_DEFS = [
     name: "check_before_signup",
     description:
       "Call BEFORE the builder signs up for something: their history with the tool, what currently covers the category, facts only.",
+    annotations: {
+      title: "Check Before Signup",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: checkBeforeSignup,
     inputSchema: {
       type: "object",
@@ -1167,6 +1258,13 @@ export const TOOL_DEFS = [
     name: "stack_audit",
     description:
       "The burn report: monthly total, active paid tools, trials converting soon, the unused list (commitment silence, honestly labeled), category overlaps, price drift.",
+    annotations: {
+      title: "Stack Audit",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: stackAudit,
     inputSchema: {
       type: "object",
@@ -1177,6 +1275,15 @@ export const TOOL_DEFS = [
     name: "whats_current",
     description:
       "The builder's own history in a category. Pooled retention is layer 3 and reports itself unavailable until it exists.",
+    annotations: {
+      title: "What Covers a Category",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      // Pooled reads are layer 3 and not live; when they are, this
+      // flips to true in the same commit that adds the network call.
+      openWorldHint: false,
+    },
     handler: whatsCurrent,
     inputSchema: {
       type: "object",
@@ -1188,6 +1295,15 @@ export const TOOL_DEFS = [
     name: "contribute_anonymized_delta",
     description:
       "Deliberately send one anonymized delta (opened or outcome) to the scvd aggregation endpoint. Requires consent on record; refuses fields the privacy sentence forbids.",
+    annotations: {
+      title: "Contribute an Anonymized Delta",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // Each call is another send; the receipt is per delivery.
+      idempotentHint: false,
+      // The one network call in the product.
+      openWorldHint: true,
+    },
     handler: contributeDelta,
     inputSchema: {
       type: "object",
@@ -1211,6 +1327,14 @@ export const TOOL_DEFS = [
     name: "confirm_entry",
     description:
       "A human looked at a swept entry and says it is real (or marks it private). Confirmation is the load-bearing layer: machine-found claims never reach the pooled corpus without it.",
+    annotations: {
+      title: "Confirm an Entry",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // Deduped on a per-tool per-day key; a same-day repeat lands once.
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: confirmEntry,
     inputSchema: {
       type: "object",
@@ -1225,6 +1349,13 @@ export const TOOL_DEFS = [
     name: "needs_attention",
     description:
       "What the rounds should ask about, dearest first and capped: unconfirmed sweep findings, entries captured with gaps, tools gone quiet, trials past their end. Ask two, not two hundred.",
+    annotations: {
+      title: "Needs Attention",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: needsAttention,
     inputSchema: {
       type: "object",
@@ -1235,6 +1366,16 @@ export const TOOL_DEFS = [
     name: "whats_due",
     description:
       "THE PAGER. Runs the clock and returns what should be said to the builder RIGHT NOW, worth most first: trials converting, trials past their end, unconfirmed sweep findings, quiet tools, gaps. Cheap. Call it on every round and at the start of a session. Say the lines, then acknowledge_pages.",
+    annotations: {
+      title: "What's Due",
+      // Runs the clock: materializes due pages and records the
+      // handover, so it is a writer even though it feels like a read.
+      readOnlyHint: false,
+      destructiveHint: false,
+      // Running the clock twice raises the same pages once.
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: whatsDue,
     inputSchema: {
       type: "object",
@@ -1248,6 +1389,14 @@ export const TOOL_DEFS = [
     name: "acknowledge_pages",
     description:
       "You put these pages to the builder in their own words. Marks them spent so they stop coming back. Only acknowledge what you actually said — the tab counts pages that aged out unspoken, and a false acknowledgment is the one lie that makes the count useless.",
+    annotations: {
+      title: "Acknowledge Pages",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // A spent page stays spent; repeating the ids changes nothing.
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: acknowledge,
     inputSchema: {
       type: "object",
@@ -1259,6 +1408,15 @@ export const TOOL_DEFS = [
     name: "set_consent",
     description:
       "Turn contribution on or off. Recorded as a consent_changed event in the tab itself — auditable like everything else. Off also disables pooled reads.",
+    annotations: {
+      title: "Set Consent",
+      readOnlyHint: false,
+      destructiveHint: false,
+      // Re-setting the same value leaves consent where it was; the
+      // extra audit event records a decision, not a state change.
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: setConsent,
     inputSchema: {
       type: "object",
@@ -1270,6 +1428,13 @@ export const TOOL_DEFS = [
     name: "export_tab",
     description:
       "Full export of the builder's tab, jsonl or csv. Any time, no charge, no lock-in.",
+    annotations: {
+      title: "Export the Tab",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     handler: exportTab,
     inputSchema: {
       type: "object",
