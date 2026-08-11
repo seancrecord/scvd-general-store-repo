@@ -216,6 +216,24 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That mcpmarket.com carries a per-server page for this store. Not an endorsement and not an audit: a directory page proves indexing, nothing about the service — and this one's generated summary paraphrases an earlier README (it leads with the marketplace framing, omits the conformance desk and corpus, and lists a 'zodiac readings' item that has never existed here), so it lags the repository until its next crawl.",
   },
   {
+    url: "https://deepwiki.com/seancrecord/scvd-general-store-repo",
+    registry: "DeepWiki (Cognition/Devin)",
+    confirmed: "2026-08-11",
+    /**
+     * A DERIVED DOCUMENT, NOT A LISTING: DeepWiki generates a
+     * browsable wiki of the repository with Devin, and models and
+     * developers consult it as if it were documentation. The keeper
+     * requested indexing 2026-08-11; the page existed and was opened
+     * before this entry was written, per this list's own rule. What
+     * renders there is Devin's READING of this repo — it can lag a
+     * commit or misread a design the way every derived surface on
+     * this list has at least once, and the repository stays the
+     * source it gets corrected from.
+     */
+    what_it_proves:
+      "That DeepWiki (Cognition's repository index, the one Devin consults) carries a page for this repository, with a generated wiki requested by the keeper on 2026-08-11. Not an endorsement and not an audit: the wiki is a machine's reading of the source, it can lag or misread until its next regeneration, and the repository it derives from is public beside it.",
+  },
+  {
     url: "https://cursor.directory/plugins/scvd-general-store-repo",
     registry: "Cursor Directory",
     confirmed: "2026-08-11",
