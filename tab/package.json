@@ -1,6 +1,7 @@
 {
   "name": "scvd-tab",
-  "version": "0.4.1",
+  "version": "0.4.2",
+  "mcpName": "store.scvd/tab",
   "description": "The Tab: an MCP server that keeps the running account of every tool a builder signs up for — trial deadlines, burn, price drift, and what each signup demanded of a human. Local JSONL, append-only, zero dependencies; nothing leaves the file without deliberate, consented contribution.",
   "type": "module",
   "bin": {
