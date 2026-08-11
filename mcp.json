@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "scvd-general-store": {
+      "type": "streamable-http",
+      "url": "https://scvd.store/mcp"
+    },
+    "scvd-tab": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "scvd-tab"]
+    }
+  }
+}
