@@ -17,6 +17,32 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   Approved as backlog, not yet, in the 2026-08-07 enforcement round
   (items 1, 2, 4, 5 of that round shipped; this is item 3).
 
+## MCP-ABANDONMENT — CLOSED AS MEASURED-CHEAP (2026-08-11)
+
+The last open question on a catalogue problem already ruled
+"real but nobody pays": directories fill with abandoned MCP servers,
+an agent picks one — is the waste quiet enough to sell a defence
+against? Measured instead of feared, ~15 minutes with
+`npm run probe:dead-mcp` (scripts/dead-mcp-probe.mjs, rubric fixed
+before the run):
+
+- **Population:** all 29 remote-server URLs from the 2025-05-30
+  snapshot of jaw9c/awesome-remote-mcp-servers (commit 258ebc0) —
+  fifteen months for whatever was going to die to die.
+- **Result:** 17 alive · 6 moved (listed path dead, same server
+  answering on the sibling `/sse`↔`/mcp` path) · 6 truly dead
+  (4 NXDOMAIN, 1 TLS gone, 1 HTTP 500) · **0 dead-quiet.**
+- **The number that closes it:** every one of the 12 stale entries
+  failed LOUD at the first exchange, median 140ms, worst 657ms. The
+  cost of picking a dead server is one retry and a log line. Nothing
+  hung, nothing answered with a plausible-but-empty handshake.
+- Staleness itself is real — 41% of the listing is wrong after
+  fifteen months, half of that just path migration off the deprecated
+  SSE transport — but a wrong listing that announces itself in 140ms
+  is a nuisance, not a market. **Verdict: no product here; reopen
+  only if a meaningful DEAD-QUIET population ever shows up in a
+  re-run.**
+
 ## KEEPER'S NEXT SESSION (written 2026-07-28 for tomorrow)
 
 ### A. SCREENSHOT THESE — four things nobody here can see
