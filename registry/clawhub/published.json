@@ -1,7 +1,7 @@
 {
-  "version": "3.0.0",
-  "bundle_sha256": "339101e326250bc0300b88a6d3dbbda1d5b859b89e224b6b462f3acd2ce63c61",
-  "published_at": "2026-08-11T00:10:50.935Z",
-  "commit": "d8d35e453875735a78c91dbe9c033e4bbd5457f1",
-  "changelog": "The trust tier arrives in the bundle: audits, watches, settlement attestations and reconciliations, Bitcoin anchors, the free preflight battery, and the signed corpus with its per-subject query. The Tab (scvd-tab) is listed as a second MCP server, now on npm. And the delivery ordering is corrected: the store delivers first and settles after as of 2026-08-10; the published bundle said the opposite."
+  "version": "3.1.0",
+  "bundle_sha256": "19c909757262d77dd4b8c871acc088d11cb02b93df959cf572b404098ab2c833",
+  "published_at": "2026-08-11T23:53:47.648Z",
+  "commit": "b48b23ebb9ad6f79bbf2ea1fec3585de32ec7223",
+  "changelog": "The Web Bot Auth line reaches the bundle: the free directory check at /api/bot-auth/check (proof-of-possession verified, not just noticed), the signed Calling Card (signature_agent_card) an origin can believe, the /bot-auth room, and the store's own signed egress with its published key directory."
 }
