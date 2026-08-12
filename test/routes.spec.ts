@@ -93,6 +93,9 @@ describe("the storefront", () => {
       // The WBA line's demand test rides the same utility shelf,
       // listed after the conformance watch it sits beside in the file.
       "signature_agent_card",
+      // The on-page battery, listed beside the card whose shape it
+      // shares: same shelf, one rung down in price.
+      "onpage_audit",
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",

@@ -279,6 +279,45 @@ const signatureCardCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * onpage_audit needs a fetchable page BEFORE money moves — the
+ * serviceAuditCheck's law with the page desk's own copy, because "the
+ * URL a buyer would GET expecting a 402" is the wrong sentence to
+ * show somebody naming a page.
+ */
+const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/onpage_audit" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        error:
+          "This needs a url query parameter — the https page to read. No target, no charge. A single unsigned look is free at POST /api/onpage/v1.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        error:
+          "That is this store's own hostname. We do not sell audits of our own pages — a report we sign about our own shop window is the instrument vouching for itself. The checks are published at GET /api/onpage/v1; read any page here against them yourself, and your own read is worth more than our word.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -625,6 +664,7 @@ buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);
 buyRoutes.use("/api/buy/*", signatureCardCheck);
+buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
@@ -686,6 +726,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "signature_agent_card") {
     // signatureCardCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "onpage_audit") {
+    // onpageAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "coffees_for_closers") {

@@ -95,6 +95,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "onpage_audit") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "The public page to read: https, default port. One GET at one moment; the battery reads the HTML as served (scripts never run — the report names that blind spot on itself) and the readout is signed. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -278,6 +287,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "signature_agent_card") {
     example["url"] = "https://your-agent.example";
+  }
+  if (item.id === "onpage_audit") {
+    example["url"] = "https://your-site.example/pricing";
   }
   if (item.id === "the_confession") {
     example["confession"] =

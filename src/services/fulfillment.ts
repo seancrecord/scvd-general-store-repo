@@ -14,6 +14,8 @@ import { deliverInstantGoods } from "@/services/instant-goods";
 import { performServiceAudit } from "@/services/service-audit";
 import { performSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
+import { performOnpageAudit } from "@/services/onpage-audit";
+import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { reconcileSettlement } from "@/services/settlement-reconciliation";
 import type {
   ReconciliationQuery,
@@ -236,6 +238,17 @@ export async function fulfillPurchase(
     mintOptions.attests = signatureAgentCard.evidence_hash;
   }
   /**
+   * THE ON-PAGE AUDIT observes first and mints second, the audit's
+   * exact discipline: the certificate binds the report's evidence
+   * hash, so /api/verify answers for the page report with no new
+   * endpoint asked to be trusted.
+   */
+  let onpageAudit: SignedOnpageAudit | undefined;
+  if (item.id === "onpage_audit") {
+    onpageAudit = await performOnpageAudit(env, input.targetUrl ?? "");
+    mintOptions.attests = onpageAudit.evidence_hash;
+  }
+  /**
    * THE RECONCILIATION observes first and mints second, same reason as
    * every artifact above it: the certificate binds the evidence hash,
    * so /api/verify answers "this is the observation that purchase
@@ -400,6 +413,9 @@ export async function fulfillPurchase(
     }
     if (signatureAgentCard) {
       goodsInput.signatureAgentCard = signatureAgentCard;
+    }
+    if (onpageAudit) {
+      goodsInput.onpageAudit = onpageAudit;
     }
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;

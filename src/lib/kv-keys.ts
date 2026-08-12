@@ -190,6 +190,13 @@ export const KV_KEYS = {
   signatureAgentCard: (cardId: string): string =>
     `signature_agent_card:${cardId}`,
   /**
+   * A purchased on-page audit: the signed page observation and the
+   * certificate that bound its evidence hash. PATRONS, terminal at
+   * write, never scanned — the Once-Over's storage shape, pointed at
+   * a page instead of a payment door.
+   */
+  onpageAudit: (auditId: string): string => `onpage_audit:${auditId}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and
