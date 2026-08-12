@@ -27,6 +27,7 @@
     "census": "node scripts/x402-census.mjs",
     "supported:kinds": "node scripts/supported-kinds.mjs",
     "agentic:check": "node scripts/agentic-market-check.mjs",
+    "probe:dead-mcp": "node scripts/dead-mcp-probe.mjs",
     "tab:test": "node --test tab/tab.test.mjs",
     "tab:pager": "node tab/pager.mjs"
   },
