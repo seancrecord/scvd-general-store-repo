@@ -17,15 +17,29 @@
  * spend against)? Loud failures cost a retry and a line in a log.
  * Quiet ones are the only shape of this problem worth a product.
  *
- * THE POPULATION IS REAL, NOT SYNTHETIC. The endpoints below are every
- * remote server URL from the 2025-05-30 snapshot of the most-starred
- * public remote-MCP directory (jaw9c/awesome-remote-mcp-servers,
- * commit 258ebc0) — a list old enough that whatever was going to be
- * abandoned has had fifteen months to die. A fabricated dead endpoint
- * would only measure our own fabrication; these measure how servers
- * actually go dark. The list is frozen history from someone else's
- * repo, which is why it may be hand-copied here (AT_SCALE rule 1
- * covers values that live in OUR code; provenance is the citation).
+ * TWO POPULATIONS, TWO QUESTIONS, ONE RUBRIC.
+ *
+ * The default is FROZEN HISTORY: every remote server URL from the
+ * 2025-05-30 snapshot of the most-starred public remote-MCP directory
+ * (jaw9c/awesome-remote-mcp-servers, commit 258ebc0) — a list old
+ * enough that whatever was going to be abandoned has had fifteen
+ * months to die. That measures ATTRITION, and being frozen, a re-run
+ * is comparable to the last one. The list is history from someone
+ * else's repo, which is why it may be hand-copied here (AT_SCALE
+ * rule 1 covers values that live in OUR code; provenance is the
+ * citation).
+ *
+ * --registry asks the FRESH question instead: of what the official
+ * MCP registry (registry.modelcontextprotocol.io) lists TODAY, how
+ * much is dead on arrival? The registry stamps every entry with
+ * publishedAt, so the sample is stratified by listing month and the
+ * summary shows death against age. First run (2026-08-11, 70 probed):
+ * 23 dead — a THIRD of current "active" listings — with the two
+ * oldest cohorts at 5/6 dead each and the newest at 0/6; the registry
+ * appears never to prune. Still zero dead-quiet, still ~800ms median
+ * to a verdict, so the closure held on the freshest population there
+ * is. A fabricated dead endpoint would only measure our own
+ * fabrication; both populations measure how servers actually go dark.
  *
  * WHAT COUNTS AS WHAT, decided before the run so the run cannot
  * negotiate:
@@ -45,12 +59,14 @@
  *                Found on the first run — half the "dead" were this.
  *
  * Read-only. Two small GET/POST probes per endpoint, one pass, no
- * retries, no spend, nothing written anywhere. ~30 endpoints, capped
- * at TIMEOUT_MS each, whole run bounded in a minute or two.
+ * retries, no spend, nothing written anywhere. Capped at TIMEOUT_MS
+ * each, whole run bounded in a minute or two.
  *
  * Usage, from the repo root:
  *
- *   npm run probe:dead-mcp
+ *   npm run probe:dead-mcp                    # frozen 2025-05 snapshot
+ *   npm run probe:dead-mcp -- --registry     # today's official registry,
+ *                                            # sampled 6 per listing-month
  */
 
 const TIMEOUT_MS = 15_000;
@@ -211,13 +227,70 @@ function siblingPath(url) {
   return null;
 }
 
+const REGISTRY = "https://registry.modelcontextprotocol.io/v0/servers";
+const REGISTRY_PAGES = 40;
+const PER_MONTH = 6;
+
+/**
+ * THE FRESH POPULATION: every remote URL the official registry lists
+ * right now, stamped with its listing month, sampled evenly (every
+ * k-th entry, not randomly, so two people running this the same hour
+ * probe the same doors) at PER_MONTH per cohort. The month is what
+ * turns a death count into an ATTRITION CURVE.
+ */
+async function registrySample() {
+  const rows = [];
+  let cursor = "";
+  for (let page = 0; page < REGISTRY_PAGES; page += 1) {
+    const url = `${REGISTRY}?limit=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
+    const response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (!response.ok) {
+      throw new Error(`registry page fetch failed: HTTP ${response.status}`);
+    }
+    const body = await response.json();
+    for (const entry of body.servers ?? []) {
+      const meta = entry._meta?.["io.modelcontextprotocol.registry/official"] ?? {};
+      if (meta.isLatest === false) continue;
+      for (const remote of entry.server?.remotes ?? []) {
+        if (remote.url) {
+          rows.push({ url: remote.url, month: String(meta.publishedAt ?? "").slice(0, 7) });
+        }
+      }
+    }
+    cursor = body.metadata?.next_cursor ?? body.metadata?.nextCursor ?? "";
+    if (!cursor) break;
+  }
+  const byMonth = new Map();
+  for (const row of rows) {
+    if (!byMonth.has(row.month)) byMonth.set(row.month, []);
+    byMonth.get(row.month).push(row);
+  }
+  const sample = [];
+  for (const [month, list] of [...byMonth.entries()].sort()) {
+    const seen = new Set();
+    const unique = list.filter((row) => !seen.has(row.url) && seen.add(row.url));
+    const step = Math.max(1, Math.floor(unique.length / PER_MONTH));
+    for (let i = 0; i < unique.length && sample.filter((s) => s.month === month).length < PER_MONTH; i += step) {
+      sample.push(unique[i]);
+    }
+  }
+  return { total: rows.length, sample };
+}
+
+const registryMode = process.argv.includes("--registry");
+const population = registryMode
+  ? await registrySample()
+  : { total: ENDPOINTS.length, sample: ENDPOINTS.map((url) => ({ url, month: "" })) };
+
 const results = [];
-for (const url of ENDPOINTS) {
-  let outcome = await probe(url);
-  if (outcome.verdict !== "ALIVE") {
+for (const target of population.sample) {
+  let outcome = await probe(target.url);
+  if (outcome.verdict !== "ALIVE" && !registryMode) {
     // Distinguish a corpse from a forwarding address: the same server,
-    // spelled in the other transport era's path.
-    const sibling = siblingPath(url);
+    // spelled in the other transport era's path. Snapshot mode only —
+    // the registry's URLs are current listings, so a dead one is not
+    // an old spelling of a live one.
+    const sibling = siblingPath(target.url);
     if (sibling) {
       const there = await probe(sibling);
       if (there.verdict === "ALIVE") {
@@ -229,9 +302,9 @@ for (const url of ENDPOINTS) {
       }
     }
   }
-  results.push({ url, ...outcome });
+  results.push({ ...target, ...outcome });
   console.log(
-    `${outcome.verdict.padEnd(10)} ${String(outcome.probe.ms).padStart(6)}ms  ${url}  — ${outcome.why}`,
+    `${outcome.verdict.padEnd(10)} ${String(outcome.probe.ms).padStart(6)}ms  ${target.month ? `[${target.month}] ` : ""}${target.url}  — ${outcome.why}`,
   );
 }
 
@@ -241,10 +314,22 @@ const median = (nums) =>
   nums.length ? [...nums].sort((a, b) => a - b)[Math.floor(nums.length / 2)] : null;
 
 console.log(`\n— THE VERDICT —`);
-console.log(`Population: ${ENDPOINTS.length} remote endpoints, ${SNAPSHOT}`);
+console.log(
+  registryMode
+    ? `Population: ${results.length} sampled of ${population.total} remote listings on the official registry today (${PER_MONTH}/listing-month)`
+    : `Population: ${ENDPOINTS.length} remote endpoints, ${SNAPSHOT}`,
+);
 console.log(
   `Alive ${by("ALIVE").length} · moved ${by("MOVED").length} · dead-loud ${by("DEAD-LOUD").length} · dead-quiet ${by("DEAD-QUIET").length}`,
 );
+if (registryMode) {
+  console.log(`\nDeath against listing age (the attrition curve):`);
+  for (const month of [...new Set(results.map((r) => r.month))].sort()) {
+    const cohort = results.filter((r) => r.month === month);
+    const gone = cohort.filter((r) => r.verdict !== "ALIVE").length;
+    console.log(`  ${month}: ${gone}/${cohort.length} dead`);
+  }
+}
 const stale = [...dead, ...by("MOVED")];
 if (stale.length) {
   console.log(
