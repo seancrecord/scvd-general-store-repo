@@ -17,6 +17,39 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   Approved as backlog, not yet, in the 2026-08-07 enforcement round
   (items 1, 2, 4, 5 of that round shipped; this is item 3).
 
+## THE FIVE-DOCUMENT PLAN'S GATES, ON THE CLOCK (recorded 2026-08-12)
+
+The consolidated build plan from the five-document evaluation is
+implemented; what remains of it is three measured gates with dates,
+recorded here because a gate that lives only in a plan file gets
+re-litigated. The step-1 data pull ran 2026-08-12 from public
+surfaces: 9 organic settlements lifetime (6 Base, 2 Solana, 1
+pre-meter), and both npm packages show the publish-day mirror spike
+(Aug 3–4, ~240 each) then a live-but-thin organic tail (x402-verify
+312 total since Jul 1, 1–25/day after the spike; x402-sign 308,
+same shape). Per-item sales, distinct free-desk callers and
+discovery `src=` are admin-only reads the keeper does from /admin —
+not pullable from outside, and not guessed at here.
+
+- [ ] **~2026-08-25 — the on-page battery's kill gate** (plan step
+  6): zero distinct free-desk callers on POST /api/onpage in the two
+  weeks since it shipped 2026-08-11 → kill the free desk's listing
+  priority, keep the code. Read: /admin window-shoppers for the
+  /api/onpage path.
+- [ ] **~2026-09-10 — the execution-contract give-away's gate** (plan
+  step 2): any organic reference or fetch of
+  /skills/execution-contract.md within 30 days of 2026-08-11, else
+  it stands as a pure funnel asset and nothing bigger gets built on
+  behavioral artifacts. The porch log carries the path as its own
+  surface; the gate is a number, not an impression.
+- [ ] **~2026-09-10 — the WBA directory's demand gate** (plan steps
+  4→5): ≥3 payers or ≥10 card generations for signature_agent_card
+  in 30 days from 2026-08-11 → build the hosted directory as a
+  saved-spec extension of the watch record (spec_version + criteria
+  blob + stored observation history over the existing sweep), days
+  not weeks. Below the gate: the build drops and the queue stays
+  collapsed to give-aways + measurement, exactly as the plan says.
+
 ## MCP-ABANDONMENT — CLOSED AS MEASURED-CHEAP (2026-08-11)
 
 The last open question on a catalogue problem already ruled
