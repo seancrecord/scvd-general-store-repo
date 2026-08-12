@@ -4,6 +4,25 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
 
 ## BACKLOG (keeper-approved "not yet", 2026-08-07)
 
+- **THE CONTEXT ANCHOR TIER LADDER (keeper's sketch, 2026-08-12).**
+  Three tiers on the anchor: the Anchoring (4K chars, $1, the current
+  item unchanged), the Mooring (~40K, $3), and a big tier (~250K, $10
+  — name open: Berth / Dock / Harbor). The economics hold exactly as
+  the keeper put it: KV takes 25 MiB a value, reads cost fractions of
+  a penny, so the cap is a PRICING decision, not a cost one — the
+  price is the permanence promise and the signature. THE ONE REAL
+  BUILD COST, found before building: the summary rides a QUERY
+  PARAMETER today (`summary`, capped 4000 in buy.ts), and a 40K-char
+  value does not fit in a URL — Cloudflare caps URLs at 32KB and
+  common clients cap at 8–16KB, so tiers 2 and 3 need a body-borne
+  input door (POST buy, or buy-then-PUT against the fresh anchor id)
+  that the probe rule and the payment gate have to learn. That is a
+  new input path on the money pipeline: small, but a real seam, not a
+  constant bump. Also worth deciding at build time: whether the big
+  tier's read stays one KV value or serves range reads, and whether
+  the signature covers a digest of the body rather than the body
+  itself past some size (signing 250K inline is fine; 25 MiB is not).
+
 - **THE REFUND-WINDOW DETECTOR.** The card by the door promises "we
   miss a promised window, you get your money back — and you won't have
   to argue for it." The delivery audit catches settled-but-never-

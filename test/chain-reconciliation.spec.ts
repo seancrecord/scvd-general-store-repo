@@ -8,6 +8,7 @@ import {
   recordDeliveredSettlement,
   reconcileAgainstChain,
   runChainReconciliation,
+  BASE_RECONCILE_LAST_RESULT_KEY,
   RECONCILE_BLOCK_SPAN,
   RECONCILE_CATCHUP_PASSES,
   RECONCILE_MAX_SPAN,
@@ -518,21 +519,29 @@ describe("the catch-up loop (problem ledger #24)", () => {
     expect((await readSkippedRanges(testEnv)).total_ranges).toBe(0);
   });
 
-  it("a clamp-distance backlog records its hole once and still reaches the head", async () => {
+  it("a clamp-distance backlog records its hole once and clears within a bounded number of runs", async () => {
+    /**
+     * The clamp moved from ~11h to ~55h of Base on 2026-08-12 (the
+     * fifth hole in a week), so the worst permitted backlog no longer
+     * clears inside one run — it clears inside a NUMBER OF RUNS
+     * derived from the constants, each run committing its progress.
+     * The hole is still recorded exactly once, on the run that
+     * finds it.
+     */
     await testEnv.COUNTERS.put(
       KV_KEYS.reconcileCursor,
       String(HEAD - RECONCILE_MAX_SPAN - 5000),
     );
-    const result = await runChainReconciliation(
-      envWith(rpcFetch({ logs: [] })),
+    const runsToClear = Math.ceil(
+      RECONCILE_MAX_SPAN / (RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN),
     );
-    expect(result.skipped).toBeDefined();
+    for (let run = 0; run < runsToClear; run += 1) {
+      const result = await runChainReconciliation(
+        envWith(rpcFetch({ logs: [] })),
+      );
+      expect(result.ran).toBe(true);
+    }
     expect((await readSkippedRanges(testEnv)).total_ranges).toBe(1);
-    // The worst backlog the clamp permits clears within the run that
-    // finds it — the pass budget must cover RECONCILE_MAX_SPAN.
-    expect(RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN).toBeGreaterThan(
-      RECONCILE_MAX_SPAN,
-    );
     expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
       HEAD,
     );
@@ -563,6 +572,119 @@ describe("the catch-up loop (problem ledger #24)", () => {
     const result = await runChainReconciliation(envWith(counting));
     expect(result.ran).toBe(true);
     expect(logCalls).toBe(1);
+  });
+});
+
+describe("the stall is loud the first hour (the 2026-08-12 fix)", () => {
+  /**
+   * Five skipped-block holes in one week, and every one arrived as
+   * the FIRST news of an eleven-hour stall — because a failed pass
+   * returns ran:false instead of throwing, and the cron's failure
+   * alert only fires on a throw. The walk now records its last
+   * outcome (the Solana walk's discipline) and pages on the first
+   * FAILED run, so the hole alert is never the opening act.
+   */
+  async function clearStallRow(): Promise<void> {
+    // The stall alert keys constant so a standing stall is one row;
+    // tests clear that row so each asserts its own firing.
+    const open = await testEnv.COUNTERS.get(
+      "alert_open:worker_health:base-walk-stalled",
+    );
+    if (open) await testEnv.COUNTERS.delete(open);
+    await testEnv.COUNTERS.delete(
+      "alert_open:worker_health:base-walk-stalled",
+    );
+    await testEnv.COUNTERS.delete(BASE_RECONCILE_LAST_RESULT_KEY);
+  }
+  beforeEach(clearStallRow);
+
+  async function stallAlert() {
+    return (await listAlerts(testEnv, 50)).find((a) =>
+      a.detail.includes("BANK WALK STALLED"),
+    );
+  }
+
+  it("a failed first pass pages immediately and records its reason", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 3000));
+    const result = await runChainReconciliation(
+      envWith(rpcFetch({ fail: "logs" })),
+    );
+    expect(result.ran).toBe(false);
+    expect(result.failed).toBe(true);
+
+    const alert = await stallAlert();
+    expect(alert).toBeDefined();
+    // Nothing is lost at this point, and the page says so plainly —
+    // this is an early warning, not a hole announcement.
+    expect(alert!.detail).toContain("Nothing is lost yet");
+    expect(alert!.detail).toContain("chain query failed");
+
+    const last = await testEnv.COUNTERS.get<Record<string, unknown>>(
+      BASE_RECONCILE_LAST_RESULT_KEY,
+      "json",
+    );
+    expect(last?.["ran"]).toBe(false);
+    expect(last?.["failed"]).toBe(true);
+    expect(String(last?.["reason"])).toContain("chain query failed");
+  });
+
+  it("an unreadable head pages too — the other failure shape", async () => {
+    const result = await runChainReconciliation(
+      envWith(rpcFetch({ fail: "head" })),
+    );
+    expect(result.failed).toBe(true);
+    expect(await stallAlert()).toBeDefined();
+  });
+
+  it("a quiet hour is not a stall: no new blocks pages nothing", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD));
+    const result = await runChainReconciliation(envWith(rpcFetch({ logs: [] })));
+    expect(result.ran).toBe(false);
+    expect(result.failed).toBeUndefined();
+    expect(await stallAlert()).toBeUndefined();
+    // The outcome is still on the record — quiet is not invisible.
+    const last = await testEnv.COUNTERS.get<Record<string, unknown>>(
+      BASE_RECONCILE_LAST_RESULT_KEY,
+      "json",
+    );
+    expect(String(last?.["reason"])).toContain("no new blocks");
+  });
+
+  it("a mid-catch-up failure pages AND keeps the committed spans", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 10_000));
+    const inner = rpcFetch({ logs: [] });
+    let calls = 0;
+    const failsAfterTwo = (async (url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { method: string };
+      if (body.method === "eth_getLogs") {
+        calls += 1;
+        if (calls > 2) return { ok: false, status: 429 } as unknown as Response;
+      }
+      return (inner as (u: string, i: RequestInit) => Promise<Response>)(
+        url,
+        init,
+      );
+    }) as unknown as typeof fetch;
+    await runChainReconciliation(envWith(failsAfterTwo));
+    const alert = await stallAlert();
+    expect(alert).toBeDefined();
+    // Partial progress is named, so the page never reads as a total loss.
+    expect(alert!.detail).toContain("committed");
+    expect(Number(await testEnv.COUNTERS.get(KV_KEYS.reconcileCursor))).toBe(
+      HEAD - 10_000 + 2 * RECONCILE_BLOCK_SPAN,
+    );
+  });
+
+  it("a clean run records its window and pages nothing", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 100));
+    await runChainReconciliation(envWith(rpcFetch({ logs: [] })));
+    expect(await stallAlert()).toBeUndefined();
+    const last = await testEnv.COUNTERS.get<Record<string, unknown>>(
+      BASE_RECONCILE_LAST_RESULT_KEY,
+      "json",
+    );
+    expect(last?.["ran"]).toBe(true);
+    expect(last?.["to_block"]).toBe(HEAD);
   });
 });
 

@@ -45,8 +45,24 @@ import type { CertificateRecord, Env } from "@/types";
 /** Blocks per pass. Base is ~2s, so this is a little over an hour. */
 export const RECONCILE_BLOCK_SPAN = 2000;
 
-/** Never walk further back than this in one pass, however far behind. */
-export const RECONCILE_MAX_SPAN = 20000;
+/**
+ * Never walk further back than this, however far behind — THE LINE
+ * WHERE FALLING BEHIND BECOMES LOSING DATA, and it moved on
+ * 2026-08-12 after tearing its fifth hole in a week.
+ *
+ * At 20000 (~11h of Base), one bad night of stalled passes crossed
+ * the line and the FIRST page anyone got was the hole itself —
+ * repeatedly, because nothing paged during the decay (that gap is
+ * closed below: a stalled run now pages the hour it stalls). The
+ * clamp's original job, bounding per-run work, belongs to
+ * RECONCILE_CATCHUP_PASSES now; the only thing this number still
+ * decides is how long a stall may run before blocks become
+ * unreadable forever. Old blocks cost eth_getLogs exactly what new
+ * ones cost, so patience is nearly free: ~55 hours means a hole now
+ * requires a multi-day outage that the stall page has been shouting
+ * about since its first hour.
+ */
+export const RECONCILE_MAX_SPAN = 100000;
 
 /**
  * Passes one cron run may take toward the head (problem ledger #24).
@@ -55,11 +71,15 @@ export const RECONCILE_MAX_SPAN = 20000;
  * backlog: an outage measured in hours took DAYS to walk back, and
  * the whole recovery was a window where a second stall pushed the
  * cursor past RECONCILE_MAX_SPAN and tore a hole (the 2026-08-11
- * page). Twelve full spans cover more than RECONCILE_MAX_SPAN, so
- * the worst backlog the clamp permits clears within the run that
- * finds it. Each pass keeps its own atomic cursor-and-inflow write:
- * a failure mid-catch-up keeps every window already read and resumes
- * exactly where it stopped.
+ * page). Twelve spans regain ~22000 blocks net per hourly run, so
+ * the worst backlog the clamp now permits clears within a handful of
+ * runs — each pass keeping its own atomic cursor-and-inflow write,
+ * so a failure mid-catch-up keeps every window already read and
+ * resumes exactly where it stopped. Deliberately NOT raised along
+ * with the clamp: more passes per run means more subrequests in an
+ * invocation that shares its budget with a dozen other jobs, and if
+ * invocations are dying of exhaustion, a heavier run makes the
+ * disease worse to cure the symptom.
  */
 export const RECONCILE_CATCHUP_PASSES = 12;
 
@@ -201,6 +221,13 @@ export interface ChainReconciliation {
   ran: boolean;
   /** Why not, when ran is false. Never a silent skip. */
   reason?: string;
+  /**
+   * Set when ran:false is a FAILURE (an unreadable head, a failed
+   * chain query) rather than a benign nothing-to-do (no new blocks,
+   * rail not configured). The distinction is what lets the cron page
+   * on the first stalled hour without crying wolf on a quiet one.
+   */
+  failed?: true;
   from_block?: number;
   to_block?: number;
   transfers_seen?: number;
@@ -296,10 +323,10 @@ async function recordSkippedRange(
  * the safe one.
  *
  * TTL-bounded: the walk reads each block once, at most RECONCILE_MAX_SPAN
- * (~11h on Base) after it was mined — and the Solana walk, cursorless
+ * (~55h on Base) after it was mined — and the Solana walk, cursorless
  * on a signature, can reach further back after a long outage. Ninety
- * days covers any plausible catch-up with two orders of margin, and
- * keeps the scan from growing with the store's lifetime.
+ * days covers any plausible catch-up with more than an order of
+ * margin, and keeps the scan from growing with the store's lifetime.
  */
 export const SETTLED_DELIVERY_TTL_SECONDS = 90 * 86400;
 
@@ -431,7 +458,11 @@ export async function reconcileAgainstChain(
   } catch (error) {
     // The chain being unreachable is not a clean sweep, and the
     // difference has to survive into the caller.
-    return { ran: false, reason: `could not read the chain head: ${String(error)}` };
+    return {
+      ran: false,
+      failed: true,
+      reason: `could not read the chain head: ${String(error)}`,
+    };
   }
 
   const stored = await env.COUNTERS.get(KV_KEYS.reconcileCursor);
@@ -479,7 +510,11 @@ export async function reconcileAgainstChain(
   try {
     transfers = await usdcTransfersTo(env, payTo, fromBlock, toBlock);
   } catch (error) {
-    return { ran: false, reason: `chain query failed: ${String(error)}` };
+    return {
+      ran: false,
+      failed: true,
+      reason: `chain query failed: ${String(error)}`,
+    };
   }
 
   const { hashes, truncated } =
@@ -529,7 +564,7 @@ export async function reconcileAgainstChain(
     await recordSkippedRange(env, skipped);
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `THE BANK WALK SKIPPED BLOCKS: the Base reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor should be back at the head within the hour; a SECOND one of these means the cron itself stalled past the clamp again.`,
+      detail: `THE BANK WALK SKIPPED BLOCKS: the Base reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor works its way back to the head over the next few runs; a SECOND one of these means the cron stalled past the clamp again, and the stall pages that should have preceded THIS one say when and why.`,
       key: `${skipped.from_block}-${skipped.to_block}`,
     }).catch(() => {
       // The alert is the courtesy; the KV record above is the fact.
@@ -600,6 +635,63 @@ function readFullSpan(result: ChainReconciliation): boolean {
   );
 }
 
+/**
+ * The Base walk's last word, stored for the same reason the Solana
+ * walk's is: a ran:false return does not throw, so the cron's failure
+ * alert never fires for it — and that silence is exactly how five
+ * skipped-block holes in a week each arrived as the FIRST news of an
+ * eleven-hour stall. The admin books page can quote this; the stall
+ * alert below is what makes the first failed hour loud.
+ */
+export const BASE_RECONCILE_LAST_RESULT_KEY = "base_reconcile_last_result";
+
+/**
+ * THE STALL PAGE (2026-08-12, after the fifth hole). Fires the first
+ * hour the walk fails, not the eleventh — one row per standing stall
+ * (constant key: repeats count on the row, the email re-pages on its
+ * own cadence), cleared from attention by the next clean run simply
+ * making it stale. Also the diagnostic the hole alert cannot be: a
+ * hole WITH stall pages before it names the failing dependency; a
+ * hole WITHOUT them means the cron invocations died before any of
+ * this code ran, which is a platform question, not an RPC one.
+ */
+async function pageBaseWalkStall(
+  env: Env,
+  failure: ChainReconciliation,
+  committedThisRun: number,
+): Promise<void> {
+  const hoursToHole = Math.round((RECONCILE_MAX_SPAN * 2) / 3600);
+  await sendAlert(env, {
+    condition: "worker_health",
+    detail: `THE BANK WALK STALLED: ${failure.reason ?? "no reason recorded"} ${
+      committedThisRun > 0
+        ? `This run committed ${committedThisRun} blocks before stalling, and the cursor holds there.`
+        : "The cursor did not move this run."
+    } Nothing is lost yet — the walk resumes exactly where it stopped, and blocks become unreadable only past ${RECONCILE_MAX_SPAN} blocks of lag (~${hoursToHole}h of consecutive stalls). This page exists so the SKIPPED-BLOCKS page is never the first news of a stall: repeated stalls point at the Base RPC (an authenticated BASE_RPC_URL_PRIMARY is already preferred by the reader when set); a skipped-blocks page with no stalls before it means the hourly cron itself died before this code ran. Last outcome is in KV (${BASE_RECONCILE_LAST_RESULT_KEY}).`,
+    key: "base-walk-stalled",
+  }).catch(() => {
+    // The alert is the courtesy; the last-result record is the fact.
+  });
+}
+
+async function recordBaseWalkOutcome(
+  env: Env,
+  result: ChainReconciliation,
+): Promise<void> {
+  await env.COUNTERS.put(
+    BASE_RECONCILE_LAST_RESULT_KEY,
+    JSON.stringify({
+      ran: result.ran,
+      ...(result.reason ? { reason: result.reason } : {}),
+      ...(result.failed ? { failed: true } : {}),
+      ...(result.ran
+        ? { from_block: result.from_block, to_block: result.to_block }
+        : {}),
+      at: new Date().toISOString(),
+    }),
+  ).catch(() => undefined);
+}
+
 export async function runChainReconciliation(
   env: Env,
   options: { now?: Date } = {},
@@ -617,6 +709,10 @@ export async function runChainReconciliation(
     : undefined;
   let merged = await reconcileAgainstChain(env, { ...options, known });
   if (!merged.ran) {
+    await recordBaseWalkOutcome(env, merged);
+    if (merged.failed) {
+      await pageBaseWalkStall(env, merged, 0);
+    }
     return merged;
   }
   await alertOrphans(
@@ -635,6 +731,15 @@ export async function runChainReconciliation(
     if (!result.ran) {
       // A later pass failing ends the catch-up without erasing what
       // the earlier passes committed; next hour resumes right here.
+      // A FAILED later pass still pages: partial progress under a
+      // failing dependency is the stall's opening act, not health.
+      if (result.failed) {
+        await pageBaseWalkStall(
+          env,
+          result,
+          (merged.to_block ?? 0) - (merged.from_block ?? 0) + 1,
+        );
+      }
       break;
     }
     await alertOrphans(
@@ -658,6 +763,7 @@ export async function runChainReconciliation(
     };
     last = result;
   }
+  await recordBaseWalkOutcome(env, merged);
   return merged;
 }
 
