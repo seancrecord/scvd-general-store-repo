@@ -12,6 +12,8 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import { storeServiceAudit } from "@/services/service-audit";
 import { storeSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
+import { storeOnpageAudit } from "@/services/onpage-audit";
+import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { storeReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedServiceAudit } from "@/services/service-audit";
@@ -33,6 +35,7 @@ import {
   luckyNote,
   patronageCertificateNote,
   patronagePassNote,
+  onpageAuditNote,
   phantomCheckNote,
   reconciliationNote,
   serviceAuditNote,
@@ -74,6 +77,8 @@ export interface InstantGoodsInput {
   serviceAudit?: SignedServiceAudit;
   /** signature_agent_card only: the card, already made and signed. */
   signatureAgentCard?: SignedSignatureAgentCard;
+  /** onpage_audit only: the page report, already made and signed. */
+  onpageAudit?: SignedOnpageAudit;
   /** settlement_reconciliation only: the observation, already signed. */
   reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
@@ -265,6 +270,27 @@ export async function deliverInstantGoods(
           card_url: `/api/bot-auth-card/${card.card_id}`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The card is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the card too. The card URL serves the record free, forever.",
+        },
+      };
+    }
+    case "onpage_audit": {
+      // Observed and signed upstream so its evidence hash could be
+      // bound into the certificate; filed here, after the mint, so
+      // the envelope carries the cert id — the Once-Over's discipline.
+      const pageAudit = input.onpageAudit;
+      if (!pageAudit) {
+        throw new Error("onpage_audit reached goods with no report");
+      }
+      await storeOnpageAudit(env, pageAudit, input.certId ?? "");
+      return {
+        deliverable: onpageAuditNote(pageAudit.verdict),
+        extras: {
+          audit_id: pageAudit.audit_id,
+          verdict: pageAudit.verdict,
+          audit: pageAudit,
+          report_url: `/api/onpage-audit/${pageAudit.audit_id}`,
+          verify_note:
+            "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The report is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the report too. The report URL serves the record free, forever — blind spots printed on it.",
         },
       };
     }

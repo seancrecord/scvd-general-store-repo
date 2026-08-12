@@ -126,6 +126,41 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * THE ON-PAGE BATTERY (2026-08-11, from the product-catalogue
+   * review's one surviving discretionary build): the Once-Over's
+   * exact shape pointed at a PAGE — title, description, canonical,
+   * robots, headings, structured data, links, read from the HTML as
+   * served via HTMLRewriter. The catalogue's schema warning is law
+   * here: house schema only (verdict/checks/evidence hash/blind
+   * spots), never a content-extraction payload. Demand tag:
+   * ANTICIPATED DEMAND under amended rule 19 (operators proving what
+   * their page serves machine readers; agents checking a page before
+   * quoting it). Rule 23a-clean: one GET, one moment, terminal at
+   * write. Rule 43: an observation of a DOCUMENT (the served HTML),
+   * never a score on whoever runs the site — and never a ranking
+   * claim, which is somebody else's casino.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "onpage_audit",
+    listed_week: "2026-W33",
+    name: "The Shop Window",
+    price_usdc: 3,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name a public page (the url query parameter) and the store GETs it once, reads the HTML the way a machine passerby does — title, meta description, canonical, robots directives, headings, JSON-LD structured data, link shape — and signs the whole readout: verdict, every check, every advisory, dated. The look is free any day at POST /api/onpage/v1 — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, served at a stable URL forever, quotable to anyone who wants more than your word about what your page serves. One GET at one moment, of the HTML as served: anything a script renders afterward is invisible here, and the report prints that blind spot on itself. Not an SEO grade, not a ranking claim, not an endorsement.",
+    note_402:
+      "Three dollars. The window is free to look through — what costs money is the signed note saying what was in it.",
+    constraints: [
+      "Give the page in the url query parameter: https, default port, on the public internet",
+      "One GET at one moment, of the HTML as served; scripts never run, and the report names that blind spot on itself",
+      "The criteria are the free desk's published battery (GET /api/onpage/v1); the audit runs those checks and no others",
+      "We refuse our own hostname — an audit of ourselves signed by ourselves would be the instrument vouching for itself",
+      "The report URL is free to read forever",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the

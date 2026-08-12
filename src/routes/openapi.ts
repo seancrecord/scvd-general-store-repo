@@ -372,6 +372,27 @@ openapiRoutes.get("/openapi.json", async (c) => {
           'JSON body: { "url": "https://..." }. One probe, one moment: 402 status, parseable PAYMENT-REQUIRED header, signable accepts, testnet networks flagged. A shape check, never an uptime claim. Free.',
         ),
       },
+      "/api/onpage/v1": {
+        get: freeOp(
+          "The on-page desk, described",
+          "What the free desk checks and the exact request shape, as JSON — also the criteria page the paid onpage_audit names as its contract.",
+        ),
+        post: freeOp(
+          "Check what a page serves a machine reader",
+          'JSON body: { "url": "https://your-site.example/page" }. One GET, one moment: title, meta description, canonical, robots, headings, JSON-LD, link shape — read from the HTML as served, scripts never run, and the report names that blind spot on itself. Free. The signed version is /api/buy/onpage_audit.',
+        ),
+      },
+      "/api/onpage-audit/{audit_id}": {
+        get: {
+          ...freeOp(
+            "A purchased on-page audit report",
+            "The signed page report an onpage_audit purchase produced, with its cert binding and verification steps. Served free, forever.",
+          ),
+          parameters: [
+            pathParam("audit_id", "From the purchase response; starts opage_."),
+          ],
+        },
+      },
       "/api/bot-auth/check": {
         post: freeOp(
           "Check a Web Bot Auth key directory",

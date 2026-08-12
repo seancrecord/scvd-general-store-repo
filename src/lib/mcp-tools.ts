@@ -138,6 +138,9 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // directory: the document checked, the proof-of-possession
       // verified, the readout signed by somebody who is not the agent.
       "signature_agent_card",
+      // And aimed at a PAGE: what the served HTML gives a machine
+      // reader, signed, blind spots printed on the artifact.
+      "onpage_audit",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

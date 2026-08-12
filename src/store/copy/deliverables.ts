@@ -131,6 +131,15 @@ export function signatureCardNote(verdict: string): string {
       : "We knocked. Nobody came. From where we stood, at that minute, the directory didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
+/** onpage_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function onpageAuditNote(verdict: string): string {
+  return verdict === "ready"
+    ? "Read your page once, the way a machine passerby does, and signed what it served: every check passed at that moment. The report is yours to show around — the URL serves it free forever, blind spots printed on it, and it never claims more than the HTML it was handed."
+    : verdict === "not_ready"
+      ? "Read your page once and wrote down what it served, signed: at least one check failed, and the report names which and why. Not a grade on you or your site — a dated readout with the fix list in it. The free desk at POST /api/onpage/v1 will tell you where you stand before you buy another word from us."
+      : "We knocked. Nobody came. From where we stood, at that minute, the page didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
+}
+
 /** service_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
 export function serviceAuditNote(verdict: string): string {
   return verdict === "ready"

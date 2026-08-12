@@ -135,6 +135,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/service-audit/{audit_id}",
   },
   {
+    id: "onpage_audit",
+    name: "On-page audit reports (the Shop Window)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole report: the page named, the moment, the criteria version, the verdict, every check and advisory, the blind spots, and the report's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
+    does_not_prove:
+      "What a browser would show. The battery reads the HTML as served — script-rendered content is invisible to it and the report says so on itself. Not an endorsement, not a ranking claim, and nothing about any other moment.",
+    verify_url: "/api/onpage-audit/{audit_id}",
+  },
+  {
     id: "settlement_reconciliation",
     name: "Settlement reconciliations (amount taken against ceiling in force)",
     trust_model: "third_party_observation",
