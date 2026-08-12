@@ -42,6 +42,14 @@ before the run):
   is a nuisance, not a market. **Verdict: no product here; reopen
   only if a meaningful DEAD-QUIET population ever shows up in a
   re-run.**
+- **Replicated the same evening on the freshest population there is**
+  (`--registry` mode, same rubric): 70 sampled of 1,455 remote
+  listings on the official MCP registry that day, stratified by
+  listing month. 22 dead — a third of current "active" listings, the
+  registry appears never to prune — with a clean attrition curve
+  (2025-09 cohort 5/6 dead, 2026-08 cohort 0/6) and STILL zero
+  dead-quiet, median 238ms to a verdict. The closure held where it
+  was most likely to break.
 
 ## KEEPER'S NEXT SESSION (written 2026-07-28 for tomorrow)
 
