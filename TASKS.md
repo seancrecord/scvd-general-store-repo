@@ -2,6 +2,43 @@
 
 Anti-shuffle file. When you ship something, move it to DONE with a date. Never delete ideas — ICEBOX with a reason.
 
+## NOW (keeper hands, ~10 minutes at a computer — moving-day parking spot, 2026-08-13)
+
+- [ ] **URGENT: unstall the bank walk (Base RPC keys).** Stalled hourly
+  since 08-12 13:30Z; cursor frozen at block 49,858,030; blocks start
+  going permanently unreadable past 100,000 blocks of lag (~2026-08-14
+  ~11:00Z, then the hole grows — recovery after that is fast, ~22K
+  blocks/hour, but the hole is forever). Diagnosis from outside
+  (2026-08-13): the exact `eth_getLogs` call succeeds instantly from
+  any other network path against `mainnet.base.org` — the endpoints
+  are healthy; the Worker's calls are what 429s. Nineteen straight
+  hourly failures is a blown key quota's shape, not a rate spike.
+  Do: (1) open the Alchemy dashboard → check the app's compute-unit
+  quota/throughput; rotate or upgrade if capped; confirm the secret is
+  the full `https://base-mainnet.g.alchemy.com/v2/<key>` URL:
+  `npx wrangler secret put BASE_RPC_URL_PRIMARY`.
+  (2) NEW SLOT, ships with this branch: a second authenticated key
+  from a DIFFERENT provider (QuickNode/Ankr free tier, or CDP's Base
+  RPC — we already hold CDP keys):
+  `npx wrangler secret put BASE_RPC_URL_SECONDARY`.
+  Two keys, two providers: a quota is a per-key outage, and the public
+  fallback shares Cloudflare egress with every other tenant, so it
+  fails at the same moment for the same reason.
+- [ ] **CHECK, don't act: the shopfront rail line.** The window-mismatch
+  fix on this branch should place the July 30 penny-page sale as Base
+  by the books' own single-rail rule — after the next rail-split cron,
+  the front should read "8 on Base, 2 on Solana" and the "before we
+  logged the rail" tail should be gone (keeper ruling 2026-08-13: "it
+  was 1000% Base, that's all we had" — the books now agree by
+  construction). IF the tail persists, the unplaced sale is instead
+  one of these Base-wallet transactions (chain-scanned 2026-08-13, the
+  hand-entry path in `RAILS_ENTERED_BY_HAND` wants exactly one hash,
+  checked against /admin's books):
+  Jul 30 $0.01 `0x6cfe7edf07ee6ed6d876d25f72da81187ace9cb6f8c99d236d82b0a3f7ae62b6` ·
+  Aug 1 $1 `0xba3cbfbecf1895312f0292cc3e2a373dd13e09fa09564ff39e805d8462785a31` ·
+  Aug 1 $0.005 `0x48f8913661efd6b012029df1b20c5ed9f9da9ce67763a126f1b556d43a514b99` ·
+  Aug 6 $0.005 `0xaab4b0704232baf8883fa2810fbfe4c599c4d23a18f71dea54a3a575766e4b09`.
+
 ## BACKLOG (keeper-approved "not yet", 2026-08-07)
 
 - **THE CONTEXT ANCHOR TIER LADDER (keeper's sketch, 2026-08-12).**
