@@ -73,18 +73,35 @@ function rpcUrl(env: Env): string {
  * EVERY ENDPOINT WE WILL TRY, best first.
  *
  * BASE_RPC_URL_PRIMARY is a secret holding an authenticated endpoint;
- * BASE_RPC_URL is the configured public one. Two INDEPENDENT providers
- * is the part that matters — retrying a rate-limited endpoint against
- * itself helps with a hiccup and not at all with an outage, and an
- * outage on the paid one must not be worse for a buyer than never
- * having had it.
+ * BASE_RPC_URL_SECONDARY is a second authenticated endpoint, from a
+ * DIFFERENT provider if at all possible; BASE_RPC_URL is the
+ * configured public one. INDEPENDENT providers is the part that
+ * matters — retrying a rate-limited endpoint against itself helps
+ * with a hiccup and not at all with an outage, and an outage on the
+ * paid one must not be worse for a buyer than never having had it.
+ *
+ * The secondary slot was added 2026-08-13, during the bank walk's
+ * nineteenth consecutive stalled hour: the primary answered 429 (a
+ * quota is a per-key outage, and it takes the whole key with it) and
+ * the public fallback 429'd from the Worker's shared egress at the
+ * same time — while the identical call succeeded instantly from any
+ * other network path. One authenticated key is one point of failure
+ * with a fallback that shares its fate under load; the fix is a
+ * second key that shares neither.
  */
-function rpcEndpoints(env: Env): string[] {
-  const primary = env.BASE_RPC_URL_PRIMARY?.trim();
-  const fallback = rpcUrl(env);
-  return primary && primary.length > 0 && primary !== fallback
-    ? [primary, fallback]
-    : [fallback];
+export function rpcEndpoints(env: Env): string[] {
+  const endpoints: string[] = [];
+  for (const candidate of [
+    env.BASE_RPC_URL_PRIMARY,
+    env.BASE_RPC_URL_SECONDARY,
+    rpcUrl(env),
+  ]) {
+    const url = candidate?.trim();
+    if (url && !endpoints.includes(url)) {
+      endpoints.push(url);
+    }
+  }
+  return endpoints;
 }
 
 /**

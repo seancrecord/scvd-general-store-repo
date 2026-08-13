@@ -60,6 +60,13 @@ export interface Env {
    */
   BASE_RPC_URL_PRIMARY?: string;
   /**
+   * Second authenticated Base endpoint, a different provider than the
+   * primary — a blown quota is a per-key outage, and the public
+   * fallback shares the Worker egress every other tenant is
+   * rate-limited on. Tried after the primary, before the public one.
+   */
+  BASE_RPC_URL_SECONDARY?: string;
+  /**
    * Solana JSON-RPC endpoint for the second rail's bank
    * reconciliation. Optional: falls back to the public mainnet
    * endpoint, fine at this volume, swappable the day it isn't.

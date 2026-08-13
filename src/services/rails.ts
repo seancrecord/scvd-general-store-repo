@@ -58,6 +58,26 @@ import type { Env } from "@/types";
  */
 export const SECOND_RAIL_OPENED = "2026-08-04";
 
+/**
+ * The single-rail window at MONTH grain — the only grain the paid
+ * counters can express. True for a date (or a bare "YYYY-MM" month)
+ * whose whole month ended before the month the second rail opened in.
+ *
+ * THE 2026-08-13 MISCOUNT LIVED IN A WINDOW MISMATCH: the cert walk
+ * credited placed_before_second_rail for sales dated Aug 1–3 — before
+ * the second rail OPENED, but inside the rail month, which the counter
+ * side (monthsBeforeSecondRail) never counts. Subtracting August
+ * placements from a July-only total swallowed the July 30 penny page,
+ * which mints no certificate and had nothing else to place it — and
+ * the front of the store said "1 from before we logged the rail"
+ * about a sale that settled when Base was the only door this store
+ * had. Both sides now ask this one function, so their windows cannot
+ * drift apart again.
+ */
+export function inSingleRailWindow(dateOrMonth: string): boolean {
+  return dateOrMonth.slice(0, 7) < SECOND_RAIL_OPENED.slice(0, 7);
+}
+
 export interface RailSplit {
   /** Pre-seam, certificate-backed: settled on an eip155 (Base) network. */
   base: number;
@@ -66,10 +86,13 @@ export interface RailSplit {
   /** Pre-seam, certificate-backed, network unrecognised. */
   unknown: number;
   /**
-   * Certificate-backed organic sales dated before the second rail
-   * opened. Subtracted from the counters' own pre-rail total to find
-   * how many single-rail sales NOTHING recorded a rail for — every one
-   * of which was Base, because nothing else was accepted yet.
+   * Certificate-backed organic sales dated in the SINGLE-RAIL MONTHS —
+   * the same month-grain window the counter side uses, and it must be:
+   * this figure exists only to be subtracted from that counter.
+   * Subtracting a sale the counter never counted (an Aug 1–3 cert
+   * sale, say — before the second rail opened, but inside its month)
+   * un-places a July sale that had nothing else to place it. That
+   * exact miscount shipped and is told at inSingleRailWindow.
    */
   placed_before_second_rail: number;
   /** True when the cert scan hit its cap: the split is a floor, not a total. */
@@ -107,7 +130,7 @@ export async function computeRailSplit(env: Env): Promise<RailSplit> {
     if (row.row_type !== "sale" || row.house_flagged === "house") {
       continue;
     }
-    if (row.date < SECOND_RAIL_OPENED) {
+    if (inSingleRailWindow(row.date)) {
       split.placed_before_second_rail += 1;
     }
     if (meterStart && row.date >= meterStart) {
@@ -192,6 +215,5 @@ export async function readRailCounters(env: Env): Promise<RailCounts> {
  * survives; a number that changes its mind does not.
  */
 export function monthsBeforeSecondRail(): string[] {
-  const railMonth = SECOND_RAIL_OPENED.slice(0, 7);
-  return monthsSinceOpening().filter((month) => month < railMonth);
+  return monthsSinceOpening().filter((month) => inSingleRailWindow(month));
 }
