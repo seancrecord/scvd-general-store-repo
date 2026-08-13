@@ -202,6 +202,29 @@ describe("a sale from the single-rail weeks can only have been Base", () => {
       SECOND_RAIL_OPENED.slice(0, 7),
     );
   });
+
+  it("holds the placed-subtraction to the same month-grain window as the counter it reduces", async () => {
+    // The 2026-08-13 miscount: the cert walk credited
+    // placed_before_second_rail for sales dated Aug 1–3 — before the
+    // second rail opened, but inside the rail month, days the monthly
+    // counter side never counts on the single-rail side. Subtracting
+    // August placements from a July-only total swallowed the July 30
+    // penny page (no certificate, nothing else to place it), and the
+    // shopfront said "1 from before we logged the rail" about a sale
+    // that settled when Base was the only door the store had. One
+    // window function now serves both sides; this pins its edges.
+    const { inSingleRailWindow, SECOND_RAIL_OPENED } = await import(
+      "@/services/rails"
+    );
+    expect(inSingleRailWindow("2026-07-30")).toBe(true);
+    expect(inSingleRailWindow("2026-08-01")).toBe(false);
+    expect(inSingleRailWindow("2026-08-03")).toBe(false);
+    expect(inSingleRailWindow(SECOND_RAIL_OPENED)).toBe(false);
+    // Bare months work at the same grain, so the counter side can ask
+    // the identical question.
+    expect(inSingleRailWindow("2026-07")).toBe(true);
+    expect(inSingleRailWindow("2026-08")).toBe(false);
+  });
 });
 
 describe("the shopfront says what happened to the record, not to the money", () => {
