@@ -353,3 +353,118 @@ describe("coverage drop is loud", () => {
     expect(html).toContain("comparisons are unsafe");
   });
 });
+
+describe("the door bank rides the round (2026-08-18, corpus velocity)", () => {
+  /*
+   * The velocity problem in one round: the feed names fewer doors
+   * than the cap allows, so the spare slots re-probe doors past
+   * rounds declared. A revisit is memory, not a listing — it carries
+   * a real verdict but must never move the listed/gone delta.
+   */
+  beforeAll(async () => {
+    const ed25519 = await import("@noble/ed25519");
+    const seed = new Uint8Array(32).fill(0x42);
+    const publicKey = await ed25519.getPublicKeyAsync(seed);
+    const both = new Uint8Array(64);
+    both.set(seed);
+    both.set(publicKey, 32);
+    testEnv.CDP_API_KEY_ID = "test-key-id";
+    testEnv.CDP_API_KEY_SECRET = btoa(String.fromCharCode(...both));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function stubWorldShared(options: { listedUrls: string[] }) {
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
+      const url = String(input instanceof Request ? input.url : input);
+      if (url.includes("api.cdp.coinbase.com")) {
+        if (url.includes("/discovery/search")) {
+          return Response.json({ items: [{ resourceUrl: `${BASE}/api/buy/hello` }] });
+        }
+        return Response.json({
+          items: options.listedUrls.map((resourceUrl) => ({ resourceUrl })),
+        });
+      }
+      // Every stranger's door answers as a conformant 402.
+      return new Response("{}", {
+        status: 402,
+        headers: {
+          "PAYMENT-REQUIRED": btoa(
+            JSON.stringify({
+              x402Version: 2,
+              accepts: [
+                {
+                  scheme: "exact",
+                  network: "eip155:8453",
+                  amount: "1000",
+                  asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                  payTo: "0x1111111111111111111111111111111111111111",
+                },
+              ],
+            }),
+          ),
+        },
+      });
+    });
+  }
+
+  it("banks this round's doors and spends spare cap on banked ones", async () => {
+    const { writeDoorBank } = await import("@/services/door-bank");
+    await writeDoorBank(testEnv, {
+      doors: {
+        "remembered.example": {
+          url: "https://remembered.example/api/buy/x",
+          first_listed: "2026-W20",
+          last_listed: "2026-W20",
+        },
+      },
+      cursor: null,
+    });
+    stubWorldShared({ listedUrls: ["https://fresh.example/api/buy/y"] });
+    const round = await runWardRound(testEnv);
+    const revisit = round.hosts.find((h) => h.host === "remembered.example");
+    expect(revisit?.source).toBe("revisit");
+    // A revisit is a real knock on a declared door, never not_probed.
+    expect(revisit?.verdict).toBe("ready");
+    expect(round.door_bank?.revisited).toBeGreaterThanOrEqual(1);
+    // The fresh door joined the bank for the next lean week.
+    const { readDoorBank } = await import("@/services/door-bank");
+    const bank = await readDoorBank(testEnv);
+    expect(bank.doors["fresh.example"]).toBeDefined();
+  });
+
+  it("keeps revisit rows out of the listed/gone delta", () => {
+    const last = fakeRound("2026-W31", { "steady.example": "ready" });
+    const now = fakeRound("2026-W32", { "steady.example": "ready" });
+    now.hosts.push({
+      host: "memory.example",
+      url: "https://memory.example/api/thing",
+      verdict: "not_ready",
+      failed: ["status-402"],
+      advisories: [],
+      source: "revisit",
+    });
+    const delta = wardDelta(now, last);
+    // Our cursor reaching back is not the ecosystem gaining a host —
+    // and next week's rotation moving on is not the host leaving.
+    expect(delta.new_hosts).toEqual([]);
+    expect(wardDelta(fakeRound("2026-W33", { "steady.example": "ready" }), now).gone_hosts).toEqual([]);
+  });
+
+  it("records the feed's pagination shape when coverage is suspect", async () => {
+    stubWorldShared({
+      listedUrls: Array.from(
+        { length: 100 },
+        (_, i) => `https://h${i}.example/api/buy/x`,
+      ),
+    });
+    const round = await runWardRound(testEnv);
+    // A full page with no recognized cursor: the round says suspect
+    // AND writes down what the page offered, so the next spelling fix
+    // reads the corpus instead of guessing like 2026-08-05.
+    expect(round.coverage_suspect).toBe(true);
+    expect(round.pagination_shape).toContain("items");
+  });
+});

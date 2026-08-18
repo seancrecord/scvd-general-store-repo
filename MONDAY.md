@@ -269,6 +269,56 @@ with their evidence rather than deleted:
   store as what it is rather than as a shop. Token route stays until
   accepted, then comes out.
 
+**Built 2026-08-18, the late sitting:**
+
+- **The pitch fix the funnel demanded.** Every ordinary purchase
+  response now offers `attest_this_purchase`: the
+  settlement_attestation door with the buyer's OWN settlement hash
+  already in the URL — the one moment a buyer provably holds the
+  required input and a demonstrated willingness to pay. The three
+  attestation items themselves are excluded (no attestation-of-an-
+  attestation loop). The menu's 402 note and the practice counter's
+  stuck-list carry the same line for agents who read before buying.
+- **The till sentinel.** The hourly chain pass now also reads USDC
+  Transfer logs FROM the receiving wallet. The Worker holds no revenue
+  keys, so expected outflow is zero and ANY outflow pages the keeper
+  within the hour (`till_outflow` alert, keyed by tx so it cannot
+  double-page). The alert says the one thing that matters: rotating
+  store secrets does nothing here — move the remaining balance and
+  find the key that leaked.
+- **The ClawHub skill, redone for conversion (v3.2.0).** 1.1k
+  downloads, ~zero arrivals: the body was a catalog, and a catalog
+  never fires at the moment an agent needs a door. The body now leads
+  with "The moments this skill is for" — seven situation-keyed
+  recipes (payment went quiet, charged right?, trusting a stranger,
+  timestamp proof, context reset, just bought, free shelf), each with
+  a copy-paste URL carrying src= so arrivals are attributable per
+  moment. Served skill, ClawHub bundle, and plugin copy identical;
+  ClawHub republish at 3.2.0 is the keeper's command (network policy
+  blocks clawhub.ai from the build container).
+- **Corpus velocity (task #22): the plan is `docs/CORPUS_VELOCITY.md`
+  and half of it shipped as code.** The W33 arithmetic: feed answers
+  100 rows coverage-suspect, 60/200 cap slots used, 42 of 5,809 known
+  hosts walked (0.7%). Shipped: the DOOR BANK (`ward_door_bank` —
+  every discovery-declared resource URL remembered; spare cap slots
+  re-probe banked doors on a rotating cursor, `source: "revisit"`,
+  excluded from the listed/gone delta; no homepage-knocking, the
+  2026-08-04 lesson intact), pagination self-diagnosis
+  (`pagination_shape` recorded whenever coverage is suspect, so the
+  next cursor-spelling fix reads the corpus instead of guessing like
+  2026-08-05), probe pooling (10 in flight; a full 200-door round
+  fits the cron budget), and hand-run rounds now MINT
+  (`/admin/ward/run` calls takeCorpusSnapshot, idempotent per week).
+  Deliberately unmoved: weekly cadence (chain identity + consent
+  posture), WARD_CAP=200 (it binds only when the feed heals), and
+  KV→R2 (watch lines written down: snapshot >~128 KB or register/bank
+  values near ~1 MB — graduation on schedule, paired with paid
+  enumeration). The paid directories' stated blocker dissolved with
+  the wallet law; what remains is a funded wallet and one
+  hand-captured paid response per directory.
+- **The Tab chain trued up and the CV re-pin done** — see item 4
+  above, corrected in place.
+
 **What is genuinely open:**
 
 **1. First outside dollar for the verification tier.** Still $0 while
@@ -284,15 +334,22 @@ against it.
 concrete enough to prototype against. First thing that looks like a
 standardized home for what this store already does.
 
-**4. The Tab.** Built, green, zero strangers. In order: the mail-sweep
-routine (SWEEP.md is contract, routine unwritten — it is the reason
-anyone installs), CV testing (segments exist at
-`docs/CV_TEST_SEGMENTS.md`; re-pin to current main before handing
-over — the old pin `7a67130` is stale), npm publish (scvd-tab is a 404
-on npm; free distribution for a finished server), THEN the aggregation
-endpoint (layer 3) once there is anything to aggregate. Part 1 of the
-test plan still needs the keeper or an unprimed instance — an agent
-that has read the plan proves nothing.
+**4. The Tab.** CORRECTED 2026-08-18 — three of the four links in this
+paragraph were already done and the sheet hadn't caught up. The
+mail-sweep routine EXISTS (`tab/SWEEP_ROUTINE.md`, shipped in the
+package beside `sweep.mjs` and the `sweep_tally`/`sweep_finish` lane,
+2026-08-10). scvd-tab is NOT a 404 — `scvd-tab@0.4.3` has been live on
+npm since 2026-08-10, byte-identical to `tab/` at HEAD. Layer 3's
+INTAKE shipped the same day (`POST /api/tab/delta`, `GET
+/api/tab/pool`); only pooled READS remain, gated on the pool having
+anything to aggregate. What was genuinely open — the CV re-pin — is
+done: `docs/CV_TEST_SEGMENTS.md` now pins `ad60264`, segment 2 covers
+the tally lane the old pin predated, and segment 8 checks the JCS
+dual-emit and the attest_this_purchase loop instead of two bugs the
+old pin's own commit had already fixed. Still true: the sweep has
+never run against a REAL inbox, and Part 1 of the test plan needs the
+keeper or an unprimed instance — an agent that has read the plan
+proves nothing.
 
 **5. The Foundation plan's build items:** the non-affiliation line
 where diligence looks, and the spec-output watch that triggers battery

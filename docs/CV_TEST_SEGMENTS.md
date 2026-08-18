@@ -9,7 +9,11 @@ Every segment pins the same commit, because the last round was tested
 against a folder five PRs stale and produced a confident wrong report.
 That was my fault for saying what to run and not where to get it.
 
-**Pin: `7a67130` on `main`.**
+**Pin: `ad60264` on `main`.** (Re-pinned 2026-08-18; the original pin
+`7a67130` fell 124 commits behind, and two segments below had been
+invalidated by the drift — segment 2 tested a quarantine lane that has
+since moved, and the old segment 8 asked CV to confirm bugs the pinned
+commit's own fixes had already closed.)
 
 Rules that apply to every segment, worth repeating inside each one:
 
@@ -28,8 +32,8 @@ wrong through no fault of yours.
 
   git clone <repo> scvd-fresh
   cd scvd-fresh
-  git checkout 7a67130
-  git log --oneline -1        # must print 7a67130
+  git checkout ad60264
+  git log --oneline -1        # must print ad60264
   npm ci
 
 Then confirm the toolchain runs at all:
@@ -73,20 +77,29 @@ cost the most if left alone.
 ## SEGMENT 2 — The Tab: the sweep contract (Part 6)
 
 ```
-Scope: tab/SWEEP.md and the quarantine in tab/store.mjs.
+Scope: tab/SWEEP.md, tab/SWEEP_ROUTINE.md, tab/sweep.mjs, and the
+quarantine in tab/store.mjs. Since 2026-08-10 the sweep has its own
+lane — the sweep_tally and sweep_finish tools — and that lane is
+where the enforcement lives now, so test BOTH doors: direct
+tab_record writes AND the tally lane.
 
 A "mail sweep" pulls fragments in from elsewhere. Swept fragments are
 QUARANTINED: they must not carry captured_text, notes, or a real
 problem_solved, because they were never actually said by the agent —
 they were scraped, and prose on a scraped row is invention.
 
-Try to get prose past the quarantine. Use source: "mail_sweep" and
-source: "historical_pass". Try the obvious routes and one unobvious
-one.
+Try to get prose past the quarantine, both ways:
+  1. Direct: source: "mail_sweep" and source: "historical_pass" on
+     tab_record. The obvious routes and one unobvious one.
+  2. The tally lane: feed sweep_tally batches that smuggle prose,
+     a fourth bucket, or money with no currency. Then check the
+     books: sweep_finish derives coverage from the ledger — try to
+     make scanned ≠ matched + unmatched_transactional +
+     not_transactional and see whether it lets you.
 
-Report: whether anything prose-shaped survived, and exactly what you
-sent. If nothing gets through, say that plainly — a clean result is a
-real result here.
+Report: whether anything prose-shaped survived either door, and
+exactly what you sent. If nothing gets through, say that plainly — a
+clean result is a real result here.
 ```
 
 ---
@@ -210,22 +223,34 @@ gap whose reason is flattering rather than accurate.
 
 ---
 
-## SEGMENT 8 — Independent check of my own red team (send last)
+## SEGMENT 8 — Independent check of the newest layer (send last)
 
 ```
-I red-teamed my own last three commits and reported four findings to
-the keeper. I may be wrong, and being wrong in either direction costs
-him.
+(The old segment 8 asked you to confirm two bugs that the pinned
+commit's own fixes had already closed — checking them again would
+only prove the fixes exist. These two claims are current, both mine,
+and being wrong in either direction costs the keeper.)
 
 Check these two claims specifically, and tell me if I overstated them:
 
-  1. That a settlement reconciliation can report "no discretion" —
-     meaning the amount was fixed in the payer's signed authorization —
-     about a payer who signed nothing, when a larger unrelated transfer
-     shares the transaction.
+  1. JCS dual-emit (shipped 2026-08-18). Every certificate minted
+     from that date carries signature_jcs beside the primary
+     signature, and src/lib/jcs.ts claims RFC 8785 conformance:
+     UTF-16 code-unit key ordering, ES number serialization, refusal
+     of non-finite numbers. Attack the canonicalizer with the RFC's
+     own hard cases (keys that sort differently in UTF-16 vs code
+     points, numbers like 1e21 and -0, nested empties) and check
+     that what /api/verify reports as covered is exactly what was
+     signed. An artifact minted BEFORE the date must verify with its
+     absence explained, never failed.
 
-  2. That the bench stops working once the store has more than 500
-     lifetime orders, because the scan truncates and nothing notices.
+  2. The attest_this_purchase loop (same day). Any ordinary purchase
+     response now offers the settlement_attestation door with the
+     buyer's OWN tx hash already in the URL — and the three
+     attestation items themselves must NOT carry the offer (an
+     attestation of an attestation of an attestation is a loop).
+     Buy something cheap on testnet or read the fulfillment path;
+     check both directions.
 
 Report: confirmed, overstated, or wrong, with what you actually ran.
 "Claude was wrong about this" is the most valuable thing you can send
