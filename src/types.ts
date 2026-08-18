@@ -345,6 +345,13 @@ export interface CertificateRecord {
   certificate: Certificate;
   signature: string;
   public_key: string;
+  /**
+   * The RFC 8785 (JCS) dual-emit signature — same fields, same key,
+   * sorted-key byte order. Additive since 2026-08-18; records minted
+   * earlier lack it, the way pre-07-30 certificates lack later
+   * fields. See lib/jcs.ts for why it exists.
+   */
+  signature_jcs?: string;
 }
 
 export interface PatronRecord {

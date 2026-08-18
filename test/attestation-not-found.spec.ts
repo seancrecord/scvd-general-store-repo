@@ -114,6 +114,11 @@ describe("a well-formed hash that never existed", () => {
       signature,
       public_key,
       signature_covers: _covers,
+      // The JCS dual-emit (2026-08-18) also rides below the primary
+      // signature in serve order; the primary covers neither it nor
+      // its explainer, same as it never covered signature_covers.
+      signature_jcs: _jcs,
+      signature_jcs_covers: _jcsCovers,
       ...core
     } = observation;
     expect(

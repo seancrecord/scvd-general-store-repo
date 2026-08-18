@@ -4,6 +4,7 @@ import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
 import type { PendingPayment, SettledPayment } from "@/lib/payments";
 import { mintCertificate } from "@/services/certificates";
+import { JCS_DISCIPLINE, JCS_SIGNATURE_COVERS } from "@/lib/jcs";
 import { observeSettlement, observeWithFacts } from "@/services/attestation";
 import { getBlockNumber, getReceiptsBatch } from "@/lib/base-rpc";
 import type {
@@ -326,6 +327,12 @@ export async function fulfillPurchase(
     signed_payload: canonicalizeCertificate(minted.certificate),
     signature_covers:
       "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). Compare its fields against the certificate above; nothing shown there is outside it.",
+    // The RFC 8785 dual-emit: same fields, same key, sorted-key byte
+    // order, so JCS-conformant tooling verifies this artifact without
+    // knowing our field lists. Additive since 2026-08-18.
+    signature_jcs: minted.signatureJcs,
+    signature_jcs_discipline: JCS_DISCIPLINE,
+    signature_jcs_covers: JCS_SIGNATURE_COVERS,
     verify_url: minted.verifyUrl,
     /**
      * THE BREADCRUMB. Assembled at serve time and stored nowhere, so

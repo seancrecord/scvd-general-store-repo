@@ -10,6 +10,7 @@ import {
 import type { RpcReceipt } from "@/lib/base-rpc";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
+import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
 import type { Env } from "@/types";
 
 /**
@@ -134,6 +135,13 @@ export interface SignedAttestation extends SettlementObservation {
   signature: string;
   public_key: string;
   signature_covers: string;
+  /**
+   * RFC 8785 dual-emit over the same observation — this is one of the
+   * three classes that live in the receipts race's territory, and the
+   * reason the dual-emit exists at all. See lib/jcs.ts.
+   */
+  signature_jcs: string;
+  signature_jcs_covers: string;
 }
 
 const SCOPE =
@@ -319,5 +327,11 @@ export async function observeWithFacts(
     public_key: publicKey,
     signature_covers:
       "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
+    // Same fields, sorted-key byte order, for JCS-conformant tooling.
+    signature_jcs: await signJcs(
+      observation as unknown as Record<string, unknown>,
+      env.SIGNING_KEY,
+    ),
+    signature_jcs_covers: JCS_SIGNATURE_COVERS,
   };
 }

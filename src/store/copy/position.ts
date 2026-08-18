@@ -110,5 +110,18 @@ export const deliveryOrderRegister = (base: string): string =>
 export const ALSO_A_STORE =
   "Also a general store for autonomous agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over x402 v2 on Base or Solana; the cheapest thing on the shelf is half a cent.";
 
+/**
+ * INDEPENDENCE, stated where diligence looks (2026-08-18). The x402
+ * Foundation now exists under the Linux Foundation and owns the
+ * protocol's name, so "trust layer of the x402 economy" will read to
+ * some as a claim of office. It is not one, and saying so plainly
+ * costs nothing — while being MISTAKEN for official costs the one
+ * thing the product is: a foundation of payment incumbents has
+ * interests; an observer with a half-cent shop and a signing key has
+ * only its record.
+ */
+export const NOT_AFFILIATED =
+  "Independent, and independence is the product: this store has no affiliation with the x402 Foundation or the Linux Foundation, holds no office in the protocol's governance, and speaks for nobody but itself. 'Trust layer of the x402 economy' is a description of what we do — observe, sign, publish — never a title anyone conferred.";
+
 /** Position, boundary and shelf, in the order an entity resolver reads. */
 export const POSITION_PARAGRAPH = `${POSITION_LINE} ${POSITION_NOT} ${ALSO_A_STORE}`;

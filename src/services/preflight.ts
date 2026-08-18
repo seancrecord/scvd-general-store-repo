@@ -41,6 +41,18 @@ import type { Env } from "@/types";
  * where to take those next steps instead of taking them in your name.
  */
 
+/**
+ * WHAT BUMPS THIS, decided 2026-08-18 when the x402 Foundation went
+ * operational: this battery tests x402 v2 AS SHIPPED, and "conformance
+ * against published criteria" quietly becomes "conformance against
+ * LAST year's criteria" the day a standards body ratifies a change
+ * nobody here noticed. So the trigger is now written where the version
+ * lives: when the Foundation ratifies a protocol or receipts change,
+ * a new battery version is cut THE SAME WEEK, each version naming
+ * which standard it tests. The old version keeps serving — a verdict
+ * cites the criteria it was rendered under, forever, the same way a
+ * certificate keeps its mint-day canonical form.
+ */
 export const PREFLIGHT_VERSION = "v1";
 
 /**

@@ -1,7 +1,8 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { BASE_NETWORK } from "@/lib/payments";
 import { newCertId } from "@/lib/ids";
-import { signCertificate } from "@/lib/signing";
+import { certificateSignedSubset, signCertificate } from "@/lib/signing";
+import { signJcs } from "@/lib/jcs";
 import { makerMarkFor } from "@/store/provenance";
 import type {
   Certificate,
@@ -24,6 +25,8 @@ import type {
 export interface MintedCertificate {
   certificate: Certificate;
   signature: string;
+  /** RFC 8785 dual-emit over the same fields. See lib/jcs.ts. */
+  signatureJcs: string;
   publicKey: string;
   patronNumber: number;
   badgeUrl: string;
@@ -189,16 +192,29 @@ export async function mintCertificate(
     certificate,
     env.SIGNING_KEY,
   );
+  /*
+   * THE DUAL-EMIT (2026-08-18, keeper's ruling): the same subset,
+   * signed a second time over its RFC 8785 byte order, so tooling
+   * built around the JCS receipts discipline can verify this
+   * certificate without knowing our field lists. The house signature
+   * above stays primary and universal — this one is interop.
+   */
+  const signatureJcs = await signJcs(
+    certificateSignedSubset(certificate),
+    env.SIGNING_KEY,
+  );
   const certRecord: CertificateRecord = {
     certificate,
     signature,
     public_key: publicKey,
+    signature_jcs: signatureJcs,
   };
   await env.PATRONS.put(KV_KEYS.cert(certId), JSON.stringify(certRecord));
 
   return {
     certificate,
     signature,
+    signatureJcs,
     publicKey,
     patronNumber,
     badgeUrl: `${env.STORE_BASE_URL}/badges/${patronNumber}.svg`,
