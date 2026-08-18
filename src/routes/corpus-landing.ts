@@ -34,6 +34,36 @@ function landingJson(base: string) {
   };
 }
 
+/**
+ * The Dataset markup, ON THE HTML PAGE (2026-08-18, the AEO
+ * straggler). /corpus.json has carried schema.org Dataset since it
+ * began — but dataset crawlers read HTML pages, not JSON endpoints,
+ * so the one surface that made the corpus findable as a dataset was
+ * the one surface that never declared it. The node here names the
+ * data's real home; the two cannot disagree about contents because
+ * this page holds none.
+ */
+function corpusDatasetJsonLd(base: string): string {
+  const dataset = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "The scvd corpus — weekly observations of the public x402 ecosystem",
+    description:
+      "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw at that moment. Hash-chained, ed25519-signed, each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, never scores on operators.",
+    url: `${base}/corpus`,
+    sameAs: `${base}/corpus.json`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}/corpus.json`,
+    },
+  };
+  return `<script type="application/ld+json">${JSON.stringify(dataset)}</script>`;
+}
+
 function landingHtml(base: string): string {
   return `<section>
       <p class="menu-desc"><strong>Weekly signed observations of the x402 ecosystem. Hash-chained. Bitcoin-anchored. Free to read.</strong></p>
@@ -70,7 +100,7 @@ corpusLandingRoutes.get("/corpus", (c) => {
         title: "The corpus",
         description: `Weekly signed observations of the x402 ecosystem — which listed hosts answered and what a conformance probe saw. Hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, free to read. Includes the census finding: ${CENSUS_NUMBER} listed hosts serve no signed offers.`,
         path: "/corpus",
-        bodyHtml: landingHtml(base),
+        bodyHtml: `${landingHtml(base)}\n${corpusDatasetJsonLd(base)}`,
       }),
     );
   }

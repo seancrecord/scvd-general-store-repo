@@ -874,6 +874,25 @@ adminRoutes.post("/admin/ward/run", async (c) => {
 });
 
 /**
+ * The door-bank backfill: one keeper-fired pass over the stored ward
+ * rounds so the bank opens holding every door history already
+ * declared (docs/CORPUS_VELOCITY.md — without this, revisits idle
+ * until the broken feed happens to vary). Idempotent; the JSON reply
+ * IS the report, counts and all.
+ */
+adminRoutes.post("/admin/ward/backfill-doors", async (c) => {
+  const { backfillDoorBank } = await import("@/services/door-bank");
+  const report = await backfillDoorBank(c.env);
+  return c.json({
+    ...report,
+    reading:
+      report.doors_after > report.doors_before
+        ? `The bank grew from ${report.doors_before} to ${report.doors_after} doors off ${report.rounds_read} stored rounds. Next round's spare cap slots re-probe them on rotation.`
+        : `Nothing new: ${report.rounds_read} stored rounds held no doors the bank did not already know. Safe to run again any time.`,
+  });
+});
+
+/**
  * The back shelf. Every reading is optional and independent: the levers
  * are what you reach for when something is wrong, so a failed read must
  * never take the page down — and must never render as a confident

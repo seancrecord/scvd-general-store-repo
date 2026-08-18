@@ -101,11 +101,11 @@ a full week.
 `the_drawer` minimum have never been exercised by an outside buyer —
 every live purchase so far took the fixed-price path.
 
-**B6. Rule 9 / deliver-first — a test, not a rewrite.** Fail a handler,
-assert no settle call and no on-chain movement. Cheap, and it either
-proves the property in our stack or kills the idea before anyone
-touches the gate. Right now the property is asserted from a README and
-our own code comment.
+**B6. ~~Rule 9 / deliver-first — a test, not a rewrite.~~ DONE
+2026-08-18:** `test/deliver-first.spec.ts` — fails a handler and
+asserts no settle call and no on-chain movement, exactly the
+acceptance test the keeper named in the 08-10 ruling. The property is
+now proven in our stack, not asserted from a README.
 
 **B7. Replay guard under concurrency.** Known, unfixed. Read-then-write
 against KV; the chain's nonce is the backstop, so this is resilience,

@@ -351,20 +351,31 @@ never run against a REAL inbox, and Part 1 of the test plan needs the
 keeper or an unprimed instance — an agent that has read the plan
 proves nothing.
 
-**5. The Foundation plan's build items:** the non-affiliation line
-where diligence looks, and the spec-output watch that triggers battery
-versions.
+**5. ~~The Foundation plan's build items~~ — struck 2026-08-18:**
+both were already built the same day this sheet listed them as open
+(see "Built 2026-08-18" above): the non-affiliation line is
+`NOT_AFFILIATED` in position.ts, served on trust.json, and the
+battery-versioning trigger is written where PREFLIGHT_VERSION lives.
+A sheet listing built work as open is the exact staleness this sheet
+replaced the last one over.
 
 **6. Remove the x402list token route** once x402-list confirms the
 listing update — same as 08-02 and 08-11; a verification nonce that
 outlives its verification is litter.
 
-**Keeper-only:** wallet-law blanks (hard cap, period, ask-first —
-still blocks the settlement-attempt lane) · Foundation membership
-(look up the tiers) · AEO stragglers: `/directory.ts` +
-`/schemas.ts` JSON-LD with the corpus `Dataset` markup, and a
-contradiction-read of `security.txt` / `did.json`. GitHub-private was
-CLOSED by the keeper 2026-08-10 — the repo stays public.
+**Keeper-only:** ~~wallet-law blanks~~ (RULED 2026-08-18, funding
+discipline — the residue is actually funding the wallet) · Foundation
+membership (look up the tiers) · ~~AEO stragglers~~ (CLOSED
+2026-08-18: the corpus `Dataset` markup now rides the `/corpus` HTML
+landing — dataset crawlers read pages, not JSON endpoints, so the
+JSON-only declaration was invisible exactly where it mattered — and
+each `/directory/:slug` detail page carries its own `Review` node.
+`schemas.ts` is REFUSED, with the reason: it serves a JSON Schema
+document, which is already machine-readable and has one job;
+schema.org vocabulary inside it would corrupt that job, not aid
+discovery) · ~~contradiction-read of `security.txt` / `did.json`~~
+(done 2026-08-10, both clean — KEEPER_LIST records it). GitHub-private
+was CLOSED by the keeper 2026-08-10 — the repo stays public.
 
 ---
 

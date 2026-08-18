@@ -21,7 +21,11 @@ export function renderWardPage(
 ): string {
   const runButton = `<form method="post" action="/admin/ward/run" style="margin:0.5em 0">
     <button type="submit">Walk the ward now</button>
-    <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round.</span>
+    <span style="opacity:0.7"> — one GET per listed host (~a minute); the page reloads with the fresh round, and a hand-run round mints its corpus entry too.</span>
+  </form>
+  <form method="post" action="/admin/ward/backfill-doors" style="margin:0.5em 0">
+    <button type="submit">Backfill the door bank</button>
+    <span style="opacity:0.7"> — one-time seed from every stored round's declared doors; idempotent, replies with the counts.</span>
   </form>`;
 
   if (!round) {

@@ -1,10 +1,17 @@
+import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
   DOOR_BANK_CAP,
+  backfillDoorBank,
   mergeDoors,
   pickRevisits,
+  readDoorBank,
   type DoorBank,
 } from "@/services/door-bank";
+import { KV_KEYS } from "@/lib/kv-keys";
+import type { Env } from "@/types";
+
+const testEnv = env as unknown as Env;
 
 /**
  * THE DOOR BANK — the ward's memory of declared doors. Built off the
@@ -97,5 +104,56 @@ describe("the rotation", () => {
     expect(picks).toHaveLength(2);
     // No host twice: spare slots stay spare rather than double-knocking.
     expect(new Set(picks.map((p) => p.host)).size).toBe(2);
+  });
+});
+
+describe("the backfill reads history so the bank does not start amnesiac", () => {
+  /*
+   * Without this, the bank only learns doors from rounds run after
+   * the 08-18 deploy — and a feed stuck on the same 100 rows would
+   * teach it nothing new, ever. History already declared the doors;
+   * the backfill just remembers them.
+   */
+  it("recovers declared doors from stored rounds, skips homepages, and is idempotent", async () => {
+    await testEnv.COUNTERS.delete(KV_KEYS.wardDoorBank);
+    const oldRound = {
+      week: "2026-W28",
+      at: "2026-07-12T11:00:00.000Z",
+      listed_resources: 2,
+      coverage_suspect: false,
+      capped: false,
+      our_search_presence: true,
+      hosts: [
+        {
+          host: "vanished.example",
+          url: "https://vanished.example/api/buy/x",
+          verdict: "ready",
+          failed: [],
+          advisories: [],
+          source: "discovery",
+        },
+        {
+          host: "homepage-only.example",
+          url: "https://homepage-only.example/",
+          verdict: "not_probed",
+          failed: [],
+          advisories: [],
+          source: "leaderboard",
+        },
+      ],
+    };
+    await testEnv.COUNTERS.put(KV_KEYS.wardRound("2026-W28"), JSON.stringify(oldRound));
+
+    const first = await backfillDoorBank(testEnv);
+    expect(first.rounds_read).toBeGreaterThanOrEqual(1);
+    const bank = await readDoorBank(testEnv);
+    // The declared door came back; the homepage stayed out.
+    expect(bank.doors["vanished.example"]?.last_listed).toBe("2026-W28");
+    expect(bank.doors["homepage-only.example"]).toBeUndefined();
+
+    // Running it again lands on the same bank — merging history twice
+    // must never look like growth.
+    const second = await backfillDoorBank(testEnv);
+    expect(second.doors_after).toBe(second.doors_before);
   });
 });
