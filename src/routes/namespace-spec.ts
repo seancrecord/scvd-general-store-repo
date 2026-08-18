@@ -67,6 +67,17 @@ function doc(base: string) {
         "4. Compare the fields inside the message against the artifact as displayed: a field shown but not signed is not vouched for, and honest surfaces here say so themselves.",
       ],
       key_history_integrity: `The key history above is ours and editable by us; the same history is committed where we cannot reach it: ${base}/.well-known/anchor-log.json — a hash chain over key states, each digest timestamped into Bitcoin via OpenTimestamps. It proves WHEN a key state was committed, never WHO SHOULD HAVE held the key.`,
+      /**
+       * THE DIVERGENCE, NAMED (2026-08-18). The IETF drafts converging
+       * on agent-payment receipts (draft-hopley-x402-canonicalisation-
+       * jcs-v1, draft-vauban-x402-*) pin RFC 8785 JCS — sorted keys —
+       * as the canonical preimage. We do not, and a spec that stayed
+       * silent about that would read as either ignorance of the field
+       * or a claim of compatibility, both false. Saying it plainly is
+       * what lets a tool that speaks both disciplines bridge them.
+       */
+      relation_to_jcs_rfc8785:
+        "This namespace's canonical form is DECLARED-FIELD-ORDER serialization, not RFC 8785 (JCS). JCS derives byte order by sorting keys; this spec derives it from the field lists published on this page, which are part of the contract. The two disciplines are equally deterministic and NOT byte-compatible: re-canonicalizing an scvd artifact through JCS produces different bytes and a failed verification. This is deliberate and permanent for artifacts already issued — this store's signatures are forever, and migrating the preimage discipline would orphan every one of them (the frozen_prefix rule below is the same commitment at field level). A verifier bridging both worlds should treat the discipline as per-issuer metadata: for scvd artifacts, the field lists here ARE the canonicalisation. If a future artifact class adopts a JCS preimage, it will say so in its own entry and carry a discipline marker; nothing existing will be reinterpreted.",
     },
     certificate: {
       what:

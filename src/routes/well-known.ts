@@ -535,10 +535,21 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   );
 });
 
-// x402-list.com domain ownership has been proven here twice, and the
-// one-time token at /.well-known/x402list.txt removed both times once
-// it had done its job, as the directory itself invites: 2026-08-02
-// for the original verification, 2026-08-11 for the listing update
-// (category moved to Finance, description brought up to the current
-// positioning). A verification nonce that outlives its verification
-// is just litter.
+// x402-list.com domain ownership: proven 2026-08-02 (original
+// verification) and 2026-08-11 (listing update), token removed both
+// times once it had done its job — a verification nonce that outlives
+// its verification is just litter. THIRD round, 2026-08-18: listing
+// update adding the six trust-tier endpoints to the monitor and the
+// position description. Token expires 72h from issue; REMOVE THIS
+// ROUTE once x402-list confirms, same as the last two times.
+wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
+  c.text(
+    [
+      "# x402-list.com domain-ownership token, 2026-08-18 listing update.",
+      "# One-time, expires 72h from issue, removed after verification.",
+      "x402list-verify-8At8JpSsqS3rsFVNbLqNgVfwqHGKWaQ8H63rOPIzDTs",
+    ].join("\n"),
+    200,
+    { "content-type": "text/plain; charset=utf-8" },
+  ),
+);
