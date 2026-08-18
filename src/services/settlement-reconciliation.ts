@@ -11,6 +11,7 @@ import {
 import type { RpcReceipt } from "@/lib/base-rpc";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
+import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 
@@ -140,6 +141,9 @@ export interface ReconciliationObservation {
 }
 
 export interface SignedReconciliation extends ReconciliationObservation {
+  /** RFC 8785 dual-emit over the same observation. See lib/jcs.ts. */
+  signature_jcs: string;
+  signature_jcs_covers: string;
   signature: string;
   public_key: string;
   signature_covers: string;
@@ -437,6 +441,12 @@ export async function reconcileSettlement(
     public_key: publicKey,
     signature_covers:
       "The canonical JSON of every field above `signature`, in the order served.",
+    // Same fields, sorted-key byte order, for JCS-conformant tooling.
+    signature_jcs: await signJcs(
+      observation as unknown as Record<string, unknown>,
+      env.SIGNING_KEY,
+    ),
+    signature_jcs_covers: JCS_SIGNATURE_COVERS,
   };
 }
 

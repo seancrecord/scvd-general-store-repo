@@ -332,7 +332,7 @@ export async function takeCensus(
     collapse_suspect: collapseSuspect,
     what_this_cannot_see: [
       "Whether a listed host is payable. Enumeration says a host EXISTS; only a probe says anything else, and coverage_pct is the share we probed.",
-      "Endpoints that never appear in any directory we read. The universe here is the union of our sources, never the universe.",
+      "Endpoints that never appear in any directory we read. The universe here is the union of our sources, never the universe. For scale: an April 2026 registry crawl (arXiv 2607.19545, measuring 119M Base+Solana x402 transactions) counted 13,760 registered endpoints across 420 domains, with the top 9 domains holding 87.8% of registrations — an outside, citable denominator to hold population_known against.",
       collapseSuspect
         ? "Disappearances this round: SUPPRESSED. The union fell past the floor against the last census, which the instrument explains more plausibly than the ecosystem does."
         : "Why a host stopped being listed. 'disappeared' means NO LONGER LISTED where we look — never 'dead', and never 'stopped taking payment'.",

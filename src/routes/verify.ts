@@ -1,4 +1,9 @@
 import { Hono } from "hono";
+import {
+  JCS_DUAL_EMIT_DATED,
+  JCS_SIGNATURE_COVERS,
+  jcsCanonicalize,
+} from "@/lib/jcs";
 import type { Context } from "hono";
 import { storeIdentity } from "@/lib/identity";
 import { recordVerifyCall } from "@/lib/metrics";
@@ -8,7 +13,9 @@ import {
   canonicalizeCertificate,
   canonicalizeCertificateLegacy,
   certificateSignatureForm,
+  certificateSignedSubset,
   fieldsOutsideLegacySignature,
+  verifyMessageSignature,
 } from "@/lib/signing";
 import {
   canonicalizeAnchor,
@@ -265,6 +272,41 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       signed_payload: certificateSignedPayload,
       artifact_hash: await artifactHash(certificateSignedPayload),
       signature_covers: HOW_TO_VERIFY,
+      /*
+       * THE DUAL-EMIT, REPORTED WITH THE SAME HONESTY AS THE PRIMARY
+       * (2026-08-18). Three states, never collapsed: verified-here,
+       * present-but-broken (named loudly — a bad interop signature is
+       * a bug worth reporting, not a footnote), and absent — which for
+       * anything minted before the dual-emit began is history, not a
+       * defect, and saying WHY spares the reader inventing a reason.
+       */
+      ...(record.signature_jcs
+        ? await (async () => {
+            const jcsPayload = jcsCanonicalize(
+              certificateSignedSubset(record.certificate),
+            );
+            const jcsValid = await verifyMessageSignature(
+              jcsPayload,
+              record.signature_jcs as string,
+              record.public_key,
+            );
+            return {
+              signature_jcs: record.signature_jcs,
+              signature_jcs_valid: jcsValid,
+              signature_jcs_payload: jcsPayload,
+              signature_jcs_covers: JCS_SIGNATURE_COVERS,
+              ...(jcsValid
+                ? {}
+                : {
+                    signature_jcs_gap:
+                      "The RFC 8785 signature on this record does NOT verify. The primary signature above is the authoritative one; if it verifies, the artifact is genuine and the broken interop signature is a store bug worth telling us about at /api/letter.",
+                  }),
+            };
+          })()
+        : {
+            signature_jcs: null,
+            signature_jcs_covers: `No RFC 8785 signature: this artifact was minted before ${JCS_DUAL_EMIT_DATED}, when the store began dual-emitting JCS alongside its declared-field-order discipline. The primary signature above is complete on its own; the JCS signature is interop, not authority.`,
+          }),
       ...(uncovered.length > 0
         ? {
             signature_gap: `This certificate was signed before 2026-07-30, when the canonical form did not include ${uncovered.join(" or ")}. The signature is genuine and covers everything else shown; ${uncovered.length === 1 ? "that field is" : "those fields are"} NOT covered by it, and you should not rely on ${uncovered.length === 1 ? "it" : "them"} as signed. Certificates minted since cover every field served. Found from outside, by a buyer who tried to verify one and couldn't: /corrections.`,

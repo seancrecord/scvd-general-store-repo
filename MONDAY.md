@@ -189,6 +189,32 @@ with their evidence rather than deleted:
 - ~~The namespace-spec JCS edit~~ — **shipped in PR #131**, same day
   it was found.
 
+**Built 2026-08-18, same day as the go:**
+
+- **JCS dual-emit (the keeper's "go").** `src/lib/jcs.ts` — a
+  hand-rolled RFC 8785 canonicalizer, pinned by tests against the
+  RFC's own semantics (UTF-16 key sort, ES number serialization,
+  refuses non-finite numbers instead of signing an improvised null).
+  Every certificate and all three overlap-class attestations
+  (settlement_attestation, settlement_reconciliation, and the bundle,
+  which exits the same signing tail) now carry `signature_jcs`: same
+  key, same fields, sorted-key bytes — verifiable by any RFC 8785
+  tool with no knowledge of our field lists. `/api/verify` reports
+  its validity separately from the primary's, and explains an old
+  artifact's missing field as history, not defect. The spec's
+  `jcs_dual_emit` entry documents it beside the divergence note.
+- **The non-affiliation line** (`NOT_AFFILIATED` in position.ts),
+  served on trust.json: independent, no affiliation with the x402
+  Foundation, and independence is the product.
+- **The battery-versioning trigger**, written where PREFLIGHT_VERSION
+  lives: a ratified Foundation change cuts a new battery version the
+  same week, each version naming which standard it tests, old
+  versions serving forever.
+- **The sourced denominator**, in the census's own
+  what_this_cannot_see: 13,760 endpoints / 420 domains / top 9 =
+  87.8% (arXiv 2607.19545), a citable outside scale to hold
+  population_known against.
+
 **What is genuinely open:**
 
 **1. First outside dollar for the verification tier.** Still $0 while

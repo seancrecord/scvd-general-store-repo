@@ -173,6 +173,25 @@ export function canonicalizeCertificate(cert: Certificate): string {
   return canonicalize(cert, CERT_FIELDS);
 }
 
+/**
+ * The SAME subset the signature covers, as an object rather than as
+ * bytes — for the JCS dual-emit (lib/jcs.ts), which derives its own
+ * byte order by sorting keys. Both signatures cover exactly this
+ * subset; they differ only in the serialization discipline.
+ */
+export function certificateSignedSubset(
+  cert: Certificate,
+): Record<string, unknown> {
+  const subset: Record<string, unknown> = {};
+  for (const field of CERT_FIELDS) {
+    const value = cert[field];
+    if (value !== undefined) {
+      subset[field] = value;
+    }
+  }
+  return subset;
+}
+
 /** What a certificate minted before 2026-07-30 was signed over. */
 export function canonicalizeCertificateLegacy(cert: Certificate): string {
   return canonicalize(cert, LEGACY_CERT_FIELDS);

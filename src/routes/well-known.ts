@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { NOT_AFFILIATED } from "@/store/copy/position";
 import {
   factBlockText,
   listingSpec,
@@ -88,6 +89,9 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
   return c.json({
     standfirst: TRUST_STANDFIRST,
     what_it_is: WHAT_IT_IS,
+    // The Foundation exists now; a diligence reader will ask. See
+    // NOT_AFFILIATED's note for why this is load-bearing, not modesty.
+    independence: NOT_AFFILIATED,
     audience:
       "Automated diligence. There is no human-facing version of this page and that is deliberate: the rooms say all of it better. Start at /what.",
     operator: OPERATOR,
