@@ -166,24 +166,45 @@ observers.
 
 ---
 
-## Open, ranked (everything else was closed or is archived)
+## Open, ranked — TRUED UP 2026-08-18 against what main actually holds
+
+The first version of this list was written from the market scan before
+checking the week's merges, and four of its eight items had ALREADY
+BEEN BUILT by other sessions. A desk sheet that ranks finished work as
+open sends somebody off to do it twice, so the closed ones are struck
+with their evidence rather than deleted:
+
+- ~~The ward widens (ruling 6)~~ — **built**: fuchss joined the census
+  (`src/services/ward-sources.ts`); paid directories named as unread
+  until the wallet law fills in. The 420-domain denominator swap
+  remains a live sub-item, folded into #2 below.
+- ~~Commission Desk (ruling 7)~~ — **built**: request → quote → pay at
+  a static rung, declines public at `/api/commission/declined`
+  (`src/routes/commission.ts`); buy-now door still open beside it.
+- ~~The criteria page (ruling 3)~~ — **built**: `/criteria`, rule 43's
+  gate opened (`781d8a0`).
+- ~~`basis` field + card reconciliation (rulings 4, 5)~~ — **built**:
+  tab schema v0.8 (`basis: fixed|metered|free_with_paid_path`) and
+  `reconcile_card_statement` taking the bank's monthly CSV.
+- ~~The namespace-spec JCS edit~~ — **shipped in PR #131**, same day
+  it was found.
+
+**What is genuinely open:**
 
 **1. First outside dollar for the verification tier.** Still $0 while
 the economy under the position 10×'d its legitimacy. Everything below
 serves this.
 
-**2. The ward widens (ruling 6, queued).** Union of every public
-directory, uniformly. The 420-domain finding makes this tractable, and
-it swaps the corpus denominator to a sourced figure at the same time.
+**2. Swap the corpus denominator to the sourced figure.** The arXiv
+snapshot (13,760 endpoints / 420 domains) replaces the unverified
+~59,818 wherever coverage is stated, and the widened ward reads
+against it.
 
-**3. The namespace-spec edit** from the JCS finding above. Cheap,
-defensive, and the interop story is worth more than the land grab now.
-
-**4. ERC-8183 base contracts — a real read.** The evaluator slot is
+**3. ERC-8183 base contracts — a real read.** The evaluator slot is
 concrete enough to prototype against. First thing that looks like a
 standardized home for what this store already does.
 
-**5. The Tab.** Built, green, zero strangers. In order: the mail-sweep
+**4. The Tab.** Built, green, zero strangers. In order: the mail-sweep
 routine (SWEEP.md is contract, routine unwritten — it is the reason
 anyone installs), CV testing (segments exist at
 `docs/CV_TEST_SEGMENTS.md`; re-pin to current main before handing
@@ -193,21 +214,20 @@ endpoint (layer 3) once there is anything to aggregate. Part 1 of the
 test plan still needs the keeper or an unprimed instance — an agent
 that has read the plan proves nothing.
 
-**6. Commission Desk build (ruling 7):** `the_collab` first,
-request → quote → agreed price, public replies on declines.
+**5. The Foundation plan's build items:** the non-affiliation line
+where diligence looks, and the spec-output watch that triggers battery
+versions.
 
-**7. The criteria page** (unblocked by ruling 3: a badge is a dated
-observation that ages, never retires).
+**6. Remove the x402list token route** once x402-list confirms the
+listing update — same as 08-02 and 08-11; a verification nonce that
+outlives its verification is litter.
 
-**8. Small queued rulings:** `basis` field for estimated burn (4);
-monthly bank-CSV reconciliation (5).
-
-**Keeper-only, unchanged:** wallet-law blanks (hard cap, period,
-ask-first — still blocks the settlement-attempt lane) · GitHub
-private? (recommendation on record: keep code public, move strategy
-docs) · AEO stragglers: `/directory.ts` + `/schemas.ts` JSON-LD with
-the corpus `Dataset` markup, and a contradiction-read of
-`security.txt` / `did.json`.
+**Keeper-only:** wallet-law blanks (hard cap, period, ask-first —
+still blocks the settlement-attempt lane) · Foundation membership
+(look up the tiers) · AEO stragglers: `/directory.ts` +
+`/schemas.ts` JSON-LD with the corpus `Dataset` markup, and a
+contradiction-read of `security.txt` / `did.json`. GitHub-private was
+CLOSED by the keeper 2026-08-10 — the repo stays public.
 
 ---
 
