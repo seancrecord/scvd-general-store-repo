@@ -148,9 +148,16 @@ export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
       "That mcpservers.org carries a second, llms.txt-derived entry beside the claimed server listing above — the store's own machine-readable front door, independently ingested. Not an endorsement and not an audit.",
   },
   {
-    url: "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp",
+    /**
+     * RE-SLUGGED 2026-08-18: m8ven's Live Monitored connection issued
+     * a new listing id (-0xqk2v, replacing -l9nvwp) and now re-verifies
+     * on every code change. The keeper opened the new page the same
+     * day, per this list's only-opened-URLs rule; the README badge
+     * moved with it.
+     */
+    url: "https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v",
     registry: "m8ven.ai",
-    confirmed: "2026-08-04",
+    confirmed: "2026-08-18",
     /**
      * A SCANNER, NOT A MIRROR — the class of entry worth having even
      * when its current readings are unflattering, and the readings are

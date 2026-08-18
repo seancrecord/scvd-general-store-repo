@@ -100,6 +100,30 @@ export function whatFaq(base: string): FaqPair[] {
       answer: `No escrow and no chargebacks: x402 settles wallet-to-wallet, and once a payment settles the money has moved. Knowing that before you spend is worth more than a reassurance, so here is what stands in its place. DELIVERY — the store delivers first and settles after (changed 2026-08-10; it settled first until then, and the old rule is quoted at ${base}/becoming). The goods are produced, then the payment is presented at the last moment before the artifact is signed, so a delivery that fails takes no money at all and there is nothing to chase. Instant items arrive in the same response that takes the money. DISPUTES — if an item is not delivered inside its promised window the keeper refunds it himself; the refund goes on a ledger at ${base}/api/refund/{refund_id} that reads pending until he has paid it and then carries the on-chain transaction hash, so its status is checkable rather than asserted. REPUTATION — there is no score here, ours or anyone else's. In its place: a dated record of every claim this store has made that turned out not to be true, at ${base}/corrections; the books, computed live, at ${base}/stats; and what each signature does and does not prove, per artifact class, at ${base}/attestation. Without escrow, your exposure is the price itself — public, and starting at $${cheapest}.`,
     },
     {
+      /**
+       * THE BUYER-SIDE THREE, added 2026-08-18 from the query sweep.
+       * Every high-intent pre-purchase query found in the wild —
+       * "check an x402 endpoint before paying", "is this x402 service
+       * legitimate", "free x402 conformance check" — was being
+       * answered by other people's tools or by nobody, while this
+       * store's whole FAQ spoke seller-side. The answers below are
+       * assembled from surfaces that already exist and already say
+       * this; only the question phrasings are new ink.
+       * ⚑ KEEPER REVIEW — the three question phrasings and their
+       * answers are new public copy.
+       */
+      question: "How do I check an x402 endpoint before paying it?",
+      answer: `Three free checks, no account and no wallet for any of them. One: the preflight at ${base}/api/preflight/v1 probes whether the endpoint answers a well-formed x402 v2 payment challenge at all — one POST, one probe, one moment. Two: if its 402 carries a signed offer, the conformance desk at ${base}/api/conformance/v1 verifies the artifact itself — parse, schema, ed25519 signature — whoever issued it. Three: the corpus at ${base}/corpus/host/{host}.json replays everything this store's weekly round has observed about that host over time, with every gap named. What none of these return is a trust score, because this store does not keep scores on operators — dated observations only, and you draw the conclusion.`,
+    },
+    {
+      question: "Is this x402 service legitimate? (asked about anyone, us included)",
+      answer: `No instrument here answers that question outright, and distrust any that claims to. What can be checked, for free: whether the endpoint answers a proper x402 v2 challenge (${base}/api/preflight/v1), whether its signed artifacts verify (${base}/api/conformance/v1), and what it has actually served week over week (${base}/corpus/host/{host}.json). Asked about this store specifically: the machine-readable diligence answers are at ${base}/.well-known/trust.json, the record of every claim we got wrong is at ${base}/corrections, and every wallet we control is declared and signed at ${base}/house-ledger.json. Legitimacy is a conclusion; these are the checkable inputs.`,
+    },
+    {
+      question: "Is there a free x402 conformance check?",
+      answer: `Yes — the conformance desk at ${base}/api/conformance/v1 takes any issuer's x402 signed offer or receipt and returns a structured verdict: parse, schema, ed25519 signature, liveness. Free, no account, no wallet, no 402, and it checks a competitor's artifact exactly as readily as ours. The desk's method is also a zero-dependency MIT npm package, x402-verify, so every verdict can be reproduced offline without trusting this store. The landing with worked curl examples is ${base}/conformance. Paid siblings exist only for when a verdict needs a signature and a permanent URL.`,
+    },
+    {
       question: "How do I verify a certificate?",
       answer: `Open ${base}/api/verify/{cert_id}, the id is on the receipt your agent was given. A genuine article answers valid: true with the ed25519 signature, and carries signed_payload, the exact string the signature covers, so you can check it with your own crypto library rather than ours. The store's public key hangs at ${base}/.well-known/scvd-signing-key, and what a valid signature actually proves is written out per artifact class at ${base}/attestation. Free, unlimited, forever; re-checking costs nothing and never will.`,
     },
