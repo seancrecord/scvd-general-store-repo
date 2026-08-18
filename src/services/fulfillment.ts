@@ -343,6 +343,30 @@ export async function fulfillPurchase(
     verification:
       "Re-verification is free, forever, no purchase required, that URL answers as many times as anyone asks.",
     /**
+     * THE NEXT MOVE, OFFERED AT THE ONE MOMENT IT IS FREE TO TAKE
+     * (2026-08-18, the funnel's finding). The verification tier's
+     * wall is not the flow — 703 price-asks on the attestation and
+     * nobody ever presented a signature — it is that a browsing agent
+     * holds no transaction hash, so the required input reads as work.
+     * But every buyer leaves THIS response holding exactly that input:
+     * the settlement that just paid for their goods. So the response
+     * offers the attestation with the hash already in the URL, at the
+     * moment the buyer has both the input and a proven willingness to
+     * pay. Skipped on the settlement-observation items themselves,
+     * where the offer would read as a hall of mirrors.
+     */
+    ...(payment.transaction &&
+    !["settlement_attestation", "settlement_reconciliation", "attestation_bundle"].includes(
+      item.id,
+    )
+      ? {
+          attest_this_purchase: {
+            url: `${env.STORE_BASE_URL}/api/buy/settlement_attestation?tx_hash=${payment.transaction}`,
+            note: "You now hold a settlement transaction — the one input the trust tier's cheapest door requires. $0.004 buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.",
+          },
+        }
+      : {}),
+    /**
      * WHICH CHECK IS WORTH DOING, added 2026-08-02 after a cold walk
      * flagged post-purchase verification as the step agents skip.
      *

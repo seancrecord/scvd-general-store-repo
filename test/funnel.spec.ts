@@ -174,3 +174,36 @@ describe("the window note tells the truth at the exact cap boundary", () => {
     expect(report.window_note).toContain("Every event row on record");
   });
 });
+
+describe("the next move — the funnel's pitch fix on the purchase response", () => {
+  /*
+   * The funnel's diagnosis: the tier's wall is upstream, and the
+   * specific brick is that a browsing agent holds no tx hash, so the
+   * required input reads as work. The one moment a buyer provably
+   * holds the input AND a willingness to pay is right after a settle
+   * — so the purchase response offers the attestation with the hash
+   * already in the URL.
+   */
+  it("hands every ordinary purchase the attestation URL with its OWN tx filled in", async () => {
+    const { installFacilitatorMock } = await import("./helpers/facilitator-mock");
+    const { buildPaymentSignature, decodePaymentRequired } = await import(
+      "./helpers/payment"
+    );
+    installFacilitatorMock();
+    const { SELF: self } = await import("cloudflare:test");
+    const challenge = await self.fetch(`${BASE}/api/buy/hello`);
+    const accepted = decodePaymentRequired(challenge).accepts[0]!;
+    const paid = await self.fetch(`${BASE}/api/buy/hello`, {
+      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
+    });
+    expect(paid.status).toBe(200);
+    const body = (await paid.json()) as Record<string, any>;
+    const block = body["patron"] ?? body;
+    const offer = block.attest_this_purchase ?? body.attest_this_purchase;
+    expect(offer, "no attest_this_purchase on the purchase response").toBeTruthy();
+    expect(offer.url).toContain("/api/buy/settlement_attestation?tx_hash=");
+    // The buyer's own settlement, not a sample: the hash in the URL is
+    // the one on the certificate.
+    expect(offer.url).toContain(block.certificate.settlement_tx);
+  });
+});
