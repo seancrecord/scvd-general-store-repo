@@ -1316,6 +1316,23 @@ adminRoutes.get("/admin/census", async (c) => {
  * real buyer bounces the SEQUENCE is the evidence — one signature
  * after reading one price is a different story from a walk and a pick.
  */
+/**
+ * THE FUNNEL: which wall the verification tier's asks are dying on.
+ * Built 2026-08-18 off the keeper's ledger read — 703 organic asks on
+ * settlement_attestation, one settle, and that one refunded. The
+ * declines desk shows the refused; this page splits the SILENT into
+ * "tried and was refused" vs "never tried", which are opposite fixes.
+ */
+adminRoutes.get("/admin/funnel", async (c) => {
+  const { auditFunnel } = await import("@/services/funnel");
+  const { renderFunnelPage } = await import("@/pages/admin/funnel-page");
+  const report = await auditFunnel(c.env);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(report);
+  }
+  return c.html(renderFunnelPage(report));
+});
+
 adminRoutes.get("/admin/declines", async (c) => {
   const report = await readDeclines(c.env);
   const outside = report.declines.filter((row) => !row.house);

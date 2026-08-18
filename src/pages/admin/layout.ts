@@ -59,7 +59,8 @@ export type AdminTab =
    * no way out — the July orphaning bug, avoided by construction rather
    * than by remembering.
    */
-  | "events";
+  | "events"
+  | "funnel";
 
 /** The three rooms. Always first, always in this order. */
 const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
@@ -76,6 +77,7 @@ const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
 const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "reconciliation", href: "/admin/reconciliation", label: "The books check" },
   { tab: "declines", href: "/admin/declines", label: "Declines" },
+  { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
   { tab: "files", href: "/admin/files", label: "Keeper's files" },

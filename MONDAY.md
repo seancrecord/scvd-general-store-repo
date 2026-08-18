@@ -215,6 +215,30 @@ with their evidence rather than deleted:
   87.8% (arXiv 2607.19545), a citable outside scale to hold
   population_known against.
 
+**Also built 2026-08-18, the second sitting:**
+
+- **The funnel** (`/admin/funnel`, in the readings nav). The ledger
+  said 703 organic asks on settlement_attestation and one settle; this
+  instrument answers WHICH WALL by splitting the silence on the
+  decline rows. A decline means a wallet was actually opened, so:
+  refused wallets → the FLOW is the brick and the reasons name it;
+  zero wallets against a pile of asks → WINDOW-SHOPPING, nobody tried,
+  and the wall is upstream (pitch, price framing, or required inputs
+  reading as work). House and infrastructure traffic excluded, verdict
+  in words on every row, verification tier sorted first. The keeper's
+  first load of the live page IS the diagnosis.
+- **The ERC-8183 evaluator position**, drafted from the actual
+  contracts: `docs/ERC8183_EVALUATOR.md`. The two facts that decide
+  it: the seat is the first standardized ON-CHAIN REVENUE slot for
+  exactly what this store does (evaluatorFeeBP pays the evaluator at
+  completion), and the incentive is SKEWED — reject pays the evaluator
+  nothing, so the standard structurally leans toward "complete," and
+  the only counterweight is a public record of signing bad news, which
+  is this store's entire brand. Draft recommendation: enter narrowly
+  (only job types our batteries can judge), every verdict mints a
+  signed artifact, a dedicated no-custody evaluator wallet decided
+  alongside the wallet law, testnet first. KEEPER'S RULING.
+
 **What is genuinely open:**
 
 **1. First outside dollar for the verification tier.** Still $0 while
