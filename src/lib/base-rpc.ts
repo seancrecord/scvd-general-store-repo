@@ -358,6 +358,47 @@ export async function usdcTransfersTo(
   }));
 }
 
+/**
+ * THE OTHER DIRECTION — every USDC transfer OUT of an address.
+ *
+ * The till sentinel's one read (2026-08-18, the keeper's scenario:
+ * revenue piles up, nobody checks the account, a compromised key
+ * drains it while the store reports a clean sweep). The store expects
+ * ZERO automated outflows from its receiving wallets, forever — no
+ * code here holds those keys, and rule 30 says none ever will. So any
+ * outgoing transfer is either the keeper's own hand or a theft, and
+ * both deserve a page within the hour: one is confirmed with a
+ * glance, the other is caught a week earlier than a monthly look at
+ * the account would have.
+ *
+ * Same indexed-topic trick as usdcTransfersTo, position 1 instead of
+ * 2: the node filters, we receive only this wallet's outflows.
+ */
+export async function usdcTransfersFrom(
+  env: Env,
+  fromAddress: string,
+  fromBlock: number,
+  toBlock: number,
+): Promise<Array<{ txHash: string; to: string; amount: bigint; block: number }>> {
+  const padded = `0x${fromAddress.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+  const logs = await rpc<
+    Array<{ transactionHash: string; topics: string[]; data: string; blockNumber: string }>
+  >(env, "eth_getLogs", [
+    {
+      address: BASE_USDC,
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: `0x${toBlock.toString(16)}`,
+      topics: [TRANSFER_TOPIC, padded],
+    },
+  ]);
+  return (logs ?? []).map((log) => ({
+    txHash: String(log.transactionHash ?? "").toLowerCase(),
+    to: addressFromTopic(log.topics?.[2] ?? ""),
+    amount: BigInt(log.data && log.data !== "0x" ? log.data : "0x0"),
+    block: Number.parseInt(log.blockNumber ?? "0x0", 16),
+  }));
+}
+
 export async function getBlockNumber(env: Env): Promise<number> {
   const hex = await rpc<string>(env, "eth_blockNumber", []);
   return Number.parseInt(hex, 16);
