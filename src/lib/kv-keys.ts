@@ -74,6 +74,17 @@ export const KV_KEYS = {
    * travels with that growth rather than surprising us at the ceiling.
    */
   populationRegister: "population_register",
+  /**
+   * THE DOOR BANK: every discovery-declared resource URL the ward has
+   * ever seen, kept so a feed that breaks (the 2026-08-05 pagination
+   * collapse, still unrepaired on 2026-08-18: 100 rows, coverage
+   * suspect every round) cannot take our observation breadth down with
+   * it. A door once DECLARED by the directory is a door we may knock
+   * on at indexer cadence — the bank remembers the declaration, never
+   * invents one. One key, same law as the register above, same R2
+   * graduation trigger if it ever stops fitting.
+   */
+  wardDoorBank: "ward_door_bank",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,

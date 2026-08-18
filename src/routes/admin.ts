@@ -861,6 +861,15 @@ adminRoutes.get("/admin/export/tax.csv", async (c) => {
 adminRoutes.post("/admin/ward/run", async (c) => {
   const { runWardRound } = await import("@/services/ward-round");
   await runWardRound(c.env);
+  /**
+   * The hand-run round MINTS too (2026-08-18; before this, a manual
+   * run wrote KV and the corpus stayed silent until Sunday — walking
+   * by hand produced no signed observation, which defeats the walk).
+   * takeCorpusSnapshot is idempotent per week, so a hand-run in a week
+   * the cron already minted is a quiet no-op, never a double entry.
+   */
+  const { takeCorpusSnapshot } = await import("@/services/corpus");
+  await takeCorpusSnapshot(c.env).catch(() => undefined);
   return c.redirect("/admin/ward");
 });
 

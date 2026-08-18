@@ -43,6 +43,14 @@ const SEARCH_PATH = "/platform/v2/x402/discovery/search";
 /** Hosts per round, far above today's 35; the round says when it binds. */
 const WARD_CAP = 200;
 const PROBE_TIMEOUT_MS = 8000;
+/**
+ * Probes in flight at once. Sequential probing at an 8s timeout puts
+ * a 200-door round's worst case near 27 minutes — past the cron's
+ * budget — so the walk is pooled. Ten at a time keeps the worst case
+ * under three minutes while staying far below any host's idea of a
+ * crawl: each HOST still gets exactly one GET a week.
+ */
+const PROBE_CONCURRENCY = 10;
 
 /**
  * A VOLUME CLAIM, labeled as one. The agent402.tools leaderboard
@@ -76,8 +84,15 @@ export interface WardHostResult {
   verdict: "ready" | "not_ready" | "unreachable" | "not_probed";
   failed: string[];
   advisories: string[];
-  /** Which feed(s) named this host. Absent on pre-feed rounds = discovery. */
-  source?: "discovery" | "leaderboard" | "both";
+  /**
+   * Which feed(s) named this host. Absent on pre-feed rounds =
+   * discovery. "revisit" (2026-08-18, the door bank): no feed named it
+   * THIS round — the probe walked a resource URL a past discovery
+   * round declared, to keep observation breadth when the feed's own
+   * coverage is suspect. Revisit rows carry real verdicts and stay out
+   * of the listed/gone delta.
+   */
+  source?: "discovery" | "leaderboard" | "both" | "revisit";
   volume_claim?: WardVolumeClaim;
 }
 
@@ -87,6 +102,22 @@ export interface WardRound {
   listed_resources: number;
   /** True when a full page arrived with no recognizable cursor. */
   coverage_suspect: boolean;
+  /**
+   * Recorded only when coverage is suspect: the key names the feed's
+   * last page actually carried (top level, plus one level under the
+   * usual pagination containers). The 2026-08-05 collapse took weeks
+   * to even diagnose because the shape that broke us was never
+   * written down anywhere — the next cursor-spelling fix should come
+   * from reading the corpus, not from guessing again.
+   */
+  pagination_shape?: string[];
+  /**
+   * The door bank's contribution this round (absent before
+   * 2026-08-18): how many declared doors the bank holds, how many
+   * spare cap slots were filled with re-probes, and how many hosts
+   * eviction dropped to keep the bank bounded (absent when none).
+   */
+  door_bank?: { known: number; revisited: number; evicted?: number };
   /**
    * Set when this round probed under 60% of the last one's hosts:
    * the loud version of coverage_suspect, with the numbers.
@@ -156,6 +187,28 @@ interface DiscoveryRead {
   hosts: { host: string; url: string }[];
   listed: number;
   coverageSuspect: boolean;
+  /** Set only when coverageSuspect: what the last page's body offered. */
+  paginationShape?: string[];
+}
+
+/**
+ * The key names a suspect page actually carried — the diagnosis the
+ * 2026-08-05 collapse never wrote down. Top-level names plus one level
+ * under the containers a cursor usually hides in.
+ */
+function describePaginationShape(body: Record<string, unknown>): string[] {
+  const shape = Object.keys(body).slice(0, 30);
+  for (const container of ["pagination", "meta", "paging", "links"]) {
+    const nested = body[container];
+    if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+      shape.push(
+        ...Object.keys(nested as Record<string, unknown>)
+          .slice(0, 10)
+          .map((key) => `${container}.${key}`),
+      );
+    }
+  }
+  return shape;
 }
 
 async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
@@ -163,6 +216,7 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
   const rows: Record<string, unknown>[] = [];
   let cursor: string | undefined;
   let coverageSuspect = false;
+  let paginationShape: string[] | undefined;
   for (let page = 0; page < 20; page += 1) {
     const params = new URLSearchParams({ pageSize: "100" });
     if (cursor) params.set("pageToken", cursor);
@@ -203,6 +257,7 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
       // A full page and no recognized cursor is a page cap wearing
       // completeness — the hand-run census's own recorded lesson.
       coverageSuspect = items.length > 0 && items.length % 100 === 0;
+      if (coverageSuspect) paginationShape = describePaginationShape(body);
       break;
     }
     if (items.length === 0) break;
@@ -222,7 +277,39 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
     seen.add(host);
     hosts.push({ host, url });
   }
-  return { hosts, listed: rows.length, coverageSuspect };
+  return {
+    hosts,
+    listed: rows.length,
+    coverageSuspect,
+    ...(paginationShape ? { paginationShape } : {}),
+  };
+}
+
+/**
+ * Run one worker per entry, at most `limit` in flight, results in the
+ * callers' order. Plain enough to not need a library and small enough
+ * to read whole.
+ */
+async function pooled<T, R>(
+  entries: T[],
+  limit: number,
+  worker: (entry: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(entries.length);
+  let next = 0;
+  const lanes = Array.from(
+    { length: Math.min(limit, entries.length) },
+    async () => {
+      for (;;) {
+        const index = next;
+        next += 1;
+        if (index >= entries.length) return;
+        results[index] = await worker(entries[index]!);
+      }
+    },
+  );
+  await Promise.all(lanes);
+  return results;
 }
 
 async function probeHost(
@@ -376,7 +463,8 @@ async function ourSearchPresence(env: Env): Promise<boolean | null> {
 
 export async function runWardRound(env: Env): Promise<WardRound> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
-  const { hosts, listed, coverageSuspect } = await readDiscoveryList(env);
+  const { hosts, listed, coverageSuspect, paginationShape } =
+    await readDiscoveryList(env);
   /**
    * THE SECOND FEED (2026-08-04): the agent402 leaderboard, used for
    * POPULATION — a host it names that discovery does not is still a
@@ -399,8 +487,49 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     }
   }
   const capped = probeList.length > WARD_CAP;
-  const results: WardHostResult[] = [];
-  for (const entry of probeList.slice(0, WARD_CAP)) {
+  /**
+   * THE DOOR BANK FILL (2026-08-18, task #22): remember every door
+   * discovery declared this round, then spend whatever the cap has
+   * left over on re-probing banked doors the broken feed no longer
+   * names. The 2026-W33 arithmetic that demanded it: 60 of 200 slots
+   * used, coverage suspect, 0.7% of the known population walked. The
+   * bank read/write is fenced so a KV hiccup degrades to today's
+   * behaviour instead of taking the round down.
+   */
+  let revisits: { host: string; url: string }[] = [];
+  let doorBankNote: { known: number; revisited: number; evicted?: number } | null =
+    null;
+  try {
+    const { readDoorBank, writeDoorBank, mergeDoors, pickRevisits } =
+      await import("@/services/door-bank");
+    const merged = mergeDoors(
+      await readDoorBank(env),
+      hosts,
+      currentWeekKey(),
+    );
+    const taken = new Set(probeList.map((entry) => entry.host));
+    taken.add(ownHost);
+    const slots = WARD_CAP - Math.min(probeList.length, WARD_CAP);
+    const picked = pickRevisits(merged.bank, taken, slots);
+    revisits = picked.picks;
+    await writeDoorBank(env, { ...merged.bank, cursor: picked.cursor });
+    doorBankNote = {
+      known: Object.keys(merged.bank.doors).length,
+      revisited: revisits.length,
+      ...(merged.evicted ? { evicted: merged.evicted } : {}),
+    };
+  } catch {
+    // No bank this round; the walk is what the feeds gave us.
+  }
+  const walkList: {
+    host: string;
+    url: string;
+    source: "discovery" | "leaderboard" | "both" | "revisit";
+  }[] = [
+    ...probeList.slice(0, WARD_CAP),
+    ...revisits.map((entry) => ({ ...entry, source: "revisit" as const })),
+  ];
+  const results = await pooled(walkList, PROBE_CONCURRENCY, async (entry) => {
     const claim = leaderboard?.byHost.get(entry.host)?.claim;
     // A leaderboard origin is a homepage, not a door — listed with
     // its claim, never knocked on for a 402 it was never built to give.
@@ -408,14 +537,14 @@ export async function runWardRound(env: Env): Promise<WardRound> {
       entry.source === "leaderboard"
         ? { verdict: "not_probed" as const, failed: [], advisories: [] }
         : await probeHost(env, entry.url);
-    results.push({
+    return {
       host: entry.host,
       url: entry.url,
       source: entry.source,
       ...(claim ? { volume_claim: claim } : {}),
       ...probe,
-    });
-  }
+    } satisfies WardHostResult;
+  });
   const presence = await ourSearchPresence(env);
   const walked = results.filter((entry) => entry.verdict !== "not_probed").length;
   /**
@@ -465,6 +594,8 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     at: new Date().toISOString(),
     listed_resources: listed,
     coverage_suspect: coverageSuspect,
+    ...(paginationShape ? { pagination_shape: paginationShape } : {}),
+    ...(doorBankNote ? { door_bank: doorBankNote } : {}),
     capped,
     our_search_presence: presence,
     leaderboard_sellers: leaderboard ? leaderboard.sellers : null,
@@ -530,7 +661,9 @@ export function wardDelta(
 ): WardDelta {
   if (!previous) {
     return {
-      new_hosts: current.hosts.map((entry) => entry.host),
+      new_hosts: current.hosts
+        .filter((entry) => entry.source !== "revisit")
+        .map((entry) => entry.host),
       gone_hosts: [],
       newly_failing: [],
       newly_fixed: [],
@@ -539,9 +672,27 @@ export function wardDelta(
   }
   const before = new Map(previous.hosts.map((entry) => [entry.host, entry]));
   const after = new Map(current.hosts.map((entry) => [entry.host, entry]));
+  /**
+   * Presence is a LISTING question, so revisit rows sit it out: a
+   * door bank re-probe proves our memory reaches back, not that a
+   * directory listed or dropped anybody. Without this filter every
+   * rotation slice would read as a wave of "new" hosts and the next
+   * slice as them all "gone" — the instrument's own cursor motion
+   * reported as the ecosystem churning.
+   */
+  const listedBefore = new Set(
+    previous.hosts
+      .filter((entry) => entry.source !== "revisit")
+      .map((entry) => entry.host),
+  );
+  const listedAfter = new Set(
+    current.hosts
+      .filter((entry) => entry.source !== "revisit")
+      .map((entry) => entry.host),
+  );
   const delta: WardDelta = {
-    new_hosts: [...after.keys()].filter((host) => !before.has(host)),
-    gone_hosts: [...before.keys()].filter((host) => !after.has(host)),
+    new_hosts: [...listedAfter].filter((host) => !listedBefore.has(host)),
+    gone_hosts: [...listedBefore].filter((host) => !listedAfter.has(host)),
     newly_failing: [],
     newly_fixed: [],
     flappers: [],

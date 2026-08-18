@@ -292,7 +292,10 @@ export function validateEvent(input) {
    * `problem_solved` is the residue and is named as such in THE_TAB.md
    * — it is required, it is free text, and a sweep that fills it from
    * the letter rather than from the builder puts vendor prose back in
-   * the ledger. Closing it needs the sweep, which is not built.
+   * the ledger. Closed since 2026-08-10: the sweep is built
+   * (sweep.mjs, the sweep_tally/sweep_finish lane), and on swept
+   * sources this field must be exactly "(not said yet)" — enforced
+   * below, pinned by the residue tests.
    */
   const swept = input?.source === "mail_sweep" || input?.source === "historical_pass";
   if (swept) {

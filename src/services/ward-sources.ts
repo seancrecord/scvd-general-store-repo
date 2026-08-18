@@ -25,6 +25,17 @@
  *
  * Both exclusions dissolve the same way: the keeper rules the wallet
  * law, the round pays for its reads, the roster shrinks by two.
+ *
+ * 2026-08-18: THE WALLET LAW IS RULED — a funding discipline, not
+ * code: the wallet is topped to $25 a calendar month, its balance IS
+ * the cap, and anything over $1 per action asks first. The stated
+ * unblock condition for both directories has therefore arrived. What
+ * remains is the keeper funding the wallet and the readers being
+ * built against each directory's paid API — a build that should
+ * start with one hand-run paid read to capture the response shape,
+ * exactly like every feed before it. Until then the entries below
+ * stand, with their "why" texts kept as written: they are the record
+ * of why the roster was short all this time.
  */
 
 const FUCHSS_BASE = "https://x402.fuchss.app";
@@ -34,11 +45,11 @@ const FETCH_TIMEOUT_MS = 8000;
 export const UNREAD_DIRECTORIES = [
   {
     source: "402index.io",
-    why: "Full enumeration is paid (L402-gated CSV export); the free API rate-limits into 402s well before its ~90k rows. A partial read is unread by the population layer's own law, so it is named instead of half-read. Unblocks when the wallet law is ruled.",
+    why: "Full enumeration is paid (L402-gated CSV export); the free API rate-limits into 402s well before its ~90k rows. A partial read is unread by the population layer's own law, so it is named instead of half-read. The wallet law was ruled 2026-08-18 ($25/month funding discipline); what remains is a funded wallet and a reader built against one hand-captured paid response.",
   },
   {
     source: "x402scan.com",
-    why: "Resource enumeration is a paid endpoint. Spending waits on the wallet law; the day it is ruled, this moves from the unread list to a reader.",
+    why: "Resource enumeration is a paid endpoint. The wallet law was ruled 2026-08-18 ($25/month funding discipline); what remains is a funded wallet and a reader built against one hand-captured paid response.",
   },
 ] as const;
 
