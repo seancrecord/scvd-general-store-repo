@@ -433,3 +433,72 @@ describe("the shelf's products hold up as merchant listings", () => {
     }
   });
 });
+
+/**
+ * THE BUYER-SIDE QUESTIONS EXIST WHERE AN ANSWER ENGINE LOOKS.
+ *
+ * The 2026-08-18 query sweep found every pre-purchase question a
+ * buyer actually types — "check an x402 endpoint before paying",
+ * "is this service legitimate", "free x402 conformance check" —
+ * answered by other people's tools or by nobody, while this store's
+ * FAQ spoke only seller-side. The pairs now exist; these pin them to
+ * both surfaces (/what JSON and the FAQPage JSON-LD) so a copy edit
+ * cannot quietly drop the register buyers search in.
+ */
+describe("the buyer-side questions are published on /what", () => {
+  const BUYER_QUESTIONS = [
+    "How do I check an x402 endpoint before paying it?",
+    "Is this x402 service legitimate? (asked about anyone, us included)",
+    "Is there a free x402 conformance check?",
+  ];
+
+  it("answers them in the JSON register", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/what`)).json()) as {
+      faq: Array<{ question: string; answer: string }>;
+    };
+    const questions = body.faq.map((pair) => pair.question);
+    for (const q of BUYER_QUESTIONS) {
+      expect(questions, `missing buyer-side pair: ${q}`).toContain(q);
+    }
+    // The legitimacy answer must refuse the verdict, not render one —
+    // scoring operators is the thing rule 43 forbids by name.
+    const legit = body.faq.find((pair) => pair.question.startsWith("Is this x402 service legitimate"));
+    expect(legit?.answer).toMatch(/does not keep scores|No instrument here answers/);
+  });
+
+  it("carries them in the FAQPage JSON-LD, where engines read", async () => {
+    const html = await (await SELF.fetch(`${BASE}/what`, { headers: HTML })).text();
+    const block = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html);
+    const data = JSON.parse((block?.[1] ?? "{}").replace(/\\u003c/g, "<")) as {
+      mainEntity?: Array<{ name: string }>;
+    };
+    const names = (data.mainEntity ?? []).map((entity) => entity.name);
+    for (const q of BUYER_QUESTIONS) {
+      expect(names, `${q} is missing from the FAQPage markup`).toContain(q);
+    }
+  });
+
+  it("names only doors that answer", async () => {
+    // Each new answer points at free surfaces; a named URL that 404s
+    // would be the exact defect the sitemap test exists to catch.
+    for (const path of ["/conformance", "/.well-known/trust.json", "/corrections"]) {
+      const response = await SELF.fetch(`${BASE}${path}`);
+      expect(response.status, `${path} is cited in a buyer-side answer and does not answer`).toBe(200);
+    }
+  });
+});
+
+/**
+ * THE HANDOFF LINES ON THE FRONT DOOR. Journey two is a human finding
+ * the store and telling their agent; until 2026-08-18 that journey
+ * ended at prose about us rather than a sentence to hand over. Two
+ * copyable lines now live in the human door; if either leaves the
+ * page, the journey breaks silently, so a test says so instead.
+ */
+describe("the human door hands the agent something to carry", () => {
+  it("renders both handoff lines in copyable form", async () => {
+    const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    expect(page).toContain("Read https://scvd.store/llms.txt and tell me");
+    expect(page).toContain("claude mcp add --transport http scvd-store https://scvd.store/mcp");
+  });
+});

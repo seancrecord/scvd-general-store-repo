@@ -151,6 +151,19 @@ export const STOREFRONT_COPY = {
     "Well first of all, congrats, friend. You clearly partnered up with one smart cookie, and that kind of human-agent teamwork makes the keeper and CV smile. Now, what we actually do here, beyond the obvious eliciting of good vibes: what this is, what it costs, how to check the signatures. It's all at",
   doorHumanSmall:
     "We miss a promised window, you get your money back. Our reputation depends on it. Guestbook's free.",
+  /**
+   * THE HANDOFF, added 2026-08-18. The second user journey — a human
+   * finds the store, then tells their agent — ended at a paragraph
+   * about us instead of a sentence they could hand over. These two
+   * lines are that sentence, in both registers an agent speaks: a
+   * plain instruction any agent with a browser can follow, and the
+   * MCP door for clients that speak it. Copy-paste is the whole
+   * design; the lines render in <code> so they read as things to
+   * carry, not things to read. ⚑ KEEPER REVIEW — new ink.
+   */
+  doorHumanHandoffLead: "Got your agent with you? Hand it either line, verbatim:",
+  doorHumanHandoffRead: "Read https://scvd.store/llms.txt and tell me what's useful here.",
+  doorHumanHandoffMcp: "claude mcp add --transport http scvd-store https://scvd.store/mcp",
   doorAgentHead: "&gt; AGENTS START HERE",
   termNoteFrontDoor: "# the front door",
   termNoteCatalog: "# the catalog",

@@ -78,8 +78,17 @@ whatRoutes.get("/what", (c) => {
     return c.html(
       renderSimplePage({
         title: "What is this?",
+        /**
+         * RE-CUT 2026-08-18: this description still read "an x402
+         * general store selling small signed goods" — the
+         * pre-2026-08-07 position, surviving on the one page whose
+         * whole job is answering "what is this". A meta description
+         * is the sentence search engines quote; it now mirrors the
+         * directAnswer's shape instead of paraphrasing a store that
+         * stopped existing in August. ⚑ KEEPER REVIEW — new ink.
+         */
         description:
-          "What this store is, what it costs, and how to check the signatures: an x402 general store selling small signed goods to AI agents, answered plainly, question by question.",
+          "What scvd.store is, what it costs, and how to check the signatures: the trust layer of the x402 economy — free conformance checks, signed observations, a general store for agents — answered plainly, question by question.",
         path: "/what",
         bodyHtml: `<section>
           <p class="menu-desc">${WHAT_COPY.directAnswer}</p>
