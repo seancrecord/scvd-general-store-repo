@@ -31,6 +31,18 @@
   "routes": [
     { "pattern": "scvd.store", "custom_domain": true }
   ],
+  /**
+   * ONE HOST, SAID OUT LOUD (AT_SCALE rule 4: config states itself).
+   * With this unset, Cloudflare may also serve the Worker at
+   * <name>.workers.dev — the whole store, word for word, on a second
+   * hostname. The HTML pages carry absolute canonicals back to
+   * scvd.store, but the JSON, markdown and llms.txt surfaces mostly
+   * do not, and a search engine meeting the same bytes on two hosts
+   * files them as duplicates and picks a canonical itself (Search
+   * Console: "duplicate without user-selected canonical"). The store
+   * has one address; the side door stays shut.
+   */
+  "workers_dev": false,
   // Weekly digest: Sundays 7am ET (11:00 UTC during daylight time).
   // Hourly: the phantom-check walk (due out-of-band probes).
   "triggers": {

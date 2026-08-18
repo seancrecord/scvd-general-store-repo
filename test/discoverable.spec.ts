@@ -359,3 +359,77 @@ describe("llms.txt, the map agents actually read", () => {
     );
   });
 });
+
+/**
+ * THE SHELF AS GOOGLE'S MERCHANT PIPELINE READS IT.
+ *
+ * Search Console parsed the storefront's ItemList on 2026-08-16 and
+ * called all twenty-three products invalid for a missing image, then
+ * warned on availability, return policy and shipping. An invalid
+ * product earns no merchant listing at all, so the whole block was
+ * decorative. These pin the four fields at the shape the pipeline
+ * checks, on every product, so the twenty-fourth item cannot ship
+ * bare. The offer URL is pinned to the item page too: it pointed at
+ * the 402 door, which reads as a crawl error to anything that cannot
+ * pay.
+ */
+describe("the shelf's products hold up as merchant listings", () => {
+  async function shelfProducts() {
+    const html = await (await SELF.fetch(BASE, { headers: HTML })).text();
+    const blocks = [
+      ...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g),
+    ];
+    const list = blocks
+      .map((block) => JSON.parse(block[1]!.replace(/\\u003c/g, "<")))
+      .find((node) => node["@type"] === "ItemList");
+    expect(list, "the storefront emits no ItemList node").toBeTruthy();
+    return (list.itemListElement as Array<{ item: Record<string, any> }>).map(
+      (entry) => entry.item,
+    );
+  }
+
+  it("every product carries an image, which is the field that voided all of them", async () => {
+    const products = await shelfProducts();
+    expect(products.length).toBe(MENU_ITEMS.length);
+    for (const product of products) {
+      expect(String(product.image ?? ""), `${product.name} has no image`).toMatch(
+        /^https:\/\/scvd\.store\/.+/,
+      );
+    }
+  });
+
+  it("every offer states availability, returns and shipping, and lands on a page that answers", async () => {
+    const products = await shelfProducts();
+    for (const product of products) {
+      const offer = product.offers;
+      expect(String(offer.availability), `${product.name} states no availability`).toContain(
+        "https://schema.org/",
+      );
+      expect(
+        offer.hasMerchantReturnPolicy?.["@type"],
+        `${product.name} has no return policy`,
+      ).toBe("MerchantReturnPolicy");
+      expect(
+        offer.shippingDetails?.["@type"],
+        `${product.name} has no shipping details`,
+      ).toBe("OfferShippingDetails");
+      // The item page, not the 402 buy door: a URL in markup is an
+      // invitation to crawl, and the buy door answers 4xx by design.
+      expect(String(offer.url), `${product.name}'s offer points at the buy door`).toMatch(
+        /\/menu\//,
+      );
+    }
+  });
+
+  it("a human-queue item's handling window is its own sla_hours, never a typed number", async () => {
+    const products = await shelfProducts();
+    for (const item of MENU_ITEMS) {
+      const product = products.find((entry) => entry.url.endsWith(`/menu/${item.id}`));
+      const days =
+        product?.offers?.shippingDetails?.deliveryTime?.handlingTime?.maxValue;
+      expect(days, `${item.id}'s handling window went missing`).toBe(
+        Math.ceil((item.sla_hours ?? 0) / 24),
+      );
+    }
+  });
+});

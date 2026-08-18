@@ -12,6 +12,11 @@ import {
   STORE_SERVICE_NAME,
 } from "@/store";
 import { OPERATED_BY, POSITION_OPENING } from "@/store/copy/position";
+import {
+  CORPUS_DATASET_DESCRIPTION,
+  CORPUS_DATASET_LICENSE,
+  CORPUS_DATASET_NAME,
+} from "@/store/corpus-dataset";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
 import { EXTERNAL_RECORDS } from "@/store/trust-signals";
 import type { StoreStats } from "@/services/stats";
@@ -219,7 +224,68 @@ function jsonLdSafe(value: unknown): string {
  * itself. priceCurrency is "USD" because schema.org wants ISO-4217
  * and the shelf prices in dollar-denominated USDC; the description
  * says USDC plainly, so nothing is hidden by the code.
+ *
+ * FILLED OUT TO MERCHANT-LISTING SHAPE, 2026-08-18, after Search
+ * Console read all 23 products and called every one invalid for a
+ * missing image, then warned on availability, return policy and
+ * shipping. The image requirement has no per-item answer yet — the
+ * only art this store publishes is the dino card at /og.png, so every
+ * product wears the store's face rather than none (a sample_url,
+ * where one exists, is the item's own art and wins). The other three
+ * fields are facts the store states elsewhere and simply hadn't said
+ * here: availability was already computed for makesOffer below,
+ * returns are the settlement reality written down in refund-policy.ts
+ * and served at /rights, and shipping is the one honest zero a
+ * digital shelf gets — nothing ships, delivery is the response
+ * itself, the handling window for human-queue items is the listing's
+ * own sla_hours rather than a number typed here.
  */
+function offerAvailability(item: (typeof MENU_ITEMS)[number]): string {
+  return item.fulfillment === "instant"
+    ? "https://schema.org/InStock"
+    : "https://schema.org/LimitedAvailability";
+}
+
+/**
+ * The settlement reality as schema.org speaks it: x402 moves funds
+ * wallet-to-wallet at purchase, nothing is held and nothing can be
+ * sent back by code, so "returns not permitted" is the true category.
+ * The missed-SLA refund promise (refund-policy.ts, on /rights) is a
+ * delivery guarantee the keeper pays by hand, not a return channel,
+ * and dressing it up as one here would promise a mechanism that does
+ * not exist. applicableCountry is where the shop stands, not a limit
+ * on who may buy.
+ */
+const OFFER_RETURN_POLICY = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "US",
+  returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+};
+
+function offerShippingDetails(item: (typeof MENU_ITEMS)[number]): object {
+  const handlingDays = Math.ceil((item.sla_hours ?? 0) / 24);
+  return {
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: {
+        "@type": "QuantitativeValue",
+        minValue: 0,
+        maxValue: handlingDays,
+        unitCode: "DAY",
+      },
+      transitTime: {
+        "@type": "QuantitativeValue",
+        minValue: 0,
+        maxValue: 0,
+        unitCode: "DAY",
+      },
+    },
+  };
+}
+
 function productListJsonLd(base: string): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
@@ -234,12 +300,24 @@ function productListJsonLd(base: string): string {
         name: item.name,
         description: `${item.description} Paid in USDC over x402, on Base or Solana.`,
         url: `${base}/menu/${item.id}`,
+        image: `${base}${item.sample_url ?? "/og.png"}`,
         brand: { "@type": "Brand", name: STORE_SERVICE_NAME },
         offers: {
           "@type": "Offer",
           price: String(item.price_usdc),
           priceCurrency: "USD",
-          url: `${base}/api/buy/${item.id}`,
+          /**
+           * THE ITEM PAGE, NOT THE BUY DOOR. This read /api/buy/{id}
+           * until 2026-08-18, which hands every crawler that honors
+           * the markup a URL whose one answer is 402 — Search Console
+           * duly filed them under "blocked due to other 4xx". The
+           * offer's public face is the item page; the 402 door is
+           * printed on it for the readers who can walk through.
+           */
+          url: `${base}/menu/${item.id}`,
+          availability: offerAvailability(item),
+          hasMerchantReturnPolicy: OFFER_RETURN_POLICY,
+          shippingDetails: offerShippingDetails(item),
           ...(item.pricing === "pay_what_it_deserves"
             ? { description: "Minimum; higher tiers offered in the 402, recorded as tips." }
             : {}),
@@ -259,16 +337,21 @@ function productListJsonLd(base: string): string {
  * Dataset gets its own top-level node here, where the storefront is
  * crawled, and the two halves join up through the shared identity.
  *
- * Deliberately thin: the full record lives at /corpus.json and this is
- * a pointer to it. A second copy of the description here would be free
- * to drift from the first, which is the defect this store keeps
- * finding in its own work.
+ * Thin, but no longer below the type's floor. The first draft omitted
+ * the description on the "no second copy to drift" rule — correct
+ * instinct, wrong mechanism: schema.org's Dataset requires one, and
+ * Search Console read the omission as an invalid Dataset outright
+ * (2026-08-16), which is worse than drift. The fix is the rule applied
+ * properly — name, description and licence are the same imported
+ * constants /corpus.json serves, one copy, two surfaces.
  */
 function corpusDatasetJsonLd(base: string): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: "The scvd corpus — weekly observations of the public x402 ecosystem",
+    name: CORPUS_DATASET_NAME,
+    description: CORPUS_DATASET_DESCRIPTION,
+    license: CORPUS_DATASET_LICENSE,
     url: `${base}/corpus.json`,
     creator: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
     isAccessibleForFree: true,
@@ -375,10 +458,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
         SPEC_WHY_USE[item.id] ?? SPEC_RETURNS[item.id] ?? item.description,
       price: String(item.price_usdc),
       priceCurrency: "USDC",
-      availability:
-        item.fulfillment === "instant"
-          ? "https://schema.org/InStock"
-          : "https://schema.org/LimitedAvailability",
+      availability: offerAvailability(item),
       url: `${base}/menu/${item.id}`,
     })),
     /**

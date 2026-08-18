@@ -212,27 +212,46 @@ describe("the corpus declares itself a dataset", () => {
     expect(body.chain).toBeTruthy();
   });
 
-  it("asserts no licence, because inventing legal terms is the wrong reflex here", async () => {
+  it("carries CC BY 4.0 — an off-the-shelf licence, not invented terms", async () => {
+    /**
+     * REVERSED 2026-08-18, reasoning in corpus-dataset.ts: asserting
+     * no licence read as principled and behaved as all-rights-reserved,
+     * and Search Console flagged the missing field on every Dataset.
+     * CC BY 4.0 is taken whole — zero drafted words — and requires the
+     * one thing the corpus exists for: reuse that names its source.
+     */
     const body = (await (await SELF.fetch(`${BASE}/corpus.json`)).json()) as Record<
       string,
       unknown
     >;
-    expect(body.license).toBeUndefined();
-    // What a reader actually needs is the fact, not a licence name.
+    expect(String(body.license)).toContain("creativecommons.org/licenses/by/4.0");
+    // The plain fact still rides beside the licence name.
     expect(String(body.conditionsOfAccess)).toContain("Free to read");
   });
 
   it("is reachable as its own entity from the storefront, not only by guessing the URL", async () => {
     const html = await (await SELF.fetch(`${BASE}/`)).text();
     const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
-    const types = blocks.map((block) => {
+    const nodes = blocks.map((block) => {
       try {
-        return (JSON.parse(block[1]!) as { "@type"?: string })["@type"];
+        return JSON.parse(block[1]!) as Record<string, unknown>;
       } catch {
         return null;
       }
     });
-    expect(types, "the storefront emits no Dataset node").toContain("Dataset");
+    const dataset = nodes.find((node) => node?.["@type"] === "Dataset");
+    expect(dataset, "the storefront emits no Dataset node").toBeTruthy();
+    /**
+     * AND IT IS A VALID ONE. This node shipped without a description —
+     * below schema.org's floor for the type, so Search Console counted
+     * the store's one Dataset impression as invalid (2026-08-16). The
+     * fields are shared constants with /corpus.json; this pins that
+     * both surfaces stay whole, not merely present.
+     */
+    expect(String(dataset?.description ?? "")).toContain("weekly ward round");
+    expect(String(dataset?.license ?? "")).toContain(
+      "creativecommons.org/licenses/by/4.0",
+    );
   });
 });
 
