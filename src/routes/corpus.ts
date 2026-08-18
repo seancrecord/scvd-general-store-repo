@@ -5,6 +5,11 @@ import {
   verifyCorpusChain,
 } from "@/services/corpus";
 import { subjectHistory } from "@/services/subject-history";
+import {
+  CORPUS_DATASET_DESCRIPTION,
+  CORPUS_DATASET_LICENSE,
+  CORPUS_DATASET_NAME,
+} from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -50,16 +55,18 @@ corpusRoutes.get("/corpus.json", async (c) => {
      * that speaks schema.org. Keys outside the vocabulary are simply
      * not interpreted; nothing had to move to make room.
      *
-     * NO LICENCE IS ASSERTED. Inventing legal terms for the data would
-     * be exactly the wrong reflex under the keeper's no-lawyers ruling.
-     * What is stated instead is the fact: free to read, no account, no
-     * key — which is the thing a reader actually needs to know.
+     * Name, description and licence are imported, not typed here: the
+     * storefront declares this same Dataset in its own JSON-LD, and the
+     * two copies drifted the first time they were written by hand (the
+     * storefront's had no description at all — an invalid Dataset in
+     * Search Console's reading). The licence question — long answered
+     * "assert none" — is settled at length in corpus-dataset.ts.
      */
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: "The scvd corpus — weekly observations of the public x402 ecosystem",
-    description:
-      "One snapshot per weekly ward round of the public x402 discovery list: which hosts were listed, which answered, and what a single conformance probe saw at that moment. Hash-chained, ed25519-signed, each digest submitted to OpenTimestamps for Bitcoin anchoring. Dated observations of moments, never scores on operators.",
+    name: CORPUS_DATASET_NAME,
+    description: CORPUS_DATASET_DESCRIPTION,
+    license: CORPUS_DATASET_LICENSE,
     url: `${base}/corpus.json`,
     creator: { "@type": "Organization", name: "scvd.store", url: base },
     isAccessibleForFree: true,

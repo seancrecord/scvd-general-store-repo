@@ -253,12 +253,26 @@ catalogRoutes.get("/menu/:item_id", async (c) => {
       404,
     );
   }
+  /**
+   * A CANONICAL SAYS SO, EVEN ON JSON. These pages are in the sitemap
+   * and content-negotiate two bodies at one URL, and a JSON page has
+   * no <head> to declare itself in — so a crawler meeting the same
+   * shelf here, at /menu.json, and on any non-scvd.store host it may
+   * reach us through, is left to pick a canonical itself (Search
+   * Console: "duplicate without user-selected canonical"). The Link
+   * header is the declaration HTTP provides for exactly this.
+   */
+  const canonical = { Link: `<${base}/menu/${item.id}>; rel="canonical"` };
   if (wantsMarkdown(c.req.header("Accept"))) {
-    return c.text(renderItemMarkdown(item, base), 200, MARKDOWN_HEADERS);
+    return c.text(renderItemMarkdown(item, base), 200, {
+      ...MARKDOWN_HEADERS,
+      ...canonical,
+    });
   }
   const shutter: ShutterState = await shutterState(c.env).catch(() => ({
     closed: false,
   }));
+  c.header("Link", canonical.Link);
   return c.json({
     ...item,
     buy_url: `${base}/api/buy/${item.id}`,
