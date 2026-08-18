@@ -101,8 +101,12 @@ and standing for future claims from the same account): this note is
 the ownership confirmation — only the repository owner can put it
 here.
 
-[![M8ven Verified](https://m8ven.ai/badge/mcp/seancrecord-scvd-general-store-repo-l9nvwp)](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp)
+[![M8ven Live Monitored](https://m8ven.ai/badge/mcp/seancrecord-scvd-general-store-repo-0xqk2v)](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v)
 <!-- m8ven-verify: e4a10c3c1d4a29d7b0b13e59eb523b66 -->
+<!-- Badge re-slugged 2026-08-18: m8ven's Live Monitored connection issued
+     a new listing id (-0xqk2v, replacing -l9nvwp); the badge now
+     self-updates on every re-verification. -->
+
 
 ## What's on the shelves
 
@@ -459,7 +463,7 @@ are not:
   install config and mirrored skill text lag the repo until its next
   crawl, which is noted in the canonical record rather than argued
   with.
-- **m8ven.ai** — [a dependency scanner](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-l9nvwp)
+- **m8ven.ai** — [a dependency scanner](https://m8ven.ai/mcp/seancrecord-scvd-general-store-repo-0xqk2v)
   that audits this repository's declared packages against OSV. Its
   readings can lag the repo (its 2026-08-04 CVE flag was a dev-only
   tool, upgraded the same day) — an instrument pointed at us is worth
