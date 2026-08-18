@@ -241,13 +241,16 @@ with their evidence rather than deleted:
 
 **Ruled 2026-08-18, evening:**
 
-- **The wallet law's three blanks are FILLED**: hard cap **$25 per
-  calendar month**, ask-first above **$1 per action**, binding the
-  STORE'S autonomous spending wallets — the settlement-attempt lane
-  and the evaluator's gas. The law is CV's by authorship, not by
-  subject; the keeper's own spending is untouched. This was the head
-  of the critical path: both revenue lanes are now unblocked, and the
-  constants land with the first spending-lane build.
+- **The wallet law, settled and then SIMPLIFIED the same evening.**
+  Numbers: $25/calendar month, ask-first above $1, binding the store's
+  autonomous spending wallets (settlement-attempt lane, evaluator
+  gas). Then the keeper asked what the cap was actually doing, and the
+  honest answer was "nothing, until something spends" — so the cap is
+  implemented as a FUNDING DISCIPLINE, not code: the wallet is topped
+  to $25 a month and its balance IS the cap, physically. A bug cannot
+  spend money that is not there, and there is no enforcement machinery
+  to have bugs of its own. Ask-first-above-$1 stays as the one
+  behavioral rule. Both revenue lanes unblocked; zero build cost.
 - **The evaluator position is ruled** (keeper reviewed, aligned) — on
   /becoming as dated direction, both gates named.
 - **The funnel's first real load** returned WINDOW-SHOPPING across the
@@ -260,10 +263,11 @@ with their evidence rather than deleted:
   walkers — promote the census's undeclared_walkers to channel.ts
   before trusting the denominators.
 - **x402-list**: verification passed; acceptance waits on a category
-  change (Finance → Facilitation, their ask). Token route stays until
-  accepted, then comes out. Flag on record: if their "Facilitation"
-  bucket means payment-facilitator in the x402 sense, that is a role
-  this store deliberately is not.
+  change, Finance → **Verifiers** (keeper corrected the earlier
+  "Facilitation" reading). No flag needed — Verifiers is the CORRECT
+  filing, and notably the first outside directory to categorize this
+  store as what it is rather than as a shop. Token route stays until
+  accepted, then comes out.
 
 **What is genuinely open:**
 
