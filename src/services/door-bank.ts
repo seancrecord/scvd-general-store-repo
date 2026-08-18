@@ -1,4 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
 /**
@@ -98,6 +99,67 @@ export function mergeDoors(
     }
   }
   return { bank: { doors, cursor: bank.cursor }, evicted };
+}
+
+/**
+ * THE BACKFILL — one pass over the STORED ward rounds, so the bank
+ * opens holding every door history already declared instead of
+ * waiting weeks for the broken feed to re-name them. Keeper-fired
+ * (rule 30), idempotent: merging the same rounds twice lands on the
+ * same bank. Leaderboard rows are skipped for the same reason they
+ * are never probed — a homepage is not a door — and revisit rows are
+ * skipped because they came FROM the bank.
+ */
+export async function backfillDoorBank(env: Env): Promise<{
+  rounds_read: number;
+  doors_before: number;
+  doors_after: number;
+  evicted: number;
+}> {
+  const weekKeys: string[] = [];
+  let cursor: string | undefined;
+  for (;;) {
+    const listed = await env.COUNTERS.list({
+      prefix: "ward:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    weekKeys.push(...listed.keys.map((key) => key.name));
+    if (listed.list_complete || !listed.keys.length) break;
+    cursor = listed.cursor;
+  }
+  // Oldest week first, so last_listed honestly lands on the newest
+  // round that actually named each door.
+  weekKeys.sort();
+
+  let bank = await readDoorBank(env);
+  const doorsBefore = Object.keys(bank.doors).length;
+  let roundsRead = 0;
+  let evicted = 0;
+  for (const key of weekKeys) {
+    const round = await env.COUNTERS.get<WardRound>(key, "json");
+    if (!round?.week || !Array.isArray(round.hosts)) continue;
+    roundsRead += 1;
+    const declared = round.hosts
+      .filter(
+        (host) =>
+          host.source !== "leaderboard" &&
+          host.source !== "revisit" &&
+          typeof host.url === "string" &&
+          host.url.startsWith("https://"),
+      )
+      .map((host) => ({ host: host.host, url: host.url }));
+    const merged = mergeDoors(bank, declared, round.week);
+    bank = merged.bank;
+    evicted += merged.evicted;
+  }
+  await writeDoorBank(env, bank);
+  return {
+    rounds_read: roundsRead,
+    doors_before: doorsBefore,
+    doors_after: Object.keys(bank.doors).length,
+    evicted,
+  };
 }
 
 /**

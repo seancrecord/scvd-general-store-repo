@@ -123,6 +123,29 @@ function directoryJsonLd(base: string): string {
   return `<script type="application/ld+json">${JSON.stringify(graph)}</script>`;
 }
 
+/**
+ * One listing's own page gets its own Review node (2026-08-18, the
+ * AEO straggler): the detail pages are the linkable surface, and
+ * until now only the index carried markup — a crawler landing on a
+ * single listing saw prose with no structure at all.
+ */
+function listingJsonLd(listing: DirectoryListing, base: string): string {
+  const review = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    url: `${base}/directory/${listing.slug}`,
+    datePublished: listing.added,
+    reviewBody: listing.review,
+    author: { "@type": "Organization", name: "scvd.store", url: base },
+    itemReviewed: {
+      "@type": "Organization",
+      name: listing.name,
+      url: listing.url,
+    },
+  };
+  return `<script type="application/ld+json">${JSON.stringify(review)}</script>`;
+}
+
 directoryRoutes.get("/directory", (c) => {
   const base = c.env.STORE_BASE_URL;
   if (wantsHtml(c.req.header("Accept"))) {
@@ -187,7 +210,8 @@ directoryRoutes.get("/directory/:slug", (c) => {
         bodyHtml: `<section>
           ${listingHtml(listing, base)}
           <p class="menu-meta">One of ${DIRECTORY.listings.length} in the <a href="/directory">Town Directory</a>, ${escapeHtml(DIRECTORY.district)}. No fee was paid for this listing and none could be.</p>
-        </section>`,
+        </section>
+        ${listingJsonLd(listing, base)}`,
       }),
     );
   }
