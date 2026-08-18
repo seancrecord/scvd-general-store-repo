@@ -572,6 +572,9 @@ export function renderStorefront(data: StorefrontData): string {
         <p>${COPY.doorHumanBody}
         <a class="door-cta" href="/what">/what</a>.</p>
         <p class="door-small">${COPY.doorHumanSmall}</p>
+        <p class="door-small">${COPY.doorHumanHandoffLead}</p>
+        <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffRead)}</code></p>
+        <p class="door-small"><code>${escapeHtml(COPY.doorHumanHandoffMcp)}</code></p>
       </div>
       <div class="door door-agent">
         <h3>${COPY.doorAgentHead}<span class="cursor">_</span></h3>
