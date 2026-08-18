@@ -1,4 +1,11 @@
-# ERC-8183's evaluator seat — a real read, and a position for the keeper
+# ERC-8183's evaluator seat — a real read, and the store's position
+
+**RULED 2026-08-18: the keeper reviewed this document and aligned.**
+The recommendation below is now the store's position, in the /becoming
+register (decided direction, gated, not stock). The two gates before
+anything touches a chain: the wallet law's three blanks, and a
+completed testnet run. Nothing else in this document changed with the
+ruling — it was written to be ruled on, and it was.
 
 Read 2026-08-18 from the actual contracts
 (`github.com/erc-8183/base-contracts`, `contracts/ERC8183.sol`, 1,084
@@ -80,7 +87,7 @@ with a better answer to the seat's own structural flaw.
   on-chain `evaluatorFeeBP` as incidental — or publish reject-rate
   alongside the record so the incentive is visible.
 
-## Recommended position (draft — keeper's ruling)
+## The position (ruled 2026-08-18)
 
 Enter the seat, narrowly and instrumented:
 
