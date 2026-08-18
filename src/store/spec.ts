@@ -32,7 +32,7 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * fact they were never charged, and it says so inside somebody else's
  * catalogue where we cannot correct it.
  */
-export const SKILL_VERSION = "3.1.0";
+export const SKILL_VERSION = "3.2.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
