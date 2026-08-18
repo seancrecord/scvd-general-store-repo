@@ -239,6 +239,36 @@ with their evidence rather than deleted:
   signed artifact, a dedicated no-custody evaluator wallet decided
   alongside the wallet law, testnet first. KEEPER'S RULING.
 
+**Ruled 2026-08-18, evening:**
+
+- **The wallet law, settled and then SIMPLIFIED the same evening.**
+  Numbers: $25/calendar month, ask-first above $1, binding the store's
+  autonomous spending wallets (settlement-attempt lane, evaluator
+  gas). Then the keeper asked what the cap was actually doing, and the
+  honest answer was "nothing, until something spends" — so the cap is
+  implemented as a FUNDING DISCIPLINE, not code: the wallet is topped
+  to $25 a month and its balance IS the cap, physically. A bug cannot
+  spend money that is not there, and there is no enforcement machinery
+  to have bugs of its own. Ask-first-above-$1 stays as the one
+  behavioral rule. Both revenue lanes unblocked; zero build cost.
+- **The evaluator position is ruled** (keeper reviewed, aligned) — on
+  /becoming as dated direction, both gates named.
+- **The funnel's first real load** returned WINDOW-SHOPPING across the
+  board, zero wallets opened anywhere in a ~25h window — consistent
+  with the lifetime ledger (703 asks : 1 wallet). Diagnosis stands:
+  the wall is upstream (pitch/price/inputs), not the flow. The load
+  also caught a bug in the instrument itself (the exact-boundary
+  coverage lie, fixed and pinned same day) and showed the flat
+  ~50–100 asks/day/item profile that fingerprints undetected catalog
+  walkers — promote the census's undeclared_walkers to channel.ts
+  before trusting the denominators.
+- **x402-list**: verification passed; acceptance waits on a category
+  change, Finance → **Verifiers** (keeper corrected the earlier
+  "Facilitation" reading). No flag needed — Verifiers is the CORRECT
+  filing, and notably the first outside directory to categorize this
+  store as what it is rather than as a shop. Token route stays until
+  accepted, then comes out.
+
 **What is genuinely open:**
 
 **1. First outside dollar for the verification tier.** Still $0 while

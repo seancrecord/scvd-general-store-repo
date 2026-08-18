@@ -255,7 +255,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "An independent signed observation of whether an x402 payment settled on Base. Give it a transaction hash (and optionally the payer, recipient, nonce, or amount you expected) and it reads public chain state once and signs what it found: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH, or REVERTED. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes a moment on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
     note_402:
-      "Four tenths of a cent, friend. The chain read is free; the signed, disinterested receipt is what you are buying.",
+      "Four tenths of a cent, friend. The chain read is free; the signed, disinterested receipt is what you are buying. No transaction hash of your own yet? Buy anything here — the half-cent blessing counts — and the purchase response hands you this door's URL with your own settlement hash already filled in.",
     constraints: [
       "Give the transaction hash in the tx_hash query parameter",
       "Optional narrowing: payer, recipient, nonce, amount_usdc, or payment_payload (the base64 PAYMENT-SIGNATURE you sent, read with the store's own replay-guard code)",

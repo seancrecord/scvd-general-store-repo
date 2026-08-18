@@ -94,6 +94,16 @@ export const ALERT_CONDITIONS = [
    * This condition is the machine doing that reading, hourly.
    */
   "books_invariant",
+  /**
+   * MONEY LEFT THE TILL (2026-08-18). The store's code holds no key
+   * to the receiving wallets and never sends from them, so an
+   * outgoing transfer is the keeper's own hand or a theft — and the
+   * difference between catching a drained wallet within the hour and
+   * at the next monthly glance is the whole balance. Keyed by tx, so
+   * one sweep the keeper made himself pages once and is dismissed
+   * with a glance.
+   */
+  "till_outflow",
 ] as const;
 
 export type AlertCondition = (typeof ALERT_CONDITIONS)[number];

@@ -1,4 +1,4 @@
-import { getBlockNumber, usdcTransfersTo, usdcFromUnits } from "@/lib/base-rpc";
+import { getBlockNumber, usdcTransfersFrom, usdcTransfersTo, usdcFromUnits } from "@/lib/base-rpc";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -505,6 +505,37 @@ export async function reconcileAgainstChain(
           recorded_at: new Date().toISOString(),
         }
       : null;
+
+  /*
+   * THE TILL SENTINEL rides the same walk, same block range, one more
+   * indexed getLogs (2026-08-18; the keeper's scenario: revenue piles
+   * up unchecked, a compromised key drains it, and every instrument
+   * here reports a clean sweep — because every instrument here watched
+   * money ARRIVE). No code in this store holds the receiving wallet's
+   * key and rule 30 says none ever will, so the store expects zero
+   * automated outflows forever: any outgoing transfer is the keeper's
+   * own hand or a theft. Both get a page inside the hour — one costs a
+   * confirming glance, the other is caught a week before a monthly
+   * look at the account would have found an empty till.
+   *
+   * FAILS QUIET ON READ ERRORS, deliberately: the incoming walk
+   * retries next hour and never advances the cursor on failure, so the
+   * sentinel's range is never lost — it re-reads the same blocks on
+   * the next pass. Alerting on a transient RPC error here would page
+   * the keeper about the instrument instead of about money.
+   */
+  try {
+    const outflows = await usdcTransfersFrom(env, payTo, fromBlock, toBlock);
+    for (const outflow of outflows) {
+      await sendAlert(env, {
+        condition: "till_outflow",
+        detail: `MONEY LEFT THE TILL: ${usdcFromUnits(outflow.amount)} USDC moved OUT of the store's Base receiving wallet to ${outflow.to} in transaction ${outflow.txHash} (block ${outflow.block}). This store's code holds no key to that wallet and never sends from it, so this was either your own hand — confirm with a glance and dismiss — or the wallet's key is compromised, in which case sweep the remaining balance to a cold key NOW and treat every machine that key has touched as burned. Rotating store secrets does nothing here; the wallet key lives with you, not with the Worker.`,
+        key: outflow.txHash,
+      }).catch(() => undefined);
+    }
+  } catch {
+    // Re-read next pass; the cursor discipline keeps the range.
+  }
 
   let transfers: Awaited<ReturnType<typeof usdcTransfersTo>>;
   try {

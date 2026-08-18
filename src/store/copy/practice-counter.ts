@@ -74,6 +74,7 @@ export const PRACTICE_COUNTER_COPY = {
     "settlement_attestation answers that one question and nothing else: give it a transaction hash and it reads Base once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. $0.004. One read, no poll, no retry, and nobody looked at it on our end.",
     "It is not a check on your signing. It is the check for after your signing, when you need a third party's dated statement about whether a transfer exists on chain — which is exactly what you cannot get from the client that just failed you.",
     "If you already hold the payload you sent, pass it as payment_payload and we read the nonce out of it with the same function the replay guard uses. Otherwise tx_hash on its own is enough.",
+    "And if your test purchase just WORKED: the response you are holding carries attest_this_purchase — the same door with your own settlement hash already in the URL. Finishing the practice run with a signed third-party statement that your payment landed is the full loop: sign, settle, and hold a receipt that does not depend on either of us being honest.",
   ],
 
   /**

@@ -39,6 +39,7 @@ const PAY_TO = "0x1111111111111111111111111111111111111111";
 const HEAD = 30_000_000;
 
 function rpcFetch(handlers: {
+    outflows?: Array<{ tx: string; to: string; units: number; block?: number }>;
   head?: number;
   logs?: Array<{ tx: string; from: string; units: bigint; block: number }>;
   fail?: "head" | "logs";
@@ -59,6 +60,33 @@ function rpcFetch(handlers: {
     if (body.method === "eth_getLogs") {
       if (handlers.fail === "logs") {
         return { ok: false, status: 429 } as unknown as Response;
+      }
+      /*
+       * DISPATCH BY TOPIC SHAPE, the same lesson the settle mocks
+       * learned: a mock keyed by call order breaks the day a new read
+       * joins the walk. The till sentinel (2026-08-18) queries with
+       * TWO topics (transfer, from=payTo); the incoming walk queries
+       * with THREE (transfer, null, to=payTo). A real node filters by
+       * the request; so does this.
+       */
+      const requestTopics = (body as { params?: Array<{ topics?: unknown[] }> })
+        .params?.[0]?.topics;
+      if (Array.isArray(requestTopics) && requestTopics.length === 2) {
+        return {
+          ok: true,
+          json: async () => ({
+            result: (handlers.outflows ?? []).map((entry) => ({
+              transactionHash: entry.tx,
+              topics: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                `0x${PAY_TO.replace(/^0x/, "").padStart(64, "0")}`,
+                `0x${entry.to.replace(/^0x/, "").padStart(64, "0")}`,
+              ],
+              data: `0x${entry.units.toString(16)}`,
+              blockNumber: `0x${(entry.block ?? 29_999_000).toString(16)}`,
+            })),
+          }),
+        } as unknown as Response;
       }
       return {
         ok: true,
@@ -488,8 +516,17 @@ describe("the catch-up loop (problem ledger #24)", () => {
     const inner = rpcFetch({ logs: [] });
     let calls = 0;
     return (async (url: string, init: RequestInit) => {
-      const body = JSON.parse(String(init.body)) as { method: string };
-      if (body.method === "eth_getLogs") {
+      const body = JSON.parse(String(init.body)) as {
+        method: string;
+        params?: Array<{ topics?: unknown[] }>;
+      };
+      // Only the incoming reads (three topics) count toward the
+      // failure schedule; the sentinel's two-topic read fails quiet by
+      // design and must not shift which PASS dies.
+      if (
+        body.method === "eth_getLogs" &&
+        (body.params?.[0]?.topics?.length ?? 0) === 3
+      ) {
         calls += 1;
         if (calls > n) {
           return { ok: false, status: 429 } as unknown as Response;
@@ -562,8 +599,17 @@ describe("the catch-up loop (problem ledger #24)", () => {
     const inner = rpcFetch({ logs: [] });
     let logCalls = 0;
     const counting = (async (url: string, init: RequestInit) => {
-      const body = JSON.parse(String(init.body)) as { method: string };
-      if (body.method === "eth_getLogs") logCalls += 1;
+      const body = JSON.parse(String(init.body)) as {
+        method: string;
+        params?: Array<{ topics?: unknown[] }>;
+      };
+      // One PASS is one incoming read; the sentinel's outflow read
+      // rides the same pass and is not a second pass.
+      if (
+        body.method === "eth_getLogs" &&
+        (body.params?.[0]?.topics?.length ?? 0) === 3
+      )
+        logCalls += 1;
       return (inner as (u: string, i: RequestInit) => Promise<Response>)(
         url,
         init,
@@ -655,8 +701,16 @@ describe("the stall is loud the first hour (the 2026-08-12 fix)", () => {
     const inner = rpcFetch({ logs: [] });
     let calls = 0;
     const failsAfterTwo = (async (url: string, init: RequestInit) => {
-      const body = JSON.parse(String(init.body)) as { method: string };
-      if (body.method === "eth_getLogs") {
+      const body = JSON.parse(String(init.body)) as {
+        method: string;
+        params?: Array<{ topics?: unknown[] }>;
+      };
+      // Incoming reads only — the sentinel's two-topic read fails
+      // quiet by design and must not shift which pass dies.
+      if (
+        body.method === "eth_getLogs" &&
+        (body.params?.[0]?.topics?.length ?? 0) === 3
+      ) {
         calls += 1;
         if (calls > 2) return { ok: false, status: 429 } as unknown as Response;
       }
@@ -718,5 +772,89 @@ describe("the cron pass", () => {
       ),
     );
     expect(result.orphans).toEqual([]);
+  });
+});
+
+describe("the till sentinel — money leaving the receiving wallet", () => {
+  /**
+   * The keeper's scenario, 2026-08-18: revenue piles up, nobody
+   * checks the account for a month, a compromised key drains it — and
+   * every instrument here reports a clean sweep, because every
+   * instrument here watched money ARRIVE. The store's code holds no
+   * key to the till and never sends from it, so an outgoing transfer
+   * is the keeper's own hand or a theft; both deserve a page inside
+   * the hour.
+   */
+  it("pages on an outgoing transfer, naming amount, destination and tx", async () => {
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 100));
+    const tx = `0x${"d1".repeat(32)}`;
+    await runChainReconciliation(
+      envWith(
+        rpcFetch({
+          logs: [],
+          outflows: [
+            { tx, to: "0x9999999999999999999999999999999999999999", units: 52_090_000 },
+          ],
+        }),
+      ),
+    );
+    const alerts = await listAlerts(testEnv, 20);
+    const row = alerts.find((a) => a.condition === "till_outflow");
+    expect(row, "no till_outflow alert raised").toBeDefined();
+    expect(row!.detail).toContain("52.09");
+    expect(row!.detail).toContain("0x9999999999999999999999999999999999999999");
+    expect(row!.detail).toContain(tx);
+    // The advice must never be "rotate store secrets" — the wallet key
+    // lives with the keeper, and reflexive rotation was last month's
+    // lesson.
+    expect(row!.detail).toContain("Rotating store secrets does nothing here");
+  });
+
+  it("pages ONCE per transaction, so the keeper's own sweep costs one glance", async () => {
+    const tx = `0x${"d2".repeat(32)}`;
+    for (const pass of [1, 2]) {
+      await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 100));
+      void pass;
+      await runChainReconciliation(
+        envWith(
+          rpcFetch({
+            logs: [],
+            outflows: [{ tx, to: "0x8888888888888888888888888888888888888888", units: 1_000_000 }],
+          }),
+        ),
+      );
+    }
+    const rows = (await listAlerts(testEnv, 20)).filter(
+      (a) => a.condition === "till_outflow" && a.detail.includes(tx),
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.repeats).toBe(2);
+  });
+
+  it("never fails the incoming walk when the outflow read dies", async () => {
+    /*
+     * The sentinel is a passenger, not the driver: a transient RPC
+     * error on ITS read must not cost the walk a pass — the cursor
+     * discipline re-reads the same range next hour, so nothing is
+     * lost by staying quiet.
+     */
+    await testEnv.COUNTERS.put(KV_KEYS.reconcileCursor, String(HEAD - 100));
+    const inner = rpcFetch({ logs: [] });
+    const outflowDies = (async (url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as {
+        method: string;
+        params?: Array<{ topics?: unknown[] }>;
+      };
+      if (
+        body.method === "eth_getLogs" &&
+        (body.params?.[0]?.topics?.length ?? 0) === 2
+      ) {
+        return { ok: false, status: 429 } as unknown as Response;
+      }
+      return (inner as (u: string, i: RequestInit) => Promise<Response>)(url, init);
+    }) as unknown as typeof fetch;
+    const result = await runChainReconciliation(envWith(outflowDies));
+    expect(result.ran).toBe(true);
+    expect(result.failed).toBeFalsy();
   });
 });

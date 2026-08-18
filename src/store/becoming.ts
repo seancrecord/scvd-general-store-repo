@@ -136,6 +136,21 @@ export const WATCHED: readonly Watched[] = [
       "Nothing for sale, still — but the trigger fired on 2026-08-10: the criteria page exists at /criteria, published before anything carries a badge, with the keeper's ruling on retirement recorded (nothing retires a badge; it ages, and re-observation answers whether it still holds). Nothing carries a badge yet, and per this page's own standfirst, a decided direction with an open gate is still not an available product.",
   },
   {
+    /**
+     * RULED 2026-08-18, the same day the contracts were read. The
+     * position doc (docs/ERC8183_EVALUATOR.md) was drafted from the
+     * actual ERC8183.sol rather than summaries, and the keeper
+     * reviewed and aligned. This entry is that ruling in the register
+     * this page exists for: decided direction, dated, gated on
+     * triggers a stranger can check — never presented as stock.
+     */
+    item: "The ERC-8183 evaluator seat — serving as the named third-party evaluator on agentic-commerce jobs whose deliverables this store's published batteries can already judge. The standard's own text gives the seat to one address: an evaluator who alone may mark a job completed, paid a protocol fee on completion. Decided 2026-08-18: this store intends to sit in it, narrowly — only job types with published criteria, every verdict minting a signed artifact citing the criteria version and deliverable hash, refusals as public as completions.",
+    trigger:
+      "Two gates, both checkable. First, the wallet law's three blanks (hard cap, cap period, ask-first threshold) — the evaluator is an on-chain actor, and this store has never held a transaction-signing key; a dedicated no-custody evaluator wallet gets ruled in the same breath. Second, a completed testnet run: the store standing in the seat for house-created jobs before anyone's real escrow depends on our liveness, because ERC-8183's one-hour post-expiry grace period makes evaluator downtime the provider's problem.",
+    today:
+      "The read and the position, nothing on chain. Worth recording why the seat fits: the contract pays the evaluator only on COMPLETION — rejecting pays nothing — so every economic force in the standard leans toward approving, and the only counterweight is an evaluator whose record of signing bad news is public and checkable. That record is this store's entire product; the attestation suite pins 'signs the negative as readily as the positive' as a test. The fee skew is stated rather than hidden, and if we enter, evaluation gets priced off-chain both-outcomes-alike, with the on-chain fee incidental.",
+  },
+  {
     item: "Federation — somebody else adopting the format unprompted.",
     trigger:
       "The first time an operator we did not ask adopts the receipt format, vouches for us unprompted, or forks the pattern. Observable in our own logs, which is why it is on this list rather than in a wish.",

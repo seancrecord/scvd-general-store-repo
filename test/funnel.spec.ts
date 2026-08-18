@@ -145,3 +145,65 @@ describe("the page and its ordering", () => {
     expect((await SELF.fetch(`${BASE}/admin/funnel`)).status).toBe(401);
   });
 });
+
+describe("the window note tells the truth at the exact cap boundary", () => {
+  it("says CAPPED when the cap lands on a page edge with rows left", async () => {
+    /*
+     * Caught by the keeper's first real load: exactly 4,000 rows
+     * scanned, oldest from yesterday — and the page said "Every event
+     * row on record." The cap had landed precisely on a page edge, so
+     * the loop exited without ever refusing a row, and `capped`
+     * stayed false. A coverage claim decided by which branch exits a
+     * loop is decided by luck; completeness is only claimable when
+     * the scan SAW the end of the listing.
+     */
+    for (let i = 0; i < 12; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
+    }
+    const report = await auditFunnel(testEnv, { scanCap: 8, pageSize: 4 });
+    expect(report.rows_scanned).toBe(8);
+    expect(report.capped).toBe(true);
+    expect(report.window_note).toContain("Newest 8 event rows only");
+    expect(report.window_note).not.toContain("Every event row");
+  });
+
+  it("still claims completeness when the listing genuinely ended", async () => {
+    await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
+    const report = await auditFunnel(testEnv, { scanCap: 100, pageSize: 4 });
+    expect(report.capped).toBe(false);
+    expect(report.window_note).toContain("Every event row on record");
+  });
+});
+
+describe("the next move — the funnel's pitch fix on the purchase response", () => {
+  /*
+   * The funnel's diagnosis: the tier's wall is upstream, and the
+   * specific brick is that a browsing agent holds no tx hash, so the
+   * required input reads as work. The one moment a buyer provably
+   * holds the input AND a willingness to pay is right after a settle
+   * — so the purchase response offers the attestation with the hash
+   * already in the URL.
+   */
+  it("hands every ordinary purchase the attestation URL with its OWN tx filled in", async () => {
+    const { installFacilitatorMock } = await import("./helpers/facilitator-mock");
+    const { buildPaymentSignature, decodePaymentRequired } = await import(
+      "./helpers/payment"
+    );
+    installFacilitatorMock();
+    const { SELF: self } = await import("cloudflare:test");
+    const challenge = await self.fetch(`${BASE}/api/buy/hello`);
+    const accepted = decodePaymentRequired(challenge).accepts[0]!;
+    const paid = await self.fetch(`${BASE}/api/buy/hello`, {
+      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
+    });
+    expect(paid.status).toBe(200);
+    const body = (await paid.json()) as Record<string, any>;
+    const block = body["patron"] ?? body;
+    const offer = block.attest_this_purchase ?? body.attest_this_purchase;
+    expect(offer, "no attest_this_purchase on the purchase response").toBeTruthy();
+    expect(offer.url).toContain("/api/buy/settlement_attestation?tx_hash=");
+    // The buyer's own settlement, not a sample: the hash in the URL is
+    // the one on the certificate.
+    expect(offer.url).toContain(block.certificate.settlement_tx);
+  });
+});
