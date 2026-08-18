@@ -101,20 +101,26 @@ function verdictFor(row: Omit<ItemFunnel, "verdict">): string {
  * One pass over the event rows, newest first, same storage the
  * declines desk and the census read — no new writes, no new state.
  */
-export async function auditFunnel(env: Env): Promise<FunnelReport> {
+export async function auditFunnel(
+  env: Env,
+  options: { scanCap?: number; pageSize?: number } = {},
+): Promise<FunnelReport> {
+  const scanCap = options.scanCap ?? FUNNEL_SCAN_CAP;
+  const pageSize = options.pageSize ?? LIST_PAGE;
   const tallies = new Map<
     string,
     Omit<ItemFunnel, "verdict" | "item" | "verification_tier">
   >();
   let scanned = 0;
   let capped = false;
+  let sawEnd = false;
   let oldest: string | undefined;
   let cursor: string | undefined;
 
-  while (scanned < FUNNEL_SCAN_CAP) {
+  while (scanned < scanCap) {
     const listed = await env.COUNTERS.list({
       prefix: "evt:",
-      limit: LIST_PAGE,
+      limit: pageSize,
       ...(cursor ? { cursor } : {}),
     });
     const values = await bulkGetJson<MetricEvent>(
@@ -122,7 +128,7 @@ export async function auditFunnel(env: Env): Promise<FunnelReport> {
       listed.keys.map((key) => key.name),
     );
     for (const name of listed.keys.map((key) => key.name)) {
-      if (scanned >= FUNNEL_SCAN_CAP) {
+      if (scanned >= scanCap) {
         capped = true;
         break;
       }
@@ -155,9 +161,23 @@ export async function auditFunnel(env: Env): Promise<FunnelReport> {
       }
       tallies.set(event.item, tally);
     }
-    if (listed.list_complete || !listed.keys.length) break;
+    if (listed.list_complete || !listed.keys.length) {
+      sawEnd = true;
+      break;
+    }
     cursor = listed.cursor;
   }
+  /*
+   * THE EXACT-BOUNDARY LIE, caught by the keeper's first real load:
+   * the cap landed precisely on a page edge, the while condition
+   * exited before any row was ever refused, `capped` stayed false —
+   * and the page said "Every event row on record (4000)" over a
+   * 25-hour window. A coverage claim decided by which branch exited
+   * the loop is a coverage claim decided by luck; what actually
+   * happened is the only honest source: we are complete only if we
+   * SAW the end of the listing.
+   */
+  if (!sawEnd) capped = true;
 
   const items: ItemFunnel[] = [...tallies.entries()]
     .map(([item, tally]) => ({
@@ -181,11 +201,12 @@ export async function auditFunnel(env: Env): Promise<FunnelReport> {
     rows_scanned: scanned,
     capped,
     window_note: capped
-      ? `Newest ${scanned} event rows only (cap ${FUNNEL_SCAN_CAP}); oldest row read ${oldest ?? "unknown"}. All-time totals live on the item-events desk — this instrument answers WHERE the recent asks leave, not how many there have ever been.`
+      ? `Newest ${scanned} event rows only (cap ${scanCap}); oldest row read ${oldest ?? "unknown"}. All-time totals live on the item-events desk — this instrument answers WHERE the recent asks leave, not how many there have ever been.`
       : `Every event row on record (${scanned}), oldest ${oldest ?? "none"}.`,
     items,
     what_this_cannot_see: [
       "Intent. An ask is a 402 issued; a crawler the infrastructure filter does not recognize yet counts as organic, so treat small ask-counts as noise and large ones as signal.",
+      "Walkers in the organic column. If MOST items show similar ask-counts with zero wallets — the flat profile this page showed on its first real load — that is the fingerprint of catalog walkers not yet in the infrastructure list, not of demand. The census page names them (undeclared_walkers); promote them to channel.ts and this page's denominators deflate to the truth.",
       "A buyer who never asked: this reads the store's own door, not demand that went elsewhere.",
       "WHY a window-shopper walked. Zero declines proves nobody presented a payment; it cannot say which upstream wall — pitch, price, or required inputs — turned them.",
       "Verify-side refusals that never wrote a decline row (a cross-isolate retry can lose the reason; the declines desk counts those as unspecified).",

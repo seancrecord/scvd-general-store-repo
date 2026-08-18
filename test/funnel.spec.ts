@@ -145,3 +145,32 @@ describe("the page and its ordering", () => {
     expect((await SELF.fetch(`${BASE}/admin/funnel`)).status).toBe(401);
   });
 });
+
+describe("the window note tells the truth at the exact cap boundary", () => {
+  it("says CAPPED when the cap lands on a page edge with rows left", async () => {
+    /*
+     * Caught by the keeper's first real load: exactly 4,000 rows
+     * scanned, oldest from yesterday — and the page said "Every event
+     * row on record." The cap had landed precisely on a page edge, so
+     * the loop exited without ever refusing a row, and `capped`
+     * stayed false. A coverage claim decided by which branch exits a
+     * loop is decided by luck; completeness is only claimable when
+     * the scan SAW the end of the listing.
+     */
+    for (let i = 0; i < 12; i += 1) {
+      await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
+    }
+    const report = await auditFunnel(testEnv, { scanCap: 8, pageSize: 4 });
+    expect(report.rows_scanned).toBe(8);
+    expect(report.capped).toBe(true);
+    expect(report.window_note).toContain("Newest 8 event rows only");
+    expect(report.window_note).not.toContain("Every event row");
+  });
+
+  it("still claims completeness when the listing genuinely ended", async () => {
+    await recordChallengeIssued(testEnv, "/api/buy/hello", organic);
+    const report = await auditFunnel(testEnv, { scanCap: 100, pageSize: 4 });
+    expect(report.capped).toBe(false);
+    expect(report.window_note).toContain("Every event row on record");
+  });
+});
