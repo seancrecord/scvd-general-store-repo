@@ -1391,6 +1391,97 @@ adminRoutes.get("/admin/market", async (c) => {
   return c.html(renderMarketPage(round, market));
 });
 
+/**
+ * THE OUTREACH DESK (2026-08-19): the ward's private readings put to
+ * their one licensed use. The queue and drafts derive fresh from the
+ * latest round every read; the ledger holds only the keeper's own
+ * workflow state and published contacts. No route here sends anything
+ * to anyone — rule 30 keeps the send in the keeper's hand.
+ */
+adminRoutes.get("/admin/outreach", async (c) => {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const { deriveProspects, healedAfterOutreach, readOutreachLedger } =
+    await import("@/services/outreach");
+  const round = await latestWardRound(c.env);
+  if (!round) {
+    return wantsHtml(c.req.header("Accept"))
+      ? c.html(
+          (await import("@/pages/admin/layout")).renderAdminShell(
+            "outreach",
+            "<h1>Outreach</h1><p class='empty'>No ward round yet — the queue derives itself from the round's rows.</p>",
+          ),
+        )
+      : c.json({ error: "no ward round yet" }, 404);
+  }
+  const previous = await previousWardRound(c.env);
+  const ledger = await readOutreachLedger(c.env);
+  const prospects = deriveProspects(round, previous);
+  const healed = healedAfterOutreach(round, ledger);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({ week: round.week, at: round.at, prospects, healed, ledger });
+  }
+  const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
+  return c.html(
+    renderOutreachPage(round, prospects, healed, ledger, c.env.STORE_BASE_URL),
+  );
+});
+
+/**
+ * The contact scout, keeper-fired: one press reads security.txt for
+ * up to SCOUT_CAP un-scouted queue hosts. Idempotent per host — a
+ * host once looked at (found or "none published") is never re-read.
+ */
+adminRoutes.post("/admin/outreach/scout", async (c) => {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const { deriveProspects, readOutreachLedger, scoutContacts } = await import(
+    "@/services/outreach"
+  );
+  const round = await latestWardRound(c.env);
+  if (!round) {
+    return c.json({ refused: "no ward round yet" }, 404);
+  }
+  const prospects = deriveProspects(round, await previousWardRound(c.env));
+  const report = await scoutContacts(
+    c.env,
+    prospects,
+    await readOutreachLedger(c.env),
+  );
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(report);
+  }
+  return c.redirect("/admin/outreach");
+});
+
+/** Flip one host's workflow status. The keeper's bookmark, nothing more. */
+adminRoutes.post("/admin/outreach/status", async (c) => {
+  const form = await c.req.parseBody();
+  const host = typeof form["host"] === "string" ? form["host"].toLowerCase() : "";
+  const statusRaw = typeof form["status"] === "string" ? form["status"] : "";
+  const { OUTREACH_STATUSES, readOutreachLedger, writeOutreachLedger } =
+    await import("@/services/outreach");
+  const status = OUTREACH_STATUSES.find((entry) => entry === statusRaw);
+  if (!host || !status) {
+    return c.json(
+      { refused: `needs host and status (one of: ${OUTREACH_STATUSES.join(", ")})` },
+      400,
+    );
+  }
+  const ledger = await readOutreachLedger(c.env);
+  const entry = ledger.hosts[host] ?? {};
+  entry.status = status;
+  entry.status_at = new Date().toISOString();
+  ledger.hosts[host] = entry;
+  await writeOutreachLedger(c.env, ledger);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({ host, status });
+  }
+  return c.redirect("/admin/outreach");
+});
+
 adminRoutes.get("/admin/declines", async (c) => {
   const report = await readDeclines(c.env);
   const outside = report.declines.filter((row) => !row.house);
