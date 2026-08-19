@@ -140,6 +140,13 @@ export function onpageAuditNote(verdict: string): string {
       : "We knocked. Nobody came. From where we stood, at that minute, the page didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
+/** the_statement. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function statementNote(coverage: string): string {
+  return coverage === "complete"
+    ? "Read the chain's side of that wallet's story and signed it: every USDC transfer in and out over the window stated, counted and summed, each row a transaction hash anyone can look up without us. Now set it beside the ledger the agent kept — the rows that appear in only one of the two are the whole reason this page exists. We never saw that ledger, and that's what the signature is worth."
+    : "The chain didn't answer us for that window, and the statement says exactly that, signed and dated — a fact about our read at that minute, not about the wallet. The window is printed on the record; the same statement bought again when the RPC is answering covers it properly.";
+}
+
 /** launch_check. ⚑ KEEPER REVIEW: drafted, recut freely. */
 export function launchCheckNote(verdict: string): string {
   switch (verdict) {

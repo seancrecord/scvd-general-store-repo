@@ -145,6 +145,10 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // attempt of the buyer's own door, from the declared field
       // wallet, the whole walk signed stage by stage.
       "launch_check",
+      // The same neutrality pointed at a whole wallet window: every
+      // USDC transfer in and out, off the chain, signed by neither
+      // the agent nor its operator.
+      "the_statement",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

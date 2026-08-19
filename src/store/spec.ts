@@ -122,6 +122,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Get a signed readout of what my page actually serves a machine reader — title, metadata, structured data — that I can hand to a third party",
   launch_check:
     "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
+  the_statement:
+    "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
   bitcoin_anchor:
     "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
@@ -180,6 +182,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "a dated, signed observation of what one page served a machine reader — title, description, canonical, robots, structured data — free at POST /api/onpage/v1; this is the same battery with a signature, a certificate binding, and a permanent report URL. Reads the HTML as served: what a script renders is named as unseen.",
   launch_check:
     "the one observation no probe can substitute: what your buy path does when a real stranger pays it — a genuine EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, the whole walk signed stage by stage. The field run's method, pointed at your door at your request.",
+  the_statement:
+    "the chain's side of an agent's books, signed by neither party: every USDC transfer in and out of one Base wallet over a stated window. Field-run data showed 10.5% of settlements missing from the buying agent's own ledger — the self-report drifts, the chain does not, and the difference is the audit.",
   bitcoin_anchor:
     "a commitment that cannot be made after the fact: a Bitcoin-anchored timestamp on the buyer's own digest — a key log, a snapshot, any record that must provably have existed now. The mechanism this store anchors its own key history with; the bytes stay the buyer's.",
   attestation_bundle:
@@ -250,6 +254,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A signed JSON report — verdict (ready, not_ready, unreachable or refused), every check and advisory from the published on-page battery, the blind spots printed on the artifact, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET of the HTML as served, never a render, never monitoring.",
   launch_check:
     "A signed JSON walk record — verdict (settled, payment_refused, no_payment_gate, malformed_challenge, unpaid_by_rule or unreachable), every stage with its detail (approach, challenge, terms, screen, payment, settle, delivery), what this store paid and to whom, the settlement transaction where the seller returned one, the paying field wallet, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable check URL serving the record free forever. Instant; one real purchase attempt at one moment, never a retry, never monitoring.",
+  the_statement:
+    "A signed JSON transfer record for one Base wallet — coverage (complete or window_unreadable), the exact block window and chain head at read, inflows and outflows each with count and total over the whole window plus up to 200 listed transfers (transaction hash, counterparty, amount, block; the list says how many it carries), dated, its evidence hash bound into the purchase certificate's attests field — plus a stable statement URL serving the record free forever. Instant; two bounded chain reads at one moment, never monitoring. USDC on Base only, stated on the artifact.",
   bitcoin_anchor:
     "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:
@@ -362,6 +368,12 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: ["launch_check", "free:/api/preflight/v1"],
     example:
       "GET /api/buy/launch_check?url=https://your-shop.example/api/buy/thing",
+  },
+  {
+    when: "An agent spends from a wallet on your behalf and you need its books audited against what actually moved — by the chain's record, held by neither of you.",
+    items: ["the_statement"],
+    example:
+      "GET /api/buy/the_statement?wallet=0x843b544bf5f0AA6cbf13E94563874878C98cc4a7&hours=6",
   },
   {
     when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",
