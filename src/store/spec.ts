@@ -32,7 +32,13 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * fact they were never charged, and it says so inside somebody else's
  * catalogue where we cannot correct it.
  */
-export const SKILL_VERSION = "3.3.0";
+/**
+ * 3.3.1 (2026-08-19): the State-of-the-registry line — the weekly
+ * public tally at /registry, added to the skill's readings beside the
+ * corpus it derives from. Mid-flight until the keeper republishes to
+ * ClawHub; the site's own /skill.md serves it immediately.
+ */
+export const SKILL_VERSION = "3.3.1";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

@@ -348,6 +348,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
         ),
       },
+      "/registry": {
+        get: freeOp(
+          "State of the registry",
+          "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
       "/corrections": {
         get: freeOp(
           "Corrections",
