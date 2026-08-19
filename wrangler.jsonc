@@ -96,9 +96,10 @@
   //                       wallet (house-ledger.json) the Launch Check pays
   //                       from — optional; unset, that door refuses before
   //                       any money moves. Never the till's key.
-  //   SANCTIONS_API_KEY   Chainalysis public screening API key for the
-  //                       walkabout's rule-3 payTo screen — optional; unset,
-  //                       screening fails closed and the Launch Check door
-  //                       refuses rather than paying unscreened
+  //   SANCTIONS_API_KEY   Chainalysis screening API key — OPTIONAL OVERRIDE
+  //                       only (their open signup has closed); the default
+  //                       rule-3 screen is the keyless Chainalysis on-chain
+  //                       oracle on Base, read over BASE_RPC_URL, failing
+  //                       closed whenever it does not answer
   //   ADMIN_PASSWORD      Basic Auth password for /admin
 }

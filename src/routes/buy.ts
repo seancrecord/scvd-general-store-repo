@@ -329,11 +329,13 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/launch_check" || !isBuying(c)) {
     return next();
   }
-  if (!c.env.FIELD_WALLET_KEY || !c.env.SANCTIONS_API_KEY) {
+  // Screening needs no secret: the keyless on-chain oracle is the
+  // default (services/launch-check.ts), so only the wallet gates.
+  if (!c.env.FIELD_WALLET_KEY) {
     return c.json(
       {
         error:
-          "The Launch Check door is closed right now: the field wallet or its sanctions screen is not provisioned on this deployment, and the walkabout rules fail closed — no screen, no payment, no charge to you. The free preflight at POST /api/preflight/v1 reads your 402 challenge without paying it.",
+          "The Launch Check door is closed right now: the field wallet is not provisioned on this deployment, so no payment could be presented — and a check that cannot pay is not sold as one. No charge to you. The free preflight at POST /api/preflight/v1 reads your 402 challenge without paying it.",
       },
       503,
     );
