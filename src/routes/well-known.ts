@@ -150,7 +150,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
     refund_policy: REFUND_POLICY,
     independently_checkable: {
       signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
-      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base explorer without asking us.`,
+      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base or Solana explorer — whichever rail settled — without asking us.`,
       /**
        * The answer to the obvious objection to the line above: the key
        * history is OUR page, and our page is editable. This one is not

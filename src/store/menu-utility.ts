@@ -255,7 +255,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "An independent signed observation of whether an x402 payment settled — on Base or on Solana, and the identifier's own shape picks the chain: a 0x hash reads Base, a base58 signature reads Solana. Give it the transaction (and optionally the payer, recipient, nonce, or amount you expected) and it reads public chain state once and signs what it found: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH, or REVERTED. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes a moment on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
     note_402:
-      "Four tenths of a cent, friend. The chain read is free; the signed, disinterested receipt is what you are buying. Base hash or Solana signature — the shape picks the chain. No transaction of your own yet? Buy anything here — the half-cent blessing counts — and the purchase response hands you this door's URL with your own settlement hash already filled in.",
+      "Four tenths of a cent, friend. The chain read is free; the signed, disinterested receipt is what you are buying. Base hash or Solana signature — the shape picks the chain. No transaction of your own yet? Buy anything here — the half-cent blessing counts — and the purchase response hands you this door's URL with your own settlement transaction already filled in, whichever rail you paid on.",
     constraints: [
       "Give the transaction in the tx_hash query parameter: a Base hash (0x + 64 hex) or a Solana signature (base58) — the shape picks the chain",
       "Optional narrowing: payer, recipient, nonce (Base only — refused beside a Solana signature), amount_usdc, or payment_payload (the base64 PAYMENT-SIGNATURE you sent, read with the store's own replay-guard code)",
@@ -297,7 +297,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     note_402:
       "Six tenths of a cent. The subtraction is free — the disinterested witness who says which number was real is the part that costs.",
     constraints: [
-      "Give the transaction hash in the tx_hash query parameter",
+      "Give the Base transaction hash (0x + 64 hex) in the tx_hash query parameter. This desk reads Base only, deliberately: the ceilings it reconciles (EIP-3009 authorizations) are a Base facility",
       "Optional narrowing: payer, recipient — a receipt can carry several legs and the largest match is what gets reported",
       "Optional declared_cap_usdc: recorded as DECLARED, never as observed, and never allowed to override a ceiling found on the chain",
       "Only approvals inside the same transaction are visible; a ceiling granted earlier reads as 'not observed', never as 'absent'",

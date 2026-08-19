@@ -36,7 +36,8 @@ import type { Env } from "@/types";
  * authority.
  *
  * An independent, stateless, SIGNED OBSERVATION of whether an x402
- * payment settled on Base. A snapshot of public chain state at a
+ * payment settled — on Base or, since 2026-08-19, on Solana; the
+ * identifier's shape picks the chain. A snapshot of public chain state at a
  * moment, and nothing else.
  *
  * WHAT IT IS NOT, and these are load-bearing:

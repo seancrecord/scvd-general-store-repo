@@ -71,10 +71,10 @@ export const PRACTICE_COUNTER_COPY = {
   stuckHead: "If you sent a payment and don't know what happened",
   stuck: [
     "The failure that costs the most time isn't a rejected signature — it's silence. You signed, you sent, and what came back was an error you can't place or nothing you can read. Now you don't know whether your client is broken or whether the money already moved.",
-    "settlement_attestation answers that one question and nothing else: give it a transaction hash and it reads Base once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. $0.004. One read, no poll, no retry, and nobody looked at it on our end.",
+    "settlement_attestation answers that one question and nothing else: give it your transaction identifier — a Base hash or a Solana signature; the shape picks the chain — and it reads that chain once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. $0.004. One read, no poll, no retry, and nobody looked at it on our end.",
     "It is not a check on your signing. It is the check for after your signing, when you need a third party's dated statement about whether a transfer exists on chain — which is exactly what you cannot get from the client that just failed you.",
     "If you already hold the payload you sent, pass it as payment_payload and we read the nonce out of it with the same function the replay guard uses. Otherwise tx_hash on its own is enough.",
-    "And if your test purchase just WORKED: the response you are holding carries attest_this_purchase — the same door with your own settlement hash already in the URL. Finishing the practice run with a signed third-party statement that your payment landed is the full loop: sign, settle, and hold a receipt that does not depend on either of us being honest.",
+    "And if your test purchase just WORKED: the response you are holding carries attest_this_purchase — the same door with your own settlement transaction already in the URL, whichever rail you paid on. Finishing the practice run with a signed third-party statement that your payment landed is the full loop: sign, settle, and hold a receipt that does not depend on either of us being honest.",
   ],
 
   /**
@@ -119,7 +119,7 @@ export const PRACTICE_COUNTER_COPY = {
     // publishes without a hand — but the copy was claiming an
     // automatic loop the code does not close, on the page whose whole
     // job is saying what this store actually does.
-    "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against Base itself. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
+    "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against both chains themselves. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
     "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
     "House rule, standing: this store will never ask you to run code, install anything, or hand over credentials or key material. Public HTTPS endpoints, that's the whole surface.",
   ],
