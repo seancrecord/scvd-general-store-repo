@@ -43,6 +43,7 @@ export { faviconRoutes } from "@/routes/favicon";
 export { schemaRoutes } from "@/routes/schemas";
 export { statsRoutes } from "@/routes/stats";
 export { corpusRoutes } from "@/routes/corpus";
+export { reportRoutes } from "@/routes/reports";
 export { pulseRoutes } from "@/routes/pulse";
 export { attestationRoutes } from "@/routes/attestation";
 export { criteriaRoutes } from "@/routes/criteria";

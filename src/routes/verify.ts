@@ -12,6 +12,7 @@ import { recordVerifyCall } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
 import {
   cachedPublicKeyHex,
+  signMessage,
   canonicalizeCertificate,
   canonicalizeCertificateLegacy,
   certificateSignatureForm,
@@ -25,6 +26,7 @@ import {
   verifyAnchorSignature,
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import { canonicalizeReport } from "@/services/reports";
 import {
   CROSS_REF_INDEPENDENCE,
   CROSS_REF_MEANING,
@@ -280,6 +282,41 @@ function receiptPageHtml(
 
 verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   const id = c.req.param("cert_id");
+
+  /**
+   * ECOSYSTEM REPORTS verify here like every artifact class (2026-08-19):
+   * one endpoint answers for everything the store signs. The signature
+   * is deterministic (ed25519, fixed canonical form), so re-deriving it
+   * here and serving the exact bytes lets a stranger run the check with
+   * their own library — which, as everywhere on this endpoint, is the
+   * check that carries the weight; ours confirming ours does not.
+   */
+  const reportCanonical = await canonicalizeReport(id);
+  if (reportCanonical) {
+    const { signature, publicKey } = await signMessage(
+      reportCanonical,
+      c.env.SIGNING_KEY,
+    );
+    const valid = await verifyMessageSignature(
+      reportCanonical,
+      signature,
+      publicKey,
+    );
+    return c.json({
+      valid,
+      artifact_class: "ecosystem_report",
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      report_url: `${c.env.STORE_BASE_URL}/api/report/${id}`,
+      signature,
+      public_key: publicKey,
+      ...(await signedBy(c, publicKey)),
+      algorithm: "ed25519",
+      signed_payload: reportCanonical,
+      artifact_hash: await artifactHash(reportCanonical),
+      signature_covers:
+        "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). The body_sha256 inside it binds the full report body served at report_url — hash that body yourself and compare; nothing in the report is outside the digest.",
+    });
+  }
 
   const record = await getCertificate(c.env, id);
   if (record) {
