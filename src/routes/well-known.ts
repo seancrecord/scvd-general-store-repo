@@ -347,6 +347,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     conformance_landing: `${base}/conformance`,
     corpus: `${base}/corpus.json`,
     corpus_landing: `${base}/corpus`,
+    /**
+     * Ecosystem research reports (2026-08-19): signed, free, every
+     * number re-derivable from raw evidence committed in the public
+     * repository. The first is the August field run — the whole
+     * walkable Bazaar paid with the store's own wallet.
+     */
+    reports: `${base}/api/report/x402-ecosystem-2026-08`,
     conformance_vectors: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
     /**
      * The dead-man beacon, same reason as the key and the attestation:
