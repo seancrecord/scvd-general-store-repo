@@ -298,6 +298,10 @@ describe("the guard, before money moves", () => {
     if (!isRecord(properties) || !isRecord(properties["tx_hash"])) {
       throw new Error("no tx_hash property");
     }
-    expect(properties["tx_hash"].pattern).toBe("^0x[0-9a-fA-F]{64}$");
+    // Both rails since 2026-08-19: a Base hash or a Solana signature,
+    // the shape alone picking the chain.
+    expect(properties["tx_hash"].pattern).toBe(
+      "^(0x[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{64,88})$",
+    );
   });
 });

@@ -638,16 +638,34 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "Nothing to look up. Give a tx_hash query parameter — a Base transaction hash — and we will read the chain once and sign what is there. No hash, no charge.",
+          "Nothing to look up. Give a tx_hash query parameter — a Base transaction hash (0x + 64 hex) or a Solana transaction signature (base58) — and we will read that chain once and sign what is there. No hash, no charge.",
       },
       400,
     );
   }
-  if (!TX_HASH.test(txHash)) {
+  const { isSolanaSignature } = await import("@/lib/solana-rpc");
+  const solana = isSolanaSignature(txHash);
+  if (!TX_HASH.test(txHash) && !solana) {
     return c.json(
       {
         error:
-          "That is not a transaction hash. Base wants 0x followed by 64 hex characters. Nothing charged; send the real one.",
+          "That is not a transaction identifier we can read. Base wants 0x followed by 64 hex characters; Solana wants the base58 transaction signature. Nothing charged; send the real one.",
+      },
+      400,
+    );
+  }
+  /**
+   * A NONCE BESIDE A SOLANA SIGNATURE IS REFUSED AT THE DOOR
+   * (2026-08-19). EIP-3009 nonces are a Base facility; a Solana
+   * observation cannot check one. Signing an artifact that silently
+   * skipped a requested check would be the certificates defect in a
+   * new coat, so the door says no before any money moves.
+   */
+  if (solana && c.req.query("nonce")) {
+    return c.json(
+      {
+        error:
+          "nonce is an EIP-3009 facility and exists on Base only — a Solana observation cannot check one, and we will not sign an artifact that silently skipped a check you asked for. Drop the nonce, or send the Base transaction hash instead. Nothing charged.",
       },
       400,
     );
@@ -668,9 +686,34 @@ buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
+/**
+ * The dilemma IS the order (2026-08-19): quick_judgment's prose always
+ * said "state your dilemma in the detail parameter" and the published
+ * schema now requires it — so the door enforces what the listing
+ * declares, the 2026-07-26 lesson run in the other direction. A paid
+ * order with no question in it is a week of SLA spent asking for one.
+ */
+const judgmentCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/quick_judgment" || !isBuying(c)) {
+    return next();
+  }
+  const detail = c.req.query("detail")?.trim() ?? "";
+  if (!detail) {
+    return c.json(
+      {
+        error:
+          "No dilemma, no charge. Put the question itself in the detail query parameter — 600 characters tops, one question in, one verdict out.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 buyRoutes.use("/api/buy/*", attestationCheck);
 buyRoutes.use("/api/buy/*", reconciliationCheck);
 buyRoutes.use("/api/buy/*", bundleCheck);
+buyRoutes.use("/api/buy/*", judgmentCheck);
 buyRoutes.use("/api/buy/*", anchorDigestCheck);
 buyRoutes.use("/api/buy/*", paymentGate);
 buyRoutes.use("/api/order/*", noStore);

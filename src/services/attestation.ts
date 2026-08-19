@@ -11,6 +11,12 @@ import type { RpcReceipt } from "@/lib/base-rpc";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
 import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
+import {
+  getSlot,
+  isSolanaSignature,
+  SOLANA_CHAIN,
+  solanaTransactionFacts,
+} from "@/lib/solana-rpc";
 import type { Env } from "@/types";
 
 /**
@@ -82,6 +88,14 @@ export type SettlementStatus =
  */
 export const FINALITY_BLOCKS = 12;
 
+/**
+ * Slots behind the head before a Solana transaction reads settled
+ * rather than pending — 32, the depth at which the cluster's own
+ * finalized commitment sits. Same posture as FINALITY_BLOCKS: a plain
+ * depth rule, stated on the artifact so a reader can apply their own.
+ */
+export const SOLANA_FINALITY_SLOTS = 32;
+
 export interface AttestationQuery {
   txHash?: string;
   payer?: string;
@@ -147,6 +161,18 @@ export interface SignedAttestation extends SettlementObservation {
 const SCOPE =
   "This observes public Base chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
 
+/**
+ * The Solana scope carries two facts its Base sibling does not need:
+ * the observation reads settled BALANCE OUTCOMES (pre/post token
+ * balances), not instructions — the same discipline the store's own
+ * bank reconciliation uses on this rail — and EIP-3009 nonce matching
+ * is a Base facility that does not exist here, which is why the door
+ * refuses a nonce beside a Solana signature instead of signing an
+ * artifact that silently skipped a check.
+ */
+const SOLANA_SCOPE =
+  "This observes public Solana chain state at the moment shown and nothing else, read from the transaction's settled USDC balance outcomes (pre/post token balances), not from its instructions. block_height and chain_head are slots. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND signature will never land — only that it had not at observed_at. EIP-3009 nonce matching is a Base facility and is not evaluated on Solana. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
+
 const READINGS: Record<SettlementStatus, string> = {
   SETTLED:
     "A matching USDC transfer is on Base, in a mined transaction that did not revert, at the depth shown.",
@@ -157,6 +183,18 @@ const READINGS: Record<SettlementStatus, string> = {
   INSUFFICIENT_MATCH:
     "The transaction exists and succeeded, but its USDC transfers do not match what was asked about — wrong recipient, wrong amount, or no USDC movement at all. The gap is the finding.",
   REVERTED: "The transaction was mined and failed. No value moved.",
+};
+
+const SOLANA_READINGS: Record<SettlementStatus, string> = {
+  SETTLED:
+    "A matching USDC balance movement is on Solana, in a transaction that did not fail, at the slot depth shown.",
+  NOT_FOUND:
+    "Solana has no transaction for that signature at the moment observed. It may be unsent, dropped, or beyond the node's retention — this says nothing about later.",
+  PENDING_FINALITY:
+    "The transaction landed and matches, but sits fewer than the stated number of slots behind the head. Real, and not yet as deep as the rule asks.",
+  INSUFFICIENT_MATCH:
+    "The transaction exists and succeeded, but its USDC balance movements do not match what was asked about — wrong recipient, wrong amount, or no USDC movement at all. The gap is the finding.",
+  REVERTED: "The transaction landed and failed. No tokens moved.",
 };
 
 /** A short, stable digest of the observed facts. */
@@ -272,11 +310,138 @@ export async function observeSettlement(
   query: AttestationQuery,
 ): Promise<SignedAttestation> {
   const txHash = query.txHash ?? null;
+  /**
+   * THE RAIL DISPATCHES ON THE IDENTIFIER'S OWN SHAPE (2026-08-19,
+   * the Solana directory's review): a base58 signature can never look
+   * like a 0x-hex hash, so the caller never says which chain — the
+   * identifier already did. The store has settled on both rails since
+   * 08-04; the attestation finally observes both.
+   */
+  if (txHash && isSolanaSignature(txHash)) {
+    return observeSolanaSettlement(env, query);
+  }
   const [receipt, head] = await Promise.all([
     txHash ? getReceipt(env, txHash) : Promise.resolve(null),
     getBlockNumber(env),
   ]);
   return observeWithFacts(env, query, receipt, head);
+}
+
+/**
+ * Sign one finished observation, both disciplines. Shared by the two
+ * rails so the artifact shape cannot drift between them.
+ */
+async function signObservation(
+  env: Env,
+  observation: SettlementObservation,
+): Promise<SignedAttestation> {
+  const { signature, publicKey } = await signMessage(
+    JSON.stringify(observation),
+    env.SIGNING_KEY,
+  );
+  return {
+    ...observation,
+    signature,
+    public_key: publicKey,
+    signature_covers:
+      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
+    // Same fields, sorted-key byte order, for JCS-conformant tooling.
+    signature_jcs: await signJcs(
+      observation as unknown as Record<string, unknown>,
+      env.SIGNING_KEY,
+    ),
+    signature_jcs_covers: JCS_SIGNATURE_COVERS,
+  };
+}
+
+/**
+ * The Solana observation: one getTransaction read against the settled
+ * balance outcomes, classified with the same statuses and the same
+ * honesty rules as Base. block_height and chain_head carry SLOTS and
+ * the scope says so. The nonce field never reaches here — the door
+ * refuses a nonce beside a Solana signature, because signing an
+ * artifact that silently skipped a requested check would be the
+ * certificates defect in a new coat.
+ */
+export async function observeSolanaSettlement(
+  env: Env,
+  query: AttestationQuery,
+): Promise<SignedAttestation> {
+  const signature = query.txHash ?? "";
+  const [facts, headSlot] = await Promise.all([
+    solanaTransactionFacts(env, signature),
+    getSlot(env),
+  ]);
+
+  let status: SettlementStatus;
+  let recipient: string | null = null;
+  let payer: string | null = null;
+  let amountUsdc: number | null = null;
+  let slot: number | null = null;
+  let confirmations: number | null = null;
+
+  if (!facts) {
+    status = "NOT_FOUND";
+  } else {
+    slot = facts.slot;
+    confirmations = Math.max(0, headSlot - facts.slot);
+    if (facts.err) {
+      status = "REVERTED";
+    } else {
+      const credits = facts.deltas.filter((d) => d.delta > 0n);
+      const debits = facts.deltas.filter((d) => d.delta < 0n);
+      // Narrow by whatever the caller gave, same law as Base: every
+      // unstated field widens the match, and the echoed query is what
+      // keeps the answer from being re-pointed later.
+      const matches = credits.filter((credit) => {
+        if (query.recipient && credit.owner !== query.recipient) return false;
+        if (query.amountUsdc !== undefined) {
+          const expected = BigInt(Math.round(query.amountUsdc * 1_000_000));
+          if (credit.delta !== expected) return false;
+        }
+        return true;
+      });
+      const payerOk =
+        !query.payer || debits.some((debit) => debit.owner === query.payer);
+      const match = matches[0];
+      if (!match || !payerOk) {
+        status = "INSUFFICIENT_MATCH";
+        recipient = credits[0]?.owner ?? null;
+        payer = debits[0]?.owner ?? null;
+        amountUsdc = credits[0] ? usdcFromUnits(credits[0].delta) : null;
+      } else {
+        status =
+          confirmations < SOLANA_FINALITY_SLOTS ? "PENDING_FINALITY" : "SETTLED";
+        recipient = match.owner;
+        payer =
+          (query.payer
+            ? debits.find((debit) => debit.owner === query.payer)
+            : debits[0]
+          )?.owner ?? null;
+        amountUsdc = usdcFromUnits(match.delta);
+      }
+    }
+  }
+
+  const core = {
+    observed_at: new Date().toISOString(),
+    chain: SOLANA_CHAIN,
+    tx_hash: query.txHash ?? null,
+    recipient,
+    payer,
+    amount_usdc: amountUsdc,
+    status,
+    block_height: slot,
+    chain_head: headSlot,
+    confirmations,
+    query,
+  };
+  return signObservation(env, {
+    ...core,
+    evidence_hash: await evidenceHash(core),
+    reading: SOLANA_READINGS[status],
+    scope: SOLANA_SCOPE,
+  });
 }
 
 /**
@@ -310,28 +475,10 @@ export async function observeWithFacts(
     confirmations: verdict.confirmations,
     query,
   };
-  const observation: SettlementObservation = {
+  return signObservation(env, {
     ...core,
     evidence_hash: await evidenceHash(core),
     reading: READINGS[verdict.status],
     scope: SCOPE,
-  };
-
-  const { signature, publicKey } = await signMessage(
-    JSON.stringify(observation),
-    env.SIGNING_KEY,
-  );
-  return {
-    ...observation,
-    signature,
-    public_key: publicKey,
-    signature_covers:
-      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
-    // Same fields, sorted-key byte order, for JCS-conformant tooling.
-    signature_jcs: await signJcs(
-      observation as unknown as Record<string, unknown>,
-      env.SIGNING_KEY,
-    ),
-    signature_jcs_covers: JCS_SIGNATURE_COVERS,
-  };
+  });
 }

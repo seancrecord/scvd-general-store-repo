@@ -332,6 +332,32 @@ with their evidence rather than deleted:
   first firing — the exact loop CORPUS_VELOCITY.md was built for.
   Next Sunday's round (or a hand-run) reads the full listing.
 
+**Built 2026-08-19, forced by the Solana directory's review** (the
+keeper's registry PR was blocked on two contract defects, both ours):
+
+- **The attestation reads both rails.** settlement_attestation takes
+  a Base hash (0x + 64 hex) OR a Solana transaction signature
+  (base58) — the identifier's shape picks the chain, no chain
+  parameter to get wrong. The Solana observation reads settled
+  balance outcomes (same discipline as the bank reconciliation on
+  that rail), reports slots where Base has blocks (finality rule: 32
+  slots, stated on the artifact), and its scope says all of it. A
+  nonce beside a Solana signature is refused at the door — EIP-3009
+  is a Base facility, and we will not sign an artifact that silently
+  skipped a requested check. Bundle and reconciliation stay
+  deliberately Base-only.
+- **quick_judgment's dilemma is finally in the machine contract.**
+  The prose said "state your dilemma in detail" while the published
+  schema never mentioned the field — a paid order whose one required
+  input was unrepresentable. Now: schema requires it, the door
+  enforces it (no dilemma, no charge), and the worked example carries
+  one (the example-satisfies-schema guard caught the omission within
+  the hour, which is what it is for).
+- Keeper's follow-through: regenerate the directory PR's sidecar
+  (providers/scvd/store/openapi.json) from the live /openapi.json and
+  /menu.json after this deploys, and the two Greptile blockers
+  dissolve.
+
 **What is genuinely open:**
 
 **1. First outside dollar for the verification tier.** Still $0 while
