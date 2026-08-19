@@ -382,6 +382,24 @@ const worker: ExportedHandler<Env> = {
       // ruling: duplicative of the Almanac, standing maintenance the
       // rack never earned). The machinery stays; nothing schedules it.
     }
+    /**
+     * THE LONG WALK rides every hourly firing (2026-08-19): start a
+     * new week's roster, walk one batch, or idle. Failure alerts —
+     * a walk that quietly stops reads exactly like a finished one,
+     * and Sunday would assemble a short week without knowing it.
+     */
+    ctx.waitUntil(
+      import("@/services/long-walk").then(({ longWalkPass }) =>
+        longWalkPass(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Long walk pass failed: ${String(error)}. The week's walk resumes on the next hourly firing; a repeat means the roster read or the state write is broken.`,
+            }),
+        ),
+      ),
+    );
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>
         sendAlert(env, {
