@@ -40,17 +40,28 @@ import type { Env } from "@/types";
 const CDP_HOST = "api.cdp.coinbase.com";
 const DISCOVERY_PATH = "/platform/v2/x402/discovery/resources";
 const SEARCH_PATH = "/platform/v2/x402/discovery/search";
-/** Hosts per round, far above today's 35; the round says when it binds. */
-const WARD_CAP = 200;
+/**
+ * Hosts per round. 200 → 750, keeper's ruling 2026-08-19, the day the
+ * repaired feed read 6,000 declared resources and the old cap bound
+ * for the first time. 750 is the honest ONE-INVOCATION maximum, set
+ * by the Workers subrequest budget (1,000 per invocation, hard):
+ * ~60 discovery pages + up to 750 probes + the census's directory
+ * reads + RPC leaves ~10% headroom. Anything past this is not a
+ * bigger number, it is a different architecture — the long walk
+ * (hourly batches on a cursor, R2-stored snapshots), greenlit as its
+ * own build. The round still says when this cap binds.
+ */
+const WARD_CAP = 750;
 const PROBE_TIMEOUT_MS = 8000;
 /**
  * Probes in flight at once. Sequential probing at an 8s timeout puts
- * a 200-door round's worst case near 27 minutes — past the cron's
- * budget — so the walk is pooled. Ten at a time keeps the worst case
- * under three minutes while staying far below any host's idea of a
- * crawl: each HOST still gets exactly one GET a week.
+ * a 750-door round's worst case near 100 minutes — far past the
+ * cron's budget — so the walk is pooled. Twenty at a time puts the
+ * worst case near five minutes and the typical round well under two,
+ * while staying far below any host's idea of a crawl: each HOST
+ * still gets exactly one GET a week.
  */
-const PROBE_CONCURRENCY = 10;
+const PROBE_CONCURRENCY = 20;
 
 /**
  * A VOLUME CLAIM, labeled as one. The agent402.tools leaderboard
