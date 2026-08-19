@@ -5,7 +5,10 @@ import { buyInputSchema } from "@/lib/bazaar-discovery";
 import {
   FIELD_SPEND_CAP_USD,
   LAUNCH_CHECK_UA,
+  SANCTIONS_ORACLE_BASE,
+  chainalysisScreen,
   fieldSignerFromKey,
+  oracleScreen,
   performLaunchCheck,
 } from "@/services/launch-check";
 import type { Env } from "@/types";
@@ -254,6 +257,65 @@ describe("the walk engine, stage by stage", () => {
   });
 });
 
+describe("the keyless sanctions screen — the on-chain oracle", () => {
+  function rpcAnswer(result: string, status = 200): typeof fetch {
+    return (async (input: RequestInfo | URL, init?: RequestInit) => {
+      // The call must be the real oracle read: eth_call, the Base
+      // deployment address, the derived selector, the padded address.
+      const body = JSON.parse(String(init?.body)) as {
+        method: string;
+        params: [{ to: string; data: string }, string];
+      };
+      expect(body.method).toBe("eth_call");
+      expect(body.params[0].to).toBe(SANCTIONS_ORACLE_BASE);
+      expect(body.params[0].data.startsWith("0xdf592f7d")).toBe(true);
+      expect(body.params[0].data).toContain(SELLER_PAY_TO.slice(2));
+      return new Response(JSON.stringify({ result }), { status });
+    }) as typeof fetch;
+  }
+
+  it("a clear address screens false, a listed one true", async () => {
+    const clear = await oracleScreen("https://rpc.test", rpcAnswer(`0x${"0".repeat(64)}`))(SELLER_PAY_TO);
+    expect(clear.listed).toBe(false);
+    const listed = await oracleScreen("https://rpc.test", rpcAnswer(`0x${"0".repeat(63)}1`))(SELLER_PAY_TO);
+    expect(listed.listed).toBe(true);
+    expect(listed.source).toContain("oracle");
+  });
+
+  it("anything unexpected is null — which upstream withholds payment", async () => {
+    const error = await oracleScreen("https://rpc.test", rpcAnswer("", 429))(SELLER_PAY_TO);
+    expect(error.listed).toBeNull();
+    const garbage = await oracleScreen("https://rpc.test", rpcAnswer("0xdeadbeef"))(SELLER_PAY_TO);
+    expect(garbage.listed).toBeNull();
+    const down = await oracleScreen("https://rpc.test", (async () => {
+      throw new Error("rpc down");
+    }) as typeof fetch)(SELLER_PAY_TO);
+    expect(down.listed).toBeNull();
+  });
+
+  it("a non-EVM address shape is unscreenable, said without a network call", async () => {
+    const never = (async () => {
+      throw new Error("must not be called");
+    }) as typeof fetch;
+    const verdict = await oracleScreen("https://rpc.test", never)("DGxcPr-not-an-evm-address");
+    expect(verdict.listed).toBeNull();
+    expect(verdict.source).toContain("unscreenable");
+  });
+
+  it("the API key, when present, still works as an override", async () => {
+    const screen = chainalysisScreen("test-key", (async () =>
+      new Response(JSON.stringify({ identifications: [] }), {
+        status: 200,
+      })) as typeof fetch);
+    expect((await screen(SELLER_PAY_TO)).listed).toBe(false);
+    const flagged = chainalysisScreen("test-key", (async () =>
+      new Response(JSON.stringify({ identifications: [{ category: "sanctions" }] }), {
+        status: 200,
+      })) as typeof fetch);
+    expect((await flagged(SELLER_PAY_TO)).listed).toBe(true);
+  });
+});
+
 describe("the launch check door", () => {
   const buying = { "PAYMENT-SIGNATURE": "not-a-real-signature" };
 
@@ -267,20 +329,30 @@ describe("the launch check door", () => {
     expect(schema.required).toContain("url");
   });
 
-  it("refuses to sell while the field wallet or screen is unprovisioned — closed, said plainly", async () => {
+  it("refuses to sell while the field wallet is unprovisioned — closed, said plainly", async () => {
     const response = await SELF.fetch(
       `${BASE}/api/buy/launch_check?url=${encodeURIComponent(TARGET)}`,
       { headers: buying },
     );
     expect(response.status).toBe(503);
     const body = (await response.json()) as { error: string };
-    expect(body.error).toContain("fail");
+    expect(body.error).toContain("field wallet");
     expect(body.error).toContain("/api/preflight/v1");
+  });
+
+  it("needs NO screening secret: the wallet alone opens the door", async () => {
+    testEnv.FIELD_WALLET_KEY = TEST_FIELD_KEY;
+    // No SANCTIONS_API_KEY — the keyless oracle is the default, so
+    // the request must get PAST the 503 and reach the payment gate.
+    const response = await SELF.fetch(
+      `${BASE}/api/buy/launch_check?url=${encodeURIComponent(TARGET)}`,
+      { headers: buying },
+    );
+    expect(response.status).not.toBe(503);
   });
 
   it("refuses a missing url before money, naming the free door", async () => {
     testEnv.FIELD_WALLET_KEY = TEST_FIELD_KEY;
-    testEnv.SANCTIONS_API_KEY = "test-screen-key";
     const response = await SELF.fetch(`${BASE}/api/buy/launch_check`, {
       headers: buying,
     });
@@ -292,7 +364,6 @@ describe("the launch check door", () => {
 
   it("refuses to walk its own till, with the reason", async () => {
     testEnv.FIELD_WALLET_KEY = TEST_FIELD_KEY;
-    testEnv.SANCTIONS_API_KEY = "test-screen-key";
     const response = await SELF.fetch(
       `${BASE}/api/buy/launch_check?url=${encodeURIComponent(`${BASE}/api/buy/hello`)}`,
       { headers: buying },
@@ -308,9 +379,10 @@ describe("the launch check door", () => {
     expect(response.status).toBe(402);
   });
 
-  it("delivers the walk end to end: settled, evidence bound, served forever", async () => {
+  it("delivers the walk end to end on the keyless default: settled, evidence bound, served forever", async () => {
     testEnv.FIELD_WALLET_KEY = TEST_FIELD_KEY;
-    testEnv.SANCTIONS_API_KEY = "test-screen-key";
+    // Deliberately NO SANCTIONS_API_KEY: this walk screens through the
+    // on-chain oracle, which is what production does out of the box.
     const log: SellerLog = { requests: [] };
     const seller = fakeSeller(log);
     const inner = globalThis.fetch;
@@ -324,11 +396,12 @@ describe("the launch check door", () => {
               ? input.toString()
               : input.url;
         if (url.startsWith(SHOP)) return seller(input as never, init as never);
-        if (url.startsWith("https://public.chainalysis.com/")) {
-          return new Response(JSON.stringify({ identifications: [] }), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-          });
+        if (String(init?.body ?? "").includes("0xdf592f7d")) {
+          // The oracle read, answering "not sanctioned", byte for byte.
+          return new Response(
+            JSON.stringify({ result: `0x${"0".repeat(64)}` }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
         }
         return inner(input as never, init as never);
       }) as typeof fetch,

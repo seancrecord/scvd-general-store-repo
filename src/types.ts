@@ -57,11 +57,12 @@ export interface Env {
    */
   FIELD_WALLET_KEY?: string;
   /**
-   * Chainalysis public screening API key, for WALKABOUT.md rule 3's
-   * sanctions screen on every payTo before the field wallet pays.
-   * Optional and FLAG-GATING the same way: unset, screening is
-   * unavailable, the rule fails closed, and the launch_check door
-   * refuses new purchases rather than paying unscreened.
+   * Chainalysis screening API key — an OPTIONAL OVERRIDE, kept for
+   * the day an operator holds one (the open signup has closed). The
+   * DEFAULT screen needs no secret at all: the Chainalysis on-chain
+   * sanctions oracle on Base, read over BASE_RPC_URL like the
+   * settlement attestation (services/launch-check.ts). Rule 3 still
+   * fails closed on any screen that does not answer.
    */
   SANCTIONS_API_KEY?: string;
   /**

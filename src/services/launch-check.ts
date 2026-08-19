@@ -146,6 +146,65 @@ export type SanctionsScreen = (
   address: string,
 ) => Promise<{ listed: boolean | null; source: string }>;
 
+/**
+ * THE KEYLESS DEFAULT: Chainalysis publishes the same designations as
+ * a free ON-CHAIN oracle — a public contract, readable by any RPC, no
+ * account and no API key (their open API-key signup has since closed,
+ * which is exactly the dependency an on-chain read does not have).
+ * On Base the oracle is a DIFFERENT address than the 0x40C5… deployed
+ * on most chains — verified against the oracle docs 2026-08-19.
+ * The selector is the first four bytes of keccak256 of
+ * "isSanctioned(address)", derived rather than copied.
+ *
+ * FAIL CLOSED ON EVERYTHING UNEXPECTED: a non-ok response, a result
+ * that is not exactly the 32-byte true or false, an unscreenable
+ * address shape — all return `listed: null`, which upstream withholds
+ * payment. The one answer that permits money to move is the oracle
+ * saying false, byte for byte.
+ */
+export const SANCTIONS_ORACLE_BASE =
+  "0x3A91A31cB3dC49b4db9Ce721F50a9D076c8D739B";
+const IS_SANCTIONED_SELECTOR = "0xdf592f7d";
+const BOOL_TRUE = `0x${"0".repeat(63)}1`;
+const BOOL_FALSE = `0x${"0".repeat(64)}`;
+
+export function oracleScreen(
+  rpcUrl: string,
+  fetchImpl: typeof fetch = fetch,
+): SanctionsScreen {
+  return async (address: string) => {
+    const source = `Chainalysis on-chain sanctions oracle (${SANCTIONS_ORACLE_BASE} on eip155:8453)`;
+    if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+      // Not a 20-byte EVM address; the oracle cannot answer for it.
+      return { listed: null, source: `${source} — address shape unscreenable` };
+    }
+    try {
+      const data =
+        IS_SANCTIONED_SELECTOR +
+        address.slice(2).toLowerCase().padStart(64, "0");
+      const response = await fetchImpl(rpcUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "eth_call",
+          params: [{ to: SANCTIONS_ORACLE_BASE, data }, "latest"],
+        }),
+      });
+      if (!response.ok) {
+        return { listed: null, source: `${source} (HTTP ${response.status})` };
+      }
+      const body = (await response.json()) as { result?: string };
+      if (body.result === BOOL_TRUE) return { listed: true, source };
+      if (body.result === BOOL_FALSE) return { listed: false, source };
+      return { listed: null, source: `${source} (unexpected result)` };
+    } catch {
+      return { listed: null, source: `${source} (unreachable)` };
+    }
+  };
+}
+
 export function chainalysisScreen(
   apiKey: string,
   fetchImpl: typeof fetch = fetch,
@@ -246,11 +305,14 @@ export async function performLaunchCheck(
     (env.FIELD_WALLET_KEY
       ? await fieldSignerFromKey(env.FIELD_WALLET_KEY)
       : undefined);
+  // The API key, when present, is an operator override; the keyless
+  // on-chain oracle is the default, over the same Base RPC the
+  // settlement attestation already reads.
   const screen =
     options.screen ??
     (env.SANCTIONS_API_KEY
       ? chainalysisScreen(env.SANCTIONS_API_KEY, fetchImpl)
-      : undefined);
+      : oracleScreen(env.BASE_RPC_URL ?? "https://mainnet.base.org", fetchImpl));
 
   walk: {
     // STAGE 1 — approach, unpaid, calling card out.

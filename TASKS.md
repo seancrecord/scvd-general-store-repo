@@ -78,11 +78,14 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   own endpoint with a real EIP-3009 authorization from the field
   wallet (caps and the rule-3 fail-closed screen hard-coded in
   services/launch-check.ts; WALKABOUT.md gained the standing-approval
-  section, ⚑). The door stays closed in production until the keeper
-  provisions two secrets — FIELD_WALLET_KEY (the declared field
-  wallet's key) and SANCTIONS_API_KEY (Chainalysis screening) — via
-  `wrangler secret put`; the buy route says so honestly until then.
-  Remaining: those two secrets, and the keeper's pen on the ⚑ copy.
+  section, ⚑). The rule-3 screen went KEYLESS the same evening —
+  Chainalysis closed their open API-key signup, so the default screen
+  is their on-chain sanctions oracle on Base (a public contract read
+  over BASE_RPC_URL; SANCTIONS_API_KEY survives as an optional
+  override). The door stays closed only until FIELD_WALLET_KEY (the
+  declared field wallet's key) lands via `wrangler secret put`; the
+  buy route says so honestly until then. Remaining: that one secret
+  (keeper reports it set, 2026-08-19), and the keeper's pen on ⚑.
 
 - **THE STATEMENT (keeper-approved backlog, 2026-08-19 — billing).**
   Periodic signed reconciliation of an agent wallet: its on-chain
