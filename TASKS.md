@@ -73,6 +73,75 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   Approved as backlog, not yet, in the 2026-08-07 enforcement round
   (items 1, 2, 4, 5 of that round shipped; this is item 3).
 
+- **LAUNCH CHECK (keeper-approved backlog, 2026-08-19 — the walkabout
+  productized for one endpoint).** We attempt a real mainnet purchase
+  of a seller's cheapest item and hand them a signed field report of
+  exactly what happened — challenge served, terms parsed, payment
+  presented, settled or refused and why, delivered or not. The field
+  run is the sales pitch: 71% of payment attempts across the walkable
+  Bazaar failed, and almost no seller has seen their buy path from
+  the buyer's side. x402station sells a $1 automated badge; this is a
+  real settlement plus narrative, no badge, never a score. The runner
+  exists (research/field-run-2026-08-18/field-run-v2.mjs); the build
+  is a paid door, per-run spend from the declared field wallet under
+  WALKABOUT.md rules, and the report as a signed artifact in the
+  ecosystem_report class. Days, not weeks.
+
+- **THE STATEMENT (keeper-approved backlog, 2026-08-19 — billing).**
+  Periodic signed reconciliation of an agent wallet: its on-chain
+  transfers vs. its own claimed ledger — exactly the analysis that
+  found our 180 unrecorded settlements ($0.66 that moved while the
+  client recorded failure), sold as a service. The regulatory wind is
+  named: the AI AGENT Act (S.5051) directs NIST toward auditable
+  records of agent actions, and this is that record, signed by a
+  party that isn\u2019t the agent. Build: generalize the Basescan
+  reconciliation from the field run; input is an address (and
+  optionally the agent\u2019s ledger), output is a signed statement
+  artifact. Honest limit to state on the artifact: we reconcile what
+  the chain shows against what the ledger claims; we cannot see
+  payments that never reached a chain we read.
+
+- **MANDATE RECEIPTS (keeper-approved backlog, 2026-08-19 — the
+  intent layer).** A signed, timestamped, third-party-held record of
+  what was authorized BEFORE the agent acts — the missing first link
+  the receipt chain reserved a field for (mandate_id, RECEIPT_CHAIN.md).
+  S.5051 pointing NIST at delegation-proof standards turns this from
+  interesting into prior art built before the standard exists. The
+  honest register, decided already: a mandate submitted by an agent
+  proves what the agent CLAIMED its instructions were, dated — never
+  what the human actually said, unless the human\u2019s client submits
+  it. Chain-of-custody, not truth-of-intent, stated per artifact class.
+
+- **THE FRESH SET (keeper-approved backlog, 2026-08-19 — routing).**
+  The walkable set as a living surface: endpoints that answered a
+  spec-conformant x402 challenge (and, where the walkabout paid them,
+  settled a real payment) as of a dated observation. Dated
+  observations, never scores — the exact line that separates this
+  from every trust-score site, held by rule 43. The weekly ward round
+  already produces the raw material; the build is a served, dated
+  snapshot with each row citing its evidence. Decide at build time
+  whether it is free (routing data as a public good that markets the
+  paid tiers) or half-cent-per-pull.
+
+- **THE METER CHECK (keeper-approved backlog, 2026-08-19 — the
+  inference angle, scoped to what is honestly checkable).** Token
+  billing is the one part of inference commerce a third party CAN
+  verify: we hold the prompt we sent and the completion we received,
+  so both sides recount deterministically with the model\u2019s
+  published tokenizer — billed_tokens vs counted_tokens is arithmetic,
+  not trust. The product: buy a small completion from an x402
+  inference endpoint, recount both sides, bind the delta and the
+  effective $/1M tokens to the settlement tx in a signed observation.
+  A weights-and-measures inspector for token billing, which is the
+  most general-store product imaginable. THE LIMIT, stated before
+  anyone overclaims: we can verify the COUNT, never the MODEL — which
+  weights actually served the request is unverifiable from outside
+  (that is the zkML problem, and it is somebody else\u2019s), and open
+  tokenizers make the recount exact while closed ones make it an
+  approximation the artifact must label. Depends on: walkabout runner,
+  a tokenizer table per claimed model, and enough x402 inference
+  endpoints to matter — the catalog says when.
+
 ## THE FIVE-DOCUMENT PLAN'S GATES, ON THE CLOCK (recorded 2026-08-12)
 
 The consolidated build plan from the five-document evaluation is
