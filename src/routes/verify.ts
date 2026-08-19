@@ -5,11 +5,14 @@ import {
   jcsCanonicalize,
 } from "@/lib/jcs";
 import type { Context } from "hono";
+import { escapeHtml } from "@/lib/sanitize";
+import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { storeIdentity } from "@/lib/identity";
 import { recordVerifyCall } from "@/lib/metrics";
 import type { EventSignals } from "@/lib/metrics";
 import {
   cachedPublicKeyHex,
+  signMessage,
   canonicalizeCertificate,
   canonicalizeCertificateLegacy,
   certificateSignatureForm,
@@ -23,6 +26,7 @@ import {
   verifyAnchorSignature,
 } from "@/services/anchors";
 import { getCertificate } from "@/services/certificates";
+import { canonicalizeReport } from "@/services/reports";
 import {
   CROSS_REF_INDEPENDENCE,
   CROSS_REF_MEANING,
@@ -54,7 +58,7 @@ import {
   HANDOVER_MEANS,
   verifyHandoverSignature,
 } from "@/services/key-handover";
-import { VOICE } from "@/store";
+import { VOICE, getMenuItem } from "@/store";
 import {
   attributeKey,
   currentKeyInServiceFrom,
@@ -63,7 +67,7 @@ import {
 } from "@/store/key-registry";
 import { MAKER_MARKS } from "@/store/provenance";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
-import type { HonoEnv } from "@/types";
+import type { Certificate, HonoEnv } from "@/types";
 
 /**
  * GET /api/verify/:cert_id, public verification of anything the store
@@ -224,8 +228,95 @@ async function noteVerify(
   });
 }
 
+/**
+ * THE RECEIPT PAGE (the receipt chain, 2026-08-19). The same URL a
+ * machine reads as JSON renders for a person as a printable receipt —
+ * the store's standard content negotiation, applied to the one
+ * artifact a human is most likely to be handed. The verdict is
+ * RE-CHECKED AT RENDER, never cached: the page is a verification,
+ * not a picture of one. Zero PII, nothing stored — a rendering of an
+ * artifact that already exists.
+ */
+function receiptPageHtml(
+  cert: Certificate,
+  valid: boolean,
+  form: string,
+): string {
+  // The certificate binds the item ID; the page shows the shelf name
+  // where the menu still knows it, and the honest id where it doesn't
+  // (retired items keep verifying forever; their receipts say what
+  // the buyer's records say).
+  const itemName = getMenuItem(cert.item)?.name ?? cert.item;
+  const money =
+    cert.paid_usdc !== undefined
+      ? `$${cert.paid_usdc} ${cert.asset ?? "USDC"}${cert.tip_usdc ? ` (includes $${cert.tip_usdc} tip)` : ""}`
+      : "Free shelf — no payment moved";
+  const explorer = cert.settlement_tx
+    ? cert.network && cert.network.startsWith("solana")
+      ? `https://solscan.io/tx/${cert.settlement_tx}`
+      : `https://basescan.org/tx/${cert.settlement_tx}`
+    : null;
+  const row = (label: string, value: string) =>
+    `<p class="menu-desc"><strong>${escapeHtml(label)}</strong> — ${value}</p>`;
+  return `<section>
+      <p class="menu-desc"><strong>${
+        valid
+          ? `Signature verified just now (${escapeHtml(form)} form) — this receipt is genuine.`
+          : "SIGNATURE DID NOT VERIFY. Do not trust this page's contents; the machine record below is the authority."
+      }</strong></p>
+      ${row("Item", escapeHtml(itemName))}
+      ${row("Date", escapeHtml(cert.date.slice(0, 10)))}
+      ${row("Paid", escapeHtml(money))}
+      ${row("Patron number", `#${cert.patron_number}`)}
+      ${cert.name ? row("For", escapeHtml(cert.name)) : ""}
+      ${cert.made_by ? row("Made by", escapeHtml(cert.made_by)) : ""}
+      ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
+      ${explorer ? row("On-chain settlement", `<a href="${explorer}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
+      ${row("Certificate id", `<code>${escapeHtml(cert.cert_id)}</code>`)}
+    </section>
+    ${cert.from_the_store ? `<section><p class="menu-desc"><em>${escapeHtml(cert.from_the_store)}</em> — the store</p></section>` : ""}
+    <section>
+      <p class="menu-meta">This page re-checks the ed25519 signature on every load. The machine-readable record — the exact signed bytes, the public key, and how to run the check with your own library — is this same URL served as JSON. What a signature from this store proves, per artifact class: <a href="/attestation">/attestation</a>. Re-verification is free, forever.</p>
+    </section>`;
+}
+
 verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   const id = c.req.param("cert_id");
+
+  /**
+   * ECOSYSTEM REPORTS verify here like every artifact class (2026-08-19):
+   * one endpoint answers for everything the store signs. The signature
+   * is deterministic (ed25519, fixed canonical form), so re-deriving it
+   * here and serving the exact bytes lets a stranger run the check with
+   * their own library — which, as everywhere on this endpoint, is the
+   * check that carries the weight; ours confirming ours does not.
+   */
+  const reportCanonical = await canonicalizeReport(id);
+  if (reportCanonical) {
+    const { signature, publicKey } = await signMessage(
+      reportCanonical,
+      c.env.SIGNING_KEY,
+    );
+    const valid = await verifyMessageSignature(
+      reportCanonical,
+      signature,
+      publicKey,
+    );
+    return c.json({
+      valid,
+      artifact_class: "ecosystem_report",
+      store_identity: storeIdentity(c.env.STORE_BASE_URL),
+      report_url: `${c.env.STORE_BASE_URL}/api/report/${id}`,
+      signature,
+      public_key: publicKey,
+      ...(await signedBy(c, publicKey)),
+      algorithm: "ed25519",
+      signed_payload: reportCanonical,
+      artifact_hash: await artifactHash(reportCanonical),
+      signature_covers:
+        "signed_payload is the exact UTF-8 string the signature covers: ed25519_verify(utf8(signed_payload), hex_to_bytes(signature), hex_to_bytes(public_key)). The body_sha256 inside it binds the full report body served at report_url — hash that body yourself and compare; nothing in the report is outside the digest.",
+    });
+  }
 
   const record = await getCertificate(c.env, id);
   if (record) {
@@ -236,6 +327,20 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       record.public_key,
     );
     const valid = form !== "invalid";
+    if (wantsHtml(c.req.header("Accept"))) {
+      return c.html(
+        renderSimplePage({
+          title: `Receipt ${record.certificate.cert_id}`,
+          description:
+            "A signed receipt from Sean-Claude Van Damme's General Store, re-verified on every load: what was bought, when, for how much, and the on-chain settlement where one exists. The machine-readable record is this same URL as JSON.",
+          bodyHtml: receiptPageHtml(
+            record.certificate,
+            valid,
+            form,
+          ),
+        }),
+      );
+    }
     /**
      * A certificate minted before 2026-07-30 is signed over a field set
      * that omitted `tag` and `attests`. It is still one of ours, so it

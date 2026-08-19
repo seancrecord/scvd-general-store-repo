@@ -38,6 +38,7 @@ import {
   executionContractRoutes,
   statsRoutes,
   corpusRoutes,
+  reportRoutes,
   serviceAuditRoutes,
   reconciliationRoutes,
   namespaceSpecRoutes,
@@ -237,6 +238,7 @@ app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
 app.route("/", corpusRoutes);
+app.route("/", reportRoutes);
 app.route("/", pulseRoutes);
 app.route("/", attestationRoutes);
 app.route("/", criteriaRoutes);

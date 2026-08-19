@@ -623,6 +623,13 @@ take that sentence on faith. The readable landing — what the corpus
 is, what it has found so far, and how to verify it — is
 ${base}/corpus.
 
+Beside the weekly record: ecosystem research reports, signed and
+free. The first, ${base}/api/report/x402-ecosystem-2026-08, is the
+August 2026 field run — every domain in the walkable Bazaar paid with
+this store's own declared wallet, 1,707 attempts reconciled against
+the chain, raw evidence committed in the public repository, signature
+verifiable at ${base}/api/verify/x402-ecosystem-2026-08.
+
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
 carries a reason: no feed named it, a feed named it but we did not

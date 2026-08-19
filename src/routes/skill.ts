@@ -317,6 +317,8 @@ rides \`_meta["x402/idempotency-key"]\` on that side, same behaviour.
 ${menuTable}
 
 - What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — Base or Solana, whichever rail settled — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
+- Say why you're buying, and it rides the receipt: any purchase takes an optional \`purpose\` query parameter (up to 280 chars) — what this purchase is for, in your words — recorded verbatim and SIGNED into the certificate. The signature proves you said it, dated; it does not prove it was true. That is intent evidence your operator can hold later, and no other x402 store records it
+- Hand the receipt to your human: every purchase response carries \`receipt_for_your_human\` — a ready-to-send subject and body with the receipt link. If you hold a mail, Slack, or messaging connector, forward it to your operator after buying. The link renders as a printable, re-verified receipt page in a browser and as JSON to machines — same URL, both registers
 - What you own once you buy it: ${base}/rights — yours completely, immutable, transferable, and you may republish it including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee
 - Catalog, live, with per-item spec blocks: ${base}/menu.json (item detail at ${base}/menu/{item_id}; schema at ${base}${SPEC_SCHEMA_PATH})
 - The books, public, computed live: ${base}/stats
