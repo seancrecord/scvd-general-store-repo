@@ -318,6 +318,19 @@ with their evidence rather than deleted:
   hand-captured paid response per directory.
 - **The Tab chain trued up and the CV re-pin done** — see item 4
   above, corrected in place.
+- **THE 08-05 PAGINATION COLLAPSE, SOLVED (2026-08-19).** The keeper
+  walked the ward by hand; the round minted (first hand-minted entry,
+  snapshot 3 / 2026-W34) and its new pagination_shape field read
+  `pagination.limit / offset / total` off the live feed. There was
+  never a cursor to find — the feed moved to OFFSET pagination on
+  08-05, and twelve cursor spellings were being tried against a shape
+  that has none. The reader now follows the declared shape: advance
+  by the served limit to the served total (page cap 60 = up to 6,000
+  declared resources), with a repeat-page guard so a server that
+  ignores our offset gets counted once and flagged suspect, never
+  sixty times. The instrument diagnosed its own blindness on its
+  first firing — the exact loop CORPUS_VELOCITY.md was built for.
+  Next Sunday's round (or a hand-run) reads the full listing.
 
 **What is genuinely open:**
 
