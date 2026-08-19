@@ -39,7 +39,8 @@
     "@x402/extensions": "^2.19.0",
     "@x402/hono": "^2.19.0",
     "@x402/svm": "~2.19.0",
-    "hono": "^4.12.31"
+    "hono": "^4.12.31",
+    "viem": "^2.55.8"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.18.7",
@@ -48,7 +49,6 @@
     "@x402/fetch": "^2.19.0",
     "dotenv": "^17.4.2",
     "typescript": "^5.8.3",
-    "viem": "^2.55.8",
     "vitest": "^4.1.0",
     "wrangler": "^4.118.0"
   },

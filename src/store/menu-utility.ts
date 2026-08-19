@@ -161,6 +161,41 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * THE LAUNCH CHECK (2026-08-19, first build off the keeper-approved
+   * backlog): the walkabout productized for ONE door — a real mainnet
+   * purchase attempt of the buyer's own endpoint, from the declared
+   * field wallet, under WALKABOUT.md rules, recorded stage by stage
+   * and signed. Demand tag: OBSERVED DEMAND — the August field run
+   * measured 71% of payment attempts failing across the walkable
+   * Bazaar, and the seller has no buyer's-eye view of their own door.
+   * Rule 23a-clean: one attempt, one moment, terminal at write; never
+   * a retry loop. Rule 43: a dated observation of ONE TRANSACTION —
+   * an unpaid verdict is framed as this store's rules, never the
+   * seller's failing; no badge, no score, and x402station's $1 badge
+   * is the counterexample the copy is written against.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "launch_check",
+    listed_week: "2026-W34",
+    name: "The Launch Check",
+    price_usdc: 5,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name your x402 endpoint (the url query parameter) and this store walks it the way a paying stranger does: one unpaid GET with our declared field-research User-Agent, your 402 challenge read the way a real buyer reads it, the cheapest Base rail chosen, the payTo screened, a real EIP-3009 authorization signed by our declared field wallet, presented, and whatever happens next written down — settled or refused, receipt returned or absent, goods delivered or an empty 2xx. Every stage is recorded raw and the whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. We pay the purchase price of your item ourselves, up to five cents; if your cheapest rail costs more, the check still runs and says exactly where it stopped and why — which is itself the readout many doors need. Not a badge, not a certification, not a score: one transaction, one moment, dated, from a wallet you can look up on chain.",
+    note_402:
+      "Five dollars, and we spend our own nickel at your till. What you get is the thing almost no seller has: your buy path, walked for real, written down by the buyer.",
+    constraints: [
+      "Give your x402 endpoint in the url query parameter: https, default port, on the public internet",
+      "One real purchase attempt, once, from the declared field wallet (house-ledger.json) — never a retry loop, never a monitor",
+      "We pay at most $0.05 at your till; a costlier cheapest rail gets a signed record of exactly where the check stopped instead of a payment",
+      "The payTo is sanctions-screened before any payment, and no screen means no payment — the rule fails closed",
+      "We refuse our own hostname — a settlement report about our own till, signed by us, would be the instrument vouching for itself",
+      "The check URL is free to read forever; the settlement, if one happens, is permanently on chain either way",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the

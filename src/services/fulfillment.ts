@@ -15,6 +15,8 @@ import { deliverInstantGoods } from "@/services/instant-goods";
 import { performServiceAudit } from "@/services/service-audit";
 import { performSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
+import { performLaunchCheck } from "@/services/launch-check";
+import type { SignedLaunchCheck } from "@/services/launch-check";
 import { performOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { reconcileSettlement } from "@/services/settlement-reconciliation";
@@ -261,6 +263,18 @@ export async function fulfillPurchase(
     mintOptions.attests = onpageAudit.evidence_hash;
   }
   /**
+   * THE LAUNCH CHECK walks first and mints second, same discipline:
+   * the certificate binds the walk record's evidence hash. The real
+   * money this spends (the field wallet's, capped in the service)
+   * moves inside the walk, post-settle of the BUYER's payment — a
+   * failed walk is still a signed observation, never a refund case.
+   */
+  let launchCheck: SignedLaunchCheck | undefined;
+  if (item.id === "launch_check") {
+    launchCheck = await performLaunchCheck(env, input.targetUrl ?? "");
+    mintOptions.attests = launchCheck.evidence_hash;
+  }
+  /**
    * THE RECONCILIATION observes first and mints second, same reason as
    * every artifact above it: the certificate binds the evidence hash,
    * so /api/verify answers "this is the observation that purchase
@@ -475,6 +489,9 @@ export async function fulfillPurchase(
     }
     if (onpageAudit) {
       goodsInput.onpageAudit = onpageAudit;
+    }
+    if (launchCheck) {
+      goodsInput.launchCheck = launchCheck;
     }
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;

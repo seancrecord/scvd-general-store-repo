@@ -87,6 +87,32 @@ is a program nobody should trust with rule 3.
 the default caps in rule 1, and this document's standing are all the
 keeper's to confirm; nothing further walks until he does.
 
+## The Launch Check — one door, walked on commission
+
+Productized 2026-08-19 (the keeper-approved backlog's first build):
+the walkabout's method pointed at a single endpoint, at the request
+of whoever runs it — the strongest consent this program has, stronger
+than a discovery listing. The rules above ride along unchanged, with
+these clarifications:
+
+- The envelope UA gains an honest program marker:
+  `scvd-walkabout/1.0 (+https://scvd.store/what) x402-launch-check`.
+- Rule 1's approval is STANDING for launch checks: the keeper
+  approved the product and its caps ($0.05 per check, hard-coded in
+  services/launch-check.ts) when he approved this section; no
+  per-check approval, because the commissioning seller's request is
+  the trigger.
+- Rule 3 fails closed in code: no sanctions screen available, no
+  payment, and the door refuses new purchases rather than walking
+  unpaid — a record that cannot pay is sold only by its own honest
+  description, never as a settlement.
+- The raw record ships as the signed artifact itself (stage-by-stage
+  at /api/launch-check/{check_id}, free forever) rather than a
+  research/ ledger — same rawness, same re-derivability, per-buyer.
+
+⚑ KEEPER REVIEW — this section, the standing approval it claims, and
+the launch_check item copy are the keeper's to confirm.
+
 ## What a run delivers
 
 - research/field-run-{date}/ledger.jsonl — every attempt, raw.

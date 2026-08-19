@@ -318,6 +318,55 @@ const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * launch_check needs a target AND an open door BEFORE money moves:
+ * the walk pays real money from the field wallet, and WALKABOUT.md
+ * rule 3 fails closed — so a store deployed without the field wallet
+ * or the sanctions screen refuses the purchase here, plainly, rather
+ * than taking five dollars for a walk that cannot pay.
+ */
+const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/launch_check" || !isBuying(c)) {
+    return next();
+  }
+  if (!c.env.FIELD_WALLET_KEY || !c.env.SANCTIONS_API_KEY) {
+    return c.json(
+      {
+        error:
+          "The Launch Check door is closed right now: the field wallet or its sanctions screen is not provisioned on this deployment, and the walkabout rules fail closed — no screen, no payment, no charge to you. The free preflight at POST /api/preflight/v1 reads your 402 challenge without paying it.",
+      },
+      503,
+    );
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        error:
+          "This needs a url query parameter — the https endpoint a buyer would pay. No target, no charge. A free unpaid read of your challenge is POST /api/preflight/v1.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        error:
+          "That is this store's own hostname. We do not walk our own till and sign the receipt — a settlement report about ourselves, by ourselves, is the instrument vouching for itself. Buy the cheapest thing here with your own wallet; your own record of what happened is worth more than our word.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -683,6 +732,7 @@ buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);
 buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
+buyRoutes.use("/api/buy/*", launchCheckCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
@@ -773,6 +823,11 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "onpage_audit") {
     // onpageAuditCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "launch_check") {
+    // launchCheckCheck validated the URL, refused our own host, and
+    // confirmed the field wallet and screen are provisioned.
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "coffees_for_closers") {

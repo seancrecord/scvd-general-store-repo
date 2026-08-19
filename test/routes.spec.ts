@@ -96,6 +96,9 @@ describe("the storefront", () => {
       // The on-page battery, listed beside the card whose shape it
       // shares: same shelf, one rung down in price.
       "onpage_audit",
+      // The $5 tie continues in file order: the walkabout's paid door
+      // rides the utility shelf right after the batteries it extends.
+      "launch_check",
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",

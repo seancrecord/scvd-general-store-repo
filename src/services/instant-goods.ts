@@ -12,6 +12,8 @@ import { schedulePhantomCheck } from "@/services/phantom";
 import { storeServiceAudit } from "@/services/service-audit";
 import { storeSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
+import { storeLaunchCheck } from "@/services/launch-check";
+import type { SignedLaunchCheck } from "@/services/launch-check";
 import { storeOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { storeReconciliation } from "@/services/settlement-reconciliation";
@@ -35,6 +37,7 @@ import {
   luckyNote,
   patronageCertificateNote,
   patronagePassNote,
+  launchCheckNote,
   onpageAuditNote,
   phantomCheckNote,
   reconciliationNote,
@@ -79,6 +82,8 @@ export interface InstantGoodsInput {
   signatureAgentCard?: SignedSignatureAgentCard;
   /** onpage_audit only: the page report, already made and signed. */
   onpageAudit?: SignedOnpageAudit;
+  /** launch_check only: the walk record, already made and signed. */
+  launchCheck?: SignedLaunchCheck;
   /** settlement_reconciliation only: the observation, already signed. */
   reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
@@ -270,6 +275,29 @@ export async function deliverInstantGoods(
           card_url: `/api/bot-auth-card/${card.card_id}`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The card is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the card too. The card URL serves the record free, forever.",
+        },
+      };
+    }
+    case "launch_check": {
+      // Walked and signed upstream so its evidence hash could be
+      // bound into the certificate; filed here, after the mint, so
+      // the envelope carries the cert id — the Once-Over's discipline.
+      const walk = input.launchCheck;
+      if (!walk) {
+        throw new Error("launch_check reached goods with no record");
+      }
+      await storeLaunchCheck(env, walk, input.certId ?? "");
+      return {
+        deliverable: launchCheckNote(walk.verdict),
+        extras: {
+          check_id: walk.check_id,
+          verdict: walk.verdict,
+          paid_usd: walk.paid_usd,
+          ...(walk.tx_hash ? { tx_hash: walk.tx_hash } : {}),
+          check: walk,
+          check_url: `/api/launch-check/${walk.check_id}`,
+          verify_note:
+            "Three ways to check this, none of which requires trusting us. The record is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the walk too. And if money moved, the settlement is on Base from the field wallet named in the record — the chain's copy is nobody's to edit.",
         },
       };
     }

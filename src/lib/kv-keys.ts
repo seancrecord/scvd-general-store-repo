@@ -238,6 +238,13 @@ export const KV_KEYS = {
    */
   onpageAudit: (auditId: string): string => `onpage_audit:${auditId}`,
   /**
+   * A purchased launch check: the signed stage-by-stage record of one
+   * real purchase attempt from the field wallet, and the certificate
+   * that bound its evidence hash. PATRONS, terminal at write, never
+   * scanned — the walkabout productized for one door.
+   */
+  launchCheck: (checkId: string): string => `launch_check:${checkId}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and

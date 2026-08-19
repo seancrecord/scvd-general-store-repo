@@ -92,5 +92,13 @@
   //   WBA_SIGNING_KEY     ed25519 seed for Web Bot Auth egress signing, same
   //                       generator, optional — unset, egress is unsigned and
   //                       the signatures directory answers 404
+  //   FIELD_WALLET_KEY    secp256k1 private key (hex) of the declared field
+  //                       wallet (house-ledger.json) the Launch Check pays
+  //                       from — optional; unset, that door refuses before
+  //                       any money moves. Never the till's key.
+  //   SANCTIONS_API_KEY   Chainalysis public screening API key for the
+  //                       walkabout's rule-3 payTo screen — optional; unset,
+  //                       screening fails closed and the Launch Check door
+  //                       refuses rather than paying unscreened
   //   ADMIN_PASSWORD      Basic Auth password for /admin
 }

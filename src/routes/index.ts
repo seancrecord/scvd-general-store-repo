@@ -56,6 +56,7 @@ export { conformanceRoutes } from "@/routes/conformance";
 export { conformanceLandingRoutes } from "@/routes/conformance-landing";
 export { corpusLandingRoutes } from "@/routes/corpus-landing";
 export { preflightRoutes } from "@/routes/preflight";
+export { launchCheckRoutes } from "@/routes/launch-check";
 export { onpageRoutes } from "@/routes/onpage";
 export { watchRoutes } from "@/routes/watch";
 export { anchorLogRoutes } from "@/routes/anchor-log";

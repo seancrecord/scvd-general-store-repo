@@ -120,6 +120,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Show origins my crawler's Web Bot Auth key directory is set up right, with somebody who is not me saying so",
   onpage_audit:
     "Get a signed readout of what my page actually serves a machine reader — title, metadata, structured data — that I can hand to a third party",
+  launch_check:
+    "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
   bitcoin_anchor:
     "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
@@ -176,6 +178,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "a dated, signed observation that an agent's Web Bot Auth key directory is in order, proof-of-possession verified — free at POST /api/bot-auth/check; this is the same battery with a signature, a certificate binding, and a permanent card URL an origin checks without us. About the document, never the operator.",
   onpage_audit:
     "a dated, signed observation of what one page served a machine reader — title, description, canonical, robots, structured data — free at POST /api/onpage/v1; this is the same battery with a signature, a certificate binding, and a permanent report URL. Reads the HTML as served: what a script renders is named as unseen.",
+  launch_check:
+    "the one observation no probe can substitute: what your buy path does when a real stranger pays it — a genuine EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, the whole walk signed stage by stage. The field run's method, pointed at your door at your request.",
   bitcoin_anchor:
     "a commitment that cannot be made after the fact: a Bitcoin-anchored timestamp on the buyer's own digest — a key log, a snapshot, any record that must provably have existed now. The mechanism this store anchors its own key history with; the bytes stay the buyer's.",
   attestation_bundle:
@@ -244,6 +248,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A signed JSON card — verdict (directory_ready, not_ready, unreachable or refused), every check from the directory battery by name including the proof-of-possession verification, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable card URL serving the record free forever. Instant; one GET at one moment, never monitoring.",
   onpage_audit:
     "A signed JSON report — verdict (ready, not_ready, unreachable or refused), every check and advisory from the published on-page battery, the blind spots printed on the artifact, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable report URL serving the record free forever. Instant; one GET of the HTML as served, never a render, never monitoring.",
+  launch_check:
+    "A signed JSON walk record — verdict (settled, payment_refused, no_payment_gate, malformed_challenge, unpaid_by_rule or unreachable), every stage with its detail (approach, challenge, terms, screen, payment, settle, delivery), what this store paid and to whom, the settlement transaction where the seller returned one, the paying field wallet, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable check URL serving the record free forever. Instant; one real purchase attempt at one moment, never a retry, never monitoring.",
   bitcoin_anchor:
     "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:
@@ -350,6 +356,12 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: ["onpage_audit", "free:/api/onpage/v1"],
     example:
       "GET /api/buy/onpage_audit?url=https://your-site.example/pricing",
+  },
+  {
+    when: "You are about to launch an x402 endpoint — or wonder why nobody pays the one you launched — and no probe can tell you what a real paying buyer meets at your till.",
+    items: ["launch_check", "free:/api/preflight/v1"],
+    example:
+      "GET /api/buy/launch_check?url=https://your-shop.example/api/buy/thing",
   },
   {
     when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",
