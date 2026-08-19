@@ -140,6 +140,11 @@ export function onpageAuditNote(verdict: string): string {
       : "We knocked. Nobody came. From where we stood, at that minute, the page didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
+/** the_mandate. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function mandateNote(): string {
+  return "Wrote down what you say you're authorized to do, before you did it — dated, signed, held by somebody who is neither you nor your principal. Cite the mandate_id on any purchase here and it rides that certificate. Plainly, because this page may be read in a dispute someday: this records that the claim was made, not that it was true. That restraint is the whole reason it will be worth quoting.";
+}
+
 /** the_statement. ⚑ KEEPER REVIEW: drafted, recut freely. */
 export function statementNote(coverage: string): string {
   return coverage === "complete"

@@ -149,6 +149,10 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // USDC transfer in and out, off the chain, signed by neither
       // the agent nor its operator.
       "the_statement",
+      // And pointed BEFORE the acting: the claimed authorization,
+      // recorded and dated by a party that is neither the agent nor
+      // its principal, citable on every later certificate.
+      "the_mandate",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

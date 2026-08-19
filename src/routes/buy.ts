@@ -404,6 +404,101 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * the_mandate needs claimed instructions BEFORE money moves, and the
+ * optional structured claims must be well-shaped — a malformed cap or
+ * expiry signed forever is worse than a refusal now.
+ */
+const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/the_mandate" || !isBuying(c)) {
+    return next();
+  }
+  const text = (c.req.query("mandate") ?? "").replace(/\0/g, "").trim();
+  if (!text) {
+    return c.json(
+      {
+        error:
+          "Nothing to record, no charge. Put the claimed instructions in the mandate query parameter — up to 2000 characters, recorded verbatim: what this agent is authorized to do, as the submitter claims it.",
+      },
+      400,
+    );
+  }
+  if (text.length > 2000) {
+    return c.json(
+      {
+        error:
+          "The mandate text caps at 2000 characters — a mandate is instructions, not a contract's appendix. Nothing charged.",
+      },
+      400,
+    );
+  }
+  const as = c.req.query("submitted_as");
+  if (as !== undefined && as !== "agent" && as !== "principal") {
+    return c.json(
+      {
+        error:
+          'submitted_as must be "agent" (the agent submitting its own claimed instructions — the default) or "principal" (the human\'s own client submitting them). It is recorded as a claim either way. Nothing charged.',
+      },
+      400,
+    );
+  }
+  const capRaw = c.req.query("declared_cap_usdc");
+  if (capRaw !== undefined) {
+    const cap = Number.parseFloat(capRaw);
+    if (!Number.isFinite(cap) || cap <= 0) {
+      return c.json(
+        {
+          error:
+            "declared_cap_usdc must be a positive number — the claimed spending ceiling in USDC. Declared, never enforced by us, and the record says so. Nothing charged.",
+        },
+        400,
+      );
+    }
+  }
+  const expiresRaw = c.req.query("expires_at");
+  if (expiresRaw !== undefined && Number.isNaN(Date.parse(expiresRaw))) {
+    return c.json(
+      {
+        error:
+          "expires_at must be an ISO 8601 date (e.g. 2026-09-01T00:00:00Z) — the claimed expiry of the authorization. Declared, never enforced by us. Nothing charged.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
+/**
+ * ANY purchase may cite a mandate — and a citation this store cannot
+ * resolve is refused BEFORE money moves, so a certificate's
+ * mandate_id never dangles. The one buy-door check that reads KV, and
+ * deliberately: the whole value of the link is that it resolves.
+ */
+const mandateRefCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (!c.req.path.startsWith("/api/buy/") || !isBuying(c)) {
+    return next();
+  }
+  const mandateId = c.req.query("mandate_id");
+  if (mandateId === undefined) {
+    return next();
+  }
+  if (
+    !/^m_[a-z0-9]+$/.test(mandateId) ||
+    !(await import("@/services/mandates").then(({ getMandate }) =>
+      getMandate(c.env, mandateId),
+    ))
+  ) {
+    return c.json(
+      {
+        error:
+          "That mandate_id resolves to no mandate this store holds, so it cannot ride a certificate — a signed authorization link that points at nothing would be worse than none. Record the mandate first at /api/buy/the_mandate, then cite the id it returns. Nothing charged.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -771,6 +866,8 @@ buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", launchCheckCheck);
 buyRoutes.use("/api/buy/*", statementCheck);
+buyRoutes.use("/api/buy/*", mandateCheck);
+buyRoutes.use("/api/buy/*", mandateRefCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
@@ -953,6 +1050,28 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   const purpose = sanitizeText(c.req.query("purpose"), 280);
   if (purpose) {
     input.purpose = purpose;
+  }
+  // The mandate link, any item: mandateRefCheck already resolved it
+  // against the store's own records before the gate let money move.
+  const mandateId = c.req.query("mandate_id");
+  if (mandateId) {
+    input.mandateId = mandateId;
+  }
+  if (item.id === "the_mandate") {
+    // mandateCheck validated text, role, cap and expiry shapes.
+    input.mandateText = (c.req.query("mandate") ?? "").replace(/\0/g, "").trim();
+    const submittedAs = c.req.query("submitted_as");
+    if (submittedAs === "agent" || submittedAs === "principal") {
+      input.mandateSubmittedAs = submittedAs;
+    }
+    const cap = Number.parseFloat(c.req.query("declared_cap_usdc") ?? "");
+    if (Number.isFinite(cap) && cap > 0) {
+      input.mandateDeclaredCap = cap;
+    }
+    const expires = c.req.query("expires_at");
+    if (expires && !Number.isNaN(Date.parse(expires))) {
+      input.mandateExpiresAt = expires;
+    }
   }
   const detail = sanitizeText(c.req.query("detail"), 600);
   if (detail) {

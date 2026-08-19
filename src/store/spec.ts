@@ -124,6 +124,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
   the_statement:
     "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
+  the_mandate:
+    "Record what my agent is authorized to do, dated and signed by a third party, before it spends anything",
   bitcoin_anchor:
     "Timestamp my own digest into Bitcoin so its existence is provable forever",
   settlement_attestation:
@@ -184,6 +186,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "the one observation no probe can substitute: what your buy path does when a real stranger pays it — a genuine EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, the whole walk signed stage by stage. The field run's method, pointed at your door at your request.",
   the_statement:
     "the chain's side of an agent's books, signed by neither party: every USDC transfer in and out of one Base wallet over a stated window. Field-run data showed 10.5% of settlements missing from the buying agent's own ledger — the self-report drifts, the chain does not, and the difference is the audit.",
+  the_mandate:
+    "the missing first link of agent-payment evidence: what was authorized, recorded before the acting, held by neither party. Later purchases cite it and the citation rides the certificate, signed. Chain-of-custody, never truth-of-intent — it proves the claim was made and dated, which today has no home at all.",
   bitcoin_anchor:
     "a commitment that cannot be made after the fact: a Bitcoin-anchored timestamp on the buyer's own digest — a key log, a snapshot, any record that must provably have existed now. The mechanism this store anchors its own key history with; the bytes stay the buyer's.",
   attestation_bundle:
@@ -256,6 +260,8 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A signed JSON walk record — verdict (settled, payment_refused, no_payment_gate, malformed_challenge, unpaid_by_rule or unreachable), every stage with its detail (approach, challenge, terms, screen, payment, settle, delivery), what this store paid and to whom, the settlement transaction where the seller returned one, the paying field wallet, dated, its evidence hash bound into the purchase certificate's attests field — plus a stable check URL serving the record free forever. Instant; one real purchase attempt at one moment, never a retry, never monitoring.",
   the_statement:
     "A signed JSON transfer record for one Base wallet — coverage (complete or window_unreadable), the exact block window and chain head at read, inflows and outflows each with count and total over the whole window plus up to 200 listed transfers (transaction hash, counterparty, amount, block; the list says how many it carries), dated, its evidence hash bound into the purchase certificate's attests field — plus a stable statement URL serving the record free forever. Instant; two bounded chain reads at one moment, never monitoring. USDC on Base only, stated on the artifact.",
+  the_mandate:
+    "A signed JSON mandate record — the claimed instructions verbatim, submitted_as (agent or principal, itself a claim), declared_cap_usdc and expires_at where given (declared, never enforced), dated, its evidence hash bound into the purchase certificate's attests field — plus a stable mandate URL serving the record free forever, and a mandate_id every later purchase here can cite (refused before charge if unresolvable, so the citation always lands, signed, on the citing certificate). Instant; terminal at write.",
   bitcoin_anchor:
     "A signed certificate binding the buyer's sha256 digest in its attests field, plus a stable proof URL serving the OpenTimestamps proof bytes — pending on purchase, upgrading automatically to a Bitcoin-confirmed proof verifiable with the standard ots tool against block headers alone. Instant; one digest, one submission, nothing recurs.",
   attestation_bundle:
@@ -374,6 +380,12 @@ export const USE_WHEN: readonly UseWhen[] = [
     items: ["the_statement"],
     example:
       "GET /api/buy/the_statement?wallet=0x843b544bf5f0AA6cbf13E94563874878C98cc4a7&hours=6",
+  },
+  {
+    when: "Before an agent acts on someone's behalf, the authorization it claims should exist somewhere neither party can rewrite — recorded, dated, citable on every purchase that follows.",
+    items: ["the_mandate"],
+    example:
+      "GET /api/buy/the_mandate?mandate=Buy+verification+artifacts+as+needed,+max+$5+per+item&declared_cap_usdc=10",
   },
   {
     when: "Something has to happen in the physical world or by a person's hand: a call placed, a thing looked at, a product used, a piece made. One door now: name the shape.",

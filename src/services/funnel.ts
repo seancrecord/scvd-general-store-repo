@@ -50,6 +50,7 @@ export const VERIFICATION_TIER: readonly string[] = [
   "phantom_check",
   "launch_check",
   "the_statement",
+  "the_mandate",
 ];
 
 /** Same bound as the declines desk; the audit says when it hit it. */

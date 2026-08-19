@@ -145,6 +145,10 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // held — and to say which of the two numbers it actually saw.
   "settlement_reconciliation",
   "attestation_bundle",
+  // The dime bought BEFORE the spending: an agent at this counter is
+  // about to make its first real purchases, which is exactly the
+  // moment to record what it claims it was authorized to do.
+  "the_mandate",
   "small_blessing",
   "daily_fortune",
   "the_confession",

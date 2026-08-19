@@ -155,6 +155,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/launch-check/{check_id}",
   },
   {
+    id: "the_mandate",
+    name: "Mandates (claimed authorization, recorded before the acting)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole record: the claimed instructions verbatim, who claimed to submit them (agent or principal — itself a claim), the declared cap and expiry where given, the moment of recording, and the record's evidence hash. The purchase certificate binds the same evidence hash in its attests field, and any later certificate citing the mandate_id carries that citation signed.",
+    does_not_prove:
+      "That the human principal actually gave these instructions — chain-of-custody, never truth-of-intent, and the store cannot distinguish a principal's client from an agent claiming to be one. Nor that the declared cap or expiry were honored: declared claims are recorded, never enforced. What it proves is narrower and real: this exact claim existed, signed and dated, before every purchase that cites it.",
+    verify_url: "/api/mandate/{mandate_id}",
+  },
+  {
     id: "the_statement",
     name: "Wallet statements (the chain's side of an agent's books)",
     trust_model: "third_party_observation",
