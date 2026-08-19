@@ -17,6 +17,11 @@ import { performSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
 import { performLaunchCheck } from "@/services/launch-check";
 import type { SignedLaunchCheck } from "@/services/launch-check";
+import {
+  performWalletStatement,
+  statementHours,
+} from "@/services/wallet-statement";
+import type { SignedWalletStatement } from "@/services/wallet-statement";
 import { performOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { reconcileSettlement } from "@/services/settlement-reconciliation";
@@ -63,6 +68,9 @@ export interface FulfillmentInput {
   summary?: string;
   /** phantom_check, standing_watch, service_audit: pre-validated URL. */
   targetUrl?: string;
+  /** the_statement: pre-validated 0x address and raw hours. */
+  statementWallet?: string;
+  statementHours?: string;
   /** coffees_for_closers: the win, pre-validated, recorded verbatim. */
   win?: string;
   /** grudge: the grievance, pre-validated, held verbatim. */
@@ -273,6 +281,20 @@ export async function fulfillPurchase(
   if (item.id === "launch_check") {
     launchCheck = await performLaunchCheck(env, input.targetUrl ?? "");
     mintOptions.attests = launchCheck.evidence_hash;
+  }
+  /**
+   * THE STATEMENT reads first and mints second, same discipline: the
+   * certificate binds the record's evidence hash. An unreadable
+   * window is still a signed, dated statement — coverage says so.
+   */
+  let walletStatement: SignedWalletStatement | undefined;
+  if (item.id === "the_statement") {
+    walletStatement = await performWalletStatement(
+      env,
+      input.statementWallet ?? "",
+      statementHours(input.statementHours),
+    );
+    mintOptions.attests = walletStatement.evidence_hash;
   }
   /**
    * THE RECONCILIATION observes first and mints second, same reason as
@@ -492,6 +514,9 @@ export async function fulfillPurchase(
     }
     if (launchCheck) {
       goodsInput.launchCheck = launchCheck;
+    }
+    if (walletStatement) {
+      goodsInput.walletStatement = walletStatement;
     }
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;

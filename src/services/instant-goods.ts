@@ -14,6 +14,8 @@ import { storeSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
 import { storeLaunchCheck } from "@/services/launch-check";
 import type { SignedLaunchCheck } from "@/services/launch-check";
+import { storeWalletStatement } from "@/services/wallet-statement";
+import type { SignedWalletStatement } from "@/services/wallet-statement";
 import { storeOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { storeReconciliation } from "@/services/settlement-reconciliation";
@@ -39,6 +41,7 @@ import {
   patronagePassNote,
   launchCheckNote,
   onpageAuditNote,
+  statementNote,
   phantomCheckNote,
   reconciliationNote,
   serviceAuditNote,
@@ -84,6 +87,8 @@ export interface InstantGoodsInput {
   onpageAudit?: SignedOnpageAudit;
   /** launch_check only: the walk record, already made and signed. */
   launchCheck?: SignedLaunchCheck;
+  /** the_statement only: the transfer record, already made and signed. */
+  walletStatement?: SignedWalletStatement;
   /** settlement_reconciliation only: the observation, already signed. */
   reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
@@ -275,6 +280,29 @@ export async function deliverInstantGoods(
           card_url: `/api/bot-auth-card/${card.card_id}`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The card is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the card too. The card URL serves the record free, forever.",
+        },
+      };
+    }
+    case "the_statement": {
+      // Read and signed upstream so its evidence hash could be bound
+      // into the certificate; filed here, after the mint, so the
+      // envelope carries the cert id — the Once-Over's discipline.
+      const statement = input.walletStatement;
+      if (!statement) {
+        throw new Error("the_statement reached goods with no record");
+      }
+      await storeWalletStatement(env, statement, input.certId ?? "");
+      return {
+        deliverable: statementNote(statement.coverage),
+        extras: {
+          statement_id: statement.statement_id,
+          coverage: statement.coverage,
+          inflow_count: statement.inflows.count,
+          outflow_count: statement.outflows.count,
+          statement,
+          statement_url: `/api/statement/${statement.statement_id}`,
+          verify_note:
+            "Three ways to check this, none of which requires trusting us. The record is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the statement too. And every row is a Base transaction hash — the chain's copy is nobody's to edit, ours included.",
         },
       };
     }

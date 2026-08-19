@@ -369,6 +369,41 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/**
+ * the_statement needs a statable wallet BEFORE money moves: a
+ * malformed address would buy a signed record of nothing. Hours are
+ * clamped by the service; only presence and shape gate here.
+ */
+const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/the_statement" || !isBuying(c)) {
+    return next();
+  }
+  const wallet = c.req.query("wallet") ?? "";
+  if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) {
+    return c.json(
+      {
+        error:
+          "This needs a wallet query parameter — a 0x Base address, 40 hex characters. USDC on Base is the only rail this statement reads (a Solana address has no USDC-on-Base history to state). No wallet, no charge.",
+      },
+      400,
+    );
+  }
+  const hoursRaw = c.req.query("hours");
+  if (hoursRaw !== undefined) {
+    const hours = Number.parseInt(hoursRaw, 10);
+    if (!Number.isFinite(hours) || hours < 1 || hours > 11) {
+      return c.json(
+        {
+          error:
+            "hours must be a whole number from 1 to 11 (default 6). The window ceiling keeps the read bounded; a longer history is several statements. Nothing charged.",
+        },
+        400,
+      );
+    }
+  }
+  await next();
+};
+
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
@@ -735,6 +770,7 @@ buyRoutes.use("/api/buy/*", serviceAuditCheck);
 buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", launchCheckCheck);
+buyRoutes.use("/api/buy/*", statementCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
 buyRoutes.use("/api/buy/*", tagCheck);
@@ -831,6 +867,11 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // launchCheckCheck validated the URL, refused our own host, and
     // confirmed the field wallet and screen are provisioned.
     input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "the_statement") {
+    // statementCheck validated the address shape and hours range.
+    input.statementWallet = c.req.query("wallet") ?? "";
+    input.statementHours = c.req.query("hours");
   }
   if (item.id === "coffees_for_closers") {
     // closerCheck validated presence and length before the gate.

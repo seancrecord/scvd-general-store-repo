@@ -254,6 +254,14 @@ export const KV_KEYS = {
    */
   launchCheck: (checkId: string): string => `launch_check:${checkId}`,
   /**
+   * A purchased wallet statement: the signed transfer record and the
+   * certificate that bound its evidence hash. PATRONS, terminal at
+   * write, never scanned — the reconciliation's storage shape pointed
+   * at a whole wallet window instead of one transaction.
+   */
+  walletStatement: (statementId: string): string =>
+    `wallet_statement:${statementId}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and

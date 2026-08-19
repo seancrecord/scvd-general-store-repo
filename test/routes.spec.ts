@@ -99,6 +99,9 @@ describe("the storefront", () => {
       // The $5 tie continues in file order: the walkabout's paid door
       // rides the utility shelf right after the batteries it extends.
       "launch_check",
+      // The statement follows its shelf-mate in file order — the
+      // ladder past the cheap doors runs by shelf, not by price.
+      "the_statement",
       "recurring_patronage",
       "quick_judgment",
       "certificate_of_patronage",

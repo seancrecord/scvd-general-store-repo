@@ -113,6 +113,19 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "the_statement") {
+    properties["wallet"] = {
+      type: "string",
+      description:
+        "The Base wallet to state: a 0x EVM address. Every USDC transfer in and out over the window, counted, summed and signed — USDC on Base only, and the statement says so on itself.",
+    };
+    properties["hours"] = {
+      type: "string",
+      description:
+        "Optional window in hours back from the chain head: 1 to 11, default 6. The block range on the artifact is the entire coverage claim.",
+    };
+    required.push("wallet");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -325,6 +338,10 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "launch_check") {
     example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "the_statement") {
+    example["wallet"] = "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7";
+    example["hours"] = "6";
   }
   if (item.id === "the_confession") {
     example["confession"] =

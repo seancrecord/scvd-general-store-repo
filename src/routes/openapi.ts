@@ -397,6 +397,20 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/api/statement/{statement_id}": {
+        get: {
+          ...freeOp(
+            "A purchased wallet statement",
+            "The signed transfer record a the_statement purchase produced — every USDC transfer in and out of one Base wallet over the stated window — with its cert binding and verification steps. Served free, forever.",
+          ),
+          parameters: [
+            pathParam(
+              "statement_id",
+              "From the purchase response; starts stmt_.",
+            ),
+          ],
+        },
+      },
       "/api/launch-check/{check_id}": {
         get: {
           ...freeOp(

@@ -196,6 +196,41 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * THE STATEMENT (2026-08-19, second build off the keeper-approved
+   * backlog): a bank statement for an agent's wallet, from somebody
+   * who is not the agent — every USDC transfer in and out of one Base
+   * address over a stated block window, read off the chain, counted,
+   * summed, signed. Demand tag: OBSERVED DEMAND — the field run's own
+   * reconciliation found 180 settlements (10.5% of attempts) the
+   * buying client recorded as failures; agents' self-reports drift
+   * and the chain does not, and S.5051 points NIST at exactly this
+   * kind of auditable record. Rule 23a-clean: two bounded reads, one
+   * moment, terminal at write. Rule 43 by construction: counts and
+   * sums, never a judgment — we never see the agent's own ledger, so
+   * no comparison is even possible from here.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "the_statement",
+    listed_week: "2026-W34",
+    name: "The Statement",
+    price_usdc: 2,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name a Base wallet (the wallet query parameter — yours, your agent's, a counterparty's; all the same to the chain) and an optional window in hours, and the store reads every USDC transfer in and out of it over that window, straight off Base: counts, totals, and the transfers themselves, each with its transaction hash, counterparty, amount, and block. The whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. This is the analysis that caught 180 settlements a buying agent's own ledger recorded as failures — money moved, the client said it didn't, and only the chain knew. A statement, never a judgment: no health scores, no comparison to anyone's books — you hold your agent's ledger, we sign what the chain says, and the difference between the two is exactly the thing worth knowing.",
+    note_402:
+      "Two dollars. Your agent says what it spent; the chain says what moved. This is the chain's side, signed.",
+    constraints: [
+      "Give the wallet in the wallet query parameter: a 0x Base address. USDC on Base only — other assets and chains are outside this statement and it says so on itself",
+      "The window is hours back from the chain head: default 6, maximum 11 — the block range on the artifact is the entire coverage claim",
+      "Counts and totals always cover the whole window; the per-transfer lists carry at most 200 rows per direction and state how many",
+      "Two bounded chain reads at one moment; never a monitor, never a subscription",
+      "A window the RPC refuses becomes a signed window_unreadable statement — a fact about our read, not about the wallet",
+      "The statement URL is free to read forever",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the
