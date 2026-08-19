@@ -111,11 +111,14 @@ now proven in our stack, not asserted from a README.
 against KV; the chain's nonce is the backstop, so this is resilience,
 not correctness.
 
-**B8. The cold-read test on the remaining artifact classes** — the
-trust list, `/house-ledger.json`, `/stack`, the badge SVG. Worth doing
-because the method already found a real defect in certificates that
-**446 tests missed**, since every test verified through the same
-function that signed.
+**B8. ~~The cold-read test on the remaining artifact classes~~ DONE
+2026-08-19:** `test/cold-read-signed-surfaces.spec.ts` — the trust
+list, `/house-ledger.json`, `/stack`, and the badge SVG, verified
+with raw ed25519 from the served bytes only, following each surface's
+own printed instruction, with a tamper check proving coverage is real
+and a key cross-check against the well-known door. The result worth
+recording: unlike certificates on 07-30, all four surfaces PASSED
+cold — no defect this time, and now none can arrive silently.
 
 ---
 
