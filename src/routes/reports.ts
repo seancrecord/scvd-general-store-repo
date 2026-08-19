@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { reportAnchorForArtifact } from "@/services/report-anchors";
 import { getReport, reportIds, signedReport } from "@/services/reports";
 import type { HonoEnv } from "@/types";
 
@@ -73,5 +74,12 @@ reportRoutes.get("/api/report/:report_id", async (c) => {
       }),
     );
   }
-  return c.json(artifact, 200, { "Cache-Control": "public, max-age=300" });
+  // The live OTS state rides beside the signature, never inside it:
+  // the signed payload binds body_sha256, and body_sha256 is what the
+  // proof anchors, so the two agree without either containing the
+  // other's weather.
+  const ots = await reportAnchorForArtifact(c.env, id);
+  return c.json({ ...artifact, ots }, 200, {
+    "Cache-Control": "public, max-age=300",
+  });
 });

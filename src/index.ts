@@ -552,6 +552,22 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    // The ecosystem reports' anchors ride the same hour, same shape:
+    // submit any report body not yet stamped, upgrade what Bitcoin has
+    // since confirmed. Bounded by the shelf — the report list is
+    // compiled in, so this can never grow into a scan.
+    ctx.waitUntil(
+      import("@/services/report-anchors").then(({ sweepReportAnchors }) =>
+        sweepReportAnchors(env).then(
+          () => undefined,
+          (error) =>
+            sendAlert(env, {
+              condition: "worker_health",
+              detail: `Report anchor sweep failed: ${String(error)}`,
+            }),
+        ),
+      ),
+    );
     ctx.waitUntil(
       listAnchors(env)
         .then((records) =>

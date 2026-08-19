@@ -1,6 +1,6 @@
 {
   "name": "x402-sign",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Zero-dependency signer for x402 Signed Offers & Receipts: mint spec-conformant JWS offers (EdDSA/Ed25519) for your 402s, generate your did:web document, refuse partial commitments. The issuing half of x402-verify.",
   "type": "module",
   "main": "./x402-sign.js",
@@ -31,7 +31,9 @@
     "jws",
     "did-web",
     "usdc",
-    "agent-payments"
+    "agent-payments",
+    "trust-layer",
+    "signed-receipts"
   ],
   "license": "MIT",
   "author": "scvd.store",
