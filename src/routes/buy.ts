@@ -845,6 +845,17 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (passId) {
     input.passId = passId;
   }
+  /**
+   * THE BUYER'S WHY (the receipt chain, 2026-08-19): any purchase may
+   * carry a purpose query parameter — what the agent says this is
+   * for — and it is signed into the certificate verbatim. Untrusted
+   * text, same handling as win and tag; capped at 280 so a receipt
+   * stays a receipt and not a context dump.
+   */
+  const purpose = sanitizeText(c.req.query("purpose"), 280);
+  if (purpose) {
+    input.purpose = purpose;
+  }
   const detail = sanitizeText(c.req.query("detail"), 600);
   if (detail) {
     input.detail = detail;

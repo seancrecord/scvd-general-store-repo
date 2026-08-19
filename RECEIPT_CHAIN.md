@@ -1,10 +1,16 @@
 # The Receipt Chain — from an agent's certificate to its human's hands
 
-Status: spec, awaiting the keeper's pen. Written 2026-08-19, from the
-keeper's direction: the agent-type certificate stays — it is the root
-of the whole chain and it is important — and it evolves composably,
-each link accessible on its own, with room for why the thing was
-bought and a word from the store.
+Status: SHIPPED 2026-08-19 (the keeper's ruling: build and iterate,
+no spec gate) — this document now describes what runs, and iterates
+with it. The agent-type certificate stays — it is the root of the
+whole chain and it is important — and it evolves composably, each
+link accessible on its own, with room for why the thing was bought
+and a word from the store. Built the same day: `purpose` (signed,
+any item, 280-char cap), `from_the_store` (weekly bank at
+src/store/copy/receipt-notes.ts — ⚑ the lines await the keeper's
+rewrite), the HTML receipt page on /api/verify/{id}, and
+`receipt_for_your_human` in every purchase response, taught in
+skill.md. Still reserved, unbuilt: `mandate_id`.
 
 ## The principle: one chain, every link stands alone
 

@@ -80,6 +80,8 @@ export interface FulfillmentInput {
   passId?: string;
   /** the_confession: the confession itself, pre-validated. */
   confessionText?: string;
+  /** Any item: the buyer's stated why, pre-capped. Untrusted. */
+  purpose?: string;
   /** Human-queue task detail. Untrusted. */
   detail?: string;
   /** Commission Desk: the quote's own promised window, in hours. */
@@ -164,6 +166,15 @@ export async function fulfillPurchase(
   }
   if (item.id === "graffiti_on_a_train" && input.tag) {
     mintOptions.tag = input.tag;
+  }
+  /**
+   * THE BUYER'S WHY rides every shelf, not one item's (the receipt
+   * chain, 2026-08-19): any purchase may state what it was for, and
+   * the statement is signed into the certificate verbatim. Intent
+   * evidence in its smallest honest form — what the agent SAID, dated.
+   */
+  if (input.purpose) {
+    mintOptions.purpose = input.purpose;
   }
   // The attestation has to be MADE before the certificate can bind its
   // evidence hash, so this one item observes first and mints second.
@@ -397,6 +408,23 @@ export async function fulfillPurchase(
      * would have to fake points at a check it cannot fake.
      */
     show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
+    /**
+     * THE FORWARDABLE COPY (the receipt chain, 2026-08-19). The line
+     * above is for pasting into a chat; this block is for the agent
+     * that holds a mail or Slack connector — subject and body ready to
+     * send verbatim, so the human's inbox gets the receipt without
+     * this store ever touching an address (the Tab's architecture:
+     * the agent already has the connector; a store that holds a
+     * credential to nothing has nothing to breach). The receipt URL
+     * renders as a printable page in a browser and as JSON to
+     * machines — same URL, both registers.
+     */
+    receipt_for_your_human: {
+      subject: `Receipt: ${item.name} — $${minted.certificate.paid_usdc ?? item.price_usdc} USDC (scvd.store)`,
+      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
+      deliver:
+        "If you hold a mail, Slack, or messaging connector, forward subject and body to your operator now. This is the half of the receipt that belongs to a person.",
+    },
     which_check_is_worth_doing:
       "You can verify this locally RIGHT NOW with no network call — signed_payload and signature_covers above are everything the check needs. Worth doing: it catches a mangled or tampered response. Be clear on what it does NOT do: checking our signature against our key, both handed to you in this same response, cannot prove we were honest, because a dishonest issuer signs its lie and confirms it twice. The verify_url is not really for you — it is for whoever you show this to later, and THAT check is the one carrying the weight. Keep the artifact; the value is that a third party can check it without us.",
   };

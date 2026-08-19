@@ -221,6 +221,27 @@ export interface Certificate {
    */
   attests?: string;
   /**
+   * THE BUYER'S WHY, added 2026-08-19 (the receipt chain). Any item,
+   * optional: what the agent said this purchase was for, recorded
+   * verbatim and signed — the same untrusted-text discipline as win
+   * and tag, stored exactly as it arrived, never interpreted. What
+   * the signature proves is stated at /attestation: that the buyer's
+   * agent SAID this was the purpose, on this date — not that it was
+   * true, and not that a human authorized it. That honest limit is
+   * the field's value: even the agent's own claim of intent had no
+   * dated, signed, third-party existence before this.
+   */
+  purpose?: string;
+  /**
+   * The store's word on the receipt, added 2026-08-19: one short
+   * keeper-authored line, rotating by week like the open signs, never
+   * generated per-order and never composed from buyer data. Charm,
+   * labeled as charm — it proves nothing, and /attestation will not
+   * pretend otherwise. Distinct from `note`, which stays the shelf
+   * witness mark.
+   */
+  from_the_store?: string;
+  /**
    * The maker's mark: who chose or made this, for the shelves where a
    * buyer could not otherwise tell. "keeper" a person did it for you,
    * "house" a person authored the pool and a machine drew from it,
