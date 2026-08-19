@@ -8,6 +8,16 @@ including ours, with nothing privileged about ours.
 `@x402/core` v2 ecosystem). Unscoped name, current spec: not related
 to the deprecated v1 `x402-fetch`/`x402-axios` family.
 
+**Where this sits in the stack:** x402 has a payment layer (the
+facilitator verifies and settles — Coinbase CDP is the usual choice)
+and a settlement layer (the chain; any explorer shows the transfer).
+This package is tooling for the **trust layer** — the evidence: who
+committed to what terms before money moved, who paid against them,
+and how a stranger checks both without asking either party. Most
+write-ups of x402 stop at the first two layers; this one exists
+because disputes, audits, and agents choosing whom to trust all live
+in the third.
+
 MIT. Install it, copy the file, vendor it, fork it — that is what it
 is for.
 

@@ -8,6 +8,14 @@ Zero dependencies, no call home, your seed never leaves your process.
 `@x402/core` v2 ecosystem). Unscoped name, current spec: not related
 to the deprecated v1 `x402-fetch`/`x402-axios` family.
 
+**Where this sits in the stack:** x402 has a payment layer (the
+facilitator verifies and settles) and a settlement layer (the chain).
+This package mints the **trust layer** — the evidence a seller ships
+with its 402s: a signed commitment to the terms before money moves,
+and a signed receipt after it does, both checkable by a stranger
+without asking either party. The payment layers prove money moved;
+this layer proves what it moved *for*.
+
 The issuing half of [`x402-verify`](https://www.npmjs.com/package/x402-verify)
 — different codebases on purpose, so neither vouches for the other.
 
