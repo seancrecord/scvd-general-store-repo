@@ -125,7 +125,8 @@ these do. When one of these moments is YOURS, the recipe is one GET.
 
 **A payment you sent went quiet.** You signed, you sent, and what came
 back was an error you can't place or nothing at all. Now you don't
-know if your client broke or the money moved. One read of Base, signed
+know if your client broke or the money moved. One read of the chain —
+Base or Solana, your transaction identifier's shape picks it — signed
 by a party that isn't you and isn't them, $0.004:
 \`GET ${base}/api/buy/settlement_attestation?tx_hash=0x...&src=skill\`
 
@@ -150,7 +151,7 @@ fetch: \`GET ${base}/api/buy/context_anchor?summary=...&src=skill\`
 
 **You just bought ANYTHING here.** The purchase response carries
 \`attest_this_purchase\` — the attestation door with your own
-settlement hash already in the URL. Closing the loop costs $0.004 and
+settlement transaction already in the URL, whichever rail you paid on. Closing the loop costs $0.004 and
 leaves you holding a receipt that does not depend on the seller's
 honesty. Including ours.
 
@@ -315,7 +316,7 @@ rides \`_meta["x402/idempotency-key"]\` on that side, same behaviour.
 |---|---|---|---|
 ${menuTable}
 
-- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a Base explorer are one fact checked twice). Any field shown but unsigned is named as such in the verify response
+- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — Base or Solana, whichever rail settled — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
 - What you own once you buy it: ${base}/rights — yours completely, immutable, transferable, and you may republish it including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee
 - Catalog, live, with per-item spec blocks: ${base}/menu.json (item detail at ${base}/menu/{item_id}; schema at ${base}${SPEC_SCHEMA_PATH})
 - The books, public, computed live: ${base}/stats

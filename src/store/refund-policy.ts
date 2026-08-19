@@ -18,7 +18,7 @@ export const REFUND_POLICY = {
   commitment:
     "Every human-fulfillment item carries a delivery promise in hours (sla_hours), stated in its listing spec and in its 402 terms before you pay. If the keeper misses that window, he refunds you himself — the full amount you paid, tip included.",
   mechanism:
-    "Personal, not automated, and we say so plainly: x402 settles wallet-to-wallet, so no code here holds funds or can send them back on its own. The keeper pays refunds by hand and marks each one on the public ledger with the on-chain transaction hash once paid — which means a refund is verifiable on a Base explorer, the same way a purchase is.",
+    "Personal, not automated, and we say so plainly: x402 settles wallet-to-wallet, so no code here holds funds or can send them back on its own. The keeper pays refunds by hand and marks each one on the public ledger with the on-chain transaction hash once paid — which means a refund is verifiable on a chain explorer, the same way a purchase is.",
   where_recorded:
     "/fulfillment-log — every human-labor order's promised window vs. actual delivery, and every refund with its status and tx hash, computed live from the same records that drive fulfillment.",
   what_this_is_not:

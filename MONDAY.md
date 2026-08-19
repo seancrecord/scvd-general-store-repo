@@ -357,6 +357,23 @@ keeper's registry PR was blocked on two contract defects, both ours):
   (providers/scvd/store/openapi.json) from the live /openapi.json and
   /menu.json after this deploys, and the two Greptile blockers
   dissolve.
+- **The dual-rail truth pass (same day, keeper's question: "are we
+  truly dual currency across the board?").** Answer: payments YES —
+  every 402 offers both rails, verified live. But ~20 agent-facing
+  claims still said Base where both rails are true, including every
+  one of llms.txt's six translated blurbs, trust.json's headline
+  "check it without asking us" line, /what's "what's actually
+  running" answer, and the attestationNote that ships on every
+  attestation sale ("what Base said" — even when the signed
+  artifact's own chain field says solana). All corrected; the
+  deliberately-Base-only items (bundle, reconciliation) now say so as
+  scoped statements about the item, never the store. openapi's
+  x-payment and store metadata gained `networks`/`chains` arrays
+  beside their legacy single-value fields. SKILL_VERSION → 3.3.0
+  (3.2.0 was never published; publish 3.3.0 directly). Two REAL
+  single-rail residues, named not hidden: /zodiac/{address} and the
+  /api/claims recovery door are EVM-address-only — a Solana-paying
+  buyer can't use either. Feature builds, queued, not doc fixes.
 
 **What is genuinely open:**
 

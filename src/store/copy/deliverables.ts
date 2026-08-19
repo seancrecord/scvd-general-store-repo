@@ -109,7 +109,7 @@ export function grudgeNote(grievance: string): string {
  * worth LESS, because a keeper is a party to the store.
  */
 export function attestationNote(status: string): string {
-  return `Read the chain once and signed what was there: ${status}. The observation is attached and signed on its own, so anyone can check it without asking us. It says what Base said at that moment — not whether anything was delivered, and not what happens next.`;
+  return `Read the chain once and signed what was there: ${status}. The observation is attached and signed on its own, so anyone can check it without asking us. It says what the chain said at that moment — the artifact's own chain field names which rail was read — not whether anything was delivered, and not what happens next.`;
 }
 
 /** Same register as the single, at volume. Statuses named, not summarized. */

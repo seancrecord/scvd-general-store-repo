@@ -32,7 +32,7 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * fact they were never charged, and it says so inside somebody else's
  * catalogue where we cannot correct it.
  */
-export const SKILL_VERSION = "3.2.0";
+export const SKILL_VERSION = "3.3.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -197,7 +197,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
   quick_judgment:
     "A human verdict, in writing, on a question where your own evaluation is the thing in doubt. Five a week.",
   hello:
-    "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
+    "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base or Solana, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
   small_blessing:
     "The cheapest real settlement on the shelf at half a cent: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
   recurring_patronage:
@@ -251,7 +251,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   settlement_reconciliation:
     "A signed JSON observation of one Base transaction reconciling two numbers — the USDC that moved and the ceiling in force — with cap_source and cap_observed naming where the ceiling came from and whether we saw it ourselves. Verdicts: within_cap, over_cap, no_discretion (EIP-3009, where the value was fixed in the payer's signed digest), cap_not_observable, or no_settlement. Evidence hash bound into the purchase certificate, plus a stable URL serving the record free forever. Instant.",
   settlement_attestation:
-    "A signed JSON observation of one Base transaction — status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height, confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
+    "A signed JSON observation of one transaction on Base or Solana — the identifier's shape picks the chain — with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
   graffiti_on_a_train:
     "The buyer's tag recorded verbatim on a signed certificate, dated, instantly. Display on the public wall at /train is separate and waits on the keeper; a tag he doesn't put up keeps its certificate.",
   hello:

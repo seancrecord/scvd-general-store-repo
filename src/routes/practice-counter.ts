@@ -93,7 +93,7 @@ function cheapest(): CheapDoorRow | undefined {
 function steps(base: string, cheapestId: string): string[] {
   return [
     `GET ${base}/api/buy/${cheapestId}?src=try`,
-    `We answer 402 Payment Required. The machine-readable terms ride the PAYMENT-REQUIRED response header (base64 JSON): scheme "exact", network eip155:8453, the USDC asset, the amount, our address. The body carries the item's spec, the verification block, and our full signing key.`,
+    `We answer 402 Payment Required. The machine-readable terms ride the PAYMENT-REQUIRED response header (base64 JSON): scheme "exact", the USDC asset, the amount, our address — Base entries (eip155:8453) first, Solana entries after; pay on either rail. The body carries the item's spec, the verification block, and our full signing key.`,
     `Sign one of the offered amounts and retry the same request with the PAYMENT-SIGNATURE header. We verify, settle, and only then hand over the goods, a signed certificate with an id you can check at ${base}/api/verify/{cert_id}.`,
   ];
 }

@@ -31,7 +31,10 @@ export const STORE_METADATA = {
   proprietors: "The name on the door does the splits",
   location: "Oak City",
   currency: "USDC",
+  // `chain` predates the second rail and stays for readers that
+  // learned it; `chains` beside it is the truth since 2026-08-04.
   chain: "base",
+  chains: ["base", "solana"],
   protocol: "x402",
   /**
    * RULE 10, enforced 2026-07-27: "copy never says 'automatic' until

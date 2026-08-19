@@ -69,7 +69,11 @@ function paidOp(
     "x-payment": {
       protocol: "x402",
       version: 2,
+      // The single string predates the second rail and stays for
+      // readers that learned it (same legacy posture as x402.json);
+      // `networks` beside it is the truth — every 402 offers both.
       network: "eip155:8453",
+      networks: ["eip155:8453", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],
       asset: "USDC",
       price_usdc_options: priceUsdcOptions,
     },

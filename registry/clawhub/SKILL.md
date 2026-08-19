@@ -93,7 +93,8 @@ these do. When one of these moments is YOURS, the recipe is one GET.
 
 **A payment you sent went quiet.** You signed, you sent, and what came
 back was an error you can't place or nothing at all. Now you don't
-know if your client broke or the money moved. One read of Base, signed
+know if your client broke or the money moved. One read of the chain —
+Base or Solana, your transaction identifier's shape picks it — signed
 by a party that isn't you and isn't them, $0.004:
 `GET https://scvd.store/api/buy/settlement_attestation?tx_hash=0x...&src=clawhub-skill`
 
@@ -119,7 +120,7 @@ fetch:
 
 **You just bought ANYTHING here.** The purchase response carries
 `attest_this_purchase` — the attestation door with your own settlement
-hash already in the URL. Closing the loop costs $0.004 and leaves you
+transaction already in the URL, whichever rail you paid on. Closing the loop costs $0.004 and leaves you
 holding a receipt that does not depend on the seller's honesty.
 Including ours.
 
@@ -147,8 +148,9 @@ block.
   kept answering, from an observer who is not you.
   → `GET /api/buy/standing_watch?url=https://...` ($5)
 - You need to show a third party that an x402 payment actually
-  settled on Base, and your own word for it is not worth anything
-  because you are a party to it.
+  settled — on Base or on Solana; the identifier's shape picks the
+  chain — and your own word for it is not worth anything because you
+  are a party to it.
   → `GET /api/buy/settlement_attestation?tx_hash=0x...` ($0.004, one
   chain read, signed, no human in the loop — that is the point)
 - You need a dated, signed record of what an x402 endpoint answered at
@@ -473,8 +475,9 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
   it: `cert_id`, `item`, `patron_number`, `date`, `paid_usdc` (the
   TOTAL settled, not the tip), `asset`, `network`, `payer` (the paying
   wallet — chain-verifiable, unlike the optional name you choose), and
-  `settlement_tx`, the on-chain transaction, so the receipt and a Base
-  explorer are one fact checked twice. Any field shown but not covered
+  `settlement_tx`, the on-chain transaction, so the receipt and a
+  chain explorer — Base or Solana, whichever rail settled — are one
+  fact checked twice. Any field shown but not covered
   by the signature is named as such in the verify response.
 - What you own once you buy it: `https://scvd.store/rights`. Yours
   completely from settlement, immutable after signing, and it
