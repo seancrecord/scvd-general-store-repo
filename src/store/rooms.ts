@@ -88,6 +88,14 @@ export const ROOMS: readonly Room[] = [
   { path: "/corrections", name: "Corrections" },
   { path: "/visitors", name: "The visitors' register" },
   { path: "/pulse", name: "The pulse", on_storefront: false },
+  /**
+   * The public registry tally, 2026-08-19 — the keeper's own design
+   * ("keep a page with this... every week publicly without naming
+   * names"). Held off the storefront the same way the pulse was until
+   * he rules on giving it a front slot; every agent-read surface
+   * carries it from day one.
+   */
+  { path: "/registry", name: "State of the registry", on_storefront: false },
   { path: "/attestation", name: "What we sign" },
   /**
    * Rule 43's gate, opened 2026-08-10 on the keeper's badge ruling.

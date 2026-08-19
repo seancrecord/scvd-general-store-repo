@@ -111,6 +111,18 @@ export function renderMarketPage(
   ${fieldsSection}
 
   <section>
+    <h2>Publish to the public tally</h2>
+    <p class="menu-desc">The public page at <a href="/registry">/registry</a>
+    carries these numbers as a running weekly tally — aggregates only, the
+    named top list stripped before storage. Nothing lands there on the clock;
+    this press is the week's publication (rule 30). Re-pressing replaces this
+    week's row.</p>
+    <form method="post" action="/admin/market/publish-registry">
+      <button type="submit">Publish ${escapeHtml(round.week)} to /registry</button>
+    </form>
+  </section>
+
+  <section>
     <h2>What this cannot see</h2>
     <ul>
       <li>The BUY side. Every number here is about sellers; what agents actually purchase is invisible to a probe.</li>

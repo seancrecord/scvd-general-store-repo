@@ -106,6 +106,15 @@ export const KV_KEYS = {
    * hand keeps its place. Sends are the keeper's alone (rule 30).
    */
   outreachLedger: "outreach_ledger",
+  /**
+   * THE PUBLIC REGISTRY TALLY (2026-08-19): the market desk's
+   * aggregates, one row per published week, served at /registry. ONE
+   * key, bounded at 104 weeks — counts and percentiles only, never a
+   * host or operator name (the builder strips the named top list
+   * before anything is stored). Rows land here only on the keeper's
+   * publish press, never on the clock (rule 30).
+   */
+  registryPulse: "registry_pulse",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,

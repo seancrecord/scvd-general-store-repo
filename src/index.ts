@@ -43,6 +43,7 @@ import {
   reconciliationRoutes,
   namespaceSpecRoutes,
   pulseRoutes,
+  registryRoutes,
   attestationRoutes,
   criteriaRoutes,
   conventionalRoutes,
@@ -241,6 +242,7 @@ app.route("/", statsRoutes);
 app.route("/", corpusRoutes);
 app.route("/", reportRoutes);
 app.route("/", pulseRoutes);
+app.route("/", registryRoutes);
 app.route("/", attestationRoutes);
 app.route("/", criteriaRoutes);
 app.route("/", conventionalRoutes);
