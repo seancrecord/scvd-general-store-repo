@@ -81,6 +81,22 @@ const INFRASTRUCTURE_UA_HINTS = [
   // column. A directory's own liveness probe is the noise floor by
   // definition — we submitted to it.
   "probe", "qos", "liveness", "nohumans.directory",
+  /**
+   * Third pass, 2026-08-19: the census's walkers-still-organic table,
+   * read by the keeper's own hand off the live page. Eleven clients
+   * whose names say LOOKING — surveys, indexes, discovery crawlers —
+   * were sitting in the organic column and inflating every conversion
+   * denominator the store reasons from (the funnel's flat-profile
+   * caveat, proven). Promoted: the self-identifying machinery only.
+   * The generic strings walking beside them (node, axios, curl, Deno,
+   * python-httpx, bare Chrome) are deliberately NOT here — those are
+   * what a real buyer's SDK looks like, the behavioural walk detector
+   * already flags them per-window, and a string promoted here is
+   * misclassified forever.
+   */
+  "entropy-daemon", "apistrust", "coinbasebazaardiscovery", "radar-x402",
+  "indexer", "mpp32", "trustindex", "x402stats", "brick.blue",
+  "healthbot", "contact-discovery",
 ];
 
 export interface ChannelSignals {

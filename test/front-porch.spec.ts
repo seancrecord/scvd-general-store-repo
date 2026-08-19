@@ -38,6 +38,42 @@ describe("channel inference upgrades", () => {
     expect(inferChannel({ declaredSource: "clawhub-skill" })).toBe("skill");
   });
 
+  it("catches the census's 2026-08-19 walkers, and spares the SDK strings they hid among", () => {
+    // The eleven self-identifying walkers the keeper read off the live
+    // census page — surveys, indexes, discovery crawlers — each was
+    // sitting in the organic column, inflating every conversion
+    // denominator (the funnel's flat-profile caveat, proven live).
+    for (const ua of [
+      "entropy-daemon-trust-oracle/2.0",
+      "ApisTrust/1.0 (+https://apistrust.com)",
+      "CoinbaseBazaarDiscovery/1.0 (+https://docs.cdp.coinbase.com/x402)",
+      "radar-x402/0.1 (+brazilayer.com)",
+      "402scout-indexer/1.0 (+https://402scout.com/methodology)",
+      "MPP32-Health/1.0 (+https://mpp32.org)",
+      "AnalogHubris-TrustIndex/0.2 (health survey; no payment attached)",
+      "x402statsweb/1.0 (+https://x402stats.decredcommunity.org)",
+      "BrickBlueBot/0.1 (+https://brick.blue/bot; agentic-web indexer)",
+      "x402-healthbot/1.0 (+https://decixa.ai/bot)",
+      "hermes-contact-discovery/1.0 (research; contact@hermes.ai)",
+    ]) {
+      expect(inferChannel({ userAgent: ua }), ua).toBe("infrastructure");
+    }
+    // The generic strings walking beside them stay CUSTOMERS: these
+    // are what a real buyer's SDK looks like, and a string promoted
+    // to the crawler table is misclassified forever. The behavioural
+    // walk detector handles them per-window instead.
+    for (const ua of [
+      "node",
+      "Deno/2.7.4",
+      "axios/1.18.1",
+      "python-httpx/0.28.1",
+      "Go-http-client/2.0",
+      "curl/8.18.0",
+    ]) {
+      expect(inferChannel({ userAgent: ua }), ua).toBe("direct");
+    }
+  });
+
   it("catches machinery that names its own job (first reading, 2026-07-26)", () => {
     // The exact UA that walked our catalog and got counted as a customer.
     expect(inferChannel({ userAgent: "mako-pulse-prober/0.1" })).toBe(
