@@ -94,11 +94,22 @@ URLs decides whether they also feed the door bank.
   consent posture, and velocity was never cadence-bound — the cap ran
   70% empty. Doubling cadence doubles contact with strangers for a 2×
   a rotation already beats.
-- **`WARD_CAP` stays 200.** It binds only when named doors exceed it;
-  today the problem is the opposite. The day the feed heals AND the
-  bank is full, raising it is a one-line decision that should be made
-  together with the R2 question below, because cap × cadence is
-  exactly what the storage premise is priced on.
+- ~~**`WARD_CAP` stays 200.**~~ **RULED 2026-08-19: 750.** The feed
+  healed the same day this plan shipped (the first hand-run round
+  read 6,000 declared resources and the old cap bound for the first
+  time), and the keeper ruled the raise. 750 is the one-invocation
+  ceiling — the Workers subrequest budget (1,000/invocation, hard)
+  minus discovery pages, census reads and headroom — not a taste.
+  Past it lies THE LONG WALK, greenlit as its own build: the hourly
+  cron walks the roster in ~60-host batches on a cursor all week
+  (indexer-gentle), Sunday assembles and signs the full snapshot,
+  stored in R2 with KV keeping the head. At 750 hosts the weekly
+  snapshot runs ~150–200 KB — past the ~128 KB watch line below, so
+  the R2 graduation is no longer a trigger to watch; it is the next
+  build's first brick, exactly as this plan priced it. Keeper-side
+  prerequisite: create the R2 bucket in the Cloudflare dashboard
+  before any wrangler binding lands — a binding naming a bucket that
+  does not exist fails the build and takes auto-deploy down with it.
 
 ## KV→R2 graduation — the trigger, made checkable
 
