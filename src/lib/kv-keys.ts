@@ -196,6 +196,13 @@ export const KV_KEYS = {
   patronAnchor: (anchorId: string): string => `patron_anchor:${anchorId}`,
   patronAnchorPrefix: "patron_anchor:",
   /**
+   * An ecosystem report's OTS anchor: the body digest and its proof
+   * state. COUNTERS beside the store's other anchor bookkeeping. One
+   * record per report, no chain, never scanned — the report ids are
+   * compiled in, so the sweep walks the shelf, not a prefix.
+   */
+  reportAnchor: (reportId: string): string => `report_anchor:${reportId}`,
+  /**
    * A purchased point-in-time service audit: the signed report, the
    * certificate that bound its evidence hash, nothing else. PATRONS
    * namespace beside the cert. No prefix scan anywhere touches these

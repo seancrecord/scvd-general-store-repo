@@ -23,14 +23,17 @@ export const REPORT_META = {
   method_governed_by: "WALKABOUT.md at the repository root",
   evidence: "research/field-run-2026-08-18/ in the same repository",
   /**
-   * HONEST ANCHORING STATUS. The digest is published and signed today;
-   * Bitcoin anchoring via OpenTimestamps rides a later pass (the
-   * store's anchor log is the key-continuity chain, not a general
-   * digest rail, and bolting this onto it would muddle both). When
-   * the anchor lands, this field changes and the change is dated —
-   * the signature already fixes the bytes it will anchor.
+   * The anchoring promise, kept 2026-08-19 (published unanchored that
+   * same morning; services/report-anchors.ts landed by evening). This
+   * string names the METHOD and stays stable; the live status — the
+   * proof bytes, pending vs Bitcoin-confirmed — rides the artifact's
+   * `ots` field OUTSIDE the signed payload, because the payload
+   * cannot contain its own anchor's status without every confirmation
+   * orphaning the signature it rode in on. What gets anchored is
+   * body_sha256, which no status change touches.
    */
-  bitcoin_anchor: "not yet anchored; sha256 published and signed, anchoring to follow",
+  bitcoin_anchor:
+    "anchored via OpenTimestamps: body_sha256 is submitted to public calendars and committed into Bitcoin; live status and proof in this artifact's ots field (anchoring live as of 2026-08-19)",
 } as const;
 
 export const REPORT_BODY = `# The x402 ecosystem, walked with a wallet: August 2026

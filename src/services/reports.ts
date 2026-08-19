@@ -92,6 +92,11 @@ export async function signedReport(
     method_governed_by: report.meta.method_governed_by,
     evidence: `https://github.com/seancrecord/scvd-general-store-repo/tree/main/${(report.meta.evidence.split(" ")[0] ?? "").replace(/\/$/, "")}`,
     bitcoin_anchor: report.meta.bitcoin_anchor,
+    // The live OTS proof state (`ots`) is merged by the route from
+    // services/report-anchors — OUTSIDE the signed payload, because a
+    // payload carrying its own anchor's status would be orphaned by
+    // every confirmation. The digest anchored is body_sha256, which
+    // the signature already binds.
     price: "free, forever — the signature is the product",
     signature,
     public_key: publicKey,
