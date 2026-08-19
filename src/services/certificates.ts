@@ -1,5 +1,6 @@
-import { KV_KEYS } from "@/lib/kv-keys";
+import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { BASE_NETWORK } from "@/lib/payments";
+import { receiptNoteForWeek } from "@/store/copy/receipt-notes";
 import { newCertId } from "@/lib/ids";
 import { certificateSignedSubset, signCertificate } from "@/lib/signing";
 import { signJcs } from "@/lib/jcs";
@@ -88,6 +89,11 @@ export interface MintOptions {
   /** graffiti_on_a_train: the buyer's tag, recorded verbatim. */
   tag?: string;
   /**
+   * Any item: the buyer's stated why, recorded verbatim (the receipt
+   * chain, 2026-08-19). Untrusted text, same discipline as win/tag.
+   */
+  purpose?: string;
+  /**
    * settlement_attestation: the observation's evidence hash, bound
    * into the certificate so /api/verify covers the attestation too.
    * No new verification endpoint: the one that already exists now
@@ -172,6 +178,17 @@ export async function mintCertificate(
   if (options.tag) {
     certificate.tag = options.tag;
   }
+  if (options.purpose) {
+    certificate.purpose = options.purpose;
+  }
+  /**
+   * The store's word, on every receipt: the week's line from the
+   * keeper's bank, chosen by the calendar and signed like everything
+   * else. Derived from the mint date so the same week always says the
+   * same thing — a receipt's charm should not depend on which worker
+   * isolate answered.
+   */
+  certificate.from_the_store = receiptNoteForWeek(currentWeekKey(new Date(date)));
   if (options.attests) {
     certificate.attests = options.attests;
   }

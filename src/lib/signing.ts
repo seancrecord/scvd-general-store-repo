@@ -98,6 +98,20 @@ export const CERT_FIELDS = [
    * design question into a build failure, which is what it is for.
    */
   "cross_ref",
+  /**
+   * THE RECEIPT CHAIN, added 2026-08-19. Appended, never inserted,
+   * like everything since the first eight. Both stay OUT of
+   * LEGACY_FIELDS_ADDED_SINCE for the cross_ref reason: neither
+   * existed pre-2026-07-30, so no legacy certificate can honestly
+   * carry one — keeping them inside the legacy form too means
+   * stapling a purpose onto an old certificate breaks BOTH forms
+   * instead of downgrading to a clean "legacy" pass. `purpose` is a
+   * buyer claim and unsigned it would be forgeable onto our
+   * signature; `from_the_store` is our own words, and unsigned words
+   * on our receipt would be anyone's words.
+   */
+  "purpose",
+  "from_the_store",
 ] as const;
 
 /**
