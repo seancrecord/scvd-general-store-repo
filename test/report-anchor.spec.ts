@@ -43,7 +43,7 @@ async function sha256Hex(text: string): Promise<string> {
 }
 
 beforeEach(async () => {
-  await testEnv.COUNTERS.delete(KV_KEYS.reportAnchor(REPORT_ID));
+  await testEnv.COUNTERS.delete(KV_KEYS.reportAnchors);
 });
 
 describe("the report anchor sweep", () => {

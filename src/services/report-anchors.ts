@@ -32,6 +32,11 @@ import type { Env } from "@/types";
  * as every anchor here: never on the money path (cron work), the
  * record survives every calendar failure, and the digest is
  * recomputable by any stranger holding the served body.
+ *
+ * ONE KV KEY FOR THE WHOLE SHELF (the population register's law): the
+ * report list is compiled in and will number a handful ever, so the
+ * sweep reads the map once, decides per report in memory, and writes
+ * once — a key per report would be a write loop bought for nothing.
  */
 
 export interface ReportAnchorRecord {
@@ -42,14 +47,20 @@ export interface ReportAnchorRecord {
   ots: OtsAnchor;
 }
 
+type ReportAnchorMap = Record<string, ReportAnchorRecord>;
+
+async function readAnchorMap(env: Env): Promise<ReportAnchorMap> {
+  return (
+    (await env.COUNTERS.get<ReportAnchorMap>(KV_KEYS.reportAnchors, "json")) ??
+    {}
+  );
+}
+
 export async function getReportAnchor(
   env: Env,
   reportId: string,
 ): Promise<ReportAnchorRecord | null> {
-  return env.COUNTERS.get<ReportAnchorRecord>(
-    KV_KEYS.reportAnchor(reportId),
-    "json",
-  );
+  return (await readAnchorMap(env))[reportId] ?? null;
 }
 
 export interface ReportAnchorSweep {
@@ -62,7 +73,8 @@ export interface ReportAnchorSweep {
  * One pass over every published report: submit what has no proof yet
  * (or whose last submission failed), upgrade what is pending, touch
  * nothing complete. The report list is compiled in, so the sweep is
- * bounded by the shelf, not by a scan.
+ * bounded by the shelf, not by a scan — and the map is read once and
+ * written once, only if something changed.
  */
 export async function sweepReportAnchors(
   env: Env,
@@ -73,10 +85,12 @@ export async function sweepReportAnchors(
     upgraded: 0,
     still_pending: 0,
   };
+  const anchors = await readAnchorMap(env);
+  let changed = false;
   for (const reportId of reportIds()) {
     const report = getReport(reportId);
     if (!report) continue;
-    const existing = await getReportAnchor(env, reportId);
+    const existing = anchors[reportId];
     const digest = await sha256Hex(report.body);
 
     // A body edit after anchoring is a NEW claim: the old proof stays
@@ -85,7 +99,7 @@ export async function sweepReportAnchors(
     // serving a proof of bytes no longer served.
     if (!existing || existing.digest !== digest || existing.ots.status === "failed") {
       const ots = await submitDigestToOts(digest, options);
-      const record: ReportAnchorRecord = {
+      anchors[reportId] = {
         report_id: reportId,
         digest,
         created_at:
@@ -94,10 +108,7 @@ export async function sweepReportAnchors(
             : (options.now ?? new Date()).toISOString(),
         ots,
       };
-      await env.COUNTERS.put(
-        KV_KEYS.reportAnchor(reportId),
-        JSON.stringify(record),
-      );
+      changed = true;
       if (ots.status === "pending") sweep.submitted += 1;
       continue;
     }
@@ -106,14 +117,15 @@ export async function sweepReportAnchors(
       const upgraded = await upgradeDigestOts(digest, existing.ots, options);
       if (upgraded) {
         sweep.upgraded += 1;
-        await env.COUNTERS.put(
-          KV_KEYS.reportAnchor(reportId),
-          JSON.stringify({ ...existing, ots: upgraded }),
-        );
+        anchors[reportId] = { ...existing, ots: upgraded };
+        changed = true;
       } else {
         sweep.still_pending += 1;
       }
     }
+  }
+  if (changed) {
+    await env.COUNTERS.put(KV_KEYS.reportAnchors, JSON.stringify(anchors));
   }
   return sweep;
 }

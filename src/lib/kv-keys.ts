@@ -196,12 +196,14 @@ export const KV_KEYS = {
   patronAnchor: (anchorId: string): string => `patron_anchor:${anchorId}`,
   patronAnchorPrefix: "patron_anchor:",
   /**
-   * An ecosystem report's OTS anchor: the body digest and its proof
-   * state. COUNTERS beside the store's other anchor bookkeeping. One
-   * record per report, no chain, never scanned — the report ids are
-   * compiled in, so the sweep walks the shelf, not a prefix.
+   * The ecosystem reports' OTS anchors: body digest and proof state
+   * per report, ONE key holding all of them — same law as the
+   * population register, because the shelf is compiled in and will
+   * number a handful ever, so a key per report would buy a write loop
+   * and a scan for nothing. COUNTERS beside the store's other anchor
+   * bookkeeping. No chain, never scanned.
    */
-  reportAnchor: (reportId: string): string => `report_anchor:${reportId}`,
+  reportAnchors: "report_anchors",
   /**
    * A purchased point-in-time service audit: the signed report, the
    * certificate that bound its evidence hash, nothing else. PATRONS
