@@ -1361,6 +1361,36 @@ adminRoutes.get("/admin/funnel", async (c) => {
   return c.html(renderFunnelPage(report));
 });
 
+/**
+ * THE MARKET (2026-08-19): the round's numbers with their meanings.
+ * Derived at read from the latest round's own rows — one code path
+ * whether the round predates the desk or not — so every stored round
+ * back to the first gets whatever the desk can honestly compute from
+ * it. JSON serves the same aggregates for scripts.
+ */
+adminRoutes.get("/admin/market", async (c) => {
+  const { latestWardRound } = await import("@/services/ward-round");
+  const { marketAggregates } = await import("@/services/market");
+  const round = await latestWardRound(c.env);
+  if (!round) {
+    return wantsHtml(c.req.header("Accept"))
+      ? c.html(
+          (await import("@/pages/admin/layout")).renderAdminShell(
+            "market",
+            "<h1>The market</h1><p class='empty'>No ward round yet — the desk derives everything from the round's rows.</p>",
+          ),
+        )
+      : c.json({ error: "no ward round yet" }, 404);
+  }
+  const market =
+    round.market ?? marketAggregates(round.hosts, undefined);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({ week: round.week, at: round.at, market });
+  }
+  const { renderMarketPage } = await import("@/pages/admin/market-page");
+  return c.html(renderMarketPage(round, market));
+});
+
 adminRoutes.get("/admin/declines", async (c) => {
   const report = await readDeclines(c.env);
   const outside = report.declines.filter((row) => !row.house);

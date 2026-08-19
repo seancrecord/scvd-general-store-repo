@@ -60,7 +60,8 @@ export type AdminTab =
    * than by remembering.
    */
   | "events"
-  | "funnel";
+  | "funnel"
+  | "market";
 
 /** The three rooms. Always first, always in this order. */
 const ROOMS: readonly { tab: AdminTab; href: string; label: string }[] = [
@@ -80,6 +81,7 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
   { tab: "funnel", href: "/admin/funnel", label: "The funnel" },
   { tab: "referrals", href: "/admin/referrals", label: "Word of mouth" },
   { tab: "ward", href: "/admin/ward", label: "The ward" },
+  { tab: "market", href: "/admin/market", label: "The market" },
   { tab: "files", href: "/admin/files", label: "Keeper's files" },
 ];
 
