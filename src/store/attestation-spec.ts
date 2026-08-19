@@ -145,6 +145,16 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
     verify_url: "/api/onpage-audit/{audit_id}",
   },
   {
+    id: "launch_check",
+    name: "Launch checks (one real purchase attempt, from the buyer's side)",
+    trust_model: "third_party_observation",
+    signs:
+      "The whole walk: the endpoint named, the moment, the exact User-Agent sent, every stage (approach, challenge, terms, screen, payment, settle, delivery) with its detail, what was paid, to whom, the settlement transaction where one came back, the paying field wallet, and the record's evidence hash. The purchase certificate binds the same evidence hash in its attests field.",
+    does_not_prove:
+      "Anything about any other moment, any other buyer, or the seller generally — one transaction, once. An unpaid verdict is a statement about this store's published rules (spend cap, sanctions screen, rails carried), never about the seller. Payment was presented in the v2 shape only; a v1-only seller's refusal is recorded as exactly that. Never a badge, never a score.",
+    verify_url: "/api/launch-check/{check_id}",
+  },
+  {
     id: "settlement_reconciliation",
     name: "Settlement reconciliations (amount taken against ceiling in force)",
     trust_model: "third_party_observation",

@@ -104,6 +104,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "launch_check") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet, once — we pay at most $0.05 at your till, and the whole walk is signed stage by stage. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_confession") {
     properties["confession"] = {
       type: "string",
@@ -313,6 +322,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "onpage_audit") {
     example["url"] = "https://your-site.example/pricing";
+  }
+  if (item.id === "launch_check") {
+    example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "the_confession") {
     example["confession"] =

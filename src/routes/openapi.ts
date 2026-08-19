@@ -397,6 +397,17 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/api/launch-check/{check_id}": {
+        get: {
+          ...freeOp(
+            "A purchased launch check record",
+            "The signed stage-by-stage record of one real purchase attempt a launch_check purchase produced — settled or refused, from the buyer's side — with its cert binding and verification steps. Served free, forever.",
+          ),
+          parameters: [
+            pathParam("check_id", "From the purchase response; starts lcheck_."),
+          ],
+        },
+      },
       "/api/bot-auth/check": {
         post: freeOp(
           "Check a Web Bot Auth key directory",

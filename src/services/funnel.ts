@@ -48,6 +48,7 @@ export const VERIFICATION_TIER: readonly string[] = [
   "standing_watch",
   "onpage_audit",
   "phantom_check",
+  "launch_check",
 ];
 
 /** Same bound as the declines desk; the audit says when it hit it. */

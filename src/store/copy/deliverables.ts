@@ -140,6 +140,24 @@ export function onpageAuditNote(verdict: string): string {
       : "We knocked. Nobody came. From where we stood, at that minute, the page didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
+/** launch_check. ⚑ KEEPER REVIEW: drafted, recut freely. */
+export function launchCheckNote(verdict: string): string {
+  switch (verdict) {
+    case "settled":
+      return "We walked up to your till as a paying stranger and it took our money. The whole transaction is written down stage by stage, signed — the settlement is on chain from our declared wallet, and the delivery stage says what actually came back for it. Read the delivery line before you celebrate: settled and delivered are different words, and the report uses the right one.";
+    case "payment_refused":
+      return "We walked up to your till as a paying stranger, presented a real signed payment, and your door refused it. That is the single most common fate of an x402 purchase attempt in the wild, and now you hold the one thing most sellers never get: the refusal, from the buyer's side, stage by stage, signed and dated. The fix usually lives in the stage right before the refusal.";
+    case "no_payment_gate":
+      return "We came to pay and your door just opened. No 402, no terms, goods or errors handed over free. An open door gets a note, not a harvest — this report is that note, signed and dated, and what you do with the door is yours to decide.";
+    case "malformed_challenge":
+      return "Your door asked for payment in a shape no buyer can sign. We wrote down exactly what it served and where it parts from the wire shape buyers actually read — signed, dated, from the buyer's side of the counter. This is the failure sellers can least see from their own logs, because to them it looks like nobody ever pays.";
+    case "unpaid_by_rule":
+      return "The check stopped before money moved, and the report says exactly which of OUR published rules stopped it — spend cap, screening, rails we don't carry. That is a statement about this store's rules, not about your door: the stages before it are still the buyer's-eye readout of your challenge, and they are usually worth the walk on their own.";
+    default:
+      return "We knocked. Nobody came. From where we stood, at that minute, the door didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
+  }
+}
+
 /** service_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
 export function serviceAuditNote(verdict: string): string {
   return verdict === "ready"

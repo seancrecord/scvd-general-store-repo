@@ -81,6 +81,44 @@ const ITEM_PARAMS = {
   // its own hostname). The protocol's public site, one week, hourly —
   // negligible traffic, and the history doubles as a live demo.
   standing_watch: { url: "https://www.x402.org/" },
+  /**
+   * The verification tier's newer doors, added 2026-08-19 after the
+   * first full house run bought 16 items and failed exactly seven —
+   * these, every one a 400 for a missing required param, because this
+   * table predated the doors. The trust shelf, unlisted in the Bazaar
+   * for want of a parameter. Same precedents as above: the founding
+   * transaction for the chain readers, the protocol's public site for
+   * the URL doors (an honest not-ready verdict is still a complete
+   * house test), and a fixed house digest for the anchor.
+   */
+  settlement_reconciliation: {
+    tx_hash:
+      "0x47c8fee81e6d11bf07c9580b0d3aea3fabb9c2a9fe7aee3ae6f2f8391450bc9c",
+  },
+  service_audit: { url: "https://www.x402.org/" },
+  conformance_watch: { url: "https://www.x402.org/" },
+  signature_agent_card: { url: "https://www.x402.org/" },
+  onpage_audit: { url: "https://www.x402.org/" },
+  bitcoin_anchor: {
+    // sha256 of the UTF-8 string "scvd.store house shopping run — the
+    // keeper walking his own shelves" — recompute it yourself; the
+    // anchor proves the digest's existence, the preimage is this line.
+    digest:
+      "7524e7e1affc183e5075a2588268cc986831c4ae9cd8e0469ad3cb0b49f0e814",
+    label: "house shopping run",
+  },
+  /**
+   * The bundle needs 2-20 DISTINCT settled Base hashes and the store
+   * refuses duplicates, so a hardcoded pair would rot. Pass your own —
+   * any two settled transactions (the certs from a previous run each
+   * carry one):
+   *   BUNDLE_TX_HASHES=0xaaa...,0xbbb... npm run shop
+   * Without it, attestation_bundle answers 400 and the run records
+   * that honestly, same as before.
+   */
+  ...(process.env.BUNDLE_TX_HASHES
+    ? { attestation_bundle: { tx_hashes: process.env.BUNDLE_TX_HASHES } }
+    : {}),
 };
 
 function fail(message) {

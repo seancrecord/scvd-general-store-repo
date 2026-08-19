@@ -141,6 +141,10 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // And aimed at a PAGE: what the served HTML gives a machine
       // reader, signed, blind spots printed on the artifact.
       "onpage_audit",
+      // The observation with money in its hand: one real purchase
+      // attempt of the buyer's own door, from the declared field
+      // wallet, the whole walk signed stage by stage.
+      "launch_check",
       // The anchor rides this shelf because it is the same primitive
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.

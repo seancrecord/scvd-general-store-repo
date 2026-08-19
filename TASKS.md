@@ -73,19 +73,16 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   Approved as backlog, not yet, in the 2026-08-07 enforcement round
   (items 1, 2, 4, 5 of that round shipped; this is item 3).
 
-- **LAUNCH CHECK (keeper-approved backlog, 2026-08-19 — the walkabout
-  productized for one endpoint).** We attempt a real mainnet purchase
-  of a seller's cheapest item and hand them a signed field report of
-  exactly what happened — challenge served, terms parsed, payment
-  presented, settled or refused and why, delivered or not. The field
-  run is the sales pitch: 71% of payment attempts across the walkable
-  Bazaar failed, and almost no seller has seen their buy path from
-  the buyer's side. x402station sells a $1 automated badge; this is a
-  real settlement plus narrative, no badge, never a score. The runner
-  exists (research/field-run-2026-08-18/field-run-v2.mjs); the build
-  is a paid door, per-run spend from the declared field wallet under
-  WALKABOUT.md rules, and the report as a signed artifact in the
-  ecosystem_report class. Days, not weeks.
+- **LAUNCH CHECK — BUILT 2026-08-19, same day it was filed.** The
+  paid door is live in code: /api/buy/launch_check walks the buyer's
+  own endpoint with a real EIP-3009 authorization from the field
+  wallet (caps and the rule-3 fail-closed screen hard-coded in
+  services/launch-check.ts; WALKABOUT.md gained the standing-approval
+  section, ⚑). The door stays closed in production until the keeper
+  provisions two secrets — FIELD_WALLET_KEY (the declared field
+  wallet's key) and SANCTIONS_API_KEY (Chainalysis screening) — via
+  `wrangler secret put`; the buy route says so honestly until then.
+  Remaining: those two secrets, and the keeper's pen on the ⚑ copy.
 
 - **THE STATEMENT (keeper-approved backlog, 2026-08-19 — billing).**
   Periodic signed reconciliation of an agent wallet: its on-chain

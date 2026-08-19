@@ -48,6 +48,23 @@ export interface Env {
    */
   WBA_SIGNING_KEY?: string;
   /**
+   * The FIELD WALLET's secp256k1 private key (hex) — the buyer-side
+   * wallet the Launch Check pays from, declared at /house-ledger.json
+   * before it ever walks. Optional and FLAG-GATING: unset, the
+   * launch_check door refuses new purchases before any money moves.
+   * DELIBERATELY NOT the till: PAY_TO_ADDRESS receives, this spends,
+   * and the spend is capped in code (services/launch-check.ts).
+   */
+  FIELD_WALLET_KEY?: string;
+  /**
+   * Chainalysis public screening API key, for WALKABOUT.md rule 3's
+   * sanctions screen on every payTo before the field wallet pays.
+   * Optional and FLAG-GATING the same way: unset, screening is
+   * unavailable, the rule fails closed, and the launch_check door
+   * refuses new purchases rather than paying unscreened.
+   */
+  SANCTIONS_API_KEY?: string;
+  /**
    * Base JSON-RPC endpoint for the settlement attestation. Optional:
    * falls back to the public endpoint, which is fine at this volume
    * and swappable the day it isn't.
