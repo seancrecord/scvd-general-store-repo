@@ -56,6 +56,7 @@ import {
   corpusLandingRoutes,
   preflightRoutes,
   launchCheckRoutes,
+  mandateRoutes,
   statementRoutes,
   onpageRoutes,
   watchRoutes,
@@ -256,6 +257,7 @@ app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", preflightRoutes);
 app.route("/", launchCheckRoutes);
+app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
 app.route("/", onpageRoutes);
 app.route("/", watchRoutes);

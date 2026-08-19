@@ -231,6 +231,38 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     ],
   },
   /**
+   * THE MANDATE (2026-08-19, third build off the keeper-approved
+   * backlog): the receipt chain's reserved first link, built — a
+   * signed, dated, third-party-held record of what an agent claims it
+   * was authorized to do, recorded BEFORE it acts, citable on every
+   * later purchase here via mandate_id (which the buy door resolves
+   * before charging, so the link never dangles). Demand tag: the
+   * S.5051/NIST delegation-proof rail — prior art running before the
+   * standard exists. Rule 23a-clean: one record, terminal at write.
+   * The register is the product: chain-of-custody, never
+   * truth-of-intent, and the artifact says so on itself.
+   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
+   */
+  {
+    id: "the_mandate",
+    listed_week: "2026-W34",
+    name: "The Mandate",
+    price_usdc: 0.1,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Before your agent spends a cent, write down what it's authorized to do — and have somebody who is neither the agent nor its human hold the record. Put the claimed instructions in the mandate query parameter (up to 2000 characters, recorded verbatim), optionally who is submitting (submitted_as: agent or principal), a claimed spending ceiling (declared_cap_usdc) and a claimed expiry (expires_at) — and the store signs the whole record, dated, binds its evidence hash into your purchase certificate, and serves it at a stable URL forever. Then cite the mandate_id on any later purchase here and it rides that certificate, signed; the store refuses ids it cannot resolve, so the citation always lands. Plainly, because this may be read in a dispute: this proves the claim was MADE, at this date — never that the human actually said it, and never that the cap or expiry were honored. Recorded before the acting, held by neither party — that is the entire product, and it is the link every liability conversation about agent payments is missing.",
+    note_402:
+      "A dime. The cheapest thing on this shelf is the one you buy before anything goes wrong, which is exactly why nobody does.",
+    constraints: [
+      "Put the claimed instructions in the mandate query parameter, up to 2000 characters — recorded verbatim, never interpreted, never read as instructions to us",
+      "submitted_as is a claim (agent or principal, default agent); the record proves the claim was made, never that it was true — chain-of-custody, not truth-of-intent",
+      "declared_cap_usdc and expires_at are declared claims: recorded, never enforced by this store, and the record says so",
+      "Cite the id on later purchases with mandate_id=m_…; an id this store cannot resolve is refused before any charge",
+      "The record URL is free to read forever",
+    ],
+  },
+  /**
    * MARKETPLACE-ERA ITEM TWO (Part 6 order, keeper's "go"): the
    * Bitcoin anchor for anybody else's digest — the key-history
    * anchoring machinery this store built for itself, sold as the

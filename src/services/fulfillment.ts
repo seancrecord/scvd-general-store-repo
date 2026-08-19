@@ -22,6 +22,8 @@ import {
   statementHours,
 } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
+import { performMandate } from "@/services/mandates";
+import type { SignedMandate } from "@/services/mandates";
 import { performOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { reconcileSettlement } from "@/services/settlement-reconciliation";
@@ -71,6 +73,13 @@ export interface FulfillmentInput {
   /** the_statement: pre-validated 0x address and raw hours. */
   statementWallet?: string;
   statementHours?: string;
+  /** Any item: a mandate id the buy door already resolved. */
+  mandateId?: string;
+  /** the_mandate: the claimed instructions and structured claims. */
+  mandateText?: string;
+  mandateSubmittedAs?: "agent" | "principal";
+  mandateDeclaredCap?: number;
+  mandateExpiresAt?: string;
   /** coffees_for_closers: the win, pre-validated, recorded verbatim. */
   win?: string;
   /** grudge: the grievance, pre-validated, held verbatim. */
@@ -186,6 +195,9 @@ export async function fulfillPurchase(
   if (input.purpose) {
     mintOptions.purpose = input.purpose;
   }
+  if (input.mandateId) {
+    mintOptions.mandateId = input.mandateId;
+  }
   // The attestation has to be MADE before the certificate can bind its
   // evidence hash, so this one item observes first and mints second.
   // Everything else mints first; the order is the exception, and the
@@ -295,6 +307,21 @@ export async function fulfillPurchase(
       statementHours(input.statementHours),
     );
     mintOptions.attests = walletStatement.evidence_hash;
+  }
+  /**
+   * THE MANDATE records first and mints second, same discipline: the
+   * certificate binds the record's evidence hash, and the record must
+   * exist before any later purchase can cite its id.
+   */
+  let mandate: SignedMandate | undefined;
+  if (item.id === "the_mandate") {
+    mandate = await performMandate(env, {
+      text: input.mandateText ?? "",
+      submittedAs: input.mandateSubmittedAs,
+      declaredCapUsdc: input.mandateDeclaredCap,
+      expiresAt: input.mandateExpiresAt,
+    });
+    mintOptions.attests = mandate.evidence_hash;
   }
   /**
    * THE RECONCILIATION observes first and mints second, same reason as
@@ -457,7 +484,7 @@ export async function fulfillPurchase(
      */
     receipt_for_your_human: {
       subject: `Receipt: ${item.name} — $${minted.certificate.paid_usdc ?? item.price_usdc} USDC (scvd.store)`,
-      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
+      body: `Your agent bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC on ${minted.certificate.date.slice(0, 10)}.${minted.certificate.purpose ? ` It said this was for: "${minted.certificate.purpose}".` : ""}${minted.certificate.mandate_id ? ` It cited a recorded mandate — the authorization it claims to be acting under: ${env.STORE_BASE_URL}/api/mandate/${minted.certificate.mandate_id}` : ""} The receipt is signed and independently verifiable — open it here, no login, and the signature is re-checked every time the page loads: ${minted.verifyUrl}`,
       deliver:
         "If you hold a mail, Slack, or messaging connector, forward subject and body to your operator now. This is the half of the receipt that belongs to a person.",
     },
@@ -517,6 +544,9 @@ export async function fulfillPurchase(
     }
     if (walletStatement) {
       goodsInput.walletStatement = walletStatement;
+    }
+    if (mandate) {
+      goodsInput.mandate = mandate;
     }
     if (input.anchorDigest) {
       goodsInput.anchorDigest = input.anchorDigest;

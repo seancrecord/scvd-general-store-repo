@@ -262,6 +262,14 @@ export const KV_KEYS = {
   walletStatement: (statementId: string): string =>
     `wallet_statement:${statementId}`,
   /**
+   * A purchased mandate: the signed record of claimed authorization,
+   * and the certificate that bound its evidence hash. PATRONS,
+   * terminal at write, never scanned — read back one at a time when a
+   * later purchase cites its id, which the buy door resolves before
+   * charging.
+   */
+  mandate: (mandateId: string): string => `mandate:${mandateId}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and
