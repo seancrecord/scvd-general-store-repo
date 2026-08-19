@@ -468,3 +468,93 @@ describe("the door bank rides the round (2026-08-18, corpus velocity)", () => {
     expect(round.pagination_shape).toContain("items");
   });
 });
+
+describe("offset paging: the 08-05 collapse, solved by its own instrument", () => {
+  /*
+   * The first hand-run round after pagination_shape shipped read
+   * `pagination.limit / offset / total` off the live feed — the feed
+   * moved to OFFSET pagination on 08-05 and there was never a cursor
+   * to find. The reader now follows the declared shape literally, and
+   * these tests hold the two edges that matter: a real multi-page walk
+   * reads to the declared total, and a server that ignores our offset
+   * cannot trick the round into counting page one sixty times.
+   */
+  beforeAll(async () => {
+    const ed25519 = await import("@noble/ed25519");
+    const seed = new Uint8Array(32).fill(0x42);
+    const publicKey = await ed25519.getPublicKeyAsync(seed);
+    const both = new Uint8Array(64);
+    both.set(seed);
+    both.set(publicKey, 32);
+    testEnv.CDP_API_KEY_ID = "test-key-id";
+    testEnv.CDP_API_KEY_SECRET = btoa(String.fromCharCode(...both));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const conformant402 = () =>
+    new Response("{}", {
+      status: 402,
+      headers: {
+        "PAYMENT-REQUIRED": btoa(
+          JSON.stringify({
+            x402Version: 2,
+            accepts: [
+              {
+                scheme: "exact",
+                network: "eip155:8453",
+                amount: "1000",
+                asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                payTo: "0x1111111111111111111111111111111111111111",
+              },
+            ],
+          }),
+        ),
+      },
+    });
+
+  function stubOffsetWorld(options: { total: number; ignoreOffset?: boolean }) {
+    const all = Array.from({ length: options.total }, (_, i) => ({
+      resourceUrl: `https://host-${i}.example/api/buy/x`,
+    }));
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
+      const url = String(input instanceof Request ? input.url : input);
+      if (url.includes("api.cdp.coinbase.com")) {
+        if (url.includes("/discovery/search")) {
+          return Response.json({ items: [{ resourceUrl: `${BASE}/api/buy/hello` }] });
+        }
+        const requested = options.ignoreOffset
+          ? 0
+          : Number(new URL(url).searchParams.get("offset") ?? 0);
+        return Response.json({
+          items: all.slice(requested, requested + 100),
+          pagination: { limit: 100, offset: options.ignoreOffset ? 0 : requested, total: options.total },
+          x402Version: 2,
+        });
+      }
+      return conformant402();
+    });
+  }
+
+  it("walks offset pages to the declared total and claims clean coverage", async () => {
+    stubOffsetWorld({ total: 230 });
+    const round = await runWardRound(testEnv);
+    expect(round.listed_resources).toBe(230);
+    // Reading everything the feed declares is the one full-last-page
+    // case that is NOT a cap wearing completeness.
+    expect(round.coverage_suspect).toBe(false);
+    expect(round.pagination_shape).toBeUndefined();
+  });
+
+  it("a server that ignores the offset is caught, not counted sixty times", async () => {
+    stubOffsetWorld({ total: 500, ignoreOffset: true });
+    const round = await runWardRound(testEnv);
+    // Page one, once — and the round says the coverage is suspect,
+    // with the shape recorded for whoever fixes the next move.
+    expect(round.listed_resources).toBe(100);
+    expect(round.coverage_suspect).toBe(true);
+    expect(round.pagination_shape).toContain("pagination.total");
+  });
+});

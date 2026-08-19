@@ -211,21 +211,47 @@ function describePaginationShape(body: Record<string, unknown>): string[] {
   return shape;
 }
 
+/**
+ * Pages the reader will walk in one round. Raised from 20 on
+ * 2026-08-19 when offset paging landed: at 100 rows a page this reads
+ * up to 6,000 declared resources — comfortably past the arXiv-scale
+ * listing — and each page is one subrequest, far inside the budget.
+ * A declared total beyond it leaves coverage_suspect true, which is
+ * the honest answer at any cap.
+ */
+const DISCOVERY_PAGE_CAP = 60;
+
 async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const rows: Record<string, unknown>[] = [];
   let cursor: string | undefined;
+  let offset: number | undefined;
   let coverageSuspect = false;
   let paginationShape: string[] | undefined;
-  for (let page = 0; page < 20; page += 1) {
+  let previousFirstRow: string | undefined;
+  for (let page = 0; page < DISCOVERY_PAGE_CAP; page += 1) {
     const params = new URLSearchParams({ pageSize: "100" });
     if (cursor) params.set("pageToken", cursor);
+    if (offset !== undefined) params.set("offset", String(offset));
     const body = (await cdpGet(env, DISCOVERY_PATH, `?${params}`)) as Record<
       string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any
     >;
     const items = (body["items"] ?? body["resources"] ?? body["data"] ?? []) as Record<string, unknown>[];
+    /**
+     * A SERVER THAT IGNORES OUR OFFSET SERVES PAGE ONE FOREVER, and a
+     * reader that keeps counting it would invent a population 60x the
+     * truth. Same first row twice = the pagination is not doing what
+     * its shape declares; stop, keep what page one gave, say suspect.
+     */
+    const firstRow = items.length ? JSON.stringify(items[0]) : undefined;
+    if (page > 0 && firstRow !== undefined && firstRow === previousFirstRow) {
+      coverageSuspect = true;
+      paginationShape = describePaginationShape(body);
+      break;
+    }
+    previousFirstRow = firstRow;
     rows.push(...items);
     // Every cursor spelling seen or plausible in the wild. The
     // 2026-08-05 round read exactly one page (100 resources, 38
@@ -249,19 +275,53 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
             parsed.searchParams.get("cursor") ??
             undefined;
         } catch {
-          /* not a URL; fall through to the cap check */
+          /* not a URL; fall through to the offset check */
         }
       }
     }
     if (!cursor) {
-      // A full page and no recognized cursor is a page cap wearing
-      // completeness — the hand-run census's own recorded lesson.
+      /**
+       * OFFSET PAGING (2026-08-19). The 08-05 collapse is solved: the
+       * instrument's own pagination_shape capture, on the first
+       * hand-run round after it shipped, read `pagination.limit /
+       * pagination.offset / pagination.total` off the live feed —
+       * the feed moved to OFFSET pagination, and there was never a
+       * cursor to find. The declared shape is followed literally:
+       * advance by the served limit until the served total, and
+       * anything else (no numbers, nonsense numbers) falls through
+       * to the suspect check exactly as before.
+       */
+      const pg = body["pagination"];
+      const limit = Number(pg?.limit);
+      const total = Number(pg?.total);
+      const served = Number.isFinite(Number(pg?.offset))
+        ? Number(pg?.offset)
+        : (offset ?? 0);
+      if (
+        items.length > 0 &&
+        Number.isFinite(limit) &&
+        limit > 0 &&
+        Number.isFinite(total) &&
+        served + items.length < total
+      ) {
+        offset = served + items.length;
+        continue;
+      }
+      if (Number.isFinite(total) && total >= 0 && rows.length >= total) {
+        // The feed declared its total and we read all of it: the one
+        // case a full last page is NOT a cap wearing completeness.
+        break;
+      }
+      // A full page and no recognized way forward is a page cap
+      // wearing completeness — the hand-run census's own lesson.
       coverageSuspect = items.length > 0 && items.length % 100 === 0;
       if (coverageSuspect) paginationShape = describePaginationShape(body);
       break;
     }
     if (items.length === 0) break;
   }
+  // The page cap binding is a coverage statement too.
+  if (rows.length >= DISCOVERY_PAGE_CAP * 100) coverageSuspect = true;
   const seen = new Set<string>();
   const hosts: { host: string; url: string }[] = [];
   for (const row of rows) {
