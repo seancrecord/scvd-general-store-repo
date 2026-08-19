@@ -50,6 +50,8 @@ export interface LongWalkState {
   listed_resources: number;
   coverage_suspect: boolean;
   pagination_shape?: string[];
+  /** The feed's row-key names, for the market desk's self-diagnosis. */
+  discovery_fields_seen?: string[];
   /** The leaderboard as read at walk start; claims dated by window. */
   leaderboard: {
     sellers: number;
@@ -157,6 +159,9 @@ async function startWalk(env: Env, week: string): Promise<WalkPass> {
     coverage_suspect: discovery.coverageSuspect,
     ...(discovery.paginationShape
       ? { pagination_shape: discovery.paginationShape }
+      : {}),
+    ...(discovery.fieldsSeen
+      ? { discovery_fields_seen: discovery.fieldsSeen }
       : {}),
     leaderboard: leaderboard
       ? {

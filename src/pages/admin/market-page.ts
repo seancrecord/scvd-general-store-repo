@@ -1,0 +1,123 @@
+import { escapeHtml } from "@/lib/sanitize";
+import { renderAdminShell } from "@/pages/admin/layout";
+import type { MarketAggregates } from "@/services/market";
+import type { WardRound } from "@/services/ward-round";
+
+/**
+ * THE MARKET PAGE — the keeper's snapshot of what the numbers MEAN.
+ *
+ * The ward page answers "what happened on the round"; this page
+ * answers "what is the market, and where is the gap". Every number
+ * carries its reading in the same breath, because the request that
+ * built this desk was explicit: not more data points — insight.
+ * Readings live HERE, on the page, never in the stored aggregate
+ * block: the arithmetic is chained history, the interpretation is
+ * allowed to get smarter.
+ */
+
+function money(value: number): string {
+  if (value >= 1) return `$${value.toFixed(2)}`;
+  return `$${value.toFixed(value < 0.01 ? 4 : 3)}`;
+}
+
+function section(title: string, headline: string, reading: string): string {
+  return `<section>
+    <h2>${escapeHtml(title)}</h2>
+    <p><strong style="font-size:1.3em">${escapeHtml(headline)}</strong></p>
+    <p class="menu-desc">${escapeHtml(reading)}</p>
+  </section>`;
+}
+
+export function renderMarketPage(
+  round: WardRound,
+  market: MarketAggregates,
+): string {
+  const so = market.signed_offers;
+  const rails = market.rails;
+  const price = market.price_usdc;
+  const conc = market.concentration;
+
+  const signedOffersSection = section(
+    "The trust gap — the store's measured TAM",
+    so.of_ready > 0
+      ? `${so.pct}% of ready doors serve signed offers (${so.serving} of ${so.of_ready})`
+      : "no ready doors measured yet",
+    so.of_ready > 0 && so.pct < 10
+      ? `This is the market thesis as a measured fact: nearly the whole ecosystem quotes prices with nothing a third party can verify. Every one of the ${so.of_ready - so.serving} unsigned doors is a seller whose buyers must take their word — which is precisely what this store sells the antidote to. When this number rises, the market is maturing INTO our category; if it rises without us, competitors are doing the maturing.`
+      : `The share of the ecosystem serving verifiable offers. Watch the direction more than the level: rising means the trust layer is becoming table stakes.`,
+  );
+
+  const rotSection = section(
+    "Registry rot",
+    `${market.rot.pct}% of listed doors answer no 402 at all (${market.rot.dead_doors} of ${market.probed})`,
+    `These hosts are LISTED as x402 endpoints and functionally absent — wrong status, no challenge header, or dead. Two meanings at once: every directory quoting raw listing counts overstates the market by roughly this factor (deflate outside claims accordingly), and every rotting door is an outreach lead — an operator who cared enough to list and hasn't noticed they broke.`,
+  );
+
+  const railsSection = section(
+    "Rails — who takes what",
+    rails.of > 0
+      ? `of ${rails.of} parseable doors: ${rails.both} take both rails, ${rails.base_only} Base-only, ${rails.solana_only} Solana-only, ${rails.other_only} neither mainnet`
+      : "no offer facts captured yet — the next walked round fills this in",
+    rails.of > 0
+      ? `A Base-only door turns away every Solana-holding buyer and vice versa. The single-rail share is addressable demand for dual-rail sellers (this store included), and the ${rails.testnet_flagged} testnet-flagged doors are the classic silent failure — working against test tooling, invisible to every mainnet wallet.`
+      : `The probe started keeping each door's offered rails on 2026-08-19; rounds before that carry verdicts only.`,
+  );
+
+  const priceSection = section(
+    "The price map (USDC-priced doors)",
+    price
+      ? `median ask ${money(price.median)} · middle half ${money(price.p25)}–${money(price.p75)} · range ${money(price.min)}–${money(price.max)} (${price.sample} doors)`
+      : "no USDC prices captured yet — fills in with the next walked round",
+    price
+      ? `Where the market prices itself. Below the 25th percentile is commodity territory (price wars, no moat); the thin top end is where judgment and verification live. Whitespace reading: gaps between the quartiles are price points with little competition — and anything we sell below the median is cheap by the market's own standard, not ours.`
+      : `Same capture date as rails: the desk keeps the cheapest USDC ask each door quotes, read from the 402 the probe already fetched.`,
+  );
+
+  const topList = conc.top
+    .map((entry) => `${entry.operator} (${entry.hosts})`)
+    .join(", ");
+  const concSection = section(
+    "Seller concentration",
+    `${conc.hosts} hosts collapse to ${conc.operators} operators; the top 5 hold ${conc.top5_share_pct}% of probed hosts`,
+    `Hosts are not sellers: subdomain farms inflate every raw count (top 5: ${topList}). Deflate directory sizes and "endpoints" claims by this ratio before believing them. Grouping is a named heuristic — registrable domain, except on shared platforms (workers.dev and kin) where the deploying subdomain is the operator.`,
+  );
+
+  const schemes = Object.entries(market.schemes)
+    .sort((a, b) => b[1] - a[1])
+    .map(([scheme, count]) => `<code>${escapeHtml(scheme)}</code> ×${count}`)
+    .join(" · ");
+
+  const fieldsSection = market.discovery_fields_seen
+    ? `<section><h2>The feed's own shape</h2>
+       <p class="menu-desc">Metadata fields the discovery rows actually carry: ${market.discovery_fields_seen.map((field) => `<code>${escapeHtml(field)}</code>`).join(", ")}. Whatever category or description mining comes next starts from this list, not from guessing.</p>
+       </section>`
+    : "";
+
+  const body = `
+  <h1>The market — what the round's numbers mean</h1>
+  <p class="menu-desc">Derived entirely from round <strong>${escapeHtml(round.week)}</strong>
+  (${escapeHtml(round.at.slice(0, 16))}Z): ${market.probed} doors probed, ${market.ready} ready.
+  Zero extra contact — every fact here was already in the responses the
+  round fetched; this desk just stopped throwing them away. Aggregates
+  only, per the consent ruling: numbers about the neighbourhood, never
+  rows about a neighbour.</p>
+
+  ${signedOffersSection}
+  ${rotSection}
+  ${railsSection}
+  ${priceSection}
+  ${concSection}
+  ${schemes ? `<section><h2>Schemes offered</h2><p class="menu-desc">${schemes}</p></section>` : ""}
+  ${fieldsSection}
+
+  <section>
+    <h2>What this cannot see</h2>
+    <ul>
+      <li>The BUY side. Every number here is about sellers; what agents actually purchase is invisible to a probe.</li>
+      <li>Delivery quality. A parseable 402 says nothing about whether paying it gets you goods — testing that means spending (the settlement-attempt lane, keeper's ruling pending).</li>
+      <li>Anything about rounds before 2026-08-19's capture: older rounds carry verdicts, not offers, so rails and prices read "not captured" there honestly.</li>
+    </ul>
+  </section>`;
+
+  return renderAdminShell("market", body);
+}

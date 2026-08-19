@@ -5,6 +5,7 @@ import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
+import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
 
 /**
@@ -105,6 +106,14 @@ export interface WardHostResult {
    */
   source?: "discovery" | "leaderboard" | "both" | "revisit";
   volume_claim?: WardVolumeClaim;
+  /**
+   * What the door's own 402 OFFERED, read from the header the probe
+   * already fetched (2026-08-19, the market desk): rails, schemes,
+   * cheapest USDC ask. Zero extra contact — keeping what was paid
+   * for. Absent on rounds before the desk and on doors whose
+   * challenge did not parse.
+   */
+  offer?: OfferFacts;
 }
 
 export interface WardRound {
@@ -166,6 +175,14 @@ export interface WardRound {
    */
   directories_unread?: { source: string; why: string }[];
   /**
+   * THE MARKET DESK's aggregate block (2026-08-19): the ecosystem's
+   * shape derived from this round's own rows — rot, rails, prices,
+   * signed-offers rate, seller concentration. Plain arithmetic anyone
+   * can recompute from `hosts`; stored so the corpus carries the
+   * market's weekly shape without a reader needing our code.
+   */
+  market?: MarketAggregates;
+  /**
    * Present when this round was ASSEMBLED from the long walk rather
    * than probed in one shot (2026-08-19): the week's hourly batches
    * did the knocking, and Sunday only collected. roster counts the
@@ -214,6 +231,13 @@ export interface DiscoveryRead {
   coverageSuspect: boolean;
   /** Set only when coverageSuspect: what the last page's body offered. */
   paginationShape?: string[];
+  /**
+   * The union of key names the feed's rows actually carried (capped),
+   * so the market desk's next mining pass reads reality instead of
+   * guessing which metadata fields exist. Same self-diagnosis habit
+   * as pagination_shape.
+   */
+  fieldsSeen?: string[];
 }
 
 /**
@@ -249,6 +273,7 @@ const DISCOVERY_PAGE_CAP = 60;
 export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const rows: Record<string, unknown>[] = [];
+  const fieldsSeen = new Set<string>();
   let cursor: string | undefined;
   let offset: number | undefined;
   let coverageSuspect = false;
@@ -278,6 +303,13 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
     }
     previousFirstRow = firstRow;
     rows.push(...items);
+    // The market desk's self-diagnosis: which metadata fields do the
+    // feed's rows actually carry? Capped; names only, never values.
+    if (fieldsSeen.size < 30) {
+      for (const item of items.slice(0, 5)) {
+        for (const key of Object.keys(item)) fieldsSeen.add(key);
+      }
+    }
     // Every cursor spelling seen or plausible in the wild. The
     // 2026-08-05 round read exactly one page (100 resources, 38
     // hosts) after weeks of several hundred — the feed's pagination
@@ -367,6 +399,7 @@ export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
     listed: rows.length,
     coverageSuspect,
     ...(paginationShape ? { paginationShape } : {}),
+    ...(fieldsSeen.size ? { fieldsSeen: [...fieldsSeen].slice(0, 30).sort() } : {}),
   };
 }
 
@@ -417,10 +450,13 @@ export async function probeHost(
     await response.body?.cancel().catch(() => undefined);
     const { checks, advisories } = runChecks(response, false);
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
+    // The market desk keeps what this fetch already paid for.
+    const offer = offerFacts(response);
     return {
       verdict: failed.length === 0 ? "ready" : "not_ready",
       failed,
       advisories: advisories.map((advisory) => advisory.name),
+      ...(offer ? { offer } : {}),
     };
   } catch {
     return { verdict: "unreachable", failed: [], advisories: [] };
@@ -556,7 +592,11 @@ async function sealRound(
   round: WardRound,
   walked: number,
   presence: boolean | null,
+  discoveryFieldsSeen?: string[],
 ): Promise<WardRound> {
+  // The market desk's block rides every sealed round: plain
+  // arithmetic over the round's own rows, recomputable by anyone.
+  round.market = marketAggregates(round.hosts, discoveryFieldsSeen);
   const previous = await latestWardRound(env);
   /**
    * COVERAGE DROP, said out loud (2026-08-05: the keeper caught a
@@ -654,7 +694,7 @@ async function assembleWalkRound(
     },
     hosts: walk.results,
   };
-  return sealRound(env, round, walked, presence);
+  return sealRound(env, round, walked, presence, walk.discovery_fields_seen);
 }
 
 export async function runWardRound(env: Env): Promise<WardRound> {
@@ -681,7 +721,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     // round; fall through to the one-shot.
   }
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
-  const { hosts, listed, coverageSuspect, paginationShape } =
+  const { hosts, listed, coverageSuspect, paginationShape, fieldsSeen } =
     await readDiscoveryList(env);
   /**
    * THE SECOND FEED (2026-08-04): the agent402 leaderboard, used for
@@ -823,7 +863,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     directories_unread: [...UNREAD_DIRECTORIES],
     hosts: results,
   };
-  return sealRound(env, round, walked, presence);
+  return sealRound(env, round, walked, presence, fieldsSeen);
 }
 
 export async function latestWardRound(env: Env): Promise<WardRound | null> {
