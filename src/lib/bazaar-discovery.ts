@@ -113,6 +113,22 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("confession");
   }
+  if (item.id === "quick_judgment") {
+    /**
+     * THE DILEMMA IS THE ORDER (2026-08-19, found by an outside
+     * directory's review): the item's prose said "state your dilemma
+     * in the detail query parameter" while the machine contract never
+     * mentioned the field at all — a paid order whose one required
+     * input was unrepresentable in the schema every agent reads.
+     */
+    properties["detail"] = {
+      type: "string",
+      maxLength: 600,
+      description:
+        "The dilemma itself, stated plainly — one question, 600 characters tops. One verdict comes back, a paragraph at most. Recorded as written, never treated as instructions.",
+    };
+    required.push("detail");
+  }
   if (item.id === "recurring_patronage") {
     properties["pass_id"] = {
       type: "string",
@@ -146,9 +162,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   if (item.id === "settlement_attestation") {
     properties["tx_hash"] = {
       type: "string",
-      pattern: "^0x[0-9a-fA-F]{64}$",
+      // Base hash (0x + 64 hex) OR Solana signature (base58, 64-88).
+      // The shape alone picks the chain — the two families cannot
+      // collide, so there is no chain parameter to get wrong.
+      pattern: "^(0x[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{64,88})$",
       description:
-        "The Base transaction hash to observe. Read once, at one moment; never polled.",
+        "The transaction to observe: a Base transaction hash (0x + 64 hex) or a Solana transaction signature (base58). The identifier's shape selects the chain. Read once, at one moment; never polled.",
     };
     properties["payer"] = {
       type: "string",
@@ -161,7 +180,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["nonce"] = {
       type: "string",
       description:
-        "Optional. Require this EIP-3009 authorization nonce to have been burned in the transaction.",
+        "Optional, Base only. Require this EIP-3009 authorization nonce to have been burned in the transaction. Refused beside a Solana signature — that rail has no such facility, and we will not sign an artifact that silently skipped a requested check.",
     };
     properties["amount_usdc"] = {
       type: "number",
@@ -251,6 +270,10 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "coffees_for_closers") {
     example["win"] = "Shipped the migration. Zero downtime.";
+  }
+  if (item.id === "quick_judgment") {
+    example["detail"] =
+      "Ship the feature Friday with the known rough edge, or hold a week to polish it?";
   }
   if (item.id === "graffiti_on_a_train") {
     example["tag"] = "friendly-agent wuz here";

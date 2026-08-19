@@ -17,6 +17,24 @@ import { outboundHeaders } from "@/lib/identity";
 export const SOLANA_USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
 /**
+ * CAIP-2 chain id for Solana mainnet — the same string
+ * lib/payments.ts uses as SOLANA_NETWORK for the settle rail, kept
+ * equal by a parity test so an attestation and a payment can never
+ * disagree about which chain they mean.
+ */
+export const SOLANA_CHAIN = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+
+/**
+ * A Solana transaction signature: 64 bytes in base58, which lands at
+ * 64-88 characters of the base58 alphabet (no 0, O, I, l). Nothing
+ * that matches the 0x-hex Base shape can match this, so the two
+ * identifier families dispatch cleanly on shape alone.
+ */
+export function isSolanaSignature(value: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{64,88}$/.test(value);
+}
+
+/**
  * Public mainnet RPC unless the keeper points us somewhere better.
  * PublicNode rather than api.mainnet-beta.solana.com, learned live
  * 2026-08-04: Solana Labs' public endpoint aggressively rate-limits
@@ -166,6 +184,69 @@ interface ParsedTransaction {
       /** jsonParsed shape: each static key says whether it signed. */
       accountKeys?: Array<{ pubkey: string; signer?: boolean }>;
     };
+  };
+}
+
+/** The chain head, in slots, at the confirmed commitment. */
+export async function getSlot(env: Env): Promise<number> {
+  return rpc<number>(env, "getSlot", [{ commitment: "confirmed" }]);
+}
+
+export interface SolanaUsdcDelta {
+  /** Token-account OWNER (the wallet), when the balances name one. */
+  owner: string;
+  /** Raw USDC units, positive = received, negative = sent. */
+  delta: bigint;
+}
+
+export interface SolanaTransactionFacts {
+  /** Non-null when the transaction failed; failed txs moved no tokens. */
+  err: unknown;
+  slot: number;
+  /** Per-owner USDC balance deltas — the settled OUTCOME of the tx. */
+  deltas: SolanaUsdcDelta[];
+}
+
+/**
+ * The USDC facts of ONE transaction, for anyone's addresses — the
+ * attestation-shaped sibling of usdcIncomingIn below, which only
+ * answers about the store's own wallet. Same discipline: pre/post
+ * token balances, the settled outcome, no instruction parsing.
+ * Returns null when the chain has no such transaction.
+ */
+export async function solanaTransactionFacts(
+  env: Env,
+  signature: string,
+): Promise<SolanaTransactionFacts | null> {
+  const tx = await rpc<ParsedTransaction | null>(env, "getTransaction", [
+    signature,
+    {
+      encoding: "jsonParsed",
+      maxSupportedTransactionVersion: 0,
+      commitment: "confirmed",
+    },
+  ]);
+  if (!tx?.meta) return null;
+  const slot = (tx as { slot?: number }).slot ?? 0;
+  const byOwner = new Map<string, bigint>();
+  const add = (owner: string | undefined, amount: bigint) => {
+    if (!owner) return;
+    byOwner.set(owner, (byOwner.get(owner) ?? 0n) + amount);
+  };
+  for (const balance of tx.meta.preTokenBalances ?? []) {
+    if (balance.mint !== SOLANA_USDC_MINT) continue;
+    add(balance.owner, -BigInt(balance.uiTokenAmount.amount));
+  }
+  for (const balance of tx.meta.postTokenBalances ?? []) {
+    if (balance.mint !== SOLANA_USDC_MINT) continue;
+    add(balance.owner, BigInt(balance.uiTokenAmount.amount));
+  }
+  return {
+    err: tx.meta.err,
+    slot,
+    deltas: [...byOwner.entries()]
+      .filter(([, delta]) => delta !== 0n)
+      .map(([owner, delta]) => ({ owner, delta })),
   };
 }
 

@@ -202,7 +202,8 @@ describe("weekly inventory", () => {
 
   it("sells out, points to the waitlist, and takes waitlist entries", async () => {
     for (let i = 0; i < 5; i += 1) {
-      const sale = await buyPaid("quick_judgment");
+      // The dilemma is required at the door since 2026-08-19.
+      const sale = await buyPaid("quick_judgment", 0, "?detail=Ship+or+refactor%3F");
       expect(sale.status).toBe(200);
     }
     const soldOut = await SELF.fetch(`${BASE}/api/buy/quick_judgment`);
