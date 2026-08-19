@@ -1482,6 +1482,30 @@ adminRoutes.post("/admin/outreach/status", async (c) => {
   return c.redirect("/admin/outreach");
 });
 
+/**
+ * THE REGISTRY PUBLISH PRESS (rule 30's shape): the weekly round
+ * derives the aggregates automatically, but the public tally at
+ * /registry gains a row only here, by the keeper's hand, after he has
+ * read the round. Idempotent per week — a re-press replaces the
+ * week's row with the round as it stands now.
+ */
+adminRoutes.post("/admin/market/publish-registry", async (c) => {
+  const { publishRegistryWeek } = await import("@/services/registry-pulse");
+  const result = await publishRegistryWeek(c.env);
+  if (!result.ok) {
+    return c.json({ refused: result.refusal }, 404);
+  }
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({
+      published: result.entry.week,
+      weeks_on_tally: result.weeks,
+      replaced_existing_row: result.replaced,
+      public_at: "/registry",
+    });
+  }
+  return c.redirect("/registry");
+});
+
 adminRoutes.get("/admin/declines", async (c) => {
   const report = await readDeclines(c.env);
   const outside = report.declines.filter((row) => !row.house);

@@ -643,6 +643,15 @@ accumulating score on an operator, which is the thing this store does
 not keep on anyone. The dated observations are all there; the ratio is
 withheld deliberately, not forgotten.
 
+## State of the registry
+
+${base}/registry: the same weekly census as a public running tally —
+how many doors public x402 discovery lists, how many actually work,
+how many serve offers a third party can verify, and what the market
+charges. Aggregates only and no names, updated by the keeper's hand
+each week; JSON at the same URL. If you operate a listed endpoint,
+the free check for your own door is POST ${base}/api/preflight.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every
