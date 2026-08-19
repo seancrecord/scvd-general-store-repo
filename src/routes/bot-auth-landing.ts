@@ -54,6 +54,7 @@ botAuthLandingRoutes.get("/bot-auth", async (c) => {
     ],
     what_this_is_not:
       "A dated look at one document at one moment. Not an endorsement of the agent, not an identity check on who operates the key, and no statement that any particular request was ever signed with it.",
+    found_us_in_your_logs: `If a request tagged "scvd-general-store/1.0 (+${base})" knocked on your endpoint: that was our weekly census of doors listed in public x402 discovery — one GET per host per week, no payload, signed with the key directory above so your logs can verify it was really us and not someone borrowing the string. Being knocked on means a public directory lists you as an x402 endpoint. What yours answered is free to check yourself, no account: POST ${base}/api/preflight with {"url": "https://your-endpoint"}.`,
   };
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json(payload);
@@ -87,6 +88,10 @@ botAuthLandingRoutes.get("/bot-auth", async (c) => {
       <section>
         <h2>What this is not</h2>
         <p class="menu-meta">${escapeHtml(payload.what_this_is_not)}</p>
+      </section>
+      <section>
+        <h2>Found us in your logs?</h2>
+        <p class="menu-desc">${escapeHtml(payload.found_us_in_your_logs)}</p>
       </section>`,
     }),
   );

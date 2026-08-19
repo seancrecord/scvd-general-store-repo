@@ -95,6 +95,17 @@ export const KV_KEYS = {
    * produces are what graduated to R2, not the working state.
    */
   longWalkState: "long_walk_state",
+  /**
+   * THE OUTREACH LEDGER (2026-08-19): the keeper's private work queue
+   * state for telling operators their own door is broken. One key,
+   * host → {workflow status, published contact strings}. It records
+   * OUR workflow (drafted/sent/replied/fixed/skip) and contacts the
+   * operator PUBLISHED for exactly this purpose (security.txt), never
+   * a verdict history or a score on anyone — rule 43 holds: the
+   * observations live in the rounds, dated; this is just where the
+   * hand keeps its place. Sends are the keeper's alone (rule 30).
+   */
+  outreachLedger: "outreach_ledger",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,
