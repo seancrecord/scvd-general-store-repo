@@ -10,7 +10,8 @@ any item, 280-char cap), `from_the_store` (weekly bank at
 src/store/copy/receipt-notes.ts — ⚑ the lines await the keeper's
 rewrite), the HTML receipt page on /api/verify/{id}, and
 `receipt_for_your_human` in every purchase response, taught in
-skill.md. Still reserved, unbuilt: `mandate_id`.
+skill.md. The reserved `mandate_id` link was BUILT later the same
+day (the keeper's "lets fucking do it"): see section 5.
 
 ## The principle: one chain, every link stands alone
 
@@ -18,13 +19,14 @@ A purchase should leave a chain of evidence where each link is
 independently checkable and no link requires the others to be
 legible:
 
-    [mandate]* → settlement (on chain) → certificate (signed JSON)
+    mandate (signed, recorded BEFORE the acting)
+              → settlement (on chain) → certificate (signed JSON)
               → receipt page (human-readable) → the human's inbox
               (carried by their own agent)
 
-*The mandate link is reserved, not built: an optional `mandate_id`
-field awaits a MANDATE spec if the keeper commissions one. Nothing
-in this document depends on it.
+Every link built and live. The mandate link is optional per
+purchase — a certificate without one loses nothing it ever had —
+but where present it is signed, and it always resolves (section 5).
 
 The machine certificate remains the root artifact and does not change
 meaning. Everything below is ADDITIVE: optional fields, a second
@@ -100,6 +102,36 @@ mail connector, Slack, a message to its operator.
   deliver `receipt_for_your_human` to your operator. The storefront's
   own promise — "your agent shops; you read the receipts" — becomes a
   mechanism instead of a hope.
+
+## 5. `mandate_id` — the first link, built (2026-08-19, same day)
+
+The reserved field, filled by the smallest honest mandate there is:
+
+- **The Mandate is an item** (`/api/buy/the_mandate`, a dime): the
+  claimed instructions verbatim (2000-char cap), who claims to
+  submit them (`submitted_as: agent | principal` — itself a claim),
+  optional declared cap and expiry (recorded, never enforced), all
+  signed and dated, served forever at `/api/mandate/{id}`, evidence
+  hash bound into the purchase certificate like every observation.
+- **Any later purchase may cite it**: `mandate_id=m_…` rides the
+  certificate SIGNED (appended to CERT_FIELDS, outside the legacy
+  form, same law as purpose — an unsigned authorization claim would
+  be forgeable onto our signature). The buy door refuses an id it
+  cannot resolve, before money moves, so a certificate's mandate
+  link never dangles and every citation provably postdates its
+  mandate.
+- **The register is the product**: chain-of-custody, never
+  truth-of-intent. The record proves the claim was MADE, dated, held
+  by neither party. It never proves the human said it — unless the
+  human's client submitted it, which the store cannot distinguish
+  and says so. Stated on the artifact, the shelf listing, and
+  /attestation, because the day this is quoted in a dispute is the
+  day the restraint is the value.
+- With the Statement beside it, the rail is complete: mandate (what
+  was authorized, before) → certificates (what was bought, under
+  which mandate) → statement (what the wallet actually moved). Each
+  link checkable alone; together, the audit an agent's word alone
+  can never be.
 
 ## What would catch it going stale
 

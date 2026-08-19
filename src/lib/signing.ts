@@ -112,6 +112,16 @@ export const CERT_FIELDS = [
    */
   "purpose",
   "from_the_store",
+  /**
+   * THE MANDATE LINK, added 2026-08-19, hours after the two above and
+   * by the same law: appended, never inserted, and OUT of
+   * LEGACY_FIELDS_ADDED_SINCE — no legacy certificate can honestly
+   * cite a mandate (the class did not exist), so stapling one onto an
+   * old certificate must break BOTH forms, not downgrade to a clean
+   * "legacy" pass. An unsigned mandate link would be an authorization
+   * claim anyone could forge onto our signature.
+   */
+  "mandate_id",
 ] as const;
 
 /**

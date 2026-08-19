@@ -16,6 +16,8 @@ import { storeLaunchCheck } from "@/services/launch-check";
 import type { SignedLaunchCheck } from "@/services/launch-check";
 import { storeWalletStatement } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
+import { storeMandate } from "@/services/mandates";
+import type { SignedMandate } from "@/services/mandates";
 import { storeOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { storeReconciliation } from "@/services/settlement-reconciliation";
@@ -40,6 +42,7 @@ import {
   patronageCertificateNote,
   patronagePassNote,
   launchCheckNote,
+  mandateNote,
   onpageAuditNote,
   statementNote,
   phantomCheckNote,
@@ -89,6 +92,8 @@ export interface InstantGoodsInput {
   launchCheck?: SignedLaunchCheck;
   /** the_statement only: the transfer record, already made and signed. */
   walletStatement?: SignedWalletStatement;
+  /** the_mandate only: the mandate record, already made and signed. */
+  mandate?: SignedMandate;
   /** settlement_reconciliation only: the observation, already signed. */
   reconciliation?: SignedReconciliation;
   /** grudge only: the grievance (pre-validated) and how much it paid. */
@@ -280,6 +285,27 @@ export async function deliverInstantGoods(
           card_url: `/api/bot-auth-card/${card.card_id}`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The card is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the card too. The card URL serves the record free, forever.",
+        },
+      };
+    }
+    case "the_mandate": {
+      // Recorded and signed upstream so its evidence hash could be
+      // bound into the certificate; filed here, after the mint, so
+      // the envelope carries the cert id — the Once-Over's discipline.
+      const record = input.mandate;
+      if (!record) {
+        throw new Error("the_mandate reached goods with no record");
+      }
+      await storeMandate(env, record, input.certId ?? "");
+      return {
+        deliverable: mandateNote(),
+        extras: {
+          mandate_id: record.mandate_id,
+          mandate: record,
+          mandate_url: `/api/mandate/${record.mandate_id}`,
+          cite_it: `Put mandate_id=${record.mandate_id} on any later purchase here and it rides that certificate, signed — the store refuses ids it cannot resolve, so the citation always lands on this record.`,
+          verify_note:
+            "Two ways to check this, neither of which requires trusting us or whoever submitted it. The record is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the mandate too. The record URL serves it free, forever — its own limits printed on it.",
         },
       };
     }

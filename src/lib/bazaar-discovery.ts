@@ -113,6 +113,30 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "the_mandate") {
+    properties["mandate"] = {
+      type: "string",
+      description:
+        "The claimed instructions, verbatim, up to 2000 characters: what this agent is authorized to do, as the submitter claims it. Recorded exactly as it arrives, signed and dated. Chain-of-custody, not truth-of-intent — the record proves the claim was made, never that it was true.",
+    };
+    properties["submitted_as"] = {
+      type: "string",
+      enum: ["agent", "principal"],
+      description:
+        "Who is submitting: the agent recording its own claimed instructions (default), or the human principal's own client. Recorded as a claim either way.",
+    };
+    properties["declared_cap_usdc"] = {
+      type: "string",
+      description:
+        "Optional claimed spending ceiling in USDC. Declared, never enforced by the store, and the record says so.",
+    };
+    properties["expires_at"] = {
+      type: "string",
+      description:
+        "Optional claimed expiry, ISO 8601. Declared, never enforced by the store.",
+    };
+    required.push("mandate");
+  }
   if (item.id === "the_statement") {
     properties["wallet"] = {
       type: "string",
@@ -342,6 +366,11 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "the_statement") {
     example["wallet"] = "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7";
     example["hours"] = "6";
+  }
+  if (item.id === "the_mandate") {
+    example["mandate"] =
+      "Research x402 tooling and buy verification artifacts as needed, at most $5 per item.";
+    example["declared_cap_usdc"] = "10";
   }
   if (item.id === "the_confession") {
     example["confession"] =

@@ -403,6 +403,17 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/api/mandate/{mandate_id}": {
+        get: {
+          ...freeOp(
+            "A purchased mandate record",
+            "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, and how later certificates cite it. Served free, forever.",
+          ),
+          parameters: [
+            pathParam("mandate_id", "From the purchase response; starts m_."),
+          ],
+        },
+      },
       "/api/statement/{statement_id}": {
         get: {
           ...freeOp(

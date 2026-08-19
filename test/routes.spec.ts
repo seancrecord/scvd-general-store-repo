@@ -78,6 +78,10 @@ describe("the storefront", () => {
       "daily_fortune",
       "the_confession",
       "attestation_bundle",
+      // A dime: the mandate rides the cheap-door region on purpose —
+      // the thing you buy BEFORE anything goes wrong should be among
+      // the first prices a scanning agent sees.
+      "the_mandate",
       "hello",
       // $1 ties hold LADDER order (stable sort): the anchor was listed
       // above the context anchor on the utility shelf, so it leads.

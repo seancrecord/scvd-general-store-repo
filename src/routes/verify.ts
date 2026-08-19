@@ -271,6 +271,7 @@ function receiptPageHtml(
       ${cert.name ? row("For", escapeHtml(cert.name)) : ""}
       ${cert.made_by ? row("Made by", escapeHtml(cert.made_by)) : ""}
       ${cert.purpose ? row("What your agent said this was for", `“${escapeHtml(cert.purpose)}” <span class="menu-meta">(the buyer's words, recorded verbatim and signed — the signature proves they were said, not that they were true)</span>`) : ""}
+      ${cert.mandate_id ? row("Acting under recorded mandate", `<a href="/api/mandate/${escapeHtml(cert.mandate_id)}">${escapeHtml(cert.mandate_id)}</a> <span class="menu-meta">(the authorization your agent claims it was given, recorded and signed BEFORE this purchase — the link resolves to the full record and its honest limits)</span>`) : ""}
       ${explorer ? row("On-chain settlement", `<a href="${explorer}">${escapeHtml(cert.settlement_tx ?? "")}</a>`) : ""}
       ${row("Certificate id", `<code>${escapeHtml(cert.cert_id)}</code>`)}
     </section>

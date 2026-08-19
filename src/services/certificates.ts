@@ -94,6 +94,13 @@ export interface MintOptions {
    */
   purpose?: string;
   /**
+   * Any item: the id of a mandate this store holds, already resolved
+   * by the buy door before money moved (the receipt chain's first
+   * link, 2026-08-19). Signed — an unsigned authorization claim
+   * would be forgeable onto anyone's receipt.
+   */
+  mandateId?: string;
+  /**
    * settlement_attestation: the observation's evidence hash, bound
    * into the certificate so /api/verify covers the attestation too.
    * No new verification endpoint: the one that already exists now
@@ -180,6 +187,9 @@ export async function mintCertificate(
   }
   if (options.purpose) {
     certificate.purpose = options.purpose;
+  }
+  if (options.mandateId) {
+    certificate.mandate_id = options.mandateId;
   }
   /**
    * The store's word, on every receipt: the week's line from the

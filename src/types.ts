@@ -268,6 +268,18 @@ export interface Certificate {
    */
   from_the_store?: string;
   /**
+   * THE MANDATE LINK, added 2026-08-19 (the receipt chain's reserved
+   * field, built). Any item, optional: the id of a mandate this store
+   * already holds — the buy door RESOLVES it before charging, so a
+   * certificate's mandate link never dangles. Signed, because an
+   * unsigned authorization claim could be stapled onto anyone's
+   * receipt. What it proves: that the buyer cited this mandate at
+   * purchase time, and that the mandate's record predates the
+   * purchase — never that the mandate's instructions were real or
+   * honored; the mandate's own scope says whose claim those are.
+   */
+  mandate_id?: string;
+  /**
    * The maker's mark: who chose or made this, for the shelves where a
    * buyer could not otherwise tell. "keeper" a person did it for you,
    * "house" a person authored the pool and a machine drew from it,

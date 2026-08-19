@@ -101,16 +101,16 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   the chain shows against what the ledger claims; we cannot see
   payments that never reached a chain we read.
 
-- **MANDATE RECEIPTS (keeper-approved backlog, 2026-08-19 — the
-  intent layer).** A signed, timestamped, third-party-held record of
-  what was authorized BEFORE the agent acts — the missing first link
-  the receipt chain reserved a field for (mandate_id, RECEIPT_CHAIN.md).
-  S.5051 pointing NIST at delegation-proof standards turns this from
-  interesting into prior art built before the standard exists. The
-  honest register, decided already: a mandate submitted by an agent
-  proves what the agent CLAIMED its instructions were, dated — never
-  what the human actually said, unless the human\u2019s client submits
-  it. Chain-of-custody, not truth-of-intent, stated per artifact class.
+- **MANDATE RECEIPTS — BUILT 2026-08-19, same day it was filed.**
+  /api/buy/the_mandate ($0.10, ⚑ copy) records the claimed
+  authorization before the acting; mandate_id rides any later
+  certificate SIGNED (CERT_FIELDS appended, outside the legacy form)
+  and the buy door refuses unresolvable ids before charging, so the
+  link never dangles. The register shipped as filed: chain-of-custody,
+  never truth-of-intent, stated on the artifact, the listing, and
+  /attestation. RECEIPT_CHAIN.md section 5 documents the built link;
+  with the Statement, the full rail runs: mandate → certificates →
+  wallet statement. Remaining: the keeper's pen on ⚑.
 
 - **THE FRESH SET (keeper-approved backlog, 2026-08-19 — routing).**
   The walkable set as a living surface: endpoints that answered a
