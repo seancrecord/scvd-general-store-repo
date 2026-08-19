@@ -473,7 +473,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
           ),
           parameters: [
-            pathParam("address", "A 0x wallet address, forty hex characters."),
+            pathParam(
+              "address",
+              "A wallet address on either rail: 0x + forty hex characters (Base), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+            ),
           ],
         },
       },
