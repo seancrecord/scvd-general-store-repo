@@ -78,6 +78,11 @@ export function renderWardPage(
     }
     ${round.coverage_suspect ? "<li>Coverage suspect: the list read may be one page. Treat totals as floors.</li>" : ""}
     ${round.capped ? "<li>The round hit its host cap; the tail went unprobed and this line is the record of that.</li>" : ""}
+    ${
+      round.walk
+        ? `<li><strong>Assembled from the long walk:</strong> ${round.walk.walked} of ${round.walk.roster} roster doors walked across ${round.walk.batches} hourly batches since ${escapeHtml(round.walk.started_at.slice(0, 16))}Z. Sunday collected; the week did the knocking.</li>`
+        : ""
+    }
     <li>Leaderboard feed (agent402.tools): <strong>${
       round.leaderboard_sellers == null
         ? "could not check this round (says nothing about anybody)"

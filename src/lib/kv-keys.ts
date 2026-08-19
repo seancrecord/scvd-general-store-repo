@@ -85,6 +85,16 @@ export const KV_KEYS = {
    * graduation trigger if it ever stops fitting.
    */
   wardDoorBank: "ward_door_bank",
+  /**
+   * THE LONG WALK's one piece of state (2026-08-19): the current
+   * week's roster, cursor, and accumulated results. ONE key, holding
+   * its own week — a new week's first pass overwrites it, so there is
+   * no per-week key litter and no previous-week arithmetic to get
+   * wrong. At full-universe scale this value runs a few megabytes,
+   * comfortably inside KV's 25 MB value ceiling; the SNAPSHOTS it
+   * produces are what graduated to R2, not the working state.
+   */
+  longWalkState: "long_walk_state",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,

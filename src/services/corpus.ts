@@ -36,14 +36,18 @@ import type { Env } from "@/types";
  * future conformance feed or audit report reads FROM; it renders no
  * verdicts of its own.
  *
- * STORAGE: KV, deliberately, for now. One snapshot a week at tens of
- * kilobytes is decades of headroom under KV's limits, and the corpus
- * rides the same store as the anchor log it mirrors. The named
- * graduation trigger is full-universe crawling at its own cadence —
- * when snapshots stop being weekly-and-small, they move to R2 and
- * this comment moves with them. Fifty-two keys a year does not need
- * an object store; pretending it does would be carry cost, and the
- * option discipline is carry near zero.
+ * STORAGE: R2 SINCE 2026-08-19 — the graduation this comment named
+ * for itself on day one ("when snapshots stop being weekly-and-small,
+ * they move to R2 and this comment moves with them") arrived with the
+ * long walk: full-universe crawling at its own cadence, snapshots in
+ * the hundreds of kilobytes and growing. New entries live as one R2
+ * object each (corpus/{seq}.json, the full CorpusRecord) with a SLIM
+ * POINTER in KV carrying the chain metadata (sequence, week, digest,
+ * signature) so listings stay cheap; entries minted before the
+ * graduation stay in KV untouched and verify exactly as they always
+ * did — a chain migration would be rewriting history to change where
+ * it is shelved. With no R2 binding present, writes fall back to the
+ * legacy KV shape: a missing bucket degrades, never breaks.
  *
  * THE CHAIN IS ITS OWN. The key-history anchor log's snapshot schema
  * is versioned, load-bearing, and reproduced byte-for-byte by outside
@@ -109,6 +113,79 @@ function corpusKey(sequence: number): string {
   return `${KV_KEYS.corpusPrefix}${String(sequence).padStart(9, "0")}`;
 }
 
+function r2Key(sequence: number): string {
+  return `corpus/${sequence}.json`;
+}
+
+/**
+ * The slim KV entry for an R2-stored record: chain metadata only, so
+ * a listing can report the chain without pulling every full round.
+ * The digest/signature here are COPIES for cheap reads; the R2 object
+ * is the record, and verification always recomputes from it.
+ */
+interface CorpusPointer {
+  pointer: true;
+  sequence: number;
+  week: string;
+  digest: string;
+  signature: string;
+  public_key: string;
+  ots?: OtsAnchor;
+  r2_key: string;
+}
+
+function isPointer(
+  value: CorpusRecord | CorpusPointer,
+): value is CorpusPointer {
+  return "pointer" in value && value.pointer === true;
+}
+
+/**
+ * Store one record: R2 object + slim KV pointer when the bucket is
+ * bound, the legacy full-record-in-KV shape when it is not. The R2
+ * write lands FIRST so a failure between the two leaves the entry
+ * invisible (and the idempotent snapshot pass re-takes it) rather
+ * than pointing at an object that does not exist.
+ */
+async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<void> {
+  const sequence = record.snapshot.sequence;
+  if (env.CORPUS_R2) {
+    await env.CORPUS_R2.put(r2Key(sequence), JSON.stringify(record));
+    const pointer: CorpusPointer = {
+      pointer: true,
+      sequence,
+      week: record.snapshot.week,
+      digest: record.digest,
+      signature: record.signature,
+      public_key: record.public_key,
+      ...(record.ots ? { ots: record.ots } : {}),
+      r2_key: r2Key(sequence),
+    };
+    await env.COUNTERS.put(corpusKey(sequence), JSON.stringify(pointer));
+    return;
+  }
+  await env.COUNTERS.put(corpusKey(sequence), JSON.stringify(record));
+}
+
+/** Resolve one stored value — pointer or legacy — to the full record. */
+async function resolveRecord(
+  env: Env,
+  stored: CorpusRecord | CorpusPointer | null,
+): Promise<CorpusRecord | null> {
+  if (!stored) return null;
+  if (!isPointer(stored)) return stored;
+  const object = env.CORPUS_R2
+    ? await env.CORPUS_R2.get(stored.r2_key)
+    : null;
+  if (!object) {
+    // A pointer whose object is gone is a chain problem, not a quiet
+    // absence — surface it as missing and let verifyCorpusChain say
+    // the chain is not contiguous rather than papering over it.
+    return null;
+  }
+  return JSON.parse(await object.text()) as CorpusRecord;
+}
+
 /** Ceiling on a corpus scan. Named because an unnamed cap is a silent one. */
 const CORPUS_SCAN_CAP = 1000;
 
@@ -117,10 +194,13 @@ export async function listCorpus(env: Env): Promise<CorpusRecord[]> {
     prefix: KV_KEYS.corpusPrefix,
     cap: CORPUS_SCAN_CAP,
   });
-  const values = await bulkGetJson<CorpusRecord>(env.COUNTERS, listed.names);
+  const values = await bulkGetJson<CorpusRecord | CorpusPointer>(
+    env.COUNTERS,
+    listed.names,
+  );
   const records: CorpusRecord[] = [];
   for (const name of listed.names) {
-    const record = values.get(name);
+    const record = await resolveRecord(env, values.get(name) ?? null);
     if (record) {
       records.push(record);
     }
@@ -140,7 +220,11 @@ export async function getCorpusEntry(
   env: Env,
   sequence: number,
 ): Promise<CorpusRecord | null> {
-  return env.COUNTERS.get<CorpusRecord>(corpusKey(sequence), "json");
+  const stored = await env.COUNTERS.get<CorpusRecord | CorpusPointer>(
+    corpusKey(sequence),
+    "json",
+  );
+  return resolveRecord(env, stored);
 }
 
 export type CorpusPass =
@@ -191,11 +275,11 @@ export async function takeCorpusSnapshot(
     signature,
     public_key: publicKey,
   };
-  await env.COUNTERS.put(corpusKey(snapshot.sequence), JSON.stringify(record));
+  await putCorpusRecord(env, record);
   // The stamp is a courtesy that can fail; the entry above cannot be
   // taken back by a calendar outage.
   record.ots = await submitDigestToOts(digest, options);
-  await env.COUNTERS.put(corpusKey(snapshot.sequence), JSON.stringify(record));
+  await putCorpusRecord(env, record);
   return { taken: true, record };
 }
 

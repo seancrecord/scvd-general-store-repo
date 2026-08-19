@@ -9,6 +9,14 @@ export interface Env {
   GUESTBOOK: KVNamespace;
   COUNTERS: KVNamespace;
   PATRONS: KVNamespace;
+  /**
+   * The corpus's object store (2026-08-19, the R2 graduation the
+   * corpus named for itself on day one). OPTIONAL on purpose: absent,
+   * every write falls back to KV exactly as before, so a missing
+   * binding degrades to the old behaviour instead of taking the
+   * chain down.
+   */
+  CORPUS_R2?: R2Bucket;
   /** Base wallet that receives USDC. Secret. */
   PAY_TO_ADDRESS: string;
   /**

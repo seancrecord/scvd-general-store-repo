@@ -60,6 +60,14 @@
     { "binding": "COUNTERS", "id": "bc1397211dbd4b30876edb76b45a1142" },
     { "binding": "PATRONS", "id": "b3b7dc0f951f4b4a9995afe7dc35e015" }
   ],
+  // The corpus's object store — the R2 graduation the corpus named
+  // for itself on day one, arrived with the long walk (2026-08-19).
+  // The bucket was created by the keeper's hand in the dashboard
+  // BEFORE this binding landed; a binding naming a bucket that does
+  // not exist fails the build and takes auto-deploy down with it.
+  "r2_buckets": [
+    { "binding": "CORPUS_R2", "bucket_name": "scvd-corpus" }
+  ],
   "vars": {
     "STORE_BASE_URL": "https://scvd.store",
     // Settlement attestation reads Base once per purchase. The public

@@ -100,10 +100,17 @@ URLs decides whether they also feed the door bank.
   time), and the keeper ruled the raise. 750 is the one-invocation
   ceiling — the Workers subrequest budget (1,000/invocation, hard)
   minus discovery pages, census reads and headroom — not a taste.
-  Past it lies THE LONG WALK, greenlit as its own build: the hourly
-  cron walks the roster in ~60-host batches on a cursor all week
-  (indexer-gentle), Sunday assembles and signs the full snapshot,
-  stored in R2 with KV keeping the head. At 750 hosts the weekly
+  Past it lies THE LONG WALK — **BUILT 2026-08-19, the same day it
+  was greenlit** (`src/services/long-walk.ts`): the hourly cron walks
+  the roster in 100-host batches on a cursor all week
+  (indexer-gentle, ~16,800 host-slots per week against today's
+  ~6,000), Sunday ASSEMBLES what the week already walked instead of
+  probing again — one GET per host per week, unchanged — and the
+  snapshot lands in R2 (`corpus/{seq}.json`, full record) with a slim
+  pointer in KV. Pre-graduation entries stay in KV untouched and
+  verify as they always did. The keeper created the bucket
+  (`scvd-corpus`, free tier) before the binding landed, in that
+  order, on purpose. At 750 hosts the weekly
   snapshot runs ~150–200 KB — past the ~128 KB watch line below, so
   the R2 graduation is no longer a trigger to watch; it is the next
   build's first brick, exactly as this plan priced it. Keeper-side

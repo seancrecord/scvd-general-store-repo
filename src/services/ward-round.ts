@@ -165,6 +165,20 @@ export interface WardRound {
    * its findings. Absent on pre-widening rounds.
    */
   directories_unread?: { source: string; why: string }[];
+  /**
+   * Present when this round was ASSEMBLED from the long walk rather
+   * than probed in one shot (2026-08-19): the week's hourly batches
+   * did the knocking, and Sunday only collected. roster counts the
+   * probeable doors the walk froze at start; walked counts real
+   * verdicts; a walked < roster round means the week ended before
+   * the cursor did, and capped says so.
+   */
+  walk?: {
+    roster: number;
+    walked: number;
+    batches: number;
+    started_at: string;
+  };
   hosts: WardHostResult[];
 }
 
@@ -194,7 +208,7 @@ async function cdpGet(env: Env, path: string, query = ""): Promise<unknown> {
   return response.json();
 }
 
-interface DiscoveryRead {
+export interface DiscoveryRead {
   hosts: { host: string; url: string }[];
   listed: number;
   coverageSuspect: boolean;
@@ -232,7 +246,7 @@ function describePaginationShape(body: Record<string, unknown>): string[] {
  */
 const DISCOVERY_PAGE_CAP = 60;
 
-async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
+export async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const rows: Record<string, unknown>[] = [];
   let cursor: string | undefined;
@@ -361,7 +375,7 @@ async function readDiscoveryList(env: Env): Promise<DiscoveryRead> {
  * callers' order. Plain enough to not need a library and small enough
  * to read whole.
  */
-async function pooled<T, R>(
+export async function pooled<T, R>(
   entries: T[],
   limit: number,
   worker: (entry: T) => Promise<R>,
@@ -383,7 +397,7 @@ async function pooled<T, R>(
   return results;
 }
 
-async function probeHost(
+export async function probeHost(
   env: WbaEnv,
   url: string,
 ): Promise<Omit<WardHostResult, "host" | "url">> {
@@ -498,7 +512,7 @@ export function mapLeaderboard(
 }
 
 /** Best-effort read; an unreachable feed is null, never an empty world. */
-async function readAgent402Leaderboard(
+export async function readAgent402Leaderboard(
   ownHost: string,
 ): Promise<LeaderboardRead | null> {
   try {
@@ -532,7 +546,140 @@ async function ourSearchPresence(env: Env): Promise<boolean | null> {
   }
 }
 
+/**
+ * The shared tail of every round, walked or one-shot: the coverage
+ * drop check, the KV writes, and the one alarm. Extracted 2026-08-19
+ * so the two paths cannot drift on how a round is sealed.
+ */
+async function sealRound(
+  env: Env,
+  round: WardRound,
+  walked: number,
+  presence: boolean | null,
+): Promise<WardRound> {
+  const previous = await latestWardRound(env);
+  /**
+   * COVERAGE DROP, said out loud (2026-08-05: the keeper caught a
+   * round of ~100 hosts shrinking to 38 by memory — a page's job,
+   * not his). If this round probed less than 60% of what the last
+   * one did, the round records the drop so the page can lead with
+   * it: week-over-week comparisons are unsafe until coverage is
+   * back, and the likely cause is the list feed changing shape.
+   */
+  const previousProbed = previous
+    ? previous.hosts.filter((h) => h.verdict !== "not_probed").length
+    : 0;
+  if (previousProbed >= 10 && walked < previousProbed * 0.6) {
+    round.coverage_drop = {
+      previous_hosts: previousProbed,
+      this_round: walked,
+      previous_at: previous?.at ?? "",
+    };
+  }
+  await env.COUNTERS.put(KV_KEYS.wardRound(round.week), JSON.stringify(round));
+  await env.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
+  if (previous && previous.week !== round.week) {
+    await env.COUNTERS.put(
+      KV_KEYS.wardRoundPrevious,
+      JSON.stringify(previous),
+    );
+  }
+  /**
+   * The one alarm: WE fell out of the search index. Everything else
+   * on the round is a reading for the keeper's eyes on his own time;
+   * this one is a channel dying with no symptom anywhere else.
+   */
+  if (presence === false) {
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail:
+        "The ward round could not find this store in the CDP discovery SEARCH index. Search is the authoritative surface — if this repeats next week, the Bazaar channel is quietly gone. Check /admin/ward and re-run bazaar:check by hand.",
+    }).catch(() => undefined);
+  }
+  return round;
+}
+
+/**
+ * ASSEMBLE FROM THE LONG WALK: the week's hourly batches already
+ * knocked on every door the roster froze; this collects their
+ * verdicts into a round, takes the census and the presence check
+ * fresh (those are about NOW, not about the week), and seals. No
+ * probe fires here — assembling is not walking, and a host the walk
+ * visited Tuesday is not visited again on Sunday.
+ */
+async function assembleWalkRound(
+  env: Env,
+  walk: import("@/services/long-walk").LongWalkState,
+): Promise<WardRound> {
+  const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
+  const presence = await ourSearchPresence(env);
+  const walked = walk.results.filter(
+    (entry) => entry.verdict !== "not_probed",
+  ).length;
+  const fuchssHosts = await readFuchssProviders(ownHost);
+  const sources: SourceResult[] = [
+    {
+      source: "discovery",
+      // Same law as the one-shot path: a page-capped listing is
+      // UNREADABLE to the census, not a short answer.
+      hosts: walk.coverage_suspect
+        ? null
+        : walk.roster.map((entry) => entry.host),
+    },
+    { source: "leaderboard", hosts: walk.leaderboard?.hosts ?? null },
+    { source: "fuchss", hosts: fuchssHosts },
+  ];
+  const population = await takeCensus(env, sources, walked).catch(() => null);
+  const round: WardRound = {
+    week: walk.week,
+    at: new Date().toISOString(),
+    listed_resources: walk.listed_resources,
+    coverage_suspect: walk.coverage_suspect,
+    ...(walk.pagination_shape
+      ? { pagination_shape: walk.pagination_shape }
+      : {}),
+    // The tail the week never reached is the cap that bound here.
+    capped: walk.cursor < walk.roster.length,
+    our_search_presence: presence,
+    leaderboard_sellers: walk.leaderboard ? walk.leaderboard.sellers : null,
+    leaderboard_window: walk.leaderboard ? walk.leaderboard.window : null,
+    our_leaderboard_rank: walk.leaderboard ? walk.leaderboard.our_rank : null,
+    ...(population ? { population } : {}),
+    directories_unread: [...UNREAD_DIRECTORIES],
+    walk: {
+      roster: walk.roster.length,
+      walked,
+      batches: walk.batches,
+      started_at: walk.started_at,
+    },
+    hosts: walk.results,
+  };
+  return sealRound(env, round, walked, presence);
+}
+
 export async function runWardRound(env: Env): Promise<WardRound> {
+  /**
+   * THE LONG WALK TAKES PRECEDENCE (2026-08-19): if this week's
+   * hourly batches have been walking, the round is an assembly of
+   * their verdicts, not a second knock on every door. The one-shot
+   * path below survives untouched for the weeks the walk has not
+   * started (a fresh deploy, a broken feed at walk start) — a
+   * missing walk degrades to the old behaviour, never to silence.
+   */
+  try {
+    const { readLongWalk } = await import("@/services/long-walk");
+    const walk = await readLongWalk(env);
+    if (
+      walk &&
+      walk.week === currentWeekKey() &&
+      walk.results.length > 0
+    ) {
+      return await assembleWalkRound(env, walk);
+    }
+  } catch {
+    // The walk state being unreadable is not a reason to skip the
+    // round; fall through to the one-shot.
+  }
   const ownHost = new URL(env.STORE_BASE_URL).host.toLowerCase();
   const { hosts, listed, coverageSuspect, paginationShape } =
     await readDiscoveryList(env);
@@ -676,46 +823,7 @@ export async function runWardRound(env: Env): Promise<WardRound> {
     directories_unread: [...UNREAD_DIRECTORIES],
     hosts: results,
   };
-  const previous = await latestWardRound(env);
-  /**
-   * COVERAGE DROP, said out loud (2026-08-05: the keeper caught a
-   * round of ~100 hosts shrinking to 38 by memory — a page's job,
-   * not his). If this round probed less than 60% of what the last
-   * one did, the round records the drop so the page can lead with
-   * it: week-over-week comparisons are unsafe until coverage is
-   * back, and the likely cause is the list feed changing shape.
-   */
-  const previousProbed = previous
-    ? previous.hosts.filter((h) => h.verdict !== "not_probed").length
-    : 0;
-  if (previousProbed >= 10 && walked < previousProbed * 0.6) {
-    round.coverage_drop = {
-      previous_hosts: previousProbed,
-      this_round: walked,
-      previous_at: previous?.at ?? "",
-    };
-  }
-  await env.COUNTERS.put(KV_KEYS.wardRound(round.week), JSON.stringify(round));
-  await env.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
-  if (previous && previous.week !== round.week) {
-    await env.COUNTERS.put(
-      KV_KEYS.wardRoundPrevious,
-      JSON.stringify(previous),
-    );
-  }
-  /**
-   * The one alarm: WE fell out of the search index. Everything else
-   * on the round is a reading for the keeper's eyes on his own time;
-   * this one is a channel dying with no symptom anywhere else.
-   */
-  if (presence === false) {
-    await sendAlert(env, {
-      condition: "worker_health",
-      detail:
-        "The ward round could not find this store in the CDP discovery SEARCH index. Search is the authoritative surface — if this repeats next week, the Bazaar channel is quietly gone. Check /admin/ward and re-run bazaar:check by hand.",
-    }).catch(() => undefined);
-  }
-  return round;
+  return sealRound(env, round, walked, presence);
 }
 
 export async function latestWardRound(env: Env): Promise<WardRound | null> {
