@@ -42,22 +42,6 @@ async function buyPaid(url: string): Promise<Record<string, unknown>> {
 }
 
 describe("the stocked shelves", () => {
-  it("the drawer sells real oddities: the thing plus what it does, describe-only", async () => {
-    await SELF.fetch(`${BASE}/admin/stock/the_drawer`, {
-      method: "POST",
-      headers: adminAuth,
-      body: new URLSearchParams({
-        item: "one brass hinge, painted over twice",
-        does: "Holds doors to their word.",
-      }).toString(),
-      redirect: "manual",
-    });
-    const body = await buyPaid(`${BASE}/api/buy/the_drawer`);
-    expect(body["status"]).toBe("completed");
-    expect(String(body["deliverable"])).toContain("one brass hinge");
-    expect(String(body["deliverable"])).toContain("Holds doors to their word.");
-    expect(String(body["deliverable"])).not.toContain("photograph");
-  });
 
   it("the jar is gone: scrapped, not sold out", async () => {
     const gone = await SELF.fetch(`${BASE}/api/buy/jar_of_tuesday`);

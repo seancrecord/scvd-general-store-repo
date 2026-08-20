@@ -147,7 +147,7 @@ describe("every certificate minted from today dual-emits", () => {
      * "every artifact carries signature_jcs" reasonably concludes the
      * artifact is broken.
      */
-    const body = await buy("/api/buy/daily_fortune");
+    const body = await buy("/api/buy/small_blessing");
     const block = body["patron"] ?? body;
     const certId = block.certificate.cert_id as string;
     const key = `cert:${certId}`;

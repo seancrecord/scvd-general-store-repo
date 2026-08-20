@@ -224,15 +224,15 @@ async function payFor(url: string, headers: Record<string, string> = {}): Promis
 describe("house traffic exclusion", () => {
   it("books flagged settles as house, apart from organic", async () => {
     const before = await readMonthLedger(testEnv);
-    const houseBefore = before.items["dibs"]?.settledHouse ?? 0;
-    const paid = await payFor(`${BASE}/api/buy/dibs`, {
+    const houseBefore = before.items["small_blessing"]?.settledHouse ?? 0;
+    const paid = await payFor(`${BASE}/api/buy/small_blessing`, {
       "X-House": "test-house-secret",
     });
     expect(paid.status).toBe(200);
     // The flag never leaks into the public response.
     expect(JSON.stringify(await paid.json())).not.toContain("house");
     const after = await readMonthLedger(testEnv);
-    expect(after.items["dibs"]?.settledHouse ?? 0).toBe(houseBefore + 1);
+    expect(after.items["small_blessing"]?.settledHouse ?? 0).toBe(houseBefore + 1);
   });
 
   it("opens the books complete: the founding settle is on them, as house", async () => {

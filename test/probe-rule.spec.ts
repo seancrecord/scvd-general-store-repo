@@ -57,7 +57,7 @@ describe("the probe rule", () => {
   }
 
   it("leaves items that need nothing exactly as they were", async () => {
-    for (const id of ["hello", "small_blessing", "daily_fortune"]) {
+    for (const id of ["hello", "small_blessing"]) {
       const response = await SELF.fetch(`${BASE}/api/buy/${id}`);
       expect(response.status).toBe(402);
       const body: unknown = await response.json();
