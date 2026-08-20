@@ -3,7 +3,7 @@ import { CONFLICT } from "@/services/conformance";
 import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
-import type { Env } from "@/types";
+import { isRecord, type Env } from "@/types";
 
 /**
  * THE FREE ENDPOINT PREFLIGHT — /api/preflight.
@@ -54,6 +54,9 @@ import type { Env } from "@/types";
  * certificate keeps its mint-day canonical form.
  */
 export const PREFLIGHT_VERSION = "v1";
+
+/** Base58 32-44, the only shape a Solana pubkey comes in (lib/payments). */
+const SOLANA_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 /**
  * The fields an accepts entry must carry, and the derivation matters:
@@ -378,6 +381,28 @@ export function runChecks(
         detail: `accepts offers ${network} (${testnet}). If this endpoint is meant for production, this is the single most common x402 stuck point: it works against testnet tooling and silently fails for every mainnet buyer, who sees only a repeating 402. Base mainnet is ${MAINNET}.`,
       });
     }
+    /**
+     * ENS IN payTo — 21 endpoints in the August field run, and a
+     * buyer with no mainnet provider simply cannot pay them.
+     *
+     * The failure is quiet in the worst way: an EIP-3009 `to` must be
+     * a 20-byte address, so a client that does not resolve names
+     * either throws deep inside its signing library (the field run's
+     * ledger says "cannot resolve ENS names without a provider") or
+     * signs garbage. The seller sees no payment and no reason. An
+     * address is also what the buyer must check against the chain
+     * afterwards; a name adds a resolution step to every audit of
+     * this endpoint forever.
+     */
+    const payTo = String(entry["payTo"] ?? "");
+    if (payTo.length > 0 && !/^0x[0-9a-fA-F]{40}$/.test(payTo) && !SOLANA_ADDRESS.test(payTo)) {
+      advisories.push({
+        name: /\.eth$/i.test(payTo) ? "payto-is-ens-name" : "payto-not-an-address",
+        detail: /\.eth$/i.test(payTo)
+          ? `accepts payTo is "${payTo}", an ENS name rather than an address. Payment authorizations are signed over a 20-byte address, so any buyer without a mainnet resolver cannot pay this endpoint at all — their client throws inside its signing library and they see nothing to fix. Publish the resolved 0x address; a name also forces every later audit of your receipts through a resolution step.`
+          : `accepts payTo is "${payTo}", which is neither a 0x address nor a base58 Solana address. A client cannot build a payment against it.`,
+      });
+    }
     const amount = String(entry["amount"] ?? "");
     if (amount.includes(".")) {
       advisories.push({
@@ -413,6 +438,55 @@ export function runChecks(
       name: "no-bazaar-extension",
       detail:
         "no extensions.bazaar block. Not a defect — but ingestion-based directories discover services from this block, so without one this endpoint is only findable by buyers who already have the URL.",
+    });
+  }
+
+  /**
+   * THE INPUT CONTRACT — 176 endpoints in the August field run took a
+   * payment attempt and only then refused, for parameters the
+   * challenge never mentioned.
+   *
+   * This is the most expensive shape of failure in the whole run,
+   * because it fails AFTER the buyer has signed: the seller's own
+   * message is correct ("Field \"url\" is required"), several even
+   * said charged:false, and the buyer still walks away with a refusal
+   * it could not have anticipated. Worse for the seller, the buyer's
+   * ledger records it as the endpoint failing — that misreading is
+   * exactly what withdrew this store's own August report.
+   *
+   * A single unpaid probe cannot see a post-payment refusal. What it
+   * CAN see is whether the challenge declares an input contract at
+   * all, which is the difference between a buyer that can prepare and
+   * one that can only find out by losing. Declared inputs are echoed
+   * back so a seller can check we read what they meant.
+   */
+  const bazaarInfo = isRecord(extensions["bazaar"])
+    ? (extensions["bazaar"] as Record<string, unknown>)["info"]
+    : undefined;
+  const declaredInput = isRecord(bazaarInfo)
+    ? (bazaarInfo as Record<string, unknown>)["input"]
+    : undefined;
+  const inputParams = isRecord(declaredInput)
+    ? {
+        ...(isRecord((declaredInput as Record<string, unknown>)["queryParams"])
+          ? ((declaredInput as Record<string, unknown>)["queryParams"] as Record<string, unknown>)
+          : {}),
+        ...(isRecord((declaredInput as Record<string, unknown>)["bodyFields"])
+          ? ((declaredInput as Record<string, unknown>)["bodyFields"] as Record<string, unknown>)
+          : {}),
+      }
+    : {};
+  const declaredNames = Object.keys(inputParams);
+  if (declaredNames.length > 0) {
+    advisories.push({
+      name: "inputs-declared",
+      detail: `the challenge declares the inputs a buyer must send (${declaredNames.join(", ")}), so a client can prepare them before signing. This is the good case and it is rare: most endpoints that need parameters only say so after taking a payment attempt.`,
+    });
+  } else if (!isRecord(declaredInput)) {
+    advisories.push({
+      name: "no-input-contract",
+      detail:
+        "the challenge declares no input contract (no extensions.bazaar.info.input). If this resource needs parameters, a buyer cannot discover that before paying — they sign, get refused for a missing field, and their logs record it as your endpoint failing. In the August 2026 field run this shape was the largest single cause of refused purchases at endpoints that were otherwise working. If the resource genuinely needs nothing, this advisory costs you nothing.",
     });
   }
 
