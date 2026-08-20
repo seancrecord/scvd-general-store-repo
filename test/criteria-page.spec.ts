@@ -4,7 +4,7 @@ import { ARTIFACT_CLASSES } from "@/store/attestation-spec";
 import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
-import { WATCHED } from "@/store/becoming";
+import { GRADUATED, WATCHED } from "@/store/becoming";
 
 const BASE = "https://scvd.store";
 
@@ -108,16 +108,27 @@ describe("the criteria page", () => {
 });
 
 describe("the gate is recorded as opened, not re-promised", () => {
-  it("/becoming stops claiming no criteria page exists", async () => {
-    const entry = WATCHED.find((watched) =>
-      watched.item.includes("verification marketplace"),
+  it("/becoming records the marketplace as graduated, honest gap included", async () => {
+    /**
+     * This test's earlier form held the row on the WATCHED list
+     * "until a badge class actually ships" — its own words. The badge
+     * class shipped 2026-08-20 (/badges/audit/{id}.svg), so the row
+     * graduates whole, original trigger kept, and the honest residue
+     * moves with it: nobody outside has displayed one yet.
+     */
+    expect(
+      WATCHED.find((watched) =>
+        watched.item.includes("verification marketplace"),
+      ),
+      "the marketplace row is still on the watched list after its badge shipped",
+    ).toBeUndefined();
+    const graduated = GRADUATED.find((entry) =>
+      entry.item.includes("verification marketplace"),
     );
-    expect(entry, "the verification-marketplace entry left /becoming").toBeTruthy();
-    expect(entry?.today).not.toContain("No criteria page exists");
-    expect(entry?.today).toContain("/criteria");
-    // But the other half of the trigger has NOT fired, and /becoming
-    // must keep saying so until a badge class actually ships.
-    expect(entry?.today.toLowerCase()).toContain("nothing carries a badge");
+    expect(graduated, "the marketplace row vanished instead of graduating").toBeTruthy();
+    expect(graduated?.trigger).toContain("criteria page");
+    expect(graduated?.fired).toContain("2026-08-10");
+    expect(graduated?.built).toContain("no outside subject has yet displayed one");
   });
 
   it("/attestation names the criteria page beside what it signs", async () => {
