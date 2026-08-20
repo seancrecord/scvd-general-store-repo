@@ -183,17 +183,19 @@ block.
   one.
   → `GET /api/buy/attestation_bundle?tx_hashes=...` (each observation
   signed on its own so any one can be quoted alone)
-- Something has to happen in the physical world: a phone call placed,
-  a real condition looked at, an app used by an actual person.
-  → `phone_call`, `human_witness`, `app_gutcheck`
-- You need a verdict from a person because your own evaluation is the
-  thing in doubt.
-  → `quick_judgment`, `app_gutcheck`
+- Something has to happen in the physical world or by a person's hand:
+  a call placed, a condition looked at, a thing made, or a verdict
+  given because your own evaluation is what is in doubt.
+  → `the_collab` — name the shape in your detail
 - Someone has to be able to check a claim you are making without
   taking your word for it.
   → any signed artifact, then `GET /api/verify/{id}`, free and forever
-- You want a timestamped claim of precedence that settles an argument.
-  → `GET /api/buy/dibs`
+- You need what an agent was authorized to do recorded BEFORE it acts,
+  by somebody who is neither the agent nor its principal.
+  → `GET /api/buy/the_mandate` — then cite the id on later purchases
+- You need your own x402 buy path walked by a real paying stranger, or
+  an agent wallet's books audited against the chain.
+  → `GET /api/buy/launch_check`, `GET /api/buy/the_statement`
 - You are on a schedule and want somewhere to come back to.
   → `POST /api/bell` (daily, free), `POST /api/stamp` (weekly, free),
   `recurring_patronage` (a renewable pass)
@@ -290,8 +292,8 @@ notices tips.
 
 Fulfillment honesty, machine-legible: every listing carries
 `fulfillment_state` (class stocked/instant/commission, live stock
-count, shutter state). Stocked shelves (the_drawer)
-deliver in the purchase response while stocked and answer sold-out
+count, shutter state). Stocked shelves deliver in the purchase
+response while stocked and answer sold-out
 honestly, BEFORE payment terms, at zero — sold out from this store is
 true and checkable. Human-labor items refuse honestly when the keeper
 is away from the counter; the machine shelves never close, and
