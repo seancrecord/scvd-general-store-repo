@@ -70,7 +70,7 @@ describe("the shutter", () => {
     expect(String(refusal["error"])).toContain("machine shelves never close");
 
     // Instant items sell straight through the closed shutter.
-    const paidDibs = await buyPaid(`${BASE}/api/buy/dibs`);
+    const paidDibs = await buyPaid(`${BASE}/api/buy/small_blessing`);
     expect(paidDibs.status).toBe(200);
 
     // The menu says so, honestly.

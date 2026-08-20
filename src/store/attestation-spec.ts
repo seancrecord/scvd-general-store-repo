@@ -264,6 +264,26 @@ export const ARTIFACT_CLASSES: readonly ArtifactClass[] = [
       "That anything reported in it is correct — only that it has not been altered since printing.",
     verify_url: "/api/verify/gazette_{n}",
   },
+  /**
+   * THE ONE SIGNATURE HERE THAT IS WORTH MONEY, and it is made with a
+   * DIFFERENT KEY than everything above — added 2026-08-20 with the
+   * bounty board and the regulars' rebate. Every other class on this
+   * page is the ed25519 artifact key saying something. This class is
+   * the field wallet's secp256k1 key authorizing a USDC transfer, and
+   * a page whose whole job is "what is a signature from us worth"
+   * would be lying by omission if it left out the one where the
+   * answer is a dollar amount.
+   */
+  {
+    id: "payout_authorization",
+    name: "Payout authorizations (bounty rewards and credit cash-outs)",
+    trust_model: "self_signed",
+    signs:
+      "An EIP-3009 TransferWithAuthorization over USDC on Base: from the store's declared field wallet, to a named recipient, for a stated amount, valid until a stated unix second, with a single-use nonce. Signed with the FIELD WALLET's secp256k1 key — not the ed25519 artifact key that signs everything else on this page, and not interchangeable with it. Anyone may submit it to the USDC contract; the contract checks the signature itself, which is why the authorization IS the payment rather than a promise of one.",
+    does_not_prove:
+      "That the store still holds the balance to honour it — an authorization is spendable only while the field wallet is funded, and the USDC contract, not this store, is the thing that decides. It expires on its own and nothing is owed afterward. A credit cash-out can only ever pay the wallet that earned it; a bounty reward pays the address the claim named, screened before signing. Neither is a certificate: they carry no verify URL and prove nothing about goods, only about money we authorized.",
+    verify_url: "(none — submit it to the USDC contract on Base; the token verifies it)",
+  },
 ];
 
 /**
@@ -333,7 +353,7 @@ export const KEY_ARCHITECTURE = {
  * better elsewhere, or the item itself is the answer.
  */
 export const MAKER_MARK_POLICY =
-  "Two shelves carry a maker's mark in the certificate, signed with everything else: the_drawer and luckies, both marked HOUSE — the keeper wrote the herd, weighted the odds and stocks the drawer by hand, and a machine chooses which one a given buyer gets. He does nothing per order on either. The mark exists because those are the only shelves where a buyer could not otherwise tell. It is deliberately absent from settlement_attestation and phantom_check, whose own copy already says no human looked and says it more precisely than a mark could, and from the human-labor shelves, where the item IS the person and a mark claiming a person did it would be telling you what you paid for. Until 2026-07-30 the listing spec said luckies were graded by a person; they never were, and the question that found it was this one.";
+  "One shelf carries a maker's mark in the certificate, signed with everything else: luckies, marked HOUSE — the keeper wrote the herd and weighted the odds, and a machine chooses which one a given buyer gets. He does nothing per order. (The drawer carried the same mark until it was retired on 2026-08-20; the cards it issued keep theirs forever.) The mark exists because those are the only shelves where a buyer could not otherwise tell. It is deliberately absent from settlement_attestation and phantom_check, whose own copy already says no human looked and says it more precisely than a mark could, and from the human-labor shelves, where the item IS the person and a mark claiming a person did it would be telling you what you paid for. Until 2026-07-30 the listing spec said luckies were graded by a person; they never were, and the question that found it was this one.";
 
 export const ATTESTATION_STANDFIRST =
   "What this store signs, who holds the key, and whose word you are actually taking. Published because a valid signature means different things for different artifacts here, and a buyer should be able to work out which without asking us — including for the artifacts where the honest answer is that the signature proves only that we said this, on this date.";

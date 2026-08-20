@@ -75,7 +75,6 @@ describe("the storefront", () => {
       // question one turn deeper, and lands beside it for the same
       // persona that made the cheap-door reorder worth doing.
       "settlement_reconciliation",
-      "daily_fortune",
       "the_confession",
       "attestation_bundle",
       // A dime: the mandate rides the cheap-door region on purpose —
@@ -107,12 +106,9 @@ describe("the storefront", () => {
       // ladder past the cheap doors runs by shelf, not by price.
       "the_statement",
       "recurring_patronage",
-      "quick_judgment",
       "certificate_of_patronage",
       "the_collab",
-      "the_drawer",
       "luckies",
-      "dibs",
       "coffees_for_closers",
     ]);
     const store = body["store"] as Record<string, unknown>;
@@ -205,7 +201,7 @@ describe("the bell", () => {
 
 describe("waitlist and requests", () => {
   it("points a waitlist request at the shelf while stock remains", async () => {
-    const response = await SELF.fetch(`${BASE}/api/waitlist/quick_judgment`, {
+    const response = await SELF.fetch(`${BASE}/api/waitlist/the_collab`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -216,7 +212,7 @@ describe("waitlist and requests", () => {
     // Inventory is full this week, so the store says buy instead.
     expect(response.status).toBe(400);
     const body = await json(response);
-    expect(body["buy_url"]).toBe(`${BASE}/api/buy/quick_judgment`);
+    expect(body["buy_url"]).toBe(`${BASE}/api/buy/the_collab`);
   });
 
   it("declines waitlists for items that never run out", async () => {

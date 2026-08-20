@@ -10,26 +10,6 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
   // jar_of_tuesday scrapped entirely, keeper's ruling 2026-07-25
   // ("lets just scrap the fucking jar"). Id retired, never reused.
   {
-    id: "the_drawer",
-    listed_week: "2026-W30",
-    name: "The Drawer",
-    // Repriced $9 PWID -> $2 fixed per the keeper's Batch 2 tag
-    // ("two bucks"); one-line revert if that was a slip.
-    price_usdc: 2,
-    pricing: "fixed",
-    fulfillment: "human_queue",
-    // Stocked shelf, describe-only per the keeper's ruling 2026-07-24.
-    // Since 2026-07-25 the drawer is the real-oddities shelf: each
-    // unit is a real thing of the keeper's plus what it does, as
-    // listed (the Bonilla shirt lives here, stocked privately via
-    // /admin, never named in this repo).
-    stocked: true,
-    description:
-      "Every store has a drawer. Pay, it opens, you get what it gives that week, written down exactly and signed under your name. You don't pick. Nothing more human than the fuckin lotto. Congrats. HOORAY. Another sticker.",
-    note_402:
-      "That'll be two bucks, friend. Nothing more human than saying fuck the odds, open the drawer.",
-  },
-  {
     id: "luckies",
     listed_week: "2026-W30",
     // lowercase, the keeper's orthography, not a typo
@@ -51,18 +31,6 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
       "Benching is real",
     ],
     sample_url: "/luckies/sample.svg",
-  },
-  {
-    id: "dibs",
-    listed_week: "2026-W30",
-    name: "Dibs",
-    price_usdc: 2,
-    pricing: "fixed",
-    fulfillment: "instant",
-    description:
-      "Official, signed, timestamped dibs. On what? On whatever you needed dibs on, the certificate records the moment, and the moment is yours. Settles arguments; starts better ones.",
-    note_402:
-      "That'll be $2 flat, friend. Dibs don't negotiate, that's what makes them dibs.",
   },
   {
     id: "coffees_for_closers",

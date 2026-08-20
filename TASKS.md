@@ -112,6 +112,28 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   with the Statement, the full rail runs: mandate → certificates →
   wallet statement. Remaining: the keeper's pen on ⚑.
 
+- **REGULARS' CREDIT — BUILT 2026-08-19, the keeper's loyalty
+  instinct.** Every organic settle banks 5% to the paying wallet; no
+  account, the wallet is the card. Balance on every purchase response
+  and free at /api/credit/{wallet}; at $1 it cashes out as a signed
+  EIP-3009 authorization payable ONLY to the earning wallet (challenge
+  -and-recover proof, the claims door's machinery). Closed-loop
+  rebate, never a token: house wallets excluded, $25/wallet cap, 90-day
+  idle expiry written down rather than assumed, and the outstanding
+  liability published and recounted hourly by books invariant #5.
+  Remaining: the keeper's pen on ⚑ copy, and the pass-holder
+  multiplier — deliberately DEFERRED, because the Costco trajectory
+  says do not build the renewal engine before there are patrons who
+  renew (memory/costco-for-agents.md).
+
+- **SECOND RETIREMENT — DONE 2026-08-20.** the_drawer, daily_fortune,
+  dibs and quick_judgment came off the shelf (26 items to 22); the
+  fortune folded into small_blessing, dibs into the_mandate, the
+  judgment into the_collab. Round one's rule held: nothing with an
+  organic settle was cut, which is why coffees_for_closers and
+  graffiti_on_a_train stayed. Retirement, never deletion — the ids
+  never return, every certificate resolves forever.
+
 - **THE BOUNTY BOARD — BUILT 2026-08-19, the keeper's mystery-shopper
   idea, hours old.** Paid mystery shopping for the x402 economy
   (BOUNTY_BOARD.md): the keeper posts doors at /admin/bounties (terms

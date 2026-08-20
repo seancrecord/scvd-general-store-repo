@@ -354,6 +354,15 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * walkable Bazaar paid with the store's own wallet.
      */
     reports: `${base}/api/report/x402-ecosystem-2026-08`,
+    /**
+     * The two doors where money moves OUTWARD (2026-08-20): paid
+     * mystery shopping, and the regulars' rebate. Both free to read,
+     * both paying in signed EIP-3009 authorizations the holder
+     * redeems themselves — discovery documents should carry the
+     * surfaces an agent would never think to look for.
+     */
+    bounty_board: `${base}/api/bounties`,
+    store_credit: `${base}/api/credit/{wallet}`,
     conformance_vectors: `${base}/.well-known/conformance/offer-receipt-vectors.json`,
     /**
      * The dead-man beacon, same reason as the key and the attestation:

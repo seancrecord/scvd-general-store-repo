@@ -211,28 +211,3 @@ describe("the paid door, both rails", () => {
   });
 });
 
-describe("the judgment door wants the dilemma (same review, same day)", () => {
-  it("refuses a paid quick_judgment with no detail — no dilemma, no charge", async () => {
-    installFacilitatorMock();
-    // The labor shelf only opens while the keeper is at the counter.
-    await markKeeperPresent(testEnv);
-    const challenge = await SELF.fetch(`${BASE}/api/buy/quick_judgment`);
-    expect(challenge.status).toBe(402);
-    const accepted = decodePaymentRequired(challenge).accepts[0]!;
-    const refused = await SELF.fetch(`${BASE}/api/buy/quick_judgment`, {
-      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
-    });
-    expect(refused.status).toBe(400);
-    const body = (await refused.json()) as { error: string };
-    expect(body.error).toContain("No dilemma, no charge");
-  });
-
-  it("declares detail required in the published contract", async () => {
-    const menu = await (await SELF.fetch(`${BASE}/menu.json`)).json() as {
-      items: { id: string; spec?: { inputs?: { required?: string[]; properties?: Record<string, unknown> } } }[];
-    };
-    const judgment = menu.items.find((item) => item.id === "quick_judgment")!;
-    expect(judgment.spec?.inputs?.required).toContain("detail");
-    expect(judgment.spec?.inputs?.properties?.["detail"]).toBeTruthy();
-  });
-});

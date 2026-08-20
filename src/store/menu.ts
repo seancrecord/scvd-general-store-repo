@@ -31,6 +31,31 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
     sla_hours: 168,
+    /**
+     * THE CEILING ON KEEPER TIME, restored 2026-08-20 — and the reason
+     * it needed restoring is worth writing down.
+     *
+     * quick_judgment carried `weekly_inventory: 5` and was the ONLY
+     * item on the menu that declared a per-item cap. Retiring it that
+     * morning took the cap with it and left this door — the most
+     * demanding thing here, both proprietors and a made thing on a
+     * 168h promise — able to accept unbounded orders. The global queue
+     * ceiling still applied, but the per-item one silently became
+     * undefined, which is exactly the class of quiet loss a curation
+     * pass is supposed to catch rather than cause.
+     *
+     * Two a week: this is a one-person shop and the promise is a week.
+     * ⚑ KEEPER REVIEW — the NUMBER is his call and always was; what is
+     * not optional is that some number exists.
+     */
+    weekly_inventory: 2,
+    /**
+     * A CAPPED SHELF NEEDS A WAY TO WAIT, or the cap is just a closed
+     * door: quick_judgment carried both the rate and the waitlist, and
+     * moving only the rate here would have left a buyer who arrives
+     * third this week with nothing to do but guess when to return.
+     */
+    waitlist: true,
     // 2026-08-05 consolidation: five keeper-time listings became this
     // one door. The retired four live on as named examples below.
     // ⚑ KEEPER REVIEW: the closing sentence is new ink for the fold.

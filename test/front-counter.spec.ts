@@ -5,6 +5,15 @@ import {
   isFrontCounter,
   FRONT_COUNTER_PROMISE,
 } from "@/lib/front-counter";
+/**
+ * STATICALLY IMPORTED, 2026-08-20. Five tests here each awaited a
+ * dynamic import of this module inside the default 5s timeout, and
+ * whichever ran first paid the whole cold-import cost of the menu
+ * graph — which under a loaded parallel pool exceeded it and failed
+ * a green build twice in one night. A module the file always needs
+ * is an import, not a lazy one.
+ */
+import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 
@@ -31,8 +40,9 @@ describe("the front counter is derived, not remembered", () => {
     // line rather than silently moving the door. If an item is added
     // or repriced into eligibility that is FINE — this test tells you
     // it happened, it does not forbid it.
-    // Cheapest first: $0.005, $0.01, $0.50, $2.
-    expect(eligible).toEqual(["small_blessing", "daily_fortune", "hello", "dibs"]);
+    // Cheapest first: $0.005, $0.50. The 2026-08-20 retirement took
+    // daily_fortune and dibs off this counter with them.
+    expect(eligible).toEqual(["small_blessing", "hello"]);
   });
 
   it("keeps recurring_patronage out for the reason that actually applies", () => {
@@ -47,14 +57,6 @@ describe("the front counter is derived, not remembered", () => {
     expect(verdict.fails.join(" ")).toContain("carries state");
   });
 
-  it("keeps the_drawer out for the reason that actually applies", () => {
-    // The item the hand-drafted list wrongly admitted. It is $2 fixed
-    // with no inputs, which is what made it look eligible.
-    const item = MENU_ITEMS.find((entry) => entry.id === "the_drawer")!;
-    const verdict = frontCounterVerdict(item);
-    expect(verdict.eligible).toBe(false);
-    expect(verdict.fails.join(" ")).toContain("human-fulfilled");
-  });
 
   it("names every rule an item breaks, not just the first", () => {
     // A verdict that stopped at the first failure would make a
@@ -134,7 +136,6 @@ describe("it keeps one trust line rather than none", () => {
  */
 describe("the front counter has a door a weak model can find", () => {
   it("is the first paid tool in the catalog", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tools = mcpToolCatalog("https://scvd.store");
     const paid = tools.filter((tool) => tool.name.startsWith("buy_"));
     expect(
@@ -144,7 +145,6 @@ describe("the front counter has a door a weak model can find", () => {
   });
 
   it("asks for item_id and nothing else", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;
@@ -165,7 +165,6 @@ describe("the front counter has a door a weak model can find", () => {
   });
 
   it("offers exactly the derived shelf, never a second list", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;
@@ -189,7 +188,6 @@ describe("the front counter has a door a weak model can find", () => {
      * the shelf side is derived from the same eligibility predicate
      * the counter is built on.
      */
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tools = mcpToolCatalog("https://scvd.store");
     const simple = tools.find((entry) => entry.name === "buy_simple")!;
     expect(simple.description).toContain("a second door to the same goods");
@@ -212,7 +210,6 @@ describe("the front counter has a door a weak model can find", () => {
   });
 
   it("carries the price in the description, like every other buy tool", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;

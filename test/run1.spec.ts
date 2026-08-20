@@ -104,16 +104,6 @@ describe("the census items", () => {
     expect(body["folded_into"]).toBe("context_anchor");
   });
 
-  it("quick_judgment stores the dilemma on the order", async () => {
-    const paid = await payFor(
-      `${BASE}/api/buy/quick_judgment?detail=${encodeURIComponent("Ship now or refactor first?")}&source=test-suite`,
-    );
-    expect(paid.status).toBe(200);
-    const body = await json(paid);
-    const orderUrl = String(body["order_url"]);
-    const order = await json(await SELF.fetch(orderUrl));
-    expect(order["status"]).toBe("queued");
-  });
 
   it("certificate_of_patronage mints the nicer badge", async () => {
     const paid = await payFor(`${BASE}/api/buy/certificate_of_patronage`);

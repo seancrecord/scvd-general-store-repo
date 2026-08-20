@@ -33,7 +33,7 @@ describe("/skill.md (agentskills.io format)", () => {
     expect(frontmatter).toContain("description:");
     // Full menu with prices, worked example, free shelf.
     expect(text).toContain("luckies");
-    expect(text).toContain("dibs");
+    expect(text).toContain("small_blessing");
     expect(text).toContain("/api/buy/hello");
     expect(text).toContain("PAYMENT-REQUIRED");
     expect(text).toContain("PAYMENT-SIGNATURE");

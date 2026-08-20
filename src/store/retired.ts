@@ -74,6 +74,40 @@ export const RETIRED_ITEMS: readonly RetiredItem[] = [
     retired_on: "2026-08-05",
     note: "The name registry closed to new claims. Names already granted are never re-issued and their certificates verify forever.",
   },
+  /**
+   * SECOND RETIREMENT, 2026-08-20, on the keeper's word — the Costco
+   * curation pass (memory/costco-for-agents.md: kill what doesn't
+   * move, perfect what does, then add the next one). Round one's rule
+   * held again: nothing with an organic settle was cut, which is why
+   * coffees_for_closers and graffiti_on_a_train stayed on the shelf.
+   */
+  {
+    id: "the_drawer",
+    name: "The Drawer",
+    retired_on: "2026-08-20",
+    note: "The drawer closed. Keeper's hands spent on a novelty was the wrong trade for a store whose work is evidence; what was drawn stays drawn and every card signed under it verifies forever.",
+  },
+  {
+    id: "daily_fortune",
+    name: "Daily Fortune",
+    retired_on: "2026-08-20",
+    note: "The fortune came off the shelf. The cheapest door here is the half-cent blessing, which does the same job — a real settlement for almost nothing — and does it cheaper.",
+    folded_into: "small_blessing",
+  },
+  {
+    id: "dibs",
+    name: "Dibs",
+    retired_on: "2026-08-20",
+    note: "Dibs closed. Timestamped precedence is now the trust shelf's actual work — a mandate records what you claimed before you acted, and a Bitcoin anchor proves when, neither of which asks anyone to take our word for the ordering.",
+    folded_into: "the_mandate",
+  },
+  {
+    id: "quick_judgment",
+    name: "Quick Judgment",
+    retired_on: "2026-08-20",
+    note: "Folded into The Collab, the same way the phone call and the human witness went in round one: one door for the keeper's time, and you name the shape you want it to take.",
+    folded_into: "the_collab",
+  },
 ] as const;
 
 export function getRetiredItem(id: string): RetiredItem | undefined {

@@ -1,6 +1,8 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Env } from "@/types";
+import { getMenuItem } from "@/store";
+import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import {
   installFacilitatorMock,
@@ -187,31 +189,44 @@ describe("paid purchases", () => {
 });
 
 describe("weekly inventory", () => {
-  // quick_judgment is the one weekly-capped shelf since the 2026-08-05
-  // consolidation, so the stocked case runs before the sell-out.
+  // the_collab is the one weekly-capped shelf since the 2026-08-20
+  // consolidation, so the stocked case runs before the sell-out — and
+  // the shelf starts each case unsold, because with one labor door the
+  // whole file now shares it.
+  beforeEach(async () => {
+    const orders = await testEnv.ORDERS.list({ prefix: "order:" });
+    for (const key of orders.keys) await testEnv.ORDERS.delete(key.name);
+    await testEnv.COUNTERS.delete(
+      KV_KEYS.inventory("the_collab", currentWeekKey()),
+    );
+  });
   it("declines waitlist entries while the shelf is stocked", async () => {
-    const response = await SELF.fetch(`${BASE}/api/waitlist/quick_judgment`, {
+    const response = await SELF.fetch(`${BASE}/api/waitlist/the_collab`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
     });
     expect(response.status).toBe(400);
     const body = await json(response);
-    expect(body["buy_url"]).toBe(`${BASE}/api/buy/quick_judgment`);
+    expect(body["buy_url"]).toBe(`${BASE}/api/buy/the_collab`);
   });
 
   it("sells out, points to the waitlist, and takes waitlist entries", async () => {
-    for (let i = 0; i < 5; i += 1) {
-      // The dilemma is required at the door since 2026-08-19.
-      const sale = await buyPaid("quick_judgment", 0, "?detail=Ship+or+refactor%3F");
+    // Derived from the shelf's own declared rate — it moved from
+    // quick_judgment (5) to the_collab (2) on 2026-08-20, and a
+    // hardcoded count here would sell past the cap and read the
+    // refusal as a failure.
+    const rate = getMenuItem("the_collab")!.weekly_inventory!;
+    for (let i = 0; i < rate; i += 1) {
+      const sale = await buyPaid("the_collab", 0, "?detail=Ship+or+refactor%3F");
       expect(sale.status).toBe(200);
     }
-    const soldOut = await SELF.fetch(`${BASE}/api/buy/quick_judgment`);
+    const soldOut = await SELF.fetch(`${BASE}/api/buy/the_collab`);
     expect(soldOut.status).toBe(409);
     const body = await json(soldOut);
     expect(body["error"]).toContain("Shelf's empty");
 
-    const waitlist = await SELF.fetch(`${BASE}/api/waitlist/quick_judgment`, {
+    const waitlist = await SELF.fetch(`${BASE}/api/waitlist/the_collab`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ agent_name: "patient-agent" }),
@@ -221,6 +236,21 @@ describe("weekly inventory", () => {
 });
 
 describe("the keeper's completion flow", () => {
+  /**
+   * A CLEAN QUEUE AND A CLEAN WEEK — 2026-08-20. With one labor door
+   * left, this suite and the sell-out suite above it share the same
+   * shelf: that one exhausts the week's rate and fills the bench, and
+   * this one could no longer buy anything. Invisible while there were
+   * two doors and a rate of five.
+   */
+  beforeEach(async () => {
+    const orders = await testEnv.ORDERS.list({ prefix: "order:" });
+    for (const key of orders.keys) await testEnv.ORDERS.delete(key.name);
+    await testEnv.COUNTERS.delete(
+      KV_KEYS.inventory("the_collab", currentWeekKey()),
+    );
+  });
+
   const auth = {
     Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
   };
