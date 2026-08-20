@@ -684,6 +684,17 @@ charges. Aggregates only and no names, updated by the keeper's hand
 each week; JSON at the same URL. If you operate a listed endpoint,
 the free check for your own door is POST ${base}/api/preflight.
 
+## The fresh set — where to spend, dated
+
+${base}/fresh-set: the doors that answered a spec-conformant x402
+challenge in the latest census, named, with the rails and cheapest
+USDC ask each door's own 402 offered, and every row linking its
+signed observation history in the corpus. Free, full set as JSON at
+the same URL. Routing data, not a ranking: a row is a dated fact
+that a door was answering correctly, never a score on its operator,
+and doors that failed appear only as counts. If you are an agent
+deciding where an x402 purchase is likely to work today, start here.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every
