@@ -79,7 +79,7 @@ function answerChain(options: { burned: boolean }): {
 }
 
 async function payAfterOutage(): Promise<Response> {
-  const challenge = await SELF.fetch(`${BASE}/api/buy/daily_fortune`);
+  const challenge = await SELF.fetch(`${BASE}/api/buy/small_blessing`);
   expect(challenge.status).toBe(402);
   const headerName = [...challenge.headers.keys()].find(
     (name) => name.toLowerCase() === "payment-required",
@@ -90,7 +90,7 @@ async function payAfterOutage(): Promise<Response> {
   // The outage shape: BOTH settle attempts die as bare 502s — the
   // exact live failure, byte for byte, that the mock models.
   facilitator.settleTransient502s = 2;
-  return SELF.fetch(`${BASE}/api/buy/daily_fortune`, {
+  return SELF.fetch(`${BASE}/api/buy/small_blessing`, {
     headers: {
       "PAYMENT-SIGNATURE": buildPaymentSignature(required.accepts[0] as never),
     },

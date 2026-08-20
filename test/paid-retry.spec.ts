@@ -83,8 +83,8 @@ describe("the paid retry", () => {
 
   it("points at the existing artifact when the crash landed after the mint", async () => {
     // A real purchase start to finish: cert mints, intent closes.
-    const header = await challengeAndSign("dibs");
-    const paid = await SELF.fetch(`${BASE}/api/buy/dibs`, {
+    const header = await challengeAndSign("small_blessing");
+    const paid = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
     expect(paid.status).toBe(200);
@@ -95,13 +95,13 @@ describe("the paid retry", () => {
     await testEnv.ORDERS.put(
       KV_KEYS.deliveryIntent(TEST_TRANSACTION),
       JSON.stringify({
-        path: "/api/buy/dibs",
+        path: "/api/buy/small_blessing",
         transaction: TEST_TRANSACTION,
         paid_usdc: 1,
         settled_at: new Date().toISOString(),
       }),
     );
-    const retry = await SELF.fetch(`${BASE}/api/buy/dibs`, {
+    const retry = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
     expect(retry.status).toBe(200);
@@ -151,7 +151,7 @@ describe("the paid retry", () => {
     );
     // The money bought hello; the retry asks for dibs. Refused — a
     // paid retry re-delivers the sale that happened, never a swap.
-    const swap = await SELF.fetch(`${BASE}/api/buy/dibs`, {
+    const swap = await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "PAYMENT-SIGNATURE": header },
     });
     expect(swap.status).toBe(402);

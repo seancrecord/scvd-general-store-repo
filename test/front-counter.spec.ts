@@ -5,17 +5,16 @@ import {
   isFrontCounter,
   FRONT_COUNTER_PROMISE,
 } from "@/lib/front-counter";
-import { MENU_ITEMS } from "@/store";
 /**
- * STATIC, NOT `await import()` INSIDE THE TEST BODY (2026-08-20). The
- * dynamic form made the FIRST test in this file pay for loading the
- * whole mcp-tools module graph against a 5-second timeout, and it
- * began timing out as that graph grew — the same fragility this suite
- * has hit before. The later tests always passed because the module
- * was cached by then, which is exactly what a load-cost flake looks
- * like from the outside.
+ * STATICALLY IMPORTED, 2026-08-20. Five tests here each awaited a
+ * dynamic import of this module inside the default 5s timeout, and
+ * whichever ran first paid the whole cold-import cost of the menu
+ * graph — which under a loaded parallel pool exceeded it and failed
+ * a green build twice in one night. A module the file always needs
+ * is an import, not a lazy one.
  */
 import { mcpToolCatalog } from "@/lib/mcp-tools";
+import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 
 /**
@@ -41,8 +40,9 @@ describe("the front counter is derived, not remembered", () => {
     // line rather than silently moving the door. If an item is added
     // or repriced into eligibility that is FINE — this test tells you
     // it happened, it does not forbid it.
-    // Cheapest first: $0.005, $0.01, $0.50, $2.
-    expect(eligible).toEqual(["small_blessing", "daily_fortune", "hello", "dibs"]);
+    // Cheapest first: $0.005, $0.50. The 2026-08-20 retirement took
+    // daily_fortune and dibs off this counter with them.
+    expect(eligible).toEqual(["small_blessing", "hello"]);
   });
 
   it("keeps recurring_patronage out for the reason that actually applies", () => {
@@ -57,14 +57,6 @@ describe("the front counter is derived, not remembered", () => {
     expect(verdict.fails.join(" ")).toContain("carries state");
   });
 
-  it("keeps the_drawer out for the reason that actually applies", () => {
-    // The item the hand-drafted list wrongly admitted. It is $2 fixed
-    // with no inputs, which is what made it look eligible.
-    const item = MENU_ITEMS.find((entry) => entry.id === "the_drawer")!;
-    const verdict = frontCounterVerdict(item);
-    expect(verdict.eligible).toBe(false);
-    expect(verdict.fails.join(" ")).toContain("human-fulfilled");
-  });
 
   it("names every rule an item breaks, not just the first", () => {
     // A verdict that stopped at the first failure would make a

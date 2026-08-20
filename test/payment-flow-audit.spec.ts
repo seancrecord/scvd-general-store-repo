@@ -88,8 +88,8 @@ describe("A.2 — the stock race, refused silence", () => {
      * asserts its absence.
      */
     const { MENU_ITEMS } = await import("@/store");
-    const witness = MENU_ITEMS.find((entry) => entry.id === "quick_judgment")!;
-    const key = KV_KEYS.inventory("quick_judgment", currentWeekKey());
+    const witness = MENU_ITEMS.find((entry) => entry.id === "the_collab")!;
+    const key = KV_KEYS.inventory("the_collab", currentWeekKey());
     // Simulate the race's outcome: the gate was passed while the
     // counter already sat AT the ceiling.
     await testEnv.COUNTERS.put(key, String(witness.weekly_inventory));
@@ -110,7 +110,7 @@ describe("A.2 — the stock race, refused silence", () => {
     const { listAlerts } = await import("@/lib/alerts");
     const alerts = await listAlerts(testEnv, 10);
     expect(
-      alerts.some((alert) => alert.detail.includes("OVERSOLD: quick_judgment")),
+      alerts.some((alert) => alert.detail.includes("OVERSOLD: the_collab")),
       "a sale past the ceiling must never be silent",
     ).toBe(true);
     await testEnv.COUNTERS.delete(key);

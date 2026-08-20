@@ -38,14 +38,6 @@ describe("a cold agent can budget before it spends", () => {
     expect(record!.description).toContain("graffiti_on_a_train needs tag");
   });
 
-  it("distinguishes the two keeper-time doors", () => {
-    // Since the 2026-08-05 consolidation: the fast verdict and the
-    // name-the-shape commission are the two ways to buy keeper-time.
-    const tools = mcpToolCatalog(BASE);
-    const human = tools.find((tool: McpTool) => tool.name === "buy_human_task");
-    expect(human!.description).toContain("quick_judgment");
-    expect(human!.description).toContain("the_collab");
-  });
 });
 
 describe("the strongest trust signal arrives first, not fourth", () => {

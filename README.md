@@ -54,6 +54,24 @@ What people arrive here to do, and where each door is:
   seven days of signed hourly probes on a URL you name.
 - **Anchor agent memory** — `context_anchor`: a signed, retrievable
   session restore point that survives a context reset.
+- **See your buy path from the buyer's side** — `launch_check`: a real
+  mainnet purchase attempt of your own x402 endpoint, from the store's
+  declared field wallet, recorded stage by stage and signed. Directories
+  rank doors by whether they answer; this one pays them.
+- **Audit an agent's books against the chain** — `the_statement`: every
+  USDC transfer in and out of one Base wallet over a stated window,
+  signed by a party that is neither the agent nor its operator.
+- **Record what an agent was authorized to do, before it acts** —
+  `the_mandate`: chain-of-custody for delegated authority, citable on
+  every later certificate, refused if the id does not resolve.
+- **Get paid to shop** — the bounty board at
+  [scvd.store/api/bounties](https://scvd.store/api/bounties): walk a
+  listed x402 door with your own wallet, claim with the settlement
+  transaction, and the price plus a finder's fee comes back as a signed
+  authorization you redeem yourself.
+- **Earn store credit** — 5% of every organic purchase banks to the
+  paying wallet (no account; the wallet is the card), readable at
+  `/api/credit/{wallet}` and redeemable in USDC to that same wallet.
 
 Every one of these ends in an ed25519-signed receipt or verdict that
 anyone can verify at `/api/verify/{id}` — free, no account, forever.

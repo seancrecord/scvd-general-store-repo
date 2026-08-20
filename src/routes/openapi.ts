@@ -199,7 +199,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
   return {
     ...paidOp(
       "Buy an item from the menu",
-      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail; REQUIRED for quick_judgment — it is the dilemma being judged), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
+      "One x402 v2 purchase per request. Optional query parameters: agent_name (on the certificate), callback_url (completion webhook, human-queue items), summary (context_anchor, required there), url (standing_watch, required there), win (coffees_for_closers, required there), detail (human-queue task detail: the shape you want the keeper's time to take), pass_id (recurring_patronage renewal), source (where you heard of us, for the ledger), tx_hash (settlement_attestation: a Base transaction hash, 0x + 64 hex, or a Solana transaction signature, base58 — the identifier's shape selects the chain). Item ids, prices and each item's full input contract live in /menu.json.",
       allPrices,
     ),
     parameters: [
@@ -260,7 +260,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         in: "query",
         schema: { type: "string", maxLength: 600 },
         description:
-          "Human-queue task detail. REQUIRED for quick_judgment: it is the dilemma itself, and the door refuses the purchase without one — no dilemma, no charge. Stored on the order for the keeper.",
+          "Human-queue task detail: the shape you want the keeper's time to take. Stored on the order for the keeper.",
       },
       {
         name: "source",

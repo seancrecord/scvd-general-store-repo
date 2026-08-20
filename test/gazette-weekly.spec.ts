@@ -5,7 +5,7 @@ import {
   getDraft,
   publishEdition,
 } from "@/services/gazette-weekly";
-import { installFacilitatorMock } from "./helpers/facilitator-mock";
+import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
 import {
   buildPaymentSignature,
   decodePaymentRequired,
@@ -62,7 +62,7 @@ describe("the edition itself", () => {
   it("reports facts exactly, reports emptiness, never reports the house", async () => {
     const organic = await payFor(`${BASE}/api/buy/small_blessing`);
     expect(organic.status).toBe(200);
-    const house = await payFor(`${BASE}/api/buy/dibs`, {
+    const house = await payFor(`${BASE}/api/buy/small_blessing`, {
       "X-House": "test-house-secret",
     });
     expect(house.status).toBe(200);
@@ -97,8 +97,12 @@ describe("the edition itself", () => {
     expect(page).toContain("No confession reached the counter.");
     expect(page).toContain("## LOOKING AHEAD");
     expect(page).toContain("Weekly shelves restock Monday.");
-    // The house never makes the paper.
-    expect(page).not.toContain("dibs");
+    // The house never makes the paper. Asserted on the house buyer
+    // rather than the item id: after the 2026-08-20 retirement the
+    // house fixture buys small_blessing, which the edition may name
+    // legitimately as a shelf — the payer is the thing that must never
+    // appear.
+    expect(page).not.toContain(TEST_PAYER);
     // The letter's contents never make anything.
     expect(page).not.toContain("Private words");
   });

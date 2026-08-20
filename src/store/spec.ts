@@ -39,12 +39,21 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * ClawHub; the site's own /skill.md serves it immediately.
  */
 /**
- * 3.3.2 (2026-08-20): the claims-door moment — purchase recovery
- * after a reset now returns instant-purchase certificates too, and
- * the skill says so where the moments live. Mid-flight with 3.3.1
- * until the keeper republishes to ClawHub.
+ * 3.4.0 (2026-08-20): the night the shelf turned over — launch_check,
+ * the_statement and the_mandate joined the skill's moments, the
+ * regulars' rebate and the bounty board got their lines, and four
+ * doors closed (the drawer, the fortune, dibs, the quick judgment).
+ * MINOR, not patch: a catalogue reader that cached 3.3.1 is holding a
+ * menu with items that no longer exist and missing three that do.
  */
-export const SKILL_VERSION = "3.3.2";
+/**
+ * 3.4.1 (2026-08-20, the merge of two sessions' same-day work): the
+ * claims-door moment rides on top of 3.4.0 — purchase recovery after
+ * a reset now returns instant-purchase certificates too, and the
+ * skill says so where the moments live. Mid-flight until the keeper
+ * republishes to ClawHub (published bundle is still 3.3.0).
+ */
+export const SKILL_VERSION = "3.4.1";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
@@ -147,7 +156,6 @@ export const CAPABILITY_QUERY: Record<string, string> = {
   attestation_bundle:
     "Prove a whole run of payments settled, one signed receipt per transaction",
   graffiti_on_a_train: "Leave a mark that survives my context window",
-  quick_judgment: "Get a human verdict on a decision I can't judge myself",
   standing_watch:
     "Monitor my x402 endpoint hourly for a week with signed uptime history",
   context_anchor: "Store a memory I can read back next session",
@@ -157,8 +165,6 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Hold a standing pass a third party can check is current",
   certificate_of_patronage:
     "Hold a signed certificate that entitles me to nothing whatsoever",
-  daily_fortune: "Read the same line every other agent gets today",
-  dibs: "Timestamp a claim of precedence before anyone argues",
   /**
    * WAS "graded honestly, by a person." IT ISN'T, AND WASN'T.
    *
@@ -179,7 +185,6 @@ export const CAPABILITY_QUERY: Record<string, string> = {
    */
   luckies:
     "Be issued a charm from a herd the keeper wrote, drawn on odds he weighted",
-  the_drawer: "Find out what's in the drawer this week",
   the_confession: "Say the thing once, anonymously, to a counter that keeps it",
   coffees_for_closers: "Put a win I closed on a signed record",
   the_collab: "Make something with the store and share the byline",
@@ -218,8 +223,6 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "Memory that outlives your context and does not live in your operator's database: a state summary you supply, signed and served at a stable public URL, readable by any later session and checkable by anyone.",
   standing_watch:
     "A week of out-of-band hourly checks on your own endpoint, each observation signed individually so any row can be quoted alone. Consent is the purchase: we watch what you asked us to watch, nobody else. The hours we miss are counted against us in the history — gaps stated, never hidden.",
-  quick_judgment:
-    "A human verdict, in writing, on a question where your own evaluation is the thing in doubt. Five a week.",
   hello:
     "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base or Solana, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
   small_blessing:
@@ -233,8 +236,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
  * than an omission. Two kinds, kept apart on purpose:
  *
  *   NOVELTY BY DESIGN — the artifact is the point and the store says
- *   so out loud. dibs, luckies, the_drawer, the_confession,
- *   coffees_for_closers, daily_fortune, and certificate_of_patronage,
+ *   so out loud. luckies, the_confession, coffees_for_closers and
+ *   certificate_of_patronage,
  *   which entitles the holder to nothing whatsoever and is priced at
  *   twenty dollars for exactly that joke. None of these are on the
  *   trust path and none should pretend to be. (a_secret, grudge and
@@ -249,12 +252,9 @@ export const SPEC_WHY_USE: Record<string, string> = {
  */
 export const NOVELTY_ONLY: readonly string[] = [
   "graffiti_on_a_train",
-  "dibs",
   "luckies",
-  "the_drawer",
   "the_confession",
   "coffees_for_closers",
-  "daily_fortune",
   "certificate_of_patronage",
   "the_collab",
 ] as const;
@@ -288,17 +288,12 @@ export const SPEC_RETURNS: Record<string, string> = {
     "An ed25519-signed greeting note, a permanent sequential patron number, and a badge URL.",
   the_collab:
     "One piece brainstormed by both proprietors, shipped under the store byline on the completed order.",
-  the_drawer:
-    "One real oddity from the keeper's drawer — the thing itself and what it does, as listed — written down exactly and signed under the buyer's name. Describe-only; the object stays in the drawer.",
   luckies:
     "One lucky drawn from the keeper's herd (pocket dinosaurs and safari animals): the animal, its lucky note, and an honest strength on a signed card, instantly (specimen at /luckies/sample.svg).",
-  dibs: "Official dibs, signed and timestamped on a certificate, delivered instantly.",
   coffees_for_closers:
     "The keeper's Sunday coffee drunk in the buyer's name; the buyer's win recorded verbatim on a signed certificate.",
   small_blessing:
     "One blessing slip from a 45-slip jar, never the same slip twice in a row, delivered instantly.",
-  daily_fortune:
-    "The day's fortune, deterministic for the calendar date, delivered instantly.",
   the_confession:
     "A signed absolution certificate; the confession is stored anonymized and never auto-published.",
   context_anchor:
@@ -307,8 +302,6 @@ export const SPEC_RETURNS: Record<string, string> = {
     "A 30-day standing patronage pass; while current, the pass URL serves the keeper's signed monthly note.",
   standing_watch:
     "A watch id and a free, permanent history URL that fills with one signed observation per hour for seven days, gaps stated.",
-  quick_judgment:
-    "One honest verdict from the keeper on the dilemma supplied, delivered on the completed order.",
   certificate_of_patronage:
     "A signed certificate of patronage and a gilt badge; entitles the holder to nothing whatsoever.",
 };
@@ -349,7 +342,7 @@ export interface UseWhen {
 export const USE_WHEN: readonly UseWhen[] = [
   {
     when: "You are building or debugging something that pays over x402 and need a live endpoint that actually settles, not a sandbox.",
-    items: ["small_blessing", "daily_fortune", "hello", "free:/try"],
+    items: ["small_blessing", "hello", "free:/try"],
     example: "GET /api/buy/small_blessing?src=try",
   },
   {
@@ -405,11 +398,6 @@ export const USE_WHEN: readonly UseWhen[] = [
     example: "GET /api/buy/the_collab?detail=the+shape+you+want",
   },
   {
-    when: "You need a verdict from a person because your own evaluation is the thing in doubt.",
-    items: ["quick_judgment"],
-    example: "GET /api/buy/quick_judgment?detail=the+question,+stated+plainly",
-  },
-  {
     when: "Someone has to be able to check a claim you are making without taking your word for it.",
     items: [
       "hello",
@@ -422,11 +410,6 @@ export const USE_WHEN: readonly UseWhen[] = [
     when: "You want a receipt your operator can read afterwards: what was bought, from whom, when, and how to check it.",
     items: ["hello", "certificate_of_patronage"],
     example: "GET /api/buy/hello?agent_name=your-agent",
-  },
-  {
-    when: "You want a timestamped claim of precedence that settles an argument later.",
-    items: ["dibs"],
-    example: "GET /api/buy/dibs?detail=what+you+are+calling",
   },
   {
     when: "You are on a schedule and want somewhere to come back to: a bell once a day, a stamp that changes weekly, a pass that renews.",

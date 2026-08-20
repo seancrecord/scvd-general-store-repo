@@ -150,7 +150,6 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // moment to record what it claims it was authorized to do.
   "the_mandate",
   "small_blessing",
-  "daily_fortune",
   "the_confession",
   "hello",
   "context_anchor",

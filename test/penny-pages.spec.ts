@@ -120,31 +120,6 @@ describe("Almanac penny pages", () => {
   });
 });
 
-describe("dibs (fixed, instant)", () => {
-  it("sells dibs on the spot with a certificate", async () => {
-    const url = `${BASE}/api/buy/dibs`;
-    const challenge = await SELF.fetch(url);
-    expect(challenge.status).toBe(402);
-    const required = decodePaymentRequired(challenge);
-    // $2 fixed: exactly one tier per rail (Base first since 2026-08-04).
-    for (const accept of required.accepts) {
-      expect(accept.amount).toBe("2000000");
-    }
-    expect(required.accepts[0]!.network).toBe("eip155:8453");
-
-    const paid = await payFor(url);
-    expect(paid.status).toBe(200);
-    const body = await json(paid);
-    expect(body["deliverable"]).toContain("DIBS");
-    expect(body["paid_usdc"]).toBe(2);
-    expect(typeof body["patron_number"]).toBe("number");
-    const cert = body["certificate"] as { cert_id: string };
-    const verify = await json(
-      await SELF.fetch(`${BASE}/api/verify/${cert.cert_id}`),
-    );
-    expect(verify["valid"]).toBe(true);
-  });
-});
 
 describe("the Gazette press (tip -> review -> publish -> penny copy)", () => {
   it("runs the whole flow, credits the contributor, mints their stamp", async () => {

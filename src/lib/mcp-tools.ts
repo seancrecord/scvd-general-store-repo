@@ -96,7 +96,6 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       "Purpose: buy a signed, dated certificate that permanently records something — a greeting, a claim, a mark, a grievance, a confession, a contribution, or a standing pass. Every one returns an ed25519-signed artifact with a public verify URL any third party can check without trusting this store. Use when an agent wants durable, independently checkable proof that a thing happened at a time. Does NOT store reloadable agent state — that is buy_memory_anchor — and does not enforce anything it records: a certificate proves WHEN you claimed a thing, not that anyone honours the claim.",
     itemIds: [
       "hello",
-      "dibs",
       "certificate_of_patronage",
       "graffiti_on_a_train",
       "coffees_for_closers",
@@ -108,11 +107,9 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_human_task",
     title: "Human Labor",
     purpose:
-      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. Two doors since the 2026-08-05 consolidation: quick_judgment is a fast yes/no verdict on a dilemma you describe, and the_collab is everything else keeper-time can be — a call placed, a thing witnessed, a piece made, a product gut-checked; name the shape in your detail. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable. the_drawer is stocked: keeper-made units, taken oldest-first, no waiting on hands.",
+      "Purpose: hire the keeper — a real named human — to do something in the physical or judgment world that an agent cannot do for itself. One door since the 2026-08-20 curation: the_collab is whatever keeper-time can be — a call placed, a thing witnessed, a verdict given on a dilemma your own evaluation cannot settle, a piece made, a product gut-checked; name the shape in your detail. Returns an order id, not the goods; a human fulfills within the item's stated window and the completed order carries the deliverable.",
     itemIds: [
-      "quick_judgment",
       "the_collab",
-      "the_drawer",
     ],
   },
   {
@@ -171,7 +168,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     title: "The Penny Shelf",
     purpose:
       "Purpose: buy a small signed novelty — a blessing, a fortune, or a lucky totem drawn from the keeper's collection. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
-    itemIds: ["small_blessing", "daily_fortune", "luckies"],
+    itemIds: ["small_blessing", "luckies"],
   },
 ];
 
@@ -302,7 +299,7 @@ function purchaseInputSchema(item: MenuItem): Schema {
   }
   if (item.fulfillment === "human_queue") {
     properties["detail"] = str(
-      "What you need the keeper to know — the quick_judgment dilemma, the shape you want the_collab to take. 600 characters.",
+      "What you need the keeper to know — the shape you want the_collab to take, or the dilemma you want judged. 600 characters.",
       600,
     );
     properties["callback_url"] = str(
@@ -340,14 +337,10 @@ function priceLine(item: MenuItem): string {
 const PURPOSE_LINES: Record<string, string> = {
   graffiti_on_a_train:
     "Purpose: permanently record a short message (your tag, in the tag input) on a signed, dated certificate; the store's public /train wall may display it later at the keeper's discretion. Use when an agent wants to leave a durable public mark.",
-  the_drawer:
-    "Purpose: buy one real, unidentified object from the keeper's drawer of oddities — the drawer picks, not you, and a human fulfills the order by recording which object you drew and what it does. Use when an agent wants a surprise physical-world artifact recorded to its name.",
   nomenclature:
     "Purpose: receive a unique name, chosen by the keeper from a pre-considered stock and never assigned twice, recorded on a signed certificate. Use when an agent wants a permanent, human-bestowed name.",
   certificate_of_patronage:
     "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
-  dibs:
-    "Purpose: mint a signed, timestamped certificate recording that you called dibs at this exact moment — tamper-evident proof of claim priority with no enforcement power. Use when an agent needs a verifiable first-claim marker. Not for storing state to reload later (that is buy_context_anchor) and it enforces nothing — it proves WHEN you claimed, not that the claim is honored.",
   luckies:
     "Purpose: buy one randomly drawn lucky totem — a signed card naming a small animal figure from the keeper's collection, its lucky note, and an honest strength. A novelty with no functional effect, stated plainly. Use when an agent wants a keepsake.",
 };

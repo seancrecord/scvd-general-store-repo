@@ -146,12 +146,6 @@ describe("the Penny Shelf", () => {
     expect(required.accepts[0]!.network).toBe("eip155:8453");
   });
 
-  it("serves the same fortune to everyone all day", async () => {
-    const first = await json(await payFor(`${BASE}/api/buy/daily_fortune`));
-    const second = await json(await payFor(`${BASE}/api/buy/daily_fortune`));
-    expect(first["deliverable"]).toBe(second["deliverable"]);
-    expect(first["fortune_date"]).toBe(new Date().toISOString().slice(0, 10));
-  });
 });
 
 describe("context_anchor", () => {
@@ -222,7 +216,7 @@ describe("settlement finality on the new shelves", () => {
     try {
       for (const url of [
         `${BASE}/api/buy/small_blessing`,
-        `${BASE}/api/buy/daily_fortune`,
+        `${BASE}/api/buy/small_blessing`,
         `${BASE}/api/buy/context_anchor?summary=state`,
         `${BASE}/api/buy/the_collab`,
         `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`,

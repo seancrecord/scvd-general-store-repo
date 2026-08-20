@@ -9,20 +9,6 @@ import type { MenuItem } from "@/types";
  */
 export const RUN1_ITEMS: readonly MenuItem[] = [
   {
-    id: "quick_judgment",
-    listed_week: "2026-W30",
-    name: "One Quick Judgment",
-    price_usdc: 3,
-    pricing: "fixed",
-    fulfillment: "human_queue",
-    sla_hours: 168,
-    weekly_inventory: 5,
-    waitlist: true,
-    description:
-      "One question, one honest answer from a person with taste. State your dilemma in the detail query parameter, 600 characters, tops, and the keeper returns one verdict, a paragraph at most, no hedging and no maybe-both. Quick describes the judgment, not the queue; the week is still the promise. Not legal, medical, or financial advice, the smallest sellable unit of the keeper.",
-    note_402: "That'll be $3 flat, friend. One dilemma in, one verdict out.",
-  },
-  {
     id: "certificate_of_patronage",
     listed_week: "2026-W30",
     name: "Certificate of Patronage",
