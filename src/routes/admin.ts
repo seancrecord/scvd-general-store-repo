@@ -883,12 +883,35 @@ adminRoutes.post("/admin/bounties", async (c) => {
     url = String(form["url"] ?? "");
     rewardUsd = Number.parseFloat(String(form["reward_usd"] ?? ""));
   }
+  const wasForm = !contentType.includes("json");
   try {
     const bounty = await openBounty(c.env, { targetUrl: url, rewardUsd });
+    if (wasForm) {
+      // The stocking form's lesson: a redirect in silence reads
+      // exactly like a form that did nothing. Say what got posted.
+      return c.redirect(
+        `/admin/market?bounty_posted=${encodeURIComponent(bounty.bounty_id)}`,
+      );
+    }
     return c.json({ opened: bounty, board: "/api/bounties" }, 201);
   } catch (error) {
     if (error instanceof BountyRefused) {
+      if (wasForm) {
+        return c.redirect(
+          `/admin/market?bounty_refused=${encodeURIComponent(error.message.slice(0, 200))}`,
+        );
+      }
       return c.json({ error: error.message }, 400);
+    }
+    if (wasForm) {
+      // An unreachable door throws a transport error rather than a
+      // refusal; a form user gets it as words on the page, never a
+      // bare 500 — the same shape lesson every other lever learned.
+      return c.redirect(
+        `/admin/market?bounty_refused=${encodeURIComponent(
+          `could not reach that door to capture its terms (${String(error).slice(0, 120)})`,
+        )}`,
+      );
     }
     throw error;
   }
@@ -1424,7 +1447,16 @@ adminRoutes.get("/admin/market", async (c) => {
     return c.json({ week: round.week, at: round.at, market });
   }
   const { renderMarketPage } = await import("@/pages/admin/market-page");
-  return c.html(renderMarketPage(round, market));
+  const { bountyBoard } = await import("@/services/bounty-board");
+  const board = await bountyBoard(c.env).catch(() => null);
+  const posted = c.req.query("bounty_posted");
+  const refused = c.req.query("bounty_refused");
+  const notice = posted
+    ? `Posted: ${posted} — it's on the public board now, terms captured from the door's live 402.`
+    : refused
+      ? `The board refused that one: ${refused}`
+      : undefined;
+  return c.html(renderMarketPage(round, market, board, notice));
 });
 
 /**
