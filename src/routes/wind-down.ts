@@ -44,7 +44,7 @@ windDownRoutes.get("/wind-down", (c) => {
     renderSimplePage({
       title: "If the lights go off",
       description:
-        "What happens to anything this store holds for you if it closes for good: signed artifacts, private confessions, held grudges and the public wall, each with a different ending, decided in advance and dated.",
+        "What happens to anything this store holds for you if it closes for good: signed artifacts, private confessions, held grudges and the public wall.",
       path: "/wind-down",
       bodyHtml: `<section>
         <p class="menu-desc"><strong>${escapeHtml(WIND_DOWN_PROMISE)}</strong></p>

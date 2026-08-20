@@ -145,7 +145,7 @@ attestationRoutes.get("/attestation", (c) => {
     renderSimplePage({
       title: "What we sign",
       description:
-        "What this x402 store signs, who holds the key, and whose word you are taking: the trust model per artifact class, including where it is the weakest available, and a list of what this store does not have.",
+        "What this x402 store signs, who holds the key, and whose word you are taking: the trust model per artifact class, including where it is the weakest available.",
       path: "/attestation",
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(ATTESTATION_STANDFIRST)}</p>

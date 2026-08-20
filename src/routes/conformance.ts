@@ -135,7 +135,7 @@ conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) => {
       renderSimplePage({
         title: "The conformance desk",
         description:
-          "Free, hosted x402 artifact checking. Send any issuer's signed offer or receipt and get a structured verdict: parse, schema, signature, liveness, and optionally the issuer's anchored key history. No wallet, no account.",
+          "Free, hosted x402 artifact checking. Send any issuer's signed offer or receipt and get a structured verdict: parse, schema, signature, liveness.",
         path: `/api/conformance/${CONFORMANCE_VERSION}`,
         bodyHtml: docHtml(base),
       }),

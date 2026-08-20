@@ -46,7 +46,7 @@ correctionsRoutes.get("/corrections", (c) => {
       renderSimplePage({
         title: "Corrections",
         description:
-          "Things this store said that were not true, dated, with what found each one and the mechanism that changed so it cannot recur quietly. Includes the signature defect a buyer found from outside.",
+          "Things this store said that were not true, dated, with what found each one and the mechanism that changed so it cannot recur quietly.",
         path: "/corrections",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(CORRECTIONS_STANDFIRST)}</p>
