@@ -11,7 +11,8 @@ The living documents stay at the root (list trued up 2026-08-20,
 after the documentation audit): README (the store), HOUSE_RULES
 (the constitution, with the drift watchlist appended), AGENTS (the
 coding-agent contract), KEEPER_LIST (the one desk file — successor
-to MONDAY, the old KEEPER_LIST, and TASKS, all archived here),
+to MONDAY and TASKS, both archived here with their dates; the old
+KEEPER_LIST was rewritten in place, git history holds it),
 PROBLEMS (the open ledger, its research annex archived here),
 SECURITY, NOTICE, CONTRIBUTING, CODE_OF_CONDUCT, AT_SCALE,
 PAYMENT_RAILS, REGISTRATION_RUN (the runbook every future rail

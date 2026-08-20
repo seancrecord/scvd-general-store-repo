@@ -66,7 +66,7 @@ async function slaGuard(env: Env): Promise<void> {
 }
 
 /**
- * THE SHELF-READER'S ROUND (EMPLOYEES.md job file):
+ * THE SHELF-READER'S ROUND (docs/archive/EMPLOYEES.md job file):
  *
  *   Role.        Notice when the machine-facing surfaces have gone
  *                quiet, because nothing else will.
@@ -106,7 +106,7 @@ async function freshnessGuard(env: Env): Promise<void> {
 }
 
 /**
- * THE REGISTRAR'S ROUND (EMPLOYEES.md job file, and the roster's
+ * THE REGISTRAR'S ROUND (docs/archive/EMPLOYEES.md job file, and the roster's
  * recommended first hire):
  *
  *   Role.        Confirm, on every tick, that the store's own claims

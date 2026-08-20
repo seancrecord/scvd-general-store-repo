@@ -1,7 +1,10 @@
 # KEEPER_LIST — the keeper's one desk file
 
-Successor to MONDAY.md, the old KEEPER_LIST.md, and TASKS.md — all
-three archived whole 2026-08-20 at `docs/archive/`. Three queues is
+Successor to MONDAY.md and TASKS.md (archived whole 2026-08-20 as
+`docs/archive/MONDAY_2026-08-20.md` and
+`docs/archive/TASKS_2026-08-20.md`) and to the old KEEPER_LIST.md,
+which was rewritten in place — git history holds every version of
+it. Three queues is
 how a finished task got handed back twice; this is now the only
 desk. The ritual is MONDAY's: carry only what is TRUE and OPEN,
 strike closed items with their evidence, and when the sheet is
@@ -20,7 +23,8 @@ only the keeper can decide; no work happens until he does.
 ## NOW
 
 **1. The bank walk — LOOK, first, because the records disagree.**
-TASKS.md (written 2026-08-13) says the walk stalled hourly from
+The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
+2026-08-13) says the walk stalled hourly from
 08-12 13:30Z, cursor frozen at block 49,858,030, nineteen straight
 failures shaped like a blown key quota, blocks going permanently
 unreadable past ~2026-08-14 11:00Z — past that the hole is forever.
@@ -28,7 +32,7 @@ PROBLEMS.md #24 says the walk's backlog disease was FIXED 2026-08-11,
 catch-up passes proven in tests. Both records stand with their dates;
 neither is picked here. Open the dashboard and the admin: cursor past
 49,858,030 means the stall record is stale and this closes; frozen
-means follow TASKS's steps — check/rotate the Alchemy key
+means follow the archived entry's steps — check/rotate the Alchemy key
 (`BASE_RPC_URL_PRIMARY`), set the second-provider secret
 (`BASE_RPC_URL_SECONDARY`) — and measure the hole honestly.
 
@@ -43,9 +47,11 @@ list.
 signed-offers gap, the price map). Re-pressing replaces the row.
 
 **4. ClawHub republish — TEST, five minutes.** From a level main:
-`npm run skill:publish`. The site serves 3.3.1 at /skill.md; only the
-ClawHub copy lags. (Supersedes MONDAY's "publish 3.3.0" — the site
-moved on after that line.)
+`npm run skill:publish`. The ClawHub copy lags the site; the number
+that is never stale is `SKILL_VERSION` in `src/store/spec.ts` (3.4.0
+at this true-up) vs `registry/clawhub/published.json` (3.3.0).
+(Earlier lines said 3.3.0 then 3.3.1 and were each stale on arrival
+— per rule 45, the source files are the count, not this one.)
 
 **5. The directory PR sidecar — keeper follow-through** (08-19).
 Regenerate `providers/scvd/store/openapi.json` from the live
@@ -80,10 +86,11 @@ four Base hashes in the TASKS archive's NOW block;
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
 
-- **Swap the corpus denominator — build.** The arXiv figure (13,760
-  endpoints / 420 domains) replaces the unverified ~59,818 wherever
-  coverage is stated; closes the old list's "neither figure is
-  checked" warning (2026-08-18).
+- ~~Swap the corpus denominator~~ — STRUCK 2026-08-20 at the
+  re-review: the arXiv figure (13,760 / 420) is already what
+  `src/services/population.ts` and docs/CORPUS_VELOCITY.md carry,
+  and the old ~59,818 appears nowhere in the tree. Done before the
+  merge; carried in error.
 - **Promote undeclared_walkers to channel.ts — build, before
   trusting any denominator** (funnel finding 2026-08-18): the flat
   ~50–100 asks/day/item profile fingerprints catalog walkers still
@@ -134,7 +141,7 @@ below serves the first outside dollar.
 
 ## BACKLOG
 
-**Unstaffed hires** (EMPLOYEES.md; registrar's round on shift, these
+**Unstaffed hires** (docs/archive/EMPLOYEES.md; registrar's round on shift, these
 proposed 2026-07-28 — each is one check on the rounds + a rule-32
 job file):
 

@@ -383,6 +383,8 @@ The store's standing documents, so nobody needs `ls` to find them:
 - [THE_PAPER_KEY.md](THE_PAPER_KEY.md) — key custody, the keeper's hands only
 - [KEEPER_LIST.md](KEEPER_LIST.md) — the keeper's one desk file (successor to MONDAY.md and TASKS.md, both archived)
 - [PROBLEMS.md](PROBLEMS.md) — the standing problem ledger
+- [PAYMENT_RAILS.md](PAYMENT_RAILS.md) — how a new payment rail earns admission; [REGISTRATION_RUN.md](REGISTRATION_RUN.md) — the runbook every future rail repeats
+- [AGENT_UX.md](AGENT_UX.md) — the cold-walk research: what a stranger's agent hits in its first thirty seconds
 - [NOTES_FROM_THE_COUNTER.md](NOTES_FROM_THE_COUNTER.md) — signed notes from the instances who worked here
 - [RECEIPT_CHAIN.md](RECEIPT_CHAIN.md), [BOUNTY_BOARD.md](BOUNTY_BOARD.md), [WALKABOUT.md](WALKABOUT.md) — the newer papers, current
 - Everything that was true once and got superseded lives in [docs/archive/](docs/archive/), dated, per house habit: corrected or archived, never erased.

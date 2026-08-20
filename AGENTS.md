@@ -5,6 +5,9 @@ short: research on these files shows unnecessary requirements *harm*
 agent performance, so this is the minimum that is actually load-bearing.
 Human-facing product docs live elsewhere (see `PROBLEMS.md`,
 `AT_SCALE.md`, and the historical record under `docs/archive/`).
+Before working, read `HOUSE_RULES.md` (the standing rules; rule 29
+requires this) and `KEEPER_LIST.md` (the keeper's one desk file —
+what is open, what is decided, what only he can rule on).
 
 ## What this is
 
@@ -84,8 +87,8 @@ imports), and a green test suite can still fail the real deploy.
   asserting exactly that case. Absence in the files you opened is not
   absence.
 - The suite (large; `npm test` is the count that's never stale) can
-  TIME OUT under load: a
-  handful of unrelated tests fail at ~15s on assertions that take
+  TIME OUT under load: a handful of unrelated tests fail at ~15s on
+  assertions that take
   milliseconds alone. Before treating that as a regression, re-run.
   **Same tests failing twice = deterministic, and yours. Different
   tests or none = load.** Observed 2026-08-02. Do NOT "fix" it by

@@ -3,7 +3,7 @@
 Cold-agent passes: what a stranger experiences in the first thirty
 seconds, before they have decided to trust us at all.
 
-Dated entries, same spirit as `LEDGER_READINGS.md` — what was walked,
+Dated entries, same spirit as `docs/archive/LEDGER_READINGS.md` — what was walked,
 what was found, what changed after. Findings here are almost never
 bugs. They are places where somebody burned an extra round trip, ate
 an avoidable 400, or hesitated a beat before trusting us, and every one

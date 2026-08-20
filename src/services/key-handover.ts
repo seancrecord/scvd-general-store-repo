@@ -26,7 +26,7 @@ import type { Env, KeyHandover, SignedHandoverRecord } from "@/types";
  * it BEFORE the secret is replaced and it carries the outgoing key's
  * signature, which is correct. Mint it after and it carries the
  * incoming key's signature, which is worthless — the new key vouching
- * for itself. The ordering is the protocol, and CEREMONY_B.md puts the
+ * for itself. The ordering is the protocol, and docs/archive/CEREMONY_B.md puts the
  * mint in a phase before the secret is touched for exactly this reason.
  *
  * THERE IS NO ROUTE THAT DOES THIS AUTOMATICALLY and there should not

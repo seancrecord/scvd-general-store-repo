@@ -768,10 +768,10 @@ PART TWO — THE FLOW (merged from TAB_UX.md on 2026-08-19; that file
 is retired, this is its full text)
 =====================================================================
 
-# The Tab — the flow, from install to steady state
+## The flow, from install to steady state
 
-Companion to THE_TAB.md, which is the specification. This one is the
-UX: what actually happens, in what order, and who speaks first.
+Part One above is the specification. This part is the UX: what
+actually happens, in what order, and who speaks first.
 
 THE ONE STRUCTURAL FACT that shapes everything below: **The Tab has
 no interface.** There is no dashboard, no login, no window. The
