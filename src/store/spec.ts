@@ -55,7 +55,9 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * claims-door moment rides on top of 3.4.0 — purchase recovery after
  * a reset now returns instant-purchase certificates too, and the
  * skill says so where the moments live. Mid-flight until the keeper
- * republishes to ClawHub (published bundle is still 3.3.0).
+ * republishes to ClawHub (published bundle: 3.4.0 as of 08-20 — the
+ * turnover is out; only this claims-door moment still awaits a
+ * republish).
  */
 export const SKILL_VERSION = "3.4.1";
 

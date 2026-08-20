@@ -432,6 +432,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/fresh-set": {
+        get: freeOp(
+          "The fresh set",
+          "The doors that answered a spec-conformant x402 challenge in the latest weekly census — named, dated, with the rails and cheapest USDC ask each door's own 402 offered, every row linking its signed per-host history in the corpus. Routing data, never a ranking; failing doors appear only as counts. HTML for browsers, full JSON otherwise. Free.",
+        ),
+      },
       "/corrections": {
         get: freeOp(
           "Corrections",

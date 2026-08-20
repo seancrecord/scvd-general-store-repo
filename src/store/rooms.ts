@@ -96,6 +96,13 @@ export const ROOMS: readonly Room[] = [
    * carries it from day one.
    */
   { path: "/registry", name: "State of the registry", on_storefront: false },
+  /**
+   * The other half of the registry bargain, 2026-08-20: the tally
+   * publishes failures without names, the set publishes names only on
+   * the ready side. Built the day the keeper hand-ran the first full
+   * walk; held off the storefront the same way the tally is.
+   */
+  { path: "/fresh-set", name: "The fresh set", on_storefront: false },
   { path: "/attestation", name: "What we sign" },
   /**
    * Rule 43's gate, opened 2026-08-10 on the keeper's badge ruling.

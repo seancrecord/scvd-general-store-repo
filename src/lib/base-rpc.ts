@@ -405,6 +405,32 @@ export async function getBlockNumber(env: Env): Promise<number> {
 }
 
 /**
+ * When was this block mined? One header read, no transactions. Built
+ * for the till sentinel (2026-08-20): its walk rides an hourly cursor
+ * that can run a day behind, and an alert that prints only a block
+ * number reads as breaking news no matter how old the transfer is —
+ * the keeper took his own day-old $50 for a live theft. Null on any
+ * read failure; the caller says "age unknown" rather than guessing.
+ */
+export async function getBlockTimestamp(
+  env: Env,
+  block: number,
+): Promise<Date | null> {
+  try {
+    const header = await rpc<{ timestamp?: string } | null>(
+      env,
+      "eth_getBlockByNumber",
+      [`0x${block.toString(16)}`, false],
+    );
+    if (!header?.timestamp) return null;
+    const seconds = Number.parseInt(header.timestamp, 16);
+    return Number.isFinite(seconds) ? new Date(seconds * 1000) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * DID THIS AUTHORIZATION BURN? — the ambiguous-settle rescue's one
  * question (incident 2026-08-07: three settles 502'd on BOTH attempts
  * and were booked as declines while every one of them had landed

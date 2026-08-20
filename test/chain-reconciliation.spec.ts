@@ -7,6 +7,7 @@ import {
   readSkippedRanges,
   recordDeliveredSettlement,
   reconcileAgainstChain,
+  tillOutflowDetail,
   runChainReconciliation,
   BASE_RECONCILE_LAST_RESULT_KEY,
   RECONCILE_BLOCK_SPAN,
@@ -41,6 +42,8 @@ const HEAD = 30_000_000;
 function rpcFetch(handlers: {
     outflows?: Array<{ tx: string; to: string; units: number; block?: number }>;
   head?: number;
+  /** Unix seconds for eth_getBlockByNumber answers (the mined-time line). */
+  minedAt?: number;
   logs?: Array<{ tx: string; from: string; units: bigint; block: number }>;
   fail?: "head" | "logs";
 }): typeof fetch {
@@ -101,6 +104,21 @@ function rpcFetch(handlers: {
             data: `0x${entry.units.toString(16).padStart(64, "0")}`,
             blockNumber: `0x${entry.block.toString(16)}`,
           })),
+        }),
+      } as unknown as Response;
+    }
+    if (body.method === "eth_getBlockByNumber") {
+      // Header read for the outflow alert's mined-time line. Without a
+      // configured minedAt the mock answers null and the alert says
+      // "unreadable" — the fail-soft path, exercised by every older
+      // test for free.
+      return {
+        ok: true,
+        json: async () => ({
+          result:
+            handlers.minedAt === undefined
+              ? null
+              : { timestamp: `0x${handlers.minedAt.toString(16)}` },
         }),
       } as unknown as Response;
     }
@@ -856,5 +874,61 @@ describe("the till sentinel — money leaving the receiving wallet", () => {
     const result = await runChainReconciliation(envWith(outflowDies));
     expect(result.ran).toBe(true);
     expect(result.failed).toBeFalsy();
+  });
+});
+
+describe("the till alert says who and when (the 2026-08-20 $50 scare)", () => {
+  /**
+   * The incident, verbatim: the keeper funded CV's test wallet with
+   * $50 from the till, the hourly cursor paged him a DAY later with a
+   * block number and no time, the text treated our own family wallet
+   * as a stranger, and two zero-value poison transfers in the same
+   * batch carried the same key-compromise alarm. He opened the thread
+   * with "Just got robbed for $50." Three readings, one per test.
+   */
+  const outflow = (to: string, units: number) => ({
+    txHash: `0x${"ab".repeat(32)}`,
+    to,
+    amount: BigInt(units),
+    block: 29_999_000,
+  });
+
+  it("names a family destination from house-wallets.json, and still pages", async () => {
+    const detail = await tillOutflowDetail(
+      envWith(rpcFetch({})),
+      outflow("0x843b544bf5f0aa6cbf13e94563874878c98cc4a7", 50_000_000),
+    );
+    expect(detail).toContain("OWN family wallet");
+    expect(detail).toContain("CV");
+    // Family softens the reading, never the vigilance: an outflow the
+    // keeper did not fire is a key event regardless of destination.
+    expect(detail).toContain("still a compromised key");
+    // And with no header answer, the age line refuses to guess.
+    expect(detail).toContain("mined time unreadable");
+  });
+
+  it("prints the mined time and calls out its own lateness", async () => {
+    const now = new Date("2026-08-20T16:31:00Z");
+    const minedAt = Math.floor(
+      new Date("2026-08-19T16:31:00Z").getTime() / 1000,
+    );
+    const detail = await tillOutflowDetail(
+      envWith(rpcFetch({ minedAt })),
+      outflow("0x9999999999999999999999999999999999999999", 50_000_000),
+      now,
+    );
+    expect(detail).toContain("~24h before this alert");
+    expect(detail).toContain("the mined time is the truth");
+  });
+
+  it("reads a zero-value transfer as poison, never as a key event", async () => {
+    const detail = await tillOutflowDetail(
+      envWith(rpcFetch({})),
+      outflow("0x843b28be87b6d35885713f7e14647bb7cb29c4a7", 0),
+    );
+    expect(detail).toContain("NO KEY was involved");
+    expect(detail).toContain("address-poisoning");
+    expect(detail).toContain("DO NOT copy");
+    expect(detail).not.toContain("compromised");
   });
 });
