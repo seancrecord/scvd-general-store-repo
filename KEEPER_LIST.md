@@ -165,6 +165,25 @@ job file):
   digest-signing at build time.
 - The Meter Check (08-19) — token-billing recount; gated on enough
   x402 inference endpoints. Count, never model.
+- **The Circle-badge slate** (keeper 08-20, off the 100/100 scanner
+  read: "i say we do it all at some point"), in build order:
+  1. SIWX / wallet auth — CAIP-122 message format on the claims
+     door's existing wallet-signature challenge. Small, doctrine-fit
+     (no accounts, no keys), mine, near-term.
+  2. MPP (Machine Payments Protocol, Stripe+Tempo) — second payment
+     standard beside x402. Spec read first; RULE before build: card
+     rails are reversible ~90 days and our certificates are signed
+     forever — settle-before-mint needs a chargeback answer (exclude
+     forever-artifacts from MPP, price the risk, or delay minting).
+  3. Circle Gateway nanopayments — accept their unified USDC
+     balance. Circle onboarding first (keeper hand, likely KYB);
+     code after is modest. The Alliance Program thread (Haider
+     Bhatti, 08-20) is probably the same front door.
+  4. World ID / Proof of Human — requires the keeper PERSONALLY
+     enrolling (Orb/app) before anything buildable; the store-shaped
+     use is the inversion: our human_witness carries OUR proof of
+     personhood, never a gate on buyers. Last, by his own "idk
+     how... at some point".
 - ~~Single-rail residues~~ DONE 08-20: /zodiac and /api/claims read
   both rails.
 - ~~The Statement~~ SHIPPED 08-20 on the shelf (`the_statement`, the
