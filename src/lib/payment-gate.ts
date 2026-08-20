@@ -202,6 +202,98 @@ function withOfferHeader(
   }
 }
 
+/**
+ * The EVM offer we are actually making, read back out of the header a
+ * compliant client parses. Read rather than recomputed on purpose: a
+ * template built from a second copy of payTo and amount would be a
+ * second source of truth, and the first thing it would do is drift.
+ */
+function evmAcceptFrom(
+  headers: Record<string, string>,
+): Record<string, unknown> | null {
+  try {
+    const name = Object.keys(headers).find(
+      (key) => key.toLowerCase() === "payment-required",
+    );
+    if (!name) return null;
+    const decoded = JSON.parse(atob(headers[name] as string)) as Record<
+      string,
+      unknown
+    >;
+    const accepts = Array.isArray(decoded["accepts"]) ? decoded["accepts"] : [];
+    return (
+      (accepts.find(
+        (entry) =>
+          isRecord(entry) &&
+          typeof entry["network"] === "string" &&
+          entry["network"].startsWith("eip155:"),
+      ) as Record<string, unknown> | undefined) ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * THE FILL-IN-THE-BLANKS PAYLOAD, 2026-08-20 — for the buyer we had
+ * not modelled.
+ *
+ * The store's help for hand-rollers assumed a reader: prose at /try, a
+ * URL on the challenge, the full teaching block on declines. The
+ * archetype that actually turned up writes a SCRIPT — an agent handed
+ * a 402 that reaches for a general-purpose web3 library, runs headless,
+ * renders no HTML and follows no documentation link. Ours did exactly
+ * that against our own door and died five times in forty seconds on
+ * four different envelope errors, twice on the same missing `accepted`,
+ * with the full teaching block sitting in the responses it had already
+ * received. Prose cannot reach a program.
+ *
+ * So the challenge hands it a payload instead of a lecture: every
+ * value that is ours is already filled in from the offer above, and
+ * the only fields left are the three that must be the buyer's — the
+ * wallet, a fresh nonce, and the signature. Copy, fill three blanks,
+ * base64, send. Every one of the five failures that prompted this is
+ * unreachable from here: the object is an object, `accepted` is
+ * present and byte-identical to what we offered, the amounts are
+ * decimal strings, and validAfter has a legal value.
+ *
+ * The placeholders are angle-bracketed and therefore invalid hex, so a
+ * client that sends one unedited gets our preflight naming the exact
+ * field rather than a silent facilitator refusal. Failing loudly is
+ * the point of the shape.
+ */
+function payloadTemplate(
+  accept: Record<string, unknown>,
+): Record<string, unknown> | null {
+  const payTo = accept["payTo"];
+  const amount = accept["amount"];
+  if (typeof payTo !== "string" || typeof amount !== "string") {
+    return null;
+  }
+  const timeout =
+    typeof accept["maxTimeoutSeconds"] === "number"
+      ? accept["maxTimeoutSeconds"]
+      : 300;
+  return {
+    x402Version: 2,
+    // Copied whole, which is also the rule: any field you rebuild by
+    // hand is a field that can disagree with ours.
+    accepted: accept,
+    payload: {
+      signature:
+        "<0x + 130 hex — your EIP-712 signature over the authorization below>",
+      authorization: {
+        from: "<0x + 40 hex — the wallet holding the USDC>",
+        to: payTo,
+        value: amount,
+        validAfter: "0",
+        validBefore: String(Math.floor(Date.now() / 1000) + timeout),
+        nonce: "<0x + 64 hex — 32 random bytes, never reused>",
+      },
+    },
+  };
+}
+
 async function enrich402Body(
   env: Env,
   path: string,
@@ -209,6 +301,7 @@ async function enrich402Body(
   decline?: DeclineReason,
   mismatch?: MismatchReport,
   payloadProblems: PayloadFieldProblem[] = [],
+  evmAccept?: Record<string, unknown> | null,
 ): Promise<unknown> {
   if (!isRecord(body)) {
     return body;
@@ -264,6 +357,18 @@ async function enrich402Body(
           // Weightless on the common path: the values are already in
           // accepts[].extra, this only says where the prose is.
           hand_rolling_url: `${base}/try#hand-rolling`,
+          // A URL helps a person; a filled payload helps a program.
+          // See payloadTemplate for the buyer this is aimed at.
+          ...(() => {
+            const template = evmAccept ? payloadTemplate(evmAccept) : null;
+            return template
+              ? {
+                  payload_template: template,
+                  payload_template_note:
+                    "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL. Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), chainId 8453, and verifyingContract = accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template is the Base rail only.",
+                }
+              : {};
+          })(),
         }),
     ...(item
       ? {
@@ -590,6 +695,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
           decline,
           refusal?.mismatch,
           payloadProblems,
+          evmAcceptFrom(result.response.headers),
         );
         return respondWithInstructions(c, {
           ...result.response,

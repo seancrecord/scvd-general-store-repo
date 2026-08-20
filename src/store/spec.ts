@@ -50,7 +50,14 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * MINOR, not patch: a catalogue reader that cached 3.3.1 is holding a
  * menu with items that no longer exist and missing three that do.
  */
-export const SKILL_VERSION = "3.4.0";
+/**
+ * 3.4.1 (2026-08-20, the merge of two sessions' same-day work): the
+ * claims-door moment rides on top of 3.4.0 — purchase recovery after
+ * a reset now returns instant-purchase certificates too, and the
+ * skill says so where the moments live. Mid-flight until the keeper
+ * republishes to ClawHub (published bundle is still 3.3.0).
+ */
+export const SKILL_VERSION = "3.4.1";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

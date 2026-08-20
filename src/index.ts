@@ -662,3 +662,12 @@ const worker: ExportedHandler<Env> = {
 
 // Cloudflare Workers requires a default export for its fetch/scheduled handlers.
 export default worker;
+
+/**
+ * The Hono app itself, exported for exactly one consumer: the
+ * no-orphan-capability guard in test/, which walks app.routes and
+ * asserts every public door is named on a surface an agent reads.
+ * Production imports the default worker; nothing else should touch
+ * this.
+ */
+export { app };

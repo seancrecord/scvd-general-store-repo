@@ -199,6 +199,14 @@ export interface OrderRecord {
   payer?: string;
   agent_name?: string;
   callback_url?: string;
+  /**
+   * What happened to the completion webhook the buyer asked for
+   * (2026-08-20). One attempt, best-effort, never blocking — but a
+   * miss used to be INVISIBLE: fetch does not throw on a 500, so a
+   * dead callback lost the notice with no record anywhere that it was
+   * ever owed. Our missed passes go in the book; this is that line.
+   */
+  webhook?: string;
   patron_number: number;
   cert_id: string;
   deliverable?: string;

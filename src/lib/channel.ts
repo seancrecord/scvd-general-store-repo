@@ -145,7 +145,37 @@ export interface HouseSignals {
   payer?: string;
   houseHeader?: string;
   houseParam?: string;
+  /** The caller's user-agent, for the house AGENTS test below. */
+  userAgent?: string;
 }
+
+/**
+ * THE STORE'S OWN AGENTS, BY NAME — the third house test, added
+ * 2026-08-20 after the first two both missed one.
+ *
+ * What happened: CV's field-run script (research/field-run-2026-08-18)
+ * walks every endpoint the Bazaar lists, and the Bazaar lists US. It
+ * hand-rolls its x402 envelopes, so its five attempts at the half-cent
+ * door died at the envelope — `payload_not_an_object`,
+ * `payload_missing_accepted` — before any payer address existed to
+ * read. And it must NOT carry the house secret, because it knocks on
+ * strangers' doors and a secret sent abroad is a secret spent.
+ *
+ * So both existing house tests were blind at once: no payer to match
+ * against the wallet list, no secret to match against the header. Five
+ * family declines booked as ORGANIC, paged the keeper four times at
+ * nine at night, and read on the desk as the strongest outside intent
+ * this store had ever seen. Family made the paper, in the one column
+ * where the store watches hardest.
+ *
+ * THE DIRECTION OF THE ERROR IS THE WHOLE ARGUMENT for matching on a
+ * spoofable string. A stranger who copies this agent name gets counted
+ * as house, which REMOVES them from the organic figures — understating
+ * the store. The bug this replaces did the opposite, and inflating
+ * organic is the failure the house rules exist to prevent. When only
+ * two directions are available, take the one that flatters nobody.
+ */
+const HOUSE_AGENTS = ["scvd-walkabout"] as const;
 
 /** Family doesn't make the paper: true when a wallet is the house's own. */
 export function isHouseWallet(env: Env, address: string): boolean {
@@ -154,6 +184,14 @@ export function isHouseWallet(env: Env, address: string): boolean {
 
 export function isHouseTraffic(env: Env, signals: HouseSignals): boolean {
   if (signals.payer && houseWallets(env).includes(signals.payer.toLowerCase())) {
+    return true;
+  }
+  // The agent test runs BEFORE the secret, and needs neither a payer
+  // nor a header — which is the point: it is the only one of the three
+  // that still works when the envelope was too malformed to carry a
+  // wallet address. See HOUSE_AGENTS.
+  const agent = signals.userAgent?.toLowerCase() ?? "";
+  if (agent && HOUSE_AGENTS.some((name) => agent.includes(name))) {
     return true;
   }
   const secret = env.HOUSE_SECRET;

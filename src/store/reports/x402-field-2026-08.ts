@@ -34,6 +34,47 @@ export const REPORT_META = {
    */
   bitcoin_anchor:
     "anchored via OpenTimestamps: body_sha256 is submitted to public calendars and committed into Bitcoin; live status and proof in this artifact's ots field (anchoring live as of 2026-08-19)",
+  /**
+   * WITHDRAWN 2026-08-20, one day after publication, by the keeper.
+   *
+   * The report's largest failure class — 616 attempts, 36% of the run
+   * — was attributed to "the facilitator/server refusing its own
+   * advertised terms." The ledger this report commits as its own
+   * evidence does not support that sentence. Classifying those 616
+   * rows by what the server actually said: 19 (3.1%) mention payment,
+   * signature or authorization at all; 176 (28.6%) are endpoints
+   * asking for business inputs the instrument never sent (a bare GET
+   * against an endpoint needing parameters — several replied
+   * "charged": false); 250 (40.6%) returned an empty body and are
+   * unknowable; 171 (27.8%) are something else.
+   *
+   * Three instrument defects push the same way and were found beside
+   * it: chainId hardcoded to 8453 so any other EVM chain got a
+   * signature over the wrong domain; accepts[0] taken blindly so a
+   * Solana-first offer got an EIP-3009 authorization built for it;
+   * and success defined as exactly HTTP 200, so a 201 or 202 counted
+   * as a failure.
+   *
+   * WHAT THE GUARD CAUGHT AND WHAT IT DID NOT. A build test reads
+   * ledger.jsonl and fails when this document's numbers disagree with
+   * it. It verified that 616 such rows exist. It never checked that
+   * the clause explaining them was true — the count was guarded, the
+   * attribution was not, and that is the lesson worth keeping.
+   *
+   * The body and its signature are NOT edited: a signed report that
+   * quietly rewrites itself is worth less than no report. The
+   * evidence stays committed. What changes is that the store stops
+   * serving the conclusion while its own ledger contradicts it.
+   */
+  withdrawn: {
+    at: "2026-08-20",
+    reason:
+      "The largest failure class was attributed to sellers; this report's own committed ledger supports that reading for about 3% of it. Roughly 29% were endpoints correctly asking for inputs our instrument never sent, and 41% answered with an empty body and cannot be read either way. The headline two-thirds figure therefore measures client-plus-server friction on one hand-rolled instrument, not seller failure, and the report did not say so.",
+    what_stands:
+      "The chain-side arithmetic is unaffected and stays true: 669 USDC transfers left the declared wallet totalling $6.396969, against 489 the client recorded as paid — the 180-settlement recording gap is a fact about the instrument's own bookkeeping and, if anything, this correction strengthens it. The raw ledger, the transfer list and the scripts remain committed at research/field-run-2026-08-18/ so anyone can redo this classification and check ours.",
+    next:
+      "A re-run with the instrument repaired — required inputs sent, chainId read from the offer, accepts filtered to a rail we can actually sign, and success counted on any 2xx — would produce a number worth publishing. Until then the store makes no claim about ecosystem payment-failure rates.",
+  },
 } as const;
 
 export const REPORT_BODY = `# The x402 ecosystem, walked with a wallet: August 2026

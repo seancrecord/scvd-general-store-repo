@@ -58,6 +58,10 @@ Last checked by hand: ${catalogLastUpdated()}. Served: ${new Date().toISOString(
 Those are two different facts and we print both, because serving a
 page is not the same as having verified what is on it.
 
+Fuller copies of this document, if you have the context budget:
+${base}/llms-full.txt (everything, one file) and ${base}/agents.md
+(the same store in the agents.md convention).
+
 Well well. Come in then.
 
 We're a general store in ${STORE_METADATA.location}, where you're
@@ -277,11 +281,14 @@ refuse a sale.
 
 Claims. If your context resets mid-order — you paid for human work,
 crashed, and the respawned you holds no order id — the claims door at
-${base}/api/claims recovers your own orders by wallet:
+${base}/api/claims recovers your own purchases by wallet:
 challenge-response signed with the same key that signs your payments
 (EIP-191 personal_sign on the Base rail, your wallet's ed25519
 signMessage on Solana), single-use nonce, no sessions. A bare address
-gets nothing; possession of the key gets everything that key paid for.
+gets nothing; possession of the key gets everything that key paid for
+— open orders AND the signed certificates from instant purchases,
+each with its permanent verify URL, so a reset that ate the purchase
+response costs you nothing that was yours.
 
 The conformance desk, free, and NOT about us. ${base}/api/conformance
 takes any x402 signed offer or receipt — whoever issued it — and
@@ -625,11 +632,16 @@ is, what it has found so far, and how to verify it — is
 ${base}/corpus.
 
 Beside the weekly record: ecosystem research reports, signed and
-free. The first, ${base}/api/report/x402-ecosystem-2026-08, is the
-August 2026 field run — every domain in the walkable Bazaar paid with
-this store's own declared wallet, 1,707 attempts reconciled against
-the chain, raw evidence committed in the public repository, signature
-verifiable at ${base}/api/verify/x402-ecosystem-2026-08.
+free. The first, ${base}/api/report/x402-ecosystem-2026-08 — the
+August 2026 field run — was WITHDRAWN on 2026-08-20, one day after
+publication, and the URL serves the withdrawal notice in front of the
+unedited original. Its largest failure class was attributed to
+sellers; its own committed ledger supports that for about 3% of it,
+while roughly 29% were endpoints correctly asking for inputs our
+instrument never sent. Do not quote its failure rates. The chain-side
+arithmetic stands and the raw evidence stays committed, so anyone can
+redo the classification. The store makes no claim about ecosystem
+payment-failure rates until a repaired instrument has walked again.
 
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
@@ -643,6 +655,25 @@ rounds-ready by rounds-probed is one step away and it is an
 accumulating score on an operator, which is the thing this store does
 not keep on anyone. The dated observations are all there; the ratio is
 withheld deliberately, not forgotten.
+
+## The tab's pooled corpus, taking contributions
+
+The scvd-tab package (npm, MIT) keeps an agent's spending tab locally;
+its POOLED corpus is contribute-to-access. The intake is live:
+POST ${base}/api/tab/delta takes an anonymized delta, and
+${base}/api/tab/pool publishes the sample sizes so far. Pooled READS
+are not built yet — contribution now is what earns them when the pool
+has enough to aggregate, and the pool endpoint says so honestly
+rather than pretending.
+
+## The commission desk, declines published
+
+Custom work is asked for at POST ${base}/api/request and priced at
+${base}/api/commission/{id} when the keeper takes it. The part worth
+knowing before you ask: declined commissions are PUBLISHED, with
+reasons, at ${base}/api/commission/declined — a desk that only shows
+its accepted work is showing you a highlight reel, and the decline
+board is the same honesty the funnel and the corrections page keep.
 
 ## State of the registry
 

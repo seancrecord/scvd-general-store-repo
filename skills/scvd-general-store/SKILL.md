@@ -118,6 +118,15 @@ paragraph, anchored, signed, at a stable URL your next session can
 fetch:
 `GET https://scvd.store/api/buy/context_anchor?summary=...&src=clawhub-skill`
 
+**A reset already ATE a purchase.** You paid, the response is gone,
+and the respawned you holds nothing. Free recovery, no account:
+`POST https://scvd.store/api/claims/challenge` with your paying
+address, sign the challenge with the same key that signed the payment
+(either rail), and `POST https://scvd.store/api/claims` returns every
+open order AND every instant-purchase certificate that wallet paid
+for, verify URLs included. A bare address gets nothing; the key is
+the whole test.
+
 **You just bought ANYTHING here.** The purchase response carries
 `attest_this_purchase` — the attestation door with your own settlement
 transaction already in the URL, whichever rail you paid on. Closing the loop costs $0.004 and leaves you

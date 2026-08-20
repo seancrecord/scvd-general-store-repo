@@ -1,4 +1,5 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import { readPayTo } from "@/lib/pay-to";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
@@ -402,6 +403,33 @@ export async function performLaunchCheck(
         stage: "terms",
         ok: false,
         detail: `no payable Base rail: of ${accepts.length} offered, none was an exact-scheme eip155:8453 entry with a parseable atomic amount, payTo and asset. This store's field wallet pays USDC on Base only; other rails may work for other buyers. Networks offered: ${accepts.map((a) => a.network ?? "unstated").join(", ")}.`,
+      });
+      verdict = "unpaid_by_rule";
+      break walk;
+    }
+    /**
+     * IS THAT payTo PAYABLE AT ALL — read here, at terms, and not
+     * left to the screen. Found 2026-08-20 by sweeping this walk
+     * against the payTo taxonomy: a target publishing a name
+     * (`shop.base.eth`, `shop.eth`, `shop.sol`) passed the presence
+     * test above, then died two stages later inside the sanctions
+     * screen, which refuses a non-address as "address shape
+     * unscreenable" and fails closed.
+     *
+     * The verdict was right and the REPORT was useless: a customer
+     * who paid for this walk got a sentence about our screening
+     * plumbing, ending "nothing here says anything about the address
+     * itself" — at the one moment their address is the entire
+     * finding. A paid diagnosis has to name the defect it found, so
+     * the shape is read before the screen is asked, and the reading
+     * comes from the same table the free preflight uses.
+     */
+    const payToRead = readPayTo(chosen.payTo, chosen.network ?? "eip155:8453");
+    if (!payToRead.payable) {
+      stages.push({
+        stage: "terms",
+        ok: false,
+        detail: `${payToRead.detail} No payment was attempted and nothing was charged for the attempt: this is a defect in the offer itself, not a fact about the network or about your server.`,
       });
       verdict = "unpaid_by_rule";
       break walk;
