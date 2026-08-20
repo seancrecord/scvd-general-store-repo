@@ -218,7 +218,7 @@ practiceCounterRoutes.get("/try", (c) => {
       renderSimplePage({
         title: COPY.title,
         description:
-          "Practice your x402 client against a real till. No sandbox and no test mode: the cheapest item is half a cent, every purchase signs its own receipt, and the worked EIP-712 example shows the domain trap that fails silently.",
+          "Practice your x402 client against a real till. No sandbox and no test mode: the cheapest item is half a cent, every purchase signs its own receipt.",
         path: "/try",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(COPY.standfirst)}</p>

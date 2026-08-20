@@ -73,7 +73,7 @@ export const SETTLED: readonly Settled[] = [
      * answer — "No. It stays a shop." — stood from 2026-07-30 and is
      * quoted here rather than deleted, because a page that quietly
      * rewrites its settled answers is worth nothing as a record. The
-     * reasoning trail is in the repository (MARKETPLACE_AUDIT.md),
+     * reasoning trail is in the repository (docs/archive/MARKETPLACE_AUDIT.md),
      * and the objection the old answer rested on is answered below
      * rather than waved past.
      */

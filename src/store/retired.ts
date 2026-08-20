@@ -6,7 +6,7 @@
  * its own shelves looks broken to the agent that remembered them.
  *
  * First enacted 2026-08-05, on the keeper's word, after the first
- * month of real demand data (docs/MENU_CONSOLIDATION.md). The rule
+ * month of real demand data (docs/archive/MENU_CONSOLIDATION.md). The rule
  * that survives the list: nothing with an organic settle was cut.
  */
 

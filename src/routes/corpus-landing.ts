@@ -1,9 +1,5 @@
 import { Hono } from "hono";
-import {
-  CENSUS_FINDING,
-  CENSUS_NUMBER,
-  CENSUS_WHY_IT_MATTERS,
-} from "@/store/copy/census";
+import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
 import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -99,7 +95,8 @@ corpusLandingRoutes.get("/corpus", (c) => {
     return c.html(
       renderSimplePage({
         title: "The corpus",
-        description: `Weekly signed observations of the x402 ecosystem — which listed hosts answered and what a conformance probe saw. Hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, free to read. Includes the census finding: ${CENSUS_NUMBER} listed hosts serve no signed offers.`,
+        description:
+          "Weekly signed observations of the x402 ecosystem — which listed hosts answered and what a conformance probe saw. Hash-chained, ed25519-signed.",
         path: "/corpus",
         bodyHtml: `${landingHtml(base)}\n${corpusDatasetJsonLd(base)}`,
       }),

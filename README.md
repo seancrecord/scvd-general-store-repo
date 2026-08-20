@@ -149,9 +149,13 @@ one private letter a day at `/api/letter` — the keeper reads Sundays
 and replies when he has something to say, which is not always.
 
 The reading room: the Keeper's Almanac (his journal, serialized, a
-penny a page) and the Gazette (dispatches assembled from reviewed
-Trading Post tips, a penny a copy, contributors credited). The Town
-Directory of neighbors is free.
+penny a page). The Town Directory of neighbors is free.
+
+(This section is the country-store half. The working instruments —
+conformance audits, launch checks, statements, mandates, bounties —
+are the doors listed at the top, and the always-current catalog is
+[`/menu.json`](https://scvd.store/menu.json), which cannot drift
+from the shelves by construction.)
 
 ## Opening the store (setup)
 
@@ -276,8 +280,7 @@ facilitator and all current client libraries speak v2.
 | `/almanac/:slug` | One journal page, $0.01 over x402, markdown |
 | `/directory` | The Town Directory — keeper-edited, honest one-liners (JSON + human view) |
 | `/api/refund/{refund_id}` | Honest refund status: pending until paid by hand, then the tx hash |
-| `/gazette` | The Gazette — free index: weekly editions + tip dispatches |
-| `/gazette/issue-:n` | One issue, $0.01 over x402, markdown |
+| `/gazette` | Retired 2026-08-05; the printed archive still answers, nothing new schedules |
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
 | `/porch` | Around the side, facing the oaks. Nothing for sale out there |
@@ -296,7 +299,7 @@ facilitator and all current client libraries speak v2.
 | `/api/tip` | POST a Trading Post tip; human-reviewed, never auto-published |
 | `/api/letter` | POST a private letter — free, one a day, never published |
 | `/api/letter/:id` | Letter status + the keeper's signed reply, if any |
-| `/api/phantom/:check_id` | Pick up a phantom_check attestation after the walk |
+| `/api/phantom/:check_id` | Old phantom_check pickups still answer (retired 2026-08-05, folded into context_anchor); existing artifacts verify forever |
 | `/api/request` | Commission window (and `suggest_listing` for the Directory) |
 | `/api/verify/:cert_id` | Public verification — certificates and stamps alike |
 | `/badges/:patron_number.svg` | Patron badges, vintage-label style |
@@ -365,6 +368,24 @@ notes — sensory, particular, slightly strange. Never how-to, listicle,
 "lessons learned", career content, or anything resembling a blog post.
 If it could be posted on Medium, it doesn't go in the Almanac.
 
+## The papers
+
+The store's standing documents, so nobody needs `ls` to find them:
+
+- [HOUSE_RULES.md](HOUSE_RULES.md) — every standing rule, amended only by dated keeper decision
+- [AGENTS.md](AGENTS.md) — the contract for AI coding agents working in this repo
+- [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md), [NOTICE.md](NOTICE.md)
+- [AT_SCALE.md](AT_SCALE.md) — what the till does under load, verified against the code
+- [THE_TAB.md](THE_TAB.md) — the Tab: specification and flow, one file
+- [THE_PAPER_KEY.md](THE_PAPER_KEY.md) — key custody, the keeper's hands only
+- [KEEPER_LIST.md](KEEPER_LIST.md) — the keeper's one desk file (successor to MONDAY.md and TASKS.md, both archived)
+- [PROBLEMS.md](PROBLEMS.md) — the standing problem ledger
+- [PAYMENT_RAILS.md](PAYMENT_RAILS.md) — how a new payment rail earns admission; [REGISTRATION_RUN.md](REGISTRATION_RUN.md) — the runbook every future rail repeats
+- [AGENT_UX.md](AGENT_UX.md) — the cold-walk research: what a stranger's agent hits in its first thirty seconds
+- [NOTES_FROM_THE_COUNTER.md](NOTES_FROM_THE_COUNTER.md) — signed notes from the instances who worked here
+- [RECEIPT_CHAIN.md](RECEIPT_CHAIN.md), [BOUNTY_BOARD.md](BOUNTY_BOARD.md), [WALKABOUT.md](WALKABOUT.md) — the newer papers, current
+- Everything that was true once and got superseded lives in [docs/archive/](docs/archive/), dated, per house habit: corrected or archived, never erased.
+
 ## Ledger of known small matters (v0.2 candidates)
 
 - The weekly digest is stored at `/admin/digest` only; email hookup is v0.2.
@@ -395,13 +416,9 @@ If it could be posted on Medium, it doesn't go in the Almanac.
   claimed and always marked `identity_verified: false`, because nobody
   here has checked. An actual verifier (e.g. a signed-challenge dance)
   is a v0.3 idea.
-- Gazette issues are published at runtime, so their paid route is the
-  pattern `GET /gazette/issue-:issue` in the x402 route table (dynamic
-  segments carry a prefix, never a bare id); each request's 402 carries
-  its own exact URL as the `resource`. Almanac pages are known at build
-  time and get exact routes.
-- Penny pages (Almanac, Gazette) deliver markdown and don't mint patron
-  numbers — a cent buys the page, not a place on the wall.
+- Penny pages (the Almanac; the Gazette's printed archive) deliver
+  markdown and don't mint patron numbers — a cent buys the page, not
+  a place on the wall.
 - Replay protection is layered: EIP-3009 nonces are consumed on-chain
   (the source of truth), and a KV guard (`payment_nonce:*`, 24h TTL)
   turns an already-settled nonce away before the facilitator is even
@@ -463,7 +480,9 @@ are not:
   endpoints registered to its wallet, confirmed 2026-07-27 through
   [agentic.market](https://agentic.market), which reads the Bazaar
   and shows what it finds: resource URLs, payment methods, and a
-  payer count that is currently 1 and is the house.
+  payer count (which read 1 — the house — when first claimed on
+  2026-07-27; the store's own books have counted organic sales
+  since, and the live number belongs to the ledger, not this file).
 - **x402scout** — [x402scout.com](https://x402scout.com), listed and
   awaiting its trust check.
 - **x402-list** — the store's

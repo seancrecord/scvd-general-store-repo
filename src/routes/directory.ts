@@ -205,7 +205,7 @@ directoryRoutes.get("/directory/:slug", (c) => {
   if (wantsHtml(c.req.header("Accept"))) {
     return c.html(
       renderSimplePage({
-        title: listing.name,
+        title: `${listing.name} in the Town Directory`,
         description: `${listing.name} in the Town Directory: what it does, and what this store can and cannot say about it.`,
         path: `/directory/${listing.slug}`,
         bodyHtml: `<section>

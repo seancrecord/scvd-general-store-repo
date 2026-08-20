@@ -94,7 +94,7 @@ export const STOREFRONT_COPY = {
    * been a rail since 2026-08-04.
    */
   metaDescription:
-    "The trust layer of the x402 economy: free x402 conformance checks of signed offers and receipts, settlement attestation, endpoint monitoring, and a weekly Bitcoin-anchored corpus. USDC on Base and Solana.",
+    "The trust layer of the x402 economy: free x402 conformance checks of signed offers and receipts, and a weekly Bitcoin-anchored corpus. USDC on Base and Solana.",
   ogDescription:
     "The trust layer of the x402 economy: free conformance checking for any issuer's x402 signed offers and receipts, a weekly signed Bitcoin-anchored corpus, and attestation you can verify without us.",
   /**

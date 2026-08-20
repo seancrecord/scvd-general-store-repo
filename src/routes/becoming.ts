@@ -76,7 +76,7 @@ becomingRoutes.get("/becoming", (c) => {
     renderSimplePage({
       title: "What this is trying to prove",
       description:
-        "The part of this x402 store that is not built: four claims it is trying to prove and how each could be shown false, the strategic questions already settled, and the triggers it is watching for. Nothing on this page is available to buy.",
+        "The part of this x402 store that is not built: four claims it is trying to prove and how each could be shown false, the strategic questions already settled.",
       path: "/becoming",
       bodyClass: "becoming",
       extraCss: BECOMING_CSS,

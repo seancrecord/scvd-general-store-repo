@@ -19,7 +19,7 @@ async function alertsSince(): Promise<string[]> {
 }
 
 /**
- * THE REGISTRAR'S ROUND — EMPLOYEES.md's recommended first hire.
+ * THE REGISTRAR'S ROUND — docs/archive/EMPLOYEES.md's recommended first hire.
  *
  * READINESS names signature tenure as the one asset that cannot be
  * bought back, and the operational rule as "never take a verify URL

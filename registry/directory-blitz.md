@@ -1,7 +1,12 @@
 # THE DIRECTORY BLITZ — every venue worth a listing, one page
 
+> NOTE 2026-08-19: partially superseded — ClawHub is at v3.x per
+> registry/clawhub/published.json (the "republish to 2.0.0 pending"
+> line below is history), and DISTRIBUTION.md now lives in
+> docs/archive/. Procedure stands; counts and versions do not.
+
 Surveyed 2026-07-23. Keeper's word: "don't mind just blasting out
-everywhere." Doctrine still applies per DISTRIBUTION.md: as ourselves,
+everywhere." Doctrine still applies per docs/archive/DISTRIBUTION.md: as ourselves,
 once per venue, never bump, free listings only, nothing that wants a
 token or credentials. Every prober that starts hitting the store gets
 its UA added to the infrastructure classifier so the books stay honest
