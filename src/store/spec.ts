@@ -38,7 +38,15 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * corpus it derives from. Mid-flight until the keeper republishes to
  * ClawHub; the site's own /skill.md serves it immediately.
  */
-export const SKILL_VERSION = "3.3.1";
+/**
+ * 3.4.0 (2026-08-20): the night the shelf turned over — launch_check,
+ * the_statement and the_mandate joined the skill's moments, the
+ * regulars' rebate and the bounty board got their lines, and four
+ * doors closed (the drawer, the fortune, dibs, the quick judgment).
+ * MINOR, not patch: a catalogue reader that cached 3.3.1 is holding a
+ * menu with items that no longer exist and missing three that do.
+ */
+export const SKILL_VERSION = "3.4.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
