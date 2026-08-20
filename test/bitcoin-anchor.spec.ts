@@ -1,4 +1,5 @@
 import { SELF, env } from "cloudflare:test";
+import { pendingProofBytes } from "./helpers/ots";
 import { beforeAll, describe, expect, it } from "vitest";
 import { MENU_ITEMS } from "@/store";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
@@ -24,7 +25,7 @@ const DIGEST = "ab".repeat(32);
 const okCalendar = {
   calendars: ["https://calendar.test"],
   fetch: (async () =>
-    new Response(new Uint8Array([9, 9, 9]))) as unknown as typeof fetch,
+    new Response(pendingProofBytes())) as unknown as typeof fetch,
 };
 const deadCalendar = {
   calendars: ["https://calendar.test"],

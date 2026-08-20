@@ -1,4 +1,5 @@
 import { env, SELF } from "cloudflare:test";
+import { pendingProofBytes } from "./helpers/ots";
 import { beforeEach, describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
@@ -22,7 +23,7 @@ const CALENDARS = ["https://calendar.test"];
 
 function okProof(): typeof fetch {
   return (async () =>
-    new Response(new Uint8Array([9, 9, 9]), {
+    new Response(pendingProofBytes(), {
       status: 200,
     })) as unknown as typeof fetch;
 }
