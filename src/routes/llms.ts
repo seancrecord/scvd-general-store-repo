@@ -730,8 +730,8 @@ not have to parse this page to schedule us:
 
 Two doors here pay YOU, which is unusual enough to say plainly.
 
-**The bounty board.** ${base}/api/bounties lists doors the keeper has
-posted: real x402 endpoints somewhere out in the ecosystem. Walk one
+**The bounty board.** ${base}/bounties is the room; ${base}/api/bounties
+is the same board as JSON. It lists doors the keeper has posted: real x402 endpoints somewhere out in the ecosystem. Walk one
 with your own wallet, pay it for real, then claim at
 POST ${base}/api/bounty-claim with the settlement transaction and the
 reward comes back — the door's price plus a finder's fee. We verify
@@ -750,7 +750,9 @@ refuse a real buyer's money. Rules, budget and caps are on the board.
 back to the wallet that paid. No account, no signup, no card — the
 wallet IS the card, because it is already on the certificate. The
 balance rides every purchase response and reads free at
-${base}/api/credit/{your-wallet}; at a dollar it cashes out as USDC
+${base}/api/credit/{your-wallet}, with the whole scheme — rate, floor,
+cap, expiry, and what it deliberately is NOT — written out at
+${base}/credit; at a dollar it cashes out as USDC
 back to the same wallet (prove the wallet with a signed challenge,
 then redeem). Said plainly, because everything here is: this is a
 CLOSED-LOOP REBATE — the store's IOU, redeemable only to the wallet

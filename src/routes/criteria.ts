@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { ARTIFACT_CLASSES, TRUST_MODELS } from "@/store/attestation-spec";
@@ -31,6 +32,51 @@ import type { HonoEnv } from "@/types";
  * ages.
  */
 export const criteriaRoutes = new Hono<HonoEnv>();
+
+/**
+ * THE VOCABULARY AS STRUCTURED DATA (the AEO pass, 2026-08-20).
+ *
+ * This page's citable asset is not an argument, it is a vocabulary:
+ * what each verdict word means and — the column nobody else
+ * publishes — what a valid signature still does not prove. schema.org
+ * has an exact type for that, DefinedTermSet, and an answer engine
+ * asked "what does verified mean for an x402 payment" can lift a
+ * defined term whole. It cannot lift a paragraph that merely contains
+ * the definition.
+ *
+ * Every term derives from the same two lists the page and /attestation
+ * already render, so the markup cannot drift from the prose above it —
+ * a second hand-typed copy is precisely the failure this store keeps
+ * catching in its own pages.
+ */
+function criteriaTermsJsonLd(base: string): string {
+  const verdicts = VERDICT_VOCABULARY.map((entry) => ({
+    "@type": "DefinedTerm",
+    name: entry.verdict,
+    description: entry.means,
+    inDefinedTermSet: `${base}/criteria`,
+  }));
+  const classes = ARTIFACT_CLASSES.map((entry) => ({
+    "@type": "DefinedTerm",
+    name: entry.name,
+    description: `Trust model: ${TRUST_MODELS[entry.trust_model].name}. Signs: ${entry.signs} A valid signature does not prove: ${entry.does_not_prove}`,
+    inDefinedTermSet: `${base}/criteria`,
+  }));
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    name: "What 'verified' means at scvd.store — x402 verdict vocabulary and artifact classes",
+    description:
+      "The published meaning of every verdict this store's checks can return, and for each class of signed artifact, what the signature covers and what it still does not prove. Criteria version " +
+      `${AUDIT_CRITERIA_VERSION}. No verdict here is ever a score on an operator; each is a dated observation of one moment.`,
+    url: `${base}/criteria`,
+    inLanguage: "en",
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    hasDefinedTerm: [...verdicts, ...classes],
+  });
+}
 
 criteriaRoutes.get("/criteria", (c) => {
   const base = c.env.STORE_BASE_URL;
@@ -128,7 +174,8 @@ criteriaRoutes.get("/criteria", (c) => {
         <h2>Badges today</h2>
         <p class="menu-desc">None. Nothing this store serves carries a badge, and this page existing changes that only by removing the gate rule 43 put in front of it.</p>
         <p class="menu-meta">${escapeHtml(CRITERIA_HONEST_LIMIT)}</p>
-      </section>`,
+      </section>
+      ${criteriaTermsJsonLd(base)}`,
     }),
   );
 });

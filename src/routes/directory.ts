@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { jsonLdScript } from "@/lib/jsonld";
 import { catalogLastUpdated } from "@/lib/freshness";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -120,7 +121,7 @@ function directoryJsonLd(base: string): string {
       },
     })),
   };
-  return `<script type="application/ld+json">${JSON.stringify(graph)}</script>`;
+  return jsonLdScript(graph);
 }
 
 /**
@@ -143,7 +144,7 @@ function listingJsonLd(listing: DirectoryListing, base: string): string {
       url: listing.url,
     },
   };
-  return `<script type="application/ld+json">${JSON.stringify(review)}</script>`;
+  return jsonLdScript(review);
 }
 
 directoryRoutes.get("/directory", (c) => {

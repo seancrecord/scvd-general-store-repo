@@ -4,6 +4,7 @@ import {
   CONFORMANCE_VERSION,
 } from "@/services/conformance";
 import { CENSUS_FINDING, CENSUS_WHY_IT_MATTERS } from "@/store/copy/census";
+import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
@@ -105,6 +106,65 @@ function landingHtml(base: string): string {
     </section>`;
 }
 
+/**
+ * THE DESK AS STRUCTURED DATA (the AEO pass, 2026-08-20).
+ *
+ * The finding that built this page was that five outside models asked
+ * "what is scvd.store" and none of them knew the desk existed. A
+ * landing page fixed the crawl; it did not fix the classification.
+ * Answer engines fielding "what tool verifies x402 payments" are
+ * matching against typed entities — a free WebAPI with a stated price
+ * of zero, an endpoint, and its documentation — not against prose
+ * that happens to describe one.
+ *
+ * PRICE ZERO IS STATED, NOT IMPLIED. "Free" in a sentence is a word;
+ * an Offer of 0 USD is a fact a machine can compare against the paid
+ * alternatives it is weighing us next to, which is the whole reason
+ * the desk is free in the first place.
+ *
+ * Every field derives from conformanceDoc — the same object the API
+ * itself serves — so the markup cannot describe a desk that is not
+ * the one answering.
+ */
+function conformanceApiJsonLd(base: string): string {
+  const doc = conformanceDoc(base);
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "WebAPI",
+    name: "The scvd conformance desk — free x402 offer and receipt verification",
+    description: doc.summary,
+    url: `${base}/conformance`,
+    documentation: `${base}/api/conformance/${CONFORMANCE_VERSION}`,
+    /* /terms is a keyword redirect; name the room itself. */
+    termsOfService: `${base}/rights`,
+    provider: { "@type": "Organization", name: "scvd.store", url: base },
+    isAccessibleForFree: true,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    },
+    potentialAction: {
+      "@type": "Action",
+      name: "Check an x402 signed offer or receipt from any issuer",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${base}/api/conformance/${CONFORMANCE_VERSION}`,
+        httpMethod: "POST",
+        contentType: "application/json",
+        encodingType: "application/json",
+      },
+    },
+    featureList: doc.what_it_checks,
+    softwareHelp: [
+      { "@type": "CreativeWork", name: "x402-verify", url: VERIFIER_URL },
+      { "@type": "CreativeWork", name: "x402-sign", url: SIGNER_URL },
+    ],
+    citation: `${base}/registry`,
+  });
+}
+
 conformanceLandingRoutes.get("/conformance", (c) => {
   const base = c.env.STORE_BASE_URL;
   if (wantsHtml(c.req.header("Accept"))) {
@@ -114,7 +174,7 @@ conformanceLandingRoutes.get("/conformance", (c) => {
         description:
           "Free x402 conformance checking: POST any issuer's signed offer or receipt and get a structured verdict — parse, schema, ed25519 signature, liveness. No account, no wallet. With the census finding, worked examples, and the npm packages (x402-verify, x402-sign) to reproduce every verdict offline.",
         path: "/conformance",
-        bodyHtml: landingHtml(base),
+        bodyHtml: `${landingHtml(base)}\n${conformanceApiJsonLd(base)}`,
       }),
     );
   }

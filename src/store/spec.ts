@@ -43,6 +43,10 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * the_statement and the_mandate joined the skill's moments, the
  * regulars' rebate and the bounty board got their lines, and four
  * doors closed (the drawer, the fortune, dibs, the quick judgment).
+ * The same day's AEO sweep added the two money-out moments and the
+ * rooms they now live in (/bounties, /credit) — the mechanisms were
+ * already in 3.4.0, but only as API paths a reader had to be told
+ * about.
  * MINOR, not patch: a catalogue reader that cached 3.3.1 is holding a
  * menu with items that no longer exist and missing three that do.
  */

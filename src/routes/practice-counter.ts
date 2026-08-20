@@ -6,6 +6,7 @@ import {
   SUGGESTED_KEY_BUCKET_SECONDS,
 } from "@/lib/idempotency";
 import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import {
@@ -96,6 +97,59 @@ function steps(base: string, cheapestId: string): string[] {
     `We answer 402 Payment Required. The machine-readable terms ride the PAYMENT-REQUIRED response header (base64 JSON): scheme "exact", the USDC asset, the amount, our address — Base entries (eip155:8453) first, Solana entries after; pay on either rail. The body carries the item's spec, the verification block, and our full signing key.`,
     `Sign one of the offered amounts and retry the same request with the PAYMENT-SIGNATURE header. We verify, settle, and only then hand over the goods, a signed certificate with an id you can check at ${base}/api/verify/{cert_id}.`,
   ];
+}
+
+/**
+ * THE THREE STEPS AS A TYPED PROCEDURE (the AEO sweep, 2026-08-20).
+ *
+ * "How do I test an x402 client" is a procedure question, and this
+ * page is a procedure — but it was published as prose, so an engine
+ * fielding that question had a page it could summarise and no steps
+ * it could lift. The steps here are the SAME array the page and the
+ * JSON both render; the markup adds no fourth step and invents no
+ * shortcut, because a HowTo that disagrees with the page under it is
+ * worse than none.
+ */
+function practiceHowToJsonLd(
+  base: string,
+  flow: readonly string[],
+  cheapest: { id: string; price_usdc: number } | undefined,
+): string {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "Test an x402 payment client against a live till",
+    description:
+      "Practice an x402 v2 client against a real store: no sandbox and no test mode, the same code path every buyer gets, from half a cent. Every purchase ends in an ed25519-signed certificate with a permanent verify URL, so a test has something to assert on.",
+    url: `${base}/try`,
+    inLanguage: "en",
+    ...(cheapest
+      ? {
+          estimatedCost: {
+            "@type": "MonetaryAmount",
+            currency: "USDC",
+            value: cheapest.price_usdc,
+          },
+        }
+      : {}),
+    supply: [
+      {
+        "@type": "HowToSupply",
+        name: "A wallet holding USDC on Base (eip155:8453) or Solana",
+      },
+    ],
+    tool: [
+      { "@type": "HowToTool", name: "An x402 v2 client, or curl and a signer" },
+    ],
+    step: flow.map((text, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: `Step ${index + 1}`,
+      text,
+      url: `${base}/try`,
+    })),
+    provider: { "@type": "Organization", name: "scvd.store", url: base },
+  });
 }
 
 practiceCounterRoutes.get("/try", (c) => {
@@ -248,7 +302,8 @@ practiceCounterRoutes.get("/try", (c) => {
           <h2>${escapeHtml(COPY.honestHead)}</h2>
           ${list(COPY.honest)}
           <p class="menu-desc">${escapeHtml(COPY.closer)}</p>
-        </section>`,
+        </section>
+        ${practiceHowToJsonLd(base, flow, low ? { id: low.id, price_usdc: low.price_usdc } : undefined)}`,
       }),
     );
   }

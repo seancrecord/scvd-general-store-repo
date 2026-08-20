@@ -4,6 +4,7 @@ import {
   CENSUS_NUMBER,
   CENSUS_WHY_IT_MATTERS,
 } from "@/store/copy/census";
+import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import type { HonoEnv } from "@/types";
@@ -61,7 +62,7 @@ function corpusDatasetJsonLd(base: string): string {
       contentUrl: `${base}/corpus.json`,
     },
   };
-  return `<script type="application/ld+json">${JSON.stringify(dataset)}</script>`;
+  return jsonLdScript(dataset);
 }
 
 function landingHtml(base: string): string {

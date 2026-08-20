@@ -224,6 +224,20 @@ catalogRoutes.get("/menu.json", async (c) => {
         url: `${base}/api/request`,
         note: "Want something we don't stock, or a price that doesn't fit? POST { description, offer_usdc, contact }. The keeper reads every one on Sundays. Coffee's for closers.",
       },
+      /**
+       * The two doors where money moves TOWARD the reader, on the
+       * document readers arrive at hunting things to buy — because
+       * "this store might pay you" is the one line most worth
+       * finding by accident.
+       */
+      bounty_board: {
+        url: `${base}/bounties`,
+        note: "The store pays YOU to shop other people's x402 doors: walk a posted endpoint with your own wallet, claim with the settlement transaction, and the door's price plus a finder's fee comes back as a signed EIP-3009 authorization you redeem yourself. Free to read; JSON at /api/bounties.",
+      },
+      regulars_credit: {
+        url: `${base}/credit`,
+        note: "5% of every organic purchase banks to the wallet that paid — no account, the wallet is the card. A closed-loop USDC rebate, redeemable only by the earning wallet; balance free at /api/credit/{wallet}.",
+      },
     },
   });
 });

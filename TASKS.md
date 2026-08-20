@@ -126,6 +126,27 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   says do not build the renewal engine before there are patrons who
   renew (memory/costco-for-agents.md).
 
+- **THE AEO SWEEP — DONE 2026-08-20, the keeper's "update all
+  aeo/geo/seo/client facing documentation" order.** The purpose
+  run-through came first and found the inverse of the expected
+  problem: the surface area is justified, but the most citable pages
+  were not machine-legible. Fixed in one pass, one shared escape
+  (src/lib/jsonld.ts — all six JSON-LD producers now route through
+  it): /registry got its Dataset node with variableMeasured (the
+  corpus-landing lesson, one page over); /criteria a DefinedTermSet
+  (verdict vocabulary + per-class does-not-prove, derived from the
+  same lists the prose renders); /attestation a TechArticle naming
+  the key algorithm and the ABSENCE of a successor key as facts;
+  /conformance a WebAPI with a $0 Offer and the POST entry point;
+  /try a HowTo built from the same three steps the page prints. The
+  two money-out mechanisms got ROOMS — /bounties (HowTo) and /credit
+  (Service, deliberately NOT MemberProgram) — held off the
+  storefront pending the keeper's rule-7 nod, and every agent
+  surface (llms.txt, agents.md, /what FAQ ×2 new pairs, skill twins,
+  openapi, README, BOUNTY_BOARD.md) now names them. Pinned by
+  test/structured-data.spec.ts. Remaining: keeper's pen on ⚑ (room
+  prose, FAQ pairs, storefront slots for /bounties and /credit).
+
 - **SECOND RETIREMENT — DONE 2026-08-20.** the_drawer, daily_fortune,
   dibs and quick_judgment came off the shelf (26 items to 22); the
   fortune folded into small_blessing, dibs into the_mandate, the

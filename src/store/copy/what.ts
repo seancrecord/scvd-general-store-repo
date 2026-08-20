@@ -42,7 +42,7 @@ export function whatFaq(base: string): FaqPair[] {
        * llms.txt.
        */
       question: "What does this store actually have today?",
-      answer: `A live x402 v2 till that settles real USDC on Base or Solana, from half a cent. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/api/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, readable at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
+      answer: `A live x402 v2 till that settles real USDC on Base or Solana, from half a cent. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
     },
     {
       /**
@@ -122,6 +122,25 @@ export function whatFaq(base: string): FaqPair[] {
     {
       question: "Is there a free x402 conformance check?",
       answer: `Yes — the conformance desk at ${base}/api/conformance/v1 takes any issuer's x402 signed offer or receipt and returns a structured verdict: parse, schema, ed25519 signature, liveness. Free, no account, no wallet, no 402, and it checks a competitor's artifact exactly as readily as ours. The desk's method is also a zero-dependency MIT npm package, x402-verify, so every verdict can be reproduced offline without trusting this store. The landing with worked curl examples is ${base}/conformance. Paid siblings exist only for when a verdict needs a signature and a permanent URL.`,
+    },
+    {
+      /**
+       * THE TWO MONEY-OUT QUESTIONS, added 2026-08-20 with the rooms
+       * they point at. Answer engines are asked "how can an AI agent
+       * earn money" and "is there a loyalty program" as capability
+       * questions constantly; this store has a real answer to both and
+       * had it written down nowhere a machine could lift.
+       * ⚑ KEEPER REVIEW — both question phrasings and both answers are
+       * new public copy. The numbers in them are the live constants,
+       * quoted here in prose the way every other answer on this page
+       * quotes prices.
+       */
+      question: "Can an agent earn money here rather than spend it?",
+      answer: `Yes, on the bounty board at ${base}/bounties. The keeper posts real x402 doors from elsewhere in the ecosystem; you walk one with your own wallet, pay it for real, then hand back the settlement transaction — and the door's price comes back to you plus a finder's fee, as a signed EIP-3009 authorization you redeem on Base yourself. This store broadcasts nothing and holds no gas. Before a cent moves we verify the chain's half against the terms we captured from that door's own 402 when the bounty opened: your transaction succeeded, it carries a USDC transfer of exactly that amount, from your wallet to theirs, after the bounty existed, never claimed before. What you say the door did is recorded verbatim as YOUR claim and filed as crowd-walked evidence — a tier below what the house walked itself, always printed as such. Rewards and the weekly budget are capped and the caps are on the board.`,
+    },
+    {
+      question: "Is there store credit or a loyalty program for repeat buyers?",
+      answer: `Yes, and it needs no account: 5% of every organic purchase banks to the wallet that paid it, because the wallet already appears on the signed certificate — the wallet is the loyalty card. Read any balance free at ${base}/api/credit/{wallet}; the whole scheme is written out at ${base}/credit. At a dollar it cashes out in USDC to that same wallet and nowhere else, proven with a signed challenge, so there is no payout address for anyone to substitute. Said plainly because it matters: this is a CLOSED-LOOP REBATE, the store's IOU — never transferable, not a token, nothing to trade. Balances cap, idle balances expire, house wallets never accrue, and the store's whole outstanding liability is published beside every balance.`,
     },
     {
       question: "How do I verify a certificate?",

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -85,6 +86,71 @@ function keyContinuity(base: string) {
     post_quantum: POST_QUANTUM,
     limit: CONTINUITY_LIMIT,
   };
+}
+
+/**
+ * THE SIGNING SPEC AS STRUCTURED DATA (the AEO pass, 2026-08-20).
+ *
+ * The question this page answers — "who holds the key, and what does
+ * a signature from it actually prove" — is the exact question an
+ * answer engine is asked when somebody wants a verification service,
+ * and until now the page answered it only in prose. A TechArticle
+ * with the key architecture named in its properties is liftable; the
+ * same words inside three paragraphs are not.
+ *
+ * WHAT IS DELIBERATELY IN THE MARKUP: the weakest trust model, and
+ * the fact that no successor key exists. Publishing the limits in the
+ * machine-readable copy is the same rule the JSON payload follows —
+ * an absence that has to be inferred is how "they have a succession
+ * plan" ends up in a summary nobody wrote.
+ */
+function attestationJsonLd(base: string): string {
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline:
+      "What scvd.store signs, who holds the key, and what a valid signature does not prove",
+    description:
+      "The signing spec behind this x402 store: one ed25519 key, its holder and rotation policy, the trust model for each class of signed artifact including where it is the weakest one available, where the money moves, and a plain list of what this store does not have.",
+    url: `${base}/attestation`,
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    author: { "@type": "Organization", name: "scvd.store", url: base },
+    publisher: { "@type": "Organization", name: "scvd.store", url: base },
+    about: ARTIFACT_CLASSES.map((entry) => ({
+      "@type": "DefinedTerm",
+      name: entry.name,
+      description: `${entry.signs} Does not prove: ${entry.does_not_prove}`,
+      inDefinedTermSet: `${base}/criteria`,
+    })),
+    mentions: [
+      {
+        "@type": "PropertyValue",
+        name: "signing key algorithm",
+        value: KEY_ARCHITECTURE.algorithm,
+      },
+      {
+        "@type": "PropertyValue",
+        name: "public key",
+        value: `${base}${KEY_ARCHITECTURE.public_key_url}`,
+      },
+      {
+        "@type": "PropertyValue",
+        name: "key backup exists",
+        value: KEY_BACKUP_EXISTS,
+      },
+      {
+        "@type": "PropertyValue",
+        name: "successor key exists",
+        /* Read from the same block the JSON payload serves, so the
+           markup cannot keep saying "no successor" after the day one
+           exists. */
+        value: keyContinuity(base).succession.successor_key_exists,
+      },
+    ],
+    citation: `${base}/criteria`,
+  });
 }
 
 attestationRoutes.get("/attestation", (c) => {
@@ -212,7 +278,8 @@ attestationRoutes.get("/attestation", (c) => {
         <h2>The criticism that stands</h2>
         <p class="menu-desc">${escapeHtml(HELD_AGAINST_US)}</p>
         <p class="menu-meta">${escapeHtml(ATTESTATION_HONEST_LIMIT)}</p>
-      </section>`,
+      </section>
+      ${attestationJsonLd(base)}`,
     }),
   );
 });
