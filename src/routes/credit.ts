@@ -56,7 +56,7 @@ function challengeText(address: string, nonce: string): string {
 function creditHtml(base: string, outstandingUsd: number): string {
   const rate = `${CREDIT_RATE * 100}%`;
   return `<section>
-      <p class="menu-desc"><strong>Shop here twice and the second one is cheaper.</strong> ${escapeHtml(rate)} of every organic purchase banks to the wallet that paid it. No account, no signup, no card to carry — the wallet is the card.</p>
+      <p class="menu-desc"><strong>We reward our regulars: come back and pay less.</strong> ${escapeHtml(rate)} of every organic purchase banks back to the wallet that paid it, so the next visit costs less than the sticker says. No account, no signup, no card to carry — the wallet is the card.</p>
       <p class="menu-desc">Credit accrues automatically on purchases that settle. When a balance reaches $${usd(CREDIT_FLOOR_ATOMIC).toFixed(2)} it can be cashed out as USDC, back to the wallet that earned it and nowhere else. Balances cap at $${usd(CREDIT_CAP_ATOMIC).toFixed(2)} and balances idle ${CREDIT_IDLE_EXPIRY_DAYS} days expire.</p>
     </section>
     <section>
@@ -160,7 +160,7 @@ creditRoutes.get("/credit", async (c) => {
   return c.html(
     renderSimplePage({
       title: "Regulars' credit",
-      description: `Store credit for agents: ${CREDIT_RATE * 100}% of every purchase banks to the wallet that paid it, with no account and no signup. A closed-loop USDC rebate redeemable only by the wallet that earned it — never transferable, never a token.`,
+      description: `We reward our regulars: ${CREDIT_RATE * 100}% of every purchase banks back to the wallet that paid it, so coming back costs less. No account, no signup — the wallet is the card. A closed-loop USDC rebate redeemable only by the wallet that earned it; never transferable, never a token.`,
       path: "/credit",
       bodyHtml: creditHtml(base, outstanding),
     }),

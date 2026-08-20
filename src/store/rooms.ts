@@ -104,19 +104,16 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/criteria", name: "What 'verified' means", on_storefront: false },
   /**
-   * The two money-out rooms, given crawlable landings 2026-08-20. Both
-   * mechanisms shipped as API paths only — a bounty board nobody can
-   * find pays nobody, and a rebate you can only read by already
-   * knowing the URL rewards nobody. Held off the storefront pending
-   * the keeper's nod on a front slot (rule 7: whether a room appears
-   * at the front is a copy decision, and copy is his), which is the
-   * same course /pulse, /registry and /criteria took. ⚑ KEEPER REVIEW
-   * — these two are the store's acquisition surfaces and there is a
-   * real argument they belong at the front; that argument is his to
-   * settle, not mine to assume.
+   * The two money-out rooms, given crawlable landings 2026-08-20 and
+   * front slots the same day — the keeper ruled they follow the
+   * held-back path "with one distinction: there should be a note for
+   * both somewhere on front page and especially a note around
+   * recurring patronage." So: linked from the front like any
+   * storefront room, plus the regulars strip that ties them to the
+   * patronage pass.
    */
-  { path: "/bounties", name: "The Bounty Board", on_storefront: false },
-  { path: "/credit", name: "Regulars' credit", on_storefront: false },
+  { path: "/bounties", name: "The Bounty Board" },
+  { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
   { path: "/wind-down", name: "If the lights go off" },
   { path: "/becoming", name: "What this is trying to prove" },

@@ -24,7 +24,13 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   Two keys, two providers: a quota is a per-key outage, and the public
   fallback shares Cloudflare egress with every other tenant, so it
   fails at the same moment for the same reason.
-- [ ] **CHECK, don't act: the shopfront rail line.** The window-mismatch
+- [x] **CHECK, don't act: the shopfront rail line — PASSED 2026-08-20.**
+  Live /stats reads organic_by_rail = 11 Base + 2 Solana +
+  0 rail_not_recorded of 13 organic; the "before we logged the rail"
+  tail is gone, as the window-mismatch fix predicted. (The 8/2 in the
+  note below was the expected split as of 2026-08-13, when organic
+  stood at 10 — the books grew, the rule held.) Original note kept:
+- [~] **CHECK, don't act: the shopfront rail line.** The window-mismatch
   fix on this branch should place the July 30 penny-page sale as Base
   by the books' own single-rail rule — after the next rail-split cron,
   the front should read "8 on Base, 2 on Solana" and the "before we

@@ -566,6 +566,11 @@ export function renderStorefront(data: StorefrontData): string {
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
     </section>
 
+    <section class="what-this-is regulars">
+      <h2 class="night-head">${COPY.regularsHead}</h2>
+      <p class="what-line">${COPY.regularsBody}</p>
+    </section>
+
     <section class="doors">
       <div class="door door-human">
         <span class="pushpin"></span>
