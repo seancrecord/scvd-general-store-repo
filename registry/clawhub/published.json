@@ -1,7 +1,7 @@
 {
-  "version": "3.3.0",
-  "bundle_sha256": "f47cb15f04cea906f519b1b741b51474151e9dba977e39862c402529ff83aee1",
-  "published_at": "2026-08-19T13:15:29.625Z",
-  "commit": "6eb6d26fd8c2b2e75cf6dacf4dabbe20873479be",
-  "changelog": "The body now leads with the moments an agent actually hits — seven situation-keyed recipes with copy-paste URLs — and settlement_attestation reads both rails: a Base hash or a Solana signature, the identifier's shape picks the chain."
+  "version": "3.4.0",
+  "bundle_sha256": "b87759836cd50ff9739dd12479f692dea3f5d9ba1f40960a44136f4bf7a18272",
+  "published_at": "2026-08-20T14:29:09.241Z",
+  "commit": "0cb185106efd0e200929a14ee0af5a70ef431c99",
+  "changelog": "Four doors retired (the drawer, the fortune, dibs, quick judgment); launch_check, the_statement and the_mandate join the moments; the bounty board and regulars' credit get rooms and front slots (/bounties, /credit)."
 }
