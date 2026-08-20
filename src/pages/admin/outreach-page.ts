@@ -71,6 +71,17 @@ function prospectCard(
   </section>`;
 }
 
+/**
+ * The page renders the TOP of each queue, not the whole of it. Built
+ * ten days before W35's first full walk (~6,000 doors probed, ~2,000
+ * broken at the measured rot rate): a page carrying two thousand
+ * inline drafts is megabytes of HTML nobody can work. The ranking is
+ * the point — the keeper works the top; the count says what's below.
+ * The JSON twin still serves every row (data, not drafts).
+ */
+const FRESH_RENDER_CAP = 50;
+const WORKED_RENDER_CAP = 100;
+
 export function renderOutreachPage(
   round: WardRound,
   prospects: Prospect[],
@@ -80,6 +91,8 @@ export function renderOutreachPage(
 ): string {
   const fresh = prospects.filter((p) => !ledger.hosts[p.host]?.status);
   const worked = prospects.filter((p) => ledger.hosts[p.host]?.status);
+  const freshShown = fresh.slice(0, FRESH_RENDER_CAP);
+  const workedShown = worked.slice(0, WORKED_RENDER_CAP);
   const healedBlock = healed.length
     ? `<section><h2>Came back after outreach</h2>
        <p class="menu-desc">${healed.map((h) => `<code>${escapeHtml(h)}</code>`).join(" · ")}
@@ -113,13 +126,18 @@ export function renderOutreachPage(
 
   ${healedBlock}
 
-  <h2>Fresh (${fresh.length})</h2>
-  ${fresh.map((p) => prospectCard(p, ledger, base)).join("\n") || "<p class='empty'>Nothing fresh — every broken door already has a status.</p>"}
+  <h2>Fresh (${fresh.length}${fresh.length > freshShown.length ? `, top ${freshShown.length} shown` : ""})</h2>
+  ${freshShown.map((p) => prospectCard(p, ledger, base)).join("\n") || "<p class='empty'>Nothing fresh — every broken door already has a status.</p>"}
+  ${
+    fresh.length > freshShown.length
+      ? `<p class="menu-meta">…and ${fresh.length - freshShown.length} more below these, in the same four-tier ranking. Work the top and stamp as you go — stamped cards leave this queue and the next ${FRESH_RENDER_CAP} rise. Every row (data, not drafts) is in the JSON twin: <code>Accept: application/json</code> on this URL.</p>`
+      : ""
+  }
 
   ${
     worked.length
-      ? `<h2>Worked (${worked.length})</h2>
-  ${worked.map((p) => prospectCard(p, ledger, base)).join("\n")}`
+      ? `<h2>Worked (${worked.length}${worked.length > workedShown.length ? `, latest ranking's top ${workedShown.length} shown` : ""})</h2>
+  ${workedShown.map((p) => prospectCard(p, ledger, base)).join("\n")}`
       : ""
   }`;
   return renderAdminShell("outreach", body);

@@ -304,6 +304,42 @@ describe("the desk and its doors", () => {
     expect(text).toContain("Clear ALL stamps");
   });
 
+  it("renders the top of a big queue, never the whole of it", async () => {
+    /**
+     * W35's first full walk lands ~2,000 broken doors on this queue;
+     * a page carrying every draft inline is megabytes nobody can
+     * work. Top 50 fresh render; the rest are counted, ranked, and
+     * live in the JSON twin.
+     */
+    const many = round(
+      "2026-W34",
+      Array.from({ length: 120 }, (_, i) =>
+        host(`broken-${String(i).padStart(3, "0")}.example`, "not_ready", {
+          failed: ["status-402"],
+        }),
+      ),
+    );
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(many));
+    await testEnv.COUNTERS.delete(KV_KEYS.outreachLedger);
+
+    const page = await SELF.fetch(`${BASE}/admin/outreach`, {
+      headers: { ...auth, Accept: "text/html" },
+    });
+    const text = await page.text();
+    expect(text).toContain("Fresh (120, top 50 shown)");
+    expect(text).toContain("broken-000.example");
+    expect(text).toContain("broken-049.example");
+    expect(text).not.toContain("broken-050.example");
+    expect(text).toContain("and 70 more below these");
+
+    // The JSON twin still carries every row.
+    const json = await SELF.fetch(`${BASE}/admin/outreach`, {
+      headers: { ...auth, Accept: "application/json" },
+    });
+    const body = (await json.json()) as { prospects: unknown[] };
+    expect(body.prospects).toHaveLength(120);
+  });
+
   it("refuses a status it does not know", async () => {
     const flip = await SELF.fetch(`${BASE}/admin/outreach/status`, {
       method: "POST",

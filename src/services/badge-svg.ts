@@ -77,6 +77,74 @@ export function renderPatronBadge(options: PatronBadgeOptions): string {
 </svg>`;
 }
 
+export interface AuditBadgeOptions {
+  host: string;
+  verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  /** ISO timestamp; the date is the loudest true thing on the label. */
+  observedAt: string;
+  criteria: string;
+  reportUrl: string;
+  /** The report's signature seeds the ink, same as the patron badge. */
+  signature?: string;
+}
+
+/** Verdict ink: moss for ready, the house red otherwise. Rule 43
+ * shapes the words — a fact about one moment, never a grade. */
+const MOSS = "#3f5a2f";
+const VERDICT_LABEL: Record<AuditBadgeOptions["verdict"], { line: string; sub: string; color: string }> = {
+  ready: {
+    line: "ANSWERED READY",
+    sub: "every published check answered",
+    color: MOSS,
+  },
+  not_ready: {
+    line: "NOT READY",
+    sub: "one or more published checks failed",
+    color: ACCENT,
+  },
+  unreachable: {
+    line: "UNREACHABLE",
+    sub: "no usable answer reached us",
+    color: ACCENT,
+  },
+  refused: {
+    line: "NOT PROBED",
+    sub: "the target failed our probe-target law",
+    color: FADED,
+  },
+};
+
+/**
+ * THE AUDIT BADGE — the displayable half of the verification
+ * marketplace, built 2026-08-20 under the /criteria ruling: a badge
+ * is a DATED observation rendered small enough to embed, it ages
+ * rather than retires, and it is never a score on an operator. So
+ * the date shares the line with the verdict, the criteria version is
+ * printed, and the whole label links to the signed report anyone can
+ * verify without us. All four verdicts render — a store that badges
+ * only good news is selling endorsements, which is the thing this is
+ * not.
+ */
+export function renderAuditBadge(options: AuditBadgeOptions): string {
+  const ink = inkParamsFromSignature(options.signature);
+  const verdict = VERDICT_LABEL[options.verdict];
+  const date = options.observedAt.slice(0, 10);
+  const host = fitName(options.host, 40);
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="380" height="132" viewBox="0 0 380 132" role="img" aria-label="Conformance observation: ${escapeHtml(options.host)} ${verdict.line.toLowerCase()} on ${date}">
+  <rect width="380" height="132" fill="${PAPER}" rx="8"/>
+  <rect x="8" y="8" width="364" height="116" fill="none" stroke="${INK}" stroke-width="2" rx="5"/>
+  <rect x="13" y="13" width="354" height="106" fill="none" stroke="${INK}" stroke-width="0.6" stroke-dasharray="1 4" stroke-dashoffset="${ink.hairlineOffset}" rx="3"/>
+  <text x="190" y="32" text-anchor="middle" font-family="Georgia, serif" font-size="10" letter-spacing="3" fill="${FADED}">SCVD GENERAL STORE • CONFORMANCE DESK</text>
+  <text x="190" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${INK}">${escapeHtml(host)}</text>
+  <text x="190" y="78" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="20" fill="${verdict.color}">${verdict.line} • ${date}</text>
+  <text x="190" y="94" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="10" fill="${FADED}">${escapeHtml(verdict.sub)} • criteria ${escapeHtml(options.criteria)}</text>
+  <text x="190" y="107" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="${FADED}">a dated observation of one moment — it ages, it is never a score</text>
+  <a xlink:href="${escapeHtml(options.reportUrl)}" href="${escapeHtml(options.reportUrl)}">
+    <text x="190" y="119" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">signed report: ${escapeHtml(options.reportUrl)}</text>
+  </a>
+</svg>`;
+}
+
 export function renderVisitorSticker(storeBaseUrl: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="Visitor sticker">
   <circle cx="150" cy="150" r="145" fill="${PAPER}"/>

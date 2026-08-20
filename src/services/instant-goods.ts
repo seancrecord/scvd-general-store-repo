@@ -393,6 +393,11 @@ export async function deliverInstantGoods(
           verdict: audit.verdict,
           audit,
           report_url: `/api/service-audit/${audit.audit_id}`,
+          // The displayable half (2026-08-20): an embeddable dated
+          // label linking back to this signed report. Free forever,
+          // renders whatever the verdict was — badges here are
+          // observations, not endorsements.
+          badge_url: `/badges/audit/${audit.audit_id}.svg`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The report is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into the certificate for this purchase, so /api/verify/{cert_id} answers for the report too — the endpoint that already existed, not a new one. The report URL serves the record free, forever.",
         },
