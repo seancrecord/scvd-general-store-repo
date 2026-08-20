@@ -1,5 +1,47 @@
 # What the keeper needs to look at and test
 
+## 0. Added 2026-08-20 — the current batch, newest first
+
+**0a. The outreach recovery — TEST, two minutes.** `/admin/outreach`:
+press **Clear ALL stamps (keeps contacts)** once — this erases the
+mispressed "sent" stamps from 08-19 while keeping every scouted
+contact. Then press **Scout contacts** until the unscouted count reads
+zero. Then the real flow, per card: open the draft, send it yourself
+(your email for a `mailto:`, their form for a URL), THEN press "mark
+sent — I delivered it myself." Nothing on that page transmits;
+stamping without sending poisons next week's healed list.
+
+**0b. Publish W34 to the public tally — LOOK+press, one minute.**
+`/admin/market` → **Publish 2026-W34 to /registry**. That puts the
+first row (31% rot, the signed-offers gap, the price map) on the
+permanent public link. Re-pressing replaces the row, so it is safe.
+
+**0c. ClawHub republish to 3.3.1 — TEST, five minutes.** From a level
+main: `npm run skill:publish`. The site already serves 3.3.1 at
+/skill.md; only the ClawHub copy lags at 3.3.0 until this runs. One
+line changed (the /registry reading beside the corpus).
+
+**0d. RULE: the settlement-attempt lane (delivery-quality census).**
+The biggest open ruling. Every instrument we ship now names the same
+blind spot: a parseable 402 says nothing about whether PAYING it gets
+goods. Testing that means real spends against strangers' doors under
+the wallet law ($25/month, ask-first above $1). The August field run
+(1,707 attempts, the signed report) was this done once by hand; the
+ruling is whether it becomes a standing lane. Yes/no/conditions.
+
+**0e. RULE: the ERC-8183 evaluator key.** The store as neutral
+evaluator in the Job standard (H1 below). One key ruling unblocks the
+testnet run build. Yes/no/which key.
+
+**0f. Still open from before, your hands only:** the bank CSV through
+`reconcile_card_statement` (#33, drives variability under 2%); fund +
+hand-capture the two paid directories (#36, 402index.io and
+x402scan); paste draft-vauban text into a session (#41, network-blocked
+from the container); hand CV the re-pinned test segments (#37).
+
+---
+
+
 Written 2026-08-10, from the whole of `MONDAY.md` plus everything that
 shipped after it was last updated. The earlier version of this list was
 **partial** — it covered the live money bugs and skipped the Tab, the
@@ -107,9 +149,14 @@ asserts no settle call and no on-chain movement, exactly the
 acceptance test the keeper named in the 08-10 ruling. The property is
 now proven in our stack, not asserted from a README.
 
-**B7. Replay guard under concurrency.** Known, unfixed. Read-then-write
-against KV; the chain's nonce is the backstop, so this is resilience,
-not correctness.
+**B7. ~~Replay guard under concurrency.~~ DONE 2026-08-20 the B6 way —
+a test, not a rewrite:** `test/replay-concurrency.spec.ts` races two
+requests carrying one signed authorization against the nonce-once
+facilitator mock and pins the three invariants that make the KV
+guard's read-then-write gap harmless: one charge per authorization, at
+most one artifact minted, and a later replay mints nothing new. "The
+chain's nonce is the backstop" is now a proven property of our stack
+rather than this list's assertion.
 
 **B8. ~~The cold-read test on the remaining artifact classes~~ DONE
 2026-08-19:** `test/cold-read-signed-surfaces.spec.ts` — the trust
