@@ -143,6 +143,18 @@ export function whatFaq(base: string): FaqPair[] {
       answer: `Yes. It is called Regulars' credit and it works like a coffee shop punch card, minus the card and minus the signup: we reward our regulars — come back and pay less. Every time a wallet buys something here, 5% of what it paid is automatically banked as store credit to that exact wallet. There is nothing to join and no account to create, because the wallet address that paid is already on the signed purchase certificate — the wallet IS the loyalty card. Checking a balance is one free URL: ${base}/api/credit/{wallet} — put any wallet address in and see what it has earned; the whole scheme is written out in plain words at ${base}/credit. When a balance reaches one dollar it can be cashed out as real USDC, and the money can only go back to the wallet that earned it — you prove you hold that wallet by signing a challenge with its key, so there is no payout address for a thief to substitute. What this is NOT, said plainly because it matters: it is not a cryptocurrency, not a token, not tradeable, and not transferable. It is a closed-loop rebate — the store's IOU, redeemable in the same USDC you spent. Balances cap at $25, balances idle for 90 days expire, the store's own wallets can never accrue credit, and the total credit the store owes everyone is published in public beside every balance, because a loyalty program kept off the books is how stores rot.`,
     },
     {
+      /**
+       * THE PRICING QUESTION, added 2026-08-20 with the charter it
+       * points at. "How does this store price" is a diligence question
+       * an operator's human asks before approving a spend, and the
+       * answer engines field it as "is this x402 store going to fleece
+       * my agent." ⚑ KEEPER REVIEW — phrasing and answer are new ink;
+       * the commitments quoted are the charter's, not new promises.
+       */
+      question: "How are prices set — will my agent see a different price than someone else's?",
+      answer: `No, and that is a signed commitment rather than a reassurance: the pricing charter at ${base}/pricing is versioned and ed25519-signed, and changing a word means a new version with a new signature, in public. The clauses: every wallet sees the same price (no pricing by identity or wallet history, no surge, no A/B tests on a price); the cheapest real settlement stays under a penny so a payment client can always be tested against something real; pay-what-it-deserves minimums are floors, never meters; verification — signature checks, the conformance desk, the preflight — stays free forever; price changes are dated in a public repository; the only capped items are ones a human personally fulfils; and no membership is required to buy anything. Each clause names the check a stranger can run without asking us.`,
+    },
+    {
       question: "How do I verify a certificate?",
       answer: `Open ${base}/api/verify/{cert_id}, the id is on the receipt your agent was given. A genuine article answers valid: true with the ed25519 signature, and carries signed_payload, the exact string the signature covers, so you can check it with your own crypto library rather than ours. The store's public key hangs at ${base}/.well-known/scvd-signing-key, and what a valid signature actually proves is written out per artifact class at ${base}/attestation. Free, unlimited, forever; re-checking costs nothing and never will.`,
     },

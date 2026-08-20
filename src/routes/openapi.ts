@@ -481,6 +481,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/pricing": {
+        get: freeOp(
+          "The pricing charter",
+          "How prices are set here, as a versioned, ed25519-signed commitment: same price for every wallet, sub-penny floor, verification free forever, dated changes, scarcity only where a human fulfils. Each clause names the check a stranger can run. HTML for browsers, JSON (with the signature and its canonical form) otherwise. Free.",
+        ),
+      },
       "/bounties": {
         get: freeOp(
           "The Bounty Board",

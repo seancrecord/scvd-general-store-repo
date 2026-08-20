@@ -58,6 +58,7 @@ import {
   launchCheckRoutes,
   bountyRoutes,
   creditRoutes,
+  pricingRoutes,
   mandateRoutes,
   statementRoutes,
   onpageRoutes,
@@ -261,6 +262,7 @@ app.route("/", preflightRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", bountyRoutes);
 app.route("/", creditRoutes);
+app.route("/", pricingRoutes);
 app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
 app.route("/", onpageRoutes);

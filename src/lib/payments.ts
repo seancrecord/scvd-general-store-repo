@@ -278,6 +278,20 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
         // to say what to send, or the caller learns the requirement by
         // being refused, which is worse manners than we keep.
         ...requiredParamsNote(item),
+        /**
+         * THE PROMISE, AT THE MOMENT OF DECISION (the Price Club
+         * rung, 2026-08-20). A buyer weighing a human-fulfilled item
+         * is weighing the gap between paying now and delivery later;
+         * the refund commitment is the answer to exactly that worry,
+         * and it was published everywhere except the one response a
+         * buyer reads before deciding. Derived from the item's own
+         * sla_hours — never a typed number.
+         */
+        ...(item.fulfillment === "human_queue"
+          ? {
+              refund_promise: `Delivered within ${item.sla_hours ?? 168} hours of settlement or your money back — full amount, tip included, paid by the keeper himself with the transaction hash on the public record at ${env.STORE_BASE_URL}/fulfillment-log. The written commitment: ${env.STORE_BASE_URL}/rights.`,
+            }
+          : {}),
         want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),

@@ -757,6 +757,18 @@ not have to parse this page to schedule us:
 
   "cadence": { "every": "day", "next_at": "<ISO timestamp>", ... }
 
+## How prices are set, signed
+
+No x402 store publishes a pricing policy; this one signs its own.
+${base}/pricing is the charter: same price for every wallet (no
+identity pricing, no surge, no A/B on a price), the cheapest real
+settlement stays under a penny, verification stays free forever,
+price changes are dated in public, and the only scarcity is a
+human's actual time. Versioned, ed25519-signed over an RFC 8785
+canonical form — changing a word is a new version with a new
+signature. Each clause ships with the check you can run without
+asking us.
+
 ## Money that flows the other way
 
 Two doors here pay YOU, which is unusual enough to say plainly.

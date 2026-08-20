@@ -566,6 +566,12 @@ export function renderStorefront(data: StorefrontData): string {
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
     </section>
 
+    <section class="what-this-is promise">
+      <h2 class="night-head">${COPY.promiseHead}</h2>
+      <p class="what-line"><strong>${escapeHtml(STORE_METADATA.refund_policy)}</strong></p>
+      <p class="what-line">${COPY.promisePointer}</p>
+    </section>
+
     <section class="what-this-is regulars">
       <h2 class="night-head">${COPY.regularsHead}</h2>
       <p class="what-line">${COPY.regularsBody}</p>
