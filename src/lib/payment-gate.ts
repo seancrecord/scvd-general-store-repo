@@ -264,6 +264,26 @@ async function enrich402Body(
           // Weightless on the common path: the values are already in
           // accepts[].extra, this only says where the prose is.
           hand_rolling_url: `${base}/try#hand-rolling`,
+          /**
+           * ONE LINE OF SHAPE, ON THE FIRST 402 — added 2026-08-20,
+           * and the evidence for it is a script of our own.
+           *
+           * The full block rides on DECLINE responses, which is the
+           * reactive moment and the right place for most of it. But
+           * the store's own field-run walker hit this door five times
+           * in forty seconds and died on the envelope every time —
+           * twice on the same missing `accepted` — because a fixed
+           * script does not browse a URL between attempts and does
+           * not read prose it was not written to parse. It is the
+           * third hand-rolled client to trip this exact wire.
+           *
+           * A URL helps a person. A shape helps a program. This is
+           * the one string that would have prevented three of those
+           * five failures, and it is quoted verbatim from the block
+           * the decline path already serves, so the two can never
+           * teach different things.
+           */
+          payload_shape: HAND_ROLLING.envelope,
         }),
     ...(item
       ? {
