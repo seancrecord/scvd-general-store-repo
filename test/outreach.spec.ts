@@ -237,6 +237,73 @@ describe("the desk and its doors", () => {
     expect(body.ledger.hosts["broken.example"]?.status).toBe("sent");
   });
 
+  it("un-stamps one card, and clears the whole queue keeping contacts", async () => {
+    /**
+     * The 2026-08-19 misreading: "sent" pressed down the whole queue
+     * as though it transmitted. Recovery must be one press and must
+     * never cost the scouted contacts.
+     */
+    const ledger = {
+      version: 1,
+      hosts: {
+        "a.example": {
+          status: "sent",
+          status_at: "2026-08-19T20:00:00.000Z",
+          contacts: ["mailto:ops@a.example"],
+          scouted_at: "2026-08-19T20:00:00.000Z",
+        },
+        "b.example": { status: "skip", status_at: "2026-08-19T20:00:00.000Z" },
+      },
+    };
+    await testEnv.COUNTERS.put(KV_KEYS.outreachLedger, JSON.stringify(ledger));
+
+    const undo = await SELF.fetch(`${BASE}/admin/outreach/status`, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+      body: "host=a.example&status=fresh",
+    });
+    expect(await undo.json()).toEqual({ host: "a.example", status: "fresh" });
+
+    const wipe = await SELF.fetch(`${BASE}/admin/outreach/clear-statuses`, {
+      method: "POST",
+      headers: auth,
+    });
+    expect(await wipe.json()).toEqual({ cleared: 1, contacts_kept: true });
+
+    const after = (await testEnv.COUNTERS.get(
+      KV_KEYS.outreachLedger,
+      "json",
+    )) as {
+      hosts: Record<
+        string,
+        { status?: string; contacts?: string[]; scouted_at?: string }
+      >;
+    };
+    expect(after.hosts["a.example"]?.status).toBeUndefined();
+    expect(after.hosts["b.example"]?.status).toBeUndefined();
+    // The expensive knowledge survives the recovery.
+    expect(after.hosts["a.example"]?.contacts).toEqual(["mailto:ops@a.example"]);
+    expect(after.hosts["a.example"]?.scouted_at).toBeTruthy();
+  });
+
+  it("labels the stamps as stamps, not sends", async () => {
+    await testEnv.COUNTERS.put(
+      KV_KEYS.wardRoundLatest,
+      JSON.stringify(
+        round("2026-W34", [
+          host("broken.example", "not_ready", { failed: ["status-402"] }),
+        ]),
+      ),
+    );
+    const page = await SELF.fetch(`${BASE}/admin/outreach`, {
+      headers: { ...auth, Accept: "text/html" },
+    });
+    const text = await page.text();
+    expect(text).toContain("Nothing on this page sends anything, ever.");
+    expect(text).toContain("mark sent — I delivered it myself");
+    expect(text).toContain("Clear ALL stamps");
+  });
+
   it("refuses a status it does not know", async () => {
     const flip = await SELF.fetch(`${BASE}/admin/outreach/status`, {
       method: "POST",

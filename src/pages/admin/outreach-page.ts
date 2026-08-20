@@ -36,20 +36,38 @@ function prospectCard(
         (entry.status_at ?? "").slice(0, 10),
       )}`
     : "fresh";
+  /**
+   * "mark sent", never "sent" (2026-08-19): the bare word was read as
+   * a send button and pressed down the whole queue. These are stamps
+   * for work the keeper's own hand already did somewhere else.
+   */
+  const stampLabel: Record<string, string> = {
+    sent: "mark sent — I delivered it myself",
+    replied: "mark replied",
+    fixed: "mark fixed",
+    skip: "skip",
+  };
   const buttons = OUTREACH_STATUSES.map(
     (option) => `<form method="post" action="/admin/outreach/status" style="display:inline">
       <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
       <input type="hidden" name="status" value="${option}">
-      <button type="submit">${option}</button>
+      <button type="submit">${stampLabel[option] ?? option}</button>
     </form>`,
   ).join(" ");
+  const undo = entry?.status
+    ? ` <form method="post" action="/admin/outreach/status" style="display:inline">
+      <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
+      <input type="hidden" name="status" value="fresh">
+      <button type="submit">undo — back to fresh</button>
+    </form>`
+    : "";
   return `<section>
     <h3>${escapeHtml(prospect.host)}${prospect.newly_failing ? " <em>· newly failing</em>" : ""}</h3>
     <p class="menu-desc">${escapeHtml(prospect.reason)}</p>
     <p class="menu-meta">contact: ${contacts} · status: ${status}</p>
-    <p class="menu-meta">${buttons}</p>
-    <details><summary>the draft (edit before sending — your pen, rule 7)</summary>
+    <details><summary>the draft (copy it, send it yourself, then stamp the card)</summary>
     <pre>${escapeHtml(draftNote(prospect, base))}</pre></details>
+    <p class="menu-meta"><strong>Stamps, not sends</strong> — pressing these transmits nothing; they record what your hand already did: ${buttons}${undo}</p>
   </section>`;
 }
 
@@ -80,8 +98,17 @@ export function renderOutreachPage(
   observations, and the contact scout reads only what operators published to be
   contacted on (security.txt).</p>
 
-  <form method="post" action="/admin/outreach/scout">
+  <p class="menu-desc"><strong>Nothing on this page sends anything, ever.</strong>
+  The flow per card: press Scout once so the cards carry contacts, copy the
+  draft, deliver it yourself (your email for a mailto:, their form for a URL),
+  then stamp the card "mark sent" so next week's round can credit the fix to
+  the note. The stamps are bookkeeping; the send is your hand (rule 30).</p>
+
+  <form method="post" action="/admin/outreach/scout" style="display:inline">
     <button type="submit">Scout contacts (${unscouted} unscouted, 25 per press)</button>
+  </form>
+  <form method="post" action="/admin/outreach/clear-statuses" style="display:inline">
+    <button type="submit">Clear ALL stamps (keeps contacts) — the mispress recovery</button>
   </form>
 
   ${healedBlock}

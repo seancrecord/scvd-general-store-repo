@@ -28,9 +28,25 @@ export function isWalletAddress(value: string): boolean {
   return /^0x[0-9a-fA-F]{40}$/.test(value);
 }
 
-/** An address's sign, fixed for life. Do not change this derivation. */
+/** Base58, 32-44 chars — the till's own shape rule (lib/payments). */
+export function isSolanaWalletAddress(value: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(value);
+}
+
+/**
+ * An address's sign, fixed for life. Do not change this derivation.
+ *
+ * The Solana rail (2026-08-19, the last EVM-only door): a base58
+ * address hashes EXACTLY as sent — case-sensitive, never folded,
+ * per lib/addresses.ts — because a lowercased base58 string is a
+ * different (almost certainly nonexistent) account, and an almanac
+ * that case-folds would deal two agents one fate. Hex keeps the
+ * lowercasing it shipped with; signs are for life on both rails.
+ */
 export function signForAddress(address: string): ZodiacSign {
-  const normalized = address.toLowerCase();
+  const normalized = address.startsWith("0x")
+    ? address.toLowerCase()
+    : address;
   const index = fnv1a(normalized) % ZODIAC_SIGNS.length;
   return ZODIAC_SIGNS[index] ?? ZODIAC_SIGNS[0]!;
 }

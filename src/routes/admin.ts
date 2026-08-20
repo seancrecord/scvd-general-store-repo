@@ -1492,7 +1492,11 @@ adminRoutes.post("/admin/outreach/scout", async (c) => {
   return c.redirect("/admin/outreach");
 });
 
-/** Flip one host's workflow status. The keeper's bookmark, nothing more. */
+/**
+ * Flip one host's workflow status. The keeper's bookmark, nothing
+ * more — no status value transmits anything to anyone. "fresh"
+ * un-stamps a card (the 2026-08-19 misreading's per-card undo).
+ */
 adminRoutes.post("/admin/outreach/status", async (c) => {
   const form = await c.req.parseBody();
   const host = typeof form["host"] === "string" ? form["host"].toLowerCase() : "";
@@ -1500,20 +1504,46 @@ adminRoutes.post("/admin/outreach/status", async (c) => {
   const { OUTREACH_STATUSES, readOutreachLedger, writeOutreachLedger } =
     await import("@/services/outreach");
   const status = OUTREACH_STATUSES.find((entry) => entry === statusRaw);
-  if (!host || !status) {
+  if (!host || (!status && statusRaw !== "fresh")) {
     return c.json(
-      { refused: `needs host and status (one of: ${OUTREACH_STATUSES.join(", ")})` },
+      {
+        refused: `needs host and status (one of: ${OUTREACH_STATUSES.join(", ")}, or "fresh" to un-stamp)`,
+      },
       400,
     );
   }
   const ledger = await readOutreachLedger(c.env);
   const entry = ledger.hosts[host] ?? {};
-  entry.status = status;
-  entry.status_at = new Date().toISOString();
+  if (status) {
+    entry.status = status;
+    entry.status_at = new Date().toISOString();
+  } else {
+    delete entry.status;
+    delete entry.status_at;
+  }
   ledger.hosts[host] = entry;
   await writeOutreachLedger(c.env, ledger);
   if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json({ host, status });
+    return c.json({ host, status: status ?? "fresh" });
+  }
+  return c.redirect("/admin/outreach");
+});
+
+/**
+ * THE ONE-PRESS RECOVERY: wipe every workflow stamp, keep every
+ * scouted contact. Built the day the "sent" buttons were misread as
+ * send buttons and pressed down the whole queue — the ledger said
+ * "sent" while nothing had gone anywhere, which would have poisoned
+ * the healed list with false outreach wins.
+ */
+adminRoutes.post("/admin/outreach/clear-statuses", async (c) => {
+  const { clearStatuses, readOutreachLedger, writeOutreachLedger } =
+    await import("@/services/outreach");
+  const ledger = await readOutreachLedger(c.env);
+  const cleared = clearStatuses(ledger);
+  await writeOutreachLedger(c.env, ledger);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({ cleared, contacts_kept: true });
   }
   return c.redirect("/admin/outreach");
 });

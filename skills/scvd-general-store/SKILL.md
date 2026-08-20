@@ -384,6 +384,10 @@ snapshot. It is public and free to read.
   from the signed chain, so the view cannot drift from what was
   signed; every row cites the digest and URL of the entry it came
   from.
+- `https://scvd.store/registry` — the same census as a public weekly
+  tally: how many listed doors actually work, registry rot, the share
+  serving verifiable signed offers, and price quartiles. Aggregates
+  only, no names, citable. JSON at the same URL.
 
 Two things about that query are unusual and both are deliberate.
 

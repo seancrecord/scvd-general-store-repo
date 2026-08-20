@@ -348,6 +348,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
         ),
       },
+      "/registry": {
+        get: freeOp(
+          "State of the registry",
+          "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
       "/corrections": {
         get: freeOp(
           "Corrections",
@@ -488,7 +494,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
             "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
           ),
           parameters: [
-            pathParam("address", "A 0x wallet address, forty hex characters."),
+            pathParam(
+              "address",
+              "A wallet address on either rail: 0x + forty hex characters (Base), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+            ),
           ],
         },
       },
