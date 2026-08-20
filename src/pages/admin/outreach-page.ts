@@ -127,6 +127,13 @@ export function renderOutreachPage(
   const unscouted = prospects.filter(
     (p) => !ledger.hosts[p.host]?.scouted_at,
   ).length;
+  // The batch wire's own eligibility, counted here so the button
+  // says what one press will actually reach.
+  const wireEligible = prospects.filter((p) => {
+    const entry = ledger.hosts[p.host];
+    if (entry?.status === "sent" || entry?.status === "replied") return false;
+    return contactEmail(entry) !== null;
+  }).length;
   const body = `
   <h1>Outreach — the queue, drafted; the send, one press</h1>
   ${noticeBlock}
@@ -148,9 +155,16 @@ export function renderOutreachPage(
   <form method="post" action="/admin/outreach/scout" style="display:inline">
     <button type="submit">Scout contacts (${unscouted} unscouted, 25 per press)</button>
   </form>
+  <form method="post" action="/admin/outreach/send-all" style="display:inline">
+    <button type="submit"><strong>Verify &amp; send to all scouted</strong> (${wireEligible} with emails, ${wireEligible > 10 ? "10 per press" : "one press"})</button>
+  </form>
   <form method="post" action="/admin/outreach/clear-statuses" style="display:inline">
     <button type="submit">Clear ALL stamps (keeps contacts) — the mispress recovery</button>
   </form>
+  <p class="menu-meta">The batch button walks the same wire as each card's own
+  button: every host re-probed live at this press, healed doors skipped and
+  marked fixed, one note per host ever. Ten per press so what you approve is a
+  list you can see; press again for the next ten.</p>
 
   ${healedBlock}
 

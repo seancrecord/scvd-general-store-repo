@@ -1534,6 +1534,49 @@ adminRoutes.post("/admin/outreach/send", async (c) => {
 });
 
 /**
+ * THE BATCH WIRE (rule 30, second amendment 2026-08-20 — the keeper:
+ * "is there not a button i can scout then send all to all scouted").
+ * One press, up to WIRE_BATCH_CAP hosts, each individually
+ * live-verified by the same wireNote the per-card button uses. The
+ * notice reports the whole batch in words: sent, healed, refused,
+ * and how many eligible hosts the cap left for the next press.
+ */
+adminRoutes.post("/admin/outreach/send-all", async (c) => {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const { deriveProspects, readOutreachLedger, wireAllScouted } = await import(
+    "@/services/outreach"
+  );
+  const round = await latestWardRound(c.env);
+  if (!round) return c.redirect("/admin/outreach");
+  const previous = await previousWardRound(c.env);
+  const ledger = await readOutreachLedger(c.env);
+  const prospects = deriveProspects(round, previous);
+  const report = await wireAllScouted(c.env, prospects, ledger);
+  const parts = [
+    report.sent.length
+      ? `Sent ${report.sent.length}: ${report.sent.map((s) => s.host).join(", ")}.`
+      : "Sent none.",
+    report.healed.length
+      ? `Found healed on the live re-probe, marked fixed, nothing sent: ${report.healed.join(", ")}.`
+      : "",
+    report.refused.length
+      ? `Refused ${report.refused.length}: ${report.refused.map((r) => `${r.host} (${r.reason})`).join(" · ")}`
+      : "",
+    report.remaining > 0
+      ? `${report.remaining} more eligible below the cap — press again for the next batch.`
+      : "Queue's eligible hosts are exhausted; scout more to widen it.",
+  ].filter(Boolean);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(report);
+  }
+  return c.redirect(
+    `/admin/outreach?notice=${encodeURIComponent(parts.join(" "))}`,
+  );
+});
+
+/**
  * The contact scout, keeper-fired: one press reads security.txt for
  * up to SCOUT_CAP un-scouted queue hosts. Idempotent per host — a
  * host once looked at (found or "none published") is never re-read.
