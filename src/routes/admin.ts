@@ -858,6 +858,42 @@ adminRoutes.get("/admin/export/tax.csv", async (c) => {
   });
 });
 
+/**
+ * THE KEEPER POSTS BOUNTIES — the board's one write door besides the
+ * claim itself (BOUNTY_BOARD.md: doors are house-picked, never
+ * self-nominated, which is the whole anti-farming design). Form or
+ * JSON body: url, reward_usd. The JSON reply is the opened bounty.
+ */
+adminRoutes.post("/admin/bounties", async (c) => {
+  const { openBounty, BountyRefused } = await import(
+    "@/services/bounty-board"
+  );
+  let url = "";
+  let rewardUsd = Number.NaN;
+  const contentType = c.req.header("Content-Type") ?? "";
+  if (contentType.includes("json")) {
+    const body = (await c.req.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
+    url = String(body["url"] ?? "");
+    rewardUsd = Number.parseFloat(String(body["reward_usd"] ?? ""));
+  } else {
+    const form = await c.req.parseBody();
+    url = String(form["url"] ?? "");
+    rewardUsd = Number.parseFloat(String(form["reward_usd"] ?? ""));
+  }
+  try {
+    const bounty = await openBounty(c.env, { targetUrl: url, rewardUsd });
+    return c.json({ opened: bounty, board: "/api/bounties" }, 201);
+  } catch (error) {
+    if (error instanceof BountyRefused) {
+      return c.json({ error: error.message }, 400);
+    }
+    throw error;
+  }
+});
+
 adminRoutes.post("/admin/ward/run", async (c) => {
   const { runWardRound } = await import("@/services/ward-round");
   await runWardRound(c.env);

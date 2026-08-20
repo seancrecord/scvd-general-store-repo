@@ -24,6 +24,7 @@ import {
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import { performMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
+import { accrueCredit } from "@/services/store-credit";
 import { performOnpageAudit } from "@/services/onpage-audit";
 import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { reconcileSettlement } from "@/services/settlement-reconciliation";
@@ -385,6 +386,22 @@ export async function fulfillPurchase(
   }
 
   /**
+   * REGULARS' CREDIT accrues after the mint, fail-soft: the rebate is
+   * decoration on a sale that already completed, so a KV hiccup here
+   * loses one accrual and never a delivery. House wallets are
+   * excluded inside the service (rule 13's list). Null = nothing
+   * accrued and nothing said — a rebate a buyer cannot have is not a
+   * thing to advertise at them.
+   */
+  const storeCredit = minted.certificate.payer
+    ? await accrueCredit(
+        env,
+        minted.certificate.payer,
+        minted.certificate.paid_usdc ?? item.price_usdc,
+      ).catch(() => null)
+    : null;
+
+  /**
    * The public key and the signed bytes ride the purchase response, not
    * only /api/verify. Same defect, same fix: a holder had the
    * certificate and the signature and no way to check one against the
@@ -470,6 +487,7 @@ export async function fulfillPurchase(
      * makes the fabricator's job strictly harder, because the line it
      * would have to fake points at a check it cannot fake.
      */
+    ...(storeCredit ? { store_credit: storeCredit } : {}),
     show_your_human: `Bought "${item.name}" from Sean-Claude Van Damme's General Store for $${minted.certificate.paid_usdc ?? item.price_usdc} USDC — independently verifiable (no login, not our word): ${minted.verifyUrl}`,
     /**
      * THE FORWARDABLE COPY (the receipt chain, 2026-08-19). The line

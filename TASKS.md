@@ -112,6 +112,20 @@ Anti-shuffle file. When you ship something, move it to DONE with a date. Never d
   with the Statement, the full rail runs: mandate → certificates →
   wallet statement. Remaining: the keeper's pen on ⚑.
 
+- **THE BOUNTY BOARD — BUILT 2026-08-19, the keeper's mystery-shopper
+  idea, hours old.** Paid mystery shopping for the x402 economy
+  (BOUNTY_BOARD.md): the keeper posts doors at /admin/bounties (terms
+  captured by our own read), strangers walk them with their own
+  wallets, /api/bounty-claim verifies the settlement on chain against
+  the captured terms and pays the reward as a signed EIP-3009
+  authorization the shopper redeems themselves — no gas held, no
+  broadcast, unredeemed rewards expire back into the budget. Caps in
+  code: $0.25/bounty, $10/week, one payout per transaction ever,
+  payout addresses oracle-screened fail-closed. What it buys: Fresh
+  Set rows at crowd scale, chain-verified, from buyers who are not
+  us. Remaining: keeper's pen on ⚑ copy, and his hand posts the
+  first bounties.
+
 - **THE FRESH SET (keeper-approved backlog, 2026-08-19 — routing).**
   The walkable set as a living surface: endpoints that answered a
   spec-conformant x402 challenge (and, where the walkabout paid them,

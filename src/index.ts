@@ -56,6 +56,8 @@ import {
   corpusLandingRoutes,
   preflightRoutes,
   launchCheckRoutes,
+  bountyRoutes,
+  creditRoutes,
   mandateRoutes,
   statementRoutes,
   onpageRoutes,
@@ -257,6 +259,8 @@ app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", preflightRoutes);
 app.route("/", launchCheckRoutes);
+app.route("/", bountyRoutes);
+app.route("/", creditRoutes);
 app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
 app.route("/", onpageRoutes);
