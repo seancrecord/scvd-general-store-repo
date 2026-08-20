@@ -52,6 +52,10 @@ function doc(base: string) {
         "PAYMENT-REQUIRED header missing or not base64 JSON — surfaces client-side as 'Invalid payment header format' or a silent parse failure.",
       amount_units:
         "Amounts are ATOMIC units (USDC: 6 decimals, $0.005 = \"5000\"). A decimal point in an accepts amount usually means dollar-typed pricing, off by a factor of a million; the probe flags it.",
+      unpayable_payto:
+        "payTo must be the bytes a payment signs over — a 20-byte 0x address on EVM rails, a base58 pubkey on Solana. A name (ENS, Basename, SNS, Unstoppable) is a resolution step the protocol does not define, so most clients throw inside their signing library and you never learn a buyer came; the probe names the registry and the chain it resolves on. It also catches the wallet pasted into the wrong rail's entry — a 0x address in a solana accepts entry or base58 in an eip155 one — which nobody can pay, resolver or not.",
+      inputs_only_discovered_by_paying:
+        "If your resource needs parameters and the challenge does not declare them (extensions.bazaar.info.input), a buyer finds out by being refused AFTER signing a payment — and their ledger records that as YOUR endpoint failing. In the August 2026 field run this was the largest single cause of refused purchases at otherwise-working endpoints. The probe flags the missing contract and credits a declared one.",
       after_verify_failures: `Facilitator codes like invalid_exact_evm_payload_signature or settle_exact_failed_onchain happen AFTER the challenge stage, at verify/settle time, and depend on the specific payment attempt — a preflight cannot catch them and this one does not pretend to. For the artifact half (do the signed offers verify against the issuer's published key), use POST ${base}/api/conformance/v1.`,
     },
     what_it_cannot_check: [

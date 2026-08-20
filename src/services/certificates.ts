@@ -1,3 +1,6 @@
+import { canonicalAddress } from "@/lib/addresses";
+import { bulkGetJson } from "@/lib/kv-bulk";
+import { listKeys } from "@/lib/kv-list";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { BASE_NETWORK } from "@/lib/payments";
 import { receiptNoteForWeek } from "@/store/copy/receipt-notes";
@@ -246,6 +249,68 @@ export async function mintCertificate(
     patronNumber,
     badgeUrl: `${env.STORE_BASE_URL}/badges/${patronNumber}.svg`,
     verifyUrl: `${env.STORE_BASE_URL}/api/verify/${certId}`,
+  };
+}
+
+/**
+ * EVERY CERTIFICATE A WALLET PAID FOR — the missing half of the
+ * claims door, found 2026-08-20 by walking the context-reset journey
+ * end to end instead of grepping for a bug class.
+ *
+ * The journey as it actually ran: an agent buys an INSTANT good (most
+ * of the shelf — hello, a blessing, an attestation), its process
+ * resets before it reads the response, and the respawned instance
+ * holds nothing. The claims door existed for exactly this reset and
+ * returned ORDERS only, so for the most common purchase type its own
+ * note said, in effect, "email the keeper." The certificate was in KV
+ * the whole time with the payer bound into it at mint.
+ *
+ * Same discipline as the tax export: a capped prefix scan with the
+ * truncation SAID, never silent. Only the caller proves key
+ * possession — this function trusts its caller the way listOrders
+ * does, and the claims route is the only caller, behind the
+ * challenge-response.
+ */
+const CLAIM_CERT_SCAN_CAP = 5000;
+const CLAIM_CERTS_RETURNED = 50;
+
+export interface ClaimedCertificate {
+  cert_id: string;
+  item: string;
+  date: string;
+  paid_usdc?: number;
+  settlement_tx?: string;
+  verify_path: string;
+}
+
+export async function certificatesForPayer(
+  env: Env,
+  canonicalPayer: string,
+): Promise<{ certificates: ClaimedCertificate[]; truncated: boolean }> {
+  const listed = await listKeys(env.PATRONS, {
+    prefix: KV_KEYS.certPrefix,
+    cap: CLAIM_CERT_SCAN_CAP,
+  });
+  const values = await bulkGetJson<CertificateRecord>(env.PATRONS, listed.names);
+  const matches: ClaimedCertificate[] = [];
+  for (const record of values.values()) {
+    const cert = record?.certificate;
+    if (!cert?.payer) continue;
+    if (canonicalAddress(cert.payer) !== canonicalPayer) continue;
+    matches.push({
+      cert_id: cert.cert_id,
+      item: cert.item,
+      date: cert.date,
+      ...(typeof cert.paid_usdc === "number" ? { paid_usdc: cert.paid_usdc } : {}),
+      ...(cert.settlement_tx ? { settlement_tx: cert.settlement_tx } : {}),
+      verify_path: `/api/verify/${cert.cert_id}`,
+    });
+  }
+  // Newest first, so the purchase the reset just ate is on top.
+  matches.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return {
+    certificates: matches.slice(0, CLAIM_CERTS_RETURNED),
+    truncated: listed.truncated || matches.length > CLAIM_CERTS_RETURNED,
   };
 }
 

@@ -1,6 +1,11 @@
 import { canonicalAddress } from "@/lib/addresses";
 import { listKeys } from "@/lib/kv-list";
 import { sendAlert } from "@/lib/alerts";
+// The decline desk's own classifier, shared rather than re-derived, so
+// the phone notification and /admin/declines can never disagree about
+// whose problem a decline is. declines.ts imports only a TYPE from this
+// module, so the pair erases to no runtime cycle.
+import { readReason, type DeclineFault } from "@/lib/declines";
 import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
@@ -288,6 +293,21 @@ async function raiseFirstOutsideSignature(
   }).catch(() => undefined);
 }
 
+/**
+ * The fault class as a phone-readable verdict. Wording is deliberately
+ * blunt and asymmetric: OURS names the emergency (money we could have
+ * taken and did not), THEIRS closes the question so a keeper can put
+ * the phone down. The classification itself is readReason's, shared
+ * with the decline desk so the notification and the page can never
+ * disagree about whose problem it is.
+ */
+const DECLINE_VERDICT: Record<DeclineFault, string> = {
+  ours: "OURS, money turned away",
+  buyer: "THEIRS, nothing to fix",
+  facilitator: "UPSTREAM, the payment rail",
+  unknown: "UNCLEAR, needs a read",
+};
+
 export async function recordPaymentDecline(
   env: Env,
   path: string,
@@ -314,9 +334,26 @@ export async function recordPaymentDecline(
     // no surface read them, and no alarm fired. Deduped by item+reason
     // so a client hitting the same wall nags once every six hours
     // rather than on every attempt.
+    //
+    // THE VERDICT LEADS, since 2026-08-20. Four of these landed on the
+    // keeper's phone inside two minutes and every preview read the
+    // same: a path, a machine string, "reading at /admin/declines".
+    // The one question a decline asks — whose problem is it, and do I
+    // get out of bed — was already answered in code by readReason(),
+    // and that answer reached a page he was not looking at instead of
+    // the notification he was. A phone preview truncates hard, so the
+    // fault class goes FIRST, before the path and before the reason:
+    // "ours" is money the store turned away and is an emergency;
+    // "theirs" is a market fact with nothing to fix. Same dedupe, same
+    // rows, same desk — the alert just stops burying its own lede.
+    const bare = event.note.startsWith("settle:")
+      ? event.note.slice(7)
+      : event.note;
+    const { fault, reading } = readReason(bare);
+    const verdict = DECLINE_VERDICT[fault];
     await sendAlert(env, {
       condition: "payment_declined",
-      detail: `A payment was offered at ${path} and declined: ${event.note}. Client: ${event.user_agent ?? "(no user-agent)"}. Somebody is trying to buy. The reading is at /admin/declines.`,
+      detail: `${verdict} — payment offered at ${path} and declined: ${event.note}. ${reading} Client: ${event.user_agent ?? "(no user-agent)"}. Somebody is trying to buy; the full reading is at /admin/declines.`,
       key: `${event.item}:${event.note}`,
     }).catch(() => undefined);
   }

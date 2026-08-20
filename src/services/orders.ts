@@ -141,9 +141,15 @@ export async function completeOrder(
   await markLaborClosed(env, orderId);
 
   if (order.callback_url) {
-    // Best effort, a broken webhook never blocks the keeper's afternoon.
+    // Best effort, a broken webhook never blocks the keeper's afternoon
+    // — but the OUTCOME is recorded either way (2026-08-20). fetch does
+    // not throw on a 500, so before this a dead callback lost the
+    // notice invisibly: the buyer asked to be told, nobody was, and no
+    // record anywhere said so. The order page now carries the miss,
+    // which is also the buyer's cue that polling the order URL is on
+    // them from here.
     try {
-      await fetch(order.callback_url, {
+      const response = await fetch(order.callback_url, {
         method: "POST",
         // The one outbound call that lands in a BUYER's log. Identity
         // attached for the same reason the certificates are signed:
@@ -156,9 +162,15 @@ export async function completeOrder(
           deliverable: order.deliverable,
         }),
       });
+      order.webhook = response.ok
+        ? `delivered (HTTP ${response.status})`
+        : `attempted once, your endpoint answered HTTP ${response.status} — not retried; the deliverable stays at this order URL forever`;
     } catch {
       // The bell rings on; delivery is still visible at /api/order/:id.
+      order.webhook =
+        "attempted once, your endpoint was unreachable — not retried; the deliverable stays at this order URL forever";
     }
+    await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
   }
   return order;
 }
