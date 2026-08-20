@@ -150,6 +150,17 @@ export function redactRpc(url: string): string {
 const RPC_ATTEMPTS = 3;
 const RPC_BACKOFF_MS = [150, 450];
 
+/** An HTTP status from a provider, kept typed so the retry loop can
+ * tell "the key/request is refused" from "the wire hiccuped". */
+class RpcHttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 async function withTransportRetries<T>(
   label: string,
   env: Env,
@@ -158,13 +169,34 @@ async function withTransportRetries<T>(
   const endpoints = rpcEndpoints(env);
   let lastError: unknown;
   let tried = 0;
-  for (const endpoint of endpoints) {
+  for (const [index, endpoint] of endpoints.entries()) {
+    const lastEndpoint = index === endpoints.length - 1;
     for (let attempt = 0; attempt < RPC_ATTEMPTS; attempt += 1) {
       tried += 1;
       try {
         return await attemptOnce(endpoint);
       } catch (error) {
         lastError = error;
+        /*
+         * A 4xx WITH ANOTHER PROVIDER WAITING skips ahead instead of
+         * backing off (2026-08-20, read off the egress dashboard: the
+         * authenticated primary answering 429 was knocked three times
+         * per operation — 288 refusals for 48 answers — while the
+         * secondary sat ready the whole time). A quota'd or rejected
+         * key is a per-key condition; 450ms cannot fix it, and the
+         * next endpoint is a different key on a different path. On the
+         * LAST endpoint the backoff stays: a burst 429 there often
+         * clears within it, and giving up instantly would drop a paid
+         * delivery to save half a second — the 08-13 lesson inverted.
+         */
+        if (
+          error instanceof RpcHttpError &&
+          error.status >= 400 &&
+          error.status < 500 &&
+          !lastEndpoint
+        ) {
+          break;
+        }
         const wait = RPC_BACKOFF_MS[attempt];
         if (wait === undefined) break;
         await new Promise((resolve) => setTimeout(resolve, wait));
@@ -189,7 +221,10 @@ async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
     });
     if (!response.ok) {
-      throw new Error(`Base RPC ${method} answered ${response.status}`);
+      throw new RpcHttpError(
+        `Base RPC ${method} answered ${response.status}`,
+        response.status,
+      );
     }
     const body: unknown = await response.json();
     if (
@@ -261,7 +296,10 @@ export async function getReceiptsBatch(
         ),
       });
       if (!response.ok) {
-        throw new Error(`Base RPC batch answered ${response.status}`);
+        throw new RpcHttpError(
+          `Base RPC batch answered ${response.status}`,
+          response.status,
+        );
       }
       return (await response.json()) as unknown;
     },
