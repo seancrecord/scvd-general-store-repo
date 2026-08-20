@@ -156,16 +156,19 @@ job file):
 
 **Queued builds, keeper-approved, not yet:**
 
-- Single-rail residues (08-19): `/zodiac/{address}` and the
-  /api/claims recovery door are EVM-only. Feature builds.
 - Context-anchor tier ladder (keeper's sketch 08-12) — real cost is
   a body-borne input door for 40K+ summaries; RULE range reads and
   digest-signing at build time.
-- The Statement (08-19) — signed wallet reconciliation as a service.
-- The Fresh Set (08-19) — the walkable set as a dated served
-  surface; RULE free-vs-half-cent at build.
 - The Meter Check (08-19) — token-billing recount; gated on enough
   x402 inference endpoints. Count, never model.
+- ~~Single-rail residues~~ DONE 08-20: /zodiac and /api/claims read
+  both rails.
+- ~~The Statement~~ SHIPPED 08-20 on the shelf (`the_statement`, the
+  3.4.0 turnover).
+- ~~The Fresh Set~~ BUILT 08-20, the day the keeper hand-ran the
+  first full walk: /fresh-set, names only on the ready side, free
+  (ruled on the funnel's own evidence — keeper may re-rule to the
+  half-cent door).
 - Pass-holder multiplier — deliberately DEFERRED until patrons renew
   (08-19, the Costco note).
 - town_papers (add /papers to the sitemap same build) and

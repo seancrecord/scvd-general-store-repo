@@ -1,4 +1,4 @@
-import { getBlockNumber, usdcTransfersFrom, usdcTransfersTo, usdcFromUnits } from "@/lib/base-rpc";
+import { getBlockNumber, getBlockTimestamp, usdcTransfersFrom, usdcTransfersTo, usdcFromUnits } from "@/lib/base-rpc";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -427,6 +427,66 @@ export async function certIdForSettlement(
 }
 
 /**
+ * THE TILL ALERT SAYS WHO AND WHEN, because on 2026-08-20 it said
+ * neither and the keeper spent an afternoon believing he had been
+ * robbed of $50. The transfer was his own hand, a day earlier,
+ * funding CV's test wallet — a destination this repo lists as family
+ * in house-wallets.json, mined ~24h before the page. The old text
+ * had exactly two failure modes and hit both at once: it printed
+ * only a block number, so a cursor running late (its designed
+ * behavior) made old money read as breaking news; and it treated
+ * every destination as a stranger, so a transfer to our own wallet
+ * carried the same sweep-to-cold-key alarm as a real drain. Poisoning
+ * bots had dusted lookalikes around his sends for extra fog.
+ *
+ * Family match is EVM-lowercase over house-wallets.json — the till is
+ * the Base receiving wallet, so every outflow destination is hex. The
+ * mined time is one header read, fail-soft: "age unknown" over a
+ * guessed timestamp, and an alert that cannot say when still says who.
+ */
+export async function tillOutflowDetail(
+  env: Env,
+  outflow: { txHash: string; to: string; amount: bigint; block: number },
+  now?: Date,
+): Promise<string> {
+  const family = HOUSE_WALLET_FILE.wallets.find(
+    (entry) => entry.address.toLowerCase() === outflow.to.toLowerCase(),
+  );
+  const mined = await getBlockTimestamp(env, outflow.block);
+  const at = now ?? new Date();
+  const ageMinutes = mined
+    ? Math.max(0, Math.round((at.getTime() - mined.getTime()) / 60000))
+    : null;
+  const age =
+    ageMinutes === null
+      ? "mined time unreadable this pass — check the block yourself before treating this as fresh"
+      : ageMinutes >= 90
+        ? `mined ${mined!.toISOString()}, ~${Math.round(ageMinutes / 60)}h before this alert — this walk rides an hourly cursor and can page late; the mined time is the truth, the alert's arrival is not`
+        : `mined ${mined!.toISOString()}, ~${ageMinutes}m ago`;
+
+  /**
+   * ZERO-VALUE FIRST: an ERC-20 transferFrom of 0 needs no key and no
+   * allowance — anyone can emit one "from" our wallet at will. The
+   * 2026-08-20 batch carried two, aimed at lookalike addresses, and
+   * the old text told the keeper his key might be compromised over
+   * transfers that prove nothing about any key. They are history
+   * poison, and the only wrong move is copying their address later.
+   */
+  if (outflow.amount === 0n) {
+    return `ZERO-VALUE TRANSFER logged from the till to ${outflow.to} in transaction ${outflow.txHash} (block ${outflow.block}; ${age}). No money moved and NO KEY was involved — a 0-USDC transferFrom needs no allowance, so anyone can emit one from any wallet. This is the address-poisoning profile: the address above is bait planted in your history. DO NOT copy it for anything; addresses come from the register and the payer rows, never from transaction history. Nothing to sweep, nothing to rotate; this is recorded.`;
+  }
+
+  const destination = family
+    ? `to the store's OWN family wallet ${outflow.to} (${family.who} — listed in house-wallets.json since ${family.since})`
+    : `to ${outflow.to}`;
+  const reading = family
+    ? `The destination is family, so if this was your hand moving house money, confirm with a glance and dismiss. If you did NOT fire it, a compromised key sending to family first is still a compromised key — sweep the remaining balance to a cold key NOW.`
+    : `This store's code holds no key to that wallet and never sends from it, so this was either your own hand — confirm with a glance and dismiss — or the wallet's key is compromised, in which case sweep the remaining balance to a cold key NOW and treat every machine that key has touched as burned. Rotating store secrets does nothing here; the wallet key lives with you, not with the Worker.`;
+
+  return `MONEY LEFT THE TILL: ${usdcFromUnits(outflow.amount)} USDC moved OUT of the store's Base receiving wallet ${destination} in transaction ${outflow.txHash} (block ${outflow.block}; ${age}). ${reading}`;
+}
+
+/**
  * Walk the chain forward from where the last pass stopped.
  *
  * INCREMENTAL, with the cursor stored rather than derived, because a
@@ -529,7 +589,7 @@ export async function reconcileAgainstChain(
     for (const outflow of outflows) {
       await sendAlert(env, {
         condition: "till_outflow",
-        detail: `MONEY LEFT THE TILL: ${usdcFromUnits(outflow.amount)} USDC moved OUT of the store's Base receiving wallet to ${outflow.to} in transaction ${outflow.txHash} (block ${outflow.block}). This store's code holds no key to that wallet and never sends from it, so this was either your own hand — confirm with a glance and dismiss — or the wallet's key is compromised, in which case sweep the remaining balance to a cold key NOW and treat every machine that key has touched as burned. Rotating store secrets does nothing here; the wallet key lives with you, not with the Worker.`,
+        detail: await tillOutflowDetail(env, outflow, options.now),
         key: outflow.txHash,
       }).catch(() => undefined);
     }
