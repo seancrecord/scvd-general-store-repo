@@ -149,6 +149,16 @@ export const STOREFRONT_COPY = {
    * pass is the standing arrangement. ⚑ KEEPER REVIEW — the phrasing
    * is new ink; the ruling that the strip exists is his.
    */
+  /**
+   * THE PROMISE STRIP (the Price Club rung, 2026-08-20: "loud refund
+   * promise"). The sentence is STORE_METADATA.refund_policy — the
+   * keeper's already-approved ink, imported where it renders, never
+   * retyped — so the only new words here are the heading and the
+   * pointer line. ⚑ KEEPER REVIEW on those two.
+   */
+  promiseHead: "THE PROMISE",
+  promisePointer:
+    'The written commitment, the numbers per item, and the public record of whether it has been kept: <a href="/rights">/rights</a> and <a href="/fulfillment-log">/fulfillment-log</a>.',
   regularsHead: "MONEY MOVES BOTH WAYS HERE",
   /** Pre-escaped HTML: carries the two room links and the pass. */
   regularsBody:
