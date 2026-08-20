@@ -143,7 +143,7 @@ registryRoutes.get("/registry", async (c) => {
     renderSimplePage({
       title: "State of the registry",
       description:
-        "A weekly running tally of the public x402 registry: how many listed payment endpoints actually work, how many serve verifiable signed offers, and what the market charges. Aggregates only, no names, updated by hand from a signed weekly census.",
+        "A weekly running tally of the public x402 registry: how many listed payment endpoints actually work, how many serve verifiable signed offers.",
       path: "/registry",
       bodyHtml,
     }),

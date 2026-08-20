@@ -88,7 +88,7 @@ whatRoutes.get("/what", (c) => {
          * stopped existing in August. ⚑ KEEPER REVIEW — new ink.
          */
         description:
-          "What scvd.store is, what it costs, and how to check the signatures: the trust layer of the x402 economy — free conformance checks, signed observations, a general store for agents — answered plainly, question by question.",
+          "What scvd.store is, what it costs, and how to check the signatures: the trust layer of the x402 economy — free conformance checks, signed observations.",
         path: "/what",
         bodyHtml: `<section>
           <p class="menu-desc">${WHAT_COPY.directAnswer}</p>

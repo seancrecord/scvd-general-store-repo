@@ -84,7 +84,7 @@ stackRoutes.get(STACK_PATH, async (c) => {
       renderSimplePage({
         title: "What this store rests on",
         description:
-          "Every dependency this store rests on and does not control, with what stops working when each one fails and what a buyer loses. None of these companies has heard of us.",
+          "Every dependency this store rests on and does not control, with what stops working when each one fails and what a buyer loses.",
         path: "/stack",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(STACK_STANDFIRST)}</p>

@@ -1,5 +1,9 @@
 # Agentic.market listing (GATED — do not submit yet)
 
+> NOTE 2026-08-19: the gate this file waits on (organic settlements)
+> has since opened per the ledger. Submission remains rule-30 gated —
+> the keeper submits, nothing here auto-fires.
+
 Prepared 2026-07-22. Per the phase plan, this submission WAITS until
 organic `mcp` and `bazaar` settles appear in the ledger ("Channels,
 organic settles" in /admin). The keeper wants it; the gate is the

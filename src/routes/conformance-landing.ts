@@ -112,7 +112,7 @@ conformanceLandingRoutes.get("/conformance", (c) => {
       renderSimplePage({
         title: "The conformance desk",
         description:
-          "Free x402 conformance checking: POST any issuer's signed offer or receipt and get a structured verdict — parse, schema, ed25519 signature, liveness. No account, no wallet. With the census finding, worked examples, and the npm packages (x402-verify, x402-sign) to reproduce every verdict offline.",
+          "Free x402 conformance checking: POST any issuer's signed offer or receipt and get a structured verdict — parse, schema, ed25519 signature, liveness.",
         path: "/conformance",
         bodyHtml: landingHtml(base),
       }),

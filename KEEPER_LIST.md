@@ -1,334 +1,269 @@
-# What the keeper needs to look at and test
+# KEEPER_LIST — the keeper's one desk file
 
-## 0. Added 2026-08-20 — the current batch, newest first
+Successor to MONDAY.md and TASKS.md (archived whole 2026-08-20 as
+`docs/archive/MONDAY_2026-08-20.md` and
+`docs/archive/TASKS_2026-08-20.md`) and to the old KEEPER_LIST.md,
+which was rewritten in place — git history holds every version of
+it. Three queues is
+how a finished task got handed back twice; this is now the only
+desk. The ritual is MONDAY's: carry only what is TRUE and OPEN,
+strike closed items with their evidence, and when the sheet is
+mostly history, archive it whole with its date and start again. A
+desk file is not a diary.
 
-**0a. The outreach recovery — TEST, two minutes.** `/admin/outreach`:
-press **Clear ALL stamps (keeps contacts)** once — this erases the
-mispressed "sent" stamps from 08-19 while keeping every scouted
-contact. Then press **Scout contacts** until the unscouted count reads
-zero. Then the real flow, per card: open the draft, send it yourself
-(your email for a `mailto:`, their form for a URL), THEN press "mark
-sent — I delivered it myself." Nothing on that page transmits;
-stamping without sending poisons next week's healed list.
+Every item keeps the old list's taxonomy, because it prices keeper
+time honestly: **LOOK** — open a page, read a number, five minutes.
+**TEST** — exercise something that has never met reality. **RULE** —
+only the keeper can decide; no work happens until he does.
 
-**0b. Publish W34 to the public tally — LOOK+press, one minute.**
-`/admin/market` → **Publish 2026-W34 to /registry**. That puts the
-first row (31% rot, the signed-offers gap, the price map) on the
-permanent public link. Re-pressing replaces the row, so it is safe.
-
-**0c. ClawHub republish to 3.3.1 — TEST, five minutes.** From a level
-main: `npm run skill:publish`. The site already serves 3.3.1 at
-/skill.md; only the ClawHub copy lags at 3.3.0 until this runs. One
-line changed (the /registry reading beside the corpus).
-
-**0d. RULE: the settlement-attempt lane (delivery-quality census).**
-The biggest open ruling. Every instrument we ship now names the same
-blind spot: a parseable 402 says nothing about whether PAYING it gets
-goods. Testing that means real spends against strangers' doors under
-the wallet law ($25/month, ask-first above $1). The August field run
-(1,707 attempts, the signed report) was this done once by hand; the
-ruling is whether it becomes a standing lane. Yes/no/conditions.
-
-**0e. RULE: the ERC-8183 evaluator key.** The store as neutral
-evaluator in the Job standard (H1 below). One key ruling unblocks the
-testnet run build. Yes/no/which key.
-
-**0f. Still open from before, your hands only:** the bank CSV through
-`reconcile_card_statement` (#33, drives variability under 2%); fund +
-hand-capture the two paid directories (#36, 402index.io and
-x402scan); paste draft-vauban text into a session (#41, network-blocked
-from the container); hand CV the re-pinned test segments (#37).
+**Last trued up: 2026-08-20.**
 
 ---
 
+## NOW
 
-Written 2026-08-10, from the whole of `MONDAY.md` plus everything that
-shipped after it was last updated. The earlier version of this list was
-**partial** — it covered the live money bugs and skipped the Tab, the
-AEO sweep, the distribution items and the standing rulings. This one is
-the complete set.
+**1. The bank walk — LOOK, first, because the records disagree.**
+The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
+2026-08-13) says the walk stalled hourly from
+08-12 13:30Z, cursor frozen at block 49,858,030, nineteen straight
+failures shaped like a blown key quota, blocks going permanently
+unreadable past ~2026-08-14 11:00Z — past that the hole is forever.
+PROBLEMS.md #24 says the walk's backlog disease was FIXED 2026-08-11,
+catch-up passes proven in tests. Both records stand with their dates;
+neither is picked here. Open the dashboard and the admin: cursor past
+49,858,030 means the stall record is stale and this closes; frozen
+means follow the archived entry's steps — check/rotate the Alchemy key
+(`BASE_RPC_URL_PRIMARY`), set the second-provider secret
+(`BASE_RPC_URL_SECONDARY`) — and measure the hole honestly.
 
-Three kinds of thing are mixed together below and they are labelled,
-because they cost very different amounts of keeper time:
+**2. The outreach recovery — TEST, two minutes** (08-19 batch).
+`/admin/outreach`: "Clear ALL stamps (keeps contacts)" once, scout to
+zero, then per card send the draft yourself, THEN mark sent. Nothing
+on that page transmits; stamping without sending poisons next week's
+list.
 
-- **LOOK** — open a page, read a number, five minutes.
-- **TEST** — actually exercise something that has never met reality.
-- **RULE** — nobody but the keeper can decide it; no work happens until
-  he does.
+**3. Publish W34 to the public tally — LOOK + one press.**
+`/admin/market` → Publish 2026-W34 to /registry (31% rot, the
+signed-offers gap, the price map). Re-pressing replaces the row.
 
----
+**4. ClawHub republish — TEST, five minutes.** From a level main:
+`npm run skill:publish`. The ClawHub copy lags the site; the number
+that is never stale is `SKILL_VERSION` in `src/store/spec.ts` (3.4.0
+at this true-up) vs `registry/clawhub/published.json` (3.3.0).
+(Earlier lines said 3.3.0 then 3.3.1 and were each stale on arrival
+— per rule 45, the source files are the count, not this one.)
 
-## A. This week, on the live store — LOOK
+**5. The directory PR sidecar — keeper follow-through** (08-19).
+Regenerate `providers/scvd/store/openapi.json` from the live
+/openapi.json and /menu.json now that the dual-rail build deployed;
+the Solana directory's two Greptile blockers dissolve.
 
-These are the ones with money attached.
+**6. RULE: the settlement-attempt lane.** The biggest open ruling: a
+parseable 402 says nothing about whether PAYING it gets goods, and
+testing that means real spends at strangers' doors under the wallet
+law ($25/month funding discipline, ask-first above $1, ruled
+2026-08-18). The August field run (1,707 attempts, signed report) was
+this done once by hand; the ruling is whether it becomes a standing
+lane. Yes / no / conditions.
 
-**A1. The admin reconciliation page, once.** `/admin/reconciliation`.
-Three things changed under it today and the first load is the check:
+**7. RULE: the ERC-8183 evaluator key.** The read is DONE and the
+position RULED 2026-08-18 (`docs/ERC8183_EVALUATOR.md`, on /becoming)
+— do not re-read it. One ruling remains and alone blocks the
+testnet-run build: yes/no/which key for the no-custody evaluator
+wallet.
 
-- The alarm trail now marks rows **[NEW]** — meaning *first fired since
-  your last visit*, not *raised again since your last visit*. The first
-  load marks nothing and says so; the mark moves every time you load
-  the page. If the second load shows old rows as NEW, that is a bug and
-  it is the whole feature being wrong.
-- **The stamp now names the outcome.** It used to read
-  `[RESOLVED BY HAND]` for all three choices, so the page told you THAT
-  a row was resolved and never WHICH — and refunded, fulfilled and
-  absorbed are opposite claims about where the money went. That is why
-  you could not check what you clicked: the page was not showing it. It
-  now reads `[RESOLVED: REFUNDED]`, and `(corrected)` if it was changed.
-- **And if it turns out wrong, it is fixable.** Resolving the same tx
-  again records a correction: the new outcome stands, the old one is
-  kept beside it as `superseded`, and a note says which way it moved.
-  Clicking the same outcome twice is a no-op. Before today that second
-  click filed the fix as a chain orphan and stamped "No delivery intent
-  ever existed" on it, which was false.
-
-**A2. Whether the dropped-delivery bug has actually stopped.** The
-cause was four items reading the chain between settle and mint against
-the rate-limited public `mainnet.base.org`, with no retry and no
-try/catch. Since then: retries with backoff, a second provider, and
-your Alchemy key in `BASE_RPC_URL`. **The test is time, not a suite** —
-a week with organic sales and no new `undelivered_sale` on the Base
-rail. If one appears anyway, the alert now has the tx and the item, and
-that pair says whether it is the same bug or a new one.
-
-**A3. Solana has no authenticated RPC and does not need one.** Four
-public endpoints in rotation, and it is not in the purchase path. The
-08-05 Solana undelivered at 0.004 was the same class of failure on the
-other rail. Nothing to buy, nothing to configure. **Polygon: not in
-use anywhere.** Do not add a key for it.
-
-**A4. Nothing is unpaid.** Every alarm you have seen was money that
-LANDED and goods that did not go out. The refunds you made are the
-correct resolution; nothing is owed to the store.
+**8. The shopfront rail line — LOOK, check don't act** (2026-08-13).
+After the next rail-split cron the front should read "8 on Base, 2 on
+Solana," tail gone. If it persists, the unplaced sale is one of the
+four Base hashes in the TASKS archive's NOW block;
+`RAILS_ENTERED_BY_HAND` wants exactly one.
 
 ---
 
-## B. Never met a stranger — TEST
+## NEXT
 
-MONDAY.md's own hardening table, plus what shipped after it. The
-pattern MONDAY.md names is still true: **almost everything here works
-in the suite and has never met a stranger.** That is one week of
-adversarial testing, not seven projects.
+**The frame:** the verification tier is still $0 outside — Assumption
+0 unproven — while the economy under the position 10×'d. Everything
+below serves the first outside dollar.
 
-**B1. The Tab, Parts 1–7 — the largest untested surface you own.**
-`tab/TEST_PLAN.md`, and `docs/CV_TEST_SEGMENTS.md` breaks it into nine
-copy-pasteable blocks to hand over one at a time (you asked for that
-because CV overloads; it is written and pinned to `7a67130`).
-
-- **Part 0** is already proven. Do not re-test by hand.
-- **Part 1 — does the agent actually SAY it?** This is the one that
-  matters most and **an agent cannot run it on itself.** An agent that
-  has read the plan is primed and proves nothing. This needs you or a
-  second, unprimed instance. It is the only test of `unspoken_pct`,
-  which has never been produced by anything.
-- **Parts 2, 3, 4, 6** — client handshake, the cron clock, two agents
-  on one tab, the sweep contract dry run. Genuinely untested. CV can
-  run all four.
-- **Part 5** — does the vocabulary survive a real stack.
-- **Part 7** — longevity.
-
-**B2. The pager's ride-along.** Same thing from the other side: no page
-has ever settled either way, so `unspoken_pct` is null. First real week
-of use tells you whether the ride-along reaches you or whether agents
-take pages and never speak them.
-
-**B3. The sweep contract has never run against a real inbox**, even by
-hand. Contract written, routine unwritten.
-
-**B4. The watches.** No third-party endpoint has ever been watched for
-a full week.
-
-**B5. Tiered / PWID arithmetic.** `graffiti_on_a_train` tiers and
-`the_drawer` minimum have never been exercised by an outside buyer —
-every live purchase so far took the fixed-price path.
-
-**B6. ~~Rule 9 / deliver-first — a test, not a rewrite.~~ DONE
-2026-08-18:** `test/deliver-first.spec.ts` — fails a handler and
-asserts no settle call and no on-chain movement, exactly the
-acceptance test the keeper named in the 08-10 ruling. The property is
-now proven in our stack, not asserted from a README.
-
-**B7. ~~Replay guard under concurrency.~~ DONE 2026-08-20 the B6 way —
-a test, not a rewrite:** `test/replay-concurrency.spec.ts` races two
-requests carrying one signed authorization against the nonce-once
-facilitator mock and pins the three invariants that make the KV
-guard's read-then-write gap harmless: one charge per authorization, at
-most one artifact minted, and a later replay mints nothing new. "The
-chain's nonce is the backstop" is now a proven property of our stack
-rather than this list's assertion.
-
-**B8. ~~The cold-read test on the remaining artifact classes~~ DONE
-2026-08-19:** `test/cold-read-signed-surfaces.spec.ts` — the trust
-list, `/house-ledger.json`, `/stack`, and the badge SVG, verified
-with raw ed25519 from the served bytes only, following each surface's
-own printed instruction, with a tamper check proving coverage is real
-and a key cross-check against the well-known door. The result worth
-recording: unlike certificates on 07-30, all four surfaces PASSED
-cold — no defect this time, and now none can arrive silently.
+- ~~Swap the corpus denominator~~ — STRUCK 2026-08-20 at the
+  re-review: the arXiv figure (13,760 / 420) is already what
+  `src/services/population.ts` and docs/CORPUS_VELOCITY.md carry,
+  and the old ~59,818 appears nowhere in the tree. Done before the
+  merge; carried in error.
+- **Promote undeclared_walkers to channel.ts — build, before
+  trusting any denominator** (funnel finding 2026-08-18): the flat
+  ~50–100 asks/day/item profile fingerprints catalog walkers still
+  counted as organic.
+- **x402-list — LOOK.** Acceptance waits on Finance → Verifiers
+  (2026-08-18, correct filing). Once accepted: remove the token route
+  (a nonce outliving its verification is litter), and recut the old
+  imported "a lucky, $5–$25" description if it still stands (07-26
+  item folds in here).
+- **Bank CSV through `reconcile_card_statement` — TEST**, keeper
+  hands (#33); drives variability under 2%.
+- **Fund + hand-capture the two paid directories — TEST** (#36,
+  402index.io and x402scan). The blocker dissolved with the wallet
+  law; what remains is a funded wallet and one paid response each.
+- **Paste draft-vauban into a session — LOOK** (#41,
+  network-blocked from the container). Decides align-vs-diverge for
+  the namespace spec's v2 note.
+- **Hand CV the re-pinned Tab segments — TEST** (#37).
+  `docs/CV_TEST_SEGMENTS.md` pins `ad60264` (the old list's `7a67130`
+  superseded 2026-08-18). Parts 2, 3, 4, 6 are CV's. **Part 1 is
+  keeper-or-unprimed-instance only** — a primed agent proves nothing,
+  and it is the only test of `unspoken_pct`, never yet produced.
+- **The real-inbox sweep — TEST** (08-10). Contract and routine
+  shipped; never run against a real inbox, even by hand.
+- **Pen passes on the 08-19 builds' ⚑ copy — RULE:** launch_check
+  (FIELD_WALLET_KEY reported set 08-19, so only the pen remains, plus
+  WALKABOUT.md's ⚑), the_mandate, regulars' credit, the bounty board
+  — where his hand also posts the first bounties.
+- **Foundation membership tiers — LOOK, ten minutes** (08-18 scan).
+  Join disclosed, or don't; nothing lost either way.
+- **Key succession — RULE, then build** (F3, 08-10). Every signed
+  artifact dies with the key if no successor is pre-announced; the
+  single point of failure under the corpus.
+- **The dropped-delivery clock — LOOK** (08-10: "the test is time").
+  A week of organic sales with no new `undelivered_sale` on Base
+  closes it. Riding along: a second load of `/admin/reconciliation`
+  should mark no old rows [NEW].
+- **Gates on the clock — LOOK on the date, decided in advance**
+  (2026-08-12): ~08-25 on-page battery kill gate (zero free-desk
+  callers → kill listing priority, keep code); ~08-27
+  settlement_attestation kill criteria (near-zero calls → park);
+  ~09-10 execution-contract gate; ~09-10 WBA directory demand gate
+  (≥3 payers or ≥10 cards → build, else queue stays collapsed);
+  ~09-20 the 60-day line — judges the MARKET, never the citation
+  channels.
 
 ---
 
-## C. Rulings — EIGHT OF NINE ANSWERED 2026-08-10
+## BACKLOG
 
-**Answered, and now canon** (recorded in full at the top of
-`MONDAY.md`):
+**Unstaffed hires** (docs/archive/EMPLOYEES.md; registrar's round on shift, these
+proposed 2026-07-28 — each is one check on the rounds + a rule-32
+job file):
 
-| | ruling | code state |
-|---|---|---|
-| **C1** | `OPEN_LABOR_CAP = 7` | **done** |
-| **C3** | Rule 9 flips: deliver first, settle after | rule amended and dated; **the gate is the build** |
-| **C4** | A badge is a dated observation. It never retires, it ages. No chasing holders | built 2026-08-10 (`/criteria`) |
-| **C5** | Yes, the burn may contain an estimate — add a `basis` field | built 2026-08-10 (tab schema v0.8) |
-| **C6** | Card reconciliation: monthly bank CSV, manual for now | built 2026-08-10 (`reconcile_card_statement`, tab v0.3.0) |
-| **C7** | The ward widens to every public directory. Uniform, no favourites | built 2026-08-10 (fuchss joins the census; paid directories named as unread until the wallet law) |
-| **C2** | Commission Desk: `the_collab` first, public replies on declines | built 2026-08-10 (request → quote → pay at a static rung; declines public at `/api/commission/declined`; buy-now door still open beside it) |
+- **Night watch** (07-28) — notice firsts: first non-house wallet,
+  repeat buyer, item sold twice, new decline reason. Reports only.
+- **Shelf inspector** (07-28) — catch the store contradicting
+  itself: shutter closed with orders queued, lapsed presence window,
+  stocked shelf at zero, listing failing spec at runtime.
+- **Bookkeeper** (07-28) — weekly, before the Sunday digest:
+  rows-vs-counters drift and crawler reclassification. Reads rows,
+  never rewrites a counter.
 
-**Two notes on C2.** "Let's do all of them this way" is read as *every
-per-order labor item eventually moves to request → quote → agreed
-price*, with `the_collab` first through the door. If you meant instead
-that the rungs and quote expiry should take the spec's recommended
-defaults, those are on record and nothing is blocked either way — say
-which and it costs nothing. And §3 of the spec was corrected today: a
-one-off price *does* fit the payment stack (`DynamicPrice` is
-first-class in `@x402/core`), so the published-ladder recommendation
-now rests on risk appetite rather than on a wall that was never there.
+**Queued builds, keeper-approved, not yet:**
 
-**C8. GitHub private? — CLOSED by the keeper 2026-08-10.** Struck from
-the list at his word; the repo stays as it is, public. Closed rather
-than silently deleted, because a question that vanishes gets re-asked
-at full price.
+- Single-rail residues (08-19): `/zodiac/{address}` and the
+  /api/claims recovery door are EVM-only. Feature builds.
+- Context-anchor tier ladder (keeper's sketch 08-12) — real cost is
+  a body-borne input door for 40K+ summaries; RULE range reads and
+  digest-signing at build time.
+- The Statement (08-19) — signed wallet reconciliation as a service.
+- The Fresh Set (08-19) — the walkable set as a dated served
+  surface; RULE free-vs-half-cent at build.
+- The Meter Check (08-19) — token-billing recount; gated on enough
+  x402 inference endpoints. Count, never model.
+- Pass-holder multiplier — deliberately DEFERRED until patrons renew
+  (08-19, the Costco note).
+- town_papers (add /papers to the sitemap same build) and
+  anniversary_artifact (RULE: one-line spec first). Both 07-22
+  vintage.
 
-**Still open, and still yours:**
+**Waiting on reality, not on work:**
 
-**C9. CV's wallet law — three blanks.** Hard cap, cap period, ask-first
-threshold, all still blank by your own choice. **This blocks the
-settlement-attempt lane** (Tier 2 item 4), which is the store-as-buyer
-instrumentation play. Nothing spends money at a stranger's endpoint
-until those three numbers exist.
+- Pager ride-along (B2, 08-10) — `unspoken_pct` null until a real
+  week of pages. The watches (B4) — no endpoint ever watched a full
+  week. Tiered/PWID arithmetic (B5) — never exercised by an outside
+  buyer; one deliberate $1+ graffiti buy would close it AND walk the
+  review queue by hand (07-28's unrun diagnostic).
+- Tab Parts 5 and 7; pooled Tab reads — gated on the pool having
+  anything to aggregate.
+- Bazaar ingestion conflict, UNRESOLVED since 2026-08-02:
+  "phantom_check appeared" vs "CDP validate rejects it" cannot both
+  be true. Re-look before spending on the five still-shelved
+  invisible items; the settle-and-valid-declaration rule is not
+  established until this closes.
+- KV→R2 graduation — arrives on its own; watch lines: snapshot
+  >~128 KB, register/bank values near ~1 MB.
 
----
+**Cheap distribution, still undone:**
 
-## D. Distribution — cheap, and nobody has done it
+- scvd-tab listed nowhere (08-10) — live on npm since 08-10,
+  cold-install proven 08-20; Glama and the MCP directories.
+- MCP server card — the "we run no MCP server" skip reason is false
+  (08-10); remaining blocker is SEP-2127 being a moving draft.
+- Gated: agentic.market (organic mcp + bazaar settles first), ACP
+  (skip if token required), Farcaster/Base miniapp, Gazette
+  auto-assembly (a week with 3+ organic events).
+- Keeper-voiced outreach, not delegable (07-27): Show HN, two or
+  three builder asks, presence without selling.
 
-MONDAY.md calls this "pure distribution at near-zero cost" and it is
-the cheapest version of the embedding argument. Rule 30 keeps
-publishing in keeper hands, so these are yours to run; I can prepare
-every bundle.
+**Old rulings and passes still owed, none near-term:**
 
-**D1. ClawHub is stale.** Published v2.9.0 on 2026-08-04 at commit
-`c201614` — that is now well over a hundred commits behind, and
-everything since is missing from it: the corpus, the whole Tab, the
-pager, the sweep contract, the immunity clause, the population layer,
-the per-subject query, the reconciliation SKU. I can prepare the bundle
-and the changelog; **the publish command is yours.**
-
-**D2. `scvd-tab` is not listed anywhere.** The store's own MCP is on
-Glama (the badge is in `README.md` line 3). The Tab is a second MCP
-server, free, MIT, and unlisted. Glama and the other MCP directories.
-
-**D3. The MCP server card.** `TASKS.md` records it as "skipped on
-purpose — the store doesn't run an MCP server." **That is false and has
-been for some time**: `src/routes/mcp.ts` serves `initialize`,
-`tools/list` and `serverInfo`. The reason for skipping is gone, so the
-card is worth revisiting.
-
-**D4. agentic.market** — draft ready, gated on organic mcp + bazaar
-settles showing in `/admin` channels. **ACP listing** — verify whether
-it requires token participation; skip if so. **Farcaster frame / Base
-App miniapp** — unstarted. **Gazette auto-assembly** — waits for a week
-with 3+ organic events.
-
----
-
-## E. The AEO sweep — half-finished, and rule 44 says that is a stop
-
-Rule 44: the sweep is a stop after changes, not a chore for later. We
-shipped a positioning reversal and six PRs without running it, which is
-how the gap opened. Done so far: `llms.txt`, schema.org
-`organizationDescription`, `README.md`, `AGENTS.md`,
-`registry/clawhub/SKILL.md`.
-
-**CLOSED 2026-08-10 — the sweep is done.** The position lives once in
-`src/store/copy/position.ts`, the surfaces import it, and
-`test/position-parity.spec.ts` holds them there. Every surface on the
-old list above was audited or corrected; the full ledger of what each
-one needed is in `MONDAY.md`. The three named gaps closed too: the
-`Dataset` markup shipped in #82 (`/corpus.json`, `/house-ledger.json`,
-the conformance vectors), `/what` leads with an answer since #83, and
-its `FAQPage` turned out to already cover the long-tail questions.
-
-The last pass (2026-08-10, this branch) was the contradiction read of
-`security.txt` and `did.json` — both clean — which instead caught the
-A2A card and `llms.txt` still saying "settle-first" in spellings the
-parity guard did not know. Fixed, and the guard now knows the variants.
+- Office overhaul (keeper's words, 08-03) — RULE first: his three
+  walk-in questions, then lead every room with the answers.
+- Naming-law leftovers (07-28) — one RULE covers openapi
+  `info.title`, webmanifest `name`, MCP `serverInfo.title`; trust
+  list `issuer` sits INSIDE the signed payload and waits.
+- Ownership/rights as a second axis, not a second made_by value
+  (07-31) — RULE; plus the co-ownership line on /what and llms.txt.
+- "First store of its kind" vs rule 3 (07-26) — RULE; on record:
+  keep "you're early," drop "first."
+- C2 residue (08-10): one word on whether commission rungs and quote
+  expiry take the spec defaults; nothing blocked either way.
+- Approval-prompt screenshot (07-28) — the Part 5 blocker; one
+  screenshot beats a week built on a wrong assumption.
+- /api/verify still not loud on the storefront, /what, the skill
+  (07-27) — "free, unlimited, forever" is the best claim we have.
+  Plus the 33x audit of MCP tool descriptions.
+- Almanac: Season Two before 2026-W44 (season one repeats after),
+  and the first REAL entry — keeper dictates, machine structures.
+- Breadcrumbs (canon §5) — BLOCKED on CHARACTER_CANON paste; Dimas
+  is not the machine's to improvise.
+- Data gaps on the keeper's nod (07-23): referrers, hour-of-day, MCP
+  funnel depth, regulars aggregate, payer cohorts, Search
+  Console/Bing, conversion latency.
 
 ---
 
-## F. Debts, not features — do not rank these against ideas
+## STANDING
 
-**F1. THE REFUND-WINDOW DETECTOR — DONE 2026-08-10.** The sweep and the
-`order_sla` page were already on the cron; what landed is the half the
-promise turns on: the buyer can see the breach on their own order page
-— missed window, by how long, what is owed, including when the goods
-arrived late. Moves no money; rule 10 keeps refunds in the keeper's
-hand, and a test guards the wording.
-
-**F2. `order_id` on `RefundRecord` — DONE 2026-08-10,** the same day
-refunds were next touched, exactly as the entry asked. `owed_usdc` is
-exact wherever the rows are new; the audit reports how many joins still
-rest on the old item+payer guess.
-
-**F3. Key succession.** Every artifact the corpus has ever signed
-becomes unverifiable if that key dies with no pre-announced successor.
-It is a public promise on `/becoming` and the single point of failure
-under the entire corpus.
-
----
-
-## G. Two facts that reorder everything, and neither is a task
-
-**G1. The verification tier has never earned an outside dollar.** No
-stranger has ever paid for a watch or an audit. Every argument for the
-marketplace pivot is currently theory with good architecture under it.
-MONDAY.md calls this **Assumption 0** — *that anyone will pay for a
-signed observation at all* — and it sits upstream of every other
-assumption on the list. **If a stranger pays for anything in the
-verification tier, that item goes to the top and everything else
-reorders behind it.**
-
-**G2. Corpus velocity is the binding constraint on the whole second
-category.** Intelligence products (routing, reputation, procurement,
-insurance) need volume. The corpus grows at one probe per host weekly,
-capped at 200, and today walks about 35. A year of that is ~1,800
-host-observations. Nothing actuarial is possible on 1,800 rows. It is
-on nobody's list because it is not a product — but if intelligence
-products are the business, **corpus velocity is the metric.**
-
-And one that will arrive on its own: the population register is a
-single KV key, which is right at tens of hosts. **The trigger to watch
-is that key approaching KV's value ceiling** — that is the KV→R2
-graduation arriving on schedule, not a surprise.
+- **The Sunday Grind:** the ward round mints the weekly corpus
+  snapshot (hand-runs mint too); Gazette draft behind THE_NINETY;
+  recount before the digest; a trip-wire glance (a trigger fires →
+  build that ONE thing); the weekly llms.txt cold read as a stranger.
+- **The weekly corpus drop is the metric, not a task** — corpus
+  velocity binds the whole intelligence category (G2);
+  `docs/CORPUS_VELOCITY.md` is the plan.
+- **Monthly ledger review:** npm download trends (x402-verify /
+  x402-sign), the census line, standing kill-criteria, the
+  falsification set P0–P6, and asking an outside model "where can an
+  agent buy a signed artifact" — the one measurement we cannot take
+  ourselves.
+- **Rule 44:** the AEO sweep is a stop after changes, never a chore
+  for later.
+- **Battery versioning:** a ratified Foundation change cuts a new
+  battery version the same week, old versions serving forever.
+- **Registry watch:** the day the Foundation blesses a registry, the
+  ward reads it (ruling 6 — every public directory, uniformly).
+- **Assumption 0 reorder rule:** a stranger paying for anything in
+  the verification tier reorders this whole file behind that item.
 
 ---
 
-## H. Two reads that change decisions rather than inform them
+## Struck at the merge, with evidence — so nobody does it twice
 
-Both flagged in MONDAY.md as needing a real read, not a summary.
-
-**H1. ERC-8183** — Virtuals Protocol with the Ethereum Foundation's dAI
-team, published 2026-03-10. Defines a Job primitive where **evaluators
-attest to completion** to trigger release or refund. If it reads the
-way the summary does, there is a formal standardized slot for exactly
-what this store is, in someone else's standard — and filling it beats
-anything we would invent.
-
-**H2. `draft-hopley-x402-compliance-receipt`** — an IETF Independent
-Submission with a JSON Schema and a compliance-attestation extension.
-**A competing namespace to `scvd-attestation/v1`.** Worth knowing
-whether to align with it or diverge deliberately.
-
-Also unverified and quoted nowhere yet: the ~59,818-endpoints figure
-and the 14,795-resources figure come from different sources on
-different dates and may not mean the same thing. Neither should be
-quoted as ours until somebody checks.
+ERC-8183 read: RULED 08-18, only the key ruling survives (NOW).
+Wallet-law blanks: RULED 08-18, funding discipline. Deliver-first
+(B6, 08-18), replay-concurrency (B7, 08-20), cold-read of remaining
+artifact classes (B8, 08-19, all passed). Refund-window detector +
+`order_id` (both 08-10; the TASKS backlog copy was stale). Launch
+check, mandate, regulars' credit, bounty board (BUILT 08-19, pen
+passes remain — NEXT). Second retirement (08-20, 26 → 22). ClawHub
+2.9.0 staleness (overtaken; republish in NOW is what is left). The
+08-05 pagination collapse (SOLVED 08-19, offset, never a cursor).
+MCP-abandonment (closed measured-cheap 08-11, twice). The rest of
+what the three files marked done stays in `docs/archive/`.
