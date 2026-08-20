@@ -3,6 +3,7 @@ import { CONFLICT } from "@/services/conformance";
 import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
+import { readPayTo } from "@/lib/pay-to";
 import { isRecord, type Env } from "@/types";
 
 /**
@@ -54,9 +55,6 @@ import { isRecord, type Env } from "@/types";
  * certificate keeps its mint-day canonical form.
  */
 export const PREFLIGHT_VERSION = "v1";
-
-/** Base58 32-44, the only shape a Solana pubkey comes in (lib/payments). */
-const SOLANA_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 /**
  * The fields an accepts entry must carry, and the derivation matters:
@@ -382,25 +380,22 @@ export function runChecks(
       });
     }
     /**
-     * ENS IN payTo — 21 endpoints in the August field run, and a
-     * buyer with no mainnet provider simply cannot pay them.
-     *
-     * The failure is quiet in the worst way: an EIP-3009 `to` must be
-     * a 20-byte address, so a client that does not resolve names
-     * either throws deep inside its signing library (the field run's
-     * ledger says "cannot resolve ENS names without a provider") or
-     * signs garbage. The seller sees no payment and no reason. An
-     * address is also what the buyer must check against the chain
-     * afterwards; a name adds a resolution step to every audit of
-     * this endpoint forever.
+     * WHAT IS IN payTo, read against the network of the SAME entry.
+     * The taxonomy and its remediation live in lib/pay-to.ts; the
+     * first pass of this check lived here, matched ".eth", and told
+     * Basename holders their buyers needed a mainnet resolver, which
+     * is false on the rail this store is first on.
      */
-    const payTo = String(entry["payTo"] ?? "");
-    if (payTo.length > 0 && !/^0x[0-9a-fA-F]{40}$/.test(payTo) && !SOLANA_ADDRESS.test(payTo)) {
+    const verdict = readPayTo(String(entry["payTo"] ?? ""), String(entry["network"] ?? ""));
+    if (!verdict.payable) {
       advisories.push({
-        name: /\.eth$/i.test(payTo) ? "payto-is-ens-name" : "payto-not-an-address",
-        detail: /\.eth$/i.test(payTo)
-          ? `accepts payTo is "${payTo}", an ENS name rather than an address. Payment authorizations are signed over a 20-byte address, so any buyer without a mainnet resolver cannot pay this endpoint at all — their client throws inside its signing library and they see nothing to fix. Publish the resolved 0x address; a name also forces every later audit of your receipts through a resolution step.`
-          : `accepts payTo is "${payTo}", which is neither a 0x address nor a base58 Solana address. A client cannot build a payment against it.`,
+        name:
+          verdict.kind === "name"
+            ? "payto-is-a-name"
+            : verdict.kind === "wrong-rail"
+              ? "payto-wrong-rail"
+              : "payto-not-an-address",
+        detail: verdict.detail,
       });
     }
     const amount = String(entry["amount"] ?? "");
