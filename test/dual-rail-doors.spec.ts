@@ -173,3 +173,164 @@ describe("the claims door's second rail", () => {
     expect(Array.isArray(body["orders"])).toBe(true);
   });
 });
+
+
+/** Top-level twin of the claims describe's wallet factory, for the
+ * journey tests below that need one outside that scope. */
+async function solanaWalletFor(): Promise<{
+  address: string;
+  sign: (message: string) => Promise<string>;
+}> {
+  const secret = crypto.getRandomValues(new Uint8Array(32));
+  const publicKey = await ed25519.getPublicKeyAsync(secret);
+  return {
+    address: encodeBase58(publicKey),
+    sign: async (message: string) =>
+      encodeBase58(
+        await ed25519.signAsync(new TextEncoder().encode(message), secret),
+      ),
+  };
+}
+
+describe("the reset journey ends at the goods, not at a mailbox", () => {
+  /**
+   * The journey sweep's find (2026-08-20): most of the shelf is
+   * INSTANT — no order opens, the certificate rides the purchase
+   * response, and an agent that resets before reading it held
+   * nothing. The claims door existed for exactly that reset and
+   * returned orders only; its own note told the most common buyer to
+   * email the keeper. Same key proof, both kinds of record.
+   */
+  it("returns the certificates the wallet paid for, newest first", async () => {
+    const wallet = await solanaWalletFor();
+    const put = (id: string, date: string) =>
+      testEnv.PATRONS.put(
+        `cert:${id}`,
+        JSON.stringify({
+          certificate: {
+            cert_id: id,
+            item: "hello",
+            patron_number: 990010,
+            date,
+            paid_usdc: 0.5,
+            payer: wallet.address,
+            settlement_tx: "0x" + "ab".repeat(32),
+          },
+          signature: "00".repeat(64),
+          public_key: "11".repeat(32),
+        }),
+      );
+    await put("cert_resetold", "2026-08-01T00:00:00.000Z");
+    await put("cert_resetnew", "2026-08-20T00:00:00.000Z");
+
+    const challenge = await (
+      await SELF.fetch(`${BASE}/api/claims/challenge`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ address: wallet.address }),
+      })
+    ).json() as Record<string, unknown>;
+    const signature = await wallet.sign(String(challenge["challenge"]));
+    const res = await SELF.fetch(`${BASE}/api/claims`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ address: wallet.address, signature }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      certificates: { cert_id: string; verify_url: string }[];
+    };
+    expect(body.certificates.map((c) => c.cert_id)).toEqual([
+      "cert_resetnew",
+      "cert_resetold",
+    ]);
+    expect(body.certificates[0]!.verify_url).toContain(
+      "/api/verify/cert_resetnew",
+    );
+  });
+
+  it("returns nobody ELSE's certificates with the claim", async () => {
+    const owner = await solanaWalletFor();
+    const stranger = await solanaWalletFor();
+    await testEnv.PATRONS.put(
+      "cert_notyours1",
+      JSON.stringify({
+        certificate: {
+          cert_id: "cert_notyours1",
+          item: "hello",
+          patron_number: 990011,
+          date: "2026-08-19T00:00:00.000Z",
+          payer: stranger.address,
+        },
+        signature: "00".repeat(64),
+        public_key: "11".repeat(32),
+      }),
+    );
+    const challenge = await (
+      await SELF.fetch(`${BASE}/api/claims/challenge`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ address: owner.address }),
+      })
+    ).json() as Record<string, unknown>;
+    const signature = await owner.sign(String(challenge["challenge"]));
+    const body = (await (
+      await SELF.fetch(`${BASE}/api/claims`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ address: owner.address, signature }),
+      })
+    ).json()) as { certificates: { cert_id: string }[] };
+    expect(
+      body.certificates.find((c) => c.cert_id === "cert_notyours1"),
+    ).toBeUndefined();
+  });
+});
+
+describe("the completion webhook's outcome goes in the book", () => {
+  /**
+   * Journey 3 of the sweep: the buyer asked to be told when their
+   * human-labor order finished, their endpoint was down for the one
+   * attempt, and before 2026-08-20 nothing anywhere recorded that the
+   * owed notice was never delivered — fetch does not throw on a 500.
+   */
+  it("records a delivered webhook as delivered", async () => {
+    const { installFacilitatorMock, TEST_WEBHOOK_URL } = await import(
+      "./helpers/facilitator-mock"
+    );
+    installFacilitatorMock();
+    const { createOrder, completeOrder } = await import("@/services/orders");
+    const { getMenuItem } = await import("@/store");
+    const order = await createOrder(testEnv, {
+      item: getMenuItem("the_collab")!,
+      paidUsdc: 5,
+      tipUsdc: 0,
+      patronNumber: 990020,
+      certId: "cert_hooktest1",
+      callbackUrl: TEST_WEBHOOK_URL,
+    });
+    const done = await completeOrder(testEnv, order.order_id, "the goods");
+    expect(done!.webhook).toContain("delivered");
+  });
+
+  it("records an unreachable webhook as attempted and not retried", async () => {
+    const { installFacilitatorMock } = await import("./helpers/facilitator-mock");
+    installFacilitatorMock();
+    const { createOrder, completeOrder } = await import("@/services/orders");
+    const { getMenuItem } = await import("@/store");
+    const order = await createOrder(testEnv, {
+      item: getMenuItem("the_collab")!,
+      paidUsdc: 5,
+      tipUsdc: 0,
+      patronNumber: 990021,
+      certId: "cert_hooktest2",
+      // The mock throws on URLs it does not know — a dead endpoint.
+      callbackUrl: "https://gone.example/hook",
+    });
+    const done = await completeOrder(testEnv, order.order_id, "the goods");
+    expect(done!.webhook).toContain("unreachable");
+    expect(done!.webhook).toContain("not retried");
+    // And the deliverable is still there for the poller.
+    expect(done!.deliverable).toBe("the goods");
+  });
+});

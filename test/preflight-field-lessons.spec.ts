@@ -188,35 +188,49 @@ describe("the paid walk names a payTo defect as the finding", () => {
      */
     const { performLaunchCheck } = await import("@/services/launch-check");
     const target = "https://names-its-wallet.example/api/buy/thing";
-    const walk = await performLaunchCheck(
-      { ...(env as unknown as Env), FIELD_WALLET_KEY: "" } as Env,
-      target,
-      {
-        fetch: (async () =>
-          new Response("{}", {
-            status: 402,
-            headers: {
-              "PAYMENT-REQUIRED": btoa(
-                JSON.stringify({
-                  x402Version: 2,
-                  accepts: [
-                    {
-                      scheme: "exact",
-                      network: "eip155:8453",
-                      amount: "5000",
-                      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-                      payTo: "shop.base.eth",
-                      maxTimeoutSeconds: 300,
-                    },
-                  ],
-                }),
-              ),
-            },
-          })) as unknown as typeof fetch,
-      },
-    );
+    const runWalk = () =>
+      performLaunchCheck(
+        { ...(env as unknown as Env), FIELD_WALLET_KEY: "" } as Env,
+        target,
+        {
+          fetch: (async () =>
+            new Response("{}", {
+              status: 402,
+              headers: {
+                "PAYMENT-REQUIRED": btoa(
+                  JSON.stringify({
+                    x402Version: 2,
+                    accepts: [
+                      {
+                        scheme: "exact",
+                        network: "eip155:8453",
+                        amount: "5000",
+                        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                        payTo: "shop.base.eth",
+                        maxTimeoutSeconds: 300,
+                      },
+                    ],
+                  }),
+                ),
+              },
+            })) as unknown as typeof fetch,
+        },
+      );
+    let walk = await runWalk();
+    if (walk.stages.some((s) => s.stage === "approach" && !s.ok)) {
+      // performLaunchCheck deliberately swallows transport errors into
+      // a signed approach-failure stage — correct in production, and
+      // it means one workerd socket blip starves this assertion (seen
+      // once in a full-suite run, right under a "Network connection
+      // lost" disconnect). One retry keeps the assertion strong
+      // without teaching the test to accept the wrong stage.
+      walk = await runWalk();
+    }
     const terms = walk.stages.find((s) => s.stage === "terms" && !s.ok);
-    expect(terms, "the walk did not fail at terms on an unpayable payTo").toBeTruthy();
+    expect(
+      terms,
+      `the walk did not fail at terms on an unpayable payTo; stages: ${JSON.stringify(walk.stages)}`,
+    ).toBeTruthy();
     expect(terms!.detail).toContain("Basename");
     expect(terms!.detail).toContain("nothing was charged");
     // And it never got as far as blaming the screen.
