@@ -126,14 +126,7 @@ export const WATCHED: readonly Watched[] = [
     trigger:
       "One other operator saying yes. The gate is not technical and never was.",
     today:
-      "Nothing bilateral exists. /trust-list.json is version 0 and lists only this store; /neighbours lists services we have paid, which is a different relation entirely.",
-  },
-  {
-    item: "The verification marketplace — signed, dated conformance checks and badges on other people's goods, under rule 43.",
-    trigger:
-      "The criteria page: a published, per-class definition of what 'verified' means here — what was checked, when, against which criteria, what it does not prove, and what retires a badge. No badge ships before that page exists, and whether it exists is checkable by anyone.",
-    today:
-      "Nothing for sale, still — but the trigger fired on 2026-08-10: the criteria page exists at /criteria, published before anything carries a badge, with the keeper's ruling on retirement recorded (nothing retires a badge; it ages, and re-observation answers whether it still holds). Nothing carries a badge yet, and per this page's own standfirst, a decided direction with an open gate is still not an available product.",
+      "Nothing bilateral exists, still. /trust-list.json (version 1) carries this store's own one-way attestations about services it paid or used, freshness-dated — a different relation entirely from a treaty, and saying 'version 0, self-only' here after v1 shipped was this page's staleness defect again, fixed 2026-08-20. What now exists toward the ask itself: the treaty note is drafted (docs/RECEIPT_TREATY_ASK.md in the public repository), the mechanical shape of a yes is written down, and the send waits on the keeper's hand, where all outward sends live.",
   },
   {
     /**
@@ -188,6 +181,15 @@ export interface Graduated {
  * just be the same defect waiting to recur.
  */
 export const GRADUATED: readonly Graduated[] = [
+  {
+    item: "The verification marketplace — signed, dated conformance checks and badges on other people's goods, under rule 43.",
+    trigger:
+      "As written from 2026-07-30: the criteria page — a published, per-class definition of what 'verified' means here — what was checked, when, against which criteria, what it does not prove, and what retires a badge. No badge ships before that page exists, and whether it exists is checkable by anyone.",
+    fired:
+      "The trigger as written, in two steps — and this record keeps the seam visible. The criteria page went live 2026-08-10 with the retirement ruling recorded (nothing retires a badge; it ages, and re-observation answers whether it still holds). The checks half was already selling by then — signed point-in-time audits and cards on other people's endpoints, each binding its evidence hash into a verifiable certificate — while this row went on saying 'nothing for sale', which was the Solana row's staleness defect repeating on the audits. The badge half completed 2026-08-20.",
+    built:
+      "Both halves. The checks: purchasable signed observations of other people's endpoints, pages, and key directories, criteria version named on every artifact, the negative signed as readily as the positive. The badge: every purchased endpoint audit now renders an embeddable dated label at its own permanent URL — verdict and date on one line, criteria cited, linking to the signed report anyone verifies without us. It ages, it is never revoked, and it renders whatever the verdict was, because a store that badges only good news is selling endorsements. The honest gap, stated: no outside subject has yet displayed one; that first sighting is federation-shaped and stays watched.",
+  },
   {
     item: "A second chain (Solana).",
     trigger:

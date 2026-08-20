@@ -407,6 +407,15 @@ never run against a REAL inbox, and Part 1 of the test plan needs the
 keeper or an unprimed instance — an agent that has read the plan
 proves nothing.
 
+COLD-INSTANCE TEST RUN 2026-08-20, PASSED: a fresh `npm install
+scvd-tab` into an empty directory (nothing from this repo on the
+path) pulled 0.4.3 from the public registry, its own shipped suite
+ran 68/68, and a stranger-shaped MCP client's initialize +
+tools/list handshake against `server.mjs` over stdio answered
+`scvd-tab 0.4.3` with all 18 tools. The published package works
+cold. Remaining on this chain: the real-inbox sweep (keeper/CV
+hands) and pooled reads (gated on pool contributions, unchanged).
+
 **5. ~~The Foundation plan's build items~~ — struck 2026-08-18:**
 both were already built the same day this sheet listed them as open
 (see "Built 2026-08-18" above): the non-affiliation line is
