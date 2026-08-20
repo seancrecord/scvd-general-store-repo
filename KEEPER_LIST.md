@@ -165,6 +165,75 @@ job file):
   digest-signing at build time.
 - The Meter Check (08-19) — token-billing recount; gated on enough
   x402 inference endpoints. Count, never model.
+- **The Circle-badge slate** (keeper 08-20, off the 100/100 scanner
+  read: "i say we do it all at some point"), in build order:
+  1. SIWX / wallet auth — CAIP-122 message format on the claims
+     door's existing wallet-signature challenge. Small, doctrine-fit
+     (no accounts, no keys), mine, near-term.
+  2. MPP (Machine Payments Protocol, Stripe+Tempo) — second payment
+     standard beside x402. Spec read first; RULE before build: card
+     rails are reversible ~90 days and our certificates are signed
+     forever — settle-before-mint needs a chargeback answer (exclude
+     forever-artifacts from MPP, price the risk, or delay minting).
+  3. Circle Gateway nanopayments — accept their unified USDC
+     balance. Circle onboarding first (keeper hand, likely KYB);
+     code after is modest. The Alliance Program thread (Haider
+     Bhatti, 08-20) is probably the same front door.
+  4. World ID / Proof of Human — requires the keeper PERSONALLY
+     enrolling (Orb/app) before anything buildable; the store-shaped
+     use is the inversion: our human_witness carries OUR proof of
+     personhood, never a gate on buyers. Last, by his own "idk
+     how... at some point".
+- **THE OUTSIDE-READS LOG** (08-20: Circle scanner 100/100 + two Exa
+  strategy runs). One dated ledger, split hard so advice never blurs
+  into what already stands — the keeper's own rule: "structure so we
+  have both and it's not confusing which we've worked hard on."
+
+  ALREADY STANDING — do not rebuild, point outsiders here:
+  audit+cert+badge+renewal = service_audit / launch_check / audit
+  badges / conformance_watch · canonical receipt schema =
+  scvd-attestation spec + JCS dual-emit · guided first purchase =
+  buy_simple + /try + payload_template · recurring wedge =
+  conformance_watch + recurring_patronage · evidence-first directory
+  = /registry + /fresh-set (rows cite the signed corpus) ·
+  own-store-as-the-demo = the 402→pay→verify walk on every door ·
+  first ICP = endpoint operators (the funnel, the wire, the tally).
+
+  NEWLY FILED, deduped across all three reads, rough build order:
+  1. The Endpoint Passport — ONE canonical object bundling audit +
+     badge + watch state + registry metadata: HTML for eyes, JSON
+     for agents, signed digest, expiry/renewal, check history,
+     non-guarantee language. The umbrella most items below feed.
+     First passport: our own endpoint, public.
+  2. Freshness states — evidence degrades VISIBLY: fresh / aging /
+     expired / broken / indeterminate, so an agent can refuse stale
+     evidence automatically. Sell the refresh, never the grade.
+  3. The authority pack — why trust the observer: verification
+     library + byte-testable vectors, sample-artifact gallery,
+     incident policy, revocation story. Key succession (F3, RULE
+     open) is the floor of this pack; third outside read to name it.
+  4. Outcome-verification separation — paid / settled / executed /
+     delivered / externally-observed / not-checked as distinct
+     fields, never collapsed (partially standing in /api/verify's
+     split verdicts; extend to receipt language).
+  5. The obstacle course + signed failure diagnosis — deterministic
+     named failure modes to practice against, and the paid signed
+     "why an agent cannot buy from this endpoint" report (preflight's
+     battery, signed and sold).
+  6. One trust panel — aggregator page for key/history, corrections,
+     books, uptime, fulfillment stats; feeds the passport.
+  7. The assurance ladder, named — novelty / observation / monitored
+     / audited / witnessed as explicit spec levels.
+  8. The distribution pack — passport made outreach-ready:
+     copy-ready profile, JSON twin, embeddable badge, registry
+     submission checklist (the wire's notes get an artifact to
+     offer, not just a defect to report).
+  9. Standards-boundary language — "x402-native", "maps to",
+     "references", with mapping tables and test vectors; never
+     "AP2/MPP compliant" without implementing the flows. Rides the
+     MPP/x401 read (#51/#52).
+  10. RULE (keeper): hosted trust profiles as a monthly SKU
+      ($9–49 shape) — a new business line, his call alone.
 - ~~Single-rail residues~~ DONE 08-20: /zodiac and /api/claims read
   both rails.
 - ~~The Statement~~ SHIPPED 08-20 on the shelf (`the_statement`, the
