@@ -1,3 +1,7 @@
+import {
+  findPendingCommitments,
+  spliceUpgrade,
+} from "@/services/ots-proof";
 import { saveAnchor, type AnchorRecord, type OtsAnchor } from "@/services/anchor-log";
 import type { Env } from "@/types";
 
@@ -140,16 +144,22 @@ export async function submitToOts(
 /**
  * Try to upgrade a pending proof to a Bitcoin-confirmed one.
  *
- * A 404 is the NORMAL answer for the first hour or two and is not an
- * error — it means "not confirmed yet, ask again later". Treating it
- * as a failure would turn the ordinary case into noise and teach the
- * keeper to ignore this log, which is how a canary dies.
- */
-/**
- * The upgrade, digest-in / OtsAnchor-out, shared with the patron
- * anchors for the same reason as the submitter: one implementation of
- * "404 is the normal answer, network trouble is a nothing-happened."
- * Returns null when nothing changed, so callers write nothing.
+ * KEYED BY THE CALENDAR'S COMMITMENT, NOT OUR DIGEST — the 2026-08-20
+ * finding, after every anchor in the store had sat pending for up to
+ * eighteen days. The calendar files a timestamp under the commitment
+ * its own ops chain produces (nonce appended, hashed, merkled), so
+ * polling /timestamp/{digest} 404s FOREVER, and this code read
+ * forever as "not confirmed yet" — 363 rejections a day that looked
+ * exactly like patience. The commitment comes from parsing the stored
+ * proof (see ots-proof.ts for why the no-parse rule bent), and a 404
+ * against the RIGHT key really does mean "no Bitcoin block yet, ask
+ * again later".
+ *
+ * On success the calendar's answer — a subtree rooted at the
+ * commitment — is spliced over the pending attestation, so the stored
+ * proof chains digest-to-Bitcoin in one piece and `ots verify` can
+ * read it whole. Returns null when nothing changed, so callers write
+ * nothing.
  */
 export async function upgradeDigestOts(
   digestHex: string,
@@ -157,13 +167,31 @@ export async function upgradeDigestOts(
   options: SubmitOptions = {},
 ): Promise<OtsAnchor | null> {
   if (ots.status !== "pending") return null;
+  if (!ots.proof_base64) return null;
   const fetchImpl = options.fetch ?? globalThis.fetch;
   const now = options.now ?? new Date();
   const calendar = ots.calendar ?? OTS_CALENDARS[0];
+  let proof: Uint8Array;
   try {
-    const response = await fetchImpl(`${calendar}/timestamp/${digestHex}`, {
-      headers: { Accept: "application/vnd.opentimestamps.v1" },
-    });
+    const raw = atob(ots.proof_base64);
+    proof = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i += 1) proof[i] = raw.charCodeAt(i);
+  } catch {
+    return null;
+  }
+  const pendings = await findPendingCommitments(proof, digestHex);
+  // An unparseable proof or one with no pending attestation upgrades
+  // nothing; guessing a key would be worse than waiting.
+  const pending = pendings?.[0];
+  if (!pending) return null;
+  // The attestation names its own calendar (the pool aggregators
+  // front the real ones); the submission host is only the fallback.
+  const upgradeHost = pending.calendar_uri ?? calendar;
+  try {
+    const response = await fetchImpl(
+      `${upgradeHost}/timestamp/${pending.commitment_hex}`,
+      { headers: { Accept: "application/vnd.opentimestamps.v1" } },
+    );
     if (response.status === 404) {
       // Still waiting on a Bitcoin block. Unchanged, not failed.
       return null;
@@ -171,12 +199,12 @@ export async function upgradeDigestOts(
     if (!response.ok) {
       return null;
     }
-    const proof = new Uint8Array(await response.arrayBuffer());
-    if (proof.length === 0) return null;
+    const upgraded = new Uint8Array(await response.arrayBuffer());
+    if (upgraded.length === 0) return null;
     return {
       ...ots,
       status: "complete",
-      proof_base64: toBase64(proof),
+      proof_base64: toBase64(spliceUpgrade(proof, pending, upgraded)),
       upgraded_at: now.toISOString(),
     };
   } catch {
