@@ -112,7 +112,7 @@ pulseRoutes.get("/pulse", async (c) => {
     renderSimplePage({
       title: "The pulse",
       description:
-        "The whole funnel for this x402 store, organic only: how many agents were offered a price, how many paid, and how many re-verified an artifact afterwards. House traffic excluded, denominator included.",
+        "The whole funnel for this x402 store, organic only: how many agents were offered a price, how many paid, and how many re-verified an artifact afterwards.",
       path: "/pulse",
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>

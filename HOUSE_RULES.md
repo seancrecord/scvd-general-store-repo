@@ -29,7 +29,9 @@ VOICE & COPY
 3. Never claim "first ever." Discovered > launched. The store behaves
    as if it has always been here.
 4. No preemptive denials. Respond, don't announce. (No "not a scam,"
-   no "no token" banners. If asked wen token: "we sell rocks.")
+   no "no token" banners. If asked wen token: no.
+   AMENDED 2026-08-19, keeper: the "we sell rocks" reply is retired
+   — the store does not sell rocks. Wen token gets a plain no.)
 5. If it wants a retweet, it dies. If it could live on Medium or
    LinkedIn, it dies. Almanac = dated first-person sensory field
    notes; never how-to, listicle, or lessons-learned.
@@ -171,9 +173,11 @@ PRODUCT & INVENTORY
 OPERATIONS & STAFF
 =====================================================================
 
-29. Read PROJECT_LOG.md before working. Decisions are not relitigated
-    without the keeper. TASKS.md catches everything discovered —
-    nothing gets dropped, things get filed.
+29. Read KEEPER_LIST.md and this file before working. Decisions are
+    not relitigated without the keeper. KEEPER_LIST.md catches
+    everything discovered — nothing gets dropped, things get filed.
+    (AMENDED 2026-08-19: PROJECT_LOG.md and TASKS.md live under
+    docs/archive/; KEEPER_LIST.md is the one desk file.)
 30. No agent holds keys, sends money, or publishes without an
     approval queue. Read + draft roles by default.
 31. Blast-radius rule: every employee runs on its own credentials.
@@ -277,8 +281,48 @@ LORE & TRADITION
     and the a2a-card specs each hold their own corner, and anything
     derived from MENU_ITEMS or ROOMS cannot drift by construction —
     so the sweep's human half is the PROSE: descriptions, identity
-    lines, and the drift watchlist in MARKETPLACE_AUDIT.md Part 4,
-    which is the standing list of strings that go stale as the
-    store evolves. Rule 10's lesson applies: a rule in a file is
-    not a test, so where a sweep finds the same prose drifting
-    twice, the fix is a test, not a better memory.
+    lines, and the DRIFT WATCHLIST appended at the bottom of this
+    file (moved 2026-08-19 from MARKETPLACE_AUDIT.md Part 4 when
+    that audit was archived as decided-and-folded), which is the
+    standing list of strings that go stale as the store evolves.
+    Rule 10's lesson applies: a rule in a file is not a test, so
+    where a sweep finds the same prose drifting twice, the fix is
+    a test, not a better memory.
+
+45. THE PAPERS STAY TRUE (2026-08-19, the keeper's direction from
+    the documentation audit): every root document is living or it
+    is archived — there is no third state. A change that ships
+    amends, in the same commit, every root paper it touches; a
+    plan a build has overtaken is corrected or archived the day
+    the build lands. Hard-coded counts (tests, shelf items,
+    payers) do not appear in root docs unless a test pins them.
+    Wording of this rule awaits the keeper's own ink.
+
+=====================================================================
+APPENDIX — THE DRIFT WATCHLIST
+(moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the
+audit was archived; rule 44 points here. Each string is TRUE today
+and collides with the destination — words follow facts, so nothing
+changes before the facts do, but every one is on a countdown.)
+=====================================================================
+
+- `trust-signals.ts` WHAT_IT_IS: "selling small signed goods and
+  human labour" — the word "small" is doing barbell-era work.
+- `what.ts` Q1: "A small general store" — same.
+- `becoming.ts` SETTLED[0] and `attestation-spec.ts:244` — the
+  infrastructure denial. The single highest-priority string in the
+  original audit: it is a PROMISE about future speech.
+- NOT_CLAIMED: "No reputation score, ours or anybody's"; "No
+  third-party security audit of anything here, AND NO PLANS FOR
+  ONE" — the second clause becomes false the moment an audit is
+  planned as a marketplace credential; delete the clause when true.
+- NOT_CLAIMED: "one operator, one key... wrong root of trust for
+  anything load-bearing" — true, and the marketplace makes us
+  load-bearing. The words don't change; the FACTS must.
+- `what.ts` "Is this a scam?" answer: "prices are public and small"
+  — "small" again; also "the top is a person's labor" stops being
+  true when a $25 audit tops the shelf.
+- HOUSE_RULES 21 (barbell) — amended 2026-08-07, watch continues.
+- `wind-down.ts` — written for a shop whose obligations end at
+  delivery. Marketplace obligations (active watches, badge
+  reliance) need a wind-down sentence each.

@@ -3,7 +3,7 @@
 Cold-agent passes: what a stranger experiences in the first thirty
 seconds, before they have decided to trust us at all.
 
-Dated entries, same spirit as `LEDGER_READINGS.md` — what was walked,
+Dated entries, same spirit as `docs/archive/LEDGER_READINGS.md` — what was walked,
 what was found, what changed after. Findings here are almost never
 bugs. They are places where somebody burned an extra round trip, ate
 an avoidable 400, or hesitated a beat before trusting us, and every one
@@ -701,3 +701,12 @@ manifest, mini's verdict, the "dust"). The protocol amendment that
 falls out: a walker verdict may not be recorded until each claimed
 purchase is checked against its cert AND the payer row's count —
 the two instruments that were right every time tonight.
+
+---
+
+## 2026-08-19 — the gap, recorded
+
+No cold pass since the seventh (2026-08-04). Per this file's own
+standing rule, a pass that finds nothing is a finding and a month
+nobody looked is not the same as a month that was clean — so this
+entry records the fifteen days where nobody looked. Next pass owed.

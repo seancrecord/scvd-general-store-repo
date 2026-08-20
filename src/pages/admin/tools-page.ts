@@ -227,7 +227,7 @@ export function renderToolsPage(data: ToolsPageData): string {
     mints a signed announcement that the key everything on this store
     verifies against is changing — signed by the key being RETIRED,
     which is what makes a real handover distinguishable from somebody
-    who has taken over the page. Read <code>CEREMONY_B.md</code> before
+    who has taken over the page. Read <code>docs/archive/CEREMONY_B.md</code> before
     touching it.</p>
     <p>A form and not a script, because a lever this size wants a hand
     on it and a password typed into a browser rather than into a shell

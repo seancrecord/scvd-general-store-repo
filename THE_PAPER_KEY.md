@@ -6,7 +6,14 @@ step of this and no agent should ever be asked to.
 The store has one ed25519 signing key. It is a 32-byte seed, 64 hex
 characters, and it is the thing that makes every certificate, stamp,
 anchor and attestation this store has ever issued checkable by a
-stranger. There is exactly one copy, as a Cloudflare Worker secret.
+stranger. When this was written there was exactly one copy, as a
+Cloudflare Worker secret.
+
+PERFORMED: Ceremony A ran 2026-08-04 (the seed papered, per the
+counter notes). Ceremony B — the first key handover — ran 2026-07-31;
+its full runbook is archived at docs/archive/CEREMONY_B.md, and the
+one rule from it that does not change is kept at the bottom of this
+file. (Stamped 2026-08-19.)
 
 **Read STEP 0 before anything else.** It decides which of two very
 different procedures you are doing, and it is the one part I cannot
@@ -58,8 +65,8 @@ nothing is at stake. The second is more interesting than it sounds and
 would exercise the succession protocol we just published, for real,
 with eight settlements behind us instead of eight thousand. But it is
 your call, it changes the published public key, and it is not something
-to decide at the end of a long night. That is CEREMONY B and I will
-write it out properly if we get there.
+to decide at the end of a long night. That is CEREMONY B — performed
+2026-07-31; the runbook is archived at docs/archive/CEREMONY_B.md.
 
 ---
 

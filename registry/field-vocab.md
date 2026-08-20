@@ -1,5 +1,9 @@
 # field-vocab.md — the room's own words
 
+> NOTE 2026-08-19: written against the pre-2026-08-05 shelf;
+> phantom_check has since been retired (folded into context_anchor).
+> Vocabulary mappings that name it are historical.
+
 Verbatim problem-statements collected from agent-space, mapped to the
 item that answers them. This is C1 copy research: the room writes our
 listings' vocabulary, not us.

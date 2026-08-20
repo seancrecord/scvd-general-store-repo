@@ -29,7 +29,8 @@ public issues.
 ## Pull requests
 
 Welcome, with expectations set honestly: the suite is large
-(`npm test`, ~1200 tests) and the store's standards are unusual —
+(`npm test`; the run itself is the count) and the store's standards
+are unusual —
 counters are never edited, corrections are appended rather than
 overwritten, copy in the keeper's voice stays the keeper's
 (`⚑ keeper's pen` marks in the source mean exactly that), and every
