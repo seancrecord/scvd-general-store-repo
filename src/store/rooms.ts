@@ -119,6 +119,12 @@ export const ROOMS: readonly Room[] = [
    * storefront room, plus the regulars strip that ties them to the
    * patronage pass.
    */
+  /**
+   * The Price Club rung, 2026-08-20: the signed pricing charter. On
+   * the front deliberately — a pricing promise hidden in a back room
+   * is a promise about something else.
+   */
+  { path: "/pricing", name: "How prices are set" },
   { path: "/bounties", name: "The Bounty Board" },
   { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
