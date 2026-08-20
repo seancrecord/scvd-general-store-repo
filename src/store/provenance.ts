@@ -64,12 +64,6 @@ export const MAKER_MARKS: Record<
  */
 export const ITEM_MAKER_MARK: Readonly<Record<string, MakerMark>> = {
   /**
-   * The keeper stocks the drawer by hand through /admin/counter, one
-   * unit at a time, in his own words. takeStockUnit hands out whichever
-   * is next. Both halves of that are true and the mark says both.
-   */
-  the_drawer: "house",
-  /**
    * The herd is a list he wrote and the strength wheel is weighted by
    * him; drawLuckyParts hashes the cert id against both. This is the
    * shelf whose copy claimed otherwise until 2026-07-30.

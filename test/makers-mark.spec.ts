@@ -63,7 +63,9 @@ describe("the mark cannot be supplied by a caller", () => {
     // caller could get wrong. The whole point of the field is being the
     // thing nobody has to take on trust.
     expect(makerMarkFor("luckies")).toBe("house");
-    expect(makerMarkFor("the_drawer")).toBe("house");
+    // the_drawer carried the only other mark until 2026-08-20; the
+    // cards it issued keep theirs, the table no longer names it.
+    expect(makerMarkFor("the_drawer")).toBeUndefined();
     expect(makerMarkFor("settlement_attestation")).toBeUndefined();
   });
 
