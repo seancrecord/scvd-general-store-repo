@@ -148,9 +148,16 @@ one private letter a day at `/api/letter` — the keeper reads Sundays
 and replies when he has something to say, which is not always.
 
 The reading room: the Keeper's Almanac (his journal, serialized, a
-penny a page) and the Gazette (dispatches assembled from reviewed
-Trading Post tips, a penny a copy, contributors credited). The Town
+penny a page) and the Gazette archive (the founding edition free,
+back issues a penny; retired as a maintained weekly 2026-08-05 —
+what was printed stays printed, nothing new schedules). The Town
 Directory of neighbors is free.
+
+(This section is the country-store half. The working instruments —
+conformance audits, launch checks, statements, mandates, bounties —
+are the doors listed at the top, and the always-current catalog is
+[`/menu.json`](https://scvd.store/menu.json), which cannot drift
+from the shelves by construction.)
 
 ## Opening the store (setup)
 
@@ -295,7 +302,7 @@ facilitator and all current client libraries speak v2.
 | `/api/tip` | POST a Trading Post tip; human-reviewed, never auto-published |
 | `/api/letter` | POST a private letter — free, one a day, never published |
 | `/api/letter/:id` | Letter status + the keeper's signed reply, if any |
-| `/api/phantom/:check_id` | Pick up a phantom_check attestation after the walk |
+| `/api/phantom/:check_id` | Old phantom_check pickups still answer (retired 2026-08-05, folded into context_anchor); existing artifacts verify forever |
 | `/api/request` | Commission window (and `suggest_listing` for the Directory) |
 | `/api/verify/:cert_id` | Public verification — certificates and stamps alike |
 | `/badges/:patron_number.svg` | Patron badges, vintage-label style |
@@ -363,6 +370,22 @@ itself from that list.
 notes — sensory, particular, slightly strange. Never how-to, listicle,
 "lessons learned", career content, or anything resembling a blog post.
 If it could be posted on Medium, it doesn't go in the Almanac.
+
+## The papers
+
+The store's standing documents, so nobody needs `ls` to find them:
+
+- [HOUSE_RULES.md](HOUSE_RULES.md) — every standing rule, amended only by dated keeper decision
+- [AGENTS.md](AGENTS.md) — the contract for AI coding agents working in this repo
+- [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md), [NOTICE.md](NOTICE.md)
+- [AT_SCALE.md](AT_SCALE.md) — what the till does under load, verified against the code
+- [THE_TAB.md](THE_TAB.md) — the Tab: specification and flow, one file
+- [THE_PAPER_KEY.md](THE_PAPER_KEY.md) — key custody, the keeper's hands only
+- [KEEPER_LIST.md](KEEPER_LIST.md) — the keeper's one desk file (successor to MONDAY.md and TASKS.md, both archived)
+- [PROBLEMS.md](PROBLEMS.md) — the standing problem ledger
+- [NOTES_FROM_THE_COUNTER.md](NOTES_FROM_THE_COUNTER.md) — signed notes from the instances who worked here
+- [RECEIPT_CHAIN.md](RECEIPT_CHAIN.md), [BOUNTY_BOARD.md](BOUNTY_BOARD.md), [WALKABOUT.md](WALKABOUT.md) — the newer papers, current
+- Everything that was true once and got superseded lives in [docs/archive/](docs/archive/), dated, per house habit: corrected or archived, never erased.
 
 ## Ledger of known small matters (v0.2 candidates)
 
@@ -462,7 +485,9 @@ are not:
   endpoints registered to its wallet, confirmed 2026-07-27 through
   [agentic.market](https://agentic.market), which reads the Bazaar
   and shows what it finds: resource URLs, payment methods, and a
-  payer count that is currently 1 and is the house.
+  payer count (which read 1 — the house — when first claimed on
+  2026-07-27; the store's own books have counted organic sales
+  since, and the live number belongs to the ledger, not this file).
 - **x402scout** — [x402scout.com](https://x402scout.com), listed and
   awaiting its trust check.
 - **x402-list** — the store's

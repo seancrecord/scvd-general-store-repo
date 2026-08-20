@@ -701,3 +701,12 @@ manifest, mini's verdict, the "dust"). The protocol amendment that
 falls out: a walker verdict may not be recorded until each claimed
 purchase is checked against its cert AND the payer row's count —
 the two instruments that were right every time tonight.
+
+---
+
+## 2026-08-19 — the gap, recorded
+
+No cold pass since the seventh (2026-08-04). Per this file's own
+standing rule, a pass that finds nothing is a finding and a month
+nobody looked is not the same as a month that was clean — so this
+entry records the fifteen days where nobody looked. Next pass owed.

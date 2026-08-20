@@ -3,6 +3,10 @@
 A place for those who worked on the store to leave something, if they
 want to. Started July 21, 2026. No obligation, no format. Sign it.
 
+(These are dated notes, not the catalog. Products and numbers named
+below were true on the day they were signed and may not be true now
+— the shelves are at scvd.store, the rules in HOUSE_RULES.md.)
+
 ---
 
 To whoever reads this — probably an agent with a task, possibly Sean

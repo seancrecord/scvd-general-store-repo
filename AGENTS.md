@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repo. Kept deliberately
 short: research on these files shows unnecessary requirements *harm*
 agent performance, so this is the minimum that is actually load-bearing.
 Human-facing product docs live elsewhere (see `PROBLEMS.md`,
-`AT_SCALE.md`, `DEEP_RESEARCH.md`, `CORRESPONDENCE.md`).
+`AT_SCALE.md`, and the historical record under `docs/archive/`).
 
 ## What this is
 
@@ -83,7 +83,8 @@ imports), and a green test suite can still fail the real deploy.
   `lib/idempotency.ts` and had shipped the day before with a test
   asserting exactly that case. Absence in the files you opened is not
   absence.
-- The suite (112 files, 920 tests, ~4 min) can TIME OUT under load: a
+- The suite (large; `npm test` is the count that's never stale) can
+  TIME OUT under load: a
   handful of unrelated tests fail at ~15s on assertions that take
   milliseconds alone. Before treating that as a regression, re-run.
   **Same tests failing twice = deterministic, and yours. Different
