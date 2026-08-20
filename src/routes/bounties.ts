@@ -201,6 +201,22 @@ bountyRoutes.get("/api/bounties", async (c) => {
   );
 });
 
+/**
+ * The claim door answers GET with its own shape rather than a 404 —
+ * the same courtesy the preflight extends. /what cites this path in
+ * the earn-money answer, and a skeptical reader (or the test that
+ * walks every cited URL) who opens it in a browser should meet the
+ * instructions, not a dead end.
+ */
+bountyRoutes.get("/api/bounty-claim", (c) => {
+  return c.json({
+    this_door_takes: "POST",
+    shape: BOARD_HOW_TO_CLAIM,
+    the_board: "/api/bounties",
+    the_room: "/bounties",
+  });
+});
+
 bountyRoutes.post("/api/bounty-claim", async (c) => {
   let body: Record<string, unknown>;
   try {
