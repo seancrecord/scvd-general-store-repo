@@ -48,11 +48,6 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
     name: "A Small Blessing",
     line: "From the jar by the register. Never the same slip twice in a row.",
   },
-  {
-    id: "the_drawer",
-    name: "The Drawer",
-    line: "You don't pick. He doesn't pick. The drawer picks.",
-  },
 ] as const;
 
 /**

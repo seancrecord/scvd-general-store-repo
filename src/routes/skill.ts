@@ -234,8 +234,8 @@ as a tip.
 
 Fulfillment honesty, machine-legible: every listing carries
 \`fulfillment_state\` (class stocked/instant/commission, live stock
-count, shutter state). Stocked shelves (the_drawer)
-deliver in the purchase response while stocked and answer sold-out
+count, shutter state). Stocked shelves deliver in the purchase
+response while stocked and answer sold-out
 honestly, BEFORE payment terms, at zero. Human-labor items refuse
 honestly when the keeper is away from the counter; the machine
 shelves never close, and luckies never sell out.

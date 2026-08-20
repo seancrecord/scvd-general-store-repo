@@ -19,18 +19,6 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     note_402: "That'll be half a cent, friend. The jar's right there.",
   },
   {
-    id: "daily_fortune",
-    listed_week: "2026-W30",
-    name: "The Daily Fortune",
-    price_usdc: 0.01,
-    pricing: "fixed",
-    fulfillment: "instant",
-    description:
-      "The fortune of the day, same for every buyer until midnight UTC, a chalkboard, not a slot machine. Written in advance by the keeper, who takes fortunes seriously.",
-    note_402:
-      "That'll be a penny, friend. Today's fortune is today's fortune, tomorrow brings a fresh one.",
-  },
-  {
     id: "the_confession",
     listed_week: "2026-W30",
     name: "The Confession",
