@@ -6,6 +6,16 @@ import {
   FRONT_COUNTER_PROMISE,
 } from "@/lib/front-counter";
 import { MENU_ITEMS } from "@/store";
+/**
+ * STATIC, NOT `await import()` INSIDE THE TEST BODY (2026-08-20). The
+ * dynamic form made the FIRST test in this file pay for loading the
+ * whole mcp-tools module graph against a 5-second timeout, and it
+ * began timing out as that graph grew — the same fragility this suite
+ * has hit before. The later tests always passed because the module
+ * was cached by then, which is exactly what a load-cost flake looks
+ * like from the outside.
+ */
+import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 
 /**
@@ -134,7 +144,6 @@ describe("it keeps one trust line rather than none", () => {
  */
 describe("the front counter has a door a weak model can find", () => {
   it("is the first paid tool in the catalog", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tools = mcpToolCatalog("https://scvd.store");
     const paid = tools.filter((tool) => tool.name.startsWith("buy_"));
     expect(
@@ -144,7 +153,6 @@ describe("the front counter has a door a weak model can find", () => {
   });
 
   it("asks for item_id and nothing else", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;
@@ -165,7 +173,6 @@ describe("the front counter has a door a weak model can find", () => {
   });
 
   it("offers exactly the derived shelf, never a second list", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;
@@ -189,7 +196,6 @@ describe("the front counter has a door a weak model can find", () => {
      * the shelf side is derived from the same eligibility predicate
      * the counter is built on.
      */
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tools = mcpToolCatalog("https://scvd.store");
     const simple = tools.find((entry) => entry.name === "buy_simple")!;
     expect(simple.description).toContain("a second door to the same goods");
@@ -212,7 +218,6 @@ describe("the front counter has a door a weak model can find", () => {
   });
 
   it("carries the price in the description, like every other buy tool", async () => {
-    const { mcpToolCatalog } = await import("@/lib/mcp-tools");
     const tool = mcpToolCatalog("https://scvd.store").find(
       (entry) => entry.name === "buy_simple",
     )!;
