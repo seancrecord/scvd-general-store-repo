@@ -45,8 +45,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
      * pass is supposed to catch rather than cause.
      *
      * Two a week: this is a one-person shop and the promise is a week.
-     * ⚑ KEEPER REVIEW — the NUMBER is his call and always was; what is
-     * not optional is that some number exists.
+     * The number is the keeper's, ruled 2026-08-20 ("2 is fine").
      */
     weekly_inventory: 2,
     /**

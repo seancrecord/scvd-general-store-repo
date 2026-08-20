@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -68,6 +69,84 @@ function latestReading(entry: RegistryWeekEntry): string {
     .filter(Boolean)
     .map((line) => `<p class="menu-desc">${escapeHtml(line)}</p>`)
     .join("\n");
+}
+
+/**
+ * THE DATASET MARKUP, ON THE HTML PAGE — the same straggler the corpus
+ * landing caught on 2026-08-18, sitting one page over and missed then.
+ * This page publishes the most citable thing this store owns: dated,
+ * weekly, original aggregate measurements of the public x402 registry
+ * that no other party publishes at all. Answer engines and dataset
+ * crawlers read HTML, not JSON endpoints, so a page carrying real
+ * measurements and no Dataset node is a page that reads as prose and
+ * gets cited as nobody.
+ *
+ * variableMeasured names the actual measurements rather than
+ * describing them, because a crawler can lift a named measurement and
+ * cannot lift an adjective. Every value comes from the same signed
+ * census the prose quotes — one source, so the markup and the page
+ * cannot drift.
+ */
+function registryDatasetJsonLd(
+  base: string,
+  latest: RegistryWeekEntry | undefined,
+): string {
+  const measurements = latest
+    ? [
+        {
+          "@type": "PropertyValue",
+          name: "listed x402 doors probed",
+          value: latest.probed,
+        },
+        {
+          "@type": "PropertyValue",
+          name: "doors answering as working x402 endpoints",
+          value: latest.ready,
+        },
+        {
+          "@type": "PropertyValue",
+          name: "listed doors serving no valid payment challenge (percent)",
+          value: latest.rot.pct,
+          unitText: "PERCENT",
+        },
+        {
+          "@type": "PropertyValue",
+          name: "working doors serving verifiable signed offers (percent)",
+          value: latest.signed_offers.pct,
+          unitText: "PERCENT",
+        },
+        {
+          "@type": "PropertyValue",
+          name: "distinct operators behind the probed hosts",
+          value: latest.operators,
+        },
+      ]
+    : [];
+  const dataset = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "State of the x402 registry — weekly census of public payment endpoints",
+    description:
+      "A weekly running tally of the public x402 registry: how many listed payment endpoints answer as working, how many serve verifiable signed offers, how many are listed but functionally absent, and how many distinct operators the hosts collapse to. Aggregates only, never rows about a named operator. Measured by one signed GET per listed host, recorded in a hash-chained, Bitcoin-anchored corpus.",
+    url: `${base}/registry`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    creator: { "@type": "Organization", name: "scvd.store", url: base },
+    ...(latest
+      ? {
+          temporalCoverage: latest.week,
+          dateModified: latest.published_at,
+          variableMeasured: measurements,
+        }
+      : {}),
+    distribution: {
+      "@type": "DataDownload",
+      encodingFormat: "application/json",
+      contentUrl: `${base}/registry`,
+    },
+    isBasedOn: `${base}/corpus`,
+  };
+  return jsonLdScript(dataset);
 }
 
 registryRoutes.get("/registry", async (c) => {
@@ -145,7 +224,7 @@ registryRoutes.get("/registry", async (c) => {
       description:
         "A weekly running tally of the public x402 registry: how many listed payment endpoints actually work, how many serve verifiable signed offers.",
       path: "/registry",
-      bodyHtml,
+      bodyHtml: `${bodyHtml}\n${registryDatasetJsonLd(base, latest)}`,
     }),
   );
 });

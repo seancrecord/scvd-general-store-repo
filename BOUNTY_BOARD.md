@@ -18,6 +18,15 @@ successes. The only way to know a door works is to walk through it
 with money — and paying strangers to walk multiplies the store's own
 walkabout beyond what one wallet can cover.
 
+## Where it lives
+
+The public room is `https://scvd.store/bounties` — open bounties, the
+three-step walk, and the rules in full, crawlable. The same board as
+JSON, for polling, is `https://scvd.store/api/bounties`; claims go to
+`POST /api/bounty-claim`. This file stays the law: the room derives
+its rules from the same strings the API serves, so neither can
+describe a board the other does not run.
+
 ## The loop
 
 1. **The keeper posts bounties** — doors HE picks (from the ward
