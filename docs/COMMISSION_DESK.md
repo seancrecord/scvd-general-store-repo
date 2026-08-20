@@ -1,8 +1,14 @@
 # The Commission Desk — spec, for the keeper's decision
 
-**Status:** SPEC. Nothing built. The ranking says "spec before build,"
-and this is that. Written against the tree with the tree open, per the
-spec checklist's first question.
+**Status:** BUILT AND ENACTED (corrected 2026-08-19; this file is now
+a historical decision record). The desk shipped under the keeper's
+2026-08-10 ruling: `src/routes/commission.ts` and
+`src/store/commission-desk.ts`, rungs $25/$50/$100/$250, admin
+quote/decline routes, public declines at `/api/commission/declined`.
+The open questions in §6 below were all decided. The original status
+line read "SPEC. Nothing built," which was true when written and then
+wasn't — kept here struck-through in spirit, per the house habit of
+dating corrections rather than erasing them.
 
 **What it would do:** retire buy-now for true per-order labor and
 replace it with request → quote → agreed price → one-off paid link.

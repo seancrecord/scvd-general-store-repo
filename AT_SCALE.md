@@ -1,5 +1,10 @@
 # AT_SCALE.md — what the till does under load, verified against the code
 
+Last reviewed: 2026-08-19 (audit pass; scenario rows and the seven
+going-forward rules stand as canon; the capacity checklist and
+dependency audit sections are point-in-time reads from 2026-08-02
+and age accordingly — re-verify before leaning on them).
+
 Written 2026-08-01, on the keeper's ask: run the payment scenarios and
 account for what could go wrong, before scale arrives rather than as
 it does. Every row below was checked against the source that day, not

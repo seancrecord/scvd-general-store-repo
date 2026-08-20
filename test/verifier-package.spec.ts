@@ -84,7 +84,7 @@ describe("the npm package tells the truth about itself", () => {
     // the first publish (keeper's call): an internal process doc in a
     // public repo describes key handling to strangers for no reader's
     // benefit. The publish record and versioning policy live in
-    // TASKS.md; the files array staying exactly four is the guard.
+    // the TASKS archive; the files array staying exactly four is the guard.
     const files = manifest["files"] as string[];
     expect(files).toHaveLength(4);
   });

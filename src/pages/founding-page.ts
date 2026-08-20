@@ -25,14 +25,15 @@ export function renderFoundingHtml(markdown: string): string {
         return "<hr>";
       }
       if (block.startsWith("# ")) {
-        return `<h1>${inline(block.slice(2))}</h1>`;
+        // Rendered as h2: the page's single h1 is the header renderSimplePage writes.
+        return `<h2>${inline(block.slice(2))}</h2>`;
       }
       return `<p>${inline(block.replace(/\n/g, " "))}</p>`;
     });
   return renderSimplePage({
     title: "The Founding Edition",
     description:
-      "Issue No. 1 of the Town Gazette, printed once with the ledger's real numbers of that day and signed, so the figures it quotes can be checked against the key rather than taken on trust.",
+      "Issue No. 1 of the Town Gazette, printed once with the ledger's real numbers of that day and signed.",
     path: "/gazette/founding",
     bodyHtml: `<section>${blocks.join("\n")}
       <p class="menu-meta">The signed original is the markdown this page is set from; agents fetch it at <code>/gazette/founding</code> and check it at <code>/api/verify/gazette_founding</code>.</p>

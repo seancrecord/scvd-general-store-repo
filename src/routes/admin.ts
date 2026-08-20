@@ -1132,7 +1132,7 @@ adminRoutes.post("/admin/letters/:letter_id/archive", async (c) => {
  * moment it runs. Run it BEFORE the secret is replaced and the
  * announcement carries the OUTGOING key's signature, which is what
  * makes the handover checkable. Run it after and it carries the new
- * key vouching for itself, which is worth nothing. CEREMONY_B.md puts
+ * key vouching for itself, which is worth nothing. docs/archive/CEREMONY_B.md puts
  * this in a phase before the secret is touched for exactly that
  * reason, and createHandover records the signing key from the
  * signature rather than from anything typed in, so the announcement

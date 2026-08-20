@@ -65,7 +65,8 @@ function roomsNav(current?: string): string {
 }
 
 export function renderSimplePage(options: SimplePageOptions): string {
-  const title = `${escapeHtml(options.title)}, ${escapeHtml(STORE_METADATA.name)}`;
+  // Suffix shortened 2026-08-20 for SERP truncation; the full name stays on the page header and homepage.
+  const title = `${escapeHtml(options.title)}, scvd.store`;
   const description = escapeHtml(options.description);
   const canonical = options.path
     ? `\n  <link rel="canonical" href="${SITE_ORIGIN}${escapeHtml(options.path)}">`

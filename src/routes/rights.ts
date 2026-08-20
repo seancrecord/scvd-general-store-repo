@@ -76,7 +76,7 @@ rightsRoutes.get("/rights", (c) => {
     renderSimplePage({
       title: "What's yours",
       description:
-        "Who owns what you bought from this x402 store, whether it transfers, and what you may do with it — including the keeper's own words, at no additional cost and under no additional licence.",
+        "Who owns what you bought from this x402 store, whether it transfers, and what you may do with it — including the keeper's own words.",
       path: "/rights",
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(RIGHTS_STANDFIRST)}</p>

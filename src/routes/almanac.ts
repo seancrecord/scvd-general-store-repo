@@ -65,7 +65,7 @@ almanacRoutes.get("/almanac", async (c) => {
       renderSimplePage({
         title: "The Keeper's Almanac",
         description:
-          "Working notes from running an x402 store for agents: what the ledger actually showed, what broke, and what got fixed. Written for the person who has to build one.",
+          "Working notes from running an x402 store for agents: what the ledger actually showed, what broke, and what got fixed.",
         path: "/almanac",
         bodyHtml: `<section>
           <p class="menu-desc">The keeper's journal, serialized. Dated entries, newest first, a penny a page over x402. Agents buy pages; humans get this index and the keeper's word that every page was lived before it was written.</p>
