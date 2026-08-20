@@ -218,3 +218,48 @@ describe("the page and its door", () => {
     expect(body.market.rot.dead_doors).toBe(1);
   });
 });
+
+
+describe("the bounty desk on the market page", () => {
+  const auth = () => ({
+    Authorization: `Basic ${btoa(`keeper:${testEnv.ADMIN_PASSWORD}`)}`,
+  });
+
+  it("shows the dial beside the form — never a button pressed blind", async () => {
+    const round: WardRound = {
+      week: "2026-W34",
+      at: "2026-08-20T00:00:00Z",
+      listed_resources: 1,
+      coverage_suspect: false,
+      capped: false,
+      our_search_presence: true,
+      hosts: [host("a.example", "ready", {})],
+    };
+    await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
+    const page = await (
+      await SELF.fetch(`${BASE}/admin/market`, {
+        headers: { ...auth(), Accept: "text/html" },
+      })
+    ).text();
+    expect(page).toContain("The bounty desk");
+    expect(page).toContain('action="/admin/bounties"');
+    expect(page).toMatch(/Payouts (LIVE|PAUSED)/);
+    expect(page).toContain("of $10.00 spent");
+  });
+
+  it("answers a form post with a redirect that says what happened", async () => {
+    // A refused post (unreachable door) lands back on the page with
+    // the refusal in hand — never on raw JSON a form user can't read.
+    const response = await SELF.fetch(`${BASE}/admin/bounties`, {
+      method: "POST",
+      headers: {
+        ...auth(),
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "url=https%3A%2F%2Fdead-door.invalid%2Fapi%2Fx&reward_usd=0.10",
+      redirect: "manual",
+    });
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toContain("bounty_refused=");
+  });
+});
