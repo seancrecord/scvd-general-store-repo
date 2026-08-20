@@ -1,4 +1,6 @@
+import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import type { Env } from "@/types";
 import { runChecks } from "@/services/preflight";
 
 /**
@@ -171,5 +173,53 @@ describe("the input contract", () => {
     );
     expect(names).not.toContain("no-input-contract");
     expect(names).not.toContain("inputs-declared");
+  });
+});
+
+describe("the paid walk names a payTo defect as the finding", () => {
+  it("stops at terms with the real reason, never at the sanctions screen", async () => {
+    /**
+     * The sweep's find, 2026-08-20: a target publishing a name passed
+     * the presence check, then failed inside the screen as "address
+     * shape unscreenable" — so a customer who PAID for this walk was
+     * told about our screening plumbing, in a sentence that ends
+     * "nothing here says anything about the address itself", at the
+     * one moment their address is the whole finding.
+     */
+    const { performLaunchCheck } = await import("@/services/launch-check");
+    const target = "https://names-its-wallet.example/api/buy/thing";
+    const walk = await performLaunchCheck(
+      { ...(env as unknown as Env), FIELD_WALLET_KEY: "" } as Env,
+      target,
+      {
+        fetch: (async () =>
+          new Response("{}", {
+            status: 402,
+            headers: {
+              "PAYMENT-REQUIRED": btoa(
+                JSON.stringify({
+                  x402Version: 2,
+                  accepts: [
+                    {
+                      scheme: "exact",
+                      network: "eip155:8453",
+                      amount: "5000",
+                      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                      payTo: "shop.base.eth",
+                      maxTimeoutSeconds: 300,
+                    },
+                  ],
+                }),
+              ),
+            },
+          })) as unknown as typeof fetch,
+      },
+    );
+    const terms = walk.stages.find((s) => s.stage === "terms" && !s.ok);
+    expect(terms, "the walk did not fail at terms on an unpayable payTo").toBeTruthy();
+    expect(terms!.detail).toContain("Basename");
+    expect(terms!.detail).toContain("nothing was charged");
+    // And it never got as far as blaming the screen.
+    expect(walk.stages.find((s) => s.stage === "screen")).toBeUndefined();
   });
 });
