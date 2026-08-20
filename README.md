@@ -148,10 +148,7 @@ one private letter a day at `/api/letter` — the keeper reads Sundays
 and replies when he has something to say, which is not always.
 
 The reading room: the Keeper's Almanac (his journal, serialized, a
-penny a page) and the Gazette archive (the founding edition free,
-back issues a penny; retired as a maintained weekly 2026-08-05 —
-what was printed stays printed, nothing new schedules). The Town
-Directory of neighbors is free.
+penny a page). The Town Directory of neighbors is free.
 
 (This section is the country-store half. The working instruments —
 conformance audits, launch checks, statements, mandates, bounties —
@@ -282,8 +279,7 @@ facilitator and all current client libraries speak v2.
 | `/almanac/:slug` | One journal page, $0.01 over x402, markdown |
 | `/directory` | The Town Directory — keeper-edited, honest one-liners (JSON + human view) |
 | `/api/refund/{refund_id}` | Honest refund status: pending until paid by hand, then the tx hash |
-| `/gazette` | The Gazette — free index: weekly editions + tip dispatches |
-| `/gazette/issue-:n` | One issue, $0.01 over x402, markdown |
+| `/gazette` | Retired 2026-08-05; the printed archive still answers, nothing new schedules |
 | `/menu/:item_id` | One item up close — JSON, or markdown per Accept |
 | `/what` | The Operator Glance — the ten-second check for the humans |
 | `/porch` | Around the side, facing the oaks. Nothing for sale out there |
@@ -419,13 +415,9 @@ The store's standing documents, so nobody needs `ls` to find them:
   claimed and always marked `identity_verified: false`, because nobody
   here has checked. An actual verifier (e.g. a signed-challenge dance)
   is a v0.3 idea.
-- Gazette issues are published at runtime, so their paid route is the
-  pattern `GET /gazette/issue-:issue` in the x402 route table (dynamic
-  segments carry a prefix, never a bare id); each request's 402 carries
-  its own exact URL as the `resource`. Almanac pages are known at build
-  time and get exact routes.
-- Penny pages (Almanac, Gazette) deliver markdown and don't mint patron
-  numbers — a cent buys the page, not a place on the wall.
+- Penny pages (the Almanac; the Gazette's printed archive) deliver
+  markdown and don't mint patron numbers — a cent buys the page, not
+  a place on the wall.
 - Replay protection is layered: EIP-3009 nonces are consumed on-chain
   (the source of truth), and a KV guard (`payment_nonce:*`, 24h TTL)
   turns an already-settled nonce away before the facilitator is even
