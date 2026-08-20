@@ -215,7 +215,9 @@ describe("the desk and its doors", () => {
     expect(html.status).toBe(200);
     const text = await html.text();
     expect(text).toContain("broken.example");
-    expect(text).toContain("the send, yours");
+    // Rule 30 as amended 2026-08-20: the desk gained the wire, and
+    // the headline moved from "the send, yours" to the press.
+    expect(text).toContain("the send, one press");
     expect(text).toContain("Scout contacts");
 
     const flip = await SELF.fetch(`${BASE}/admin/outreach/status`, {
@@ -286,7 +288,15 @@ describe("the desk and its doors", () => {
     expect(after.hosts["a.example"]?.scouted_at).toBeTruthy();
   });
 
-  it("labels the stamps as stamps, not sends", async () => {
+  it("says what the wire does and keeps the stamps labeled as stamps", async () => {
+    /**
+     * EVOLVED 2026-08-20 with rule 30's amendment: the page now HAS a
+     * send button (the wire), so the old "Nothing on this page sends
+     * anything, ever" line would be a lie. What must still hold: the
+     * wire's law is stated (live verification, one note ever), the
+     * hand stamps keep their unmistakable labels, and the mispress
+     * lever survives.
+     */
     await testEnv.COUNTERS.put(
       KV_KEYS.wardRoundLatest,
       JSON.stringify(
@@ -299,7 +309,8 @@ describe("the desk and its doors", () => {
       headers: { ...auth, Accept: "text/html" },
     });
     const text = await page.text();
-    expect(text).toContain("Nothing on this page sends anything, ever.");
+    expect(text).toContain("The wire sends only verified facts");
+    expect(text).toContain("One note per host, ever");
     expect(text).toContain("mark sent — I delivered it myself");
     expect(text).toContain("Clear ALL stamps");
   });
