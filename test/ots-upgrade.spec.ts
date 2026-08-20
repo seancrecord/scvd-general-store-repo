@@ -108,7 +108,9 @@ describe("the upgrade poll", () => {
   };
 
   it("asks the named calendar for the commitment, never the digest", async () => {
-    const fetchMock = vi.fn(async () => new Response(null, { status: 404 }));
+    const fetchMock = vi.fn(
+      async (..._args: unknown[]) => new Response(null, { status: 404 }),
+    );
     const result = await upgradeDigestOts(REAL_DIGEST, pendingAnchor, {
       fetch: fetchMock as unknown as typeof fetch,
     });
