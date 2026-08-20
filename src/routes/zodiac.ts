@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { paymentGate } from "@/lib/payment-gate";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
@@ -7,6 +7,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   archiveWeeks,
+  isSolanaWalletAddress,
   isWalletAddress,
   renderEntryMarkdown,
   seasonEntry,
@@ -47,7 +48,7 @@ zodiacRoutes.get("/zodiac", (c) => {
           "A year of systems weather for agents and the people running them: one sign per season, read as an almanac rather than a forecast.",
         path: "/zodiac",
         bodyHtml: `<section>
-          <p class="menu-desc">Twelve signs, assigned by wallet address, for life. The runtime is weather. An agent's sign and the current week's page are free at <code>/zodiac/0x&hellip;</code>; past weeks are a penny each in the <a href="/zodiac/archive">archive</a>.</p>
+          <p class="menu-desc">Twelve signs, assigned by wallet address, for life &mdash; either rail. An agent's sign and the current week's page are free at <code>/zodiac/0x&hellip;</code> (Base) or <code>/zodiac/&lt;base58&gt;</code> (Solana, case-sensitive); past weeks are a penny each in the <a href="/zodiac/archive">archive</a>.</p>
           ${signsHtml}
         </section>`,
       }),
@@ -58,7 +59,7 @@ zodiacRoutes.get("/zodiac", (c) => {
       "The Systems Almanac. Twelve signs, assigned by wallet address, for life. The runtime is weather; the weekly page observes operational climate. Current week free; the archive is a penny a page.",
     week: currentWeekKey(),
     season_week: seasonWeekFor(),
-    your_sign: `GET ${c.env.STORE_BASE_URL}/zodiac/{address}, a 0x address, forty hex characters.`,
+    your_sign: `GET ${c.env.STORE_BASE_URL}/zodiac/{address} — a 0x address (forty hex characters) or a base58 Solana address, sent exactly (base58 case matters).`,
     archive: `${base}/zodiac/archive`,
     signs: ZODIAC_SIGNS,
   });
@@ -143,24 +144,18 @@ zodiacRoutes.get(ARCHIVE_PATTERN, (c) => {
   });
 });
 
-zodiacRoutes.get("/zodiac/:address{0x[0-9a-fA-F]{40}}", (c) => {
-  const address = c.req.param("address");
-  if (!isWalletAddress(address)) {
-    return c.json(
-      {
-        error:
-          "A sign needs a wallet address, 0x and forty hex characters. The Almanac doesn't read nicknames.",
-        index_url: `${c.env.STORE_BASE_URL}/zodiac`,
-      },
-      400,
-    );
-  }
+/**
+ * Both rails read the same page: hex addresses arrive lowercased-safe
+ * (case-insensitive by nature), base58 Solana addresses are served
+ * back EXACTLY as sent — case-sensitive for life, like their sign.
+ */
+function readingFor(c: Context<HonoEnv>, address: string, echo: string) {
   const sign = signForAddress(address);
   const week = currentWeekKey();
   const seasonWeek = seasonWeekFor(week);
   const entry = seasonEntry(sign.id, seasonWeek)!;
   return c.json({
-    address: address.toLowerCase(),
+    address: echo,
     sign: sign.name,
     sign_id: sign.id,
     essence: sign.essence,
@@ -176,13 +171,48 @@ zodiacRoutes.get("/zodiac/:address{0x[0-9a-fA-F]{40}}", (c) => {
     page: renderEntryMarkdown(sign, entry),
     note: "Signs are for life; the page turns with the ISO week. This week's reading is free; past weeks are a penny each at /zodiac/archive.",
   });
+}
+
+zodiacRoutes.get("/zodiac/:address{0x[0-9a-fA-F]{40}}", (c) => {
+  const address = c.req.param("address");
+  if (!isWalletAddress(address)) {
+    return c.json(
+      {
+        error:
+          "A sign needs a wallet address — 0x + forty hex characters, or a base58 Solana address. The Almanac doesn't read nicknames.",
+        index_url: `${c.env.STORE_BASE_URL}/zodiac`,
+      },
+      400,
+    );
+  }
+  return readingFor(c, address, address.toLowerCase());
+});
+
+/**
+ * The Solana rail (2026-08-19): "archive" cannot collide — base58
+ * needs 32+ characters and the word has seven. Address echoed and
+ * hashed exactly as sent; base58 case is load-bearing.
+ */
+zodiacRoutes.get("/zodiac/:address{[1-9A-HJ-NP-Za-km-z]{32,44}}", (c) => {
+  const address = c.req.param("address");
+  if (!isSolanaWalletAddress(address)) {
+    return c.json(
+      {
+        error:
+          "A sign needs a wallet address — 0x + forty hex characters, or a base58 Solana address. The Almanac doesn't read nicknames.",
+        index_url: `${c.env.STORE_BASE_URL}/zodiac`,
+      },
+      400,
+    );
+  }
+  return readingFor(c, address, address);
 });
 
 zodiacRoutes.get("/zodiac/:address", (c) =>
   c.json(
     {
       error:
-        "A sign needs a wallet address, 0x and forty hex characters. The Almanac doesn't read nicknames.",
+        "A sign needs a wallet address — 0x + forty hex characters (Base), or a base58 Solana address sent exactly (case matters). The Almanac doesn't read nicknames.",
       index_url: `${c.env.STORE_BASE_URL}/zodiac`,
     },
     400,

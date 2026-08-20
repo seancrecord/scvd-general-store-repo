@@ -91,10 +91,13 @@ describe("surfaces that already knew their limits keep them", () => {
     expect(String(body["what_it_does_not_prove"])).toContain("WHO SHOULD HAVE");
   });
 
-  it("the claims door still names what it cannot verify", async () => {
+  it("the claims door still names what it cannot verify, on both rails", async () => {
     const res = await SELF.fetch(`${BASE}/api/claims`);
     const body = (await res.json()) as Record<string, unknown>;
-    expect(String(body["limits"])).toContain("EOA signatures only");
+    // Was "EOA signatures only" while the door was EVM-only; the
+    // limit survived the second rail with both halves named.
+    expect(String(body["limits"])).toContain("EIP-1271");
+    expect(String(body["limits"])).toContain("PDA");
   });
 
   it("trust.json still carries its limit", async () => {

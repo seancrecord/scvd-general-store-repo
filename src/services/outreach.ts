@@ -39,6 +39,26 @@ export const OUTREACH_STATUSES: readonly OutreachStatus[] = [
   "skip",
 ];
 
+/**
+ * Wipe the workflow stamps, keep the scouted contacts. Exists because
+ * of 2026-08-19: the keeper pressed "sent" down the whole queue
+ * believing the button transmitted the note — the buttons are
+ * bookkeeping stamps and nothing on the desk sends (rule 30), but a
+ * label that CAN be misread eventually WILL be, and the recovery from
+ * that misreading should be one press, not a KV excavation.
+ */
+export function clearStatuses(ledger: OutreachLedger): number {
+  let cleared = 0;
+  for (const entry of Object.values(ledger.hosts)) {
+    if (entry.status) {
+      delete entry.status;
+      delete entry.status_at;
+      cleared += 1;
+    }
+  }
+  return cleared;
+}
+
 export interface OutreachEntry {
   status?: OutreachStatus;
   status_at?: string;

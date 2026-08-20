@@ -370,6 +370,14 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      */
     anchor_log: `${base}/.well-known/anchor-log.json`,
     pulse: `${base}/pulse.json`,
+    /**
+     * The public weekly tally of the neighbourhood itself (2026-08-19):
+     * how many listed x402 doors work, how many serve verifiable
+     * offers, what the market charges. Aggregates only, no names,
+     * published by the keeper's hand from the same census that mints
+     * the corpus. JSON at the same URL via Accept.
+     */
+    registry: `${base}/registry`,
     corrections: `${base}/corrections`,
     mcp: {
       endpoint: `${base}/mcp`,
