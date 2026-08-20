@@ -537,7 +537,7 @@ export interface SettlementSignals extends EventSignals {
  * unbounded key is one a stranger could mint without limit. "other"
  * is a real answer and gets its own counter rather than being dropped.
  */
-export type SettlementRail = "base" | "solana" | "other";
+export type SettlementRail = "base" | "polygon" | "solana" | "other";
 
 export function railOf(network: string | undefined): SettlementRail | null {
   if (!network) {
@@ -545,6 +545,17 @@ export function railOf(network: string | undefined): SettlementRail | null {
   }
   if (network.startsWith("solana")) {
     return "solana";
+  }
+  /**
+   * THE THIRD RAIL'S BOOKS BUG, caught before it shipped (2026-08-20):
+   * this function mapped EVERY eip155 network to "base", which was
+   * true while Base was the only EVM rail and would have silently
+   * booked Polygon income as Base income the day the rail lit. Polygon
+   * gets its own bucket; every OTHER eip155 network keeps the legacy
+   * mapping, because that is what the stored history already means.
+   */
+  if (network === "eip155:137") {
+    return "polygon";
   }
   return network.startsWith("eip155") || network.startsWith("base")
     ? "base"

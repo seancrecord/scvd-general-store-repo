@@ -167,3 +167,62 @@ ADDITION C.9: the ward round and preflight advisories should observe
 the new rail's entries as ordinary data (scheme/network drift
 tracking) — confirm the store's own instruments read its own second
 rail without special-casing it.
+
+
+## Part D — the third rail (Polygon PoS). GATES RUN 2026-08-20. OPEN — SHIPPED FLAG-GATED, DARK.
+
+The intake rule ran the same two gates the Solana door ran, and both
+stood open wider.
+
+**Demand.** Token Terminal's 30-day read (2026-08-19, reported across
+multiple outlets): ~14M x402 transfers, Base 7.3M, **Polygon 5.6M** —
+the second-biggest rail in the economy, carrying 40% of protocol
+volume. A finding rides along: our own census shows only 2.5% of
+listed doors quoting non-Base/non-Solana networks, which means the
+Polygon x402 economy runs almost entirely OUTSIDE the Base-centric
+discovery surface this store probes. The registry census has a named
+blind spot now; that is a census finding, not a rails blocker.
+
+**Door cost.** Lower than Solana's was, on all four counts: (1) the
+CDP facilitator — the same one that verifies and settles every sale
+here — announced Polygon support (their launch page, 2026); (2) the
+@x402/evm dependency already carries the Polygon mainnet USDC
+deployment (eip155:137 → 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359,
+EIP-3009 v2) in its own asset table, so "$X" maps to the right
+contract with no store-side address to mistype; (3) the scheme is the
+SAME ExactEvmScheme class the Base rail runs — zero new payment code;
+(4) an EVM pay-to address works on Polygon as-is, so no new wallet
+and no new key ceremony.
+
+**What shipped (2026-08-20), mirroring the second rail's discipline:**
+
+- Flag-gated on `POLYGON_PAY_TO` (0x-address-shaped or the offer never
+  mints). Unset, the store is byte-identical to before the rail.
+  Deliberately never inferred from PAY_TO_ADDRESS: lighting a rail is
+  the keeper's decision.
+- Base stays `accepts[0]` at the minimum tier — the compatibility
+  promise survives a third rail. EVM entries precede Solana.
+- The unreconciled cap: `POLYGON_UNRECONCILED_CAP_USDC = 10`, counted
+  at the till from the first settle, alarmed past the bound, never a
+  refusal — standing until a Polygon-side bank walk ships (the walk
+  needs a `POLYGON_RPC_URL`; the Alchemy account already covers it).
+- THE BOOKS BUG THE BUILD CAUGHT: `railOf` mapped every eip155
+  network to "base", which was true while Base was the only EVM rail
+  and would have silently booked Polygon income as Base income the
+  day the flag flipped. Polygon has its own bucket end to end now —
+  till counters, certificate walk, organic_by_rail, the books
+  invariant, and the net-by-chain statement (observed side honestly
+  absent until the walk exists). Other eip155 networks keep the
+  legacy "base" mapping because stored history was written under it.
+
+**What stays Base-only, deliberately:** bounty-claim verification and
+regulars'-credit cash-outs — the money-out doors are their own risk
+surface and their own decision, exactly as they were for Solana.
+
+**What waits on the flag flip:** the copy pass. "USDC on Base or
+Solana" is keeper-ink across the storefront, /what, llms.txt, the
+skill, and the specs; updating it before the rail is lit would
+advertise a door that does not exist. When the keeper sets
+POLYGON_PAY_TO, the machine surfaces that derive from
+acceptedNetworks() follow instantly; the hand copy is a ⚑ pass filed
+in TASKS.md.

@@ -239,6 +239,7 @@ describe("the shopfront says what happened to the record, not to the money", () 
       artifacts_issued: 89,
       organic_by_rail: {
         base: 3,
+        polygon: 0,
         solana: 2,
         rail_not_recorded: 1,
         computed_at: "2026-08-06T00:00:00.000Z",

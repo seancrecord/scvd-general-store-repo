@@ -76,9 +76,41 @@ export function solanaPayTo(env: Env): string | null {
     : null;
 }
 
+/**
+ * THE THIRD RAIL (2026-08-20): USDC on Polygon PoS, same facilitator.
+ *
+ * The gates that opened Solana both stand open wider here. Demand:
+ * Token Terminal's 30-day read has Polygon carrying 5.6M of 14M x402
+ * transfers — the second-biggest rail in the economy, invisible from
+ * our census because the Base-centric registry we probe doesn't list
+ * it. Door cost: LOWER than Solana's was — the CDP facilitator
+ * announced Polygon support, @x402/evm already carries the Polygon
+ * USDC deployment in its own table, the scheme is the same
+ * ExactEvmScheme the Base rail runs, and an EVM pay-to address works
+ * on Polygon as-is. Flag-gated on POLYGON_PAY_TO exactly as Solana is
+ * on SOLANA_PAY_TO: unset, the store is byte-identical to before the
+ * rail existed.
+ *
+ * Deliberately a SEPARATE variable from PAY_TO_ADDRESS even though
+ * the keeper will almost certainly set the same 0x address: lighting
+ * a rail is a decision, and inferring it from a variable set for a
+ * different chain would be the store deciding for him.
+ */
+export const POLYGON_NETWORK = "eip155:137";
+
+/** 0x + 40 hex, the only shape an EVM address comes in. Same rule as
+ * the Solana gate: malformed stays OUT of the 402. */
+export function polygonPayTo(env: Env): string | null {
+  const address = env.POLYGON_PAY_TO?.trim();
+  return address && /^0x[0-9a-fA-F]{40}$/.test(address) ? address : null;
+}
+
 /** Every rail the till currently accepts, for the discovery documents. */
 export function acceptedNetworks(env: Env): string[] {
-  return solanaPayTo(env) ? [BASE_NETWORK, SOLANA_NETWORK] : [BASE_NETWORK];
+  const networks = [BASE_NETWORK];
+  if (polygonPayTo(env)) networks.push(POLYGON_NETWORK);
+  if (solanaPayTo(env)) networks.push(SOLANA_NETWORK);
+  return networks;
 }
 
 /**
@@ -137,6 +169,34 @@ export async function recordSolanaSettle(
       condition: "worker_health",
       detail: `Solana settles have passed the $${SOLANA_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and the Solana-side bank reconciliation has not completed a pass in the last 24h. Either the walk is broken (check the cron) or it never ran — fix it, or close the door (unset SOLANA_PAY_TO). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal. Last walk result: ${lastResult ?? "none recorded — it has never run on this deployment"}.`,
       key: "solana-unreconciled-cap",
+    }).catch(() => undefined);
+  }
+}
+
+/**
+ * The same ruling, third rail: Polygon settles are UNRECONCILED until
+ * a Polygon-side walk ships, so the same bounded-named-alarmed cap
+ * stands in front of them. Mirrors the Solana cap deliberately —
+ * PAYMENT_RAILS.md's rule is per-rail, not per-incident.
+ */
+export const POLYGON_UNRECONCILED_CAP_USDC = 10;
+export const POLYGON_SETTLED_TOTAL_KEY = "polygon_settled_total_usdc";
+
+export async function recordPolygonSettle(
+  env: Env,
+  paidUsdc: number,
+): Promise<void> {
+  const current = Number(
+    (await env.COUNTERS.get(POLYGON_SETTLED_TOTAL_KEY)) ?? "0",
+  );
+  const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
+  await env.COUNTERS.put(POLYGON_SETTLED_TOTAL_KEY, String(total));
+  if (total > POLYGON_UNRECONCILED_CAP_USDC) {
+    const { sendAlert } = await import("@/lib/alerts");
+    await sendAlert(env, {
+      condition: "worker_health",
+      detail: `Polygon settles have passed the $${POLYGON_UNRECONCILED_CAP_USDC} unreconciled cap ($${total} total) and no Polygon-side bank reconciliation exists yet. Ship the Polygon walk, or close the door (unset POLYGON_PAY_TO — a secret change redeploys). Money keeps settling honestly meanwhile — this alert is the bound, not a refusal.`,
+      key: "polygon-unreconciled-cap",
     }).catch(() => undefined);
   }
 }
@@ -238,6 +298,17 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
     price: `$${tierUsdc}`,
     payTo: env.PAY_TO_ADDRESS,
   }));
+  const polygon = polygonPayTo(env);
+  if (polygon) {
+    for (const tierUsdc of tiersUsdc) {
+      accepts.push({
+        scheme: "exact",
+        network: POLYGON_NETWORK,
+        price: `$${tierUsdc}`,
+        payTo: polygon,
+      });
+    }
+  }
   const solana = solanaPayTo(env);
   if (solana) {
     for (const tierUsdc of tiersUsdc) {
@@ -581,6 +652,13 @@ export function getPaymentStack(env: Env): PaymentStack {
       BASE_NETWORK,
       new ExactEvmScheme(),
     );
+    if (polygonPayTo(env)) {
+      // Same scheme class as Base — @x402/evm's own table carries the
+      // Polygon USDC deployment, so "$X" maps to the right contract
+      // with no store-side address to mistype. Registered only when
+      // the door is open: an unset flag is byte-identical to before.
+      resourceServer.register(POLYGON_NETWORK, new ExactEvmScheme());
+    }
     if (solanaPayTo(env)) {
       // The scheme server maps "$X" to the USDC mint and carries the
       // facilitator's feePayer through — the buyer stays gasless on

@@ -47,9 +47,11 @@ export const OPERATING_SINCE = "2026-07-22";
  */
 export const RAILS_ENTERED_BY_HAND: {
   base: readonly string[];
+  polygon: readonly string[];
   solana: readonly string[];
 } = {
   base: [],
+  polygon: [],
   solana: [],
 };
 
@@ -94,6 +96,7 @@ export interface StoreStats {
    */
   organic_by_rail?: {
     base: number;
+    polygon: number;
     solana: number;
     rail_not_recorded: number;
     computed_at: string;
@@ -224,8 +227,13 @@ export async function computeStatsDiagnosed(
     RAILS_ENTERED_BY_HAND.base.length;
   const railSolana =
     (split?.solana ?? 0) + (till?.solana ?? 0) + RAILS_ENTERED_BY_HAND.solana.length;
+  const railPolygon =
+    (split?.polygon ?? 0) +
+    (till?.polygon ?? 0) +
+    RAILS_ENTERED_BY_HAND.polygon.length;
   const haveRails = split !== null || till !== null;
-  const overshoot = railBase + railSolana > organicSettlements;
+  const railTotal = railBase + railPolygon + railSolana;
+  const overshoot = railTotal > organicSettlements;
   const stats: StoreStats = {
     operating_since: OPERATING_SINCE,
     settled_purchases_total:
@@ -235,12 +243,13 @@ export async function computeStatsDiagnosed(
     reclassified_house: reclassified,
     pre_meter_settlements: FOUNDING_SETTLES_WITHOUT_PAYER_ROW,
     artifacts_issued: artifactsIssued,
-    ...(haveRails && railBase + railSolana > 0 && !overshoot
+    ...(haveRails && railTotal > 0 && !overshoot
       ? {
           organic_by_rail: {
             base: railBase,
+            polygon: railPolygon,
             solana: railSolana,
-            rail_not_recorded: organicSettlements - railBase - railSolana,
+            rail_not_recorded: organicSettlements - railTotal,
             computed_at: split?.computed_at ?? new Date().toISOString(),
           },
         }
@@ -250,7 +259,7 @@ export async function computeStatsDiagnosed(
   return {
     stats,
     rail_overshoot: overshoot
-      ? { rail_total: railBase + railSolana, organic: organicSettlements }
+      ? { rail_total: railTotal, organic: organicSettlements }
       : null,
   };
 }
@@ -290,7 +299,8 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
     rail.rail_not_recorded > 0
       ? ` and ${rail.rail_not_recorded} settled before this store recorded the rail at the till, on a page that mints no certificate to carry one — a closed set that nothing can join`
       : "";
-  return `Of the organic figure, ${rail.base} settled in USDC on Base, ${rail.solana} in USDC on Solana${tail}.`;
+  const polygon = rail.polygon > 0 ? `, ${rail.polygon} in USDC on Polygon` : "";
+  return `Of the organic figure, ${rail.base} settled in USDC on Base${polygon}, ${rail.solana} in USDC on Solana${tail}.`;
 }
 
 /**

@@ -81,11 +81,11 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
   const rail = stats.organic_by_rail;
   if (
     rail &&
-    rail.base + rail.solana + rail.rail_not_recorded !==
+    rail.base + rail.polygon + rail.solana + rail.rail_not_recorded !==
       stats.organic_settlements
   ) {
     breaches.push(
-      `rail-identity: published split ${rail.base}+${rail.solana}+${rail.rail_not_recorded} ≠ organic ${stats.organic_settlements}. The construction that guarantees this identity has been broken by a change somewhere upstream.`,
+      `rail-identity: published split ${rail.base}+${rail.polygon}+${rail.solana}+${rail.rail_not_recorded} ≠ organic ${stats.organic_settlements}. The construction that guarantees this identity has been broken by a change somewhere upstream.`,
     );
   }
 

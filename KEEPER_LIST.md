@@ -80,7 +80,21 @@ four Base hashes in the TASKS archive's NOW block;
 
 ---
 
-## NEXT
+- [ ] **Light the Polygon rail** (shipped dark 2026-08-20, PAYMENT_RAILS.md
+  Part D): `npx wrangler secret put POLYGON_PAY_TO` — the same 0x pay-to
+  address works on Polygon as-is. Until the flag is set the store is
+  byte-identical to before the rail. Gates already run: CDP facilitator
+  supports polygon; Token Terminal has Polygon at 5.6M of 14M x402
+  transfers/30d.
+- [ ] **The three-rails copy pass, after the flag flips** (⚑ throughout):
+  "USDC on Base or Solana" → three rails across storefront copy, /what,
+  llms.txt, the skill twins, spec strings. Machine surfaces deriving from
+  acceptedNetworks() follow the flag on their own; the ink is yours.
+- [ ] LATER: the Polygon bank walk (POLYGON_RPC_URL secrets — the Alchemy
+  account covers Polygon) so the $10 unreconciled cap can stand down the
+  way Solana's did.
+
+## NEXT## NEXT
 
 **The frame:** the verification tier is still $0 outside — Assumption
 0 unproven — while the economy under the position 10×'d. Everything
