@@ -397,6 +397,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/api/bounties": {
+        get: freeOp(
+          "The bounty board — get paid to shop",
+          "Open mystery-shopping bounties: walk a listed x402 door with your own wallet, submit the settlement transaction at POST /api/bounty-claim, and the reward comes back as a signed EIP-3009 authorization you redeem on chain yourself. Rules, budget, and claim shape are on the board itself. Free to read.",
+        ),
+        post: freeOp(
+          "Claim a bounty (POST /api/bounty-claim)",
+          'POST /api/bounty-claim with JSON {"bounty_id","tx_hash","payer","payout_to","observation?"}. The store verifies the settlement on Base against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.',
+        ),
+      },
       "/api/mandate/{mandate_id}": {
         get: {
           ...freeOp(

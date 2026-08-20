@@ -270,6 +270,16 @@ export const KV_KEYS = {
    */
   mandate: (mandateId: string): string => `mandate:${mandateId}`,
   /**
+   * The bounty board (BOUNTY_BOARD.md): keeper-posted bounties, the
+   * per-week payout budget, and the one-payout-per-transaction guard.
+   * COUNTERS. The bounty scan is bounded by the board's own scale —
+   * a handful of keeper-posted rows a week, capped at listing time.
+   */
+  bounty: (bountyId: string): string => `bounty:${bountyId}`,
+  bountyPrefix: "bounty:",
+  bountyBudget: (weekKey: string): string => `bounty_budget:${weekKey}`,
+  bountyTx: (txLower: string): string => `bounty_tx:${txLower}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and
