@@ -95,9 +95,12 @@ describe("a provider that will not answer", () => {
   });
 
   it("gives up eventually, and says how hard it tried", async () => {
+    // Every endpoint 429s: one knock each on the default and the two
+    // keyless fallbacks (a 4xx skips ahead while another provider
+    // waits), then the full three-attempt backoff on the last. 1+1+3.
     const mock = mockRpc(() => rateLimited());
-    await expect(getBlockNumber(testEnv)).rejects.toThrow(/after 3 attempts/);
-    expect(mock.calls()).toBe(3);
+    await expect(getBlockNumber(testEnv)).rejects.toThrow(/after 5 attempts/);
+    expect(mock.calls()).toBe(5);
   });
 
   it("covers the batch too, which the sheaf reads after settling", async () => {
@@ -182,6 +185,39 @@ describe("two providers, and the secret that must never leak", () => {
     expect(await getBlockNumber(twoProviders)).toBe(100);
     // Three attempts at the paid one, then the public one answers.
     expect(seen.filter((host) => host === "paid.example")).toHaveLength(3);
+    expect(seen.at(-1)).toBe("public.example");
+  });
+
+  it("skips ahead on a 4xx instead of knocking a refused key three times", async () => {
+    /*
+     * 2026-08-20, read off the egress dashboard: the authenticated
+     * primary was answering 429 and each operation still knocked it
+     * three times with backoff — 288 refusals for 48 answers — while
+     * the secondary sat ready. A quota'd or rejected key is a per-key
+     * condition; the fix for it is the NEXT provider, not 450ms of
+     * patience. (A 5xx keeps the backoff — see the test above — and
+     * so does a 4xx on the LAST endpoint, where instant surrender
+     * would drop a paid delivery a burst limit was about to allow.)
+     */
+    const seen: string[] = [];
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: unknown) => {
+      const url = String(input);
+      seen.push(new URL(url).host);
+      return url.includes("paid.example")
+        ? new Response("quota", { status: 429 })
+        : ok("0x64");
+    }) as typeof fetch;
+
+    const twoProviders = {
+      ...testEnv,
+      BASE_RPC_URL_PRIMARY: "https://paid.example/rpc/secret-token",
+      BASE_RPC_URL: "https://public.example/rpc",
+    } as unknown as Env;
+
+    expect(await getBlockNumber(twoProviders)).toBe(100);
+    // ONE knock on the refused key, then straight to the one that answers.
+    expect(seen.filter((host) => host === "paid.example")).toHaveLength(1);
     expect(seen.at(-1)).toBe("public.example");
   });
 

@@ -1492,8 +1492,45 @@ adminRoutes.get("/admin/outreach", async (c) => {
   }
   const { renderOutreachPage } = await import("@/pages/admin/outreach-page");
   return c.html(
-    renderOutreachPage(round, prospects, healed, ledger, c.env.STORE_BASE_URL),
+    renderOutreachPage(
+      round,
+      prospects,
+      healed,
+      ledger,
+      c.env.STORE_BASE_URL,
+      c.req.query("notice"),
+    ),
   );
+});
+
+/**
+ * THE WIRE (rule 30 as amended 2026-08-20 — the keeper: "if im
+ * looking at it just give me a button that fires it"). One press,
+ * one host: live re-probe first, send only if the defect reproduces,
+ * one note per host ever. The outcome — sent, healed, refused — rides
+ * back to the page as the notice, so the press always says what it
+ * did in words.
+ */
+adminRoutes.post("/admin/outreach/send", async (c) => {
+  const { latestWardRound, previousWardRound } = await import(
+    "@/services/ward-round"
+  );
+  const { deriveProspects, readOutreachLedger, wireNote } = await import(
+    "@/services/outreach"
+  );
+  const body = await c.req.parseBody();
+  const host = String(body["host"] ?? "").toLowerCase();
+  if (!host) return c.redirect("/admin/outreach?notice=no+host+named");
+  const round = await latestWardRound(c.env);
+  if (!round) return c.redirect("/admin/outreach");
+  const previous = await previousWardRound(c.env);
+  const ledger = await readOutreachLedger(c.env);
+  const prospects = deriveProspects(round, previous);
+  const outcome = await wireNote(c.env, host, prospects, ledger);
+  const notice = outcome.sent
+    ? `Sent to ${outcome.to} — the door was re-probed and the defect reproduced at ${outcome.verified_at.slice(0, 19)}Z.`
+    : outcome.detail;
+  return c.redirect(`/admin/outreach?notice=${encodeURIComponent(notice)}`);
 });
 
 /**

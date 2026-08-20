@@ -2,6 +2,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
 import {
   OUTREACH_STATUSES,
+  contactEmail,
   draftNote,
   type OutreachLedger,
   type Prospect,
@@ -12,10 +13,15 @@ import type { WardRound } from "@/services/ward-round";
  * THE OUTREACH PAGE — the keeper's private work queue, and nothing
  * else's. Every row here is licensed by the ward's own standing line
  * ("private readings for outreach"); every draft is a dated
- * observation the recipient can verify without trusting us; and the
- * page has no send button because rule 30 says the hand fires
- * outward actions, so the page's whole job is to make the hand fast:
- * copy the draft, use the published contact, flip the status.
+ * observation the recipient can verify without trusting us.
+ *
+ * SINCE 2026-08-20 the page HAS a send button (rule 30 as amended:
+ * the keeper's press IS the approval queue; his words — "if im
+ * looking at it just give me a button that fires it"). The button
+ * fires the WIRE: a live re-probe first, so what goes out is a
+ * verified fact seconds old, never the week's stored reading; a door
+ * found healed sends nothing and says so. Hand stamps remain for
+ * contacts the wire can't reach (no published email).
  */
 
 function prospectCard(
@@ -54,20 +60,36 @@ function prospectCard(
       <button type="submit">${stampLabel[option] ?? option}</button>
     </form>`,
   ).join(" ");
-  const undo = entry?.status
-    ? ` <form method="post" action="/admin/outreach/status" style="display:inline">
+  const undo =
+    entry?.status && !entry.wired
+      ? ` <form method="post" action="/admin/outreach/status" style="display:inline">
       <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
       <input type="hidden" name="status" value="fresh">
       <button type="submit">undo — back to fresh</button>
     </form>`
-    : "";
+      : "";
+  const email = contactEmail(entry);
+  // THE WIRE (rule 30 as amended 2026-08-20). Only rendered where an
+  // email contact exists and no note has ever gone out; the route
+  // re-checks both, the button is just the honest surface of it.
+  const wire =
+    email && entry?.status !== "sent" && entry?.status !== "replied"
+      ? `<form method="post" action="/admin/outreach/send" style="display:inline">
+      <input type="hidden" name="host" value="${escapeHtml(prospect.host)}">
+      <button type="submit"><strong>verify live &amp; send</strong> to ${escapeHtml(email)}</button>
+    </form>
+    <span class="menu-meta"> — re-probes the door first; sends only if the defect reproduces right now, once per host ever</span>`
+      : entry?.wired
+        ? `<span class="menu-meta">wired to ${escapeHtml(entry.sent_to ?? "")} ${escapeHtml((entry.status_at ?? "").slice(0, 16))} (live-verified first)</span>`
+        : "";
   return `<section>
     <h3>${escapeHtml(prospect.host)}${prospect.newly_failing ? " <em>· newly failing</em>" : ""}</h3>
     <p class="menu-desc">${escapeHtml(prospect.reason)}</p>
     <p class="menu-meta">contact: ${contacts} · status: ${status}</p>
-    <details><summary>the draft (copy it, send it yourself, then stamp the card)</summary>
+    <details><summary>the draft (what the wire sends, redrafted from the live probe at press time)</summary>
     <pre>${escapeHtml(draftNote(prospect, base))}</pre></details>
-    <p class="menu-meta"><strong>Stamps, not sends</strong> — pressing these transmits nothing; they record what your hand already did: ${buttons}${undo}</p>
+    ${wire ? `<p class="menu-meta">${wire}</p>` : ""}
+    <p class="menu-meta"><strong>Stamps, not sends</strong> — these record hand-delivery for contacts the wire can't reach: ${buttons}${undo}</p>
   </section>`;
 }
 
@@ -88,7 +110,11 @@ export function renderOutreachPage(
   healed: string[],
   ledger: OutreachLedger,
   base: string,
+  notice?: string,
 ): string {
+  const noticeBlock = notice
+    ? `<section><p><strong>${escapeHtml(notice)}</strong></p></section>`
+    : "";
   const fresh = prospects.filter((p) => !ledger.hosts[p.host]?.status);
   const worked = prospects.filter((p) => ledger.hosts[p.host]?.status);
   const freshShown = fresh.slice(0, FRESH_RENDER_CAP);
@@ -102,20 +128,22 @@ export function renderOutreachPage(
     (p) => !ledger.hosts[p.host]?.scouted_at,
   ).length;
   const body = `
-  <h1>Outreach — the queue, drafted; the send, yours</h1>
+  <h1>Outreach — the queue, drafted; the send, one press</h1>
+  ${noticeBlock}
   <p class="menu-desc">Derived from round <strong>${escapeHtml(round.week)}</strong>:
   ${prospects.length} broken doors ranked by four named tiers (newly failing with a
   revenue claim, any claim by size, newly failing, the rest). Rows here are the
   ward's private readings put to their licensed use — telling an operator about
-  their own door. Nothing on this page sends anything; drafts are dated
-  observations, and the contact scout reads only what operators published to be
+  their own door. The contact scout reads only what operators published to be
   contacted on (security.txt).</p>
 
-  <p class="menu-desc"><strong>Nothing on this page sends anything, ever.</strong>
-  The flow per card: press Scout once so the cards carry contacts, copy the
-  draft, deliver it yourself (your email for a mailto:, their form for a URL),
-  then stamp the card "mark sent" so next week's round can credit the fix to
-  the note. The stamps are bookkeeping; the send is your hand (rule 30).</p>
+  <p class="menu-desc"><strong>The wire sends only verified facts</strong>
+  (rule 30 as amended 2026-08-20: your press is the approval; the wire is
+  machinery). "Verify live &amp; send" re-probes the door at that moment and
+  sends only if the defect reproduces — a healed door sends nothing and gets
+  marked fixed instead. One note per host, ever; wired cards never re-arm, and
+  Clear-ALL leaves them alone. Cards without a published email keep the old
+  flow: copy the draft, deliver by hand, stamp it.</p>
 
   <form method="post" action="/admin/outreach/scout" style="display:inline">
     <button type="submit">Scout contacts (${unscouted} unscouted, 25 per press)</button>

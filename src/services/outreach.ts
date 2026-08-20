@@ -23,12 +23,22 @@ import type { Env } from "@/types";
  *     contacted on (RFC 9116 security.txt), keeper-fired,
  *   - the DRAFT is a dated observation with a receipt the operator
  *     verifies in their own logs — never a score (rule 43),
- *   - the SEND is the keeper's hand, every time (rule 30). Nothing in
- *     this file transmits a word to anyone.
+ *   - the SEND is the keeper's press (rule 30 as AMENDED 2026-08-20:
+ *     a keeper-pressed button on this desk IS the approval queue —
+ *     the draft is the agent's, the press is the hand, the wire is
+ *     machinery). One press, one host, one note, ever.
  *
- * WHY AUTOMATED SENDING IS REFUSED, NOT DEFERRED: a trust store that
- * cold-mails at machine rate torches the one asset it sells. The
- * bottleneck is the point.
+ * WHY MACHINE-RATE SENDING STAYS REFUSED: a trust store that
+ * cold-mails on a clock torches the one asset it sells. The press
+ * being human is the rate limit, and the rate limit is the point.
+ *
+ * THE VERIFIED-FACT LAW (the keeper's condition, attached to the
+ * amendment in the same breath: "make sure my data that im sending is
+ * not an assumption its a verified fact"): the wire NEVER sends the
+ * stored reading. At press time it re-probes the door live; the note
+ * that goes out is drafted from THAT probe, seconds old. A door found
+ * healed sends nothing and says so — a congratulation nobody asked
+ * for is still an assumption-shaped email.
  */
 
 export type OutreachStatus = "sent" | "replied" | "fixed" | "skip";
@@ -50,7 +60,11 @@ export const OUTREACH_STATUSES: readonly OutreachStatus[] = [
 export function clearStatuses(ledger: OutreachLedger): number {
   let cleared = 0;
   for (const entry of Object.values(ledger.hosts)) {
-    if (entry.status) {
+    // A wired entry records an email that actually LEFT — clearing it
+    // would re-arm the send button on a host that already got the
+    // note, and the one-note-per-host-ever promise is in the note's
+    // own text. Hand stamps clear; wire records do not.
+    if (entry.status && !entry.wired) {
       delete entry.status;
       delete entry.status_at;
       cleared += 1;
@@ -67,6 +81,12 @@ export interface OutreachEntry {
   scouted_at?: string;
   /** "none published" when the scout looked and found nothing. */
   scout_note?: string;
+  /** Set when the desk's wire sent the note (vs a hand stamp). */
+  wired?: true;
+  /** Where the wired note went. */
+  sent_to?: string;
+  /** When the live re-probe last confirmed (or cleared) the defect. */
+  verified_at?: string;
 }
 
 export interface OutreachLedger {
@@ -201,8 +221,15 @@ export function healedAfterOutreach(
  * one dated fact and the way to verify it (rule 43's shape).
  * ⚑ Wording is the keeper's under rule 7; he edits before any send.
  */
-export function draftNote(prospect: Prospect, base: string): string {
+export function draftNote(
+  prospect: Prospect,
+  base: string,
+  opts: { firstSeenWeek?: string } = {},
+): string {
   const date = prospect.observed_at.slice(0, 10);
+  const verifiedLine = opts.firstSeenWeek
+    ? `\n(First seen on our ${opts.firstSeenWeek} weekly pass; re-checked seconds before this note was sent, so the observation above is current as of the send, not the week.)\n`
+    : "";
   const finding =
     prospect.verdict === "unreachable"
       ? "got no usable answer at all (connection failed, timed out, or the response was unreadable)"
@@ -224,7 +251,7 @@ Hello — I run ${base.replace("https://", "")}, a small store and free conforma
 On ${date} our weekly probe of doors listed in public x402 discovery fetched
   ${prospect.url}
 and ${finding}. Any buyer that finds you through those listings hits the same thing.
-${freshLine}${claimLine}
+${verifiedLine}${freshLine}${claimLine}
 You don't have to take my word for any of this:
 - Your own access logs: the probe identifies as "scvd-general-store/1.0 (+${base})" and is cryptographically signed (Web Bot Auth / RFC 9421; key directory at ${base}/.well-known/http-message-signatures-directory).
 - Re-check it yourself right now, free, no account:
@@ -334,4 +361,144 @@ export async function scoutContacts(
     found,
     remaining: pending.length - slice.length,
   };
+}
+
+/** The first email-shaped contact the operator published, or null.
+ * Web forms and URLs stay hand-delivery — the wire only does email. */
+export function contactEmail(entry: OutreachEntry | undefined): string | null {
+  for (const contact of entry?.contacts ?? []) {
+    const bare = contact.replace(/^mailto:/i, "").trim();
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bare)) return bare;
+  }
+  return null;
+}
+
+export type WireOutcome =
+  | { sent: true; to: string; verified_at: string }
+  | {
+      sent: false;
+      reason:
+        | "already-sent"
+        | "no-email-contact"
+        | "door-healed"
+        | "not-in-queue"
+        | "wire-not-configured"
+        | "send-failed";
+      detail: string;
+    };
+
+/**
+ * THE WIRE — one press, one host, one live-verified note (rule 30 as
+ * amended 2026-08-20; the verified-fact law in the file header).
+ *
+ * Sequence: refuse anything already sent; refuse hosts without a
+ * published email; RE-PROBE THE DOOR NOW; if it answers correctly,
+ * record the healing and send nothing; otherwise draft from the
+ * seconds-old probe — never the stored round — and hand it to Resend.
+ * The stamp lands only after Resend accepts, and a wired stamp is
+ * permanent: clear-all skips it, because the note's own text promises
+ * one note ever.
+ */
+export async function wireNote(
+  env: Env,
+  host: string,
+  prospects: Prospect[],
+  ledger: OutreachLedger,
+): Promise<WireOutcome> {
+  const entry = ledger.hosts[host];
+  if (entry?.status === "sent" || entry?.status === "replied") {
+    return {
+      sent: false,
+      reason: "already-sent",
+      detail: `${host} is already marked ${entry.status}${entry.sent_to ? ` (wired to ${entry.sent_to})` : ""}; the promise is one note per host, ever.`,
+    };
+  }
+  const to = contactEmail(entry);
+  if (!to) {
+    return {
+      sent: false,
+      reason: "no-email-contact",
+      detail: `${host} published no email contact — only hand delivery can reach it.`,
+    };
+  }
+  const prospect = prospects.find((p) => p.host === host);
+  if (!prospect) {
+    return {
+      sent: false,
+      reason: "not-in-queue",
+      detail: `${host} is not in the current round's queue; nothing to verify against.`,
+    };
+  }
+  if (!env.RESEND_API_KEY) {
+    return {
+      sent: false,
+      reason: "wire-not-configured",
+      detail: "RESEND_API_KEY is not set; the wire has no way to send.",
+    };
+  }
+
+  // The verified-fact law: the door is probed NOW, and the note is
+  // drafted from what THIS probe saw.
+  const { probeHost } = await import("@/services/ward-round");
+  const live = await probeHost(env, prospect.url);
+  const verifiedAt = new Date().toISOString();
+  if (live.verdict === "ready") {
+    ledger.hosts[host] = {
+      ...entry,
+      status: "fixed",
+      status_at: verifiedAt,
+      verified_at: verifiedAt,
+    };
+    await writeOutreachLedger(env, ledger);
+    return {
+      sent: false,
+      reason: "door-healed",
+      detail: `${host} answered correctly on the live re-probe — the week's reading is stale, nothing was sent, and it is marked fixed.`,
+    };
+  }
+
+  const fresh: Prospect = {
+    ...prospect,
+    verdict: live.verdict === "unreachable" ? "unreachable" : "not_ready",
+    failed: live.failed,
+    observed_at: verifiedAt,
+  };
+  const body = draftNote(fresh, env.STORE_BASE_URL, {
+    firstSeenWeek: prospect.week,
+  });
+  const [subjectLine, ...rest] = body.split("\n");
+  const subject = subjectLine!.replace(/^Subject:\s*/, "");
+  const text = rest.join("\n").trimStart();
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "The Store <alerts@scvd.store>",
+      to: [to],
+      subject,
+      text,
+    }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      sent: false,
+      reason: "send-failed",
+      detail: `Resend answered ${response.status}${detail ? `: ${detail.slice(0, 200)}` : ""}. Nothing was stamped; press again or deliver by hand.`,
+    };
+  }
+  ledger.hosts[host] = {
+    ...entry,
+    status: "sent",
+    status_at: verifiedAt,
+    wired: true,
+    sent_to: to,
+    verified_at: verifiedAt,
+  };
+  await writeOutreachLedger(env, ledger);
+  return { sent: true, to, verified_at: verifiedAt };
 }

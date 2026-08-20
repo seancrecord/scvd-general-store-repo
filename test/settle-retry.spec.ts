@@ -91,7 +91,15 @@ describe("a facilitator blip", () => {
     expect(facilitator.settleCalls).toBe(2);
   });
 
-  it("books the verbatim reason when the outage outlives the retry", async () => {
+  /**
+   * EXPLICIT TIMEOUT, 2026-08-20: this path SLEEPS 4000ms by design —
+   * SETTLE_RETRY_DELAY_MS (1500) before the second settle, then
+   * RESCUE_DELAY_MS (2500) before the ambiguous-502 rescue read —
+   * inside vitest's 5000ms default, leaving one second for actual
+   * work. On a loaded CI pool it lost that second twice in one run.
+   * The budget below is the designed sleeps plus honest headroom.
+   */
+  it("books the verbatim reason when the outage outlives the retry", { timeout: 15_000 }, async () => {
     facilitator.settleTransient502s = 2;
     const response = await buyPaid("small_blessing");
     expect(response.status).toBe(402);

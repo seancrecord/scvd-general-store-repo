@@ -17,7 +17,10 @@ function envWith(overrides: Partial<Env>): Env {
 }
 
 describe("the RPC ladder", () => {
-  it("tries primary, then secondary, then the public fallback", () => {
+  it("tries primary, then secondary, then the public one, then the keyless rotation", () => {
+    // The keyless tail joined 2026-08-20 ("i dont care who manages as
+    // long as its free and works"): configured endpoints keep their
+    // order and the public fallbacks always bring up the rear.
     const endpoints = rpcEndpoints(
       envWith({
         BASE_RPC_URL_PRIMARY: "https://paid-one.example/v2/key",
@@ -29,6 +32,8 @@ describe("the RPC ladder", () => {
       "https://paid-one.example/v2/key",
       "https://paid-two.example/key",
       "https://public.example",
+      "https://base-rpc.publicnode.com",
+      "https://base.drpc.org",
     ]);
   });
 
@@ -43,11 +48,19 @@ describe("the RPC ladder", () => {
         BASE_RPC_URL: "https://public.example",
       }),
     );
-    expect(endpoints).toEqual(["https://public.example"]);
+    expect(endpoints).toEqual([
+      "https://public.example",
+      "https://base-rpc.publicnode.com",
+      "https://base.drpc.org",
+    ]);
   });
 
-  it("stands on the default public endpoint when nothing is configured", () => {
-    expect(rpcEndpoints(envWith({}))).toEqual(["https://mainnet.base.org"]);
+  it("stands on the default public endpoint plus the keyless rotation when nothing is configured", () => {
+    expect(rpcEndpoints(envWith({}))).toEqual([
+      "https://mainnet.base.org",
+      "https://base-rpc.publicnode.com",
+      "https://base.drpc.org",
+    ]);
   });
 
   it("never says a URL out loud that could carry a credential", () => {
