@@ -95,9 +95,12 @@ describe("a provider that will not answer", () => {
   });
 
   it("gives up eventually, and says how hard it tried", async () => {
+    // Every endpoint 429s: one knock each on the default and the two
+    // keyless fallbacks (a 4xx skips ahead while another provider
+    // waits), then the full three-attempt backoff on the last. 1+1+3.
     const mock = mockRpc(() => rateLimited());
-    await expect(getBlockNumber(testEnv)).rejects.toThrow(/after 3 attempts/);
-    expect(mock.calls()).toBe(3);
+    await expect(getBlockNumber(testEnv)).rejects.toThrow(/after 5 attempts/);
+    expect(mock.calls()).toBe(5);
   });
 
   it("covers the batch too, which the sheaf reads after settling", async () => {

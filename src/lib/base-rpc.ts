@@ -51,6 +51,24 @@ export const APPROVAL_TOPIC =
 /** Public Base RPC unless the keeper points us somewhere better. */
 const DEFAULT_RPC = "https://mainnet.base.org";
 
+/**
+ * KEYLESS PUBLIC FALLBACKS, added 2026-08-20 on the keeper's word ("i
+ * dont care who manages as long as its free and works") — the same
+ * rotation the Solana reader has carried since its own one-endpoint
+ * bad afternoon (2026-08-05). The day's evidence: the authenticated
+ * primary's free tier refuses eth_getLogs at our 2,000-block span
+ * outright (HTTP 400, permanently, by plan design), which left the
+ * log-reading walk leaning on however many OTHER endpoints were
+ * configured. Free, no signup, independent operators; tried after
+ * every keeper-configured endpoint, and the 08-13 lesson — what
+ * protects a paid delivery is a DIFFERENT network path — is the whole
+ * selection criterion.
+ */
+const FALLBACK_RPCS = [
+  "https://base-rpc.publicnode.com",
+  "https://base.drpc.org",
+] as const;
+
 export interface RpcLog {
   address: string;
   topics: string[];
@@ -95,6 +113,7 @@ export function rpcEndpoints(env: Env): string[] {
     env.BASE_RPC_URL_PRIMARY,
     env.BASE_RPC_URL_SECONDARY,
     rpcUrl(env),
+    ...FALLBACK_RPCS,
   ]) {
     const url = candidate?.trim();
     if (url && !endpoints.includes(url)) {
