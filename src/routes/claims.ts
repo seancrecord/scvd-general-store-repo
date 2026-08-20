@@ -4,6 +4,7 @@ import * as ed25519 from "@noble/ed25519";
 import { canonicalAddress } from "@/lib/addresses";
 import { decodeBase58 } from "@/lib/base58";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { certificatesForPayer } from "@/services/certificates";
 import { listOrders } from "@/services/orders";
 import { isRecord, type HonoEnv } from "@/types";
 
@@ -88,11 +89,11 @@ function solanaSignatureBytes(signature: string): Uint8Array | null {
 claimsRoutes.get("/api/claims", (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
-    what: "Recover your own orders by proving you hold the wallet that paid — built for the agent whose context reset between paying and delivery. Both rails: EVM (Base) and Solana addresses alike.",
+    what: "Recover your own purchases by proving you hold the wallet that paid — built for the agent whose context reset between paying and reading the response. Returns BOTH kinds of record: open orders (human-labor items) and signed certificates (instant items, most of the shelf), each with its permanent URL. Both rails: EVM (Base) and Solana addresses alike.",
     how: [
       `1. POST ${base}/api/claims/challenge with JSON { address } — 0x + 40 hex (Base) or base58 (Solana), the wallet that paid. You get a challenge string and its expiry.`,
       "2. Sign the challenge string with the SAME key that signs your payments. EVM: EIP-191 personal_sign. Solana: your wallet's signMessage (ed25519) over the exact UTF-8 string.",
-      `3. POST ${base}/api/claims with JSON { address, signature } inside ${CHALLENGE_TTL_SECONDS} seconds — EVM signatures 0x-hex; Solana signatures base58 or hex. A valid signature returns every order this store holds for that wallet, order URLs included.`,
+      `3. POST ${base}/api/claims with JSON { address, signature } inside ${CHALLENGE_TTL_SECONDS} seconds — EVM signatures 0x-hex; Solana signatures base58 or hex. A valid signature returns everything this store holds for that wallet: open orders (order URLs included) AND signed certificates from instant purchases, each with its permanent verify URL.`,
     ],
     why_a_challenge:
       "A bare address lookup would let anyone read anyone's purchase history. The challenge is single-use and expires, so a captured signature replays nothing.",
@@ -224,9 +225,29 @@ claimsRoutes.post("/api/claims", async (c) => {
       order.payer !== undefined &&
       canonicalAddress(order.payer) === canonical,
   );
+  /**
+   * CERTIFICATES TOO (2026-08-20) — the reset journey's missing half.
+   * Most of the shelf is instant: no order opens, the goods and the
+   * certificate ride the purchase response, and an agent that resets
+   * before reading it used to be told, by this door's own note, to
+   * email the keeper. The certificate was in KV the whole time with
+   * the payer minted into it. Key possession was already proven
+   * above, so the same proof now returns both kinds of record.
+   */
+  const claimed = await certificatesForPayer(c.env, canonical);
   const base = c.env.STORE_BASE_URL;
   return c.json({
     address: canonical,
+    certificates: claimed.certificates.map((cert) => ({
+      ...cert,
+      verify_url: `${base}${cert.verify_path}`,
+    })),
+    ...(claimed.truncated
+      ? {
+          certificates_truncated:
+            "the certificate scan hit its cap; the newest 50 are listed. The mailbox at /api/letter reaches the keeper for anything older.",
+        }
+      : {}),
     orders: orders.map((order) => ({
       order_id: order.order_id,
       order_url: `${base}/api/order/${order.order_id}`,
@@ -239,7 +260,7 @@ claimsRoutes.post("/api/claims", async (c) => {
     })),
     note:
       orders.length === 0
-        ? "No orders bound to this wallet. Orders carry a payer since 2026-07-31; anything older predates the binding, and instant purchases deliver in their own response rather than opening an order. The mailbox at /api/letter reaches the keeper for anything this door cannot see."
+        ? "No open orders bound to this wallet — but check `certificates` above: instant purchases mint a certificate rather than opening an order, and those are returned by this same claim since 2026-08-20. Orders and certificates carry a payer since 2026-07-31; anything older predates the binding. The mailbox at /api/letter reaches the keeper for anything this door cannot see."
         : "Your orders, proven yours by the key that paid for them. Poll each order_url for status and the deliverable; nothing about this claim changed any order's state.",
   });
 });

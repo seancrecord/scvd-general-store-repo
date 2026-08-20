@@ -353,7 +353,13 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * repository. The first is the August field run — the whole
      * walkable Bazaar paid with the store's own wallet.
      */
+    /**
+     * WITHDRAWN 2026-08-20 and still served, notice first: a machine
+     * that already has this URL must be able to learn it was pulled.
+     */
     reports: `${base}/api/report/x402-ecosystem-2026-08`,
+    reports_note:
+      "The August 2026 field run was withdrawn on 2026-08-20, one day after publication: its largest failure class was attributed to sellers and its own ledger supports that for about 3% of it. The URL still answers, withdrawal notice first, original text unedited. Do not quote its failure rates.",
     /**
      * The two doors where money moves OUTWARD (2026-08-20): paid
      * mystery shopping, and the regulars' rebate. Both free to read,
