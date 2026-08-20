@@ -348,6 +348,68 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
         ),
       },
+      /**
+       * THE PERMANENT ARTIFACT RECORDS (2026-08-20, the no-orphan
+       * guard's first catch): every paid observation serves forever at
+       * its own URL, and the whole "hand somebody the readout" story
+       * depends on a third party understanding that URL when handed
+       * one — yet none of these record-serving doors was in the
+       * contract. The purchase responses carry them; the spec now
+       * does too.
+       */
+      "/api/service-audit/{audit_id}": {
+        get: freeOp(
+          "A purchased endpoint audit, served forever",
+          "The signed point-in-time audit a purchase minted: verdict, every check, criteria version, evidence hash, verification steps. Free to read forever; the badge rendering is at /badges/audit/{audit_id}.svg.",
+        ),
+      },
+      "/api/watch/{watch_id}": {
+        get: freeOp(
+          "A standing watch's signed history, served forever",
+          "Every hourly observation the purchased watch made, each signed alone so any row can be quoted by itself; missed passes counted against us in the same record.",
+        ),
+      },
+      "/api/conformance-watch/{watch_id}": {
+        get: freeOp(
+          "A conformance watch's daily record, served forever",
+          "Seven daily signed conformance readouts on the watched endpoint, drift derivable by arithmetic anyone can redo.",
+        ),
+      },
+      "/api/bitcoin-anchor/{anchor_id}": {
+        get: freeOp(
+          "A Bitcoin anchor record, served forever",
+          "The purchased OpenTimestamps commitment of the buyer's digest, with live proof status. The bytes stay the buyer's; the record is anyone's to check.",
+        ),
+      },
+      "/api/reconciliation/{reconciliation_id}": {
+        get: freeOp(
+          "A settlement reconciliation, served forever",
+          "The authorized-vs-taken observation a purchase minted, with the signed statement of WHICH ceiling was observed — on-chain or asserted.",
+        ),
+      },
+      "/api/lucky/{lucky_id}": {
+        get: freeOp(
+          "A lucky charm's signed record, served forever",
+          "The charm as drawn, odds and herd authorship disclosed at /luckies/house.",
+        ),
+      },
+      /**
+       * THE TAB'S POOL INTAKE — live since 2026-08-10 and, until the
+       * same guard caught it, named on no machine surface at all: the
+       * one door whose entire value is other agents finding it.
+       */
+      "/api/tab/delta": {
+        post: freeOp(
+          "Contribute an anonymized tab delta to the pooled corpus",
+          "The scvd-tab package's pool intake (npm: scvd-tab, MIT). Contribution is what earns pooled reads when they open; sample sizes are public at /api/tab/pool.",
+        ),
+      },
+      "/api/tab/pool": {
+        get: freeOp(
+          "The pooled tab corpus's sample sizes",
+          "What the pool holds so far, counted. Pooled reads are not built yet and this endpoint says so honestly.",
+        ),
+      },
       "/api/claims/challenge": {
         post: freeOp(
           "Start a purchase-recovery claim",
