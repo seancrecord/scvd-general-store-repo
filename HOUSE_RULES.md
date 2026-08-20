@@ -188,6 +188,14 @@ OPERATIONS & STAFF
     VERIFIED FACT, re-checked live at press time, never a stored
     reading assumed still true. Machine-rate sending (cron, batch,
     anything without a press per outward act) stays forbidden.
+    AMENDED AGAIN 2026-08-20 evening, keeper's word ("is there not a
+    button i can scout then send all to all scouted"): one press may
+    fire a BOUNDED batch — each recipient still individually
+    live-verified at that press, healed doors still skipped, one
+    note per host ever, and the batch capped small enough that the
+    press remains a decision about a list the keeper can actually
+    see. What stays forbidden is the clock: no send ever happens
+    without a press in front of it.
 31. Blast-radius rule: every employee runs on its own credentials.
     One compromise loses one employee.
 32. Every employee gets a written job file: role, tools, boundaries,

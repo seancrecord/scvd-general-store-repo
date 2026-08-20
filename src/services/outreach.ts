@@ -502,3 +502,72 @@ export async function wireNote(
   await writeOutreachLedger(env, ledger);
   return { sent: true, to, verified_at: verifiedAt };
 }
+
+/**
+ * Per-press ceiling on the batch wire (rule 30, second amendment
+ * 2026-08-20). Ten, not unbounded, for two reasons that are not
+ * doctrine but physics: (1) DELIVERABILITY — a young sending domain
+ * that fires hundreds of cold notes in one minute reads as a spam
+ * cannon to every receiving filter, and a trust store on a blocklist
+ * has torched the asset it sells; (2) the press is only an approval
+ * if the keeper can actually see what he approved — ten cards fit on
+ * a screen. Press again for the next ten. The keeper can re-rule the
+ * number.
+ */
+export const WIRE_BATCH_CAP = 10;
+
+export interface BatchWireReport {
+  sent: { host: string; to: string }[];
+  healed: string[];
+  refused: { host: string; reason: string }[];
+  /** Eligible hosts the cap left for the next press. */
+  remaining: number;
+}
+
+/**
+ * THE BATCH WIRE — one press, up to WIRE_BATCH_CAP hosts, every one
+ * still walking the full single-wire path: live re-probe, draft from
+ * the seconds-old reading, one note per host ever. Eligibility is
+ * exactly what the per-card button requires (an email contact, no
+ * note ever sent); everything else on the queue is untouched. Runs
+ * sequentially, not pooled — each send is an outward act and a
+ * failure mid-batch should leave a legible ledger, not ten races.
+ */
+export async function wireAllScouted(
+  env: Env,
+  prospects: Prospect[],
+  ledger: OutreachLedger,
+): Promise<BatchWireReport> {
+  const eligible = prospects.filter((p) => {
+    const entry = ledger.hosts[p.host];
+    if (entry?.status === "sent" || entry?.status === "replied") return false;
+    return contactEmail(entry) !== null;
+  });
+  const slice = eligible.slice(0, WIRE_BATCH_CAP);
+  const report: BatchWireReport = {
+    sent: [],
+    healed: [],
+    refused: [],
+    remaining: eligible.length - slice.length,
+  };
+  for (const prospect of slice) {
+    const outcome = await wireNote(env, prospect.host, prospects, ledger);
+    if (outcome.sent) {
+      report.sent.push({ host: prospect.host, to: outcome.to });
+    } else if (outcome.reason === "door-healed") {
+      report.healed.push(prospect.host);
+    } else {
+      report.refused.push({ host: prospect.host, reason: outcome.detail });
+      // A wire that cannot send at all (no key, provider down) will
+      // refuse every remaining host the same way — stop after the
+      // first such refusal instead of logging it ten times.
+      if (
+        outcome.reason === "wire-not-configured" ||
+        outcome.reason === "send-failed"
+      ) {
+        break;
+      }
+    }
+  }
+  return report;
+}
