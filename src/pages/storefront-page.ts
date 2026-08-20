@@ -1,5 +1,6 @@
 import { currentWeekKey } from "@/lib/kv-keys";
 import { catalogLastUpdated } from "@/lib/freshness";
+import { jsonLdBody } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { priceLabel } from "@/lib/price-label";
 import { STOREFRONT_CSS } from "@/pages/storefront-css";
@@ -213,7 +214,7 @@ function roomsFooterHtml(): string {
  * quietly ignoring us rather than as anything breaking.
  */
 function jsonLdSafe(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, "\\u003c");
+  return jsonLdBody(value);
 }
 
 /**
@@ -479,7 +480,7 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
       name: room.name,
       url: `${base}${room.path}`,
     })),
-  }).replace(/</g, "\\u003c");
+  });
 }
 
 export function renderStorefront(data: StorefrontData): string {
@@ -563,6 +564,11 @@ export function renderStorefront(data: StorefrontData): string {
       </div>
       <p class="shelf-more">${COPY.shelvesMore}
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
+    </section>
+
+    <section class="what-this-is regulars">
+      <h2 class="night-head">${COPY.regularsHead}</h2>
+      <p class="what-line">${COPY.regularsBody}</p>
     </section>
 
     <section class="doors">

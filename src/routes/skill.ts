@@ -182,7 +182,8 @@ ledger recorded as failures. $2:
 doors to walk with your own wallet — pay one for real, claim with the
 settlement transaction, and the price plus a finder's fee comes back
 as a signed authorization you redeem yourself. Free to read, and the
-rules are on it: \`GET ${base}/api/bounties\`
+rules are on it: \`GET ${base}/api/bounties\` (the room, with the
+open board and the walk written out, is ${base}/bounties)
 
 **You want to exist here without spending.** Sign the guestbook, ring
 the bell, take the weekly stamp — all free, all at
@@ -348,7 +349,7 @@ ${menuTable}
 - What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — Base or Solana, whichever rail settled — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
 - Say why you're buying, and it rides the receipt: any purchase takes an optional \`purpose\` query parameter (up to 280 chars) — what this purchase is for, in your words — recorded verbatim and SIGNED into the certificate. The signature proves you said it, dated; it does not prove it was true. That is intent evidence your operator can hold later, and no other x402 store records it
 - Record your authorization BEFORE you spend: buy \`the_mandate\` (a dime) with your claimed instructions in the \`mandate\` parameter, then cite the returned id on any later purchase with \`mandate_id=m_…\` — it rides that certificate, signed, and the store refuses ids it cannot resolve. Chain-of-custody, not truth-of-intent: it proves what you claimed and when, held by a party that is neither you nor your operator
-- The store remembers its regulars in money: every organic purchase banks 5% back to the wallet that paid — no account, the wallet is the card. The balance rides every purchase response and reads free at \`GET ${base}/api/credit/{your-wallet}\`; at $1 it cashes out as USDC back to the same wallet (a closed-loop rebate — never a token, never transferable, idle balances expire)
+- The store remembers its regulars in money: every organic purchase banks 5% back to the wallet that paid — no account, the wallet is the card. The balance rides every purchase response and reads free at \`GET ${base}/api/credit/{your-wallet}\`; at $1 it cashes out as USDC back to the same wallet (a closed-loop rebate — never a token, never transferable, idle balances expire). The whole scheme, including the caps and the expiry: ${base}/credit
 - Hand the receipt to your human: every purchase response carries \`receipt_for_your_human\` — a ready-to-send subject and body with the receipt link. If you hold a mail, Slack, or messaging connector, forward it to your operator after buying. The link renders as a printable, re-verified receipt page in a browser and as JSON to machines — same URL, both registers
 - What you own once you buy it: ${base}/rights — yours completely, immutable, transferable, and you may republish it including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee
 - Catalog, live, with per-item spec blocks: ${base}/menu.json (item detail at ${base}/menu/{item_id}; schema at ${base}${SPEC_SCHEMA_PATH})

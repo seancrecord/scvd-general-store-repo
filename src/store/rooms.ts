@@ -103,6 +103,17 @@ export const ROOMS: readonly Room[] = [
    * sitemap, llms.txt and the room contract all carry it either way.
    */
   { path: "/criteria", name: "What 'verified' means", on_storefront: false },
+  /**
+   * The two money-out rooms, given crawlable landings 2026-08-20 and
+   * front slots the same day — the keeper ruled they follow the
+   * held-back path "with one distinction: there should be a note for
+   * both somewhere on front page and especially a note around
+   * recurring patronage." So: linked from the front like any
+   * storefront room, plus the regulars strip that ties them to the
+   * patronage pass.
+   */
+  { path: "/bounties", name: "The Bounty Board" },
+  { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
   { path: "/wind-down", name: "If the lights go off" },
   { path: "/becoming", name: "What this is trying to prove" },

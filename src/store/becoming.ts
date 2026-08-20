@@ -144,6 +144,21 @@ export const WATCHED: readonly Watched[] = [
       "The read and the position, nothing on chain. Worth recording why the seat fits: the contract pays the evaluator only on COMPLETION — rejecting pays nothing — so every economic force in the standard leans toward approving, and the only counterweight is an evaluator whose record of signing bad news is public and checkable. That record is this store's entire product; the attestation suite pins 'signs the negative as readily as the positive' as a test. The fee skew is stated rather than hidden, and if we enter, evaluation gets priced off-chain both-outcomes-alike, with the on-chain fee incidental.",
   },
   {
+    /**
+     * RULED 2026-08-19/20, across the Costco reads and the second
+     * retirement. The keeper's words: "In all honesty we wanna be
+     * Costco for agents" — and the page this direction belongs on is
+     * this one, in this register: decided, dated, gated on facts,
+     * never presented as stock. ⚑ KEEPER REVIEW — the phrasings are
+     * new ink; the direction is his verbatim.
+     */
+    item: "The membership store — Costco's architecture, translated to agents. Decided 2026-08-19: the long direction is the one the warehouse model proved — membership as the product (the standing relationship, not the per-item markup, carries the business), radical curation over endless shelves (the second retirement was this direction acting, not housekeeping), and house-made equivalents only where equal-or-better at lower cost is provable. The trajectory is Price Club's, deliberately: earn the builders first, dress the membership later.",
+    trigger:
+      "Pass-holder economics wait on pass-holders. The credit multiplier for recurring patrons — the move that welds the pass to the rebate — ships when enough standing passes exist that a multiplier changes an agent's decision rather than a spreadsheet cell. Countable in our own books, never a date.",
+    today:
+      "The rungs that exist are live and run separately: the renewable patronage pass on the shelf, regulars' credit (5% back, closed-loop, the wallet is the card) at /credit, and the bounty board (mystery shopping, retail's oldest audit, pointed at the one economy that never had it) at /bounties. They are not yet joined, and that is the deliberate part — joining them before the membership means anything would be dressing a warehouse nobody shops at.",
+  },
+  {
     item: "Federation — somebody else adopting the format unprompted.",
     trigger:
       "The first time an operator we did not ask adopts the receipt format, vouches for us unprompted, or forks the pattern. Observable in our own logs, which is why it is on this list rather than in a wish.",

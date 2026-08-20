@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
+import { jsonLdBody } from "@/lib/jsonld";
 import { escapeHtml, linkStoreUrls } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
@@ -16,7 +17,7 @@ export const whatRoutes = new Hono<HonoEnv>();
 
 /** Invisible plumbing: schema.org FAQPage. Inert data, not script. */
 function faqJsonLd(pairs: FaqPair[]): string {
-  return JSON.stringify({
+  return jsonLdBody({
     "@context": "https://schema.org",
     "@type": "FAQPage",
     dateModified: catalogLastUpdated(),
@@ -25,7 +26,7 @@ function faqJsonLd(pairs: FaqPair[]): string {
       name: pair.question,
       acceptedAnswer: { "@type": "Answer", text: pair.answer },
     })),
-  }).replace(/</g, "\\u003c");
+  });
 }
 
 /**

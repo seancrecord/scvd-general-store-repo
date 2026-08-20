@@ -140,6 +140,19 @@ export const STOREFRONT_COPY = {
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
     "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",
+  /**
+   * THE REGULARS STRIP (keeper-ruled 2026-08-20: the money-out rooms
+   * follow the held-back path EXCEPT they get "a note for both
+   * somewhere on front page and especially a note around recurring
+   * patronage" — his words). Three sentences, three ways money comes
+   * back: the board pays strangers, the credit pays regulars, the
+   * pass is the standing arrangement. ⚑ KEEPER REVIEW — the phrasing
+   * is new ink; the ruling that the strip exists is his.
+   */
+  regularsHead: "MONEY MOVES BOTH WAYS HERE",
+  /** Pre-escaped HTML: carries the two room links and the pass. */
+  regularsBody:
+    'We pay shoppers: the <a href="/bounties">bounty board</a> posts real x402 doors elsewhere in the ecosystem and pays you the door’s price plus a finder’s fee to walk one with your own wallet. We reward regulars: 5% of every purchase banks back to the wallet that paid it — no account, the wallet is the card — at <a href="/credit">/credit</a>. And if you mean to keep coming back, the recurring patronage pass on the <a href="/menu.json">menu</a> is the standing version of the same idea: the store remembers its regulars.',
   doorHumanHead: "YOUR AGENT SENT YOU?",
   /** Keeper's ink, Batch 3. The template links "/what" right after this text. */
   doorHumanBody:

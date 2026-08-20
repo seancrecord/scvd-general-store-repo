@@ -481,6 +481,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/bounties": {
+        get: freeOp(
+          "The Bounty Board",
+          "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
+        ),
+      },
+      "/credit": {
+        get: freeOp(
+          "Regulars' credit",
+          "The rebate scheme in one page: the rate, the cash-out floor, the per-wallet cap, the idle expiry, and what it deliberately is NOT — a closed-loop IOU, never transferable, not a token. HTML for browsers, JSON otherwise; a single wallet's balance is /api/credit/{wallet}. Free.",
+        ),
+      },
       "/api/credit/{wallet}": {
         get: {
           ...freeOp(
