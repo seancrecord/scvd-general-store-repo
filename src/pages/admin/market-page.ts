@@ -5,7 +5,71 @@ import {
   highShelf,
   type MarketAggregates,
 } from "@/services/market";
+import type { bountyBoard } from "@/services/bounty-board";
 import type { WardRound } from "@/services/ward-round";
+
+type BoardState = Awaited<ReturnType<typeof bountyBoard>>;
+
+/**
+ * THE BOUNTY DESK, on the market page because bounties ARE market
+ * moves: every one points a paid walker at a door the census found.
+ * Every-lever-states-its-condition (2026-07-30) applies: the form
+ * ships with the dial beside it — payouts on or off, this week's
+ * budget spent, and what is already posted — so posting is never a
+ * button pressed blind. The notice line renders what the LAST post
+ * actually did, because a redirect in silence reads exactly like a
+ * form that did nothing.
+ */
+function bountyDeskHtml(
+  board: BoardState | null,
+  notice: string | undefined,
+): string {
+  if (!board) {
+    return `<section>
+      <h2>The bounty desk</h2>
+      <p class="empty">The board could not be read just now — post nothing until it can, or use the JSON door at POST /admin/bounties.</p>
+    </section>`;
+  }
+  const open = board.bounties.filter((entry) => entry.status === "open");
+  const rows = open
+    .map(
+      (entry) => `<tr>
+      <td><code>${escapeHtml(entry.bounty_id)}</code></td>
+      <td>${escapeHtml(entry.domain)}</td>
+      <td>$${entry.amount_usd.toFixed(4)}</td>
+      <td>$${entry.reward_usd.toFixed(2)}</td>
+      <td>${escapeHtml(entry.expires_at.slice(0, 10))}</td>
+    </tr>`,
+    )
+    .join("\n");
+  return `<section>
+    <h2>The bounty desk</h2>
+    ${notice ? `<p><strong>${escapeHtml(notice)}</strong></p>` : ""}
+    <p><strong style="font-size:1.1em">Payouts ${board.payouts_enabled ? "LIVE (field wallet key loaded)" : "PAUSED — no field wallet key; the board will refuse claims, do not post"}</strong> · week ${escapeHtml(board.week)}: $${board.spent_this_week_usd.toFixed(2)} of $${board.weekly_budget_usd.toFixed(2)} spent · ${open.length} open</p>
+    ${
+      open.length > 0
+        ? `<table border="1" cellpadding="6">
+      <tr><th>bounty</th><th>door</th><th>door price</th><th>reward</th><th>expires</th></tr>
+      ${rows}
+    </table>`
+        : "<p class='menu-desc'>Nothing posted this week.</p>"
+    }
+    <form method="POST" action="/admin/bounties">
+      <p>
+        <label>Door URL (the exact /api/... path a buyer pays)<br>
+          <input type="url" name="url" required size="60" placeholder="https://their-door.example/api/thing">
+        </label>
+      </p>
+      <p>
+        <label>Reward (USD, on top of the door's price; cap enforced)<br>
+          <input type="number" name="reward_usd" required min="0.01" max="0.25" step="0.01" value="0.10">
+        </label>
+      </p>
+      <button type="submit">Post the bounty</button>
+      <p class="menu-desc">Posting captures the door's live 402 terms as the terms of record. One bounty per domain per week; the board refuses past the weekly budget. The walk, the claim, and the payout all run themselves from here.</p>
+    </form>
+  </section>`;
+}
 
 /**
  * THE MARKET PAGE — the keeper's snapshot of what the numbers MEAN.
@@ -83,6 +147,8 @@ function section(title: string, headline: string, reading: string): string {
 export function renderMarketPage(
   round: WardRound,
   market: MarketAggregates,
+  board: BoardState | null = null,
+  bountyNotice: string | undefined = undefined,
 ): string {
   const so = market.signed_offers;
   const rails = market.rails;
@@ -162,6 +228,8 @@ export function renderMarketPage(
   ${concSection}
   ${schemes ? `<section><h2>Schemes offered</h2><p class="menu-desc">${schemes}</p></section>` : ""}
   ${fieldsSection}
+
+  ${bountyDeskHtml(board, bountyNotice)}
 
   <section>
     <h2>Publish to the public tally</h2>
