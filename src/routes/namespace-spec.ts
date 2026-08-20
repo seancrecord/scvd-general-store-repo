@@ -80,6 +80,19 @@ function doc(base: string) {
         "This namespace's PRIMARY canonical form is DECLARED-FIELD-ORDER serialization, not RFC 8785 (JCS). JCS derives byte order by sorting keys; this spec derives it from the field lists published on this page, which are part of the contract. The two disciplines are equally deterministic and NOT byte-compatible: re-canonicalizing an scvd artifact's primary signature through JCS produces different bytes and a failed verification. This is deliberate and permanent for artifacts already issued — this store's signatures are forever, and migrating a preimage discipline would orphan every one of them (the frozen_prefix rule below is the same commitment at field level).",
       jcs_dual_emit:
         "SINCE 2026-08-18 every artifact minted here ALSO carries `signature_jcs`: a second ed25519 signature, same key, same field subset, over the RFC 8785 (JCS) canonicalization — sorted keys, ECMAScript number and string serialization, no whitespace. Verify it with any RFC 8785 implementation: jcs(signed_fields_as_object) -> utf8 bytes -> ed25519_verify against the same public_key. The primary signature remains the authoritative one; signature_jcs is interop, so tooling built around the JCS receipts discipline (draft-hopley-x402-canonicalisation-jcs-v1 and kin) can verify scvd artifacts without knowing our field lists. Artifacts minted before 2026-08-18 carry no signature_jcs, exactly the way certificates minted before 2026-07-30 lack later fields: history, not a defect. Where served, signature_jcs_covers states this in place, and /api/verify reports the JCS signature's own validity separately from the primary's — never collapsed into one boolean.",
+      /**
+       * THE VAUBAN READ (2026-08-20), closing the align-vs-diverge
+       * question this note carried since 08-18. The family
+       * (draft-vauban-x402-consolidated / -stark-receipts /
+       * -vpsf-algebra / -delegation-binding, Independent Submission
+       * stream) pins the same RFC 8785 preimage discipline hopley
+       * does, so signature_jcs already speaks it — align by prior
+       * work, no migration. The rest is vocabulary mapping, stated
+       * here so a reader arriving from those drafts can place us
+       * without a decoder ring.
+       */
+      relation_to_receipt_drafts:
+        "The draft-vauban-x402-* family (Independent Submission; receipt-format negotiation, a claim algebra, delegation binding) pins the same RFC 8785 preimage discipline as draft-hopley-x402-canonicalisation-jcs-v1, so `signature_jcs` above already verifies under it. Vocabulary mapping for readers arriving from those drafts: this store's certificate plays the SettlementReceipt role (self-contained, offline-verifiable, seller-issued); the `attests` binding is the same idea as their 32-byte `action_ref` — a digest inside the signed fields tying the payment artifact to a work-layer artifact — differing in name and in that ours states WHAT was digested per item class. We implement no STARK or post-quantum variant and no claim-algebra operators; if the receipt_format negotiation in those drafts stabilizes, this namespace's formats would be offered as tokens under it rather than replaced by it. Drafts, not standards: nothing here is bound by them, and this paragraph is dated so its staleness is visible.",
     },
     certificate: {
       what:

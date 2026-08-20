@@ -180,6 +180,14 @@ OPERATIONS & STAFF
     docs/archive/; KEEPER_LIST.md is the one desk file.)
 30. No agent holds keys, sends money, or publishes without an
     approval queue. Read + draft roles by default.
+    AMENDED 2026-08-20, keeper's word ("if im looking at it just
+    give me a button that fires it"): a keeper-pressed button on an
+    admin desk IS the approval queue — the draft is the agent's, the
+    press is the hand, the wire after the press is machinery. The
+    condition attached in the same breath: what fires must be a
+    VERIFIED FACT, re-checked live at press time, never a stored
+    reading assumed still true. Machine-rate sending (cron, batch,
+    anything without a press per outward act) stays forbidden.
 31. Blast-radius rule: every employee runs on its own credentials.
     One compromise loses one employee.
 32. Every employee gets a written job file: role, tools, boundaries,

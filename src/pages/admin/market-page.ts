@@ -1,6 +1,10 @@
 import { escapeHtml } from "@/lib/sanitize";
 import { renderAdminShell } from "@/pages/admin/layout";
-import type { MarketAggregates } from "@/services/market";
+import {
+  HIGH_SHELF_FLOOR_USDC,
+  highShelf,
+  type MarketAggregates,
+} from "@/services/market";
 import type { bountyBoard } from "@/services/bounty-board";
 import type { WardRound } from "@/services/ward-round";
 
@@ -82,6 +86,54 @@ function bountyDeskHtml(
 function money(value: number): string {
   if (value >= 1) return `$${value.toFixed(2)}`;
   return `$${value.toFixed(value < 0.01 ? 4 : 3)}`;
+}
+
+/**
+ * THE HIGH SHELF (keeper's ask, 2026-08-20: "list out things priced
+ * over say $50 … to see if people pay for it and if I could do
+ * something similar"). Row-level and NAMED, which is licensed HERE:
+ * the consent ruling keeps rows on the private side, and this is the
+ * private side. Two honesty notes carried in the section itself:
+ * min-only rounds can only show doors whose CHEAPEST ask clears the
+ * floor, and an ask is not a sale — the buy side stays invisible
+ * until the payTo capture (also 08-20) gives the chain something to
+ * answer with.
+ */
+function highShelfSection(round: WardRound): string {
+  const shelf = highShelf(round);
+  const minOnly = round.hosts.every(
+    (host) => !host.offer || host.offer.max_usdc === undefined,
+  );
+  const rows = shelf.rows
+    .map(
+      (row) => `<tr>
+      <td><a href="${escapeHtml(row.url)}" rel="noreferrer">${escapeHtml(row.host)}</a></td>
+      <td>${escapeHtml(
+        row.ask_min === row.ask_max
+          ? money(row.ask_max)
+          : `${money(row.ask_min)}–${money(row.ask_max)}`,
+      )}</td>
+      <td>${escapeHtml(row.verdict)}</td>
+      <td>${escapeHtml(row.networks.join(", "))}</td>
+    </tr>`,
+    )
+    .join("\n");
+  return `<section>
+    <h2>The high shelf — asks at $${HIGH_SHELF_FLOOR_USDC}+</h2>
+    ${
+      shelf.rows.length > 0
+        ? `<table border="1" cellpadding="6">
+      <tr><th>door</th><th>USDC ask</th><th>verdict</th><th>rails</th></tr>
+      ${rows}
+    </table>${shelf.truncated ? `<p class="menu-meta">list capped; more above the floor exist.</p>` : ""}`
+        : `<p class="menu-desc">No door in this round quotes ${minOnly ? "a cheapest ask" : "any ask"} at $${HIGH_SHELF_FLOOR_USDC} or more.</p>`
+    }
+    <p class="menu-meta">${
+      minOnly
+        ? `This round captured only each door's CHEAPEST ask, so a door selling a $500 item behind a $1 item is invisible here — the max-ask capture shipped 2026-08-20 and the next walked round lists the true top of the market.`
+        : `Asks read from each door's own 402; range shown where the door quotes more than one USDC price.`
+    } An ask is not a sale: nothing here says anyone PAYS these prices. The payTo capture (2026-08-20) is the path to that answer — USDC inflows to a door's published payTo are checkable on chain, and that reader is the next build once a walked round carries the addresses.</p>
+  </section>`;
 }
 
 function section(title: string, headline: string, reading: string): string {
@@ -172,6 +224,7 @@ export function renderMarketPage(
   ${rotSection}
   ${railsSection}
   ${priceSection}
+  ${highShelfSection(round)}
   ${concSection}
   ${schemes ? `<section><h2>Schemes offered</h2><p class="menu-desc">${schemes}</p></section>` : ""}
   ${fieldsSection}

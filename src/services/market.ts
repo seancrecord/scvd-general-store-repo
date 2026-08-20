@@ -1,6 +1,6 @@
 import { BASE_USDC } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
-import type { WardHostResult } from "@/services/ward-round";
+import type { WardHostResult, WardRound } from "@/services/ward-round";
 
 /**
  * THE MARKET DESK (2026-08-19, the keeper's question: "are we
@@ -43,6 +43,22 @@ export interface OfferFacts {
   /** Cheapest USDC ask across accepts, in whole USDC. Absent when no
    * entry prices in USDC we recognize. */
   min_usdc?: number;
+  /**
+   * Dearest USDC ask across accepts (2026-08-20, the keeper's high
+   * shelf question). min-only capture made every multi-tier door
+   * read as its cheapest item, which hid the top of the market from
+   * the one person shopping it for ideas. Absent on rounds captured
+   * before this date — a reader treats missing as "not measured".
+   */
+  max_usdc?: number;
+  /**
+   * Where the door asks to be paid, verbatim from its own accepts
+   * (0x lowercased, base58 preserved — the base58 law), capped at 4.
+   * Captured 2026-08-20 so the buy side stops being invisible: USDC
+   * inflows to a published payTo are the first honest signal of
+   * whether anyone PAYS an ask, not just quotes one.
+   */
+  pay_to?: string[];
 }
 
 export function offerFacts(response: Response): OfferFacts | null {
@@ -61,20 +77,83 @@ export function offerFacts(response: Response): OfferFacts | null {
   const networks = new Set<string>();
   const schemes = new Set<string>();
   let minUnits: bigint | null = null;
+  let maxUnits: bigint | null = null;
+  const payTo = new Set<string>();
   for (const entry of accepts) {
     if (typeof entry["network"] === "string") networks.add(entry["network"]);
     if (typeof entry["scheme"] === "string") schemes.add(entry["scheme"]);
+    const to = entry["payTo"];
+    if (typeof to === "string" && to.length > 0 && payTo.size < 4) {
+      payTo.add(to.startsWith("0x") ? to.toLowerCase() : to);
+    }
     const asset = String(entry["asset"] ?? "").toLowerCase();
     const amount = String(entry["amount"] ?? "");
     if (USDC_ASSETS.has(asset) && /^[0-9]+$/.test(amount)) {
       const units = BigInt(amount);
       if (minUnits === null || units < minUnits) minUnits = units;
+      if (maxUnits === null || units > maxUnits) maxUnits = units;
     }
   }
   return {
     networks: [...networks].sort(),
     schemes: [...schemes].sort(),
     ...(minUnits !== null ? { min_usdc: Number(minUnits) / 1_000_000 } : {}),
+    ...(maxUnits !== null ? { max_usdc: Number(maxUnits) / 1_000_000 } : {}),
+    ...(payTo.size > 0 ? { pay_to: [...payTo] } : {}),
+  };
+}
+
+/**
+ * THE HIGH SHELF — the top of the market, listed for the keeper's
+ * desk (his ask, 2026-08-20: "things priced over say $50 … to see if
+ * people pay for it and if I could do something similar").
+ *
+ * Row-level and NAMED, which is correct HERE and nowhere public: the
+ * consent ruling keeps row-level readings on the private side, and
+ * this desk is the private side. The prices are each door's own
+ * published 402 — facts it broadcasts to every caller — and the
+ * verdict rides along so a $200 ask on a broken door reads as what
+ * it is.
+ */
+export interface HighShelfRow {
+  host: string;
+  url: string;
+  verdict: string;
+  /** Cheapest and dearest USDC asks the door quoted. Equal on
+   * min-only rounds (pre-08-20 capture) and single-price doors. */
+  ask_min: number;
+  ask_max: number;
+  networks: string[];
+  pay_to?: string[];
+}
+
+export const HIGH_SHELF_FLOOR_USDC = 50;
+const HIGH_SHELF_CAP = 50;
+
+export function highShelf(
+  round: WardRound,
+  floorUsdc: number = HIGH_SHELF_FLOOR_USDC,
+): { rows: HighShelfRow[]; truncated: boolean } {
+  const rows: HighShelfRow[] = [];
+  for (const host of round.hosts) {
+    const offer = host.offer;
+    if (!offer || offer.min_usdc === undefined) continue;
+    const top = offer.max_usdc ?? offer.min_usdc;
+    if (top < floorUsdc) continue;
+    rows.push({
+      host: host.host,
+      url: host.url,
+      verdict: host.verdict,
+      ask_min: offer.min_usdc,
+      ask_max: top,
+      networks: offer.networks,
+      ...(offer.pay_to ? { pay_to: offer.pay_to } : {}),
+    });
+  }
+  rows.sort((a, b) => b.ask_max - a.ask_max);
+  return {
+    rows: rows.slice(0, HIGH_SHELF_CAP),
+    truncated: rows.length > HIGH_SHELF_CAP,
   };
 }
 

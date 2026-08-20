@@ -119,9 +119,13 @@ below serves the first outside dollar.
 - **Fund + hand-capture the two paid directories — TEST** (#36,
   402index.io and x402scan). The blocker dissolved with the wallet
   law; what remains is a funded wallet and one paid response each.
-- **Paste draft-vauban into a session — LOOK** (#41,
-  network-blocked from the container). Decides align-vs-diverge for
-  the namespace spec's v2 note.
+- ~~Paste draft-vauban into a session~~ DONE 08-20 (web search
+  reached what direct fetch could not). Verdict: ALIGN by prior work
+  — the family pins the same RFC 8785 discipline as hopley, which
+  `signature_jcs` already speaks; our declared-order primary stays.
+  The namespace spec now carries the vocabulary mapping
+  (certificate ≈ SettlementReceipt, attests ≈ action_ref). No
+  migration, nothing normative binds us; drafts watched, not chased.
 - **Hand CV the re-pinned Tab segments — TEST** (#37).
   `docs/CV_TEST_SEGMENTS.md` pins `ad60264` (the old list's `7a67130`
   superseded 2026-08-18). Parts 2, 3, 4, 6 are CV's. **Part 1 is

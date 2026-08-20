@@ -294,6 +294,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
       // x402scan verifies ownership from this and nothing else; a
       // store that asks to be checked has to be reachable.
       contact: { url: base, email: STORE_CONTACT_EMAIL },
+      /**
+       * AGENT GUIDANCE, 2026-08-20: Circle's Sell-to-Agents readiness
+       * scanner names `info.x-guidance` as the field an agent reads to
+       * decide WHEN to call a service — its Agent Consumability score
+       * marked us 12/30 for lacking it. Plain language, inputs and
+       * outputs stated, held well under the scanner's ~1000-token
+       * budget. Everything here restates surfaces that already exist
+       * (llms.txt, the per-operation descriptions); this is the
+       * elevator version for a reader that only opens the spec.
+       */
+      "x-guidance":
+        "SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on Base eip155:8453 or Solana mainnet — pick either; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Prices run $0.004–$25; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt.",
     },
     servers: [{ url: base }],
     paths: {
