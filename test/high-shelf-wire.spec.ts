@@ -224,6 +224,110 @@ describe("the wire holds the verified-fact law", () => {
   });
 });
 
+describe("the batch wire: one press, ten verified sends, nothing on a clock", () => {
+  const mkProspect = (name: string): Prospect => ({
+    host: name,
+    url: `https://${name}/api/x`,
+    verdict: "not_ready",
+    failed: ["stale finding from the round"],
+    week: "2026-W34",
+    observed_at: "2026-08-19T17:00:00.000Z",
+    newly_failing: false,
+    reason: "answers, but not as an x402 door",
+  });
+  const mkLedger = (hosts: string[]): OutreachLedger => ({
+    version: 1,
+    hosts: Object.fromEntries(
+      hosts.map((h) => [h, { contacts: [`sec@${h}`] }]),
+    ),
+  });
+
+  it("caps at ten per press and says how many the cap left", async () => {
+    const { wireAllScouted, WIRE_BATCH_CAP } = await import(
+      "@/services/outreach"
+    );
+    expect(WIRE_BATCH_CAP).toBe(10);
+    const names = Array.from({ length: 12 }, (_, i) => `door${i}.example`);
+    const prospects = names.map(mkProspect);
+    const ledger = mkLedger(names);
+    const withKey = { ...testEnv, RESEND_API_KEY: "test-key" } as Env;
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () =>
+        new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
+      );
+    const report = await wireAllScouted(withKey, prospects, ledger);
+    fetchSpy.mockRestore();
+    expect(report.sent.length).toBe(10);
+    expect(report.remaining).toBe(2);
+    // Every send stamped permanently; the two beyond the cap untouched.
+    expect(ledger.hosts["door0.example"]!.wired).toBe(true);
+    expect(ledger.hosts["door11.example"]!.status).toBeUndefined();
+  });
+
+  it("eligibility is the card button's own: no email or already sent means not in the batch", async () => {
+    const { wireAllScouted } = await import("@/services/outreach");
+    const prospects = ["a.example", "b.example", "c.example"].map(mkProspect);
+    const ledger: OutreachLedger = {
+      version: 1,
+      hosts: {
+        "a.example": { contacts: ["https://a.example/form"] },
+        "b.example": { contacts: ["sec@b.example"], status: "sent", wired: true },
+        "c.example": { contacts: ["sec@c.example"] },
+      },
+    };
+    const withKey = { ...testEnv, RESEND_API_KEY: "test-key" } as Env;
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () =>
+        new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
+      );
+    const report = await wireAllScouted(withKey, prospects, ledger);
+    fetchSpy.mockRestore();
+    expect(report.sent.map((s) => s.host)).toEqual(["c.example"]);
+    expect(report.remaining).toBe(0);
+    // The form-only and already-sent hosts were never even refusals —
+    // they were simply not the batch's business.
+    expect(report.refused).toEqual([]);
+  });
+
+  it("a healed door inside the batch is skipped and marked, the rest still send", async () => {
+    const { wireAllScouted } = await import("@/services/outreach");
+    const { probeHost } = await import("@/services/ward-round");
+    (probeHost as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      verdict: "ready",
+      failed: [],
+      advisories: [],
+    });
+    const prospects = ["healed.example", "still-broken.example"].map(mkProspect);
+    const ledger = mkLedger(["healed.example", "still-broken.example"]);
+    const withKey = { ...testEnv, RESEND_API_KEY: "test-key" } as Env;
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () =>
+        new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
+      );
+    const report = await wireAllScouted(withKey, prospects, ledger);
+    fetchSpy.mockRestore();
+    expect(report.healed).toEqual(["healed.example"]);
+    expect(report.sent.map((s) => s.host)).toEqual(["still-broken.example"]);
+    expect(ledger.hosts["healed.example"]!.status).toBe("fixed");
+  });
+
+  it("a wire that cannot send stops after the first refusal instead of logging it ten times", async () => {
+    const { wireAllScouted } = await import("@/services/outreach");
+    const names = ["a.example", "b.example", "c.example"];
+    const report = await wireAllScouted(
+      { ...testEnv, RESEND_API_KEY: undefined } as unknown as Env,
+      names.map(mkProspect),
+      mkLedger(names),
+    );
+    expect(report.sent).toEqual([]);
+    expect(report.refused.length).toBe(1);
+    expect(report.refused[0]!.reason).toContain("RESEND_API_KEY");
+  });
+});
+
 describe("contactEmail reads only email-shaped contacts", () => {
   it("takes mailto: and bare addresses, skips URLs", () => {
     expect(contactEmail({ contacts: ["mailto:a@b.example"] })).toBe("a@b.example");
