@@ -280,6 +280,17 @@ export const KV_KEYS = {
   bountyBudget: (weekKey: string): string => `bounty_budget:${weekKey}`,
   bountyTx: (txLower: string): string => `bounty_tx:${txLower}`,
   /**
+   * Regulars' credit (services/store-credit.ts): the per-wallet
+   * rebate balance, the outstanding-liability aggregate the books
+   * watch, and the single-use cash-out challenge. COUNTERS. Keys are
+   * canonical addresses — the wallet IS the loyalty card.
+   */
+  credit: (canonicalWallet: string): string => `credit:${canonicalWallet}`,
+  creditPrefix: "credit:",
+  creditOutstanding: "credit_outstanding_atomic",
+  creditChallenge: (addressLower: string): string =>
+    `credit_challenge:${addressLower}`,
+  /**
    * A purchased settlement reconciliation: the signed observation and
    * the certificate that bound its evidence hash. PATRONS beside the
    * cert, terminal at write, same as the service audit — no sweep and

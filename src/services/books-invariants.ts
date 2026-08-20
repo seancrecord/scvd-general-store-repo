@@ -116,8 +116,46 @@ export async function sweepBooksInvariants(env: Env): Promise<InvariantSweep> {
     }
   }
 
+  // 5. The regulars'-credit liability: the published aggregate against
+  // a recount of every wallet's balance. A loyalty program whose books
+  // disagree with themselves is a real store's oldest rot, so the
+  // aggregate the credit endpoint publishes gets the same treatment as
+  // every other number here: recomputed from rows, breach on drift
+  // beyond dust (the aggregate's writes are unguarded against KV races
+  // by design at this scale — a cent of tolerance is that honesty).
+  try {
+    const { listKeys } = await import("@/lib/kv-list");
+    const { bulkGetJson } = await import("@/lib/kv-bulk");
+    const { KV_KEYS } = await import("@/lib/kv-keys");
+    const { creditOutstandingAtomic } = await import(
+      "@/services/store-credit"
+    );
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: KV_KEYS.creditPrefix,
+      cap: 2000,
+    });
+    const rows = await bulkGetJson<{ balance_atomic: string }>(
+      env.COUNTERS,
+      listed.names.filter((name) => !name.startsWith("credit_")),
+    );
+    let recount = 0n;
+    for (const row of rows.values()) {
+      if (row?.balance_atomic) recount += BigInt(row.balance_atomic);
+    }
+    const aggregate = await creditOutstandingAtomic(env);
+    const drift = aggregate > recount ? aggregate - recount : recount - aggregate;
+    if (drift > 10_000n && !listed.truncated) {
+      breaches.push(
+        `credit-liability: the published outstanding-credit aggregate ($${Number(aggregate) / 1e6}) disagrees with the per-wallet recount ($${Number(recount) / 1e6}) by more than a cent. One of the store's IOUs moved without its ledger row, or a race got unlucky twice the same way.`,
+      );
+    }
+  } catch {
+    // The recount is a watchdog; its own failure must not page as a
+    // books breach. It reruns next hour.
+  }
+
   const sweep: InvariantSweep = {
-    checked: 4,
+    checked: 5,
     breaches,
     at: new Date().toISOString(),
   };

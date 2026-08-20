@@ -403,6 +403,15 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ],
         },
       },
+      "/api/credit/{wallet}": {
+        get: {
+          ...freeOp(
+            "Regulars' credit balance",
+            "The rebate balance a wallet has earned — 5% of every organic purchase banks to the wallet that paid, no account, the wallet is the card. Closed-loop: redeemable as USDC back to the earning wallet only (challenge-signed, POST /api/credit/challenge then /api/credit/redeem), never transferable, idle balances expire. The store's total outstanding credit is published on the same response, because a loyalty liability off the books is how real stores rot.",
+          ),
+          parameters: [pathParam("wallet", "A 0x Base address.")],
+        },
+      },
       "/api/bounties": {
         get: freeOp(
           "The bounty board — get paid to shop",

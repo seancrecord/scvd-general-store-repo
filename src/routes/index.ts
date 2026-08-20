@@ -59,6 +59,7 @@ export { corpusLandingRoutes } from "@/routes/corpus-landing";
 export { preflightRoutes } from "@/routes/preflight";
 export { launchCheckRoutes } from "@/routes/launch-check";
 export { bountyRoutes } from "@/routes/bounties";
+export { creditRoutes } from "@/routes/credit";
 export { mandateRoutes } from "@/routes/mandate";
 export { statementRoutes } from "@/routes/statement";
 export { onpageRoutes } from "@/routes/onpage";
