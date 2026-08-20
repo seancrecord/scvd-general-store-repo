@@ -18,7 +18,10 @@ its UA added to the infrastructure classifier so the books stay honest
   every buy route carries discovery extensions.
 - **x402scan** — passive: indexes /.well-known/x402(.json), which we
   serve. "On x402scan" stays unclaimed until seen.
-- **ClawHub** — scvd-general-store, republish to 2.0.0 pending keeper.
+- **ClawHub** — scvd-general-store, standing. The published version
+  lives in registry/clawhub/published.json (the only status source —
+  a number copied here went stale twice; 3.4.0 as of 08-20, with a
+  3.4.1 republish queued on the keeper).
 - **awesome-x402** — RESUBMITTED 2026-07-27 to the live list:
   xpaysh/awesome-x402 PR #1024 (open, mergeable). The 07-22 PR went
   to brooks091/awesome-x402, a dead fork of it (0 stars, no
