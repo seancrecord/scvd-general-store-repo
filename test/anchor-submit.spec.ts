@@ -1,4 +1,5 @@
 import { env } from "cloudflare:test";
+import { pendingProofBytes } from "./helpers/ots";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   appendAnchor,
@@ -36,7 +37,7 @@ const testEnv = env as unknown as Env;
 
 const CALENDARS = ["https://calendar.test"];
 
-function okProof(bytes = new Uint8Array([1, 2, 3, 4])): typeof fetch {
+function okProof(bytes = pendingProofBytes()): typeof fetch {
   return (async () =>
     new Response(bytes, { status: 200 })) as unknown as typeof fetch;
 }
@@ -278,7 +279,7 @@ describe("the cron pass", () => {
 
 describe("the daily interval", () => {
   const okFetch = (async () =>
-    new Response(new Uint8Array([1]), { status: 200 })) as unknown as typeof fetch;
+    new Response(pendingProofBytes(), { status: 200 })) as unknown as typeof fetch;
 
   it("appends on an empty log, whatever the clock says", async () => {
     const result = await runAnchorCron(
