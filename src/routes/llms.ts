@@ -625,11 +625,16 @@ is, what it has found so far, and how to verify it — is
 ${base}/corpus.
 
 Beside the weekly record: ecosystem research reports, signed and
-free. The first, ${base}/api/report/x402-ecosystem-2026-08, is the
-August 2026 field run — every domain in the walkable Bazaar paid with
-this store's own declared wallet, 1,707 attempts reconciled against
-the chain, raw evidence committed in the public repository, signature
-verifiable at ${base}/api/verify/x402-ecosystem-2026-08.
+free. The first, ${base}/api/report/x402-ecosystem-2026-08 — the
+August 2026 field run — was WITHDRAWN on 2026-08-20, one day after
+publication, and the URL serves the withdrawal notice in front of the
+unedited original. Its largest failure class was attributed to
+sellers; its own committed ledger supports that for about 3% of it,
+while roughly 29% were endpoints correctly asking for inputs our
+instrument never sent. Do not quote its failure rates. The chain-side
+arithmetic stands and the raw evidence stays committed, so anyone can
+redo the classification. The store makes no claim about ecosystem
+payment-failure rates until a repaired instrument has walked again.
 
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
