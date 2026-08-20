@@ -348,6 +348,22 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
         ),
       },
+      "/api/claims/challenge": {
+        post: freeOp(
+          "Start a purchase-recovery claim",
+          "Send { address } — 0x + 40 hex (Base) or base58 (Solana), the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
+        ),
+      },
+      "/api/claims": {
+        get: freeOp(
+          "How purchase recovery works",
+          "The claims door, described: challenge-response, both rails, what a valid claim returns.",
+        ),
+        post: freeOp(
+          "Recover everything a wallet paid for",
+          "Send { address, signature } over the challenge. A valid signature returns the wallet's open orders (order URLs included) AND the signed certificates from instant purchases, newest first, each with its permanent verify URL. A bare address gets nothing — possession of the key is the whole test. Free.",
+        ),
+      },
       "/registry": {
         get: freeOp(
           "State of the registry",

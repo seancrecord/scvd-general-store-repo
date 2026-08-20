@@ -38,7 +38,13 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * corpus it derives from. Mid-flight until the keeper republishes to
  * ClawHub; the site's own /skill.md serves it immediately.
  */
-export const SKILL_VERSION = "3.3.1";
+/**
+ * 3.3.2 (2026-08-20): the claims-door moment — purchase recovery
+ * after a reset now returns instant-purchase certificates too, and
+ * the skill says so where the moments live. Mid-flight with 3.3.1
+ * until the keeper republishes to ClawHub.
+ */
+export const SKILL_VERSION = "3.3.2";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
