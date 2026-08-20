@@ -7,6 +7,7 @@ import {
   usdcTransfers,
 } from "@/lib/base-rpc";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
+import { readPayTo } from "@/lib/pay-to";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newEntryId } from "@/lib/ids";
@@ -212,6 +213,30 @@ export async function openBounty(
   if (!chosen?.payTo || !isSameAddress(chosen.asset ?? "", BASE_USDC)) {
     throw new BountyRefused(
       "no payable USDC-on-Base rail could be read from the door's 402 — the claim verifier would have nothing to verify against",
+    );
+  }
+  /**
+   * THE payTo HAS TO BE AN ADDRESS, and this refusal protects the
+   * SHOPPER rather than the store. Found 2026-08-20 sweeping every
+   * consumer of a stranger's offer against the payTo taxonomy.
+   *
+   * A bounty captures the door's payTo at open time, and the claim
+   * verifier later checks that the receipt carries a transfer TO that
+   * captured value. If the door published a name, three things follow
+   * in order: most shoppers cannot pay the door at all; the rare one
+   * who resolves the name pays the resolved ADDRESS; and the claim
+   * then compares an address against a name and can never match. The
+   * shopper does the work, spends their own money, and cannot collect
+   * — and from outside it looks exactly like the store welching on a
+   * posted reward.
+   *
+   * Refusing at open is the only honest moment: after that, somebody
+   * is already out of pocket.
+   */
+  const payToRead = readPayTo(chosen.payTo, chosen.network ?? "eip155:8453");
+  if (!payToRead.payable) {
+    throw new BountyRefused(
+      `${payToRead.detail} A bounty captures this value and the claim verifier compares an on-chain transfer against it, so a shopper who managed to pay could never prove it — no bounty is opened, and nothing is held.`,
     );
   }
   const price = amountUsd(chosen);

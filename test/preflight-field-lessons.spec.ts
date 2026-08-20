@@ -223,3 +223,50 @@ describe("the paid walk names a payTo defect as the finding", () => {
     expect(walk.stages.find((s) => s.stage === "screen")).toBeUndefined();
   });
 });
+
+describe("no bounty is opened on a door nobody can be paid to visit", () => {
+  it("refuses at open, so the shopper is never the one who finds out", async () => {
+    /**
+     * The sweep's second find, and the costlier one. A bounty captures
+     * the door's payTo and the claim verifier later compares an
+     * on-chain transfer against it. A name never matches an address,
+     * so a shopper could pay out of their own pocket and still be
+     * unable to collect — which from outside looks like the store
+     * welching on a posted reward.
+     */
+    const { openBounty, BountyRefused } = await import("@/services/bounty-board");
+    const challengeWith = (payTo: string) =>
+      (async () =>
+        new Response("{}", {
+          status: 402,
+          headers: {
+            "PAYMENT-REQUIRED": btoa(
+              JSON.stringify({
+                x402Version: 2,
+                accepts: [
+                  {
+                    scheme: "exact",
+                    network: "eip155:8453",
+                    amount: "5000",
+                    asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    payTo,
+                    maxTimeoutSeconds: 300,
+                  },
+                ],
+              }),
+            ),
+          },
+        })) as unknown as typeof fetch;
+
+    await expect(
+      openBounty(
+        env as unknown as Env,
+        {
+          targetUrl: "https://names-its-wallet.example/api/buy/thing",
+          rewardUsd: 1,
+        },
+        { fetch: challengeWith("shop.base.eth") },
+      ),
+    ).rejects.toThrow(BountyRefused);
+  });
+});
