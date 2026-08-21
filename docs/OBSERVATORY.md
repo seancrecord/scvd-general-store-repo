@@ -98,6 +98,58 @@ Two corollaries, both hard rules:
   Proposed line, needs a ruling (§12.9): **we sell observation
   labour, never access to what we saw.**
 
+### THE INVENTORY — what we actually have today (08-21)
+
+Structured around what exists, because most of this document is about
+what does not. Everything below is **shipped and live**. Read this
+first; §§1–21 are about the gap between it and the thesis above.
+
+**Instruments that observe** — the census/ward round (weekly, signed);
+preflight (free, one probe one moment); service_audit (full battery,
+point in time); standing_watch and conformance_watch (over time,
+paid); launch_check (a real mainnet purchase of your own door, stage
+by stage); settlement_attestation (what the chain says); the_statement
+(a wallet's whole window); signature_agent_card and onpage_audit.
+
+**Instruments that verify** — the free conformance desk (anyone's
+signed offers/receipts, split verdicts, never one magic number); the
+receipt-verification desk (any issuer's artifact in, signed verdict
+out, with a real taxonomy: valid / invalid / expired /
+insufficient_evidence / unsupported / indeterminate); /api/verify,
+free forever; the authority pack with published test vectors and a
+reference verifier; full key history with retired keys kept.
+
+**The record** — a weekly signed, hash-chained, Bitcoin-anchored
+corpus with gaps preserved rather than filled; per-host history; the
+registry tally; the Pulse (our own funnel, asks split from
+settlements); a permanent corrections log.
+
+**Derived surfaces** — endpoint passports (signed, expiring, freshness
+states, derived from the corpus, never re-observing); the free
+decaying chip; the Fresh Set; the trust panel with the five-level
+assurance ladder; hosted trust profiles; the practice/obstacle
+course; the mandate; the bounty board.
+
+**Doctrine already in force** — rule 43 (dated observations, never
+scores on operators); the consent line (names only on the ready
+side); delivery-first (a failed delivery takes no money at all);
+refusal to sell audits of our own door; the 27→5 consolidation law;
+dual-discipline signing for new artifact classes; corrections
+permanent; and the positioning already in the README — *"the layer
+underneath you rather than a competitor."*
+
+**Demand** — one confirmed external consumer, who bought two watches
+and is asking design-partner questions (§20).
+
+**The honest one-line summary of all of it:**
+
+> **The form is built. The volume is thin.** Nearly every mechanism
+> this document argues for either exists or has a shipped sibling to
+> copy from; what is missing is coverage, frequency, precision of the
+> record, and consumers. That is a much better position to be in than
+> the reverse, and it is why this outline is mostly about plumbing
+> rather than invention.
+
 **Start at §16 for the architecture** — the stack, every component
 mapped to the question it answers, and an honest maturity column.
 §17 is the proposal to publish that map. §18 is the observation
@@ -1448,24 +1500,31 @@ rich one set.
 Every ratio also needs its denominator explained on the artifact
 itself: 309/312 of *what was attempted*, not of what happened.
 
-### "Bloomberg for machine commerce" — and why identity is the moat
+### Normalization and identity (the "Bloomberg" framing, ⚑ RULED OUT as a goal)
 
-The framing lands, and the qualifier is the important half: **not
-because we hold proprietary information, but because we
-systematically observed and normalized** what was always public.
+**Keeper, 08-21: "I don't think Bloomberg is my goal."** Recorded, and
+the aspiration is struck — it is not a target, not a comparison to
+put on a surface, and not a thing to build toward. Filed here only
+because one structural observation inside it survives on its own
+merits.
 
-That is precisely the reference-data business, and in every one of
-those businesses **the identifier is the product** — the ticker, the
-CUSIP, the ISIN. Value accrues to whoever maintains the canonical
-name for a thing everyone needs to talk about consistently.
+That observation: the value would come **not from holding proprietary
+information, but from systematically observing and normalizing** what
+was always public. Normalization is the word that matters, and it
+points at something already in this document — §14's stable subject
+identity.
 
-Which promotes §14's stable subject identity from a hygiene item to a
-strategic one. If SCVD becomes where a machine service's identity is
-canonically resolved — this host, these paths, this operator, these
-rails, across renames and migrations — then the corpus is not merely
-a history, it is the registry everyone must reference to compare
-notes. That is a bigger moat than the observations themselves, and it
-is currently unbuilt and unclaimed.
+In any business built on observing a shared world, whoever maintains
+the canonical *name* for a thing ends up load-bearing, because two
+parties cannot compare notes about an endpoint they identify
+differently. That promotes stable subject identity from a hygiene
+item to a structural one: this host, these paths, this operator,
+these rails, held stable across renames and migrations.
+
+Stated without the analogy: **if our identifiers are the ones people
+use to talk about machine services, our observations compose with
+everybody else's. If they are not, our history is an island.** That
+is worth building for its own sake, and it is currently unbuilt.
 
 ### The dataset, stated in one line
 
