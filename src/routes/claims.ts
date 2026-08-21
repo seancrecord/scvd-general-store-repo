@@ -151,11 +151,11 @@ function solanaSignatureBytes(signature: string): Uint8Array | null {
 claimsRoutes.get("/api/claims", (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
-    what: "Recover your own purchases by proving you hold the wallet that paid — built for the agent whose context reset between paying and reading the response. Returns BOTH kinds of record: open orders (human-labor items) and signed certificates (instant items, most of the shelf), each with its permanent URL. Both rails: EVM (Base) and Solana addresses alike.",
+    what: "Recover your own purchases by proving you hold the wallet that paid — built for the agent whose context reset between paying and reading the response. Returns ALL THREE kinds of record: open orders (human-labor items), signed certificates (instant items, most of the shelf), and watches (the week-long observations, whose ids used to live only in the purchase response), each with its permanent URL. Both rails: EVM (Base) and Solana addresses alike.",
     how: [
       `1. POST ${base}/api/claims/challenge with JSON { address } — 0x + 40 hex (Base) or base58 (Solana), the wallet that paid. You get a challenge string and its expiry.`,
       "2. Sign the challenge string with the SAME key that signs your payments. EVM: EIP-191 personal_sign. Solana: your wallet's signMessage (ed25519) over the exact UTF-8 string.",
-      `3. POST ${base}/api/claims with JSON { address, signature } inside ${CHALLENGE_TTL_SECONDS} seconds — EVM signatures 0x-hex; Solana signatures base58 or hex. A valid signature returns everything this store holds for that wallet: open orders (order URLs included) AND signed certificates from instant purchases, each with its permanent verify URL.`,
+      `3. POST ${base}/api/claims with JSON { address, signature } inside ${CHALLENGE_TTL_SECONDS} seconds — EVM signatures 0x-hex; Solana signatures base58 or hex. A valid signature returns everything this store holds for that wallet: open orders (order URLs included), signed certificates from instant purchases, and any standing or conformance watches with their history URLs — each with its permanent URL.`,
     ],
     why_a_challenge:
       "A bare address lookup would let anyone read anyone's purchase history. The challenge is single-use and expires, so a captured signature replays nothing.",
@@ -304,6 +304,20 @@ claimsRoutes.post("/api/claims", async (c) => {
    * above, so the same proof now returns both kinds of record.
    */
   const claimed = await certificatesForPayer(c.env, canonical);
+  /**
+   * AND THE WATCHES (2026-08-21) — the third kind of record, and the
+   * one where a lost id cost the most.
+   *
+   * A watch delivers seven days of value AFTER the purchase response
+   * is gone, which makes it the purchase most likely to outlive the
+   * context that made it — and its id lived in that response and
+   * nowhere else. The certificate does not name it and the store's
+   * own shopping run keeps the receipt without the body, so the only
+   * recovery path was to buy the watch again. CV did exactly that on
+   * 2026-08-21, which is how we know.
+   */
+  const { watchesForPayer } = await import("@/services/standing-watch");
+  const watched = await watchesForPayer(c.env, canonical);
   const base = c.env.STORE_BASE_URL;
   return c.json({
     address: canonical,
@@ -317,6 +331,24 @@ claimsRoutes.post("/api/claims", async (c) => {
             "the certificate scan hit its cap; the newest 50 are listed. The mailbox at /api/letter reaches the keeper for anything older.",
         }
       : {}),
+    watches: watched.watches.map((watch) => ({
+      watch_id: watch.watch_id,
+      kind: watch.kind,
+      url: watch.url,
+      started_at: watch.started_at,
+      ends_at: watch.ends_at,
+      history_url: `${base}${watch.history_path}`,
+    })),
+    ...(watched.truncated
+      ? {
+          watches_truncated:
+            "the watch scan hit its cap; the newest are listed. The mailbox at /api/letter reaches the keeper for anything older.",
+        }
+      : {}),
+    watches_note:
+      watched.watches.length === 0
+        ? "No watches bound to this wallet. Watches carry a payer since 2026-08-21; one opened before that cannot be found by this door, and its history URL still works if you kept it — the mailbox at /api/letter reaches the keeper if you did not."
+        : "Every watch this wallet paid for, with its permanent history URL. The history is free to read forever and was always free; what this returns is the id, which used to live only in the purchase response.",
     orders: orders.map((order) => ({
       order_id: order.order_id,
       order_url: `${base}/api/order/${order.order_id}`,

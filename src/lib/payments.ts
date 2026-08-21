@@ -29,7 +29,8 @@ import { isRecord } from "@/types";
 import type { Env, MenuItem } from "@/types";
 
 /**
- * x402 v2 payment plumbing. USDC on Base (eip155:8453), CDP facilitator.
+ * x402 v2 payment plumbing. USDC on Base (eip155:8453), Polygon
+ * (eip155:137, flag-gated) and Solana, CDP facilitator for all three.
  *
  * Pay-what-it-deserves items are offered as multiple exact-scheme tiers in
  * the 402 challenge (v2 requires the authorized value to exactly equal one
@@ -59,7 +60,7 @@ export const BASE_NETWORK = "eip155:8453";
  * FLAG-GATED ON SOLANA_PAY_TO: with the var unset, nothing about any
  * 402 changes. Set it (the keeper's receive-address ceremony: key
  * generated offline, seed on paper, only the PUBLIC address deployed)
- * and every priced route offers both rails, Base entries first so a
+ * and every priced route offers every live rail, Base entries first so a
  * client that blindly signs accepts[0] behaves exactly as before.
  */
 export const SOLANA_NETWORK = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";

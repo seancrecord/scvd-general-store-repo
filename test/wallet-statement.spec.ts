@@ -162,7 +162,10 @@ describe("the statement door", () => {
     const item = MENU_ITEMS.find((entry) => entry.id === "the_statement");
     expect(item?.fulfillment).toBe("instant");
     expect(item?.description).toContain("never a judgment");
-    expect(JSON.stringify(item?.constraints)).toContain("USDC on Base only");
+    // The constraint moved with the machinery (parity, 2026-08-21):
+    // one chain per statement, Base default, Polygon by network param.
+    expect(JSON.stringify(item?.constraints)).toContain("USDC on Base by default");
+    expect(JSON.stringify(item?.constraints)).toContain("network=eip155:137");
     const schema = buyInputSchema(item!);
     expect(schema.required).toContain("wallet");
   });
@@ -261,5 +264,52 @@ describe("the statement door", () => {
       vi.unstubAllGlobals();
       installFacilitatorMock();
     }
+  });
+});
+
+/**
+ * THE THIRD RAIL ON THE STATEMENT (parity ruling, 2026-08-21): one
+ * chain per statement, Base unless asked, Polygon by name or CAIP-2,
+ * anything else refused before money moves.
+ */
+describe("the statement's network parameter", () => {
+  it("resolves the whole vocabulary, and only the vocabulary", async () => {
+    const { statementChain } = await import("@/services/wallet-statement");
+    expect(statementChain(undefined)?.caip2).toBe("eip155:8453");
+    expect(statementChain("base")?.caip2).toBe("eip155:8453");
+    expect(statementChain("eip155:8453")?.caip2).toBe("eip155:8453");
+    expect(statementChain("polygon")?.caip2).toBe("eip155:137");
+    expect(statementChain("eip155:137")?.caip2).toBe("eip155:137");
+    expect(statementChain("solana")).toBeNull();
+    expect(statementChain("eip155:1")).toBeNull();
+  });
+
+  it("stamps the chain it actually read on the artifact", async () => {
+    const { statementChain } = await import("@/services/wallet-statement");
+    const polygon = statementChain("polygon")!;
+    const statement = await withChain(
+      fakeChain({
+        inbound: [{ tx: "0xpa", from: OTHER, amount: 500_000n, block: 999_990 }],
+        outbound: [],
+      }),
+      () => performWalletStatement(testEnv, WALLET, 6, polygon),
+    );
+    expect(statement.chain).toBe("eip155:137");
+    expect(statement.asset).toBe(
+      "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+    );
+    expect(statement.scope).toContain("Polygon (eip155:137)");
+    expect(statement.inflows.count).toBe(1);
+  });
+
+  it("refuses an unrecognized network at the door, before money moves", async () => {
+    const refused = await SELF.fetch(
+      `${BASE}/api/buy/the_statement?wallet=${WALLET}&network=eip155:1`,
+      { headers: { "PAYMENT-SIGNATURE": "not-a-real-signature" } },
+    );
+    expect(refused.status).toBe(400);
+    const body = (await refused.json()) as { error: string };
+    expect(body.error).toContain("eip155:137");
+    expect(body.error).toContain("refused");
   });
 });

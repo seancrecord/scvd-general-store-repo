@@ -159,7 +159,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["wallet"] = {
       type: "string",
       description:
-        "The Base wallet to state: a 0x EVM address. Every USDC transfer in and out over the window, counted, summed and signed — USDC on Base only, and the statement says so on itself.",
+        "The wallet to state: a 0x EVM address. Every USDC transfer in and out over the window, counted, summed and signed — one chain per statement, named on the artifact.",
+    };
+    properties["network"] = {
+      type: "string",
+      description:
+        'Which rail to read: "eip155:8453" (Base, the default) or "eip155:137" (Polygon). One chain per statement.',
     };
     properties["hours"] = {
       type: "string",

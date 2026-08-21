@@ -1,4 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
+import { bulkGetJson } from "@/lib/kv-bulk";
+import { listKeys } from "@/lib/kv-list";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { runChecks } from "@/services/preflight";
 import { checkProbeTarget } from "@/lib/probe-target";
@@ -88,6 +90,23 @@ export interface StandingWatchRecord {
   url: string;
   started_at: string;
   ends_at: string;
+  /**
+   * THE WALLET THAT PAID, so a lost watch id can be recovered by
+   * proving you hold it — the claims door's whole purpose, and the
+   * one record it could not reach until 2026-08-21.
+   *
+   * CV found this the expensive way: the watch id lives in the
+   * purchase RESPONSE and nowhere else, the certificate does not name
+   * it, and the store's own shopping run keeps the receipt but not
+   * the body. So the only recovery path for a lost id was to buy the
+   * watch a second time, which he did. A watch is seven days of
+   * value delivered after the response is gone — precisely the
+   * purchase most likely to outlive the context that made it.
+   *
+   * Absent on watches opened before this field existed; the claims
+   * door says so rather than pretending they were never bought.
+   */
+  payer?: string;
   probes: WatchProbe[];
 }
 
@@ -119,6 +138,7 @@ export function canonicalizeProbe(
 export async function startWatch(
   env: Env,
   url: string,
+  payer?: string,
 ): Promise<{ record: StandingWatchRecord; historyUrl: string }> {
   const now = new Date();
   const record: StandingWatchRecord = {
@@ -128,6 +148,7 @@ export async function startWatch(
     ends_at: new Date(
       now.getTime() + WATCH_DURATION_HOURS * 3600_000,
     ).toISOString(),
+    ...(payer ? { payer: payer.toLowerCase() } : {}),
     probes: [],
   };
   await env.ORDERS.put(
@@ -249,6 +270,80 @@ export async function sweepStandingWatches(env: Env): Promise<number> {
     entriesOf: (record) => record.probes,
     observe: (record) => probeOnce(env, record),
   });
+}
+
+/**
+ * EVERY WATCH A WALLET PAID FOR — the claims door's reach extended
+ * to the one record it could not see. Both kinds in one scan shape,
+ * bounded like every other listing here, and the truncation is
+ * reported rather than hidden: a wallet with more watches than the
+ * cap gets the newest and is told so.
+ */
+export async function watchesForPayer(
+  env: Env,
+  payer: string,
+): Promise<{
+  watches: Array<{
+    watch_id: string;
+    kind: "standing_watch" | "conformance_watch";
+    url: string;
+    started_at: string;
+    ends_at: string;
+    history_path: string;
+  }>;
+  truncated: boolean;
+}> {
+  const wanted = payer.toLowerCase();
+  const found: Array<{
+    watch_id: string;
+    kind: "standing_watch" | "conformance_watch";
+    url: string;
+    started_at: string;
+    ends_at: string;
+    history_path: string;
+  }> = [];
+  let truncated = false;
+  const lanes = [
+    {
+      prefix: KV_KEYS.standingWatchPrefix,
+      kind: "standing_watch" as const,
+      path: "/api/watch/",
+    },
+    {
+      prefix: KV_KEYS.conformanceWatchPrefix,
+      kind: "conformance_watch" as const,
+      path: "/api/conformance-watch/",
+    },
+  ];
+  for (const lane of lanes) {
+    const listed = await listKeys(env.ORDERS, {
+      prefix: lane.prefix,
+      cap: WATCH_SCAN_CAP,
+    });
+    truncated ||= listed.truncated;
+    const records = await bulkGetJson<{
+      watch_id?: string;
+      url?: string;
+      started_at?: string;
+      ends_at?: string;
+      payer?: string;
+    }>(env.ORDERS, listed.names);
+    for (const record of records.values()) {
+      if (!record?.watch_id || record.payer?.toLowerCase() !== wanted) {
+        continue;
+      }
+      found.push({
+        watch_id: record.watch_id,
+        kind: lane.kind,
+        url: record.url ?? "",
+        started_at: record.started_at ?? "",
+        ends_at: record.ends_at ?? "",
+        history_path: `${lane.path}${record.watch_id}`,
+      });
+    }
+  }
+  found.sort((a, b) => b.started_at.localeCompare(a.started_at));
+  return { watches: found, truncated };
 }
 
 export interface WatchHistory {

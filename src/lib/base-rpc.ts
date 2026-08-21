@@ -22,6 +22,61 @@ export const BASE_USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 /** CAIP-2 for Base mainnet, the same string the 402s advertise. */
 export const BASE_CHAIN = "eip155:8453";
 
+/** Native USDC on Polygon PoS (Circle's, not the bridged USDC.e). */
+export const POLYGON_USDC = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359";
+
+/** CAIP-2 for Polygon PoS, the same string the 402s advertise. */
+export const POLYGON_CHAIN = "eip155:137";
+
+/**
+ * THE EVM CHAIN, AS A PARAMETER (the third-rail parity ruling,
+ * 2026-08-21: EVM chains get full functionality by parameterization,
+ * never by parallel code). Everything in this file that speaks
+ * JSON-RPC takes one of these, defaulting to Base so no existing
+ * call site moved when Polygon arrived — the same shape as the
+ * shopping run's rail map. USDC keeps six decimals on both.
+ */
+export interface EvmChain {
+  key: "base" | "polygon";
+  label: string;
+  caip2: string;
+  /** The chain's native USDC contract, lowercase. */
+  usdc: string;
+}
+
+export const BASE_EVM: EvmChain = {
+  key: "base",
+  label: "Base",
+  caip2: BASE_CHAIN,
+  usdc: BASE_USDC,
+};
+
+export const POLYGON_EVM: EvmChain = {
+  key: "polygon",
+  label: "Polygon",
+  caip2: POLYGON_CHAIN,
+  usdc: POLYGON_USDC,
+};
+
+export const EVM_CHAINS: readonly EvmChain[] = [BASE_EVM, POLYGON_EVM];
+
+/**
+ * The network vocabulary, resolved: CAIP-2 or the plain word, either
+ * EVM rail, Base when unsaid. Null means unrecognized — callers
+ * refuse rather than defaulting silently, because a chain the caller
+ * did not name is a chain the answer must not be about.
+ */
+export function evmChainOf(network: string | undefined): EvmChain | null {
+  const value = (network ?? "").trim().toLowerCase();
+  if (value === "" || value === "base" || value === BASE_CHAIN) {
+    return BASE_EVM;
+  }
+  if (value === "polygon" || value === POLYGON_CHAIN) {
+    return POLYGON_EVM;
+  }
+  return null;
+}
+
 /**
  * keccak256("Transfer(address,address,uint256)") and
  * keccak256("AuthorizationUsed(address,bytes32)").
@@ -69,6 +124,13 @@ const FALLBACK_RPCS = [
   "https://base.drpc.org",
 ] as const;
 
+/** Same posture for Polygon: keyless, independent operators. */
+const POLYGON_FALLBACK_RPCS = [
+  "https://polygon-rpc.com",
+  "https://polygon-bor-rpc.publicnode.com",
+  "https://polygon.drpc.org",
+] as const;
+
 export interface RpcLog {
   address: string;
   topics: string[];
@@ -81,7 +143,12 @@ export interface RpcReceipt {
   logs: RpcLog[];
 }
 
-function rpcUrl(env: Env): string {
+function rpcUrl(env: Env, chain: EvmChain = BASE_EVM): string {
+  if (chain.key === "polygon") {
+    return env.POLYGON_RPC_URL && env.POLYGON_RPC_URL.length > 0
+      ? env.POLYGON_RPC_URL
+      : POLYGON_FALLBACK_RPCS[0];
+  }
   return env.BASE_RPC_URL && env.BASE_RPC_URL.length > 0
     ? env.BASE_RPC_URL
     : DEFAULT_RPC;
@@ -107,14 +174,23 @@ function rpcUrl(env: Env): string {
  * with a fallback that shares its fate under load; the fix is a
  * second key that shares neither.
  */
-export function rpcEndpoints(env: Env): string[] {
+export function rpcEndpoints(env: Env, chain: EvmChain = BASE_EVM): string[] {
+  const candidates =
+    chain.key === "polygon"
+      ? [
+          env.POLYGON_RPC_URL_PRIMARY,
+          env.POLYGON_RPC_URL_SECONDARY,
+          rpcUrl(env, chain),
+          ...POLYGON_FALLBACK_RPCS,
+        ]
+      : [
+          env.BASE_RPC_URL_PRIMARY,
+          env.BASE_RPC_URL_SECONDARY,
+          rpcUrl(env, chain),
+          ...FALLBACK_RPCS,
+        ];
   const endpoints: string[] = [];
-  for (const candidate of [
-    env.BASE_RPC_URL_PRIMARY,
-    env.BASE_RPC_URL_SECONDARY,
-    rpcUrl(env),
-    ...FALLBACK_RPCS,
-  ]) {
+  for (const candidate of candidates) {
     const url = candidate?.trim();
     if (url && !endpoints.includes(url)) {
       endpoints.push(url);
@@ -184,8 +260,9 @@ async function withTransportRetries<T>(
   label: string,
   env: Env,
   attemptOnce: (endpoint: string) => Promise<T>,
+  chain: EvmChain = BASE_EVM,
 ): Promise<T> {
-  const endpoints = rpcEndpoints(env);
+  const endpoints = rpcEndpoints(env, chain);
   let lastError: unknown;
   let tried = 0;
   for (const [index, endpoint] of endpoints.entries()) {
@@ -226,13 +303,18 @@ async function withTransportRetries<T>(
   }
   const where = endpoints.map(redactRpc).join(" then ");
   throw new Error(
-    `Base RPC ${label} failed after ${tried} attempts across ${where}${
+    `${chain.label} RPC ${label} failed after ${tried} attempts across ${where}${
       lastError instanceof Error ? `: ${lastError.message}` : ""
     }`,
   );
 }
 
-async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
+async function rpc<T>(
+  env: Env,
+  method: string,
+  params: unknown[],
+  chain: EvmChain = BASE_EVM,
+): Promise<T> {
   return withTransportRetries(method, env, async (endpoint) => {
     const response = await fetch(endpoint, {
       method: "POST",
@@ -241,7 +323,7 @@ async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
     });
     if (!response.ok) {
       throw new RpcHttpError(
-        `Base RPC ${method} answered ${response.status}`,
+        `${chain.label} RPC ${method} answered ${response.status}`,
         response.status,
       );
     }
@@ -252,21 +334,22 @@ async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
       !("result" in body) ||
       (body as { error?: unknown }).error
     ) {
-      throw new Error(`Base RPC ${method} returned no result`);
+      throw new Error(`${chain.label} RPC ${method} returned no result`);
     }
     // A well-formed answer, INCLUDING result: null. Returned as-is,
     // first time, every time. This is the line the semantic rule
     // protects and nothing above it may re-ask.
     return (body as { result: T }).result;
-  });
+  }, chain);
 }
 
 /** null when the chain has never heard of the hash. */
 export async function getReceipt(
   env: Env,
   txHash: string,
+  chain: EvmChain = BASE_EVM,
 ): Promise<RpcReceipt | null> {
-  return rpc<RpcReceipt | null>(env, "eth_getTransactionReceipt", [txHash]);
+  return rpc<RpcReceipt | null>(env, "eth_getTransactionReceipt", [txHash], chain);
 }
 
 /**
@@ -287,6 +370,7 @@ export async function getReceipt(
 export async function getReceiptsBatch(
   env: Env,
   txHashes: readonly string[],
+  chain: EvmChain = BASE_EVM,
 ): Promise<Map<string, RpcReceipt | null>> {
   const receipts = new Map<string, RpcReceipt | null>();
   if (txHashes.length === 0) {
@@ -316,16 +400,17 @@ export async function getReceiptsBatch(
       });
       if (!response.ok) {
         throw new RpcHttpError(
-          `Base RPC batch answered ${response.status}`,
+          `${chain.label} RPC batch answered ${response.status}`,
           response.status,
         );
       }
       return (await response.json()) as unknown;
     },
+    chain,
   );
   if (!Array.isArray(body)) {
     for (const txHash of txHashes) {
-      receipts.set(txHash, await getReceipt(env, txHash));
+      receipts.set(txHash, await getReceipt(env, txHash, chain));
     }
     return receipts;
   }
@@ -353,7 +438,7 @@ export async function getReceiptsBatch(
        */
       if ("error" in entry) {
         throw new Error(
-          `Base RPC batch errored for ${txHash}: ${JSON.stringify((entry as { error: unknown }).error).slice(0, 200)}`,
+          `${chain.label} RPC batch errored for ${txHash}: ${JSON.stringify((entry as { error: unknown }).error).slice(0, 200)}`,
         );
       }
       receipts.set(
@@ -369,7 +454,7 @@ export async function getReceiptsBatch(
   for (const txHash of txHashes) {
     if (!receipts.has(txHash)) {
       throw new Error(
-        `Base RPC batch answered without an entry for ${txHash}`,
+        `${chain.label} RPC batch answered without an entry for ${txHash}`,
       );
     }
   }
@@ -395,18 +480,19 @@ export async function usdcTransfersTo(
   toAddress: string,
   fromBlock: number,
   toBlock: number,
+  chain: EvmChain = BASE_EVM,
 ): Promise<Array<{ txHash: string; from: string; amount: bigint; block: number }>> {
   const padded = `0x${toAddress.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
   const logs = await rpc<
     Array<{ transactionHash: string; topics: string[]; data: string; blockNumber: string }>
   >(env, "eth_getLogs", [
     {
-      address: BASE_USDC,
+      address: chain.usdc,
       fromBlock: `0x${fromBlock.toString(16)}`,
       toBlock: `0x${toBlock.toString(16)}`,
       topics: [TRANSFER_TOPIC, null, padded],
     },
-  ]);
+  ], chain);
   return (logs ?? []).map((log) => ({
     txHash: String(log.transactionHash ?? "").toLowerCase(),
     from: addressFromTopic(log.topics?.[1] ?? ""),
@@ -436,18 +522,19 @@ export async function usdcTransfersFrom(
   fromAddress: string,
   fromBlock: number,
   toBlock: number,
+  chain: EvmChain = BASE_EVM,
 ): Promise<Array<{ txHash: string; to: string; amount: bigint; block: number }>> {
   const padded = `0x${fromAddress.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
   const logs = await rpc<
     Array<{ transactionHash: string; topics: string[]; data: string; blockNumber: string }>
   >(env, "eth_getLogs", [
     {
-      address: BASE_USDC,
+      address: chain.usdc,
       fromBlock: `0x${fromBlock.toString(16)}`,
       toBlock: `0x${toBlock.toString(16)}`,
       topics: [TRANSFER_TOPIC, padded],
     },
-  ]);
+  ], chain);
   return (logs ?? []).map((log) => ({
     txHash: String(log.transactionHash ?? "").toLowerCase(),
     to: addressFromTopic(log.topics?.[2] ?? ""),
@@ -456,8 +543,11 @@ export async function usdcTransfersFrom(
   }));
 }
 
-export async function getBlockNumber(env: Env): Promise<number> {
-  const hex = await rpc<string>(env, "eth_blockNumber", []);
+export async function getBlockNumber(
+  env: Env,
+  chain: EvmChain = BASE_EVM,
+): Promise<number> {
+  const hex = await rpc<string>(env, "eth_blockNumber", [], chain);
   return Number.parseInt(hex, 16);
 }
 
@@ -472,12 +562,14 @@ export async function getBlockNumber(env: Env): Promise<number> {
 export async function getBlockTimestamp(
   env: Env,
   block: number,
+  chain: EvmChain = BASE_EVM,
 ): Promise<Date | null> {
   try {
     const header = await rpc<{ timestamp?: string } | null>(
       env,
       "eth_getBlockByNumber",
       [`0x${block.toString(16)}`, false],
+      chain,
     );
     if (!header?.timestamp) return null;
     const seconds = Number.parseInt(header.timestamp, 16);
@@ -503,17 +595,18 @@ export async function findAuthorizationUse(
   authorizer: string,
   nonce: string,
   blockWindow = 300,
+  chain: EvmChain = BASE_EVM,
 ): Promise<{ txHash: string } | null> {
-  const head = await getBlockNumber(env);
+  const head = await getBlockNumber(env, chain);
   const padded = `0x${authorizer.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
   const logs = await rpc<Array<{ transactionHash: string }>>(env, "eth_getLogs", [
     {
-      address: BASE_USDC,
+      address: chain.usdc,
       fromBlock: `0x${Math.max(0, head - blockWindow).toString(16)}`,
       toBlock: "latest",
       topics: [AUTHORIZATION_USED_TOPIC, padded, nonce.toLowerCase()],
     },
-  ]);
+  ], chain);
   const found = (logs ?? [])[0];
   return found?.transactionHash
     ? { txHash: String(found.transactionHash).toLowerCase() }
@@ -537,10 +630,13 @@ export interface UsdcTransfer {
 }
 
 /** Every USDC Transfer in a receipt, decoded. Ignores other tokens. */
-export function usdcTransfers(receipt: RpcReceipt): UsdcTransfer[] {
+export function usdcTransfers(
+  receipt: RpcReceipt,
+  chain: EvmChain = BASE_EVM,
+): UsdcTransfer[] {
   const transfers: UsdcTransfer[] = [];
   for (const log of receipt.logs ?? []) {
-    if (!isSameAddress(log.address, BASE_USDC)) continue;
+    if (!isSameAddress(log.address, chain.usdc)) continue;
     if (log.topics[0]?.toLowerCase() !== TRANSFER_TOPIC) continue;
     const from = log.topics[1];
     const to = log.topics[2];
@@ -570,10 +666,13 @@ export interface UsdcApproval {
  * ceiling existed". The reconciliation says exactly that rather than
  * reporting an unobserved cap as an absent one.
  */
-export function usdcApprovals(receipt: RpcReceipt): UsdcApproval[] {
+export function usdcApprovals(
+  receipt: RpcReceipt,
+  chain: EvmChain = BASE_EVM,
+): UsdcApproval[] {
   const approvals: UsdcApproval[] = [];
   for (const log of receipt.logs ?? []) {
-    if (!isSameAddress(log.address, BASE_USDC)) continue;
+    if (!isSameAddress(log.address, chain.usdc)) continue;
     if (log.topics[0]?.toLowerCase() !== APPROVAL_TOPIC) continue;
     const owner = log.topics[1];
     const spender = log.topics[2];
@@ -605,10 +704,13 @@ export interface UsdcAuthorization {
  * throwing that away is what let the claim be attached to the wrong
  * party.
  */
-export function usdcAuthorizations(receipt: RpcReceipt): UsdcAuthorization[] {
+export function usdcAuthorizations(
+  receipt: RpcReceipt,
+  chain: EvmChain = BASE_EVM,
+): UsdcAuthorization[] {
   const authorizations: UsdcAuthorization[] = [];
   for (const log of receipt.logs ?? []) {
-    if (!isSameAddress(log.address, BASE_USDC)) continue;
+    if (!isSameAddress(log.address, chain.usdc)) continue;
     if (log.topics[0]?.toLowerCase() !== AUTHORIZATION_USED_TOPIC) continue;
     const authorizer = log.topics[1];
     const nonce = log.topics[2];
@@ -622,8 +724,11 @@ export function usdcAuthorizations(receipt: RpcReceipt): UsdcAuthorization[] {
 }
 
 /** EIP-3009 nonces burned in this transaction, lowercased. */
-export function authorizationNonces(receipt: RpcReceipt): string[] {
-  return usdcAuthorizations(receipt).map((entry) => entry.nonce);
+export function authorizationNonces(
+  receipt: RpcReceipt,
+  chain: EvmChain = BASE_EVM,
+): string[] {
+  return usdcAuthorizations(receipt, chain).map((entry) => entry.nonce);
 }
 
 /** USDC has six decimals; the attestation reports both. */

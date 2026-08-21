@@ -92,8 +92,33 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * MINOR: a reader cached on the published 3.5.0 has three rails but
  * no evidence layer. Mid-flight until the keeper republishes to
  * ClawHub.
+ *
+ * CORRECTION (2026-08-21, hours later): "mid-flight" was already
+ * false when it was written. The keeper published 3.6.0 to ClawHub at
+ * 16:58 from commit 02c69a4, and trust_profile merged AFTER that — so
+ * the 3.6.0 on ClawHub is the evidence layer WITHOUT the $19 door,
+ * and the sentence above describes a bundle that never shipped under
+ * this number. The trust_profile half is 3.7.0's.
+ *
+ * THIS IS THE THIRD TIME IN ONE DAY (3.4.1, 3.5.0, now 3.6.0) and the
+ * pattern is worth naming rather than fixing again quietly: two
+ * sessions share one skill bundle, and the publish is a hand step
+ * neither can see the other take. Every one of these was caught by
+ * the published-record guard rather than by anybody noticing — which
+ * is the guard working, and also the reason nobody notices.
  */
-export const SKILL_VERSION = "3.6.0";
+/**
+ * 3.7.0 (2026-08-21): trust_profile ($19 ⚑) — the keeper's ruled
+ * recurring door, a STANDING page for an endpoint at
+ * /profiles/{host}: live passport, chip and signed history at one
+ * URL, 30 hosted days a purchase, renewable, ready-side hosts only at
+ * the door and honest in both directions after it. MINOR: a reader
+ * cached on the published 3.6.0 does not know a $19 listing exists,
+ * which is exactly the kind of gap that makes a catalogue reader
+ * quote a shelf that has since grown. Mid-flight until the keeper
+ * republishes — and this time the record on disk will say so.
+ */
+export const SKILL_VERSION = "3.7.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

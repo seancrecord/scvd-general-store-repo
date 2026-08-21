@@ -19,6 +19,7 @@ import { performLaunchCheck } from "@/services/launch-check";
 import type { SignedLaunchCheck } from "@/services/launch-check";
 import {
   performWalletStatement,
+  statementChain,
   statementHours,
 } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
@@ -82,6 +83,7 @@ export interface FulfillmentInput {
   /** the_statement: pre-validated 0x address and raw hours. */
   statementWallet?: string;
   statementHours?: string;
+  statementNetwork?: string;
   /** Any item: a mandate id the buy door already resolved. */
   mandateId?: string;
   /** the_mandate: the claimed instructions and structured claims. */
@@ -338,6 +340,9 @@ export async function fulfillPurchase(
       env,
       input.statementWallet ?? "",
       statementHours(input.statementHours),
+      // The door refused anything unrecognized before money moved;
+      // this fallback only ever restates the default.
+      statementChain(input.statementNetwork) ?? undefined,
     );
     mintOptions.attests = walletStatement.evidence_hash;
   }
@@ -546,6 +551,11 @@ export async function fulfillPurchase(
     const goodsInput: Parameters<typeof deliverInstantGoods>[2] = {
       patronNumber: minted.patronNumber,
     };
+    // The watches record it so a lost id is recoverable by proving
+    // the wallet, rather than by buying the watch a second time.
+    if (minted.certificate.payer) {
+      goodsInput.payer = minted.certificate.payer;
+    }
     if (input.agentName) {
       goodsInput.agentName = input.agentName;
     }

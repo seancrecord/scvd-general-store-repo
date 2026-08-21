@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { POLYGON_EVM } from "@/lib/base-rpc";
 import {
   adminRoutes,
   almanacRoutes,
@@ -89,6 +90,7 @@ import { sendAlert } from "@/lib/alerts";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit } from "@/lib/metrics";
 import { getMenuItem } from "@/store";
+import { porchSurface } from "@/lib/porch-surface";
 import { STORE_HEADER } from "@/lib/identity";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
@@ -102,7 +104,7 @@ import { runDeliveryAudit } from "@/services/delivery-audit";
 import { runRefundWindowAudit } from "@/services/refund-window";
 import { rebuildOpenLaborIndex } from "@/services/queue-capacity";
 import {
-  runChainReconciliation,
+  runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
 import type { Env, HonoEnv } from "@/types";
@@ -148,63 +150,6 @@ app.use("*", async (c, next) => {
    */
   c.res.headers.set("X-Store", STORE_HEADER);
 });
-
-/**
- * The front-porch log: free-tier attribution. Paths and headers only;
- * no bodies, no cookies, nothing client-side, nothing in responses.
- * /mcp initialize+tools/list log inside the handler (needs the method).
- */
-const PORCH_EXACT = new Map<string, string>([
-  ["/", "storefront"],
-  ["/what", "what"],
-  ["/llms.txt", "llms.txt"],
-  ["/menu.json", "menu.json"],
-  ["/skill.md", "skill.md"],
-  // The execution-contract give-away's 30-day gate is "did anyone
-  // organically fetch or reference this" — a porch row, not a feeling.
-  ["/skills/execution-contract.md", "execution-contract"],
-  ["/gazette", "gazette"],
-  ["/almanac", "almanac"],
-  ["/api/treat", "treat"],
-  ["/stats", "stats"],
-  ["/api/conformance", "conformance"],
-  ["/api/conformance/v1", "conformance"],
-]);
-
-function porchSurface(path: string, method: string): string | undefined {
-  const exact = PORCH_EXACT.get(path);
-  if (exact) {
-    return exact;
-  }
-  if (path.startsWith("/.well-known/")) {
-    return "well-known";
-  }
-  if (path === "/zodiac" || path.startsWith("/zodiac/")) {
-    return "zodiac";
-  }
-  if (path === "/api/bell" && method === "POST") {
-    return "bell";
-  }
-  if (path === "/api/guestbook") {
-    return method === "POST" ? "guestbook:write" : "guestbook:read";
-  }
-  /**
-   * PER-ITEM WINDOW SHOPPING. /menu.json logged as one surface, so a
-   * reader who pulled up a single item's page and left was invisible:
-   * we could see attention on the menu and money at the till, and
-   * nothing about WHICH shelf got picked up and put back down. That
-   * gap is the closest thing this store can measure to want, since a
-   * 402 needs a client that already decided to try.
-   *
-   * Only ids that are actually on the shelf log. A junk path can't
-   * mint a counter key, so the key space stays bounded by the menu.
-   */
-  if (path.startsWith("/menu/")) {
-    const itemId = path.slice("/menu/".length);
-    return getMenuItem(itemId) ? `item:${itemId}` : undefined;
-  }
-  return undefined;
-}
 
 app.use("*", async (c, next) => {
   const surface = porchSurface(c.req.path, c.req.method);
@@ -481,9 +426,14 @@ const worker: ExportedHandler<Env> = {
      * store's wallet against certificates minted, which is the only
      * check here that does not depend on our own writes — so it is the
      * only one that can see a payment our own pipeline never recorded.
+     *
+     * BOTH EVM RAILS, one read of the certificate drawer between them
+     * (parity build, 2026-08-21): the drawer's answer is the same for
+     * Base and Polygon, and buying that 2,000-key scan twice an hour
+     * is a real line on a real invoice for one fact.
      */
     ctx.waitUntil(
-      runChainReconciliation(env).then(
+      runEvmReconciliations(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {

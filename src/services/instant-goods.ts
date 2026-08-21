@@ -65,6 +65,12 @@ import type { Env, MenuItem } from "@/types";
 export interface InstantGoodsInput {
   patronNumber: number;
   agentName?: string;
+  /**
+   * The wallet that paid. Recorded on the WATCHES so a lost watch id
+   * is recoverable at the claims door instead of by buying the thing
+   * twice (CV, 2026-08-21).
+   */
+  payer?: string;
   /** context_anchor only: the agent's state summary, pre-validated. */
   summary?: string;
   /** recurring_patronage only: an existing pass to extend. */
@@ -187,7 +193,7 @@ export async function deliverInstantGoods(
       };
     }
     case "standing_watch": {
-      const watch = await startWatch(env, input.targetUrl ?? "");
+      const watch = await startWatch(env, input.targetUrl ?? "", input.payer);
       return {
         deliverable: standingWatchNote(
           watch.record.url,
@@ -203,7 +209,11 @@ export async function deliverInstantGoods(
       };
     }
     case "conformance_watch": {
-      const watch = await startConformanceWatch(env, input.targetUrl ?? "");
+      const watch = await startConformanceWatch(
+        env,
+        input.targetUrl ?? "",
+        input.payer,
+      );
       return {
         deliverable: conformanceWatchNote(
           watch.record.url,
