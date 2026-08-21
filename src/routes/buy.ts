@@ -386,7 +386,17 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "This needs a wallet query parameter — a 0x Base address, 40 hex characters. USDC on Base is the only rail this statement reads (a Solana address has no USDC-on-Base history to state). No wallet, no charge.",
+          "This needs a wallet query parameter — a 0x EVM address, 40 hex characters. This statement reads USDC on Base by default, or Polygon with network=eip155:137 (a Solana address has no history on either). No wallet, no charge.",
+      },
+      400,
+    );
+  }
+  const { statementChain } = await import("@/services/wallet-statement");
+  if (statementChain(c.req.query("network")) === null) {
+    return c.json(
+      {
+        error:
+          'network must be "eip155:8453" (or "base", the default) or "eip155:137" (or "polygon"). An unrecognized network is refused rather than silently read as Base — the statement must be about the chain you asked about. Nothing charged.',
       },
       400,
     );
@@ -976,6 +986,7 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     // statementCheck validated the address shape and hours range.
     input.statementWallet = c.req.query("wallet") ?? "";
     input.statementHours = c.req.query("hours");
+    input.statementNetwork = c.req.query("network");
   }
   if (item.id === "coffees_for_closers") {
     // closerCheck validated presence and length before the gate.
