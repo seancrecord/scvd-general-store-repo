@@ -2,13 +2,31 @@ import "dotenv/config";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { createPublicClient, http, formatUnits } from "viem";
-import { base } from "viem/chains";
+import { base, polygon } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm";
 
-/** USDC on Base mainnet; the store's till takes nothing else. */
-const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+/**
+ * The EVM rails, one map: same buyer key, same ExactEvmScheme, same
+ * EIP-3009 gasless transfer — only the chain, its native USDC, and
+ * the CAIP-2 name differ. Adding an EVM rail here is the whole job
+ * (the third-rail ruling: EVM chains get parity by parameterization).
+ */
+const EVM_RAILS = {
+  base: {
+    label: "Base",
+    network: "eip155:8453",
+    chain: base,
+    usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  },
+  polygon: {
+    label: "Polygon",
+    network: "eip155:137",
+    chain: polygon,
+    usdc: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+  },
+};
 const ERC20_BALANCE_ABI = [
   {
     name: "balanceOf",
@@ -30,6 +48,8 @@ const ERC20_BALANCE_ABI = [
  *   BUYER_PRIVATE_KEY=0x... HOUSE_SECRET=... node scripts/shopping-run.mjs
  * Over the Solana rail (registration runs; see PAYMENT_RAILS.md):
  *   RAIL=solana SOLANA_BUYER_KEY=<base58 secret> node scripts/shopping-run.mjs
+ * Over the Polygon rail (same EVM wallet as Base, USDC on Polygon):
+ *   RAIL=polygon BUYER_PRIVATE_KEY=0x... node scripts/shopping-run.mjs
  * Options (env):
  *   STORE_URL   default https://scvd.store
  *   ITEMS       comma-separated item ids (default: THE WHOLE MENU —
@@ -39,7 +59,7 @@ const ERC20_BALANCE_ABI = [
  *   DRY_RUN=1   print the plan and the total, buy nothing
  *   YES=1       skip the confirmation prompt
  *
- * The wallet needs USDC on Base for the total (the plan prints it)
+ * The wallet needs USDC on the chosen rail for the total (the plan prints it)
  * plus nothing else; x402 uses gasless EIP-3009 transfers.
  *
  * Heads-up: the human-labor shelf is presence-gated (48h window).
@@ -138,12 +158,21 @@ function fail(message) {
  *   SOLANA_BUYER_KEY       base58 secret key (Solflare/Phantom export)
  *   SOLANA_BUYER_KEY_FILE  JSON byte-array file (solana-keygen output)
  */
-const RAIL = process.env.RAIL === "solana" ? "solana" : "base";
+const RAIL =
+  process.env.RAIL === "solana"
+    ? "solana"
+    : EVM_RAILS[process.env.RAIL ?? "base"]
+      ? (process.env.RAIL ?? "base")
+      : fail(
+          `RAIL must be one of ${[...Object.keys(EVM_RAILS), "solana"].join(", ")} — got "${process.env.RAIL}".`,
+        );
+/** The chosen EVM rail's config, or null when the rail is Solana. */
+const evmRail = EVM_RAILS[RAIL] ?? null;
 const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 
 const privateKey = process.env.BUYER_PRIVATE_KEY;
 const houseSecret = process.env.HOUSE_SECRET;
-if (!process.env.DRY_RUN && RAIL === "base" && !privateKey) {
+if (!process.env.DRY_RUN && evmRail && !privateKey) {
   fail(
     "BUYER_PRIVATE_KEY is required (0x-prefixed). Use the funded burner, never the till.",
   );
@@ -231,7 +260,7 @@ for (const item of items) {
   );
 }
 console.log(
-  `\n  Total: $${total.toFixed(3)} USDC on ${RAIL === "solana" ? "Solana" : "Base"}, all house-flagged.`,
+  `\n  Total: $${total.toFixed(3)} USDC on ${evmRail?.label ?? "Solana"}, all house-flagged.`,
 );
 console.log(
   "  Human-queue items will stack orders at /admin/counter for you to self-fulfill\n  (that IS the other half of the test: work the counter like a stranger paid).\n",
@@ -243,13 +272,16 @@ if (process.env.DRY_RUN) {
 }
 
 // Know thy wallet before the till does: whose key, and is it funded?
-const buyerAccount = RAIL === "base" ? privateKeyToAccount(privateKey) : null;
+const buyerAccount = evmRail ? privateKeyToAccount(privateKey) : null;
 let balanceUsdc = null;
-if (RAIL === "base") {
-  const publicClient = createPublicClient({ chain: base, transport: http() });
+if (evmRail) {
+  const publicClient = createPublicClient({
+    chain: evmRail.chain,
+    transport: http(),
+  });
   const balanceRaw = await publicClient
     .readContract({
-      address: USDC_ADDRESS,
+      address: evmRail.usdc,
       abi: ERC20_BALANCE_ABI,
       functionName: "balanceOf",
       args: [buyerAccount.address],
@@ -288,7 +320,7 @@ if (RAIL === "base") {
     )
     .catch(() => null);
 }
-const railLabel = RAIL === "solana" ? "Solana" : "Base";
+const railLabel = evmRail?.label ?? "Solana";
 console.log(`  Buyer wallet: ${buyerAddress} (${railLabel})`);
 console.log(
   balanceUsdc === null
@@ -337,9 +369,9 @@ const houseFetch = (input, init) => {
 // scheme for, so RAIL=solana pays the Solana offer or fails loudly —
 // never silently falls back to Base.
 const schemes = [];
-if (RAIL === "base") {
+if (evmRail) {
   schemes.push({
-    network: "eip155:8453",
+    network: evmRail.network,
     client: new ExactEvmScheme(buyerAccount),
   });
 } else {
@@ -374,7 +406,7 @@ for (const item of items) {
       const diagnosis =
         response.status === 402
           ? lastRequestPaid
-            ? "a signed payment was offered and DECLINED (usually: not enough USDC on Base in this wallet, or the authorization failed verification)"
+            ? `a signed payment was offered and DECLINED (usually: not enough USDC on ${railLabel} in this wallet, or the authorization failed verification)`
             : "the client never attached a payment to the retry (client-side problem, tell the shoptender)"
           : "unexpected status";
       // Full forensics: the decline body says WHY, when anyone asks it to.
