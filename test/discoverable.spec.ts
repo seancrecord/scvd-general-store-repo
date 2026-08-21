@@ -165,9 +165,21 @@ describe("a room is published on every surface, or it is not published", () => {
     );
     const page = await (await SELF.fetch(BASE, { headers: HTML })).text();
     for (const room of held) {
-      expect(page, `the storefront names ${room.path} anyway`).not.toContain(
-        room.path,
+      /**
+       * PRECISION FIX 2026-08-21: bare toContain(room.path) false-
+       * alarmed the day a SHELF ITEM's id started with a held room's
+       * name — /menu/passport_refresh contains "/passport", but the
+       * item on the front is the shelf speaking, not the held room.
+       * The needle now requires the path to end at a word boundary,
+       * so the ROOM stays unnameable while items may share its stem.
+       */
+      const asRoomLink = new RegExp(
+        `${room.path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w-])`,
       );
+      expect(
+        asRoomLink.test(page),
+        `the storefront names ${room.path} anyway`,
+      ).toBe(false);
     }
   });
 

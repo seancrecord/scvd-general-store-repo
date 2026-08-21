@@ -47,11 +47,16 @@ const SWEEP_EVENTS = [
   "adopted",
 ];
 
-/** What a matched verdict may carry to the tab. Closed, not advisory. */
+/** What a matched verdict may carry to the tab. Closed, not advisory.
+ * previous_price arrived 2026-08-21: the list advertised
+ * price_changed but dropped the one field that event requires, so
+ * every swept price change was silently demoted to an unparsed blob
+ * and the burn kept the stale price (dark team). */
 const ENTRY_FIELDS = [
   "tool_name",
   "event",
   "price",
+  "previous_price",
   "trial_ends",
   "category",
   "confidence",
@@ -199,6 +204,14 @@ function checkMessage(message, state, batchSeen, source) {
     if (entry.occurred_at !== undefined && !isIsoDate(entry.occurred_at)) {
       problems.push("entry.occurred_at must be an ISO date (the letter's own date).");
     }
+    // Refused loudly so the sweep RESUBMITS with both prices, instead
+    // of the capture lane demoting the change to an unparsed blob and
+    // the tally booking it as a silent success.
+    if (entry.event === "price_changed" && (entry.price === undefined || entry.previous_price === undefined)) {
+      problems.push(
+        "entry.event price_changed needs BOTH price and previous_price — a change with one price is not a change, it is a number.",
+      );
+    }
     if (problems.length > 0) return { problems };
     const capture = { source };
     for (const field of ENTRY_FIELDS) {
@@ -209,7 +222,25 @@ function checkMessage(message, state, batchSeen, source) {
     capture.dedupe_key = id;
     const written = captureEvent(state.tabPath, capture);
     const row = { message_id: id, bucket: "matched" };
-    if (Number.isFinite(entry.price?.amount)) row.amount = entry.price.amount;
+    /**
+     * ATTRIBUTED MEANS MONEY MOVED AND WAS RECORDED. The old line
+     * booked entry.price.amount for every matched verdict: trial
+     * conversion claims and canceled tools' prices (no money moved in
+     * this window), and entries the capture lane demoted with the
+     * price deleted (money never recorded). Both inflated
+     * attributed_amount and understated variability (dark team
+     * 2026-08-21).
+     */
+    const moneyMoved = entry.event === "paid_started" || entry.event === "renewed";
+    const keptPrice = written.duplicate ? entry.price : written.entry?.price;
+    if (moneyMoved && Number.isFinite(keptPrice?.amount)) {
+      row.amount = keptPrice.amount;
+    }
+    if (Array.isArray(written.incomplete) && written.incomplete.length > 0) {
+      // The tally shows what the write lost, instead of reading as a
+      // clean success while the ledger holds a gap.
+      row.incomplete = written.incomplete;
+    }
     if (written.duplicate) {
       // Matched HERE even though the tab wrote nothing: the same
       // receipt found by an earlier sweep is still this window's mail.

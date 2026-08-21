@@ -73,16 +73,20 @@ export function recordCoverage(input, path = defaultTabPath()) {
       ? input.not_transactional
       : 0,
   };
+  /**
+   * UNCLAMPED. The residue can be NEGATIVE — buckets summing past
+   * scanned means the sweep counted a message twice or misstated its
+   * denominator — and Math.max(0, …) used to absorb exactly that
+   * defect and then report books_balanced:true over it (dark team
+   * 2026-08-21). A negative residue is published as its own finding.
+   */
   record.unclassified =
     record.scanned === null
       ? null
-      : Math.max(
-          0,
-          record.scanned -
-            record.matched -
-            record.unmatched_transactional.length -
-            record.not_transactional,
-        );
+      : record.scanned -
+        record.matched -
+        record.unmatched_transactional.length -
+        record.not_transactional;
   const coveragePath = sidecarPath(path, ".coverage.jsonl");
   mkdirSync(dirname(coveragePath), { recursive: true }); // F4: fresh install
   appendFileSync(coveragePath, `${JSON.stringify(record)}\n`, "utf8");
@@ -95,9 +99,11 @@ export function recordCoverage(input, path = defaultTabPath()) {
     note:
       record.scanned === null
         ? "Recorded, but the sweep did not say how many messages it looked at — so the gap it reports cannot be checked against anything. Pass `scanned` and `not_transactional`: every message the sweep read belongs in exactly one bucket, and a denominator nobody states is a denominator nobody can audit."
-        : record.unclassified > 0
-          ? `Recorded. ${record.unclassified} message${record.unclassified === 1 ? "" : "s"} were read and never placed in any bucket — that residue is published, not absorbed, because it is exactly where a pre-filter hides.`
-          : "Recorded and the books balance: every message the sweep read is accounted for in one bucket. Coverage is appended beside the tab, never mixed into it, so the gap can be watched over time.",
+        : record.unclassified < 0
+          ? `Recorded, and the books do NOT balance: the buckets sum to ${-record.unclassified} MORE than scanned. A message was counted twice, or scanned is understated — either way the denominator is wrong and every percentage built on it is too.`
+          : record.unclassified > 0
+            ? `Recorded. ${record.unclassified} message${record.unclassified === 1 ? "" : "s"} were read and never placed in any bucket — that residue is published, not absorbed, because it is exactly where a pre-filter hides.`
+            : "Recorded and the books balance: every message the sweep read is accounted for in one bucket. Coverage is appended beside the tab, never mixed into it, so the gap can be watched over time.",
   };
 }
 

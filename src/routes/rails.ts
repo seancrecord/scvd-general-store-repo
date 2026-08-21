@@ -129,9 +129,14 @@ railsRoutes.get("/rails", async (c) => {
 
   const tableRows = months
     .map(
-      (m) => `<tr><td>${escapeHtml(m.month)}</td><td>${m.base}</td><td>${m.polygon}</td><td>${m.solana}</td><td>${m.base + m.polygon + m.solana + m.other}</td></tr>`,
+      (m) => `<tr><td>${escapeHtml(m.month)}${m.truncated ? " *" : ""}</td><td>${m.base}</td><td>${m.polygon}</td><td>${m.solana}</td><td>${m.base + m.polygon + m.solana + m.other}</td></tr>`,
     )
     .join("\n");
+  // Truncation is visible or it is lying-by-cap: a month whose key
+  // scan hit the cap says so on the row it may have undercounted.
+  const truncationNote = months.some((m) => m.truncated)
+    ? `<p class="menu-meta">* This month's counter scan hit its listing cap before completing — the row may undercount, which is why it is marked instead of rounded silently.</p>`
+    : "";
 
   const tiles = rail
     ? `<table border="1" cellpadding="6">
@@ -162,7 +167,7 @@ railsRoutes.get("/rails", async (c) => {
           <tr><th>month</th><th>Base</th><th>Polygon</th><th>Solana</th><th>total</th></tr>
           ${tableRows}
         </table>
-        <p class="menu-meta">Till-era months only — sales settled before the till kept rails are in the all-time row below, where the method note explains their placement.</p>`
+        <p class="menu-meta">Till-era months only — sales settled before the till kept rails are in the all-time row below, where the method note explains their placement.</p>${truncationNote}`
             : ""
         }
         ${tiles}

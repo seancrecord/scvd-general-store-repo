@@ -205,6 +205,9 @@ const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 const PROBE_ITEM_PATHS = [
   "/api/buy/service_audit",
   "/api/buy/conformance_watch",
+  // The Refresh rides the same law: a validated https target, our own
+  // hostname refused, nothing charged without a real door to look at.
+  "/api/buy/passport_refresh",
 ];
 
 const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
@@ -949,6 +952,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "service_audit" || item.id === "conformance_watch") {
+    // serviceAuditCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "passport_refresh") {
     // serviceAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
   }

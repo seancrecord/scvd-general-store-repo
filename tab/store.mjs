@@ -23,7 +23,7 @@ import { randomBytes } from "node:crypto";
  * field set triples tells a reader nothing. Old values are accepted
  * forever; anything that would break an existing reader is a v1.
  */
-export const SCHEMA_VERSION = "0.8";
+export const SCHEMA_VERSION = "0.9";
 
 export const EVENTS = [
   "trial_started",
@@ -46,6 +46,18 @@ export const EVENTS = [
   "replaced",
   "renewed",
   "price_changed",
+  /**
+   * CONFIRMED — an annotation, not a lifecycle event. A human looked
+   * at a swept entry and says it is real (or marks it private); the
+   * tool's actual state is whatever it already was. v0.9 added this
+   * because confirmation used to be recorded by appending "adopted",
+   * which REWROTE the tool: a confirmed paid sub became free (its
+   * burn vanished), a confirmed trial lost its conversion warning,
+   * and a replaced tool was resurrected. Confirming a fact about an
+   * entry must never change the facts on the tab (dark team
+   * 2026-08-21).
+   */
+  "confirmed",
   "consent_changed",
 ];
 
@@ -205,8 +217,18 @@ export function closestCategory(raw) {
   return best;
 }
 
+/**
+ * ISO-shaped or refused. Date.parse alone accepted "August 5, 2026",
+ * which validated fine and then hit every consumer that assumes
+ * YYYY-MM-DD — dedupe keys, slice(0,10), isoWeekOf — as NaN-WNaN
+ * corpus weeks. Same strict form sweep.mjs already used.
+ */
 function isIsoDate(value) {
-  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}/.test(value) &&
+    Number.isFinite(Date.parse(value))
+  );
 }
 
 /**
@@ -237,6 +259,11 @@ function isPrice(value) {
     Number.isFinite(value.amount) &&
     value.amount >= 0 &&
     typeof value.currency === "string" &&
+    // Bounded like every other field: a currency code is a handful of
+    // letters, and an uncapped one was a free field for prose to land
+    // in (dark team 2026-08-21).
+    value.currency.length > 0 &&
+    value.currency.length <= 8 &&
     PERIODS.includes(value.period) &&
     // Absent means fixed; present must be in the vocabulary.
     (value.basis === undefined || BASIS.includes(value.basis))
@@ -271,8 +298,20 @@ export function validateEvent(input) {
   const problems = [];
   const event = input?.event;
 
+  /**
+   * STRING OR REFUSED. The caps and the quarantine below used to fire
+   * only on `typeof === "string"`, which made an array or object a
+   * free pass around both — a 500KB notes array or a prose-laden
+   * captured_text object landed verbatim in the ledger (dark team
+   * 2026-08-21). A capped field that is present must be a string
+   * before the cap even gets a say.
+   */
   for (const [field, cap] of Object.entries(CAPS)) {
-    if (typeof input?.[field] === "string" && input[field].length > cap) {
+    const value = input?.[field];
+    if (value === undefined) continue;
+    if (typeof value !== "string") {
+      problems.push(`${field} must be a string — got ${Array.isArray(value) ? "an array" : `a ${typeof value}`}.`);
+    } else if (value.length > cap) {
       problems.push(`${field} runs past ${cap} characters. Trim it to the good part.`);
     }
   }
@@ -300,7 +339,11 @@ export function validateEvent(input) {
   const swept = input?.source === "mail_sweep" || input?.source === "historical_pass";
   if (swept) {
     for (const field of ["captured_text", "notes"]) {
-      if (typeof input?.[field] === "string" && input[field].trim() !== "") {
+      // Any present, non-empty value — string or not. The old
+      // string-only guard let an array of vendor prose straight
+      // through the quarantine (dark team 2026-08-21).
+      const value = input?.[field];
+      if (value !== undefined && !(typeof value === "string" && value.trim() === "")) {
         problems.push(
           `${field} may not be set on a ${input.source} entry: a letter's own words never enter the tab. Keep the numbers, the dates and the closed fields.`,
         );
@@ -348,14 +391,23 @@ export function validateEvent(input) {
       `event must be one of ${EVENTS.filter((e) => e !== "consent_changed").join(", ")}.`,
     );
   }
-  if (typeof input?.problem_solved !== "string" || input.problem_solved.trim() === "") {
-    problems.push(
-      "problem_solved is required: what the builder was trying to do, in their words.",
-    );
+  // An annotation about an existing entry carries no story of its
+  // own: problem_solved and category live on the lifecycle events.
+  if (event !== "confirmed") {
+    if (typeof input?.problem_solved !== "string" || input.problem_solved.trim() === "") {
+      problems.push(
+        "problem_solved is required: what the builder was trying to do, in their words.",
+      );
+    }
+    if (!CATEGORIES.includes(input?.category)) {
+      problems.push(
+        `category "${input?.category}" is not in the vocabulary — closest match: "${closestCategory(input?.category ?? "")}".`,
+      );
+    }
   }
-  if (!CATEGORIES.includes(input?.category)) {
+  if (event === "confirmed" && input?.price !== undefined) {
     problems.push(
-      `category "${input?.category}" is not in the vocabulary — closest match: "${closestCategory(input?.category ?? "")}".`,
+      "confirmed is an annotation and carries no price — the tool's terms are whatever its lifecycle events already say.",
     );
   }
   if (event === "trial_started" && !isIsoDate(input?.trial_ends)) {
@@ -525,10 +577,21 @@ export function appendEvent(path, input) {
     typeof input.confirmed === "boolean"
       ? input.confirmed
       : source === "manual" || source === "capture";
+  /**
+   * WHO SAID SO, KEPT APART FROM WHAT WAS SAID. The server-defaulted
+   * stamp above marks the ENTRY as trusted on arrival; it must never
+   * read as a human confirming the TOOL — that stamp on an ordinary
+   * manual event used to silently clear a swept tool's unconfirmed
+   * state, bypassing the one load-bearing gate against forged
+   * receipts (dark team 2026-08-21). Only a caller who actually said
+   * confirmed:true gets to flip the sticky flag in derive().
+   */
+  const confirmedExplicit = input.confirmed === true;
   const entry = {
     ...input,
     source,
     confirmed,
+    ...(confirmedExplicit ? { confirmed_explicit: true } : {}),
     entry_id: newEntryId(),
     server_timestamp: new Date().toISOString(),
     schema_version: SCHEMA_VERSION,
@@ -560,6 +623,23 @@ export function captureEvent(path, input) {
   draft.event = EVENTS.includes(draft.event) && draft.event !== "consent_changed"
     ? draft.event
     : (incomplete.push("event"), "adopted");
+  /**
+   * A DATE CLAIM WITHOUT ITS MARKER. A fragment carrying occurred_at
+   * but not retroactive:true used to fail validation and fall into
+   * the last-resort blob — neither dated by the claim nor rejected,
+   * with the loss unnamed (dark team 2026-08-21). A capture that
+   * states a past date MEANS retroactive; a date that can't be read
+   * is dropped by name so the rounds ask for it.
+   */
+  if (draft.occurred_at !== undefined) {
+    if (isIsoDate(draft.occurred_at)) {
+      draft.retroactive = true;
+    } else {
+      incomplete.push("occurred_at");
+      delete draft.occurred_at;
+      delete draft.retroactive;
+    }
+  }
   if (typeof draft.tool_name === "string") {
     draft.tool_name = draft.tool_name.trim().toLowerCase();
   }
@@ -589,7 +669,12 @@ export function captureEvent(path, input) {
     !(isPrice(draft.price) && draft.price.basis === "free_with_paid_path")
   ) {
     // A price on a free adoption is dropped UNLESS it is a well-formed
-    // paid-path marker — the one combination v0.8 made legal.
+    // paid-path marker — the one combination v0.8 made legal. The drop
+    // is NAMED: a downgraded trial's stated conversion price used to
+    // vanish here with no entry in `incomplete`, so the pager chased
+    // the missing end date but never the destroyed price (dark team
+    // 2026-08-21).
+    if (!incomplete.includes("price")) incomplete.push("price");
     delete draft.price;
   }
   if (incomplete.length > 0) {
@@ -649,7 +734,7 @@ export function captureEvent(path, input) {
     .join("-")
     .slice(0, 40);
   if (slug.endsWith("-")) slug = slug.slice(0, -1); // the cut can land on one
-  return appendEvent(path, {
+  const rescue = appendEvent(path, {
     tool_name: slug ? `unparsed-${slug}` : "unparsed-capture",
     event: "adopted",
     problem_solved: swept ? UNSAID : "(capture could not be shaped; raw text kept)",
@@ -659,12 +744,26 @@ export function captureEvent(path, input) {
     dedupe_key: `unparsed:${randomBytes(8).toString("hex")}`,
     incomplete: ["everything"],
   });
+  // The response names the wreck the same way the entry does — a bare
+  // {logged:true} from this branch read as a clean capture while the
+  // ledger held a blob (dark team 2026-08-21).
+  return { ...rescue, incomplete: ["everything"] };
 }
 
 /** The date an event claims for itself: the retroactive claim when
  * present (displayed as a claim), the server's stamp otherwise. */
 export function eventDate(event) {
   return (event.retroactive && event.occurred_at) || event.server_timestamp;
+}
+
+/** The event's place on the timeline, for ordering the replay. Falls
+ * back to the server stamp when a retroactive claim doesn't parse,
+ * because a garbage date should not teleport an event to the epoch. */
+function eventTime(event) {
+  const claimed = Date.parse(eventDate(event));
+  if (Number.isFinite(claimed)) return claimed;
+  const stamped = Date.parse(event.server_timestamp);
+  return Number.isFinite(stamped) ? stamped : 0;
 }
 
 export function monthlyOf(price) {
@@ -684,7 +783,20 @@ export function derive(events, now = new Date()) {
   const drift = [];
   let consent = false;
 
-  for (const event of events) {
+  /**
+   * REPLAY IN TIMELINE ORDER, NOT FILE ORDER. The ledger is
+   * append-only but history isn't lived append-only: a backward
+   * backfill (SWEEP.md's historical pass, walked newest-first)
+   * appends a July renewal before a January signup, and replaying
+   * that in file order regressed price and last_billing_at to the
+   * OLDER event — false quiet flags, and a cancel appended before
+   * its own signup left the tool on the burn forever. Sort is
+   * stable, so same-moment events keep their append order.
+   * Found by the 2026-08-21 dark-team run.
+   */
+  const ordered = [...events].sort((a, b) => eventTime(a) - eventTime(b));
+
+  for (const event of ordered) {
     if (event.event === "consent_changed") {
       consent = event.contribute === true;
       continue;
@@ -731,13 +843,42 @@ export function derive(events, now = new Date()) {
     tool.sources.add(event.source ?? "manual");
     // Unconfirmed is sticky until somebody confirms; private is
     // sticky once set, because un-marking it should be deliberate.
+    // "Somebody confirms" means a caller who actually said
+    // confirmed:true — the server's default stamp on an ordinary
+    // manual event is trust in the ENTRY, not a human look at the
+    // TOOL, and letting it flip the flag bypassed the confirmation
+    // gate (dark team 2026-08-21).
     if (event.confirmed === false) tool.confirmed = false;
-    if (event.confirmed === true) tool.confirmed = true;
+    if (event.confirmed === true && event.confirmed_explicit === true) {
+      tool.confirmed = true;
+    }
     if (event.private === true) tool.private = true;
     // A signup after an inactive spell opens a NEW commitment (red
     // team F4): the epoch resets, so a re-trial a year after a cancel
     // is measured and classified on its own life, not the old one's.
     const reopening = tool.status === "inactive" && tool.history.length > 0;
+    /**
+     * ...and the reset means ALL of the dead epoch's billing state,
+     * not just the clock. Until 2026-08-21 renewals_seen,
+     * last_billing_at, price, converts_to, trial_ends and (on the
+     * adopted path) ever_paid all survived the cancel, so quiet
+     * detection flagged a six-day-old fresh trial with the old
+     * life's price, and a re-adopted free tool's later cancel was
+     * published as canceled_post_conversion. Found by the dark team.
+     */
+    if (
+      reopening &&
+      (event.event === "trial_started" ||
+        event.event === "paid_started" ||
+        event.event === "adopted")
+    ) {
+      tool.renewals_seen = 0;
+      tool.last_billing_at = null;
+      tool.price = null;
+      tool.converts_to = null;
+      tool.trial_ends = null;
+      tool.ever_paid = false;
+    }
     switch (event.event) {
       case "trial_started":
         tool.status = "active_trial";
@@ -745,7 +886,6 @@ export function derive(events, now = new Date()) {
         tool.converts_to = event.price ?? tool.converts_to;
         tool.since = at;
         tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
-        if (reopening) tool.ever_paid = false;
         break;
       case "adopted":
         // Free, and the status says so rather than hiding in paid.
@@ -775,6 +915,11 @@ export function derive(events, now = new Date()) {
       case "canceled":
       case "replaced":
         tool.status = "inactive";
+        break;
+      case "confirmed":
+        // An annotation. The sticky confirmed/private flags were
+        // handled above, and the tool's state is not this event's to
+        // touch — confirming a fact must never change the facts.
         break;
       case "price_changed":
         tool.price = event.price;
@@ -819,6 +964,19 @@ export function derive(events, now = new Date()) {
   const activePaid = active.filter((t) => t.status === "active_paid");
   const burn = activePaid.reduce((sum, t) => sum + monthlyOf(t.price), 0);
   /**
+   * A SUM ACROSS CURRENCIES IS NOT A NUMBER IN ANY OF THEM. The burn
+   * used to add €12 to $30 and label the total USD (dark team
+   * 2026-08-21). No exchange rates live here — derive-or-refuse — so
+   * a mixed tab keeps the raw sum for continuity but labels it
+   * "mixed" and publishes the per-currency split beside it.
+   */
+  const byCurrency = {};
+  for (const t of activePaid) {
+    const cur = t.price?.currency ?? "USD";
+    byCurrency[cur] = (byCurrency[cur] ?? 0) + monthlyOf(t.price);
+  }
+  const currencies = Object.keys(byCurrency).sort();
+  /**
    * THE ESTIMATED SHARE, beside the total rather than inside a
    * footnote. The keeper's ruling lets a metered estimate into the
    * burn on one condition — that the number says which part of
@@ -836,7 +994,16 @@ export function derive(events, now = new Date()) {
     active_paid: activePaid,
     monthly_burn: {
       amount: Math.round(burn * 100) / 100,
-      currency: "USD",
+      currency: currencies.length > 1 ? "mixed" : (currencies[0] ?? "USD"),
+      ...(currencies.length > 1
+        ? {
+            by_currency: Object.fromEntries(
+              currencies.map((cur) => [cur, Math.round(byCurrency[cur] * 100) / 100]),
+            ),
+            mixed_note:
+              "The tab holds prices in more than one currency and keeps no exchange rates, so `amount` is the raw sum across currencies — read `by_currency` for numbers that mean something.",
+          }
+        : {}),
       estimated_amount: Math.round(estimated * 100) / 100,
       ...(estimated > 0
         ? {
@@ -949,23 +1116,41 @@ export function possibleAliases(state) {
   return pairs;
 }
 
+/**
+ * The moment a trial actually stops being preventable. A date-only
+ * trial_ends ("2026-08-24") means THROUGH that day — a builder told
+ * "ends the 24th" can still cancel on the 24th, so the boundary is
+ * that midnight's end, not its start. A timestamped trial_ends is
+ * its own boundary. Before this split, the day-of "charges you
+ * today" warning was unreachable: date-only ends classified the
+ * trial as already past at breakfast on its own end date, and ceil
+ * made days_left 0 impossible for a charge three hours out (dark
+ * team 2026-08-21).
+ */
+function trialEndBoundary(trialEnds) {
+  const parsed = Date.parse(trialEnds);
+  return String(trialEnds).length <= 10 ? parsed + 24 * 3600_000 : parsed;
+}
+
 /** Trials whose conversion lands inside the horizon. The headline. */
 export function trialsConvertingSoon(state, days = 7) {
-  const horizon = state.now.getTime() + days * 24 * 3600_000;
+  const dayMs = 24 * 3600_000;
+  const horizon = state.now.getTime() + days * dayMs;
   return state.active
     .filter(
       (t) =>
         t.status === "active_trial" &&
         t.trial_ends &&
-        Date.parse(t.trial_ends) >= state.now.getTime() &&
-        Date.parse(t.trial_ends) <= horizon,
+        trialEndBoundary(t.trial_ends) > state.now.getTime() &&
+        trialEndBoundary(t.trial_ends) <= horizon + dayMs,
     )
     .map((t) => ({
       tool_name: t.tool_name,
       trial_ends: t.trial_ends,
+      // 0 = converts today, before the day is out.
       days_left: Math.max(
         0,
-        Math.ceil((Date.parse(t.trial_ends) - state.now.getTime()) / (24 * 3600_000)),
+        Math.floor((trialEndBoundary(t.trial_ends) - state.now.getTime()) / dayMs),
       ),
       converts_to: t.converts_to,
       problem_solved: t.problem_solved,
@@ -986,7 +1171,7 @@ export function trialsPastEnd(state) {
       (t) =>
         t.status === "active_trial" &&
         t.trial_ends &&
-        Date.parse(t.trial_ends) < state.now.getTime(),
+        trialEndBoundary(t.trial_ends) <= state.now.getTime(),
     )
     .map((t) => ({
       tool_name: t.tool_name,

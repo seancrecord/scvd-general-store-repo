@@ -407,4 +407,36 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "One read at one moment; no polling, no retry, no second look",
     ],
   },
+  /**
+   * THE REFRESH (2026-08-21, the keeper's "both" ruling off the
+   * passport strategy talk): the paid fresh check for an endpoint
+   * passport. Uses the CENSUS'S OWN probe — not the audit battery —
+   * so buyer-commissioned observations stay byte-comparable with the
+   * weekly ones; the full named-criteria report remains
+   * service_audit's different job (consolidation law held). Payment
+   * buys the check, never the grade: a refresh that finds the door
+   * broken flips the passport to refuse and the chip to dark, and
+   * every surface says so before the coin drops.
+   * ⚑ KEEPER REVIEW: price ($1) recommended-and-ruled "both"; copy
+   * drafted, not canon.
+   */
+  {
+    id: "passport_refresh",
+    listed_week: "2026-W34",
+    name: "The Refresh",
+    price_usdc: 1,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "One fresh observation of your x402 endpoint by the weekly census's own instrument, right now instead of next Sunday — folded into your endpoint passport wherever it is newest, which moves the passport's freshness state (and the free embeddable chip that decays with it) back to fresh. Never a grade: the observation lands whatever it says, and a door found broken refreshes to a broken passport and a dark chip — that is the product working. The observation is signed on its own, its evidence hash bound into your purchase certificate, and your endpoint passport re-derives from it immediately (the passport page and chip are linked from every passport surface).",
+    note_402:
+      "A dollar for a fresh look. The check is bought; the verdict never is.",
+    constraints: [
+      "Give your endpoint in the url query parameter: https, default port, on the public internet. We refuse our own hostname",
+      "The probe is the census's: one GET, Web Bot Auth signed, byte-comparable with the weekly rounds",
+      "The newest observation wins in BOTH directions — a broken finding turns the chip off",
+      "One observation at one moment; the standing version is conformance_watch, a different item",
+      "The passport and chip stay free to read forever; this buys only the freshness",
+    ],
+  },
 ] as const;

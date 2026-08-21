@@ -166,10 +166,14 @@ function variabilityOf(sweep) {
 
 export function checkBeforeSignup({ tool_name, category }, path = defaultTabPath()) {
   const current = state(path);
-  const tool = current.tools.get(String(tool_name ?? "").toLowerCase());
+  // One normalization, used everywhere below — comparing the raw
+  // input against stored lowercase names made "Figma" list figma as
+  // its own category coverage (dark team 2026-08-21).
+  const name = String(tool_name ?? "").trim().toLowerCase();
+  const tool = current.tools.get(name);
   const effectiveCategory = category ?? tool?.category;
   const coverage = current.active
-    .filter((t) => effectiveCategory && t.category === effectiveCategory && t.tool_name !== tool_name)
+    .filter((t) => effectiveCategory && t.category === effectiveCategory && t.tool_name !== name)
     .map((t) => ({
       tool_name: t.tool_name,
       category: t.category,
@@ -232,6 +236,12 @@ export function checkBeforeSignup({ tool_name, category }, path = defaultTabPath
  * the number says it, it is a mirror.
  */
 export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = defaultTabPath()) {
+  // A mistyped number must come back as a named problem, not a raw
+  // RangeError from a NaN Date (dark team 2026-08-21).
+  since_days = Number(since_days);
+  unused_days = Number(unused_days);
+  if (!Number.isFinite(since_days) || since_days <= 0) since_days = 90;
+  if (!Number.isFinite(unused_days) || unused_days <= 0) unused_days = 45;
   const { events } = readEvents(path);
   const current = state(path);
   const byCategory = new Map();
@@ -299,7 +309,12 @@ export function burnRollup({ since_days = 90, unused_days = 45 } = {}, path = de
   return {
     monthly,
     annualized: Math.round(monthly * 12 * 100) / 100,
-    currency: "USD",
+    // The derived record's label, not a typed one — a mixed-currency
+    // tab says "mixed" here too, with the split riding along.
+    currency: current.monthly_burn.currency,
+    ...(current.monthly_burn.by_currency
+      ? { by_currency: current.monthly_burn.by_currency }
+      : {}),
     estimated: {
       monthly: current.monthly_burn.estimated_amount,
       tools: metered,
@@ -617,25 +632,41 @@ export function confirmEntry({ tool_name, private: isPrivate }, path = defaultTa
   if (!tool) {
     return { confirmed: false, error: `Nothing on the tab named "${name}".` };
   }
-  const last = tool.history[tool.history.length - 1];
+  /**
+   * STATE-NEUTRAL, BY EVENT KIND. Confirmation used to append an
+   * "adopted" lifecycle event, which rewrote the tool it was
+   * vouching for: a confirmed paid sub turned free (its burn
+   * vanished), a confirmed trial lost its conversion warning, and a
+   * replaced tool was resurrected through the reopening branch. The
+   * dedicated "confirmed" annotation event says what a confirmation
+   * IS — a human looked — and changes nothing else (dark team
+   * 2026-08-21).
+   */
   const result = appendEvent(path, {
     tool_name: name,
-    event: last?.event === "canceled" ? "canceled" : "adopted",
-    problem_solved: tool.problem_solved ?? "(confirmed)",
-    category: tool.category ?? "other",
+    event: "confirmed",
     source: "manual",
     confirmed: true,
     ...(isPrivate === true ? { private: true } : {}),
     notes: "confirmation",
-    dedupe_key: `confirm:${name}:${new Date().toISOString().slice(0, 10)}`,
+    // The private mark is part of the key: "confirm, then realize it
+    // should be private" is a same-day upgrade, not a duplicate.
+    dedupe_key: `confirm${isPrivate === true ? "-private" : ""}:${name}:${new Date().toISOString().slice(0, 10)}`,
   });
+  // A same-day repeat lands on the dedupe key — and a confirmation
+  // that already stands is a success, not a failure with a cheerful
+  // note attached.
+  const alreadyToday = result.duplicate === true;
   return {
-    confirmed: result.logged,
+    confirmed: result.logged || alreadyToday,
     tool_name: name,
     ...(isPrivate === true ? { private: true } : {}),
-    note: isPrivate === true
-      ? "Confirmed and marked private — it stays on your tab and never leaves the box, in a delta or a shared count."
-      : "Confirmed. It can contribute to the pooled corpus now, if contribution is on.",
+    ...(alreadyToday ? { already_confirmed: true } : {}),
+    note: alreadyToday
+      ? "Already confirmed today — the confirmation stands, nothing new written."
+      : isPrivate === true
+        ? "Confirmed and marked private — it stays on your tab and never leaves the box, in a delta or a shared count."
+        : "Confirmed. It can contribute to the pooled corpus now, if contribution is on.",
   };
 }
 
@@ -811,6 +842,30 @@ export function contributeDelta(input, path = defaultTabPath()) {
   }
   if (problems.length > 0) {
     return { accepted: false, problems };
+  }
+  /**
+   * THE SAME GATE THE SUGGESTION PATH KEEPS. deltaFor refuses to
+   * even SUGGEST a delta for a private or unconfirmed tool — but
+   * this door, the one that actually sends, used to check neither,
+   * so a direct call shipped a private tool's opened-week and an
+   * unlooked-at swept claim straight to the aggregate (dark team
+   * 2026-08-21). The derived record is the authority, and the gate
+   * lives at the only place a delta leaves the box.
+   */
+  const knownTool = current.tools.get(String(input.tool_name).trim().toLowerCase());
+  if (knownTool?.private === true) {
+    return {
+      accepted: false,
+      error:
+        "This tool is marked private: it stays on your tab and never leaves the box, in a delta or a shared count.",
+    };
+  }
+  if (knownTool?.confirmed === false) {
+    return {
+      accepted: false,
+      error:
+        "This tool is unconfirmed — a swept claim nobody has looked at cannot become a published statistic. Confirm it first (confirm_entry), then contribute.",
+    };
   }
   // The projection, not the input: even a bug above this line cannot
   // put an undeclared field on the wire.

@@ -1,4 +1,4 @@
-# The Tab — storage schema, v0.8
+# The Tab — storage schema, v0.9
 
 The contract for `~/.scvd/tab.jsonl`: one JSON object per line,
 append-only, written by the server alone. This document is the
@@ -28,9 +28,10 @@ outside the program.
 | entry_id | string | server | `tab_` + 16 hex |
 | server_timestamp | ISO datetime | server | when the write happened; **cannot** be supplied by the caller |
 | schema_version | string | server | the vocabulary the entry was written under |
-| event | enum | caller | `trial_started`, `paid_started`, `adopted`, `canceled`, `replaced`, `renewed`, `price_changed`, `consent_changed` |
+| event | enum | caller | `trial_started`, `paid_started`, `adopted`, `canceled`, `replaced`, `renewed`, `price_changed`, `confirmed`, `consent_changed` |
 | source | enum | caller (defaults `manual`) | `manual`, `capture`, `mail_sweep`, `historical_pass` |
 | confirmed | bool | server unless supplied | see *Who spoke* below |
+| confirmed_explicit | bool | server | stamped only when the caller actually said `confirmed: true`; the defaulted stamp never flips a tool's unconfirmed state |
 
 The envelope is applied **after** the caller's input spreads, so a
 caller-supplied `server_timestamp`, `entry_id` or `schema_version` is
@@ -114,6 +115,17 @@ derived tool**, not on the entry. A later cancellation carries no flag
 of its own, so a gate reading only the incoming event happily leaked a
 private tool — the gate consults derived state.
 
+**Sticky means sticky (v0.9).** The server-defaulted `confirmed: true`
+on an ordinary manual event marks the ENTRY as trusted; it never
+clears a tool's unconfirmed state. Only an entry whose caller actually
+said `confirmed: true` — stamped `confirmed_explicit: true` by the
+server — flips the derived flag. The `confirmed` EVENT (v0.9) is how
+that normally happens: an annotation appended by `confirm_entry`,
+carrying no lifecycle change at all, because confirmation used to be
+recorded as `adopted` and rewrote the very tool it was vouching for.
+Both gates — corpus suggestion and the contribute door itself — refuse
+private and unconfirmed tools from derived state.
+
 ## The quarantine (v0.4, closed in v0.6)
 
 On any entry whose `source` is `mail_sweep` or `historical_pass`:
@@ -161,10 +173,19 @@ what makes "the server owns the file" an honest sentence.
 
 `server_timestamp` is the file's truth about when the write happened.
 `occurred_at` is the caller's claim about when the thing happened,
-allowed only with `retroactive: true`. Derived views date an event by
-`occurred_at` when it is a marked claim, `server_timestamp`
+allowed only with `retroactive: true`, and must be ISO-shaped
+(`YYYY-MM-DD…`) — a parseable-but-freeform date would validate and
+then corrupt every consumer that slices it. Derived views date an
+event by `occurred_at` when it is a marked claim, `server_timestamp`
 otherwise — so a backfill session records real history without the
 file ever lying about what it knew when.
+
+Replay follows the **timeline, not the file**: events are ordered by
+their own dates before derivation, so a backward backfill (a
+historical sweep walked newest-first) appends in any order it likes
+and the derived state still reads chronologically. Same-moment events
+keep their append order. The file itself stays append-only and
+unordered — order is derived, like everything else.
 
 ## Derived at read, never stored
 
@@ -184,8 +205,20 @@ storefront: a stored tally is a lie with a timer on it. It is also
 what makes "what did I know on March 3rd" answerable at all.
 
 A signup after an inactive spell opens a **new** commitment: the epoch
-resets, so a re-trial a year after a cancel is measured on its own
-life rather than the old one's.
+resets — all of it. `renewals_seen`, `last_billing_at`, `price`,
+`converts_to`, `trial_ends` and `ever_paid` are cleared along with the
+clock (v0.9; they used to survive the cancel, so quiet detection read
+a fresh trial against the dead life's heartbeat and a re-adopted free
+tool's cancel was published as a paid conversion's). A re-trial a year
+after a cancel is measured on its own life rather than the old one's.
+
+The burn is labeled by what it holds: a tab whose active prices span
+more than one currency reports `currency: "mixed"` with a
+`by_currency` split beside the raw sum, because no exchange rates live
+here and a EUR+USD total labeled USD is a number in no currency at
+all. Trial boundaries are inclusive of their own day: a date-only
+`trial_ends` means THROUGH that day, so "charges you today" is
+reachable on the day it is true, and past-end begins the day after.
 
 ## The sidecars
 
@@ -225,12 +258,15 @@ the CSV by hand, same law as the mail sweep.
 
 **`.pages.jsonl`** — the pager's append-only log, replayed the same
 way the tab is. States: `queued`, `handed_over`, `acknowledged`,
-`superseded`. `page_id` is `kind:tool:YYYY-MM-DD`, so one worry raises
-one page a day. A handover is not a delivery; only `acknowledged`
-spends a page, superseded-and-unacknowledged pages become
-`unspoken_pct`, and a superseded page cannot be acknowledged after the
-fact — otherwise the party being measured could edit its own failure
-out of the record.
+`superseded`, `retired`. `page_id` is `kind:tool:YYYY-MM-DD`, so one
+worry raises one page a day. A handover is not a delivery; only
+`acknowledged` spends a page, superseded-and-unacknowledged pages
+become `unspoken_pct`, and a superseded page cannot be acknowledged
+after the fact — otherwise the party being measured could edit its own
+failure out of the record. `retired` is the opposite of superseded: the
+worry stopped holding (trial canceled, gap filled, worry crossed into
+another kind), so the page is closed as **moot, not missed** — retired
+pages are counted (`pages_retired`) but never feed `unspoken_pct`.
 
 ## Versioning
 

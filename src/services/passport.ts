@@ -1,4 +1,5 @@
 import { signJcs, JCS_DISCIPLINE } from "@/lib/jcs";
+import { readPassportRefresh } from "@/services/passport-refresh";
 import { signMessage } from "@/lib/signing";
 import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
 import type { Env } from "@/types";
@@ -74,6 +75,9 @@ export interface PassportPayload {
     networks?: string[];
     min_usdc?: number;
     max_usdc?: number;
+    /** Absent on census observations; names the paid refresh when a
+     * buyer-commissioned observation is the newest evidence. */
+    source?: string;
   } | null;
   /** The observation record behind this passport, summarized. */
   history: {
@@ -84,6 +88,8 @@ export interface PassportPayload {
     verdict_changes: number;
     full_history_url: string;
   };
+  /** The free, freshness-degrading embeddable face of this passport. */
+  chip_url: string;
   /** Who observed, said plainly — load-bearing for the self passport. */
   observer: string;
   not_a_guarantee: string;
@@ -158,33 +164,59 @@ export async function issuePassport(
   const latestProbed = [...history.timeline]
     .reverse()
     .find((round) => round.probed && round.verdict);
-  if (!latestProbed) {
+  /**
+   * THE PAID REFRESH FOLDS IN HERE (keeper's "both" ruling): a
+   * buyer-commissioned observation from the census's own instrument
+   * outranks the weekly round wherever it is NEWER — in both
+   * directions. A refresh that found the door broken makes the
+   * passport refuse and the chip go dark; payment bought the check,
+   * never the grade.
+   */
+  const refresh = await readPassportRefresh(env, host);
+  const censusObserved = latestProbed ? history.last_observed : null;
+  const refreshIsNewest =
+    refresh !== null &&
+    (censusObserved === null || refresh.observed_at > censusObserved);
+  const effectiveVerdict = refreshIsNewest
+    ? refresh.verdict
+    : latestProbed?.verdict;
+  if (!latestProbed && !refresh) {
     return {
       issued: false,
       reason: "never-observed",
       detail: `${host} has never been probed by the census — there is no evidence to passport. If you operate it, the free self-check is POST ${base}/api/preflight.`,
     };
   }
-  if (latestProbed.verdict !== "ready") {
+  if (effectiveVerdict !== "ready") {
     return {
       issued: false,
       reason: "not-ready",
       detail: `${host}'s latest observation is not on the ready side, and this store publishes names only on the ready side. If you operate it: the free self-check is POST ${base}/api/preflight, and the census will read the door again on its weekly pass.`,
     };
   }
-  const lastObserved = history.last_observed;
+  const lastObserved = refreshIsNewest
+    ? refresh.observed_at
+    : history.last_observed;
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
     issued_at: now.toISOString(),
     expires: expiryFrom(lastObserved ?? now.toISOString()),
-    freshness: freshnessOf(lastObserved, latestProbed.verdict, now),
+    freshness: freshnessOf(lastObserved, effectiveVerdict, now),
     freshness_rule: `fresh <= ${FRESH_DAYS} days since last observation, aging <= ${AGING_DAYS}, expired after; broken when the latest verdict is not ready; refuse expired passports.`,
-    latest: {
-      verdict: latestProbed.verdict,
-      observed_at: lastObserved,
-      week: latestProbed.week,
-    },
+    latest: refreshIsNewest
+      ? {
+          verdict: refresh.verdict,
+          observed_at: refresh.observed_at,
+          week: null,
+          source:
+            "paid refresh — buyer-commissioned, census instrument; same probe, same rules, no favor",
+        }
+      : {
+          verdict: latestProbed!.verdict!,
+          observed_at: lastObserved,
+          week: latestProbed!.week,
+        },
     history: {
       first_observed: history.first_observed,
       rounds_probed: history.rounds_probed,
@@ -193,6 +225,7 @@ export async function issuePassport(
       verdict_changes: history.verdict_changes.length,
       full_history_url: `${base}/corpus/host/${host}.json`,
     },
+    chip_url: `${base}/badges/passport/${host}.svg`,
     observer: `${new URL(base).host} weekly census (signed corpus; one GET per host per week, Web Bot Auth)`,
     not_a_guarantee: NOT_A_GUARANTEE,
   };
@@ -233,6 +266,7 @@ export async function issueSelfPassport(
       verdict_changes: 0,
       full_history_url: `${base}/corpus.json`,
     },
+    chip_url: `${base}/badges/passport/${host}.svg`,
     observer:
       "SELF-OBSERVED — the subject and the observer are the same party. Do not weight this like a census passport; every claim in it is re-checkable at the public surfaces it names (/llms.txt, /openapi.json, /.well-known/x402.json, /api/verify), which is the only reason it is worth issuing at all.",
     not_a_guarantee: NOT_A_GUARANTEE,

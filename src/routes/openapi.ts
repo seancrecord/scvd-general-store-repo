@@ -444,6 +444,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/api/practice": {
+        get: freeOp(
+          "The obstacle course",
+          "Practice doors that fail in deliberate, named, deterministic ways — malformed 402s, testnet traps, name payTo, wrong-rail payTo, and one perfectly-formed dust offer you should parse but never pay. Each body names the defect, the right client behavior, and the preflight check that catches it. Free; nothing mints; not counted in any metric.",
+        ),
+      },
+      "/api/practice/{scenario}": {
+        get: freeOp(
+          "One practice scenario",
+          "Answers 402 (or a broken imitation) with the named defect and the lesson in the body. Deterministic forever, safe to hit from CI.",
+        ),
+      },
+      "/api/verify-receipt": {
+        get: freeOp(
+          "Receipt verification — the doc",
+          "How the receipt-verification desk works: what it checks (structure, ed25519 signatures over every derivable form, claimed RFC 8785 twins, expiry, key attribution) and what it never checks, stated plainly. Free.",
+        ),
+        post: freeOp(
+          "Verify any receipt",
+          "POST any receipt or signed artifact (this store's or any issuer's, JSON, max 32KB) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate — every check named, everything unchecked stated. Stateless: the document is verified and forgotten, bound to the verdict only by sha256. Free, one document per call.",
+        ),
+      },
       "/passport": {
         get: freeOp(
           "Endpoint passports",

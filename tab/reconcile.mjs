@@ -57,8 +57,13 @@ export function readCardHistory(path) {
 const CHARGE_CAP = 500;
 const DESCRIPTOR_CAP = 200;
 
+/** ISO-shaped or refused — same strict form store.mjs and sweep.mjs use. */
 function isIsoDate(value) {
-  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}/.test(value) &&
+    Number.isFinite(Date.parse(value))
+  );
 }
 
 /** "OPENAI *API SVCS" and "openai-api" meet in the middle: alnum only. */
@@ -217,9 +222,18 @@ export function reconcileCardStatement(input, path = defaultTabPath()) {
    * contained the charge; metered tools have no fixed expectation and
    * are excluded by name.
    */
+  /**
+   * INCLUSIVE, because statements are: "Feb 1 through Feb 28" is 28
+   * days of coverage, not 27. The exclusive difference silently
+   * failed the >= 28 gate for every non-leap February — a full
+   * calendar month whose missing charges were waved through with a
+   * note claiming the window was short. Off-by-one at exactly the
+   * boundary the threshold was tuned for; dark-team run 2026-08-21.
+   */
   const windowDays =
     (Date.parse(input.statement_to) - Date.parse(input.statement_from)) /
-    (24 * 3600_000);
+      (24 * 3600_000) +
+    1;
   const expectedNotSeen =
     windowDays >= 28
       ? state.active_paid

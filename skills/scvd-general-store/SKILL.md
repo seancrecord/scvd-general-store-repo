@@ -438,6 +438,43 @@ wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
 
+### The evidence layer (3.5.0, 2026-08-21)
+
+The observations above now compose into standing surfaces an agent
+can route on without buying anything:
+
+- **Endpoint passports** — `GET https://scvd.store/passport/{host}`:
+  one signed, EXPIRING object per ready-side host — latest census
+  verdict, observation history with its gaps counted, and a
+  freshness state you act on mechanically (`fresh / aging / expired /
+  broken / indeterminate`; refuse expired passports — the arithmetic
+  is printed on the payload). Free. Failing hosts get a reasoned
+  refusal, never a public row. Each passport carries a free
+  embeddable `chip_url` (an SVG that decays with the same freshness
+  arithmetic — it cannot become stale wallpaper).
+- **`passport_refresh`** ($1) — the census's own probe pointed at
+  your door RIGHT NOW, folded into your passport wherever it is
+  newest. Payment buys the check, never the grade: a broken finding
+  refreshes to a broken passport and a dark chip, and the shelf says
+  so before you pay.
+- **Verify anyone's receipt** — `POST
+  https://scvd.store/api/verify-receipt` with any issuer's signed
+  artifact: a SIGNED verdict back (`valid | invalid | expired |
+  insufficient_evidence | unsupported | indeterminate`), every check
+  named, everything NOT checked stated. Stateless and free.
+- **The obstacle course** — `GET https://scvd.store/api/practice`:
+  doors that fail in deliberate, named, deterministic ways (plus one
+  well-formed dust offer you should parse and still refuse). Rehearse
+  failure handling from CI, free, before it costs you at a
+  stranger's door.
+- **The trust panel** — `https://scvd.store/trust`: the signing key
+  and its Bitcoin-anchored history, the five-level assurance ladder
+  (what a valid signature CLAIMS per level), and real house-bought
+  sample artifacts to inspect before ever paying.
+
+The claims door's challenge is now standard **SIWX (CAIP-122)** —
+any SIWE library signs it natively; the flow is unchanged.
+
 ## The Tab — a second MCP server, free and yours
 
 `scvd-tab` is a separate MCP server that runs entirely on the
