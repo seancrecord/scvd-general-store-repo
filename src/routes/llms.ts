@@ -770,6 +770,15 @@ not have to parse this page to schedule us:
 
   "cadence": { "every": "day", "next_at": "<ISO timestamp>", ... }
 
+## Privacy, structurally
+
+${base}/privacy is the policy, and the short version is the honest
+one: no accounts, no cookies, no tracking, no kept IP logs — the
+store is built not to know who you are. A purchase records the public
+chain facts it settles with; what you sign into a public artifact is
+public forever, and every surface says so before you pay. The
+machine-readable stance stays at ${base}/.well-known/trust.json.
+
 ## Where the money settles, drawn
 
 ${base}/rails charts this store's organic settlements by chain —

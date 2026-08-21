@@ -134,6 +134,12 @@ export const ROOMS: readonly Room[] = [
   { path: "/bounties", name: "The Bounty Board" },
   { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
+  /**
+   * A real room 2026-08-21, forced by the MCP directories' privacy-
+   * policy gate — and better for it: the honest answer to "what do
+   * you collect" here is mostly "nothing, structurally".
+   */
+  { path: "/privacy", name: "Privacy" },
   { path: "/wind-down", name: "If the lights go off" },
   { path: "/becoming", name: "What this is trying to prove" },
 ];

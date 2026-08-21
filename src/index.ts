@@ -61,6 +61,7 @@ import {
   creditRoutes,
   pricingRoutes,
   railsRoutes,
+  privacyRoutes,
   mandateRoutes,
   statementRoutes,
   onpageRoutes,
@@ -267,6 +268,7 @@ app.route("/", bountyRoutes);
 app.route("/", creditRoutes);
 app.route("/", pricingRoutes);
 app.route("/", railsRoutes);
+app.route("/", privacyRoutes);
 app.route("/", mandateRoutes);
 app.route("/", statementRoutes);
 app.route("/", onpageRoutes);

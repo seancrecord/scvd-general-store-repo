@@ -63,6 +63,7 @@ export { bountyRoutes } from "@/routes/bounties";
 export { creditRoutes } from "@/routes/credit";
 export { pricingRoutes } from "@/routes/pricing";
 export { railsRoutes } from "@/routes/rails";
+export { privacyRoutes } from "@/routes/privacy";
 export { mandateRoutes } from "@/routes/mandate";
 export { statementRoutes } from "@/routes/statement";
 export { onpageRoutes } from "@/routes/onpage";
