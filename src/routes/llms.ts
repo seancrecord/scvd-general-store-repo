@@ -730,6 +730,20 @@ your document is verified and forgotten, bound to the verdict only by
 sha256. The doc is the GET on the same URL; artifacts this store
 minted also verify by id at ${base}/api/verify/{id}.
 
+## The obstacle course — rehearse failure before it costs you
+
+${base}/api/practice: doors that fail in deliberate, NAMED,
+deterministic ways — a malformed 402, an empty accepts list, the
+testnet trap, a name in payTo, a wrong-rail address, and one
+perfectly-formed dust offer you should parse and still refuse to pay.
+Each body says what is wrong, what a good client does, and which
+named check in the free battery catches it. Free forever, safe from
+CI, nothing mints. One battery, three uses: rehearse here; self-check
+your own door free (POST ${base}/api/preflight); and when you need
+the diagnosis ON PAPER, the signed version is the service_audit item
+— same battery, published criteria, a report you can hand to whoever
+runs your infrastructure.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every

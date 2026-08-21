@@ -48,6 +48,7 @@ import {
   trustRoutes,
   passportRoutes,
   receiptVerifyRoutes,
+  practiceRoutes,
   attestationRoutes,
   criteriaRoutes,
   conventionalRoutes,
@@ -256,6 +257,7 @@ app.route("/", freshSetRoutes);
 app.route("/", trustRoutes);
 app.route("/", passportRoutes);
 app.route("/", receiptVerifyRoutes);
+app.route("/", practiceRoutes);
 app.route("/", attestationRoutes);
 app.route("/", criteriaRoutes);
 app.route("/", conventionalRoutes);

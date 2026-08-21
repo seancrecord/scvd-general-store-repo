@@ -444,6 +444,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/api/practice": {
+        get: freeOp(
+          "The obstacle course",
+          "Practice doors that fail in deliberate, named, deterministic ways — malformed 402s, testnet traps, name payTo, wrong-rail payTo, and one perfectly-formed dust offer you should parse but never pay. Each body names the defect, the right client behavior, and the preflight check that catches it. Free; nothing mints; not counted in any metric.",
+        ),
+      },
+      "/api/practice/{scenario}": {
+        get: freeOp(
+          "One practice scenario",
+          "Answers 402 (or a broken imitation) with the named defect and the lesson in the body. Deterministic forever, safe to hit from CI.",
+        ),
+      },
       "/api/verify-receipt": {
         get: freeOp(
           "Receipt verification — the doc",
