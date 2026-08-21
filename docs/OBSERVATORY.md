@@ -58,10 +58,50 @@ naming: a crawler's output is *ours*. A standard's output is
 whether a second party can emit a conformant record we would accept
 (§8 federation).
 
+### THE THESIS (keeper, 08-21)
+
+> **SCVD becoming the place where the machine-readable historical
+> evidence about machine commerce accumulates.**
+
+Every word load-bearing: *machine-readable* (not prose), *historical*
+(not current state), *accumulates* (not is published once).
+
+### THE ACID TEST (keeper, 08-21) — the criterion everything must pass
+
+> "Can an independent agent, **without trusting SCVD's conclusions**,
+> consume SCVD's raw evidence and reach **its own conclusion** about
+> whether an endpoint deserves trust?"
+
+This is stronger than the five properties above — it is the test *of*
+them, and it converts the whole document from a plan into something
+falsifiable. It has one structural consequence that governs the
+record format:
+
+**`conclusion = f(evidence, rules)`, where the evidence is complete,
+`f` is published and versioned, and the agent may replace `f`.**
+
+Three things a consumer must be able to do:
+
+1. accept our `f` (convenience),
+2. apply their own `f′` to our evidence (independence),
+3. ignore both and read the raw fields (rawest).
+
+If any of the three is impossible, we are a crawler with opinions.
+Two corollaries, both hard rules:
+
+- **No fact may exist only inside a conclusion.** If we judge
+  `not_ready` because a field was missing, that missing field is
+  itself a recorded fact, not an explanation buried in a verdict.
+- **Raw evidence must be no more expensive and no less fresh than the
+  conclusion.** If conclusions are free and the underlying facts are
+  paid, independence costs money and the test only half-passes.
+  Proposed line, needs a ruling (§12.9): **we sell observation
+  labour, never access to what we saw.**
+
 **Start at §16 for the architecture** — the stack, every component
 mapped to the question it answers, and an honest maturity column.
-§17 is the proposal to publish that map. §§1–15 are the depth behind
-it.
+§17 is the proposal to publish that map. §18 is the observation
+manifest and the non-equivalences. §§1–15 are the depth behind them.
 
 ---
 
@@ -609,6 +649,16 @@ Continuity is what you protect once the first two are real.
 8. **Bounties as observation capacity** (§16) — do we spend bounty
    money to buy probe diversity we cannot get from our own
    infrastructure, and under what rules?
+9. **Free raw evidence?** (§0 acid test) — proposed line: *we sell
+   observation labour, never access to what we saw.* The watch, the
+   refresh, the audit, the hosted page are all labour and stay paid;
+   the underlying facts stay as free and as fresh as the conclusion
+   drawn from them. If raw evidence is ever paywalled, the acid test
+   only half-passes and the thesis weakens with it. Needs the
+   keeper's ruling because it forecloses a revenue line on purpose.
+10. **Are the non-equivalences canon?** (§18) — ten of them now. If
+    ruled, they belong in HOUSE_RULES.md, not only here, and every
+    surface gets checked against them.
 4. **Scope broadening** — does the census officially become
    "agent-facing commercial endpoints" rather than x402 only?
 5. **The hiccup rule** — our-miss extends the term, their-miss is the
@@ -963,7 +1013,122 @@ claim we could make instead.
 
 ---
 
-## 18. Parking lot — not yet placed
+## 18. The observation manifest and the non-equivalences
+
+### PROPOSED — the manifest (keeper's field list, 08-21)
+
+Published per observation, machine-readable. This supersedes the
+sketch in §3; §3's reasoning still applies to why each field exists.
+
+```
+SCVD observation
+├── timestamp
+├── probe version              ← §3: un-backfillable
+├── source population          ← which population this host came from
+├── enumeration source         ← §5 provenance, ON the observation
+├── exact target
+├── exact request              ← headers we sent, so bias is visible
+├── network
+├── geographic region          ← §8: honest "unknown" until DO hints
+├── DNS result                 ┐
+├── TLS result                 │
+├── HTTP status                ├─ §2 layers L0–L2, free from the fetch
+├── headers observed           ┘
+├── x402 challenge             ┐
+├── challenge validation       ├─ L3
+├── offer validation           ┘  L4
+├── payment attempted?         ┐
+├── settlement tx              ├─ L5
+├── resource delivery          ┘  L6
+├── response hash              ← divergence without republishing goods
+├── failure classification     ← typed, and it attributes fault
+└── limitations                ← §3: the most important field
+```
+
+Two notes on fields that carry more weight than they look:
+
+**`response hash`, never the response body.** The hash detects
+divergence across observers, moments and client profiles — which is
+§2's oracle-free substitute for correctness — without us storing or
+republishing goods somebody sells for money. Bodies only for our own
+purchases, where we are the customer.
+
+**`enumeration source` and `source population` ride the observation,
+not a side table.** That is what makes per-source quality (§5,
+index-of-the-indexes) computable by a *consumer*, not just by us.
+
+### PROPOSED — failure classification must attribute fault
+
+Free-text failure strings make `probe failure ≠ endpoint failure`
+unenforceable. The classification is typed, and the first thing it
+says is **whose failure it was**:
+
+| Class | Meaning | Consumer should conclude |
+|---|---|---|
+| `ours` | our egress, timeout, canary void, quota | **nothing about the endpoint** |
+| `theirs` | DNS, TLS, HTTP error, malformed challenge, invalid offer | something about the endpoint, at that layer |
+| `refused_by_policy` | our own rules: private address, own host, robots, backoff | nothing about the endpoint |
+| `identity_conditional` | reachable, but this client profile was blocked/challenged | §8's actual finding — depends whose eyes |
+| `indeterminate` | cannot attribute | **nothing, and say so** |
+
+`indeterminate` must stay populated in practice. A taxonomy that
+never returns "I cannot tell" is one that guesses.
+
+### DOCTRINE — the non-equivalences (keeper's, 08-21, extended)
+
+These are canon candidates, in the house's voice. Everything in this
+document exists to keep them true.
+
+```
+probe failure     ≠  endpoint failure
+not observed      ≠  absent
+not listed        ≠  dead
+402 response      ≠  successful commerce
+ask               ≠  sale
+```
+
+Four more fall out of what is outlined above and belong in the same
+set:
+
+```
+settlement        ≠  delivery          (L5 ≠ L6; the attestation says so already)
+delivered         ≠  correct           (L6 ≠ L7; the oracle boundary, §2)
+sample            ≠  population        (§11; the door bank is not the ecosystem)
+no observed change ≠  stable           (§1; weekly cadence cannot tell)
+```
+
+And the one the acid test adds, which governs all of them:
+
+```
+our conclusion    ≠  your conclusion
+```
+
+The conclusion is ours; the evidence is yours. A consumer who
+disagrees with `f` should be able to disagree **using our own data**,
+and that is a feature we build on purpose, not a leak we tolerate.
+
+### Where each non-equivalence is enforced
+
+| Non-equivalence | Enforced by | State |
+|---|---|---|
+| probe failure ≠ endpoint failure | canary (§10) + failure class + client profiles (§8) | **gap** |
+| not observed ≠ absent | `not_observed[]`, gaps preserved in the corpus | **half standing** |
+| not listed ≠ dead | registry/population split, backoff not deletion (§6) | **half standing** |
+| 402 ≠ successful commerce | the layer model (§2) | **gap** |
+| ask ≠ sale | the Pulse's own split (25,787 asks / 32 settlements) | **standing** |
+| settlement ≠ delivery | settlement_attestation's stated limits | **standing** |
+| delivered ≠ correct | the L7 boundary + divergence (§2) | **named** |
+| sample ≠ population | panel + random sample (§11) | **gap** |
+| no change ≠ stable | cadence stated on the artifact | **gap** |
+| our conclusion ≠ yours | `conclusion = f(evidence, rules)`, published `f` | **gap** |
+
+Six gaps. That table is the honest build list, and it is a better one
+than any feature roadmap — each row is a claim we are currently
+making that the machinery does not yet keep.
+
+---
+
+## 19. Parking lot — not yet placed
 
 - Reciprocal walking with other observatories (beyond signature
   verification): probably premature.
