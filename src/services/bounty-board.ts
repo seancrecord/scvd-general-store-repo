@@ -63,6 +63,13 @@ export interface BountyRecord {
   amount_usd: number;
   reward_usd: number;
   opened_at: string;
+  /**
+   * The keeper's optional "why this walk" — his own ink, verbatim,
+   * shown on the public board so a careful shopper knows what to look
+   * at. Optional forever: a bounty is fully self-describing without
+   * it (door, captured price, reward, expiry, claim procedure).
+   */
+  note?: string;
   opened_block: number;
   expires_at: string;
   status: "open" | "paid" | "expired";
@@ -150,7 +157,7 @@ export class BountyRefused extends Error {}
  */
 export async function openBounty(
   env: Env,
-  input: { targetUrl: string; rewardUsd: number },
+  input: { targetUrl: string; rewardUsd: number; note?: string },
   options: BountyBoardOptions = {},
 ): Promise<BountyRecord> {
   const fetchImpl = options.fetch ?? fetch;
@@ -255,6 +262,7 @@ export async function openBounty(
     amount_usd: price,
     reward_usd: input.rewardUsd,
     opened_at: now.toISOString(),
+    ...(input.note?.trim() ? { note: input.note.trim().slice(0, 500) } : {}),
     opened_block: await getBlockNumber(env),
     expires_at: new Date(
       now.getTime() + BOUNTY_OPEN_DAYS * 24 * 3600 * 1000,

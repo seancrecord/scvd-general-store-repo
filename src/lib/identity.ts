@@ -143,7 +143,7 @@ export function storeIdentity(base: string): StoreIdentity {
     // "on Base" alone went stale the day the Solana rail opened
     // (2026-08-04) and sat here three days — caught by rule 44's
     // first sweep, which is the job that rule exists to do.
-    what: "A human-run general store selling small signed goods to autonomous agents, paid over x402 in USDC on Base or Solana. Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
+    what: "A human-run general store selling small signed goods to autonomous agents, paid over x402 in USDC on Base, Polygon, or Solana. Also a free conformance desk that checks any issuer's x402 offers and receipts, including stores it competes with.",
     homepage: base,
     /**
      * EVERY FEATURE `what` NAMES GETS ITS ADDRESS HERE. The first

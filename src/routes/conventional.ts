@@ -52,15 +52,13 @@ const GUESSED: Record<string, string> = {
   // What a signature proves, who holds the key, what is not built.
   "/security": "/attestation",
   /**
-   * The one that is NOT a room, because there is no privacy room and
-   * inventing one would be surfacing the thing the keeper asked to
-   * keep behind the scenes. The full data stance — no cookies, no
-   * IPs, nothing client-side, uniqueness deliberately unavailable —
-   * is published as structured data for the readers who ask this
-   * question, which are overwhelmingly automated.
+   * /privacy became a real room 2026-08-21 — the MCP connector
+   * directories require a public privacy policy and treat a redirect
+   * to a JSON file as absence. The structured stance in trust.json
+   * stays for the automated readers; the room serves the humans and
+   * the reviewers. Only the alias remains here.
    */
-  "/privacy": "/.well-known/trust.json",
-  "/privacy-policy": "/.well-known/trust.json",
+  "/privacy-policy": "/privacy",
   // /.well-known/security.txt left this map 2026-08-01: a real RFC
   // 9116 file is served by well-known.ts now, and a redirect here
   // would shadow it (this router mounts first).

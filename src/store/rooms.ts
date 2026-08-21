@@ -138,9 +138,21 @@ export const ROOMS: readonly Room[] = [
    * is a promise about something else.
    */
   { path: "/pricing", name: "How prices are set" },
+  /**
+   * The rails chart, 2026-08-21 — the keeper's ask the night the
+   * third rail lit: the books' split, drawn, with the table beside
+   * the picture.
+   */
+  { path: "/rails", name: "Where the money settles" },
   { path: "/bounties", name: "The Bounty Board" },
   { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
+  /**
+   * A real room 2026-08-21, forced by the MCP directories' privacy-
+   * policy gate — and better for it: the honest answer to "what do
+   * you collect" here is mostly "nothing, structurally".
+   */
+  { path: "/privacy", name: "Privacy" },
   { path: "/wind-down", name: "If the lights go off" },
   { path: "/becoming", name: "What this is trying to prove" },
 ];

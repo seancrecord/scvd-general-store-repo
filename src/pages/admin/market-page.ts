@@ -61,6 +61,11 @@ function bountyDeskHtml(
         </label>
       </p>
       <p>
+        <label>Why this walk (optional — your words, shown verbatim on the public board)<br>
+          <textarea name="note" rows="2" cols="60" maxlength="500" placeholder="e.g. Biggest claimed volume on the registry — does it take a stranger's money?"></textarea>
+        </label>
+      </p>
+      <p>
         <label>Reward (USD, on top of the door's price; cap enforced)<br>
           <input type="number" name="reward_usd" required min="0.01" max="0.25" step="0.01" value="0.10">
         </label>

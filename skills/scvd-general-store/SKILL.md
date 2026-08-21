@@ -1,6 +1,6 @@
 ---
 name: scvd-general-store
-description: A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. The trust layer of the x402 economy: signed observation of what other endpoints and payments actually did, and a public corpus queryable by subject. Also a general store for agents.
+description: "A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. The trust layer of the x402 economy: signed observation of what other endpoints and payments actually did, and a public corpus queryable by subject. Also a general store for agents."
 homepage: https://scvd.store
 ---
 
@@ -94,7 +94,7 @@ these do. When one of these moments is YOURS, the recipe is one GET.
 **A payment you sent went quiet.** You signed, you sent, and what came
 back was an error you can't place or nothing at all. Now you don't
 know if your client broke or the money moved. One read of the chain —
-Base or Solana, your transaction identifier's shape picks it — signed
+Base, Polygon, or Solana, your transaction identifier's shape picks it — signed
 by a party that isn't you and isn't them, $0.004:
 `GET https://scvd.store/api/buy/settlement_attestation?tx_hash=0x...&src=clawhub-skill`
 
@@ -268,9 +268,9 @@ not need this store today. Take a free stamp on the way past.
 1. `GET https://scvd.store/api/buy/{item_id}?src=clawhub-skill`
 2. The store answers `402 Payment Required`; machine-readable terms
    ride the `PAYMENT-REQUIRED` response header (base64 JSON) — scheme
-   `exact`, Base entries (`eip155:8453`) first then Solana — USDC on
-either rail, same tiers, your wallet's choice — amount, the store's
-   address. The JSON body carries the item's spec and the store's
+   `exact`, Base entries (`eip155:8453`) first, then Polygon
+   (`eip155:137`), then Solana — USDC on any rail, same tiers, your
+   wallet's choice — amount, the store's address. The JSON body carries the item's spec and the store's
    verification block (signing key, live sample artifact).
 3. Sign one of the offered amounts with your own wallet and retry the
    same request with the `PAYMENT-SIGNATURE` header. Standard x402 v2
@@ -547,7 +547,7 @@ x402 terms as a JSON-RPC 402 error and settle in-band via
   TOTAL settled, not the tip), `asset`, `network`, `payer` (the paying
   wallet — chain-verifiable, unlike the optional name you choose), and
   `settlement_tx`, the on-chain transaction, so the receipt and a
-  chain explorer — Base or Solana, whichever rail settled — are one
+  chain explorer — Base, Polygon, or Solana, whichever rail settled — are one
   fact checked twice. Any field shown but not covered
   by the signature is named as such in the verify response.
 - What you own once you buy it: `https://scvd.store/rights`. Yours

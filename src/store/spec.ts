@@ -60,15 +60,18 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * republish).
  */
 /**
- * 3.5.0 (2026-08-21): the evidence layer's night — the six-P slate.
- * NEW on the shelf: passport_refresh ($1 ⚑, the paid fresh check for
- * an endpoint passport; census instrument, verdict lands whatever it
- * says). NEW free surfaces a skill reader should know exist: /trust,
- * /passport/{host} with the freshness states and the embeddable chip,
- * POST /api/verify-receipt (anyone's receipt, signed verdict), the
- * SIWX (CAIP-122) claims challenge, and /api/practice — the obstacle
- * course. MINOR: a reader cached on 3.4.1 is missing a shelf item and
- * the entire evidence layer around it.
+ * 3.5.0 (2026-08-21, two sessions' same-day work sharing one
+ * unpublished number — neither half shipped to ClawHub before the
+ * merge, so they land together): THE THIRD RAIL — Polygon
+ * (eip155:137) lit in every 402; the buying steps and rail lists name
+ * three rails. AND THE EVIDENCE LAYER — passport_refresh joins the
+ * shelf ($1 ⚑, the paid fresh check; census instrument, verdict lands
+ * whatever it says), plus the free surfaces a reader should know:
+ * /trust, /passport/{host} with freshness states and the embeddable
+ * chip, POST /api/verify-receipt, the SIWX (CAIP-122) claims
+ * challenge, and /api/practice. MINOR twice over: a reader cached on
+ * 3.4.x under-declares where money can come from and misses the
+ * evidence layer entirely.
  */
 export const SKILL_VERSION = "3.5.0";
 
@@ -241,7 +244,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
   standing_watch:
     "A week of out-of-band hourly checks on your own endpoint, each observation signed individually so any row can be quoted alone. Consent is the purchase: we watch what you asked us to watch, nobody else. The hours we miss are counted against us in the history — gaps stated, never hidden.",
   hello:
-    "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base or Solana, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
+    "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base, Polygon, or Solana, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
   small_blessing:
     "The cheapest real settlement on the shelf at half a cent: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
   recurring_patronage:
@@ -298,7 +301,7 @@ export const SPEC_RETURNS: Record<string, string> = {
   settlement_reconciliation:
     "A signed JSON observation of one Base transaction reconciling two numbers — the USDC that moved and the ceiling in force — with cap_source and cap_observed naming where the ceiling came from and whether we saw it ourselves. Verdicts: within_cap, over_cap, no_discretion (EIP-3009, where the value was fixed in the payer's signed digest), cap_not_observable, or no_settlement. Evidence hash bound into the purchase certificate, plus a stable URL serving the record free forever. Instant.",
   settlement_attestation:
-    "A signed JSON observation of one transaction on Base or Solana — the identifier's shape picks the chain — with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
+    "A signed JSON observation of one transaction on Base, Polygon, or Solana — the identifier's shape picks the chain — with status (SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED), block height (slots on Solana), confirmations, chain head, the query echoed back, and an evidence hash — verifiable against the store's published key without asking the store. Instant.",
   graffiti_on_a_train:
     "The buyer's tag recorded verbatim on a signed certificate, dated, instantly. Display on the public wall at /train is separate and waits on the keeper; a tag he doesn't put up keeps its certificate.",
   hello:

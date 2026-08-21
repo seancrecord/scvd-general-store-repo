@@ -45,7 +45,7 @@ ${item.description}
 - **id:** \`${item.id}\`
 - **price:** ${priceLine(item)}
 - **fulfillment:** ${fulfillmentLine(item)}
-- **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on Base or Solana)
+- **buy:** \`GET ${base}/api/buy/${item.id}\` (x402 v2; USDC on Base, Polygon, or Solana)
 ${item.sample_url ? `- **sample:** ${base}${item.sample_url}\n` : ""}${stock}${constraints}
 > ${item.note_402}
 `;

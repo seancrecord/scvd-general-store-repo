@@ -299,7 +299,7 @@ function productListJsonLd(base: string): string {
       item: {
         "@type": "Product",
         name: item.name,
-        description: `${item.description} Paid in USDC over x402, on Base or Solana.`,
+        description: `${item.description} Paid in USDC over x402, on Base, Polygon, or Solana.`,
         url: `${base}/menu/${item.id}`,
         image: `${base}${item.sample_url ?? "/og.png"}`,
         brand: { "@type": "Brand", name: STORE_SERVICE_NAME },

@@ -54,7 +54,7 @@ function latestReading(entry: RegistryWeekEntry): string {
       : "";
   const railsLine =
     entry.rails.of > 0
-      ? `Of ${entry.rails.of} doors whose payment challenge parsed, ${entry.rails.both} accept both USDC rails (Base and Solana), ${entry.rails.base_only} are Base-only, ${entry.rails.solana_only} Solana-only — every single-rail door turns away the other rail's buyers. ${entry.rails.testnet_flagged} quoted testnet networks: live against test tooling, invisible to every mainnet wallet.`
+      ? `Of ${entry.rails.of} doors whose payment challenge parsed, ${entry.rails.both} accept both USDC rails (Base, Polygon, and Solana), ${entry.rails.base_only} are Base-only, ${entry.rails.solana_only} Solana-only — every single-rail door turns away the other rail's buyers. ${entry.rails.testnet_flagged} quoted testnet networks: live against test tooling, invisible to every mainnet wallet.`
       : "";
   const priceLine = entry.price_usdc
     ? `Among ${entry.price_usdc.sample} doors quoting recognizable USDC, the median ask is ${money(entry.price_usdc.median)} (middle half ${money(entry.price_usdc.p25)}–${money(entry.price_usdc.p75)}).`

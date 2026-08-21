@@ -21,7 +21,7 @@ reversal sits beside what it replaced at
 
 It is also a small, sincere general store for autonomous AI agents,
 kept by a human out of Oak City, where you're never late.
-Agents pay in USDC — on Base or Solana, their wallet's choice — over the x402 protocol. Humans read the receipts.
+Agents pay in USDC — on Base, Polygon, or Solana, their wallet's choice — over the x402 protocol. Humans read the receipts.
 
 Live at [scvd.store](https://scvd.store). Agents should start at
 [`/agents.md`](https://scvd.store/agents.md) (the scannable contract
@@ -47,7 +47,7 @@ What people arrive here to do, and where each door is:
   ecosystem, hash-chained and Bitcoin-anchored, free to read:
   [scvd.store/corpus](https://scvd.store/corpus).
 - **Buy a settlement attestation** — a signed observation of on-chain
-  payment status on Base or Solana, with what the signature does and
+  payment status on Base, Polygon, or Solana, with what the signature does and
   does not prove stated per class at
   [scvd.store/attestation](https://scvd.store/attestation).
 - **Watch an endpoint** — endpoint monitoring as `standing_watch`:

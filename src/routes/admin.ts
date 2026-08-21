@@ -870,6 +870,7 @@ adminRoutes.post("/admin/bounties", async (c) => {
   );
   let url = "";
   let rewardUsd = Number.NaN;
+  let note = "";
   const contentType = c.req.header("Content-Type") ?? "";
   if (contentType.includes("json")) {
     const body = (await c.req.json().catch(() => ({}))) as Record<
@@ -878,14 +879,20 @@ adminRoutes.post("/admin/bounties", async (c) => {
     >;
     url = String(body["url"] ?? "");
     rewardUsd = Number.parseFloat(String(body["reward_usd"] ?? ""));
+    note = typeof body["note"] === "string" ? body["note"] : "";
   } else {
     const form = await c.req.parseBody();
     url = String(form["url"] ?? "");
     rewardUsd = Number.parseFloat(String(form["reward_usd"] ?? ""));
+    note = typeof form["note"] === "string" ? form["note"] : "";
   }
   const wasForm = !contentType.includes("json");
   try {
-    const bounty = await openBounty(c.env, { targetUrl: url, rewardUsd });
+    const bounty = await openBounty(c.env, {
+      targetUrl: url,
+      rewardUsd,
+      ...(note ? { note } : {}),
+    });
     if (wasForm) {
       // The stocking form's lesson: a redirect in silence reads
       // exactly like a form that did nothing. Say what got posted.
