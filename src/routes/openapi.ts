@@ -444,6 +444,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/trust": {
+        get: freeOp(
+          "The trust panel",
+          "Every trust surface in one place: the signing key with its Bitcoin-anchored history, the five-level assurance ladder (what a valid signature claims and does not claim per level), a gallery of real house-purchased artifacts with live verify URLs, and the corrections/books/corpus record. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
       "/fresh-set": {
         get: freeOp(
           "The fresh set",

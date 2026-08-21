@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ASSURANCE_LADDER } from "@/store/assurance";
 import { CERT_FIELDS } from "@/lib/signing";
 import { storeIdentity } from "@/lib/identity";
 import {
@@ -93,6 +94,18 @@ function doc(base: string) {
        */
       relation_to_receipt_drafts:
         "The draft-vauban-x402-* family (Independent Submission; receipt-format negotiation, a claim algebra, delegation binding) pins the same RFC 8785 preimage discipline as draft-hopley-x402-canonicalisation-jcs-v1, so `signature_jcs` above already verifies under it. Vocabulary mapping for readers arriving from those drafts: this store's certificate plays the SettlementReceipt role (self-contained, offline-verifiable, seller-issued); the `attests` binding is the same idea as their 32-byte `action_ref` — a digest inside the signed fields tying the payment artifact to a work-layer artifact — differing in name and in that ours states WHAT was digested per item class. We implement no STARK or post-quantum variant and no claim-algebra operators; if the receipt_format negotiation in those drafts stabilizes, this namespace's formats would be offered as tokens under it rather than replaced by it. Drafts, not standards: nothing here is bound by them, and this paragraph is dated so its staleness is visible.",
+    },
+    /**
+     * THE LADDER ON THE SPEC (2026-08-20): the five levels are store
+     * canon in store/assurance.ts; the spec serves them so a machine
+     * reader learns what a valid signature is evidence OF without
+     * visiting the human room at /trust.
+     */
+    assurance_levels: {
+      what:
+        "Every artifact verifies identically; its LEVEL says what a valid signature claims. Levels describe this store's claim, never the subject's quality.",
+      levels: ASSURANCE_LADDER,
+      human_room: `${base}/trust`,
     },
     certificate: {
       what:

@@ -695,6 +695,17 @@ that a door was answering correctly, never a score on its operator,
 and doors that failed appear only as counts. If you are an agent
 deciding where an x402 purchase is likely to work today, start here.
 
+## The trust panel — every trust surface, one page
+
+${base}/trust: the signing key and its Bitcoin-anchored history, the
+assurance ladder (what a valid signature CLAIMS at each of five
+levels — novelty, observation, monitored, audited, witnessed), a
+gallery of real house-bought artifacts you can verify before ever
+paying us, and links to the corrections log, the chain-checked books,
+and the corpus. JSON at the same URL. If you are deciding whether to
+trust a signature from this store, start and end here; the honesty
+block (what we are NOT) leads the page.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every
