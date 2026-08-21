@@ -21,7 +21,7 @@ export const PRACTICE_COUNTER_COPY = {
 
   whyHead: "Why practice here",
   why: [
-    "It's a real store, so it's a real settlement: USDC on Base or Solana, x402 v2, no sandbox, no mock facilitator, no test-mode branch that behaves differently than production.",
+    "It's a real store, so it's a real settlement: USDC on Base, Polygon, or Solana, x402 v2, no sandbox, no mock facilitator, no test-mode branch that behaves differently than production.",
     "Half a cent is the cheapest door. You can exercise the whole flow, end to end, for less than the gas you'd spend thinking about it.",
     "Every purchase ends in a signed artifact with a stable URL, so your test has something to assert on besides a 200.",
     "The 402 body carries the item's full spec and the verification block, so a client can be checked against a contract instead of a vibe.",

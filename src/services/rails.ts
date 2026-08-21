@@ -231,3 +231,54 @@ export async function readRailCounters(env: Env): Promise<RailCounts> {
 export function monthsBeforeSecondRail(): string[] {
   return monthsSinceOpening().filter((month) => inSingleRailWindow(month));
 }
+
+
+/** One month's organic till counts, for the public /rails chart. */
+export interface RailMonth {
+  month: string;
+  base: number;
+  polygon: number;
+  solana: number;
+  other: number;
+}
+
+/**
+ * The till's rails BY MONTH, organic only — the /rails chart's data.
+ * Same counter scan as readRailCounters, kept separate because the
+ * aggregate reader's callers want one number and a chart wants the
+ * shape of time. Months with no settles at all are omitted; a chart
+ * of leading zeroes would just push the story off the right edge.
+ */
+export async function readRailCountersByMonth(env: Env): Promise<RailMonth[]> {
+  const months: RailMonth[] = [];
+  for (const month of monthsSinceOpening()) {
+    const listed = await listKeys(env.COUNTERS, {
+      prefix: `metric:${month}:rail`,
+      cap: 100,
+    });
+    const values = await bulkGetText(env.COUNTERS, listed.names);
+    const row: RailMonth = { month, base: 0, polygon: 0, solana: 0, other: 0 };
+    for (const name of listed.names) {
+      if (name.includes(":railh:")) {
+        continue; // Family doesn't make the paper.
+      }
+      const rail = name.slice(name.lastIndexOf(":") + 1);
+      const value = parseInt(values.get(name) ?? "", 10);
+      if (!Number.isFinite(value)) {
+        continue;
+      }
+      if (
+        rail === "base" ||
+        rail === "polygon" ||
+        rail === "solana" ||
+        rail === "other"
+      ) {
+        row[rail] += value;
+      }
+    }
+    if (row.base + row.polygon + row.solana + row.other > 0) {
+      months.push(row);
+    }
+  }
+  return months;
+}

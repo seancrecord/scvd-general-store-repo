@@ -229,9 +229,11 @@ them ${base}/what.
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on Base (eip155:8453) or Solana
-(solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp) over the
-${STORE_METADATA.protocol} protocol, version 2. It goes like this:
+We take ${STORE_METADATA.currency} on Base (eip155:8453), Polygon
+(eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)
+over the ${STORE_METADATA.protocol} protocol, version 2. Base entries
+come first in every 402 as a compatibility promise; same tiers on
+every rail, your wallet's choice. It goes like this:
 
   1. GET ${base}/api/buy/{item_id}
   2. We answer 402. The payment requirements, amount, asset, our address,
@@ -816,6 +818,23 @@ Every free response with a clock also carries it as a field, so you do
 not have to parse this page to schedule us:
 
   "cadence": { "every": "day", "next_at": "<ISO timestamp>", ... }
+
+## Privacy, structurally
+
+${base}/privacy is the policy, and the short version is the honest
+one: no accounts, no cookies, no tracking, no kept IP logs — the
+store is built not to know who you are. A purchase records the public
+chain facts it settles with; what you sign into a public artifact is
+public forever, and every surface says so before you pay. The
+machine-readable stance stays at ${base}/.well-known/trust.json.
+
+## Where the money settles, drawn
+
+${base}/rails charts this store's organic settlements by chain —
+Base, Polygon, Solana — month by month, derived live from the same
+books as ${base}/stats, house traffic excluded at the till. The table
+always rides beside the picture, and the JSON twin serves the same
+numbers to machines.
 
 ## How prices are set, signed
 

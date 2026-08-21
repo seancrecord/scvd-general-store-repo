@@ -94,7 +94,7 @@ export const STOREFRONT_COPY = {
    * been a rail since 2026-08-04.
    */
   metaDescription:
-    "The trust layer of the x402 economy: free x402 conformance checks of signed offers and receipts, and a weekly Bitcoin-anchored corpus. USDC on Base and Solana.",
+    "The trust layer of the x402 economy: free x402 conformance checks of signed offers and receipts, and a weekly Bitcoin-anchored corpus. USDC on Base, Polygon, and Solana.",
   ogDescription:
     "The trust layer of the x402 economy: free conformance checking for any issuer's x402 signed offers and receipts, a weekly signed Bitcoin-anchored corpus, and attestation you can verify without us.",
   /**
@@ -112,7 +112,7 @@ export const STOREFRONT_COPY = {
    * last thing carried away.
    */
   organizationDescription:
-    "The trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over the x402 protocol, on Base or Solana; every purchase publicly checkable. The cheapest thing on the shelf is half a cent, and everything this store signs verifies free, forever.",
+    "The trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over the x402 protocol, on Base, Polygon, or Solana; every purchase publicly checkable. The cheapest thing on the shelf is half a cent, and everything this store signs verifies free, forever.",
   /** The little tube-lit line above the big sign. The keeper's line. */
   tubeLine: "OAK CITY \u00B7 WHERE YOU'RE NEVER LATE",
   /** Keeper-approved 2026-07-23 (batch 1). Back on the sign. */
@@ -136,7 +136,7 @@ export const STOREFRONT_COPY = {
   whatThisIsDoors:
     'Payment infrastructure first, general store second. The conformance desk takes any issuer\u2019s x402 signed offer or receipt and returns a verdict \u2014 free, no account, no wallet \u2014 at <a href="/conformance">/conformance</a>. The corpus, a weekly signed and Bitcoin-anchored record of the x402 ecosystem, reads free at <a href="/corpus">/corpus</a>. What every signature proves, and what it doesn\u2019t, is at <a href="/attestation">/attestation</a>.',
   whatThisIsShop:
-    "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
+    "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base, Polygon, or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
     "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",
@@ -190,18 +190,18 @@ export const STOREFRONT_COPY = {
   termNoteTry: "# building a client? practice on us",
   termNoteUseWhen: "# which shelf for which situation",
   termNoteRequest: "# want something we don't stock?",
-  termPayLine: "USDC on Base or Solana \u00B7 x402 v2 \u00B7 goods first, settle after",
+  termPayLine: "USDC on Base, Polygon, or Solana \u00B7 x402 v2 \u00B7 goods first, settle after",
   wallHead: "SIGNED THE WALL",
   wallEmpty:
     "There's a reason everybody remembers John Hancock. It pays to be first.",
   /**
    * THE RAIL NOTE, and why it moved to the human half of the page.
-   * "USDC on Base or Solana" has been true since the second rail
+   * "USDC on Base, Polygon, or Solana" has been true since the second rail
    * opened and appeared in exactly one place: inside the agent door,
    * in a terminal font, under a column of HTTP verbs. A person working
    * out whether they can pay here never read it.
    */
-  payRails: "USDC on Base or Solana, over x402.",
+  payRails: "USDC on Base, Polygon, or Solana, over x402.",
   /** Where the paragraph went. The front of the store keeps the number. */
   booksLink: "The whole ledger, and what counts as organic, is at",
   finePrintVerify:
