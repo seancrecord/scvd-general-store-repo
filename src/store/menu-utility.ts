@@ -428,7 +428,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "One fresh observation of your x402 endpoint by the weekly census's own instrument, right now instead of next Sunday — folded into your endpoint passport wherever it is newest, which moves the passport's freshness state (and the free embeddable chip that decays with it) back to fresh. Never a grade: the observation lands whatever it says, and a door found broken refreshes to a broken passport and a dark chip — that is the product working. The observation is signed on its own, its evidence hash bound into your purchase certificate, and the passport at /passport/{host} re-derives from it immediately.",
+      "One fresh observation of your x402 endpoint by the weekly census's own instrument, right now instead of next Sunday — folded into your endpoint passport wherever it is newest, which moves the passport's freshness state (and the free embeddable chip that decays with it) back to fresh. Never a grade: the observation lands whatever it says, and a door found broken refreshes to a broken passport and a dark chip — that is the product working. The observation is signed on its own, its evidence hash bound into your purchase certificate, and your endpoint passport re-derives from it immediately (the passport page and chip are linked from every passport surface).",
     note_402:
       "A dollar for a fresh look. The check is bought; the verdict never is.",
     constraints: [
