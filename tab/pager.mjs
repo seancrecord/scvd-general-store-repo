@@ -56,7 +56,16 @@ export const PAGE_KINDS = [
   "gap", // captured in a hurry, a field never filled
 ];
 
-const PAGE_STATES = ["queued", "handed_over", "acknowledged", "superseded"];
+/**
+ * `superseded` and `retired` are both terminal and mean OPPOSITE
+ * things: superseded is the same worry re-raised fresher (the old
+ * page's count is evidence of days unspoken), retired is the worry
+ * no longer holding at all — canceled trial, filled gap, a worry
+ * that crossed into another kind. Only superseded feeds
+ * unspoken_pct; a moot page counted as "missed" would let resolved
+ * worries inflate the instrument's failure number.
+ */
+const PAGE_STATES = ["queued", "handed_over", "acknowledged", "superseded", "retired"];
 
 function pagesPath(tabPath) {
   return sidecarPath(tabPath, ".pages.jsonl");
@@ -226,6 +235,24 @@ export function queueDue(tabPath = defaultTabPath(), { horizonDays = 7, now = ne
   const at = now.toISOString();
   const queued = [];
 
+  /**
+   * RETIRE WHAT NO LONGER HOLDS. Supersession below only fires when a
+   * fresher page for the same worry queues — so a worry that resolved
+   * (trial canceled, gap filled) or crossed into another kind left its
+   * open page delivering a stale, now-false warning forever. Found by
+   * the 2026-08-21 dark-team run. An open page whose (kind, tool) is
+   * absent from today's due set is moot: retired, not superseded,
+   * because moot is not missed.
+   */
+  const dueKeys = new Set(due.map((page) => `${page.kind}:${page.tool_name}`));
+  for (const [id, old] of known) {
+    const open = old.state === "queued" || old.state === "handed_over";
+    if (open && !dueKeys.has(`${old.kind}:${old.tool_name}`)) {
+      appendPage(tabPath, { page_id: id, state: "retired", at });
+      old.state = "retired";
+    }
+  }
+
   for (const page of due) {
     if (known.has(page.page_id)) continue;
     for (const [id, old] of known) {
@@ -341,12 +368,16 @@ export function pagerCoverage(tabPath = defaultTabPath()) {
     (page) => page.state === "queued" || page.state === "handed_over",
   ).length;
   const missed = known.filter((page) => page.state === "superseded").length;
+  const retired = known.filter((page) => page.state === "retired").length;
   const settled = spoken + missed;
   return {
     pages_raised: raised,
     pages_acknowledged: spoken,
     pages_open: openNow,
     pages_missed: missed,
+    // Worries that stopped holding before anybody spoke them —
+    // outside unspoken_pct on purpose: moot is not missed.
+    pages_retired: retired,
     unspoken_pct: settled === 0 ? null : Math.round((missed / settled) * 1000) / 10,
     note:
       "A page handed to an agent is not a page the builder heard. `pages_missed` counts the ones that aged out unacknowledged — the clock knew and nobody said it. Null until at least one page has settled either way, because a made-up zero is the worst answer available.",

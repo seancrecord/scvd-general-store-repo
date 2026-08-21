@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import {
   appendEvent,
   BASIS,
+  burnAt,
   captureEvent,
   closestCategory,
   derive,
@@ -1856,4 +1857,161 @@ test("quiet detection reaches quarterly and yearly billing (CV bug 2)", () => {
   assert.ok(quiet.includes("quarterly-host"), "2.5-years-silent quarterly sub unflagged");
   assert.ok(quiet.includes("annual-domain"), "2-years-silent annual sub unflagged");
   assert.ok(!quiet.includes("one-off"), '"once" has no cycle; silence means nothing');
+});
+
+/**
+ * DARK TEAM 2026-08-21, finding 1 (high): the replay must follow the
+ * timeline, not the file. A backward backfill — SWEEP.md's historical
+ * pass walked newest-first — appends later-dated events before
+ * earlier-dated ones, and file-order replay regressed price and
+ * last_billing_at to the OLDER event, false-flagged quiet tools, and
+ * left a canceled tool on the burn forever.
+ */
+test("replay follows the timeline, not the append order", () => {
+  // A July renewal appended BEFORE the January signup it renews.
+  const backfilled = [
+    {
+      event: "renewed",
+      tool_name: "figma",
+      retroactive: true,
+      occurred_at: "2026-07-15",
+      server_timestamp: "2026-08-21T10:00:00Z",
+      price: { amount: 15, currency: "USD", period: "month" },
+    },
+    {
+      event: "paid_started",
+      tool_name: "figma",
+      retroactive: true,
+      occurred_at: "2026-01-15",
+      server_timestamp: "2026-08-21T10:00:01Z",
+      price: { amount: 12, currency: "USD", period: "month" },
+    },
+  ];
+  const state = derive(backfilled, new Date("2026-08-21T12:00:00Z"));
+  const figma = state.tools.get("figma");
+  assert.equal(figma.price.amount, 15, "price regressed to the older event");
+  assert.equal(String(figma.last_billing_at).slice(0, 10), "2026-07-15");
+  assert.equal(figma.renewals_seen, 1);
+  assert.deepEqual(quietTools(state), [], "a 37-day-old heartbeat is not silence");
+
+  // A June cancel appended BEFORE the January signup it ends.
+  const canceledFirst = [
+    {
+      event: "canceled",
+      tool_name: "vercel",
+      retroactive: true,
+      occurred_at: "2026-06-01",
+      server_timestamp: "2026-08-21T10:00:00Z",
+    },
+    {
+      event: "paid_started",
+      tool_name: "vercel",
+      retroactive: true,
+      occurred_at: "2026-01-01",
+      server_timestamp: "2026-08-21T10:00:01Z",
+      price: { amount: 99, currency: "USD", period: "month" },
+    },
+  ];
+  const ended = derive(canceledFirst, new Date("2026-08-21T12:00:00Z"));
+  assert.equal(ended.tools.get("vercel").status, "inactive");
+  assert.equal(ended.monthly_burn.amount, 0, "a canceled tool stayed on the burn");
+  // The trajectory read agrees: May shows the burn, July shows it gone.
+  assert.equal(burnAt(canceledFirst, new Date("2026-05-01T00:00:00Z")), 99);
+  assert.equal(burnAt(canceledFirst, new Date("2026-07-01T00:00:00Z")), 0);
+});
+
+/**
+ * DARK TEAM 2026-08-21, finding 2 (medium): statement windows are
+ * endpoint-inclusive — Feb 1 through Feb 28 is 28 days of coverage.
+ * The exclusive difference failed the >= 28 gate for every non-leap
+ * February, silently emptying expected_not_seen for a genuinely
+ * full-month statement.
+ */
+test("a full February statement still checks for missing charges", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "figma", event: "paid_started", problem_solved: "design", category: "design",
+      price: { amount: 20, currency: "USD", period: "month" } },
+    path,
+  );
+  const report = reconcileCardStatement(
+    {
+      statement_from: "2026-02-01",
+      statement_to: "2026-02-28",
+      charges: [{ date: "2026-02-03", amount: 4, descriptor: "COFFEE" }],
+    },
+    path,
+  );
+  assert.equal(report.window.days, 28, "Feb 1 through Feb 28 is 28 days, inclusive");
+  assert.equal(report.expected_not_seen_note, undefined);
+  assert.deepEqual(
+    report.expected_not_seen.map((t) => t.tool_name),
+    ["figma"],
+    "a full-month window with the charge absent must say so",
+  );
+});
+
+/**
+ * DARK TEAM 2026-08-21, finding 3 (medium): occurred_at accepted any
+ * Date.parse-able string — "August 5, 2026" validated, then hit every
+ * consumer assuming YYYY-MM-DD as NaN-WNaN corpus weeks and unstable
+ * dedupe keys. ISO-shaped or refused.
+ */
+test("a retroactive date that is not ISO-shaped is refused, not mangled", () => {
+  const path = freshPath();
+  const refused = appendEvent(path, {
+    tool_name: "figma",
+    event: "paid_started",
+    problem_solved: "design",
+    category: "design",
+    price: { amount: 12, currency: "USD", period: "month" },
+    retroactive: true,
+    occurred_at: "August 5, 2026",
+  });
+  assert.equal(refused.logged, false);
+  assert.ok(refused.problems.some((p) => p.includes("occurred_at")));
+  // The same words in the right shape go straight through.
+  const accepted = appendEvent(path, {
+    tool_name: "figma",
+    event: "paid_started",
+    problem_solved: "design",
+    category: "design",
+    price: { amount: 12, currency: "USD", period: "month" },
+    retroactive: true,
+    occurred_at: "2026-08-05",
+  });
+  assert.equal(accepted.logged, true);
+});
+
+/**
+ * DARK TEAM 2026-08-21, finding 4 (medium): an open page whose worry
+ * stopped holding — trial canceled, gap filled — was never retired,
+ * so the pager delivered a stale, now-false warning forever. Retired
+ * is not superseded: moot is not missed, and unspoken_pct must not
+ * inflate because a worry resolved.
+ */
+test("a page whose worry resolves is retired, not delivered forever", () => {
+  const path = freshPath();
+  logToolEvent(
+    { tool_name: "midjourney", event: "trial_started", problem_solved: "art", category: "image-gen",
+      trial_ends: soon(3), price: { amount: 30, currency: "USD", period: "month" } },
+    path,
+  );
+  queueDue(path);
+  assert.equal(openPages(path).total, 1);
+  // The builder cancels the trial. The warning is now false.
+  const canceled = logToolEvent(
+    { tool_name: "midjourney", event: "canceled", problem_solved: "art", category: "image-gen" },
+    path,
+  );
+  assert.equal(canceled.logged, true);
+  queueDue(path, { now: new Date(Date.now() + 60_000) });
+  assert.equal(openPages(path).total, 0, "a resolved worry stayed on the pager");
+  const coverage = pagerCoverage(path);
+  assert.equal(coverage.pages_retired, 1);
+  assert.equal(coverage.pages_missed, 0);
+  assert.equal(coverage.unspoken_pct, null, "moot is not missed");
+  // And a retired page cannot be acknowledged back into the record.
+  const known = openPages(path);
+  assert.equal(known.open.length, 0);
 });

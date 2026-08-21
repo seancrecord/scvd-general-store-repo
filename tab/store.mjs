@@ -205,8 +205,18 @@ export function closestCategory(raw) {
   return best;
 }
 
+/**
+ * ISO-shaped or refused. Date.parse alone accepted "August 5, 2026",
+ * which validated fine and then hit every consumer that assumes
+ * YYYY-MM-DD — dedupe keys, slice(0,10), isoWeekOf — as NaN-WNaN
+ * corpus weeks. Same strict form sweep.mjs already used.
+ */
 function isIsoDate(value) {
-  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}/.test(value) &&
+    Number.isFinite(Date.parse(value))
+  );
 }
 
 /**
@@ -667,6 +677,16 @@ export function eventDate(event) {
   return (event.retroactive && event.occurred_at) || event.server_timestamp;
 }
 
+/** The event's place on the timeline, for ordering the replay. Falls
+ * back to the server stamp when a retroactive claim doesn't parse,
+ * because a garbage date should not teleport an event to the epoch. */
+function eventTime(event) {
+  const claimed = Date.parse(eventDate(event));
+  if (Number.isFinite(claimed)) return claimed;
+  const stamped = Date.parse(event.server_timestamp);
+  return Number.isFinite(stamped) ? stamped : 0;
+}
+
 export function monthlyOf(price) {
   if (!price) return 0;
   if (price.period === "month") return price.amount;
@@ -684,7 +704,20 @@ export function derive(events, now = new Date()) {
   const drift = [];
   let consent = false;
 
-  for (const event of events) {
+  /**
+   * REPLAY IN TIMELINE ORDER, NOT FILE ORDER. The ledger is
+   * append-only but history isn't lived append-only: a backward
+   * backfill (SWEEP.md's historical pass, walked newest-first)
+   * appends a July renewal before a January signup, and replaying
+   * that in file order regressed price and last_billing_at to the
+   * OLDER event — false quiet flags, and a cancel appended before
+   * its own signup left the tool on the burn forever. Sort is
+   * stable, so same-moment events keep their append order.
+   * Found by the 2026-08-21 dark-team run.
+   */
+  const ordered = [...events].sort((a, b) => eventTime(a) - eventTime(b));
+
+  for (const event of ordered) {
     if (event.event === "consent_changed") {
       consent = event.contribute === true;
       continue;

@@ -161,10 +161,19 @@ what makes "the server owns the file" an honest sentence.
 
 `server_timestamp` is the file's truth about when the write happened.
 `occurred_at` is the caller's claim about when the thing happened,
-allowed only with `retroactive: true`. Derived views date an event by
-`occurred_at` when it is a marked claim, `server_timestamp`
+allowed only with `retroactive: true`, and must be ISO-shaped
+(`YYYY-MM-DD…`) — a parseable-but-freeform date would validate and
+then corrupt every consumer that slices it. Derived views date an
+event by `occurred_at` when it is a marked claim, `server_timestamp`
 otherwise — so a backfill session records real history without the
 file ever lying about what it knew when.
+
+Replay follows the **timeline, not the file**: events are ordered by
+their own dates before derivation, so a backward backfill (a
+historical sweep walked newest-first) appends in any order it likes
+and the derived state still reads chronologically. Same-moment events
+keep their append order. The file itself stays append-only and
+unordered — order is derived, like everything else.
 
 ## Derived at read, never stored
 
@@ -225,12 +234,15 @@ the CSV by hand, same law as the mail sweep.
 
 **`.pages.jsonl`** — the pager's append-only log, replayed the same
 way the tab is. States: `queued`, `handed_over`, `acknowledged`,
-`superseded`. `page_id` is `kind:tool:YYYY-MM-DD`, so one worry raises
-one page a day. A handover is not a delivery; only `acknowledged`
-spends a page, superseded-and-unacknowledged pages become
-`unspoken_pct`, and a superseded page cannot be acknowledged after the
-fact — otherwise the party being measured could edit its own failure
-out of the record.
+`superseded`, `retired`. `page_id` is `kind:tool:YYYY-MM-DD`, so one
+worry raises one page a day. A handover is not a delivery; only
+`acknowledged` spends a page, superseded-and-unacknowledged pages
+become `unspoken_pct`, and a superseded page cannot be acknowledged
+after the fact — otherwise the party being measured could edit its own
+failure out of the record. `retired` is the opposite of superseded: the
+worry stopped holding (trial canceled, gap filled, worry crossed into
+another kind), so the page is closed as **moot, not missed** — retired
+pages are counted (`pages_retired`) but never feed `unspoken_pct`.
 
 ## Versioning
 
