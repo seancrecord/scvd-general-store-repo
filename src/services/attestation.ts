@@ -1,13 +1,14 @@
 import {
   authorizationNonces,
-  BASE_CHAIN,
+  BASE_EVM,
   getBlockNumber,
   getReceipt,
   isSameAddress,
+  POLYGON_EVM,
   usdcFromUnits,
   usdcTransfers,
 } from "@/lib/base-rpc";
-import type { RpcReceipt } from "@/lib/base-rpc";
+import type { EvmChain, RpcReceipt } from "@/lib/base-rpc";
 import { extractPaymentNonce } from "@/lib/replay-guard";
 import { signMessage } from "@/lib/signing";
 import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
@@ -159,8 +160,16 @@ export interface SignedAttestation extends SettlementObservation {
   signature_jcs_covers: string;
 }
 
-const SCOPE =
-  "This observes public Base chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
+/**
+ * The EVM scope, one sentence-set per chain — the third-rail parity
+ * ruling made the wording a parameter rather than a second constant
+ * that could drift.
+ */
+function evmScope(chain: EvmChain): string {
+  return `This observes public ${chain.label} chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.`;
+}
+
+const SCOPE = evmScope(BASE_EVM);
 
 /**
  * The Solana scope carries two facts its Base sibling does not need:
@@ -174,17 +183,24 @@ const SCOPE =
 const SOLANA_SCOPE =
   "This observes public Solana chain state at the moment shown and nothing else, read from the transaction's settled USDC balance outcomes (pre/post token balances), not from its instructions. block_height and chain_head are slots. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND signature will never land — only that it had not at observed_at. EIP-3009 nonce matching is a Base facility and is not evaluated on Solana. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
 
-const READINGS: Record<SettlementStatus, string> = {
-  SETTLED:
-    "A matching USDC transfer is on Base, in a mined transaction that did not revert, at the depth shown.",
-  NOT_FOUND:
-    "Base has no receipt for that transaction hash at the moment observed. It may be unbroadcast, dropped, or simply not yet mined — this says nothing about later.",
-  PENDING_FINALITY:
-    "The transaction is mined and matches, but sits fewer than the stated number of blocks behind the head. Real, and not yet as deep as the rule asks.",
-  INSUFFICIENT_MATCH:
-    "The transaction exists and succeeded, but its USDC transfers do not match what was asked about — wrong recipient, wrong amount, or no USDC movement at all. The gap is the finding.",
-  REVERTED: "The transaction was mined and failed. No value moved.",
-};
+function evmReadings(
+  chain: EvmChain,
+  checkedBothOnNotFound = false,
+): Record<SettlementStatus, string> {
+  return {
+    SETTLED: `A matching USDC transfer is on ${chain.label}, in a mined transaction that did not revert, at the depth shown.`,
+    NOT_FOUND: checkedBothOnNotFound
+      ? "Neither Base nor Polygon has a receipt for that transaction hash at the moment observed — a 0x hash names an EVM transaction, not a chain, so both live EVM rails were read. It may be unbroadcast, dropped, or simply not yet mined — this says nothing about later."
+      : `${chain.label} has no receipt for that transaction hash at the moment observed. It may be unbroadcast, dropped, or simply not yet mined — this says nothing about later.`,
+    PENDING_FINALITY:
+      "The transaction is mined and matches, but sits fewer than the stated number of blocks behind the head. Real, and not yet as deep as the rule asks.",
+    INSUFFICIENT_MATCH:
+      "The transaction exists and succeeded, but its USDC transfers do not match what was asked about — wrong recipient, wrong amount, or no USDC movement at all. The gap is the finding.",
+    REVERTED: `The transaction was mined and failed. No value moved.`,
+  };
+}
+
+const READINGS: Record<SettlementStatus, string> = evmReadings(BASE_EVM);
 
 const SOLANA_READINGS: Record<SettlementStatus, string> = {
   SETTLED:
@@ -219,6 +235,7 @@ function classify(
   receipt: RpcReceipt | null,
   query: AttestationQuery,
   head: number,
+  chain: EvmChain = BASE_EVM,
 ): {
   status: SettlementStatus;
   recipient: string | null;
@@ -254,8 +271,8 @@ function classify(
     };
   }
 
-  const transfers = usdcTransfers(receipt);
-  const nonces = authorizationNonces(receipt);
+  const transfers = usdcTransfers(receipt, chain);
+  const nonces = authorizationNonces(receipt, chain);
 
   // Narrow by whatever the caller actually gave us. Every unstated
   // field widens the match, which is why the query is echoed onto the
@@ -325,7 +342,33 @@ export async function observeSettlement(
     txHash ? getReceipt(env, txHash) : Promise.resolve(null),
     getBlockNumber(env),
   ]);
-  return observeWithFacts(env, query, receipt, head);
+  if (receipt || !txHash) {
+    return observeWithFacts(env, query, receipt, head);
+  }
+  /**
+   * NOT ON BASE IS NOT NOT-FOUND ANY MORE (dark team follow-through,
+   * 2026-08-21): since the third rail opened, a 0x hash names an EVM
+   * transaction, not a chain — the same shape settles on Base and on
+   * Polygon. Before signing NOT_FOUND, ask Polygon. Whichever chain
+   * holds the receipt is the settlement's chain; a hash on neither is
+   * NOT_FOUND with both reads named on the artifact.
+   */
+  const [polygonReceipt, polygonHead] = await Promise.all([
+    getReceipt(env, txHash, POLYGON_EVM),
+    getBlockNumber(env, POLYGON_EVM),
+  ]);
+  if (polygonReceipt) {
+    return observeWithFacts(
+      env,
+      query,
+      polygonReceipt,
+      polygonHead,
+      POLYGON_EVM,
+    );
+  }
+  return observeWithFacts(env, query, null, head, BASE_EVM, {
+    checkedBothEvmChains: true,
+  });
 }
 
 /**
@@ -461,11 +504,18 @@ export async function observeWithFacts(
   query: AttestationQuery,
   receipt: Awaited<ReturnType<typeof getReceipt>>,
   head: number,
+  chain: EvmChain = BASE_EVM,
+  options: { checkedBothEvmChains?: boolean } = {},
 ): Promise<SignedAttestation> {
-  const verdict = classify(receipt, query, head);
+  const verdict = classify(receipt, query, head, chain);
   const core = {
     observed_at: new Date().toISOString(),
-    chain: BASE_CHAIN,
+    chain: chain.caip2,
+    // Named only when more than one chain was actually read — the
+    // NOT_FOUND that checked both EVM rails says so on the artifact.
+    ...(options.checkedBothEvmChains
+      ? { chains_checked: [BASE_EVM.caip2, POLYGON_EVM.caip2] }
+      : {}),
     tx_hash: query.txHash ?? null,
     recipient: verdict.recipient,
     payer: verdict.payer,
@@ -479,7 +529,9 @@ export async function observeWithFacts(
   return signObservation(env, {
     ...core,
     evidence_hash: await evidenceHash(core),
-    reading: READINGS[verdict.status],
-    scope: SCOPE,
+    reading: evmReadings(chain, options.checkedBothEvmChains === true)[
+      verdict.status
+    ],
+    scope: evmScope(chain),
   });
 }
