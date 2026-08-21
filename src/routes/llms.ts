@@ -770,6 +770,14 @@ not have to parse this page to schedule us:
 
   "cadence": { "every": "day", "next_at": "<ISO timestamp>", ... }
 
+## Where the money settles, drawn
+
+${base}/rails charts this store's organic settlements by chain —
+Base, Polygon, Solana — month by month, derived live from the same
+books as ${base}/stats, house traffic excluded at the till. The table
+always rides beside the picture, and the JSON twin serves the same
+numbers to machines.
+
 ## How prices are set, signed
 
 No x402 store publishes a pricing policy; this one signs its own.
