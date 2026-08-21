@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
+import { STORE_CONTACT_EMAIL } from "@/store/metadata";
 import type {
   WardHostResult,
   WardRound,
@@ -479,6 +480,15 @@ export async function wireNote(
     body: JSON.stringify({
       from: "The Store <alerts@scvd.store>",
       to: [to],
+      /**
+       * REPLY-TO, added 2026-08-20 after the first 70 real sends: the
+       * note signs "the keeper" and invites a conversation, but
+       * without this an operator's Reply landed in the alerts
+       * mailbox nobody converses from. Replies are the entire yield
+       * of outreach; they go to the address the keeper actually
+       * reads (the same one every public surface names).
+       */
+      reply_to: STORE_CONTACT_EMAIL,
       subject,
       text,
     }),
