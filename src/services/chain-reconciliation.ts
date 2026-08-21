@@ -10,6 +10,7 @@ import {
 import type { EvmChain } from "@/lib/base-rpc";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
+import { kvGet, kvGetJson } from "@/lib/kv-retry";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import { listPayers, metricsMonth } from "@/lib/metrics";
@@ -200,7 +201,7 @@ async function bankInflow(
   const add = async (kind: string, amount: number): Promise<void> => {
     if (amount <= 0) return;
     const key = KV_KEYS.metric(month, kind, chain);
-    const current = await env.COUNTERS.get(key);
+    const current = await kvGet(env.COUNTERS, key);
     await env.COUNTERS.put(
       key,
       String((current ? parseInt(current, 10) : 0) + amount),
@@ -208,7 +209,7 @@ async function bankInflow(
   };
   await add("inflow", totals.microUsdc);
   await add("inflowdust", totals.dustMicroUsdc);
-  if (!(await env.COUNTERS.get(KV_KEYS.inflowMeterStart(chain)))) {
+  if (!(await kvGet(env.COUNTERS, KV_KEYS.inflowMeterStart(chain)))) {
     await env.COUNTERS.put(
       KV_KEYS.inflowMeterStart(chain),
       new Date().toISOString(),
@@ -289,9 +290,9 @@ export async function readSkippedRanges(
   env: Env,
 ): Promise<SkippedRangesRecord> {
   return (
-    (await env.COUNTERS.get<SkippedRangesRecord>(
+    (await kvGetJson<SkippedRangesRecord>(
+      env.COUNTERS,
       KV_KEYS.reconcileSkippedRanges,
-      "json",
     )) ?? { ranges: [], total_ranges: 0, total_blocks: 0 }
   );
 }
@@ -552,7 +553,7 @@ export async function reconcileAgainstChain(
     chain.key === "polygon"
       ? POLYGON_RECONCILE_CURSOR_KEY
       : KV_KEYS.reconcileCursor;
-  const stored = await env.COUNTERS.get(cursorKey);
+  const stored = await kvGet(env.COUNTERS, cursorKey);
   const cursor = stored ? Number.parseInt(stored, 10) : NaN;
   /**
    * FIRST RUN STARTS NEAR THE HEAD, not at genesis. Walking all of
@@ -945,18 +946,50 @@ export async function runEvmReconciliations(
   env: Env,
   options: { now?: Date } = {},
 ): Promise<{ base: ChainReconciliation; polygon: ChainReconciliation }> {
+  /**
+   * ONE RAIL'S BAD HOUR IS NOT THE OTHER'S (2026-08-21T20:31:38.446Z,
+   * paged as P1). The shared certificate read was a cost fix and it
+   * stays — but written straight-line it also became the single point
+   * where a transient KV 500 skipped BOTH walks and sent one alert
+   * naming neither. Worse than the old shape, which at least only lost
+   * Base.
+   *
+   * So: the shared read is now best-effort (each walk falls back to
+   * reading the drawer itself — dearer, and dearer beats blind), and
+   * each rail is caught on its own. A rail that throws is REPORTED as
+   * failed rather than swallowed, so the pager still fires and still
+   * names which chain — and the other rail's books still get walked.
+   */
   const anyRail = env.PAY_TO_ADDRESS || env.POLYGON_PAY_TO;
-  const known = anyRail ? await knownSettlementHashes(env) : undefined;
-  const base = await runChainReconciliation(env, {
-    ...options,
-    chain: BASE_EVM,
-    ...(known ? { known } : {}),
-  });
-  const polygon = await runChainReconciliation(env, {
-    ...options,
-    chain: POLYGON_EVM,
-    ...(known ? { known } : {}),
-  });
+  const known = anyRail
+    ? await knownSettlementHashes(env).catch(() => undefined)
+    : undefined;
+  const walk = async (chain: EvmChain): Promise<ChainReconciliation> => {
+    try {
+      return await runChainReconciliation(env, {
+        ...options,
+        chain,
+        ...(known ? { known } : {}),
+      });
+    } catch (error) {
+      /*
+       * The alert has to name the rail. "Chain reconciliation failed"
+       * with two rails live is a page that tells the keeper to go
+       * look at everything, which is the same as telling him nothing.
+       */
+      await sendAlert(env, {
+        condition: "worker_health",
+        detail: `${chain.label} reconciliation failed: ${String(error)}`,
+      }).catch(() => undefined);
+      return {
+        ran: false,
+        failed: true,
+        reason: `${chain.label} walk threw: ${String(error)}`,
+      };
+    }
+  };
+  const base = await walk(BASE_EVM);
+  const polygon = await walk(POLYGON_EVM);
   return { base, polygon };
 }
 
@@ -1003,7 +1036,7 @@ export async function reconcileSolanaAgainstChain(
   }
 
   const cursor =
-    (await env.COUNTERS.get(SOLANA_RECONCILE_CURSOR_KEY)) ?? undefined;
+    (await kvGet(env.COUNTERS, SOLANA_RECONCILE_CURSOR_KEY)) ?? undefined;
   const { hashes, truncated } = await knownSettlementHashes(env);
   const orphans: OrphanTransfer[] = [];
   const floor = cheapestListingUsdc();

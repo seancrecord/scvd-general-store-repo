@@ -1,3 +1,4 @@
+import { withKvRetry } from "@/lib/kv-retry";
 import type { Env } from "@/types";
 
 /**
@@ -22,31 +23,15 @@ const CHUNK = 100;
  * then again on the unguarded text fallback — one blip blinding the
  * instrument this file's own comment promises never to blind.
  *
- * The failure that remains after retries still THROWS, deliberately:
- * silently nulling a failed chunk would let a correction publish
- * while missing up to 100 rows — a wrong number wearing a
- * correction's authority. Loud failure plus the cron's next pass is
- * the honest degradation; the retry only absorbs the blip.
+ * The policy MOVED to lib/kv-retry.ts on 2026-08-21, unchanged, after
+ * the same 500 arrived at a single-key `.get()` this file could not
+ * cover (the hourly bank walk's cursor read, paged as P1). One policy,
+ * both shapes of read. The failure that remains after retries still
+ * THROWS, deliberately: silently nulling a failed chunk would let a
+ * correction publish while missing up to 100 rows — a wrong number
+ * wearing a correction's authority.
  */
-const RETRIES = 3;
-const BACKOFF_MS = [150, 600];
-
-async function withRetry<T>(read: () => Promise<T>): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt < RETRIES; attempt += 1) {
-    try {
-      return await read();
-    } catch (error) {
-      lastError = error;
-      if (attempt < RETRIES - 1) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, BACKOFF_MS[attempt] ?? 600),
-        );
-      }
-    }
-  }
-  throw lastError;
-}
+const withRetry = withKvRetry;
 
 /**
  * ONE BAD ROW MUST NOT BLIND A WHOLE INSTRUMENT.
