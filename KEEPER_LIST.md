@@ -102,19 +102,32 @@ four Base hashes in the TASKS archive's NOW block;
 
 ---
 
-- [ ] **Light the Polygon rail** (shipped dark 2026-08-20, PAYMENT_RAILS.md
-  Part D): `npx wrangler secret put POLYGON_PAY_TO` — the same 0x pay-to
-  address works on Polygon as-is. Until the flag is set the store is
-  byte-identical to before the rail. Gates already run: CDP facilitator
-  supports polygon; Token Terminal has Polygon at 5.6M of 14M x402
-  transfers/30d.
-- [ ] **The three-rails copy pass, after the flag flips** (⚑ throughout):
-  "USDC on Base or Solana" → three rails across storefront copy, /what,
-  llms.txt, the skill twins, spec strings. Machine surfaces deriving from
-  acceptedNetworks() follow the flag on their own; the ink is yours.
-- [ ] LATER: the Polygon bank walk (POLYGON_RPC_URL secrets — the Alchemy
-  account covers Polygon) so the $10 unreconciled cap can stand down the
-  way Solana's did.
+- ~~**Light the Polygon rail**~~ — DONE 2026-08-21. The keeper set
+  POLYGON_PAY_TO; the rail went live at merge. Proven with real money
+  the same day: CV's hand-rolled $0.50 settled on Polygon, cert
+  `cert_s83s3dqvjf`, `network: eip155:137`, tx `0x1d78fdc7…`, both
+  signatures verified. House-flagged (his wallet is listed), so it
+  correctly does NOT appear in the organic split — the first ORGANIC
+  Polygon dollar is still unclaimed.
+- ~~**The three-rails copy pass**~~ — DONE 2026-08-21 (PR #186). The
+  sweep found two AEO surfaces with ZERO Polygon mentions — agents.md
+  and the OpenAPI contract had never been swept. Copy for machinery
+  that was still Base-only was deliberately left alone and moved with
+  its machinery instead, below.
+- ~~LATER: the Polygon bank walk~~ — DONE 2026-08-21 (PR #186), and it
+  came with the rest of EVM parity rather than alone, because the
+  keeper's ruling was parity by parameterization: the RPC reader takes
+  an EvmChain, the attestation reads BOTH EVM rails before signing
+  NOT_FOUND (a Polygon settlement is 0x-hex too, and the old dispatch
+  would have signed a false NOT_FOUND about real money one chain
+  over), the Statement takes a `network`, and the board walks Polygon
+  doors. Both walks share ONE read of the certificate drawer — the
+  naive version bought a 2,000-key scan twice an hour for a
+  chain-independent fact.
+  STILL OPEN, small: `POLYGON_RPC_URL_PRIMARY` / `_SECONDARY` secrets
+  (the Alchemy account covers Polygon). The walk runs on keyless
+  public endpoints today and prefers the secrets the moment they
+  exist; this is resilience, not function.
 
 ## NEXT## NEXT
 
