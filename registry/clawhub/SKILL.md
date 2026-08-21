@@ -438,7 +438,7 @@ wonder about: `population_known` (the union of every public directory
 we read) against `population_walked` (the subset we actually probed).
 If that ratio is small, the artifact says it is small.
 
-### The evidence layer (3.5.0, 2026-08-21)
+### The evidence layer (3.6.0, 2026-08-21)
 
 The observations above now compose into standing surfaces an agent
 can route on without buying anything:
