@@ -23,6 +23,41 @@ The governing sentence, from the 08-21 exchange: **this is an
 evidence protocol, not a monitoring service.** Every decision below
 should be checked against it.
 
+### THE GOVERNING QUESTION (keeper, 08-21)
+
+> "How do I turn SCVD from a crawler that produces interesting
+> observations into a standardized evidence system that agents can
+> safely consume?"
+
+This is the spine of the document. Everything below is a sub-answer.
+The full answer is five properties — an observation becomes
+consumable evidence when it is all five, and today we hold two:
+
+| Property | Means | Where | State |
+|---|---|---|---|
+| **Verifiable** | checkable without trusting the issuer | signatures, key history, chained + anchored corpus | **STANDING** — our strongest half |
+| **Refusable** | the record makes "don't rely on this" the easy default | freshness states, expiry, `not_observed`, `indeterminate` | **PARTLY STANDING** — passports have it, the census does not |
+| **Decidable** | an agent acts on it without reading prose | §2 layers, §3 typed record, `limitations[]` | PROPOSED |
+| **Reproducible** | a stranger can run the procedure and emit a comparable record | §4 methodology, `procedure.version` | PROPOSED |
+| **Consumable** | stable identifiers, stable schema, a way to read it at agent scale | §14 | **GAP — surfaced by this question** |
+
+The word doing the most work is **safely**. Safe consumption means the
+worst case of trusting a record is bounded and known. Every unsafe
+case we can name maps to one of the five:
+
+- a `ready` from three weeks ago read as current → **refusable**
+- a `ready` at L3 read as "I can buy here" → **decidable**
+- a `not_ready` that was actually our network blinking → the canary
+  (§10), which is refusability applied to ourselves
+- a record whose schema a consumer mis-parses → **consumable**
+- a record nobody can check → **verifiable**
+
+"Crawler" and "evidence system" differ in exactly one more way worth
+naming: a crawler's output is *ours*. A standard's output is
+**anyone's**. The test for whether we have crossed the line is
+whether a second party can emit a conformant record we would accept
+(§8 federation).
+
 ---
 
 ## 1. The problem, in numbers
@@ -323,6 +358,18 @@ not throughput.
   at strangers' doors. One polite, self-identifying request per host
   per week is defensible — but the cap and the rule should be decided
   while it is still theoretical.
+- **Daily changes that answer materially** (keeper's medium-term goal,
+  §13). Weekly is unmistakably polite; 10,000 hosts × daily is ~10k
+  unrequested requests a day, which some operators will read as
+  scraping regardless of how well we behave. If the corpus goes daily
+  at scale it needs, at minimum: robots respect, honouring 429 and
+  Retry-After, per-host backoff, a published opt-out that actually
+  works, and the reason we are knocking stated at the door (User-Agent
+  + Web Bot Auth identity + a URL explaining the census). Worth
+  considering a **tiered cadence** instead of uniform daily — daily
+  for the panel and anyone who opted in, weekly for the long tail —
+  which buys the drift signal where it matters without a tenfold
+  knock on strangers who never asked.
 
 ---
 
@@ -564,30 +611,148 @@ trust_profile price (currently $19 ⚑).
 
 ---
 
-## 13. Sequencing (proposed, not agreed)
+## 13. Sequencing
+
+### THE KEEPER'S ROADMAP (08-21, his words)
+
+**Immediate — this week: scale the walking.**
+"0.7% coverage is a demo, not a product. The population register
+knows 5,873 hosts; we walk 40. That gap is the whole problem."
+
+**Medium-term — this month: increase frequency.**
+"Weekly is too slow for the 'did Tuesday's deploy break it' question.
+The paid watch is hourly; the corpus needs to be at least daily to be
+useful."
+
+**Long-term — this quarter: build the middle layer.**
+"Medium-frequency, medium-coverage, paid-per-host. Right now we have
+two ends of a spectrum (free weekly 0.7% vs paid hourly 1 host) with
+nothing in between. That middle is where the data moat actually
+lives."
+
+*The middle layer is §7's **Beat** rung. Same instrument, already has
+a home in this outline.*
+
+### What "scale the walking" translates to in work
+
+You cannot walk what you cannot address. If the register holds 5,873
+**hosts** but the door bank holds ~40 **URLs**, then "scale the
+walking" IS the resolver — §5's missing pipe — and the fastest form of
+it is **convention-based resolution**: for each known host, probe a
+small fixed set of conventional paths rather than hunting for a
+bespoke URL.
+
+- `/.well-known/x402.json`
+- `/llms.txt`
+- `/openapi.json`
+- the root
+
+Four cheap requests per host, once per host, cached, with the backoff
+ladder for failures. ~23k requests for a full first pass over 5,873 —
+a bounded sweep spread across the hourly batches already running, not
+a new machine. That is the realistic path from 40 to thousands inside
+a week, and the funnel count (below) tells us the hit rate before we
+commit to it.
+
+### Dependencies that must ride WITH the scaling, not after it
+
+Recorded as disagreement-in-the-open, not as a block. Both are small,
+and both get permanently more expensive the moment volume arrives:
+
+1. **The observation record's un-backfillable fields (§3).** Scaling
+   to thousands before the record carries `limitations[]`,
+   `not_observed[]` and `procedure.version` means thousands of
+   permanently low-fidelity rows. At 40 rows/week that debt is
+   trivial; at 5,000/day it is the whole corpus. The fields are free
+   at probe time — this costs days, not weeks, and it does not slow
+   acquisition, which is different code.
+2. **The canary (§10).** A false verdict at 40 hosts is 40 wrong
+   claims about other people's businesses; at 10,000 it is 10,000,
+   generated in one bad round by our own network blinking. This is the
+   single cheapest robustness item and the licence to grow.
+
+Everything else in the old proposed order can follow the keeper's
+roadmap rather than precede it.
+
+### Remaining order, after the roadmap's three phases are underway
 
 1. **The funnel count** — reads only, touches no stranger's door.
-   Tells us whether the clog is resolution or qualification before we
-   build the wrong pipe.
-2. **The observation record** — layers, `not_observed`,
-   `limitations[]`, procedure/observer versions, environment
-   fingerprint. Every round run without these is permanently recorded
-   at lower fidelity.
-3. **The methodology document** — published, versioned, carrying the
-   L7 boundary and the consent ceiling. *Written before the record
-   format is baked, so the keeper can catch disagreements in prose.*
-4. **Canary + confirmation-before-verdict** — the licence to scale.
-5. **Client-profile diversity** — the identity axis; our actual
+   Tells us whether the clog is resolution or qualification, and what
+   convention-based resolution's hit rate actually is.
+2. **The methodology document** — published, versioned, carrying the
+   L7 boundary and the consent ceiling.
+3. **Client-profile diversity** — the identity axis; our actual
    question.
-6. **Acquisition pipeline** — harvest → resolve → qualify, with
-   provenance and the backoff ladder.
-7. **Panel + random sample** in the walk.
-8. **The Beat** — the cohort rung.
-9. **Federation schema** — after our own records are worth copying.
+4. **Panel + random sample** in the walk.
+5. **Federation schema** — after our own records are worth copying.
 
 ---
 
-## 14. Parking lot — not yet placed
+## 14. Consuming the evidence — the gap the governing question found
+
+Everything in §§1–13 is about **producing** good observations. The
+keeper's question exposes a whole half nobody has designed: what an
+agent developer needs in order to read them safely at scale. All of
+this is **GAP** — not built, not previously outlined.
+
+### Stable subject identity
+
+`host` is a fragile key. Subdomains, ports, paths, redirects, CDN
+fronting and multi-tenant platforms all break it, and two observations
+of "the same" subject may not be about the same thing. A standard
+needs a canonical subject identifier with stated rules — what
+normalizes, what does not, and what happens when a door moves. Without
+it, longitudinal series silently splice unrelated things together.
+
+### Schema evolution policy
+
+Agents cache. A format that changes silently breaks consumers who did
+everything right. Needs, stated publicly and enforced:
+
+- schema version on every record
+- additive-only changes within a major version
+- a deprecation window with dates, announced like key rotation
+- old records remain valid and parseable forever
+
+### Consumer conformance vectors
+
+We already publish signature test vectors in the authority pack — the
+precedent exists. Extend it: publish N observation records with the
+**correct conclusion for each**, including the hard ones (expired,
+`not_observed`, divergent, void-by-canary). An implementer runs them
+and learns whether they are reading us right. This is what separates a
+format from a standard.
+
+### Query semantics at agent scale
+
+Today a consumer can ask about one host (the passport). A consumer
+tracking 500 hosts has no efficient move. Missing:
+
+- a **delta feed** — "everything that changed since T"
+- bulk lookup
+- stable pagination with a cursor that survives new data
+- cache directives that match the freshness model, so a well-behaved
+  consumer refetches exactly when the evidence decays
+
+### The consumer guide
+
+A document written for the agent developer, not the operator: how to
+read a record, when to refuse, what each conclusion does and does not
+license, and worked examples of correct and incorrect use. The
+methodology doc (§4) explains how we observe; this explains how to
+consume. They are different readers and should be different documents.
+
+### Hard-to-over-quote design
+
+A claim should be inseparable from its conditions. If `conclusion`
+serialises to a bare `"ok"`, it will be quoted as "SCVD says this
+endpoint works" the first day someone builds a badge from it. The
+conclusion field should carry its own scope — layer, client profile,
+moment — so that quoting the conclusion quotes the limits with it.
+
+---
+
+## 15. Parking lot — not yet placed
 
 - Reciprocal walking with other observatories (beyond signature
   verification): probably premature.
