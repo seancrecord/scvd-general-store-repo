@@ -535,6 +535,11 @@ export async function fulfillPurchase(
     const goodsInput: Parameters<typeof deliverInstantGoods>[2] = {
       patronNumber: minted.patronNumber,
     };
+    // The watches record it so a lost id is recoverable by proving
+    // the wallet, rather than by buying the watch a second time.
+    if (minted.certificate.payer) {
+      goodsInput.payer = minted.certificate.payer;
+    }
     if (input.agentName) {
       goodsInput.agentName = input.agentName;
     }

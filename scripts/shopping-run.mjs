@@ -474,6 +474,38 @@ for (const item of items) {
       patron_number: body.patron_number,
       cert_id: certId,
       order_id: body.order_id,
+      /**
+       * THE IDENTIFIERS THAT LIVE ONLY IN THE RESPONSE — a watch id, a
+       * statement url, a mandate id, a check id. The store spreads
+       * them FLAT into the body (fulfillment.ts spreads goods.extras),
+       * so there is no `extras` key to grab: this file kept the
+       * receipt and the cert and let every one of these scroll off the
+       * terminal. A standing watch bought by the house was
+       * unrecoverable the moment it did. CV hit exactly that on
+       * 2026-08-21 and had to buy the watch a second time to get its
+       * id back.
+       *
+       * Everything the body carried beyond the fields already named
+       * above, kept verbatim. A NEW identifier invented next month is
+       * kept by this line without anybody remembering to add it —
+       * which is the property the old code lacked.
+       */
+      response_extras: Object.fromEntries(
+        Object.entries(body).filter(
+          ([key]) =>
+            ![
+              "message",
+              "item_id",
+              "deliverable",
+              "paid_usdc",
+              "tip_usdc",
+              "certificate",
+              "cert_id",
+              "order_id",
+              "patron_number",
+            ].includes(key),
+        ),
+      ),
       verify_valid: verify?.valid,
       deliverable: body.deliverable,
     });
