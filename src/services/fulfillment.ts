@@ -22,6 +22,10 @@ import {
   statementHours,
 } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
+import {
+  performPassportRefresh,
+  type SignedPassportRefresh,
+} from "@/services/passport-refresh";
 import { performMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
 import { accrueCredit } from "@/services/store-credit";
@@ -300,6 +304,18 @@ export async function fulfillPurchase(
    * certificate binds the record's evidence hash. An unreadable
    * window is still a signed, dated statement — coverage says so.
    */
+  /**
+   * THE REFRESH observes first and mints second, same discipline: the
+   * certificate binds the observation's evidence hash, and the
+   * observation lands in KV before the mint so the passport re-derives
+   * from it the moment the buyer looks. The verdict lands whatever it
+   * says — a broken finding is the product working.
+   */
+  let passportRefresh: SignedPassportRefresh | undefined;
+  if (item.id === "passport_refresh") {
+    passportRefresh = await performPassportRefresh(env, input.targetUrl ?? "");
+    mintOptions.attests = passportRefresh.evidence_hash;
+  }
   let walletStatement: SignedWalletStatement | undefined;
   if (item.id === "the_statement") {
     walletStatement = await performWalletStatement(
@@ -562,6 +578,9 @@ export async function fulfillPurchase(
     }
     if (walletStatement) {
       goodsInput.walletStatement = walletStatement;
+    }
+    if (passportRefresh) {
+      goodsInput.passportRefresh = passportRefresh;
     }
     if (mandate) {
       goodsInput.mandate = mandate;

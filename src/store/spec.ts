@@ -59,7 +59,18 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * turnover is out; only this claims-door moment still awaits a
  * republish).
  */
-export const SKILL_VERSION = "3.4.1";
+/**
+ * 3.5.0 (2026-08-21): the evidence layer's night — the six-P slate.
+ * NEW on the shelf: passport_refresh ($1 ⚑, the paid fresh check for
+ * an endpoint passport; census instrument, verdict lands whatever it
+ * says). NEW free surfaces a skill reader should know exist: /trust,
+ * /passport/{host} with the freshness states and the embeddable chip,
+ * POST /api/verify-receipt (anyone's receipt, signed verdict), the
+ * SIWX (CAIP-122) claims challenge, and /api/practice — the obstacle
+ * course. MINOR: a reader cached on 3.4.1 is missing a shelf item and
+ * the entire evidence layer around it.
+ */
+export const SKILL_VERSION = "3.5.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";

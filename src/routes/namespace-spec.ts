@@ -96,6 +96,42 @@ function doc(base: string) {
         "The draft-vauban-x402-* family (Independent Submission; receipt-format negotiation, a claim algebra, delegation binding) pins the same RFC 8785 preimage discipline as draft-hopley-x402-canonicalisation-jcs-v1, so `signature_jcs` above already verifies under it. Vocabulary mapping for readers arriving from those drafts: this store's certificate plays the SettlementReceipt role (self-contained, offline-verifiable, seller-issued); the `attests` binding is the same idea as their 32-byte `action_ref` — a digest inside the signed fields tying the payment artifact to a work-layer artifact — differing in name and in that ours states WHAT was digested per item class. We implement no STARK or post-quantum variant and no claim-algebra operators; if the receipt_format negotiation in those drafts stabilizes, this namespace's formats would be offered as tokens under it rather than replaced by it. Drafts, not standards: nothing here is bound by them, and this paragraph is dated so its staleness is visible.",
     },
     /**
+     * THE AUTHORITY PACK (P6, 2026-08-21 — three outside reads asked
+     * the same question: "SCVD can sign observations, but why should
+     * others trust SCVD as an observer?"). The answer this spec can
+     * give is RECOMPUTABILITY: a worked vector with a published
+     * throwaway key, a verifier small enough to read whole, and the
+     * incident/revocation posture stated as facts about what exists
+     * rather than promises about what would happen.
+     */
+    test_vectors: {
+      what:
+        "A fully worked example of both signature disciplines, with a PUBLISHED throwaway key. Run it before trusting your verifier: if your implementation cannot reproduce these two verifications, the bug is on your side of the wire, and finding that out costs nothing.",
+      key_warning:
+        "The vector key below signs NOTHING real. It appears in no key history and never will; a real artifact presenting it must fail step 1 of verification (key not in the store's history).",
+      vector: {
+        seed_hex: "42".repeat(32),
+        public_key:
+          "2152f8d19b791d24453242e15f2eab6cb7cffa7b6a5ed30097960e069881db12",
+        served_payload_exact_bytes:
+          '{"note":"This vector signs nothing real; its key is published on purpose and appears in no key history.","artifact":"test_vector","issued_at":"2026-08-21T00:00:00.000Z"}',
+        primary_signature_over_served_bytes:
+          "194853ba44ed91d5f178d0ac225c5aed912c21f969118233f1e40dda9caa9f4af38cea1b2834ddd9cb99e8b2347c3025738d64e41eb5b725ee7ccee2ce4fd60e",
+        jcs_canonicalization_of_same_payload:
+          '{"artifact":"test_vector","issued_at":"2026-08-21T00:00:00.000Z","note":"This vector signs nothing real; its key is published on purpose and appears in no key history."}',
+        signature_jcs_over_jcs_bytes:
+          "532f58e1723cf5d9227b54cf8aaf809a6104cdc8fa2173d264d95920b7ffe05a6c4ecc7998e1f090165e3fa2c6057388be5a61468a99fbbaf5523f84acc5c009",
+        the_lesson:
+          "The payload's keys are served UNSORTED on purpose: the two disciplines produce different bytes and different signatures over the same object. A verifier that conflates them will pass one and fail the other, and this vector catches it.",
+      },
+      reference_verifier_js:
+        'async function verify(message, signatureHex, publicKeyHex) { const hex = (h) => Uint8Array.from(h.match(/.{2}/g).map((b) => parseInt(b, 16))); const key = await crypto.subtle.importKey("raw", hex(publicKeyHex), { name: "Ed25519" }, false, ["verify"]); return crypto.subtle.verify({ name: "Ed25519" }, key, hex(signatureHex), new TextEncoder().encode(message)); } // WebCrypto Ed25519 (Node 19+, Deno, Cloudflare Workers, modern browsers). message is signed_payload verbatim for the primary, or your own RFC 8785 canonicalization for signature_jcs.',
+      incident_policy:
+        "Stated as facts about what exists. ONE live signing key, one operator; a stolen live key would sign indistinguishably from the store — every artifact-selling surface says so. On suspected compromise, what the machinery already supports: the key is retired in the directory with an end-of-service date, a new key enters with its start date, the state change is committed into the Bitcoin-anchored key chain (which proves WHEN, never WHO SHOULD HAVE), and a corrections entry names the incident window. Containment is the service window: artifacts attribute to the key that signed them WITHIN its dated service, so a compromise bounds the doubt to the window between last-known-good anchor and retirement, never to the whole history. What does NOT exist yet, said plainly: a pre-announced successor key (the single-point-of-failure every outside read names; open ruling F3), and any co-signer or independent witness.",
+      revocation_story:
+        "There is no revocation registry, and this spec does not pretend one. Three mechanisms do the honest work instead: (1) EXPIRY — artifacts that age (passports) carry their own expiry and freshness arithmetic, and verifiers should refuse expired evidence without asking anybody; (2) WITHDRAWAL — a claim this store no longer stands behind is withdrawn IN PUBLIC at its original URL, the notice leading both dialects while the signed bytes stay byte-identical and the withdrawal rides OUTSIDE the signed payload (precedent: the August 2026 field report — a retraction must never rewrite what the signature covers); (3) KEY RETIREMENT — see incident_policy. /api/verify reports what a signature IS (valid over these bytes, by this key, in this service window), never that the claim remains endorsed.",
+    },
+    /**
      * THE LADDER ON THE SPEC (2026-08-20): the five levels are store
      * canon in store/assurance.ts; the spec serves them so a machine
      * reader learns what a valid signature is evidence OF without

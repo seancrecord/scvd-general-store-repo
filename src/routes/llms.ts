@@ -715,7 +715,12 @@ mechanically (fresh / aging / expired / broken / indeterminate — refuse
 expired passports), and the signed per-host history it derives from.
 Free. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
-refusal, not a row: names appear only on the ready side here.
+refusal, not a row: names appear only on the ready side here. Every
+passport carries a free embeddable chip (${base}/badges/passport/{host}.svg)
+that DECAYS by the same freshness arithmetic — and the paid refresh
+(the passport_refresh item, $1) points the census's own probe at your
+door right now, folding the result in wherever it is newest. The
+check is bought; the verdict never is.
 
 ## Verify anyone's receipt — signed verdicts, free
 
