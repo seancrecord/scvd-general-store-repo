@@ -38,7 +38,6 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/contact": "redirect to a real room; listing it would double-count the destination",
   "/faq": "redirect to a real room; listing it would double-count the destination",
   "/legal": "redirect to a real room; listing it would double-count the destination",
-  "/privacy": "redirect to a real room; listing it would double-count the destination",
   "/privacy-policy": "redirect to a real room; listing it would double-count the destination",
   "/security": "redirect to a real room; listing it would double-count the destination",
   "/support": "redirect to a real room; listing it would double-count the destination",

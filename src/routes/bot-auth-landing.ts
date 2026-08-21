@@ -83,7 +83,7 @@ botAuthLandingRoutes.get("/bot-auth", async (c) => {
       <section>
         <h2>The signed card</h2>
         <p class="menu-desc">${escapeHtml(payload.signed_card?.note ?? "")}</p>
-        <p class="menu-meta">GET ${escapeHtml(base)}/api/buy/signature_agent_card?url=https://your-agent.example — $${escapeHtml(String(payload.signed_card?.price_usdc ?? ""))} over x402, instant, USDC on Base or Solana.</p>
+        <p class="menu-meta">GET ${escapeHtml(base)}/api/buy/signature_agent_card?url=https://your-agent.example — $${escapeHtml(String(payload.signed_card?.price_usdc ?? ""))} over x402, instant, USDC on Base, Polygon, or Solana.</p>
       </section>
       <section>
         <h2>What this is not</h2>

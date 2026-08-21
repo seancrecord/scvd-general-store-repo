@@ -65,7 +65,7 @@ export const TRUST_MODELS: Record<
   third_party_observation: {
     name: "Third-party observation",
     means:
-      "The store observes something it does not control and signs what it saw: public chain state on Base or Solana, or whether somebody else's URL answered when we walked past it out of band. We are not a party to the thing being observed, which is the property that makes the observation worth anything.",
+      "The store observes something it does not control and signs what it saw: public chain state on Base, Polygon, or Solana, or whether somebody else's URL answered when we walked past it out of band. We are not a party to the thing being observed, which is the property that makes the observation worth anything.",
     weakness:
       "It is still OUR observation, made once, at one moment, by one party. It is not a consensus, not a monitoring history, and not a promise about any other moment. A NOT_FOUND is not a claim that something will never settle.",
   },

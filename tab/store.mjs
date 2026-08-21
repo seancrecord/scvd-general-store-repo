@@ -796,6 +796,18 @@ export function derive(events, now = new Date()) {
       notes: event.notes,
       price: event.price,
       replaced_with: event.replaced_with,
+      /**
+       * The gaps ride the history or they are swept under: the pager's
+       * gap pages read history[].incomplete, and until 2026-08-21 this
+       * builder dropped the field the capture rounds worked to record —
+       * so the one mechanism built to keep SCHEMA.md's "the gaps are
+       * not swept under" promise never fired, for any tool, ever.
+       * Found by CV's clock-advance exercise.
+       */
+      incomplete:
+        Array.isArray(event.incomplete) && event.incomplete.length > 0
+          ? event.incomplete
+          : undefined,
     });
     tools.set(name, tool);
   }
@@ -870,8 +882,26 @@ export function quietTools(state, cyclesAllowed = 2) {
     .filter((tool) => {
       if (tool.renewals_seen < 1 || !tool.last_billing_at) return false;
       const period = tool.price?.period;
-      if (period !== "month" && period !== "week") return false;
-      const cycleMs = period === "month" ? 30 * 24 * 3600_000 : 7 * 24 * 3600_000;
+      /**
+       * Every billing period with a heartbeat gets the same silence
+       * check — until 2026-08-21 only month and week did, so a
+       * quarterly or annual sub (domains, hosting, the classic
+       * forgotten renewals) could go quiet forever unflagged. Found
+       * by CV seeding a quarterly tool and advancing the clock 2.5
+       * years to zero pages. "once" stays excluded on purpose: a
+       * one-time purchase has no cycle whose absence means anything.
+       */
+      const cycleMs =
+        period === "month"
+          ? 30 * 24 * 3600_000
+          : period === "week"
+            ? 7 * 24 * 3600_000
+            : period === "quarter"
+              ? 91 * 24 * 3600_000
+              : period === "year"
+                ? 365 * 24 * 3600_000
+                : null;
+      if (cycleMs === null) return false;
       return (
         state.now.getTime() - Date.parse(tool.last_billing_at) >
         cyclesAllowed * cycleMs

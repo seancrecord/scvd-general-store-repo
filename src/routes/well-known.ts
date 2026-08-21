@@ -150,7 +150,7 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
     refund_policy: REFUND_POLICY,
     independently_checkable: {
       signatures: `${base}/api/verify/{id} — free, no account, forever. Every artifact carries the exact signed bytes and the public key; check with your own ed25519 library. Key history at ${base}/.well-known/scvd-signing-key.`,
-      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base or Solana explorer — whichever rail settled — without asking us.`,
+      settlement: `Every certificate for a paid purchase binds settlement_tx, the on-chain transaction. Check it on any Base, Polygon, or Solana explorer — whichever rail settled — without asking us.`,
       /**
        * The answer to the obvious objection to the line above: the key
        * history is OUR page, and our page is editable. This one is not
@@ -508,7 +508,7 @@ function a2aCard(base: string) {
       ...MENU_ITEMS.map((item) => ({
         id: item.id,
         name: item.name,
-        description: `${item.description} $${item.price_usdc} in USDC over x402 (Base or Solana), delivered first and settled after; GET ${base}/api/buy/${item.id}. Every purchase returns a signed artifact verifiable at ${base}/api/verify/{id}.`,
+        description: `${item.description} $${item.price_usdc} in USDC over x402 (Base, Polygon, or Solana), delivered first and settled after; GET ${base}/api/buy/${item.id}. Every purchase returns a signed artifact verifiable at ${base}/api/verify/{id}.`,
         tags: ["x402", "usdc", item.fulfillment],
         inputModes: ["application/json"],
         outputModes: ["application/json"],

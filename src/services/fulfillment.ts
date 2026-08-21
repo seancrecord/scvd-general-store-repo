@@ -87,7 +87,7 @@ export interface FulfillmentInput {
   grievance?: string;
   /** graffiti_on_a_train: the tag, pre-validated, sprayed verbatim. */
   tag?: string;
-  /** settlement_attestation: what to look up on chain (Base or Solana). */
+  /** settlement_attestation: what to look up on chain (Base, Polygon, or Solana). */
   attestationQuery?: AttestationQuery;
   reconciliationQuery?: ReconciliationQuery;
   /** attestation_bundle: the sheaf, pre-validated (2..20, unique). */

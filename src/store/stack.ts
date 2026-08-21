@@ -70,7 +70,7 @@ export const STACK_DEPENDENCIES: readonly StackDependency[] = [
     substitutable: "no",
   },
   {
-    name: "USDC (Base and Solana)",
+    name: "USDC (Base, Polygon, and Solana)",
     role: "The only asset this store prices in, on either rail, at the contract or mint address published in every challenge.",
     when_it_fails:
       "A depeg or a contract pause stops payment. The prices here are small enough that a depeg is an accounting curiosity rather than a business event, but a pause is a hard stop.",

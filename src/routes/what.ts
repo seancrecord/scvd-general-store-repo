@@ -50,7 +50,7 @@ function longTailFaq(base: string): FaqPair[] {
     const returns = SPEC_RETURNS[item.id] ?? item.description;
     return {
       question,
-      answer: `"${item.name}" (${price}, USDC on Base or Solana over x402): ${returns} Buy: GET ${base}/api/buy/${item.id} — machine spec at ${base}/menu/${item.id}, live terms in the 402 itself.`,
+      answer: `"${item.name}" (${price}, USDC on Base, Polygon, or Solana over x402): ${returns} Buy: GET ${base}/api/buy/${item.id} — machine spec at ${base}/menu/${item.id}, live terms in the 402 itself.`,
     };
   });
 }

@@ -17,6 +17,7 @@ import {
   closestCategory,
   derive,
   PERIODS,
+  quietTools,
   readEvents,
   SCHEMA_VERSION,
   validateEvent,
@@ -1786,4 +1787,73 @@ test("the pager still runs when invoked through a symlink — the npm bin shape"
     run.stdout.includes("ahrefs"),
     `expected the due trial on stdout, got: ${JSON.stringify(run.stdout)}`,
   );
+});
+
+
+// ————— CV's clock-advance findings, 2026-08-21 —————
+
+test("gap pages fire: derive() carries incomplete onto history (CV bug 1)", () => {
+  const events = [
+    {
+      event: "adopted",
+      tool_name: "gappy",
+      server_timestamp: "2026-01-05T00:00:00Z",
+      incomplete: ["problem_solved", "trial_ends"],
+    },
+  ];
+  const state = derive(events, new Date("2026-01-20T00:00:00Z"));
+  const tool = state.tools.get("gappy");
+  assert.ok(tool, "tool derived");
+  const carried = tool.history.flatMap((h) => h.incomplete ?? []);
+  assert.deepEqual(
+    carried.sort(),
+    ["problem_solved", "trial_ends"],
+    "history dropped the incomplete list the capture recorded",
+  );
+});
+
+test("quiet detection reaches quarterly and yearly billing (CV bug 2)", () => {
+  const events = [
+    {
+      event: "paid_started",
+      tool_name: "quarterly-host",
+      server_timestamp: "2024-01-05T00:00:00Z",
+      price: { amount: 30, period: "quarter" },
+    },
+    {
+      event: "renewed",
+      tool_name: "quarterly-host",
+      server_timestamp: "2024-04-05T00:00:00Z",
+      price: { amount: 30, period: "quarter" },
+    },
+    {
+      event: "paid_started",
+      tool_name: "annual-domain",
+      server_timestamp: "2023-06-01T00:00:00Z",
+      price: { amount: 12, period: "year" },
+    },
+    {
+      event: "renewed",
+      tool_name: "annual-domain",
+      server_timestamp: "2024-06-01T00:00:00Z",
+      price: { amount: 12, period: "year" },
+    },
+    {
+      event: "paid_started",
+      tool_name: "one-off",
+      server_timestamp: "2024-01-01T00:00:00Z",
+      price: { amount: 5, period: "once" },
+    },
+    {
+      event: "renewed",
+      tool_name: "one-off",
+      server_timestamp: "2024-06-01T00:00:00Z",
+      price: { amount: 5, period: "once" },
+    },
+  ];
+  const state = derive(events, new Date("2026-08-21T00:00:00Z"));
+  const quiet = quietTools(state).map((t) => t.tool_name);
+  assert.ok(quiet.includes("quarterly-host"), "2.5-years-silent quarterly sub unflagged");
+  assert.ok(quiet.includes("annual-domain"), "2-years-silent annual sub unflagged");
+  assert.ok(!quiet.includes("one-off"), '"once" has no cycle; silence means nothing');
 });

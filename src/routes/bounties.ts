@@ -72,7 +72,11 @@ function boardHtml(
       <td>$${entry.amount_usd.toFixed(4)}</td>
       <td><strong>$${entry.reward_usd.toFixed(2)}</strong></td>
       <td><small>${escapeHtml(entry.expires_at.slice(0, 10))}</small></td>
-    </tr>`,
+    </tr>${
+      entry.note
+        ? `<tr><td></td><td colspan="4"><small>The house's note: ${escapeHtml(entry.note)}</small></td></tr>`
+        : ""
+    }`,
     )
     .join("\n");
   const rules = BOARD_RULES.map(
