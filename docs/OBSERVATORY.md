@@ -15,7 +15,7 @@ already stands — the keeper's own rule from the outside-reads log:
 - **OPEN** — a question with no answer yet, or a keeper ruling.
 
 New material goes into the section it belongs to under the right
-heading, dated. Section 14 is the parking lot for anything that
+heading, dated. Section 20 is the parking lot for anything that
 doesn't have a home yet. Nothing moves from PROPOSED to built without
 the keeper saying so.
 
@@ -101,7 +101,8 @@ Two corollaries, both hard rules:
 **Start at §16 for the architecture** — the stack, every component
 mapped to the question it answers, and an honest maturity column.
 §17 is the proposal to publish that map. §18 is the observation
-manifest and the non-equivalences. §§1–15 are the depth behind them.
+manifest and the non-equivalences. §19 is adoption, the fork, and
+economic weight. §§1–15 are the depth behind them.
 
 ---
 
@@ -951,23 +952,31 @@ as being for dispute evidence, auditability, reputation systems and
 agent-to-agent commerce. The protocol is creating the primitive; this
 is the layer that reads it.
 
-### ⚑ NUMBER DISCREPANCY — a LOOK item, unresolved
+### ⚑⚑ NUMBER DISCREPANCY — now THREE-WAY, and it is the top LOOK item
 
-The outside read cites **"5,954 known / 964 walked"** (≈16% coverage).
-Our working table (§1) says **5,873 known / 40 walked** (0.7%). Those
-cannot both describe the same thing, and the entire coverage argument
-turns on which is right. Candidates: cumulative-hosts-ever-walked vs
-per-round walked; `listed_resources` vs distinct hosts; a figure that
-moved between reads.
+Three sources, three incompatible pictures of the same instrument:
 
-Attempted to verify against the live `/registry` and `/corpus.json`
-on 08-21 — **scvd.store is egress-blocked from the build environment,
-so this could not be checked from here.** Neither number is adopted
-in this document until someone looks. House doctrine on disagreeing
-records applies: go look, do not pick.
+| Source | Population | Walked | Ready |
+|---|---|---|---|
+| Working table (§1), keeper 08-21 | 5,873 | **40** | **33** |
+| Outside architecture read | 5,954 | **964** | — |
+| Outside evidence read | — | — | **633** |
 
-If 964 is real, §1's diagnosis softens considerably and the keeper's
-"scale the walking" is a shorter climb than either of us thought.
+These cannot all describe the same quantity. Candidates:
+cumulative-ever-walked vs per-round; `listed_resources` vs distinct
+hosts; a figure that moved between reads; per-round verdict counts vs
+all-time distinct ready hosts.
+
+**This is no longer a footnote — it is the single most important
+unknown in this document.** §1's whole diagnosis ("0.7%, flat, a
+demo not a product") is built on the first row. If 633 hosts have
+been observed ready, the instrument is a different order of magnitude
+and several conclusions in §§1, 5 and 13 are wrong.
+
+Attempted verification against live `/registry` and `/corpus.json` on
+08-21: **scvd.store is egress-blocked from this build environment.**
+No number is adopted here until someone looks. House doctrine on
+disagreeing records applies — go look, do not pick.
 
 ---
 
@@ -1107,6 +1116,47 @@ The conclusion is ours; the evidence is yours. A consumer who
 disagrees with `f` should be able to disagree **using our own data**,
 and that is a feature we build on purpose, not a leak we tolerate.
 
+### ⚑ THE WORKED EXAMPLE — `no-signed-offers`, and why it matters most
+
+A live published statistic, and the clearest case of the doctrine
+above being violated by our own surface today:
+
+> "0% of ready doors serve signed offers" (reported as 0 of 633)
+
+`no-signed-offers` is ambiguous, and it collapses at least three
+observations that are not the same:
+
+```
+A) the endpoint does not support signed offers
+B) it supports them but exposes them somewhere we didn't look
+C) our probe did not find them at the path we probed
+```
+
+Only (A) is a fact about the endpoint. (B) and (C) are facts about
+**our probe**. The honest statistic is granular:
+
+```
+633 ready
+    SCVD-recognized signed offer:      0
+    other recognized signed offer:     ?
+    offer present but unverifiable:    ?
+    offer not exposed at probed path:  ?
+    probe could not determine:         ?
+```
+
+**Why this is the most urgent item in the document.** We sell
+conformance checking and offer verification. A statistic that says
+0% of the ecosystem complies, published by the party selling
+compliance, is self-serving unless it is granular — and the risk is
+not that it is wrong, it is that **we would be quietly defining
+reality in a way that makes our own product look necessary.** That is
+the one failure this house cannot survive, because the entire
+proposition is that we are the party that does not do that.
+
+This is not a build. It is a **wording and measurement correction**,
+and the corrections log exists for exactly this. It should be fixed
+before any scaling work makes it 6,330 instead of 633.
+
 ### Where each non-equivalence is enforced
 
 | Non-equivalence | Enforced by | State |
@@ -1126,9 +1176,156 @@ Six gaps. That table is the honest build list, and it is a better one
 than any feature roadmap — each row is a claim we are currently
 making that the machinery does not yet keep.
 
+
 ---
 
-## 19. Parking lot — not yet placed
+## 19. Adoption, the fork, and economic weight (filed 08-21)
+
+### The three stages, and where we are
+
+```
+Stage 1  OBSERVATION   SCVD → corpus          evidence is collected
+Stage 2  CONSUMPTION   SCVD → agents          others query it
+Stage 3  DEPENDENCY    SCVD → reputation → marketplace → insurance
+                                              others BUILD on it
+```
+
+**We are between 1 and 2.** Stage 3 is where the moat becomes real,
+and the acid test (§0) is precisely the gate between 2 and 3: nobody
+builds a business on evidence they must take on faith.
+
+This also reframes the whole document. §§1–13 are about making
+Stage 1 credible enough to reach Stage 2. §14 (consumption) and §8
+(federation) are what carry Stage 2 into Stage 3.
+
+### What is forkable and what is not
+
+The code is not the moat, and pretending otherwise wastes effort.
+
+| Easily forked | Hard to fork |
+|---|---|
+| verifier code | **the historical corpus** |
+| passport code | **the ongoing observation process** |
+| APIs, signing formats | **signed observation history** |
+| MCP server, UX | coverage knowledge |
+| business logic | **corrections history** |
+| the whole repo | reputation as a neutral observer |
+| | integrations and downstream consumers |
+
+A fork on 2026-08-21 starts with zero historical observations, and
+tomorrow it still has zero for August. The passport is explicitly
+*derived from the corpus* — which means the forkable part produces
+nothing without the unforkable part.
+
+**Corollary that should change behaviour:** every week of continuity
+is a week a competitor can never buy, and every week missed is a hole
+in the only asset that compounds. This does not outrank coverage
+(§11's correction stands), but it does mean **never missing** is
+worth more than any single feature on the roadmap.
+
+### "What stops Coinbase or the x402 Foundation from running this?"
+
+Nothing technical. Two things structural, and the second is the real
+answer:
+
+1. **Time.** They cannot backfill August 2026.
+2. **Neutrality.** The protocol's own authors cannot credibly be the
+   protocol's neutral observer — it is the instrument vouching for
+   itself, the exact conflict this store already refuses when it
+   declines to sell audits of its own door. And they have no
+   incentive to publish rot in their own ecosystem. Our willingness
+   to publish "31% rot" is credible *because* it is not our protocol.
+
+That is a defensible position, and it is doctrine we already hold
+rather than a claim we would have to invent.
+
+### Evidence is the raw material of many reputations
+
+The clearest statement of the §0 acid test in commercial form. One
+passport, three consumers, three different `f`:
+
+```
+passport { latest: READY, freshness: FRESH,
+           observations: 47, gaps: 3, coverage: 82% }
+        │
+        ├── reputation engine  →  trust_score = 91
+        ├── insurance engine   →  premium = 0.7%
+        └── marketplace        →  eligible = true
+```
+
+**We do not need to own any of those businesses**, and owning one
+would compromise the neutrality that makes the evidence worth buying.
+The refusal to compute a score is the product decision that makes
+Stage 3 possible.
+
+### PROPOSED — the second dimension: economic weight
+
+The best product idea in the 08-21 batch. Today the corpus has one
+axis (does it work). Volume data adds a second:
+
+```
+                 HIGH VOLUME
+                     ↑
+    important        │
+    infrastructure   │
+                     │
+LOW TRUST ───────────┼─────────── HIGH TRUST
+                     │
+    experiments      │
+                     ↓
+                 LOW VOLUME
+```
+
+Example from the wild: `blockrun.ai` at ~$28,118 across ~2,747,668
+calls and 154 buyers, against thousands of endpoints with no reported
+volume at all.
+
+The valuable output is not "33% of endpoints are broken." It is
+**high-economic-value endpoints with weak evidence** — a genuine risk
+primitive:
+
+> "This endpoint has processed $4.2M historically, but has only 82%
+> observed availability and no independently verifiable offer
+> history."
+
+That is what an agent wallet about to move $50,000 actually needs,
+and it is a sentence no directory can produce.
+
+**We can compute the volume axis already.** The chain is public, the
+payTo capture is live, and the settlement instruments exist — this is
+the chain-inflow reader (backlogged, gated on the W35 walk) pointed
+at the whole population instead of one buyer's question. Rule 43
+holds: volume is a dated observation of on-chain fact, not a score.
+
+### The forensic agenda — questions we cannot currently answer
+
+An honest list of what we would need to know to argue the moat with
+numbers instead of theory. Most are reads.
+
+1. Actual corpus size and growth over time
+2. Unique endpoints observed (all-time, not per-round)
+3. Observations per endpoint (distribution, not average)
+4. Exactly what gets recorded per observation today
+5. Whether anyone is querying the corpus, and who
+6. Who is paying for observations / passports / attestations
+7. Actual revenue
+8. External consumers of the evidence — any at all?
+9. How much architecture is observatory vs original store
+10. The roadmap as the commit history actually shows it
+11. Whether we are explicitly positioning as an evidence supplier to
+    third-party reputation systems (the README already says
+    "the layer underneath you rather than a competitor" — so: yes,
+    and it should be said louder)
+12. What prevents a well-funded team from running the same
+    observatory (answered above; needs the numbers to be persuasive)
+
+**#5 and #8 are the ones that matter most and are least known.**
+Stage 3 is unreachable without external consumers, and we do not
+currently know whether we have any.
+
+---
+
+## 20. Parking lot — not yet placed
 
 - Reciprocal walking with other observatories (beyond signature
   verification): probably premature.
