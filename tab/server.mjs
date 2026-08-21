@@ -109,7 +109,14 @@ async function handle(message) {
             : attachPending(result, PATH);
         return respond(id, {
           content: [{ type: "text", text: JSON.stringify(carried, null, 2) }],
-          isError: result?.logged === false || result?.accepted === false || Boolean(result?.error),
+          // A dedupe hit is the system working, not an error — the
+          // write was refused BECAUSE the fact is already on the tab.
+          // isError:true on a healthy duplicate taught clients to
+          // retry a success (dark team 2026-08-21).
+          isError:
+            (result?.logged === false && result?.duplicate !== true) ||
+            result?.accepted === false ||
+            Boolean(result?.error),
         });
       } catch (error) {
         return respond(id, {

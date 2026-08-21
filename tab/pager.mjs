@@ -17,6 +17,7 @@ import {
   sidecarPath,
   trialsConvertingSoon,
   trialsPastEnd,
+  UNSAID,
 } from "./store.mjs";
 
 /**
@@ -101,19 +102,35 @@ export function duePages(current, { horizonDays = 7 } = {}) {
     });
 
   for (const trial of trialsConvertingSoon(current, horizonDays)) {
-    const monthly = monthlyOf(trial.converts_to);
+    const price = trial.converts_to;
     const when =
       trial.days_left === 0
         ? "today"
         : trial.days_left === 1
           ? "tomorrow"
           : `in ${trial.days_left} days`;
+    /**
+     * THE STATED PRICE, ON ITS OWN CLOCK. The line used to print
+     * monthlyOf(), which announced an annual conversion at a twelfth
+     * of the coming charge and priced a one-time fee as recurring —
+     * the one load-bearing sentence, wrong by 12x exactly when the
+     * charge is largest (dark team 2026-08-21).
+     */
+    const suffix =
+      price?.period === "month"
+        ? ""
+        : price?.period === "once"
+          ? " once"
+          : ` a ${price?.period}`;
     push(
       "trial_converting",
       trial.tool_name,
-      1000 - trial.days_left * 5,
-      monthly > 0
-        ? `${trial.tool_name} charges you ${money(monthly)} ${when}.`
+      // Preventable NEVER ranks below already-happened: past-end tops
+      // out at 949, so the floor here keeps a long-horizon trial
+      // above every unpreventable page.
+      Math.max(1000 - trial.days_left * 5, 950),
+      price && price.amount > 0
+        ? `${trial.tool_name} charges you ${money(price.amount)}${suffix} ${when}.`
         : `${trial.tool_name}'s trial converts ${when}, and the tab was never told the price.`,
     );
   }
@@ -150,12 +167,41 @@ export function duePages(current, { horizonDays = 7 } = {}) {
   }
 
   for (const tool of current.active) {
-    const missing = [...new Set(tool.history.flatMap((h) => h.incomplete ?? []))];
+    const named = [...new Set(tool.history.flatMap((h) => h.incomplete ?? []))];
+    // A gap the derived record has since filled is not a gap — the
+    // history names what a capture MISSED, and the ledger is
+    // append-only, so old rows never stop naming it. Filtering
+    // against current state is what lets a corrected event actually
+    // end the page: before this, a filled gap re-queued daily with a
+    // now-false line, forever (dark team 2026-08-21). Fields this
+    // check cannot resolve from state stay conservative: still
+    // missing until acknowledged.
+    const missing = named.filter((field) => stillMissing(tool, field));
     if (missing.length === 0) continue;
     push("gap", tool.tool_name, 100, `${tool.tool_name} is still missing ${missing.join(" and ")}.`);
   }
 
   return pages.sort((a, b) => b.urgency - a.urgency);
+}
+
+/** Whether a once-named gap is still open on the derived record. */
+function stillMissing(tool, field) {
+  switch (field) {
+    case "problem_solved":
+      return !tool.problem_solved || tool.problem_solved === UNSAID;
+    case "category":
+      return !tool.category || tool.category === "other";
+    case "price":
+      return tool.price == null && tool.converts_to == null && tool.paid_path == null;
+    case "trial_ends":
+      // Only a live trial still needs its end date; once the tool
+      // moved on (converted, adopted, canceled) the question is moot.
+      return tool.status === "active_trial" && !tool.trial_ends;
+    default:
+      // "everything", "event", "occurred_at" — not answerable from
+      // derived state. The page stays until somebody acknowledges it.
+      return true;
+  }
 }
 
 function readPageLog(tabPath) {
