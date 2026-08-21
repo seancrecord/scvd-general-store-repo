@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { POLYGON_EVM } from "@/lib/base-rpc";
 import {
   adminRoutes,
   almanacRoutes,
@@ -487,6 +488,24 @@ const worker: ExportedHandler<Env> = {
           sendAlert(env, {
             condition: "worker_health",
             detail: `Chain reconciliation failed: ${String(error)}`,
+          }),
+      ),
+    );
+    /**
+     * THE SAME QUESTION, ASKED OF THE THIRD RAIL (parity ruling,
+     * 2026-08-21). Real money settles on Polygon now — the first
+     * dollar landed the same day this walk did — and a rail whose
+     * incoming transfers nobody reads is the unwatched half of the
+     * books. Skips itself with a stated reason while POLYGON_PAY_TO
+     * is unset; one code path, one chain parameter.
+     */
+    ctx.waitUntil(
+      runChainReconciliation(env, { chain: POLYGON_EVM }).then(
+        () => undefined,
+        (error) =>
+          sendAlert(env, {
+            condition: "worker_health",
+            detail: `Polygon reconciliation failed: ${String(error)}`,
           }),
       ),
     );

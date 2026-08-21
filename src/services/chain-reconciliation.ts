@@ -1,4 +1,13 @@
-import { getBlockNumber, getBlockTimestamp, usdcTransfersFrom, usdcTransfersTo, usdcFromUnits } from "@/lib/base-rpc";
+import {
+  BASE_EVM,
+  getBlockNumber,
+  getBlockTimestamp,
+  POLYGON_EVM,
+  usdcFromUnits,
+  usdcTransfersFrom,
+  usdcTransfersTo,
+} from "@/lib/base-rpc";
+import type { EvmChain } from "@/lib/base-rpc";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
@@ -181,7 +190,7 @@ export function findLookalike(
  */
 async function bankInflow(
   env: Env,
-  chain: "base" | "solana",
+  chain: "base" | "polygon" | "solana",
   totals: { microUsdc: number; dustMicroUsdc: number },
 ): Promise<void> {
   if (totals.microUsdc <= 0) {
@@ -256,6 +265,9 @@ export interface SkippedBlockRange {
   to_block: number;
   blocks: number;
   recorded_at: string;
+  /** CAIP-2 of the chain the hole was torn on. Absent means Base —
+   * every range recorded before the third rail's walk existed. */
+  chain?: string;
 }
 
 /**
@@ -448,11 +460,12 @@ export async function tillOutflowDetail(
   env: Env,
   outflow: { txHash: string; to: string; amount: bigint; block: number },
   now?: Date,
+  chain: EvmChain = BASE_EVM,
 ): Promise<string> {
   const family = HOUSE_WALLET_FILE.wallets.find(
     (entry) => entry.address.toLowerCase() === outflow.to.toLowerCase(),
   );
-  const mined = await getBlockTimestamp(env, outflow.block);
+  const mined = await getBlockTimestamp(env, outflow.block, chain);
   const at = now ?? new Date();
   const ageMinutes = mined
     ? Math.max(0, Math.round((at.getTime() - mined.getTime()) / 60000))
@@ -505,16 +518,26 @@ export async function reconcileAgainstChain(
      * exist by the time the run starts.
      */
     known?: Awaited<ReturnType<typeof knownSettlementHashes>>;
+    /** Which EVM chain's books to walk. Base unless said otherwise. */
+    chain?: EvmChain;
   } = {},
 ): Promise<ChainReconciliation> {
-  const payTo = env.PAY_TO_ADDRESS;
+  const chain = options.chain ?? BASE_EVM;
+  const payTo =
+    chain.key === "polygon" ? env.POLYGON_PAY_TO : env.PAY_TO_ADDRESS;
   if (!payTo) {
-    return { ran: false, reason: "no PAY_TO_ADDRESS configured" };
+    return {
+      ran: false,
+      reason:
+        chain.key === "polygon"
+          ? "no POLYGON_PAY_TO configured — the rail is not live here"
+          : "no PAY_TO_ADDRESS configured",
+    };
   }
 
   let head: number;
   try {
-    head = await getBlockNumber(env);
+    head = await getBlockNumber(env, chain);
   } catch (error) {
     // The chain being unreachable is not a clean sweep, and the
     // difference has to survive into the caller.
@@ -525,7 +548,11 @@ export async function reconcileAgainstChain(
     };
   }
 
-  const stored = await env.COUNTERS.get(KV_KEYS.reconcileCursor);
+  const cursorKey =
+    chain.key === "polygon"
+      ? POLYGON_RECONCILE_CURSOR_KEY
+      : KV_KEYS.reconcileCursor;
+  const stored = await env.COUNTERS.get(cursorKey);
   const cursor = stored ? Number.parseInt(stored, 10) : NaN;
   /**
    * FIRST RUN STARTS NEAR THE HEAD, not at genesis. Walking all of
@@ -563,6 +590,7 @@ export async function reconcileAgainstChain(
           to_block: fromBlock - 1,
           blocks: fromBlock - cursor - 1,
           recorded_at: new Date().toISOString(),
+          ...(chain.key === "polygon" ? { chain: chain.caip2 } : {}),
         }
       : null;
 
@@ -585,11 +613,17 @@ export async function reconcileAgainstChain(
    * the keeper about the instrument instead of about money.
    */
   try {
-    const outflows = await usdcTransfersFrom(env, payTo, fromBlock, toBlock);
+    const outflows = await usdcTransfersFrom(
+      env,
+      payTo,
+      fromBlock,
+      toBlock,
+      chain,
+    );
     for (const outflow of outflows) {
       await sendAlert(env, {
         condition: "till_outflow",
-        detail: await tillOutflowDetail(env, outflow, options.now),
+        detail: await tillOutflowDetail(env, outflow, options.now, chain),
         key: outflow.txHash,
       }).catch(() => undefined);
     }
@@ -599,7 +633,7 @@ export async function reconcileAgainstChain(
 
   let transfers: Awaited<ReturnType<typeof usdcTransfersTo>>;
   try {
-    transfers = await usdcTransfersTo(env, payTo, fromBlock, toBlock);
+    transfers = await usdcTransfersTo(env, payTo, fromBlock, toBlock, chain);
   } catch (error) {
     return {
       ran: false,
@@ -655,14 +689,14 @@ export async function reconcileAgainstChain(
     await recordSkippedRange(env, skipped);
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `THE BANK WALK SKIPPED BLOCKS: the Base reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor works its way back to the head over the next few runs; a SECOND one of these means the cron stalled past the clamp again, and the stall pages that should have preceded THIS one say when and why.`,
+      detail: `THE BANK WALK SKIPPED BLOCKS: the ${chain.label} reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor works its way back to the head over the next few runs; a SECOND one of these means the cron stalled past the clamp again, and the stall pages that should have preceded THIS one say when and why.`,
       key: `${skipped.from_block}-${skipped.to_block}`,
     }).catch(() => {
       // The alert is the courtesy; the KV record above is the fact.
     });
   }
-  await bankInflow(env, "base", inflow);
-  await env.COUNTERS.put(KV_KEYS.reconcileCursor, String(toBlock));
+  await bankInflow(env, chain.key, inflow);
+  await env.COUNTERS.put(cursorKey, String(toBlock));
 
   return {
     ran: true,
@@ -737,6 +771,14 @@ function readFullSpan(result: ChainReconciliation): boolean {
 export const BASE_RECONCILE_LAST_RESULT_KEY = "base_reconcile_last_result";
 
 /**
+ * The third rail's walk keeps its own cursor and last word — same
+ * discipline, different chain, one code path (the parity ruling).
+ */
+export const POLYGON_RECONCILE_CURSOR_KEY = "polygon_reconcile_cursor";
+export const POLYGON_RECONCILE_LAST_RESULT_KEY =
+  "polygon_reconcile_last_result";
+
+/**
  * THE STALL PAGE (2026-08-12, after the fifth hole). Fires the first
  * hour the walk fails, not the eleventh — one row per standing stall
  * (constant key: repeats count on the row, the email re-pages on its
@@ -750,16 +792,21 @@ async function pageBaseWalkStall(
   env: Env,
   failure: ChainReconciliation,
   committedThisRun: number,
+  chain: EvmChain = BASE_EVM,
 ): Promise<void> {
   const hoursToHole = Math.round((RECONCILE_MAX_SPAN * 2) / 3600);
+  const lastResultKey =
+    chain.key === "polygon"
+      ? POLYGON_RECONCILE_LAST_RESULT_KEY
+      : BASE_RECONCILE_LAST_RESULT_KEY;
   await sendAlert(env, {
     condition: "worker_health",
-    detail: `THE BANK WALK STALLED: ${failure.reason ?? "no reason recorded"} ${
+    detail: `THE BANK WALK STALLED (${chain.label}): ${failure.reason ?? "no reason recorded"} ${
       committedThisRun > 0
         ? `This run committed ${committedThisRun} blocks before stalling, and the cursor holds there.`
         : "The cursor did not move this run."
-    } Nothing is lost yet — the walk resumes exactly where it stopped, and blocks become unreadable only past ${RECONCILE_MAX_SPAN} blocks of lag (~${hoursToHole}h of consecutive stalls). This page exists so the SKIPPED-BLOCKS page is never the first news of a stall: repeated stalls point at the Base RPC (an authenticated BASE_RPC_URL_PRIMARY is already preferred by the reader when set); a skipped-blocks page with no stalls before it means the hourly cron itself died before this code ran. Last outcome is in KV (${BASE_RECONCILE_LAST_RESULT_KEY}).`,
-    key: "base-walk-stalled",
+    } Nothing is lost yet — the walk resumes exactly where it stopped, and blocks become unreadable only past ${RECONCILE_MAX_SPAN} blocks of lag (~${hoursToHole}h of consecutive stalls). This page exists so the SKIPPED-BLOCKS page is never the first news of a stall: repeated stalls point at the ${chain.label} RPC (an authenticated primary endpoint is already preferred by the reader when set); a skipped-blocks page with no stalls before it means the hourly cron itself died before this code ran. Last outcome is in KV (${lastResultKey}).`,
+    key: `${chain.key}-walk-stalled`,
   }).catch(() => {
     // The alert is the courtesy; the last-result record is the fact.
   });
@@ -768,9 +815,12 @@ async function pageBaseWalkStall(
 async function recordBaseWalkOutcome(
   env: Env,
   result: ChainReconciliation,
+  chain: EvmChain = BASE_EVM,
 ): Promise<void> {
   await env.COUNTERS.put(
-    BASE_RECONCILE_LAST_RESULT_KEY,
+    chain.key === "polygon"
+      ? POLYGON_RECONCILE_LAST_RESULT_KEY
+      : BASE_RECONCILE_LAST_RESULT_KEY,
     JSON.stringify({
       ran: result.ran,
       ...(result.reason ? { reason: result.reason } : {}),
@@ -785,8 +835,9 @@ async function recordBaseWalkOutcome(
 
 export async function runChainReconciliation(
   env: Env,
-  options: { now?: Date } = {},
+  options: { now?: Date; chain?: EvmChain } = {},
 ): Promise<ChainReconciliation> {
+  const chain = options.chain ?? BASE_EVM;
   /**
    * THE CATCH-UP LOOP (problem ledger #24). Passes repeat until the
    * read stops filling its span — the head, reached — or the pass
@@ -795,21 +846,21 @@ export async function runChainReconciliation(
    * everything already read; the merged report below is only a
    * summary of what the committed passes saw.
    */
-  const known = env.PAY_TO_ADDRESS
-    ? await knownSettlementHashes(env)
-    : undefined;
-  let merged = await reconcileAgainstChain(env, { ...options, known });
+  const walkPayTo =
+    chain.key === "polygon" ? env.POLYGON_PAY_TO : env.PAY_TO_ADDRESS;
+  const known = walkPayTo ? await knownSettlementHashes(env) : undefined;
+  let merged = await reconcileAgainstChain(env, { ...options, known, chain });
   if (!merged.ran) {
-    await recordBaseWalkOutcome(env, merged);
+    await recordBaseWalkOutcome(env, merged, chain);
     if (merged.failed) {
-      await pageBaseWalkStall(env, merged, 0);
+      await pageBaseWalkStall(env, merged, 0, chain);
     }
     return merged;
   }
   await alertOrphans(
     env,
     merged.orphans ?? [],
-    "Base",
+    chain.label,
     merged.cert_scan_truncated ?? false,
   );
   let last = merged;
@@ -818,7 +869,11 @@ export async function runChainReconciliation(
     pass < RECONCILE_CATCHUP_PASSES && readFullSpan(last);
     pass += 1
   ) {
-    const result = await reconcileAgainstChain(env, { ...options, known });
+    const result = await reconcileAgainstChain(env, {
+      ...options,
+      known,
+      chain,
+    });
     if (!result.ran) {
       // A later pass failing ends the catch-up without erasing what
       // the earlier passes committed; next hour resumes right here.
@@ -829,6 +884,7 @@ export async function runChainReconciliation(
           env,
           result,
           (merged.to_block ?? 0) - (merged.from_block ?? 0) + 1,
+          chain,
         );
       }
       break;
@@ -836,7 +892,7 @@ export async function runChainReconciliation(
     await alertOrphans(
       env,
       result.orphans ?? [],
-      "Base",
+      chain.label,
       result.cert_scan_truncated ?? false,
     );
     merged = {
@@ -854,7 +910,7 @@ export async function runChainReconciliation(
     };
     last = result;
   }
-  await recordBaseWalkOutcome(env, merged);
+  await recordBaseWalkOutcome(env, merged, chain);
   return merged;
 }
 

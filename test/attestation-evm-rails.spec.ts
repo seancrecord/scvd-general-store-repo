@@ -29,7 +29,7 @@ const pad = (address: string) =>
 /** Half a dollar of USDC in atomic units, as log data. */
 const HALF_DOLLAR = `0x${(500000n).toString(16).padStart(64, "0")}`;
 
-function polygonReceipt(): unknown {
+function polygonReceipt(): Record<string, unknown> {
   return {
     status: "0x1",
     blockNumber: "0x3f0f5c43",
