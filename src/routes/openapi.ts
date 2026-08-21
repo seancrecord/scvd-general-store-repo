@@ -444,6 +444,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/api/verify-receipt": {
+        get: freeOp(
+          "Receipt verification — the doc",
+          "How the receipt-verification desk works: what it checks (structure, ed25519 signatures over every derivable form, claimed RFC 8785 twins, expiry, key attribution) and what it never checks, stated plainly. Free.",
+        ),
+        post: freeOp(
+          "Verify any receipt",
+          "POST any receipt or signed artifact (this store's or any issuer's, JSON, max 32KB) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate — every check named, everything unchecked stated. Stateless: the document is verified and forgotten, bound to the verdict only by sha256. Free, one document per call.",
+        ),
+      },
       "/passport": {
         get: freeOp(
           "Endpoint passports",

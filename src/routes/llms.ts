@@ -717,6 +717,19 @@ Free. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
 refusal, not a row: names appear only on the ready side here.
 
+## Verify anyone's receipt — signed verdicts, free
+
+POST ${base}/api/verify-receipt with any receipt or signed artifact
+(ours or any issuer's, JSON) and get a SIGNED verdict: valid |
+invalid | expired | insufficient_evidence | unsupported |
+indeterminate. Every check is named with its outcome; what was NOT
+checked (settlement, delivery, revocation, non-scvd key identity) is
+stated on the verdict instead of implied — "unknown" and "bad" drive
+different automated actions, so they are never collapsed. Stateless:
+your document is verified and forgotten, bound to the verdict only by
+sha256. The doc is the GET on the same URL; artifacts this store
+minted also verify by id at ${base}/api/verify/{id}.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every
