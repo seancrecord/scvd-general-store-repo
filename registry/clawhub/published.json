@@ -1,7 +1,7 @@
 {
-  "version": "3.4.0",
-  "bundle_sha256": "b87759836cd50ff9739dd12479f692dea3f5d9ba1f40960a44136f4bf7a18272",
-  "published_at": "2026-08-20T14:29:09.241Z",
-  "commit": "0cb185106efd0e200929a14ee0af5a70ef431c99",
-  "changelog": "Four doors retired (the drawer, the fortune, dibs, quick judgment); launch_check, the_statement and the_mandate join the moments; the bounty board and regulars' credit get rooms and front slots (/bounties, /credit)."
+  "version": "3.5.0",
+  "bundle_sha256": "8882c95829f79e58f6cb4a32783c2a02072f452cba9bdea0b1ceea60f0d43ca8",
+  "published_at": "2026-08-21T13:25:37.758Z",
+  "commit": "cddb441649665ac647d9a2285283c4740830e11c",
+  "changelog": "The third rail: Polygon in every 402 and the skill's buying steps; the claims-door recovery moment folded in from 3.4.1."
 }
