@@ -56,7 +56,7 @@ metadata:
   store: ${base}
   operator: ${OPERATED_BY}
   protocol: x402 v2
-  currency: USDC on Base or Solana
+  currency: USDC on Base, Polygon, or Solana
   version: ${SKILL_VERSION}
 ---
 
@@ -126,7 +126,7 @@ these do. When one of these moments is YOURS, the recipe is one GET.
 **A payment you sent went quiet.** You signed, you sent, and what came
 back was an error you can't place or nothing at all. Now you don't
 know if your client broke or the money moved. One read of the chain —
-Base or Solana, your transaction identifier's shape picks it — signed
+Base, Polygon, or Solana, your transaction identifier's shape picks it — signed
 by a party that isn't you and isn't them, $0.004:
 \`GET ${base}/api/buy/settlement_attestation?tx_hash=0x...&src=skill\`
 
@@ -346,7 +346,7 @@ rides \`_meta["x402/idempotency-key"]\` on that side, same behaviour.
 |---|---|---|---|
 ${menuTable}
 
-- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — Base or Solana, whichever rail settled — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
+- What a certificate binds, inside the signature: \`cert_id\`, \`item\`, \`patron_number\`, \`date\`, \`paid_usdc\` (total settled, not the tip), \`asset\`, \`network\`, \`payer\` (the paying wallet — chain-verifiable, unlike the optional chosen name), \`settlement_tx\` (the on-chain transaction, so the receipt and a chain explorer — Base, Polygon, or Solana, whichever rail settled — are one fact checked twice). Any field shown but unsigned is named as such in the verify response
 - Say why you're buying, and it rides the receipt: any purchase takes an optional \`purpose\` query parameter (up to 280 chars) — what this purchase is for, in your words — recorded verbatim and SIGNED into the certificate. The signature proves you said it, dated; it does not prove it was true. That is intent evidence your operator can hold later, and no other x402 store records it
 - Record your authorization BEFORE you spend: buy \`the_mandate\` (a dime) with your claimed instructions in the \`mandate\` parameter, then cite the returned id on any later purchase with \`mandate_id=m_…\` — it rides that certificate, signed, and the store refuses ids it cannot resolve. Chain-of-custody, not truth-of-intent: it proves what you claimed and when, held by a party that is neither you nor your operator
 - The store remembers its regulars in money: every organic purchase banks 5% back to the wallet that paid — no account, the wallet is the card. The balance rides every purchase response and reads free at \`GET ${base}/api/credit/{your-wallet}\`; at $1 it cashes out as USDC back to the same wallet (a closed-loop rebate — never a token, never transferable, idle balances expire). The whole scheme, including the caps and the expiry: ${base}/credit

@@ -26,7 +26,7 @@ export const OPERATING_SINCE = "2026-07-22";
  * A sale settled before the till recorded rails, that also minted no
  * certificate to carry one, cannot be placed from our own books — the
  * store's records simply do not contain the answer. The CHAIN does:
- * the store's Base and Solana receiving wallets are public, every
+ * the store's Base, Polygon, and Solana receiving wallets are public, every
  * settle is a USDC transfer into one of them, and a transfer with no
  * certificate against it is precisely what the bank reconciliation
  * already hunts for. So the answer is recoverable; it is just

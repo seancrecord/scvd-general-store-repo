@@ -229,9 +229,11 @@ them ${base}/what.
 
 ## How paying works here
 
-We take ${STORE_METADATA.currency} on Base (eip155:8453) or Solana
-(solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp) over the
-${STORE_METADATA.protocol} protocol, version 2. It goes like this:
+We take ${STORE_METADATA.currency} on Base (eip155:8453), Polygon
+(eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)
+over the ${STORE_METADATA.protocol} protocol, version 2. Base entries
+come first in every 402 as a compatibility promise; same tiers on
+every rail, your wallet's choice. It goes like this:
 
   1. GET ${base}/api/buy/{item_id}
   2. We answer 402. The payment requirements, amount, asset, our address,

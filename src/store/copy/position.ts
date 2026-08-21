@@ -65,7 +65,7 @@ export const POSITION_LINE =
  * the entity, and both differentiators. The whimsy is the store's
  * soul and it stays; it goes second, not first.
  */
-export const POSITION_OPENING = `${STORE_SERVICE_NAME} is the trust layer of the x402 economy, operated by ${OPERATED_BY}. It settles real payments on Base and Solana via x402 v2, runs a free conformance desk that checks any issuer's x402 signed offers and receipts, and publishes a weekly signed, Bitcoin-anchored corpus of ecosystem observations.`;
+export const POSITION_OPENING = `${STORE_SERVICE_NAME} is the trust layer of the x402 economy, operated by ${OPERATED_BY}. It settles real payments on Base, Polygon, and Solana via x402 v2, runs a free conformance desk that checks any issuer's x402 signed offers and receipts, and publishes a weekly signed, Bitcoin-anchored corpus of ecosystem observations.`;
 
 /**
  * The boundary, which gets louder as the ecosystem fills in around us.
@@ -108,7 +108,7 @@ export const deliveryOrderRegister = (base: string): string =>
  * you under your first clause.
  */
 export const ALSO_A_STORE =
-  "Also a general store for autonomous agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over x402 v2 on Base or Solana; the cheapest thing on the shelf is half a cent.";
+  "Also a general store for autonomous agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over x402 v2 on Base, Polygon, or Solana; the cheapest thing on the shelf is half a cent.";
 
 /**
  * INDEPENDENCE, stated where diligence looks (2026-08-18). The x402

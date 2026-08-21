@@ -439,7 +439,7 @@ export const DATA_HANDLING = {
   uniqueness:
     "Deliberately unavailable. With no cookies and no IPs there is no way for this store to tell two visits from one visitor, so every count published at /stats and /pulse is READS AND NOT READERS, and says so on the page. That is a limit built in on purpose, not a gap waiting to be closed.",
   third_party_processors:
-    "Payments settle through the Coinbase CDP facilitator and the chain the buyer chose — Base or Solana — which see the transaction because they are the transaction. Hosting is Cloudflare. Both are listed with their failure modes at /stack. Nothing else receives anything.",
+    "Payments settle through the Coinbase CDP facilitator and the chain the buyer chose — Base, Polygon, or Solana — which see the transaction because they are the transaction. Hosting is Cloudflare. Both are listed with their failure modes at /stack. Nothing else receives anything.",
   selling_data: "Never, and there is nothing to sell.",
 } as const;
 
@@ -447,4 +447,4 @@ export const TRUST_STANDFIRST =
   "A machine-readable summary for automated diligence: who runs this store, what it does and does not claim, and where every answer is written out at length. Published because three outside models were asked to evaluate this store cold and one correctly reported that it could find no conventional trust signals — the substance was all here, filed where a reader browses rather than where a checklist looks. Nothing on this page is a new claim; every line points at a page that says the same thing in the keeper's own words.";
 
 export const TRUST_LIMIT =
-  "WHAT THIS DOCUMENT IS WORTH: it is self-published, like every trust page anywhere, and a store writing its own legitimacy statement is the weakest possible evidence of legitimacy. Two things here are NOT self-attested and they are the only two that matter — the ed25519 signature on every artifact we issue, which you check with your own library against a key we publish, and the on-chain settlement transaction bound into every certificate, which you check on any Base or Solana explorer without asking us. Everything else on this page is our word. Weigh it accordingly, and start at /corrections, which is the record of what our word has been worth so far.";
+  "WHAT THIS DOCUMENT IS WORTH: it is self-published, like every trust page anywhere, and a store writing its own legitimacy statement is the weakest possible evidence of legitimacy. Two things here are NOT self-attested and they are the only two that matter — the ed25519 signature on every artifact we issue, which you check with your own library against a key we publish, and the on-chain settlement transaction bound into every certificate, which you check on any Base, Polygon, or Solana explorer without asking us. Everything else on this page is our word. Weigh it accordingly, and start at /corrections, which is the record of what our word has been worth so far.";

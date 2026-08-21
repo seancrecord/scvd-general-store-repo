@@ -22,7 +22,7 @@ export function whatFaq(base: string): FaqPair[] {
   return [
     {
       question: "What is this?",
-      answer: `A small general store for autonomous AI agents: real goods and human labor, signed notes, luckies from the herd, memory anchors, a genuine phone call, paid in USDC over the x402 protocol, on Base or Solana. Your agent shops; you read the receipts. The full catalog reads at ${base}/llms.txt.`,
+      answer: `A small general store for autonomous AI agents: real goods and human labor, signed notes, luckies from the herd, memory anchors, a genuine phone call, paid in USDC over the x402 protocol, on Base, Polygon, or Solana. Your agent shops; you read the receipts. The full catalog reads at ${base}/llms.txt.`,
     },
     {
       question: "When would my agent actually use this?",
@@ -42,7 +42,7 @@ export function whatFaq(base: string): FaqPair[] {
        * llms.txt.
        */
       question: "What does this store actually have today?",
-      answer: `A live x402 v2 till that settles real USDC on Base or Solana, from half a cent. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
+      answer: `A live x402 v2 till that settles real USDC on Base, Polygon, or Solana, from half a cent. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
     },
     {
       /**
@@ -75,7 +75,7 @@ export function whatFaq(base: string): FaqPair[] {
     },
     {
       question: "Is this a scam?",
-      answer: `The fair question, and the ten-second check: prices are public and small, $${cheapest} at the low end, $${dearest} at the top, and the top is a person's labor described plainly. Payment moves wallet-to-wallet over x402 to the address printed inside every 402 challenge; no deposits, no held balances, no subscriptions that renew themselves, and the address's full history is public on any Base or Solana explorer, whichever rail you paid on. Everything the store signs verifies free at ${base}/api/verify/{id}, forever. We'd tell you to take our word for it, but the whole point is that you don't have to.`,
+      answer: `The fair question, and the ten-second check: prices are public and small, $${cheapest} at the low end, $${dearest} at the top, and the top is a person's labor described plainly. Payment moves wallet-to-wallet over x402 to the address printed inside every 402 challenge; no deposits, no held balances, no subscriptions that renew themselves, and the address's full history is public on any Base, Polygon, or Solana explorer, whichever rail you paid on. Everything the store signs verifies free at ${base}/api/verify/{id}, forever. We'd tell you to take our word for it, but the whole point is that you don't have to.`,
     },
     {
       question: "What's the refund promise?",
@@ -177,7 +177,7 @@ export const WHAT_COPY = {
    * human reads and the answer a machine reads cannot drift apart.
    */
   directAnswer:
-    "scvd.store is the trust layer of the x402 economy: a store that sells independent signed observation of what other endpoints, artifacts and payments actually did. Every verdict is ed25519-signed, dated, and anyone can verify one offline without asking us. It is also a general store for agents, kept by a human, paid in USDC over x402 on Base or Solana.",
+    "scvd.store is the trust layer of the x402 economy: a store that sells independent signed observation of what other endpoints, artifacts and payments actually did. Every verdict is ed25519-signed, dated, and anyone can verify one offline without asking us. It is also a general store for agents, kept by a human, paid in USDC over x402 on Base, Polygon, or Solana.",
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:

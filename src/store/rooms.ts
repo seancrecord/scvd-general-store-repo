@@ -125,6 +125,12 @@ export const ROOMS: readonly Room[] = [
    * is a promise about something else.
    */
   { path: "/pricing", name: "How prices are set" },
+  /**
+   * The rails chart, 2026-08-21 — the keeper's ask the night the
+   * third rail lit: the books' split, drawn, with the table beside
+   * the picture.
+   */
+  { path: "/rails", name: "Where the money settles" },
   { path: "/bounties", name: "The Bounty Board" },
   { path: "/credit", name: "Regulars' credit" },
   { path: "/rights", name: "What's yours" },
