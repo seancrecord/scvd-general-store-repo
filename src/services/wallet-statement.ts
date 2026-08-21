@@ -1,7 +1,7 @@
 import {
   BASE_EVM,
+  evmChainOf,
   getBlockNumber,
-  POLYGON_EVM,
   usdcFromUnits,
   usdcTransfersFrom,
   usdcTransfersTo,
@@ -123,14 +123,7 @@ export function statementScope(chain: EvmChain): string {
  * silently to a chain the buyer did not ask about.
  */
 export function statementChain(raw: string | undefined): EvmChain | null {
-  const value = (raw ?? "").trim().toLowerCase();
-  if (value === "" || value === "base" || value === BASE_EVM.caip2) {
-    return BASE_EVM;
-  }
-  if (value === "polygon" || value === POLYGON_EVM.caip2) {
-    return POLYGON_EVM;
-  }
-  return null;
+  return evmChainOf(raw);
 }
 
 function side(

@@ -61,6 +61,23 @@ export const POLYGON_EVM: EvmChain = {
 export const EVM_CHAINS: readonly EvmChain[] = [BASE_EVM, POLYGON_EVM];
 
 /**
+ * The network vocabulary, resolved: CAIP-2 or the plain word, either
+ * EVM rail, Base when unsaid. Null means unrecognized — callers
+ * refuse rather than defaulting silently, because a chain the caller
+ * did not name is a chain the answer must not be about.
+ */
+export function evmChainOf(network: string | undefined): EvmChain | null {
+  const value = (network ?? "").trim().toLowerCase();
+  if (value === "" || value === "base" || value === BASE_CHAIN) {
+    return BASE_EVM;
+  }
+  if (value === "polygon" || value === POLYGON_CHAIN) {
+    return POLYGON_EVM;
+  }
+  return null;
+}
+
+/**
  * keccak256("Transfer(address,address,uint256)") and
  * keccak256("AuthorizationUsed(address,bytes32)").
  *

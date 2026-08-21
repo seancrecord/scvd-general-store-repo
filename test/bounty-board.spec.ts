@@ -11,7 +11,7 @@ import {
 } from "@/services/bounty-board";
 import { fieldSignerFromKey } from "@/services/launch-check";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
-import { BASE_USDC, TRANSFER_TOPIC } from "@/lib/base-rpc";
+import { BASE_USDC, POLYGON_USDC, TRANSFER_TOPIC } from "@/lib/base-rpc";
 import type { Env } from "@/types";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
 
@@ -34,6 +34,11 @@ function world(opts: {
   transferTo?: string;
   transferFrom?: string;
   noReceipt?: boolean;
+  /** The door quotes this rail (and its USDC) instead of Base. */
+  doorNetwork?: string;
+  doorAsset?: string;
+  /** The token contract the receipt's transfer log sits on. */
+  logAsset?: string;
 } = {}): typeof fetch {
   const pad = (addr: string) =>
     `0x${addr.toLowerCase().slice(2).padStart(64, "0")}`;
@@ -54,9 +59,9 @@ function world(opts: {
               accepts: [
                 {
                   scheme: "exact",
-                  network: "eip155:8453",
+                  network: opts.doorNetwork ?? "eip155:8453",
                   amount: "50000", // $0.05
-                  asset: BASE_USDC,
+                  asset: opts.doorAsset ?? BASE_USDC,
                   payTo: DOOR_PAY_TO,
                 },
               ],
@@ -83,7 +88,7 @@ function world(opts: {
             blockNumber: `0x${(opts.receiptBlock ?? 500_010).toString(16)}`,
             logs: [
               {
-                address: BASE_USDC,
+                address: opts.logAsset ?? BASE_USDC,
                 topics: [
                   TRANSFER_TOPIC,
                   pad(opts.transferFrom ?? SHOPPER),
@@ -361,3 +366,74 @@ async function clearBoardStatusOpen(bountyId: string): Promise<void> {
   }
 }
 
+
+/**
+ * THE THIRD RAIL ON THE BOARD (parity ruling, 2026-08-21): a
+ * Polygon-only door is still a door somebody should be paid to walk.
+ * The bounty captures the rail beside the terms, the claim verifier
+ * reads the bounty's own chain, and the reward still pays in Base
+ * USDC — same shopper address on both EVM rails.
+ */
+describe("the third rail on the board", () => {
+  const polygonWorld = (extra: Parameters<typeof world>[0] = {}) =>
+    world({
+      doorNetwork: "eip155:137",
+      doorAsset: POLYGON_USDC,
+      logAsset: POLYGON_USDC,
+      ...extra,
+    });
+
+  it("captures a Polygon-only door and pays its Polygon-verified claim", async () => {
+    vi.stubGlobal("fetch", polygonWorld());
+    const bounty = await openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: polygonWorld() },
+    );
+    expect(bounty.network).toBe("eip155:137");
+    expect(bounty.pay_to).toBe(DOOR_PAY_TO);
+    const result = await claimBounty(
+      testEnv,
+      {
+        bountyId: bounty.bounty_id,
+        txHash: TX,
+        payer: SHOPPER,
+        payoutTo: PAYOUT_TO,
+      },
+      { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: polygonWorld() },
+    );
+    expect(result.what_was_verified).toContain("succeeded on Polygon");
+    // The reward is Base USDC regardless: one payout rail, stated.
+    expect(result.payout.asset).toBe(BASE_USDC);
+    expect(result.payout.chain).toBe("eip155:8453");
+  });
+
+  it("refuses a claim whose transfer sits on the wrong rail's USDC", async () => {
+    vi.stubGlobal("fetch", polygonWorld());
+    const bounty = await openBounty(
+      testEnv,
+      { targetUrl: DOOR, rewardUsd: 0.1 },
+      { fetch: polygonWorld() },
+    );
+    // The receipt exists on the read, but its transfer log is Base
+    // USDC — on the Polygon read that token is a stranger's contract,
+    // and the settlement the bounty asked for is not in it. The chain
+    // read rides global fetch (base-rpc has no injection seam).
+    vi.stubGlobal("fetch", polygonWorld({ logAsset: BASE_USDC }));
+    await expect(
+      claimBounty(
+        testEnv,
+        {
+          bountyId: bounty.bounty_id,
+          txHash: TX,
+          payer: SHOPPER,
+          payoutTo: PAYOUT_TO,
+        },
+        {
+          signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+          fetch: polygonWorld({ logAsset: BASE_USDC }),
+        },
+      ),
+    ).rejects.toThrow(/no USDC transfer/);
+  });
+});
