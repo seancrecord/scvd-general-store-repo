@@ -106,6 +106,8 @@ export const KV_KEYS = {
    * hand keeps its place. Sends are the keeper's alone (rule 30).
    */
   outreachLedger: "outreach_ledger",
+  /** The trust panel's hourly-recomputed half (corpus count + gallery). */
+  trustPanelCache: "trust_panel_cache",
   /**
    * THE PUBLIC REGISTRY TALLY (2026-08-19): the market desk's
    * aggregates, one row per published week, served at /registry. ONE

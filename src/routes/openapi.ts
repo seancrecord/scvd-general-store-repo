@@ -444,6 +444,24 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The weekly public tally of the x402 registry: how many listed doors actually work, registry rot, the share serving verifiable signed offers, price quartiles, and operator collapse — aggregates only, no names, updated by hand from the same signed census that mints the corpus. HTML for browsers, JSON otherwise. Free.",
         ),
       },
+      "/passport": {
+        get: freeOp(
+          "Endpoint passports",
+          "What a passport is, plus this store's own self-passport as the public example (labeled self-observed). One signed, expiring object per ready-side host with a machine-actionable freshness state. Free.",
+        ),
+      },
+      "/passport/{host}": {
+        get: freeOp(
+          "One host's endpoint passport",
+          "The census's evidence about one host as a single signed, expiring object: latest verdict, observation history with gaps counted, freshness state (fresh / aging / expired / broken / indeterminate — refuse expired). Ready-side hosts only; failing hosts get a reasoned refusal, never a public row. JSON by default, HTML for eyes. Free.",
+        ),
+      },
+      "/trust": {
+        get: freeOp(
+          "The trust panel",
+          "Every trust surface in one place: the signing key with its Bitcoin-anchored history, the five-level assurance ladder (what a valid signature claims and does not claim per level), a gallery of real house-purchased artifacts with live verify URLs, and the corrections/books/corpus record. HTML for browsers, JSON otherwise. Free.",
+        ),
+      },
       "/fresh-set": {
         get: freeOp(
           "The fresh set",

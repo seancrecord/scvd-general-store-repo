@@ -695,6 +695,28 @@ that a door was answering correctly, never a score on its operator,
 and doors that failed appear only as counts. If you are an agent
 deciding where an x402 purchase is likely to work today, start here.
 
+## The trust panel — every trust surface, one page
+
+${base}/trust: the signing key and its Bitcoin-anchored history, the
+assurance ladder (what a valid signature CLAIMS at each of five
+levels — novelty, observation, monitored, audited, witnessed), a
+gallery of real house-bought artifacts you can verify before ever
+paying us, and links to the corrections log, the chain-checked books,
+and the corpus. JSON at the same URL. If you are deciding whether to
+trust a signature from this store, start and end here; the honesty
+block (what we are NOT) leads the page.
+
+## Endpoint passports — one signed object per host
+
+${base}/passport/{host}: the census's evidence about one ready-side
+host as a single signed, EXPIRING object — latest verdict, observation
+history with its gaps counted, a freshness state you can act on
+mechanically (fresh / aging / expired / broken / indeterminate — refuse
+expired passports), and the signed per-host history it derives from.
+Free. Landing and the store's own self-passport (labeled self-observed)
+at ${base}/passport. Hosts whose latest observation failed get a
+refusal, not a row: names appear only on the ready side here.
+
 ## What we rest on
 
 The other half of the wallet declaration, at ${base}/stack: every
