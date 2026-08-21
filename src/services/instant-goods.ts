@@ -17,6 +17,7 @@ import type { SignedLaunchCheck } from "@/services/launch-check";
 import { storeWalletStatement } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
+import type { SignedTrustProfile } from "@/services/trust-profile";
 import { storeMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
 import { storeOnpageAudit } from "@/services/onpage-audit";
@@ -101,6 +102,8 @@ export interface InstantGoodsInput {
   walletStatement?: SignedWalletStatement;
   /** passport_refresh only: the observation, already made and signed. */
   passportRefresh?: SignedPassportRefresh;
+  /** trust_profile only: the commission record, already gated and signed. */
+  trustProfile?: SignedTrustProfile;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
   /** settlement_reconciliation only: the observation, already signed. */
@@ -340,6 +343,28 @@ export async function deliverInstantGoods(
           chip_url: `/badges/passport/${observed.host}.svg`,
           verify_note:
             "The observation is signed on its own: verify signed_payload semantics per /spec/scvd-attestation/v1 against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the observation too.",
+        },
+      };
+    }
+    case "trust_profile": {
+      const profile = input.trustProfile;
+      if (!profile) {
+        throw new Error("trust_profile reached goods with no record");
+      }
+      const r = profile.record;
+      return {
+        deliverable: `Your hosted trust profile for ${r.host} is standing at ${r.profile_url} — term ends ${r.expires.slice(0, 10)}, purchase ${r.renewals} of the record. The page aggregates your live passport, the freshness chip, and the signed observation history; it derives from the same corpus everyone reads free, so what it shows moves with the evidence, both directions. Renew any time — an early renewal extends the term from its current end, never from today.`,
+        extras: {
+          profile: r,
+          evidence_hash: profile.evidence_hash,
+          signature: profile.signature,
+          signature_jcs: profile.signature_jcs,
+          public_key: profile.public_key,
+          profile_url: `/profiles/${r.host}`,
+          passport_url: `/passport/${r.host}`,
+          chip_url: `/badges/passport/${r.host}.svg`,
+          verify_note:
+            "The commission record is signed on its own: verify signed_payload semantics per /spec/scvd-attestation/v1 against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the record too.",
         },
       };
     }

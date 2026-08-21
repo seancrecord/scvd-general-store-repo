@@ -6,7 +6,7 @@ import type { Env } from "@/types";
 
 /**
  * THE PASSPORT REFRESH — the paid fresh check (the keeper's "both"
- * ruling, 2026-08-21; priced $1 ⚑). Payment buys ONE thing: the
+ * ruling, 2026-08-21; the $1 keeper-confirmed same day). Payment buys ONE thing: the
  * census's own instrument pointed at your door RIGHT NOW, with the
  * result folded into your passport wherever it is newest. It never
  * buys a grade: a refresh that finds the door broken updates the

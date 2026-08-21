@@ -109,6 +109,9 @@ describe("the storefront", () => {
       // ladder past the cheap doors runs by shelf, not by price.
       "the_statement",
       "recurring_patronage",
+      // The hosted profile's $19 slots between the patronages by
+      // price — the ladder's stable sort, nothing hand-picked.
+      "trust_profile",
       "certificate_of_patronage",
       "the_collab",
       "luckies",

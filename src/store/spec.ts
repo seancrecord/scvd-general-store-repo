@@ -85,9 +85,13 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * content the 3.5.0 note describes above, now under the number that
  * actually ships it: passport_refresh on the shelf, /trust,
  * /passport/{host} and the chip, POST /api/verify-receipt, the SIWX
- * claims challenge, /api/practice. MINOR: a reader cached on the
- * published 3.5.0 has three rails but no evidence layer. Mid-flight
- * until the keeper republishes to ClawHub.
+ * claims challenge, /api/practice. Late same-day addition riding the
+ * same unpublished number: trust_profile ($19 ⚑, the keeper's ruled
+ * recurring door — 30 hosted days per purchase at /profiles/{host},
+ * ready-side at the door, honest in both directions after it).
+ * MINOR: a reader cached on the published 3.5.0 has three rails but
+ * no evidence layer. Mid-flight until the keeper republishes to
+ * ClawHub.
  */
 export const SKILL_VERSION = "3.6.0";
 
@@ -183,6 +187,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
   passport_refresh:
     "Turn my endpoint passport fresh again right now — a new census observation of my door, without waiting for Sunday's walk",
+  trust_profile:
+    "Give my endpoint a standing evidence page at a neutral third party's domain — my passport, chip and history at one URL I can hand to anyone",
   the_mandate:
     "Record what my agent is authorized to do, dated and signed by a third party, before it spends anything",
   bitcoin_anchor:
@@ -231,6 +237,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 export const SPEC_WHY_USE: Record<string, string> = {
   passport_refresh:
     "a new census observation of your endpoint, now instead of Sunday — folded into your endpoint passport wherever newest, moving the passport (and the chip that decays with it) back to fresh. The verdict lands whatever it says: a broken finding darkens the chip. The check is bought; the grade never is.",
+  trust_profile:
+    "a standing page at a neutral domain aggregating your live passport, chip and signed history — 30 days a purchase, renewable, ready-side hosts only at the door. It derives from the corpus everyone reads free, so it moves with the evidence both directions. The page is bought; what it shows never is.",
   conformance_watch:
     "a week of daily signed conformance readouts on your own endpoint — the drift one audit cannot see: whether a mid-week deploy broke what Monday's buyer could parse. Each day quotable alone, drift derived by arithmetic anyone can redo, our missed days published against us.",
   service_audit:

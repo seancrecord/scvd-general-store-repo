@@ -4,6 +4,7 @@ import { paymentGate } from "@/lib/payment-gate";
 import { SettlementDeclined } from "@/lib/payments";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { checkProbeTarget } from "@/lib/probe-target";
+import { issuePassport } from "@/services/passport";
 import { ANCHOR_SUMMARY_CAP } from "@/services/anchors";
 import {
   COFFEE_WIN_CAP,
@@ -239,6 +240,52 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       },
       400,
     );
+  }
+  await next();
+};
+
+/**
+ * trust_profile holds serviceAuditCheck's URL law AND the ready gate
+ * BEFORE money moves: the profiles index names only ready-side hosts,
+ * so a door whose latest evidence is failing gets its refusal here,
+ * for free, with the same reasons the passport gives — never after
+ * the coin drops. (The mint re-derives the gate; evidence can move
+ * between the quote and the payment, and the verified-fact law says
+ * the check runs when it matters, not when it was cheap.)
+ */
+const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/trust_profile" || !isBuying(c)) {
+    return next();
+  }
+  const raw = c.req.query("url");
+  if (!isValidHttpUrl(raw)) {
+    return c.json(
+      {
+        error:
+          "This needs a url query parameter — your endpoint, https, on the public internet. No target, no charge. The free evidence for any ready-side host is already at /passport/{host}.",
+      },
+      400,
+    );
+  }
+  const url = new URL(raw);
+  const verdict = checkProbeTarget(url, "");
+  if (!verdict.ok) {
+    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+  }
+  if (
+    url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
+  ) {
+    return c.json(
+      {
+        error:
+          "That is this store's own hostname; the house profile is /trust, free, and hosting a paid page about ourselves would be the instrument vouching for itself.",
+      },
+      400,
+    );
+  }
+  const gate = await issuePassport(c.env, url.host.toLowerCase());
+  if (!gate.issued) {
+    return c.json({ error: `${gate.detail} Nothing charged.` }, 403);
   }
   await next();
 };
@@ -875,6 +922,7 @@ buyRoutes.use("/api/buy/*", capacityCheck);
 buyRoutes.use("/api/buy/*", anchorCheck);
 buyRoutes.use("/api/buy/*", standingWatchCheck);
 buyRoutes.use("/api/buy/*", serviceAuditCheck);
+buyRoutes.use("/api/buy/*", trustProfileCheck);
 buyRoutes.use("/api/buy/*", signatureCardCheck);
 buyRoutes.use("/api/buy/*", onpageAuditCheck);
 buyRoutes.use("/api/buy/*", launchCheckCheck);
@@ -967,6 +1015,11 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   }
   if (item.id === "passport_refresh") {
     // serviceAuditCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "trust_profile") {
+    // trustProfileCheck validated the URL, refused our own host, and
+    // held the ready gate before the 402; the mint re-derives it.
     input.targetUrl = c.req.query("url") ?? "";
   }
   if (item.id === "signature_agent_card") {

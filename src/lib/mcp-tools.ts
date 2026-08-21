@@ -159,6 +159,11 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // wherever newest, whatever it says. The check is bought; the
       // grade never is.
       "passport_refresh",
+      // The observation given a standing address: thirty days of
+      // hosted evidence page per purchase — the passport, the chip,
+      // the history at one URL. The page is bought; what it shows
+      // never is.
+      "trust_profile",
     ],
   },
   {

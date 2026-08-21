@@ -482,6 +482,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The census's evidence about one host as a single signed, expiring object: latest verdict, observation history with gaps counted, freshness state (fresh / aging / expired / broken / indeterminate — refuse expired). Ready-side hosts only; failing hosts get a reasoned refusal, never a public row. JSON by default, HTML for eyes. Free.",
         ),
       },
+      "/profiles": {
+        get: freeOp(
+          "Hosted trust profiles",
+          "What a hosted profile is, plus every in-term profile whose latest evidence is on the ready side. A profile is a standing page an operator commissions about their own endpoint (the trust_profile item, 30 days per purchase, renewable) aggregating the live passport, chip and signed history. Reading is free forever.",
+        ),
+      },
+      "/profiles/{host}": {
+        get: freeOp(
+          "One host's hosted profile",
+          "The commissioned standing page for one endpoint: the signed commission record plus live-derived freshness and latest verdict. Serves honestly in both directions — a broken host shows broken, an expired term says so. 404 when nobody has commissioned one. Free to read.",
+        ),
+      },
       "/trust": {
         get: freeOp(
           "The trust panel",

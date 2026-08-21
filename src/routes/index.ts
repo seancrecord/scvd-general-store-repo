@@ -49,6 +49,7 @@ export { registryRoutes } from "@/routes/registry";
 export { freshSetRoutes } from "@/routes/fresh-set";
 export { trustRoutes } from "@/routes/trust";
 export { passportRoutes } from "@/routes/passport";
+export { profilesRoutes } from "@/routes/profiles";
 export { receiptVerifyRoutes } from "@/routes/receipt-verify";
 export { practiceRoutes } from "@/routes/practice";
 export { attestationRoutes } from "@/routes/attestation";

@@ -116,6 +116,12 @@ export const ROOMS: readonly Room[] = [
    * self-passport as the public example.
    */
   { path: "/passport", name: "Endpoint passports", on_storefront: false },
+  /**
+   * The hosted profiles' index, 2026-08-21 — the keeper's ruled
+   * recurring door. Off the storefront pending his slot ruling, same
+   * as its passport kin; the machine surfaces carry it either way.
+   */
+  { path: "/profiles", name: "Hosted trust profiles", on_storefront: false },
   { path: "/attestation", name: "What we sign" },
   /**
    * Rule 43's gate, opened 2026-08-10 on the keeper's badge ruling.
