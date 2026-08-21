@@ -60,10 +60,18 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * republish).
  */
 /**
- * 3.5.0 (2026-08-21, folds the unpublished 3.4.1 in): the third rail.
- * Polygon (eip155:137) lit in every 402 — the skill's buying steps
- * and rail lists now name three rails. MINOR: a reader on 3.4.x holds
- * a menu that under-declares where money can come from.
+ * 3.5.0 (2026-08-21, two sessions' same-day work sharing one
+ * unpublished number — neither half shipped to ClawHub before the
+ * merge, so they land together): THE THIRD RAIL — Polygon
+ * (eip155:137) lit in every 402; the buying steps and rail lists name
+ * three rails. AND THE EVIDENCE LAYER — passport_refresh joins the
+ * shelf ($1 ⚑, the paid fresh check; census instrument, verdict lands
+ * whatever it says), plus the free surfaces a reader should know:
+ * /trust, /passport/{host} with freshness states and the embeddable
+ * chip, POST /api/verify-receipt, the SIWX (CAIP-122) claims
+ * challenge, and /api/practice. MINOR twice over: a reader cached on
+ * 3.4.x under-declares where money can come from and misses the
+ * evidence layer entirely.
  */
 export const SKILL_VERSION = "3.5.0";
 
@@ -157,6 +165,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
   the_statement:
     "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
+  passport_refresh:
+    "Turn my endpoint passport fresh again right now — a new census observation of my door, without waiting for Sunday's walk",
   the_mandate:
     "Record what my agent is authorized to do, dated and signed by a third party, before it spends anything",
   bitcoin_anchor:
@@ -203,6 +213,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
 };
 
 export const SPEC_WHY_USE: Record<string, string> = {
+  passport_refresh:
+    "a new census observation of your endpoint, now instead of Sunday — folded into your endpoint passport wherever newest, moving the passport (and the chip that decays with it) back to fresh. The verdict lands whatever it says: a broken finding darkens the chip. The check is bought; the grade never is.",
   conformance_watch:
     "a week of daily signed conformance readouts on your own endpoint — the drift one audit cannot see: whether a mid-week deploy broke what Monday's buyer could parse. Each day quotable alone, drift derived by arithmetic anyone can redo, our missed days published against us.",
   service_audit:

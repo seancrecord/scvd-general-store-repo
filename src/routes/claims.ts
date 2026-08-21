@@ -69,6 +69,68 @@ function challengeText(address: string, nonce: string): string {
 }
 
 /**
+ * SIWX (CAIP-122), 2026-08-21 — P4 of the Circle-badge slate. The
+ * proprietary scvd-claims-v1 string worked, but every wallet, SIWE
+ * library, and agent framework already knows how to render, sign and
+ * audit THIS shape — the door stops asking callers to learn ours.
+ * Clients sign whatever string the challenge endpoint serves, so the
+ * upgrade needs no client change; verification rebuilds the text
+ * from what KV stored, so the stored record (below) says which
+ * format each challenge used and in-flight legacy challenges keep
+ * verifying through the transition.
+ */
+function siwxChallengeText(
+  base: string,
+  address: string,
+  nonce: string,
+  issuedAt: string,
+): string {
+  const rail = railOf(address)!;
+  const canonical = canonicalAddress(address);
+  const domain = new URL(base).host;
+  const chainId =
+    rail === "evm" ? "eip155:8453" : "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+  const expirationTime = new Date(
+    Date.parse(issuedAt) + CHALLENGE_TTL_SECONDS * 1000,
+  ).toISOString();
+  return `${domain} wants you to sign in with your ${rail === "evm" ? "Ethereum" : "Solana"} account:
+${canonical}
+
+Prove you hold the wallet that paid; the answer reveals this wallet's purchase history to its holder alone. No account is created.
+
+URI: ${base}/api/claims
+Version: 1
+Chain ID: ${chainId}
+Nonce: ${nonce}
+Issued At: ${issuedAt}
+Expiration Time: ${expirationTime}`;
+}
+
+/** What KV holds per live challenge. Legacy entries are the bare
+ * nonce string; SIWX entries carry issued_at so verification can
+ * rebuild the exact CAIP-122 text. */
+interface ChallengeRecord {
+  nonce: string;
+  issued_at: string;
+}
+
+function challengeTextFor(
+  base: string,
+  address: string,
+  stored: string,
+): string {
+  try {
+    const record = JSON.parse(stored) as ChallengeRecord;
+    if (record && typeof record.nonce === "string" && record.issued_at) {
+      return siwxChallengeText(base, address, record.nonce, record.issued_at);
+    }
+  } catch {
+    // Legacy bare-nonce entry from before the SIWX upgrade.
+  }
+  return challengeText(address, stored);
+}
+
+/**
  * A Solana wallet's signMessage yields 64 ed25519 bytes; clients hand
  * them on as base58 (Phantom convention) or hex. Both accepted, both
  * the same bytes.
@@ -118,16 +180,23 @@ claimsRoutes.post("/api/claims/challenge", async (c) => {
   const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+  const issuedAt = new Date().toISOString();
   await c.env.COUNTERS.put(
     KV_KEYS.claimChallenge(canonicalAddress(address)),
-    nonce,
+    JSON.stringify({ nonce, issued_at: issuedAt } satisfies ChallengeRecord),
     { expirationTtl: CHALLENGE_TTL_SECONDS },
   );
   return c.json({
-    challenge: challengeText(address, nonce),
+    challenge: siwxChallengeText(
+      c.env.STORE_BASE_URL,
+      address,
+      nonce,
+      issuedAt,
+    ),
+    format: "CAIP-122 (Sign in with X); SIWE tooling renders and signs it as-is on the EVM side",
     sign_how:
       railOf(address) === "evm"
-        ? "EIP-191 personal_sign over the exact challenge string, with the key that signs your payments. Then POST /api/claims with { address, signature }."
+        ? "EIP-191 personal_sign over the exact challenge string (any SIWE library does this natively), with the key that signs your payments. Then POST /api/claims with { address, signature }."
         : "Your wallet's signMessage (ed25519) over the exact challenge string, with the key that signs your payments. Send the signature base58 or hex. Then POST /api/claims with { address, signature }.",
     expires_in_seconds: CHALLENGE_TTL_SECONDS,
     single_use: true,
@@ -153,8 +222,8 @@ claimsRoutes.post("/api/claims", async (c) => {
   }
   const canonical = canonicalAddress(address);
   const kvKey = KV_KEYS.claimChallenge(canonical);
-  const nonce = await c.env.COUNTERS.get(kvKey);
-  if (!nonce) {
+  const stored = await c.env.COUNTERS.get(kvKey);
+  if (!stored) {
     return c.json(
       {
         error:
@@ -167,7 +236,7 @@ claimsRoutes.post("/api/claims", async (c) => {
   // the nonce too, so nothing about this door rewards guessing.
   await c.env.COUNTERS.delete(kvKey);
 
-  const challenge = challengeText(address, nonce);
+  const challenge = challengeTextFor(c.env.STORE_BASE_URL, address, stored);
   if (rail === "evm") {
     let recovered: string;
     try {

@@ -154,6 +154,11 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // pointed at time: a commitment (your digest, Bitcoin's clock)
       // that neither party could fabricate after the fact.
       "bitcoin_anchor",
+      // The census's own probe pointed at your door NOW instead of
+      // Sunday: the observation folds into your endpoint passport
+      // wherever newest, whatever it says. The check is bought; the
+      // grade never is.
+      "passport_refresh",
     ],
   },
   {

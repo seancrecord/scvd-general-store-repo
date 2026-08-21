@@ -717,7 +717,39 @@ mechanically (fresh / aging / expired / broken / indeterminate — refuse
 expired passports), and the signed per-host history it derives from.
 Free. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
-refusal, not a row: names appear only on the ready side here.
+refusal, not a row: names appear only on the ready side here. Every
+passport carries a free embeddable chip (${base}/badges/passport/{host}.svg)
+that DECAYS by the same freshness arithmetic — and the paid refresh
+(the passport_refresh item, $1) points the census's own probe at your
+door right now, folding the result in wherever it is newest. The
+check is bought; the verdict never is.
+
+## Verify anyone's receipt — signed verdicts, free
+
+POST ${base}/api/verify-receipt with any receipt or signed artifact
+(ours or any issuer's, JSON) and get a SIGNED verdict: valid |
+invalid | expired | insufficient_evidence | unsupported |
+indeterminate. Every check is named with its outcome; what was NOT
+checked (settlement, delivery, revocation, non-scvd key identity) is
+stated on the verdict instead of implied — "unknown" and "bad" drive
+different automated actions, so they are never collapsed. Stateless:
+your document is verified and forgotten, bound to the verdict only by
+sha256. The doc is the GET on the same URL; artifacts this store
+minted also verify by id at ${base}/api/verify/{id}.
+
+## The obstacle course — rehearse failure before it costs you
+
+${base}/api/practice: doors that fail in deliberate, NAMED,
+deterministic ways — a malformed 402, an empty accepts list, the
+testnet trap, a name in payTo, a wrong-rail address, and one
+perfectly-formed dust offer you should parse and still refuse to pay.
+Each body says what is wrong, what a good client does, and which
+named check in the free battery catches it. Free forever, safe from
+CI, nothing mints. One battery, three uses: rehearse here; self-check
+your own door free (POST ${base}/api/preflight); and when you need
+the diagnosis ON PAPER, the signed version is the service_audit item
+— same battery, published criteria, a report you can hand to whoever
+runs your infrastructure.
 
 ## What we rest on
 

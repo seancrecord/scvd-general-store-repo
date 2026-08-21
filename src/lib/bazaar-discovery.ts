@@ -137,6 +137,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("mandate");
   }
+  if (item.id === "passport_refresh") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 endpoint: https, default port, on the public internet. One fresh observation by the weekly census's own probe, folded into your endpoint passport wherever it is newest — the verdict lands whatever it says, and a broken finding turns the chip dark. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_statement") {
     properties["wallet"] = {
       type: "string",
@@ -362,6 +371,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "launch_check") {
     example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "passport_refresh") {
+    example["url"] = "https://your-endpoint.example/api/thing";
   }
   if (item.id === "the_statement") {
     example["wallet"] = "0x843b544bf5f0AA6cbf13E94563874878C98cc4a7";
