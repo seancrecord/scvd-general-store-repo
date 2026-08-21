@@ -188,6 +188,9 @@ describe("the wire holds the verified-fact law", () => {
 
     expect(outcome.sent).toBe(true);
     expect(outcome.sent && outcome.to).toBe("sec@broken.example");
+    // Replies are the yield: they must land where the keeper reads,
+    // not in the alerts mailbox the from-address names.
+    expect(sends[0]).toContain('"reply_to":"sean@recordcreativeco.com"');
     // The verified-fact law: the email body carries the LIVE probe's
     // finding and the re-verified line — never the round's stale one.
     expect(sends[0]).toContain("no accepts entry priced in USDC");

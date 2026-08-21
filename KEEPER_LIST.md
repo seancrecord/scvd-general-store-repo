@@ -248,6 +248,34 @@ job file):
      MPP/x401 read (#51/#52).
   10. RULE (keeper): hosted trust profiles as a monthly SKU
       ($9–49 shape) — a new business line, his call alone.
+  11. Paid receipt-verification API (Exa residue, filed 08-20 late):
+      /api/verify checks OUR artifacts free; this door takes ANYONE'S
+      receipt by POST and returns a signed verdict — valid / invalid
+      / insufficient-evidence / expired / indeterminate. Free by ID
+      stays free forever; batch/third-party is the paid tier. The
+      conformance desk pointed at receipts instead of offers.
+  12. Compatibility mapping pack as a sellable (Exa residue): item
+      9's standards-boundary language turned product — what your
+      metadata has, what's missing, what claims to avoid, for
+      operators wanting AP2/ACP/MPP-facing language. After the MPP
+      read.
+
+  BUILD ORDER RE-RULED 08-20 late (keeper: "prioritize on roi +
+  doability"), replacing the list order above where they differ:
+  P1 trust surfaces batch — trust panel (6) + sample gallery (from
+     3) + assurance ladder (7): cheapest, lifts conversion of every
+     EXISTING paid door, and is the substrate the passport needs.
+  P2 the Endpoint Passport (1) + freshness states (2): the default
+     paid offer, mostly assembly of shipped SKUs.
+  P3 paid receipt-verification API (11): new in-lane revenue door on
+     an existing battery.
+  P4 SIWX (Circle slate 1): small, badge + claims friction cut.
+  P5 obstacle course + failure diagnosis (5).
+  P6 authority-pack residue (3) — test vectors, verification
+     library, incident policy.
+  Interleaved cheap: the spec reads (x401, MPP chargeback memo,
+     Gateway). After passport + MPP read: distribution pack (8),
+     mapping pack (12). Sunday-gated: the chain-inflow reader.
 - ~~Single-rail residues~~ DONE 08-20: /zodiac and /api/claims read
   both rails.
 - ~~The Statement~~ SHIPPED 08-20 on the shelf (`the_statement`, the
