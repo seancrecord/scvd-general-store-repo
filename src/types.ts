@@ -30,6 +30,13 @@ export interface Env {
    * afternoon (wrangler deploy replaces plaintext vars wholesale).
    */
   SOLANA_PAY_TO?: string;
+  /**
+   * The third rail's flag (2026-08-20): set to an 0x address to light
+   * USDC-on-Polygon in every 402; unset, the rail does not exist.
+   * Deliberately separate from PAY_TO_ADDRESS — lighting a rail is
+   * the keeper's decision, never an inference.
+   */
+  POLYGON_PAY_TO?: string;
   /** Coinbase Developer Platform facilitator credentials. Secrets. */
   CDP_API_KEY_ID: string;
   CDP_API_KEY_SECRET: string;

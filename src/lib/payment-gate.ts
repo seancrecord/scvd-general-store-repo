@@ -38,6 +38,8 @@ import {
   BASE_NETWORK,
   DECLINE_SLOT_KEY,
   SOLANA_NETWORK,
+  POLYGON_NETWORK,
+  recordPolygonSettle,
   recordSolanaSettle,
   takeDeclineReason,
 } from "@/lib/payments";
@@ -365,7 +367,7 @@ async function enrich402Body(
               ? {
                   payload_template: template,
                   payload_template_note:
-                    "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL. Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), chainId 8453, and verifyingContract = accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template is the Base rail only.",
+                    "Copy this object, replace only the three <angle-bracketed> values with your wallet address, a fresh random nonce and your signature, then send base64(JSON.stringify(it)) as the PAYMENT-SIGNATURE header on a retry of this same URL. Everything else is already correct for THIS challenge and should not be rebuilt — `accepted` in particular must stay byte-identical to what we offered. Amounts and times are decimal STRINGS, not numbers. validBefore is unix seconds and this one is good for the maxTimeoutSeconds above; a fresh GET always yields a fresh challenge. One more wall waits after the envelope and it fails silently: the EIP-712 domain must be built from accepted.extra (name, version), the chainId of the accepted entry's own network (eip155:8453 \u2192 8453, eip155:137 \u2192 137), and verifyingContract = accepted.asset — details at the hand_rolling_url. The solana:* entry in accepts takes a signed transaction instead of an authorization; this template covers the EVM rails (eip155:*) only.",
                 }
               : {};
           })(),
@@ -1078,6 +1080,10 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
     // the seam where money moved, alarmed past the bound, never a refusal.
     await recordSolanaSettle(c.env, paidUsdc).catch(() => undefined);
+  }
+  if (payment.network === POLYGON_NETWORK) {
+    // Third rail, same ruling: bounded, named, alarmed — never refused.
+    await recordPolygonSettle(c.env, paidUsdc).catch(() => undefined);
   }
   c.set("payment", payment);
   till.payment = payment;

@@ -58,6 +58,11 @@ export interface ChainNet {
 
 export interface NetStatement {
   base: ChainNet;
+  /** The third rail: booked side live from the till's counters the day
+   * the rail lights; observed side absent until a Polygon walker
+   * ships (observed_since null says so out loud, the same way Solana
+   * did before its walk). */
+  polygon: ChainNet;
   solana: ChainNet;
   /** When the till started booking revenue by rail. Null: not yet. */
   booked_since: string | null;
@@ -83,7 +88,7 @@ function microToUsdc(raw: string | null | undefined): number {
 
 export async function computeNetStatement(env: Env): Promise<NetStatement> {
   const months = monthsSinceOpening();
-  const chains = ["base", "solana"] as const;
+  const chains = ["base", "polygon", "solana"] as const;
   /**
    * Every key is constructed, none listed: the key shapes are ours and
    * the months are enumerable, so this is one bulk read rather than a
@@ -141,6 +146,7 @@ export async function computeNetStatement(env: Env): Promise<NetStatement> {
 
   return {
     base: chainNet("base"),
+    polygon: chainNet("polygon"),
     solana: chainNet("solana"),
     booked_since: values.get(KV_KEYS.railMeterStart) ?? null,
     method: NET_STATEMENT_METHOD,

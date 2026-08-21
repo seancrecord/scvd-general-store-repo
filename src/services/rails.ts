@@ -81,6 +81,11 @@ export function inSingleRailWindow(dateOrMonth: string): boolean {
 export interface RailSplit {
   /** Pre-seam, certificate-backed: settled on an eip155 (Base) network. */
   base: number;
+  /** Pre-seam, certificate-backed: settled on Polygon (eip155:137).
+   * Structurally zero before 2026-08-20 — the rail did not exist —
+   * and absent from snapshots stored before the field was born, which
+   * read as zero rather than invalid. */
+  polygon?: number;
   /** Pre-seam, certificate-backed: settled on a Solana network. */
   solana: number;
   /** Pre-seam, certificate-backed, network unrecognised. */
@@ -104,6 +109,7 @@ export interface RailSplit {
 
 export interface RailCounts {
   base: number;
+  polygon: number;
   solana: number;
   other: number;
 }
@@ -120,6 +126,7 @@ export async function computeRailSplit(env: Env): Promise<RailSplit> {
   const { rows, truncated } = await taxRows(env);
   const split = {
     base: 0,
+    polygon: 0,
     solana: 0,
     unknown: 0,
     placed_before_second_rail: 0,
@@ -139,6 +146,8 @@ export async function computeRailSplit(env: Env): Promise<RailSplit> {
     const rail = railOf(row.network);
     if (rail === "base") {
       split.base += 1;
+    } else if (rail === "polygon") {
+      split.polygon += 1;
     } else if (rail === "solana") {
       split.solana += 1;
     } else {
@@ -178,7 +187,7 @@ export async function readRailSplit(env: Env): Promise<RailSplit | null> {
  * and house never reaches a public figure.
  */
 export async function readRailCounters(env: Env): Promise<RailCounts> {
-  const counts: RailCounts = { base: 0, solana: 0, other: 0 };
+  const counts: RailCounts = { base: 0, polygon: 0, solana: 0, other: 0 };
   for (const month of monthsSinceOpening()) {
     const listed = await listKeys(env.COUNTERS, {
       prefix: `metric:${month}:rail`,
@@ -194,7 +203,12 @@ export async function readRailCounters(env: Env): Promise<RailCounts> {
       if (!Number.isFinite(value)) {
         continue;
       }
-      if (rail === "base" || rail === "solana" || rail === "other") {
+      if (
+        rail === "base" ||
+        rail === "polygon" ||
+        rail === "solana" ||
+        rail === "other"
+      ) {
         counts[rail] += value;
       }
     }
