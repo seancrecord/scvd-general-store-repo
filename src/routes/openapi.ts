@@ -71,9 +71,13 @@ function paidOp(
       version: 2,
       // The single string predates the second rail and stays for
       // readers that learned it (same legacy posture as x402.json);
-      // `networks` beside it is the truth — every 402 offers both.
+      // `networks` beside it is the truth — every 402 offers all three.
       network: "eip155:8453",
-      networks: ["eip155:8453", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],
+      networks: [
+        "eip155:8453",
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      ],
       asset: "USDC",
       price_usdc_options: priceUsdcOptions,
     },
@@ -290,7 +294,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       // the contract's description travels into other people's
       // catalogs, so it carries the entity and both differentiators.
       description:
-        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base, eip155:8453, or Solana). ${DELIVERY_ORDER} The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.`,
+        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base eip155:8453, Polygon eip155:137, or Solana). ${DELIVERY_ORDER} The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.`,
       // x402scan verifies ownership from this and nothing else; a
       // store that asks to be checked has to be reachable.
       contact: { url: base, email: STORE_CONTACT_EMAIL },
@@ -305,7 +309,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * elevator version for a reader that only opens the spec.
        */
       "x-guidance":
-        "SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on Base eip155:8453 or Solana mainnet — pick either; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Prices run $0.004–$25; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt.",
+        "SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on Base eip155:8453, Polygon eip155:137, or Solana mainnet — pick any; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Prices run $0.004–$25; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt.",
     },
     servers: [{ url: base }],
     paths: {
@@ -425,13 +429,13 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/api/claims/challenge": {
         post: freeOp(
           "Start a purchase-recovery claim",
-          "Send { address } — 0x + 40 hex (Base) or base58 (Solana), the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
+          "Send { address } — 0x + 40 hex (the EVM rails — Base and Polygon share addresses) or base58 (Solana), the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
         ),
       },
       "/api/claims": {
         get: freeOp(
           "How purchase recovery works",
-          "The claims door, described: challenge-response, both rails, what a valid claim returns.",
+          "The claims door, described: challenge-response, every rail the store settles on, what a valid claim returns.",
         ),
         post: freeOp(
           "Recover everything a wallet paid for",
@@ -659,7 +663,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
           parameters: [
             pathParam(
               "address",
-              "A wallet address on either rail: 0x + forty hex characters (Base), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+              "A wallet address on any rail: 0x + forty hex characters (Base and Polygon share EVM addresses), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
             ),
           ],
         },
