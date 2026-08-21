@@ -102,7 +102,7 @@ import { runDeliveryAudit } from "@/services/delivery-audit";
 import { runRefundWindowAudit } from "@/services/refund-window";
 import { rebuildOpenLaborIndex } from "@/services/queue-capacity";
 import {
-  runChainReconciliation,
+  runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
 import type { Env, HonoEnv } from "@/types";
@@ -480,32 +480,19 @@ const worker: ExportedHandler<Env> = {
      * store's wallet against certificates minted, which is the only
      * check here that does not depend on our own writes — so it is the
      * only one that can see a payment our own pipeline never recorded.
+     *
+     * BOTH EVM RAILS, one read of the certificate drawer between them
+     * (parity build, 2026-08-21): the drawer's answer is the same for
+     * Base and Polygon, and buying that 2,000-key scan twice an hour
+     * is a real line on a real invoice for one fact.
      */
     ctx.waitUntil(
-      runChainReconciliation(env).then(
+      runEvmReconciliations(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {
             condition: "worker_health",
             detail: `Chain reconciliation failed: ${String(error)}`,
-          }),
-      ),
-    );
-    /**
-     * THE SAME QUESTION, ASKED OF THE THIRD RAIL (parity ruling,
-     * 2026-08-21). Real money settles on Polygon now — the first
-     * dollar landed the same day this walk did — and a rail whose
-     * incoming transfers nobody reads is the unwatched half of the
-     * books. Skips itself with a stated reason while POLYGON_PAY_TO
-     * is unset; one code path, one chain parameter.
-     */
-    ctx.waitUntil(
-      runChainReconciliation(env, { chain: POLYGON_EVM }).then(
-        () => undefined,
-        (error) =>
-          sendAlert(env, {
-            condition: "worker_health",
-            detail: `Polygon reconciliation failed: ${String(error)}`,
           }),
       ),
     );

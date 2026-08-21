@@ -835,7 +835,20 @@ async function recordBaseWalkOutcome(
 
 export async function runChainReconciliation(
   env: Env,
-  options: { now?: Date; chain?: EvmChain } = {},
+  options: {
+    now?: Date;
+    chain?: EvmChain;
+    /**
+     * The certificate drawer, read once by the caller and shared.
+     * The drawer is CHAIN-AGNOSTIC — a certificate names its
+     * settlement hash whatever rail it settled on — so two EVM walks
+     * in the same tick asking for it separately is a full 2,000-key
+     * scan bought twice for one answer. Supplied by
+     * runEvmReconciliations below; computed here when absent, so a
+     * single-walk caller is unchanged.
+     */
+    known?: Awaited<ReturnType<typeof knownSettlementHashes>>;
+  } = {},
 ): Promise<ChainReconciliation> {
   const chain = options.chain ?? BASE_EVM;
   /**
@@ -848,7 +861,8 @@ export async function runChainReconciliation(
    */
   const walkPayTo =
     chain.key === "polygon" ? env.POLYGON_PAY_TO : env.PAY_TO_ADDRESS;
-  const known = walkPayTo ? await knownSettlementHashes(env) : undefined;
+  const known =
+    options.known ?? (walkPayTo ? await knownSettlementHashes(env) : undefined);
   let merged = await reconcileAgainstChain(env, { ...options, known, chain });
   if (!merged.ran) {
     await recordBaseWalkOutcome(env, merged, chain);
@@ -912,6 +926,38 @@ export async function runChainReconciliation(
   }
   await recordBaseWalkOutcome(env, merged, chain);
   return merged;
+}
+
+/**
+ * BOTH EVM RAILS, ONE READ OF THE DRAWER.
+ *
+ * Each walk needs the same question answered — which settlement
+ * hashes do our certificates already name — and the answer does not
+ * depend on the chain. Read separately, that is a 2,000-key scan plus
+ * up to 2,000 value reads bought twice an hour for one fact: ~1.5M
+ * wasted KV reads a month, which on this platform is a real line on a
+ * real invoice. Read once here and handed to both.
+ *
+ * The walks still run independently in every other respect: a failing
+ * Polygon pass cannot stop the Base cursor, and vice versa.
+ */
+export async function runEvmReconciliations(
+  env: Env,
+  options: { now?: Date } = {},
+): Promise<{ base: ChainReconciliation; polygon: ChainReconciliation }> {
+  const anyRail = env.PAY_TO_ADDRESS || env.POLYGON_PAY_TO;
+  const known = anyRail ? await knownSettlementHashes(env) : undefined;
+  const base = await runChainReconciliation(env, {
+    ...options,
+    chain: BASE_EVM,
+    ...(known ? { known } : {}),
+  });
+  const polygon = await runChainReconciliation(env, {
+    ...options,
+    chain: POLYGON_EVM,
+    ...(known ? { known } : {}),
+  });
+  return { base, polygon };
 }
 
 /**

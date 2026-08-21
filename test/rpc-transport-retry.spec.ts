@@ -128,15 +128,28 @@ describe("an answer, which is never re-asked", () => {
     expect(mock.calls()).toBe(1);
   });
 
-  it("keeps a paid attestation's NOT_FOUND verdict to exactly two reads", async () => {
-    // observeSettlement reads the receipt and the head. Two calls
-    // total for a NOT_FOUND — no hopeful third look.
+  it("keeps a paid attestation's NOT_FOUND verdict to two reads per rail", async () => {
+    /*
+     * observeSettlement reads the receipt and the head — two calls per
+     * EVM rail, and since 2026-08-21 a 0x hash is asked of BOTH live
+     * EVM rails before NOT_FOUND is signed (a Polygon settlement is
+     * 0x-hex too, and signing NOT_FOUND about a payment one chain over
+     * is the false negative this product exists to never produce).
+     *
+     * FOUR, and the shape of the four is the invariant: 2 × Base,
+     * 2 × Polygon, each answer taken the first time. No hopeful third
+     * look at either chain — that is the rule this test protects, and
+     * it survives the rail count changing.
+     */
     const mock = mockRpc((method) =>
       method === "eth_getTransactionReceipt" ? ok(null) : ok("0x64"),
     );
     const observation = await observeSettlement(testEnv, { txHash: TX });
     expect(observation.status).toBe("NOT_FOUND");
-    expect(mock.calls()).toBe(2);
+    expect(mock.calls()).toBe(4);
+    expect(
+      (observation as unknown as { chains_checked?: string[] }).chains_checked,
+    ).toEqual(["eip155:8453", "eip155:137"]);
   });
 
   it("survives a rate-limited moment and still signs the honest verdict", async () => {

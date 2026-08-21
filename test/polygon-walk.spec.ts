@@ -120,3 +120,49 @@ describe("the Polygon bank walk", () => {
     ).toBe(true);
   });
 });
+
+/**
+ * ONE READ OF THE DRAWER FOR BOTH RAILS. The certificate scan is
+ * capped at 2,000 keys and its answer does not depend on the chain,
+ * so two EVM walks in the same cron tick asking separately is that
+ * scan bought twice an hour for one fact — about 1.5M wasted KV reads
+ * a month, which on this platform is a line on an invoice. The shared
+ * runner is what keeps the third rail from doubling the bill.
+ */
+describe("both EVM walks, one certificate read", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("reads the drawer once and still walks both rails", async () => {
+    const { runEvmReconciliations } = await import(
+      "@/services/chain-reconciliation"
+    );
+    const withRails = {
+      ...testEnv,
+      POLYGON_PAY_TO: PAY_TO,
+      PAY_TO_ADDRESS: PAY_TO,
+    } as Env;
+    let certListCalls = 0;
+    const realList = testEnv.PATRONS.list.bind(testEnv.PATRONS);
+    const spied = {
+      ...withRails,
+      PATRONS: {
+        ...testEnv.PATRONS,
+        list: (options?: KVNamespaceListOptions) => {
+          if (String(options?.prefix ?? "").startsWith("cert")) {
+            certListCalls += 1;
+          }
+          return realList(options);
+        },
+      },
+    } as unknown as Env;
+    stubPolygonChain({ inflows: [] });
+    const result = await runEvmReconciliations(spied);
+    // Both walks reported — neither swallowed by the other.
+    expect(result.base).toBeTruthy();
+    expect(result.polygon).toBeTruthy();
+    // The drawer was listed for ONE walk's worth, not two.
+    expect(certListCalls).toBeLessThanOrEqual(1);
+  });
+});
