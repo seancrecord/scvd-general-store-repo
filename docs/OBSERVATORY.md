@@ -15,7 +15,7 @@ already stands — the keeper's own rule from the outside-reads log:
 - **OPEN** — a question with no answer yet, or a keeper ruling.
 
 New material goes into the section it belongs to under the right
-heading, dated. Section 20 is the parking lot for anything that
+heading, dated. Section 21 is the parking lot for anything that
 doesn't have a home yet. Nothing moves from PROPOSED to built without
 the keeper saying so.
 
@@ -660,6 +660,14 @@ Continuity is what you protect once the first two are real.
 10. **Are the non-equivalences canon?** (§18) — ten of them now. If
     ruled, they belong in HOUSE_RULES.md, not only here, and every
     surface gets checked against them.
+11. **Do we answer the first consumer, and how?** (§20) — a paying
+    stranger asked whether a formal evidence schema exists. Saying
+    "yes, here it is" costs nothing and may convert a Stage-2 buyer
+    into a Stage-3 dependency. Recommend yes, in public, via §17.
+12. **Four axes, not one ladder** (§20) — confirm the depth /
+    corroboration / continuity / weight split, and that the shipped
+    assurance ladder stays untouched beside it. This decides the
+    record format's shape, so it precedes §3.
 4. **Scope broadening** — does the census officially become
    "agent-facing commercial endpoints" rather than x402 only?
 5. **The hiccup rule** — our-miss extends the term, their-miss is the
@@ -1310,6 +1318,8 @@ numbers instead of theory. Most are reads.
 6. Who is paying for observations / passports / attestations
 7. Actual revenue
 8. External consumers of the evidence — any at all?
+   **ANSWERED 08-21 (§20): at least one, who bought two watches and
+   is asking design-partner questions.**
 9. How much architecture is observatory vs original store
 10. The roadmap as the commit history actually shows it
 11. Whether we are explicitly positioning as an evidence supplier to
@@ -1325,7 +1335,164 @@ currently know whether we have any.
 
 ---
 
-## 20. Parking lot — not yet placed
+## 20. The evidence axes, the rich passport, and the first consumer (08-21)
+
+### THE SIGNAL: we have an external consumer, and they are a design partner
+
+Filed against §19's forensic question #8 ("external consumers of the
+evidence — any at all?"), which said we did not know. **We do.**
+
+Someone has **bought both a `standing_watch` and a
+`conformance_watch` on x402.org**, then come back asking — unprompted
+— for precisely the things this document argues for: procedure and
+observer versions, request and payment parameters, raw or hashed
+request/response evidence, exactly which checks passed and failed,
+what the result establishes and what it explicitly does NOT, probe
+limitations, cross-region corroboration, and selection methodology
+for the walked population.
+
+They also ask directly:
+
+> "I'd be curious whether you're designing the Observatory around a
+> formal evidence schema/assurance hierarchy already, or whether
+> that's still evolving."
+
+Three things follow, and they are the most actionable items in this
+document:
+
+1. **The answer is yes, and it is this document.** Saying so is free.
+2. This is the strongest possible argument for §17 (`/plan`): a real
+   buyer is asking for our maturity map by name.
+3. `conformance_watch` and `standing_watch` are marked **drafted —
+   never run a full week** in §16. They are being run now, by a
+   paying stranger, on a third party's endpoint. Whatever those
+   watches deliver is our first real delivery test, and §10's
+   our-miss/their-miss rule stops being theoretical this week.
+
+### ⚑ COLLISION — the E-ladder versus the shipped assurance ladder
+
+The proposed hierarchy (E0 none → E1 reachable → E2 protocol → E3
+conformance → E4 settled → E5 delivered → E6 independently validated
+→ E7 multiple observers) is good thinking, and it **collides with a
+ladder we already shipped**: novelty / observation / monitored /
+audited / witnessed, live on `/trust`.
+
+Publishing both under similar names recreates exactly the confusion
+the keeper has ruled against twice. Worse, the E-ladder has a
+technical flaw: **it is not one axis.** E0–E5 measure how deep into
+the transaction the evidence reached. E6 (validated) is the oracle
+problem §2 rules out. E7 (multiple observers) is not depth at all —
+it is corroboration, an entirely different dimension. A single
+observer who reached delivery and three observers who only reached
+reachability cannot be ranked on one line.
+
+### PROPOSED — four orthogonal axes instead of one ladder
+
+The resolution, and it is more expressive than either ladder:
+
+| Axis | Question | Values |
+|---|---|---|
+| **DEPTH** | how far into the transaction did evidence reach | enumerated → reachable → protocol → conformance → settled → **delivered** (stops here; correctness is the oracle boundary) |
+| **CORROBORATION** | how many independent observers, from how many vantages | 1 · N observers · cross-region · cross-client-profile |
+| **CONTINUITY** | how many observations over what window, with what gaps | single · repeated · longitudinal, with coverage % and gap count |
+| **WEIGHT** | economic activity observed on-chain | purchases, buyers, volume — **not our probe at all** (§19) |
+
+A consumer then expresses a requirement far more precisely than
+"E4+":
+
+```
+require depth >= settled
+        corroboration >= 2 independent
+        continuity >= 30d at >= 95% coverage
+```
+
+**And the shipped assurance ladder survives untouched**, because it
+answers a fifth question none of these do: *how strongly is this
+held* — novelty, observation, monitored, audited, witnessed. Nothing
+to rename, nothing to retract.
+
+**Correctness gets no axis.** §2's ruling stands: the oracle-free
+substitute is divergence across the corroboration axis.
+
+Note the mockup passport below is *already four-dimensional* — counts,
+regional coverage, corroboration, window. The flat E-ladder would
+throw that structure away. **The mockup is better than the ladder.**
+
+### The rich passport mockup — and its denominator problem
+
+```
+x402 Provider: example.com
+Observed: 312 times over 31 days
+Coverage: US-East 72% / EU-West 19% / Other 9%
+x402 discovery:        312 / 312
+Payment:               309 / 312
+Resource delivery:     307 / 309
+Protocol conformance:  310 / 312
+Observed failures: 5      Unobserved periods: 3
+Independent corroboration: 2 observers
+Last observed: 17 minutes ago
+```
+
+This is the right shape and it should be the target. One honest
+caution before it becomes a promise:
+
+**⚑ Those ratios describe a PAID WATCH, not the census.** "Payment
+309/312" means 312 real payment attempts in 31 days on one host —
+that is money, at the subject's own door, with consent. "Last
+observed 17 minutes ago" is continuous monitoring, not a weekly
+walk. The census passport for a stranger's endpoint will be far
+thinner (§2's consent ceiling: L3/L4 only), and the two must be
+visibly different objects or the thin one inherits expectations the
+rich one set.
+
+Every ratio also needs its denominator explained on the artifact
+itself: 309/312 of *what was attempted*, not of what happened.
+
+### "Bloomberg for machine commerce" — and why identity is the moat
+
+The framing lands, and the qualifier is the important half: **not
+because we hold proprietary information, but because we
+systematically observed and normalized** what was always public.
+
+That is precisely the reference-data business, and in every one of
+those businesses **the identifier is the product** — the ticker, the
+CUSIP, the ISIN. Value accrues to whoever maintains the canonical
+name for a thing everyone needs to talk about consistently.
+
+Which promotes §14's stable subject identity from a hygiene item to a
+strategic one. If SCVD becomes where a machine service's identity is
+canonically resolved — this host, these paths, this operator, these
+rails, across renames and migrations — then the corpus is not merely
+a history, it is the registry everyone must reference to compare
+notes. That is a bigger moat than the observations themselves, and it
+is currently unbuilt and unclaimed.
+
+### The dataset, stated in one line
+
+> **"What happened when independent observers attempted to interact
+> economically with every machine-readable service in the x402
+> economy, under precisely documented conditions, over time."**
+
+Every clause is a section of this document: *independent observers*
+(§8), *attempted to interact economically* (§11 sampled purchase),
+*every machine-readable service* (§5 scope), *precisely documented
+conditions* (§18 manifest), *over time* (§19 continuity).
+
+### The unprompted question we have no answer to
+
+> "If 40 of 5,873 known resources are walked, what determines which
+> 40?"
+
+We do not currently publish a selection methodology, and an outsider
+found that hole in one reading. §11's panel-plus-random-sample is the
+answer, but **until it exists the honest response is that selection
+is arbitrary and the aggregate is therefore about our door bank, not
+the ecosystem.** That sentence should be published before someone
+else writes it for us.
+
+---
+
+## 21. Parking lot — not yet placed
 
 - Reciprocal walking with other observatories (beyond signature
   verification): probably premature.
