@@ -72,8 +72,24 @@ import { RETIRED_KEYS } from "@/store/key-registry";
  * challenge, and /api/practice. MINOR twice over: a reader cached on
  * 3.4.x under-declares where money can come from and misses the
  * evidence layer entirely.
+ *
+ * CORRECTION (2026-08-21, same day): the halves did NOT land together
+ * after all. The keeper published 3.5.0 to ClawHub at 13:25 from the
+ * pre-merge tree, so the 3.5.0 that shipped is the THIRD-RAIL half
+ * only; the evidence layer merged under the same number two hours
+ * later, which is exactly the state the published-record guard
+ * refuses. The evidence half is 3.6.0's.
  */
-export const SKILL_VERSION = "3.5.0";
+/**
+ * 3.6.0 (2026-08-21): THE EVIDENCE LAYER, as its own release — the
+ * content the 3.5.0 note describes above, now under the number that
+ * actually ships it: passport_refresh on the shelf, /trust,
+ * /passport/{host} and the chip, POST /api/verify-receipt, the SIWX
+ * claims challenge, /api/practice. MINOR: a reader cached on the
+ * published 3.5.0 has three rails but no evidence layer. Mid-flight
+ * until the keeper republishes to ClawHub.
+ */
+export const SKILL_VERSION = "3.6.0";
 
 /** One live artifact whose verify link resolves: the founding fifty-cent hello. */
 export const SAMPLE_ARTIFACT_ID = "cert_4dww28dx5j";
