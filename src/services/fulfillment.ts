@@ -26,6 +26,10 @@ import {
   performPassportRefresh,
   type SignedPassportRefresh,
 } from "@/services/passport-refresh";
+import {
+  performTrustProfile,
+  type SignedTrustProfile,
+} from "@/services/trust-profile";
 import { performMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
 import { accrueCredit } from "@/services/store-credit";
@@ -316,6 +320,18 @@ export async function fulfillPurchase(
     passportRefresh = await performPassportRefresh(env, input.targetUrl ?? "");
     mintOptions.attests = passportRefresh.evidence_hash;
   }
+  /**
+   * THE HOSTED PROFILE gates first and mints second: the ready gate
+   * re-derives at the mint (the middleware's check was pre-402, and
+   * evidence can move between quote and coin), and the commission
+   * record's evidence hash binds into the certificate. A refusal here
+   * fails the delivery before payment settles — nothing charged.
+   */
+  let trustProfile: SignedTrustProfile | undefined;
+  if (item.id === "trust_profile") {
+    trustProfile = await performTrustProfile(env, input.targetUrl ?? "");
+    mintOptions.attests = trustProfile.evidence_hash;
+  }
   let walletStatement: SignedWalletStatement | undefined;
   if (item.id === "the_statement") {
     walletStatement = await performWalletStatement(
@@ -581,6 +597,9 @@ export async function fulfillPurchase(
     }
     if (passportRefresh) {
       goodsInput.passportRefresh = passportRefresh;
+    }
+    if (trustProfile) {
+      goodsInput.trustProfile = trustProfile;
     }
     if (mandate) {
       goodsInput.mandate = mandate;

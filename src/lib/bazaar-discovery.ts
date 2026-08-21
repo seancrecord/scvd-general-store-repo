@@ -146,6 +146,15 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "trust_profile") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "Your own x402 endpoint: https, default port, on the public internet, and on the ready side of the census's latest evidence — a failing door is refused before any money moves. Thirty days of standing page per purchase; renewal extends the term. We refuse our own hostname.",
+    };
+    required.push("url");
+  }
   if (item.id === "the_statement") {
     properties["wallet"] = {
       type: "string",
@@ -373,6 +382,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
     example["url"] = "https://your-shop.example/api/buy/thing";
   }
   if (item.id === "passport_refresh") {
+    example["url"] = "https://your-endpoint.example/api/thing";
+  }
+  if (item.id === "trust_profile") {
     example["url"] = "https://your-endpoint.example/api/thing";
   }
   if (item.id === "the_statement") {

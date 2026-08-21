@@ -417,8 +417,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * buys the check, never the grade: a refresh that finds the door
    * broken flips the passport to refuse and the chip to dark, and
    * every surface says so before the coin drops.
-   * ⚑ KEEPER REVIEW: price ($1) recommended-and-ruled "both"; copy
-   * drafted, not canon.
+   * Price ($1) KEEPER-CONFIRMED 2026-08-21 ("fine at $1 for now");
+   * copy drafted, not canon.
    */
   {
     id: "passport_refresh",
@@ -437,6 +437,38 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "The newest observation wins in BOTH directions — a broken finding turns the chip off",
       "One observation at one moment; the standing version is conformance_watch, a different item",
       "The passport and chip stay free to read forever; this buys only the freshness",
+    ],
+  },
+  /**
+   * THE HOSTED PROFILE (2026-08-21, keeper-ruled: "why not right? we
+   * can always remove them"): the store's first recurring door. x402
+   * has no subscriptions, so "monthly" is an EXPIRING artifact — 30
+   * days a purchase, renewal extends from whichever is later, now or
+   * the current term's end. The page derives from the same signed
+   * corpus everyone reads free and stays honest in both directions: a
+   * host that breaks mid-term shows broken on its own profile, and
+   * only in-term ready-side hosts appear on the index (the consent
+   * line, everywhere).
+   * ⚑ KEEPER REVIEW: price ($19) drafted inside the keeper's named
+   * $9–49 shape; name and copy drafted, not canon.
+   */
+  {
+    id: "trust_profile",
+    listed_week: "2026-W34",
+    name: "The Hosted Profile",
+    price_usdc: 19,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "A standing page about your endpoint at this store's domain for 30 days per purchase, renewable: your live endpoint passport, the freshness chip, and the signed per-host observation history, aggregated at one URL an operator can hand to anyone. The commission record is signed and its evidence hash bound into your purchase certificate. Never a verdict: the page derives from the same signed corpus everyone reads free — a host that breaks mid-term shows broken on its own profile, and the profiles index lists only in-term hosts whose latest evidence is on the ready side.",
+    note_402:
+      "Thirty days of standing. The page is bought; what it shows never is.",
+    constraints: [
+      "Give your endpoint in the url query parameter: https, default port, on the public internet. We refuse our own hostname",
+      "Ready-side hosts only at purchase — a door whose latest evidence is failing is refused before any money moves",
+      "The page derives live: a broken week shows broken, and the index drops you until the evidence recovers",
+      "Renewal extends from now or the current term's end, whichever is later — renewing early never burns days",
+      "The passport, chip and history stay free to read forever; this buys only the standing page",
     ],
   },
 ] as const;
