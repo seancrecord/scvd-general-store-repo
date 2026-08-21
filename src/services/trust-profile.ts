@@ -1,5 +1,7 @@
 import { signJcs } from "@/lib/jcs";
+import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { listKeys } from "@/lib/kv-list";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import { issuePassport } from "@/services/passport";
@@ -94,26 +96,23 @@ export async function readTrustProfile(
 }
 
 /**
- * The index's ground truth: every stored profile, one KV page. The
- * ROUTE applies the consent filter (in-term AND ready-side); this
- * returns everything so the filter is testable on its own.
+ * The index's ground truth: every stored profile, capped and read in
+ * bulk (the scalability audit's two laws — a list with a cap that
+ * reports truncation, and no read-per-key loop behind it). The ROUTE
+ * applies the consent filter (in-term AND ready-side); this returns
+ * everything so the filter is testable on its own.
  */
 export async function listTrustProfiles(
   env: Env,
 ): Promise<SignedTrustProfile[]> {
-  const page = await env.COUNTERS.list({
+  const { names } = await listKeys(env.COUNTERS, {
     prefix: "trust_profile:",
-    limit: INDEX_CAP,
+    cap: INDEX_CAP,
   });
-  const profiles: SignedTrustProfile[] = [];
-  for (const key of page.keys) {
-    const profile = await env.COUNTERS.get<SignedTrustProfile>(
-      key.name,
-      "json",
-    );
-    if (profile) profiles.push(profile);
-  }
-  return profiles;
+  const values = await bulkGetJson<SignedTrustProfile>(env.COUNTERS, names);
+  return [...values.values()].filter(
+    (profile): profile is SignedTrustProfile => profile !== null,
+  );
 }
 
 export async function performTrustProfile(
