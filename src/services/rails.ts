@@ -240,6 +240,15 @@ export interface RailMonth {
   polygon: number;
   solana: number;
   other: number;
+  /**
+   * Set when the month's key scan hit its cap before the listing
+   * completed — the row may undercount, and it says so. Cannot fire
+   * today (four rail buckets exist per month against a cap of 100),
+   * but "truncation must be visible" is the house pattern everywhere
+   * else a listing is capped, and this was the one scan that dropped
+   * the flag on the floor. CV's batch-4 note, 2026-08-21.
+   */
+  truncated?: true;
 }
 
 /**
@@ -258,6 +267,9 @@ export async function readRailCountersByMonth(env: Env): Promise<RailMonth[]> {
     });
     const values = await bulkGetText(env.COUNTERS, listed.names);
     const row: RailMonth = { month, base: 0, polygon: 0, solana: 0, other: 0 };
+    if (listed.truncated) {
+      row.truncated = true;
+    }
     for (const name of listed.names) {
       if (name.includes(":railh:")) {
         continue; // Family doesn't make the paper.
@@ -276,7 +288,9 @@ export async function readRailCountersByMonth(env: Env): Promise<RailMonth[]> {
         row[rail] += value;
       }
     }
-    if (row.base + row.polygon + row.solana + row.other > 0) {
+    // A truncated month rides even at zero: its zeros are suspect,
+    // and omitting it would hide exactly the row that needs the flag.
+    if (row.truncated || row.base + row.polygon + row.solana + row.other > 0) {
       months.push(row);
     }
   }
