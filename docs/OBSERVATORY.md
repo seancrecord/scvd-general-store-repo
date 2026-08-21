@@ -58,6 +58,11 @@ naming: a crawler's output is *ours*. A standard's output is
 whether a second party can emit a conformant record we would accept
 (§8 federation).
 
+**Start at §16 for the architecture** — the stack, every component
+mapped to the question it answers, and an honest maturity column.
+§17 is the proposal to publish that map. §§1–15 are the depth behind
+it.
+
 ---
 
 ## 1. The problem, in numbers
@@ -597,7 +602,13 @@ Continuity is what you protect once the first two are real.
    strangers to emit? This decision must precede the format design —
    a schema built for third parties from day one differs from one
    retrofitted later.
-3. **Etiquette ceiling** for unrequested probing at 10k+ scale.
+3. **Etiquette ceiling** for unrequested probing at 10k+ scale, and
+   whether daily gets a tiered cadence rather than uniform knocking.
+7. **Publish `/plan`?** (§17) — the dated self-observation of our own
+   maturity, including the word "thin" where it applies.
+8. **Bounties as observation capacity** (§16) — do we spend bounty
+   money to buy probe diversity we cannot get from our own
+   infrastructure, and under what rules?
 4. **Scope broadening** — does the census officially become
    "agent-facing commercial endpoints" rather than x402 only?
 5. **The hiccup rule** — our-miss extends the term, their-miss is the
@@ -752,7 +763,207 @@ moment — so that quoting the conclusion quotes the limits with it.
 
 ---
 
-## 15. Parking lot — not yet placed
+## 16. The stack — doctrine (filed 08-21 from an outside architecture read)
+
+### The architectural decision, stated once
+
+**SCVD provides the evidence. It does not become the reputation
+score.** This is already implicit in the assurance ladder
+(observation → monitored → audited → witnessed rather than a number)
+and in rule 43. Stated here as the load-bearing choice it is, because
+every component below either honours it or breaks it.
+
+```
+                    AGENT WANTS TO BUY
+                           │
+                  "Should I trust this?"
+            ┌──────────────┼──────────────┐
+        REGISTRY         CORPUS       CONFORMANCE
+      "who exists?"  "what happened?"  "is this valid?"
+            └──────────────┼──────────────┘
+                     EVIDENCE LAYER
+              ┌────────────┼────────────┐
+           WATCHES       AUDITS     ATTESTATIONS
+          "over time"  "deep once"  "on-chain?"
+              └────────────┼────────────┘
+                    ENDPOINT PASSPORT
+                           │
+                     TRUST PROFILE
+              ┌────────────┼────────────┐
+          DIRECTORY    REPUTATION      AGENT
+           ranking       engine       decision
+                    ↑
+        WE STOP HERE. The bottom row is someone else's.
+```
+
+### The two-sided insight
+
+The evidence is being built on **both sides of the transaction**, and
+nobody named this before:
+
+```
+SELLER                          BUYER
+offer                           mandate
+  ↓                               ↓
+conformance                   authorization
+  └────────── transaction ────────┘
+                  ↓
+             settlement
+                  ↓
+              delivery
+```
+
+`the_mandate` is not a novelty item — it is the buyer-side twin of a
+signed offer. That symmetry is a bigger story than uptime monitoring
+and should be said out loud on the public surfaces.
+
+### The component map
+
+Every component answers a question **and refuses a neighbouring one.**
+That refusal column is §2's layer discipline applied at product scale
+— the same doctrine, one level up. The maturity column is **DRAFT and
+needs the keeper's pass**; some entries are inferred, not verified.
+
+| # | Component | Answers | Does NOT answer | Maturity (draft) |
+|---|---|---|---|---|
+| 1 | **Registry** | what doors exist; topology, churn, prices, operators | whether you'd successfully buy; whether it's permanently alive | **standing**, evidence **thin** |
+| 2 | **Corpus** | what we observed at historical moments, chained + anchored | anything about unobserved moments | **standing form**, **thin volume** |
+| 3 | **Preflight** | does this URL answer a recognizable x402 challenge right now | "the API works" — one probe, one moment | **standing**, well-used |
+| 4 | **Conformance desk** | is this signed offer/receipt structurally and cryptographically valid | whether the seller delivers | **standing** — strongest piece |
+| 5 | **conformance_watch** | does it keep passing the battery over a week | correctness of what it serves | **drafted** — never run a full week |
+| 6 | **standing_watch** | does it keep answering over time | whether a purchase completes | **drafted** — unexercised |
+| 7 | **service_audit** | the full named battery at one moment, deep | continuity | **standing** |
+| 8 | **launch_check** | can a real buyer complete the whole purchase | anyone else's experience | **drafted** — the strategically biggest one |
+| 9 | **settlement_attestation** | what the chain says happened to the payment | whether the service delivered | **standing** |
+| 10 | **the_statement** | what a wallet actually moved | endpoint trust — this is buyer accounting | **drafted** |
+| 11 | **the_mandate** | what the agent was authorized to do beforehand | whether it obeyed | **drafted** |
+| 12 | **Fresh Set** | the latest observations available | history | **standing** |
+| 13 | **Endpoint passport** | one object per host: identity, history, freshness | layers never observed | **standing**, evidence **thin** |
+| 14 | **Trust profile** | a standing hosted view of the above | a score — deliberately | **drafted** (shipped 08-21) |
+| 15 | **Bounty board** | can third parties be paid to observe | who those observers are | **drafted** — see below |
+| 16 | **Pulse** | are agents using SCVD (our own funnel) | ecosystem activity | **standing** |
+| 17 | **Corrections** | what we got wrong, permanently | — | **standing** — credibility machinery |
+
+### Maturity vocabulary
+
+- **standing** — built, live, load-bearing.
+- **thin** — built, but the evidence behind it is too sparse to carry
+  the claim the surface makes. *This is the honest word for most of
+  the evidence layer today, and the whole point of §§1–13.*
+- **drafted** — built, never exercised by a real outside buyer.
+- **named** — designed and written down, not built.
+- **open** — a question, not yet a design.
+
+### The bounty board is the federation primitive, already shipped
+
+The single most useful thing this read surfaced. A distributed
+observation market attacks the one weakness a centralized observatory
+cannot fix: **one observer cannot see everything** — not from every
+region, not from every identity, not at every moment.
+
+And we already own both halves:
+
+- **The bounty board** — pays a third party to walk a door with their
+  own wallet and prove the settlement.
+- **The receipt desk** — verifies *anyone's* signed artifact.
+
+Federation (§8) is those two pointed at each other plus a published
+schema (§14). It is not a new system. A bounty-funded observation
+from a stranger's wallet, in a stranger's region, from a stranger's
+client, is exactly the probe diversity §8 says we cannot buy from
+Cloudflare.
+
+The governance answer from §8 holds unchanged: **publish the format,
+verify the signature, certify no observer.** Bounties buy
+observations, never reputations.
+
+### The pitch, restated
+
+Not "x402 uptime monitoring" — too small, and it invites exactly the
+over-claim §2 exists to prevent.
+
+**The observability and evidence layer for autonomous commerce.**
+
+A human buying an API reads reviews, opens docs, tries it, complains
+to support, disputes a charge. An autonomous agent has none of that
+and needs machine-readable answers to a chain of questions:
+
+> Who is selling this? · What exactly are they offering? · Did they
+> cryptographically commit to the terms? · Has this endpoint actually
+> been observed? · Has it stayed operational? · Has anyone
+> successfully bought it? · Did payment settle? · Was the resource
+> delivered? · What authority did my agent have? · Can I
+> independently verify all of that?
+
+We have pieces of nearly every one. The category is not invented:
+x402's own signed offer/receipt extension describes signed artifacts
+as being for dispute evidence, auditability, reputation systems and
+agent-to-agent commerce. The protocol is creating the primitive; this
+is the layer that reads it.
+
+### ⚑ NUMBER DISCREPANCY — a LOOK item, unresolved
+
+The outside read cites **"5,954 known / 964 walked"** (≈16% coverage).
+Our working table (§1) says **5,873 known / 40 walked** (0.7%). Those
+cannot both describe the same thing, and the entire coverage argument
+turns on which is right. Candidates: cumulative-hosts-ever-walked vs
+per-round walked; `listed_resources` vs distinct hosts; a figure that
+moved between reads.
+
+Attempted to verify against the live `/registry` and `/corpus.json`
+on 08-21 — **scvd.store is egress-blocked from the build environment,
+so this could not be checked from here.** Neither number is adopted
+in this document until someone looks. House doctrine on disagreeing
+records applies: go look, do not pick.
+
+If 964 is real, §1's diagnosis softens considerably and the keeper's
+"scale the walking" is a shorter climb than either of us thought.
+
+---
+
+## 17. Publishing the plan (keeper's ask, 08-21)
+
+> "I think we need to publicise the plan and outline how we approach
+> each piece and maybe even how far along we view each is."
+
+### PROPOSED — `/plan`, as a dated self-observation
+
+The doctrinal problem with roadmaps is that they are promises, and
+this house does not publish promises it cannot sign. The resolution:
+**the plan page is a dated observation of our own state**, in exactly
+the voice rule 43 uses on everyone else — what stands today, what is
+thin, what is named but unbuilt. Not "we will ship X by Y."
+
+That makes publishing it consistent rather than risky, and it does
+something almost nobody does: **states its own weakness in public,
+with dates.** An operator deciding whether to trust the corpus learns
+more from "this component is thin and here is why" than from any
+claim we could make instead.
+
+### What the page carries
+
+- The stack diagram (§16) — where we stop, and that the bottom row is
+  someone else's job.
+- The component table with the maturity column, dated.
+- The five properties (§0) with which we hold today.
+- The honest coverage numbers, both denominators, with the gap named.
+- What we are working on now and what is merely written down —
+  distinguished, never blurred.
+- A machine twin, because an agent evaluating whether to depend on us
+  deserves the same answer a human gets.
+
+### OPEN
+
+- Does maturity language go on each component's own surface too, or
+  only on `/plan`? (Recommendation: on `/plan` only at first — one
+  place to keep honest is easier than seventeen.)
+- Cadence of the dated re-issue. Monthly?
+- Does `/plan` sit in the rooms list, on the storefront, or held back
+  like `/trust` and `/passport` pending a keeper slot ruling?
+
+---
+
+## 18. Parking lot — not yet placed
 
 - Reciprocal walking with other observatories (beyond signature
   verification): probably premature.
