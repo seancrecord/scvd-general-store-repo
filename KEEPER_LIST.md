@@ -22,6 +22,28 @@ only the keeper can decide; no work happens until he does.
 
 ## NOW
 
+**0. Rulings landed 2026-08-21 (the keeper's four-part note):**
+- HOSTED TRUST PROFILES: APPROVED to build ("why not right? we can
+  always remove them"). Monthly SKU, his $9–49 shape — exact price
+  still ⚑ (a $19/mo draft will ship flagged unless he names one
+  first). Queued as the next revenue build after the favicon swap.
+- PASSPORT_REFRESH at $1: CONFIRMED "for now" — ⚑ struck in
+  menu-utility.ts, copy still drafted-not-canon per rule 7.
+- KEY SUCCESSION (F3): deferred by the keeper — "another day." The
+  authority pack keeps naming the gap honestly meanwhile.
+- FAVICON: the keeper put a preferred favicon in his Google Drive
+  ("scvd.store" folder) to REPLACE the 08-21 house tyrannosaur; needs
+  a Drive-tool approval click, then resize + swap. Small PR.
+- ALERTS MAILBOX: keeper believes he fixed the alerts@ reply path
+  (the pre-reply-to sends) but is unsure — verify by sending it a
+  test mail from an outside account and watching it arrive.
+- SPEC READS filed: docs/SPEC_READS.md — MPP (chargeback RULE now
+  framed with a recommended `settlement_finality` field), Gateway
+  (we likely already qualify — all three of our rails are Gateway
+  chains; confirm criteria on the Haider call), x401 (watch, don't
+  implement). Primary spec hosts egress-blocked; positions built on
+  secondary coverage, byte-level claims deferred to build time.
+
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
 2026-08-13) says the walk stalled hourly from
@@ -246,8 +268,9 @@ job file):
      "references", with mapping tables and test vectors; never
      "AP2/MPP compliant" without implementing the flows. Rides the
      MPP/x401 read (#51/#52).
-  10. RULE (keeper): hosted trust profiles as a monthly SKU
-      ($9–49 shape) — a new business line, his call alone.
+  10. ~~RULE (keeper): hosted trust profiles as a monthly SKU~~
+      RULED 08-21: approved to build ("we can always remove them");
+      the price alone still ⚑. See NOW item 0.
   11. Paid receipt-verification API (Exa residue, filed 08-20 late):
       /api/verify checks OUR artifacts free; this door takes ANYONE'S
       receipt by POST and returns a signed verdict — valid / invalid

@@ -417,8 +417,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * buys the check, never the grade: a refresh that finds the door
    * broken flips the passport to refuse and the chip to dark, and
    * every surface says so before the coin drops.
-   * ⚑ KEEPER REVIEW: price ($1) recommended-and-ruled "both"; copy
-   * drafted, not canon.
+   * Price ($1) KEEPER-CONFIRMED 2026-08-21 ("fine at $1 for now");
+   * copy drafted, not canon.
    */
   {
     id: "passport_refresh",
