@@ -16,6 +16,7 @@ import { storeLaunchCheck } from "@/services/launch-check";
 import type { SignedLaunchCheck } from "@/services/launch-check";
 import { storeWalletStatement } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
+import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import { storeMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
 import { storeOnpageAudit } from "@/services/onpage-audit";
@@ -92,6 +93,8 @@ export interface InstantGoodsInput {
   launchCheck?: SignedLaunchCheck;
   /** the_statement only: the transfer record, already made and signed. */
   walletStatement?: SignedWalletStatement;
+  /** passport_refresh only: the observation, already made and signed. */
+  passportRefresh?: SignedPassportRefresh;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
   /** settlement_reconciliation only: the observation, already signed. */
@@ -306,6 +309,27 @@ export async function deliverInstantGoods(
           cite_it: `Put mandate_id=${record.mandate_id} on any later purchase here and it rides that certificate, signed — the store refuses ids it cannot resolve, so the citation always lands on this record.`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever submitted it. The record is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the mandate too. The record URL serves it free, forever — its own limits printed on it.",
+        },
+      };
+    }
+    case "passport_refresh": {
+      const refresh = input.passportRefresh;
+      if (!refresh) {
+        throw new Error("passport_refresh reached goods with no observation");
+      }
+      const observed = refresh.observation;
+      return {
+        deliverable: `A fresh look at ${observed.host}, taken ${observed.observed_at} by the census's own instrument: ${observed.verdict.toUpperCase()}. The passport at /passport/${observed.host} re-derives from this observation immediately${observed.verdict === "ready" ? ", and the chip reads FRESH" : " — and because the finding is not ready, the passport refuses and the chip is dark. The check was bought; the verdict never is"}.`,
+        extras: {
+          refresh: refresh.observation,
+          evidence_hash: refresh.evidence_hash,
+          signature: refresh.signature,
+          signature_jcs: refresh.signature_jcs,
+          public_key: refresh.public_key,
+          passport_url: `/passport/${observed.host}`,
+          chip_url: `/badges/passport/${observed.host}.svg`,
+          verify_note:
+            "The observation is signed on its own: verify signed_payload semantics per /spec/scvd-attestation/v1 against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the observation too.",
         },
       };
     }

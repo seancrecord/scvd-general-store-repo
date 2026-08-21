@@ -26,6 +26,55 @@ badgeRoutes.get("/badges/sticker.svg", (c) => {
   return c.body(renderVisitorSticker(c.env.STORE_BASE_URL), 200, SVG_HEADERS);
 });
 
+/**
+ * THE PASSPORT CHIP (keeper's "both" ruling, 2026-08-21): free,
+ * ready-side only, freshness-degrading. Same refusal line as the
+ * passport itself — a broken host's chip does not render, because a
+ * chip that stayed green while the door broke would be the exact
+ * stale wallpaper the freshness states exist to kill. Edge-cached
+ * six hours: freshness moves in days, and a hot-linked chip must not
+ * cost a corpus scan per pageview.
+ */
+badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
+  const host = c.req.param("chip").replace(/\.svg$/, "");
+  const { issuePassport, issueSelfPassport } = await import(
+    "@/services/passport"
+  );
+  const { renderPassportChip } = await import("@/services/badge-svg");
+  const ownHost = new URL(c.env.STORE_BASE_URL).host.toLowerCase();
+  const outcome =
+    host === ownHost
+      ? { issued: true as const, passport: await issueSelfPassport(c.env) }
+      : await issuePassport(c.env, host);
+  if (!outcome.issued) {
+    return c.json(
+      { error: outcome.detail },
+      outcome.reason === "never-observed" ? 404 : 403,
+    );
+  }
+  const { payload } = outcome.passport;
+  if (
+    payload.freshness !== "fresh" &&
+    payload.freshness !== "aging" &&
+    payload.freshness !== "expired"
+  ) {
+    return c.json(
+      { error: "No chip renders for this state; the passport says why." },
+      403,
+    );
+  }
+  return c.body(
+    renderPassportChip({
+      host,
+      freshness: payload.freshness,
+      observedAt: payload.latest?.observed_at ?? payload.issued_at,
+      passportUrl: `${c.env.STORE_BASE_URL}/passport/${host}`,
+    }),
+    200,
+    { ...SVG_HEADERS, "Cache-Control": "public, max-age=21600" },
+  );
+});
+
 badgeRoutes.get("/badges/audit/:badge{saudit_[a-z0-9]+\\.svg}", async (c) => {
   const auditId = c.req.param("badge").replace(/\.svg$/, "");
   const record = await getServiceAudit(c.env, auditId);

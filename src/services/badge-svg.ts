@@ -145,6 +145,53 @@ export function renderAuditBadge(options: AuditBadgeOptions): string {
 </svg>`;
 }
 
+/** The chip's freshness palette. Broken and indeterminate never
+ * render — the route refuses them the way the passport door does. */
+const CHIP_STATE: Record<
+  "fresh" | "aging" | "expired",
+  { color: string; sub: string }
+> = {
+  fresh: { color: "#2e7d32", sub: "observed inside one census cadence" },
+  aging: { color: "#b26a00", sub: "older than one cadence — a refresh would say more" },
+  expired: { color: FADED, sub: "too old to rely on; agents should refuse it" },
+};
+
+export interface PassportChipOptions {
+  host: string;
+  freshness: "fresh" | "aging" | "expired";
+  observedAt: string;
+  passportUrl: string;
+}
+
+/**
+ * THE PASSPORT CHIP (2026-08-21, the keeper's "both" ruling): the
+ * free, embeddable, FRESHNESS-DEGRADING face of an endpoint
+ * passport. An operator embeds it once; it decays on its own —
+ * fresh, aging, expired — by the same arithmetic printed on the
+ * passport, so it can never become stale wallpaper, and an aging
+ * chip on your own page is the politest possible case for the
+ * refresh. Free at the observation level; the AUDITED level's badge
+ * stays the paid one that rides service_audit / launch_check — the
+ * free/paid line maps onto the assurance ladder, not onto a paywall
+ * invented for the chip.
+ */
+export function renderPassportChip(options: PassportChipOptions): string {
+  const state = CHIP_STATE[options.freshness];
+  const date = options.observedAt.slice(0, 10);
+  const host = fitName(options.host, 34);
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} ${options.freshness}, observed ${date}">
+  <rect width="300" height="56" fill="${PAPER}" rx="6"/>
+  <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
+  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="${FADED}">SCVD PASSPORT</text>
+  <text x="14" y="38" font-family="Georgia, serif" font-size="12" fill="${INK}">${escapeHtml(host)}</text>
+  <text x="286" y="21" text-anchor="end" font-family="Georgia, serif" font-weight="bold" font-size="12" fill="${state.color}">${options.freshness.toUpperCase()} • ${date}</text>
+  <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">
+    <text x="286" y="38" text-anchor="end" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.passportUrl)}</text>
+  </a>
+  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(state.sub)} — a dated observation, never a score</text>
+</svg>`;
+}
+
 export function renderVisitorSticker(storeBaseUrl: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300" viewBox="0 0 300 300" role="img" aria-label="Visitor sticker">
   <circle cx="150" cy="150" r="145" fill="${PAPER}"/>

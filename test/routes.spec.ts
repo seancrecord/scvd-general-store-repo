@@ -86,6 +86,9 @@ describe("the storefront", () => {
       // above the context anchor on the utility shelf, so it leads.
       "bitcoin_anchor",
       "context_anchor",
+      // The third $1: the refresh sits after the anchors it followed
+      // onto the utility shelf — same tie, same stable ladder order.
+      "passport_refresh",
       "graffiti_on_a_train",
       "standing_watch",
       // $5 ties hold LADDER order too: the audit and the conformance
