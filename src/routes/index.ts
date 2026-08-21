@@ -48,6 +48,7 @@ export { pulseRoutes } from "@/routes/pulse";
 export { registryRoutes } from "@/routes/registry";
 export { freshSetRoutes } from "@/routes/fresh-set";
 export { trustRoutes } from "@/routes/trust";
+export { passportRoutes } from "@/routes/passport";
 export { attestationRoutes } from "@/routes/attestation";
 export { criteriaRoutes } from "@/routes/criteria";
 export { conventionalRoutes } from "@/routes/conventional";

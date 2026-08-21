@@ -110,6 +110,12 @@ export const ROOMS: readonly Room[] = [
    * storefront pending the keeper's slot ruling, same as its kin.
    */
   { path: "/trust", name: "The trust panel", on_storefront: false },
+  /**
+   * The Endpoint Passport's landing, 2026-08-21 — P2 of the ROI
+   * order: one signed, expiring object per ready-side host, our own
+   * self-passport as the public example.
+   */
+  { path: "/passport", name: "Endpoint passports", on_storefront: false },
   { path: "/attestation", name: "What we sign" },
   /**
    * Rule 43's gate, opened 2026-08-10 on the keeper's badge ruling.
