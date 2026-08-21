@@ -121,6 +121,7 @@ describe("the front of the store, trimmed", () => {
       artifacts_issued: 89,
       organic_by_rail: {
         base: 4,
+        polygon: 0,
         solana: 2,
         rail_not_recorded: 0,
         computed_at: "2026-08-06T00:00:00.000Z",
@@ -141,6 +142,7 @@ describe("the front of the store, trimmed", () => {
       artifacts_issued: 89,
       organic_by_rail: {
         base: 4,
+        polygon: 0,
         solana: 1,
         rail_not_recorded: 1,
         computed_at: "2026-08-06T00:00:00.000Z",
