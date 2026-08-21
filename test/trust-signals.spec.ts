@@ -163,12 +163,24 @@ describe("the list states its own edges", () => {
   });
 });
 
-describe("it stays machine-only", () => {
-  it("is never a room, so it never reaches a human", async () => {
-    // The keeper's instruction and the right one: the public rooms say
-    // all of this in a voice worth reading. A conventional trust page
-    // in conventional language would be a duller second copy.
-    expect(ROOMS.map((room) => room.path)).not.toContain("/trust");
+describe("the trust surfaces keep their split", () => {
+  it("trust.json stays machine-only; the /trust room is the human aggregator", async () => {
+    /**
+     * EVOLVED 2026-08-21. The original ruling ("never a room — a
+     * conventional trust page in conventional language would be a
+     * duller second copy") protected against dull duplication, and
+     * it held until three independent outside reads found the trust
+     * substrate scattered across eight rooms and the keeper ruled
+     * the aggregator into the ROI order's first slot. The /trust
+     * room that now exists answers the ORIGINAL objection: every
+     * number derives from the deep room's own source (it cannot be
+     * a second copy, dull or otherwise), and the voice is the
+     * house's. What survives of the old rule unchanged: the
+     * machine list at /.well-known/trust.json is still never a
+     * room — indexers read it beside the signing key, humans read
+     * the panel.
+     */
+    expect(ROOMS.map((room) => room.path)).toContain("/trust");
     expect(ROOMS.map((room) => room.path)).not.toContain(
       "/.well-known/trust.json",
     );

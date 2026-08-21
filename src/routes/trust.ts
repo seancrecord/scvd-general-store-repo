@@ -112,6 +112,9 @@ trustRoutes.get("/trust", async (c) => {
       work, order by order, including the late ones.</li>
       <li><a href="/stack">The stack</a> — every dependency we do not control
       and what breaks when it does.</li>
+      <li><a href="/.well-known/trust.json">The machine trust list</a> —
+      third-party registries that have confirmed us, with dates, edges
+      stated; the surface indexers read beside the signing key.</li>
       <li><a href="/corrections">When we get it wrong</a> and
       <a href="/attestation">what we sign</a> — the standing terms.</li>
     </ul>
