@@ -110,6 +110,8 @@ export const KV_KEYS = {
   trustPanelCache: "trust_panel_cache",
   /** Latest buyer-commissioned passport-refresh observation per host. */
   passportRefresh: (host: string) => `passport_refresh:${host}`,
+  /** The hosted trust profile's current term, latest-only per host. */
+  trustProfile: (host: string) => `trust_profile:${host}`,
   /**
    * THE PUBLIC REGISTRY TALLY (2026-08-19): the market desk's
    * aggregates, one row per published week, served at /registry. ONE

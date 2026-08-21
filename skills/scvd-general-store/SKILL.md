@@ -471,6 +471,12 @@ can route on without buying anything:
   and its Bitcoin-anchored history, the five-level assurance ladder
   (what a valid signature CLAIMS per level), and real house-bought
   sample artifacts to inspect before ever paying.
+- **`trust_profile`** ($19 ⚑) — a STANDING page for your endpoint at
+  `https://scvd.store/profiles/{host}`: your live passport, the chip
+  and the signed history at one URL, 30 days a purchase, renewable
+  (renewing early extends the term). Ready-side hosts only at the
+  door; the page derives live from the same corpus, so a broken week
+  shows broken. The index lists in-term ready-side hosts only.
 
 The claims door's challenge is now standard **SIWX (CAIP-122)** —
 any SIWE library signs it natively; the flow is unchanged.

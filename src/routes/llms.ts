@@ -722,7 +722,12 @@ passport carries a free embeddable chip (${base}/badges/passport/{host}.svg)
 that DECAYS by the same freshness arithmetic — and the paid refresh
 (the passport_refresh item, $1) points the census's own probe at your
 door right now, folding the result in wherever it is newest. The
-check is bought; the verdict never is.
+check is bought; the verdict never is. Operators who want a STANDING
+address for their evidence can commission a hosted profile
+(${base}/profiles/{host}, the trust_profile item — 30 days a
+purchase, renewable): the passport, chip and history at one URL,
+derived live from the same corpus, honest in both directions. The
+index at ${base}/profiles lists in-term ready-side hosts only.
 
 ## Verify anyone's receipt — signed verdicts, free
 
