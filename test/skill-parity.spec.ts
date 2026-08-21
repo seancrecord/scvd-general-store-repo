@@ -46,7 +46,12 @@ function frontmatterField(document: string, field: string): string {
   const line = document
     .split("\n")
     .find((entry) => entry.startsWith(`${field}:`));
-  return line ? line.slice(field.length + 1).trim() : "";
+  if (!line) return "";
+  const value = line.slice(field.length + 1).trim();
+  // Valid YAML quotes scalars that carry colons (the 2026-08-21 fix
+  // that made the skill visible to the Agent Skills CLI); this
+  // reader compares content, not quoting.
+  return value.replace(/^"(.*)"$/s, "$1");
 }
 
 describe("both skill documents lead with the same thing", () => {
