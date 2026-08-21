@@ -133,7 +133,10 @@ export function inferChannel(signals: ChannelSignals): Channel {
   return "unknown";
 }
 
-function houseWallets(env: Env): string[] {
+/** Exported 2026-08-20 for the trust panel's gallery: the sample
+ * artifacts shown publicly are HOUSE purchases only — a stranger's
+ * cert id is a capability URL and never gets published by us. */
+export function houseWallets(env: Env): string[] {
   const extra = (env.HOUSE_WALLETS ?? "")
     .split(",")
     .map((address) => address.trim().toLowerCase())
