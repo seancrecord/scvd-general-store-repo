@@ -46,6 +46,8 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/corpus.json", "corpus.json"],
   ["/registry", "registry"],
   ["/fresh-set", "fresh-set"],
+  ["/okf/index.md", "okf:index"],
+  ["/okf/log.md", "okf:log"],
   ["/passport", "passport"],
   ["/trust", "trust"],
 ]);
@@ -57,6 +59,16 @@ export function porchSurface(path: string, method: string): string | undefined {
   }
   if (path.startsWith("/.well-known/")) {
     return "well-known";
+  }
+  /*
+   * The OKF bundle, bucketed like every other per-host surface: one
+   * key for all host concepts, never one per stranger's hostname.
+   */
+  if (path.startsWith("/okf/host/")) {
+    return "okf:host";
+  }
+  if (path === "/okf" || path.startsWith("/okf/")) {
+    return "okf:concept";
   }
   if (path === "/zodiac" || path.startsWith("/zodiac/")) {
     return "zodiac";

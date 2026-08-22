@@ -30,6 +30,123 @@ type OpenApiObject = Record<string, unknown>;
 const JSON_RESPONSE: OpenApiObject = {
   content: { "application/json": { schema: { type: "object" } } },
 };
+
+/**
+ * THE ERROR MODEL, TYPED — RFC 9457 problem+json.
+ *
+ * Every failure this store returns already had a shape: a JSON object
+ * with a human-readable `error`, and on a refusal the reason. The
+ * spec never said so, so an agent reading the contract had no way to
+ * know what a 4xx would look like without provoking one. A readiness
+ * audit put it plainly on 2026-08-21: no typed error model.
+ *
+ * RFC 9457 rather than a bespoke object, because the point is to be
+ * handled without being learned. `type` and `title` classify, `detail`
+ * carries the store's own sentence, and `error` is kept beside them
+ * so every existing client keeps working — this documents what is
+ * already sent, it does not change it.
+ */
+const PROBLEM_SCHEMA: OpenApiObject = {
+  type: "object",
+  description:
+    "An RFC 9457 problem object. `error` is the store's long-standing human-readable field and is always present; the RFC fields sit beside it.",
+  properties: {
+    type: {
+      type: "string",
+      format: "uri",
+      description:
+        "A URI identifying the problem class. Dereferenceable at this origin where one exists.",
+    },
+    title: { type: "string", description: "A short, stable summary of the problem class." },
+    status: { type: "integer", description: "The HTTP status code, repeated in the body." },
+    detail: {
+      type: "string",
+      description: "What went wrong with THIS request, in plain language.",
+    },
+    instance: { type: "string", format: "uri", description: "The request path." },
+    error: {
+      type: "string",
+      description:
+        "The store's human-readable message. Always present, including on responses that predate the typed model.",
+    },
+  },
+  required: ["error"],
+};
+
+const PROBLEM_RESPONSE = (description: string): OpenApiObject => ({
+  description,
+  content: {
+    "application/problem+json": { schema: PROBLEM_SCHEMA },
+    "application/json": { schema: PROBLEM_SCHEMA },
+  },
+});
+
+/**
+ * THE RATE LIMIT THIS STORE DOES NOT HAVE, SAID OUT LOUD.
+ *
+ * A readiness audit on 2026-08-21 reported "no REST rate-limit
+ * headers found on probed endpoints" and recommended returning the
+ * IETF RateLimit fields. The first draft of this change duly declared
+ * RateLimit-Limit / -Remaining / -Reset on every 200 — and that would
+ * have been a lie in the store's own contract, because there is no
+ * application-level limiter in this Worker to produce a number.
+ *
+ * Advertising a ceiling nobody enforces is worse than having none: an
+ * agent self-throttles against a fiction, and the first honest thing
+ * this spec says stops being trustworthy. The store publishes what it
+ * does; a limiter is a product decision and a behaviour change, and
+ * until it is made this field says so.
+ *
+ * A 429 IS still documented, because one can genuinely arrive: the
+ * edge in front of this Worker throttles abuse, and that response
+ * carries Retry-After without the Worker's involvement.
+ */
+const NO_APP_RATE_LIMIT =
+  "This store enforces no application-level rate limit and therefore returns no RateLimit-Limit/-Remaining/-Reset headers — declaring a ceiling nothing enforces would be worse than declaring none. A 429 can still arrive from the edge in front of the Worker under abuse conditions; it carries Retry-After. A refused request is never charged for. If a limiter is ever added, it will announce itself in these headers and be documented at /developers before it takes effect.";
+
+const TOO_MANY_REQUESTS: OpenApiObject = {
+  ...PROBLEM_RESPONSE(
+    `Too many requests, from the edge rather than from the store's own logic. Retry after the interval named in Retry-After; the store does not charge for a refusal. ${NO_APP_RATE_LIMIT}`,
+  ),
+  headers: {
+    "Retry-After": {
+      schema: { type: "integer" },
+      description: "Seconds to wait before retrying.",
+    },
+  },
+};
+
+/**
+ * EVERY OPERATION NEEDS A UNIQUE, STABLE HANDLE, and none of the 99
+ * had one. Function-calling formats key on operationId; without it a
+ * generator invents names from the path and they change the day the
+ * path does. Derived from method + path so the id cannot drift from
+ * the operation it names, and asserted unique by test.
+ */
+export function operationIdFor(method: string, path: string): string {
+  /*
+   * THE EXTENSION IS PART OF THE NAME, and the first draft of this
+   * function stripped it for tidiness. `/.well-known/x402` and
+   * `/.well-known/x402.json` are two different documents at two
+   * different paths, and tidiness collapsed them into one id — which
+   * in a function-calling format means one of the two silently
+   * vanishes. Caught by the uniqueness guard on the first run.
+   */
+  const cleaned = path
+    .replace(/[{}]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+  return `${method.toLowerCase()}_${cleaned || "root"}`;
+}
+
+/** The responses every operation carries, whatever else it declares. */
+const COMMON_RESPONSES: OpenApiObject = {
+  "400": PROBLEM_RESPONSE("The request was malformed or a required parameter was missing."),
+  "404": PROBLEM_RESPONSE("No such resource. The body names where to look instead."),
+  "429": TOO_MANY_REQUESTS,
+  "500": PROBLEM_RESPONSE("Something fell off a shelf. Nothing was charged."),
+};
 const MARKDOWN_RESPONSE: OpenApiObject = {
   content: { "text/markdown": { schema: { type: "string" } } },
 };
@@ -53,7 +170,10 @@ function freeOp(summary: string, description: string): OpenApiObject {
     summary,
     description,
     security: [],
-    responses: { "200": { description: "OK", ...JSON_RESPONSE } },
+    responses: {
+      "200": { description: "OK", ...JSON_RESPONSE },
+      ...COMMON_RESPONSES,
+    },
   };
 }
 
@@ -89,8 +209,16 @@ function paidOp(
       "402": {
         description:
           "Payment required. Requirements ride in the PAYMENT-REQUIRED response header (base64 JSON, x402 v2); retrying with a signed PAYMENT-SIGNATURE header completes the purchase.",
+        headers: {
+          "PAYMENT-REQUIRED": {
+            schema: { type: "string" },
+            description:
+              "Base64-encoded x402 v2 payment requirements: the accepts[] array, one entry per rail.",
+          },
+        },
         ...JSON_RESPONSE,
       },
+      ...COMMON_RESPONSES,
     },
   };
 }
@@ -312,6 +440,37 @@ openapiRoutes.get("/openapi.json", async (c) => {
         "SCVD General Store verifies x402 commerce and sells signed artifacts. Call it when you need: (1) a FREE pre-purchase check of any x402 endpoint — POST /api/preflight/v1 with {url}; returns a named-check verdict on whether the door answers a well-formed x402 v2 challenge (testnet-network traps flagged); (2) a FREE conformance verdict on any x402 signed offer or receipt, whoever issued it — POST /api/conformance/v1; (3) a paid, signed artifact: GET /api/buy/{item_id} returns HTTP 402 with terms in the PAYMENT-REQUIRED header (base64 JSON, x402 v2; USDC on Base eip155:8453, Polygon eip155:137, or Solana mainnet — pick any; a fill-in-the-blanks payload_template rides the 402 body); retry with a signed payment to receive the deliverable plus a certificate. Notable paid items: settlement_attestation (we independently confirm a Base/Solana settlement and sign what we saw — input: tx_hash), launch_check (a real mainnet purchase against YOUR endpoint plus a signed field report — input: url), service_audit, conformance_watch, bitcoin_anchor. Inputs are query parameters, declared per item in /menu.json; outputs are JSON with a certificate id. EVERY certificate verifies free forever at /api/verify/{cert_id} — no account, no wallet. Prices run $0.004–$25; most items deliver instantly in the response. Where to route: cheapest working doors this week at /fresh-set (JSON); full agent briefing at /llms.txt.",
     },
     servers: [{ url: base }],
+    /**
+     * THE VERSIONING PROMISE, STATED (2026-08-21). The store already
+     * versioned in the URL — /api/preflight/v1, /api/conformance/v1 —
+     * and had published nothing about what happens when a version
+     * ends, which an audit correctly read as a surface that could
+     * change without warning. An agent will not integrate against
+     * that, and it should not have to guess.
+     *
+     * The promise is deliberately modest, because an over-promise
+     * here is the kind of thing /corrections exists to catch: one
+     * operator, one key. What is guaranteed is NOTICE, not permanence.
+     */
+    "x-rate-limiting": {
+      application_level_limit: false,
+      headers_returned: [],
+      note: NO_APP_RATE_LIMIT,
+      policy_url: `${base}/developers`,
+    },
+    "x-versioning": {
+      scheme: "url-path",
+      note: "Breaking changes arrive as a new version in the path (/api/preflight/v1 → /v2). A published version's SHAPE never changes under a client: fields are added, never removed or retyped.",
+      deprecation:
+        "A version being retired serves the RFC 8594 Deprecation and Sunset headers on every response for at least 90 days before it stops answering, and the date is published at /developers before the headers appear.",
+      sunset_headers: ["Deprecation", "Sunset", "Link; rel=\"successor-version\""],
+      policy_url: `${base}/developers`,
+      /*
+       * Nothing is deprecated today, and saying so is more useful
+       * than an empty field a reader has to interpret.
+       */
+      currently_deprecated: [],
+    },
     paths: {
       "/menu.json": {
         get: freeOp(
@@ -823,6 +982,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The richer origin-hosted catalog of payable resources.",
         ),
       },
+      /**
+       * THE DEVELOPER-FACING DOORS, added 2026-08-21 after a
+       * readiness audit found the store's documentation by name and
+       * could not find its address. All three are free and describe
+       * the store rather than doing anything to it.
+       */
+      "/developers": {
+        get: freeOp(
+          "Developer documentation",
+          "One index of everything needed to build against this store: the OpenAPI contract, the free preflight and conformance endpoints, the MCP server, the CLI, and the conventions — authentication (there is none, and no account or API key exists), the RFC 9457 error model, the rate-limit headers, and the versioning and deprecation policy. HTML for browsers, JSON otherwise, markdown when the Accept header prefers it. Also served at /docs and /api, which carry a canonical link back here.",
+        ),
+      },
+      "/.well-known/mcp": {
+        get: freeOp(
+          "Where the MCP server is",
+          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the methods that answer without payment, the capabilities actually served, and the readable resources on the shelf. Published so a client that does not already know the path can complete a handshake.",
+        ),
+      },
+      "/.well-known/agent-instructions": {
+        get: freeOp(
+          "When to reach for this store",
+          "The situations this store is the right call for, each with the items that answer it and the exact request to make — plus the half nobody publishes: when you do not need us. Derived from the same list /llms.txt renders, so the two cannot disagree.",
+        ),
+      },
       "/.well-known/scvd-signing-key": {
         get: freeOp(
           "The store's public key",
@@ -831,5 +1014,40 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
     },
   };
+  stampOperationIds(document);
   return c.json(document);
 });
+
+/**
+ * THE LAST PASS, DELIBERATELY OVER THE FINISHED DOCUMENT.
+ *
+ * Stamping ids inside freeOp/paidOp would cover the operations those
+ * two builders make and silently miss any written by hand — which is
+ * how a spec ends up with 99 operations and 0 operationIds in the
+ * first place. Walking the assembled paths means an operation cannot
+ * be added without getting one, whoever built it.
+ *
+ * An id already set by hand is never overwritten: it is API surface
+ * the moment a client generates against it.
+ */
+export function stampOperationIds(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const [path, item] of Object.entries(paths as Record<string, unknown>)) {
+    if (typeof item !== "object" || item === null) continue;
+    for (const [method, operation] of Object.entries(
+      item as Record<string, unknown>,
+    )) {
+      if (typeof operation !== "object" || operation === null) continue;
+      const op = operation as OpenApiObject;
+      if (!op["operationId"]) op["operationId"] = operationIdFor(method, path);
+      /*
+       * A description is the other half of what a function-calling
+       * format needs. Every builder sets one; a hand-written
+       * operation that forgot falls back to its summary rather than
+       * reaching a client with an empty field.
+       */
+      if (!op["description"] && op["summary"]) op["description"] = op["summary"];
+    }
+  }
+}

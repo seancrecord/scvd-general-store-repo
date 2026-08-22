@@ -1,3 +1,4 @@
+import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { POLYGON_EVM } from "@/lib/base-rpc";
@@ -46,6 +47,7 @@ import {
   pulseRoutes,
   registryRoutes,
   freshSetRoutes,
+  okfRoutes,
   trustRoutes,
   passportRoutes,
   profilesRoutes,
@@ -78,6 +80,7 @@ import {
   becomingRoutes,
   stampRoutes,
   storefrontRoutes,
+  developerRoutes,
   tradingPostRoutes,
   verifyRoutes,
   wellKnownRoutes,
@@ -194,6 +197,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/", storefrontRoutes);
+app.route("/", developerRoutes);
 app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
@@ -202,6 +206,7 @@ app.route("/", reportRoutes);
 app.route("/", pulseRoutes);
 app.route("/", registryRoutes);
 app.route("/", freshSetRoutes);
+app.route("/", okfRoutes);
 app.route("/", trustRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);
@@ -277,16 +282,56 @@ app.route("/", luckyRoutes);
 app.route("/", badgeRoutes);
 app.route("/", adminRoutes);
 
-app.notFound((c) =>
-  c.json(
+/**
+ * A 404 THAT TELLS YOU WHERE TO GO INSTEAD.
+ *
+ * The status was already right — a real 404, never a 200 wearing an
+ * app shell, which is the failure that teaches an agent every path on
+ * a site exists. What it lacked was a way back: two URLs in a JSON
+ * body, and nothing at all for a caller that asked in markdown.
+ *
+ * A lost agent is the reader here. It gets the whole set of doors —
+ * the front door, the catalog, the contract, the sitemap — in the
+ * dialect it asked for, so one wrong guess costs a redirect rather
+ * than the session.
+ */
+function notFoundLinks(base: string): Array<{ url: string; what: string }> {
+  return [
+    { url: `${base}/llms.txt`, what: "the front door: what this store is, in full" },
+    { url: `${base}/agents.md`, what: "the operational manual: how to transact here" },
+    { url: `${base}/menu.json`, what: "the catalog: every item, price and input contract" },
+    { url: `${base}/openapi.json`, what: "the OpenAPI 3.1 contract for every endpoint" },
+    { url: `${base}/developers`, what: "the developer portal" },
+    { url: `${base}/sitemap.xml`, what: "every public URL this store serves" },
+  ];
+}
+
+app.notFound((c) => {
+  const base = c.env.STORE_BASE_URL;
+  const links = notFoundLinks(base);
+  const message = "That aisle doesn't exist.";
+  if (prefersMarkdown(c.req.header("Accept"))) {
+    const body = `# 404 — no such aisle\n\n${message} Nothing here has moved; this path was never a door.\n\n## Where to look next\n\n${links
+      .map((link) => `- [${link.url}](${link.url}) — ${link.what}`)
+      .join("\n")}\n`;
+    return c.text(body, 404, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+    });
+  }
+  c.header("Vary", VARY_ACCEPT);
+  return c.json(
     {
-      error: "That aisle doesn't exist. The whole store fits on one page:",
-      menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
-      front_door: `${c.env.STORE_BASE_URL}/llms.txt`,
+      error: `${message} The whole store fits on one page:`,
+      menu_url: `${base}/menu.json`,
+      front_door: `${base}/llms.txt`,
+      // The same set the markdown body carries, so neither dialect
+      // knows about a door the other does not.
+      where_to_look_next: links,
     },
     404,
-  ),
-);
+  );
+});
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
