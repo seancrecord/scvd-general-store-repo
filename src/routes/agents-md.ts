@@ -4,6 +4,7 @@ import {
   POSITION_NOT,
   POSITION_OPENING,
 } from "@/store/copy/position";
+import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
 import { STORE_METADATA } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -27,7 +28,7 @@ import type { HonoEnv } from "@/types";
  */
 export const agentsMdRoutes = new Hono<HonoEnv>();
 
-function agentsMd(base: string): string {
+export function agentsMd(base: string): string {
   return `# ${STORE_METADATA.name}
 
 > ${POSITION_OPENING}
@@ -97,6 +98,9 @@ artifact any third party can verify without trusting us.
 ## Discovery & trust endpoints
 
 - Sitemap: ${base}/sitemap.xml
+- Developer documentation (one index, no account or key exists): ${base}/developers
+- When to reach for this store, machine-readable: ${base}/.well-known/agent-instructions
+- MCP server pointer and its readable resources: ${base}/.well-known/mcp
 - x402 discovery: ${base}/.well-known/x402.json
 - did:web identity + key history: ${base}/.well-known/did.json
 - Conformance vectors (offer/receipt): ${base}/.well-known/conformance/offer-receipt-vectors.json
@@ -115,6 +119,7 @@ artifact any third party can verify without trusting us.
 
 agentsMdRoutes.get("/agents.md", (c) =>
   c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
-    "content-type": "text/markdown; charset=utf-8",
+    "content-type": MARKDOWN_MEDIA_TYPE,
+    Vary: VARY_ACCEPT,
   }),
 );

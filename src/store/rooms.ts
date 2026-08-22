@@ -49,6 +49,17 @@ export interface Room {
  */
 export const ROOMS: readonly Room[] = [
   { path: "/what", name: "What is this?" },
+  /**
+   * THE ADDRESS THE LIBRARY NEVER HAD (2026-08-21). Every fact on
+   * this page was already published — the contract, the manual, the
+   * briefing, the MCP server, the criteria — and a readiness audit
+   * probed /developers, /docs and /api, got three 404s, and reported
+   * the store as having no developer documentation at all. It was an
+   * addressing failure, not a documentation one. /docs and /api serve
+   * the same page and stay out of this list: one room, one canonical
+   * path, three doors.
+   */
+  { path: "/developers", name: "developer documentation" },
   { path: "/try", name: "The Practice Counter" },
   /**
    * The two differentiators, given crawlable rooms 2026-08-10. Both

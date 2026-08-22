@@ -1,3 +1,4 @@
+import { mcpResourceCatalog, readMcpResource } from "@/lib/mcp-resources";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
@@ -561,15 +562,18 @@ async function handleRpc(
           ? requested
           : DEFAULT_PROTOCOL,
         /**
-         * resources and prompts are DECLARED AND EMPTY rather than
-         * undeclared, since 2026-08-11: Smithery's scanner probed
-         * both list methods, took the spec-correct -32601 for a
-         * failure, and printed warnings on the store's page. This
-         * store has no resources and no prompts — tools are the whole
-         * catalog — and an empty shelf that says so honestly reads
-         * better on every scanner than a door that errors. The
-         * capability objects are minimal on purpose: nothing changes,
-         * nothing to subscribe to.
+         * DECLARED AND, SINCE 2026-08-21, ACTUALLY STOCKED.
+         *
+         * Declared-and-empty was the 2026-08-11 posture, adopted so
+         * Smithery's scanner got an honest "nothing here" instead of
+         * a spec-correct -32601 it counted as a failure. The reasoning
+         * held that tools were the whole catalog. A readiness audit
+         * found the flaw in the premise: this store publishes five
+         * machine-readable context surfaces free and forever, and
+         * every one of them is a resource in the exact sense the
+         * protocol means. See lib/mcp-resources.ts.
+         *
+         * Prompts stay empty and declared, for the original reason.
          */
         capabilities: {
           tools: { listChanged: false },
@@ -596,21 +600,50 @@ async function handleRpc(
     case "ping":
       return rpcResult(id, {});
     /**
-     * THE EMPTY SHELVES. Declared in capabilities, so the list
-     * methods answer with honest emptiness instead of -32601 — a
-     * scanner probing them gets "nothing here" rather than "no such
-     * door". The read/get methods still refuse, because with zero
-     * resources and zero prompts, any URI or name a caller sends is
-     * one we do not have.
+     * THE SHELVES, STOCKED. What the store publishes to everyone —
+     * the guide, the manual, the catalog, the criteria and the week's
+     * routing data — served as context an MCP client can read without
+     * spending a tool call to be handed a URL it cannot fetch through
+     * this transport.
+     *
+     * Nothing a purchase minted appears here: a certificate or a watch
+     * history belongs to whoever bought it, and a resource list is a
+     * browsable index.
      */
     case "resources/list":
-      return rpcResult(id, { resources: [] });
+      return rpcResult(id, { resources: mcpResourceCatalog() });
     case "resources/templates/list":
+      // Every resource is a fixed URI; there is no family of them
+      // parameterised by anything, so a template list would be a
+      // shape with no instances.
       return rpcResult(id, { resourceTemplates: [] });
-    case "resources/read":
-      // -32002 is the spec's "resource not found", and with an empty
-      // shelf every URI is not found.
-      return rpcError(id, -32002, "No resources on the shelf; tools are the whole catalog here.");
+    case "resources/read": {
+      const uri = isRecord(request.params)
+        ? String(request.params["uri"] ?? "")
+        : "";
+      const found = await readMcpResource(c.env, c.env.STORE_BASE_URL, uri);
+      if (!found) {
+        // -32002 is the spec's "resource not found".
+        return rpcError(
+          id,
+          -32002,
+          `No resource at ${uri || "(no uri given)"}. The shelf: ${mcpResourceCatalog()
+            .map((resource) => resource.uri)
+            .join(", ")}`,
+        );
+      }
+      return rpcResult(id, {
+        contents: [
+          {
+            uri: found.resource.uri,
+            name: found.resource.name,
+            title: found.resource.title,
+            mimeType: found.resource.mimeType,
+            text: found.text,
+          },
+        ],
+      });
+    }
     case "prompts/list":
       return rpcResult(id, { prompts: [] });
     case "prompts/get":

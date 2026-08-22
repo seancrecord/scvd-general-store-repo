@@ -1,3 +1,5 @@
+import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
 import {
@@ -549,6 +551,100 @@ for (const path of [
  * hand-typed, per the derive-or-refuse rule; the RFC wants under a
  * year and this serves exactly half of one, rolling.
  */
+/**
+ * GET /.well-known/mcp — where the MCP server actually is.
+ *
+ * The store has run a Streamable HTTP MCP server at /mcp since the
+ * skill shipped, and it is listed in Smithery. A readiness audit on
+ * 2026-08-21 found the listing and then could not complete a
+ * handshake, because nothing at a predictable path said where the
+ * endpoint lives — a scanner that does not already know the path has
+ * no way to find it, and "listed in a registry" is not the same as
+ * "reachable".
+ *
+ * Descriptive only: this is a pointer, not a second transport. The
+ * protocol still happens at /mcp, over POST, exactly as before.
+ */
+wellKnownRoutes.get("/.well-known/mcp", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    name: "scvd-general-store",
+    title: STORE_SERVICE_NAME,
+    description:
+      "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
+    // The one field a client actually needs.
+    endpoint: `${base}/mcp`,
+    transport: "streamable-http",
+    /** The methods that answer without payment, so a scanner knows what to probe. */
+    free_methods: [
+      "initialize",
+      "ping",
+      "tools/list",
+      "resources/list",
+      "resources/read",
+      "prompts/list",
+    ],
+    capabilities: {
+      tools: true,
+      // Stocked since 2026-08-21 — see lib/mcp-resources.ts.
+      resources: true,
+      prompts: false,
+    },
+    resources: mcpResourceCatalog().map((resource) => ({
+      uri: resource.uri,
+      name: resource.name,
+      title: resource.title,
+      mimeType: resource.mimeType,
+    })),
+    documentation: `${base}/developers`,
+    openapi: `${base}/openapi.json`,
+  });
+});
+
+/**
+ * GET /.well-known/agent-instructions — WHEN to reach for this store,
+ * at a path an agent can guess.
+ *
+ * The guidance itself is not new and it is not written here: USE_WHEN
+ * has carried it since the spec shipped, and /llms.txt renders it
+ * under "When you'd use this store" — job-shaped triggers, the items
+ * that serve them, and the exact call to make. A readiness audit on
+ * 2026-08-21 reported "no agent instruction file with when-to-use
+ * guidance found", which was wrong about the store and right about
+ * the address: guidance a crawler has to read 200 lines of prose to
+ * reach is guidance most crawlers will not reach.
+ *
+ * Derived from the same array, so this file cannot describe a store
+ * the briefing does not. Marketing copy is deliberately absent — the
+ * audit's own note is that generic positioning does not read as
+ * guidance, and it is right.
+ */
+wellKnownRoutes.get("/.well-known/agent-instructions", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    name: STORE_SERVICE_NAME,
+    what_this_is:
+      "When to call this store, and with what. Each entry is a situation an agent can actually be in, the items that answer it, and the request to make.",
+    when_to_use: USE_WHEN.map((entry) => ({
+      situation: entry.when,
+      items: entry.items,
+      example_request: entry.example,
+    })),
+    when_not_to_use:
+      "If none of those situations is yours, you do not need this store today. Nothing here is a subscription and nothing renews itself.",
+    how_to_call: {
+      free: "Plain HTTPS. No account, no key, no signup exists.",
+      paid: "GET the item URL, receive HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON), sign one of the offered accepts, retry with the signed payment. One payment per request; settlement is wallet-to-wallet.",
+      rails: ["eip155:8453", "eip155:137", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],
+    },
+    full_briefing: `${base}/llms.txt`,
+    transaction_manual: `${base}/agents.md`,
+    contract: `${base}/openapi.json`,
+    documentation: `${base}/developers`,
+    catalog: `${base}/menu.json`,
+  });
+});
+
 wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   const base = c.env.STORE_BASE_URL;
   const expires = new Date(Date.now() + 182 * 24 * 3600 * 1000).toISOString();

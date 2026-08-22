@@ -473,4 +473,30 @@ code {
   background: rgba(93,230,200,0.08); border: 1px solid #2a3b36;
   padding: 0 0.35em; border-radius: 3px; font-size: 0.9em;
 }
+
+/**
+ * THE ACCESSIBLE NAME, AND WHY IT NEEDS ITS OWN ELEMENT.
+ *
+ * The sign is built out of letters that flicker on their own timers,
+ * so "STORE" is really ST + <span>O</span> + RE. To a person that is
+ * a bulb with a loose contact. To anything reading textContent it is
+ * "GENERAL ST O RE" — and a readiness audit on 2026-08-21 reported
+ * this page as having NO H1 at all, because the only h1 on it spells
+ * nothing a parser can match against the store's name.
+ *
+ * Clipped, not display:none — a hidden element is dropped from the
+ * accessibility tree and from most text extraction, which is the
+ * whole thing being fixed. The neon is untouched.
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 `;

@@ -192,6 +192,14 @@ A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
 OpenAPI 3.1 contract: ${base}/openapi.json
+Developer documentation, one index of all of it: ${base}/developers
+(also at /docs and /api). No account and no API key exists to obtain:
+free shelves are open, paid ones take a signed x402 payment per
+request. The page states the error model, the rate-limit headers and
+the deprecation policy in one place.
+When to reach for this store, machine-readable:
+${base}/.well-known/agent-instructions — the same situations listed
+under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
 free; paid tools carry x402 in-band, delivered first and settled after.
