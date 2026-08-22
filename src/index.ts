@@ -47,6 +47,7 @@ import {
   pulseRoutes,
   registryRoutes,
   freshSetRoutes,
+  okfRoutes,
   trustRoutes,
   passportRoutes,
   profilesRoutes,
@@ -205,6 +206,7 @@ app.route("/", reportRoutes);
 app.route("/", pulseRoutes);
 app.route("/", registryRoutes);
 app.route("/", freshSetRoutes);
+app.route("/", okfRoutes);
 app.route("/", trustRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);

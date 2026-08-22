@@ -666,6 +666,42 @@ accumulating score on an operator, which is the thing this store does
 not keep on anyone. The dated observations are all there; the ratio is
 withheld deliberately, not forgotten.
 
+## The same evidence as an OKF bundle
+
+${base}/okf/index.md serves the evidence layer as an
+Open Knowledge Format v0.2 bundle (the Google Cloud spec, 2026-06):
+one markdown
+concept per file, YAML frontmatter for the structured fields, ordinary
+markdown links between them. If your toolchain already reads OKF
+bundles, this is the door to use — nothing here is unique to the
+format, it is the census and the criteria in a shape a knowledge
+catalog can ingest.
+
+Two things about the frontmatter are worth knowing before you trust
+it. Every concept carries \`stale_after\`, sixteen days past the
+observation, which is the passport's own aging rule and not a number
+invented for this surface — expire it yourself rather than asking us.
+And every concept's \`verified\` list names only the census instrument,
+never a \`human:\` actor, so an OKF consumer deriving trust tiers will
+correctly read these as machine-confirmed rather than human-reviewed.
+Nobody reviewed the weekly rounds by hand. Claiming the top tier for
+an unwatched machine walk would be the exact thing this store sells
+against.
+
+The bundle is generated from the signed round on every read, so it
+cannot go stale in the way a hand-maintained file does.
+
+Concepts in the bundle:
+
+- ${base}/okf/index.md: every concept, listed. The bundle root.
+- ${base}/okf/log.md: what changed, by date, newest first.
+- ${base}/okf/store.md: what this shop is and when to reach for it.
+- ${base}/okf/criteria.md: the battery every observation was made against.
+- ${base}/okf/fresh-set.md: this week's conformant doors, as a concept.
+- ${base}/okf/host/{host}.md: one door, dated. Exists only for hosts that
+  answered conformantly in the latest round; anything else answers 404
+  with a pointer back to the index.
+
 ## The tab's pooled corpus, taking contributions
 
 The scvd-tab package (npm, MIT) keeps an agent's spending tab locally;
