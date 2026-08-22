@@ -56,6 +56,21 @@ jobs:
       # no warning, at some unknown future size.
       - name: Scalability audit
         run: npm run audit
+      # WHICH DOCUMENTS HAVE GONE QUIET — printed, never enforced.
+      # The facts a machine can recompute are already guarded by tests
+      # that fail this build (doc-drift for outbound copy,
+      # derived-not-typed for served surfaces, skill-parity and
+      # published-record for the bundle). What is left is the judgment
+      # call no test can make, and it only reaches the keeper if it
+      # rides a job he already reads.
+      #
+      # IT MUST NOT FAIL THE BUILD. A red build for a quiet document
+      # would be answered by touching the file, and a freshness check
+      # that can be satisfied by touching a file manufactures fake
+      # freshness — the exact failure the store's own dated surfaces
+      # exist to avoid.
+      - name: Documents that have gone quiet
+        run: npm run docs:check
       # DOES IT ACTUALLY BUILD — added 2026-07-30, the same day a green
       # CI shipped nothing. The tests run under vite, which serves a
       # `?raw` markdown import happily; wrangler builds with esbuild,

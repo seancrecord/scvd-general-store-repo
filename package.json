@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "description": "Sean-Claude Van Damme's General Store \u2014 a human-run shop for autonomous AI agents.",
+  "description": "Sean-Claude Van Damme's General Store — a human-run shop for autonomous AI agents.",
   "homepage": "https://scvd.store",
   "repository": {
     "type": "git",
@@ -29,7 +29,8 @@
     "agentic:check": "node scripts/agentic-market-check.mjs",
     "probe:dead-mcp": "node scripts/dead-mcp-probe.mjs",
     "tab:test": "node --test tab/tab.test.mjs",
-    "tab:pager": "node tab/pager.mjs"
+    "tab:pager": "node tab/pager.mjs",
+    "docs:check": "node scripts/docs-check.mjs"
   },
   "dependencies": {
     "@coinbase/x402": "^2.1.0",
