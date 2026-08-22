@@ -100,9 +100,25 @@ describe("the questions a developer portal exists to answer", () => {
     ).json()) as {
       sections: Array<{ entries: Array<{ href: string; label: string }> }>;
     };
+    /*
+     * ORIGIN COMPARED, NOT PREFIX-MATCHED (CodeQL, 2026-08-22).
+     * `startsWith("https://scvd.store")` is also true of
+     * https://scvd.store.example.com/, so a link that had drifted to a
+     * lookalike host would be treated as ours and probed as ours —
+     * the test would vouch for a door it had never checked. Parsing
+     * and comparing the origin is both the documented remediation and
+     * the stricter assertion.
+     */
+    const isOurs = (href: string): boolean => {
+      try {
+        return new URL(href).origin === "https://scvd.store";
+      } catch {
+        return false;
+      }
+    };
     const local = json.sections
       .flatMap((section) => section.entries)
-      .filter((entry) => entry.href.startsWith("https://scvd.store"))
+      .filter((entry) => isOurs(entry.href))
       // A path template is documentation, not a resource; the store
       // learned that from x402scan probing `{item_id}` literally.
       .filter((entry) => !entry.href.includes("{"));

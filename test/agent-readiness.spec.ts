@@ -19,6 +19,26 @@ import { negotiate, prefersMarkdown } from "@/lib/accept";
  * asked in, and a wrong guess at a URL comes back with a way out.
  */
 
+/**
+ * Remove markup until the string stops changing, then drop a dangling
+ * unterminated tag.
+ *
+ * BOTH HALVES ARE LOAD-BEARING, and the second one only exists because
+ * the assertion below caught the first fix being wrong: looping on
+ * /<[^>]*>/ handles nesting, but that pattern REQUIRES a closing
+ * bracket, so `<script src="x"` at the end of a fragment survives any
+ * number of passes. That was the exact case CodeQL named.
+ */
+function stripTags(fragment: string): string {
+  let previous: string;
+  let current = fragment;
+  do {
+    previous = current;
+    current = current.replace(/<[^>]*>/g, "");
+  } while (current !== previous);
+  return current.replace(/<[^>]*$/, "");
+}
+
 describe("the Accept header, parsed rather than guessed at", () => {
   it("honours q-values instead of substring-matching", () => {
     /*
@@ -118,13 +138,32 @@ describe("the front door answers in the dialect it was asked in", () => {
   });
 });
 
+describe("the h1 reader cannot be fooled by a stray angle bracket", () => {
+  it("strips until stable, so an unterminated tag leaves no markup behind", () => {
+    // The exact shape CodeQL named: one pass of /<[^>]+>/ leaves this.
+    expect(stripTags('<span>General <b>Store</b><script src="x"')).toBe(
+      "General Store",
+    );
+    expect(stripTags("<p><em>x402</em></p>")).toBe("x402");
+    expect(stripTags("plain text")).toBe("plain text");
+  });
+});
+
 describe("the store's name, legible to a machine", () => {
   it("puts the real name in the h1, not just the flickering bulbs", async () => {
     const page = await SELF.fetch("https://scvd.store/");
     const html = await page.text();
     const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html)?.[1] ?? "";
     expect(h1).toBeTruthy();
-    const text = h1.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    /*
+     * STRIPPED UNTIL STABLE, not once (CodeQL, 2026-08-22). A single
+     * pass of /<[^>]+>/ leaves an unterminated `<script src="x"` — and
+     * more to the point here, a nested or malformed tag can leave
+     * markup that this assertion would then read as the store's NAME.
+     * A guard on legibility that can be fooled by a stray angle
+     * bracket is not a guard.
+     */
+    const text = stripTags(h1).replace(/\s+/g, " ").trim();
     /*
      * The whole finding, in one assertion: the h1's text has to
      * contain the store's name spelled the way anyone would search
