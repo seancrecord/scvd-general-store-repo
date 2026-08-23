@@ -80,6 +80,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           what: "This week's x402 doors that answered a conformant challenge, with rails and cheapest ask per host. Routing data, CC BY 4.0.",
         },
         {
+          href: `${base}/defects.json`,
+          label: "GET /defects.json",
+          what: "Stable names for the ways an x402 endpoint can be broken — what each asserts, what falsifies a finding, and whether an unpaid probe can see it at all. CC BY 4.0.",
+        },
+        {
           href: `${base}/okf/index.md`,
           label: "GET /okf/index.md",
           what: "The same evidence as an Open Knowledge Format v0.2 bundle — markdown concepts with YAML frontmatter, cross-linked, machine-confirmed and dated.",

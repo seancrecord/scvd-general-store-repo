@@ -666,6 +666,28 @@ accumulating score on an operator, which is the thing this store does
 not keep on anyone. The dated observations are all there; the ratio is
 withheld deliberately, not forgotten.
 
+## Named defect classes, so two instruments can compare notes
+
+${base}/defects (and ${base}/defects.json) publishes stable names for
+the ways an x402 endpoint can be broken. Each class states what it
+asserts, what would falsify a finding of it, and — the field that
+actually matters — whether an UNPAID probe can see it at all.
+
+That last one is the interop. This store's census sends one unpaid
+GET; a paid walk settles real money and sees things a free probe
+never can. A door clean to us and defective to a paying tester is not
+a contradiction, it is two instruments measuring different things,
+and the \`detectable\` field is how you tell which happened.
+
+Where another published instrument names the same observable property,
+the mapping is stated with the path to check it and what would show it
+wrong. Those mappings are our reading of somebody else's published
+definitions on a date, never their endorsement.
+
+Not a score, not a ranking, not a list of anybody: every class
+describes one endpoint at one moment. CC BY 4.0 — take the names, that
+is the point of publishing them.
+
 ## The same evidence as an OKF bundle
 
 ${base}/okf/index.md serves the evidence layer as an

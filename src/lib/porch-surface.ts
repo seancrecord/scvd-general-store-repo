@@ -46,6 +46,8 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/corpus.json", "corpus.json"],
   ["/registry", "registry"],
   ["/fresh-set", "fresh-set"],
+  ["/defects", "defects"],
+  ["/defects.json", "defects.json"],
   ["/okf/index.md", "okf:index"],
   ["/okf/log.md", "okf:log"],
   ["/passport", "passport"],
