@@ -40,7 +40,14 @@ import type { Env } from "@/types";
 /** The mint every offer on this rail is measured against. */
 export const RECEIVABLE_CHECK = "solana-rail-receivable";
 
-interface AcceptEntry {
+/**
+ * One entry of a challenge's `accepts`, as runChecks() hands it over:
+ * an open record, because a real offer carries scheme, amount,
+ * maxTimeoutSeconds and whatever else its issuer chose, and a closed
+ * shape here would reject the very data this check exists to read.
+ * Only the three fields below are consulted; the rest ride along.
+ */
+export interface AcceptEntry extends Record<string, unknown> {
   network?: unknown;
   payTo?: unknown;
   asset?: unknown;
