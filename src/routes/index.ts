@@ -49,6 +49,7 @@ export { pulseRoutes } from "@/routes/pulse";
 export { registryRoutes } from "@/routes/registry";
 export { freshSetRoutes } from "@/routes/fresh-set";
 export { okfRoutes } from "@/routes/okf";
+export { defectRoutes } from "@/routes/defects";
 export { trustRoutes } from "@/routes/trust";
 export { passportRoutes } from "@/routes/passport";
 export { profilesRoutes } from "@/routes/profiles";
