@@ -401,11 +401,14 @@ export async function deliverInstantGoods(
       }
       await storeLaunchCheck(env, walk, input.certId ?? "");
       return {
-        deliverable: launchCheckNote(walk.verdict),
+        deliverable: launchCheckNote(walk.verdict, walk.replay_served),
         extras: {
           check_id: walk.check_id,
           verdict: walk.verdict,
           paid_usd: walk.paid_usd,
+          // Top-level so a machine reading extras never has to dig
+          // into `check` for the one finding that costs money.
+          replay_served: walk.replay_served,
           ...(walk.tx_hash ? { tx_hash: walk.tx_hash } : {}),
           check: walk,
           check_url: `/api/launch-check/${walk.check_id}`,
