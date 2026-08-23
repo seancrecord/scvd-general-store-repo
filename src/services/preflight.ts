@@ -4,6 +4,7 @@ import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
+import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
 
 /**
@@ -245,7 +246,17 @@ export async function probeOnce(
 export function runChecks(
   response: Response,
   bodyOverLimit: boolean,
-): { checks: PreflightCheck[]; advisories: PreflightAdvisory[] } {
+): {
+  checks: PreflightCheck[];
+  advisories: PreflightAdvisory[];
+  /**
+   * The offer entries this battery parsed, handed back so a caller
+   * that needs the NETWORK (the Solana receivability read, which
+   * cannot be synchronous) never has to decode the challenge twice
+   * and never drifts from what the battery actually saw.
+   */
+  accepts?: Record<string, unknown>[];
+} {
   const checks: PreflightCheck[] = [];
   const advisories: PreflightAdvisory[] = [];
 
@@ -524,7 +535,7 @@ export function runChecks(
     });
   }
 
-  return { checks, advisories };
+  return { checks, advisories, accepts };
 }
 
 export async function preflightUrl(
@@ -602,10 +613,43 @@ export async function preflightUrl(
     };
   }
 
-  const { checks, advisories } = runChecks(
+  const { checks, advisories, accepts } = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
   );
+  /*
+   * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
+   *
+   * It reports a real defect — a payTo that owns no USDC token account
+   * cannot be credited, so the door 402s perfectly and nobody can pay
+   * it — and on the merits that should sink a verdict. It does not,
+   * yet, and the reason is a contract rather than a doubt.
+   *
+   * FIVE INSTRUMENTS SHARE runChecks(): this preflight, the paid
+   * service_audit, the conformance_watch, the standing_watch and the
+   * census ward round. The audit's published promise is that it runs
+   * "the free preflight's exact battery", and the criteria page says a
+   * new battery is a NEW VERSION, named on every artifact it produces.
+   * Moving this into the verdict here alone would make five
+   * instruments disagree about one door; moving it into all five is a
+   * preflight-v2, which renames the criteria on every signed artifact
+   * the store issues. That is the keeper's call, not a side effect of
+   * adding a check.
+   *
+   * So it rides as an advisory: outside the verdict by the existing
+   * contract, in front of the operator today, and one line from
+   * becoming a check the day v2 is ruled on.
+   */
+  const rail = accepts
+    ? await checkRailReceivable(env, accepts).catch(() => ({
+        check: null,
+        advisory: null,
+      }))
+    : { check: null, advisory: null };
+  if (rail.check) {
+    advisories.push({ name: rail.check.name, detail: rail.check.detail });
+  }
+  if (rail.advisory) advisories.push(rail.advisory);
   const verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
   return { status: 200, body: report(base, verdict, checks, advisories) };
 }
