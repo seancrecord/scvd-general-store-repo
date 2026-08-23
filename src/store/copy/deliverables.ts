@@ -153,7 +153,22 @@ export function statementNote(coverage: string): string {
 }
 
 /** launch_check. ⚑ KEEPER REVIEW: drafted, recut freely. */
-export function launchCheckNote(verdict: string): string {
+export function launchCheckNote(
+  verdict: string,
+  replayServed?: boolean | null,
+): string {
+  /*
+   * THE FINDING THAT COSTS THEM MONEY LEADS. A door that settles
+   * correctly and then serves the SAME already-settled payment again
+   * is giving its product away: the authorization's nonce is spent, so
+   * nothing reaches the seller the second time. Three of thirty-one
+   * doors an independent tester walked on 2026-08-23 did this. Burying
+   * it under "your till took our money" would hand an operator good
+   * news and leave the expensive part in a stage they may not read.
+   */
+  if (verdict === "settled" && replayServed === true) {
+    return "Your till took our money — and then took it again. We presented the identical, already-settled payment a second time and your door served the goods a second time for it. Read that carefully: the authorization behind it is single-use, so nothing reached you on the second pass. You delivered your product for free, and any buyer who noticed could keep doing it. The replay stage has the exact response. This is the failure sellers almost never find alone, because from your side both requests look like successful sales.";
+  }
   switch (verdict) {
     case "settled":
       return "We walked up to your till as a paying stranger and it took our money. The whole transaction is written down stage by stage, signed — the settlement is on chain from our declared wallet, and the delivery stage says what actually came back for it. Read the delivery line before you celebrate: settled and delivered are different words, and the report uses the right one.";

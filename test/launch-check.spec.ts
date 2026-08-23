@@ -57,8 +57,18 @@ function fakeSeller(
     amount?: string;
     refuse?: boolean;
     challengeIn?: "header" | "body";
+    /**
+     * THE DEFECT, MODELLED. A conformant seller refuses a payment it
+     * has already settled; the default below does. Three of thirty-one
+     * doors an independent tester walked on 2026-08-23 did not, and
+     * served their goods twice for one settlement. Set this to make
+     * the fake seller one of those three.
+     */
+    acceptsReplay?: boolean;
   } = {},
 ): typeof fetch {
+  /** Payments this seller has already settled once. */
+  const spent = new Set<string>();
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
     const payment = headers.get("PAYMENT-SIGNATURE");
@@ -108,6 +118,13 @@ function fakeSeller(
         status: 400,
       });
     }
+    if (spent.has(payment) && !opts.acceptsReplay) {
+      // The correct answer: this authorization is spent.
+      return new Response(JSON.stringify({ error: "payment already used" }), {
+        status: 402,
+      });
+    }
+    spent.add(payment);
     return new Response(JSON.stringify({ goods: "the thing" }), {
       status: 200,
       headers: {
@@ -132,8 +149,9 @@ describe("the walk engine, stage by stage", () => {
     expect(check.paid_usd).toBe(0.005);
     expect(check.tx_hash).toBe(SELLER_TX);
     expect(check.pay_to).toBe(SELLER_PAY_TO);
-    // The calling card was out on BOTH knocks — the walkabout's law.
-    expect(log.requests).toHaveLength(2);
+    // The calling card is out on EVERY knock — the walkabout's law.
+    // Three now: the unpaid approach, the payment, and the replay.
+    expect(log.requests).toHaveLength(3);
     for (const request of log.requests) {
       expect(request.ua).toBe(LAUNCH_CHECK_UA);
     }
@@ -149,8 +167,9 @@ describe("the walk engine, stage by stage", () => {
       "payment",
       "settle",
       "delivery",
+      "replay",
     ]);
-    const delivery = check.stages.at(-1)!;
+    const delivery = check.stages.find((stage) => stage.stage === "delivery")!;
     expect(delivery.ok).toBe(true);
     expect(delivery.detail).toContain("sha256");
     expect(check.signature).toMatch(/^[0-9a-f]{128}$/);
@@ -167,6 +186,104 @@ describe("the walk engine, stage by stage", () => {
     expect(check.verdict).toBe("settled");
     const challengeStage = check.stages.find((s) => s.stage === "challenge")!;
     expect(challengeStage.detail).toContain("header absent");
+  });
+
+  /**
+   * THE ONE CHECK THAT FINDS ANYTHING.
+   *
+   * An independent tester (Cairn, cairnwake.com) walked 37 x402 doors
+   * between 2026-08-12 and 2026-08-23 and published every result. Its
+   * eleven hostile-payload checks — garbage, unsigned, wrong scheme,
+   * wrong network, wrong asset, self-destination, wrong amount, extra
+   * instruction, fee-payer-as-source, high priority fee — passed 37 of
+   * 37. Not one endpoint anywhere accepted a malformed payment.
+   *
+   * Every defect it found was in two places: the settlement, and the
+   * REPLAY. Three of thirty-one doors served their goods a second time
+   * for a payment that had already settled once.
+   *
+   * That is why this store did not build the negative battery it had
+   * evidence nobody fails, and built this instead.
+   */
+  it("presents the settled payment a second time and records the answer", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("settled");
+    // A conformant door refused it, so the field is FALSE, not null.
+    expect(check.replay_served).toBe(false);
+    const replay = check.stages.find((stage) => stage.stage === "replay")!;
+    expect(replay.ok).toBe(true);
+    expect(replay.detail).toContain("refused, correctly");
+    // BYTE-IDENTICAL is the whole test: a fresh authorization would
+    // prove nothing, because a second nonce is a second payment.
+    expect(log.requests[2]?.payment).toBe(log.requests[1]?.payment);
+  });
+
+  it("names the defect when a door serves the same payment twice", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log, { acceptsReplay: true }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("settled");
+    expect(check.replay_served).toBe(true);
+    const replay = check.stages.find((stage) => stage.stage === "replay")!;
+    expect(replay.ok).toBe(false);
+    expect(replay.detail).toContain("SERVED AGAIN");
+    /*
+     * AND WE ARE NOT BILLED TWICE. The authorization's nonce is spent
+     * on first settlement, so no second transfer can reach the seller
+     * — which is exactly what makes this defect expensive for THEM and
+     * free for us. If paid_usd ever doubles here, the check has become
+     * a way to spend the keeper's money finding bugs.
+     */
+    expect(check.paid_usd).toBe(0.005);
+    expect(check.paid_usd).toBeLessThanOrEqual(FIELD_SPEND_CAP_USD);
+  });
+
+  it("claims nothing about a door it never paid", async () => {
+    // Nothing settled, so there was nothing to replay. NULL, not false
+    // — scoring a door we never tested is the lie this field prevents.
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller({ requests: [] }, { refuse: true }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("payment_refused");
+    expect(check.replay_served).toBeNull();
+    expect(check.stages.some((stage) => stage.stage === "replay")).toBe(false);
+  });
+
+  it("counts a replay that never answered as unknown, not as a pass", async () => {
+    /*
+     * A door that dies on the replay has not refused it. Recording
+     * that as a pass would credit an endpoint for behaviour nobody
+     * observed — the same dishonesty the census avoids by counting its
+     * own missed rounds against itself.
+     */
+    const log: SellerLog = { requests: [] };
+    const seller = fakeSeller(log);
+    let knocks = 0;
+    const diesOnReplay = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      knocks += 1;
+      if (knocks === 3) throw new Error("Network connection lost.");
+      return seller(input, init);
+    }) as typeof fetch;
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: diesOnReplay,
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("settled");
+    expect(check.replay_served).toBeNull();
+    const replay = check.stages.find((stage) => stage.stage === "replay")!;
+    expect(replay.ok).toBe(false);
+    expect(replay.detail).toContain("could not complete");
   });
 
   it("records a refusal as the seller's answer, money never counted", async () => {
@@ -457,5 +574,36 @@ describe("the launch check door", () => {
       vi.unstubAllGlobals();
       installFacilitatorMock();
     }
+  });
+});
+
+/**
+ * THE BUYER HAS TO BE TOLD, not just recorded to. A finding that
+ * costs an operator money and rides only in a stage array is a
+ * finding most operators will never read.
+ */
+describe("the replay finding reaches the person who paid for it", () => {
+  it("leads the note with the giveaway when a door served twice", async () => {
+    const { launchCheckNote } = await import("@/store/copy/deliverables");
+    const note = launchCheckNote("settled", true);
+    expect(note).toContain("took it again");
+    expect(note).toContain("for free");
+    // And it explains WHY no second payment arrived, so the operator
+    // does not go looking for money that cannot exist.
+    expect(note.toLowerCase()).toContain("single-use");
+  });
+
+  it("keeps the ordinary settled note when the door refused the replay", async () => {
+    const { launchCheckNote } = await import("@/store/copy/deliverables");
+    const note = launchCheckNote("settled", false);
+    expect(note).not.toContain("took it again");
+    expect(note).toContain("paying stranger");
+  });
+
+  it("says nothing about replay on a walk that never paid", async () => {
+    const { launchCheckNote } = await import("@/store/copy/deliverables");
+    const note = launchCheckNote("payment_refused", null);
+    expect(note).not.toContain("took it again");
+    expect(note).toContain("refused it");
   });
 });
