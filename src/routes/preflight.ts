@@ -1,8 +1,13 @@
 import { Hono, type Context } from "hono";
 import {
   ACCEPT_REQUIRED_FIELDS,
+  BATTERY_ADDS,
   PREFLIGHT_VERSION,
+  PREFLIGHT_VERSIONS,
+  PREFLIGHT_VERSION_NEXT,
+  PREFLIGHT_V2_SINCE,
   preflightUrl,
+  type PreflightBattery,
 } from "@/services/preflight";
 import type { HonoEnv } from "@/types";
 
@@ -22,10 +27,27 @@ export const preflightRoutes = new Hono<HonoEnv>();
  * helps nobody at the moment of failure, and the moment of failure
  * is the only moment this tool is for.
  */
-function doc(base: string) {
+function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
   return {
     title: "The x402 endpoint preflight",
-    version: PREFLIGHT_VERSION,
+    version: battery,
+    /**
+     * BOTH BATTERIES, AND WHY THE OLD ONE KEPT RUNNING. An observatory
+     * that changes an instrument in place loses the ability to compare
+     * this week to last. v1 is frozen so its series keeps its meaning;
+     * v2 folds in the Solana rail-receivability read, whose series
+     * starts on its own stated date. One probe scores both, so the two
+     * verdicts can never disagree about what was seen.
+     */
+    batteries: {
+      served: PREFLIGHT_VERSIONS,
+      this_one: battery,
+      v2_adds: BATTERY_ADDS[PREFLIGHT_VERSION_NEXT],
+      v2_series_begins: PREFLIGHT_V2_SINCE,
+      why_both:
+        "v1 is frozen: a `ready` rendered under it today means what a `ready` rendered under it in week 34 meant, and every artifact this store has signed names the criteria it was rendered under. v2 folds the rail read into the verdict, because a payTo that owns no token account for the mint it asked for cannot be credited and is not ready by any reading a buyer would accept. Both are computed from the SAME probe and every response carries the other one's verdict in `also_under`, so a reader comparing two reports never has to guess whether the doors differed or the rules did.",
+      defect_vocabulary: `${base}/defects`,
+    },
     summary:
       "Send a URL; we GET it once and report whether it answers a well-formed x402 v2 payment challenge: a 402 status, a parseable base64 PAYMENT-REQUIRED header, accepts entries a client can actually sign against, and structurally valid signed offers if declared. Free, no account. One probe, one moment — a shape check, never an uptime claim.",
     method: "POST",
@@ -75,12 +97,17 @@ function doc(base: string) {
   };
 }
 
-preflightRoutes.get(`/api/preflight/${PREFLIGHT_VERSION}`, (c) =>
-  c.json(doc(c.env.STORE_BASE_URL)),
-);
+for (const battery of PREFLIGHT_VERSIONS) {
+  preflightRoutes.get(`/api/preflight/${battery}`, (c) =>
+    c.json(doc(c.env.STORE_BASE_URL, battery)),
+  );
+}
 preflightRoutes.get("/api/preflight", (c) => c.json(doc(c.env.STORE_BASE_URL)));
 
-async function handle(c: Context<HonoEnv>) {
+async function handle(
+  c: Context<HonoEnv>,
+  battery: PreflightBattery = PREFLIGHT_VERSION,
+) {
   let body: unknown;
   try {
     body = await c.req.json();
@@ -94,11 +121,15 @@ async function handle(c: Context<HonoEnv>) {
     typeof body === "object" && body !== null
       ? (body as Record<string, unknown>)["url"]
       : undefined;
-  const result = await preflightUrl(url, c.env);
+  const result = await preflightUrl(url, c.env, battery);
   return c.json(result.body, result.status as 200, {
     "Cache-Control": "no-store",
   });
 }
 
-preflightRoutes.post(`/api/preflight/${PREFLIGHT_VERSION}`, handle);
-preflightRoutes.post("/api/preflight", handle);
+for (const battery of PREFLIGHT_VERSIONS) {
+  preflightRoutes.post(`/api/preflight/${battery}`, (c) => handle(c, battery));
+}
+/* The unversioned door keeps rendering v1, so an existing caller's
+ * verdicts stay comparable to the ones it already holds. */
+preflightRoutes.post("/api/preflight", (c) => handle(c, PREFLIGHT_VERSION));

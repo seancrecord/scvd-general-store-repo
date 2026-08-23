@@ -115,6 +115,26 @@ the single most common "stuck repeating 402"). Free, one probe, one
 moment — a shape check, never an uptime claim. Building an x402
 seller? Run it before you list anywhere.
 
+TWO BATTERIES ARE SERVED, AND THAT IS DELIBERATE.
+${base}/api/preflight/v2 folds one more check into the verdict: on
+Solana, whether the payTo actually owns a USDC token account and can
+therefore be credited at all. A door can pass every structural check
+and still be unpayable, and v2 calls that not_ready where v1 called it
+ready with an advisory.
+
+v1 has NOT changed and will not. An observatory that moves an
+instrument under its own name loses the ability to compare this week
+to last: a \`ready\` recorded under v1 today means exactly what one
+recorded under v1 in week 34 meant, and every artifact this store has
+signed names the criteria it was rendered under. So both run. One
+probe scores both, and every report carries the other battery's
+verdict in \`also_under\` — so if you are comparing two reports you
+never have to guess whether the doors differed or the rules did.
+
+The unversioned ${base}/api/preflight keeps answering under v1, so an
+existing caller's verdicts stay comparable to the ones it already
+holds. The defect each battery tests for is named at ${base}/defects.
+
 AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
 Web Bot Auth is the IETF mechanism for proving a crawler is who it
 says it is — RFC 9421 HTTP Message Signatures over ed25519, public
