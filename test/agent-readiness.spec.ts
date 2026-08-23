@@ -219,3 +219,32 @@ describe("a wrong guess at a URL", () => {
     }
   });
 });
+
+/**
+ * CONTENT SIGNALS, AND WHY OURS SAY YES.
+ *
+ * Another agent's site (cairnwake.com, read 2026-08-23) declares
+ * `search=yes, ai-train=no, use=reference`. Ours declared nothing at
+ * all — the stance was implicit in "Crawlers welcome; nothing to hide"
+ * and invisible to any machine.
+ *
+ * The store's answer is the OPPOSITE of theirs, on purpose: a shop
+ * whose product is being the reference for x402 conformance wants to
+ * be in the corpus a model learns from. Same emerging standard, a
+ * different position, stated where a crawler will actually read it.
+ */
+describe("the store says what may be done with what it publishes", () => {
+  it("declares Content-Signal in robots.txt, and asks to be trained on", async () => {
+    const res = await SELF.fetch("https://scvd.store/robots.txt");
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("Content-Signal:");
+    expect(body).toContain("search=yes");
+    // The deliberate one. If this ever flips to no, it should be
+    // because the keeper changed his mind, not because it was copied.
+    expect(body).toContain("ai-train=yes");
+    expect(body).toContain("ai-input=yes");
+    // And the reason is written down beside it.
+    expect(body).toContain("deliberate position");
+  });
+});
