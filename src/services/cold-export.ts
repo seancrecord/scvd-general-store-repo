@@ -1,3 +1,4 @@
+import { bulkGetText } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import { sha256Hex } from "@/services/anchor-log";
@@ -129,9 +130,24 @@ export async function runColdExport(
       cap: KEYS_PER_PREFIX,
     });
 
+    /*
+     * BULK, NOT PER-KEY. The first draft read each key in a loop and
+     * the repo's own scalability audit caught it — three warnings over
+     * budget, of which TWO were this loop and real. An export walks
+     * the WHOLE keyspace by definition, so it is the worst place in
+     * the codebase to pay a round trip per key: the shape that is
+     * merely wasteful at ten rows is what makes a backup stop
+     * finishing at ten thousand. (The third was the R2 write below,
+     * one bundle per subject, and it was the instrument that needed
+     * the fix — see BUCKET_BINDINGS in scripts/audit.mjs.)
+     *
+     * Nothing here needs to decide per record — every value goes into
+     * the bundle unchanged — which is the audit's own stated test for
+     * when a loop is allowed to keep reading one at a time.
+     */
+    const fetched = await bulkGetText(namespace, [...listed.names]);
     const rows: Record<string, string> = {};
-    for (const name of listed.names) {
-      const value = await namespace.get(name);
+    for (const [name, value] of fetched) {
       if (value !== null) rows[name] = value;
     }
 
