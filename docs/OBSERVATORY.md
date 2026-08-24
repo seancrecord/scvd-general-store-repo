@@ -1,9 +1,21 @@
 # THE OBSERVATORY — design outline
 
 **Status: OUTLINE ONLY. Nothing here is built. Nothing here is canon.**
-Opened 2026-08-21 at the keeper's direction: "outline it all before
-even considering building." He has more to add; this document is
-built to receive it.
+Opened at the keeper's direction: "outline it all before even
+considering building." He has more to add; this document is built to
+receive it.
+
+**⚑ DATING CORRECTION (recorded, not rewritten).** Every "08-21" in
+this document — and every git commit timestamp on the branch that
+carries it — came from a build container whose clock read
+2026-08-21 while the real date ran through **2026-08-24**. The dates
+are therefore up to three days early. They are annotated rather than
+silently rewritten, because some genuinely refer to 08-21 events
+(the trust_profile ship, the rule 30 amendments) and overwriting the
+lot would destroy the distinction. In a document whose whole
+discipline is dated observation, the error is worth stating plainly:
+**the observer's own clock was wrong and the observations carry it.**
+See §22, which supersedes several conclusions here.
 
 ## 0. How to use and extend this document
 
@@ -1548,6 +1560,169 @@ answer, but **until it exists the honest response is that selection
 is arbitrary and the aggregate is therefore about our door bank, not
 the ecosystem.** That sentence should be published before someone
 else writes it for us.
+
+---
+
+## 22. Reconciliation with PR #202 (the audit ledger, spec v1, and roadmap)
+
+**Read this before acting on anything above.** On 2026-08-24 a
+parallel eleven-pass audit produced three documents on branch
+`evidence-observatory-audit-docs` (PR #202, 2,167 lines):
+
+- `docs/EVIDENCE_LAYER_REVIEW_2026-08.md` — findings ledger, areas
+  A–M, with file pointers
+- `docs/EVIDENCE_ARCHITECTURE_V1.md` — NORMATIVE spec (DRAFT for
+  keeper review)
+- `docs/OBSERVATORY_ROADMAP_2026-08.md` — agent-executable, Phase 0
+  safety → Phase 5 distribution, ledger IDs and acceptance criteria
+  per item, keeper gates marked ⚑
+
+The two efforts were independent and **converged hard**, which is the
+best available evidence that the architecture is right. Where they
+differ, the differences are the useful part.
+
+### Where they say the same thing (adopt #202's version — it is normative)
+
+| This document | Spec v1 | Note |
+|---|---|---|
+| §2 layer model L0–L7 | §4 **evidence levels L0–L6** | Theirs is better: splits parseable from *payable* terms and gives signed-offer its own rung. **Adopt theirs; retire mine.** |
+| §3/§18 observation manifest | §2 **evidence envelope** | Theirs is more complete (`authorization`, `revocation/rotation`, service window cited in-band). Adopt theirs. |
+| §10 canary, failure attribution | §6 **observer accounting** — `observer_status`, numerator AND denominator, "a timeout of ours is never the subject's outage" | Same rule, already normative there. |
+| §0 acid test corollaries | §9 `evidence_basis: direct \| derived \| absent` — "the designed refusal of a confidence scalar" | Their implementation of my criterion, and more elegant. |
+| §16 "we provide evidence, not the score" | §11 refusals | Identical doctrine, theirs written as binding. |
+| §2 not_observed ≠ absent | §2 "absent facts are STATED, never omitted" | Same. |
+| §14 delta feed | §7 "what changed since T" + roadmap 5.1 | Same. |
+| §8 federation | §12 distributed observers, cross-observer co-signing via `cross_ref` | Same, theirs already scoped. |
+| §3 `procedure.version` | 1.3 methodology **inside signed bytes** | Same, theirs has an acceptance test. |
+
+**Vocabulary note, important:** spec v1 has *two* ladders and they do
+not collide — §1's **six trust layers** (what a signature
+establishes: crypto validity → signer identity → authorization →
+factual observation → interpretation → historical persistence) is a
+different axis from §4's **evidence levels L0–L6** (how far into the
+transaction evidence reached). Together with the shipped assurance
+ladder that is three ladders, each answering a different question.
+§20's four-axis proposal should be checked against them rather than
+added beside them.
+
+### ⚑⚑ THE CONTRADICTION — a keeper ruling, not a merge conflict
+
+Spec v1, doctrine line:
+
+> "DEFENSIBLE evidence beats more data — **host count is not the
+> moat**; the per-host evidence vector is."
+
+Keeper, this conversation:
+
+> "**40 is not a number we can sell.** We need to be scaling to the
+> 100s of thousands, even millions eventually… at least double-digit
+> thousands." · "Immediate, this week: **scale the walking.**"
+
+These are opposed strategies, and it shows in the artifacts: **the
+#202 roadmap contains no acquisition work at all.** Phases 0–5 make
+each observation more defensible; not one item increases the number
+of endpoints observed. Phase 1.4 states a coverage *matrix* — it
+publishes what we cover, it does not grow it. Followed literally,
+that roadmap ends the quarter with an excellent evidence model over
+the same ~40 doors.
+
+**Both are right about different things,** and §11 already holds the
+resolution: two products, two data requirements.
+
+- **Depth per host** is what makes evidence *defensible* — spec v1 is
+  correct that a thin row over 10,000 hosts persuades nobody.
+- **Coverage** is what makes it *relevant to a given buyer* — a
+  passport is worth nothing to an operator whose endpoint was never
+  in the door bank, and an ecosystem claim over an arbitrary 40 is
+  not an ecosystem claim (§11).
+
+The synthesis is the panel-plus-sample split: deep on a panel,
+broad on a random draw, same probe budget. **Neither document
+currently proposes it as a phase.** Recommendation: coverage becomes
+an explicit phase in the #202 roadmap rather than a competing plan,
+and the keeper rules on where it sits relative to Phase 0.
+
+### What #202 has that this document does not (and it is more urgent)
+
+Their audit found live defects; this outline found strategy. Theirs
+wins on urgency:
+
+- **0.14 — the census certifies doors that cannot be paid.**
+  `/corpus/host/hypernatt.com.json` publishes `ready`;
+  `/api/preflight/v2` publishes `not_ready` for the same door on the
+  same day, because the Solana payTo owns no USDC token account. The
+  ward round runs the offline battery and never receives
+  `checkRailReceivable`. This is **strictly worse than §18's
+  no-signed-offers finding**: it is a signed, hash-chained,
+  OTS-anchored false claim — the anchoring makes it permanent and
+  attributable. Same disease as §18 (two of our instruments
+  disagreeing in public), one degree more serious.
+- Money exposure on the paying walk: `validBefore` clamp (I2),
+  unbounded body reads (I3), price-vs-field-cap margin (I7).
+- Seller-claimed tx hashes signed as fact without a chain read
+  (C2/I4).
+- Missing key service-window check (L1).
+- **0.11 corpus backup — a gap this document missed entirely.** The
+  anchor chain proves integrity, *not availability*. The moat asset
+  must survive losing the KV namespace. Nothing in §§1–21 addresses
+  it.
+- Package strategy (`@scvd/*` tier, zero-dep forever), CI publishing
+  with OIDC + provenance.
+- And the form: ledger IDs, per-item acceptance, red-test-first
+  discipline. **That roadmap is executable; this outline is
+  discursive.**
+
+### What this document has that #202 does not
+
+Mostly the coverage half, plus the product shape:
+
+1. **Acquisition entirely** — §5's supply funnel (listed →
+   resolvable → qualified → door bank), the resolver, the harvest,
+   convention-based resolution, scope broadening to agent-facing
+   endpoints. Nothing equivalent in the roadmap.
+2. **Selection methodology** — §11 panel + random sample. This is
+   the exact question the paying consumer asked (§20) and neither
+   spec v1 nor the roadmap answers it.
+3. **Rot and churn** — §6's backoff ladder, never-delete, churn as a
+   publishable product.
+4. **The instrument ladder and the watch grammar** — §7 Sweep /
+   Round / **Beat** / Watch, and §9's six-parameter watch. Spec v1
+   describes observation classes but not the frequency/coverage
+   product surface between the census and a single paid watch.
+5. **The economic-weight axis** — §19/§20. Chain-derived volume as a
+   second dimension; "high-value endpoints with weak evidence" as a
+   risk primitive. Absent from spec v1.
+6. **The etiquette ceiling** — §5 OPEN. Scaled unrequested probing
+   needs a written rule *before* volume, and daily-at-scale changes
+   it materially.
+7. **The acid test as a named gate** (§0) — spec v1 implements it
+   (`evidence_basis`, no scalar) without stating it as the criterion
+   proposals must pass.
+8. **Publishing our own maturity** (§17). Their M5 is positioning
+   copy; this is the dated self-observation of what is thin.
+
+### Proposed disposition (keeper's call)
+
+1. **PR #202's spec and roadmap are canonical for execution.** This
+   document is repositioned as the **strategy and coverage layer**
+   that feeds it, and defers to spec v1 on every vocabulary and
+   record-format question.
+2. **Retire this document's L0–L7** in favour of spec v1's L0–L6;
+   check §20's four axes against spec v1's two ladders before
+   proposing anything further.
+3. **Coverage becomes a phase in the #202 roadmap** — the funnel
+   count, the resolver, panel+sample, rot backoff — rather than a
+   rival plan. The keeper rules where it sits relative to Phase 0.
+4. **§18's no-signed-offers correction folds into the pattern PR
+   #200 already established** on 08-24: state what was observed,
+   label the inference, carry a falsifier. That merged PR is the
+   template; the fix is a narrowing, not a build.
+5. **Federation is further along than §8 assumed.** PR #200 shows
+   Cairn (cairnwake.com) authored the `listed-not-walked` evidence
+   label and SCVD registered it *naming them as author, per entry*.
+   That is §8's "publish the format, certify no one" already
+   happening, with a second external party. §8 should be rewritten
+   against what shipped rather than proposing it fresh.
 
 ---
 
