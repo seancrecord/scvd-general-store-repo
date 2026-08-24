@@ -36,7 +36,47 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "1";
+export const DEFECT_VOCABULARY_VERSION = "2";
+
+/**
+ * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
+ *
+ * A vocabulary that anybody may use is only worth something if nobody
+ * — including us — can quietly redefine a word after other people
+ * have built on it. Usage decides meaning otherwise, and the party
+ * that publishes fastest wins the definition by default. So every
+ * version states what moved, on what date, and at whose instigation.
+ *
+ * Entries are appended. A definition is never edited in place: a
+ * changed assertion is a new version with the old text still readable
+ * here, which is the same rule this store applies to its own
+ * corrections.
+ */
+export interface VocabularyChange {
+  version: string;
+  date: string;
+  /** Who asked for it — us, or a named outside instrument. */
+  at_the_instigation_of: string;
+  what_changed: string;
+}
+
+export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
+  {
+    version: "1",
+    date: "2026-08-23",
+    at_the_instigation_of: "this store",
+    what_changed:
+      "First publication. Eleven defect classes, each carrying what it asserts, what would falsify a finding of it, and whether an unpaid probe can detect it. Cross-instrument mappings to Cairn (cairnwake.com) read on 2026-08-23.",
+  },
+  {
+    version: "2",
+    date: "2026-08-24",
+    at_the_instigation_of:
+      "Cairn (cairnwake.com), who supplied the definition and the falsifier",
+    what_changed:
+      "Added EVIDENCE_LABELS, a second and separate register. A defect class describes a property of an ENDPOINT; an evidence label describes the PROVENANCE OF A CLAIM about one. Conflating the two was the gap: both instruments had been making listing-backed claims with no name for what made them weaker than walk-backed ones. First entry: listed-not-walked.",
+  },
+];
 
 /** The date this file's cross-instrument mappings were last verified. */
 export const MAPPINGS_READ_ON = "2026-08-23";
@@ -73,6 +113,59 @@ export interface DefectClass {
   /** The same property, as other published instruments name it. */
   also_known_as?: ForeignName[];
 }
+
+/**
+ * EVIDENCE LABELS — a separate register, and the separation is the point.
+ *
+ * A DEFECT CLASS describes a property of an ENDPOINT. An EVIDENCE
+ * LABEL describes the PROVENANCE OF A CLAIM about one. They are not
+ * the same kind of thing, and filing them together would say that
+ * "this door replays payments" and "we read that in a directory" are
+ * findings of the same weight. They are not.
+ *
+ * WHY THIS EXISTS AT ALL (2026-08-24). Both instruments in this market
+ * had been making listing-backed claims for weeks with no name for
+ * what made them weaker than walk-backed ones. This store found it the
+ * hard way: /corpus/host pages were reporting rounds we never probed
+ * with the friendliest available reason, in a document whose own
+ * listing block contradicted it. The fix was mechanical. The missing
+ * WORD was not, and neither of us had it.
+ *
+ * THE FIRST ENTRY IS NOT OURS. Cairn (cairnwake.com) wrote the
+ * definition and the falsifier and sent them for registration; this
+ * store is the registrar, not the author. That distinction is
+ * recorded per-entry because a vocabulary whose registrar quietly
+ * becomes its author is a vocabulary nobody else can trust.
+ */
+export interface EvidenceLabel {
+  id: string;
+  title: string;
+  /** What the label says about the claim it is attached to. */
+  asserts: string;
+  /** What it does NOT say — the misreading the label exists to block. */
+  does_not_assert: string;
+  /** What observation would retire the label from a given claim. */
+  falsified_by: string;
+  /** Who wrote this definition, and when it was registered. */
+  authored_by: string;
+  registered: string;
+}
+
+export const EVIDENCE_LABELS: readonly EvidenceLabel[] = [
+  {
+    id: "listed-not-walked",
+    title: "Listed, not walked",
+    asserts:
+      "A claim about a service whose provenance is an index, directory, census row, or register entry, made by an instrument that has not itself completed the act the entry implies — no probe sent, no payment made, no settlement observed by the claiming instrument. The label marks the gap between appearing in a register and having been walked: it says the evidence is the listing, not the walk.",
+    does_not_assert:
+      "Nothing about the service. A listed-not-walked claim is a statement about the CLAIMANT'S coverage, never about the operator's endpoint — it is not 'unverified because suspect', it is 'unverified because we did not look'. Reading it as a mark against the service inverts its whole purpose.",
+    falsified_by:
+      "A published, instrument-signed record of the walk itself — for a paid battery, a signed report carrying the settlement transaction; for this store's census, a v2 walk row — dated at or before the claim it would falsify.",
+    authored_by:
+      "Cairn (cairnwake.com), verbatim on 2026-08-24 but for the schema-name substitution in falsified_by, confirmed back to them",
+    registered: "2026-08-24",
+  },
+];
 
 const CAIRN_SCOREBOARD =
   "cairnwake.com/scoreboard.json, read 2026-08-23: a public machine-readable rollup of its published reports";
@@ -238,6 +331,11 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
 ];
 
 /** Lookup by stable id. Unknown ids return undefined rather than guessing. */
+/** An evidence label by id. Separate register, separate lookup. */
+export function evidenceLabel(id: string): EvidenceLabel | undefined {
+  return EVIDENCE_LABELS.find((entry) => entry.id === id);
+}
+
 export function defectClass(id: string): DefectClass | undefined {
   return DEFECT_CLASSES.find((entry) => entry.id === id);
 }

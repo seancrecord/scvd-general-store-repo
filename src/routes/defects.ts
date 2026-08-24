@@ -5,7 +5,9 @@ import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   DEFECT_CLASSES,
   DEFECT_VOCABULARY_VERSION,
+  EVIDENCE_LABELS,
   MAPPINGS_READ_ON,
+  VOCABULARY_CHANGELOG,
   type DefectClass,
 } from "@/store/defect-vocabulary";
 import type { HonoEnv } from "@/types";
@@ -40,6 +42,19 @@ function document(base: string) {
     mapping_caveat:
       "Mappings to another instrument's names are our reading of their published definitions on the date above, not their endorsement. Each carries the path to check it and what would show it wrong. If they change a definition, this file is stale until corrected — say so rather than trusting it.",
     classes: DEFECT_CLASSES,
+    /*
+     * A SECOND REGISTER, DELIBERATELY NOT MIXED IN. A defect class is
+     * a property of an endpoint; an evidence label is the provenance
+     * of a CLAIM about one. Filing them together would rank "this door
+     * replays payments" and "we read that in a directory" as findings
+     * of equal weight.
+     */
+    evidence_labels: EVIDENCE_LABELS,
+    what_evidence_labels_are:
+      "Labels for how a claim was come by, not for what is wrong with a service. They attach to the claimant, never to the operator: listed-not-walked says the instrument did not look, and says nothing whatever about the door.",
+    changelog: VOCABULARY_CHANGELOG,
+    governance:
+      "Definitions are appended and never edited in place. A changed assertion is a new version with the old text still readable in the changelog, and every version records at whose instigation it moved. Outside instruments may author entries; where one did, the entry names them as author and this store only as registrar.",
     license: "CC BY 4.0. Take the names; that is the point of publishing them.",
   };
 }
@@ -84,6 +99,31 @@ function markdown(base: string): string {
     "---",
     "",
     ...DEFECT_CLASSES.map(classMarkdown).flatMap((block) => [block, ""]),
+    "## Evidence labels — a separate register",
+    "",
+    doc.what_evidence_labels_are,
+    "",
+    ...EVIDENCE_LABELS.flatMap((entry) => [
+      `### \`${entry.id}\` — ${entry.title}`,
+      "",
+      `**Asserts:** ${entry.asserts}`,
+      "",
+      `**Does NOT assert:** ${entry.does_not_assert}`,
+      "",
+      `**Falsified by:** ${entry.falsified_by}`,
+      "",
+      `**Authored by:** ${entry.authored_by}. Registered ${entry.registered}.`,
+      "",
+    ]),
+    "## Changelog",
+    "",
+    ...VOCABULARY_CHANGELOG.map(
+      (entry) =>
+        `- **v${entry.version}** (${entry.date}, at the instigation of ${entry.at_the_instigation_of}) — ${entry.what_changed}`,
+    ),
+    "",
+    doc.governance,
+    "",
     `Machine-readable: ${base}/defects.json — ${doc.license}`,
     "",
   ].join("\n");
@@ -124,6 +164,26 @@ function html(base: string): string {
       read on ${escapeHtml(MAPPINGS_READ_ON)} and are our reading of another
       instrument's published definitions, not their endorsement — each one
       carries the path to check it and what would show it wrong.</p>
+      <h2>Evidence labels — a separate register</h2>
+      <p>A defect class describes a property of an <em>endpoint</em>. An
+      evidence label describes the provenance of a <em>claim</em> about one.
+      Keeping them apart is the point: filing them together would rank
+      &ldquo;this door replays payments&rdquo; and &ldquo;we read that in a
+      directory&rdquo; as findings of equal weight.</p>
+      ${EVIDENCE_LABELS.map(
+        (entry) => `<h3><code>${escapeHtml(entry.id)}</code> — ${escapeHtml(entry.title)}</h3>
+        <p><strong>Asserts:</strong> ${escapeHtml(entry.asserts)}</p>
+        <p><strong>Does NOT assert:</strong> ${escapeHtml(entry.does_not_assert)}</p>
+        <p><strong>Falsified by:</strong> ${escapeHtml(entry.falsified_by)}</p>
+        <p><small>Authored by ${escapeHtml(entry.authored_by)}. Registered ${escapeHtml(entry.registered)} &mdash; this store is the registrar, not the author.</small></p>`,
+      ).join("")}
+      <h2>Changelog</h2>
+      <ul>${VOCABULARY_CHANGELOG.map(
+        (entry) =>
+          `<li><strong>v${escapeHtml(entry.version)}</strong> (${escapeHtml(entry.date)}, at the instigation of ${escapeHtml(entry.at_the_instigation_of)}) — ${escapeHtml(entry.what_changed)}</li>`,
+      ).join("")}</ul>
+      <p>Definitions are appended and never edited in place. A changed
+      assertion is a new version with the old text still readable above.</p>
       <p>CC BY 4.0. Take the names; that is the point of publishing them.</p>
     `,
   });
