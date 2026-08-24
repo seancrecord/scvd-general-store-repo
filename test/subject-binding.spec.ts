@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   bindClaims,
   compareClaims,
+  joinClaimSets,
   normalizeIdentity,
   type IdentityClaim,
 } from "@/discovery";
@@ -158,5 +159,40 @@ describe("bindClaims pairs kinds both sides stated", () => {
     );
     expect(byKind["tool_identity"]).toBe("strong");
     expect(byKind["route_identity"]).toBe("conflict");
+  });
+});
+
+describe("joinClaimSets is the catalog compare", () => {
+  it("matches on normalized value — shared vs only-left vs only-right", () => {
+    const joins = joinClaimSets(
+      [
+        claim("route_identity", "hello", { surface: "menu_json" }),
+        claim("route_identity", "settlement_attestation", { surface: "menu_json" }),
+      ],
+      [
+        claim("route_identity", "hello", { surface: "x402_catalog" }),
+        claim("route_identity", "planted_ghost", { surface: "x402_catalog" }),
+      ],
+    );
+    expect(joins).toHaveLength(1);
+    expect(joins[0]?.shared).toEqual(["hello"]);
+    expect(joins[0]?.only_left).toEqual(["settlement_attestation"]);
+    expect(joins[0]?.only_right).toEqual(["planted_ghost"]);
+  });
+
+  it("a kind only one side stated is skipped — not a hole", () => {
+    const joins = joinClaimSets(
+      [
+        claim("route_identity", "hello", { surface: "menu_json" }),
+        claim("endpoint_identity", "https://scvd.store/api/buy/hello", {
+          surface: "menu_json",
+        }),
+      ],
+      [claim("route_identity", "hello", { surface: "mcp_clusters" })],
+    );
+    expect(joins).toHaveLength(1);
+    expect(joins[0]?.kind).toBe("route_identity");
+    expect(joins[0]?.only_left).toEqual([]);
+    expect(joins[0]?.only_right).toEqual([]);
   });
 });

@@ -209,3 +209,65 @@ export function bindClaims(
   }
   return bindings;
 }
+
+/**
+ * SET JOIN — what a catalog compare actually is.
+ *
+ * bindClaims is pairwise (one payTo vs one payTo). Two menus each
+ * stating twenty route ids would cartesian-product into 400
+ * "conflicts" that are just different items. This matches on the
+ * normalized value: shared, only-left, only-right. A non-empty
+ * only-* is the disagreement a self-row fails on.
+ */
+export interface ClaimSetJoin {
+  kind: IdentityKind;
+  left_surface: string;
+  right_surface: string;
+  shared: string[];
+  only_left: string[];
+  only_right: string[];
+}
+
+export function joinClaimSets(
+  left: readonly IdentityClaim[],
+  right: readonly IdentityClaim[],
+): ClaimSetJoin[] {
+  const joins: ClaimSetJoin[] = [];
+  for (const kind of IDENTITY_KINDS) {
+    const leftOfKind = left.filter((claim) => claim.kind === kind);
+    const rightOfKind = right.filter((claim) => claim.kind === kind);
+    // Same skip as bindClaims: a kind only one side stated is
+    // not_observed, not a catalog hole. MCP clusters name routes
+    // and never endpoints; treating that as only_left would invent
+    // a disagreement the surface did not make.
+    if (leftOfKind.length === 0 || rightOfKind.length === 0) continue;
+    const leftMap = new Map<string, IdentityClaim>();
+    for (const claim of leftOfKind) {
+      leftMap.set(normalizeIdentity(kind, claim.value), claim);
+    }
+    const rightMap = new Map<string, IdentityClaim>();
+    for (const claim of rightOfKind) {
+      rightMap.set(normalizeIdentity(kind, claim.value), claim);
+    }
+    const keys = new Set([...leftMap.keys(), ...rightMap.keys()]);
+    const shared: string[] = [];
+    const only_left: string[] = [];
+    const only_right: string[] = [];
+    for (const key of keys) {
+      const hasL = leftMap.has(key);
+      const hasR = rightMap.has(key);
+      if (hasL && hasR) shared.push(key);
+      else if (hasL) only_left.push(key);
+      else only_right.push(key);
+    }
+    joins.push({
+      kind,
+      left_surface: leftOfKind[0]?.surface ?? "absent",
+      right_surface: rightOfKind[0]?.surface ?? "absent",
+      shared: shared.sort(),
+      only_left: only_left.sort(),
+      only_right: only_right.sort(),
+    });
+  }
+  return joins;
+}
