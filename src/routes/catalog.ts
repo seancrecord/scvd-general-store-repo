@@ -154,6 +154,8 @@ catalogRoutes.get("/menu.json", async (c) => {
       skill_md: `${base}/skill.md`,
       openapi: `${base}/openapi.json`,
       x402_discovery: `${base}/.well-known/x402.json`,
+      coverage: `${base}/.well-known/coverage.json`,
+      coverage_alias: `${base}/coverage.json`,
       signing_key: `${base}/.well-known/scvd-signing-key`,
       /**
        * THE THESIS, ON THE DOCUMENT THAT CARRIES THE SHELF.
