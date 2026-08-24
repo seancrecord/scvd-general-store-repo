@@ -16,9 +16,14 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
+    /*
+     * TS 7 removed baseUrl (TS5102) and rejects non-relative path
+     * targets (TS5090), so the alias is written relative to this file.
+     * Same mapping, one syntax newer — and it is the only tsconfig
+     * change the major needed.
+     */
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "vitest.config.ts"]
