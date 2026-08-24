@@ -44,6 +44,19 @@ only the keeper can decide; no work happens until he does.
   implement). Primary spec hosts egress-blocked; positions built on
   secondary coverage, byte-level claims deferred to build time.
 
+**0a. THE OBSERVATORY OUTLINE (docs/OBSERVATORY.md, opened 08-21).**
+The coverage/credibility brainstorm, outlined at the keeper's
+direction — "outline it all before even considering building."
+NOTHING IN IT IS BUILT and nothing is canon. Split STANDING /
+PROPOSED / OPEN throughout so advice never blurs into shipped work.
+Covers: the seven layers of "works", the observation record and its
+un-backfillable fields, published methodology, the supply funnel and
+its growth routines, rot as a product, the instrument ladder
+(Sweep/Round/Beat/Watch), probe diversity (identity before geography)
+and federation, the watch grammar, the canary, and panel+random
+sampling. Six open rulings for the keeper sit in §12. He has more
+material to add; §14 is the parking lot.
+
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
 2026-08-13) says the walk stalled hourly from
