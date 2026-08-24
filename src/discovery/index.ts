@@ -39,3 +39,13 @@ export type {
   SelfJoinDisagreement,
   SurfaceClaims,
 } from "@/discovery/self-coherence";
+export {
+  DISCOVERY_COHERENCE_CLASS,
+  buildDiffObservation,
+  signDiffObservation,
+} from "@/discovery/diff-observation";
+export type {
+  DiffCheckState,
+  DiffObservationBlocks,
+  DiffObservationInput,
+} from "@/discovery/diff-observation";
