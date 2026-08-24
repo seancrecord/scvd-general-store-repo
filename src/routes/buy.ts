@@ -46,21 +46,40 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!item) {
     // A retired shelf answers with what happened — an agent that
     // remembered the old menu should learn the new one, not conclude
-    // the store is broken. 410, deliberately: gone, on purpose.
+    // the store is broken.
+    //
+    // Two answers, by whether the job survived (2026-08-24, after an
+    // index that remembered the old fortune door graded the whole
+    // store degraded on a shelf we closed on purpose):
+    //  - folded_into a successor → 308 to the successor's buy door.
+    //    The redirect is the truthful statement "the job went there",
+    //    and the destination quotes its own 402 terms before any
+    //    payment, so nobody is walked into buying blind.
+    //  - no successor → 410, deliberately: gone, on purpose.
     const retired = getRetiredItem(itemId);
     if (retired) {
+      const note = `${retired.name} retired ${retired.retired_on}. ${retired.note}`;
+      const certificatesNote =
+        "Certificates issued under this item verify forever; retirement changes the shelf, not the record.";
+      if (retired.folded_into) {
+        const successorUrl = `${c.env.STORE_BASE_URL}/api/buy/${retired.folded_into}`;
+        return c.json(
+          {
+            error: note,
+            folded_into: retired.folded_into,
+            buy_url: successorUrl,
+            menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
+            certificates_note: certificatesNote,
+          },
+          308,
+          { Location: successorUrl },
+        );
+      }
       return c.json(
         {
-          error: `${retired.name} retired ${retired.retired_on}. ${retired.note}`,
-          ...(retired.folded_into
-            ? {
-                folded_into: retired.folded_into,
-                buy_url: `${c.env.STORE_BASE_URL}/api/buy/${retired.folded_into}`,
-              }
-            : {}),
+          error: note,
           menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
-          certificates_note:
-            "Certificates issued under this item verify forever; retirement changes the shelf, not the record.",
+          certificates_note: certificatesNote,
         },
         410,
       );

@@ -5,6 +5,8 @@ import {
   buildPaymentSignature,
   decodePaymentRequired,
 } from "./helpers/payment";
+import { getMenuItem } from "@/store";
+import { RETIRED_ITEMS } from "@/store/retired";
 import type { Env } from "@/types";
 
 /**
@@ -66,11 +68,44 @@ describe("the retired shelf", () => {
     expect(String(body["certificates_note"])).toContain("verify forever");
   });
 
-  it("points a folded item at its successor", async () => {
-    const gone = await SELF.fetch(`${BASE}/api/buy/phone_call`);
-    expect(gone.status).toBe(410);
+  it("walks a folded item to its successor's door with a 308", async () => {
+    // 2026-08-24: a folded shelf's job survived, so the door forwards
+    // to where it went instead of announcing a corpse. An indexer that
+    // remembered the old door follows the redirect and finds a live
+    // 402; an agent that reads bodies still gets the whole story.
+    const gone = await SELF.fetch(`${BASE}/api/buy/phone_call`, {
+      redirect: "manual",
+    });
+    expect(gone.status).toBe(308);
+    expect(gone.headers.get("Location")).toBe(`${BASE}/api/buy/the_collab`);
     const body = (await gone.json()) as Record<string, unknown>;
     expect(body["folded_into"]).toBe("the_collab");
     expect(String(body["buy_url"])).toContain("/api/buy/the_collab");
+    expect(String(body["error"])).toContain("retired");
+  });
+
+  it("the redirected door is alive: the successor quotes a real 402", async () => {
+    // The redirect is only honest if the destination actually sells.
+    // Every folded successor must be a live menu item, and the one an
+    // outside index is known to probe (daily_fortune → small_blessing)
+    // must answer with a payment challenge, not another tombstone.
+    for (const item of RETIRED_ITEMS) {
+      if (item.folded_into) {
+        expect(getMenuItem(item.folded_into)?.id).toBe(item.folded_into);
+      }
+    }
+    const redirected = await SELF.fetch(`${BASE}/api/buy/daily_fortune`, {
+      redirect: "manual",
+    });
+    expect(redirected.status).toBe(308);
+    const door = await SELF.fetch(redirected.headers.get("Location")!);
+    expect(door.status).toBe(402);
+  });
+
+  it("a retired id with no successor stays gone, on purpose", async () => {
+    const gone = await SELF.fetch(`${BASE}/api/buy/the_drawer`, {
+      redirect: "manual",
+    });
+    expect(gone.status).toBe(410);
   });
 });

@@ -97,9 +97,12 @@ describe("the Agent Zodiac", () => {
 });
 
 describe("the census items", () => {
-  it("phantom_check is retired and says so at the door", async () => {
-    const gone = await SELF.fetch(`${BASE}/api/buy/phantom_check`);
-    expect(gone.status).toBe(410);
+  it("phantom_check is retired and its door forwards to the anchor", async () => {
+    const gone = await SELF.fetch(`${BASE}/api/buy/phantom_check`, {
+      redirect: "manual",
+    });
+    expect(gone.status).toBe(308);
+    expect(gone.headers.get("Location")).toContain("/api/buy/context_anchor");
     const body = await json(gone);
     expect(body["folded_into"]).toBe("context_anchor");
   });
