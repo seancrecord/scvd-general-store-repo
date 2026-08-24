@@ -1,3 +1,4 @@
+import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { Hono } from "hono";
 import { catalogLastUpdated } from "@/lib/freshness";
 import {
@@ -176,7 +177,7 @@ don't need us today. Take a free stamp on the way past.
 ## Practicing on us
 
 Building or debugging something that pays over x402? Point it here.
-The till is real, the cheapest thing on the shelf is half a cent, and
+The till is real, the cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and
 every purchase ends in a signed certificate with a stable verify URL,
 so your test has something to assert on. No sandbox and no test mode,
 which is the point: you get the same code path everyone else gets.

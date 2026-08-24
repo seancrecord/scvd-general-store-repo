@@ -47,6 +47,79 @@ export const LAUNCH_CHECK_UA =
  * per-item default; raising it is the keeper's call, here in code. */
 export const FIELD_SPEND_CAP_USD = 0.05;
 
+/**
+ * THE LONGEST AUTHORIZATION THIS STORE WILL EVER SIGN (ledger I2).
+ *
+ * `validBefore` used to be `now + the SELLER'S maxTimeoutSeconds`,
+ * uncapped. The seller writes that number. A door asking for ten
+ * years received a signed, submittable EIP-3009 authorization against
+ * the field wallet good for ten years, and the walk then ended,
+ * because from our side the check was over.
+ *
+ * Ten minutes is longer than any honest settlement needs and short
+ * enough that an unpresented authorization stops being a liability
+ * while the keeper is still awake. The seller may ask for less; it
+ * may never ask for more.
+ */
+export const MAX_AUTHORIZATION_SECONDS = 600;
+
+/**
+ * WHAT A PAID KNOCK REFUSES TO DO (ledger I3).
+ *
+ * All three knocks used bare `fetch`: no timeout, no size cap, and
+ * redirects followed by default. Each is a real exposure on a walk
+ * that carries money.
+ *
+ * REDIRECTS ARE THE SHARP ONE. `redirect: "follow"` sends the
+ * PAYMENT-SIGNATURE header wherever the seller points, so a door can
+ * bounce this store's signed authorization to a host it does not
+ * control and that we never agreed to pay. A redirect on the paid
+ * knock is not a detour to be followed; it is a FINDING to be
+ * recorded, which is why this is "manual" and the status is read.
+ *
+ * The timeout keeps one slow door from holding a walk open, and the
+ * body cap keeps a hostile response from being read into memory
+ * unbounded. Truncation is recorded rather than hidden — a report
+ * that quietly read the first megabyte and called it the body would
+ * be describing something the buyer never received.
+ */
+const KNOCK_TIMEOUT_MS = 20_000;
+const MAX_KNOCK_BYTES = 1_048_576;
+
+/** Read at most MAX_KNOCK_BYTES, saying so when the body was longer. */
+async function readCapped(
+  response: Response,
+): Promise<{ text: string; truncated: boolean }> {
+  const body = response.body;
+  if (!body) return { text: "", truncated: false };
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  let truncated = false;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+    total += value.byteLength;
+    if (total > MAX_KNOCK_BYTES) {
+      chunks.push(value.slice(0, value.byteLength - (total - MAX_KNOCK_BYTES)));
+      truncated = true;
+      await reader.cancel().catch(() => undefined);
+      break;
+    }
+    chunks.push(value);
+  }
+  const joined = new Uint8Array(
+    chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0),
+  );
+  let offset = 0;
+  for (const chunk of chunks) {
+    joined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { text: new TextDecoder().decode(joined), truncated };
+}
+
 export type LaunchCheckVerdict =
   /** Money moved and the response carried goods (or at least a 2xx). */
   | "settled"
@@ -116,6 +189,22 @@ export interface LaunchCheckObservation {
    * door we never paid.
    */
   replay_served: boolean | null;
+  /**
+   * UNIX SECONDS THE SIGNED AUTHORIZATION STAYS SUBMITTABLE, or null
+   * if none was ever presented (ledger I2).
+   *
+   * `paid_usd: 0` on a refused presentation is a claim about the
+   * PAST. It says no goods arrived and no settlement was seen. It
+   * does NOT say no money can move, because the authorization we
+   * signed and handed over is live until this moment passes — an
+   * EIP-3009 nonce is spent by settlement, not by our disappointment.
+   *
+   * So the zero travels with its own expiry INSIDE THE SIGNED BYTES.
+   * A reader can tell the difference between "nothing moved" and
+   * "nothing had moved yet when we looked", which is the whole
+   * distinction a money claim has to keep.
+   */
+  authorization_outstanding_until: number | null;
   evidence_hash: string;
   scope: string;
 }
@@ -332,6 +421,12 @@ export async function performLaunchCheck(
   let verdict: LaunchCheckVerdict;
   let paidUsd = 0;
   let replayServed: boolean | null = null;
+  /*
+   * Set the moment an authorization is PRESENTED, not when it is
+   * accepted (ledger I2). Presentation is what puts the wallet at
+   * risk; acceptance is what ends the question.
+   */
+  let authorizationOutstandingUntil: number | null = null;
   let payTo: string | null = null;
   let txHash: string | null = null;
 
@@ -354,6 +449,8 @@ export async function performLaunchCheck(
     let first: Response;
     try {
       first = await fetchImpl(targetUrl, {
+        redirect: "manual",
+        signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
         headers: { "User-Agent": LAUNCH_CHECK_UA, Accept: "application/json" },
       });
     } catch (error) {
@@ -542,9 +639,20 @@ export async function performLaunchCheck(
       to: chosen.payTo,
       value: chosen.amount ?? chosen.maxAmountRequired ?? "0",
       validAfter: "0",
-      validBefore: String(nowSeconds + (chosen.maxTimeoutSeconds ?? 300)),
+      /*
+       * CLAMPED (ledger I2). min(what the seller asked, the house
+       * ceiling) — never the seller's number alone.
+       */
+      validBefore: String(
+        nowSeconds +
+          Math.min(
+            chosen.maxTimeoutSeconds ?? 300,
+            MAX_AUTHORIZATION_SECONDS,
+          ),
+      ),
       nonce: (options.randomNonce ?? defaultNonce)(),
     };
+    authorizationOutstandingUntil = Number(authorization.validBefore);
     const signature = await signer.signTypedData({
       domain: {
         name: chosen.extra?.name ?? "USD Coin",
@@ -582,6 +690,8 @@ export async function performLaunchCheck(
     let second: Response;
     try {
       second = await fetchImpl(targetUrl, {
+        redirect: "manual",
+        signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
         headers: {
           "User-Agent": LAUNCH_CHECK_UA,
           Accept: "application/json",
@@ -597,7 +707,29 @@ export async function performLaunchCheck(
       verdict = "unreachable";
       break walk;
     }
-    const bodyText = await second.text();
+    /*
+     * A REDIRECT ON THE PAID KNOCK IS THE FINDING (ledger I3). We no
+     * longer follow it, so the header carrying a signed authorization
+     * never travels to a host the seller merely pointed at.
+     */
+    if (second.status >= 300 && second.status < 400) {
+      stages.push({
+        stage: "settle",
+        ok: false,
+        detail: `the paid request was answered with ${second.status} redirect to ${second.headers.get("location") ?? "an undisclosed location"}. This walk does not follow it: the PAYMENT-SIGNATURE header carries a signed authorization, and forwarding it to a host named at redirect time hands somebody else a payable instrument. A buyer's client that DOES follow would be paying whoever the redirect names.`,
+      });
+      verdict = "payment_refused";
+      break walk;
+    }
+    const { text: bodyText, truncated: bodyTruncated } =
+      await readCapped(second);
+    if (bodyTruncated) {
+      stages.push({
+        stage: "delivery",
+        ok: true,
+        detail: `the response body exceeded ${MAX_KNOCK_BYTES} bytes and this walk stopped reading. What is recorded below is the capped prefix, not the whole delivery — said plainly because a report that read the first megabyte and called it the body would be describing something the buyer never received.`,
+      });
+    }
     if (second.status >= 200 && second.status < 300) {
       paidUsd = price;
       const responseHeader = second.headers.get("payment-response");
@@ -656,6 +788,8 @@ export async function performLaunchCheck(
       let replayError: string | null = null;
       try {
         replayResponse = await fetchImpl(targetUrl, {
+          redirect: "manual",
+          signal: AbortSignal.timeout(KNOCK_TIMEOUT_MS),
           headers: {
             "User-Agent": LAUNCH_CHECK_UA,
             Accept: "application/json",
@@ -704,6 +838,7 @@ export async function performLaunchCheck(
     paid_usd: paidUsd,
     pay_to: payTo,
     replay_served: replayServed,
+    authorization_outstanding_until: authorizationOutstandingUntil,
     tx_hash: txHash,
     field_wallet: signer?.address ?? null,
   };
@@ -721,7 +856,7 @@ export async function performLaunchCheck(
     signature: signed.signature,
     public_key: signed.publicKey,
     signature_covers:
-      "The canonical JSON of every field above signature, in the order served. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
+      "The canonical JSON of every field above signature, in the order served — including authorization_outstanding_until, so a paid_usd of 0 cannot be quoted apart from the window it was true in. Re-serialize them and check against the ed25519 public key here or at /.well-known/scvd-signing-key.",
   };
 }
 

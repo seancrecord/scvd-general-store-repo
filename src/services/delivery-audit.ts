@@ -8,21 +8,40 @@ import type { Env } from "@/types";
  * THE DELIVERY AUDIT — did the goods actually leave the shelf after
  * the money moved?
  *
- * THE GAP THIS EXISTS FOR (problem ledger #18). The money path runs:
+ * THE GAP THIS EXISTS FOR (problem ledger #18), AS THE PATH RUNS
+ * TODAY. Corrected 2026-08-24 under ledger D3: the description below
+ * had outlived the code. It still recited the pre-amendment ordering
+ * — settle, record, then `await next()` — which was true when this
+ * file was written and stopped being true when the gate went
+ * deliver-first. A comment describing a settlement order the store no
+ * longer uses is rule 45 doc-drift on the money path, which is the
+ * worst place to keep a stale map.
  *
- *     processSettlement      money moves
- *     recordSettlement       counter AND payer row both written
- *     await next()           the handler that mints the artifact
+ * WHAT ACTUALLY HAPPENS NOW (full rationale in lib/payment-gate.ts):
  *
- * Both sides of the reconciliation we already had — settle counters
- * against payer rows — are written BEFORE delivery is attempted. So a
- * handler that throws, returns a non-2xx, or never finishes because
- * the isolate went away leaves a settled payment, a bumped counter, a
- * bumped payer row and NO ARTIFACT, and the old check reports
- * `unexplained: 0`. The books balance. The buyer got nothing. That is
- * the worst failure class this store has: money taken, goods not
- * delivered, and no complaint guaranteed, because the buyer may be an
- * agent that is no longer running.
+ *     verify + replay guard    unchanged, still first
+ *     await next()             handler gets a PENDING authorization
+ *     pending.settle()         called by the route at its own last
+ *                              line, immediately before the mint
+ *     mint                     signature + KV writes
+ *
+ * A route that mints nothing never calls settle, and the gate settles
+ * for it after a 2xx — stock x402 ordering. The trade was made
+ * deliberately: settling first meant money moved and the delivery step
+ * could still die, which happened four times on Base and twice on
+ * Solana, every one an item that read the chain after settling against
+ * a rate-limited public RPC.
+ *
+ * SO WHY THIS FILE STILL EXISTS. The window shrank; it did not close.
+ * Between `pending.settle()` and a finished mint there is still a
+ * signature and a KV write — local and fast, and not nothing. A
+ * handler that dies in that gap leaves a settled payment, a bumped
+ * counter, a bumped payer row and NO ARTIFACT, and a reconciliation
+ * of counters against payer rows reports `unexplained: 0`. The books
+ * balance. The buyer got nothing. That is still the worst failure
+ * class this store has: money taken, goods not delivered, and no
+ * complaint guaranteed, because the buyer may be an agent that is no
+ * longer running.
  *
  * HOW: an intent row, written after settlement and before the handler,
  * deleted only when the handler returns goods. Anything still sitting

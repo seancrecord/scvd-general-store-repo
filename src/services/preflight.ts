@@ -156,8 +156,33 @@ const MAX_BODY_BYTES = 256 * 1024;
  *     increments make it slightly generous, never tighter than
  *     stated. An approximate ceiling beats an imaginary one.
  */
-const PROBES_PER_MINUTE = 30;
-const GLOBAL_PROBES_PER_MINUTE = 60;
+export const PROBES_PER_MINUTE = 30;
+export const GLOBAL_PROBES_PER_MINUTE = 60;
+
+/**
+ * THE CEILINGS, SAID OUT LOUD (roadmap 0.13, 2026-08-24).
+ *
+ * Both limits have been enforced since 2026-08-03 and neither was
+ * ever published, so a caller building a pipeline against this
+ * endpoint learned the ceiling by being refused halfway through it —
+ * the least useful moment and the least informative form. The
+ * conformance desk already states its budget and the trade it makes;
+ * this brings the other free instrument onto the same footing.
+ *
+ * DERIVED FROM THE CONSTANTS THE LIMITER USES, so raising a ceiling
+ * cannot leave the published figure behind (rule 46).
+ */
+export function statedRateLimit(base: string): {
+  per_isolate_per_minute: number;
+  global_per_minute: number;
+  note: string;
+} {
+  return {
+    per_isolate_per_minute: PROBES_PER_MINUTE,
+    global_per_minute: GLOBAL_PROBES_PER_MINUTE,
+    note: `Two ceilings, both approximate. The per-isolate bucket is exact within one isolate and Cloudflare may hold several, so it is not an abuse ceiling on its own; the global backstop is a read-modify-write on eventually consistent storage, which makes it slightly GENEROUS under load and never tighter than stated. Neither uses an IP, a cookie or any identifier — it bounds our cost rather than allocating fairly between callers, and that trade is deliberate. Past the ceiling you get 429 and nothing else is denied to you. Reading many doors at once? Take the weekly census whole from ${base}/corpus.json or ${base}/fresh-set instead — it costs you no probes and us no outbound requests.`,
+  };
+}
 let probeMinute = "";
 let probesUsed = 0;
 
@@ -211,6 +236,13 @@ export interface PreflightReport {
   single_probe_note: string;
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
+  /**
+   * WHAT THIS ENDPOINT WILL AND WILL NOT KEEP DOING FOR YOU (0.13).
+   * Both ceilings have been enforced since 2026-08-03; publishing
+   * them means a caller learns the limit while designing rather than
+   * by being refused halfway through a run.
+   */
+  rate_limit: ReturnType<typeof statedRateLimit>;
   store_identity: ReturnType<typeof storeIdentity>;
   /**
    * THE SAME PROBE, SCORED UNDER THE OTHER BATTERY. Present while more
@@ -257,6 +289,7 @@ function report(
       "Whether the signed offers verify — this probe deliberately makes no second request, so the offers' did:web was not resolved. POST one to the conformance desk for that.",
     ],
     our_conflict_of_interest: CONFLICT,
+    rate_limit: statedRateLimit(base),
     store_identity: storeIdentity(base),
     next_steps: {
       conformance_desk: `POST ${base}/api/conformance/v1 — full verification of any signed offer this 402 carried: structure, signature against the issuer's did:web key, liveness. Free.`,

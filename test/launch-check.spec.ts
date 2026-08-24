@@ -65,6 +65,17 @@ function fakeSeller(
      * the fake seller one of those three.
      */
     acceptsReplay?: boolean;
+    /**
+     * A HOSTILE WINDOW. The spec lets a seller name
+     * maxTimeoutSeconds and this store took it at face value, so a
+     * door could mint an authorization against the field wallet good
+     * for years. Set this to be that door.
+     */
+    maxTimeoutSeconds?: number;
+    /** Bytes of filler on the paid response, to model an unbounded read. */
+    padBytes?: number;
+    /** Answer the paid knock with a redirect instead of goods. */
+    redirectTo?: string;
   } = {},
 ): typeof fetch {
   /** Payments this seller has already settled once. */
@@ -82,7 +93,7 @@ function fakeSeller(
           amount: opts.amount ?? "5000",
           asset: USDC_BASE,
           payTo: SELLER_PAY_TO,
-          maxTimeoutSeconds: 300,
+          maxTimeoutSeconds: opts.maxTimeoutSeconds ?? 300,
           extra: { name: "USD Coin", version: "2" },
         },
       ],

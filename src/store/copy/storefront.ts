@@ -1,3 +1,4 @@
+import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 /**
  * KEEPER-EDITABLE COPY, the human storefront at GET /.
  * Every word on the front of the building lives here: sign, gauges,
@@ -112,7 +113,7 @@ export const STOREFRONT_COPY = {
    * last thing carried away.
    */
   organizationDescription:
-    "The trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over the x402 protocol, on Base, Polygon, or Solana; every purchase publicly checkable. The cheapest thing on the shelf is half a cent, and everything this store signs verifies free, forever.",
+    `The trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over the x402 protocol, on Base, Polygon, or Solana; every purchase publicly checkable. The cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and everything this store signs verifies free, forever.`,
   /**
    * THE H1'S ACCESSIBLE NAME (2026-08-21). The sign spells the store
    * out in letters that flicker on their own timers, so the only h1
