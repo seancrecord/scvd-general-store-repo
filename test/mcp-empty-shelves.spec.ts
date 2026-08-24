@@ -18,6 +18,28 @@ const BASE = "https://scvd.store";
  * and the read/get methods still refuse, because with zero resources
  * and zero prompts every URI and name a caller sends is one we do
  * not have. Tools stay the whole catalog.
+ *
+ * CORRECTION, 2026-08-21. "Tools stay the whole catalog" is the part
+ * that did not survive contact with a second auditor. A readiness
+ * audit read the same handshake and called the resources capability a
+ * FAILURE rather than a warning, on reasoning the 2026-08-11 note
+ * never addressed: a server that advertises resources and lists none
+ * has made a promise it does not keep, and the honest options are to
+ * stop advertising or to stock the shelf.
+ *
+ * Stocking it was right, because the PREMISE was the error. This
+ * store publishes five machine-readable context surfaces free and
+ * forever — the guide, the manual, the catalog, the criteria, the
+ * week's routing data — and every one is a resource in the exact
+ * sense the protocol means. They were reachable over HTTPS and
+ * invisible to an MCP client.
+ *
+ * So one assertion below inverts, and the original reasoning still
+ * holds everywhere else it applies: prompts are still declared and
+ * empty, templates are still empty, an unknown URI is still -32002,
+ * and an unknown METHOD is still -32601. What changed is one factual
+ * claim about what this store has.
+ * The shelf's own guards are in test/mcp-resources.spec.ts.
  */
 
 async function rpc(body: Record<string, unknown>) {
@@ -46,11 +68,21 @@ describe("the handshake declares what the shelves will answer", () => {
 });
 
 describe("the empty shelves answer honestly", () => {
-  it("resources/list is an empty list, not a missing method", async () => {
+  it("resources/list answers, and since 2026-08-21 it answers with resources", async () => {
+    /*
+     * The original assertion here was `toEqual([])`, correct for the
+     * ten days the shelf was empty. What it was really defending is
+     * the property below: the method ANSWERS rather than erroring,
+     * because a scanner reads -32601 as breakage. That property is
+     * unchanged. Only the contents are.
+     */
     const reply = await rpc({ method: "resources/list", params: {} });
     expect(reply["error"]).toBeUndefined();
     const result = isRecord(reply["result"]) ? reply["result"] : {};
-    expect(result["resources"]).toEqual([]);
+    const resources = result["resources"] as unknown[];
+    expect(Array.isArray(resources)).toBe(true);
+    // And the correction itself: a declared capability keeps its promise.
+    expect(resources.length).toBeGreaterThan(0);
   });
 
   it("resources/templates/list is empty too, since scanners probe it next", async () => {
@@ -67,7 +99,7 @@ describe("the empty shelves answer honestly", () => {
     expect(result["prompts"]).toEqual([]);
   });
 
-  it("resources/read refuses with the spec's not-found code", async () => {
+  it("resources/read still refuses a URI the shelf does not carry", async () => {
     const reply = await rpc({
       method: "resources/read",
       params: { uri: "file:///anything" },

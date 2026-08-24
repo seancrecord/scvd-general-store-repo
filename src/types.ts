@@ -100,6 +100,16 @@ export interface Env {
    */
   BASE_RPC_URL_SECONDARY?: string;
   /**
+   * Polygon JSON-RPC endpoints, same three-slot posture as Base:
+   * PRIMARY and SECONDARY are authenticated secrets (token in the
+   * URL, never logged — redactRpc applies), POLYGON_RPC_URL is a
+   * configured public one. All optional: the reader falls back to
+   * keyless public endpoints, fine at this volume.
+   */
+  POLYGON_RPC_URL?: string;
+  POLYGON_RPC_URL_PRIMARY?: string;
+  POLYGON_RPC_URL_SECONDARY?: string;
+  /**
    * Solana JSON-RPC endpoint for the second rail's bank
    * reconciliation. Optional: falls back to the public mainnet
    * endpoint, fine at this volume, swappable the day it isn't.

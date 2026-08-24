@@ -4,6 +4,7 @@ import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
+import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
 
 /**
@@ -55,6 +56,61 @@ import { isRecord, type Env } from "@/types";
  * certificate keeps its mint-day canonical form.
  */
 export const PREFLIGHT_VERSION = "v1";
+
+/**
+ * THE SECOND BATTERY, AND THE FIRST ONE KEPT RUNNING (2026-08-23).
+ *
+ * v2 folds the Solana rail-receivability read into the VERDICT. v1
+ * reported it as an advisory, which meant a door that literally cannot
+ * be credited — the payTo owns no token account for the mint it asked
+ * for — was still called `ready`. That is wrong on the merits and the
+ * published defect vocabulary at /defects says so.
+ *
+ * WHY v1 DOES NOT SIMPLY CHANGE. An observatory's most valuable asset
+ * is a comparable series. If the battery moves under the name `v1`,
+ * then a `ready` recorded in week 34 stops meaning what a `ready`
+ * recorded in week 36 means, and six weeks of hash-chained weekly
+ * rounds quietly lose the property that made them worth keeping. Every
+ * artifact this store has signed names the criteria it was rendered
+ * under; renaming those criteria retroactively would make a signature
+ * cover a claim nobody made.
+ *
+ * So both run. This is what an observatory does when it upgrades an
+ * instrument: keep the old one going through an overlap so the records
+ * join up, rather than starting a new series that cannot be compared
+ * to the old one. The comment above PREFLIGHT_VERSION already promised
+ * exactly this — "the old version keeps serving; a verdict cites the
+ * criteria it was rendered under, forever" — and this is the first
+ * time the store has had a second version to prove it with.
+ *
+ * ONE PROBE, TWO VERDICTS. The door is walked once. Both batteries
+ * read the same observation, so the overlap costs a caller nothing and
+ * the two verdicts can never disagree about what was seen — only about
+ * what counts.
+ */
+export const PREFLIGHT_VERSION_NEXT = "v2";
+
+/** Every battery currently served. Ordered oldest first. */
+export const PREFLIGHT_VERSIONS = [
+  PREFLIGHT_VERSION,
+  PREFLIGHT_VERSION_NEXT,
+] as const;
+
+export type PreflightBattery = (typeof PREFLIGHT_VERSIONS)[number];
+
+/** The date v2 began rendering verdicts. Its series starts here. */
+export const PREFLIGHT_V2_SINCE = "2026-08-23";
+
+/**
+ * What each battery folds into its verdict. Stated as data rather than
+ * prose so the criteria page cannot drift from the code that renders
+ * the verdict — the same derive-or-refuse rule the rest of the store
+ * lives under.
+ */
+export const BATTERY_ADDS: Record<PreflightBattery, readonly string[]> = {
+  v1: [],
+  v2: ["solana-rail-receivable"],
+};
 
 /**
  * The fields an accepts entry must carry, and the derivation matters:
@@ -156,6 +212,18 @@ export interface PreflightReport {
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
   store_identity: ReturnType<typeof storeIdentity>;
+  /**
+   * THE SAME PROBE, SCORED UNDER THE OTHER BATTERY. Present while more
+   * than one version is served, so a reader comparing a v1 verdict to a
+   * v2 one never has to guess whether the doors differed or the rules
+   * did. One probe produced both; they cannot disagree about what was
+   * seen, only about what counts.
+   */
+  also_under?: {
+    version: string;
+    verdict: PreflightReport["verdict"];
+    difference: string;
+  };
   next_steps: Record<string, string>;
 }
 
@@ -164,12 +232,23 @@ function report(
   verdict: PreflightReport["verdict"],
   checks: PreflightCheck[],
   advisories: PreflightAdvisory[],
+  options: {
+    battery?: PreflightBattery;
+    /** The same probe, scored under the other battery. */
+    alsoUnder?: {
+      version: PreflightBattery;
+      verdict: PreflightReport["verdict"];
+      difference: string;
+    };
+  } = {},
 ): PreflightReport {
+  const battery = options.battery ?? PREFLIGHT_VERSION;
   return {
-    version: PREFLIGHT_VERSION,
+    version: battery,
     verdict,
     checks,
     advisories,
+    ...(options.alsoUnder ? { also_under: options.alsoUnder } : {}),
     single_probe_note:
       "One request, one moment. This says whether the endpoint is SHAPED right now, never whether it is reliable — a passing preflight quoted as an uptime claim is a misquote.",
     what_this_cannot_tell_you: [
@@ -245,7 +324,17 @@ export async function probeOnce(
 export function runChecks(
   response: Response,
   bodyOverLimit: boolean,
-): { checks: PreflightCheck[]; advisories: PreflightAdvisory[] } {
+): {
+  checks: PreflightCheck[];
+  advisories: PreflightAdvisory[];
+  /**
+   * The offer entries this battery parsed, handed back so a caller
+   * that needs the NETWORK (the Solana receivability read, which
+   * cannot be synchronous) never has to decode the challenge twice
+   * and never drifts from what the battery actually saw.
+   */
+  accepts?: Record<string, unknown>[];
+} {
   const checks: PreflightCheck[] = [];
   const advisories: PreflightAdvisory[] = [];
 
@@ -424,15 +513,26 @@ export function runChecks(
         : {
             name: "bazaar-extension",
             ok: false,
+            /*
+             * OBSERVATION AND INFERENCE, SPLIT — 2026-08-24, after an
+             * independent tester captured this same 402 by hand,
+             * confirmed the missing block, and declined to co-sign the
+             * consequence: they do not run an indexer, and neither do
+             * we. The old wording asserted what a directory WOULD do
+             * as though we had watched one do it. Our own rule is that
+             * every claim ships with a path to check it or an explicit
+             * label saying it rests on inference; this check was
+             * breaking that rule in the store's own voice.
+             */
             detail:
-              "extensions.bazaar is declared but carries no parseable info block — a discovery indexer will drop or mangle this listing.",
+              "extensions.bazaar is declared but carries no parseable info block — no name, no description, nothing an ingestion-based directory could render as a listing. THAT MISSING BLOCK IS WHAT WE OBSERVED. What follows from it — that an indexer drops or mangles the entry — is INFERENCE and not measurement: this store runs no directory ingester and has not tested one. Falsified by any directory that ingests this endpoint and renders a complete listing without an info block.",
           },
     );
   } else {
     advisories.push({
       name: "no-bazaar-extension",
       detail:
-        "no extensions.bazaar block. Not a defect — but ingestion-based directories discover services from this block, so without one this endpoint is only findable by buyers who already have the URL.",
+        "no extensions.bazaar block. Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present.",
     });
   }
 
@@ -524,12 +624,14 @@ export function runChecks(
     });
   }
 
-  return { checks, advisories };
+  return { checks, advisories, accepts };
 }
 
 export async function preflightUrl(
   rawUrl: unknown,
   env: Env,
+  /** Which battery renders the headline verdict. Both are computed. */
+  battery: PreflightBattery = PREFLIGHT_VERSION,
 ): Promise<{ status: number; body: PreflightReport | { error: string } }> {
   const base = env.STORE_BASE_URL;
   if (typeof rawUrl !== "string" || rawUrl.trim().length === 0) {
@@ -602,10 +704,88 @@ export async function preflightUrl(
     };
   }
 
-  const { checks, advisories } = runChecks(
+  const { checks, advisories, accepts } = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
   );
-  const verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
-  return { status: 200, body: report(base, verdict, checks, advisories) };
+  /*
+   * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
+   *
+   * It reports a real defect — a payTo that owns no USDC token account
+   * cannot be credited, so the door 402s perfectly and nobody can pay
+   * it — and on the merits that should sink a verdict. It does not,
+   * yet, and the reason is a contract rather than a doubt.
+   *
+   * FIVE INSTRUMENTS SHARE runChecks(): this preflight, the paid
+   * service_audit, the conformance_watch, the standing_watch and the
+   * census ward round. The audit's published promise is that it runs
+   * "the free preflight's exact battery", and the criteria page says a
+   * new battery is a NEW VERSION, named on every artifact it produces.
+   * Moving this into the verdict here alone would make five
+   * instruments disagree about one door; moving it into all five is a
+   * preflight-v2, which renames the criteria on every signed artifact
+   * the store issues. That is the keeper's call, not a side effect of
+   * adding a check.
+   *
+   * So it rides as an advisory: outside the verdict by the existing
+   * contract, in front of the operator today, and one line from
+   * becoming a check the day v2 is ruled on.
+   */
+  const rail = accepts
+    ? await checkRailReceivable(env, accepts).catch(() => ({
+        check: null,
+        advisory: null,
+      }))
+    : { check: null, advisory: null };
+  if (rail.advisory) advisories.push(rail.advisory);
+
+  /*
+   * ONE PROBE, TWO BATTERIES (2026-08-23).
+   *
+   * v1 is frozen: the structural checks and nothing else, so a `ready`
+   * recorded today means exactly what a `ready` recorded in week 34
+   * meant. The rail read rides it as an advisory, outside the verdict.
+   *
+   * v2 folds the rail read INTO the verdict, because a door whose payTo
+   * cannot be credited is not ready by any reading a buyer would accept
+   * — and /defects says so in public.
+   *
+   * Both are computed from the SAME observation, so they can never
+   * disagree about what was seen, only about what counts. That is the
+   * whole reason to run an overlap rather than cut the old series.
+   */
+  const v1Checks = [...checks];
+  const v2Checks = rail.check ? [...checks, rail.check] : [...checks];
+  const scoreOf = (entries: PreflightCheck[]): PreflightReport["verdict"] =>
+    entries.every((check) => check.ok) ? "ready" : "not_ready";
+  const v1Verdict = scoreOf(v1Checks);
+  const v2Verdict = scoreOf(v2Checks);
+
+  const asked = battery === PREFLIGHT_VERSION_NEXT ? "v2" : "v1";
+  const servedChecks = asked === "v2" ? v2Checks : v1Checks;
+  const servedVerdict = asked === "v2" ? v2Verdict : v1Verdict;
+  const otherVersion =
+    asked === "v2" ? PREFLIGHT_VERSION : PREFLIGHT_VERSION_NEXT;
+  const otherVerdict = asked === "v2" ? v1Verdict : v2Verdict;
+
+  /*
+   * If the rail read produced nothing — no Solana rail offered, or the
+   * ledger would not answer — the two batteries scored identically and
+   * saying so plainly beats implying a distinction that did not apply.
+   */
+  const difference = rail.check
+    ? `v2 folds solana-rail-receivable into the verdict; v1 reports it as an advisory. On this probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"}.`
+    : "The rail read did not apply to this endpoint (no Solana rail offered, or the ledger could not be read), so both batteries scored the identical set of checks.";
+
+  return {
+    status: 200,
+    body: report(base, servedVerdict, servedChecks, advisories, {
+      battery: asked,
+      alsoUnder: {
+        version: otherVersion,
+        verdict: otherVerdict,
+        difference,
+      },
+    }),
+  };
 }

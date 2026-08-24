@@ -1,10 +1,11 @@
 import {
-  BASE_CHAIN,
-  BASE_USDC,
+  BASE_EVM,
+  evmChainOf,
   getBlockNumber,
   usdcFromUnits,
   usdcTransfersFrom,
   usdcTransfersTo,
+  type EvmChain,
 } from "@/lib/base-rpc";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
@@ -107,8 +108,23 @@ export interface WalletStatementRecord {
   created_at: string;
 }
 
-const STATEMENT_SCOPE =
-  "USDC transfers on Base (eip155:8453), read from the chain by indexed eth_getLogs over exactly the block window stated — nothing outside it was read, and no other asset or chain was seen: a wallet moving ETH, other tokens, or funds on other networks shows none of that here. Counts and totals cover the whole window; the transfer lists are capped at list_cap rows per direction and say how many they carry. A statement, never a judgment: no comparison to anyone's ledger was made or possible — we never see one — and nothing here says what any transfer was for. window_unreadable is a fact about our read at this moment, not about the wallet. Produced automatically; a statement commissioned by anyone about any wallet reads the same.";
+/**
+ * The scope names its own chain — the parity ruling's wording rule:
+ * one template, a chain parameter, no second constant to drift.
+ */
+export function statementScope(chain: EvmChain): string {
+  return `USDC transfers on ${chain.label} (${chain.caip2}), read from the chain by indexed eth_getLogs over exactly the block window stated — nothing outside it was read, and no other asset or chain was seen: a wallet moving ETH, other tokens, or funds on other networks shows none of that here. Counts and totals cover the whole window; the transfer lists are capped at list_cap rows per direction and say how many they carry. A statement, never a judgment: no comparison to anyone's ledger was made or possible — we never see one — and nothing here says what any transfer was for. window_unreadable is a fact about our read at this moment, not about the wallet. Produced automatically; a statement commissioned by anyone about any wallet reads the same.`;
+}
+
+/**
+ * The network parameter's whole vocabulary: CAIP-2 or the plain
+ * word, either rail, Base when unsaid. Null is a refusal — an
+ * unrecognized network must bounce before money moves, never default
+ * silently to a chain the buyer did not ask about.
+ */
+export function statementChain(raw: string | undefined): EvmChain | null {
+  return evmChainOf(raw);
+}
 
 function side(
   rows: Array<{ txHash: string; amount: bigint; block: number }>,
@@ -162,6 +178,7 @@ export async function performWalletStatement(
   env: Env,
   wallet: string,
   hoursRequested: number = STATEMENT_DEFAULT_HOURS,
+  chain: EvmChain = BASE_EVM,
 ): Promise<SignedWalletStatement> {
   const address = wallet.toLowerCase();
   const hours = Math.min(Math.max(hoursRequested, 1), STATEMENT_MAX_HOURS);
@@ -174,11 +191,11 @@ export async function performWalletStatement(
   let outflows = EMPTY_SIDE;
   let fromBlock = 0;
   try {
-    head = await getBlockNumber(env);
+    head = await getBlockNumber(env, chain);
     fromBlock = Math.max(head - hours * BLOCKS_PER_HOUR, 0);
     const [inbound, outbound] = [
-      await usdcTransfersTo(env, address, fromBlock, head),
-      await usdcTransfersFrom(env, address, fromBlock, head),
+      await usdcTransfersTo(env, address, fromBlock, head, chain),
+      await usdcTransfersFrom(env, address, fromBlock, head, chain),
     ];
     inflows = side(inbound, (row) =>
       (row as { from?: string }).from ?? "",
@@ -198,8 +215,8 @@ export async function performWalletStatement(
   const core = {
     statement_id: `stmt_${newEntryId()}`,
     wallet: address,
-    chain: BASE_CHAIN,
-    asset: BASE_USDC,
+    chain: chain.caip2,
+    asset: chain.usdc,
     observed_at: now.toISOString(),
     coverage,
     window: {
@@ -216,7 +233,7 @@ export async function performWalletStatement(
   const observation: WalletStatementObservation = {
     ...core,
     evidence_hash: await sha256Hex(JSON.stringify(core)),
-    scope: STATEMENT_SCOPE,
+    scope: statementScope(chain),
   };
   const signed = await signMessage(
     JSON.stringify(observation),

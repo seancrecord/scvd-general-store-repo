@@ -1,7 +1,7 @@
 {
-  "version": "3.5.0",
-  "bundle_sha256": "8882c95829f79e58f6cb4a32783c2a02072f452cba9bdea0b1ceea60f0d43ca8",
-  "published_at": "2026-08-21T13:25:37.758Z",
-  "commit": "cddb441649665ac647d9a2285283c4740830e11c",
-  "changelog": "The third rail: Polygon in every 402 and the skill's buying steps; the claims-door recovery moment folded in from 3.4.1."
+  "version": "3.6.0",
+  "bundle_sha256": "e441c4affb56e21ebc84d1cc767219f9749ee5886495a3adc658608cc5ee8c8f",
+  "published_at": "2026-08-21T16:58:22.581Z",
+  "commit": "02c69a407a99808515804c8e29adb8b57d3b8a69",
+  "changelog": "The evidence layer: passport refresh on the shelf, /trust and /passport/{host} with the embeddable chip, free receipt verification (POST /api/verify-receipt), the SIWX claims challenge, and /api/practice."
 }

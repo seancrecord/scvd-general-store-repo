@@ -1,5 +1,7 @@
 import {
+  BASE_EVM,
   BASE_USDC,
+  evmChainOf,
   getBlockNumber,
   getReceipt,
   isSameAddress,
@@ -59,6 +61,9 @@ export interface BountyRecord {
   domain: string;
   /** The door's terms, captured BY THE STORE at posting time. */
   pay_to: string;
+  /** CAIP-2 of the rail the captured terms quote. Absent means Base —
+   * every bounty opened before the third rail's parity build. */
+  network?: string;
   amount_atomic: string;
   amount_usd: number;
   reward_usd: number;
@@ -208,18 +213,42 @@ export async function openBounty(
     accepts?: AcceptEntry[];
   } | null;
   const accepts = Array.isArray(challenge?.accepts) ? challenge.accepts : [];
-  const base = accepts
+  /**
+   * EVM entries only, Base preferred, Polygon accepted (parity ruling
+   * 2026-08-21: a Polygon-only door is still a door somebody should
+   * be paid to walk). The claim verifier reads the bounty's own chain,
+   * so whichever rail is captured here is the rail the settlement
+   * must land on. Solana doors stay refused — the claim check for
+   * that rail is a per-build item (SOLANA_PARITY.md #2).
+   */
+  const evmEntries = accepts
+    .map((entry) => ({
+      entry,
+      chain: entry.network ? evmChainOf(entry.network) : null,
+    }))
     .filter(
-      (entry) =>
-        (entry.network === "eip155:8453" || entry.network === "base") &&
-        (entry.scheme ?? "exact") === "exact" &&
-        Number.isFinite(amountUsd(entry)),
+      (pair): pair is { entry: AcceptEntry; chain: NonNullable<ReturnType<typeof evmChainOf>> } =>
+        pair.chain !== null &&
+        (pair.entry.scheme ?? "exact") === "exact" &&
+        Number.isFinite(amountUsd(pair.entry)),
     )
-    .sort((a, b) => amountUsd(a) - amountUsd(b));
-  const chosen = base[0];
-  if (!chosen?.payTo || !isSameAddress(chosen.asset ?? "", BASE_USDC)) {
+    .sort((a, b) =>
+      a.chain.key === b.chain.key
+        ? amountUsd(a.entry) - amountUsd(b.entry)
+        : a.chain.key === "base"
+          ? -1
+          : 1,
+    );
+  const chosenPair = evmEntries[0];
+  const chosen = chosenPair?.entry;
+  const bountyChain = chosenPair?.chain;
+  if (
+    !chosen?.payTo ||
+    !bountyChain ||
+    !isSameAddress(chosen.asset ?? "", bountyChain.usdc)
+  ) {
     throw new BountyRefused(
-      "no payable USDC-on-Base rail could be read from the door's 402 — the claim verifier would have nothing to verify against",
+      "no payable USDC rail on Base or Polygon could be read from the door's 402 — the claim verifier would have nothing to verify against",
     );
   }
   /**
@@ -263,7 +292,8 @@ export async function openBounty(
     reward_usd: input.rewardUsd,
     opened_at: now.toISOString(),
     ...(input.note?.trim() ? { note: input.note.trim().slice(0, 500) } : {}),
-    opened_block: await getBlockNumber(env),
+    network: bountyChain.caip2,
+    opened_block: await getBlockNumber(env, bountyChain),
     expires_at: new Date(
       now.getTime() + BOUNTY_OPEN_DAYS * 24 * 3600 * 1000,
     ).toISOString(),
@@ -370,10 +400,14 @@ export async function claimBounty(
   // THE CHAIN'S PART: the settlement is real, succeeded, runs from
   // the claimed payer to the terms WE captured, and postdates the
   // bounty. This is what the reward pays for.
-  const receipt = await getReceipt(env, input.txHash);
+  // The bounty's own rail is the one the settlement must be on —
+  // captured at open, defaulting Base for bounties older than the
+  // third rail's parity build.
+  const claimChain = evmChainOf(bounty.network) ?? BASE_EVM;
+  const receipt = await getReceipt(env, input.txHash, claimChain);
   if (!receipt || receipt.status !== "0x1") {
     throw new BountyRefused(
-      "the chain shows no successful transaction under that hash — nothing verified, nothing paid",
+      `${claimChain.label} shows no successful transaction under that hash — nothing verified, nothing paid. The bounty's captured rail is ${claimChain.caip2}; a settlement on another chain cannot claim it`,
     );
   }
   const receiptBlock = Number.parseInt(receipt.blockNumber ?? "0x0", 16);
@@ -382,7 +416,7 @@ export async function claimBounty(
       "that settlement predates the bounty — the board pays for walks it commissioned, not history",
     );
   }
-  const transfer = usdcTransfers(receipt).find(
+  const transfer = usdcTransfers(receipt, claimChain).find(
     (candidate) =>
       isSameAddress(candidate.from, input.payer) &&
       isSameAddress(candidate.to, bounty.pay_to) &&
@@ -477,7 +511,7 @@ export async function claimBounty(
     bounty_id: bounty.bounty_id,
     reward_usd: bounty.reward_usd,
     what_was_verified:
-      `The chain's part: transaction ${input.txHash.toLowerCase()} succeeded on Base and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a block after the bounty existed, never claimed before. That is what the reward pays for.`,
+      `The chain's part: transaction ${input.txHash.toLowerCase()} succeeded on ${claimChain.label} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a block after the bounty existed, never claimed before. That is what the reward pays for.`,
     what_was_not:
       "Your observations, if you sent any, are recorded verbatim as YOUR claim — this store did not see your HTTP transcript and does not pretend to. Crowd-walked rows enter the corpus at their own evidence tier, below house-walked ones, and the tier is always printed.",
     payout: {

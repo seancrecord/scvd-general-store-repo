@@ -9,6 +9,7 @@ import type { FirstDollar } from "@/lib/metrics";
 import {
   bellLine,
   MENU_ITEMS,
+  STORE_CONTACT_EMAIL,
   STORE_METADATA,
   STORE_SERVICE_NAME,
 } from "@/store";
@@ -388,6 +389,42 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
      */
     legalName: OPERATED_BY,
     /**
+     * THE CONTACT POINT, in the field schema.org provides for it.
+     *
+     * A readiness audit on 2026-08-21 marked the Organization block
+     * incomplete for want of `contactPoint` and `address`. The email
+     * has been published on six surfaces since July — security.txt,
+     * the OpenAPI contact, llms.txt, the wind-down notice — and was
+     * absent from the one block an entity resolver actually reads.
+     *
+     * `address` stays off deliberately and is not an oversight: the
+     * only address this store has is where the keeper lives, and
+     * schema.org has no way to say "one person, no premises" other
+     * than by not claiming premises. A PostalAddress here would be
+     * either a home address published to every crawler or an invented
+     * one, and inventing it is the exact failure /corrections exists
+     * to catch. The audit's other half is answered; this half is
+     * declined on the record.
+     */
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: STORE_CONTACT_EMAIL,
+        url: `${base}/developers`,
+        availableLanguage: "English",
+        areaServed: "001",
+      },
+      {
+        "@type": "ContactPoint",
+        contactType: "technical support",
+        email: STORE_CONTACT_EMAIL,
+        url: `${base}/developers`,
+        availableLanguage: "English",
+        areaServed: "001",
+      },
+    ],
+    /**
      * THE FIELD schema.org PROVIDES FOR "here is independent record of
      * us," and the direct answer to an outside model reporting it
      * could find no external reputation footprint. Derived from
@@ -521,7 +558,7 @@ export function renderStorefront(data: StorefrontData): string {
 
     <header class="signfront">
       <p class="tube-line">${COPY.tubeLine}</p>
-      <h1 class="neon">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></h1>
+      <h1 class="neon"><span class="sr-only">${escapeHtml(STORE_SERVICE_NAME)} — ${escapeHtml(COPY.h1Summary)}</span><span aria-hidden="true">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span></h1>
       <div class="light-pool"></div>
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>

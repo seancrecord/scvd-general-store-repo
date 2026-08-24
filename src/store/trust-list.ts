@@ -78,7 +78,7 @@ export const TRUST_LIST_ENTRIES: readonly TrustListEntry[] = [
     transacted:
       "Purchases across the full shelf, paid over x402 v2 on Base, each one settling before anything shipped and each one minting a certificate that still verifies.",
     first_verified: "2026-07-22",
-    last_checked: "2026-07-27",
+    last_checked: "2026-08-21",
     status: "verified",
   },
   {
@@ -87,7 +87,7 @@ export const TRUST_LIST_ENTRIES: readonly TrustListEntry[] = [
     transacted:
       "Reads the /.well-known/x402 and openapi.json you already serve, probes your paid routes itself, and tells you which ones failed and why. Ours came back with thirty-two complaints the first time. Every one was fair.",
     first_verified: "2026-07-27",
-    last_checked: "2026-07-27",
+    last_checked: "2026-08-21",
     status: "verified",
   },
   {
@@ -96,7 +96,7 @@ export const TRUST_LIST_ENTRIES: readonly TrustListEntry[] = [
     transacted:
       "Reads the Bazaar and shows its work: endpoints, payment methods, payer counts, and quality signals it computed rather than accepted. It told us something true about ourselves we had not noticed.",
     first_verified: "2026-07-27",
-    last_checked: "2026-07-27",
+    last_checked: "2026-08-21",
     status: "verified",
   },
   {
@@ -105,7 +105,7 @@ export const TRUST_LIST_ENTRIES: readonly TrustListEntry[] = [
     transacted:
       "Probes what you submit and says how many endpoints actually answered. Ours came back three of six, which is how we found a real bug. A directory that disagrees with you is worth more than one that doesn't.",
     first_verified: "2026-07-27",
-    last_checked: "2026-07-27",
+    last_checked: "2026-08-21",
     status: "verified",
   },
 ] as const;

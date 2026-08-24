@@ -45,6 +45,14 @@ export interface ReconciliationPageData {
   settles: SettleReconciliation | null;
   chain: {
     baseCursor: string | null;
+    /** The third rail's walk: same discipline, its own cursor. */
+    polygonCursor: string | null;
+    polygonLastResult: {
+      ran: boolean;
+      reason?: string;
+      failed?: boolean;
+      at: string;
+    } | null;
     solanaLastOk: string | null;
     solanaLastResult: {
       ran: boolean;
@@ -122,6 +130,20 @@ function chainHtml(chain: ReconciliationPageData["chain"], now: Date): string {
   const base = chain.baseCursor
     ? `<p>${PASS} — Base cursor at block ${escapeHtml(chain.baseCursor)}; it only advances on a clean pass, so an advancing cursor IS the verdict. Anything found on-chain that the books can't explain pages the keeper instead of waiting here.</p>`
     : `<p>${ATTENTION} — no clean Base pass recorded yet.</p>`;
+  const polygon = (() => {
+    if (chain.polygonCursor) {
+      return `<p>${PASS} — Polygon cursor at block ${escapeHtml(chain.polygonCursor)}; same rule as Base, an advancing cursor IS the verdict.</p>`;
+    }
+    const last = chain.polygonLastResult;
+    if (last && !last.ran && !last.failed) {
+      // A benign skip (rail not configured here) is a fact, not a fire.
+      return `<p>Polygon walk: not running — ${escapeHtml(last.reason ?? "no reason recorded")} (as of ${escapeHtml(last.at)}).</p>`;
+    }
+    if (last && last.failed) {
+      return `<p>${ATTENTION} — the Polygon walk's last attempt FAILED at ${escapeHtml(last.at)}: <strong>${escapeHtml(last.reason ?? "no reason recorded")}</strong>. A failed pass retries next hour and never advances the cursor.</p>`;
+    }
+    return `<p>${ATTENTION} — no clean Polygon pass recorded yet. Real money settles on this rail; until a pass lands, its incoming transfers are unwatched.</p>`;
+  })();
   /**
    * The holes (ledger #22): block ranges the walk moved past without
    * reading. Rendered even at zero, because "no known holes" is a
@@ -144,7 +166,7 @@ function chainHtml(chain: ReconciliationPageData["chain"], now: Date): string {
             ? `<p><small>Only the most recent ${skippedRecord.ranges.length} ranges are listed; the totals above count every hole ever recorded.</small></p>`
             : ""
         }`;
-  return `${base}${holes}${solana}`;
+  return `${base}${polygon}${holes}${solana}`;
 }
 
 function deliveriesHtml(

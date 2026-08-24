@@ -68,6 +68,9 @@ export interface ConformanceWatchRecord {
   url: string;
   started_at: string;
   ends_at: string;
+  /** The wallet that paid — see standing-watch.ts for why this
+   * arrived late and what it cost to find out. */
+  payer?: string;
   passes: ConformancePass[];
 }
 
@@ -98,6 +101,7 @@ export function canonicalizeConformancePass(
 export async function startConformanceWatch(
   env: Env,
   url: string,
+  payer?: string,
 ): Promise<{ record: ConformanceWatchRecord; historyUrl: string }> {
   const now = new Date();
   const record: ConformanceWatchRecord = {
@@ -107,6 +111,7 @@ export async function startConformanceWatch(
     ends_at: new Date(
       now.getTime() + CONFORMANCE_WATCH_DURATION_DAYS * 24 * 3600_000,
     ).toISOString(),
+    ...(payer ? { payer: payer.toLowerCase() } : {}),
     passes: [],
   };
   await env.ORDERS.put(
