@@ -672,12 +672,30 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
 // update adding the six trust-tier endpoints to the monitor and the
 // position description. Token expires 72h from issue; REMOVE THIS
 // ROUTE once x402-list confirms, same as the last two times.
+//
+// FOURTH round, 2026-08-24. Request bdf3ad99-18ce-40c9-ac34-6d2978340670.
+// The listing update that carries the new identity (evidence
+// observatory), the corrected shelf floor, and six verification
+// instruments the monitor never had — launch_check among them, which
+// is the door their own reliability panel argues for when it says a
+// service can 402 correctly and still fail after payment.
+//
+// THE ROUTE OUTLIVED ITS OWN INSTRUCTION THREE TIMES. Each round said
+// remove after confirmation and each round it stayed, so the note is
+// now the fourth copy of an undone chore. Two things this round that
+// the last three did not have: the request id above, which lets the
+// verification be re-run from their API if the page is lost, and the
+// admission that "remove after verification" is a promise this file
+// has broken every time it was made. The token that was live until
+// today was issued 2026-08-18 and had been expired since roughly the
+// 21st — serving a dead nonce at a well-known path for three days is
+// litter of exactly the kind the first comment warned about.
 wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
   c.text(
     [
-      "# x402-list.com domain-ownership token, 2026-08-18 listing update.",
+      "# x402-list.com domain-ownership token, 2026-08-24 listing update.",
       "# One-time, expires 72h from issue, removed after verification.",
-      "x402list-verify-8At8JpSsqS3rsFVNbLqNgVfwqHGKWaQ8H63rOPIzDTs",
+      "x402list-verify-DZUc1jh1Vm0fpE-0m_Wh0X3J_Oc5Fmd2srAHm9tQras",
     ].join("\n"),
     200,
     { "content-type": "text/plain; charset=utf-8" },

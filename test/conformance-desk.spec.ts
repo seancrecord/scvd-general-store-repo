@@ -385,7 +385,25 @@ describe("the desk is bounded before anybody finds it", () => {
         );
       }
     }
-  });
+    /*
+     * 30s, not the 5s default, for the reason its neighbour below
+     * already documents: eighty sequential requests on a loaded CI
+     * runner take longer than five seconds, and the same commit goes
+     * green on one runner and red on its twin. That is exactly how
+     * this failed on 2026-08-24 — job 97616072965 red, its sibling
+     * job on the IDENTICAL commit green.
+     *
+     * The hardening was applied to the budget test below and missed
+     * here, which is its own small lesson: a fix aimed at one test
+     * belongs everywhere the same shape lives, or the flake simply
+     * moves next door and waits.
+     *
+     * This is slack, not a weakened claim. The assertion is unchanged
+     * — every one of the eighty must answer 200/conforms — and a path
+     * that genuinely started throttling still fails here on the first
+     * refusal, long before any clock runs out.
+     */
+  }, 30_000);
 
   it("says the budget was ours, not a fact about their artifact", async () => {
     /**

@@ -1,3 +1,4 @@
+import { POSITION_NOT, POSITION_OPENING } from "@/store/copy/position";
 import { Hono } from "hono";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
@@ -49,7 +50,7 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: "A live x402 practice counter: real settlement, no sandbox, from $0.005. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. The trust layer of the x402 economy: signed observation of what other endpoints and payments actually did, and a public corpus queryable by subject. Also a general store for agents."
+description: "A live x402 practice counter: real settlement, no sandbox, from $0.004. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a score or a ranking, plus a public corpus queryable by subject. Also a general store for agents."
 license: "All store copy is the keeper's; call the endpoints all you like."
 compatibility: "Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453), Polygon (eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)."
 metadata:
@@ -61,6 +62,12 @@ metadata:
 ---
 
 # ${STORE_METADATA.name}
+
+${POSITION_OPENING}
+
+${POSITION_NOT}
+
+---
 
 Well well. Come in then.
 

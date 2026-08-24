@@ -36,6 +36,30 @@
       "who": "CV's Solana-rail buyer (registration runs)",
       "since": "2026-08-04",
       "why": "The second rail's house test wallet: runs the registration settles (REGISTRATION_RUN.md) that admit endpoints to CDP discovery and live-test the Solana door. Listed BEFORE its first purchase \u2014 the first wallet in this file to arrive the way the rule was always meant to run. Base58 is case-sensitive; compare exactly."
+    },
+    {
+      "address": "0x9453C2411FC45a8b86df7f603e966d58ed34C651",
+      "who": "the keeper (EVM)",
+      "since": "2026-08-24",
+      "why": "The keeper's own hand on the EVM rails. His settles are family, never organic \u2014 the same reason CV's hand-rolled Polygon fifty cents was house-flagged the day that rail lit."
+    },
+    {
+      "address": "EvDsNubVNWWEH4GuqUGd8qFuHCp3rArQbjspwSy4Zxrj",
+      "who": "the keeper (Solana)",
+      "since": "2026-08-24",
+      "why": "The keeper's own hand on the Solana rail. Same rule, second rail: family, never organic."
+    },
+    {
+      "address": "0x2606be9c7fe58915ff7fdcab6ee84db5fad89c22",
+      "who": "scvd-store agent on Virtuals ACP (EVM)",
+      "since": "2026-08-24",
+      "why": "The store's own agent on Virtuals (EconomyOS, scvd-store@agents.world), created 2026-08-24. Listed BEFORE its first purchase, per the lesson attached to the sonnet46 entry above \u2014 if this agent ever transacts with its own store, that is a house test, and an unflagged settle here would be the exact self-dealing the store tabulates in other people's traction."
+    },
+    {
+      "address": "HT1fgiGPdieMQCaV85U3bxpA4BaCsBBBPRXJXYtwNk2Z",
+      "who": "scvd-store agent on Virtuals ACP (Solana)",
+      "since": "2026-08-24",
+      "why": "The Virtuals agent's Solana wallet, listed the day it was provisioned and before any spend, same rule as its EVM twin."
     }
   ]
 }

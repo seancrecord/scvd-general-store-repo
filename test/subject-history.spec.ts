@@ -249,6 +249,48 @@ describe("the gaps, which are the whole product", () => {
     expect(history.observation_coverage_pct).toBeNull();
   });
 
+  /**
+   * LEDGER H2 — A REVISIT WAS PUBLISHED AS A LISTING.
+   *
+   * Every probed row carried `listed: true`, but `source: "revisit"`
+   * means, in the door bank's own words, "no feed named it THIS
+   * round" — the probe walked a resource URL a PAST discovery round
+   * declared, to keep breadth when a feed's coverage is suspect.
+   *
+   * So a host delisted from every directory but still in the bank
+   * read as continuously listed in its own published history. PROBED
+   * was silently converted into LISTED, which is the same substitution
+   * this file was already caught making in the other direction on
+   * 2026-08-24 — a derived label asserting more than the record
+   * behind it.
+   *
+   * It matters because the listing side is a fact about the
+   * DIRECTORIES, not the host. Reporting a revisit as a listing hides
+   * a host's disappearance from the feeds behind our own decision to
+   * keep knocking.
+   */
+  it("does not report a revisit probe as a listing", async () => {
+    await chain([
+      round("2026-W01", [
+        { ...host("gone.example", "ready"), source: "revisit" },
+      ]),
+    ]);
+    const history = await subjectHistory(testEnv, "gone.example", BASE);
+    const row = history.timeline[0]!;
+
+    expect(row.probed).toBe(true);
+    expect(row.verdict).toBe("ready");
+    // We knocked and it answered — but nobody listed it that round.
+    expect(row.listed).toBe(false);
+    expect(row.source).toBe("revisit");
+  });
+
+  it("still reports a discovery probe as a listing", async () => {
+    await chain([round("2026-W01", [host("named.example", "ready")])]);
+    const history = await subjectHistory(testEnv, "named.example", BASE);
+    expect(history.timeline[0]!.listed).toBe(true);
+  });
+
   it("prefers the round's own walked set as the listing source when it has one", async () => {
     await takeCensus(
       testEnv,

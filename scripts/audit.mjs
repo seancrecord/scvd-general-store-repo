@@ -143,6 +143,71 @@ if (KV_READ.test("const row = rows.get(name);")) {
   process.exit(1);
 }
 
+/**
+ * OBJECT STORE, NOT KEY STORE — and the binding list is DERIVED.
+ *
+ * Rules 3 and 4 are about KV's cost model: a read or a write per key,
+ * where the key count grows with the store. R2 is a different service
+ * with a different shape, and on 2026-08-24 the cold export tripped
+ * rule 4 on `await env.CORPUS_R2.put(...)` inside `for (const subject
+ * of COLD_SUBJECTS)`. That loop is not a keyspace walk. It writes one
+ * bundle per SUBJECT, from a hand-authored constant, and R2 has no
+ * bulk put to move it to — so the only available fix would have been
+ * raising the ratchet for a finding with nothing behind it. This
+ * file's own comment already names that outcome: a false positive
+ * spends the budget, teaches the reader to discount the tool, and
+ * leaves changing a number as the only move.
+ *
+ * WHAT THIS GIVES UP, said plainly rather than buried: an R2 put
+ * inside a loop that DOES walk a keyspace would now go unflagged.
+ * Nothing in the tree does that today (the corpus writes one object
+ * per record, outside any loop), and the honest way to earn the
+ * coverage back is a rule that reads the loop's iterable, not a
+ * pattern that treats two services as one.
+ *
+ * The names are harvested from the Env type rather than typed here,
+ * because a hand-listed binding goes stale the first time one is
+ * renamed and stales SILENTLY — the exemption would simply stop
+ * applying, or worse, keep applying to a name that is now KV. If the
+ * harvest ever comes back empty the run dies below, on the same
+ * principle as the canary: a rule that quietly stops doing its job
+ * reads exactly like a codebase with nothing to find.
+ */
+const BUCKET_BINDINGS = [
+  ...readFileSync(join(SRC, "types.ts"), "utf8").matchAll(
+    /(\w+)\??:\s*R2Bucket\b/g,
+  ),
+].map((match) => match[1]);
+
+if (BUCKET_BINDINGS.length === 0) {
+  console.error(
+    "\nAudit self-check FAILED: no R2Bucket bindings found in src/types.ts.\nThe object-store exemption is derived from that type. An empty harvest means the shape changed and the exemption is now silently off (or about to be wrong). Fix the harvest before trusting any count from this run.",
+  );
+  process.exit(1);
+}
+
+/** True when the awaited call's receiver is an R2 bucket binding. */
+function isBucketCall(line) {
+  return BUCKET_BINDINGS.some((name) =>
+    new RegExp(`await [\\w.]*\\b${name}\\.(get|put)[<(]`).test(line),
+  );
+}
+
+// The exemption must be narrow in BOTH directions, so it is checked
+// both ways: the bucket write is excused, the KV write beside it is not.
+if (!isBucketCall("await env.CORPUS_R2.put(key, body);")) {
+  console.error(
+    "\nAudit self-check FAILED: the object-store exemption no longer recognises an R2 put, so rules 3 and 4 are back to flagging bucket writes as keyspace walks.",
+  );
+  process.exit(1);
+}
+if (isBucketCall("await env.ORDERS.put(name, JSON.stringify(record));")) {
+  console.error(
+    "\nAudit self-check FAILED: the object-store exemption now swallows a KV write. That is the budget going quiet, which is the one failure this script exists to prevent.",
+  );
+  process.exit(1);
+}
+
 for (const path of sourceFiles(SRC)) {
   const text = readFileSync(path, "utf8");
   const lines = text.split("\n");
@@ -186,7 +251,11 @@ for (const path of sourceFiles(SRC)) {
     //    deliberate, and the point is to keep the count from growing
     //    quietly.
     if (!isHelper && /^\s*for \(/.test(line)) {
-      if (deeperLinesAfter(lines, i).some((l) => KV_READ.test(l))) {
+      if (
+        deeperLinesAfter(lines, i).some(
+          (l) => KV_READ.test(l) && !isBucketCall(l),
+        )
+      ) {
         flag("warn", path, n, "per-key-read", "A KV read per key inside a loop. Prefer a bulk read unless the loop must decide per record.");
       }
     }
@@ -194,7 +263,11 @@ for (const path of sourceFiles(SRC)) {
     // 4. A write per key inside a loop, which spends the write budget
     //    in a way that is invisible until a bill or a cap says so.
     if (!isHelper && /^\s*for \(/.test(line)) {
-      if (deeperLinesAfter(lines, i).some((l) => KV_WRITE.test(l))) {
+      if (
+        deeperLinesAfter(lines, i).some(
+          (l) => KV_WRITE.test(l) && !isBucketCall(l),
+        )
+      ) {
         flag("warn", path, n, "per-key-write", "A KV write per key inside a loop.");
       }
     }
@@ -256,6 +329,16 @@ for (const path of sourceFiles(SRC)) {
  * RATCHETED 8 -> 7 with that consolidation, and kv-bulk.ts joined
  * kv-list.ts as an exempt primitive: flagging the bulk helper's own
  * chunk loop is flagging the cure as the disease.
+ *
+ * HELD AT 7 on 2026-08-24 under the cold export, which arrived three
+ * over. Two were real and went to a bulk read — an export walks the
+ * whole keyspace by definition, so it is the worst place in the tree
+ * to pay a round trip per key. The third was the object-store phantom
+ * described beside BUCKET_BINDINGS, and the tell was that raising the
+ * number was the ONLY available fix: a loop over a hand-authored
+ * constant, writing to a service with no bulk put, cannot be improved.
+ * A budget that goes up whenever it is inconvenient is not a ratchet,
+ * so the instrument was calibrated and the number left alone.
  */
 const WARN_BUDGET = 7;
 

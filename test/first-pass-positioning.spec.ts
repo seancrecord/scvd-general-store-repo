@@ -38,7 +38,7 @@ async function text(path: string, html = false): Promise<string> {
 describe("llms.txt leads with the infrastructure", () => {
   it("states the position, the entity and both differentiators before the whimsy", async () => {
     const guide = await text("/llms.txt");
-    const position = guide.indexOf("trust layer of the x402 economy");
+    const position = guide.indexOf("evidence observatory");
     const whimsy = guide.indexOf("Well well. Come in then.");
     expect(position, "the position is missing entirely").toBeGreaterThan(-1);
     expect(whimsy, "the keeper's greeting is gone — it must stay").toBeGreaterThan(-1);
