@@ -100,7 +100,11 @@ describe("submitting", () => {
     const calls: string[] = [];
     const flaky = (async (url: string) => {
       calls.push(url);
-      return url.startsWith("https://first")
+      // Hostname, not prefix: "https://first" also matches
+      // https://firstevil.com. Same shape CodeQL flagged in
+      // ward-round-rail.spec.ts; fixed here too rather than waiting
+      // for it to appear in a diff somebody happens to be scanning.
+      return new URL(url).hostname === "first.test"
         ? new Response(null, { status: 503 })
         : new Response(new Uint8Array([7, 7]), { status: 200 });
     }) as unknown as typeof fetch;

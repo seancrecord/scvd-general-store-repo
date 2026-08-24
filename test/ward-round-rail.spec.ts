@@ -62,8 +62,30 @@ function stubWorld(payTo: string, ledger: Record<string, string[]> | null): void
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: unknown, init?: { body?: string }) => {
+      /*
+       * HOSTNAME, NOT PREFIX. `startsWith("https://door.example")`
+       * also matches https://door.example.evil.com — CodeQL flagged
+       * it high, correctly, and it is the second time this exact
+       * shape has appeared in this repo (the first was
+       * startsWith("https://scvd.store") in the developer-portal
+       * spec, same morning).
+       *
+       * It is "only a test", and that is the reason to fix it rather
+       * than suppress it: a fake seller that answers for hosts it was
+       * never meant to answer for can make a test pass for a request
+       * the code should never have sent. A stub with a loose matcher
+       * is a stub that hides routing bugs.
+       */
       const target = String(url);
-      if (target.startsWith("https://door.example")) {
+      let isDoor = false;
+      try {
+        const parsed = new URL(target);
+        isDoor =
+          parsed.protocol === "https:" && parsed.hostname === "door.example";
+      } catch {
+        isDoor = false;
+      }
+      if (isDoor) {
         return new Response(null, {
           status: 402,
           headers: { "PAYMENT-REQUIRED": challenge(payTo) },
