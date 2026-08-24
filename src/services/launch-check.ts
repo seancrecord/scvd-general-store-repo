@@ -100,6 +100,16 @@ export interface LaunchCheckObservation {
    * product away, which is the defect that costs an operator money and
    * the one they are least likely to find alone.
    *
+   * CORRECTION APPENDED 2026-08-24, ORIGINAL LEFT STANDING. The tester
+   * wrote back: "37/37 clean" was true when we read it and is now
+   * stale. Its board carries ONE hostile-input failure in 88 endpoints
+   * — palmyr.ai settled a wrong-scheme envelope,
+   * https://cairnwake.com/r/1ccbdc9f.html. The other ten checks still
+   * have zero failures. The number moved; the ruling did not. One
+   * check in eleven, failing once in eighty-eight doors, is still a
+   * battery whose expected yield rounds to nothing next to a replay
+   * defect found in three doors of thirty-one.
+   *
    * TRUE = the door served us AGAIN on a spent authorization, which is
    * the defect. FALSE = it refused, correctly. NULL = nothing settled,
    * so there was nothing to replay and we say so rather than scoring a
