@@ -177,7 +177,7 @@ export const WHAT_COPY = {
    * human reads and the answer a machine reads cannot drift apart.
    */
   directAnswer:
-    "scvd.store is the trust layer of the x402 economy: a store that sells independent signed observation of what other endpoints, artifacts and payments actually did. Every verdict is ed25519-signed, dated, and anyone can verify one offline without asking us. Also a general store for agents, kept by a human, paid in USDC over x402 on Base, Polygon or Solana.",
+    "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design. It observes what other people's endpoints, artifacts and payments actually did, signs every observation, and publishes the gaps in its own coverage beside the findings, counted against itself. Nothing here is a score, a rating, or a ranking: every verdict is one dated observation that expires and is re-taken, ed25519-signed, verifiable offline by anyone without asking us. It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 v2 on Base, Polygon or Solana.",
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:
