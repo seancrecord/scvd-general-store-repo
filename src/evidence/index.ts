@@ -9,6 +9,7 @@ export {
   KNOWN_CHAINS,
   PROTOCOL_FAMILIES,
   RAIL_ASSETS,
+  SANDBOX_CHAIN,
   isKnownChain,
   isValidChain,
   isValidRail,
@@ -17,13 +18,30 @@ export {
 } from "@/evidence/subject";
 export type { EvidenceSubject, ProtocolFamily } from "@/evidence/subject";
 export {
+  COVERAGE_DEPTHS,
+  COVERAGE_REGISTRATIONS,
+  coverageClassIds,
+  coverageMatrix,
+  envelopeCoverage,
+  isCoverageDepth,
+  publicCoverageDocument,
+  registrationFor,
+  rowFor,
+} from "@/evidence/coverage";
+export type {
+  ClassCoverageRegistration,
+  CoverageMatrixRow,
+} from "@/evidence/coverage";
+export {
   EVIDENCE_SCHEMA_V1,
   REFUSED_DERIVED_FIELDS,
 } from "@/evidence/types";
 export type {
   CheckState,
+  CoverageDepth,
   EvidenceAuthorization,
   EvidenceCapture,
+  EvidenceCoverage,
   EvidenceDerived,
   EvidenceEnvelope,
   EvidenceEnvelopePayload,

@@ -88,6 +88,21 @@ export interface EvidenceLimitations {
   not_checked: string[];
 }
 
+/**
+ * How deep this class goes, per chain (M1). Ordered: a walk implies
+ * we can also read a challenge on that rail; the matrix still says
+ * the deepest thing THIS class does, not the implication stack.
+ */
+export type CoverageDepth = "none" | "challenge" | "read" | "till" | "walk";
+
+export interface EvidenceCoverage {
+  class_id: string;
+  /** Depth on the subject chain for THIS observation. */
+  depth: CoverageDepth;
+  /** This class's full row at signing time — every known chain stated. */
+  class_row: Record<string, CoverageDepth>;
+}
+
 export interface EvidenceKeyWindow {
   key_id: string;
   /** Service window cited in-band so layer 3 is checkable offline
@@ -122,6 +137,8 @@ export interface EvidenceEnvelopePayload {
   clock: string;
   derived: EvidenceDerived;
   limitations: EvidenceLimitations;
+  /** Class × chain × depth, in-band so "we cover Solana" is per class. */
+  coverage: EvidenceCoverage;
   key: EvidenceKeyWindow;
   authorization: EvidenceAuthorization;
 }

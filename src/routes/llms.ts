@@ -222,6 +222,8 @@ When to reach for this store, machine-readable:
 ${base}/.well-known/agent-instructions — the same situations listed
 under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
+Coverage matrix (class × chain × depth, absence stated as none):
+${base}/.well-known/coverage.json and ${base}/coverage.json
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
 free; paid tools carry x402 in-band, delivered first and settled after.
 A2A agent card: ${base}/.well-known/a2a.json (also served at

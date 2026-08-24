@@ -1487,20 +1487,24 @@ seam and currently has one family in it. The corpus does not carry
 protocol/chain as first-class subject dimensions — a host is a host.
 
 ### M-findings
-- **M1 [ ] — the coverage matrix must be STATED, per class per
-  chain.** Today "we observe three chains" is true only of one
-  artifact class; B12's law (absence stated, never implied) applies
-  to chain coverage exactly as to checks. One derived table
-  (class × chain × depth), served on the observatory surfaces and
-  inside envelopes as coverage — also the honest answer to any
-  partner asking "do you cover Solana?" (attestation yes, purchase
-  evidence no).
-- **M2 [ ] — subject dimensions in the corpus schema.** The
-  G-schema/J-envelope subject becomes (endpoint, protocol,
-  protocol_version, chain, rail) so a new protocol family lands as
-  new rows, not new schema. The battery manifest's applicability
-  field is the same dimension on the check side — one registry of
-  protocol identifiers serves both (B16's discipline).
+- **M1 [x] — the coverage matrix must be STATED, per class per
+  chain.** CLOSED 2026-08-24 (phase1/1.4-coverage).
+  `src/evidence/coverage.ts` derives class × chain × depth from the
+  chain ids payments.ts / base-rpc / solana-rpc already export.
+  Every KNOWN_CHAIN is present on every row (`none` is a value).
+  Envelopes carry `coverage` (class_id, this-observation depth,
+  class_row snapshot). Served at `/coverage.json` and
+  `/.well-known/coverage.json`. Sandbox Sepolia is named and stays
+  `none` on every production class. Partner question "do you cover
+  Solana?" is now per class: attestation/statement/till yes (read or
+  till); launch_check no.
+- **M2 [~] — subject dimensions in the corpus schema.** Envelope
+  subject tuple shipped in 1.1. Discovery-surface families
+  (x402_bazaar, mcp_card, a2a_agent_card, llms_txt, openapi, …)
+  landed as PROTOCOL_FAMILIES rows 2026-08-24 so a coherence
+  observation can name the surface — batteries not built yet, the
+  row is the id not a claim we have checks. Corpus schema still
+  open (G-schema).
 - **M3 [ ] — the trajectory surface.** "Show the spike as it
   happens" is a derived time-series over the corpus chain (hosts,
   offers seen, settlements observed, failure classes — per week,

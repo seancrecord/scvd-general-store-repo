@@ -86,6 +86,7 @@ import {
   tradingPostRoutes,
   verifyRoutes,
   wellKnownRoutes,
+  coverageRoutes,
   botAuthRoutes,
   botAuthLandingRoutes,
   whatRoutes,
@@ -259,6 +260,7 @@ app.route("/", executionContractRoutes);
 app.route("/", catalogRoutes);
 app.route("/", openapiRoutes);
 app.route("/", wellKnownRoutes);
+app.route("/", coverageRoutes);
 app.route("/", botAuthRoutes);
 app.route("/", botAuthLandingRoutes);
 app.route("/", buyRoutes);

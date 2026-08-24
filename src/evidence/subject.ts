@@ -35,6 +35,24 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   { id: "x402", versions: ["v1", "v2"] },
   /** The signed offer/receipt extension battery (offer-receipt rev 1). */
   { id: "x402-offer-receipt", versions: ["rev1"] },
+  /**
+   * Discovery surfaces (joins thesis, 2026-08-24). The row is the
+   * subject id so a coherence observation can name the surface it
+   * looked at. The battery that diffs them is not built yet — the
+   * row arriving first is M2's rule, not a claim we have checks.
+   */
+  { id: "x402_bazaar", versions: ["rev1"] },
+  { id: "x402_list", versions: ["rev1"] },
+  { id: "mcp_card", versions: ["rev1"] },
+  { id: "mcp_registry_listing", versions: ["rev1"] },
+  { id: "a2a_agent_card", versions: ["0.3.0"] },
+  { id: "llms_txt", versions: ["rev1"] },
+  { id: "openapi", versions: ["3.1"] },
+  { id: "menu_json", versions: ["rev1"] },
+  { id: "agent_services_json", versions: ["rev1"] },
+  { id: "owned_passport", versions: ["rev1"] },
+  { id: "receipt", versions: ["rev1"] },
+  { id: "badge", versions: ["rev1"] },
 ] as const;
 
 /**
@@ -47,9 +65,14 @@ const CAIP2_GRAMMAR = /^[-a-z0-9]{3,8}:[-_a-zA-Z0-9]{1,32}$/;
 /** Chains the store's own rails and readers currently touch (M1's
  * coverage matrix documents DEPTH per class; this list is only the
  * id spelling, so coverage claims and subjects cannot drift apart). */
+/** Base Sepolia — named so coverage can exclude sandbox without
+ * retyping the id. Listed in KNOWN_CHAINS because a subject on it
+ * is valid; no production class claims depth there. */
+export const SANDBOX_CHAIN = "eip155:84532" as const;
+
 export const KNOWN_CHAINS: readonly string[] = [
   "eip155:8453", // Base mainnet
-  "eip155:84532", // Base Sepolia (sandbox walks only)
+  SANDBOX_CHAIN, // Base Sepolia (sandbox walks only)
   "eip155:137", // Polygon mainnet
   "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", // Solana mainnet (CAIP-2)
 ] as const;
