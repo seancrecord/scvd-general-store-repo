@@ -353,6 +353,68 @@ checkable stale wallpaper — hand-typed "live" facts are worse than
 none. Overlaps corpus/metrics/well-known lanes; assign as a named
 lane in the work split, not ad-hoc.
 
+## 9. Keeper notes 2026-08-24 — coverage check
+
+Five market theses from the keeper, mapped to where each is covered
+and what was NEW. Four were already load-bearing in the plans; one
+adds a dimension nobody had written down.
+
+1. **Freshness markets** — operators pay for recurring
+   re-observation, not a permanent badge; the badge decays, the
+   watch renews it. COVERED and older than this note: freshness
+   states ("sell the refresh, never the grade" — KEEPER_LIST,
+   outside-reads item 2), the freshness-degrading passport chip
+   (shipped), conformance_watch. The one-line commercial loop worth
+   keeping verbatim: **the watch is the badge's power supply.**
+
+2. **Cross-protocol discovery aggregation (CRITICAL, and partly
+   NEW).** x402, MCP, A2A, AP2/ACP/MPP-adjacent metadata get merged;
+   agent-tools.cloud is an early aggregation signal. Covered as
+   positioning (spec §2a dimensions; MPP battery families at
+   horizon). NOT previously written down: **discovery-surface
+   coherence as an observation class.** One service exists across
+   several discovery layers at once — its 402 catalog, its MCP
+   server card, its A2A card, its llms.txt, its directory listings —
+   and nobody observes whether those surfaces AGREE. An MCP card
+   claiming tools the till doesn't sell, an A2A card naming a dead
+   endpoint, a Bazaar entry whose price drifted from the live 402:
+   each is a citable cross-surface inconsistency, and the audit that
+   finds them is the claim-check product (§6) pointed at machine
+   surfaces instead of listing prose. Fits the architecture without
+   amendment: discovery layers land as new protocol-registry rows
+   with their own battery families (M2's no-migration rule doing its
+   job). We are also our own first subject — the self-row should
+   link every discovery surface we serve and assert their coherence
+   in CI.
+
+3. **Verification as pre-transaction middleware.** COVERED: roadmap
+   0.17 (the $0.001 quick look), Area J's gate, the guard-SDK
+   distribution item (§4/§6), TTL semantics for high-volume flows
+   (the amortization note from the traffic-plan review).
+
+4. **Signed negative evidence becomes citable.** COVERED in parts
+   (battery failure states, launch-check defects, 0.14's unfunded
+   payTo, the payTo-drift/incidents expand note) — the envelope
+   makes it structural: a failure is an envelope whose checks vector
+   says `fail` with raw evidence attached, as signable and anchorable
+   as a pass. The named-product version already queued:
+   KEEPER_LIST's "obstacle course + signed failure diagnosis" (the
+   paid, signed "why an agent cannot buy from this door" report).
+   The observation index's "none found <date>" cells are the same
+   class, published.
+
+5. **Portable endpoint passports as THE product object.** COVERED
+   and keeper-ruled: the Endpoint Passport is item 1 of the
+   outside-reads build list (P2 in his own ROI ordering) — one
+   URL/JSON object carrying status, observed routes, coverage,
+   receipts, corrections, expiry, verification links. Everything in
+   this document rolls INTO it: the self-row (§8) is our own
+   passport served live; evidence.json is the passport's
+   interchange format; the index is passports side by side; chips
+   are its embeddable face; the watch renews it. Note 2's merge
+   layer gives the passport its cross-protocol spine — the passport
+   is where the merged discovery surfaces become one object.
+
 ---
 
 *Filed 2026-08-24 from three parallel research passes over the top ~30
