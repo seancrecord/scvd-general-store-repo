@@ -17,10 +17,19 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     /*
-     * TS 7 removed baseUrl (TS5102) and rejects non-relative path
-     * targets (TS5090), so the alias is written relative to this file.
-     * Same mapping, one syntax newer — and it is the only tsconfig
-     * change the major needed.
+     * NO baseUrl, AND THE ALIAS IS RELATIVE ON PURPOSE. TypeScript 7
+     * removes baseUrl (TS5102) and rejects non-relative path targets
+     * (TS5090). 5.9 accepts this form too, so it is written the
+     * forward-compatible way now and the major becomes a one-line
+     * change in package.json rather than a config migration.
+     *
+     * TS 7 ITSELF IS NOT INSTALLED, and the reason is upstream rather
+     * than ours (2026-08-24). The code compiles and the whole suite
+     * passes under 7.0.2 — but @solana/kit@5.5.1 declares
+     * peerOptional typescript@"^5.0.0", which 7.x does not satisfy,
+     * so `npm ci` refuses to resolve the tree even though `npm
+     * install` will. When that peer range widens, bump and delete
+     * this paragraph.
      */
     "paths": {
       "@/*": ["./src/*"]
