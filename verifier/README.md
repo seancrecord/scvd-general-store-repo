@@ -133,6 +133,48 @@ An issuer without an anchor log returns `available: false`. That is
 information, not a failure — most do not have one, and that is the
 honest state of the ecosystem today.
 
+## The service window: was the key authorized *at the artifact's date?*
+
+Signature validity asks *"did this key sign this?"*. Key resolution
+asks *"is this key genuinely the issuer's?"*. Neither asks the third
+question: **was the key authorized at the time the artifact claims?**
+A stolen *retired* key signing an artifact dated after its own
+retirement passes both — the signature is real, the key genuinely was
+the issuer's — and the artifact is a forgery all the same, because at
+its claimed date that key had no authority to sign anything.
+
+Issuers that publish key history with service dates (scvd.store
+serves the shape at `/.well-known/scvd-signing-key`; nothing about it
+is specific to that issuer) make the check possible:
+
+```js
+import { checkKeyServiceWindow } from "x402-verify";
+
+const result = checkKeyServiceWindow(keyHistory, publicKeyHex, artifact.date);
+// { status: "after_retirement",
+//   window: { in_service_from: "2026-07-22", retired_on: "2026-07-31" },
+//   detail: "the artifact is dated 2026-08-15, after this key retired…" }
+```
+
+`status` is one of `in_service`, `before_service` (a key cannot sign
+before it exists — a backdated artifact), `after_retirement` (the
+stolen-retired-key shape), `unknown_key` (no published window exists
+to check), or `undated` (the artifact carries no parseable date —
+reported, never guessed at).
+
+The window is **inclusive at both ends**, deliberately: service dates
+are calendar dates, and a handover is two moves that cannot be
+simultaneous — the announcement deploys while the old key still
+signs, the secret swaps after. An artifact dated on the retirement
+day itself is the expected shape of a key's last honest signatures,
+not a finding.
+
+One honest limit, the same one the anchor section carries: the window
+comes from the issuer's **own published registry**, which the issuer
+can edit. Where the issuer anchors key history, `checkAnchoredKeyHistory`
+bounds how far back that registry could have been quietly rewritten.
+The two checks are halves of the same question.
+
 ## Runtime
 
 Zero dependencies. Ed25519 verification uses WebCrypto (Node 18.4+,

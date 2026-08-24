@@ -127,7 +127,7 @@ const CURRENT_MEANS =
   "Signed with the key this store publishes today. Check it against /.well-known/scvd-signing-key.";
 
 const RETIRED_MEANS =
-  "Signed with a key this store used to publish and has since retired. That is expected on an artifact issued before the handover, and it does not weaken the signature: the key remains published in key_history precisely so artifacts signed under it stay attributable to this store. The handover itself is signed by the retiring key and verifiable at its own URL.";
+  "Signed with a key this store used to publish and has since retired. That is expected on an artifact issued before the handover — and whether THIS artifact was is not left to reassurance: its own date is checked against the key's published service window and the verdict reported beside this field as service_window. Inside the window, retirement does not weaken the signature: the key remains published in key_history precisely so artifacts signed under it stay attributable to this store, and the handover itself is signed by the retiring key and verifiable at its own URL. Dated AFTER the window, the artifact is the exact shape a stolen retired key produces, and service_window says so in those words.";
 
 /**
  * THE HONEST THIRD ANSWER, and the reason this function exists at all.
