@@ -166,3 +166,84 @@ describe("published where an instrument can actually fetch it", () => {
     expect(porchSurface("/defects.json", "GET")).toBe("defects.json");
   });
 });
+
+/**
+ * THE SECOND REGISTER, AND WHY IT IS SECOND.
+ *
+ * 2026-08-24. Both instruments publishing dated findings in this
+ * market had been making listing-backed claims for weeks with no name
+ * for what made them weaker than walk-backed ones. This store found
+ * that the hard way — /corpus/host pages reporting rounds we never
+ * probed with the friendliest available reason — and fixed the
+ * mechanism the same morning. The missing WORD took an outside
+ * instrument to supply.
+ *
+ * The tests below hold the two properties that make a shared
+ * vocabulary worth using: the registers stay SEPARATE, and no
+ * definition can be quietly changed once other people build on it.
+ */
+describe("evidence labels are not defect classes", () => {
+  it("keeps the two registers disjoint", async () => {
+    const { DEFECT_CLASSES, EVIDENCE_LABELS } = await import(
+      "@/store/defect-vocabulary"
+    );
+    const defects = new Set(DEFECT_CLASSES.map((entry) => entry.id));
+    for (const label of EVIDENCE_LABELS) {
+      // An id in both registers means a reader cannot tell whether a
+      // finding is about the door or about our own coverage of it.
+      expect(defects.has(label.id)).toBe(false);
+    }
+  });
+
+  it("makes listed-not-walked say nothing about the service", async () => {
+    /*
+     * The misreading the label exists to block. "We did not look" read
+     * as "we looked and it was suspect" would turn our own coverage
+     * gaps into marks against operators — which is rule 43 inverted.
+     */
+    const { evidenceLabel } = await import("@/store/defect-vocabulary");
+    const entry = evidenceLabel("listed-not-walked")!;
+    expect(entry).toBeDefined();
+    expect(entry.does_not_assert).toContain("never about the operator");
+    expect(entry.falsified_by).toBeTruthy();
+  });
+
+  it("names an outside author rather than absorbing the definition", async () => {
+    // A registrar that quietly becomes the author is a registrar
+    // nobody else can afford to send definitions to.
+    const { evidenceLabel } = await import("@/store/defect-vocabulary");
+    const entry = evidenceLabel("listed-not-walked")!;
+    expect(entry.authored_by).toContain("Cairn");
+    expect(entry.registered).toBe("2026-08-24");
+  });
+});
+
+describe("the vocabulary is governed, not merely open", () => {
+  it("carries a changelog entry for the current version", async () => {
+    const { DEFECT_VOCABULARY_VERSION, VOCABULARY_CHANGELOG } = await import(
+      "@/store/defect-vocabulary"
+    );
+    const current = VOCABULARY_CHANGELOG.at(-1)!;
+    expect(current.version).toBe(DEFECT_VOCABULARY_VERSION);
+    // Who asked is part of the record: a definition that moved at an
+    // outside party's request reads differently from one we changed.
+    expect(current.at_the_instigation_of).toBeTruthy();
+    expect(current.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("never drops an older version from the changelog", async () => {
+    const { VOCABULARY_CHANGELOG } = await import("@/store/defect-vocabulary");
+    const versions = VOCABULARY_CHANGELOG.map((entry) => entry.version);
+    expect(versions).toContain("1");
+    expect(new Set(versions).size).toBe(versions.length);
+  });
+
+  it("publishes both registers and the changelog at /defects.json", async () => {
+    const response = await SELF.fetch("https://scvd.store/defects.json");
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(Array.isArray(body["classes"])).toBe(true);
+    expect(Array.isArray(body["evidence_labels"])).toBe(true);
+    expect(Array.isArray(body["changelog"])).toBe(true);
+    expect(String(body["governance"])).toContain("never edited in place");
+  });
+});

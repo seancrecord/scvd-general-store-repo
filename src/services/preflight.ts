@@ -513,15 +513,26 @@ export function runChecks(
         : {
             name: "bazaar-extension",
             ok: false,
+            /*
+             * OBSERVATION AND INFERENCE, SPLIT — 2026-08-24, after an
+             * independent tester captured this same 402 by hand,
+             * confirmed the missing block, and declined to co-sign the
+             * consequence: they do not run an indexer, and neither do
+             * we. The old wording asserted what a directory WOULD do
+             * as though we had watched one do it. Our own rule is that
+             * every claim ships with a path to check it or an explicit
+             * label saying it rests on inference; this check was
+             * breaking that rule in the store's own voice.
+             */
             detail:
-              "extensions.bazaar is declared but carries no parseable info block — a discovery indexer will drop or mangle this listing.",
+              "extensions.bazaar is declared but carries no parseable info block — no name, no description, nothing an ingestion-based directory could render as a listing. THAT MISSING BLOCK IS WHAT WE OBSERVED. What follows from it — that an indexer drops or mangles the entry — is INFERENCE and not measurement: this store runs no directory ingester and has not tested one. Falsified by any directory that ingests this endpoint and renders a complete listing without an info block.",
           },
     );
   } else {
     advisories.push({
       name: "no-bazaar-extension",
       detail:
-        "no extensions.bazaar block. Not a defect — but ingestion-based directories discover services from this block, so without one this endpoint is only findable by buyers who already have the URL.",
+        "no extensions.bazaar block. Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present.",
     });
   }
 
