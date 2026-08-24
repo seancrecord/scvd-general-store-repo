@@ -699,6 +699,19 @@ never can. A door clean to us and defective to a paying tester is not
 a contradiction, it is two instruments measuring different things,
 and the \`detectable\` field is how you tell which happened.
 
+## The notice desk, for an operator who found us in their log
+
+${base}/notice explains the two calling cards this store sends —
+\`scvd-general-store\` on the weekly unpaid census, \`scvd-walkabout\` on
+a paid walk somebody bought — and points an operator at the record of
+their own endpoint at \`/notice/{their-hostname}\`. Free, no account,
+nothing to buy.
+
+Per-host notices are deliberately unlisted: doors that failed a round
+are counted in the public aggregates and named nowhere, so a page that
+names one is reachable by its operator and linked from no index of
+ours. Unlisted is not secret, and each page says so about itself.
+
 Where another published instrument names the same observable property,
 the mapping is stated with the path to check it and what would show it
 wrong. Those mappings are our reading of somebody else's published

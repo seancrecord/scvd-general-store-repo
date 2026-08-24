@@ -49,6 +49,7 @@ import {
   freshSetRoutes,
   okfRoutes,
   defectRoutes,
+  noticeRoutes,
   trustRoutes,
   passportRoutes,
   profilesRoutes,
@@ -209,6 +210,7 @@ app.route("/", registryRoutes);
 app.route("/", freshSetRoutes);
 app.route("/", okfRoutes);
 app.route("/", defectRoutes);
+app.route("/", noticeRoutes);
 app.route("/", trustRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);
