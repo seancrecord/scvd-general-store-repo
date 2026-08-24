@@ -10,6 +10,13 @@ third state). Nothing here is a ruling; RULE-class items are flagged
 for the keeper (⚑).
 
 Status: [ ] open · [x] done · [~] partial · ⚑ keeper ruling.
+
+A `[x]` carries the DATE and the COMMIT that closed it. A completion
+nobody can check is the same shape as every claim this ledger exists
+to catch: true-sounding, unverifiable, and eventually wrong. Done is
+recorded HERE and nowhere else — the roadmap points at these entries
+rather than keeping a second copy, because a second copy drifts
+(AT_SCALE rule 1).
 A fix that closes two findings is built once and cross-referenced.
 
 **Reviewed against:** main @ 230b5ac (2026-08-21). P1 ran against the
@@ -37,14 +44,14 @@ The highest-trust-cost area: where displayed language can outrun what
 was actually measured. House rule 10 (the auto-refund incident) is the
 governing precedent — a true-sounding line nobody re-checked.
 
-- **A1 [ ] IMMEDIATE — `/criteria` says "no badges today," which is false.** (P1)
+- **A1 [x] DONE 2026-08-24 — `/criteria` says "no badges today," which is false.** (P1)
   `criteria.ts:110` and `:175`: `badges_today: "None. Nothing this
   store serves carries a badge…"` while audit badges, passport chips,
   and patron badges all ship live. Same class as the auto-refund
   incident. Fix: derive the statement from what badge routes actually
   serve; behind a failing `claim-chain` test.
 
-- **A2 [ ] IMMEDIATE — registry overstates offer verification.** (P1)
+- **A2 [x] DONE 2026-08-24 — registry overstates offer verification.** (P1)
   `registry.ts:53` says offers "a third party can cryptographically
   verify," but the census only *parses* the JWS — signatures are not
   verified (`preflight.ts:504` says so itself). Reword to what was
@@ -351,7 +358,7 @@ add probes_observer_degraded to summary.
   immutability is the product. Exceptions today: x402 offers (300s
   validUntil) and the opt-in liveness nonce.
 
-- **D3 [ ] IMMEDIATE — stale delivery-audit header comment.** (P1)
+- **D3 [x] DONE 2026-08-24 — stale delivery-audit header comment.** (P1)
   `delivery-audit.ts:11-25` still describes pre-amendment
   settle-before-handler ordering; runtime is deliver-first. Rule 45
   doc-drift.
@@ -800,7 +807,7 @@ else. **The registry ladder and B's evidence taxonomy are ONE model**
 (OBSERVED/PROBED), evidence levels (L0–L6). Build it once.
 
 ### H-findings (accidental state conversions)
-- **H1 [ ] — copy converts CONFORMANT into "working."** (P5)
+- **H1 [x] DONE 2026-08-24 — copy converts CONFORMANT into "working."** (P5)
   `/registry` prose: "N answered as working x402 endpoints"
   (`registry.ts:63`) and the Dataset markup's "doors answering as
   working x402 endpoints" — `ready` is L3a shape-conformance from one
@@ -808,7 +815,7 @@ else. **The registry ladder and B's evidence taxonomy are ONE model**
   family as A2/A3; fix with the same conditions-beside-verdict rule
   (say "answered a well-formed challenge"). Cheap, live, public.
 
-- **H2 [ ] — subject history marks revisit probes as listed.** (P5)
+- **H2 [x] DONE 2026-08-24 — subject history marks revisit probes as listed.** (P5)
   `subject-history.ts` sets `listed: true` on every probed row, but a
   `source:"revisit"` row means BY DEFINITION no feed named the host
   that round (the door bank's own doc says so). A host delisted

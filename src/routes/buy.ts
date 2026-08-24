@@ -39,6 +39,28 @@ const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   c.res.headers.set("Vary", "PAYMENT-SIGNATURE");
 };
 
+/**
+ * Standard-dialect retirement headers. `@` date form is RFC 9745;
+ * Sunset is an HTTP-date per RFC 8594. Both name the same moment the
+ * body already names — one fact, three renderings, no second source
+ * of truth.
+ */
+function retirementHeaders(
+  base: string,
+  retired: { retired_on: string; folded_into?: string },
+): Record<string, string> {
+  const at = new Date(`${retired.retired_on}T00:00:00Z`);
+  const headers: Record<string, string> = {
+    Deprecation: `@${Math.floor(at.getTime() / 1000)}`,
+    Sunset: at.toUTCString(),
+  };
+  if (retired.folded_into) {
+    headers["Link"] =
+      `<${base}/api/buy/${retired.folded_into}>; rel="successor-version"`;
+  }
+  return headers;
+}
+
 /** Turns away unknown items (logged as market research) and sold-out shelves. */
 const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const itemId = c.req.path.replace(/^\/api\/buy\//, "");
@@ -63,6 +85,26 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
             "Certificates issued under this item verify forever; retirement changes the shelf, not the record.",
         },
         410,
+        /*
+         * THE TOMBSTONE IN A DIALECT PROBERS ALREADY SPEAK (2026-08-24).
+         *
+         * The JSON body above is good and nobody has to read it. A
+         * directory that probed this door before we closed it sees
+         * only a status code, and "not 402" reads as DEGRADED unless
+         * something tells it otherwise — which is how a listing we
+         * submitted on 2026-08-18 came to report this store as broken
+         * over an item deliberately retired on 2026-08-20.
+         *
+         * So the retirement is restated in standard headers rather
+         * than only in our own shape: RFC 9745 Deprecation, RFC 8594
+         * Sunset, and a successor Link. A prober honouring any of the
+         * three can delist instead of alarming, without knowing
+         * anything about this store.
+         *
+         * It does not fix the stale listing — only re-submitting does
+         * that. It stops the NEXT directory from having to be told.
+         */
+        retirementHeaders(c.env.STORE_BASE_URL, retired),
       );
     }
     await recordFailedItem(c.env, itemId);

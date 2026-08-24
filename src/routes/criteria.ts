@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { BADGE_SURFACES, badgesTodayLine } from "@/store/badges";
 import { ARTIFACT_CLASSES, TRUST_MODELS } from "@/store/attestation-spec";
 import {
   BADGE_IS,
@@ -107,7 +108,24 @@ criteriaRoutes.get("/criteria", (c) => {
       does_not_prove: entry.does_not_prove,
       verify_url: `${base}${entry.verify_url}`,
     })),
-    badges_today: "None. Nothing this store serves carries a badge, and this page existing changes that only by removing the gate rule 43 put in front of it.",
+    /*
+     * LEDGER A1 (2026-08-24). This field read "None. Nothing this
+     * store serves carries a badge" while five badge surfaces were
+     * live. It is derived now, and a test walks the router to make
+     * sure it stays derived.
+     */
+    badges_today: {
+      count: BADGE_SURFACES.length,
+      summary: badgesTodayLine(),
+      serves: BADGE_SURFACES.map((entry) => ({
+        route: entry.route,
+        name: entry.name,
+        cost: entry.cost,
+        asserts: entry.asserts,
+        does_not_assert: entry.does_not_assert,
+        ages: entry.ages,
+      })),
+    },
     attestation: `${base}/attestation`,
     becoming: `${base}/becoming`,
     limit: CRITERIA_HONEST_LIMIT,
@@ -172,7 +190,21 @@ criteriaRoutes.get("/criteria", (c) => {
       </section>
       <section>
         <h2>Badges today</h2>
-        <p class="menu-desc">None. Nothing this store serves carries a badge, and this page existing changes that only by removing the gate rule 43 put in front of it.</p>
+        <p class="menu-desc">${escapeHtml(badgesTodayLine())}</p>
+        <div style="overflow-x:auto">
+        <table border="1" cellpadding="6">
+          <tr><th>badge</th><th>cost</th><th>what it asserts</th><th>what it refuses to assert</th><th>ages</th></tr>
+          ${BADGE_SURFACES.map(
+            (entry) => `<tr>
+              <td>${escapeHtml(entry.name)}</td>
+              <td>${entry.cost}</td>
+              <td>${escapeHtml(entry.asserts)}</td>
+              <td>${escapeHtml(entry.does_not_assert)}</td>
+              <td>${entry.ages ? "yes" : "no"}</td>
+            </tr>`,
+          ).join("")}
+        </table>
+        </div>
         <p class="menu-meta">${escapeHtml(CRITERIA_HONEST_LIMIT)}</p>
       </section>
       ${criteriaTermsJsonLd(base)}`,

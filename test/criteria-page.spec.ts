@@ -67,9 +67,46 @@ describe("the criteria page", () => {
     );
   });
 
-  it("admits that nothing carries a badge today", async () => {
+  /**
+   * REPLACED 2026-08-24 (ledger A1). This test used to read:
+   *
+   *   it("admits that nothing carries a badge today", ...)
+   *     expect(String(body.badges_today)).toContain("None");
+   *
+   * It passed for as long as it existed, and it was pinning a false
+   * claim in place. Five badge surfaces were shipping — sticker,
+   * patron, service audit, passport chip, stamp — while the criteria
+   * page announced there were none, and the suite defended the
+   * announcement.
+   *
+   * THAT IS THE WORST SHAPE THIS DEFECT TAKES. An unguarded false
+   * claim is an oversight. A guarded one has a test arguing for it,
+   * so the next person to notice the discrepancy checks the suite,
+   * sees green, and concludes they misread the product. The guard
+   * converts a fixable mistake into evidence against the person who
+   * spotted it.
+   *
+   * The lesson is not "write more tests". It is that a test asserting
+   * an ABSENCE must be derived from the thing that would end the
+   * absence — here, the router. Otherwise it silently becomes a test
+   * that the absence be maintained.
+   */
+  it("counts the badges it actually serves, and never claims none", async () => {
     const body = await json("/criteria");
-    expect(String(body.badges_today)).toContain("None");
+    const badges = body.badges_today as {
+      count: number;
+      summary: string;
+      serves: { route: string; asserts: string; does_not_assert: string }[];
+    };
+    expect(badges.count).toBeGreaterThan(0);
+    expect(badges.serves).toHaveLength(badges.count);
+    expect(badges.summary).not.toContain("None.");
+    // Rule 43 rides every entry: a mark that cannot say what it
+    // refuses to assert is a score wearing a sticker.
+    for (const entry of badges.serves) {
+      expect(entry.asserts.length).toBeGreaterThan(0);
+      expect(entry.does_not_assert.length).toBeGreaterThan(0);
+    }
   });
 
   it("serves the same immunity clause the watch histories carry, byte for byte", async () => {

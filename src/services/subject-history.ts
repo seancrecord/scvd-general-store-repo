@@ -222,8 +222,25 @@ export async function subjectHistory(
       previousVerdict = entry.verdict;
       timeline.push({
         ...common,
-        listed: true,
-        listing_source: "round",
+        /*
+         * LEDGER H2 (2026-08-24). This was `listed: true` on every
+         * probed row. A `revisit` row means — in the door bank's own
+         * words — "no feed named it THIS round": the probe walked a
+         * resource URL a PAST discovery round declared, to keep
+         * breadth when a feed's coverage was suspect.
+         *
+         * So a host delisted from every directory but still in the
+         * bank read as continuously listed in its own history. PROBED
+         * was being converted into LISTED, which is the same
+         * substitution this file was caught making in the other
+         * direction the same day. Whether a feed named a host is a
+         * fact about the DIRECTORIES; our decision to keep knocking
+         * must not be published as their decision to keep listing.
+         */
+        listed: entry.source !== "revisit",
+        ...(entry.source !== "revisit"
+          ? { listing_source: "round" as const }
+          : {}),
         probed: true,
         url: entry.url,
         verdict: entry.verdict,
