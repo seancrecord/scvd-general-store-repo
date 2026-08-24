@@ -73,6 +73,30 @@ a field on some surfaces and not others reads as hiding).
 | 0.13 | RATE LIMITS on free unauthenticated paths (desk, future /agent/v1), with limits PUBLISHED (silent limiting violates the stated-conditions law); bulk consumers pointed at the snapshot feed (K1) | Limits enforced + stated; test |
 | 0.14 | ⚑ THE CENSUS CERTIFIES DOORS THAT CANNOT BE PAID. Found live 2026-08-24, after this ledger was written, so it carries no A-number. `/corpus/host/hypernatt.com.json` publishes verdict `ready`, `failed: []`; `/api/preflight/v2` publishes `not_ready` on the same door, same day, because the Solana payTo owns no USDC token account. Cause: `ward-round.ts:451` calls `runChecks(response, false)` — the deliberately synchronous, offline battery — and `checkRailReceivable` is reachable only from `preflight.ts`. The check was built to live outside `runChecks` because it needs the network and CI aims `runChecks` at our own 402 every build; that reasoning was right and its consequence was never followed through, so the census never received the check | Red test: a Solana-rail host with an unfunded payTo is scored `ready` by the ward round today, and is not after. Ledger-unreadable is its own gap reason, never a pass |
 
+### Phase 0-x402list — directory position (added 2026-08-24, from the
+competitive read of x402-list.com; we scored 85, ranked 18/46 in
+Verification, and the drags are identified)
+
+| # | What | Acceptance |
+|---|------|------------|
+| 0.14 | FIX "DEGRADED": x402-list still probes /api/buy/daily_fortune, retired 2026-08-20 (their last_seen matches the retirement date exactly). Use their owner-update flow (/services/{slug}/update, one-time domain proof, manually reviewed) to drop the retired endpoint. ⚑ keeper submits (domain proof) | Status returns to ● on their board |
+| 0.15 | SIGNABILITY RE-CAPTURE: their eip712_domain_extra check reads unknown (envelope captured 2026-08-21, before their signability checks landed); VERIFIED 2026-08-24 our live 402 carries extra.name/version on every EVM entry, so a fresh capture passes. Request re-assessment via the owner flow; ?signable=true currently EXCLUDES unknowns, so agents filtering on it never see us | Check reads pass; we match ?signable=true |
+| 0.16 | FORTE TIER: only 1 of 550 listed services is verified (they paid a real call that delivered). Our $0.004 settlement_attestation is the cheapest possible probe target. Request a paid probe via the owner flow / their paid /assess with probe target. Being FORTE service #2 puts us in every require_verified=true result from their /best API | verified: true on our listing |
+| 0.17 | THE $0.001 QUICK LOOK (⚑ keeper: name/price/copy): the J-gate v0 as a paid x402 route — give a host, get what the observatory already holds (ladder state, last observed, artifact links, coverage, honest not_observed) from KV reads only, no external calls, envelope-shaped response. Purpose: the routine pre-transaction call path (the only route to top-of-board buyer counts from the Verification category), cheapest-sort visibility at $0.001, buyer diversification (gen-3 ranking discounts our 64.6% top-buyer share). This is Area J's gate shipped early on existing data, not a new product class | Route live at $0.001; envelope response; buyers_30d and top_buyer_share both improve |
+| 0.18 | BUYER CONCENTRATION: watch top_buyer_share_30d (0.65 at writing) — gen-3 discounts it; 0.17 is the fix, this row is the metric to check monthly alongside the npm trends in KEEPER_LIST | Share trending down |
+
+Expand/consider (from the category read, all mapping to existing
+plans): watch alerts via webhook (Trust Prober sells these; J2's
+diff feed productized); payTo-rotation as a named alertable finding
+(x402-list logged 1,069 rotations in 90d; PulseFeed leads with the
+fear); free preview + embeddable endpoint badges (K-chips); a
+published benchmark page in the Second Opinion style (accuracy with
+failures shown — house style already); MPP coverage exists at
+probe402 (validates M2's dimension work). Deliberate non-gaps, do
+NOT build: trust scores (J4 refusal is the differentiation) and
+take-rate routing à la Aegis (the payment-execution class Area I
+refuses).
+
 ## Phase 1 — Evidence model (the foundation; stops the weekly loss)
 
 | # | Ledger | What | Acceptance |
