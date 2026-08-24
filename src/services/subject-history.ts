@@ -94,6 +94,13 @@ export interface SubjectRound {
   listing_source?: "round" | "register";
   /** We actually knocked, so there is a verdict. */
   probed: boolean;
+  /**
+   * The exact door we knocked on. A host can serve several paid
+   * resources, so "your endpoint failed" without the URL is a riddle
+   * rather than a finding. Present only on a probed round — we cannot
+   * name a door we never visited.
+   */
+  url?: string;
   verdict?: WardHostResult["verdict"];
   failed?: string[];
   advisories?: string[];
@@ -218,6 +225,7 @@ export async function subjectHistory(
         listed: true,
         listing_source: "round",
         probed: true,
+        url: entry.url,
         verdict: entry.verdict,
         failed: entry.failed,
         advisories: entry.advisories,
