@@ -1,3 +1,4 @@
+import { isCoverageDepth, registrationFor } from "@/evidence/coverage";
 import { subjectDefects, type EvidenceSubject } from "@/evidence/subject";
 import {
   EVIDENCE_SCHEMA_V1,
@@ -135,6 +136,25 @@ export function validateEnvelopePayload(value: unknown): EnvelopeValidation {
     // In-band and mandatory: an envelope with nothing in these
     // arrays says so with empty arrays, never by leaving them out.
     defects.push("envelope.limitations.missing");
+  }
+
+  const coverage = value["coverage"];
+  if (
+    !isRecord(coverage) ||
+    typeof coverage["class_id"] !== "string" ||
+    !isCoverageDepth(coverage["depth"]) ||
+    !isRecord(coverage["class_row"])
+  ) {
+    defects.push("envelope.coverage.missing");
+  } else {
+    if (!registrationFor(coverage["class_id"])) {
+      defects.push("envelope.coverage.class-unregistered");
+    }
+    for (const [chain, depth] of Object.entries(coverage["class_row"])) {
+      if (!isCoverageDepth(depth)) {
+        defects.push(`envelope.coverage.depth-invalid:${chain}`);
+      }
+    }
   }
 
   const key = value["key"];

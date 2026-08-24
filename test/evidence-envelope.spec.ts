@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   EVIDENCE_SCHEMA_V1,
   canonicalEvidenceBytes,
+  envelopeCoverage,
   roundTrips,
   validateEnvelopePayload,
   type EvidenceEnvelopePayload,
@@ -56,6 +57,9 @@ function validPayload(): EvidenceEnvelopePayload {
       does_not_prove: ["that paying this door yields goods"],
       not_checked: ["delivery"],
     },
+    coverage: envelopeCoverage("preflight", {
+      chain: "eip155:8453",
+    })!,
     key: {
       key_id: "scvd-2026-06",
       in_service_from: "2026-06-01",
@@ -189,6 +193,19 @@ describe("the validator rejects each malformed fixture", () => {
     // @ts-expect-error deliberately corrupting the fixture
     payload.key = { key_id: "scvd-2026-06" };
     expectDefect(payload, "envelope.key.window-missing");
+  });
+
+  it("coverage omitted instead of stated", () => {
+    const payload = validPayload();
+    // @ts-expect-error deliberately corrupting the fixture
+    delete payload.coverage;
+    expectDefect(payload, "envelope.coverage.missing");
+  });
+
+  it("an unregistered coverage class", () => {
+    const payload = validPayload();
+    payload.coverage.class_id = "vibes";
+    expectDefect(payload, "envelope.coverage.class-unregistered");
   });
 
   it("missing authorization pointers", () => {
