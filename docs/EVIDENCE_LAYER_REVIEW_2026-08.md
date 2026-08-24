@@ -958,7 +958,7 @@ authorization signed at step 7 is the live risk between.)
   own artifact). Domain binding bounds theft, not the false report.
   Fix: the B13⇄F1 shared value-checks module reaches here — asset
   must equal Base USDC or the verdict is `unpaid_by_rule` naming it.
-- **I2 [ ] — unbounded validBefore + paid_usd recorded before the
+- **I2 [x] DONE 2026-08-24 — unbounded validBefore + paid_usd recorded before the
   authorization dies.** validBefore = now + seller's
   maxTimeoutSeconds (uncapped: a seller can mint a years-long
   authorization). And on `payment_refused`/late `unreachable`, the
@@ -971,7 +971,7 @@ authorization signed at step 7 is the live risk between.)
   verdicts carry `authorization_outstanding_until` in the signed
   bytes, and optionally re-read the chain after expiry to upgrade
   the record via a linked follow-up artifact (never mutate).
-- **I3 [ ] — unbounded reads, default redirects, no explicit
+- **I3 [x] DONE 2026-08-24 — unbounded reads, default redirects, no explicit
   timeout.** Both knocks `await .text()` with no size cap; fetch
   follows redirects (the paid header travels to wherever the seller
   points); no configured timeout. Fix: cap the body read (e.g. 1MB,
@@ -991,7 +991,7 @@ authorization signed at step 7 is the live risk between.)
 - **I6 [ ] — no offer/signer validation.** Where a 402 carries a
   signed offer or DID, nothing checks it (F2's build, consumed
   here). Absence should be a recorded observation either way.
-- **I7 [ ] — the economic invariant is hand-typed.** Till price ($5,
+- **I7 [~] PARTIAL 2026-08-24 — the economic invariant is hand-typed.** Till price ($5,
   menu) > payout cap ($0.05, service) is the load-bearing 100:1
   ratio and lives in two files with no derived guard — AT_SCALE
   rule 1. One test: `menu.launch_check.price_usdc >
