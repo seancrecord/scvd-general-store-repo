@@ -95,6 +95,7 @@ describe("the coverage matrix is derived, not typed", () => {
     ]) {
       expect(protocolFamily(id), id).toBeDefined();
     }
+    expect(protocolFamily("discovery_coherence")).toBeDefined();
     expect(PROTOCOL_FAMILIES.some((family) => family.id === "mpp")).toBe(false);
   });
 });
