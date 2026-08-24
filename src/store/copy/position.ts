@@ -51,7 +51,7 @@ export const DELIVERY_ORDER_DATED = "2026-08-10";
  * surfaces IS the AEO work, and a second phrasing would undo it.
  */
 export const POSITION_LINE =
-  "scvd.store is the trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did.";
+  "scvd.store is an evidence observatory for agentic commerce — x402 today, cross-protocol by design: independent signed observation of what other people's endpoints, artifacts and payments actually did, with the gaps counted against itself.";
 
 /**
  * THE OPENING, for the surfaces a stranger meets first (llms.txt, the
@@ -91,8 +91,17 @@ export const CHEAPEST_ON_THE_SHELF = (() => {
  * "Agentic commerce — x402 today, cross-protocol by design" widens
  * the subject without overclaiming the present. The H1 stays x402,
  * because that is the term an agent searches this week.
+ *
+ * ONE WORD CHANGED FROM THE KEEPER'S DRAFT, and it is flagged rather
+ * than absorbed: the draft read "a Bitcoin-anchored history that
+ * appends DAILY". The corpus appends weekly — cron `0 11 * * SUN`,
+ * and the published chain runs W32, W33, W34, W35. Shipping "daily"
+ * would have put a false claim on the most-quoted sentence this store
+ * has, which is the one place it can least afford one. "History"
+ * became "corpus" in the same edit: it is the product's actual name
+ * and the term a reader can go look up.
  */
-export const POSITION_OPENING = `${STORE_SERVICE_NAME} is an evidence observatory for agentic commerce — x402 today, cross-protocol by design. It observes what other people's endpoints, artifacts and payments actually did, signs every observation, and publishes the gaps in its own coverage beside the findings, counted against itself. Nothing here is a score, a rating, or a ranking: every verdict is one dated observation that expires and is re-taken, verifiable offline by anyone, without asking us. Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored history that appends daily. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Operated by ${OPERATED_BY}.`;
+export const POSITION_OPENING = `${STORE_SERVICE_NAME} is an evidence observatory for agentic commerce — x402 today, cross-protocol by design. It observes what other people's endpoints, artifacts and payments actually did, signs every observation, and publishes the gaps in its own coverage beside the findings, counted against itself. Nothing here is a score, a rating, or a ranking: every verdict is one dated observation that expires and is re-taken, verifiable offline by anyone, without asking us. Free instruments: a preflight check on any x402 door, a conformance desk for any issuer's signed offers and receipts — including our competitors' — a named defect vocabulary, and a Bitcoin-anchored corpus that appends weekly. Paid instruments: conformance audits, endpoint watches, settlement attestations, launch checks. Operated by ${OPERATED_BY}.`;
 
 /**
  * The boundary, which gets louder as the ecosystem fills in around us.
@@ -147,7 +156,7 @@ export const ALSO_A_STORE = `It is also a general store for autonomous agents, k
  * only its record.
  */
 export const NOT_AFFILIATED =
-  "Independent, and independence is the product: this store has no affiliation with the x402 Foundation or the Linux Foundation, holds no office in the protocol's governance, and speaks for nobody but itself. 'Trust layer of the x402 economy' is a description of what we do — observe, sign, publish — never a title anyone conferred.";
+  "Independent, and independence is the product: this store has no affiliation with the x402 Foundation or the Linux Foundation, holds no office in the protocol's governance, and speaks for nobody but itself. 'Evidence observatory' is a description of what we do — observe, sign, publish, and count the gaps against ourselves — never a title anyone conferred.";
 
 /** Position, boundary and shelf, in the order an entity resolver reads. */
 export const POSITION_PARAGRAPH = `${POSITION_LINE} ${POSITION_NOT} ${ALSO_A_STORE}`;
