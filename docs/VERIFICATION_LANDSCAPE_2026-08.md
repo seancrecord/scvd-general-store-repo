@@ -309,6 +309,50 @@ Three lessons the exercise forces:
    walkthrough above is its natural companion prose (⚑ keeper pen
    before any of it posts, since it names competitors as picks).
 
+## 8. The live self-row (keeper direction, 2026-08-24)
+
+Evidence-aware rankings — last successful paid delivery, schema
+validity, failure history, payTo stability, buyer concentration,
+signed receipts — should be servable about US, live, before we ask
+any list to rank by them. Not a self-score ("never a score" has no
+self-exception); a **self-row**: each dimension computed from the
+till at read time, with how-computed and a source URL per cell.
+
+What exists: the trust panel (key history, corrections, corpus,
+house-paid gallery) and the self-passport cover about half. The
+plumbing delta:
+
+1. **Last successful paid delivery** — latest settled + delivered
+   order, house/organic split explicit (an unsplit "recently" is the
+   defect we tabulate in others). From payer rows + delivery audit.
+2. **payTo stability** — new small data: per-rail payTo with `since`
+   dates + a runtime check that the live 402 matches the declared
+   record. The strongest possible answer to the hijack-detection
+   category.
+3. **Buyer concentration** — distinct organic payers + top-buyer
+   share, live. Publishes 64.6% against us today; volunteering it
+   before the directory reports it owns the narrative, and the quick
+   look turns the cell into an improvement graph.
+
+Plus derived: schema validity (own battery vs. own doors — the
+self-audit) and signed-receipt share (certs per settle, derived
+never asserted).
+
+**The format is the play:** publish the shape as
+`/.well-known/evidence.json` — a spec any service can serve, fields
+defined with their computations. We serve the reference
+implementation live; the observation index consumes it where
+competitors serve it and records "not served <date>" where they
+don't; directories get a spec to ingest instead of a pitch. Any
+adopter either tells the truth in it or 404s — both are index cells.
+Same standard-setting move as the assurance-ladder vocabulary, in
+JSON.
+
+Discipline: every cell derived at read time or the row rots into
+checkable stale wallpaper — hand-typed "live" facts are worse than
+none. Overlaps corpus/metrics/well-known lanes; assign as a named
+lane in the work split, not ad-hoc.
+
 ---
 
 *Filed 2026-08-24 from three parallel research passes over the top ~30
