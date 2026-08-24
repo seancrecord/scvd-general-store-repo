@@ -204,6 +204,14 @@ describe("the walk engine, stage by stage", () => {
    *
    * That is why this store did not build the negative battery it had
    * evidence nobody fails, and built this instead.
+   *
+   * CORRECTION APPENDED 2026-08-24, ORIGINAL LEFT STANDING. The tester
+   * wrote back that "37/37" is now stale: one hostile-input failure has
+   * since appeared in 88 endpoints — palmyr.ai settled a wrong-scheme
+   * envelope, https://cairnwake.com/r/1ccbdc9f.html. Ten of the eleven
+   * checks remain at zero. The decision this test guards is unchanged,
+   * and it is recorded here rather than edited above so a reader can
+   * see both what we believed and when it moved.
    */
   it("presents the settled payment a second time and records the answer", async () => {
     const log: SellerLog = { requests: [] };
