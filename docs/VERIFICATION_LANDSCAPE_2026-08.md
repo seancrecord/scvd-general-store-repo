@@ -415,6 +415,101 @@ adds a dimension nobody had written down.
    layer gives the passport its cross-protocol spine — the passport
    is where the merged discovery surfaces become one object.
 
+## 10. The passport spec sketch, the cadence, and the named artifacts
+
+Second keeper coverage-check of 2026-08-24. Most rows were already
+in the roadmap (0.15 signability re-capture, 0.16 FORTE, 0.17's
+KV-read-only quick look, 0.18 concentration). Three things were not
+written down anywhere; they are now.
+
+### 10.1 Endpoint Passport — the concrete sketch (keeper's fields)
+
+One JSON object per service/endpoint; everything else the store
+sells becomes a module inside it. Public noun: **Endpoint Passport**.
+
+- **Identity:** `passport_id` (stable per subject), `subject`
+  (domain, endpoint URL, route, protocol, protocol_version, chain,
+  rail, asset, payTo, price — the envelope's subject block plus the
+  route-level fields).
+- **State:** `status` ∈ ready | not_ready | unreachable |
+  indeterminate. `freshness` ∈ fresh | aging | expired | revoked |
+  corrected. `observed_at`, `valid_until` (expiry derived from a
+  stated rule, never implied permanence).
+- **Modules:** service_audit, launch_check, badge, watch,
+  quick_look, envelope, conformance, corpus, corrections. The badge
+  is DISPLAY ONLY, never a source of truth.
+- **Signed bytes include:** passport_id, subject, observed_at,
+  valid_until, methodology_id, battery_version, schema_id, coverage,
+  not_observed, limitations, evidence_hashes, correction_of.
+- **Public page order (agent-first):** can an agent pay this right
+  now → last observed + expiry → what was checked → what failed →
+  what was NOT checked → verify URL → change/correction history →
+  buy refresh / start watch.
+
+**The load-bearing observation:** the signed-bytes list maps almost
+1:1 onto the evidence envelope shipped 2026-08-24 (`src/evidence/`,
+scvd-evidence/v1): methodology_id/battery_version/schema_id are the
+envelope's methodology block, coverage/not_observed are its
+limitations discipline, evidence_hashes is its evidence capture,
+correction_of is its authorization-adjacent lineage pointer. The
+passport is a DERIVED, SIGNED VIEW over envelopes — build it that
+way and the vocabulary never forks (the ledger's J-envelope ⇄
+D-envelope rule doing its job). The reference artifact is our own
+self-passport (§8's self-row), shipped first, limitations and
+correction links visible.
+
+### 10.2 The operating cadence (⚑ = keeper's hands)
+
+- **Daily:** check our x402-list badge, signable state, active
+  endpoints, rank, failed checks; run the self-passport and confirm
+  preflight, corpus, watch, and public copy DISAGREE NOWHERE;
+  classify new Verification-category entrants into §1's table.
+- **Weekly:** a State of Endpoint Evidence note; one public failure
+  fixture or correction note if something meaningful broke; ⚑
+  outreach to endpoints observed stale/malformed/unknown/not_ready.
+- **Monthly:** buyer concentration + route-level traction review
+  (roadmap 0.18); ⚑ quick-look/watch pricing from actual usage; ⚑
+  decide whether @scvd/evidence or @scvd/conformance publish as
+  installable packages.
+
+### 10.3 Named recurring artifacts (what each research track ships)
+
+Research that doesn't end in a changed artifact field, a red test, a
+SKU, a fixture, or an outreach target is research theater — the
+keeper's rule, now the doc's rule.
+
+1. **Discovery Position Note** (weekly): where SCVD appears —
+   x402-list /services and /best, Coinbase Bazaar, x402scan feeds,
+   MCP registries, agent-tools.cloud — where it is FILTERED OUT, and
+   the exact field causing the loss (the 0.15 lesson generalized:
+   `?signable=true` excluding unknowns cost distribution invisibly).
+2. **Verification Market Map**: §1 of this document, kept current by
+   the daily entrant classification.
+3. **Evidence Gap Register**: already exists — it is the ledger
+   (EVIDENCE_LAYER_REVIEW). Every place we sign a conclusion without
+   enough method, coverage, expiry, or correction context is a
+   D-series finding.
+4. **Money Loop Report** (monthly): scan → diagnosis → fix → paid
+   refresh → passport → watch renewal, measured per route: price,
+   buyer count, repeat buyers, top-buyer share, free-to-paid
+   conversion, refresh purchases, watch renewals, refunds, manual
+   time.
+5. **Failure Receipt Catalog**: the signed-negative-evidence product
+   (§9.4) as a public, growing catalog — malformed 402, missing
+   EIP-712 extra, wrong version, unfunded payTo, unsupported chain,
+   bad atomic amount, templated endpoint, schema mismatch, settled
+   -but-no-delivery, stale docs, payTo rotation, price drift,
+   oversized body, redirect on a paid knock. Each entry: a fixture,
+   a red test, and a public example.
+
+One measurable item left the doc for the codebase the same day:
+`extra.name`/`extra.version` on our own EVM 402s was confirmed by
+hand (0.15) but nothing FORCED it — the values are emitted by the
+x402 SDK, which dependabot bumps; a version that dropped them would
+have passed every test we had. `test/signability-guard.spec.ts`
+now walks every priced door and fails the suite if any EVM entry
+loses its EIP-712 extra.
+
 ---
 
 *Filed 2026-08-24 from three parallel research passes over the top ~30
