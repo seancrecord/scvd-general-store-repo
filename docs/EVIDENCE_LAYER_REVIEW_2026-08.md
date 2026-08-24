@@ -453,24 +453,34 @@ Nothing here invents a format the store doesn't already half-own:
 signed_payload discipline + attests binding + key registry + OTS,
 with B9's evidence capture as the one genuinely new field group.
 
-- **D4 [ ] — no service-window check at verification (the layer-3 gap).** (P6)
-  The key registry holds `in_service_from`/`retired_on` for exactly
-  this; `/api/verify` never compares the artifact's own date against
-  them. An artifact dated AFTER a key's retirement, signed by that
-  retired key, gets `status: "retired"` with prose that actively
-  reassures ("expected on an artifact issued before the handover")
-  without checking that it was. One comparison + one red test; mind
-  the documented swap window (`retiredKeysFor`'s lock-wins rule) so a
-  mid-handover artifact isn't falsely flagged.
+- **D4 [x] — no service-window check at verification (the layer-3 gap).** (P6)
+  CLOSED 2026-08-24 (phase1/1.5-key-window). The comparison lives in
+  the PACKAGE (`checkKeyServiceWindow` in verifier/x402-verify.js, per
+  the L1⇄D4⇄D5 build-once rule) and `/api/verify`'s signedBy consumes
+  it, passing each artifact class's own date (cert/stamp/anchor/lucky/
+  gazette date, phantom checked_at, handover announced — every class,
+  per the maker's-mark lesson). The response gains
+  `signed_by.service_window` with status/in_window/window/means; a
+  retired-key artifact dated post-retirement now reads
+  `after_retirement` with "the exact shape a stolen retired key
+  produces". Swap window honoured two ways: the store reads the
+  registry through `retiredKeysFor` (lock wins), and the window is
+  inclusive at both ends (retirement-day artifacts are the handover's
+  expected last signatures). RETIRED_MEANS no longer reassures
+  unverifiably — it points at the check beside it. Red-proven:
+  test/key-window.spec.ts route tests fail without the wiring (3
+  failed on stash, 11 pass with it).
 
-- **D5 [ ] — the offline verification recipe stops at layer 1.** (P6)
-  `KEY_ARCHITECTURE.verification` instructs verify(signed_payload,
-  signature, public_key) with the key FROM THE RESPONSE — internally
-  consistent, not attributable. `attributeKey`'s own header comment
-  names this exact trap, and the online path defends it; the offline
-  recipe (the one a dispute uses) omits the "then confirm the key is
-  one we publish, in service at the artifact's date" step. A doc fix
-  plus the envelope's key-window citation (D-envelope).
+- **D5 [x] — the offline verification recipe stops at layer 1.** (P6)
+  CLOSED 2026-08-24 (phase1/1.5-key-window).
+  `KEY_ARCHITECTURE.verification` is now four numbered steps: (1)
+  ed25519 over signed_payload, stated to prove only internal
+  consistency; (2) resolve the key against the published directory;
+  (3) confirm the artifact's date falls inside that key's service
+  window — naming `checkKeyServiceWindow` in the open verifier so a
+  dispute runs the same function the store runs; (4) compare fields
+  against signed_payload. The envelope's key-window citation
+  (D-envelope) remains Phase 1's schema work.
 
 - **D6 [ ] — methodology/version absent from most signed bytes.** (P6)
   Extends B9 beyond the watch: settlement attestations and launch
@@ -1417,13 +1427,16 @@ sign/verify paths without a stated reason — now enforced by the
 zero-dep rule above rather than by review vigilance.
 
 ### L-findings
-- **L1 [ ] — key-window verification missing from x402-verify.**
-  The package verifies JWS + did:web but not that the signing key
-  was IN SERVICE at the artifact's date (the D4 gap, distributable
-  form). x402-verify already resolves key history ("externally
-  anchored key history" is in its own description) — the window
-  comparison is the missing clause. Red test: retired-key artifact
-  dated post-retirement passes today.
+- **L1 [x] — key-window verification missing from x402-verify.**
+  CLOSED 2026-08-24 (phase1/1.5-key-window). `checkKeyServiceWindow`
+  shipped in the package with README section and .d.ts types —
+  generic over any issuer's published key_history shape, five
+  statuses (in_service / before_service / after_retirement /
+  unknown_key / undated), inclusive window edges for the swap day.
+  The store's /api/verify is its first consumer (D4), which is the
+  dogfood path the cross-ref ordered. NOT yet republished to npm —
+  the release is a keeper ceremony (⚑), and until it ships the
+  function is public in-repo only.
 - **L2 [ ] — @scvd scope unregistered (verify, then register).**
   Squatting cost is near-zero for an attacker and permanent for us.
 - **L3 [ ] — no CI publish pipeline with provenance.** Local
