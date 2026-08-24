@@ -29,6 +29,23 @@ from the audit ledger and the architecture spec; keeper-directed.
 
 Live false claims and live money exposure on shipping products.
 
+**0.14 is A-class and arguably the worst of them.** A1 and A2 are copy
+overclaims on HTML pages — wrong, fixable, ephemeral. 0.14 is a signed,
+hash-chained, OpenTimestamps-anchored artifact asserting `ready` for a
+door that provably cannot receive money. The anchoring is the problem
+rather than the mitigation: it makes the false claim permanent,
+attributable, and independently verifiable as ours. An observatory that
+anchors a wrong verdict has published a durable lie with a proof of
+authorship attached.
+
+Note the shape, because it recurs: the check EXISTS, is free, is live,
+and is correct — the flagship record simply does not consume it. Two
+instruments of ours disagreeing in public is the failure; either could
+have been right. **1.3 (D6) is the structural fix** — a verdict carrying
+its battery version inside the signed bytes cannot make this error
+silently, because the disagreement becomes visible in the artifact
+itself. 0.14 stops the bleeding; 1.3 stops the class.
+
 | # | Ledger | What | Acceptance |
 |---|--------|------|------------|
 | 0.1 | A1 | Fix live false public claim #1 (read the ledger entry) | Claim matches measured data; test pins it |
@@ -54,6 +71,7 @@ a field on some surfaces and not others reads as hiding).
 | 0.11 | CORPUS BACKUP: periodic cold export of KV (corpus, watch histories, artifacts) to R2/offline, hash-verifiable against the anchored snapshots. The anchor chain proves integrity, not availability — the moat asset must survive losing the namespace | Export runs on schedule; restore drill documented; digests match anchors |
 | 0.12 | SELF-WATCH: an EXTERNAL monitor on SCVD's own surfaces, linked publicly (the store rightly refuses to audit itself; someone else must). Publish agent-API latency figures | Link live; latency served with denominators |
 | 0.13 | RATE LIMITS on free unauthenticated paths (desk, future /agent/v1), with limits PUBLISHED (silent limiting violates the stated-conditions law); bulk consumers pointed at the snapshot feed (K1) | Limits enforced + stated; test |
+| 0.14 | ⚑ THE CENSUS CERTIFIES DOORS THAT CANNOT BE PAID. Found live 2026-08-24, after this ledger was written, so it carries no A-number. `/corpus/host/hypernatt.com.json` publishes verdict `ready`, `failed: []`; `/api/preflight/v2` publishes `not_ready` on the same door, same day, because the Solana payTo owns no USDC token account. Cause: `ward-round.ts:451` calls `runChecks(response, false)` — the deliberately synchronous, offline battery — and `checkRailReceivable` is reachable only from `preflight.ts`. The check was built to live outside `runChecks` because it needs the network and CI aims `runChecks` at our own 402 every build; that reasoning was right and its consequence was never followed through, so the census never received the check | Red test: a Solana-rail host with an unfunded payTo is scored `ready` by the ward round today, and is not after. Ledger-unreadable is its own gap reason, never a pass |
 
 ## Phase 1 — Evidence model (the foundation; stops the weekly loss)
 
