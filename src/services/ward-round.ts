@@ -4,6 +4,7 @@ import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
+import { checkRailReceivable } from "@/services/rail-receivable";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
@@ -430,8 +431,36 @@ export async function pooled<T, R>(
   return results;
 }
 
+/**
+ * ROADMAP 0.14 — THE ROUND CONSUMES THE RAIL READ (2026-08-24).
+ *
+ * Until this date the census scored every door with `runChecks` alone,
+ * which is synchronous and offline by design so CI can aim it at this
+ * store's own 402 on every build. The Solana receivability read needs
+ * the network, so it was built to live outside that battery — correct
+ * reasoning whose consequence was never followed through. The result
+ * was two of our own surfaces contradicting each other in public: the
+ * corpus published `ready` for a door `/api/preflight/v2` published
+ * `not_ready`, because its payTo owned no USDC token account.
+ *
+ * That the wrong one was the SIGNED, hash-chained, anchored artifact
+ * is what made it worth stopping for. An observatory that anchors a
+ * false verdict has published a durable lie with a proof of authorship
+ * attached.
+ *
+ * `runChecks` already handed back `accepts` for exactly this caller.
+ * The seam existed; nothing was plugged into it.
+ *
+ * THREE OUTCOMES, AND THE THIRD IS THE POINT. Cannot receive is a
+ * FAILURE. Can receive is a pass. Could not read the ledger is OUR
+ * GAP, recorded as an advisory and never folded into the verdict — a
+ * missing answer rendered as a clean one is the defect this item
+ * exists to remove. The RPC path already falls back four deep
+ * (SOLANA_RPC_URL, PublicNode, dRPC, mainnet-beta), so that branch is
+ * rare. Rare is not never.
+ */
 export async function probeHost(
-  env: WbaEnv,
+  env: Env,
   url: string,
 ): Promise<Omit<WardHostResult, "host" | "url">> {
   try {
@@ -448,14 +477,36 @@ export async function probeHost(
       }),
     });
     await response.body?.cancel().catch(() => undefined);
-    const { checks, advisories } = runChecks(response, false);
+    const { checks, advisories, accepts } = runChecks(response, false);
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
+    const advisoryNames = advisories.map((advisory) => advisory.name);
+
+    /*
+     * The one check in this battery that cannot be synchronous. It is
+     * best-effort by construction: a throw here must not turn a door
+     * we did reach into an `unreachable`, because that would book our
+     * own RPC trouble as the subject's outage.
+     */
+    const rail = accepts
+      ? await checkRailReceivable(env, accepts).catch(() => ({
+          check: null,
+          advisory: {
+            name: "solana-rail-unread",
+            detail:
+              "the Solana rail read did not complete, so whether that payTo can be credited is unknown. Our gap, not a finding about this endpoint.",
+          },
+        }))
+      : { check: null, advisory: null };
+
+    if (rail.check && !rail.check.ok) failed.push(rail.check.name);
+    if (rail.advisory) advisoryNames.push(rail.advisory.name);
+
     // The market desk keeps what this fetch already paid for.
     const offer = offerFacts(response);
     return {
       verdict: failed.length === 0 ? "ready" : "not_ready",
       failed,
-      advisories: advisories.map((advisory) => advisory.name),
+      advisories: advisoryNames,
       ...(offer ? { offer } : {}),
     };
   } catch {

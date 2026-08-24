@@ -46,11 +46,34 @@ function tallyRow(entry: RegistryWeekEntry): string {
   </tr>`;
 }
 
-function latestReading(entry: RegistryWeekEntry): string {
+/**
+ * Exported for the guard in test/registry-claim.spec.ts. The claim it
+ * builds is conditional on a round HAVING offers data, so a test that
+ * only reads the rendered page passes whenever the condition is false
+ * — green because the code never ran. The sentence has to be
+ * testable on a fixture, not on this week's luck.
+ */
+export function latestReading(entry: RegistryWeekEntry): string {
   const so = entry.signed_offers;
   const offersLine =
     so.of_ready > 0
-      ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve offers a third party can cryptographically verify — the rest ask to be paid on their word alone.`
+      /*
+       * LEDGER A2 (2026-08-24). This read "serve offers a third party
+       * can cryptographically verify". The census never verified a
+       * signature — it parses the JWS and stops, and the check that
+       * does it says so itself: "Signatures NOT verified here — that
+       * needs the issuer's key, which is a second request this probe
+       * refuses to make."
+       *
+       * The instrument was honest; the statistic derived from it was
+       * not, which is the worse direction — the caveat sat in a check
+       * nobody reads while the confident sentence was the quotable
+       * one. It also flattered us twice over: this store SELLS
+       * signature verification at the desk, so a census implying we
+       * already do it free both overstates the census and makes the
+       * paid product look redundant.
+       */
+      ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve signed offers that are present and structurally valid JWS — the rest ask to be paid on their word alone. Signatures are NOT verified by this census: that needs each issuer's key and a second request the weekly probe does not make. The conformance desk verifies them free, one artifact at a time.`
       : "";
   const railsLine =
     entry.rails.of > 0
@@ -60,7 +83,7 @@ function latestReading(entry: RegistryWeekEntry): string {
     ? `Among ${entry.price_usdc.sample} doors quoting recognizable USDC, the median ask is ${money(entry.price_usdc.median)} (middle half ${money(entry.price_usdc.p25)}–${money(entry.price_usdc.p75)}).`
     : "";
   return [
-    `In week ${entry.week} the census probed ${entry.probed} listed doors. ${entry.ready} answered as working x402 endpoints; ${entry.rot.dead_doors} (${entry.rot.pct}%) answered no valid payment challenge at all — listed, and functionally absent. Any count of "x402 endpoints" quoted from raw directory listings overstates the working market by roughly that factor.`,
+    `In week ${entry.week} the census probed ${entry.probed} listed doors. ${entry.ready} answered a well-formed x402 payment challenge — shape only, from one vantage, at one moment, and never a claim that a purchase would deliver; ${entry.rot.dead_doors} (${entry.rot.pct}%) answered no valid payment challenge at all — listed, and functionally absent. Any count of "x402 endpoints" quoted from raw directory listings overstates the working market by roughly that factor.`,
     offersLine,
     railsLine,
     priceLine,
@@ -100,7 +123,14 @@ function registryDatasetJsonLd(
         },
         {
           "@type": "PropertyValue",
-          name: "doors answering as working x402 endpoints",
+          /*
+           * LEDGER H1. "working" read as purchasable-and-delivering;
+           * `ready` is shape-conformance from one vantage at one
+           * moment. This is the MACHINE-READABLE half, so it matters
+           * more than the prose — an indexer quotes this verbatim and
+           * cannot see the caveat in a paragraph beside it.
+           */
+          name: "doors answering a well-formed x402 payment challenge (shape only, one vantage)",
           value: latest.ready,
         },
         {

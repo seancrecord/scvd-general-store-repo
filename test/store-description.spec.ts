@@ -1,4 +1,5 @@
 import { SELF } from "cloudflare:test";
+import { MENU_ITEMS } from "@/store";
 import { describe, expect, it } from "vitest";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store";
 import { WHAT_COPY } from "@/store/copy/what";
@@ -48,7 +49,16 @@ describe("the store describes itself", () => {
     expect(text).toContain("agents");
     expect(text).toContain("x402");
     expect(text).toContain("verify");
-    expect(text).toContain("half a cent");
+    /*
+     * WAS `toContain("half a cent")` until 2026-08-24, and that made
+     * it the third test found today pinning a claim that had gone
+     * false. The cheapest door is settlement_attestation at $0.004;
+     * half a cent is small_blessing, which is a different item. A
+     * test asserting a PRICE has to derive it, or it becomes a test
+     * that the price never be corrected.
+     */
+    const floor = Math.min(...MENU_ITEMS.map((item) => item.price_usdc));
+    expect(text).toContain(`$${floor.toFixed(3)}`);
   });
 });
 
@@ -70,7 +80,7 @@ describe("/what leads with an answer that stands alone", () => {
     expect(words, "the direct answer has drifted outside the 40-60 word band").
       toBeGreaterThanOrEqual(40);
     expect(words).toBeLessThanOrEqual(60);
-    expect(WHAT_COPY.directAnswer).toContain("trust layer of the x402 economy");
+    expect(WHAT_COPY.directAnswer).toContain("evidence observatory");
     // Complete on its own: what it sells, what proves it, how you pay.
     expect(WHAT_COPY.directAnswer).toContain("signed observation");
     expect(WHAT_COPY.directAnswer).toContain("verify");

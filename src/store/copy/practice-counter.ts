@@ -1,3 +1,4 @@
+import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 /**
  * KEEPER-EDITABLE COPY for the Practice Counter (/try).
  *
@@ -17,7 +18,7 @@ export const PRACTICE_COUNTER_COPY = {
 
   /** The one-liner. Used on the page, in menus, and in the JSON. */
   standfirst:
-    "Building something that pays over x402? Practice on us. The till is real, the cheapest thing on the shelf is half a cent, and everything you buy signs its own receipt.",
+    `Building something that pays over x402? Practice on us. The till is real, the cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and everything you buy signs its own receipt.`,
 
   whyHead: "Why practice here",
   why: [

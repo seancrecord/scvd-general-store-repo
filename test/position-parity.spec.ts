@@ -44,11 +44,19 @@ const MACHINE_SURFACES = [
 ];
 
 describe("the position reaches the surfaces a machine reads", () => {
-  it("says 'trust layer of the x402 economy' on every one of them", async () => {
+    /*
+     * MARKER UPDATED 2026-08-24 (roadmap 0.10, keeper's canon). The
+     * RULE is unchanged and is the whole point of this file: one
+     * position, identically, on every surface a machine reads. Only
+     * the string that identifies the position moved — "trust layer of
+     * the x402 economy" was a positioning claim anyone could assert;
+     * "evidence observatory" is a method claim that can be checked.
+     */
+  it("says 'evidence observatory' on every one of them", async () => {
     for (const path of MACHINE_SURFACES) {
       const body = (await text(path)).toLowerCase();
       expect(
-        body.includes("trust layer of the x402 economy"),
+        body.includes("evidence observatory"),
         `${path} does not carry the position. A model trained six months from now learns whatever is on that page today.`,
       ).toBe(true);
     }
@@ -73,7 +81,7 @@ describe("the position reaches the surfaces a machine reads", () => {
     // The constant is the point. If somebody re-types the sentence
     // into a surface instead of importing it, the next reversal has
     // to find every copy again.
-    expect(POSITION_LINE).toContain("trust layer of the x402 economy");
+    expect(POSITION_LINE).toContain("evidence observatory");
   });
 });
 

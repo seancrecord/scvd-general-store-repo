@@ -314,6 +314,50 @@ LORE & TRADITION
     payers) do not appear in root docs unless a test pins them.
     Wording of this rule awaits the keeper's own ink.
 
+46. A GUARD THAT CANNOT FAIL IS A GUARD THAT ARGUES FOR THE LIE
+    (2026-08-24, the keeper's agreement, from four found in one
+    afternoon). A test asserting an ABSENCE, or asserting a
+    CONSTANT, must derive it from the thing that would change it.
+    A literal string compared against copy does not verify the
+    copy; it MEMORISES it, and the day the fact moves, the test
+    becomes the store's argument for the stale version.
+
+    Four were found the same day, and the pattern is what makes
+    this a rule rather than four fixes:
+
+      `admits that nothing carries a badge today` asserted
+      "None" while five badge surfaces shipped — on /criteria, the
+      page whose whole job is to govern when this store may mark
+      anything.
+
+      `store-description` asserted "half a cent" while the
+      cheapest door was $0.004. Half a cent is small_blessing, a
+      different item.
+
+      "37/37 clean" sat in launch-check's reasoning after the
+      board it came from had moved. An outside tester corrected
+      us against their own interest.
+
+      A registry guard READ THE RENDERED PAGE and passed because
+      the sentence it checked only renders when a round has offers
+      data. Green because the code never ran.
+
+    WHY THIS IS WORSE THAN NO TEST. An unguarded false claim is an
+    oversight; anyone who notices can fix it. A guarded one has a
+    test arguing on its behalf, so the next person to spot the
+    discrepancy checks the suite, sees green, and concludes they
+    misread the product. The guard converts a fixable mistake into
+    evidence against whoever found it.
+
+    THE PRACTICE. Derive the value (walk the router, read
+    MENU_ITEMS, compute from both live numbers) rather than typing
+    it twice — AT_SCALE rule 1 with teeth. Prove every new guard
+    RED before trusting it: stash the fix, watch it fail, restore.
+    A guard whose failing state was never witnessed is a guard
+    nobody has checked. And prefer asserting ORDER or RELATIONSHIP
+    over exact wording, so the guard survives honest edits and
+    still fires on the change that matters.
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the

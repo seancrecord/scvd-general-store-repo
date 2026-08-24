@@ -364,6 +364,49 @@ const worker: ExportedHandler<Env> = {
   scheduled: async (event, env, ctx) => {
     if (event.cron === "0 11 * * SUN") {
       /**
+       * THE COLD EXPORT rides the same press as the ward round
+       * (roadmap 0.11). Every signature, digest and OpenTimestamps
+       * proof this store serves answers whether the record was
+       * ALTERED. None of them answers whether it is still THERE, and
+       * Bitcoin will confirm a corpus entry existed to a reader who no
+       * longer has it.
+       *
+       * Weekly rather than hourly on purpose: the subjects are
+       * append-mostly, and a copy taken more often than the data
+       * changes buys nothing but write volume. Failure alerts rather
+       * than passing quietly — a backup nobody noticed stopping is the
+       * shape every backup story ends in.
+       */
+      ctx.waitUntil(
+        import("@/services/cold-export").then(({ runColdExport }) =>
+          runColdExport(env)
+            .then((report) => {
+              const short = report.bundles.filter((b) => b.truncated);
+              if (short.length > 0) {
+                return import("@/lib/alerts").then(({ sendAlert }) =>
+                  sendAlert(env, {
+                    condition: "worker_health",
+                    key: "cold-export-truncated",
+                    detail: `Cold export truncated. Prefixes past the per-pass cap: ${short
+                      .map((b) => `${b.prefix} (${b.keys} carried)`)
+                      .join(", ")}. A truncated bundle is a PARTIAL record and must never be restored as a whole one.`,
+                  }),
+                );
+              }
+              return undefined;
+            })
+            .catch((error: unknown) =>
+              import("@/lib/alerts").then(({ sendAlert }) =>
+                sendAlert(env, {
+                  condition: "worker_health",
+                  key: "cold-export-failed",
+                  detail: `Cold export failed: ${String(error)}. The weekly copy of the irreplaceable prefixes did not complete. The anchor chain still proves integrity; nothing now proves availability.`,
+                }),
+              ),
+            ),
+        ),
+      );
+      /**
        * THE WARD ROUND rides the Sunday press: the weekly ecosystem
        * census (services/ward-round.ts) that keeps the outreach data
        * from going stale by nobody remembering a script. Failure

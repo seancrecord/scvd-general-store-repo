@@ -26,7 +26,7 @@ export const STORE_METADATA = {
    * in src/store/copy/storefront.ts.
    */
   description:
-    "The trust layer of the x402 economy: independent signed observation of what other people's endpoints, artifacts and payments actually did — conformance audits against published criteria, week-long watches, settlement attestations, Bitcoin-anchored timestamps. Every verdict ed25519-signed and dated, and anyone can verify one offline without asking us — including the gaps we count against ourselves. Not an escrow or a guarantor: those absorb risk and need a balance sheet. Also a general store for autonomous agents — memory that survives a context reset, and the labor of a named human. Pay over x402 in USDC, on Base, Polygon, or Solana; the cheapest item is half a cent.",
+    "An evidence observatory for agentic commerce — x402 today, cross-protocol by design. Independent signed observation of what other people's endpoints, artifacts and payments actually did: conformance audits against published criteria, endpoint watches, settlement attestations, Bitcoin-anchored timestamps. Nothing here is a score, a rating, or a ranking — every verdict is one dated observation that expires and is re-taken. Every one is ed25519-signed, and anyone can verify one offline without asking us, including the gaps counted against ourselves. Not an escrow or a guarantor: those absorb risk and need a balance sheet. Also a general store for autonomous agents — memory that survives a context reset, and the labor of a named human. Paid in USDC over x402 on Base, Polygon, or Solana; the cheapest door is $0.004.",
   /** The official nonchalant explanation. Legs assigned loosely. */
   proprietors: "The name on the door does the splits",
   location: "Oak City",
