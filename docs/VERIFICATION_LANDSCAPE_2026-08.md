@@ -510,6 +510,78 @@ have passed every test we had. `test/signability-guard.spec.ts`
 now walks every priced door and fails the suite if any EVM entry
 loses its EIP-712 extra.
 
+## 11. The joins thesis: coherence classes inside the Passport
+
+Third keeper filing of 2026-08-24, and the one that names the wedge:
+agent commerce is fragmenting into complementary machine surfaces —
+Bazaar catalogs, MCP cards (/.well-known/mcp.json), A2A Agent Cards,
+llms.txt, OpenAPI, agent-services.json, directory listings, receipts
+— and everyone validates each surface alone. **SCVD validates the
+JOINS: do the surfaces agree, does the live endpoint still behave
+like the catalog says, and can the disagreement be cited as signed
+evidence.** Marketing line, keeper-approved wording: "SCVD finds
+contradictions between the machine surfaces agents use before they
+pay." A fact-claim, so it survives the no-score doctrine.
+
+NOT ten products. Observation classes inside the one Endpoint
+Passport (§10.1), landing as protocol-registry rows + battery
+families per M2's no-migration rule:
+
+1. **discovery_coherence** (ship first) — one service across
+   Bazaar, MCP card, A2A card, llms.txt, OpenAPI, menu/catalog,
+   directories, owned well-known files: do names, endpoints, tools,
+   schemas, prices, networks, payTo, capabilities agree? Output
+   PASS / DRIFT / CONFLICT / NOT_OBSERVED with per-surface facts.
+2. **price_settlement_coherence** (very high) — catalog price vs
+   live 402 amount vs atomic USDC vs settlement vs receipt. RULE:
+   this is the QUICK LOOK'S growth path (0.17), not a second cheap
+   oracle — same route, richer answer, one buyer habit.
+3. **schema_coherence** (very high) — MCP inputSchema vs OpenAPI vs
+   Bazaar extension vs actual response payload. Agents act from
+   schemas, not prose; drift breaks calls on live endpoints.
+4. **capability_coherence** — streaming/transport/auth/chains
+   claimed vs observed.
+5. **identity_binding** — ⚑ BLOCKED ON KEEPER: cross-origin
+   operator resolution (domain/payTo/signing key/repo) is exactly
+   the operator-linking question G2/G-privacy already flags.
+   Same-origin surface comparison is unencumbered; the binding
+   GRAPH needs a ruling first.
+6. **freshness_coherence** — do timestamps, cache headers,
+   last_seen, valid_until, badge renewal and the live probe tell
+   one story. The recurring-revenue wedge.
+7. **receipt_coherence** — does the delivered artifact match the
+   surface the agent SELECTED (toolName, price, schema, chain).
+   Dogfood field first: bind a discovery-surface hash into our own
+   receipts so the artifact is provably what the buyer saw.
+8. **registry_coherence** — x402-list vs Bazaar vs MCP registries
+   vs owned surfaces. The 0.14 degraded-status incident is this
+   class experienced from the subject's side.
+9. **corrections** — correction_of / supersedes / affected_surfaces
+   pointers; anchored wrongness cannot be deleted but can be
+   surrounded by more-discoverable signed corrections.
+10. **stated_conditions** (later) — refund/SLA/auth/rate-limit
+    claims vs live behavior.
+
+Implementation order (keeper's, annotated against the plans):
+registry rows for discovery surfaces (a small extension to
+src/evidence/subject.ts — M2 built for this) → subject binding
+model BEFORE checks → host inventory first, raw bytes/hashes, no
+grading (G3/G4 doctrine: free now, uncollectable later) → derived
+coherence checks → **signed Diff Observations, which are evidence
+envelopes already** (the diff is the observation block, raw hashes
+its evidence capture, not_observed its limitations — no new
+container) → passport module → **self-row coherence in CI as a
+release blocker** (we serve llms.txt, MCP, A2A, menu.json and the
+well-knowns today and nothing asserts they agree; never grade
+anyone before that test exists) → productize: free inventory, paid
+signed report, paid refresh, watch + drift alerts.
+
+Sequencing: none of this jumps the queue. Phase 1's producers and
+the subject-binding model are prerequisites; the free moves (rows,
+self-coherence test) can ride convenient branches. Observer costs
+apply — inventory fetches are bounded, cached and rate-limited like
+any probe (B6, 0-ops).
+
 ---
 
 *Filed 2026-08-24 from three parallel research passes over the top ~30
