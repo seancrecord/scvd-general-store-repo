@@ -103,6 +103,7 @@ describe("the passport door", () => {
     expect(String(passport.payload["not_a_guarantee"])).toContain(
       "not endorsement",
     );
+    expect(passport.payload["modules"]).toEqual([]);
   });
 
   it("refuses a failing host with the reason, never a public row", async () => {
@@ -137,9 +138,19 @@ describe("the passport door", () => {
       await SELF.fetch(`${BASE}/passport`, {
         headers: { Accept: "application/json" },
       })
-    ).json()) as { the_example: { payload: { observer: string; host: string } } };
+    ).json()) as {
+      the_example: {
+        payload: {
+          observer: string;
+          host: string;
+          modules: Array<{ id: string; derived: string }>;
+        };
+      };
+    };
     expect(json.the_example.payload.host).toBe("scvd.store");
     expect(json.the_example.payload.observer).toContain("SELF-OBSERVED");
+    expect(json.the_example.payload.modules[0]?.id).toBe("discovery_coherence");
+    expect(json.the_example.payload.modules[0]?.derived).toBe("agree");
 
     const html = await (
       await SELF.fetch(`${BASE}/passport`, { headers: { Accept: "text/html" } })

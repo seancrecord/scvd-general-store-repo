@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { originCatalogFetcher } from "@/discovery/self-module";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -35,6 +36,12 @@ function passportHtml(passport: EndpointPassport): string {
     ${p.history.verdict_changes} verdict changes ·
     <a href="${escapeHtml(p.history.full_history_url)}">full signed history</a></p>
     <p class="menu-meta">observer: ${escapeHtml(p.observer)}</p>
+    ${p.modules
+      .map(
+        (module) =>
+          `<p class="menu-meta">checked: <code>${escapeHtml(module.id)}</code> → <strong>${escapeHtml(module.derived)}</strong> · not checked: ${escapeHtml(module.not_checked.join(", "))}</p>`,
+      )
+      .join("")}
     <p class="menu-desc">${escapeHtml(p.not_a_guarantee)}</p>
     <details><summary>the signed object (verify it without asking us)</summary>
     <pre>${escapeHtml(JSON.stringify(passport, null, 2))}</pre></details>
@@ -43,7 +50,11 @@ function passportHtml(passport: EndpointPassport): string {
 
 passportRoutes.get("/passport", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const self = await issueSelfPassport(c.env);
+  const self = await issueSelfPassport(
+    c.env,
+    new Date(),
+    originCatalogFetcher(new URL(c.req.url).origin),
+  );
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json({
       what: "One canonical, signed, expiring object per endpoint: the census's evidence about one host, with a freshness state an agent can act on mechanically. Ready-side hosts only — names appear only on the ready side, everywhere in this store.",
@@ -85,7 +96,14 @@ passportRoutes.get("/passport/:host", async (c) => {
   const ownHost = new URL(base).host.toLowerCase();
   const passportOrRefusal =
     rawHost === ownHost
-      ? { issued: true as const, passport: await issueSelfPassport(c.env) }
+      ? {
+          issued: true as const,
+          passport: await issueSelfPassport(
+            c.env,
+            new Date(),
+            originCatalogFetcher(new URL(c.req.url).origin),
+          ),
+        }
       : await issuePassport(c.env, rawHost);
 
   if (!passportOrRefusal.issued) {
