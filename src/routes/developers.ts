@@ -1,4 +1,8 @@
 import { Hono } from "hono";
+import {
+  GLOBAL_PROBES_PER_MINUTE,
+  PROBES_PER_MINUTE,
+} from "@/services/preflight";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
@@ -142,7 +146,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
     },
     {
       q: "Rate limits",
-      a: "There is no application-level rate limit, and so no RateLimit-Limit/-Remaining/-Reset headers — a ceiling nothing enforces is worse than no ceiling, because you would throttle against a fiction. A 429 can still arrive from the edge in front of the store under abuse conditions, and it carries Retry-After. A refused request is never charged for. If a limiter is ever added it will announce itself in those headers and be documented here first.",
+      a: `One path is limited and the rest are not. The free preflight at /api/preflight/v2 spends outbound requests to a host you choose, so it carries ${PROBES_PER_MINUTE} probes per isolate per minute and a global backstop of ${GLOBAL_PROBES_PER_MINUTE} per minute; past either you get a 429 with Retry-After, and the body says plainly that the budget is our cost bound and not a fact about your endpoint. Nothing else here has an application-level ceiling, and so returns no RateLimit-Limit/-Remaining/-Reset headers — a ceiling nothing enforces is worse than no ceiling, because you would throttle against a fiction. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. THESE TWO NUMBERS ARE READ FROM THE LIMITER ITSELF: this sentence said "there is no application-level rate limit" for a day after one shipped, which is exactly what a hand-typed claim does.`,
     },
     {
       q: "Versioning and deprecation",

@@ -68,8 +68,11 @@ describe("the house rules stay citable", () => {
       expect(numbers[index]!).toBeGreaterThan(numbers[index - 1]!);
     }
 
-    // The highest number is the newest rule, and rule 46 is the newest.
-    expect(Math.max(...numbers)).toBe(46);
+    // The highest number is the newest rule, and rule 50 is the newest.
+    // (47-49 never existed: rule 50 skipped ahead on the keeper's
+    // instruction. A gap is history; the loop above still bans a
+    // duplicate or a decrease, which are the ambiguities that matter.)
+    expect(Math.max(...numbers)).toBe(50);
   });
 
   it("dates every rule added or amended since the practice began", () => {

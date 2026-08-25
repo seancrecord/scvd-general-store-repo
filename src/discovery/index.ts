@@ -79,3 +79,5 @@ export {
   signHostDiscoveryReport,
 } from "@/discovery/sign-report";
 export type { DiscoveryReportRecord } from "@/discovery/sign-report";
+export { selfRowFromCatalogs, selfRowVerdict } from "@/discovery/self-row";
+export type { SelfRowVerdict } from "@/discovery/self-row";

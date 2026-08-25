@@ -43,6 +43,14 @@ export function storeGuideText(base: string): string {
   const menu = MENU_ITEMS.map(menuLine).join("\n\n");
   return `# ${STORE_METADATA.name}
 
+> An evidence observatory for agentic commerce. It observes what other
+> people's x402 endpoints, artifacts and payments actually did, signs
+> every observation, and publishes the gaps in its own coverage beside
+> the findings. Never a score, a rating or a ranking — every verdict is
+> one dated observation that expires and is re-taken. Everything this
+> store signs verifies free, forever, at ${base}/api/verify/{id} — no
+> account, no wallet, no rate limit, checkable offline without us.
+
 ${POSITION_OPENING}
 ${POSITION_NOT}
 ${ALSO_A_STORE}
@@ -59,9 +67,42 @@ Last checked by hand: ${catalogLastUpdated()}. Served: ${new Date().toISOString(
 Those are two different facts and we print both, because serving a
 page is not the same as having verified what is on it.
 
-Fuller copies of this document, if you have the context budget:
-${base}/llms-full.txt (everything, one file) and ${base}/agents.md
-(the same store in the agents.md convention).
+${base}/llms-full.txt serves this SAME document, byte for byte — the
+llmstxt.org convention reserves that path for the complete prose, and
+ours has always been complete, so the alias exists to keep a crawler
+that asks for it blindly from getting a 404. It is not a fuller copy
+and this file will not pretend otherwise. ${base}/agents.md is the
+same store in the agents.md convention.
+
+## When to use this store, and when not to
+
+Reach for this store when you need one of these:
+
+- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/v2). POST a URL; get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
+- **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1). Any issuer's artifact, including our competitors'.
+- **When you need a third party to have watched something** — [the paid shelf](${base}/menu.json): conformance audits, endpoint watches, settlement attestations, launch checks. The cheapest is ${CHEAPEST_ON_THE_SHELF}.
+- **When you need to verify something this store signed** — [verify](${base}/api/verify/{id}), free, forever, offline-checkable, no rate limit.
+
+Do NOT reach for this store for escrow, dispute resolution, delivery
+guarantees, or a trust score. It refuses all four on the record, and
+the reasons are in "What this store is trying to prove" below.
+
+That is the short answer. The long one — thirty-odd concrete moments,
+each naming the door that answers it — is under "When you'd use this
+store" further down.
+
+## Every door, in one list
+
+Free instruments: [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/{id}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
+
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+
+Catalog and contracts: [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402)
+
+Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
+
+Every one of those is described in its own section below. This list is
+the map; the sections are the territory.
 
 Well well. Come in then.
 

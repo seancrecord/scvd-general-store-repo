@@ -188,7 +188,30 @@ export async function recordChallengeIssued(
 ): Promise<void> {
   const event = buildEvent(env, "challenge", itemKeyFromPath(path), signals);
   const suffix = bucketSuffix(event, true);
-  await bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item));
+  /*
+   * ONE WAVE, NOT A QUEUE. Measured 2026-08-25: /api/buy/hello answered
+   * its 402 in ~1.14s warm while /openapi.json — EIGHTY TIMES the
+   * payload — answered in 0.19s. The door was not slow because of
+   * bytes. It was slow because of this function.
+   *
+   * `bump` is a read then a write, and these four ran one after
+   * another, so a challenge paid up to eight SERIAL KV round trips
+   * before the agent got an answer. They touch four different keys
+   * and none reads what another wrote, so the ordering bought
+   * nothing at all.
+   *
+   * Deferring the whole call through waitUntil was tried first and
+   * the suite refused it: referrals.spec reads the referrer-host
+   * table immediately after the response, and that table is written
+   * by the event below. The test was right — write-before-response
+   * is an observable contract here — so the fix keeps every await
+   * and removes the QUEUEING instead. Same writes, same guarantees,
+   * roughly a quarter of the wall clock.
+   */
+  const pending: Array<Promise<void>> = [];
+  pending.push(
+    bump(env, KV_KEYS.metric(metricsMonth(), `402${suffix}`, event.item)),
+  );
 
   // THE INFRASTRUCTURE DIET, 2026-07-28. A crawler 402 used to cost
   // three KV writes; it now costs one.
@@ -223,29 +246,31 @@ export async function recordChallengeIssued(
   if (!isNoiseFloor) {
     // Who's window-shopping, by channel, the diagnosis column for
     // "challenges without settles: shoppers or scanners?"
-    await bump(
-      env,
-      KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel),
+    pending.push(
+      bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel)),
     );
   }
   if (suffix === "") {
     // Organic day counter for the trend table.
-    await bump(env, KV_KEYS.metric(metricsMonth(), "d402", dayKey()));
+    pending.push(bump(env, KV_KEYS.metric(metricsMonth(), "d402", dayKey())));
   }
   if (event.declared_source && !event.house) {
     // ?src= venue markers: the free-papers measurement.
-    await bump(
-      env,
-      KV_KEYS.metric(
-        metricsMonth(),
-        "venue",
-        venueCounterKey(event.declared_source),
+    pending.push(
+      bump(
+        env,
+        KV_KEYS.metric(
+          metricsMonth(),
+          "venue",
+          venueCounterKey(event.declared_source),
+        ),
       ),
     );
   }
   if (!isNoiseFloor) {
-    await writeEvent(env, event);
+    pending.push(writeEvent(env, event));
   }
+  await Promise.all(pending);
 }
 
 /**
