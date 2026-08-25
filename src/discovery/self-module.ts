@@ -52,8 +52,16 @@ export async function fetchSelfCatalogs(
 }> {
   const texts: Record<string, string> = {};
   const urls: Record<string, string> = {};
-  for (const [surface, path] of Object.entries(CATALOG_PATHS)) {
-    texts[surface] = await getText(path);
+  // Sequential fetches stacked the landing over the 5s spec timeout.
+  const fetched = await Promise.all(
+    Object.entries(CATALOG_PATHS).map(async ([surface, path]) => ({
+      surface,
+      path,
+      text: await getText(path),
+    })),
+  );
+  for (const { surface, path, text } of fetched) {
+    texts[surface] = text;
     urls[surface] = `${base}${path}`;
   }
   const mcpItemIds = SHELF_CLUSTERS.flatMap((cluster) => [...cluster.itemIds]);
@@ -108,20 +116,20 @@ export async function selfPassportModules(input: {
   getText: CatalogFetcher;
 }): Promise<PassportModule[]> {
   const live = await fetchSelfCatalogs(input.base, input.getText);
-  return [
-    await discoveryModuleFromCatalogs(
+  return Promise.all([
+    discoveryModuleFromCatalogs(
       live,
       input.signingKeyHex,
       input.at,
       input.clock,
     ),
-    await schemaModuleFromCatalogs(
+    schemaModuleFromCatalogs(
       live,
       input.signingKeyHex,
       input.at,
       input.clock,
     ),
-  ];
+  ]);
 }
 
 export async function selfPassportDiscoveryModule(input: {

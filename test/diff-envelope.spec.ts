@@ -103,6 +103,9 @@ describe("the Diff Observation wraps in the evidence envelope", () => {
     const verdict = validateEnvelopePayload(payload);
     expect(verdict.ok, JSON.stringify(verdict)).toBe(true);
     expect(payload.methodology.schema).toBe(EVIDENCE_SCHEMA_V1);
+    expect(payload.methodology.battery_version).toBe(
+      DISCOVERY_COHERENCE_FAMILY.versions[0],
+    );
     expect(payload.subject.protocol).toBe(DISCOVERY_COHERENCE_FAMILY.id);
     expect(payload.subject.chain).toBe("none");
     expect(payload.subject.rail).toBe("none");
