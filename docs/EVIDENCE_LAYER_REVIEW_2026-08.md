@@ -206,7 +206,11 @@ Carries its own changelog (`changed_in_v2`) — the pattern B16 wants.
   seller serve a clean 402 to the probe and a paywall-off 200 to real
   buyers. Consider a second unsigned identity and divergence flagging.
 
-- **B9 [ ] — signs the conclusion, not the evidence.** (P2)
+- **B9 [~] PARTIAL 2026-08-25 — signs the conclusion, not the evidence.** (P2)
+  Standing-watch rows now carry the verbatim PAYMENT-REQUIRED value,
+  curated response headers, and a bounded complete-body sha256 inside
+  their signed bytes (`b7d9354`). The broader reproduction envelope
+  fields and the ward-round / launch-check producers remain open.
   A verifier can check "SCVD signed this verdict" but can't reproduce
   what SCVD saw. Sign the reproduction envelope: verbatim
   PAYMENT-REQUIRED bytes, curated headers, body_sha256,
@@ -670,7 +674,10 @@ network effect.
   buyers compute their own priors — the corpus never ships a score.
 
 ### G-findings
-- **G1 [ ] CORE — the corpus stores conclusions, not evidence.** (P4)
+- **G1 [~] PARTIAL 2026-08-25 CORE — the corpus stores conclusions, not evidence.** (P4)
+  The standing-watch producer now stores signed raw response evidence
+  (`b7d9354`); ward rows still discard it, so the corpus loss described
+  below remains open until the ward producer lands.
   Ward rows keep failed-check NAMES and derived OfferFacts; the
   verbatim PAYMENT-REQUIRED bytes, response headers, and body hash
   are discarded at probe time. Same disease as B9, and here it is an
