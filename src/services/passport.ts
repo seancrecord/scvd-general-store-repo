@@ -1,3 +1,4 @@
+import { citedModulesForHost } from "@/discovery/host-module";
 import {
   originCatalogFetcher,
   selfPassportDiscoveryModule,
@@ -101,7 +102,7 @@ export interface PassportPayload {
   /** Who observed, said plainly — load-bearing for the self passport. */
   observer: string;
   not_a_guarantee: string;
-  /** Citations of envelopes this passport is a view over. Empty until a host is joined. */
+  /** Citations of envelopes this passport is a view over. Empty until a join was stored; GET does not fetch. */
   modules: PassportModule[];
 }
 
@@ -238,7 +239,7 @@ export async function issuePassport(
     chip_url: `${base}/badges/passport/${host}.svg`,
     observer: `${new URL(base).host} weekly census (signed corpus; one GET per host per week, Web Bot Auth)`,
     not_a_guarantee: NOT_A_GUARANTEE,
-    modules: [],
+    modules: await citedModulesForHost(env, host),
   };
   return { issued: true, passport: await signPassport(env, payload) };
 }

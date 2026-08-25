@@ -4,6 +4,11 @@ import {
   type HostSurfaceRow,
 } from "@/discovery/host-probe";
 import { selfJoinDisagreements } from "@/discovery/self-coherence";
+import { rememberHostDiscoveryModule } from "@/discovery/host-module";
+import {
+  rememberInventoryLook,
+  type SnapshotCompare,
+} from "@/discovery/snapshot";
 import { storeIdentity } from "@/lib/identity";
 import { checkProbeTarget } from "@/lib/probe-target";
 import type { Env } from "@/types";
@@ -35,6 +40,7 @@ export interface DiscoveryInventory {
   surfaces: InventorySurfaceRow[];
   disagreements: ReturnType<typeof selfJoinDisagreements>;
   derived: { verdict: "agree" | "conflict" | "not_observed" };
+  compared_to: SnapshotCompare | null;
   not_checked: string[];
   does_not_prove: string[];
   signed: false;
@@ -124,6 +130,7 @@ export function inventoryFromCapture(
     surfaces: capture.surfaces,
     disagreements,
     derived: { verdict: derived },
+    compared_to: null,
     not_checked: [
       ...NOT_CHECKED,
       ...capture.surfaces
@@ -133,7 +140,7 @@ export function inventoryFromCapture(
     does_not_prove: [
       "that the compared surfaces belong to the same operator — same_operator is refused (G2)",
       "that the live buy door still behaves like these catalogs",
-      "anything after this moment — one inventory, not a watch",
+      "continuity — a second look names what moved since the last look we stored; it is not a watch and does not alert",
     ],
     signed: false,
     store_identity: storeIdentity(base),
@@ -170,13 +177,23 @@ export async function inventoryOrigin(input: {
     env: input.env,
     fetchImpl: input.fetchImpl,
   });
-  return {
-    status: 200,
-    body: inventoryFromCapture(
-      capture,
-      base,
-      input.at ?? new Date().toISOString(),
-      input.clock ?? "injected-request-clock",
-    ),
-  };
+  const body = inventoryFromCapture(
+    capture,
+    base,
+    input.at ?? new Date().toISOString(),
+    input.clock ?? "injected-request-clock",
+  );
+  body.compared_to = await rememberInventoryLook(input.env, {
+    about: body.about,
+    at: body.at,
+    verdict: body.derived.verdict,
+    surfaces: body.surfaces,
+  });
+  await rememberHostDiscoveryModule({
+    env: input.env,
+    capture,
+    at: body.at,
+    clock: body.clock,
+  });
+  return { status: 200, body };
 }

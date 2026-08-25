@@ -1,3 +1,5 @@
+import { moduleFromPayload } from "@/discovery/cite-module";
+import { writeHostDiscoveryModule } from "@/discovery/host-module";
 import { wrapDiffEnvelope, signDiffEnvelope } from "@/discovery/diff-envelope";
 import { buildDiffObservation } from "@/discovery/diff-observation";
 import {
@@ -90,6 +92,11 @@ export async function persistDiscoveryReport(
     envelope,
   };
   await env.PATRONS.put(KV_KEYS.discoveryReport(report_id), JSON.stringify(record));
+  await writeHostDiscoveryModule(
+    env,
+    new URL(record.about).host,
+    await moduleFromPayload(envelope),
+  );
   return record;
 }
 

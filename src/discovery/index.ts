@@ -79,5 +79,15 @@ export {
   signHostDiscoveryReport,
 } from "@/discovery/sign-report";
 export type { DiscoveryReportRecord } from "@/discovery/sign-report";
+export {
+  compareCatalogSnapshots,
+  rememberInventoryLook,
+} from "@/discovery/snapshot";
+export type { SnapshotCompare } from "@/discovery/snapshot";
+export { citeHostCapture, citeWrappedJoin } from "@/discovery/cite-module";
+export {
+  readHostDiscoveryModule,
+  rememberHostDiscoveryModule,
+} from "@/discovery/host-module";
 export { selfRowFromCatalogs, selfRowVerdict } from "@/discovery/self-row";
 export type { SelfRowVerdict } from "@/discovery/self-row";
