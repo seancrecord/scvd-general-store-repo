@@ -64,6 +64,16 @@ jobs:
       # no warning, at some unknown future size.
       - name: Scalability audit
         run: npm run audit
+      # WHICH PUBLIC CLAIMS ARE STILL UNBOUND. /developers served
+      # "There is no application-level rate limit" for a day after
+      # one shipped — true when written, and the code moved under it.
+      # That is the cost of shipping fast, not a character failure,
+      # and the answer is not to ship slower. It is to make drift
+      # VISIBLE: every claim-shaped line is counted, and each one is
+      # derived from the code, dated so a reader can weigh its age,
+      # or declined on the record. The budget only goes down.
+      - name: Claims register
+        run: npm run claims
       # WHICH DOCUMENTS HAVE GONE QUIET — printed, never enforced.
       # The facts a machine can recompute are already guarded by tests
       # that fail this build (doc-drift for outbound copy,

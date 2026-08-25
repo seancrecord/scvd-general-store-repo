@@ -42,6 +42,7 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
+import { REGISTER } from "./claims-register.mjs";
 import { join, relative } from "node:path";
 
 const ROOT = process.cwd();
@@ -140,7 +141,48 @@ if (claims.length === 0) {
   process.exit(1);
 }
 
-const unbound = claims.filter((claim) => !claim.bound);
+/**
+ * A REGISTERED CLAIM IS RESOLVED — derived, dated, declined, or
+ * external. See scripts/claims-register.mjs for what each means and
+ * why "dated" is not a lesser answer than "derived".
+ */
+const resolvedBy = (claim) =>
+  REGISTER.find(
+    (entry) => entry.file === claim.file && claim.text.includes(entry.match),
+  );
+
+/**
+ * THE ROT CHECK, and the reason this register is worth more than a
+ * list in a wiki. Copy gets rewritten. An entry still pointing at a
+ * sentence nobody serves any more has quietly released a claim from
+ * its guard, and the run would report a clean sheet while doing it.
+ *
+ * So a register entry that matches NOTHING is a hard failure, in the
+ * same spirit as the canary above: an instrument that stops seeing
+ * the thing it exists to see must take the build down rather than
+ * report less.
+ */
+const everyLine = sourceFiles(SRC)
+  .filter((path) => !isNarrative(path))
+  .map((path) => ({ file: relative(ROOT, path), body: readFileSync(path, "utf8") }));
+const stale = REGISTER.filter((entry) => {
+  const file = everyLine.find((candidate) => candidate.file === entry.file);
+  return !file || !file.body.includes(entry.match);
+});
+if (stale.length > 0) {
+  console.error("\nClaims register FAILED: entries match nothing any more.\n");
+  for (const entry of stale) {
+    console.error(`  ${entry.id} -> ${entry.file}`);
+    console.error(`    looked for: ${entry.match}`);
+  }
+  console.error(
+    "\nThe copy moved and its resolution did not follow. Re-point the entry or drop it — a resolution aimed at a sentence nobody serves is a claim with no guard at all.",
+  );
+  process.exit(1);
+}
+
+const unbound = claims.filter((claim) => !claim.bound && !resolvedBy(claim));
+const resolved = claims.length - unbound.length;
 
 console.log(`Claims register — ${claims.length} claim-shaped lines.\n`);
 if (unbound.length > 0) {
@@ -160,5 +202,23 @@ if (unbound.length > 0) {
  * legible. Raising it is allowed and must carry a reason; lowering
  * it needs no permission.
  */
-const UNBOUND_BUDGET = unbound.length;
-console.log(`Budget: ${UNBOUND_BUDGET}. Bound: ${claims.length - unbound.length}.`);
+const UNBOUND_BUDGET = 27;
+const byResolution = REGISTER.reduce((tally, entry) => {
+  tally[entry.resolution] = (tally[entry.resolution] ?? 0) + 1;
+  return tally;
+}, {});
+console.log(
+  `Resolved ${resolved} of ${claims.length} — ` +
+    Object.entries(byResolution)
+      .map(([kind, n]) => `${n} ${kind}`)
+      .join(", ") +
+    `, ${resolved - REGISTER.length} interpolated or dated in place.`,
+);
+console.log(`Unbound: ${unbound.length} (budget ${UNBOUND_BUDGET}).`);
+
+if (unbound.length > UNBOUND_BUDGET) {
+  console.error(
+    `\nOver the unbound budget (${unbound.length} > ${UNBOUND_BUDGET}). Resolve one — derive it, date it, or decline it on the record — or raise the budget in scripts/claims.mjs with a reason.`,
+  );
+  process.exit(1);
+}

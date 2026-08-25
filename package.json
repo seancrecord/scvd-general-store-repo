@@ -22,6 +22,7 @@
     "bazaar:check": "node scripts/bazaar-check.mjs",
     "wba:check": "node scripts/wba-check.mjs",
     "audit": "node scripts/audit.mjs",
+    "claims": "node scripts/claims.mjs",
     "skill:publish": "node scripts/publish-skill.mjs",
     "build:check": "wrangler deploy --dry-run --outdir .build-check",
     "bazaar:validate": "node scripts/bazaar-validate.mjs",
