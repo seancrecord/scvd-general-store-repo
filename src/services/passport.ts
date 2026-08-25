@@ -1,7 +1,7 @@
 import { citedModulesForHost } from "@/discovery/host-module";
 import {
   originCatalogFetcher,
-  selfPassportDiscoveryModule,
+  selfPassportModules,
   type CatalogFetcher,
   type PassportModule,
 } from "@/discovery/self-module";
@@ -259,23 +259,24 @@ export async function issueSelfPassport(
 ): Promise<EndpointPassport> {
   const base = env.STORE_BASE_URL;
   const host = new URL(base).host.toLowerCase();
-  const discovery = await selfPassportDiscoveryModule({
+  const at = now.toISOString();
+  const modules = await selfPassportModules({
     base,
     signingKeyHex: env.SIGNING_KEY,
-    at: now.toISOString(),
+    at,
     clock: "injected-request-clock",
     getText,
   });
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
-    issued_at: now.toISOString(),
-    expires: expiryFrom(now.toISOString()),
+    issued_at: at,
+    expires: expiryFrom(at),
     freshness: "fresh",
     freshness_rule: `Re-issued on every request from live self-observation; fresh by construction, expires ${AGING_DAYS} days after issue if you keep a copy.`,
     latest: {
       verdict: "ready",
-      observed_at: now.toISOString(),
+      observed_at: at,
       week: null,
     },
     history: {
@@ -290,7 +291,7 @@ export async function issueSelfPassport(
     observer:
       "SELF-OBSERVED — the subject and the observer are the same party. Do not weight this like a census passport; every claim in it is re-checkable at the public surfaces it names (/llms.txt, /openapi.json, /.well-known/x402.json, /api/verify), which is the only reason it is worth issuing at all.",
     not_a_guarantee: NOT_A_GUARANTEE,
-    modules: [discovery],
+    modules,
   };
   return signPassport(env, payload);
 }

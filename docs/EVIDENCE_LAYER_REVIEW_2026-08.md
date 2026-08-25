@@ -1499,14 +1499,22 @@ protocol/chain as first-class subject dimensions — a host is a host.
   Solana?" is now per class: attestation/statement/till yes (read or
   till); launch_check no.
 - **M2 [~] — subject dimensions in the corpus schema.** Envelope
-  subject tuple shipped in 1.1. Discovery-surface families
-  (x402_bazaar, mcp_card, a2a_agent_card, llms_txt, openapi, …)
-  landed as PROTOCOL_FAMILIES rows 2026-08-24 so a coherence
-  observation can name the surface. Join-class families that
-  followed: `discovery_coherence`, `schema_coherence` (2026-08-25,
-  #236), `receipt_coherence` (2026-08-25 — dogfood: certificates
-  carry `saw`, the hash of the catalog surface the buyer selected).
-  Corpus schema still open (G-schema).
+  subject tuple shipped in 1.1 (`6c4d71a`). Discovery-surface
+  families (x402_bazaar, mcp_card, a2a_agent_card, llms_txt,
+  openapi, …) landed as PROTOCOL_FAMILIES rows 2026-08-24 so a
+  coherence observation can name the surface. JOIN BATTERIES,
+  2026-08-25 — the row is no longer an empty id:
+  `discovery_coherence` self-join + CI + self-passport module
+  (wrap `80e369c`); `schema_coherence` extractors + join + CI
+  (`155a01a`, #236) and self-passport citation (`efc3dbf`, #239);
+  `receipt_coherence` dogfood (`35511c4`, #242) — certificates
+  carry `saw`, the hash of the catalog surface the buyer selected.
+  MCP is named not_checked on the schema citation (live RPC, not
+  a fetched catalog). Still unbuilt as batteries:
+  price_settlement_coherence (0.17's path), capability_coherence,
+  freshness_coherence, registry_coherence, corrections,
+  stated_conditions. identity_binding remains ⚑ G2. Corpus schema
+  still open (G-schema).
 - **M3 [ ] — the trajectory surface.** "Show the spike as it
   happens" is a derived time-series over the corpus chain (hosts,
   offers seen, settlements observed, failure classes — per week,
