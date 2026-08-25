@@ -595,22 +595,55 @@ export async function recordSettlement(
 ): Promise<void> {
   const month = metricsMonth();
   const event = buildEvent(env, "settle", itemKeyFromPath(path), signals);
+  /*
+   * ONE WAVE, NOT A QUEUE — rule 50, applied where the 402 fix
+   * stopped.
+   *
+   * recordChallengeIssued was parallelised on 2026-08-25; this
+   * function, which runs on the SETTLE, was left as twenty serial KV
+   * round trips. Nine distinct counter keys, none of which reads
+   * another's write, awaited one behind the other while the buyer
+   * held the connection.
+   *
+   * It is worse than a wait. performSettlement calls this AFTER the
+   * money has moved and BEFORE openDeliveryIntent writes the row that
+   * makes an undelivered sale recoverable, so every one of those trips
+   * widened the window where a payment exists with no delivery record.
+   * Parallelising shortens that window, not only the response.
+   *
+   * WHAT DOES NOT MOVE: every write is still AWAITED before this
+   * function returns. The last attempt at this deferred writes with
+   * waitUntil and broke referrals.spec, because writeEvent's evt: row
+   * is read back by readReferrerHosts and the counters are read back
+   * by computeStats. Remove the QUEUE, keep the awaits.
+   *
+   * The two read-then-write pairs below (railMeterStart, firstDollar)
+   * stay serial WITHIN their own chain — they are get-then-put on one
+   * key — but they no longer block anything else.
+   */
+  const pending: Array<Promise<void>> = [];
   // Settles never bucket as infrastructure: a crawler that pays is a customer.
-  await bump(
-    env,
-    KV_KEYS.metric(month, `paid${bucketSuffix(event, false)}`, event.item),
-  );
-  await bump(
-    env,
-    KV_KEYS.metric(
-      month,
-      `tier${bucketSuffix(event, false)}`,
-      `${event.item}:${tierLabel(signals.paidUsdc, signals.minimumUsdc)}`,
+  pending.push(
+    bump(
+      env,
+      KV_KEYS.metric(month, `paid${bucketSuffix(event, false)}`, event.item),
     ),
   );
-  await bump(
-    env,
-    KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel),
+  pending.push(
+    bump(
+      env,
+      KV_KEYS.metric(
+        month,
+        `tier${bucketSuffix(event, false)}`,
+        `${event.item}:${tierLabel(signals.paidUsdc, signals.minimumUsdc)}`,
+      ),
+    ),
+  );
+  pending.push(
+    bump(
+      env,
+      KV_KEYS.metric(month, `src${bucketSuffix(event, false)}`, event.channel),
+    ),
   );
   /**
    * The rail, counted beside the sale rather than inferred from an
@@ -621,62 +654,79 @@ export async function recordSettlement(
    */
   const rail = railOf(signals.network);
   if (rail) {
-    if (!(await env.COUNTERS.get(KV_KEYS.railMeterStart))) {
-      await env.COUNTERS.put(KV_KEYS.railMeterStart, event.at);
-    }
-    await bump(
-      env,
-      KV_KEYS.metric(month, `rail${bucketSuffix(event, false)}`, rail),
+    pending.push(
+      (async () => {
+        if (!(await env.COUNTERS.get(KV_KEYS.railMeterStart))) {
+          await env.COUNTERS.put(KV_KEYS.railMeterStart, event.at);
+        }
+      })(),
+    );
+    pending.push(
+      bump(
+        env,
+        KV_KEYS.metric(month, `rail${bucketSuffix(event, false)}`, rail),
+      ),
     );
     // The MONEY per rail, not just the count — the booked side of the
     // net-by-chain statement. House rides its own suffix as always,
     // but the statement reads both: chain inflow cannot tell family
     // money from a stranger's, so the side that faces it must not
     // either.
-    await bumpBy(
-      env,
-      KV_KEYS.metric(month, `revrail${bucketSuffix(event, false)}`, rail),
-      Math.round(signals.paidUsdc * USDC_MICRO),
+    pending.push(
+      bumpBy(
+        env,
+        KV_KEYS.metric(month, `revrail${bucketSuffix(event, false)}`, rail),
+        Math.round(signals.paidUsdc * USDC_MICRO),
+      ),
     );
   }
   // Revenue, organic and house apart, in integer millionths of USDC.
-  await bumpBy(
-    env,
-    KV_KEYS.metric(month, `rev${bucketSuffix(event, false)}`, "total"),
-    Math.round(signals.paidUsdc * USDC_MICRO),
+  pending.push(
+    bumpBy(
+      env,
+      KV_KEYS.metric(month, `rev${bucketSuffix(event, false)}`, "total"),
+      Math.round(signals.paidUsdc * USDC_MICRO),
+    ),
   );
   if (bucketSuffix(event, false) === "") {
     // The First Dollar: the empty frame by the register fills exactly
     // once, with the first organic settlement, forever.
-    const frame = await env.COUNTERS.get(KV_KEYS.firstDollar);
-    if (!frame) {
-      await env.COUNTERS.put(
-        KV_KEYS.firstDollar,
-        JSON.stringify({
-          item: event.item,
-          paid_usdc: signals.paidUsdc,
-          at: event.at,
-        }),
-      );
-    }
-    await bump(env, KV_KEYS.metric(month, "dpaid", dayKey()));
+    pending.push(
+      (async () => {
+        const frame = await env.COUNTERS.get(KV_KEYS.firstDollar);
+        if (!frame) {
+          await env.COUNTERS.put(
+            KV_KEYS.firstDollar,
+            JSON.stringify({
+              item: event.item,
+              paid_usdc: signals.paidUsdc,
+              at: event.at,
+            }),
+          );
+        }
+      })(),
+    );
+    pending.push(bump(env, KV_KEYS.metric(month, "dpaid", dayKey())));
   }
   if (event.declared_source && !event.house) {
-    await bump(
-      env,
-      KV_KEYS.metric(month, "venue", venueCounterKey(event.declared_source)),
+    pending.push(
+      bump(
+        env,
+        KV_KEYS.metric(month, "venue", venueCounterKey(event.declared_source)),
+      ),
     );
   }
-  await writeEvent(env, event);
-  await raiseFirstOutsideSignature(env, event, "settled");
+  pending.push(writeEvent(env, event));
+  pending.push(raiseFirstOutsideSignature(env, event, "settled"));
   if (signals.payer) {
-    await recordPayerSeen(env, signals.payer);
+    pending.push(recordPayerSeen(env, signals.payer));
   } else {
     // Money moved and no wallet came back with it. Counted, so the gap
     // between settle counters and payer rows stays explainable instead
     // of becoming a mystery someone re-derives in six months.
-    await bump(env, KV_KEYS.metric(month, "nopayer", event.item));
+    pending.push(bump(env, KV_KEYS.metric(month, "nopayer", event.item)));
   }
+  await Promise.all(pending);
 }
 
 async function recordPayerSeen(env: Env, address: string): Promise<void> {

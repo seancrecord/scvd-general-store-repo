@@ -149,32 +149,46 @@ export async function signedOffersForChallenge(
     if (!Array.isArray(accepts) || accepts.length === 0) {
       return null;
     }
-    const offers: Record<string, unknown>[] = [];
-    for (let index = 0; index < accepts.length; index += 1) {
-      const entry = accepts[index] as AcceptsEntry;
-      if (!isSignableAccept(entry)) {
-        // An accepts entry missing a required offer field gets no
-        // offer rather than an offer with a hole in it — a partial
-        // commitment signed by our key is worse than silence.
-        continue;
-      }
-      const payload = {
-        version: 1,
-        resourceUrl,
-        scheme: entry.scheme,
-        network: entry.network,
-        asset: entry.asset,
-        payTo: entry.payTo,
-        amount: entry.amount,
-        validUntil: nowSeconds + OFFER_VALIDITY_SECONDS,
-      };
-      offers.push({
-        format: "jws",
-        acceptIndex: index,
-        payload,
-        signature: await signJws(env, payload),
-      });
-    }
+    /*
+     * ONE WAVE OF SIGNATURES, NOT NINE IN A ROW.
+     *
+     * A fixed-price item quotes 1 tier x 3 rails; pay-what-it-deserves
+     * quotes 3 x 3, and every one of those was a serial ed25519 sign
+     * on the 402 an agent is blocked on. They share no state.
+     *
+     * THE FILTER HAPPENS FIRST, deliberately. acceptIndex commits each
+     * offer to the tier it is an offer FOR, so mapping over the
+     * unfiltered array and dropping entries afterwards would misalign
+     * every index past the first skip — a signed offer pointing at the
+     * wrong amount, which is worse than no offer at all. Pair the
+     * index to the entry before anything is signed.
+     */
+    const signable = accepts
+      .map((entry, index) => ({ entry: entry as AcceptsEntry, index }))
+      // An accepts entry missing a required offer field gets no offer
+      // rather than an offer with a hole in it — a partial commitment
+      // signed by our key is worse than silence.
+      .filter(({ entry }) => isSignableAccept(entry));
+    const offers: Record<string, unknown>[] = await Promise.all(
+      signable.map(async ({ entry, index }) => {
+        const payload = {
+          version: 1,
+          resourceUrl,
+          scheme: entry.scheme,
+          network: entry.network,
+          asset: entry.asset,
+          payTo: entry.payTo,
+          amount: entry.amount,
+          validUntil: nowSeconds + OFFER_VALIDITY_SECONDS,
+        };
+        return {
+          format: "jws",
+          acceptIndex: index,
+          payload,
+          signature: await signJws(env, payload),
+        };
+      }),
+    );
     if (offers.length === 0) {
       return null;
     }
