@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { originCatalogFetcher } from "@/discovery/self-module";
 import { getCertificate, getPatron } from "@/services/certificates";
 import {
   renderAuditBadge,
@@ -44,7 +45,14 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
   const ownHost = new URL(c.env.STORE_BASE_URL).host.toLowerCase();
   const outcome =
     host === ownHost
-      ? { issued: true as const, passport: await issueSelfPassport(c.env) }
+      ? {
+          issued: true as const,
+          passport: await issueSelfPassport(
+            c.env,
+            new Date(),
+            originCatalogFetcher(new URL(c.req.url).origin),
+          ),
+        }
       : await issuePassport(c.env, host);
   if (!outcome.issued) {
     return c.json(

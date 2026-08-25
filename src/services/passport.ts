@@ -1,8 +1,16 @@
+import {
+  originCatalogFetcher,
+  selfPassportDiscoveryModule,
+  type CatalogFetcher,
+  type PassportModule,
+} from "@/discovery/self-module";
 import { signJcs, JCS_DISCIPLINE } from "@/lib/jcs";
 import { readPassportRefresh } from "@/services/passport-refresh";
 import { signMessage } from "@/lib/signing";
 import { subjectHistory, type SubjectHistory } from "@/services/subject-history";
 import type { Env } from "@/types";
+
+export type { PassportModule };
 
 /**
  * THE ENDPOINT PASSPORT — one canonical object per endpoint
@@ -93,6 +101,8 @@ export interface PassportPayload {
   /** Who observed, said plainly — load-bearing for the self passport. */
   observer: string;
   not_a_guarantee: string;
+  /** Citations of envelopes this passport is a view over. Empty until a host is joined. */
+  modules: PassportModule[];
 }
 
 export interface EndpointPassport {
@@ -228,6 +238,7 @@ export async function issuePassport(
     chip_url: `${base}/badges/passport/${host}.svg`,
     observer: `${new URL(base).host} weekly census (signed corpus; one GET per host per week, Web Bot Auth)`,
     not_a_guarantee: NOT_A_GUARANTEE,
+    modules: [],
   };
   return { issued: true, passport: await signPassport(env, payload) };
 }
@@ -243,9 +254,17 @@ export async function issuePassport(
 export async function issueSelfPassport(
   env: Env,
   now: Date = new Date(),
+  getText: CatalogFetcher = originCatalogFetcher(env.STORE_BASE_URL),
 ): Promise<EndpointPassport> {
   const base = env.STORE_BASE_URL;
   const host = new URL(base).host.toLowerCase();
+  const discovery = await selfPassportDiscoveryModule({
+    base,
+    signingKeyHex: env.SIGNING_KEY,
+    at: now.toISOString(),
+    clock: "injected-request-clock",
+    getText,
+  });
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
@@ -270,6 +289,7 @@ export async function issueSelfPassport(
     observer:
       "SELF-OBSERVED — the subject and the observer are the same party. Do not weight this like a census passport; every claim in it is re-checkable at the public surfaces it names (/llms.txt, /openapi.json, /.well-known/x402.json, /api/verify), which is the only reason it is worth issuing at all.",
     not_a_guarantee: NOT_A_GUARANTEE,
+    modules: [discovery],
   };
   return signPassport(env, payload);
 }

@@ -4,6 +4,7 @@ import {
   type IdentityKind,
 } from "@/discovery/binding";
 import type { SelfJoinDisagreement, SurfaceClaims } from "@/discovery/self-coherence";
+import { DISCOVERY_COHERENCE_FAMILY } from "@/evidence";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { signMessage } from "@/lib/signing";
 
@@ -13,16 +14,15 @@ import { signMessage } from "@/lib/signing";
  * Landscape §11: Diff Observations are evidence envelopes already.
  * The diff is the observation, raw hashes are the evidence capture,
  * not_observed is limitations. No new container. This file builds
- * those four fields. The envelope module (phase1/1.1) is the wrapper
- * they drop into; it is not on this stack, so we do not invent a
- * twin schema. The signature covers these four fields via JCS —
- * the same preimage discipline the envelope uses for its payload.
+ * those four fields. wrapDiffEnvelope puts them in the envelope
+ * (#206). The four-field signature remains for tests that pin the
+ * join preimage; the envelope signature covers the whole payload.
  *
  * No scores. Counts and denominators only. same_operator is named
  * in not_checked, never answered.
  */
 
-export const DISCOVERY_COHERENCE_CLASS = "discovery_coherence" as const;
+export const DISCOVERY_COHERENCE_CLASS = DISCOVERY_COHERENCE_FAMILY.id;
 
 export type DiffCheckState = "pass" | "fail" | "not_checked";
 
