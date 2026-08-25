@@ -130,7 +130,9 @@ describe("signed egress headers", () => {
       `"signature-agent": ${headers["Signature-Agent"]}`,
       `"@signature-params": ${signatureParams(headers["Signature-Input"])}`,
     ].join("\n");
-    const artifactKey = await ed25519.getPublicKeyAsync(testEnv.SIGNING_KEY);
+    const artifactKey = await ed25519.getPublicKeyAsync(
+      ed25519.etc.hexToBytes(testEnv.SIGNING_KEY),
+    );
     const verified = await ed25519.verifyAsync(
       signatureBytes(headers.Signature),
       new TextEncoder().encode(base),
