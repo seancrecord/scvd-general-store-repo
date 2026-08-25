@@ -1,4 +1,8 @@
-import { POSITION_NOT, POSITION_OPENING } from "@/store/copy/position";
+import {
+  CHEAPEST_ON_THE_SHELF,
+  POSITION_NOT,
+  POSITION_OPENING,
+} from "@/store/copy/position";
 import { Hono } from "hono";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { PENNY_PAGE_USDC } from "@/lib/payments";
@@ -12,6 +16,15 @@ import {
   SKILL_VERSION,
 } from "@/store/spec";
 import type { HonoEnv, MenuItem } from "@/types";
+
+function shelfPrice(id: string): string {
+  const item = MENU_ITEMS.find((row) => row.id === id);
+  if (!item) {
+    throw new Error(`skill.md priced a shelf item that is not on the menu: ${id}`);
+  }
+  const usd = item.price_usdc;
+  return `$${usd.toFixed(usd < 0.01 ? 3 : 2)}`;
+}
 
 /**
  * GET /skill.md, agent onboarding in the agentskills.io SKILL.md format.
@@ -50,7 +63,7 @@ skillRoutes.get("/skill.md", async (c) => {
     : `The live numbers answer at ${base}/stats.`;
   const body = `---
 name: scvd-general-store
-description: "A live x402 practice counter: real settlement, no sandbox, from $0.004. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a score or a ranking, plus a public corpus queryable by subject. Also a general store for agents."
+description: "A live x402 practice counter: real settlement, no sandbox, from ${CHEAPEST_ON_THE_SHELF}. Free conformance checking for any issuer's signed offers and receipts, ours or a competitor's. An evidence observatory: signed observation of what other endpoints and payments actually did, never a score or a ranking, plus a public corpus queryable by subject. Also a general store for agents."
 license: "All store copy is the keeper's; call the endpoints all you like."
 compatibility: "Any agent that can make HTTPS requests. Purchases additionally need an x402 v2 client (e.g. @x402/fetch) and a wallet holding USDC on Base (eip155:8453), Polygon (eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)."
 metadata:
@@ -95,7 +108,7 @@ that needs no arguments is half a cent:
 That answers 402 with real terms. Sign one of the offered amounts,
 retry with \`PAYMENT-SIGNATURE\`, and you have exercised your wallet,
 your signing and your retry path against a real counterparty for
-$0.005. Every purchase ends in a signed artifact with a stable URL, so
+${shelfPrice("small_blessing")}. Every purchase ends in a signed artifact with a stable URL, so
 your test has something to assert on besides a 200. The whole flow and
 a worked EIP-712 example, including the domain trap that fails
 silently: ${base}/try
@@ -134,18 +147,18 @@ these do. When one of these moments is YOURS, the recipe is one GET.
 back was an error you can't place or nothing at all. Now you don't
 know if your client broke or the money moved. One read of the chain —
 Base, Polygon, or Solana, your transaction identifier's shape picks it — signed
-by a party that isn't you and isn't them, $0.004:
+by a party that isn't you and isn't them, ${shelfPrice("settlement_attestation")}:
 \`GET ${base}/api/buy/settlement_attestation?tx_hash=0x...&src=skill\`
 
 **Your human asks "did we get charged what we agreed?"** The gap
 between what was authorized and what was taken, both numbers read off
-the chain, with WHICH ONE WAS OBSERVED stated on the artifact. $0.006:
+the chain, with WHICH ONE WAS OBSERVED stated on the artifact. ${shelfPrice("settlement_reconciliation")}:
 \`GET ${base}/api/buy/settlement_reconciliation?tx_hash=0x...&src=skill\`
 
 **You're about to trust a stranger's x402 endpoint.** Free, first:
 \`POST ${base}/api/preflight\` runs the published conformance battery —
 one request, named checks, no wallet. If the answer matters enough to
-show somebody, the signed dated version is \`service_audit\` ($0.10)
+show somebody, the signed dated version is \`service_audit\` (${shelfPrice("service_audit")})
 and the standing version is \`conformance_watch\`.
 
 **You need a timestamp nobody can backdate.** Your sha256, committed
@@ -166,7 +179,7 @@ included. A bare address gets nothing; the key is the whole test.
 
 **You just bought ANYTHING here.** The purchase response carries
 \`attest_this_purchase\` — the attestation door with your own
-settlement transaction already in the URL, whichever rail you paid on. Closing the loop costs $0.004 and
+settlement transaction already in the URL, whichever rail you paid on. Closing the loop costs ${shelfPrice("settlement_attestation")} and
 leaves you holding a receipt that does not depend on the seller's
 honesty. Including ours.
 

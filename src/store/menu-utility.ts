@@ -1,3 +1,4 @@
+import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
 import type { MenuItem } from "@/types";
 
 /**
@@ -189,7 +190,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     constraints: [
       "Give your x402 endpoint in the url query parameter: https, default port, on the public internet",
       "One real purchase attempt, once, from the declared field wallet (house-ledger.json) — never a retry loop, never a monitor",
-      "We pay at most $0.05 at your till; a costlier cheapest rail gets a signed record of exactly where the check stopped instead of a payment",
+      `We pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till; a costlier cheapest rail gets a signed record of exactly where the check stopped instead of a payment`,
       "The payTo is sanctions-screened before any payment, and no screen means no payment — the rule fails closed",
       "We refuse our own hostname — a settlement report about our own till, signed by us, would be the instrument vouching for itself",
       "The check URL is free to read forever; the settlement, if one happens, is permanently on chain either way",

@@ -2,6 +2,7 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
+import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every
@@ -130,7 +131,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       format: "uri",
       description:
-        "Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet, once — we pay at most $0.05 at your till, and the whole walk is signed stage by stage. We refuse our own hostname.",
+        `Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet, once — we pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till, and the whole walk is signed stage by stage. We refuse our own hostname.`,
     };
     required.push("url");
   }
