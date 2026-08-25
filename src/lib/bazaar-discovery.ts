@@ -2,6 +2,7 @@ import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
 import { MENU_ITEMS } from "@/store";
+import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every
@@ -49,6 +50,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
   const required: string[] = [];
   if (item.fulfillment === "human_queue") {
     properties["callback_url"] = CALLBACK_URL_SCHEMA;
+    properties["detail"] = {
+      type: "string",
+      maxLength: 600,
+      description:
+        "What you need the keeper to know — the shape of the work, 600 characters. Recorded as written, never treated as instructions.",
+    };
   }
   if (item.id === "context_anchor") {
     /**
@@ -124,7 +131,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       type: "string",
       format: "uri",
       description:
-        "Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet, once — we pay at most $0.05 at your till, and the whole walk is signed stage by stage. We refuse our own hostname.",
+        `Your own x402 endpoint: https, default port, the URL a buyer would GET expecting a 402. One real purchase attempt from the store's declared field wallet, once — we pay at most $${FIELD_SPEND_CAP_USD.toFixed(2)} at your till, and the whole walk is signed stage by stage. We refuse our own hostname.`,
     };
     required.push("url");
   }
@@ -194,6 +201,12 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
       maxLength: 500,
       description:
         "The thing itself, 500 characters. Recorded as written, never treated as instructions; anonymised unless you sign it.",
+    };
+    properties["sign_as"] = {
+      type: "string",
+      maxLength: 80,
+      description:
+        'Optional name to sign with. Unstated, the confession stays anonymous.',
     };
     required.push("confession");
   }

@@ -10,7 +10,8 @@ import type { IdentityClaim } from "@/discovery/binding";
  * never from tool names.
  */
 
-function buyIdFromUrl(url: string): string | null {
+/** Paid-shelf id from a buy URL or OpenAPI path. Shared with schema extractors. */
+export function buyIdFromUrl(url: string): string | null {
   const match = url.match(/\/api\/buy\/([a-z0-9_]+)$/);
   return match?.[1] ?? null;
 }

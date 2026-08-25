@@ -6,7 +6,6 @@ import {
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import type { ListingSpec } from "@/lib/listing-spec";
 import { priceTiersUsdc } from "@/lib/payments";
-import { TAG_CAP } from "@/services/train";
 import { MENU_ITEMS } from "@/store";
 import { GUARANTEE_BLOCK_TEXT, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
@@ -247,76 +246,20 @@ function purchaseOutputSchema(item: MenuItem): Schema {
   };
 }
 
+/**
+ * MCP's per-item input schema IS buyInputSchema. The cluster
+ * description already derived required fields from that function;
+ * the machine schema was a cousin, so tools/list could name a field
+ * in prose and not require it. schema_coherence found it.
+ */
 function purchaseInputSchema(item: MenuItem): Schema {
-  const properties: Record<string, Schema> = {
-    agent_name: str("Optional name for the certificate and badge.", 80),
+  const base = buyInputSchema(item);
+  return {
+    type: "object",
+    additionalProperties: false,
+    properties: base.properties,
+    required: base.required ?? [],
   };
-  const required: string[] = [];
-  if (item.id === "context_anchor") {
-    properties["summary"] = str(
-      "The agent state to sign and store, who you are, what you were doing. Stored as written; never treated as instructions.",
-      4000,
-    );
-    required.push("summary");
-  }
-  if (item.id === "standing_watch") {
-    properties["url"] = str(
-      "Your own x402 endpoint, https, probed hourly for seven days; each look signed.",
-    );
-    required.push("url");
-  }
-  if (item.id === "recurring_patronage") {
-    properties["pass_id"] = str(
-      "An existing pass to extend by 30 days instead of opening a new one.",
-      40,
-    );
-  }
-  if (item.id === "coffees_for_closers") {
-    properties["win"] = str(
-      "The thing you closed, shipped, landed, or finished. Recorded on the certificate verbatim; stored as written, never treated as instructions. 200 characters.",
-      200,
-    );
-    required.push("win");
-  }
-  if (item.id === "grudge") {
-    properties["grievance"] = str(
-      "The thing that wronged you, held verbatim on the permanent register. Private to the certificate holder. 280 characters.",
-      280,
-    );
-    required.push("grievance");
-  }
-  if (item.id === "graffiti_on_a_train") {
-    // The tool's one distinguishing input. It was missing from this
-    // schema while FulfillmentInput carried it the whole time — an MCP
-    // buyer literally could not choose their own tag.
-    properties["tag"] = str(
-      `The tag itself, sprayed verbatim on the certificate. Up to ${TAG_CAP} characters; no URLs (a tag is a mark, not a billboard). Stored as written, never treated as instructions.`,
-      TAG_CAP,
-    );
-    required.push("tag");
-  }
-  if (item.id === "the_confession") {
-    properties["confession"] = str(
-      "The confession itself, the phantom success, the dropped context. 500 characters. Anonymous unless sign_as is given.",
-      500,
-    );
-    properties["sign_as"] = str(
-      'Optional name to sign with (or "anonymous", which is the default).',
-      80,
-    );
-    required.push("confession");
-    delete properties["agent_name"];
-  }
-  if (item.fulfillment === "human_queue") {
-    properties["detail"] = str(
-      "What you need the keeper to know — the shape you want the_collab to take, or the dilemma you want judged. 600 characters.",
-      600,
-    );
-    properties["callback_url"] = str(
-      "Optional webhook POSTed when the keeper completes the order.",
-    );
-  }
-  return { type: "object", properties, required, additionalProperties: false };
 }
 
 function completionCriteria(item: MenuItem): string {

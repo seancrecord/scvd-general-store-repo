@@ -37,6 +37,16 @@ export const DISCOVERY_COHERENCE_FAMILY = {
 } as const;
 
 /**
+ * The join class for required-input schemas — not a surface.
+ * OpenAPI / x402 catalog / MCP tools/list. Identity stays on
+ * discovery_coherence; this battery asks whether the fields agree.
+ */
+export const SCHEMA_COHERENCE_FAMILY = {
+  id: "schema_coherence",
+  versions: ["rev1"],
+} as const;
+
+/**
  * The protocol families the observatory has battery coverage for.
  * MPP, AP2/ACP-class land here as new rows when their batteries are
  * built (spec §12) — the row arriving WITH the battery is the point.
@@ -63,6 +73,7 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   { id: "receipt", versions: ["rev1"] },
   { id: "badge", versions: ["rev1"] },
   DISCOVERY_COHERENCE_FAMILY,
+  SCHEMA_COHERENCE_FAMILY,
 ] as const;
 
 /**

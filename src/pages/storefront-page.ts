@@ -406,6 +406,12 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
      * to catch. The audit's other half is answered; this half is
      * declined on the record.
      */
+    additionalProperty: {
+      "@type": "PropertyValue",
+      name: "premises",
+      value:
+        "There is no premises address — one person, no shop floor. A PostalAddress here would be a home or an invention.",
+    },
     contactPoint: [
       {
         "@type": "ContactPoint",
