@@ -543,9 +543,59 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
   return signals;
 }
 
+/**
+ * THE DIALECT SHIM — and it exists because a stranger paid half a cent
+ * to prove we needed it.
+ *
+ * x402 v2 names the payment header PAYMENT-SIGNATURE. v1 named it
+ * X-PAYMENT, and a large part of the live ecosystem still sends the
+ * old name with a perfectly valid v2 envelope inside. The SDK reads
+ * only the v2 name, so those requests got a 402 while holding a
+ * signature that would have settled — the store answering "no" to
+ * money it could have taken.
+ *
+ * HOW THIS WENT UNFIXED FOR SO LONG, recorded because the mechanism
+ * matters more than the bug. Three places in this codebase read
+ * `PAYMENT-SIGNATURE ?? X-PAYMENT`, and reading them was mistaken for
+ * proof the store accepted both. It does not: :661 reads the alias to
+ * write a DECLINE REASON after the 402 is already decided, and
+ * buy.ts's isBuying() reads it to decide whether pre-payment guards
+ * apply. Neither makes a payment succeed. The acceptance decision is
+ * the SDK's, one layer below both. Call sites were read; behaviour was
+ * never exercised. CV said the door refused X-PAYMENT and was told he
+ * was wrong; Cairn then sent the identical envelope under both names
+ * on a cold walk — 402 under X-PAYMENT, settled under
+ * PAYMENT-SIGNATURE — and published it. Rule 52 is about lookups that
+ * cannot see everything; this was a reader that could have looked and
+ * inferred instead.
+ *
+ * WHAT THIS DOES AND DOES NOT CHANGE. It changes which header name the
+ * envelope may arrive under, and nothing else. Signature verification,
+ * schema validation, requirement matching and settlement are all
+ * untouched — a v1-SHAPED payload under the old name still fails
+ * schema, and now fails it with a named reason instead of a bare 402.
+ * The store's own documented dialect is unchanged: PAYMENT-SIGNATURE
+ * is what the 402 asks for and what every surface says to send. This
+ * only stops punishing clients that speak the ecosystem's older name
+ * correctly.
+ */
+class DialectTolerantAdapter extends HonoAdapter {
+  override getHeader(name: string): string | undefined {
+    const direct = super.getHeader(name);
+    if (direct !== undefined) {
+      return direct;
+    }
+    // Only this one header aliases. A blanket fallback would be a
+    // guess about headers nobody asked us to guess about.
+    return name.toLowerCase() === "payment-signature"
+      ? super.getHeader("X-PAYMENT")
+      : undefined;
+  }
+}
+
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
-  const adapter = new HonoAdapter(c);
+  const adapter = new DialectTolerantAdapter(c);
   // The decline slot rides along on the context. The SDK shallow-copies
   // this object on its way to the verify hooks, and a shallow copy keeps
   // the slot BY REFERENCE — so the hook writes the reason here and we
