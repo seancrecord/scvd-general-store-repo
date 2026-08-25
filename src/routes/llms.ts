@@ -142,7 +142,10 @@ inventory on ourselves — menu.json, x402, OpenAPI, A2A, llms.txt,
 skill.md, the well-known cousins — hash what answered, and join the
 identity claims. Free, unsigned, one origin, no score. A lonely
 catalog is not_observed, not a silent agree. We cannot inventory
-this store from inside the Worker; CI joins our own catalogs.
+this store from inside the Worker; CI joins our own catalogs. A
+signed report of the same join, once issued, is free to read at
+${base}/api/discovery/report/{id}. The SKU that issues one is not
+priced yet.
 
 AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
 Web Bot Auth is the IETF mechanism for proving a crawler is who it
