@@ -136,6 +136,14 @@ The unversioned ${base}/api/preflight keeps answering under v1, so an
 existing caller's verdicts stay comparable to the ones it already
 holds. The defect each battery tests for is named at ${base}/defects.
 
+CATALOGS, NOT JUST THE 402. POST {"url": "https://their-origin.example"}
+to ${base}/api/discovery/v1 and we GET the catalog paths we already
+inventory on ourselves — menu.json, x402, OpenAPI, A2A, llms.txt,
+skill.md, the well-known cousins — hash what answered, and join the
+identity claims. Free, unsigned, one origin, no score. A lonely
+catalog is not_observed, not a silent agree. We cannot inventory
+this store from inside the Worker; CI joins our own catalogs.
+
 AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
 Web Bot Auth is the IETF mechanism for proving a crawler is who it
 says it is — RFC 9421 HTTP Message Signatures over ed25519, public

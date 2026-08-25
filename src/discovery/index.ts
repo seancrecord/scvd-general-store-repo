@@ -49,3 +49,13 @@ export type {
   DiffObservationBlocks,
   DiffObservationInput,
 } from "@/discovery/diff-observation";
+export {
+  DISCOVERY_INVENTORY_VERSION,
+  inventoryCandidates,
+  inventoryOrigin,
+} from "@/discovery/inventory";
+export type {
+  DiscoveryInventory,
+  InventorySurfaceRow,
+} from "@/discovery/inventory";
+export { extractSurfaceClaims } from "@/discovery/inventory-extract";

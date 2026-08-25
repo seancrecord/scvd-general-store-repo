@@ -303,6 +303,8 @@ function report(
 export interface ProbeOutcome {
   response: Response;
   bodyOverLimit: boolean;
+  /** The bytes already read to enforce the size ceiling. */
+  body: string;
 }
 
 /**
@@ -346,7 +348,11 @@ export async function probeOnce(
   });
   // Bound the read before anything parses it.
   const raw = await response.text();
-  return { response, bodyOverLimit: raw.length > MAX_BODY_BYTES };
+  return {
+    response,
+    bodyOverLimit: raw.length > MAX_BODY_BYTES,
+    body: raw,
+  };
 }
 
 /**

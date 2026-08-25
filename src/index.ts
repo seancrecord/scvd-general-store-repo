@@ -66,6 +66,7 @@ import {
   conformanceLandingRoutes,
   corpusLandingRoutes,
   preflightRoutes,
+  discoveryRoutes,
   launchCheckRoutes,
   bountyRoutes,
   creditRoutes,
@@ -228,6 +229,7 @@ app.route("/", conformanceRoutes);
 app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", preflightRoutes);
+app.route("/", discoveryRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", bountyRoutes);
 app.route("/", creditRoutes);
