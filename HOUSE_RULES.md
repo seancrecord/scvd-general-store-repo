@@ -430,6 +430,45 @@ LORE & TRADITION
     The relationship stays valuable only while both remain
     independent enough to embarrass each other.
 
+
+52. A LOOKUP THAT CANNOT SEE EVERYTHING MUST NOT ANSWER "NO".
+    (2026-08-25, after six instances of the same defect surfaced in
+    a single day. Enforced by test/bounded-read-honesty.spec.ts.)
+
+    A bounded read publishes its own incompleteness beside its
+    result, or it does not publish. `listKeys` takes a cap and
+    returns `truncated` next to the names it found; a caller that
+    never reads that flag has answered a question it never asked,
+    and the answer it gives is always the flattering one.
+
+    THE SIX, because the pattern is easier to refuse once it has
+    a face. The census scored `ready` for doors it never
+    pay-checked. /rails published `rail_not_recorded: 0` — the
+    field that exists to say "we do not know", saying zero.
+    /pulse published 33 organic settlements while /stats and
+    /rails published 14. A spec test asserted the field the spec
+    forbids, so passing REQUIRED the violation. Two drafts of a
+    byte guard went green against a live defect because the test
+    worker cannot reach production's size. A latency histogram
+    timed only the requests that succeeded, so its percentiles
+    excluded our own failures.
+
+    NOT ALL OF THEM ARE BUGS, AND THAT IS THE POINT. Some caps
+    sit provably above any possible key count; some results never
+    reach a published figure. The rule does not demand every
+    bounded read be handled — it demands the question be answered
+    once, in the code, where the next reader will find it. A site
+    exempted says why beside itself: `BOUNDED-READ-SAFE: <reason>`.
+    A reason in a commit message is a reason nobody will ever read
+    again.
+
+    THE CHECK DECLARES ITS OWN BLIND SPOT, or it would be the
+    seventh instance. It works per file, not per call site: a file
+    that handles truncation for one read and drops it for a second
+    passes. Its baseline is a floor on the problem, not a census
+    of it, and the file says so in those words.
+
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the
