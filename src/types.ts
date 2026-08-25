@@ -335,6 +335,14 @@ export interface Certificate {
    * than remembered.
    */
   cross_ref?: CrossReference[];
+  /**
+   * THE CATALOG SURFACE THE BUYER SELECTED, hashed at mint.
+   * SHA-256 (hex) of the JCS form of `{ route, price_usdc, required }`.
+   * Derived like `made_by` — never passed in. Absent on items with
+   * no menu row and on every certificate minted before this field
+   * existed. Absence is not_observed, not a conflict.
+   */
+  saw?: string;
 }
 
 /** The one thing a cross-reference is allowed to assert in v0. */

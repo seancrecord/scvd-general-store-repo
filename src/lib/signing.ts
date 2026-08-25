@@ -122,6 +122,15 @@ export const CERT_FIELDS = [
    * claim anyone could forge onto our signature.
    */
   "mandate_id",
+  /**
+   * THE SELECTED-SURFACE HASH, added 2026-08-25. Appended, never
+   * inserted, and OUT of LEGACY_FIELDS_ADDED_SINCE — no legacy
+   * certificate can honestly carry one (the field did not exist),
+   * so stapling a saw onto an old certificate must break BOTH
+   * forms. An unsigned surface hash would let anyone claim a
+   * different catalog moment under our signature.
+   */
+  "saw",
 ] as const;
 
 /**
