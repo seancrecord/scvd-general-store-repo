@@ -9,7 +9,7 @@ import {
   GLOBAL_PROBES_PER_MINUTE,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { buyInputSchema, itemsRequiring } from "@/lib/bazaar-discovery";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import { CAPABILITY_QUERY } from "@/store/spec";
@@ -373,8 +373,7 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         name: "url",
         in: "query",
         schema: { type: "string", format: "uri" },
-        description:
-          "phantom_check only (required there): the http(s) URL to look at.",
+        description: `Required by ${itemsRequiring("url").join(", ")}: the http(s) URL to look at.`,
       },
       {
         name: "win",

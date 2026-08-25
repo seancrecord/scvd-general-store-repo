@@ -153,7 +153,7 @@ criteriaRoutes.get("/criteria", (c) => {
     renderSimplePage({
       title: "What 'verified' means",
       description:
-        "What 'verified' means at this store, per artifact class, published before anything carries a badge: the criteria version, the verdict vocabulary.",
+        "What 'verified' means at this store, per artifact class, and the terms every badge here ships against: the criteria version, the verdict vocabulary.",
       path: "/criteria",
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(CRITERIA_STANDFIRST)}</p>

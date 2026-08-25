@@ -299,7 +299,7 @@ export const SPEC_WHY_USE: Record<string, string> = {
   hello:
     "The cheapest complete exercise of the whole path: a real x402 v2 settlement on Base, Polygon, or Solana, a signed artifact, and a permanent verify URL, for fifty cents. Proves a client works end to end against a live store.",
   small_blessing:
-    "The cheapest real settlement on the shelf at half a cent: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
+    "A real settlement on the shelf at half a cent, and the cheapest door that takes no arguments: exercises 402, signature, settlement and signed artifact against production, with no sandbox and no test mode.",
   recurring_patronage:
     "A dated pass at a stable URL that anyone can check is current — a standing relationship as a verifiable artifact rather than a claim about one.",
 };

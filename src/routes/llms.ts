@@ -9,6 +9,7 @@ import {
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { USE_WHEN } from "@/store/spec";
+import { TRUST_LIST_VERSION, trustListCounts } from "@/routes/trust-list";
 import type { HonoEnv, MenuItem } from "@/types";
 
 /**
@@ -87,7 +88,7 @@ Do NOT reach for this store for escrow, dispute resolution, delivery
 guarantees, or a trust score. It refuses all four on the record, and
 the reasons are in "What this store is trying to prove" below.
 
-That is the short answer. The long one — thirty-odd concrete moments,
+That is the short answer. The long one — ${USE_WHEN.length} concrete moments,
 each naming the door that answers it — is under "When you'd use this
 store" further down.
 
@@ -532,13 +533,13 @@ system rather than a more capable one; that sentence is quoted on the
 page in their words, because a store that publishes its corrections
 does not get to rewrite an outside verdict into a kinder one.
 
-What "verified" would mean here is published at ${base}/criteria,
-before anything carries a badge (house rule: no badge ships before its
-criteria page exists). A badge would be a dated observation on a thing
-against the published check battery, never a score on an actor — and
-nothing retires one: it ages, and re-observation is what answers "is
-this still true." Nothing carries a badge today; the page says so
-itself.
+What "verified" means here is published at ${base}/criteria, and the
+page came first (house rule: no badge ships before its criteria page
+exists). A badge here is a dated observation on a thing against the
+published check battery, never a score on an actor — and nothing
+retires one: it ages, and re-observation is what answers "is this
+still true." How many the store serves today is counted on that page,
+derived from the router rather than typed into a sentence.
 
 ## If the one key is lost, stolen, or handed on
 
@@ -931,9 +932,12 @@ came in and didn't sign, which is most of them.
 
 ## The trust list
 
-A signed list of origins the keeper has personally transacted with,
-at ${base}/trust-list.json. Version 0 lists only this store; it grows
-by hand and only after he has done the thing himself. Each entry
+A signed list of origins the keeper has personally dealt with, at
+${base}/trust-list.json. Version ${TRUST_LIST_VERSION} carries
+${trustListCounts().transacted} he has TRANSACTED with and
+${trustListCounts().used} he has only USED — the strong claim and the
+weak one kept apart, never blurred. It grows by hand and only after he
+has done the thing himself. Each entry
 records an observation about a past event, not a promise about
 anyone's future.
 
@@ -962,7 +966,6 @@ THE CLOCK, so a scheduled agent can put us in its loop:
   the bell     once a day per visitor
   the stamp    a new design every week; the old ones stay yours
   the zodiac   this week's page free, past weeks a penny
-  the fortune  one line a day, the same for everyone until midnight
 
 No streaks, nothing expires, nothing is lost by skipping a week. The
 clock is here so you can plan around it, not so we can pull you back.
@@ -991,7 +994,8 @@ numbers to machines.
 
 ## How prices are set, signed
 
-No x402 store publishes a pricing policy; this one signs its own.
+This store publishes a pricing policy and signs it. What anybody
+else does is not something we have measured, so we do not say.
 ${base}/pricing is the charter: same price for every wallet (no
 identity pricing, no surge, no A/B on a price), the cheapest real
 settlement stays under a penny, verification stays free forever,
@@ -1018,8 +1022,10 @@ walking it is recorded verbatim as YOUR claim, labeled as such,
 because we did not see your HTTP transcript and will not pretend we
 did. Mystery shopping, the oldest trick in retail, pointed at the one
 economy that has never had it: directories rank doors by whether they
-ANSWER, and our own field run found 71% of doors that answer still
-refuse a real buyer's money. Rules, budget and caps are on the board.
+ANSWER. Whether a door will take money is a different question, and
+only a real purchase answers it. (This store's own field run put a
+number on that gap; the number was withdrawn on 2026-08-20 and is not
+quoted here — see the withdrawal above.) Rules, budget and caps are on the board.
 
 **Regulars' credit.** Every organic purchase banks 5% of the price
 back to the wallet that paid. No account, no signup, no card — the

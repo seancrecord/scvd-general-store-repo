@@ -56,6 +56,34 @@ export interface CreditRecord {
   redeemed_total_atomic: string;
   expired_total_atomic: string;
   updated_at: string;
+  /**
+   * THE CLAIM MARKER. Written by the redemption that zeroed the
+   * balance, so the readback beside it can tell OUR write from a
+   * rival's. Absent on records that have never been redeemed.
+   */
+  claimed_by?: string;
+}
+
+/**
+ * Run a signing step that has already claimed a balance, and put the
+ * balance back if it throws.
+ *
+ * The claim has to land before the signature (otherwise two requests
+ * sign for the same money), which means a signer failure would
+ * otherwise zero a buyer's credit and hand them nothing.
+ */
+async function signWithRollback<T>(
+  env: Env,
+  creditKey: string,
+  before: CreditRecord,
+  sign: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await sign();
+  } catch (error) {
+    await env.COUNTERS.put(creditKey, JSON.stringify(before));
+    throw error;
+  }
 }
 
 export function usd(atomic: bigint): number {
@@ -159,7 +187,9 @@ export async function accrueCredit(
   const next: CreditRecord = {
     ...record,
     balance_atomic: (balance + earned).toString(),
-    earned_total_atomic: (BigInt(record.earned_total_atomic) + earned).toString(),
+    earned_total_atomic: (
+      BigInt(record.earned_total_atomic) + earned
+    ).toString(),
     updated_at: now.toISOString(),
   };
   await env.COUNTERS.put(KV_KEYS.credit(record.wallet), JSON.stringify(next));
@@ -244,8 +274,50 @@ export async function redeemCredit(
         : `the sanctions screen did not answer (${screened.source}) and the rule fails closed — the balance is untouched; try again when it answers`,
     );
   }
+  /*
+   * CLAIM THE BALANCE BEFORE SIGNING FOR IT.
+   *
+   * Until 2026-08-25 this function read the balance, signed an
+   * EIP-3009 authorization for it, and only then wrote the record
+   * back to zero. Three concurrent redemptions of one $2 balance all
+   * read $2 and all got a signed authorization — three DISTINCT
+   * nonces, so the USDC contract's own replay protection accepts
+   * every one of them. Measured: $6 authorized against a $2 debt.
+   *
+   * The single-use challenge in front of this route did not help:
+   * that is a get-then-delete, and a KV delete is not globally
+   * visible for up to a minute. Two edges both see the nonce.
+   *
+   * So the BALANCE is the mutex, not the challenge. Zero it first,
+   * read it back, and only sign if our own claim id survived. A
+   * loser refuses without a signature — no money, and the balance
+   * still belongs to whoever won.
+   *
+   * The sanctions screen stays ABOVE this line: it fails closed and
+   * must leave the balance untouched when it cannot answer.
+   */
+  const claimId = (options.randomNonce ?? defaultNonce)();
+  const claimed: CreditRecord = {
+    ...record,
+    balance_atomic: "0",
+    redeemed_total_atomic: (
+      BigInt(record.redeemed_total_atomic) + balance
+    ).toString(),
+    updated_at: now.toISOString(),
+    claimed_by: claimId,
+  };
+  const creditKey = KV_KEYS.credit(record.wallet);
+  await env.COUNTERS.put(creditKey, JSON.stringify(claimed));
+  const readback = await getCredit(env, wallet, now);
+  if (readback.claimed_by !== claimId) {
+    throw new CreditRefused(
+      "another redemption claimed this balance first — nothing was signed here, and the balance belongs to whichever request won; read /api/credit/{wallet} for the current state",
+    );
+  }
+
   const signer =
-    options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+    options.signer ??
+    (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
   const authorization = {
     from: signer.address,
     to: record.wallet,
@@ -256,35 +328,30 @@ export async function redeemCredit(
     ),
     nonce: (options.randomNonce ?? defaultNonce)(),
   };
-  const signature = await signer.signTypedData({
-    domain: {
-      name: "USD Coin",
-      version: "2",
-      chainId: 8453,
-      verifyingContract: BASE_USDC as `0x${string}`,
-    },
-    types: {
-      TransferWithAuthorization: [
-        { name: "from", type: "address" },
-        { name: "to", type: "address" },
-        { name: "value", type: "uint256" },
-        { name: "validAfter", type: "uint256" },
-        { name: "validBefore", type: "uint256" },
-        { name: "nonce", type: "bytes32" },
-      ],
-    },
-    primaryType: "TransferWithAuthorization",
-    message: authorization,
-  });
-  const next: CreditRecord = {
-    ...record,
-    balance_atomic: "0",
-    redeemed_total_atomic: (
-      BigInt(record.redeemed_total_atomic) + balance
-    ).toString(),
-    updated_at: now.toISOString(),
-  };
-  await env.COUNTERS.put(KV_KEYS.credit(record.wallet), JSON.stringify(next));
+  // If signing throws after the claim, the buyer's balance would be
+  // gone with nothing to show for it. Hand it back and re-raise.
+  const signature = await signWithRollback(env, creditKey, record, () =>
+    signer.signTypedData({
+      domain: {
+        name: "USD Coin",
+        version: "2",
+        chainId: 8453,
+        verifyingContract: BASE_USDC as `0x${string}`,
+      },
+      types: {
+        TransferWithAuthorization: [
+          { name: "from", type: "address" },
+          { name: "to", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "validAfter", type: "uint256" },
+          { name: "validBefore", type: "uint256" },
+          { name: "nonce", type: "bytes32" },
+        ],
+      },
+      primaryType: "TransferWithAuthorization",
+      message: authorization,
+    }),
+  );
   await bumpOutstanding(env, -balance);
   return {
     redeemed_usd: usd(balance),

@@ -87,8 +87,8 @@ This is what most callers arrive for, so it goes first.
 
 The store is a live x402 target. Real settlement, no sandbox, no test
 mode, no separate code path — you get exactly what every other caller
-gets, which is the point of practising against it. Cheapest door is
-half a cent:
+gets, which is the point of practising against it. The cheapest door
+that needs no arguments is half a cent:
 
 \`GET ${base}/api/buy/small_blessing?src=skill\`
 
