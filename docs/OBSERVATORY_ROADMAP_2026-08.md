@@ -113,6 +113,16 @@ Expand/consider: while in 1.1, decide envelope storage layout in KV
 place to confirm every producer clears its KV prefix in specs
 (append-only surface rule in AGENTS.md).
 
+### Phase 1-joins — coherence batteries (landscape §11)
+
+Not a second Phase 1. The batteries that sit on the envelope
+already shipped. Productize (paid report / refresh / alerts) stays
+off until the keeper names a price.
+
+| # | What | Acceptance |
+|---|------|------------|
+| 1.j6 ✅ 2026-08-25 | `receipt_coherence` dogfood: bind the selected catalog surface into our own receipts | Minted `hello` carries `saw` matching the menu hash; planted list-price disagreement is conflict; missing `saw` is not_observed; published signature fixtures still verify |
+
 ## Phase 2 — Conformance engine as the measurement standard
 
 | # | Ledger | What | Acceptance |

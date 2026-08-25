@@ -1502,9 +1502,11 @@ protocol/chain as first-class subject dimensions — a host is a host.
   subject tuple shipped in 1.1. Discovery-surface families
   (x402_bazaar, mcp_card, a2a_agent_card, llms_txt, openapi, …)
   landed as PROTOCOL_FAMILIES rows 2026-08-24 so a coherence
-  observation can name the surface — batteries not built yet, the
-  row is the id not a claim we have checks. Corpus schema still
-  open (G-schema).
+  observation can name the surface. Join-class families that
+  followed: `discovery_coherence`, `schema_coherence` (2026-08-25,
+  #236), `receipt_coherence` (2026-08-25 — dogfood: certificates
+  carry `saw`, the hash of the catalog surface the buyer selected).
+  Corpus schema still open (G-schema).
 - **M3 [ ] — the trajectory surface.** "Show the spike as it
   happens" is a derived time-series over the corpus chain (hosts,
   offers seen, settlements observed, failure classes — per week,

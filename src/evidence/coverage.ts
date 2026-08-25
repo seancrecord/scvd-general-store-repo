@@ -9,6 +9,7 @@ import {
   DISCOVERY_COHERENCE_FAMILY,
   KNOWN_CHAINS,
   SANDBOX_CHAIN,
+  RECEIPT_COHERENCE_FAMILY,
   SCHEMA_COHERENCE_FAMILY,
   type EvidenceSubject,
 } from "@/evidence/subject";
@@ -144,6 +145,11 @@ export const COVERAGE_REGISTRATIONS: readonly ClassCoverageRegistration[] = [
   {
     class_id: SCHEMA_COHERENCE_FAMILY.id,
     does: "Join of required-input schemas on the same route: OpenAPI, x402 catalog, MCP tools. No chain dimension.",
+    depths: {},
+  },
+  {
+    class_id: RECEIPT_COHERENCE_FAMILY.id,
+    does: "Join of a receipt against the catalog surface the buyer selected. No chain dimension.",
     depths: {},
   },
 ] as const;

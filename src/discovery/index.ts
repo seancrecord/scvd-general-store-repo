@@ -103,6 +103,22 @@ export {
   schemaNotObserved,
   schemaRowVerdict,
 } from "@/discovery/schema-coherence";
+export {
+  buyRouteFor,
+  hashSelectedSurface,
+  selectedSurface,
+} from "@/discovery/receipt-surface";
+export type { SelectedSurface } from "@/discovery/receipt-surface";
+export {
+  RECEIPT_COHERENCE_CLASS,
+  listPriceUsdc,
+  receiptRowVerdict,
+} from "@/discovery/receipt-coherence";
+export type {
+  ReceiptCertSide,
+  ReceiptDisagreement,
+  ReceiptJoinVerdict,
+} from "@/discovery/receipt-coherence";
 export type {
   SchemaDisagreement,
   SchemaJoinVerdict,
