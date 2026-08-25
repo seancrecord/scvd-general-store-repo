@@ -545,8 +545,11 @@ families per M2's no-migration rule:
    endpoints. Extractors + join + CI (`155a01a`, #236); cited on
    the self-passport (`efc3dbf`, #239). MCP named not_checked —
    live RPC, not a fetched catalog. Ledger M2.
-4. **capability_coherence** — streaming/transport/auth/chains
-   claimed vs observed.
+4. **capability_coherence** (catalog slice 2026-08-25, #245) —
+   streaming/transport/auth/chains claimed vs observed. Catalog
+   join ships: x402 `networks` set-equality, A2A
+   `preferredTransport` vs MCP `transport` (normalized). Live
+   probe still open.
 5. **identity_binding** — ⚑ BLOCKED ON KEEPER: cross-origin
    operator resolution (domain/payTo/signing key/repo) is exactly
    the operator-linking question G2/G-privacy already flags.
