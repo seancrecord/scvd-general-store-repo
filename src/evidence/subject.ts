@@ -47,6 +47,16 @@ export const SCHEMA_COHERENCE_FAMILY = {
 } as const;
 
 /**
+ * The join class for a receipt vs the catalog surface the buyer
+ * selected. Dogfood first: our own certificates carry `saw`, the
+ * hash of that surface at mint. Landscape §11.
+ */
+export const RECEIPT_COHERENCE_FAMILY = {
+  id: "receipt_coherence",
+  versions: ["rev1"],
+} as const;
+
+/**
  * The protocol families the observatory has battery coverage for.
  * MPP, AP2/ACP-class land here as new rows when their batteries are
  * built (spec §12) — the row arriving WITH the battery is the point.
@@ -74,6 +84,7 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   { id: "badge", versions: ["rev1"] },
   DISCOVERY_COHERENCE_FAMILY,
   SCHEMA_COHERENCE_FAMILY,
+  RECEIPT_COHERENCE_FAMILY,
 ] as const;
 
 /**

@@ -549,10 +549,11 @@ families per M2's no-migration rule:
 6. **freshness_coherence** — do timestamps, cache headers,
    last_seen, valid_until, badge renewal and the live probe tell
    one story. The recurring-revenue wedge.
-7. **receipt_coherence** — does the delivered artifact match the
-   surface the agent SELECTED (toolName, price, schema, chain).
-   Dogfood field first: bind a discovery-surface hash into our own
-   receipts so the artifact is provably what the buyer saw.
+7. **receipt_coherence** (dogfood shipped 2026-08-25) — does the
+   delivered artifact match the surface the agent SELECTED
+   (toolName, price, schema, chain). Our own certificates carry
+   `saw`: SHA-256 of JCS `{ route, price_usdc, required }` at mint.
+   The join names agree / conflict / not_observed. No new SKU.
 8. **registry_coherence** — x402-list vs Bazaar vs MCP registries
    vs owned surfaces. The 0.14 degraded-status incident is this
    class experienced from the subject's side.

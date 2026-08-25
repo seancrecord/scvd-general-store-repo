@@ -7,6 +7,8 @@ import { receiptNoteForWeek } from "@/store/copy/receipt-notes";
 import { newCertId } from "@/lib/ids";
 import { certificateSignedSubset, signCertificate } from "@/lib/signing";
 import { signJcs } from "@/lib/jcs";
+import { hashSelectedSurface, selectedSurface } from "@/discovery/receipt-surface";
+import { getMenuItem } from "@/store";
 import { makerMarkFor } from "@/store/provenance";
 import type {
   Certificate,
@@ -218,6 +220,16 @@ export async function mintCertificate(
   const mark = makerMarkFor(options.itemId);
   if (mark) {
     certificate.made_by = mark;
+  }
+  /**
+   * THE SELECTED SURFACE IS DERIVED, NEVER PASSED IN. Same law as
+   * made_by: a hash a caller could supply is a hash a caller could
+   * get wrong. The menu row plus buyInputSchema is the catalog the
+   * buyer saw; no row means not_observed, not a guess.
+   */
+  const menuItem = getMenuItem(options.itemId);
+  if (menuItem) {
+    certificate.saw = await hashSelectedSurface(selectedSurface(menuItem));
   }
 
   const { signature, publicKey } = await signCertificate(
