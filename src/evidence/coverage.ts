@@ -9,6 +9,7 @@ import {
   DISCOVERY_COHERENCE_FAMILY,
   KNOWN_CHAINS,
   SANDBOX_CHAIN,
+  SCHEMA_COHERENCE_FAMILY,
   type EvidenceSubject,
 } from "@/evidence/subject";
 import type { CoverageDepth, EvidenceCoverage } from "@/evidence/types";
@@ -138,6 +139,11 @@ export const COVERAGE_REGISTRATIONS: readonly ClassCoverageRegistration[] = [
   {
     class_id: DISCOVERY_COHERENCE_FAMILY.id,
     does: "Join of a host's machine catalogs: do the surfaces agree. No chain dimension.",
+    depths: {},
+  },
+  {
+    class_id: SCHEMA_COHERENCE_FAMILY.id,
+    does: "Join of required-input schemas on the same route: OpenAPI, x402 catalog, MCP tools. No chain dimension.",
     depths: {},
   },
 ] as const;

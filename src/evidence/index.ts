@@ -11,6 +11,7 @@ export {
   PROTOCOL_FAMILIES,
   RAIL_ASSETS,
   SANDBOX_CHAIN,
+  SCHEMA_COHERENCE_FAMILY,
   isKnownChain,
   isValidChain,
   isValidRail,

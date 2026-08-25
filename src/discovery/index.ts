@@ -91,3 +91,20 @@ export {
 } from "@/discovery/host-module";
 export { selfRowFromCatalogs, selfRowVerdict } from "@/discovery/self-row";
 export type { SelfRowVerdict } from "@/discovery/self-row";
+export {
+  schemaFromMcpTools,
+  schemaFromOpenApi,
+  schemaFromX402,
+} from "@/discovery/schema-claims";
+export type { SchemaClaim } from "@/discovery/schema-claims";
+export {
+  SCHEMA_COHERENCE_CLASS,
+  schemaJoinDisagreements,
+  schemaNotObserved,
+  schemaRowVerdict,
+} from "@/discovery/schema-coherence";
+export type {
+  SchemaDisagreement,
+  SchemaJoinVerdict,
+  SurfaceSchemaClaims,
+} from "@/discovery/schema-coherence";
