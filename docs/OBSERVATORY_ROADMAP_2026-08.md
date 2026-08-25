@@ -101,12 +101,26 @@ refuses).
 
 | # | Ledger | What | Acceptance |
 |---|--------|------|------------|
-| 1.1 | D-envelope, M2 | Define envelope schema v1 with subject dimensions (endpoint, protocol, protocol_version, chain, rail) — types + JCS canonical form + validators, as its own module tree (future `@scvd/evidence`) | Schema round-trips; validator rejects each malformed fixture |
+| 1.1 ✅ 2026-08-24 `6c4d71a` | D-envelope, M2 | Define envelope schema v1 with subject dimensions (endpoint, protocol, protocol_version, chain, rail) — types + JCS canonical form + validators, as its own module tree (future `@scvd/evidence`) | Schema round-trips; validator rejects each malformed fixture — **src/evidence/** |
 | 1.2 | B9, G1, I5 | Wire the envelope into its first three producers: watch rows, ward rounds, launch checks — STORE raw evidence (challenge bytes, curated headers, body_sha256) | Red test: current main discards evidence; new artifacts carry and store it |
 | 1.3 | D6 | Methodology/battery version + schema id INSIDE signed bytes on all observation classes | Red test: artifact without methodology fails validator |
-| 1.4 | M1 | Derived coverage matrix (class × chain × depth); serve on observatory surfaces + envelope `coverage` | Matrix derived from code, not typed; test compares to registrations |
-| 1.5 | L1 | Key-window (service dates) check in `x402-verify`; store consumes it (delivers D4/D5) | Red test: retired-key artifact dated post-retirement passes today, fails after |
-| 1.6 | D5 | Fix offline verification recipe text (resolve key against published directory + window) | Copy test |
+| 1.4 ✅ 2026-08-24 `c36d619` | M1 | Derived coverage matrix (class × chain × depth); serve on observatory surfaces + envelope `coverage` | Matrix derived from code, not typed; test compares to registrations — **M1 [x]** |
+| 1.5 ✅ 2026-08-24 | L1 | Key-window (service dates) check in `x402-verify`; store consumes it (delivers D4/D5) | Red test: retired-key artifact dated post-retirement passes today, fails after — **L1/D4 [x]** |
+| 1.6 ✅ 2026-08-24 | D5 | Fix offline verification recipe text (resolve key against published directory + window) | Copy test — **D5 [x]** |
+
+### Phase 1-joins — coherence classes (landscape §11 / M2)
+
+Not a second product line. Observation classes inside the passport.
+Done is recorded on M2; this table is the order.
+
+| # | What | Status |
+|---|------|--------|
+| 1.j1 | Registry rows for discovery surfaces + subject binding + host inventory | ✅ PROTOCOL_FAMILIES + `src/discovery/binding.ts` + inventory |
+| 1.j2 | `discovery_coherence` derived join, signed Diff Observation, self-passport module, CI | ✅ wrap `80e369c`; self-row + host citation |
+| 1.j3 | `schema_coherence` extractors + join + CI | ✅ 2026-08-25 `155a01a` #236 |
+| 1.j4 | `schema_coherence` on the self-passport (MCP named not_checked) | ✅ 2026-08-25 `efc3dbf` #239 |
+| 1.j5 | Productize: free inventory, paid signed report, paid refresh, watch + drift alerts | Open. Do not invent a price. |
+| 1.j6 | Next batteries: receipt_coherence (dogfood field first), then capability / freshness / registry. price_settlement is 0.17's path. identity_binding ⚑ G2 | Open |
 
 Expand/consider: while in 1.1, decide envelope storage layout in KV
 (per-artifact vs bundled) with M4's write limits in mind; 1.2 is the
