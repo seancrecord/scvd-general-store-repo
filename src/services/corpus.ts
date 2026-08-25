@@ -198,13 +198,24 @@ export async function listCorpus(env: Env): Promise<CorpusRecord[]> {
     env.COUNTERS,
     listed.names,
   );
-  const records: CorpusRecord[] = [];
-  for (const name of listed.names) {
-    const record = await resolveRecord(env, values.get(name) ?? null);
-    if (record) {
-      records.push(record);
-    }
-  }
+  /*
+   * ONE WAVE OVER THE POINTERS — rule 50.
+   *
+   * Every record written since the R2 move is a POINTER, and
+   * resolveRecord turns each one into an R2 get plus a text read: two
+   * serial round trips per record, awaited one after another, up to
+   * CORPUS_SCAN_CAP. The corpus gains an entry every week forever, so
+   * this got one record slower every Sunday with no commit to notice.
+   *
+   * The records do not depend on each other here — the CHAIN check
+   * does, and it stays sequential over the resolved set below.
+   */
+  const resolved = await Promise.all(
+    listed.names.map((name) => resolveRecord(env, values.get(name) ?? null)),
+  );
+  const records = resolved.filter((record): record is CorpusRecord =>
+    Boolean(record),
+  );
   records.sort((a, b) => a.snapshot.sequence - b.snapshot.sequence);
   return records;
 }
@@ -291,8 +302,18 @@ export async function takeCorpusSnapshot(
  */
 export async function verifyCorpusChain(
   env: Env,
+  /**
+   * The already-listed records, when the caller has them.
+   *
+   * /corpus.json used to call listCorpus AND verifyCorpusChain in the
+   * same Promise.all, and verifyCorpusChain called listCorpus again —
+   * so one request walked the whole R2 keyspace TWICE. Passing the set
+   * in halves the door; omitting it keeps every other caller working
+   * exactly as before.
+   */
+  listed?: CorpusRecord[],
 ): Promise<{ intact: boolean; entries: number; problem?: string }> {
-  const records = await listCorpus(env);
+  const records = listed ?? (await listCorpus(env));
   let previousDigest: string | null = null;
   for (const [index, record] of records.entries()) {
     if (record.snapshot.sequence !== index + 1) {

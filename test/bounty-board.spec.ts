@@ -520,3 +520,89 @@ describe("a settlement can only be claimed once", () => {
     expect(held, "a refused claim kept the transaction locked").toBeNull();
   });
 });
+
+/**
+ * A STALE READ MUST NOT BURN A REAL WALK — found 2026-08-25 by a
+ * review pass over the fix that shipped hours earlier.
+ *
+ * The claim readback sat ABOVE the try block, so it was the one
+ * refusal path that never released the claim. And it is the path a
+ * stale read takes: Workers KV reads are edge-cached and eventually
+ * consistent, so a get after a put can return the old value with
+ * nobody else involved.
+ *
+ * The consequence was permanent. A mystery shopper who really walked
+ * the door and really settled on chain would be told "already
+ * claimed", get no reward, and leave the tx key holding a claim for a
+ * payout that never happened — refusing every future attempt, theirs
+ * or anyone else's, forever. There is no expiry on that key and no
+ * operator path to clear it.
+ */
+describe("an unconfirmed claim is released, not kept", () => {
+  function staleOnce(realEnv: Env, key: string): Env {
+    /*
+     * `null` is a legitimate pre-write value here — the tx key is
+     * ABSENT before the claim — so the armed flag has to be separate
+     * from the held value. Conflating them made the first version of
+     * this facade never fire, and the test passed for the wrong
+     * reason before that was noticed.
+     */
+    let stale: string | null = null;
+    let held = false;
+    const counters = realEnv.COUNTERS;
+    const facade = {
+      ...counters,
+      get: (async (name: string, type?: string) => {
+        if (name === key && held) {
+          held = false;
+          return stale;
+        }
+        return (counters.get as (n: string, t?: string) => Promise<unknown>)(
+          name,
+          type,
+        );
+      }) as KVNamespace["get"],
+      put: (async (name: string, value: string) => {
+        if (name === key && !held) {
+          stale = (await counters.get(name)) as string | null;
+          held = true;
+        }
+        return counters.put(name, value);
+      }) as KVNamespace["put"],
+      delete: counters.delete.bind(counters),
+      list: counters.list.bind(counters),
+    } as unknown as KVNamespace;
+    return { ...realEnv, COUNTERS: facade } as Env;
+  }
+
+  it("leaves the settlement claimable after an unconfirmed claim", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    const txKey = KV_KEYS.bountyTx(TX.toLowerCase());
+
+    let refusal: unknown = null;
+    try {
+      await claimBounty(
+        staleOnce(testEnv, txKey),
+        {
+          bountyId: bounty.bounty_id,
+          txHash: TX,
+          payer: SHOPPER,
+          payoutTo: PAYOUT_TO,
+        },
+        await claimOptions(),
+      );
+    } catch (error) {
+      refusal = error;
+    }
+    expect(refusal, "a stale readback was allowed to sign").toBeTruthy();
+
+    // THE HARM: the key must not be left holding a claim nobody was
+    // paid for, or this settlement can never be claimed again.
+    expect(
+      await testEnv.COUNTERS.get(txKey),
+      "a stale read burned a real settlement permanently",
+    ).toBeNull();
+    expect(String(refusal)).toMatch(/could not be confirmed/);
+  });
+});

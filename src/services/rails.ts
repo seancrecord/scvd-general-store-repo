@@ -188,12 +188,23 @@ export async function readRailSplit(env: Env): Promise<RailSplit | null> {
  */
 export async function readRailCounters(env: Env): Promise<RailCounts> {
   const counts: RailCounts = { base: 0, polygon: 0, solana: 0, other: 0 };
-  for (const month of monthsSinceOpening()) {
-    const listed = await listKeys(env.COUNTERS, {
-      prefix: `metric:${month}:rail`,
-      cap: 100,
-    });
-    const values = await bulkGetText(env.COUNTERS, listed.names);
+  // One wave over the months, not a queue — the loop bound here is the
+  // CALENDAR, so a serial read gets one round trip slower every month
+  // with no commit for anybody to notice. Rule 50.
+  const perMonth = await Promise.all(
+    monthsSinceOpening().map(async (month) => {
+      const listed = await listKeys(env.COUNTERS, {
+        prefix: `metric:${month}:rail`,
+        cap: 100,
+      });
+      return {
+        month,
+        listed,
+        values: await bulkGetText(env.COUNTERS, listed.names),
+      };
+    }),
+  );
+  for (const { listed, values } of perMonth) {
     for (const name of listed.names) {
       if (name.includes(":railh:")) {
         continue; // Family doesn't make the paper.
@@ -260,12 +271,22 @@ export interface RailMonth {
  */
 export async function readRailCountersByMonth(env: Env): Promise<RailMonth[]> {
   const months: RailMonth[] = [];
-  for (const month of monthsSinceOpening()) {
-    const listed = await listKeys(env.COUNTERS, {
-      prefix: `metric:${month}:rail`,
-      cap: 100,
-    });
-    const values = await bulkGetText(env.COUNTERS, listed.names);
+  // Same wave as readRailCounters. Promise.all preserves order, so the
+  // rows still come back oldest-first without sorting them again.
+  const reads = await Promise.all(
+    monthsSinceOpening().map(async (month) => {
+      const listed = await listKeys(env.COUNTERS, {
+        prefix: `metric:${month}:rail`,
+        cap: 100,
+      });
+      return {
+        month,
+        listed,
+        values: await bulkGetText(env.COUNTERS, listed.names),
+      };
+    }),
+  );
+  for (const { month, listed, values } of reads) {
     const row: RailMonth = { month, base: 0, polygon: 0, solana: 0, other: 0 };
     if (listed.truncated) {
       row.truncated = true;

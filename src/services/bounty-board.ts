@@ -417,6 +417,19 @@ export async function claimBounty(
    * the settlement is not real, the budget is spent — the claim is
    * released, because a transaction that never paid out must stay
    * claimable.
+   *
+   * THIS IS NOT A MUTEX, and the first version of this comment said
+   * it was. Workers KV is last-write-wins with edge-cached reads and
+   * no compare-and-swap: two colos can each claim and each read back
+   * their own claim. It narrows the window and makes the rare case
+   * detectable; it does not close it. A Durable Object per tx hash
+   * is the real answer.
+   *
+   * AND ONE GAP THIS DOES NOT COVER AT ALL, stated rather than
+   * implied: only the TX key is claimed. Two concurrent claims of the
+   * same bounty with two DIFFERENT real settlements both read
+   * status "open" above and both pay. That is a separate defect with
+   * no fix in this commit.
    */
   const txKey = KV_KEYS.bountyTx(input.txHash.toLowerCase());
   const claimId = `${input.bountyId}:${(options.randomNonce ?? defaultNonce)()}`;
@@ -426,21 +439,38 @@ export async function claimBounty(
     );
   }
   await env.COUNTERS.put(txKey, claimId);
-  if ((await env.COUNTERS.get(txKey)) !== claimId) {
-    throw new BountyRefused(
-      "that transaction has already been claimed — one payout per settlement, ever",
-    );
-  }
+
   /*
    * A budget reservation taken and then abandoned would shrink the
    * week for everybody else, so the release gives both back — the
    * claim AND whatever was reserved against it.
+   *
+   * BOTH HALVES ARE CONDITIONAL, corrected 2026-08-25 hours after the
+   * first version shipped:
+   *
+   *   The delete used to be unconditional. If two requests both
+   *   believed they held the claim, the LOSER's refusal deleted the
+   *   WINNER's key — so a settlement that had already been paid for
+   *   became claimable again, by the very code enforcing "one payout
+   *   per settlement, ever".
+   *
+   *   The budget used to be restored to a SNAPSHOT taken before the
+   *   signature. A reservation that landed in between was erased —
+   *   the same read-then-write defect this commit claimed to fix,
+   *   moved from the happy path onto the rollback path. It gives back
+   *   the DELTA now, off a fresh read, clamped at zero.
    */
-  let reserved: { key: string; previous: number } | null = null;
+  let reserved: { week: string; amount: number } | null = null;
   const releaseClaim = async () => {
-    await env.COUNTERS.delete(txKey);
+    if ((await env.COUNTERS.get(txKey)) === claimId) {
+      await env.COUNTERS.delete(txKey);
+    }
     if (reserved) {
-      await env.COUNTERS.put(reserved.key, String(reserved.previous));
+      const current = await weekSpent(env, reserved.week);
+      await env.COUNTERS.put(
+        KV_KEYS.bountyBudget(reserved.week),
+        String(Math.max(0, current - reserved.amount)),
+      );
       reserved = null;
     }
   };
@@ -449,6 +479,36 @@ export async function claimBounty(
   // paid out has to stay claimable, or one bad chain read burns a
   // walker's real purchase forever.
   try {
+    /*
+     * THE READBACK LIVES INSIDE THE TRY — and that placement is the
+     * whole finding. In the first version it sat ABOVE this line, so
+     * it was the one refusal path that never released, and it is the
+     * path a STALE READ takes.
+     *
+     * Workers KV reads are edge-cached and eventually consistent: a
+     * get after a put can return the old value with nobody else
+     * involved. A real mystery shopper who really walked the door and
+     * really settled on chain would be told "already claimed", get
+     * nothing, and leave txKey holding a claim for a payout that
+     * never happened — refusing every future attempt, theirs or
+     * anyone's, forever, with no expiry and no operator path to clear
+     * it.
+     *
+     * A different claim id means a genuine rival: refuse and leave
+     * their claim alone. Anything else means our own write is not
+     * visible, so release and let them try again.
+     */
+    const seen = await env.COUNTERS.get(txKey);
+    if (seen !== claimId) {
+      if (seen) {
+        throw new BountyRefused(
+          "that transaction has already been claimed — one payout per settlement, ever",
+        );
+      }
+      throw new BountyRefused(
+        "the claim on that settlement could not be confirmed, so nothing was signed and nothing is spent — try again in a moment",
+      );
+    }
     // THE CHAIN'S PART: the settlement is real, succeeded, runs from
     // the claimed payer to the terms WE captured, and postdates the
     // bounty. This is what the reward pays for.
@@ -508,7 +568,7 @@ export async function claimBounty(
     // RESERVE, then sign. Written after the signature, this counter lost
     // every concurrent increment but one, so the weekly cap bounded
     // nothing and /bounties published a figure below what was paid.
-    reserved = { key: KV_KEYS.bountyBudget(weekKey), previous: spent };
+    reserved = { week: weekKey, amount: bounty.reward_usd };
     await env.COUNTERS.put(
       KV_KEYS.bountyBudget(weekKey),
       String(spent + bounty.reward_usd),
