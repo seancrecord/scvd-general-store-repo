@@ -12,6 +12,27 @@ import type { Env } from "@/types";
 const BASE = "https://scvd.store";
 
 /**
+ * READ THE PAYLOAD THE WAY THE SPEC TELLS A VERIFIER TO.
+ *
+ * These tests used to read `offer.payload.*` straight off the envelope,
+ * which is how they came to defend a defect: the spec makes `payload`
+ * EIP-712-only and says for JWS it "MUST be omitted (the JWS compact
+ * string already contains the payload)", and for JWS "clients extract
+ * the payload by base64url-decoding the JWS payload component". Reading
+ * the object was easier and wrong. Decoding the JWS is what a
+ * conformant verifier does, so the assertions now exercise the same
+ * path a stranger's client would.
+ */
+function payloadOf(jws: string): Record<string, unknown> {
+  const body = jws.split(".")[1];
+  if (!body) throw new Error("not a compact JWS");
+  const padded =
+    body.replace(/-/g, "+").replace(/_/g, "/") +
+    "=".repeat((4 - (body.length % 4)) % 4);
+  return JSON.parse(atob(padded)) as Record<string, unknown>;
+}
+
+/**
  * THE x402 SIGNED OFFERS & RECEIPTS EXTENSION — built from the
  * normative spec fetched in full, after a confident summary of it
  * turned out to carry three field-level errors (`offerType` for
@@ -54,12 +75,14 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
     const body = (await response.json()) as Record<string, unknown>;
     const offers = (
       ((body["extensions"] as Record<string, unknown>)["offer-receipt"]) as unknown as {
-        info: { offers: { acceptIndex: number; payload: { amount: string } }[] };
+        info: { offers: { acceptIndex: number; signature: string }[] };
       }
     ).info.offers;
     expect(offers.length).toBe(accepts.length);
     for (const offer of offers) {
-      expect(offer.payload.amount).toBe(accepts[offer.acceptIndex]?.amount);
+      expect(payloadOf(offer.signature)["amount"]).toBe(
+        accepts[offer.acceptIndex]?.amount,
+      );
     }
   });
 
@@ -112,7 +135,7 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
       signed as unknown as {
         "offer-receipt": {
           info: {
-            offers: { acceptIndex: number; payload: { amount: string } }[];
+            offers: { acceptIndex: number; signature: string }[];
           };
         };
       }
@@ -123,7 +146,7 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
     // ...and every surviving offer still names its OWN tier.
     for (const offer of offers) {
       expect(
-        offer.payload.amount,
+        payloadOf(offer.signature)["amount"],
         `acceptIndex ${offer.acceptIndex} points at the wrong tier`,
       ).toBe(accepts[offer.acceptIndex]?.amount);
     }
@@ -134,7 +157,7 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
     const body = await challengeBody();
     const offer = (
       ((body["extensions"] as Record<string, unknown>)["offer-receipt"]) as unknown as {
-        info: { offers: { format: string; payload: Record<string, unknown> }[] };
+        info: { offers: { format: string; signature: string }[] };
       }
     ).info.offers[0]!;
     expect(offer.format).toBe("jws");
@@ -151,17 +174,22 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
       "amount",
       "validUntil",
     ]) {
-      expect(offer.payload[field], `offer payload lacks ${field}`).toBeDefined();
+      expect(
+        payloadOf(offer.signature)[field],
+        `offer payload lacks ${field}`,
+      ).toBeDefined();
     }
-    expect(offer.payload["version"]).toBe(1);
-    expect(offer.payload["resourceUrl"]).toBe(`${BASE}/api/buy/hello`);
+    expect(payloadOf(offer.signature)["version"]).toBe(1);
+    expect(payloadOf(offer.signature)["resourceUrl"]).toBe(
+      `${BASE}/api/buy/hello`,
+    );
   });
 
   it("signs with EdDSA under our did:web kid, and the JWS verifies", async () => {
     const body = await challengeBody();
     const offer = (
       ((body["extensions"] as Record<string, unknown>)["offer-receipt"]) as unknown as {
-        info: { offers: { signature: string; payload: { amount: string } }[] };
+        info: { offers: { signature: string }[] };
       }
     ).info.offers[0]!;
     const [headerPart] = offer.signature.split(".");
@@ -185,7 +213,74 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
     // identity, checkable three ways.
     const checked = await verifyOwnJws(env as Env, offer.signature);
     expect(checked.valid).toBe(true);
-    expect(checked.payload?.["amount"]).toBe(offer.payload.amount);
+    expect(checked.payload?.["amount"]).toBe(
+      payloadOf(offer.signature)["amount"],
+    );
+  });
+});
+
+describe("the JWS envelope omits what the spec forbids", () => {
+  beforeAll(() => {
+    installFacilitatorMock();
+  });
+
+  /**
+   * THE DEFECT THIS HOLDS DOWN, found 2026-08-25 by reading the spec
+   * rather than the implementation. Every offer we issued from launch
+   * until that date carried BOTH `signature` (a compact JWS, payload
+   * inside) and `payload` (the same object again, in the clear). The
+   * spec's envelope table makes payload EIP-712-only and says of JWS:
+   * "`payload` MUST be omitted (the JWS compact string already
+   * contains the payload)". Nine forbidden copies per challenge, on a
+   * published surface, from the store that sells conformance audits.
+   *
+   * The tests that should have caught it were reading `offer.payload`
+   * to make their assertions, so they required the violation to pass.
+   * A guard that depends on the defect is not a guard.
+   */
+  it("no offer carries payload beside a jws signature", async () => {
+    const response = await SELF.fetch(`${BASE}/api/buy/certificate_of_patronage`);
+    const body = (await response.json()) as Record<string, unknown>;
+    const offers = (
+      ((body["extensions"] as Record<string, unknown>)["offer-receipt"]) as unknown as {
+        info: { offers: Record<string, unknown>[] };
+      }
+    ).info.offers;
+    // A tiered item, so this walks nine envelopes rather than three.
+    expect(offers.length).toBeGreaterThan(1);
+    for (const offer of offers) {
+      expect(offer["format"]).toBe("jws");
+      expect(
+        Object.hasOwn(offer, "payload"),
+        "a jws offer carries payload — the spec says MUST be omitted",
+      ).toBe(false);
+      // And the payload is still recoverable, which is why omitting it
+      // costs a verifier nothing.
+      expect(payloadOf(offer["signature"] as string)["version"]).toBe(1);
+    }
+  });
+
+  it("the receipt omits it too — same MUST, same sentence in the spec", async () => {
+    const url = `${BASE}/api/buy/hello`;
+    const challenge = await SELF.fetch(url);
+    const accepted = decodePaymentRequired(challenge).accepts[0]!;
+    const settled = await SELF.fetch(url, {
+      headers: { "PAYMENT-SIGNATURE": buildPaymentSignature(accepted) },
+    });
+    const decoded = JSON.parse(
+      atob(settled.headers.get("PAYMENT-RESPONSE")!),
+    ) as Record<string, unknown>;
+    const receipt = (
+      (decoded["extensions"] as Record<string, unknown>)[
+        "offer-receipt"
+      ] as unknown as { info: { receipt: Record<string, unknown> } }
+    ).info.receipt;
+    expect(receipt["format"]).toBe("jws");
+    expect(
+      Object.hasOwn(receipt, "payload"),
+      "the jws receipt carries payload — the spec says MUST be omitted",
+    ).toBe(false);
+    expect(payloadOf(receipt["signature"] as string)["version"]).toBe(1);
   });
 });
 
@@ -213,19 +308,22 @@ describe("a settlement carries a signed receipt in PAYMENT-RESPONSE", () => {
     expect(header, "the settlement header vanished").toBeTruthy();
     const decoded = JSON.parse(atob(header!)) as {
       extensions?: {
-        "offer-receipt"?: { info: { receipt: { payload: Record<string, unknown> } } };
+        "offer-receipt"?: { info: { receipt: { signature: string } } };
       };
     };
     const receipt = decoded.extensions?.["offer-receipt"]?.info.receipt;
     expect(receipt, "no receipt in the settlement response").toBeTruthy();
     for (const field of ["version", "network", "resourceUrl", "payer", "issuedAt"]) {
-      expect(receipt!.payload[field], `receipt lacks ${field}`).toBeDefined();
+      expect(
+        payloadOf(receipt!.signature)[field],
+        `receipt lacks ${field}`,
+      ).toBeDefined();
     }
-    expect(receipt!.payload["version"]).toBe(1);
+    expect(payloadOf(receipt!.signature)["version"]).toBe(1);
     // `transaction`, not `txHash` — and named because this store
     // already publishes settlement_tx on the certificate, so the
     // privacy option the spec leaves open was decided days ago.
-    expect(receipt!.payload["payer"]).toBe(TEST_PAYER);
+    expect(payloadOf(receipt!.signature)["payer"]).toBe(TEST_PAYER);
   });
 
   it("does not disturb what the facilitator put in the header", async () => {
