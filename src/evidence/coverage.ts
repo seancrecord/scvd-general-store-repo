@@ -6,6 +6,7 @@ import {
 } from "@/lib/payments";
 import { SOLANA_CHAIN } from "@/lib/solana-rpc";
 import {
+  DISCOVERY_COHERENCE_FAMILY,
   KNOWN_CHAINS,
   SANDBOX_CHAIN,
   type EvidenceSubject,
@@ -133,6 +134,11 @@ export const COVERAGE_REGISTRATIONS: readonly ClassCoverageRegistration[] = [
     class_id: "preflight",
     does: "Free unpaid read of a 402 challenge. Flags testnet; does not walk.",
     depths: CHALLENGE_MAINNETS,
+  },
+  {
+    class_id: DISCOVERY_COHERENCE_FAMILY.id,
+    does: "Join of a host's machine catalogs: do the surfaces agree. No chain dimension.",
+    depths: {},
   },
 ] as const;
 

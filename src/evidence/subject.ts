@@ -27,6 +27,16 @@ export interface ProtocolFamily {
 }
 
 /**
+ * The join class — not a surface. The battery that diffs owned
+ * catalogs is the self-join; a Diff Observation cites this as
+ * subject.protocol. Surface rows stay in PROTOCOL_FAMILIES below.
+ */
+export const DISCOVERY_COHERENCE_FAMILY = {
+  id: "discovery_coherence",
+  versions: ["rev1"],
+} as const;
+
+/**
  * The protocol families the observatory has battery coverage for.
  * MPP, AP2/ACP-class land here as new rows when their batteries are
  * built (spec §12) — the row arriving WITH the battery is the point.
@@ -38,8 +48,7 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   /**
    * Discovery surfaces (joins thesis, 2026-08-24). The row is the
    * subject id so a coherence observation can name the surface it
-   * looked at. The battery that diffs them is not built yet — the
-   * row arriving first is M2's rule, not a claim we have checks.
+   * looked at. The join battery is discovery_coherence, below.
    */
   { id: "x402_bazaar", versions: ["rev1"] },
   { id: "x402_list", versions: ["rev1"] },
@@ -53,6 +62,7 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   { id: "owned_passport", versions: ["rev1"] },
   { id: "receipt", versions: ["rev1"] },
   { id: "badge", versions: ["rev1"] },
+  DISCOVERY_COHERENCE_FAMILY,
 ] as const;
 
 /**
