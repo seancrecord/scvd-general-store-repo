@@ -1505,8 +1505,10 @@ protocol/chain as first-class subject dimensions — a host is a host.
   observation can name the surface. Join-class families that
   followed: `discovery_coherence`, `schema_coherence` (2026-08-25,
   #236), `receipt_coherence` (2026-08-25 — dogfood: certificates
-  carry `saw`, the hash of the catalog surface the buyer selected).
-  Corpus schema still open (G-schema).
+  carry `saw`, the hash of the catalog surface the buyer selected),
+  `capability_coherence` (2026-08-25 — catalog-only: chains on the
+  two x402 documents, primary transport on A2A vs MCP card. Live
+  probe still open). Corpus schema still open (G-schema).
 - **M3 [ ] — the trajectory surface.** "Show the spike as it
   happens" is a derived time-series over the corpus chain (hosts,
   offers seen, settlements observed, failure classes — per week,

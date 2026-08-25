@@ -122,6 +122,7 @@ off until the keeper names a price.
 | # | What | Acceptance |
 |---|------|------------|
 | 1.j6 ✅ 2026-08-25 | `receipt_coherence` dogfood: bind the selected catalog surface into our own receipts | Minted `hello` carries `saw` matching the menu hash; planted list-price disagreement is conflict; missing `saw` is not_observed; published signature fixtures still verify |
+| 1.j7 ✅ 2026-08-25 | `capability_coherence` catalog-only: chains + primary transport | Live x402.json and x402 thin agree on networks; planted chain is conflict; A2A MCP vs MCP card agree after normalize. No live probe |
 
 ## Phase 2 — Conformance engine as the measurement standard
 

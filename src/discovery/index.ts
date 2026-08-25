@@ -124,3 +124,20 @@ export type {
   SchemaJoinVerdict,
   SurfaceSchemaClaims,
 } from "@/discovery/schema-coherence";
+export {
+  capabilityFromA2a,
+  capabilityFromMcp,
+  capabilityFromX402,
+  normalizeTransport,
+} from "@/discovery/capability-claims";
+export type { CapabilityClaim } from "@/discovery/capability-claims";
+export {
+  CAPABILITY_COHERENCE_CLASS,
+  capabilityJoinDisagreements,
+  capabilityRowVerdict,
+} from "@/discovery/capability-coherence";
+export type {
+  CapabilityDisagreement,
+  CapabilityJoinVerdict,
+  SurfaceCapabilityClaim,
+} from "@/discovery/capability-coherence";
