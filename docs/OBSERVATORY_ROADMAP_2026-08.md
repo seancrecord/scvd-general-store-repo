@@ -102,7 +102,7 @@ refuses).
 | # | Ledger | What | Acceptance |
 |---|--------|------|------------|
 | 1.1 ✅ 2026-08-24 `6c4d71a` | D-envelope, M2 | Define envelope schema v1 with subject dimensions (endpoint, protocol, protocol_version, chain, rail) — types + JCS canonical form + validators, as its own module tree (future `@scvd/evidence`) | Schema round-trips; validator rejects each malformed fixture — **src/evidence/** |
-| 1.2 | B9, G1, I5 | Wire the envelope into its first three producers: watch rows, ward rounds, launch checks — STORE raw evidence (challenge bytes, curated headers, body_sha256) | Red test: current main discards evidence; new artifacts carry and store it |
+| 1.2 | B9, G1, I5 | **PARTIAL 2026-08-25 (`b7d9354`): standing-watch producer landed.** Wire the envelope into its first three producers: watch rows, ward rounds, launch checks — STORE raw evidence (challenge bytes, curated headers, body_sha256). Ward rounds and launch checks remain open. | Red test: current main discards evidence; new artifacts carry and store it |
 | 1.3 | D6 | Methodology/battery version + schema id INSIDE signed bytes on all observation classes | Red test: artifact without methodology fails validator |
 | 1.4 ✅ 2026-08-24 `c36d619` | M1 | Derived coverage matrix (class × chain × depth); serve on observatory surfaces + envelope `coverage` | Matrix derived from code, not typed; test compares to registrations — **M1 [x]** |
 | 1.5 ✅ 2026-08-24 | L1 | Key-window (service dates) check in `x402-verify`; store consumes it (delivers D4/D5) | Red test: retired-key artifact dated post-retirement passes today, fails after — **L1/D4 [x]** |
