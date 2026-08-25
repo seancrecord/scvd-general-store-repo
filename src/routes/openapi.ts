@@ -5,6 +5,10 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { Hono } from "hono";
+import {
+  GLOBAL_PROBES_PER_MINUTE,
+  PROBES_PER_MINUTE,
+} from "@/services/preflight";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { PENNY_PAGE_USDC, priceTiersUsdc } from "@/lib/payments";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
@@ -101,8 +105,7 @@ const PROBLEM_RESPONSE = (description: string): OpenApiObject => ({
  * edge in front of this Worker throttles abuse, and that response
  * carries Retry-After without the Worker's involvement.
  */
-const NO_APP_RATE_LIMIT =
-  "This store enforces no application-level rate limit and therefore returns no RateLimit-Limit/-Remaining/-Reset headers — declaring a ceiling nothing enforces would be worse than declaring none. A 429 can still arrive from the edge in front of the Worker under abuse conditions; it carries Retry-After. A refused request is never charged for. If a limiter is ever added, it will announce itself in these headers and be documented at /developers before it takes effect.";
+const NO_APP_RATE_LIMIT = `The free preflight at /api/preflight/v2 is limited — ${PROBES_PER_MINUTE} probes per isolate per minute, ${GLOBAL_PROBES_PER_MINUTE} global — because it spends outbound requests to a host the caller chooses; past either it returns 429 with Retry-After. No other operation enforces an application-level ceiling, and so returns no RateLimit-Limit/-Remaining/-Reset headers: declaring a ceiling nothing enforces would be worse than declaring none. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. The two figures above are read from the limiter's own constants, not restated here — this string asserted that NO limit existed for a day after one shipped.`;
 
 const TOO_MANY_REQUESTS: OpenApiObject = {
   ...PROBLEM_RESPONSE(

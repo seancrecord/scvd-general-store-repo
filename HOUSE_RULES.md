@@ -358,6 +358,37 @@ LORE & TRADITION
     over exact wording, so the guard survives honest edits and
     still fires on the change that matters.
 
+50. THE DOOR AN AGENT WAITS ON IS THE ONE THAT MUST BE FAST.
+    (2026-08-25, the keeper's call, after two outside monitors
+    clocked the paid doors at 977ms and 1424ms.) Latency is not a
+    polish item here, it is the product: an agent blocked on a 402
+    is spending its own budget waiting for us to finish our
+    paperwork. Measured that morning, /api/buy/hello answered in
+    1.14s warm while /openapi.json — EIGHTY TIMES the payload —
+    answered in 0.19s. The slowest thing the store served was the
+    only thing anybody pays for.
+
+    So: no bookkeeping between the request and the answer that could
+    have happened beside it. Writes that touch different keys go out
+    in one wave, never a queue. A read per key in a loop on a hot
+    path is a defect, not a style note. And when a courtesy CAN be
+    deferred, defer it — but prove first that nothing reads it back
+    before the response, because a guard already caught that exact
+    mistake being made in the name of this rule.
+
+    RULES 47-49 DO NOT EXIST. This one skipped ahead on the keeper's
+    instruction to stop deliberating and ship. The gap is history,
+    not an error, and the numbering guard permits it.
+
+    WHAT THIS RULE MAY NOT BECOME: "we are the fastest." That is a
+    COMPARATIVE claim about a field we have never measured, and this
+    house does not get to make one of those about itself while
+    refusing to score anybody else (rule 43, J4). Being fast is the
+    discipline. Being FASTEST is an observation, and until the
+    preflight captures latency on the doors it already walks, the
+    honest value is not_observed. Speed is earned in the code and
+    claimed only from a measurement.
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the

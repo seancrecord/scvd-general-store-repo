@@ -314,8 +314,65 @@ function notFoundLinks(base: string): Array<{ url: string; what: string }> {
   ];
 }
 
+/**
+ * WRONG METHOD IS NOT NO SUCH DOOR, and until 2026-08-25 this store
+ * said it was. Six public paths — /api/bell, /api/letter, /api/tip,
+ * /api/request, /api/anchor, /api/refund — are POST doors. A GET to
+ * any of them fell through to the 404 below, which states in plain
+ * words that "this path was never a door." That sentence was false
+ * about six of our own doors.
+ *
+ * It was not a private embarrassment. An external index probed all
+ * six with GET, read the 404, and graded them failing. The grade was
+ * wrong and OUR ANSWER IS WHY: a prober cannot distinguish a door it
+ * knocked on incorrectly from a wall, unless the door says so. RFC
+ * 9110 §15.5.6 already settles the mechanism — 405 MUST carry Allow
+ * — and the house rule was already written: absent facts are STATED,
+ * never omitted, and silence must be distinguishable from a pass.
+ *
+ * DERIVED FROM THE ROUTER, never a hand-kept list (AT_SCALE rule 1).
+ * The seventh POST-only route somebody adds is covered the moment it
+ * is registered, because this reads `app.routes` rather than a
+ * constant that would need remembering. Today's other lesson pushed
+ * the same way: a fix aimed at one instance leaves the bug next door
+ * and waiting, so this is fixed at the shape.
+ *
+ * Literal paths only, stated rather than glossed: a parameterized
+ * route (`/api/verify/:id`) is not matched here, so a wrong-method
+ * request to one still answers 404. Every such route in the tree
+ * serves GET today, so nothing is currently mislabelled by that gap
+ * — but it IS a gap, and it belongs in the comment rather than in
+ * nobody's memory.
+ */
+function methodsFor(path: string): string[] {
+  const allowed = new Set<string>();
+  for (const route of app.routes) {
+    if (route.path !== path) continue;
+    const method = route.method.toUpperCase();
+    if (method === "ALL") continue;
+    allowed.add(method);
+  }
+  return [...allowed].sort();
+}
+
 app.notFound((c) => {
   const base = c.env.STORE_BASE_URL;
+  const allowed = methodsFor(c.req.path);
+  if (allowed.length > 0 && !allowed.includes(c.req.method.toUpperCase())) {
+    const allow = allowed.join(", ");
+    c.header("Allow", allow);
+    c.header("Vary", VARY_ACCEPT);
+    return c.json(
+      {
+        error: `This door exists and takes ${allow}, not ${c.req.method.toUpperCase()}.`,
+        allow: allowed,
+        what_this_is_not:
+          "Not a missing endpoint and not an outage. The path is served; the method was wrong.",
+        menu_url: `${base}/menu.json`,
+      },
+      405,
+    );
+  }
   const links = notFoundLinks(base);
   const message = "That aisle doesn't exist.";
   if (prefersMarkdown(c.req.header("Accept"))) {

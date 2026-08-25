@@ -57,6 +57,25 @@ export interface Ed25519Jwk {
   kty: "OKP";
   crv: "Ed25519";
   x: string;
+  /**
+   * PUBLISHED SO A VERIFIER CAN MATCH A SIGNATURE TO A KEY.
+   *
+   * The thumbprint has always been computed and has always ridden on
+   * every signature as the keyid — it just never appeared in the
+   * directory, so an origin holding one of our signed requests could
+   * fetch this document and still have nothing to match the keyid
+   * AGAINST. Publishing the key without its name is half a handshake.
+   *
+   * SAFE BY CONSTRUCTION, not by luck: RFC 7638 canonicalizes an OKP
+   * key over crv, kty and x ONLY, and jwkThumbprint below hand-writes
+   * exactly those three. Adding kid cannot move the thumbprint, which
+   * is why this is an addition and not a key rotation.
+   *
+   * Optional in the type because the thumbprint is derived FROM the
+   * jwk: the object exists for one function call before it has a
+   * name.
+   */
+  kid?: string;
 }
 
 interface WbaKeyMaterial {
@@ -129,7 +148,9 @@ async function deriveKeyMaterial(seedHex: string): Promise<WbaKeyMaterial | null
       crv: "Ed25519",
       x: base64Url(hexToBytes(publicKey)),
     };
-    return { seedHex, jwk, thumbprint: await jwkThumbprint(jwk) };
+    const thumbprint = await jwkThumbprint(jwk);
+    // Name the key with the same string its signatures carry.
+    return { seedHex, jwk: { ...jwk, kid: thumbprint }, thumbprint };
   } catch {
     // A malformed secret reads as no secret: decoration fails open.
     return null;

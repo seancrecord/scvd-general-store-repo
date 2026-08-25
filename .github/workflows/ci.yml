@@ -35,6 +35,14 @@ jobs:
       - run: npm ci
       - name: Typecheck
         run: npm run typecheck
+      # SELF-ROW — we sell discovery_coherence pointed at other
+      # people. This step is the release blocker that says we do
+      # not, until our own catalogs agree. Buried in npm test it
+      # is one of two thousand; named here it is the gate. The
+      # 2026-07-29 correction was a sentence about CI with no job
+      # behind it. The spec asserts this step exists.
+      - name: Self-row
+        run: npm run self-row
       # The suite walks every public claim the store makes: the naming
       # law across seven surfaces, the listing spec's field order, the
       # refund wording, the decline readings, and the skill document
@@ -56,6 +64,16 @@ jobs:
       # no warning, at some unknown future size.
       - name: Scalability audit
         run: npm run audit
+      # WHICH PUBLIC CLAIMS ARE STILL UNBOUND. /developers served
+      # "There is no application-level rate limit" for a day after
+      # one shipped — true when written, and the code moved under it.
+      # That is the cost of shipping fast, not a character failure,
+      # and the answer is not to ship slower. It is to make drift
+      # VISIBLE: every claim-shaped line is counted, and each one is
+      # derived from the code, dated so a reader can weigh its age,
+      # or declined on the record. The budget only goes down.
+      - name: Claims register
+        run: npm run claims
       # WHICH DOCUMENTS HAVE GONE QUIET — printed, never enforced.
       # The facts a machine can recompute are already guarded by tests
       # that fail this build (doc-drift for outbound copy,

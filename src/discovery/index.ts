@@ -89,3 +89,5 @@ export {
   readHostDiscoveryModule,
   rememberHostDiscoveryModule,
 } from "@/discovery/host-module";
+export { selfRowFromCatalogs, selfRowVerdict } from "@/discovery/self-row";
+export type { SelfRowVerdict } from "@/discovery/self-row";

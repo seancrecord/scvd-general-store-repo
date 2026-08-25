@@ -124,6 +124,9 @@ async function handle(
   const result = await preflightUrl(url, c.env, battery);
   return c.json(result.body, result.status as 200, {
     "Cache-Control": "no-store",
+    // The refusal carries its own headers — a 429 owes Retry-After,
+    // which two of our own pages had already promised readers.
+    ...result.headers,
   });
 }
 
