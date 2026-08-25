@@ -369,10 +369,15 @@ async function callPurchaseTool(
    */
   const idempotencySurface = await idempotencyScope(
     `mcp:buy_${item.id}`,
+    // Every PRIMITIVE argument, not only the strings. Today every buy_*
+    // input is a string, so filtering to strings was correct and
+    // latent — but the first numeric or boolean argument that decides
+    // the goods would drop silently out of the cache scope and bring
+    // the wrong-subject bug straight back.
     new URLSearchParams(
       Object.entries(args)
-        .filter(([, value]) => typeof value === "string")
-        .map(([key, value]) => [key, value as string]),
+        .filter(([, value]) => value !== null && typeof value !== "object")
+        .map(([key, value]): [string, string] => [key, String(value)]),
     ),
   );
   const replayCheck = idempotencyKey

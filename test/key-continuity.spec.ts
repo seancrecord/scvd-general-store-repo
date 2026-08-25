@@ -16,52 +16,66 @@ const BASE = "https://scvd.store";
  * next.
  */
 describe("no continuity claim runs ahead of the fact", () => {
-  it("serves the pending wording, not the shipped wording, while the flag is false", async () => {
-    // A durability promise made slightly early is indistinguishable
-    // from one made honestly, right up until the day it matters.
-    //
-    // WHAT THIS COVERS AND WHAT IT DOES NOT, because the first draft
-    // pretended to cover more: it asserts the PRESENT copy is not being
-    // served while the flag is false, which catches the actual likely
-    // mistake — somebody editing the reassuring paragraph into place
-    // and forgetting the boolean. It does NOT catch a backup claimed in
-    // brand new words somewhere else, and no regex here could: the
-    // first attempt tried, and flagged a menu item that says a
-    // certificate is for people who "want it on paper". An instrument
-    // that fires on unrelated copy is worse than a narrower one that
-    // does not, which is the lesson from the 500px screenshot.
-    /*
-     * BOTH DIRECTIONS, BECAUSE ONE OF THEM WENT DEAD — 2026-08-25.
-     *
-     * This used to `return` when the flag was true, and the flag is a
-     * compile-time constant that has been true since the backup was
-     * made. Everything below was therefore unreachable and had been
-     * for weeks: dead code shaped like coverage, still counted as a
-     * passing test.
-     *
-     * The sibling test one block down already had the right shape —
-     * assert in BOTH branches — so this now matches it. While the
-     * flag is false the shipped wording must be ABSENT (a durability
-     * promise made early is indistinguishable from an honest one); while
-     * it is true that same wording must be PRESENT, because a backup
-     * nobody is told about buys the reader nothing.
-     */
-    const SHIPPED_WORDING = [
-      "The signing key exists offline",
-      "more than one physical location",
-    ];
-    for (const path of ["/attestation", "/llms.txt", "/.well-known/scvd-signing-key"]) {
-      const text = await (await SELF.fetch(`${BASE}${path}`)).text();
-      for (const phrase of SHIPPED_WORDING) {
-        if (!KEY_BACKUP_EXISTS) {
+  /*
+   * SKIPPED, NOT SILENTLY GREEN — corrected 2026-08-25, hours after
+   * the first attempt at this, by a review pass that caught the
+   * correction being wrong.
+   *
+   * The original test `return`ed when KEY_BACKUP_EXISTS was true, and
+   * the flag is a compile-time constant that has been true since the
+   * backup was made — so everything after it was unreachable. The
+   * first fix moved the flag check INSIDE the loop as a guard, which
+   * changed nothing: the test still fetched three pages and asserted
+   * zero times, while its new comment claimed it now "asserts in BOTH
+   * branches". A false claim about a fix to false claims.
+   *
+   * There is genuinely nothing to assert here while the flag is true.
+   * The claim is "do not promise this EARLY", and it is not early any
+   * more. So the honest report is SKIPPED — visible in the run,
+   * costing nothing, and live again the moment the flag goes back to
+   * false. The half that has work to do while the flag is true is the
+   * test below, which asserts the wording IS served on the surface
+   * that owns it.
+   *
+   * expect.hasAssertions() makes vacuity fail rather than pass, so
+   * this cannot quietly become a no-op a third time.
+   */
+  it.skipIf(KEY_BACKUP_EXISTS)(
+    "serves the pending wording, not the shipped wording, while the flag is false",
+    async () => {
+      // A durability promise made slightly early is indistinguishable
+      // from one made honestly, right up until the day it matters.
+      //
+      // WHAT THIS COVERS AND WHAT IT DOES NOT, because the first draft
+      // pretended to cover more: it asserts the PRESENT copy is not
+      // being served while the flag is false, which catches the actual
+      // likely mistake — somebody editing the reassuring paragraph into
+      // place and forgetting the boolean. It does NOT catch a backup
+      // claimed in brand new words somewhere else, and no regex here
+      // could: the first attempt tried, and flagged a menu item that
+      // says a certificate is for people who "want it on paper". An
+      // instrument that fires on unrelated copy is worse than a
+      // narrower one that does not.
+      expect.hasAssertions();
+      const SHIPPED_WORDING = [
+        "The signing key exists offline",
+        "more than one physical location",
+      ];
+      for (const path of [
+        "/attestation",
+        "/llms.txt",
+        "/.well-known/scvd-signing-key",
+      ]) {
+        const text = await (await SELF.fetch(`${BASE}${path}`)).text();
+        for (const phrase of SHIPPED_WORDING) {
           expect(
             text,
             `${path} claims a key backup that has not been made yet`,
           ).not.toContain(phrase);
         }
       }
-    }
-  });
+    },
+  );
 
   it("says the backup exists on the page that owns the claim, once it does", async () => {
     /*
@@ -77,6 +91,7 @@ describe("no continuity claim runs ahead of the fact", () => {
      * must not appear EARLY, which is a different claim and stays
      * where it was.
      */
+    expect.hasAssertions();
     const text = await (await SELF.fetch(`${BASE}/attestation`)).text();
     for (const phrase of [
       "The signing key exists offline",

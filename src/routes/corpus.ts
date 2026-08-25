@@ -31,10 +31,10 @@ export const corpusRoutes = new Hono<HonoEnv>();
 
 corpusRoutes.get("/corpus.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const [records, chain] = await Promise.all([
-    listCorpus(c.env),
-    verifyCorpusChain(c.env),
-  ]);
+  // List once, verify against what was listed. These two used to run
+  // "in parallel" while the second one listed the whole keyspace again.
+  const records = await listCorpus(c.env);
+  const chain = await verifyCorpusChain(c.env, records);
   const first = records[0]?.snapshot.taken_at ?? null;
   const last = records[records.length - 1]?.snapshot.taken_at ?? null;
   return c.json({
