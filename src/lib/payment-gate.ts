@@ -1,4 +1,51 @@
 import { HonoAdapter } from "@x402/hono";
+
+/**
+ * FACILITATOR CALL TIMEOUT — 2026-08-25 hang fix.
+ *
+ * @x402/core's HTTPFacilitatorClient calls fetch() directly against CDP
+ * with no AbortController anywhere in verify(), settle(), or
+ * getSupported() (read straight from node_modules/@x402/core). A slow
+ * or briefly-rate-limited moment on CDP's end therefore does not
+ * degrade our response — it HANGS it, with nothing capping how long.
+ * Reproduced live: roughly 1 in 30 requests to any /api/buy/* item
+ * stalled a full 10-15s with zero response, reproducible at multiple
+ * request rates, isolated to specific cold isolates (unrelated calls
+ * fired at the identical instant answered fine).
+ *
+ * The SDK gives no clean injection point for a per-call AbortSignal, so
+ * this races the real call against a timer instead of patching global
+ * fetch (which does not work here — the SDK's methods read `fetch` at
+ * CALL time, not at HTTPFacilitatorClient construction time, so a
+ * patch-then-restore around the constructor is a no-op). A race is
+ * strictly additive: the happy path is untouched, and a timeout throws
+ * a plain Error into the exact same try/catch + sendAlert path that
+ * already handles every other facilitator failure shape below — no new
+ * decision logic, no change to verification or settlement semantics.
+ */
+const FACILITATOR_TIMEOUT_MS = 8000;
+
+class FacilitatorTimeoutError extends Error {
+  constructor(label: string) {
+    super(`facilitator call timed out after ${FACILITATOR_TIMEOUT_MS}ms: ${label}`);
+    this.name = "FacilitatorTimeoutError";
+  }
+}
+
+async function withFacilitatorTimeout<T>(
+  label: string,
+  promise: Promise<T>,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => reject(new FacilitatorTimeoutError(label)), FACILITATOR_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timer!);
+  }
+}
 import type {
   HTTPRequestContext,
   HTTPResponseInstructions,
@@ -436,6 +483,36 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new HonoAdapter(c);
+  /**
+   * X-PAYMENT ACCEPTED AS AN ALIAS FOR PAYMENT-SIGNATURE — 2026-08-25
+   * finding, confirmed with real money against our own live site.
+   *
+   * The 402 challenge and every doc we publish name PAYMENT-SIGNATURE,
+   * but X-PAYMENT is the header name a majority of x402 client
+   * implementations reach for FIRST (5 of 7 real competitor services
+   * tested this session default to it), including generic x402 SDKs
+   * and the store's own competitor-testing tooling. A client that
+   * tries X-PAYMENT first against our gate as-shipped gets refused,
+   * has to notice, then retry with the right header — a full wasted
+   * round trip eaten by exactly the buyers we most want to convert:
+   * the ones running standard, spec-following tooling rather than
+   * code hand-written against our docs.
+   *
+   * MECHANICS: HonoAdapter.getHeader() only ever reads the exact name
+   * it is asked for, so the SDK's own extractPayment() never sees an
+   * X-PAYMENT value — it explicitly checks payment-signature/
+   * PAYMENT-SIGNATURE only (read straight from
+   * node_modules/@x402/core/dist/cjs/http/index.js). Rather than
+   * patch the SDK, this backfills PAYMENT-SIGNATURE onto the request
+   * BEFORE the adapter is built, only when it is missing and an
+   * X-PAYMENT value is present. A client sending both keeps its
+   * PAYMENT-SIGNATURE value untouched; a client sending only
+   * PAYMENT-SIGNATURE (every path this store has ever tested) sees
+   * zero behavior change.
+   */
+  if (!c.req.header("PAYMENT-SIGNATURE") && c.req.header("X-PAYMENT")) {
+    c.req.raw.headers.set("PAYMENT-SIGNATURE", c.req.header("X-PAYMENT") as string);
+  }
   // The decline slot rides along on the context. The SDK shallow-copies
   // this object on its way to the verify hooks, and a shallow copy keeps
   // the slot BY REFERENCE — so the hook writes the reason here and we
@@ -500,13 +577,22 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   );
 
   // First facilitator sync happens on the first paid request per isolate.
-  await stack.initialized;
+  // Timeout-wrapped: a cold isolate's first-ever request pays this call,
+  // and CDP's getSupported() has no timeout of its own — see the note
+  // on withFacilitatorTimeout above.
+  await withFacilitatorTimeout("initialize", stack.initialized);
 
   let result: Awaited<ReturnType<typeof stack.httpServer.processHTTPRequest>>;
   try {
-    result = await stack.httpServer.processHTTPRequest(context);
+    result = await withFacilitatorTimeout(
+      "processHTTPRequest",
+      stack.httpServer.processHTTPRequest(context),
+    );
   } catch (error) {
     // P1: the facilitator conversation itself broke (not a mere decline).
+    // A FacilitatorTimeoutError lands here too, on purpose: a hang and a
+    // hard failure both mean "the facilitator did not answer," and this
+    // alert path already exists for exactly that condition.
     await sendAlert(c.env, {
       condition: "settlement_failure",
       detail: `processHTTPRequest threw on ${c.req.path}: ${String(error)}`,
@@ -840,16 +926,23 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   try {
     // One retry on a facilitator 5xx — the transport-failed shape,
     // never a verdict. Safe because the EIP-3009 nonce settles at most
-    // once on-chain; rationale at processSettlementWithRetry.
-    settlement = await processSettlementWithRetry(
-      stack.httpServer,
-      verifiedPayload,
-      verifiedRequirements,
-      verifiedExtensions,
-      { request: context },
+    // once on-chain; rationale at processSettlementWithRetry. Each
+    // attempt inside the retry is itself timeout-wrapped, so a hang on
+    // attempt one still leaves room for the real retry rather than
+    // consuming the whole budget silently.
+    settlement = await withFacilitatorTimeout(
+      "processSettlementWithRetry",
+      processSettlementWithRetry(
+        stack.httpServer,
+        verifiedPayload,
+        verifiedRequirements,
+        verifiedExtensions,
+        { request: context },
+      ),
     );
   } catch (error) {
-    // P1: the settle call errored outright.
+    // P1: the settle call errored outright. A FacilitatorTimeoutError
+    // lands here too — see the note on withFacilitatorTimeout above.
     await sendAlert(c.env, {
       condition: "settlement_failure",
       detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,

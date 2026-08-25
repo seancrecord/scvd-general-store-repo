@@ -139,6 +139,30 @@ function isSignableAccept(entry: AcceptsEntry): boolean {
  *
  * Returns null rather than throwing, whatever goes wrong inside.
  */
+/**
+ * THE HEADER BUDGET — 2026-08-25 finding, confirmed with real money.
+ *
+ * PAYMENT-REQUIRED rides a response header, and headers have a real
+ * ceiling: Node/undici's default is 16KB, and a signed JWS offer costs
+ * roughly 900 bytes each. Every accepts[] entry gets one offer, so a
+ * pay_what_it_deserves item on 3 rails (3 price tiers × 3 networks = 9
+ * accepts entries) pushed certificate_of_patronage and the_collab past
+ * 16KB and gave any standard Node-based x402 client a hard
+ * UND_ERR_HEADERS_OVERFLOW — not a slow response, a purchase that
+ * cannot complete at all, confirmed live against both items. curl's
+ * much higher header limit hid this from every earlier check; only a
+ * real payment client surfaced it.
+ *
+ * This budget is deliberately conservative (well under 16KB, leaving
+ * headroom for the rest of the response's own headers) and applies the
+ * same fail-open principle already documented above: skipping the
+ * signed-offer extension when it would not fit is strictly better than
+ * shipping a response a buyer's client cannot even parse. A skipped
+ * extension costs nothing but the extension itself — the 402 challenge
+ * underneath it is unaffected and still fully payable.
+ */
+const OFFER_RECEIPT_HEADER_BUDGET_BYTES = 8000;
+
 export async function signedOffersForChallenge(
   env: Env,
   resourceUrl: string,
@@ -174,6 +198,15 @@ export async function signedOffersForChallenge(
         payload,
         signature: await signJws(env, payload),
       });
+      // Stop as soon as the accumulated offers would blow the header
+      // budget, rather than building all of them and discarding the
+      // work — a partial set of offers (covering the FIRST N accepts
+      // entries a client would try anyway) is still useful proof, and
+      // never carries a hole: each offer signed above is complete on
+      // its own.
+      if (JSON.stringify(offers).length > OFFER_RECEIPT_HEADER_BUDGET_BYTES) {
+        break;
+      }
     }
     if (offers.length === 0) {
       return null;
