@@ -383,9 +383,10 @@ adds a dimension nobody had written down.
    surfaces instead of listing prose. Fits the architecture without
    amendment: discovery layers land as new protocol-registry rows
    with their own battery families (M2's no-migration rule doing its
-   job). We are also our own first subject — the self-row should
-   link every discovery surface we serve and assert their coherence
-   in CI.
+   job). We are also our own first subject — the self-row now
+   links the discovery surfaces we serve and asserts identity
+   (`discovery_coherence`) and required-input (`schema_coherence`)
+   joins in CI. Remaining classes in §11 are still open.
 
 3. **Verification as pre-transaction middleware.** COVERED: roadmap
    0.17 (the $0.001 quick look), Area J's gate, the guard-SDK
@@ -527,19 +528,24 @@ NOT ten products. Observation classes inside the one Endpoint
 Passport (§10.1), landing as protocol-registry rows + battery
 families per M2's no-migration rule:
 
-1. **discovery_coherence** (ship first) — one service across
+1. **discovery_coherence** ✅ (shipped first) — one service across
    Bazaar, MCP card, A2A card, llms.txt, OpenAPI, menu/catalog,
    directories, owned well-known files: do names, endpoints, tools,
    schemas, prices, networks, payTo, capabilities agree? Output
    PASS / DRIFT / CONFLICT / NOT_OBSERVED with per-surface facts.
+   Self-join, signed Diff Observation, self-passport + host
+   citation, CI. Ledger M2.
 2. **price_settlement_coherence** (very high) — catalog price vs
    live 402 amount vs atomic USDC vs settlement vs receipt. RULE:
    this is the QUICK LOOK'S growth path (0.17), not a second cheap
    oracle — same route, richer answer, one buyer habit.
-3. **schema_coherence** (very high) — MCP inputSchema vs OpenAPI vs
-   Bazaar extension vs actual response payload. Agents act from
-   schemas, not prose; drift breaks calls on live endpoints.
-4. **capability_coherence** (catalog slice 2026-08-25) —
+3. **schema_coherence** ✅ 2026-08-25 (very high) — MCP inputSchema
+   vs OpenAPI vs Bazaar extension vs actual response payload.
+   Agents act from schemas, not prose; drift breaks calls on live
+   endpoints. Extractors + join + CI (`155a01a`, #236); cited on
+   the self-passport (`efc3dbf`, #239). MCP named not_checked —
+   live RPC, not a fetched catalog. Ledger M2.
+4. **capability_coherence** (catalog slice 2026-08-25, #245) —
    streaming/transport/auth/chains claimed vs observed. Catalog
    join ships: x402 `networks` set-equality, A2A
    `preferredTransport` vs MCP `transport` (normalized). Live
@@ -567,18 +573,26 @@ families per M2's no-migration rule:
     claims vs live behavior.
 
 Implementation order (keeper's, annotated against the plans):
-registry rows for discovery surfaces (a small extension to
-src/evidence/subject.ts — M2 built for this) → subject binding
-model BEFORE checks → host inventory first, raw bytes/hashes, no
-grading (G3/G4 doctrine: free now, uncollectable later) → derived
-coherence checks → **signed Diff Observations, which are evidence
-envelopes already** (the diff is the observation block, raw hashes
-its evidence capture, not_observed its limitations — no new
-container) → passport module → **self-row coherence in CI as a
-release blocker** (we serve llms.txt, MCP, A2A, menu.json and the
-well-knowns today and nothing asserts they agree; never grade
-anyone before that test exists) → productize: free inventory, paid
-signed report, paid refresh, watch + drift alerts.
+
+- [x] registry rows for discovery surfaces (`PROTOCOL_FAMILIES` —
+  M2 built for this)
+- [x] subject binding model BEFORE checks (`src/discovery/binding.ts`)
+- [x] host inventory first, raw bytes/hashes, no grading
+  (`src/discovery/inventory.ts`; G3/G4: free now, uncollectable later)
+- [x] derived coherence checks — `discovery_coherence`, then
+  `schema_coherence` (2026-08-25, #236)
+- [x] signed Diff Observations, which are evidence envelopes
+  already (`80e369c` — the diff is the observation block, raw
+  hashes its evidence capture, not_observed its limitations — no
+  new container)
+- [x] passport module — identity join first; `schema_coherence`
+  cited on the self-passport 2026-08-25 (#239)
+- [x] self-row coherence in CI as a release blocker (we serve
+  llms.txt, MCP, A2A, menu.json and the well-knowns; CI now
+  asserts identity and required-input joins agree; never grade
+  anyone before that test exists)
+- [ ] productize: free inventory, paid signed report, paid
+  refresh, watch + drift alerts (do not invent a price)
 
 Sequencing: none of this jumps the queue. Phase 1's producers and
 the subject-binding model are prerequisites; the free moves (rows,

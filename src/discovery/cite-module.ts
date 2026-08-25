@@ -1,8 +1,5 @@
 import { wrapDiffEnvelope } from "@/discovery/diff-envelope";
-import {
-  buildDiffObservation,
-  DISCOVERY_COHERENCE_CLASS,
-} from "@/discovery/diff-observation";
+import { buildDiffObservation } from "@/discovery/diff-observation";
 import { selfJoinDisagreements } from "@/discovery/self-coherence";
 import type { HostCatalogCapture } from "@/discovery/host-probe";
 import type { SurfaceClaims } from "@/discovery/self-coherence";
@@ -46,7 +43,7 @@ export async function moduleFromPayload(
   payload: EvidenceEnvelopePayload,
 ): Promise<PassportModule> {
   return {
-    id: DISCOVERY_COHERENCE_CLASS,
+    id: payload.subject.protocol,
     schema: EVIDENCE_SCHEMA_V1,
     evidence_hash: await sha256Hex(canonicalEvidenceBytes(payload)),
     derived: payload.derived.verdict,
