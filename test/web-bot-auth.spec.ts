@@ -213,4 +213,26 @@ describe("the directory", () => {
     const directory = await signedDirectory({ STORE_BASE_URL: BASE });
     expect(directory).toBeNull();
   });
+
+  it("names the key with its own thumbprint, without moving it", async () => {
+    /*
+     * THE CLAIM THIS GUARDS: publishing `kid` cannot change the
+     * thumbprint, because RFC 7638 canonicalizes an OKP key over
+     * crv, kty and x only. That is the entire reason adding a kid is
+     * an addition rather than a key rotation — and a rotation nobody
+     * announced would break every signature already in the wild.
+     *
+     * Asserted rather than reasoned about, because "the spec says it
+     * ignores extra fields" is exactly the kind of true-sounding
+     * sentence that is worth ten seconds of proof on a signing path.
+     */
+    const { jwkThumbprint } = await import("@/lib/web-bot-auth");
+    const bare = {
+      kty: "OKP",
+      crv: "Ed25519",
+      x: "myYPVJS-xYeANbKAFcKWJOIqWCmruzIIMuVr0ZWKevE",
+    } as const;
+    const named = { ...bare, kid: "whatever-name-we-like" };
+    expect(await jwkThumbprint(named)).toBe(await jwkThumbprint(bare));
+  });
 });

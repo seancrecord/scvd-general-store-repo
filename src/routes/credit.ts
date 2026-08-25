@@ -170,6 +170,29 @@ creditRoutes.get("/credit", async (c) => {
 creditRoutes.get("/api/credit/:wallet", async (c) => {
   const wallet = c.req.param("wallet");
   if (!ADDRESS.test(wallet)) {
+    /*
+     * THIS ROUTE SHADOWS ITS OWN SIBLINGS, and said something false
+     * because of it. `/api/credit/challenge` is a documented POST
+     * door; a GET to it matched HERE, bound "challenge" to :wallet,
+     * failed the address test, and answered 400 "the wallet must be
+     * a 0x Base address." The caller's wallet was not malformed.
+     * They used the wrong method on a real endpoint, and we blamed
+     * their input for it.
+     *
+     * Anything that is not even shaped like an address is not a
+     * failed wallet lookup, so it is handed to the 404 path — which
+     * is method-aware and answers 405 with Allow when a sibling
+     * route serves that exact path under another method. Derived
+     * from the router, so a new /api/credit/* POST door is covered
+     * without anyone adding its name to a list here.
+     *
+     * A string that IS reaching for an address (0x…) still gets the
+     * format message, because there the caller's input really is
+     * the problem and the explanation helps.
+     */
+    if (!wallet.startsWith("0x")) {
+      return c.notFound();
+    }
     return c.json(
       { error: "The wallet must be a 0x Base address — the wallet is the loyalty card, and there is nothing else to look up by." },
       400,

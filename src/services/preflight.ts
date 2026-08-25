@@ -665,7 +665,12 @@ export async function preflightUrl(
   env: Env,
   /** Which battery renders the headline verdict. Both are computed. */
   battery: PreflightBattery = PREFLIGHT_VERSION,
-): Promise<{ status: number; body: PreflightReport | { error: string } }> {
+): Promise<{
+  status: number;
+  body: PreflightReport | { error: string };
+  /** Set only where the status needs one; the 429 owes a Retry-After. */
+  headers?: Record<string, string>;
+}> {
   const base = env.STORE_BASE_URL;
   if (typeof rawUrl !== "string" || rawUrl.trim().length === 0) {
     return {
@@ -712,8 +717,22 @@ export async function preflightUrl(
     };
   }
   if (!takeProbeBudget() || !(await takeGlobalProbeBudget(env))) {
+    /*
+     * RETRY-AFTER, because two of our own pages already promised it.
+     * /developers and the OpenAPI spec both told readers a 429 here
+     * "carries Retry-After" while this refusal shipped with a body
+     * and no header. The house's own almanac says it plainer than
+     * the docs did: "a no with a timestamp is a yes deferred."
+     *
+     * 60, not a computed remainder: the buckets reset on the
+     * wall-clock minute, so the longest any caller waits is the rest
+     * of this one. Stating the whole minute is never tighter than
+     * the truth, which is the same direction of error the published
+     * ceilings already commit to.
+     */
     return {
       status: 429,
+      headers: { "Retry-After": "60" },
       body: {
         error:
           "The probe budget for this minute is spent — a cost bound on our side, not a fact about your endpoint. Retry next minute.",
