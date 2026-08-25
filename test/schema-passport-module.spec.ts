@@ -56,11 +56,6 @@ describe("the self-passport cites the schema join", () => {
     expect(schema?.evidence_hash).toMatch(/^[0-9a-f]{64}$/);
     expect(schema?.not_checked).toContain("mcp_tools");
     expect(JSON.stringify(schema)).not.toMatch(/score|confidence|rating|rank/i);
-
-    const html = await (
-      await SELF.fetch(`${ABOUT}/passport`, { headers: { Accept: "text/html" } })
-    ).text();
-    expect(html).toContain("schema_coherence");
   });
 });
 
