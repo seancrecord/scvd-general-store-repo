@@ -35,6 +35,14 @@ jobs:
       - run: npm ci
       - name: Typecheck
         run: npm run typecheck
+      # SELF-ROW — we sell discovery_coherence pointed at other
+      # people. This step is the release blocker that says we do
+      # not, until our own catalogs agree. Buried in npm test it
+      # is one of two thousand; named here it is the gate. The
+      # 2026-07-29 correction was a sentence about CI with no job
+      # behind it. The spec asserts this step exists.
+      - name: Self-row
+        run: npm run self-row
       # The suite walks every public claim the store makes: the naming
       # law across seven surfaces, the listing spec's field order, the
       # refund wording, the decline readings, and the skill document
