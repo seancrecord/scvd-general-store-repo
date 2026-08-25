@@ -1,4 +1,5 @@
 import { Hono, type Context } from "hono";
+import { readDiscoveryReport } from "@/discovery/sign-report";
 import {
   DISCOVERY_INVENTORY_VERSION,
   GLOBAL_INVENTORIES_PER_MINUTE,
@@ -45,7 +46,7 @@ function doc(base: string) {
       self_row:
         "Our own catalogs are joined in CI. Probe this door from outside if you want a reading of us.",
       signed_report:
-        "A signed Diff Observation of the same join is the paid sibling when it ships. This door does not pretend it already exists.",
+        `The signer is built. A report, once issued, is free to read at ${base}/api/discovery/report/{id}. The SKU that issues one is not priced yet — this door does not sell a signature.`,
     },
   };
 }
@@ -84,3 +85,17 @@ discoveryRoutes.post(`/api/discovery/${DISCOVERY_INVENTORY_VERSION}`, (c) =>
   handle(c),
 );
 discoveryRoutes.post("/api/discovery", (c) => handle(c));
+
+discoveryRoutes.get("/api/discovery/report/:id", async (c) => {
+  const record = await readDiscoveryReport(c.env, c.req.param("id"));
+  if (!record) {
+    return c.json(
+      {
+        error:
+          "No discovery report under that id. The id rides the issue response; this door only reads.",
+      },
+      404,
+    );
+  }
+  return c.json(record, 200, { "Cache-Control": "no-store" });
+});

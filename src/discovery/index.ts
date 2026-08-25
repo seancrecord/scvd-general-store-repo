@@ -71,3 +71,11 @@ export type {
   InventorySurfaceRow,
 } from "@/discovery/inventory";
 export { extractSurfaceClaims } from "@/discovery/inventory-extract";
+export { probeHostCatalogs } from "@/discovery/host-probe";
+export type { HostCatalogCapture, HostSurfaceRow } from "@/discovery/host-probe";
+export {
+  issueDiscoveryReport,
+  readDiscoveryReport,
+  signHostDiscoveryReport,
+} from "@/discovery/sign-report";
+export type { DiscoveryReportRecord } from "@/discovery/sign-report";
