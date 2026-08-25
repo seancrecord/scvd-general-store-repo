@@ -68,6 +68,7 @@ export { conformanceRoutes } from "@/routes/conformance";
 export { conformanceLandingRoutes } from "@/routes/conformance-landing";
 export { corpusLandingRoutes } from "@/routes/corpus-landing";
 export { preflightRoutes } from "@/routes/preflight";
+export { discoveryRoutes } from "@/routes/discovery";
 export { launchCheckRoutes } from "@/routes/launch-check";
 export { bountyRoutes } from "@/routes/bounties";
 export { creditRoutes } from "@/routes/credit";
