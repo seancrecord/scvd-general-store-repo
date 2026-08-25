@@ -84,3 +84,8 @@ export {
   rememberInventoryLook,
 } from "@/discovery/snapshot";
 export type { SnapshotCompare } from "@/discovery/snapshot";
+export { citeHostCapture, citeWrappedJoin } from "@/discovery/cite-module";
+export {
+  readHostDiscoveryModule,
+  rememberHostDiscoveryModule,
+} from "@/discovery/host-module";

@@ -4,6 +4,7 @@ import {
   type HostSurfaceRow,
 } from "@/discovery/host-probe";
 import { selfJoinDisagreements } from "@/discovery/self-coherence";
+import { rememberHostDiscoveryModule } from "@/discovery/host-module";
 import {
   rememberInventoryLook,
   type SnapshotCompare,
@@ -187,6 +188,12 @@ export async function inventoryOrigin(input: {
     at: body.at,
     verdict: body.derived.verdict,
     surfaces: body.surfaces,
+  });
+  await rememberHostDiscoveryModule({
+    env: input.env,
+    capture,
+    at: body.at,
+    clock: body.clock,
   });
   return { status: 200, body };
 }
