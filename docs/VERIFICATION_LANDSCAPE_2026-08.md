@@ -555,9 +555,11 @@ families per M2's no-migration rule:
    the operator-linking question G2/G-privacy already flags.
    Same-origin surface comparison is unencumbered; the binding
    GRAPH needs a ruling first.
-6. **freshness_coherence** — do timestamps, cache headers,
-   last_seen, valid_until, badge renewal and the live probe tell
-   one story. The recurring-revenue wedge.
+6. **freshness_coherence** (catalog slice 2026-08-25, `e9db33b`) —
+   do timestamps, cache headers, last_seen, valid_until, badge
+   renewal and the live probe tell one story. Catalog join ships:
+   `as_of` / `valid_until` set-equality on the two x402 documents.
+   Cache headers, last_seen, badge renewal, live probe still open.
 7. **receipt_coherence** (dogfood shipped 2026-08-25) — does the
    delivered artifact match the surface the agent SELECTED
    (toolName, price, schema, chain). Our own certificates carry

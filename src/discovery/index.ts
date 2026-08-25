@@ -143,3 +143,23 @@ export type {
   CapabilityJoinVerdict,
   SurfaceCapabilityClaim,
 } from "@/discovery/capability-coherence";
+export {
+  freshnessFromA2a,
+  freshnessFromJson,
+  freshnessFromX402,
+  normalizeStamp,
+} from "@/discovery/freshness-claims";
+export type {
+  FreshnessClaim,
+  FreshnessField,
+} from "@/discovery/freshness-claims";
+export {
+  FRESHNESS_COHERENCE_CLASS,
+  freshnessJoinDisagreements,
+  freshnessRowVerdict,
+} from "@/discovery/freshness-coherence";
+export type {
+  FreshnessDisagreement,
+  FreshnessJoinVerdict,
+  SurfaceFreshnessClaim,
+} from "@/discovery/freshness-coherence";
