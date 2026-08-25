@@ -63,14 +63,20 @@ export function validateEnvelopePayload(value: unknown): EnvelopeValidation {
     return { ok: false, defects: ["envelope.not-an-object"] };
   }
 
-  if (
-    !isRecord(value["methodology"]) ||
-    value["methodology"]["schema"] !== EVIDENCE_SCHEMA_V1
-  ) {
+  const methodology = value["methodology"];
+  if (!isRecord(methodology) || methodology["schema"] !== EVIDENCE_SCHEMA_V1) {
     // The schema id lives INSIDE the signed bytes (D6) — an envelope
     // that does not say what it is cannot be read safely under any
     // assumption about what it is.
     defects.push("envelope.methodology.schema-missing");
+  } else if (
+    typeof methodology["battery_version"] !== "string" ||
+    methodology["battery_version"].length === 0
+  ) {
+    // Schema id names the container; battery_version names the
+    // instrument. D6 wants both. A later reader cannot assume
+    // today's battery from a schema id that outlives it.
+    defects.push("envelope.methodology.battery-missing");
   }
 
   if (!isRecord(value["subject"])) {

@@ -4,9 +4,9 @@ import {
 } from "@/discovery/diff-observation";
 import {
   DISCOVERY_COHERENCE_FAMILY,
-  EVIDENCE_SCHEMA_V1,
   canonicalEvidenceBytes,
   envelopeCoverage,
+  envelopeMethodology,
   validateEnvelopePayload,
   type EvidenceAuthorization,
   type EvidenceEnvelope,
@@ -51,7 +51,7 @@ export function wrapDiffEnvelope(
     throw new Error("discovery_coherence family has no version");
   }
   return {
-    methodology: { schema: EVIDENCE_SCHEMA_V1 },
+    methodology: envelopeMethodology(DISCOVERY_COHERENCE_FAMILY),
     subject: {
       endpoint: input.blocks.observation.about,
       protocol: DISCOVERY_COHERENCE_FAMILY.id,

@@ -206,7 +206,11 @@ Carries its own changelog (`changed_in_v2`) — the pattern B16 wants.
   seller serve a clean 402 to the probe and a paywall-off 200 to real
   buyers. Consider a second unsigned identity and divergence flagging.
 
-- **B9 [ ] — signs the conclusion, not the evidence.** (P2)
+- **B9 [~] PARTIAL 2026-08-25 — signs the conclusion, not the evidence.** (P2)
+  Standing-watch rows now carry the verbatim PAYMENT-REQUIRED value,
+  curated response headers, and a bounded complete-body sha256 inside
+  their signed bytes (`b7d9354`). The broader reproduction envelope
+  fields and the ward-round / launch-check producers remain open.
   A verifier can check "SCVD signed this verdict" but can't reproduce
   what SCVD saw. Sign the reproduction envelope: verbatim
   PAYMENT-REQUIRED bytes, curated headers, body_sha256,
@@ -482,11 +486,17 @@ with B9's evidence capture as the one genuinely new field group.
   against signed_payload. The envelope's key-window citation
   (D-envelope) remains Phase 1's schema work.
 
-- **D6 [ ] — methodology/version absent from most signed bytes.** (P6)
+- **D6 [~] — methodology/version absent from most signed bytes.** (P6)
   Extends B9 beyond the watch: settlement attestations and launch
   checks sign no software version; watch rows sign no battery
   version; only the audit classes sign criteria. Generalize the
   audit-class pattern via the envelope's `methodology` block.
+  ENVELOPE SLICE 2026-08-25: validator requires
+  `methodology.battery_version` (defect
+  `envelope.methodology.battery-missing`); `wrapDiffEnvelope`
+  derives it from the family via `envelopeMethodology`. Schema wrap
+  on #239 writes the same. Still open: attestations, launch-check,
+  watch rows (Codex 1.2).
 
 - **D7 [x-by-design elsewhere / cross-ref] — replayability.** (P6)
   Not a new finding: the reproducible classes already cite chain
@@ -670,7 +680,10 @@ network effect.
   buyers compute their own priors — the corpus never ships a score.
 
 ### G-findings
-- **G1 [ ] CORE — the corpus stores conclusions, not evidence.** (P4)
+- **G1 [~] PARTIAL 2026-08-25 CORE — the corpus stores conclusions, not evidence.** (P4)
+  The standing-watch producer now stores signed raw response evidence
+  (`b7d9354`); ward rows still discard it, so the corpus loss described
+  below remains open until the ward producer lands.
   Ward rows keep failed-check NAMES and derived OfferFacts; the
   verbatim PAYMENT-REQUIRED bytes, response headers, and body hash
   are discarded at probe time. Same disease as B9, and here it is an

@@ -6,6 +6,10 @@ import { runChecks } from "@/services/preflight";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { sweepWatches } from "@/services/watch-sweep";
+import {
+  captureWatchEvidence,
+  type WatchEvidenceCapture,
+} from "@/services/watch-evidence";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
 
@@ -79,6 +83,11 @@ export interface WatchProbe {
   latency_ms?: number;
   /** Names of failed checks, empty when ready. */
   failed: string[];
+  /**
+   * The response material this verdict came from. Absent only on
+   * legacy rows and refused rows where this store made no request.
+   */
+  evidence?: WatchEvidenceCapture;
   /** ed25519 over canonicalizeProbe(); each row quotable alone. */
   signature: string;
   public_key: string;
@@ -119,12 +128,12 @@ function newWatchId(): string {
 export function canonicalizeProbe(
   watchId: string,
   url: string,
-  probe: Pick<WatchProbe, "at" | "verdict" | "failed"> & {
+  probe: Pick<WatchProbe, "at" | "verdict" | "failed" | "evidence"> & {
     status?: number;
     latency_ms?: number;
   },
 ): string {
-  return JSON.stringify({
+  const payload: Record<string, unknown> = {
     watch_id: watchId,
     url,
     at: probe.at,
@@ -132,7 +141,11 @@ export function canonicalizeProbe(
     status: probe.status ?? null,
     latency_ms: probe.latency_ms ?? null,
     failed: probe.failed,
-  });
+  };
+  // Legacy rows have no evidence field and keep their exact original
+  // preimage. New rows append evidence inside the signed bytes.
+  if (probe.evidence) payload["evidence"] = probe.evidence;
+  return JSON.stringify(payload);
 }
 
 export async function startWatch(
@@ -177,6 +190,7 @@ async function probeOnce(
   let status: number | undefined;
   let latency: number | undefined;
   let failed: string[] = [];
+  let evidence: WatchEvidenceCapture | undefined;
   /*
    * THE COMMENT ABOVE USED TO BE FALSE. It promised "the guards stay
    * up on every probe, not just the first" while this function called
@@ -225,15 +239,14 @@ async function probeOnce(
     });
     latency = Date.now() - started;
     status = response.status;
-    // Headers and status are the whole read; drop the body stream.
-    await response.body?.cancel().catch(() => undefined);
-    const { checks } = runChecks(response, false);
+    evidence = await captureWatchEvidence(response);
+    const { checks } = runChecks(response, evidence.body_truncated);
     failed = checks.filter((check) => !check.ok).map((check) => check.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
   } catch {
     verdict = "unreachable";
   }
-  const body: Pick<WatchProbe, "at" | "verdict" | "failed"> & {
+  const body: Pick<WatchProbe, "at" | "verdict" | "failed" | "evidence"> & {
     status?: number;
     latency_ms?: number;
   } = { at, verdict, failed };
@@ -242,6 +255,9 @@ async function probeOnce(
   }
   if (latency !== undefined) {
     body.latency_ms = latency;
+  }
+  if (evidence) {
+    body.evidence = evidence;
   }
   const { signature } = await signMessage(
     canonicalizeProbe(record.watch_id, record.url, body),
@@ -414,7 +430,7 @@ export async function readWatch(
     },
     probes: record.probes,
     how_to_verify:
-      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed (exactly that order, null for absent numbers) against the row's public_key. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
+      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence when present (exactly that order, null for absent numbers) against the row's public_key. Legacy and refused rows omit evidence. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
       "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched.",
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,

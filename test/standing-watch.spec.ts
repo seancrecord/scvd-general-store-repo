@@ -15,6 +15,7 @@ import {
   decodePaymentRequired,
 } from "./helpers/payment";
 import type { Env } from "@/types";
+import { captureWatchEvidence } from "@/services/watch-evidence";
 
 /**
  * THE STANDING WATCH: seller-pays monitoring as a signed artifact.
@@ -126,6 +127,75 @@ describe("the sweep", () => {
     ).toBe(true);
   });
 
+  it("stores the response evidence the verdict came from, inside the signed row", async () => {
+    const { record } = await startWatch(
+      testEnv,
+      "https://evidence.example/api/buy/x",
+    );
+    const challengeBytes = btoa(JSON.stringify(GOOD_CHALLENGE));
+    vi.stubGlobal(
+      "fetch",
+      async () =>
+        new Response("watch-body", {
+          status: 402,
+          headers: {
+            "PAYMENT-REQUIRED": challengeBytes,
+            "Content-Type": "application/x402+json",
+            "X-Unrelated": "must-not-be-stored",
+          },
+        }),
+    );
+
+    await sweepStandingWatches(testEnv);
+    const stored = await testEnv.ORDERS.get<StandingWatchRecord>(
+      KV_KEYS.standingWatch(record.watch_id),
+      "json",
+    );
+    const probe = stored!.probes[0]!;
+    const evidence = (
+      probe as typeof probe & {
+        evidence?: {
+          challenge_bytes: string | null;
+          headers: Record<string, string>;
+          body_sha256: string | null;
+          body_bytes: number;
+          body_truncated: boolean;
+        };
+      }
+    ).evidence;
+
+    expect(evidence).toEqual({
+      challenge_bytes: challengeBytes,
+      headers: {
+        "content-type": "application/x402+json",
+        "payment-required": challengeBytes,
+      },
+      body_sha256:
+        "faf6fdc3fa6f93829d0cc582a8d20666d2bb311a8ef0303bfd23cbbcc80e0866",
+      body_bytes: 10,
+      body_truncated: false,
+    });
+
+    // Evidence beside a signature is decoration unless changing it
+    // breaks that signature. The row must bind what it saw, not only
+    // the verdict it drew from it.
+    const { verifyMessageSignature } = await import("@/lib/signing");
+    const tampered = {
+      ...probe,
+      evidence: {
+        ...evidence!,
+        body_sha256: "0".repeat(64),
+      },
+    };
+    expect(
+      await verifyMessageSignature(
+        canonicalizeProbe(record.watch_id, record.url, tampered),
+        probe.signature,
+        probe.public_key,
+      ),
+    ).toBe(false);
+  });
+
   it("a doubled cron tick does not double-probe the hour", async () => {
     const { record } = await startWatch(testEnv, "https://watched2.example/api/buy/x");
     vi.stubGlobal("fetch", async () => watch402(GOOD_CHALLENGE));
@@ -165,6 +235,35 @@ describe("the sweep", () => {
     );
     expect(stored!.probes[0]!.verdict).toBe("unreachable");
     expect(stored!.probes[0]!.signature).toBeTruthy();
+  });
+});
+
+describe("the watch evidence boundary", () => {
+  it("does not publish a partial-body hash as though it covered the whole response", async () => {
+    const evidence = await captureWatchEvidence(
+      new Response("five!", {
+        headers: { "Content-Type": "text/plain", "X-Unrelated": "drop me" },
+      }),
+      4,
+    );
+    expect(evidence.body_truncated).toBe(true);
+    expect(evidence.body_sha256).toBeNull();
+    expect(evidence.body_bytes).toBeGreaterThan(4);
+    expect(evidence.headers).toEqual({ "content-type": "text/plain" });
+  });
+
+  it("keeps the exact preimage of rows issued before evidence capture", () => {
+    expect(
+      canonicalizeProbe("watch_legacy", "https://legacy.example/paid", {
+        at: "2026-08-24T12:00:00.000Z",
+        verdict: "ready",
+        status: 402,
+        latency_ms: 12,
+        failed: [],
+      }),
+    ).toBe(
+      '{"watch_id":"watch_legacy","url":"https://legacy.example/paid","at":"2026-08-24T12:00:00.000Z","verdict":"ready","status":402,"latency_ms":12,"failed":[]}',
+    );
   });
 });
 
