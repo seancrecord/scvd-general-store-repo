@@ -154,3 +154,44 @@ export declare function checkAnchoredKeyHistory(
   publicKeyHex: string,
   options?: VerifyOptions,
 ): Promise<AnchoredKeyHistory>;
+
+/**
+ * The key_history shape issuers publish beside their signing key.
+ * Generic: scvd.store serves it at /.well-known/scvd-signing-key,
+ * and nothing about that issuer is privileged here.
+ */
+export interface PublishedKeyHistory {
+  current: { public_key: string; in_service_from: string };
+  retired: ReadonlyArray<{
+    public_key: string;
+    in_service_from: string;
+    retired_on: string;
+  }>;
+}
+
+export type KeyServiceWindowStatus =
+  | "in_service"
+  | "before_service"
+  | "after_retirement"
+  | "unknown_key"
+  | "undated";
+
+export interface KeyServiceWindowResult {
+  status: KeyServiceWindowStatus;
+  /** Null when the key is unknown; the published window otherwise. */
+  window: { in_service_from: string; retired_on: string | null } | null;
+  detail: string;
+}
+
+/**
+ * Layer 3: was the key AUTHORIZED at the artifact's claimed date?
+ * Catches what signature validity and key attribution both miss —
+ * a stolen retired key signing artifacts dated after its retirement.
+ * Inclusive at both ends of the window (calendar dates; a handover's
+ * swap day legitimately carries both keys' signatures).
+ */
+export declare function checkKeyServiceWindow(
+  keyHistory: PublishedKeyHistory | null | undefined,
+  publicKeyHex: string,
+  artifactIso: string | null | undefined,
+): KeyServiceWindowResult;

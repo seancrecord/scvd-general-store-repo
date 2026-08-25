@@ -59,6 +59,7 @@ import {
   verifyHandoverSignature,
 } from "@/services/key-handover";
 import { VOICE, getMenuItem } from "@/store";
+import { checkKeyServiceWindow } from "../../verifier/x402-verify.js";
 import {
   attributeKey,
   currentKeyInServiceFrom,
@@ -129,6 +130,13 @@ export const verifyRoutes = new Hono<HonoEnv>();
 async function signedBy(
   c: Context<HonoEnv>,
   recordPublicKey: string | undefined,
+  /**
+   * The artifact's OWN claimed date, where the record carries one.
+   * With it, the response also answers the layer-3 question — was
+   * this key AUTHORIZED at that date? — which attribution alone
+   * never did. Everything above the report route passes one.
+   */
+  artifactDateIso?: string,
 ): Promise<Record<string, unknown>> {
   /**
    * Two artifact classes record the key as optional. Where none was
@@ -149,10 +157,68 @@ async function signedBy(
    * existed and was already used by the payment gate.
    */
   const current = await cachedPublicKeyHex(c.env.SIGNING_KEY);
+  const attribution = attributeKey(recordPublicKey, current);
+
+  /**
+   * THE SERVICE-WINDOW CHECK (2026-08-24), closing the gap the
+   * retired-key prose used to paper over. RETIRED_MEANS reassured
+   * that a retired key is "expected on an artifact issued before the
+   * handover" — without ever checking that it WAS issued before. A
+   * stolen retired key signing an artifact dated after its own
+   * retirement passed here with `status: "retired"` and comforting
+   * words: cryptographically valid (layer 1), genuinely our key
+   * (layer 2), and a forgery all the same, because at its claimed
+   * date that key had no authority (layer 3).
+   *
+   * The comparison lives in verifier/x402-verify.js — the public
+   * package, so the same check a dispute would run offline is the
+   * one this response ran — and reads the registry through
+   * retiredKeysFor, whose lock-wins rule keeps a mid-handover
+   * artifact from being falsely flagged: a key still signing is
+   * current, whatever the registry says.
+   *
+   * No block for an unrecognised key: no published window exists to
+   * check against, and attributeKey's own verdict already says the
+   * only honest thing there is to say.
+   */
+  const windowBlock =
+    artifactDateIso && attribution.status !== "unrecognised"
+      ? (() => {
+          const checked = checkKeyServiceWindow(
+            {
+              current: {
+                public_key: current,
+                in_service_from: currentKeyInServiceFrom(current),
+              },
+              retired: retiredKeysFor(current),
+            },
+            recordPublicKey,
+            artifactDateIso,
+          );
+          return {
+            service_window: {
+              status: checked.status,
+              ...(checked.status !== "undated"
+                ? { in_window: checked.status === "in_service" }
+                : {}),
+              ...(checked.window
+                ? {
+                    in_service_from: checked.window.in_service_from,
+                    retired_on: checked.window.retired_on,
+                  }
+                : {}),
+              artifact_dated: artifactDateIso,
+              means: checked.detail,
+            },
+          };
+        })()
+      : {};
+
   return {
     signed_by: {
       public_key: recordPublicKey,
-      ...attributeKey(recordPublicKey, current),
+      ...attribution,
+      ...windowBlock,
     },
   };
 }
@@ -373,7 +439,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       certificate: record.certificate,
       signature: record.signature,
       public_key: record.public_key,
-      ...(await signedBy(c, record.public_key)),
+      ...(await signedBy(c, record.public_key, record.certificate.date)),
       algorithm: "ed25519",
       signed_payload: certificateSignedPayload,
       artifact_hash: await artifactHash(certificateSignedPayload),
@@ -487,7 +553,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       stamp: stampRecord.stamp,
       signature: stampRecord.signature,
       public_key: stampRecord.public_key,
-      ...(await signedBy(c, stampRecord.public_key)),
+      ...(await signedBy(c, stampRecord.public_key, stampRecord.stamp.date)),
       algorithm: "ed25519",
       signed_payload: canonicalizeStamp(stampRecord.stamp),
       artifact_hash: await artifactHash(canonicalizeStamp(stampRecord.stamp)),
@@ -513,7 +579,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       anchor: anchorRecord.anchor,
       signature: anchorRecord.signature,
       public_key: anchorRecord.public_key,
-      ...(await signedBy(c, anchorRecord.public_key)),
+      ...(await signedBy(c, anchorRecord.public_key, anchorRecord.anchor.date)),
       algorithm: "ed25519",
       signed_payload: canonicalizeAnchor(anchorRecord.anchor),
       artifact_hash: await artifactHash(canonicalizeAnchor(anchorRecord.anchor)),
@@ -541,7 +607,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       lucky: luckyRecord.lucky,
       signature: luckyRecord.signature,
       public_key: luckyRecord.public_key,
-      ...(await signedBy(c, luckyRecord.public_key)),
+      ...(await signedBy(c, luckyRecord.public_key, luckyRecord.lucky.date)),
       algorithm: "ed25519",
       signed_payload: canonicalizeLucky(luckyRecord.lucky),
       artifact_hash: await artifactHash(canonicalizeLucky(luckyRecord.lucky)),
@@ -570,7 +636,7 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         date: issue.date,
         signature: issue.signature,
         public_key: issue.public_key,
-        ...(await signedBy(c, issue.public_key)),
+        ...(await signedBy(c, issue.public_key, issue.date)),
         algorithm: "ed25519",
         // The paper's own markdown IS the signed payload, served whole
         // at /gazette so a holder compares the copy they read.
@@ -608,7 +674,11 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
       observation: phantomRecord.observation,
       signature: phantomRecord.signature,
       public_key: phantomRecord.public_key,
-      ...(await signedBy(c, phantomRecord.public_key)),
+      ...(await signedBy(
+        c,
+        phantomRecord.public_key,
+        phantomRecord.observation?.checked_at,
+      )),
       algorithm: "ed25519",
       signed_payload: canonicalizePhantomCheck(phantomRecord),
       artifact_hash: await artifactHash(canonicalizePhantomCheck(phantomRecord)),
@@ -638,7 +708,14 @@ verifyRoutes.get("/api/verify/:cert_id", async (c) => {
         handover: handoverRecord.handover,
         signature: handoverRecord.signature,
         public_key: handoverRecord.public_key,
-        ...(await signedBy(c, handoverRecord.public_key)),
+        // The announcement is the retiring key's LAST legitimate act,
+        // signed on the swap day itself — the inclusive window edge
+        // exists for exactly this artifact.
+        ...(await signedBy(
+          c,
+          handoverRecord.public_key,
+          handoverRecord.handover.announced,
+        )),
         algorithm: "ed25519",
         signed_payload: canonicalizeHandover(handoverRecord.handover),
         artifact_hash: await artifactHash(

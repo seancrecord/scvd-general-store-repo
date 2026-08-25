@@ -749,6 +749,136 @@ export async function verifyAnchorChain(log, options = {}) {
   return { ok: problems.length === 0, problems, notes, checked: entries.length };
 }
 
+/**
+ * THE SERVICE-WINDOW CHECK — layer 3 of verification, the one both
+ * this package and most verifiers skip.
+ *
+ * Layer 1 asks "does the signature verify?". Layer 2 asks "is the key
+ * genuinely the issuer's?" — that is key resolution above. This asks
+ * the question neither of those covers: WAS THE KEY AUTHORIZED AT THE
+ * TIME THE ARTIFACT CLAIMS? A stolen retired key can sign an artifact
+ * dated after its own retirement; layers 1 and 2 both pass — the
+ * signature is real and the key genuinely was the issuer's — and the
+ * artifact is still a forgery, because at its claimed date that key
+ * had no authority to sign anything. The issuer's published service
+ * dates are the only thing that catches it, and until 2026-08-24
+ * nothing here compared them.
+ *
+ * INPUT is the key_history shape issuers publish beside their key
+ * (scvd.store serves it at /.well-known/scvd-signing-key; the shape
+ * is generic): `current.public_key` + `current.in_service_from`, and
+ * `retired[]` entries each carrying `public_key`, `in_service_from`,
+ * `retired_on`. Nothing else is read.
+ *
+ * DAYS, NOT INSTANTS, AND INCLUSIVE AT BOTH ENDS. Service dates are
+ * published as calendar dates, and a handover is two moves that
+ * cannot be simultaneous — the announcement deploys while the old key
+ * still signs, the secret swaps after. An artifact dated ON the
+ * retirement day is therefore the expected shape of the last honest
+ * artifacts a key ever signs, and flagging it would call the swap
+ * window itself a forgery. The comparison is lexicographic on the
+ * ISO date part, which for YYYY-MM-DD is chronological.
+ *
+ * WHAT IT STILL DOES NOT PROVE: the window comes from the issuer's
+ * own published registry, which the issuer can edit. Where the issuer
+ * anchors key history (checkAnchoredKeyHistory above), the anchor
+ * bounds how far back that registry could have been rewritten; this
+ * check and that one are two halves of the same question.
+ */
+export function checkKeyServiceWindow(keyHistory, publicKeyHex, artifactIso) {
+  const wanted = String(publicKeyHex ?? "")
+    .replace(/^0x/, "")
+    .toLowerCase();
+  if (wanted.length === 0) {
+    return {
+      status: "unknown_key",
+      window: null,
+      detail: "no public key given to look up",
+    };
+  }
+
+  const currentKey = String(keyHistory?.current?.public_key ?? "")
+    .replace(/^0x/, "")
+    .toLowerCase();
+  let window = null;
+  if (currentKey.length > 0 && currentKey === wanted) {
+    window = {
+      in_service_from: String(keyHistory.current.in_service_from ?? ""),
+      retired_on: null,
+    };
+  } else {
+    const retired = (
+      Array.isArray(keyHistory?.retired) ? keyHistory.retired : []
+    ).find(
+      (entry) =>
+        String(entry?.public_key ?? "")
+          .replace(/^0x/, "")
+          .toLowerCase() === wanted,
+    );
+    if (retired) {
+      window = {
+        in_service_from: String(retired.in_service_from ?? ""),
+        retired_on: String(retired.retired_on ?? ""),
+      };
+    }
+  }
+  if (!window) {
+    return {
+      status: "unknown_key",
+      window: null,
+      detail:
+        "this key appears nowhere in the issuer's published key history — " +
+        "the artifact may be internally consistent, but it is not attributable, " +
+        "and no service window exists to check it against",
+    };
+  }
+
+  // The date PART, because windows are calendar dates. An artifact
+  // date that does not start with a parseable YYYY-MM-DD is reported
+  // rather than guessed at — an unfalsifiable date is a finding, not
+  // a pass.
+  const day = String(artifactIso ?? "").slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    return {
+      status: "undated",
+      window,
+      detail:
+        "the artifact carries no parseable ISO date, so the service window cannot be checked against it",
+    };
+  }
+
+  if (window.in_service_from && day < window.in_service_from) {
+    return {
+      status: "before_service",
+      window,
+      detail:
+        `the artifact is dated ${day}, before this key entered service on ` +
+        `${window.in_service_from}. A key cannot sign before it exists: either the ` +
+        "artifact's date is false or the signature was applied later and backdated. " +
+        "Treat the date as unproven whatever the signature says.",
+    };
+  }
+  if (window.retired_on && day > window.retired_on) {
+    return {
+      status: "after_retirement",
+      window,
+      detail:
+        `the artifact is dated ${day}, after this key retired on ${window.retired_on}. ` +
+        "A retired key has no authority at that date — the signature may be " +
+        "cryptographically genuine and the key genuinely the issuer's, and the " +
+        "artifact is STILL not evidence of anything at its claimed time. This is " +
+        "the exact shape a stolen retired key produces.",
+    };
+  }
+  return {
+    status: "in_service",
+    window,
+    detail: window.retired_on
+      ? `dated ${day}, inside this key's published service window (${window.in_service_from} to ${window.retired_on}, inclusive — an artifact dated on the retirement day itself is the expected shape of a handover's last honest signatures)`
+      : `dated ${day}, and the key has been in service since ${window.in_service_from} with no retirement published`,
+  };
+}
+
 /** A one-line human summary; handy in CI logs. */
 export function formatResult(result) {
   const lines = result.checks.map(
