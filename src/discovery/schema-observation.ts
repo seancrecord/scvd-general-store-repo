@@ -150,7 +150,7 @@ export function wrapSchemaEnvelope(input: {
     throw new Error("schema_coherence family has no version");
   }
   return {
-    methodology: { schema: EVIDENCE_SCHEMA_V1 },
+    methodology: { schema: EVIDENCE_SCHEMA_V1, battery_version: version },
     subject: {
       endpoint: input.blocks.observation.about,
       protocol: SCHEMA_COHERENCE_FAMILY.id,
