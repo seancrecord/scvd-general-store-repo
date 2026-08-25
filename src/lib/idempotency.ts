@@ -97,6 +97,41 @@ export function suggestedIdempotencyKey(
   return `scvd-suggested-${itemId}-${idempotencyBucket(nowMs)}`;
 }
 
+/**
+ * THE SURFACE HAS TO INCLUDE THE ARGUMENTS, or the cache hands back
+ * somebody else's answer.
+ *
+ * Until 2026-08-25 the idempotency slot was keyed on (path, payer,
+ * key) and the suggested key was `scvd-suggested-<item>-<minute>`.
+ * Neither carried the QUERY — and most of this shelf takes its whole
+ * input from the query: tx_hash, url, wallet, digest, tag, mandate.
+ *
+ * So two genuinely different purchases in the same minute by the same
+ * payer collided. Measured: `?tag=FIRST` then `?tag=SECOND` returned
+ * ONE certificate, and the buyer who asked for SECOND was handed an
+ * ed25519-signed artifact whose signed payload reads `tag: "FIRST"`.
+ * `tag` is inside CERT_FIELDS, so the signature covers the wrong
+ * value and verifies cleanly against it. On the parameterized doors
+ * it is worse: an agent batching settlement attestations over N
+ * transactions gets one attestation about the first, N-1 times.
+ *
+ * The scope is hashed rather than appended whole, because a `url`
+ * parameter can be long and a KV key cannot.
+ */
+export async function idempotencyScope(
+  path: string,
+  query: URLSearchParams,
+): Promise<string> {
+  const canonical = [...query.entries()]
+    .sort(([a, av], [b, bv]) =>
+      a === b ? av.localeCompare(bv) : a.localeCompare(b),
+    )
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
+  if (!canonical) return path;
+  return `${path}#${(await sha256Hex(canonical)).slice(0, 16)}`;
+}
+
 export function usableIdempotencyKey(key: string | undefined): string | null {
   if (
     !key ||
@@ -108,7 +143,7 @@ export function usableIdempotencyKey(key: string | undefined): string | null {
   return key;
 }
 
-async function sha256Hex(value: string): Promise<string> {
+export async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest(
     "SHA-256",
     new TextEncoder().encode(value),

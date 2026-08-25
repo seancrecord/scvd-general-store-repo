@@ -201,7 +201,9 @@ export async function mintCertificate(
    * same thing — a receipt's charm should not depend on which worker
    * isolate answered.
    */
-  certificate.from_the_store = receiptNoteForWeek(currentWeekKey(new Date(date)));
+  certificate.from_the_store = receiptNoteForWeek(
+    currentWeekKey(new Date(date)),
+  );
   if (options.attests) {
     certificate.attests = options.attests;
   }
@@ -240,6 +242,15 @@ export async function mintCertificate(
     signature_jcs: signatureJcs,
   };
   await env.PATRONS.put(KV_KEYS.cert(certId), JSON.stringify(certRecord));
+  // The reverse index the paid-retry lane reads, so "did this
+  // settlement already mint?" is one lookup rather than a capped scan
+  // that silently stops seeing older records.
+  if (certificate.settlement_tx) {
+    await env.PATRONS.put(
+      KV_KEYS.settlementCert(certificate.settlement_tx.toLowerCase()),
+      certId,
+    );
+  }
 
   return {
     certificate,
@@ -291,7 +302,10 @@ export async function certificatesForPayer(
     prefix: KV_KEYS.certPrefix,
     cap: CLAIM_CERT_SCAN_CAP,
   });
-  const values = await bulkGetJson<CertificateRecord>(env.PATRONS, listed.names);
+  const values = await bulkGetJson<CertificateRecord>(
+    env.PATRONS,
+    listed.names,
+  );
   const matches: ClaimedCertificate[] = [];
   for (const record of values.values()) {
     const cert = record?.certificate;
@@ -301,7 +315,9 @@ export async function certificatesForPayer(
       cert_id: cert.cert_id,
       item: cert.item,
       date: cert.date,
-      ...(typeof cert.paid_usdc === "number" ? { paid_usdc: cert.paid_usdc } : {}),
+      ...(typeof cert.paid_usdc === "number"
+        ? { paid_usdc: cert.paid_usdc }
+        : {}),
       ...(cert.settlement_tx ? { settlement_tx: cert.settlement_tx } : {}),
       verify_path: `/api/verify/${cert.cert_id}`,
     });

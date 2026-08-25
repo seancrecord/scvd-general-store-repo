@@ -26,6 +26,7 @@ import {
   refusalBeforeVerify,
 } from "@/lib/decline-diagnosis";
 import {
+  idempotencyScope,
   lookupIdempotentWithBucketGrace,
   replayNote,
   SUGGESTED_KEY_BUCKET_SECONDS,
@@ -58,7 +59,10 @@ import {
   certIdForSettlement,
   recordDeliveredSettlement,
 } from "@/services/chain-reconciliation";
-import { signedOffersForChallenge, withReceiptHeader } from "@/lib/offer-receipt";
+import {
+  signedOffersForChallenge,
+  withReceiptHeader,
+} from "@/lib/offer-receipt";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { getMenuItem } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
@@ -475,7 +479,6 @@ function respondWithInstructions(
   return c.json(instructions.body ?? {}, status);
 }
 
-
 /** The nonce inside a PAYMENT-SIGNATURE header, for decline matching. */
 function nonceFromPaymentHeader(header: string | undefined): string | null {
   if (!header) {
@@ -602,9 +605,7 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * after verification, further down, and the distance between those
    * two facts is deliberate — see the note at the lookup.
    */
-  const idempotencyKey = usableIdempotencyKey(
-    c.req.header("Idempotency-Key"),
-  );
+  const idempotencyKey = usableIdempotencyKey(c.req.header("Idempotency-Key"));
 
   // First facilitator sync happens on the first paid request per isolate.
   await stack.initialized;
@@ -752,9 +753,11 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     ? payerOfVerifiedPayload(result.paymentPayload)
     : undefined;
   if (idempotencyKey && idempotencyPayer) {
+    // The scope carries the query, so `?tag=SECOND` cannot collect the
+    // signed artifact minted for `?tag=FIRST`.
     const replay = await lookupIdempotentWithBucketGrace(
       c.env,
-      c.req.path,
+      await idempotencyScope(c.req.path, new URL(c.req.url).searchParams),
       idempotencyPayer,
       idempotencyKey,
       itemKeyFromPath(c.req.path),
@@ -799,10 +802,39 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       if (spent.transaction && spent.path === c.req.path) {
         const open = await getOpenDeliveryIntent(c.env, spent.transaction);
         if (open) {
-          const existingCert = await certIdForSettlement(
-            c.env,
-            spent.transaction,
-          );
+          const lookup = await certIdForSettlement(c.env, spent.transaction);
+          const existingCert = lookup.certId;
+          /*
+           * A LOOKUP THAT COULD NOT SEE EVERYTHING IS NOT A "NO".
+           *
+           * Before 2026-08-25 this answer came from a scan capped at
+           * 2000 cert: rows that discarded its own `truncated` flag,
+           * so past the cap it said "no certificate" for settlements
+           * that had one — and this lane answers a false no by
+           * minting a SECOND signed certificate with a second patron
+           * number against one payment, and accruing credit twice on
+           * the same money. Certificates have no TTL; the set only
+           * grows, so that was a defect with a date on it rather than
+           * a possibility.
+           *
+           * Refusing here costs a buyer one manual message in the
+           * rare case; minting costs a double-counted sale in the
+           * books and two certificates that both verify.
+           */
+          if (!existingCert && !lookup.certain) {
+            c.header("Cache-Control", "no-store");
+            c.header("Paid-Retry", "unverifiable");
+            return c.json(
+              {
+                error:
+                  "this authorization settled, and we cannot yet confirm whether its goods already minted — so nothing is minted again here",
+                settlement_tx: spent.transaction,
+                what_to_do:
+                  "write to the keeper with this settlement_tx; the goods are owed and will be handed over by hand. Nothing was charged again.",
+              },
+              503,
+            );
+          }
           if (existingCert) {
             await closeDeliveryIntent(c.env, open.key).catch(() => undefined);
             c.header("Cache-Control", "no-store");
@@ -942,199 +974,207 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   };
 
   async function performSettlement(): Promise<SettledPayment> {
-  let settlement: Awaited<
-    ReturnType<typeof stack.httpServer.processSettlement>
-  >;
-  try {
-    // One retry on a facilitator 5xx — the transport-failed shape,
-    // never a verdict. Safe because the EIP-3009 nonce settles at most
-    // once on-chain; rationale at processSettlementWithRetry.
-    settlement = await processSettlementWithRetry(
-      stack.httpServer,
-      verifiedPayload,
-      verifiedRequirements,
-      verifiedExtensions,
-      { request: context },
-    );
-  } catch (error) {
-    // P1: the settle call errored outright.
-    await sendAlert(c.env, {
-      condition: "settlement_failure",
-      detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
-    });
-    throw error;
-  }
-  await persistBazaarObservations(c.env, c.req.path);
-  /**
-   * One settled outcome for both roads in. The facilitator's success
-   * fills it directly; a transport-dead settle gets ONE chance at the
-   * ambiguous-settle rescue (payments.ts) — the chain is asked whether
-   * the authorization actually burned, because on 2026-08-07 three
-   * "declines" turned out to be landed transfers and a real buyer paid
-   * three times for nothing. A rescued settle carries no facilitator
-   * headers (there is no signed PAYMENT-RESPONSE to relay — the origin
-   * died); the certificate in the body, naming the found transaction,
-   * is the receipt that survives.
-   */
-  if (settlement.success) {
-    till.settled = {
-      transaction: settlement.transaction,
-      headers: settlement.headers,
-      ...(settlement.network ? { network: settlement.network } : {}),
-      ...(settlement.payer ? { payer: settlement.payer } : {}),
-    };
-  } else {
-    const rescued = await rescueAmbiguousSettle(c.env, {
-      errorReason: settlement.errorReason,
-      paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
-      network: verifiedRequirements.network,
-    });
-    if (!rescued) {
-      // Verified but didn't settle — and the chain agrees, or the
-      // question didn't apply. Same instrument, settle-side reason.
-      await recordPaymentDecline(
-        c.env,
-        c.req.path,
-        `settle:${settlement.errorReason}`,
-        gateSignals(c),
-      ).catch(() => undefined);
-      /*
-       * The decline is thrown rather than returned, because this can
-       * now happen INSIDE a handler that has already done its work.
-       * The gate catches it around `next()` and serves this response;
-       * no handler has to carry decline-handling of its own.
-       */
-      if (!settlement.response.isHtml && isRecord(settlement.response.body)) {
-        throw new SettlementDeclined(
-          respondWithInstructions(c, {
-            ...settlement.response,
-            body: {
-              ...settlement.response.body,
-              payment_declined: {
-                reason: settlement.errorReason,
-                ...(settlement.errorMessage
-                  ? { message: settlement.errorMessage }
-                  : {}),
-                note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+    let settlement: Awaited<
+      ReturnType<typeof stack.httpServer.processSettlement>
+    >;
+    try {
+      // One retry on a facilitator 5xx — the transport-failed shape,
+      // never a verdict. Safe because the EIP-3009 nonce settles at most
+      // once on-chain; rationale at processSettlementWithRetry.
+      settlement = await processSettlementWithRetry(
+        stack.httpServer,
+        verifiedPayload,
+        verifiedRequirements,
+        verifiedExtensions,
+        { request: context },
+      );
+    } catch (error) {
+      // P1: the settle call errored outright.
+      await sendAlert(c.env, {
+        condition: "settlement_failure",
+        detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
+      });
+      throw error;
+    }
+    await persistBazaarObservations(c.env, c.req.path);
+    /**
+     * One settled outcome for both roads in. The facilitator's success
+     * fills it directly; a transport-dead settle gets ONE chance at the
+     * ambiguous-settle rescue (payments.ts) — the chain is asked whether
+     * the authorization actually burned, because on 2026-08-07 three
+     * "declines" turned out to be landed transfers and a real buyer paid
+     * three times for nothing. A rescued settle carries no facilitator
+     * headers (there is no signed PAYMENT-RESPONSE to relay — the origin
+     * died); the certificate in the body, naming the found transaction,
+     * is the receipt that survives.
+     */
+    if (settlement.success) {
+      till.settled = {
+        transaction: settlement.transaction,
+        headers: settlement.headers,
+        ...(settlement.network ? { network: settlement.network } : {}),
+        ...(settlement.payer ? { payer: settlement.payer } : {}),
+      };
+    } else {
+      const rescued = await rescueAmbiguousSettle(c.env, {
+        errorReason: settlement.errorReason,
+        paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
+        network: verifiedRequirements.network,
+      });
+      if (!rescued) {
+        // Verified but didn't settle — and the chain agrees, or the
+        // question didn't apply. Same instrument, settle-side reason.
+        await recordPaymentDecline(
+          c.env,
+          c.req.path,
+          `settle:${settlement.errorReason}`,
+          gateSignals(c),
+        ).catch(() => undefined);
+        /*
+         * The decline is thrown rather than returned, because this can
+         * now happen INSIDE a handler that has already done its work.
+         * The gate catches it around `next()` and serves this response;
+         * no handler has to carry decline-handling of its own.
+         */
+        if (!settlement.response.isHtml && isRecord(settlement.response.body)) {
+          throw new SettlementDeclined(
+            respondWithInstructions(c, {
+              ...settlement.response,
+              body: {
+                ...settlement.response.body,
+                payment_declined: {
+                  reason: settlement.errorReason,
+                  ...(settlement.errorMessage
+                    ? { message: settlement.errorMessage }
+                    : {}),
+                  note: "The payment verified but did not settle; no money moved and nothing left the shelf.",
+                },
               },
-            },
-          }),
+            }),
+          );
+        }
+        throw new SettlementDeclined(
+          respondWithInstructions(c, settlement.response),
         );
       }
-      throw new SettlementDeclined(
-        respondWithInstructions(c, settlement.response),
+      till.settled = {
+        transaction: rescued.transaction,
+        network: rescued.network,
+        payer: rescued.payer,
+        headers: {},
+      };
+    }
+    if (nonce) {
+      // The transaction rides the spent-nonce row: it is the link the
+      // paid retry stands on (nonce → settle → delivery intent).
+      await recordSpentNonce(
+        c.env,
+        nonce,
+        c.req.path,
+        till.settled.transaction,
       );
     }
-    till.settled = {
-      transaction: rescued.transaction,
-      network: rescued.network,
-      payer: rescued.payer,
-      headers: {},
+
+    const settlementSignals: Parameters<typeof recordSettlement>[2] = {
+      ...gateSignals(c),
+      paidUsdc,
+      minimumUsdc,
     };
-  }
-  if (nonce) {
-    // The transaction rides the spent-nonce row: it is the link the
-    // paid retry stands on (nonce → settle → delivery intent).
-    await recordSpentNonce(c.env, nonce, c.req.path, till.settled.transaction);
-  }
-
-  const settlementSignals: Parameters<typeof recordSettlement>[2] = {
-    ...gateSignals(c),
-    paidUsdc,
-    minimumUsdc,
-  };
-  // The rail, recorded at the till. Everything gated passes here,
-  // including the penny pages that mint no certificate to carry it.
-  if (till.settled.network) {
-    settlementSignals.network = till.settled.network;
-  }
-  // The payer, from the facilitator if it returned one and from the
-  // signed authorization if it did not. THIS MATTERS MORE THAN IT
-  // LOOKS: the house flag is decided by wallet address, so a settle
-  // that arrives with no payer books as ORGANIC — and an organic
-  // settle is the one number this whole build is waiting on. A house
-  // wallet quietly promoted to the first outside sale would be false
-  // in the direction rule 13 exists to prevent. The `from` in the
-  // authorization is the account that signed and is about to be
-  // debited; when both are present they are the same address.
-  till.payer =
-    till.settled.payer ?? payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
-  if (till.payer) {
-    settlementSignals.payer = till.payer;
-  }
-  await recordSettlement(c.env, c.req.path, settlementSignals);
-  await recordReferralFor(c, "settled", till.payer).catch(() => undefined);
-  const payment: SettledPayment = {
-    paidUsdc,
-    tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
-    transaction: till.settled.transaction,
-    settleHeaders: till.settled.headers,
-  };
-  if (till.settled.network) {
-    payment.network = till.settled.network;
-  }
-  if (till.settled.payer) {
-    payment.payer = till.settled.payer;
-  }
-  if (payment.network === SOLANA_NETWORK) {
-    // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
-    // the seam where money moved, alarmed past the bound, never a refusal.
-    await recordSolanaSettle(c.env, paidUsdc).catch(() => undefined);
-  }
-  if (payment.network === POLYGON_NETWORK) {
-    // Third rail, same ruling: bounded, named, alarmed — never refused.
-    await recordPolygonSettle(c.env, paidUsdc).catch(() => undefined);
-  }
-  c.set("payment", payment);
-  till.payment = payment;
-
-  /**
-   * THE DELIVERY INTENT, opened here because HERE is still the seam,
-   * even though the seam is now much narrower. Money has moved and the
-   * goods have not been committed: under the old ordering that gap
-   * held the entire handler, chain reads included; under deliver-first
-   * it holds whatever the handler does after calling settle, which
-   * should be the mint and nothing else.
-   *
-   * IT IS NOT ZERO, AND THAT IS WHY THIS STAYS. A signature or a KV
-   * write can still fail between the money and the goods. If the rest
-   * of the request throws, returns a non-2xx, or never finishes
-   * because the isolate went away, this row is the only trace that a
-   * buyer paid and got nothing (problem ledger #18, where the
-   * reconciliation we already had reads healthy through exactly this
-   * failure).
-   *
-   * NEVER FAILS THE SALE. A paid customer does not get an error
-   * because an audit row would not write — that would trade a real
-   * delivery for a bookkeeping preference. The cost is that such a
-   * sale is invisible to the audit rather than falsely flagged, which
-   * is the quieter direction and is recorded as such in the service.
-   */
-  /*
-   * The request's own parameters ride along, so a delivery that dies
-   * after settlement can still be finished by hand. Without this the
-   * keeper knows a buyer paid and not what for.
-   */
-  const askedFor = (() => {
-    try {
-      const params = new URL(c.req.url).searchParams;
-      params.delete("payment_payload");
-      const encoded = params.toString();
-      return encoded.length > 0 ? encoded.slice(0, 600) : undefined;
-    } catch {
-      return undefined;
+    // The rail, recorded at the till. Everything gated passes here,
+    // including the penny pages that mint no certificate to carry it.
+    if (till.settled.network) {
+      settlementSignals.network = till.settled.network;
     }
-  })();
-  till.deliveryKey = await openDeliveryIntent(c.env, {
-    path: c.req.path,
-    ...(askedFor ? { query: askedFor } : {}),
-    ...(till.settled.transaction ? { transaction: till.settled.transaction } : {}),
-    ...(till.payer ? { payer: till.payer } : {}),
-    paid_usdc: paidUsdc,
-    settled_at: new Date().toISOString(),
-  }).catch(() => null);
+    // The payer, from the facilitator if it returned one and from the
+    // signed authorization if it did not. THIS MATTERS MORE THAN IT
+    // LOOKS: the house flag is decided by wallet address, so a settle
+    // that arrives with no payer books as ORGANIC — and an organic
+    // settle is the one number this whole build is waiting on. A house
+    // wallet quietly promoted to the first outside sale would be false
+    // in the direction rule 13 exists to prevent. The `from` in the
+    // authorization is the account that signed and is about to be
+    // debited; when both are present they are the same address.
+    till.payer =
+      till.settled.payer ??
+      payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
+    if (till.payer) {
+      settlementSignals.payer = till.payer;
+    }
+    await recordSettlement(c.env, c.req.path, settlementSignals);
+    await recordReferralFor(c, "settled", till.payer).catch(() => undefined);
+    const payment: SettledPayment = {
+      paidUsdc,
+      tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
+      transaction: till.settled.transaction,
+      settleHeaders: till.settled.headers,
+    };
+    if (till.settled.network) {
+      payment.network = till.settled.network;
+    }
+    if (till.settled.payer) {
+      payment.payer = till.settled.payer;
+    }
+    if (payment.network === SOLANA_NETWORK) {
+      // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
+      // the seam where money moved, alarmed past the bound, never a refusal.
+      await recordSolanaSettle(c.env, paidUsdc).catch(() => undefined);
+    }
+    if (payment.network === POLYGON_NETWORK) {
+      // Third rail, same ruling: bounded, named, alarmed — never refused.
+      await recordPolygonSettle(c.env, paidUsdc).catch(() => undefined);
+    }
+    c.set("payment", payment);
+    till.payment = payment;
 
-  return payment;
+    /**
+     * THE DELIVERY INTENT, opened here because HERE is still the seam,
+     * even though the seam is now much narrower. Money has moved and the
+     * goods have not been committed: under the old ordering that gap
+     * held the entire handler, chain reads included; under deliver-first
+     * it holds whatever the handler does after calling settle, which
+     * should be the mint and nothing else.
+     *
+     * IT IS NOT ZERO, AND THAT IS WHY THIS STAYS. A signature or a KV
+     * write can still fail between the money and the goods. If the rest
+     * of the request throws, returns a non-2xx, or never finishes
+     * because the isolate went away, this row is the only trace that a
+     * buyer paid and got nothing (problem ledger #18, where the
+     * reconciliation we already had reads healthy through exactly this
+     * failure).
+     *
+     * NEVER FAILS THE SALE. A paid customer does not get an error
+     * because an audit row would not write — that would trade a real
+     * delivery for a bookkeeping preference. The cost is that such a
+     * sale is invisible to the audit rather than falsely flagged, which
+     * is the quieter direction and is recorded as such in the service.
+     */
+    /*
+     * The request's own parameters ride along, so a delivery that dies
+     * after settlement can still be finished by hand. Without this the
+     * keeper knows a buyer paid and not what for.
+     */
+    const askedFor = (() => {
+      try {
+        const params = new URL(c.req.url).searchParams;
+        params.delete("payment_payload");
+        const encoded = params.toString();
+        return encoded.length > 0 ? encoded.slice(0, 600) : undefined;
+      } catch {
+        return undefined;
+      }
+    })();
+    till.deliveryKey = await openDeliveryIntent(c.env, {
+      path: c.req.path,
+      ...(askedFor ? { query: askedFor } : {}),
+      ...(till.settled.transaction
+        ? { transaction: till.settled.transaction }
+        : {}),
+      ...(till.payer ? { payer: till.payer } : {}),
+      paid_usdc: paidUsdc,
+      settled_at: new Date().toISOString(),
+    }).catch(() => null);
+
+    return payment;
   }
 
   /*
@@ -1273,7 +1313,9 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     ...(till.payer ? { payer: till.payer } : {}),
     // The rail that actually settled; Base only as the pre-second-rail fallback.
     network: till.settled.network ?? BASE_NETWORK,
-    ...(till.settled.transaction ? { transaction: till.settled.transaction } : {}),
+    ...(till.settled.transaction
+      ? { transaction: till.settled.transaction }
+      : {}),
     nowSeconds: Math.floor(Date.now() / 1000),
   });
   for (const [key, value] of Object.entries(outHeaders)) {
@@ -1286,14 +1328,20 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * refusal must stay retryable, only a charge must not repeat.
    */
   if (idempotencyKey && idempotencyPayer && c.res.status < 300) {
-    const bodyText = await c.res.clone().text().catch(() => null);
+    const bodyText = await c.res
+      .clone()
+      .text()
+      .catch(() => null);
     if (bodyText) {
       try {
         const parsed: unknown = JSON.parse(bodyText);
         if (isRecord(parsed)) {
           await storeIdempotent(
             c.env,
-            c.req.path,
+            await idempotencyScope(
+              c.req.path,
+              new URL(c.req.url).searchParams,
+            ),
             idempotencyPayer,
             idempotencyKey,
             parsed,
