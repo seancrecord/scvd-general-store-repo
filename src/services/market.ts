@@ -34,6 +34,79 @@ const USDC_ASSETS = new Set([
 
 const BASE_MAINNET = "eip155:8453";
 const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+const POLYGON_MAINNET = "eip155:137";
+
+/**
+ * WHICH BUCKETS A WEEK'S RAIL SPLIT WAS TAKEN UNDER.
+ *
+ * Stored weeks carry this, because the buckets changed on 2026-08-25
+ * and a reader comparing week 34 to week 40 has to know that. Older
+ * rows are NOT back-filled: nobody re-probed those doors, so
+ * recomputing their split would be inventing an observation. They
+ * keep the shape they were measured in and say so.
+ */
+export const RAIL_BASIS = "per-rail-v2" as const;
+
+/**
+ * The rail split, per rail.
+ *
+ * BEFORE 2026-08-25 THIS COULD NOT SEE POLYGON. The buckets were
+ * `both` / `base_only` / `solana_only` / `other_only`, where `both`
+ * meant Base AND Solana — computed from those two networks and no
+ * others. So a Polygon-only door landed in `other_only`, next to a
+ * typo'd chain id, and a Base+Polygon door was counted `base_only`
+ * and described on /registry as turning away "the other rail's
+ * buyers", which was simply false.
+ *
+ * The store's OWN books had carried Polygon since 2026-08-20
+ * (metrics.railOf, with a comment about the bug it caught). The
+ * telescope had not. For an observatory that is the wrong way round:
+ * we could bank the rail and not count it in anybody else's market.
+ *
+ * Counts are per rail and NOT mutually exclusive — a door offering
+ * Base and Polygon is counted in both, and once in `multi`. Summing
+ * them does not give `of`, deliberately: the question this answers is
+ * "how much of the market can a buyer on rail X pay?", which is the
+ * question the old buckets could not ask.
+ */
+export interface MarketRails {
+  /** Doors whose 402 carried a parseable offer. */
+  of: number;
+  /** Doors accepting this rail, alone or alongside others. */
+  base: number;
+  polygon: number;
+  solana: number;
+  /** Doors offering only chains outside the three named above. */
+  other: number;
+  /** Doors accepting more than one of base/polygon/solana. */
+  multi: number;
+  /** Doors offering only ONE of the three — the addressable share. */
+  single: number;
+  testnet_flagged: number;
+  basis: typeof RAIL_BASIS;
+}
+
+/**
+ * A week measured before the buckets changed. Kept as a type rather
+ * than migrated, so the compiler forces every reader to handle both
+ * rather than quietly reading `polygon` as undefined off an old row.
+ */
+export interface LegacyMarketRails {
+  of: number;
+  both: number;
+  base_only: number;
+  solana_only: number;
+  other_only: number;
+  testnet_flagged: number;
+  basis?: undefined;
+}
+
+/** Narrow a stored week's rails to the shape that can see Polygon. */
+export function isPerRail(
+  rails: MarketRails | LegacyMarketRails,
+): rails is MarketRails {
+  return rails.basis === RAIL_BASIS;
+}
 
 /** What one probed 402 actually offered. Read from the header the
  * probe already fetched; never a second request. */
@@ -201,14 +274,7 @@ export interface MarketAggregates {
   /** The trust layer's measured TAM: ready doors serving signed offers. */
   signed_offers: { serving: number; of_ready: number; pct: number };
   /** Among hosts whose 402 was parseable. */
-  rails: {
-    of: number;
-    both: number;
-    base_only: number;
-    solana_only: number;
-    other_only: number;
-    testnet_flagged: number;
-  };
+  rails: MarketRails;
   /** USDC-priced doors only, cheapest ask per door, whole USDC. */
   price_usdc: {
     sample: number;
@@ -257,20 +323,26 @@ export function marketAggregates(
   );
 
   const withOffer = probedRows.filter((h) => h.offer);
-  let both = 0;
-  let baseOnly = 0;
-  let solanaOnly = 0;
-  let otherOnly = 0;
+  let baseDoors = 0;
+  let polygonDoors = 0;
+  let solanaDoors = 0;
+  let otherDoors = 0;
+  let multiDoors = 0;
+  let singleDoors = 0;
   const schemes: Record<string, number> = {};
   const prices: number[] = [];
   for (const host of withOffer) {
     const networks = new Set(host.offer!.networks);
     const hasBase = networks.has(BASE_MAINNET);
+    const hasPolygon = networks.has(POLYGON_MAINNET);
     const hasSolana = networks.has(SOLANA_MAINNET);
-    if (hasBase && hasSolana) both += 1;
-    else if (hasBase) baseOnly += 1;
-    else if (hasSolana) solanaOnly += 1;
-    else otherOnly += 1;
+    if (hasBase) baseDoors += 1;
+    if (hasPolygon) polygonDoors += 1;
+    if (hasSolana) solanaDoors += 1;
+    const known = Number(hasBase) + Number(hasPolygon) + Number(hasSolana);
+    if (known === 0) otherDoors += 1;
+    else if (known === 1) singleDoors += 1;
+    else multiDoors += 1;
     for (const scheme of host.offer!.schemes) {
       schemes[scheme] = (schemes[scheme] ?? 0) + 1;
     }
@@ -313,13 +385,16 @@ export function marketAggregates(
     },
     rails: {
       of: withOffer.length,
-      both,
-      base_only: baseOnly,
-      solana_only: solanaOnly,
-      other_only: otherOnly,
+      base: baseDoors,
+      polygon: polygonDoors,
+      solana: solanaDoors,
+      other: otherDoors,
+      multi: multiDoors,
+      single: singleDoors,
       testnet_flagged: probedRows.filter((h) =>
         h.advisories.includes("testnet-network"),
       ).length,
+      basis: RAIL_BASIS,
     },
     price_usdc:
       prices.length > 0

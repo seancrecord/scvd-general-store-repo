@@ -131,6 +131,12 @@ const MAINNET = "eip155:8453";
 const KNOWN_TESTNETS: Record<string, string> = {
   "eip155:84532": "Base Sepolia",
   "eip155:11155111": "Ethereum Sepolia",
+  // Added 2026-08-25 with the rail split. This store settles on
+  // Polygon mainnet, so a seller pointing at Amoy is making exactly
+  // the mistake this check exists to catch — and until today it went
+  // unflagged, because the list only knew the rails the check was
+  // first written for.
+  "eip155:80002": "Polygon Amoy",
 };
 
 const PROBE_TIMEOUT_MS = 8000;
