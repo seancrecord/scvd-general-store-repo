@@ -1,4 +1,5 @@
 import { citeWrappedJoin, type PassportModule } from "@/discovery/cite-module";
+import { schemaModuleFromCatalogs } from "@/discovery/schema-module";
 import {
   assembleSelfRow,
   type FetchedSelfRow,
@@ -96,6 +97,31 @@ export async function discoveryModuleFromCatalogs(
     );
   }
   return cited;
+}
+
+/** One catalog fetch, both join citations. The landing path used to fetch twice. */
+export async function selfPassportModules(input: {
+  base: string;
+  signingKeyHex: string;
+  at: string;
+  clock: string;
+  getText: CatalogFetcher;
+}): Promise<PassportModule[]> {
+  const live = await fetchSelfCatalogs(input.base, input.getText);
+  return [
+    await discoveryModuleFromCatalogs(
+      live,
+      input.signingKeyHex,
+      input.at,
+      input.clock,
+    ),
+    await schemaModuleFromCatalogs(
+      live,
+      input.signingKeyHex,
+      input.at,
+      input.clock,
+    ),
+  ];
 }
 
 export async function selfPassportDiscoveryModule(input: {
