@@ -94,10 +94,33 @@ export const STOREFRONT_COPY = {
    * tags exist to answer — and said "on Base" as if Solana had not
    * been a rail since 2026-08-04.
    */
+  /*
+   * 2026-08-25: BOTH OF THESE STILL SAID "the trust layer of the x402
+   * economy" five days after 0.10 made this an EVIDENCE OBSERVATORY.
+   * 0.10 rewrote the canon in copy/position.ts and every surface that
+   * reads that constant followed. These two do not read it — they are
+   * their own strings, in their own file — so the highest-visibility
+   * copy on the site, the snippet a search engine and a social card
+   * actually show, went on describing the store we stopped being.
+   *
+   * Sixth instance of one shape in one day: a change applied where
+   * somebody remembered to apply it, while the same fact sat typed
+   * somewhere else. Nobody was careless. The canon simply had no way
+   * to reach here.
+   *
+   * WHY THESE ARE NOT `POSITION_OPENING`. A meta description has a
+   * budget — past roughly 160 characters a search engine truncates
+   * mid-sentence, and the canon is a paragraph. So this is the SHORT
+   * FORM of the same identity, and it leads with the same three words
+   * the canon leads with. The identity is one thing; the lengths are
+   * two. When the canon moves again, this comment is the reminder
+   * that a second edit is owed here — until claims.mjs can bind them,
+   * which is the actual fix and is now counted in that register.
+   */
   metaDescription:
-    "The trust layer of the x402 economy: free x402 conformance checks of signed offers and receipts, and a weekly Bitcoin-anchored corpus. USDC on Base, Polygon, and Solana.",
+    "An evidence observatory for agentic commerce: free x402 conformance checks of any issuer's signed offers and receipts, and a weekly Bitcoin-anchored corpus. USDC on Base, Polygon, Solana.",
   ogDescription:
-    "The trust layer of the x402 economy: free conformance checking for any issuer's x402 signed offers and receipts, a weekly signed Bitcoin-anchored corpus, and attestation you can verify without us.",
+    "An evidence observatory for agentic commerce. Free conformance checking for any issuer's x402 signed offers and receipts — including our competitors' — a weekly signed Bitcoin-anchored corpus, and attestation you can verify without us. Never a score, a rating or a ranking.",
   /**
    * JSON-LD Organization description for the answer engines. C3 strip:
    * "sincere" was an unsupported adjective on a machine surface.
