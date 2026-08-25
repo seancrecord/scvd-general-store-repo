@@ -24,10 +24,10 @@ and submit by hand.
 goods, human labor, and signed certificates, paid in USDC on Base
 over x402 v2.
 
-**Description:** Twenty-one items from $0.005 to $50: instant signed
-deliverables (memory anchors, URL health attestations, blessings,
-absolution) and human-labor fulfillment (phone calls, app reviews,
-luckies drawn from a real herd). Every purchase mints an ed25519-signed
+**Description:** Instant signed deliverables (memory anchors, URL
+health attestations, blessings, absolution) and human-labor
+fulfillment (phone calls, app reviews, luckies drawn from a real
+herd), priced from fractions of a cent; the live shelf is /menu.json. Every purchase mints an ed25519-signed
 certificate, verifiable free forever. Four doors: HTTP + x402,
 Bazaar-discoverable resources, an MCP server with in-band payment,
 and a ClawHub skill. The store settles before it mints, publishes an
@@ -39,7 +39,7 @@ https://scvd.store/mcp · https://scvd.store/openapi.json
 
 ## Claims audit (verify true on submission day)
 
-- 21 items — check /menu.json count on the day.
+- Item count and price range — read them off /menu.json on the day; do not type a number into the listing, it goes stale the week the shelf changes.
 - Bazaar-discoverable — confirmed 2026-07-22 (hello route), NOT re-verified since; the keeper could not find the store on any browsable mirror as of 2026-07-26. Re-query the CDP discovery list before this line is submitted anywhere.
 - MCP in-band payment — live, first settle 2026-07-22.
 - ClawHub skill — scvd-general-store@1.0.1.

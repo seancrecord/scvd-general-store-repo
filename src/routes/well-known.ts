@@ -1,3 +1,5 @@
+import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
 import {
@@ -549,6 +551,100 @@ for (const path of [
  * hand-typed, per the derive-or-refuse rule; the RFC wants under a
  * year and this serves exactly half of one, rolling.
  */
+/**
+ * GET /.well-known/mcp — where the MCP server actually is.
+ *
+ * The store has run a Streamable HTTP MCP server at /mcp since the
+ * skill shipped, and it is listed in Smithery. A readiness audit on
+ * 2026-08-21 found the listing and then could not complete a
+ * handshake, because nothing at a predictable path said where the
+ * endpoint lives — a scanner that does not already know the path has
+ * no way to find it, and "listed in a registry" is not the same as
+ * "reachable".
+ *
+ * Descriptive only: this is a pointer, not a second transport. The
+ * protocol still happens at /mcp, over POST, exactly as before.
+ */
+wellKnownRoutes.get("/.well-known/mcp", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    name: "scvd-general-store",
+    title: STORE_SERVICE_NAME,
+    description:
+      "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
+    // The one field a client actually needs.
+    endpoint: `${base}/mcp`,
+    transport: "streamable-http",
+    /** The methods that answer without payment, so a scanner knows what to probe. */
+    free_methods: [
+      "initialize",
+      "ping",
+      "tools/list",
+      "resources/list",
+      "resources/read",
+      "prompts/list",
+    ],
+    capabilities: {
+      tools: true,
+      // Stocked since 2026-08-21 — see lib/mcp-resources.ts.
+      resources: true,
+      prompts: false,
+    },
+    resources: mcpResourceCatalog().map((resource) => ({
+      uri: resource.uri,
+      name: resource.name,
+      title: resource.title,
+      mimeType: resource.mimeType,
+    })),
+    documentation: `${base}/developers`,
+    openapi: `${base}/openapi.json`,
+  });
+});
+
+/**
+ * GET /.well-known/agent-instructions — WHEN to reach for this store,
+ * at a path an agent can guess.
+ *
+ * The guidance itself is not new and it is not written here: USE_WHEN
+ * has carried it since the spec shipped, and /llms.txt renders it
+ * under "When you'd use this store" — job-shaped triggers, the items
+ * that serve them, and the exact call to make. A readiness audit on
+ * 2026-08-21 reported "no agent instruction file with when-to-use
+ * guidance found", which was wrong about the store and right about
+ * the address: guidance a crawler has to read 200 lines of prose to
+ * reach is guidance most crawlers will not reach.
+ *
+ * Derived from the same array, so this file cannot describe a store
+ * the briefing does not. Marketing copy is deliberately absent — the
+ * audit's own note is that generic positioning does not read as
+ * guidance, and it is right.
+ */
+wellKnownRoutes.get("/.well-known/agent-instructions", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json({
+    name: STORE_SERVICE_NAME,
+    what_this_is:
+      "When to call this store, and with what. Each entry is a situation an agent can actually be in, the items that answer it, and the request to make.",
+    when_to_use: USE_WHEN.map((entry) => ({
+      situation: entry.when,
+      items: entry.items,
+      example_request: entry.example,
+    })),
+    when_not_to_use:
+      "If none of those situations is yours, you do not need this store today. Nothing here is a subscription and nothing renews itself.",
+    how_to_call: {
+      free: "Plain HTTPS. No account, no key, no signup exists.",
+      paid: "GET the item URL, receive HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON), sign one of the offered accepts, retry with the signed payment. One payment per request; settlement is wallet-to-wallet.",
+      rails: ["eip155:8453", "eip155:137", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],
+    },
+    full_briefing: `${base}/llms.txt`,
+    transaction_manual: `${base}/agents.md`,
+    contract: `${base}/openapi.json`,
+    documentation: `${base}/developers`,
+    catalog: `${base}/menu.json`,
+  });
+});
+
 wellKnownRoutes.get("/.well-known/security.txt", (c) => {
   const base = c.env.STORE_BASE_URL;
   const expires = new Date(Date.now() + 182 * 24 * 3600 * 1000).toISOString();
@@ -576,12 +672,30 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
 // update adding the six trust-tier endpoints to the monitor and the
 // position description. Token expires 72h from issue; REMOVE THIS
 // ROUTE once x402-list confirms, same as the last two times.
+//
+// FOURTH round, 2026-08-24. Request bdf3ad99-18ce-40c9-ac34-6d2978340670.
+// The listing update that carries the new identity (evidence
+// observatory), the corrected shelf floor, and six verification
+// instruments the monitor never had — launch_check among them, which
+// is the door their own reliability panel argues for when it says a
+// service can 402 correctly and still fail after payment.
+//
+// THE ROUTE OUTLIVED ITS OWN INSTRUCTION THREE TIMES. Each round said
+// remove after confirmation and each round it stayed, so the note is
+// now the fourth copy of an undone chore. Two things this round that
+// the last three did not have: the request id above, which lets the
+// verification be re-run from their API if the page is lost, and the
+// admission that "remove after verification" is a promise this file
+// has broken every time it was made. The token that was live until
+// today was issued 2026-08-18 and had been expired since roughly the
+// 21st — serving a dead nonce at a well-known path for three days is
+// litter of exactly the kind the first comment warned about.
 wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
   c.text(
     [
-      "# x402-list.com domain-ownership token, 2026-08-18 listing update.",
+      "# x402-list.com domain-ownership token, 2026-08-24 listing update.",
       "# One-time, expires 72h from issue, removed after verification.",
-      "x402list-verify-8At8JpSsqS3rsFVNbLqNgVfwqHGKWaQ8H63rOPIzDTs",
+      "x402list-verify-DZUc1jh1Vm0fpE-0m_Wh0X3J_Oc5Fmd2srAHm9tQras",
     ].join("\n"),
     200,
     { "content-type": "text/plain; charset=utf-8" },

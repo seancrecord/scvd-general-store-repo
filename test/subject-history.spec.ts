@@ -59,11 +59,19 @@ function round(
   };
 }
 
-/** Freeze one round into the chain. Week is the identity, so each differs. */
-async function chain(rounds: WardRound[]): Promise<void> {
-  for (const entry of rounds) {
+/**
+ * Freeze one round into the chain. Week is the identity, so each
+ * differs. `at` dates the freezes when a test needs the chain and the
+ * population register to sit at known distances from each other.
+ */
+async function chain(rounds: WardRound[], at: Date[] = []): Promise<void> {
+  for (const [index, entry] of rounds.entries()) {
     await testEnv.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(entry));
-    const pass = await takeCorpusSnapshot(testEnv, okCalendar);
+    const when = at[index];
+    const pass = await takeCorpusSnapshot(testEnv, {
+      ...okCalendar,
+      ...(when ? { now: when } : {}),
+    });
     if (!pass.taken) throw new Error(`seed failed: ${pass.reason}`);
   }
 }
@@ -172,6 +180,91 @@ describe("the gaps, which are the whole product", () => {
     expect(history.rounds_probed).toBe(1);
     expect(history.rounds_gapped).toBe(2);
     expect(history.observation_coverage_pct).toBeCloseTo(33.3, 1);
+  });
+
+  /**
+   * FOUND LIVE 2026-08-24, ON OUR OWN PUBLISHED SURFACE.
+   *
+   * /corpus/host/hypernatt.com.json served `rounds_probed: 0` with all
+   * three rounds marked "Not a miss — we had not met", inside the same
+   * document whose `listing` block said first_seen 2026-08-11 and
+   * last_seen 2026-08-23. Two adjacent fields, one of them false.
+   *
+   * The cause was reading first sight from the chain alone. A ward
+   * round walks a few dozen hosts out of thousands enumerated — that
+   * round had walked 40 of 5,873 — so for all but the walked handful
+   * the chain has no sighting, and the fallback stamped the friendliest
+   * possible reason across every round. The true reason was
+   * LISTED_NOT_WALKED the whole time, which is a fact about our cadence
+   * and not about the operator.
+   *
+   * A gap surface that mislabels its own gaps is worse than no gap
+   * surface, because it is believed.
+   */
+  it("does not say WE HAD NOT MET about a host the register has been listing", async () => {
+    // Enumerated on the 11th, still enumerated on the 23rd — exactly
+    // hypernatt's listing block.
+    for (const day of ["2026-08-11", "2026-08-23"]) {
+      await takeCensus(
+        testEnv,
+        [{ source: "fuchss", hosts: ["listed.example"] }],
+        1,
+        new Date(`${day}T00:00:00.000Z`),
+      );
+    }
+    // And in between, a round that walked somebody else entirely.
+    await chain(
+      [round("2026-W01", [host("other.example", "ready")])],
+      [new Date("2026-08-19T00:00:00.000Z")],
+    );
+    const history = await subjectHistory(testEnv, "listed.example", BASE);
+
+    expect(history.gaps_by_reason.before_first_sighting).toBe(0);
+    expect(history.gaps_by_reason.listed_not_walked).toBe(1);
+    expect(history.timeline[0]!.listed).toBe(true);
+    expect(history.timeline[0]!.listing_source).toBe("register");
+    expect(history.timeline[0]!.note).toContain("not knocked on");
+    // And the denominator counts it, so the coverage figure stops
+    // flattering us for the rounds we skipped.
+    expect(history.rounds_since_first_sighting).toBe(1);
+    expect(history.observation_coverage_pct).toBe(0);
+  });
+
+  it("still says WE HAD NOT MET for the rounds that truly predate both records", async () => {
+    await chain(
+      [round("2026-W01", [host("other.example", "ready")])],
+      [new Date("2026-08-19T00:00:00.000Z")],
+    );
+    await takeCensus(
+      testEnv,
+      [{ source: "fuchss", hosts: ["late.example"] }],
+      1,
+      // Dated after the round above was frozen, so nothing knew of it.
+      new Date("2026-08-20T00:00:00.000Z"),
+    );
+    const history = await subjectHistory(testEnv, "late.example", BASE);
+
+    expect(history.gaps_by_reason.before_first_sighting).toBe(1);
+    expect(history.rounds_since_first_sighting).toBe(0);
+    expect(history.observation_coverage_pct).toBeNull();
+  });
+
+  it("prefers the round's own walked set as the listing source when it has one", async () => {
+    await takeCensus(
+      testEnv,
+      [{ source: "fuchss", hosts: ["a.example"] }],
+      1,
+      new Date("2026-08-11T00:00:00.000Z"),
+    );
+    await chain(
+      [round("2026-W01", [host("a.example", "not_probed")])],
+      [new Date("2026-08-19T00:00:00.000Z")],
+    );
+    const history = await subjectHistory(testEnv, "a.example", BASE);
+
+    expect(history.timeline[0]!.listed).toBe(true);
+    expect(history.timeline[0]!.listing_source).toBe("round");
+    expect(history.gaps_by_reason.listed_not_walked).toBe(1);
   });
 
   it("blames the instrument, not the host, when the round hit its cap", async () => {

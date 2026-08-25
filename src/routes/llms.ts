@@ -115,6 +115,26 @@ the single most common "stuck repeating 402"). Free, one probe, one
 moment — a shape check, never an uptime claim. Building an x402
 seller? Run it before you list anywhere.
 
+TWO BATTERIES ARE SERVED, AND THAT IS DELIBERATE.
+${base}/api/preflight/v2 folds one more check into the verdict: on
+Solana, whether the payTo actually owns a USDC token account and can
+therefore be credited at all. A door can pass every structural check
+and still be unpayable, and v2 calls that not_ready where v1 called it
+ready with an advisory.
+
+v1 has NOT changed and will not. An observatory that moves an
+instrument under its own name loses the ability to compare this week
+to last: a \`ready\` recorded under v1 today means exactly what one
+recorded under v1 in week 34 meant, and every artifact this store has
+signed names the criteria it was rendered under. So both run. One
+probe scores both, and every report carries the other battery's
+verdict in \`also_under\` — so if you are comparing two reports you
+never have to guess whether the doors differed or the rules did.
+
+The unversioned ${base}/api/preflight keeps answering under v1, so an
+existing caller's verdicts stay comparable to the ones it already
+holds. The defect each battery tests for is named at ${base}/defects.
+
 AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
 Web Bot Auth is the IETF mechanism for proving a crawler is who it
 says it is — RFC 9421 HTTP Message Signatures over ed25519, public
@@ -192,6 +212,14 @@ A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
 any agent — at ${base}/skills/execution-contract.md
 OpenAPI 3.1 contract: ${base}/openapi.json
+Developer documentation, one index of all of it: ${base}/developers
+(also at /docs and /api). No account and no API key exists to obtain:
+free shelves are open, paid ones take a signed x402 payment per
+request. The page states the error model, the rate-limit headers and
+the deprecation policy in one place.
+When to reach for this store, machine-readable:
+${base}/.well-known/agent-instructions — the same situations listed
+under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
 free; paid tools carry x402 in-band, delivered first and settled after.
@@ -657,6 +685,77 @@ rounds-ready by rounds-probed is one step away and it is an
 accumulating score on an operator, which is the thing this store does
 not keep on anyone. The dated observations are all there; the ratio is
 withheld deliberately, not forgotten.
+
+## Named defect classes, so two instruments can compare notes
+
+${base}/defects (and ${base}/defects.json) publishes stable names for
+the ways an x402 endpoint can be broken. Each class states what it
+asserts, what would falsify a finding of it, and — the field that
+actually matters — whether an UNPAID probe can see it at all.
+
+That last one is the interop. This store's census sends one unpaid
+GET; a paid walk settles real money and sees things a free probe
+never can. A door clean to us and defective to a paying tester is not
+a contradiction, it is two instruments measuring different things,
+and the \`detectable\` field is how you tell which happened.
+
+## The notice desk, for an operator who found us in their log
+
+${base}/notice explains the two calling cards this store sends —
+\`scvd-general-store\` on the weekly unpaid census, \`scvd-walkabout\` on
+a paid walk somebody bought — and points an operator at the record of
+their own endpoint at \`/notice/{their-hostname}\`. Free, no account,
+nothing to buy.
+
+Per-host notices are deliberately unlisted: doors that failed a round
+are counted in the public aggregates and named nowhere, so a page that
+names one is reachable by its operator and linked from no index of
+ours. Unlisted is not secret, and each page says so about itself.
+
+Where another published instrument names the same observable property,
+the mapping is stated with the path to check it and what would show it
+wrong. Those mappings are our reading of somebody else's published
+definitions on a date, never their endorsement.
+
+Not a score, not a ranking, not a list of anybody: every class
+describes one endpoint at one moment. CC BY 4.0 — take the names, that
+is the point of publishing them.
+
+## The same evidence as an OKF bundle
+
+${base}/okf/index.md serves the evidence layer as an
+Open Knowledge Format v0.2 bundle (the Google Cloud spec, 2026-06):
+one markdown
+concept per file, YAML frontmatter for the structured fields, ordinary
+markdown links between them. If your toolchain already reads OKF
+bundles, this is the door to use — nothing here is unique to the
+format, it is the census and the criteria in a shape a knowledge
+catalog can ingest.
+
+Two things about the frontmatter are worth knowing before you trust
+it. Every concept carries \`stale_after\`, sixteen days past the
+observation, which is the passport's own aging rule and not a number
+invented for this surface — expire it yourself rather than asking us.
+And every concept's \`verified\` list names only the census instrument,
+never a \`human:\` actor, so an OKF consumer deriving trust tiers will
+correctly read these as machine-confirmed rather than human-reviewed.
+Nobody reviewed the weekly rounds by hand. Claiming the top tier for
+an unwatched machine walk would be the exact thing this store sells
+against.
+
+The bundle is generated from the signed round on every read, so it
+cannot go stale in the way a hand-maintained file does.
+
+Concepts in the bundle:
+
+- ${base}/okf/index.md: every concept, listed. The bundle root.
+- ${base}/okf/log.md: what changed, by date, newest first.
+- ${base}/okf/store.md: what this shop is and when to reach for it.
+- ${base}/okf/criteria.md: the battery every observation was made against.
+- ${base}/okf/fresh-set.md: this week's conformant doors, as a concept.
+- ${base}/okf/host/{host}.md: one door, dated. Exists only for hosts that
+  answered conformantly in the latest round; anything else answers 404
+  with a pointer back to the index.
 
 ## The tab's pooled corpus, taking contributions
 

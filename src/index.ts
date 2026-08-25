@@ -1,5 +1,7 @@
+import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { POLYGON_EVM } from "@/lib/base-rpc";
 import {
   adminRoutes,
   almanacRoutes,
@@ -45,6 +47,9 @@ import {
   pulseRoutes,
   registryRoutes,
   freshSetRoutes,
+  okfRoutes,
+  defectRoutes,
+  noticeRoutes,
   trustRoutes,
   passportRoutes,
   profilesRoutes,
@@ -77,6 +82,7 @@ import {
   becomingRoutes,
   stampRoutes,
   storefrontRoutes,
+  developerRoutes,
   tradingPostRoutes,
   verifyRoutes,
   wellKnownRoutes,
@@ -89,6 +95,7 @@ import { sendAlert } from "@/lib/alerts";
 import type { EventSignals } from "@/lib/metrics";
 import { recordPorchVisit } from "@/lib/metrics";
 import { getMenuItem } from "@/store";
+import { porchSurface } from "@/lib/porch-surface";
 import { STORE_HEADER } from "@/lib/identity";
 import { compileDigest } from "@/services/digest";
 import { runHealthChecks } from "@/services/health";
@@ -102,7 +109,7 @@ import { runDeliveryAudit } from "@/services/delivery-audit";
 import { runRefundWindowAudit } from "@/services/refund-window";
 import { rebuildOpenLaborIndex } from "@/services/queue-capacity";
 import {
-  runChainReconciliation,
+  runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
 import type { Env, HonoEnv } from "@/types";
@@ -149,63 +156,6 @@ app.use("*", async (c, next) => {
   c.res.headers.set("X-Store", STORE_HEADER);
 });
 
-/**
- * The front-porch log: free-tier attribution. Paths and headers only;
- * no bodies, no cookies, nothing client-side, nothing in responses.
- * /mcp initialize+tools/list log inside the handler (needs the method).
- */
-const PORCH_EXACT = new Map<string, string>([
-  ["/", "storefront"],
-  ["/what", "what"],
-  ["/llms.txt", "llms.txt"],
-  ["/menu.json", "menu.json"],
-  ["/skill.md", "skill.md"],
-  // The execution-contract give-away's 30-day gate is "did anyone
-  // organically fetch or reference this" — a porch row, not a feeling.
-  ["/skills/execution-contract.md", "execution-contract"],
-  ["/gazette", "gazette"],
-  ["/almanac", "almanac"],
-  ["/api/treat", "treat"],
-  ["/stats", "stats"],
-  ["/api/conformance", "conformance"],
-  ["/api/conformance/v1", "conformance"],
-]);
-
-function porchSurface(path: string, method: string): string | undefined {
-  const exact = PORCH_EXACT.get(path);
-  if (exact) {
-    return exact;
-  }
-  if (path.startsWith("/.well-known/")) {
-    return "well-known";
-  }
-  if (path === "/zodiac" || path.startsWith("/zodiac/")) {
-    return "zodiac";
-  }
-  if (path === "/api/bell" && method === "POST") {
-    return "bell";
-  }
-  if (path === "/api/guestbook") {
-    return method === "POST" ? "guestbook:write" : "guestbook:read";
-  }
-  /**
-   * PER-ITEM WINDOW SHOPPING. /menu.json logged as one surface, so a
-   * reader who pulled up a single item's page and left was invisible:
-   * we could see attention on the menu and money at the till, and
-   * nothing about WHICH shelf got picked up and put back down. That
-   * gap is the closest thing this store can measure to want, since a
-   * 402 needs a client that already decided to try.
-   *
-   * Only ids that are actually on the shelf log. A junk path can't
-   * mint a counter key, so the key space stays bounded by the menu.
-   */
-  if (path.startsWith("/menu/")) {
-    const itemId = path.slice("/menu/".length);
-    return getMenuItem(itemId) ? `item:${itemId}` : undefined;
-  }
-  return undefined;
-}
-
 app.use("*", async (c, next) => {
   const surface = porchSurface(c.req.path, c.req.method);
   if (surface) {
@@ -249,6 +199,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/", storefrontRoutes);
+app.route("/", developerRoutes);
 app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);
@@ -257,6 +208,9 @@ app.route("/", reportRoutes);
 app.route("/", pulseRoutes);
 app.route("/", registryRoutes);
 app.route("/", freshSetRoutes);
+app.route("/", okfRoutes);
+app.route("/", defectRoutes);
+app.route("/", noticeRoutes);
 app.route("/", trustRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);
@@ -332,16 +286,56 @@ app.route("/", luckyRoutes);
 app.route("/", badgeRoutes);
 app.route("/", adminRoutes);
 
-app.notFound((c) =>
-  c.json(
+/**
+ * A 404 THAT TELLS YOU WHERE TO GO INSTEAD.
+ *
+ * The status was already right — a real 404, never a 200 wearing an
+ * app shell, which is the failure that teaches an agent every path on
+ * a site exists. What it lacked was a way back: two URLs in a JSON
+ * body, and nothing at all for a caller that asked in markdown.
+ *
+ * A lost agent is the reader here. It gets the whole set of doors —
+ * the front door, the catalog, the contract, the sitemap — in the
+ * dialect it asked for, so one wrong guess costs a redirect rather
+ * than the session.
+ */
+function notFoundLinks(base: string): Array<{ url: string; what: string }> {
+  return [
+    { url: `${base}/llms.txt`, what: "the front door: what this store is, in full" },
+    { url: `${base}/agents.md`, what: "the operational manual: how to transact here" },
+    { url: `${base}/menu.json`, what: "the catalog: every item, price and input contract" },
+    { url: `${base}/openapi.json`, what: "the OpenAPI 3.1 contract for every endpoint" },
+    { url: `${base}/developers`, what: "the developer portal" },
+    { url: `${base}/sitemap.xml`, what: "every public URL this store serves" },
+  ];
+}
+
+app.notFound((c) => {
+  const base = c.env.STORE_BASE_URL;
+  const links = notFoundLinks(base);
+  const message = "That aisle doesn't exist.";
+  if (prefersMarkdown(c.req.header("Accept"))) {
+    const body = `# 404 — no such aisle\n\n${message} Nothing here has moved; this path was never a door.\n\n## Where to look next\n\n${links
+      .map((link) => `- [${link.url}](${link.url}) — ${link.what}`)
+      .join("\n")}\n`;
+    return c.text(body, 404, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+    });
+  }
+  c.header("Vary", VARY_ACCEPT);
+  return c.json(
     {
-      error: "That aisle doesn't exist. The whole store fits on one page:",
-      menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
-      front_door: `${c.env.STORE_BASE_URL}/llms.txt`,
+      error: `${message} The whole store fits on one page:`,
+      menu_url: `${base}/menu.json`,
+      front_door: `${base}/llms.txt`,
+      // The same set the markdown body carries, so neither dialect
+      // knows about a door the other does not.
+      where_to_look_next: links,
     },
     404,
-  ),
-);
+  );
+});
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
@@ -481,9 +475,14 @@ const worker: ExportedHandler<Env> = {
      * store's wallet against certificates minted, which is the only
      * check here that does not depend on our own writes — so it is the
      * only one that can see a payment our own pipeline never recorded.
+     *
+     * BOTH EVM RAILS, one read of the certificate drawer between them
+     * (parity build, 2026-08-21): the drawer's answer is the same for
+     * Base and Polygon, and buying that 2,000-key scan twice an hour
+     * is a real line on a real invoice for one fact.
      */
     ctx.waitUntil(
-      runChainReconciliation(env).then(
+      runEvmReconciliations(env).then(
         () => undefined,
         (error) =>
           sendAlert(env, {

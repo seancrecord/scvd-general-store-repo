@@ -64,6 +64,13 @@ siteMetaRoutes.get("/robots.txt", (c) => {
 # The free conformance desk: ${base}/conformance. The corpus: ${base}/corpus.
 User-agent: *
 Allow: /
+# CONTENT SIGNALS, STATED RATHER THAN LEFT TO BE GUESSED AT.
+# ai-train=yes is a deliberate position, not a default. A shop whose
+# product is being the reference for x402 conformance WANTS to be in
+# the corpus a model learns from: that is distribution, not leakage.
+# Everything here is already free to fetch, most of it CC BY 4.0, and
+# a policy we would not enforce is one we should not print.
+Content-Signal: search=yes, ai-train=yes, ai-input=yes
 
 Sitemap: ${base}/sitemap.xml
 `,

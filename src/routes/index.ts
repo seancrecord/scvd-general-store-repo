@@ -1,4 +1,5 @@
 export { storefrontRoutes } from "@/routes/storefront";
+export { developerRoutes } from "@/routes/developers";
 export { llmsRoutes } from "@/routes/llms";
 export { agentsMdRoutes } from "@/routes/agents-md";
 export { skillRoutes } from "@/routes/skill";
@@ -47,6 +48,9 @@ export { reportRoutes } from "@/routes/reports";
 export { pulseRoutes } from "@/routes/pulse";
 export { registryRoutes } from "@/routes/registry";
 export { freshSetRoutes } from "@/routes/fresh-set";
+export { okfRoutes } from "@/routes/okf";
+export { defectRoutes } from "@/routes/defects";
+export { noticeRoutes } from "@/routes/notice";
 export { trustRoutes } from "@/routes/trust";
 export { passportRoutes } from "@/routes/passport";
 export { profilesRoutes } from "@/routes/profiles";

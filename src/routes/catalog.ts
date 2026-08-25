@@ -5,8 +5,8 @@ import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
 import {
   renderItemMarkdown,
   renderMenuMarkdown,
-  wantsMarkdown,
 } from "@/services/menu-markdown";
+import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
 import { stockedShelfCount } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
@@ -80,12 +80,26 @@ async function fulfillmentState(
 export const catalogRoutes = new Hono<HonoEnv>();
 
 const MARKDOWN_HEADERS = {
-  "Content-Type": "text/markdown; charset=utf-8",
+  "Content-Type": MARKDOWN_MEDIA_TYPE,
+  /**
+   * WITHOUT THIS, THE CDN DECIDES WHO GETS WHAT. Two clients, one
+   * URL, two media types: whichever variant reaches the edge cache
+   * first is served to both until it expires. An agent that asked
+   * for markdown and was handed cached JSON has been given the wrong
+   * answer by infrastructure, not by this route.
+   */
+  Vary: VARY_ACCEPT,
 } as const;
+
+/** The same declaration, for the JSON side of the same negotiated URL. */
+function varyOnAccept(c: { header: (name: string, value: string) => void }): void {
+  c.header("Vary", VARY_ACCEPT);
+}
 
 catalogRoutes.get("/menu.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  if (wantsMarkdown(c.req.header("Accept"))) {
+  varyOnAccept(c);
+  if (prefersMarkdown(c.req.header("Accept"))) {
     return c.text(renderMenuMarkdown(MENU_ITEMS, base), 200, MARKDOWN_HEADERS);
   }
   // The books are part of the catalog's root metadata (C2); a ledger
@@ -277,7 +291,8 @@ catalogRoutes.get("/menu/:item_id", async (c) => {
    * header is the declaration HTTP provides for exactly this.
    */
   const canonical = { Link: `<${base}/menu/${item.id}>; rel="canonical"` };
-  if (wantsMarkdown(c.req.header("Accept"))) {
+  varyOnAccept(c);
+  if (prefersMarkdown(c.req.header("Accept"))) {
     return c.text(renderItemMarkdown(item, base), 200, {
       ...MARKDOWN_HEADERS,
       ...canonical,

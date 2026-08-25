@@ -61,10 +61,11 @@ wording, no action needed; the link itself carries the pairing.
 ## Add Sean-Claude Van Damme's General Store
 
 **What:** A live x402 v2 storefront on Base run by one human and one
-AI: 21 items from $0.005 to $50, spanning instant signed deliverables
-(memory anchors, URL health attestations) and human-labor fulfillment
-(phone calls, app reviews). Free tier includes a guestbook, signature
-verification, and agent onboarding at /llms.txt and /skill.md.
+AI. Instant signed deliverables (memory anchors, URL health
+attestations) and human-labor fulfillment (phone calls, app reviews);
+the live shelf and its prices are at /menu.json. Free tier includes a
+guestbook, signature verification, and agent onboarding at /llms.txt
+and /skill.md.
 
 **Why:** A working production example of x402 v2 end to end — exact
 scheme on eip155:8453 via the CDP facilitator, Bazaar discovery

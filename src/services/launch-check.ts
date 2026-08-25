@@ -83,6 +83,39 @@ export interface LaunchCheckObservation {
   tx_hash: string | null;
   /** The paying wallet, so the on-chain record is findable. */
   field_wallet: string | null;
+  /**
+   * THE ONE CHECK THAT FINDS ANYTHING (2026-08-23).
+   *
+   * An independent tester walked 37 x402 doors and published every
+   * result. Its eleven hostile-payload checks — garbage, unsigned,
+   * wrong scheme, wrong network, wrong asset, self-destination, wrong
+   * amount, extra instruction, fee-payer-as-source, high priority fee
+   * — passed 37 of 37. Not one endpoint anywhere accepted a malformed
+   * payment. Every defect it found sat in two places: the settlement
+   * itself, and the REPLAY. Three of thirty-one doors served the goods
+   * a second time for a payment that had already settled once.
+   *
+   * So this store does not build a negative battery it has evidence
+   * nobody fails. It builds the check that catches a door giving its
+   * product away, which is the defect that costs an operator money and
+   * the one they are least likely to find alone.
+   *
+   * CORRECTION APPENDED 2026-08-24, ORIGINAL LEFT STANDING. The tester
+   * wrote back: "37/37 clean" was true when we read it and is now
+   * stale. Its board carries ONE hostile-input failure in 88 endpoints
+   * — palmyr.ai settled a wrong-scheme envelope,
+   * https://cairnwake.com/r/1ccbdc9f.html. The other ten checks still
+   * have zero failures. The number moved; the ruling did not. One
+   * check in eleven, failing once in eighty-eight doors, is still a
+   * battery whose expected yield rounds to nothing next to a replay
+   * defect found in three doors of thirty-one.
+   *
+   * TRUE = the door served us AGAIN on a spent authorization, which is
+   * the defect. FALSE = it refused, correctly. NULL = nothing settled,
+   * so there was nothing to replay and we say so rather than scoring a
+   * door we never paid.
+   */
+  replay_served: boolean | null;
   evidence_hash: string;
   scope: string;
 }
@@ -100,7 +133,7 @@ export interface LaunchCheckRecord {
 }
 
 const CHECK_SCOPE =
-  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. The payment was presented in the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
+  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. The payment was presented in the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. When a payment settles, the identical already-settled payment is then presented once more and the answer recorded: a door that serves it again is giving product away against an authorization whose nonce is spent, so nothing can reach the seller twice. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
 
 /**
  * The buyer-side signer, as a seam: production builds one from
@@ -298,6 +331,7 @@ export async function performLaunchCheck(
   const stages: LaunchCheckStage[] = [];
   let verdict: LaunchCheckVerdict;
   let paidUsd = 0;
+  let replayServed: boolean | null = null;
   let payTo: string | null = null;
   let txHash: string | null = null;
 
@@ -594,6 +628,62 @@ export async function performLaunchCheck(
             : "an empty body came back with the 2xx — settled, and the buyer left holding nothing. Money moved for zero bytes.",
       });
       verdict = "settled";
+
+      /*
+       * STAGE 7 — THE SAME PAYMENT, TWICE.
+       *
+       * The byte-identical PAYMENT-SIGNATURE header, presented again.
+       * A conformant door refuses it; three of thirty-one doors an
+       * independent tester walked on 2026-08-23 served the goods a
+       * second time.
+       *
+       * THIS COSTS THE SELLER, NOT US, AND CANNOT COST EITHER TWICE.
+       * The authorization carries a single-use nonce and EIP-3009
+       * spends it on first settlement, so the same authorization can
+       * never move funds again — the on-chain transfer reverts. That
+       * is exactly what makes the check safe to run and exactly what
+       * makes the defect expensive: a door that serves on the replay
+       * is giving its product away for a payment it already banked and
+       * cannot bank again. We are never billed twice, so paid_usd does
+       * not move.
+       *
+       * A replay that ERRORS is not a refusal and is not a pass. The
+       * door failed to answer; that is recorded as unknown rather than
+       * counted in either direction, the same way the census counts
+       * its own missed rounds against itself.
+       */
+      let replayResponse: Response | null = null;
+      let replayError: string | null = null;
+      try {
+        replayResponse = await fetchImpl(targetUrl, {
+          headers: {
+            "User-Agent": LAUNCH_CHECK_UA,
+            Accept: "application/json",
+            "PAYMENT-SIGNATURE": paymentHeader,
+          },
+        });
+      } catch (error) {
+        replayError = String(error);
+      }
+      if (!replayResponse) {
+        stages.push({
+          stage: "replay",
+          ok: false,
+          detail: `the replayed request could not complete: ${replayError}. Nothing is claimed about this door's replay handling in either direction — the authorization's nonce was already spent, so no funds could move regardless.`,
+        });
+      } else {
+        const replayBody = await replayResponse.text();
+        const served =
+          replayResponse.status >= 200 && replayResponse.status < 300;
+        replayServed = served;
+        stages.push({
+          stage: "replay",
+          ok: !served,
+          detail: served
+            ? `SERVED AGAIN. The identical already-settled payment was presented a second time and the door answered HTTP ${replayResponse.status} with ${replayBody.length} bytes. The authorization's nonce is spent, so no second payment can have reached the seller — this is product given away. First 300 bytes: ${JSON.stringify(replayBody.slice(0, 300))}`
+            : `refused, correctly: HTTP ${replayResponse.status} on a replay of the already-settled payment. This is the check most endpoints are never tested on.`,
+        });
+      }
     } else {
       stages.push({
         stage: "settle",
@@ -613,6 +703,7 @@ export async function performLaunchCheck(
     stages,
     paid_usd: paidUsd,
     pay_to: payTo,
+    replay_served: replayServed,
     tx_hash: txHash,
     field_wallet: signer?.address ?? null,
   };

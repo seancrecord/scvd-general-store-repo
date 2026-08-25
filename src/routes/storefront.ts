@@ -1,4 +1,10 @@
 import { Hono } from "hono";
+import {
+  MARKDOWN_MEDIA_TYPE,
+  prefersMarkdown,
+  VARY_ACCEPT,
+} from "@/lib/accept";
+import { agentsMd } from "@/routes/agents-md";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
@@ -15,6 +21,32 @@ import type { HonoEnv } from "@/types";
 export const storefrontRoutes = new Hono<HonoEnv>();
 
 storefrontRoutes.get("/", async (c) => {
+  /**
+   * THE FRONT DOOR, IN THE DIALECT THAT WAS ASKED FOR.
+   *
+   * The store has served an agent-shaped front door since /llms.txt
+   * and /agents.md shipped — but only to a caller who already knew
+   * those paths. A crawler doing the ordinary thing, GET / with
+   * `Accept: text/markdown`, got the neon page: 84KB of HTML wrapped
+   * around a sign made of flickering letters. Readiness audit,
+   * 2026-08-21, and it is a fair hit.
+   *
+   * So the apex negotiates. HTML stays the default and the design is
+   * untouched — this fires only when a client ranks markdown ABOVE
+   * html, which a browser never does and an agent asking in the
+   * convention's own terms always does. The body is /agents.md, the
+   * operational manual, because a caller who asked a store for
+   * markdown wants the transaction flow and not a description of the
+   * porch.
+   */
+  c.header("Vary", VARY_ACCEPT);
+  if (prefersMarkdown(c.req.header("Accept"), "text/html")) {
+    return c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+      Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
+    });
+  }
   const [
     weekNote,
     bellCountRaw,

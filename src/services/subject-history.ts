@@ -33,11 +33,33 @@ import type { Env } from "@/types";
  *   INSTRUMENT_DEGRADED — the round itself recorded coverage trouble.
  *   The absence is more plausibly ours than theirs.
  *
- * FIRST SIGHTING COMES FROM THE CHAIN, NOT THE REGISTER. The
+ * FIRST SIGHTING COMES FROM WHICHEVER RECORD MET THE HOST FIRST. The
  * population register began the day the population layer shipped, so
- * reading first sight from it would stamp "before_first_sighting" over
- * every historical round the host was plainly observed in. The chain
- * is the longer record and is the one asked.
+ * reading first sight from it ALONE would stamp "before_first_sighting"
+ * over every historical round the host was plainly observed in. The
+ * chain is the longer record. But the chain is also a SAMPLE — a ward
+ * round walks a few dozen hosts out of thousands enumerated — so
+ * reading first sight from the chain alone stamps the same lie the
+ * other way round, on every host we have listed for weeks and never
+ * had a slot to knock on. So both are read and the EARLIER wins.
+ *
+ * FOUND LIVE 2026-08-24, and it is the reason the two-record rule
+ * exists. /corpus/host/hypernatt.com.json reported `rounds_probed: 0`
+ * with all three rounds marked "Not a miss — we had not met", in the
+ * same document whose `listing` block said we first saw the host on
+ * 2026-08-11 and last saw it on 2026-08-23. Two adjacent fields, one
+ * of them false. The round that host was missing from had walked 40
+ * hosts of 5,873 known: it was never "we had not met", it was always
+ * LISTED_NOT_WALKED, which is a fact about our cadence and not about
+ * the operator. A gap surface that mislabels its own gaps is worse
+ * than no gap surface, because it is believed.
+ *
+ * WHY `listed` CANNOT COME FROM round.hosts. That array holds the
+ * hosts a round WALKED, not the hosts it knew of, so the
+ * listed-not-walked branch could never fire from it — the two facts
+ * it distinguishes were collapsed into one array. Listing comes from
+ * the register's [first_seen, last_seen] window instead, and the
+ * timeline says which record it came from.
  *
  * WHAT THIS REFUSES TO COMPUTE, and it is the obvious feature: an
  * aggregate. "Ready in 8 of 12 rounds" is one division away and it is
@@ -64,8 +86,21 @@ export interface SubjectRound {
   entry_url: string;
   /** A feed named it that round. */
   listed: boolean;
+  /**
+   * Where `listed` came from: the walked set inside the round itself,
+   * or the population register's window around it. Absent when the
+   * host was not listed at all that round.
+   */
+  listing_source?: "round" | "register";
   /** We actually knocked, so there is a verdict. */
   probed: boolean;
+  /**
+   * The exact door we knocked on. A host can serve several paid
+   * resources, so "your endpoint failed" without the URL is a riddle
+   * rather than a finding. Present only on a probed round — we cannot
+   * name a door we never visited.
+   */
+  url?: string;
   verdict?: WardHostResult["verdict"];
   failed?: string[];
   advisories?: string[];
@@ -129,13 +164,28 @@ export async function subjectHistory(
   ]);
 
   /*
-   * First sighting from the chain. Anything before it is not a miss,
-   * and counting it as one would make a host we met last month look
-   * like one we had been failing to watch all year.
+   * First sighting from BOTH records, earliest wins. The chain reaches
+   * further back; the register covers hosts the chain's sample never
+   * had a slot for. Anything before the earlier of the two is not a
+   * miss, and counting it as one would make a host we met last month
+   * look like one we had been failing to watch all year. Counting the
+   * other way — stamping "we had not met" on a host the register has
+   * listed since the 11th — is the same lie pointed at ourselves.
    */
-  const firstSightingIndex = records.findIndex((record) =>
-    record.snapshot.round.hosts.some((entry) => entry.host === host),
-  );
+  const chainFirstSequence =
+    records.find((record) =>
+      record.snapshot.round.hosts.some((entry) => entry.host === host),
+    )?.snapshot.sequence ?? null;
+  const registerFirstSeen = listing?.first_seen ?? null;
+
+  /*
+   * The chain side compares by SEQUENCE, not timestamp. Two rounds
+   * frozen inside the same millisecond compare equal as strings, and
+   * an ordering that can tie is not an ordering. Sequence cannot tie.
+   */
+  const metByThen = (snapshot: { sequence: number; taken_at: string }): boolean =>
+    (chainFirstSequence !== null && snapshot.sequence >= chainFirstSequence) ||
+    (registerFirstSeen !== null && registerFirstSeen <= snapshot.taken_at);
 
   const timeline: SubjectRound[] = [];
   const gaps = emptyGaps();
@@ -145,7 +195,7 @@ export async function subjectHistory(
   let lastObserved: string | null = null;
   let previousVerdict: WardHostResult["verdict"] | null = null;
 
-  for (const [index, record] of records.entries()) {
+  for (const record of records) {
     const { snapshot, digest } = record;
     const round = snapshot.round;
     const common = {
@@ -173,7 +223,9 @@ export async function subjectHistory(
       timeline.push({
         ...common,
         listed: true,
+        listing_source: "round",
         probed: true,
+        url: entry.url,
         verdict: entry.verdict,
         failed: entry.failed,
         advisories: entry.advisories,
@@ -186,12 +238,24 @@ export async function subjectHistory(
       continue;
     }
 
+    /*
+     * Listed that round, by either record. round.hosts holds what the
+     * round WALKED, so on its own it can only ever say "walked"; the
+     * register's window is what actually answers "did we know of it".
+     */
+    const listedInRound = Boolean(entry);
+    const listedInRegister =
+      listing !== null &&
+      listing.first_seen <= snapshot.taken_at &&
+      snapshot.taken_at <= listing.last_seen;
+    const listedThatRound = listedInRound || listedInRegister;
+
     let gap: GapReason;
     let note: string;
-    if (firstSightingIndex === -1 || index < firstSightingIndex) {
+    if (!metByThen(snapshot)) {
       gap = "before_first_sighting";
       note = "This round predates our first sight of this host. Not a miss — we had not met.";
-    } else if (entry) {
+    } else if (listedThatRound) {
       gap = "listed_not_walked";
       note =
         "Named by a feed this round but not knocked on. Enumeration is nearly free and probing is not, so being listed is the cheaper half of what we know.";
@@ -211,7 +275,10 @@ export async function subjectHistory(
     gaps[gap] += 1;
     timeline.push({
       ...common,
-      listed: Boolean(entry),
+      listed: listedThatRound,
+      ...(listedThatRound
+        ? { listing_source: listedInRound ? ("round" as const) : ("register" as const) }
+        : {}),
       probed: false,
       ...(entry?.source ? { source: entry.source } : {}),
       gap,
@@ -219,8 +286,9 @@ export async function subjectHistory(
     });
   }
 
-  const sinceFirst =
-    firstSightingIndex === -1 ? 0 : records.length - firstSightingIndex;
+  const sinceFirst = records.filter((record) =>
+    metByThen(record.snapshot),
+  ).length;
   const gapped = sinceFirst - probed;
 
   return {
@@ -244,7 +312,8 @@ export async function subjectHistory(
       "Whether an absence is the host's doing or ours. That is what `gap` is for: read the reason, not the blank.",
       "A reliability figure, and this is a refusal rather than a limitation. Dividing rounds-ready by rounds-probed would be a score on an operator, which this store does not keep on anyone. Every dated observation is here; the aggregate is deliberately not.",
       "Anything before the corpus started. The chain is the record, and it does not reach back further than its first entry.",
-      "Listing history before the population register existed. `listing` began with the population layer; the chain is the longer record and the timeline is drawn from it.",
+      "Listing history before the population register existed. `listing` began with the population layer, so on rounds older than the register the timeline can only draw on the chain — and the chain only records the hosts a round WALKED. A `not_listed` on one of those rounds may be an unrecorded listing.",
+      "Whether a host listed on the register's first day had been listed earlier. `first_seen` is when the register met it, not when the world did.",
     ],
   };
 }

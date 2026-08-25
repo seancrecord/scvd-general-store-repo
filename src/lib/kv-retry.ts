@@ -1,0 +1,62 @@
+import type { Env } from "@/types";
+
+/**
+ * ONE RETRY POLICY FOR TRANSIENT KV FAILURES, IN ONE PLACE.
+ *
+ * The policy itself was written 2026-08-04, inside kv-bulk.ts, after a
+ * live "KV GET_BULK failed: 500 Internal Server Error" killed a whole
+ * corrections walk. It has been correct ever since — for BULK reads
+ * only. Single-key `.get()` calls never got it.
+ *
+ * 2026-08-21T20:31:38.446Z, and this is the reason the file exists:
+ * "[P1] worker_health — Chain reconciliation failed: KV GET failed:
+ * 500 Internal Server Error". GET, not GET_BULK. A one-key cursor
+ * read hit the same transient class the bulk path had absorbed for
+ * seventeen days, threw, and took the hourly bank walk down with it.
+ *
+ * THE LINE THIS DOES NOT CROSS. A failure that survives the retries
+ * still THROWS, exactly as the bulk path does. Silently defaulting a
+ * cursor read to "missing" would restart a walk from a made-up block
+ * and report the span as clean — a wrong number wearing a walk's
+ * authority. Loud failure plus the cron's next pass is the honest
+ * degradation. The retry absorbs the blip and nothing else.
+ */
+
+type Namespace = Env["ORDERS"];
+
+const RETRIES = 3;
+const BACKOFF_MS = [150, 600];
+
+/** Retries a transient KV failure; rethrows the last one if it persists. */
+export async function withKvRetry<T>(read: () => Promise<T>): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < RETRIES; attempt += 1) {
+    try {
+      return await read();
+    } catch (error) {
+      lastError = error;
+      if (attempt < RETRIES - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, BACKOFF_MS[attempt] ?? 600),
+        );
+      }
+    }
+  }
+  throw lastError;
+}
+
+/** A single-key text read that survives a 500 from the KV service. */
+export function kvGet(
+  kv: Namespace,
+  key: string,
+): Promise<string | null> {
+  return withKvRetry(() => kv.get(key));
+}
+
+/** The same, for the rows this store keeps as JSON. */
+export function kvGetJson<T>(
+  kv: Namespace,
+  key: string,
+): Promise<T | null> {
+  return withKvRetry(() => kv.get<T>(key, "json"));
+}
