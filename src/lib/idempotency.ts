@@ -122,11 +122,24 @@ export async function idempotencyScope(
   path: string,
   query: URLSearchParams,
 ): Promise<string> {
+  /*
+   * ENCODE BEFORE JOINING — corrected 2026-08-25, hours after the
+   * first version of this function shipped.
+   *
+   * Interpolating raw makes the delimiters injectable: `=` and `&`
+   * inside a DECODED value are indistinguishable from structure, so
+   * `?tag=one&z=two` and `?tag=one%26z%3Dtwo` canonicalized to the
+   * same string. Same item, same payer, same minute, same
+   * store-suggested key — one cache slot, and the second caller
+   * collects an ed25519-signed artifact naming the wrong subject.
+   * Which is exactly the defect this function was added to close.
+   *
+   * Sorted by code point rather than locale: this value is a cache
+   * key, and localeCompare is ICU-dependent by contract.
+   */
   const canonical = [...query.entries()]
-    .sort(([a, av], [b, bv]) =>
-      a === b ? av.localeCompare(bv) : a.localeCompare(b),
-    )
-    .map(([k, v]) => `${k}=${v}`)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .sort()
     .join("&");
   if (!canonical) return path;
   return `${path}#${(await sha256Hex(canonical)).slice(0, 16)}`;

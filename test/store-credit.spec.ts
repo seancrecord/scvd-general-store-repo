@@ -283,3 +283,87 @@ describe("a balance can only be spent once", () => {
     expect(after.redeemed_total_atomic).toBe("2000000");
   });
 });
+
+/**
+ * A STALE READ IS NOT A RIVAL — and the first version of the claim
+ * block could not tell them apart.
+ *
+ * Found 2026-08-25 by a review pass over the fix that shipped hours
+ * earlier. Workers KV reads are edge-cached and eventually
+ * consistent: getCredit primes that cache moments before the claim
+ * write, so the readback that follows CAN return the old value with
+ * nobody else involved. The first version treated that as a rival,
+ * refused, and left behind a zeroed balance, an incremented
+ * redeemed_total, and no signature — destroying a buyer's money in a
+ * single request with no concurrency at all.
+ *
+ * This drives that exact case with a KV facade that returns the
+ * pre-write value for one read of the credit key, which is the
+ * documented behaviour rather than anything exotic.
+ */
+describe("a claim that cannot be confirmed gives the money back", () => {
+  function staleOnce(realEnv: Env, key: string): Env {
+    let stale: string | null = null;
+    let armed = true;
+    const counters = realEnv.COUNTERS;
+    const facade = {
+      ...counters,
+      get: (async (name: string, type?: string) => {
+        if (name === key && armed && stale !== null) {
+          armed = false;
+          const held = stale;
+          stale = null;
+          return type === "json" ? JSON.parse(held) : held;
+        }
+        return (counters.get as (n: string, t?: string) => Promise<unknown>)(
+          name,
+          type,
+        );
+      }) as KVNamespace["get"],
+      put: (async (name: string, value: string) => {
+        if (name === key && stale === null && armed) {
+          stale = (await counters.get(name)) as string | null;
+        }
+        return counters.put(name, value);
+      }) as KVNamespace["put"],
+      delete: counters.delete.bind(counters),
+      list: counters.list.bind(counters),
+    } as unknown as KVNamespace;
+    return { ...realEnv, COUNTERS: facade } as Env;
+  }
+
+  it("refuses without signing and leaves the balance where it was", async () => {
+    await accrueCredit(testEnv, REGULAR.address, 40); // $2.00
+    const key = KV_KEYS.credit(REGULAR.address.toLowerCase());
+    const outstandingBefore = await creditOutstandingAtomic(testEnv);
+
+    /*
+     * Catch rather than `rejects.toThrow`, deliberately: the refusal
+     * MESSAGE is the small half of this. The assertion that names the
+     * actual harm is the balance below, and a message check that
+     * threw first would hide it.
+     */
+    let refusal: unknown = null;
+    try {
+      await redeemCredit(staleOnce(testEnv, key), REGULAR.address, {
+        signer: await fieldSignerFromKey(REGULAR_KEY),
+        screen: clearScreen,
+      });
+    } catch (error) {
+      refusal = error;
+    }
+    expect(refusal, "a stale readback was allowed to sign").toBeTruthy();
+
+    // The money is still the buyer's, and the books still agree.
+    const after = await getCredit(testEnv, REGULAR.address, new Date());
+    expect(
+      after.balance_atomic,
+      "a stale read destroyed the buyer's balance",
+    ).toBe("2000000");
+    expect(after.redeemed_total_atomic).toBe("0");
+    expect(await creditOutstandingAtomic(testEnv)).toBe(outstandingBefore);
+    // And it is refused as UNCONFIRMED, not as somebody else's win —
+    // the two need opposite handling and the message says which.
+    expect(String(refusal)).toMatch(/could not be confirmed/);
+  });
+});

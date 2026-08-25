@@ -162,10 +162,33 @@ export async function computeStatsDiagnosed(
   let organicBeforeSecondRail = 0;
   const { monthsBeforeSecondRail } = await import("@/services/rails");
   const singleRailMonths = new Set(monthsBeforeSecondRail());
-  for (const month of monthsSinceOpening()) {
-    const listed = await listKeys(env.COUNTERS, { prefix: `metric:${month}:paid`, cap: PAID_METRIC_CAP });
-    const names = listed.names;
-    const values = await bulkGetJson<number>(env.COUNTERS, names);
+  /*
+   * A LOOP WHOSE BOUND IS THE CALENDAR — rule 50, and the one shape
+   * the scalability audit cannot argue about in a commit message.
+   *
+   * This used to await each month in turn: 2 serial KV round trips
+   * per month, growing by one month every month, with no code change
+   * and no commit for anybody to review. On the storefront, /menu.json
+   * and /stats.json, all free, none cached.
+   *
+   * The months are independent — each reads its own key prefix and
+   * none reads another's result — so they go out in one wave and the
+   * totals are summed after. net-statement.ts already made this point
+   * in its own comment: the key shapes are ours and the months are
+   * enumerable, so the storefront-adjacent read stays cheap however
+   * many months the store survives.
+   */
+  const perMonth = await Promise.all(
+    monthsSinceOpening().map(async (month) => {
+      const listed = await listKeys(env.COUNTERS, {
+        prefix: `metric:${month}:paid`,
+        cap: PAID_METRIC_CAP,
+      });
+      const values = await bulkGetJson<number>(env.COUNTERS, listed.names);
+      return { month, names: listed.names, values };
+    }),
+  );
+  for (const { month, names, values } of perMonth) {
     for (const name of names) {
       const count = values.get(name) ?? 0;
       // metric:<m>:paid:<item> is organic; metric:<m>:paidh:<item> is house.

@@ -75,13 +75,45 @@ export interface CreditRecord {
 async function signWithRollback<T>(
   env: Env,
   creditKey: string,
-  before: CreditRecord,
+  claimId: string,
+  amount: bigint,
   sign: () => Promise<T>,
 ): Promise<T> {
   try {
     return await sign();
   } catch (error) {
-    await env.COUNTERS.put(creditKey, JSON.stringify(before));
+    /*
+     * GIVE BACK THE AMOUNT, DO NOT RESTORE A SNAPSHOT.
+     * Corrected 2026-08-25, same day as the block above.
+     *
+     * The first version wrote back the record as it was read before
+     * the claim. Two ways that was wrong:
+     *
+     *   accrueCredit writes this same key on every settle. A purchase
+     *   landing inside the signing window was overwritten by the
+     *   snapshot — while bumpOutstanding had already counted it, so
+     *   the published liability disagreed with the record it sums.
+     *
+     *   And it did not check whose record it was overwriting. If a
+     *   rival had already won and signed for the balance, restoring
+     *   the snapshot RESURRECTED money that was already paid out.
+     *
+     * So: re-read, refuse to touch anything that is not still our own
+     * claim, and add the amount back rather than replacing the whole
+     * record — which leaves any accrual that landed meanwhile intact.
+     */
+    const current = await env.COUNTERS.get<CreditRecord>(creditKey, "json");
+    if (current && current.claimed_by === claimId) {
+      const restored: CreditRecord = {
+        ...current,
+        balance_atomic: (BigInt(current.balance_atomic) + amount).toString(),
+        redeemed_total_atomic: (
+          BigInt(current.redeemed_total_atomic) - amount
+        ).toString(),
+      };
+      delete restored.claimed_by;
+      await env.COUNTERS.put(creditKey, JSON.stringify(restored));
+    }
     throw error;
   }
 }
@@ -192,6 +224,11 @@ export async function accrueCredit(
     ).toString(),
     updated_at: now.toISOString(),
   };
+  // The claim marker is TRANSIENT — it belongs to one redemption in
+  // flight. Spreading `...record` forward re-persisted the winning
+  // request's id on every later accrual, forever, which is a stale
+  // fact sitting in a record that is otherwise all live ones.
+  delete next.claimed_by;
   await env.COUNTERS.put(KV_KEYS.credit(record.wallet), JSON.stringify(next));
   await bumpOutstanding(env, earned);
   return {
@@ -288,10 +325,28 @@ export async function redeemCredit(
    * that is a get-then-delete, and a KV delete is not globally
    * visible for up to a minute. Two edges both see the nonce.
    *
-   * So the BALANCE is the mutex, not the challenge. Zero it first,
-   * read it back, and only sign if our own claim id survived. A
-   * loser refuses without a signature — no money, and the balance
-   * still belongs to whoever won.
+   * So the balance is claimed first: zero it, read it back, and only
+   * sign if our own claim id survived. A loser refuses without a
+   * signature.
+   *
+   * WHAT THIS IS AND IS NOT, corrected 2026-08-25 after the first
+   * version of this comment called it a mutex. IT IS NOT A MUTEX.
+   * Workers KV is a last-write-wins register with edge-cached,
+   * eventually-consistent reads and no compare-and-swap. Two requests
+   * landing in two colos can each write their own claim and each read
+   * back their own claim, and both can proceed. The very property
+   * that made the original bug real — a KV write is not immediately
+   * visible everywhere — is the property this cannot rely on being
+   * false.
+   *
+   * What it DOES do is close the common case (one colo, back-to-back
+   * retries, a client hammering the route) and make the rare case
+   * detectable rather than silent. The real fix is a Durable Object
+   * per wallet, which is a binding change and a deploy, and is not
+   * being done half-awake at 6am. Until then the honest position is
+   * this comment plus the books invariant that compares the
+   * outstanding aggregate against the sum of the records it claims to
+   * total.
    *
    * The sanctions screen stays ABOVE this line: it fails closed and
    * must leave the balance untouched when it cannot answer.
@@ -310,6 +365,38 @@ export async function redeemCredit(
   await env.COUNTERS.put(creditKey, JSON.stringify(claimed));
   const readback = await getCredit(env, wallet, now);
   if (readback.claimed_by !== claimId) {
+    /*
+     * A MISMATCH HAS TWO CAUSES AND THEY NEED OPPOSITE ANSWERS.
+     * Corrected 2026-08-25, hours after the first version of this
+     * block shipped treating them as one.
+     *
+     * (a) SOMEBODY ELSE'S CLAIM IS THERE. A rival won. Refuse, and
+     *     leave the record alone: the balance is theirs to spend and
+     *     writing anything here would step on it.
+     *
+     * (b) OUR OWN WRITE IS NOT VISIBLE YET. Workers KV reads are
+     *     edge-cached and eventually consistent, and getCredit read
+     *     this very key moments ago, priming that cache. A read after
+     *     a write CAN return the old value with no rival involved.
+     *
+     * The first version refused in both cases — after zeroing the
+     * record and incrementing redeemed_total, and above the rollback.
+     * So a single request with no concurrency at all could burn its
+     * challenge, destroy the buyer's balance, book it as redeemed,
+     * and sign NOTHING. That is worse than the double-payout it was
+     * written to prevent, and it needed no attacker.
+     */
+    const rivalWon = Boolean(
+      readback.claimed_by && readback.claimed_by !== claimId,
+    );
+    if (!rivalWon) {
+      // Case (b): put the balance back before refusing. Nothing was
+      // signed, so the buyer must keep their money.
+      await env.COUNTERS.put(creditKey, JSON.stringify(record));
+      throw new CreditRefused(
+        "the claim on this balance could not be confirmed, so nothing was signed and the balance is untouched — ask again in a moment",
+      );
+    }
     throw new CreditRefused(
       "another redemption claimed this balance first — nothing was signed here, and the balance belongs to whichever request won; read /api/credit/{wallet} for the current state",
     );
@@ -330,27 +417,32 @@ export async function redeemCredit(
   };
   // If signing throws after the claim, the buyer's balance would be
   // gone with nothing to show for it. Hand it back and re-raise.
-  const signature = await signWithRollback(env, creditKey, record, () =>
-    signer.signTypedData({
-      domain: {
-        name: "USD Coin",
-        version: "2",
-        chainId: 8453,
-        verifyingContract: BASE_USDC as `0x${string}`,
-      },
-      types: {
-        TransferWithAuthorization: [
-          { name: "from", type: "address" },
-          { name: "to", type: "address" },
-          { name: "value", type: "uint256" },
-          { name: "validAfter", type: "uint256" },
-          { name: "validBefore", type: "uint256" },
-          { name: "nonce", type: "bytes32" },
-        ],
-      },
-      primaryType: "TransferWithAuthorization",
-      message: authorization,
-    }),
+  const signature = await signWithRollback(
+    env,
+    creditKey,
+    claimId,
+    balance,
+    () =>
+      signer.signTypedData({
+        domain: {
+          name: "USD Coin",
+          version: "2",
+          chainId: 8453,
+          verifyingContract: BASE_USDC as `0x${string}`,
+        },
+        types: {
+          TransferWithAuthorization: [
+            { name: "from", type: "address" },
+            { name: "to", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "validAfter", type: "uint256" },
+            { name: "validBefore", type: "uint256" },
+            { name: "nonce", type: "bytes32" },
+          ],
+        },
+        primaryType: "TransferWithAuthorization",
+        message: authorization,
+      }),
   );
   await bumpOutstanding(env, -balance);
   return {

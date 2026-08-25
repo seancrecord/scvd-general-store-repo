@@ -97,3 +97,50 @@ describe("the idempotency slot is scoped to what was actually asked for", () => 
     expect(certOf(again)["cert_id"]).toBe(certOf(first)["cert_id"]);
   });
 });
+
+/**
+ * THE DELIMITERS ARE NOT DATA — found 2026-08-25 by a review pass over
+ * the fix above, hours after it shipped.
+ *
+ * The first version of idempotencyScope interpolated keys and values
+ * raw: `${k}=${v}` joined on "&". So `=` and `&` INSIDE a decoded
+ * value were indistinguishable from structure, and two different
+ * query strings canonicalized to one string.
+ *
+ * That is not a theoretical collision. Same item, same payer, same
+ * minute, same store-suggested key — one cache slot, and the second
+ * caller collects an ed25519-signed artifact naming the wrong
+ * subject. Precisely the defect the scope was added to close, back
+ * through a hole in the closure.
+ */
+describe("the scope cannot be forged through its own delimiters", () => {
+  it("keeps two different query strings in two different slots", async () => {
+    const { idempotencyScope } = await import("@/lib/idempotency");
+    const structured = await idempotencyScope(
+      "/api/buy/graffiti_on_a_train",
+      new URLSearchParams("tag=one&z=two"),
+    );
+    // One parameter whose VALUE happens to contain the delimiters.
+    const injected = await idempotencyScope(
+      "/api/buy/graffiti_on_a_train",
+      new URLSearchParams([["tag", "one&z=two"]]),
+    );
+    expect(
+      injected,
+      "a value carrying & and = collides with real structure",
+    ).not.toBe(structured);
+  });
+
+  it("is stable under parameter order, which is the property it needs", async () => {
+    const { idempotencyScope } = await import("@/lib/idempotency");
+    const forwards = await idempotencyScope(
+      "/api/buy/x",
+      new URLSearchParams("a=1&b=2"),
+    );
+    const backwards = await idempotencyScope(
+      "/api/buy/x",
+      new URLSearchParams("b=2&a=1"),
+    );
+    expect(forwards).toBe(backwards);
+  });
+});

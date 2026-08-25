@@ -1,4 +1,5 @@
 import { SELF, env } from "cloudflare:test";
+import { afterEach } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
 import type { RegistryWeekEntry } from "@/services/registry-pulse";
@@ -9,6 +10,16 @@ import { jsonLdBody, jsonLdScript } from "@/lib/jsonld";
 
 const BASE = "https://scvd.store";
 const HTML = { Accept: "text/html" };
+
+/*
+ * The seeded week is cleaned up after EVERY test rather than by the
+ * test that happens to be declared next. This pool isolates KV per
+ * file but not per test, so `vitest -t "names the measurements"` used
+ * to leave the week seeded for the other nine.
+ */
+afterEach(async () => {
+  await (env as unknown as Env).COUNTERS.delete(KV_KEYS.registryPulse);
+});
 
 /** A published week, so the Dataset node actually carries measurements. */
 const PUBLISHED_WEEK: RegistryWeekEntry = {

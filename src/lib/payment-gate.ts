@@ -575,13 +575,35 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     const preflight = preflightBlockers(offeredHeader);
     const first = preflight[0];
     if (first) {
-      await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
-      await recordPaymentDecline(
-        c.env,
-        c.req.path,
-        `local:preflight:${first.field}`,
-        gateSignals(c),
-      ).catch(() => undefined);
+      /*
+       * ONE WAVE ON THE REFUSAL A BUYER IS WAITING FOR — rule 50.
+       *
+       * These two share no state, and the decline path is the more
+       * expensive of the pair: recordPaymentDecline awaits sendAlert,
+       * which on a repeat decline is six serial KV round trips, and on
+       * a first one adds an outbound email. All of it sat between a
+       * buyer's malformed header and the sentence telling them which
+       * field was wrong — on the response whose own body says "we
+       * check what we can check before spending the round trip."
+       *
+       * NOT DEFERRED, DELIBERATELY. waitUntil here would be the larger
+       * win and it is what the last attempt at this reached for; it
+       * broke referrals.spec because something read the value back
+       * before the response. The alert log is read back by tests that
+       * drive the store through SELF.fetch, and proving which ones is
+       * a bigger claim than this fix needs. Removing the QUEUE is free
+       * and provable; removing the AWAIT is neither, so it is not done
+       * here.
+       */
+      await Promise.all([
+        recordChallengeIssued(c.env, c.req.path, gateSignals(c)),
+        recordPaymentDecline(
+          c.env,
+          c.req.path,
+          `local:preflight:${first.field}`,
+          gateSignals(c),
+        ).catch(() => undefined),
+      ]);
       c.header("Cache-Control", "no-store");
       return c.json(
         {
