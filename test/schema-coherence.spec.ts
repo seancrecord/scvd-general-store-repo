@@ -20,8 +20,8 @@ const ABOUT = "https://scvd.store";
  * surface is not_observed, not a conflict.
  *
  * Live OpenAPI and x402.json share buyInputSchema — they must agree.
- * MCP tools/list is fixture-only here: that catalog is a POST, and
- * discovery already refuses to call tools/list in a stranger's name.
+ * Our own tools/list is fetched here (SELF, not a stranger). Pointed
+ * at someone else, MCP stays not_observed until they publish schemas.
  */
 
 async function fetchJson(path: string): Promise<unknown> {
@@ -285,5 +285,45 @@ describe("live OpenAPI and x402.json share one input schema", () => {
         (row) => row.route === "launch_check" && row.only_right.includes("planted"),
       ),
     ).toBe(true);
+  });
+});
+
+describe("live MCP tools/list uses the same required fields", () => {
+  async function liveToolsList(): Promise<unknown> {
+    const response = await SELF.fetch(`${ABOUT}/mcp`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/list",
+      }),
+    });
+    expect(response.status, "tools/list did not serve").toBe(200);
+    const body: unknown = await response.json();
+    expect(isRecord(body) && isRecord(body["result"])).toBe(true);
+    return (body as { result: unknown }).result;
+  }
+
+  it("MCP, OpenAPI, and x402.json agree on required inputs", async () => {
+    const openapi = await fetchJson("/openapi.json");
+    const x402 = await fetchJson("/.well-known/x402.json");
+    const mcp = await liveToolsList();
+    const verdict = schemaRowVerdict([
+      {
+        surface: "openapi",
+        claims: schemaFromOpenApi(openapi, ABOUT, `${ABOUT}/openapi.json`),
+      },
+      {
+        surface: "x402_catalog",
+        claims: schemaFromX402(x402, ABOUT, `${ABOUT}/.well-known/x402.json`),
+      },
+      {
+        surface: "mcp_tools",
+        claims: schemaFromMcpTools(mcp, ABOUT, `${ABOUT}/mcp`),
+      },
+    ]);
+    expect(verdict.derived).toBe("agree");
+    expect(verdict.disagreements).toEqual([]);
   });
 });
