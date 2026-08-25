@@ -1726,6 +1726,108 @@ Mostly the coverage half, plus the product shape:
 
 ---
 
+## 23. A competitor scores us, and gets it wrong (2026-08-24)
+
+A worked example of everything §§2, 16 and 18 argue against, delivered
+by a rival and aimed at us. Filed because it is more persuasive than
+any argument in this document.
+
+### What they published about scvd.store
+
+An endpoint-audit product ("Before your agent pays an x402 or MPP
+endpoint, we tell you if it's real or just reselling someone else's
+API. Every endpoint gets a score, a verdict, and a plain-language
+assessment.") audited scvd.store and displayed:
+
+```
+SCORE 80          [PROPRIETARY]
+https://scvd.store/            proxying anthropic   ← in red
+P50 146ms   P95 186ms   Proxy confidence 20%
+```
+
+Footer, same screen: `ENDPOINTS AUDITED 500 · TOTAL SCANS 12,587 ·
+PROPRIETARY 500 · PROXIES DETECTED 0 · AVG SCORE 100`.
+
+### What we can state as OBSERVED
+
+- The repository contains **no outbound call to any LLM API**. Grep
+  over `src/` and `tab/` for `api.anthropic`, `anthropic.com`,
+  `ANTHROPIC_API`, `openai.com`: zero matches. The store's goods are
+  deterministic — signed records, probes, chain reads.
+- The strings "claude"/"anthropic" DO appear in served copy, because
+  **the store's name is "Sean-Claude Van Damme's General Store"** —
+  in the page title, the metadata, the site-meta header — and because
+  the storefront publishes the MCP install line
+  `claude mcp add --transport http scvd-store https://scvd.store/mcp`.
+- Their own displayed latency is **P50 146ms**.
+- Their own displayed confidence in the proxy claim is **20%**.
+- Their own footer says **PROXIES DETECTED: 0** on the same screen
+  that renders "proxying anthropic" in red about us.
+- Their own footer says **AVG SCORE 100** while displaying our 80.
+
+### What we state as INFERENCE (labeled, per the #200 pattern)
+
+The verdict is most likely a **string-match false positive** on the
+store's own name and its MCP install instruction. Falsifier: any
+evidence of an outbound LLM call from the Worker, or a statement of
+method from them showing the detection used something other than
+response-content or copy matching.
+
+Supporting reasoning, from their own numbers: **146ms is not an LLM
+round trip.** A genuine proxy of a large-model API cannot answer in
+146ms; inference is seconds. Their latency panel refutes their own
+verdict, on the same card.
+
+### Why this belongs in this document
+
+Every failure mode named in §§0–19, in one screenshot:
+
+| Their behaviour | Our doctrine |
+|---|---|
+| 20% confidence rendered as a red flat assertion | §18: an inference must be labeled as inference and carry a falsifier (PR #200 established the pattern in our own code) |
+| A **proprietary** score of 80, method undisclosed | §16 / spec v1 §11: no score, ever; no proprietary math. Composition is the consumer's job |
+| Item-level claim contradicts their own aggregate (0 proxies detected / "proxying anthropic") | §18 non-equivalences; derived figures must be derived, never hand-kept beside each other |
+| No conditions, no procedure version, no vantage | §3 manifest, §4 methodology |
+| Verdict not reconstructible — no evidence shown | §0 acid test: `conclusion = f(evidence, rules)` with the evidence exposed |
+| "AVG SCORE 100" beside a displayed 80 | the same class of defect the corpus fixed in #198 |
+
+**Note the asymmetry that matters commercially:** they audited 500
+endpoints to our ~40. Their coverage is an order of magnitude better
+and their evidence is unfalsifiable; ours is thin and checkable.
+Neither is the product on its own — which is exactly the keeper's
+ruling below.
+
+### ⚑ KEEPER RULING, 2026-08-24: "I think they both can be true"
+
+On §22's contradiction — spec v1's "host count is not the moat"
+versus the keeper's "40 is not a number we can sell." **Ruled: both.**
+Depth and coverage are not competing strategies; they are the two
+things a buyer needs simultaneously, and this competitor is the proof
+that either alone fails — 500 shallow scores persuade nobody who
+looks closely, and 40 deep records serve nobody whose endpoint is not
+among them.
+
+Consequence for the roadmaps: coverage work is **added to** the #202
+roadmap, not traded against it. §11's panel-plus-sample is the shape
+(deep panel, broad random draw, one probe budget), and the keeper
+rules where it sits relative to Phase 0.
+
+### PROPOSED — the answer to a scorer is not a better score
+
+Worth stating before someone proposes we compete on their terms: we
+do not answer a proprietary 80 with our own number. We answer it with
+**a reconstructible record** — what was tested, from where, with what
+identity, what it establishes, what it does not, and the falsifier.
+Their product is the argument for ours.
+
+Also worth considering, and cheap: run their audit against the
+population *we* know and record what they say. A second scorer's
+public verdicts are a corroboration source (§20's corroboration
+axis) and, where they diverge from ours, divergence is the finding
+(§2's oracle-free substitute for correctness).
+
+---
+
 ## 21. Parking lot — not yet placed
 
 - Reciprocal walking with other observatories (beyond signature
