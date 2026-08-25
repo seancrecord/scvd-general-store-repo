@@ -52,6 +52,16 @@ export type {
 export { signDiffEnvelope, wrapDiffEnvelope } from "@/discovery/diff-envelope";
 export type { WrapDiffInput } from "@/discovery/diff-envelope";
 export {
+  discoveryModuleFromCatalogs,
+  fetchSelfCatalogs,
+  originCatalogFetcher,
+  selfPassportDiscoveryModule,
+} from "@/discovery/self-module";
+export type {
+  CatalogFetcher,
+  PassportModule,
+} from "@/discovery/self-module";
+export {
   DISCOVERY_INVENTORY_VERSION,
   inventoryCandidates,
   inventoryOrigin,
