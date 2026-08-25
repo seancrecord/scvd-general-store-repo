@@ -57,6 +57,17 @@ export const RECEIPT_COHERENCE_FAMILY = {
 } as const;
 
 /**
+ * The join class for claimed capabilities — chains, primary
+ * transport, schemes, streaming. Catalog-only this rev: what the
+ * surfaces say, not whether the live door still does it.
+ * Landscape §11 #4.
+ */
+export const CAPABILITY_COHERENCE_FAMILY = {
+  id: "capability_coherence",
+  versions: ["rev1"],
+} as const;
+
+/**
  * The protocol families the observatory has battery coverage for.
  * MPP, AP2/ACP-class land here as new rows when their batteries are
  * built (spec §12) — the row arriving WITH the battery is the point.
@@ -85,6 +96,7 @@ export const PROTOCOL_FAMILIES: readonly ProtocolFamily[] = [
   DISCOVERY_COHERENCE_FAMILY,
   SCHEMA_COHERENCE_FAMILY,
   RECEIPT_COHERENCE_FAMILY,
+  CAPABILITY_COHERENCE_FAMILY,
 ] as const;
 
 /**

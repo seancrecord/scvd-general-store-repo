@@ -9,6 +9,7 @@ import {
   DISCOVERY_COHERENCE_FAMILY,
   KNOWN_CHAINS,
   SANDBOX_CHAIN,
+  CAPABILITY_COHERENCE_FAMILY,
   RECEIPT_COHERENCE_FAMILY,
   SCHEMA_COHERENCE_FAMILY,
   type EvidenceSubject,
@@ -150,6 +151,11 @@ export const COVERAGE_REGISTRATIONS: readonly ClassCoverageRegistration[] = [
   {
     class_id: RECEIPT_COHERENCE_FAMILY.id,
     does: "Join of a receipt against the catalog surface the buyer selected. No chain dimension.",
+    depths: {},
+  },
+  {
+    class_id: CAPABILITY_COHERENCE_FAMILY.id,
+    does: "Join of claimed capabilities across catalogs: chains, primary transport, schemes, streaming. No live probe this rev. No chain dimension.",
     depths: {},
   },
 ] as const;

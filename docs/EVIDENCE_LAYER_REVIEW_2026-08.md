@@ -1508,10 +1508,12 @@ protocol/chain as first-class subject dimensions — a host is a host.
   (wrap `80e369c`); `schema_coherence` extractors + join + CI
   (`155a01a`, #236) and self-passport citation (`efc3dbf`, #239);
   `receipt_coherence` dogfood (`35511c4`, #242) — certificates
-  carry `saw`, the hash of the catalog surface the buyer selected.
-  MCP is named not_checked on the schema citation (live RPC, not
-  a fetched catalog). Still unbuilt as batteries:
-  price_settlement_coherence (0.17's path), capability_coherence,
+  carry `saw`, the hash of the catalog surface the buyer selected;
+  `capability_coherence` catalog-only (`171f51d`, #245) — chains
+  on the two x402 documents, primary transport on A2A vs MCP card.
+  Live probe still open. MCP is named not_checked on the schema
+  citation (live RPC, not a fetched catalog). Still unbuilt as
+  batteries: price_settlement_coherence (0.17's path),
   freshness_coherence, registry_coherence, corrections,
   stated_conditions. identity_binding remains ⚑ G2. Corpus schema
   still open (G-schema).
