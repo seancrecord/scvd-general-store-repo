@@ -10,6 +10,7 @@ import {
   KNOWN_CHAINS,
   SANDBOX_CHAIN,
   CAPABILITY_COHERENCE_FAMILY,
+  FRESHNESS_COHERENCE_FAMILY,
   RECEIPT_COHERENCE_FAMILY,
   SCHEMA_COHERENCE_FAMILY,
   type EvidenceSubject,
@@ -156,6 +157,11 @@ export const COVERAGE_REGISTRATIONS: readonly ClassCoverageRegistration[] = [
   {
     class_id: CAPABILITY_COHERENCE_FAMILY.id,
     does: "Join of claimed capabilities across catalogs: chains, primary transport, schemes, streaming. No live probe this rev. No chain dimension.",
+    depths: {},
+  },
+  {
+    class_id: FRESHNESS_COHERENCE_FAMILY.id,
+    does: "Join of dated catalog facts: as_of and valid_until. No live probe this rev. No chain dimension.",
     depths: {},
   },
 ] as const;
