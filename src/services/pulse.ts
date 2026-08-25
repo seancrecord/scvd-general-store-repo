@@ -1,7 +1,11 @@
 import { readMonthLedger } from "@/lib/metrics";
 import { HOUSE_FLAG_POLICY, monthsSinceOpening } from "@/services/stats";
 import type { Env } from "@/types";
-import { readCorrections } from "@/services/reclassify";
+import {
+  monthReclassAdjustments,
+  readCorrections,
+  totalReclassified,
+} from "@/services/reclassify";
 
 /**
  * THE PULSE — the whole funnel, organic only, in public.
@@ -50,8 +54,40 @@ export interface PulseWindow {
   month?: string;
   /** 402s offered to organic traffic. The denominator. */
   organic_challenges: number;
-  /** Payments that settled from organic traffic. */
+  /**
+   * Payments that settled from organic traffic, WITH THE HOUSE
+   * RECLASSIFICATION ALREADY TAKEN OUT — the same arithmetic /stats
+   * does, from the same ledger.
+   *
+   * WHY THIS ONE IS SUBTRACTED WHEN known_machinery IS NOT. The
+   * crawler correction below is an ESTIMATE published beside the
+   * recorded figure so a reader can check our working. A
+   * reclassification is not an estimate: it is a decision the books
+   * already made and already apply, and /stats has been serving
+   * `organic − reclassified` since it was built. Publishing the raw
+   * column here made two public surfaces disagree about the word
+   * "organic" — /pulse said 33 while /stats and /rails said 14 — and
+   * the 19 between them were this store's own subagent tests. Being
+   * out of step with the ledger is not an editorial choice, it is a
+   * stale read, and the flattering direction of the error is exactly
+   * why it had to be the one we went and fixed.
+   */
   organic_settled: number;
+  /**
+   * Settles this month that were later reclassified from organic to
+   * house, already removed from organic_settled above. Published so
+   * the subtraction can be checked rather than taken on trust.
+   */
+  misbooked_house?: number;
+  /**
+   * ROLLUP ONLY. True when the per-month split of the reclassification
+   * could not be reconciled against its exact lifetime total, so the
+   * months will not sum to all_time.organic_settled. The rollup is
+   * still exact — it subtracts the frozen total, which cannot
+   * truncate — but the reader is owed the fact that the split under
+   * it is partial rather than left to discover it by adding up.
+   */
+  reclass_split_incomplete?: boolean;
   /** Free re-verifications of artifacts, organic only. */
   organic_verifies: number;
   /**
@@ -105,7 +141,7 @@ export interface Pulse {
 }
 
 const NOTE =
-  "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else.";
+  "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges and verifies those same wallets generated are still counted organic here. organic_challenges and organic_verifies are therefore ceilings, and the conversion rate computed from them is a floor.";
 
 /**
  * NEVER ROUND A REAL RATE TO ZERO.
@@ -145,6 +181,15 @@ export async function computePulse(env: Env): Promise<Pulse> {
   const windows: PulseWindow[] = [];
   // One read for the whole window, not one per month inside the loop.
   const corrections = await readCorrections(env).catch(() => null);
+  /**
+   * The reclassification, from the two records that hold it: the
+   * frozen ledger rows give the EXACT lifetime total, and a walk of
+   * the certificates gives the per-month split. The total cannot
+   * truncate; the split can, and the rollup below says so out loud
+   * when the two fail to reconcile.
+   */
+  const reclassSplit = await monthReclassAdjustments(env).catch(() => null);
+  const reclassTotal = await totalReclassified(env).catch(() => null);
 
   for (const month of months) {
     const ledger = await readMonthLedger(env, month);
@@ -156,7 +201,13 @@ export async function computePulse(env: Env): Promise<Pulse> {
      * forgotten.
      */
     const challenges = rows.reduce((sum, row) => sum + row.challenges, 0);
-    const settled = rows.reduce((sum, row) => sum + row.settled, 0);
+    const recordedSettled = rows.reduce((sum, row) => sum + row.settled, 0);
+    const misbooked = reclassSplit?.months[month]?.settles ?? 0;
+    // Never below zero: the ledger row and the monthly counter are
+    // different instruments, and a correction larger than the column
+    // it corrects means one of them lost a write — a real direction,
+    // not a licence to print a negative settlement count.
+    const settled = Math.max(0, recordedSettled - misbooked);
     const verifies = rows.reduce((sum, row) => sum + row.verifies, 0);
     /**
      * The standing correction, computed on the clock over every row of
@@ -175,6 +226,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
       organic_settled: settled,
       organic_verifies: verifies,
       conversion_rate: rate(settled, challenges),
+      ...(misbooked > 0 ? { misbooked_house: misbooked } : {}),
       ...(machinery !== undefined
         ? {
             known_machinery: machinery,
@@ -205,15 +257,38 @@ export async function computePulse(env: Env): Promise<Pulse> {
     { challenges: 0, settled: 0, verifies: 0 },
   );
 
+  /**
+   * THE ROLLUP IS SUBTRACTED FROM THE EXACT TOTAL, not from the sum of
+   * whatever the split happened to place. `total.settled` already has
+   * the placed months removed, so adding them back and taking the
+   * frozen lifetime figure off gives a number that matches /stats even
+   * when the certificate walk came up short — and being unable to
+   * split a correction is not a reason to publish an uncorrected
+   * lifetime figure in the flattering direction.
+   */
+  const appliedReclass = windows.reduce(
+    (sum, window) => sum + (window.misbooked_house ?? 0),
+    0,
+  );
+  const allTimeSettled =
+    reclassTotal === null
+      ? total.settled
+      : Math.max(0, total.settled + appliedReclass - reclassTotal);
+  const splitIncomplete =
+    reclassTotal !== null &&
+    (reclassSplit?.truncated === true || appliedReclass !== reclassTotal);
+
   const base = env.STORE_BASE_URL;
   return {
     computed_at: new Date().toISOString(),
     house_flag_policy: HOUSE_FLAG_POLICY,
     all_time: {
       organic_challenges: total.challenges,
-      organic_settled: total.settled,
+      organic_settled: allTimeSettled,
       organic_verifies: total.verifies,
-      conversion_rate: rate(total.settled, total.challenges),
+      conversion_rate: rate(allTimeSettled, total.challenges),
+      ...(reclassTotal ? { misbooked_house: reclassTotal } : {}),
+      ...(splitIncomplete ? { reclass_split_incomplete: true } : {}),
       /**
        * ALL OR NOTHING, and this is the whole lesson of the recount
        * bug in one condition. Summing the corrections that happen to

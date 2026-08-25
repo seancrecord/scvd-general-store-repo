@@ -5,6 +5,7 @@ import {
   reclassifyHousePayer,
   totalReclassified,
 } from "@/services/reclassify";
+import { computePulse } from "@/services/pulse";
 import { computeStats } from "@/services/stats";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
@@ -161,6 +162,77 @@ describe("the reclassification ledger", () => {
     for (const cert of certs) {
       await testEnv.PATRONS.delete(KV_KEYS.cert(cert.id));
     }
+    await testEnv.COUNTERS.delete(`house_reclass:${walker}`);
+  });
+
+  it("the public pulse subtracts the same correction /stats does", async () => {
+    /**
+     * THE TWO SURFACES DISAGREED IN PUBLIC (found 2026-08-25).
+     * /stats served `organic − reclassified` = 14 and /rails drew the
+     * same 14, while /pulse.json summed the raw monthly ledger and
+     * published 33 — the 19 between them being this store's own
+     * subagent tests, still booked organic in the per-item rows the
+     * pulse reads. The published conversion rate was therefore 2.4x
+     * flattering, sourced from our own traffic, on the one endpoint
+     * whose entire argument is that the shape is whole.
+     *
+     * This holds the invariant rather than the number: whatever the
+     * ledger says, the funnel and the books must agree about the word
+     * "organic". Non-vacuous by construction — it asserts there IS a
+     * correction before asserting the two agree about it, so a broken
+     * ledger cannot make this pass by making both sides zero.
+     */
+    const walker = "0x007cA504E06C98d8580A061F1099da8BE02f8765".toLowerCase();
+    const month = new Date().toISOString().slice(0, 7);
+    await testEnv.PATRONS.put(
+      KV_KEYS.cert("cert_pulse_agreement"),
+      JSON.stringify({
+        certificate: {
+          cert_id: "cert_pulse_agreement",
+          item: "hello",
+          patron_number: 1,
+          date: `${month}-02`,
+          paid_usdc: 0.5,
+          payer: walker,
+        },
+        signature: "aa",
+        public_key: "bb",
+      }),
+    );
+    await testEnv.COUNTERS.put(`metric:${month}:paid:small_blessing`, "6");
+    await testEnv.COUNTERS.put(
+      `house_reclass:${walker}`,
+      JSON.stringify({
+        address: walker,
+        settles: 1,
+        at: `${month}-02T00:00:00.000Z`,
+        reason: "test",
+      }),
+    );
+
+    const stats = await computeStats(testEnv);
+    const funnel = await computePulse(testEnv);
+
+    // There is something to correct — otherwise the agreement below
+    // is satisfied by two zeros and holds nothing.
+    expect(stats.reclassified_house).toBeGreaterThan(0);
+    // The invariant the disagreement broke.
+    expect(funnel.all_time.organic_settled).toBe(stats.organic_settlements);
+    expect(funnel.all_time.misbooked_house).toBe(stats.reclassified_house);
+
+    // An adjustment, not an erasure: the raw column still holds the
+    // uncorrected count, and published + corrected reconstructs it.
+    const window = funnel.months.find((row) => row.month === month);
+    expect(window).toBeDefined();
+    expect(window!.misbooked_house).toBeGreaterThan(0);
+    expect(
+      window!.organic_settled + (window!.misbooked_house ?? 0),
+    ).toBe(6);
+    expect(
+      await testEnv.COUNTERS.get(`metric:${month}:paid:small_blessing`),
+    ).toBe("6");
+
+    await testEnv.PATRONS.delete(KV_KEYS.cert("cert_pulse_agreement"));
     await testEnv.COUNTERS.delete(`house_reclass:${walker}`);
   });
 
