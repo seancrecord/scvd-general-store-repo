@@ -122,7 +122,8 @@ Done is recorded on M2; this table is the order.
 | 1.j5 | Productize: free inventory, paid signed report, paid refresh, watch + drift alerts | Open. Do not invent a price. |
 | 1.j6 | `receipt_coherence` dogfood: `saw` on our certificates | ✅ 2026-08-25 `35511c4` #242 |
 | 1.j7 | `capability_coherence` catalog-only: chains + primary transport | ✅ 2026-08-25 `171f51d` #245 |
-| 1.j8 | Next batteries: freshness / registry. price_settlement is 0.17's path. identity_binding ⚑ G2 | Open |
+| 1.j8 | `freshness_coherence` catalog-only: as_of + valid_until | ✅ 2026-08-25 `e9db33b` |
+| 1.j9 | Next batteries: registry. price_settlement is 0.17's path. identity_binding ⚑ G2 | Open |
 
 Expand/consider: while in 1.1, decide envelope storage layout in KV
 (per-artifact vs bundled) with M4's write limits in mind; 1.2 is the

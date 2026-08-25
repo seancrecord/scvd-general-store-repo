@@ -1518,12 +1518,14 @@ protocol/chain as first-class subject dimensions — a host is a host.
   carry `saw`, the hash of the catalog surface the buyer selected;
   `capability_coherence` catalog-only (`171f51d`, #245) — chains
   on the two x402 documents, primary transport on A2A vs MCP card.
-  Live probe still open. MCP is named not_checked on the schema
-  citation (live RPC, not a fetched catalog). Still unbuilt as
-  batteries: price_settlement_coherence (0.17's path),
-  freshness_coherence, registry_coherence, corrections,
-  stated_conditions. identity_binding remains ⚑ G2. Corpus schema
-  still open (G-schema).
+  Live probe still open. `freshness_coherence` catalog-only
+  (`e9db33b`) — as_of / valid_until on catalogs that dated
+  themselves. Cache headers, last_seen, badge renewal, live probe
+  still open. MCP is named not_checked on the schema citation
+  (live RPC, not a fetched catalog). Still unbuilt as batteries:
+  price_settlement_coherence (0.17's path), registry_coherence,
+  corrections, stated_conditions. identity_binding remains ⚑ G2.
+  Corpus schema still open (G-schema).
 - **M3 [ ] — the trajectory surface.** "Show the spike as it
   happens" is a derived time-series over the corpus chain (hosts,
   offers seen, settlements observed, failure classes — per week,
