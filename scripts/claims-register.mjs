@@ -23,12 +23,17 @@
  *             and unavailable more often than you would hope —
  *             a meta description has a length budget a paragraph
  *             constant cannot meet.
- *   dated     True on a stated day. NOT the consolation prize: this
- *             store's entire method is the dated observation that
- *             expires and is re-taken, and copy was the one place it
- *             never applied that to itself. Stale copy is the cost
- *             of shipping fast, not a character failure — a date
- *             lets a reader weigh age instead of trusting forever.
+ *   dated     True on a stated day. Field name: asOf (ISO date),
+ *             not as_of — claims.mjs does not read a date off the
+ *             entry (the line itself, or this file, is the record),
+ *             but a wrong name means the resolution does not carry
+ *             the date a reader was promised. NOT the consolation
+ *             prize: this store's entire method is the dated
+ *             observation that expires and is re-taken, and copy
+ *             was the one place it never applied that to itself.
+ *             Stale copy is the cost of shipping fast, not a
+ *             character failure — a date lets a reader weigh age
+ *             instead of trusting forever.
  *   declined  A check we will never pass, refused in writing, with
  *             the reason attached. The Organization `address` is the
  *             case in point: a scanner flagged it missing, and the

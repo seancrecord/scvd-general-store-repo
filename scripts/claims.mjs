@@ -83,17 +83,30 @@ const INTERPOLATED = /\$\{[^}]+\}/;
 const DATED = /\b20\d{2}-\d{2}-\d{2}\b/;
 
 /**
- * Seasonal fiction and archived reports are not the store speaking
- * about itself. zodiac-season-one is a written almanac; a report
- * dated in its own filename is a snapshot that is SUPPOSED to be
- * frozen — re-deriving it later would rewrite history, which the
- * house forbids more strongly than it forbids a stale number.
+ * Seasonal fiction, archived reports, and compiled research logs
+ * are not the store speaking about itself today.
+ *
+ * zodiac-season-one is a written almanac; a report dated in its
+ * own filename is a snapshot that is SUPPOSED to be frozen —
+ * re-deriving it later would rewrite history, which the house
+ * forbids more strongly than it forbids a stale number.
+ *
+ * agent-ux-text.ts is the same class (2026-08-25): AGENT_UX.md
+ * compiled for /aura. The dollar figures in it are dated
+ * observations of what the books said on a walk day — including
+ * figures that were WRONG then and got reclassified. Binding
+ * them in the register would mean registering every historical
+ * entry forever as more of the log gets served. The register
+ * cannot meaningfully bind a compiled document. Skip the
+ * generated file; the source of truth stays AGENT_UX.md, which
+ * this scanner never reads (it only walks TypeScript under src/).
  */
 function isNarrative(path) {
   return (
     path.includes("zodiac-season-one") ||
     path.includes("/reports/") ||
-    path.includes("gazette-founding")
+    path.includes("gazette-founding") ||
+    path.endsWith("agent-ux-text.ts")
   );
 }
 
