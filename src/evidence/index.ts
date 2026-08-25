@@ -58,3 +58,4 @@ export type {
 export { canonicalEvidenceBytes, roundTrips } from "@/evidence/canonical";
 export { validateEnvelopePayload } from "@/evidence/validate";
 export type { EnvelopeValidation } from "@/evidence/validate";
+export { envelopeMethodology } from "@/evidence/methodology";

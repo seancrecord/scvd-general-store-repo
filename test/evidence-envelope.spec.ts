@@ -119,6 +119,12 @@ describe("the validator rejects each malformed fixture", () => {
     expectDefect(payload, "envelope.methodology.schema-missing");
   });
 
+  it("missing battery version", () => {
+    const payload = validPayload();
+    payload.methodology = { schema: EVIDENCE_SCHEMA_V1 };
+    expectDefect(payload, "envelope.methodology.battery-missing");
+  });
+
   it("unregistered protocol family", () => {
     const payload = validPayload();
     payload.subject.protocol = "mpp";
