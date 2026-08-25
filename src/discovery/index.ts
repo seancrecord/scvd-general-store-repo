@@ -51,3 +51,13 @@ export type {
 } from "@/discovery/diff-observation";
 export { signDiffEnvelope, wrapDiffEnvelope } from "@/discovery/diff-envelope";
 export type { WrapDiffInput } from "@/discovery/diff-envelope";
+export {
+  discoveryModuleFromCatalogs,
+  fetchSelfCatalogs,
+  originCatalogFetcher,
+  selfPassportDiscoveryModule,
+} from "@/discovery/self-module";
+export type {
+  CatalogFetcher,
+  PassportModule,
+} from "@/discovery/self-module";
