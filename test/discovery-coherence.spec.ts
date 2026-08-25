@@ -19,9 +19,10 @@ const RETIRED = RETIRED_ITEMS.map((item) => item.id);
  *
  * The joins thesis: machine surfaces can each be valid and still
  * disagree. We sell that observation pointed at other people. This
- * spec is the release blocker that says we do not grade anyone
- * before our own surfaces agree — menu.json, x402.json, OpenAPI,
- * the A2A card, llms.txt, skill.md, and the MCP cluster list.
+ * spec is the inventory join (ids, prices, buy URLs). The named
+ * CI release blocker is test/self-row-blocker.spec.ts. Surfaces
+ * this join watches: menu.json, x402.json, OpenAPI, the A2A card,
+ * llms.txt, skill.md, and the MCP cluster list.
  *
  * Existing specs already guard one surface, or one direction
  * (present / not stale). This one is the JOIN: same live id set,

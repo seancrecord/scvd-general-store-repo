@@ -61,3 +61,5 @@ export type {
   CatalogFetcher,
   PassportModule,
 } from "@/discovery/self-module";
+export { selfRowFromCatalogs, selfRowVerdict } from "@/discovery/self-row";
+export type { SelfRowVerdict } from "@/discovery/self-row";
