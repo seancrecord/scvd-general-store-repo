@@ -149,8 +149,14 @@ describe("the passport door", () => {
     };
     expect(json.the_example.payload.host).toBe("scvd.store");
     expect(json.the_example.payload.observer).toContain("SELF-OBSERVED");
-    expect(json.the_example.payload.modules[0]?.id).toBe("discovery_coherence");
-    expect(json.the_example.payload.modules[0]?.derived).toBe("agree");
+    const ids = json.the_example.payload.modules.map((module) => module.id);
+    expect(ids).toContain("discovery_coherence");
+    expect(ids).toContain("schema_coherence");
+    expect(
+      json.the_example.payload.modules.every(
+        (module) => module.derived === "agree",
+      ),
+    ).toBe(true);
 
     const html = await (
       await SELF.fetch(`${BASE}/passport`, { headers: { Accept: "text/html" } })

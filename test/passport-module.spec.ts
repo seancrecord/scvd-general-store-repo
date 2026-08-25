@@ -47,9 +47,10 @@ describe("the self-passport cites the join", () => {
         };
       };
     };
-    const module = json.the_example.payload.modules[0];
-    expect(json.the_example.payload.modules).toHaveLength(1);
-    expect(module?.id).toBe(DISCOVERY_COHERENCE_CLASS);
+    const module = json.the_example.payload.modules.find(
+      (entry) => entry.id === DISCOVERY_COHERENCE_CLASS,
+    );
+    expect(module).toBeDefined();
     expect(module?.schema).toBe(EVIDENCE_SCHEMA_V1);
     expect(module?.derived).toBe("agree");
     expect(module?.evidence_hash).toMatch(/^[0-9a-f]{64}$/);

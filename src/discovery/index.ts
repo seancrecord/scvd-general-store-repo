@@ -56,6 +56,7 @@ export {
   fetchSelfCatalogs,
   originCatalogFetcher,
   selfPassportDiscoveryModule,
+  selfPassportModules,
 } from "@/discovery/self-module";
 export type {
   CatalogFetcher,
@@ -103,6 +104,7 @@ export {
   schemaNotObserved,
   schemaRowVerdict,
 } from "@/discovery/schema-coherence";
+export { schemaModuleFromCatalogs } from "@/discovery/schema-module";
 export type {
   SchemaDisagreement,
   SchemaJoinVerdict,
