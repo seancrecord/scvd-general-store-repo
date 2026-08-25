@@ -389,6 +389,47 @@ LORE & TRADITION
     honest value is not_observed. Speed is earned in the code and
     claimed only from a measurement.
 
+51. NO INSTRUMENT HAS AUTHORITY OVER ANOTHER'S REGISTER.
+    (2026-08-25, the keeper's acceptance of Cairn's three-part
+    arrangement, and his own ask that the last clause be in
+    writing rather than assumed. Full record: docs/CAIRN_ARRANGEMENT.md.)
+
+    When this store shares a vocabulary with another instrument,
+    the registers stay SEPARATE and each side keeps its own.
+    Neither ratifies the other's entries. A definition we did not
+    write is registered under its author's name, dated, or it is
+    not registered at all — the registrar does not become the
+    author.
+
+    DISAGREEMENTS PUBLISH ON BOTH SIDES. When two readings
+    diverge, the divergence is published here as well as there.
+    It is not negotiated down to a joint statement first, and it
+    is never published as settled while it is not.
+
+    PRIVATE-FIRST, SYMMETRICALLY. A finding that touches the
+    other instrument goes to them before it goes out — and the
+    same binds them. Not courtesy: an early-warning channel is
+    only worth having while it runs both ways, and a norm that
+    runs one way is a favour somebody eventually stops doing.
+
+    LOOKS ARE TRIGGERED, NOT SCHEDULED. We do not put another
+    instrument's origin on a timer. A scheduled walk manufactures
+    a coverage claim; a triggered one carries its own reason, and
+    the reason publishes beside the finding.
+
+    A REFERRAL CARRIES ITS DISCLOSURE OR IT IS NOT SENT. Where we
+    name another instrument as the one who does a check we do not,
+    no money moves in either direction and the disclosure of the
+    arrangement travels in the same breath as the referral. A
+    referral that arrives without it is a breach of the
+    arrangement, not a formatting slip.
+
+    WHAT THIS RULE FORBIDS, PLAINLY: joint certification, implied
+    endorsement, the other party's findings in our marketing, and
+    any amendment that makes two instruments agree more easily.
+    The relationship stays valuable only while both remain
+    independent enough to embarrass each other.
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the

@@ -31,6 +31,25 @@ export const trustListRoutes = new Hono<HonoEnv>();
 export const TRUST_LIST_PATH = "/trust-list.json";
 export const TRUST_LIST_VERSION = 1;
 
+/**
+ * The two counts, exported so prose cannot drift from the payload.
+ *
+ * llms.txt said "Version 0 lists only this store" for five days after
+ * v1 shipped with four origins on it — and /becoming had already
+ * recorded that exact sentence being fixed in one place and left
+ * standing in the other. A number typed into prose is a number that
+ * only some of its copies get updated.
+ */
+export function trustListCounts(): { transacted: number; used: number } {
+  return {
+    transacted: TRUST_LIST_ENTRIES.filter(
+      (entry) => entry.relation === "transacted",
+    ).length,
+    used: TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "used")
+      .length,
+  };
+}
+
 trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
   const base = c.env.STORE_BASE_URL;
   // The signed payload: everything a reader would act on. Signature
@@ -50,13 +69,7 @@ trustListRoutes.get(TRUST_LIST_PATH, async (c) => {
     how_to_be_considered: TRUST_LIST_SUBMISSION_NOTE,
     // Counted, not just listed, so a reader can weigh the list without
     // walking it: the strong claim and the weak one, apart.
-    counts: {
-      transacted: TRUST_LIST_ENTRIES.filter(
-        (entry) => entry.relation === "transacted",
-      ).length,
-      used: TRUST_LIST_ENTRIES.filter((entry) => entry.relation === "used")
-        .length,
-    },
+    counts: trustListCounts(),
     // Age is computed at serve time and stated per entry, so a check
     // from the spring cannot sit beside one from yesterday looking
     // identical. The dates were always here; the arithmetic wasn't.

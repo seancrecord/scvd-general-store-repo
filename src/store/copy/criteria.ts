@@ -20,7 +20,7 @@
 export const CRITERIA_DATED = "2026-08-10";
 
 export const CRITERIA_STANDFIRST =
-  "What 'verified' means at this store, stated before anything carries a badge: what gets checked, against which published criteria, what a verdict says, what it never says, and what happens when the thing changes. House rule 43 forbids any badge from shipping before this page exists. It exists now — and this page existing is not a badge, an endorsement, or a product. Nothing carries a badge today.";
+  "What 'verified' means at this store: what gets checked, against which published criteria, what a verdict says, what it never says, and what happens when the thing changes. House rule 43 forbids any badge from shipping before this page exists — it existed first, and every mark this store serves ships against these terms. This page existing is not itself a badge, an endorsement, or a product.";
 
 export const BADGE_IS =
   "A badge here would be a dated observation on a THING — a skill, a service, an endpoint — never a score on an actor. It says exactly this: as of a stated date, this artifact passed these named checks against this published criteria version. It is observation-shaped, never warranty-shaped. 'Ready' means the checks passed at that moment; it does not mean good, safe, reliable, or endorsed, and the copy on any badge this store ever ships is bound to that register by the same rule that wrote this page.";
@@ -67,4 +67,4 @@ export const VERDICT_VOCABULARY = [
 ] as const;
 
 export const CRITERIA_HONEST_LIMIT =
-  "This page is the contract for badges that do not exist yet. When the first badge class ships, it ships against these terms: the criteria version named on the artifact, the failing checks named on a miss, the date on everything, the gaps counted against us, and no score on any actor. If a badge this store issued ever violates a line on this page, the mailbox is free and the violation goes on /corrections with your name on it.";
+  "This page is the contract every badge on it ships against: the criteria version named on the artifact, the failing checks named on a miss, the date on everything, the gaps counted against us, and no score on any actor. If a badge this store issued ever violates a line on this page, the mailbox is free and the violation goes on /corrections with your name on it.";

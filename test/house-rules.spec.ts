@@ -1,4 +1,5 @@
 import houseRulesText from "../HOUSE_RULES.md?raw";
+import cairnArrangement from "../docs/CAIRN_ARRANGEMENT.md?raw";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -68,11 +69,11 @@ describe("the house rules stay citable", () => {
       expect(numbers[index]!).toBeGreaterThan(numbers[index - 1]!);
     }
 
-    // The highest number is the newest rule, and rule 50 is the newest.
+    // The highest number is the newest rule, and rule 51 is the newest.
     // (47-49 never existed: rule 50 skipped ahead on the keeper's
     // instruction. A gap is history; the loop above still bans a
     // duplicate or a decrease, which are the ambiguities that matter.)
-    expect(Math.max(...numbers)).toBe(50);
+    expect(Math.max(...numbers)).toBe(51);
   });
 
   it("dates every rule added or amended since the practice began", () => {
@@ -89,6 +90,36 @@ describe("the house rules stay citable", () => {
       const head = rule.slice(0, 400);
       expect(head).toMatch(/\d{4}-\d{2}-\d{2}/);
     }
+  });
+
+  it("keeps rule 51 pointed at a record that still exists", () => {
+    /*
+     * Rule 51 is the only rule that cites a companion document, and
+     * it does so because the keeper asked for the clause in writing
+     * rather than assumed. A rule that names a file which is no
+     * longer served is worse than a rule that names nothing: it
+     * reads as though the record exists.
+     *
+     * The import is the check — a deleted or renamed document fails
+     * this suite at build time, not at read time. The assertions
+     * below hold the two properties that make the record the thing
+     * rule 51 says it is: the arrangement's own protection clause,
+     * and the keeper's acceptance date.
+     */
+    const text = houseRules();
+    const rule51 = text.split(/^51\.\s/m)[1] ?? "";
+    expect(rule51).toBeTruthy();
+    expect(rule51).toContain("docs/CAIRN_ARRANGEMENT.md");
+    expect(cairnArrangement).toContain("2026-08-25");
+    /*
+     * The keeper's own clause, quoted. Rule 46 forbids memorising a
+     * DERIVED value — but this is a quotation, and a quotation that
+     * drifts is no longer a quotation. He asked for this sentence
+     * in writing rather than assumed, so the guard holds the words.
+     */
+    expect(cairnArrangement).toContain(
+      "no authority over each\n> other's registers, disagreements publish on both sides",
+    );
   });
 
   it("carries rule 46, which is the one this file exists to obey", () => {

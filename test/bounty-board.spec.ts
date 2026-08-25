@@ -437,3 +437,86 @@ describe("the third rail on the board", () => {
     ).rejects.toThrow(/no USDC transfer/);
   });
 });
+
+/**
+ * ONE SETTLEMENT, ONE PAYOUT — found 2026-08-25 by a review pass, and
+ * measured before it was fixed.
+ *
+ * "One payout per transaction, EVER" was a `get` at the top of
+ * claimBounty and a `put` a hundred lines below it, with a chain read
+ * and an EIP-3009 signature in between. Four concurrent POSTs of the
+ * same claim body all saw an empty key and all came back with a signed
+ * authorization — four DISTINCT nonces, so the USDC contract accepts
+ * every one of them. Measured: four payouts for one $0.10 bounty, on
+ * an unauthenticated route.
+ *
+ * The weekly budget was the same shape and so bounded nothing: `spent`
+ * was read at the top and written at the bottom, so four payouts moved
+ * the counter by ONE reward — and /bounties publishes that counter, so
+ * the public figure understated what the wallet had signed away.
+ *
+ * Revert either half and this goes red.
+ */
+describe("a settlement can only be claimed once", () => {
+  it("signs one payout for concurrent claims of the same transaction", async () => {
+    const bounty = await openTestBounty();
+    vi.stubGlobal("fetch", world());
+    const options = await claimOptions();
+    const attempts = await Promise.allSettled(
+      [0, 1, 2, 3].map(() =>
+        claimBounty(
+          testEnv,
+          {
+            bountyId: bounty.bounty_id,
+            txHash: TX,
+            payer: SHOPPER,
+            payoutTo: PAYOUT_TO,
+          },
+          options,
+        ),
+      ),
+    );
+
+    const paid = attempts.filter((a) => a.status === "fulfilled");
+    expect(
+      paid.length,
+      "more than one claim produced a signed authorization",
+    ).toBe(1);
+    for (const attempt of attempts) {
+      if (attempt.status === "fulfilled") continue;
+      expect(String(attempt.reason)).toMatch(/already been claimed/);
+    }
+
+    // And the week's books moved by exactly one reward, which is the
+    // half that made the cap meaningless.
+    const spent = await testEnv.COUNTERS.get(
+      KV_KEYS.bountyBudget(currentWeekKey(new Date())),
+    );
+    expect(Number(spent)).toBe(0.1);
+  });
+
+  it("gives the claim back when the chain refuses, so a real walk is not burned", async () => {
+    // A transaction that never paid out has to stay claimable: one bad
+    // chain read must not consume a walker's real purchase forever.
+    const bounty = await openTestBounty();
+    const blind = world({ noReceipt: true });
+    vi.stubGlobal("fetch", blind);
+    await expect(
+      claimBounty(
+        testEnv,
+        {
+          bountyId: bounty.bounty_id,
+          txHash: `0x${"ab".repeat(32)}`,
+          payer: SHOPPER,
+          payoutTo: PAYOUT_TO,
+        },
+        { signer: await fieldSignerFromKey(TEST_FIELD_KEY), fetch: blind },
+      ),
+    ).rejects.toThrow(BountyRefused);
+
+    const held = await testEnv.COUNTERS.get(
+      KV_KEYS.bountyTx(`0x${"ab".repeat(32)}`),
+    );
+    expect(held, "a refused claim kept the transaction locked").toBeNull();
+  });
+});

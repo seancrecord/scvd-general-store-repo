@@ -175,7 +175,7 @@ export const STOREFRONT_COPY = {
     "The shelves below \u2014 settlement attestation, endpoint monitoring, agent memory, and yes, the blessings and the luckies \u2014 all run on the same rails: USDC on Base, Polygon, or Solana over x402, every purchase ending in a signed receipt anyone can verify, free, forever.",
   shelvesHead: "WHAT'S ON THE SHELVES",
   shelvesMore:
-    "\u2026and more on the menu, from half-cent fortunes on up. Send the keeper a note if something catches; he'll work with you.",
+    `\u2026and more on the menu, from ${CHEAPEST_ON_THE_SHELF} on up. Send the keeper a note if something catches; he'll work with you.`,
   /**
    * THE REGULARS STRIP (keeper-ruled 2026-08-20: the money-out rooms
    * follow the held-back path EXCEPT they get "a note for both

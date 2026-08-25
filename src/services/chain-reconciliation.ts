@@ -419,7 +419,21 @@ export async function knownSettlementHashes(
 export async function certIdForSettlement(
   env: Env,
   transaction: string,
-): Promise<string | null> {
+): Promise<CertLookup> {
+  const wanted = transaction.toLowerCase();
+
+  // The keyed row, written at mint since 2026-08-25. One lookup, and
+  // it cannot go blind.
+  const indexed = await env.PATRONS.get(KV_KEYS.settlementCert(wanted));
+  if (indexed) return { certId: indexed, certain: true };
+
+  /*
+   * The scan is the FALLBACK, for certificates minted before the
+   * reverse index existed — and it now reports whether it saw the
+   * whole set. Discarding `truncated` was the defect: past the cap it
+   * answered "no certificate" for a settlement that had one, and the
+   * caller answers a false null by minting a second one.
+   */
   const listed = await listKeys(env.PATRONS, {
     prefix: KV_KEYS.certPrefix,
     cap: CERT_SCAN_CAP,
@@ -428,15 +442,28 @@ export async function certIdForSettlement(
     env.PATRONS,
     listed.names,
   );
-  const wanted = transaction.toLowerCase();
   for (const record of values.values()) {
     if (!record) continue;
     const tx = record.certificate?.settlement_tx;
     if (typeof tx === "string" && tx.toLowerCase() === wanted) {
-      return record.certificate.cert_id;
+      return { certId: record.certificate.cert_id, certain: true };
     }
   }
-  return null;
+  // Nothing found. Whether that means "no certificate" or "I could not
+  // see far enough" is the whole difference, so say which.
+  return { certId: null, certain: !listed.truncated };
+}
+
+/**
+ * What a settlement lookup can honestly say.
+ *
+ * `certain: false` means the answer is "I could not see everything",
+ * which is NOT the same as "there is no certificate" — and a caller
+ * that treats them alike mints twice against one payment.
+ */
+export interface CertLookup {
+  certId: string | null;
+  certain: boolean;
 }
 
 /**
@@ -690,7 +717,7 @@ export async function reconcileAgainstChain(
     await recordSkippedRange(env, skipped);
     await sendAlert(env, {
       condition: "worker_health",
-      detail: `THE BANK WALK SKIPPED BLOCKS: the ${chain.label} reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round((skipped.blocks * 2) / 3600 * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor works its way back to the head over the next few runs; a SECOND one of these means the cron stalled past the clamp again, and the stall pages that should have preceded THIS one say when and why.`,
+      detail: `THE BANK WALK SKIPPED BLOCKS: the ${chain.label} reconciliation cursor had fallen more than ${RECONCILE_MAX_SPAN} blocks behind the head, so blocks ${skipped.from_block}\u2013${skipped.to_block} (${skipped.blocks} blocks, roughly ${Math.round(((skipped.blocks * 2) / 3600) * 10) / 10}h of chain) were NEVER read for incoming transfers and never will be by this walk — it only goes forward. Any payment that arrived in that window with no certificate is invisible to every instrument the store has. The range is on the books check and in KV (${KV_KEYS.reconcileSkippedRanges}); back-fill it by hand with a bounded eth_getLogs over the range if the window matters. This run keeps walking after recording the hole — up to ${RECONCILE_CATCHUP_PASSES * RECONCILE_BLOCK_SPAN} blocks per hourly run — so the cursor works its way back to the head over the next few runs; a SECOND one of these means the cron stalled past the clamp again, and the stall pages that should have preceded THIS one say when and why.`,
       key: `${skipped.from_block}-${skipped.to_block}`,
     }).catch(() => {
       // The alert is the courtesy; the KV record above is the fact.
@@ -1017,7 +1044,10 @@ export async function reconcileSolanaAgainstChain(
   const { solanaPayTo } = await import("@/lib/payments");
   const owner = solanaPayTo(env);
   if (!owner) {
-    return { ran: false, reason: "no SOLANA_PAY_TO configured — the rail is closed" };
+    return {
+      ran: false,
+      reason: "no SOLANA_PAY_TO configured — the rail is closed",
+    };
   }
   const { usdcTokenAccountsOf, signaturesForAddress, usdcIncomingIn } =
     await import("@/lib/solana-rpc");
@@ -1027,7 +1057,10 @@ export async function reconcileSolanaAgainstChain(
   try {
     accounts = await usdcTokenAccountsOf(env, owner);
   } catch (error) {
-    return { ran: false, reason: `could not read token accounts: ${String(error)}` };
+    return {
+      ran: false,
+      reason: `could not read token accounts: ${String(error)}`,
+    };
   }
   if (accounts.length === 0) {
     // No USDC has ever arrived; there is genuinely nothing to walk.
@@ -1061,7 +1094,10 @@ export async function reconcileSolanaAgainstChain(
       try {
         incoming = await usdcIncomingIn(env, info.signature, owner);
       } catch (error) {
-        return { ran: false, reason: `transaction read failed: ${String(error)}` };
+        return {
+          ran: false,
+          reason: `transaction read failed: ${String(error)}`,
+        };
       }
       if (!incoming) continue;
       seen += 1;

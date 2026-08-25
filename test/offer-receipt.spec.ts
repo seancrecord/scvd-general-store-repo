@@ -2,7 +2,11 @@ import { env, SELF } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { installFacilitatorMock, TEST_PAYER } from "./helpers/facilitator-mock";
 import { buildPaymentSignature, decodePaymentRequired } from "./helpers/payment";
-import { verifyOwnJws, withReceiptHeader } from "@/lib/offer-receipt";
+import {
+  signedOffersForChallenge,
+  verifyOwnJws,
+  withReceiptHeader,
+} from "@/lib/offer-receipt";
 import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -57,6 +61,73 @@ describe("a 402 carries signed offers, per the spec's wire format", () => {
     for (const offer of offers) {
       expect(offer.payload.amount).toBe(accepts[offer.acceptIndex]?.amount);
     }
+  });
+
+  it("keeps acceptIndex pointing at the right tier when one is skipped", async () => {
+    /*
+     * THE HAZARD THE PARALLEL SIGNING CREATED, held down before it
+     * could happen.
+     *
+     * The signing loop was serial and pushed as it went, so a skipped
+     * entry simply produced no offer. Signing them in one wave means
+     * mapping — and a map that drops entries AFTERWARDS renumbers
+     * everything past the first skip. An offer whose acceptIndex
+     * points at a different tier is a signed commitment to an amount
+     * the buyer was never quoted, which is worse than no offer.
+     *
+     * So this drives signedOffersForChallenge directly with an
+     * unsignable entry in the MIDDLE, where a renumbering bug would
+     * show, and checks each offer against the tier it names.
+     */
+    const accepts = [
+      {
+        scheme: "exact",
+        network: "eip155:8453",
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        payTo: "0x1111111111111111111111111111111111111111",
+        amount: "10000",
+      },
+      // Missing payTo: unsignable, and deliberately not last.
+      {
+        scheme: "exact",
+        network: "eip155:8453",
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        amount: "20000",
+      },
+      {
+        scheme: "exact",
+        network: "eip155:8453",
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        payTo: "0x1111111111111111111111111111111111111111",
+        amount: "30000",
+      },
+    ];
+    const signed = await signedOffersForChallenge(
+      env as unknown as Env,
+      `${BASE}/api/buy/hello`,
+      accepts,
+      Math.floor(Date.now() / 1000),
+    );
+    const offers = (
+      signed as unknown as {
+        "offer-receipt": {
+          info: {
+            offers: { acceptIndex: number; payload: { amount: string } }[];
+          };
+        };
+      }
+    )["offer-receipt"].info.offers;
+
+    // The hole is skipped, not filled...
+    expect(offers.length).toBe(2);
+    // ...and every surviving offer still names its OWN tier.
+    for (const offer of offers) {
+      expect(
+        offer.payload.amount,
+        `acceptIndex ${offer.acceptIndex} points at the wrong tier`,
+      ).toBe(accepts[offer.acceptIndex]?.amount);
+    }
+    expect(offers.map((offer) => offer.acceptIndex)).toEqual([0, 2]);
   });
 
   it("carries the spec's exact §4.2 payload, version 1 included", async () => {

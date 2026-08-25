@@ -399,6 +399,20 @@ export const KV_KEYS = {
    * in the key; TTL-bounded because the walk only ever needs a row
    * while its block can still come up in a pass.
    */
+  /**
+   * WHICH CERTIFICATE A SETTLEMENT MINTED — a keyed row, written at
+   * mint, because the alternative was a scan that goes blind.
+   *
+   * certIdForSettlement used to walk every cert: row up to a 2000 cap
+   * and DISCARD `truncated`, so past 2000 certificates it answered
+   * "no certificate" for a settlement that had one. Its caller is the
+   * paid-retry lane, whose whole job is to not mint twice against one
+   * payment — so a false null there is a second signed certificate,
+   * a second patron number, and a second credit accrual on the same
+   * money. Certificates are written with no TTL, so that set only
+   * grows.
+   */
+  settlementCert: (txLower: string): string => `settle_cert:${txLower}`,
   settledDelivery: (txLower: string): string => `settled_delivery:${txLower}`,
   settledDeliveryPrefix: "settled_delivery:",
   /**

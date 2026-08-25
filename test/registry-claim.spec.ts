@@ -1,4 +1,6 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
+import { KV_KEYS } from "@/lib/kv-keys";
+import type { Env } from "@/types";
 import { describe, expect, it } from "vitest";
 import { latestReading } from "@/routes/registry";
 import type { RegistryWeekEntry } from "@/services/registry-pulse";
@@ -83,7 +85,33 @@ describe("the registry claims only what the census measured", () => {
   });
 
   it("keeps the overclaim off the rendered page too", async () => {
-    const body = await (await SELF.fetch(`${BASE}/registry`)).text();
+    /*
+     * SEED A WEEK FIRST — found 2026-08-25.
+     *
+     * This test was the LAST vacuous one in a file whose own header
+     * documents the vacuous-guard lesson. The fixture above was added
+     * for the three unit tests and this fourth one was left fetching
+     * the live page, which renders no week block at all in test: the
+     * whole `latest ?` branch never ran, so the overclaim could have
+     * been reintroduced anywhere inside it and this would still pass.
+     *
+     * Proven: putting "a third party can cryptographically verify"
+     * into the table legend left this green.
+     */
+    await (env as unknown as Env).COUNTERS.put(
+      KV_KEYS.registryPulse,
+      JSON.stringify({ version: 1, weeks: [WITH_OFFERS] }),
+    );
+    // AND ASK FOR THE PAGE. Without this header /registry answers JSON,
+    // so the original guard was checking a payload that has no prose in
+    // it at all for a sentence that only exists in the prose.
+    const body = await (
+      await SELF.fetch(`${BASE}/registry`, { headers: { Accept: "text/html" } })
+    ).text();
+    // Prove the branch rendered before trusting what is absent from it.
+    expect(body, "no week rendered, so the guard read nothing").toContain(
+      "The running tally",
+    );
     expect(body).not.toContain("cryptographically verify");
   });
 });

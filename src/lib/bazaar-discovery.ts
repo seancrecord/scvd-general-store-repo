@@ -1,6 +1,7 @@
 import { declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import type { DiscoveryExtension } from "@x402/extensions/bazaar";
 import type { MenuItem } from "@/types";
+import { MENU_ITEMS } from "@/store";
 
 /**
  * Bazaar discovery declarations (x402 v2 extensions.bazaar) for every
@@ -27,6 +28,20 @@ export type QuerySchema = Record<string, unknown> & {
   properties: Record<string, unknown>;
   required?: string[];
 };
+
+/**
+ * Which live items require a given query parameter, derived.
+ *
+ * openapi.json described `url` as "phantom_check only" for twenty days
+ * after phantom_check retired — while six live items required it. A
+ * parameter description naming one item is a list, and a list typed by
+ * hand is a list that stops being true.
+ */
+export function itemsRequiring(param: string): string[] {
+  return MENU_ITEMS.filter((item) =>
+    (buyInputSchema(item).required ?? []).includes(param),
+  ).map((item) => item.id);
+}
 
 /** One input schema per item, shared by Bazaar, the listing spec, and MCP. */
 export function buyInputSchema(item: MenuItem): QuerySchema {

@@ -95,7 +95,11 @@ describe("a Diff Observation is the envelope's inner blocks", () => {
     });
     expect(blocks.observation.class_id).toBe(DISCOVERY_COHERENCE_CLASS);
     expect(blocks.observation.compared_surfaces).toHaveLength(7);
-    expect(blocks.observation.pair_count).toBe(21);
+    // Derived, not memorised: 21 is C(7,2), and typing both numbers
+    // means a surface added to one and not the other still reads as
+    // correct on the line that was supposed to catch it.
+    const n = blocks.observation.compared_surfaces.length;
+    expect(blocks.observation.pair_count).toBe((n * (n - 1)) / 2);
     expect(blocks.observation.join_count).toBeGreaterThan(0);
     expect(blocks.observation.disagreement_count).toBe(0);
     expect(blocks.observation.disagreements).toEqual([]);

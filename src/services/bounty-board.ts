@@ -133,8 +133,8 @@ async function listBountyRecords(env: Env): Promise<BountyRecord[]> {
     cap: 200,
   });
   const values = await bulkGetJson<BountyRecord>(env.COUNTERS, listed.names);
-  return [...values.values()].filter(
-    (record): record is BountyRecord => Boolean(record),
+  return [...values.values()].filter((record): record is BountyRecord =>
+    Boolean(record),
   );
 }
 
@@ -227,7 +227,12 @@ export async function openBounty(
       chain: entry.network ? evmChainOf(entry.network) : null,
     }))
     .filter(
-      (pair): pair is { entry: AcceptEntry; chain: NonNullable<ReturnType<typeof evmChainOf>> } =>
+      (
+        pair,
+      ): pair is {
+        entry: AcceptEntry;
+        chain: NonNullable<ReturnType<typeof evmChainOf>>;
+      } =>
         pair.chain !== null &&
         (pair.entry.scheme ?? "exact") === "exact" &&
         Number.isFinite(amountUsd(pair.entry)),
@@ -379,7 +384,9 @@ export async function claimBounty(
     "json",
   );
   if (!bounty) {
-    throw new BountyRefused("no bounty under that id — the board is /api/bounties");
+    throw new BountyRefused(
+      "no bounty under that id — the board is /api/bounties",
+    );
   }
   if (bounty.status !== "open") {
     throw new BountyRefused(`that bounty is ${bounty.status}, not open`);
@@ -388,139 +395,196 @@ export async function claimBounty(
     throw new BountyRefused("that bounty expired unclaimed");
   }
 
-  // One payout per transaction, EVER — before any chain read, so a
-  // replayed hash costs nothing.
+  /*
+   * ONE PAYOUT PER TRANSACTION, EVER — AND THE CLAIM HAS TO LAND
+   * BEFORE THE SIGNATURE, NOT AFTER IT.
+   *
+   * Until 2026-08-25 this was a `get` here and a `put` a hundred
+   * lines below, with a chain read and an EIP-3009 signature in
+   * between. Four concurrent POSTs of the same claim body all saw an
+   * empty key and all got a signed authorization — four distinct
+   * nonces, so the USDC contract accepts every one. Measured: four
+   * payouts for one $0.25 bounty on one settlement, against an
+   * unauthenticated route.
+   *
+   * The weekly budget did not bound it either: `spent` was read here
+   * and written there too, so four payouts advanced the counter by
+   * ONE reward. `/bounties` publishes that counter, so the public
+   * figure understated what the wallet had actually signed away.
+   *
+   * So the key is claimed first and read back. A loser refuses
+   * without signing. If anything downstream refuses — the chain says
+   * the settlement is not real, the budget is spent — the claim is
+   * released, because a transaction that never paid out must stay
+   * claimable.
+   */
   const txKey = KV_KEYS.bountyTx(input.txHash.toLowerCase());
+  const claimId = `${input.bountyId}:${(options.randomNonce ?? defaultNonce)()}`;
   if (await env.COUNTERS.get(txKey)) {
     throw new BountyRefused(
       "that transaction has already been claimed — one payout per settlement, ever",
     );
   }
-
-  // THE CHAIN'S PART: the settlement is real, succeeded, runs from
-  // the claimed payer to the terms WE captured, and postdates the
-  // bounty. This is what the reward pays for.
-  // The bounty's own rail is the one the settlement must be on —
-  // captured at open, defaulting Base for bounties older than the
-  // third rail's parity build.
-  const claimChain = evmChainOf(bounty.network) ?? BASE_EVM;
-  const receipt = await getReceipt(env, input.txHash, claimChain);
-  if (!receipt || receipt.status !== "0x1") {
+  await env.COUNTERS.put(txKey, claimId);
+  if ((await env.COUNTERS.get(txKey)) !== claimId) {
     throw new BountyRefused(
-      `${claimChain.label} shows no successful transaction under that hash — nothing verified, nothing paid. The bounty's captured rail is ${claimChain.caip2}; a settlement on another chain cannot claim it`,
+      "that transaction has already been claimed — one payout per settlement, ever",
     );
   }
-  const receiptBlock = Number.parseInt(receipt.blockNumber ?? "0x0", 16);
-  if (receiptBlock < bounty.opened_block) {
-    throw new BountyRefused(
-      "that settlement predates the bounty — the board pays for walks it commissioned, not history",
-    );
-  }
-  const transfer = usdcTransfers(receipt, claimChain).find(
-    (candidate) =>
-      isSameAddress(candidate.from, input.payer) &&
-      isSameAddress(candidate.to, bounty.pay_to) &&
-      candidate.amount.toString() === bounty.amount_atomic,
-  );
-  if (!transfer) {
-    throw new BountyRefused(
-      `the receipt carries no USDC transfer of ${bounty.amount_atomic} atomic units from ${input.payer} to the door's captured payTo — the settlement the bounty asked for is not in this transaction`,
-    );
-  }
-
-  // Rule 3, outbound: the address OUR money goes to, screened, fail
-  // closed. The oracle needs no key; an unanswered screen pays nobody.
-  const screen =
-    options.screen ??
-    oracleScreen(env.BASE_RPC_URL ?? "https://mainnet.base.org", options.fetch ?? fetch);
-  const screened = await screen(input.payoutTo);
-  if (screened.listed !== false) {
-    throw new BountyRefused(
-      screened.listed === true
-        ? `the payout address is identified on the sanctions screen (${screened.source}); the claim stands unpaid and the refusal is recorded`
-        : `the sanctions screen did not answer (${screened.source}) and the rule fails closed — try again when it does; nothing is lost`,
-    );
-  }
-
-  // The week's budget, checked last before money.
-  const weekKey = currentWeekKey(now);
-  const spent = await weekSpent(env, weekKey);
-  if (spent + bounty.reward_usd > BOUNTY_WEEKLY_BUDGET_USD) {
-    throw new BountyRefused(
-      `this week's bounty budget ($${BOUNTY_WEEKLY_BUDGET_USD}) is spent — the board reopens with the ISO week`,
-    );
-  }
-
-  const signer =
-    options.signer ?? (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
-  const rewardAtomic = String(Math.round(bounty.reward_usd * 1e6));
-  const authorization = {
-    from: signer.address,
-    to: input.payoutTo,
-    value: rewardAtomic,
-    validAfter: "0",
-    validBefore: String(
-      Math.floor(now.getTime() / 1000) + BOUNTY_AUTH_VALID_SECONDS,
-    ),
-    nonce: (options.randomNonce ?? defaultNonce)(),
+  /*
+   * A budget reservation taken and then abandoned would shrink the
+   * week for everybody else, so the release gives both back — the
+   * claim AND whatever was reserved against it.
+   */
+  let reserved: { key: string; previous: number } | null = null;
+  const releaseClaim = async () => {
+    await env.COUNTERS.delete(txKey);
+    if (reserved) {
+      await env.COUNTERS.put(reserved.key, String(reserved.previous));
+      reserved = null;
+    }
   };
-  const signature = await signer.signTypedData({
-    domain: {
-      name: "USD Coin",
-      version: "2",
-      chainId: 8453,
-      verifyingContract: BASE_USDC as `0x${string}`,
-    },
-    types: {
-      TransferWithAuthorization: [
-        { name: "from", type: "address" },
-        { name: "to", type: "address" },
-        { name: "value", type: "uint256" },
-        { name: "validAfter", type: "uint256" },
-        { name: "validBefore", type: "uint256" },
-        { name: "nonce", type: "bytes32" },
-      ],
-    },
-    primaryType: "TransferWithAuthorization",
-    message: authorization,
-  });
 
-  const paid: BountyRecord = {
-    ...bounty,
-    status: "paid",
-    claim: {
-      tx_hash: input.txHash.toLowerCase(),
-      payer: input.payer.toLowerCase(),
-      payout_to: input.payoutTo.toLowerCase(),
-      claimed_at: now.toISOString(),
-      ...(input.observation
-        ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
-        : {}),
-      authorization_nonce: authorization.nonce,
-      authorization_valid_before: authorization.validBefore,
-    },
-  };
-  await env.COUNTERS.put(txKey, input.bountyId);
-  await saveBounty(env, paid);
-  await env.COUNTERS.put(
-    KV_KEYS.bountyBudget(weekKey),
-    String(spent + bounty.reward_usd),
-  );
+  // Every refusal below releases the claim: a settlement that never
+  // paid out has to stay claimable, or one bad chain read burns a
+  // walker's real purchase forever.
+  try {
+    // THE CHAIN'S PART: the settlement is real, succeeded, runs from
+    // the claimed payer to the terms WE captured, and postdates the
+    // bounty. This is what the reward pays for.
+    // The bounty's own rail is the one the settlement must be on —
+    // captured at open, defaulting Base for bounties older than the
+    // third rail's parity build.
+    const claimChain = evmChainOf(bounty.network) ?? BASE_EVM;
+    const receipt = await getReceipt(env, input.txHash, claimChain);
+    if (!receipt || receipt.status !== "0x1") {
+      throw new BountyRefused(
+        `${claimChain.label} shows no successful transaction under that hash — nothing verified, nothing paid. The bounty's captured rail is ${claimChain.caip2}; a settlement on another chain cannot claim it`,
+      );
+    }
+    const receiptBlock = Number.parseInt(receipt.blockNumber ?? "0x0", 16);
+    if (receiptBlock < bounty.opened_block) {
+      throw new BountyRefused(
+        "that settlement predates the bounty — the board pays for walks it commissioned, not history",
+      );
+    }
+    const transfer = usdcTransfers(receipt, claimChain).find(
+      (candidate) =>
+        isSameAddress(candidate.from, input.payer) &&
+        isSameAddress(candidate.to, bounty.pay_to) &&
+        candidate.amount.toString() === bounty.amount_atomic,
+    );
+    if (!transfer) {
+      throw new BountyRefused(
+        `the receipt carries no USDC transfer of ${bounty.amount_atomic} atomic units from ${input.payer} to the door's captured payTo — the settlement the bounty asked for is not in this transaction`,
+      );
+    }
 
-  return {
-    bounty_id: bounty.bounty_id,
-    reward_usd: bounty.reward_usd,
-    what_was_verified:
-      `The chain's part: transaction ${input.txHash.toLowerCase()} succeeded on ${claimChain.label} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a block after the bounty existed, never claimed before. That is what the reward pays for.`,
-    what_was_not:
-      "Your observations, if you sent any, are recorded verbatim as YOUR claim — this store did not see your HTTP transcript and does not pretend to. Crowd-walked rows enter the corpus at their own evidence tier, below house-walked ones, and the tier is always printed.",
-    payout: {
-      method: "eip3009_transfer_with_authorization",
-      asset: BASE_USDC,
-      chain: "eip155:8453",
-      authorization,
-      signature,
-      how_to_redeem: `Submit transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, signature) on the USDC contract (${BASE_USDC}) on Base — from your own wallet or any relayer; the function is submittable by anyone. Valid until unix ${authorization.validBefore}; unredeemed, it expires on its own and the budget takes it back. The signature is the payment — treat it like cash.`,
-    },
-  };
+    // Rule 3, outbound: the address OUR money goes to, screened, fail
+    // closed. The oracle needs no key; an unanswered screen pays nobody.
+    const screen =
+      options.screen ??
+      oracleScreen(
+        env.BASE_RPC_URL ?? "https://mainnet.base.org",
+        options.fetch ?? fetch,
+      );
+    const screened = await screen(input.payoutTo);
+    if (screened.listed !== false) {
+      throw new BountyRefused(
+        screened.listed === true
+          ? `the payout address is identified on the sanctions screen (${screened.source}); the claim stands unpaid and the refusal is recorded`
+          : `the sanctions screen did not answer (${screened.source}) and the rule fails closed — try again when it does; nothing is lost`,
+      );
+    }
+
+    // The week's budget, checked last before money.
+    const weekKey = currentWeekKey(now);
+    const spent = await weekSpent(env, weekKey);
+    if (spent + bounty.reward_usd > BOUNTY_WEEKLY_BUDGET_USD) {
+      throw new BountyRefused(
+        `this week's bounty budget ($${BOUNTY_WEEKLY_BUDGET_USD}) is spent — the board reopens with the ISO week`,
+      );
+    }
+    // RESERVE, then sign. Written after the signature, this counter lost
+    // every concurrent increment but one, so the weekly cap bounded
+    // nothing and /bounties published a figure below what was paid.
+    reserved = { key: KV_KEYS.bountyBudget(weekKey), previous: spent };
+    await env.COUNTERS.put(
+      KV_KEYS.bountyBudget(weekKey),
+      String(spent + bounty.reward_usd),
+    );
+
+    const signer =
+      options.signer ??
+      (await fieldSignerFromKey(env.FIELD_WALLET_KEY as string));
+    const rewardAtomic = String(Math.round(bounty.reward_usd * 1e6));
+    const authorization = {
+      from: signer.address,
+      to: input.payoutTo,
+      value: rewardAtomic,
+      validAfter: "0",
+      validBefore: String(
+        Math.floor(now.getTime() / 1000) + BOUNTY_AUTH_VALID_SECONDS,
+      ),
+      nonce: (options.randomNonce ?? defaultNonce)(),
+    };
+    const signature = await signer.signTypedData({
+      domain: {
+        name: "USD Coin",
+        version: "2",
+        chainId: 8453,
+        verifyingContract: BASE_USDC as `0x${string}`,
+      },
+      types: {
+        TransferWithAuthorization: [
+          { name: "from", type: "address" },
+          { name: "to", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "validAfter", type: "uint256" },
+          { name: "validBefore", type: "uint256" },
+          { name: "nonce", type: "bytes32" },
+        ],
+      },
+      primaryType: "TransferWithAuthorization",
+      message: authorization,
+    });
+
+    const paid: BountyRecord = {
+      ...bounty,
+      status: "paid",
+      claim: {
+        tx_hash: input.txHash.toLowerCase(),
+        payer: input.payer.toLowerCase(),
+        payout_to: input.payoutTo.toLowerCase(),
+        claimed_at: now.toISOString(),
+        ...(input.observation
+          ? { observation: input.observation.slice(0, BOUNTY_OBSERVATION_CAP) }
+          : {}),
+        authorization_nonce: authorization.nonce,
+        authorization_valid_before: authorization.validBefore,
+      },
+    };
+    // txKey already holds this claim and the budget is already reserved;
+    // both were taken before the signature existed.
+    await saveBounty(env, paid);
+
+    return {
+      bounty_id: bounty.bounty_id,
+      reward_usd: bounty.reward_usd,
+      what_was_verified: `The chain's part: transaction ${input.txHash.toLowerCase()} succeeded on ${claimChain.label} and carries a USDC transfer of exactly $${usdcFromUnits(BigInt(bounty.amount_atomic))} from your wallet to the door's payTo as this store captured it when the bounty opened, in a block after the bounty existed, never claimed before. That is what the reward pays for.`,
+      what_was_not:
+        "Your observations, if you sent any, are recorded verbatim as YOUR claim — this store did not see your HTTP transcript and does not pretend to. Crowd-walked rows enter the corpus at their own evidence tier, below house-walked ones, and the tier is always printed.",
+      payout: {
+        method: "eip3009_transfer_with_authorization",
+        asset: BASE_USDC,
+        chain: "eip155:8453",
+        authorization,
+        signature,
+        how_to_redeem: `Submit transferWithAuthorization(from, to, value, validAfter, validBefore, nonce, signature) on the USDC contract (${BASE_USDC}) on Base — from your own wallet or any relayer; the function is submittable by anyone. Valid until unix ${authorization.validBefore}; unredeemed, it expires on its own and the budget takes it back. The signature is the payment — treat it like cash.`,
+      },
+    };
+  } catch (error) {
+    await releaseClaim();
+    throw error;
+  }
 }

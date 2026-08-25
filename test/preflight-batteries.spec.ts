@@ -31,6 +31,50 @@ import {
  * one probe scores both.
  */
 
+/**
+ * THE v1 STRUCTURAL BATTERY, BY NAME.
+ *
+ * Frozen deliberately. v1 has not changed since July and must not:
+ * every artifact this store signed under v1 names the criteria it was
+ * rendered under, so a `ready` recorded today has to mean what one
+ * recorded in week 34 meant. Adding a name here is the same act as
+ * changing what those artifacts said, which is what v2 exists for.
+ *
+ * These are the checks a well-formed 402 exercises. runChecks emits a
+ * subset on a malformed response (it stops where it cannot proceed),
+ * so the assertion is subset-plus-no-strangers rather than equality.
+ */
+const V1_CHECK_NAMES = [
+  "status-402",
+  "payment-required-header",
+  "x402-version",
+  "accepts",
+] as const;
+
+/** A 402 well-formed enough to run the whole structural battery. */
+function wellFormed402(): Response {
+  return new Response("{}", {
+    status: 402,
+    headers: {
+      "PAYMENT-REQUIRED": btoa(
+        JSON.stringify({
+          x402Version: 2,
+          accepts: [
+            {
+              scheme: "exact",
+              network: "eip155:8453",
+              amount: "10000",
+              asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              payTo: "0x1111111111111111111111111111111111111111",
+            },
+          ],
+        }),
+      ),
+    },
+  });
+}
+
+
 describe("v1 is frozen, which is the whole point", () => {
   it("adds nothing to the battery that has been running since July", () => {
     /*
@@ -40,6 +84,36 @@ describe("v1 is frozen, which is the whole point", () => {
      * it needs a new VERSION — that is what v2 is for.
      */
     expect(BATTERY_ADDS[PREFLIGHT_VERSION]).toEqual([]);
+
+    /*
+     * AND THE NOTE IS NOT THE BATTERY — found 2026-08-25.
+     *
+     * The line above compares a hand-typed [] in BATTERY_ADDS against
+     * a hand-typed []. It tests the NOTE about v1, not v1: nothing
+     * here derived anything from runChecks(), which is what actually
+     * decides a v1 verdict.
+     *
+     * Proven: pushing an always-ok check into runChecks left this
+     * file AND preflight.spec.ts green at 26 passed — a check v1
+     * never had, silently deciding what every signed `ready` since
+     * July means. (An ok:false addition is caught elsewhere; an
+     * always-green one was not, and that is the realistic shape.)
+     *
+     * So pin the membership itself. A new check in the v1 battery now
+     * fails here by name, which is the moment to ask whether it wants
+     * to be v3 instead.
+     */
+    const v1 = runChecks(wellFormed402(), false);
+    const ran = v1.checks.map((check) => check.name);
+    const strangers = ran.filter(
+      (name) => !(V1_CHECK_NAMES as readonly string[]).includes(name),
+    );
+    expect(
+      strangers,
+      "a check v1 never had is now deciding v1 verdicts — it belongs in a new version, not this one",
+    ).toEqual([]);
+    // And the battery has not quietly emptied out either.
+    expect(ran.length).toBe(V1_CHECK_NAMES.length);
   });
 
   it("keeps the structural battery synchronous and offline", () => {

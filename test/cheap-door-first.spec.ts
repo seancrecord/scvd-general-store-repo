@@ -62,6 +62,13 @@ describe("the cheap door leads", () => {
     const underADollar = MENU_ITEMS.filter(
       (item) => item.price_usdc < CHEAP_DOOR_MAX_USDC,
     ).map((item) => item.id);
+    // A repricing that empties the cheap door would make the assertion
+    // below pass by having nothing to check — the same empty-guard
+    // shape rule 46 is about.
+    expect(
+      underADollar.length,
+      "no item is under a dollar, so this guard checked nothing",
+    ).toBeGreaterThan(0);
     const missing = underADollar.filter(
       (id) => !CHEAP_DOOR_ITEM_IDS.includes(id),
     );

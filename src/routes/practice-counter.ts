@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import {
@@ -120,7 +121,7 @@ function practiceHowToJsonLd(
     "@type": "HowTo",
     name: "Test an x402 payment client against a live till",
     description:
-      "Practice an x402 v2 client against a real store: no sandbox and no test mode, the same code path every buyer gets, from half a cent. Every purchase ends in an ed25519-signed certificate with a permanent verify URL, so a test has something to assert on.",
+      `Practice an x402 v2 client against a real store: no sandbox and no test mode, the same code path every buyer gets, from ${CHEAPEST_ON_THE_SHELF}. Every purchase ends in an ed25519-signed certificate with a permanent verify URL, so a test has something to assert on.`,
     url: `${base}/try`,
     inLanguage: "en",
     ...(cheapest
@@ -218,7 +219,7 @@ practiceCounterRoutes.get("/try", (c) => {
       renderSimplePage({
         title: COPY.title,
         description:
-          "Practice your x402 client against a real till. No sandbox and no test mode: the cheapest item is half a cent, every purchase signs its own receipt.",
+          `Practice your x402 client against a real till. No sandbox and no test mode: the cheapest item is ${CHEAPEST_ON_THE_SHELF}, every purchase signs its own receipt.`,
         path: "/try",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(COPY.standfirst)}</p>

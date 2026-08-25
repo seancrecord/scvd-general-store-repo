@@ -225,3 +225,61 @@ describe("cash-out — proven wallet, payable only to itself", () => {
     expect(usd(BigInt(record.balance_atomic))).toBe(1.5);
   });
 });
+
+/**
+ * ONE BALANCE, ONE PAYOUT — found 2026-08-25 by a review pass, and
+ * measured before it was fixed.
+ *
+ * `redeemCredit` used to read the balance, sign an EIP-3009
+ * authorization for it, and only THEN write the record back to zero.
+ * Three concurrent redemptions of one $2 balance each read $2 and each
+ * came back with a signed authorization carrying a DISTINCT nonce — so
+ * the USDC contract's own replay protection accepts all three and the
+ * field wallet pays three times the debt. Measured: $6 authorized
+ * against $2 owed.
+ *
+ * The single-use challenge in front of the route is not a mutex: it is
+ * a KV get-then-delete, and a delete is not globally visible for up to
+ * a minute, so two edges both see the nonce.
+ *
+ * The balance itself is the mutex now. This test is the proof: revert
+ * the claim-before-signing block in store-credit.ts and it goes red
+ * with three payouts instead of one.
+ */
+describe("a balance can only be spent once", () => {
+  it("gives exactly one signed payout to concurrent redemptions", async () => {
+    await accrueCredit(testEnv, REGULAR.address, 40); // $2.00
+    const before = await getCredit(testEnv, REGULAR.address, new Date());
+    expect(before.balance_atomic).toBe("2000000");
+
+    const signer = await fieldSignerFromKey(REGULAR_KEY);
+    const attempts = await Promise.allSettled(
+      [0, 1, 2].map(() =>
+        redeemCredit(testEnv, REGULAR.address, { signer, screen: clearScreen }),
+      ),
+    );
+
+    const paid = attempts.filter((a) => a.status === "fulfilled");
+    expect(
+      paid.length,
+      "more than one redemption produced a signed authorization",
+    ).toBe(1);
+
+    // The one that won paid the whole balance, and no more.
+    const won = paid[0] as PromiseFulfilledResult<
+      Awaited<ReturnType<typeof redeemCredit>>
+    >;
+    expect(won.value.redeemed_usd).toBe(2);
+    expect(won.value.payout.authorization.value).toBe("2000000");
+
+    // The losers refused in words a caller can act on, and signed nothing.
+    for (const attempt of attempts) {
+      if (attempt.status === "fulfilled") continue;
+      expect(String(attempt.reason)).toMatch(/claimed this balance first/);
+    }
+
+    const after = await getCredit(testEnv, REGULAR.address, new Date());
+    expect(after.balance_atomic).toBe("0");
+    expect(after.redeemed_total_atomic).toBe("2000000");
+  });
+});

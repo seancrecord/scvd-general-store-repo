@@ -1,4 +1,7 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
+import { KV_KEYS } from "@/lib/kv-keys";
+import type { Env } from "@/types";
+import type { RegistryWeekEntry } from "@/services/registry-pulse";
 import { describe, expect, it } from "vitest";
 import { ARTIFACT_CLASSES } from "@/store/attestation-spec";
 import { VERDICT_VOCABULARY } from "@/store/copy/criteria";
@@ -6,6 +9,30 @@ import { jsonLdBody, jsonLdScript } from "@/lib/jsonld";
 
 const BASE = "https://scvd.store";
 const HTML = { Accept: "text/html" };
+
+/** A published week, so the Dataset node actually carries measurements. */
+const PUBLISHED_WEEK: RegistryWeekEntry = {
+  week: "2026-W34",
+  observed_at: "2026-08-19T17:00:00.000Z",
+  published_at: "2026-08-19T18:00:00.000Z",
+  probed: 60,
+  ready: 40,
+  rot: { dead_doors: 20, pct: 33 },
+  signed_offers: { serving: 12, of_ready: 40, pct: 30 },
+  rails: {
+    of: 0,
+    both: 0,
+    base_only: 0,
+    solana_only: 0,
+    other_only: 0,
+    testnet_flagged: 0,
+  },
+  price_usdc: null,
+  hosts: 60,
+  operators: 22,
+  top5_share_pct: 41,
+  schemes: { exact: 40 },
+};
 
 /**
  * THE PAGES THAT WERE ARGUED BUT NEVER TYPED.
@@ -74,19 +101,46 @@ describe("/registry publishes its census as a Dataset", () => {
   });
 
   it("names the measurements rather than describing them", async () => {
+    /*
+     * SEED A WEEK, BECAUSE THE LOOP NEVER RAN — found 2026-08-25.
+     *
+     * `variableMeasured` is emitted only when a week is published, and
+     * this file published none. So the early return fired on every run
+     * since the test was written and the three shape assertions below
+     * have NEVER been evaluated: this is the only place in the whole
+     * suite that asserts PropertyValue.
+     *
+     * Proven vacuous by mutation — renaming every "@type" to
+     * "MUTANT_NOT_A_PROPERTY_VALUE" and stringifying every value left
+     * the file green at 14 passed.
+     *
+     * The absence branch was worth keeping as a claim (a node must not
+     * announce measurements it does not have), so it is asserted
+     * separately below rather than used as an escape hatch here.
+     */
+    await (env as unknown as Env).COUNTERS.put(
+      KV_KEYS.registryPulse,
+      JSON.stringify({ version: 1, weeks: [PUBLISHED_WEEK] }),
+    );
     const dataset = nodeOfType(await jsonLdNodes("/registry"), "Dataset");
     const measured = dataset.variableMeasured;
-    if (!Array.isArray(measured)) {
-      // No week published in this fixture: the node is still valid,
-      // and claiming measurements it does not have would be the bug.
-      expect(measured).toBeUndefined();
-      return;
-    }
+    expect(
+      Array.isArray(measured) && measured.length > 0,
+      "no measurements rendered, so this test asserted nothing",
+    ).toBe(true);
     for (const entry of measured as Record<string, unknown>[]) {
       expect(entry["@type"]).toBe("PropertyValue");
       expect(typeof entry.name).toBe("string");
       expect(typeof entry.value).toBe("number");
     }
+  });
+
+  it("announces no measurements when no week is published", async () => {
+    // The other half, held as its own claim rather than as the reason
+    // the test above could skip itself.
+    await (env as unknown as Env).COUNTERS.delete(KV_KEYS.registryPulse);
+    const dataset = nodeOfType(await jsonLdNodes("/registry"), "Dataset");
+    expect(dataset.variableMeasured).toBeUndefined();
   });
 });
 

@@ -193,10 +193,13 @@ export async function performWalletStatement(
   try {
     head = await getBlockNumber(env, chain);
     fromBlock = Math.max(head - hours * BLOCKS_PER_HOUR, 0);
-    const [inbound, outbound] = [
-      await usdcTransfersTo(env, address, fromBlock, head, chain),
-      await usdcTransfersFrom(env, address, fromBlock, head, chain),
-    ];
+    // An array literal evaluates left to right, so the old shape here —
+    // [await a, await b] — READ as parallel and was two serial
+    // eth_getLogs calls over an 11-hour window, on a paid door.
+    const [inbound, outbound] = await Promise.all([
+      usdcTransfersTo(env, address, fromBlock, head, chain),
+      usdcTransfersFrom(env, address, fromBlock, head, chain),
+    ]);
     inflows = side(inbound, (row) =>
       (row as { from?: string }).from ?? "",
     );

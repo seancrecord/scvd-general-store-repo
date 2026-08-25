@@ -25,6 +25,7 @@ import {
 } from "@/services/fulfillment";
 import { signGuestbook } from "@/services/guestbook";
 import {
+  idempotencyScope,
   lookupIdempotentWithBucketGrace,
   replayNote,
   SUGGESTED_KEY_BUCKET_SECONDS,
@@ -35,10 +36,7 @@ import {
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
-import {
-  cachedPublicKeyHex,
-  verifyCertificateSignature,
-} from "@/lib/signing";
+import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
 import { getMenuItem, STORE_SERVICE_NAME } from "@/store";
 import { HAND_ROLLING } from "@/store/hand-rolling";
 import { IDENTITY_POLICY, SAMPLE_ARTIFACT_ID } from "@/store/spec";
@@ -133,7 +131,9 @@ function toolText(payload: Record<string, unknown>): unknown {
 }
 
 /** Flatten the purchase response so the output schema stays flat. */
-function flattenPurchase(response: Record<string, unknown>): Record<string, unknown> {
+function flattenPurchase(
+  response: Record<string, unknown>,
+): Record<string, unknown> {
   const { certificate, ...rest } = response;
   const flat: Record<string, unknown> = { ...rest };
   if (isRecord(certificate)) {
@@ -157,9 +157,7 @@ async function callFreeTool(
       "a-mysterious-stranger";
     const rung = await ringBell(c.env, who);
     // Same porch row an HTTP ring writes; this door used to ring silently.
-    await recordPorchVisit(c.env, "bell", mcpSignals(c)).catch(
-      () => undefined,
-    );
+    await recordPorchVisit(c.env, "bell", mcpSignals(c)).catch(() => undefined);
     return { message: rung.message, count: rung.count };
   }
   if (name === "sign_guestbook") {
@@ -178,9 +176,7 @@ async function callFreeTool(
       args["name"],
       args["message"],
       verifiedIdentity,
-      publicKeyHex || signatureHex
-        ? { publicKeyHex, signatureHex }
-        : undefined,
+      publicKeyHex || signatureHex ? { publicKeyHex, signatureHex } : undefined,
     );
     if (!outcome.ok) {
       return outcome.reason === "identity_signature_invalid"
@@ -226,7 +222,11 @@ async function callFreeTool(
     }
     const stamp = await getStamp(c.env, id);
     if (stamp) {
-      await recordVerifyCall(c.env, `stamp:${stamp.stamp.variant}`, mcpSignals(c));
+      await recordVerifyCall(
+        c.env,
+        `stamp:${stamp.stamp.variant}`,
+        mcpSignals(c),
+      );
       const valid = await verifyStampSignature(stamp);
       return {
         valid,
@@ -359,7 +359,22 @@ async function callPurchaseTool(
    * goods must not be turned away by a shelf that emptied since.
    */
   const idempotencyKey = usableIdempotencyKey(rawIdempotencyKey);
-  const idempotencySurface = `mcp:buy_${item.id}`;
+  /*
+   * THE ARGUMENTS ARE PART OF THE SURFACE. `mcp:buy_<id>` alone meant
+   * two different purchases of the same tool by the same payer in the
+   * same minute collided, and the second caller was handed the FIRST
+   * caller's signed artifact — signature and all, over the wrong
+   * subject. Same defect as the HTTP door's missing query string,
+   * fixed the same day and the same way.
+   */
+  const idempotencySurface = await idempotencyScope(
+    `mcp:buy_${item.id}`,
+    new URLSearchParams(
+      Object.entries(args)
+        .filter(([, value]) => typeof value === "string")
+        .map(([key, value]) => [key, value as string]),
+    ),
+  );
   const replayCheck = idempotencyKey
     ? async (verifiedPayer: string) => {
         const replay = await lookupIdempotentWithBucketGrace(
@@ -593,8 +608,7 @@ async function handleRpc(
         // POSITION_OPENING since 2026-08-10: the handshake is the one
         // sentence an MCP client caches about us, so it carries the
         // entity and both differentiators, then the operating facts.
-        instructions:
-          `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free conformance desk (POST /api/conformance/v1) checks any issuer's x402 signed offers and receipts; the corpus at /corpus.json is the weekly signed record. The store never asks you to run code or share credentials.`,
+        instructions: `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free conformance desk (POST /api/conformance/v1) checks any issuer's x402 signed offers and receipts; the corpus at /corpus.json is the weekly signed record. The store never asks you to run code or share credentials.`,
       });
     }
     case "ping":
@@ -647,7 +661,11 @@ async function handleRpc(
     case "prompts/list":
       return rpcResult(id, { prompts: [] });
     case "prompts/get":
-      return rpcError(id, -32602, "No prompts on the shelf; tools are the whole catalog here.");
+      return rpcError(
+        id,
+        -32602,
+        "No prompts on the shelf; tools are the whole catalog here.",
+      );
     case "tools/list":
       return rpcResult(id, {
         tools: mcpToolCatalog(c.env.STORE_BASE_URL).map(
@@ -660,7 +678,11 @@ async function handleRpc(
       const args = isRecord(params["arguments"]) ? params["arguments"] : {};
       const tool = findMcpTool(name, c.env.STORE_BASE_URL);
       if (!tool) {
-        return rpcError(id, -32602, `No tool by that name on the shelf: ${name}`);
+        return rpcError(
+          id,
+          -32602,
+          `No tool by that name on the shelf: ${name}`,
+        );
       }
       if (tool.itemId || tool.itemIds) {
         /**
@@ -692,7 +714,11 @@ async function handleRpc(
         }
         const item = itemId ? getMenuItem(itemId) : undefined;
         if (!item) {
-          return rpcError(id, -32603, "That shelf's gone missing. Tell the keeper.");
+          return rpcError(
+            id,
+            -32603,
+            "That shelf's gone missing. Tell the keeper.",
+          );
         }
         const meta = isRecord(params["_meta"])
           ? params["_meta"]["x402/payment"]
@@ -725,7 +751,11 @@ async function handleRpc(
 
 mcpRoutes.post("/mcp", async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
-  if (isRecord(body) && body["jsonrpc"] === "2.0" && typeof body["method"] === "string") {
+  if (
+    isRecord(body) &&
+    body["jsonrpc"] === "2.0" &&
+    typeof body["method"] === "string"
+  ) {
     return handleRpc(c, body as unknown as JsonRpcRequest);
   }
   return rpcError(null, -32700, "That wasn't JSON-RPC. The door takes 2.0.");
