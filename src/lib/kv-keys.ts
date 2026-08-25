@@ -238,6 +238,27 @@ export const KV_KEYS = {
    */
   serviceAudit: (auditId: string): string => `service_audit:${auditId}`,
   /**
+   * A signed discovery_coherence envelope pointed at someone else's
+   * catalogs. PATRONS, terminal at write. The SKU is not priced yet;
+   * the instrument writes here so a purchase door can bind `attests`.
+   */
+  discoveryReport: (reportId: string): string => `discovery_report:${reportId}`,
+  /**
+   * Latest unsigned catalog look per host. COUNTERS, latest-wins —
+   * the next inventory of the same origin compares against this, then
+   * overwrites it. Not a watch and not a signed artifact.
+   */
+  discoverySnapshot: (host: string): string => `discovery_snapshot:${host}`,
+  discoverySnapshotPrefix: "discovery_snapshot:",
+  /**
+   * Latest discovery_coherence citation per host, for the passport
+   * to derive. COUNTERS, latest-wins. Written on a join, never on
+   * GET /passport/{host}.
+   */
+  hostDiscoveryModule: (host: string): string =>
+    `discovery_module:${host}`,
+  hostDiscoveryModulePrefix: "discovery_module:",
+  /**
    * A purchased signature-agent card: the signed directory
    * observation and the certificate that bound its evidence hash.
    * PATRONS, terminal at write, never scanned — the Once-Over's

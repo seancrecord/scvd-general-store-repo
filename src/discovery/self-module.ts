@@ -1,23 +1,12 @@
-import { wrapDiffEnvelope } from "@/discovery/diff-envelope";
-import {
-  buildDiffObservation,
-  DISCOVERY_COHERENCE_CLASS,
-} from "@/discovery/diff-observation";
+import { citeWrappedJoin, type PassportModule } from "@/discovery/cite-module";
 import {
   assembleSelfRow,
-  selfJoinDisagreements,
   type FetchedSelfRow,
 } from "@/discovery/self-coherence";
-import {
-  canonicalEvidenceBytes,
-  EVIDENCE_SCHEMA_V1,
-  validateEnvelopePayload,
-} from "@/evidence";
 import { jcsCanonicalize } from "@/lib/jcs";
 import { SHELF_CLUSTERS } from "@/lib/mcp-tools";
-import { getPublicKeyHex } from "@/lib/signing";
-import { currentKeyInServiceFrom } from "@/store/key-registry";
-import { SKILL_VERSION } from "@/store/spec";
+
+export type { PassportModule };
 
 /**
  * SELF-PASSPORT MODULE — the join, cited on our own passport.
@@ -25,18 +14,10 @@ import { SKILL_VERSION } from "@/store/spec";
  * Landscape §10.1: the passport is a derived signed view over
  * envelopes. This file runs the self-row join, wraps it, and
  * returns the citation the passport signs: class id, schema,
- * evidence hash, derived fold, limitations. No scores. Census
- * passports do not get this module yet — they were not joined.
+ * evidence hash, derived fold, limitations. No scores. A census
+ * passport cites the same module when a join was already stored;
+ * GET /passport/{host} does not fetch.
  */
-
-export interface PassportModule {
-  id: string;
-  schema: string;
-  evidence_hash: string;
-  derived: string;
-  not_checked: string[];
-  does_not_prove: string[];
-}
 
 export type CatalogFetcher = (path: string) => Promise<string>;
 
@@ -59,16 +40,6 @@ const CATALOG_PATHS = {
   llms_txt: "/llms.txt",
   skill_md: "/skill.md",
 } as const;
-
-async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
 
 export async function fetchSelfCatalogs(
   base: string,
@@ -109,44 +80,22 @@ export async function discoveryModuleFromCatalogs(
   at: string,
   clock: string,
 ): Promise<PassportModule> {
-  const sides = assembleSelfRow(live.row);
-  const blocks = await buildDiffObservation({
+  const cited = await citeWrappedJoin({
     about: live.row.about,
-    sides,
-    disagreements: selfJoinDisagreements(sides),
-    surfaceBodies: live.bodies,
-    surfaceUrls: live.urls,
-  });
-  const keyId = await getPublicKeyHex(signingKeyHex);
-  const payload = wrapDiffEnvelope({
-    blocks,
+    sides: assembleSelfRow(live.row),
+    bodies: live.bodies,
+    urls: live.urls,
+    signingKeyHex,
     at,
     clock,
-    observer: {
-      key_id: keyId,
-      software_version: SKILL_VERSION,
-      vantage: "cloudflare-workers/single-vantage",
-    },
-    key: { key_id: keyId, in_service_from: currentKeyInServiceFrom(keyId) },
-    authorization: {
-      key_registry_url: `${live.row.about}/.well-known/scvd-signing-key`,
-      anchor_log_url: `${live.row.about}/.well-known/anchor-log.json`,
-    },
+    authorizationBase: live.row.about,
   });
-  const verdict = validateEnvelopePayload(payload);
-  if (!verdict.ok) {
+  if (!cited) {
     throw new Error(
-      `self-passport refused an invalid envelope: ${verdict.defects.join("; ")}`,
+      "self-passport refused to cite the join — fewer than two claim-bearing surfaces, or the envelope did not validate",
     );
   }
-  return {
-    id: DISCOVERY_COHERENCE_CLASS,
-    schema: EVIDENCE_SCHEMA_V1,
-    evidence_hash: await sha256Hex(canonicalEvidenceBytes(payload)),
-    derived: blocks.derived.verdict,
-    not_checked: blocks.limitations.not_checked,
-    does_not_prove: blocks.limitations.does_not_prove,
-  };
+  return cited;
 }
 
 export async function selfPassportDiscoveryModule(input: {

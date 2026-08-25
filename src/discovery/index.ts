@@ -61,5 +61,33 @@ export type {
   CatalogFetcher,
   PassportModule,
 } from "@/discovery/self-module";
+export {
+  DISCOVERY_INVENTORY_VERSION,
+  inventoryCandidates,
+  inventoryOrigin,
+} from "@/discovery/inventory";
+export type {
+  DiscoveryInventory,
+  InventorySurfaceRow,
+} from "@/discovery/inventory";
+export { extractSurfaceClaims } from "@/discovery/inventory-extract";
+export { probeHostCatalogs } from "@/discovery/host-probe";
+export type { HostCatalogCapture, HostSurfaceRow } from "@/discovery/host-probe";
+export {
+  issueDiscoveryReport,
+  readDiscoveryReport,
+  signHostDiscoveryReport,
+} from "@/discovery/sign-report";
+export type { DiscoveryReportRecord } from "@/discovery/sign-report";
+export {
+  compareCatalogSnapshots,
+  rememberInventoryLook,
+} from "@/discovery/snapshot";
+export type { SnapshotCompare } from "@/discovery/snapshot";
+export { citeHostCapture, citeWrappedJoin } from "@/discovery/cite-module";
+export {
+  readHostDiscoveryModule,
+  rememberHostDiscoveryModule,
+} from "@/discovery/host-module";
 export { selfRowFromCatalogs, selfRowVerdict } from "@/discovery/self-row";
 export type { SelfRowVerdict } from "@/discovery/self-row";
