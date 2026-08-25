@@ -79,3 +79,8 @@ export {
   signHostDiscoveryReport,
 } from "@/discovery/sign-report";
 export type { DiscoveryReportRecord } from "@/discovery/sign-report";
+export {
+  compareCatalogSnapshots,
+  rememberInventoryLook,
+} from "@/discovery/snapshot";
+export type { SnapshotCompare } from "@/discovery/snapshot";
