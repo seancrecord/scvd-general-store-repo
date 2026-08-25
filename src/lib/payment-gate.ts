@@ -540,6 +540,51 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
   return signals;
 }
 
+
+/**
+ * THE DOOR NEVER WAITS ON ITS OWN BOOKKEEPING.
+ *
+ * Measured 2026-08-25: `/api/buy/hello` answered its 402 in ~1.3s
+ * warm while `/menu.json` — ten times the payload over the same path
+ * — answered in 0.39s. The difference was not payload and not
+ * network. It was this file awaiting its own counters before letting
+ * the 402 out.
+ *
+ * `bump()` in lib/metrics.ts is a READ THEN A WRITE, sequentially,
+ * and `recordChallengeIssued` calls it four times. Every challenge
+ * was paying about eight serial KV round trips before the agent got
+ * an answer, on the one door where an agent is actually waiting.
+ *
+ * The store already knew this. The porch middleware in index.ts logs
+ * visits through `waitUntil` and says why in one line: "The log is a
+ * courtesy; the door never waits on it." That lesson was applied at
+ * the free door and never carried to the priced one — the same shape
+ * as every other miss found today, a fix that landed on the instance
+ * instead of the class.
+ *
+ * What this does NOT change: the counters are still written, from
+ * the same calls with the same arguments. `waitUntil` keeps the
+ * isolate alive until they finish. What it gives up is the guarantee
+ * that a write survives an isolate killed mid-flight — the same
+ * trade the porch accepted, on data that is a courtesy rather than a
+ * receipt. Nothing a buyer is owed rides on these; the money path
+ * (nonce checks, settlement, delivery intents) stays awaited and is
+ * untouched here.
+ */
+function defer(
+  c: { executionCtx: { waitUntil(promise: Promise<unknown>): void } },
+  work: Promise<unknown>,
+): void {
+  const swallowed = work.catch(() => undefined);
+  try {
+    c.executionCtx.waitUntil(swallowed);
+  } catch {
+    // No execution context (some test harnesses): the courtesy still
+    // happens, it just happens inline rather than after the response.
+    void swallowed;
+  }
+}
+
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new HonoAdapter(c);
@@ -572,13 +617,16 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     const preflight = preflightBlockers(offeredHeader);
     const first = preflight[0];
     if (first) {
-      await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
-      await recordPaymentDecline(
-        c.env,
-        c.req.path,
-        `local:preflight:${first.field}`,
-        gateSignals(c),
-      ).catch(() => undefined);
+      defer(c, recordChallengeIssued(c.env, c.req.path, gateSignals(c)));
+      defer(
+        c,
+        recordPaymentDecline(
+          c.env,
+          c.req.path,
+          `local:preflight:${first.field}`,
+          gateSignals(c),
+        ),
+      );
       c.header("Cache-Control", "no-store");
       return c.json(
         {
@@ -628,10 +676,10 @@ export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (result.response.status === 402) {
       // Challenge issued. The monthly gap between these and settlements
       // is the budget-cap / abandonment signal (RUN1 instrumentation).
-      await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
+      defer(c, recordChallengeIssued(c.env, c.req.path, gateSignals(c)));
       // A marker that reached a priced door. Counted apart from one
       // that settled, because the gap between them is the signal.
-      await recordReferralFor(c, "arrived").catch(() => undefined);
+      defer(c, recordReferralFor(c, "arrived"));
       // If a signed payment rode in and still got a 402, that's a
       // decline: tell the payer why and keep the reason in the books.
       const paymentHeader =
