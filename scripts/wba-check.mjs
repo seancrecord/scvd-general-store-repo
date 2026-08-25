@@ -52,7 +52,9 @@ async function jwkThumbprint(x) {
 }
 
 async function signRequest(seedHex, targetUrl) {
-  const pub = await ed25519.getPublicKeyAsync(seedHex);
+  // v3 takes Uint8Array only; hex seeds were accepted through 2.x.
+  const seed = ed25519.etc.hexToBytes(seedHex);
+  const pub = await ed25519.getPublicKeyAsync(seed);
   const keyid = await jwkThumbprint(b64url(pub));
   const created = Math.floor(Date.now() / 1000);
   const expires = created + 300;
@@ -62,7 +64,7 @@ async function signRequest(seedHex, targetUrl) {
   const base = `"@authority": ${authority}\n"@signature-params": ${params}`;
   const signature = await ed25519.signAsync(
     new TextEncoder().encode(base),
-    seedHex,
+    seed,
   );
   return {
     "Signature-Input": `sig1=${params}`,
