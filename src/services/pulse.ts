@@ -1,4 +1,8 @@
-import { readMonthLedger } from "@/lib/metrics";
+import {
+  LATENCY_BUCKET_EDGES_MS,
+  readLatencyHistograms,
+  readMonthLedger,
+} from "@/lib/metrics";
 import { HOUSE_FLAG_POLICY, monthsSinceOpening } from "@/services/stats";
 import type { Env } from "@/types";
 import {
@@ -128,6 +132,37 @@ export interface PulseWindow {
    */
 }
 
+export interface LatencyRoute {
+  /** Timings recorded for this route class this month. A FLOOR — see note. */
+  samples: number;
+  /** Bucket label -> count, exactly as stored. The raw histogram. */
+  buckets: Record<string, number>;
+  /**
+   * The interval the median falls in, in milliseconds: [at least, under].
+   * A null upper bound means the bucket is open-ended (over the last edge).
+   *
+   * A RANGE, NOT A NUMBER, and this is the point of the whole block. A
+   * histogram can tell you which interval a percentile lands in; it
+   * cannot tell you the percentile. Every latency figure in this market
+   * is quoted as a single number with no method beside it. The honest
+   * form is wider and less flattering, and a reader can check it.
+   */
+  p50_ms_range: [number, number | null] | null;
+  /** Same shape at the 95th percentile — the tail that loses buyers. */
+  p95_ms_range: [number, number | null] | null;
+}
+
+export interface Latency {
+  what_this_is: string;
+  method: string;
+  /** The histogram's resolution, published so the ranges can be read. */
+  bucket_edges_ms: number[];
+  /** Route class -> histogram. */
+  routes: Record<string, LatencyRoute>;
+  /** True when the key scan hit its cap; the figures are then partial. */
+  truncated: boolean;
+}
+
 export interface Pulse {
   computed_at: string;
   house_flag_policy: string;
@@ -135,9 +170,79 @@ export interface Pulse {
   /** Newest first. */
   months: PulseWindow[];
   note: string;
+  /** Roadmap 0.12: what our own clock saw, with its denominators. */
+  latency: Latency;
   /** Tier 3: how to check the artifacts these numbers count. */
   verify_url: string;
   signing_key: string;
+}
+
+
+const LATENCY_WHAT =
+  "How long this store's own server took to produce a 402 challenge, in buckets. SERVER-SIDE ONLY: the clock starts when the payment gate is entered and stops when the challenge is ready, so it excludes DNS, TLS, network transit and everything the buyer's own client does. A reader measuring from outside will always see a larger number than this, and the difference is the network, not us.";
+
+const LATENCY_METHOD =
+  "One counter per route class per bucket per month, bumped after the response is sent so the instrument never slows the thing it measures. Percentiles are published as the INTERVAL they fall in rather than as a point value, because that is all a histogram can honestly support. THE SAMPLE COUNT IS A FLOOR, NOT A CENSUS: the counters are read-modify-write against Workers KV, which is last-write-wins with no compare-and-swap, so two requests landing in the same bucket in the same instant can record as one. That biases the count down and never up. House and infrastructure traffic are counted here, unlike everywhere else in this document, because latency is a fact about our own server doing work and our own probes run the same code a stranger does — excluding them would shrink the sample without making it truer. This is the store timing itself, which is exactly the reading nobody should take on trust: the external monitor linked from this store is the one that owes you no favours.";
+
+/**
+ * The interval a percentile falls in, read off the cumulative counts.
+ *
+ * Returns [lowerEdge, upperEdge], upper null when the sample landed in
+ * the open-ended bucket past the last edge. Null when there is nothing
+ * to read — an empty histogram has no median, and printing 0 there
+ * would be a claim rather than an absence.
+ */
+function percentileRange(
+  buckets: Record<string, number>,
+  fraction: number,
+): [number, number | null] | null {
+  const labels = [
+    ...LATENCY_BUCKET_EDGES_MS.map(
+      (edge) => `u${String(edge).padStart(5, "0")}`,
+    ),
+    "over",
+  ];
+  const total = labels.reduce((sum, label) => sum + (buckets[label] ?? 0), 0);
+  if (total === 0) return null;
+  // Ceiling, so p50 of a two-sample set names the bucket holding the
+  // upper of the two rather than rounding a median off the bottom.
+  const target = Math.ceil(total * fraction);
+  let seen = 0;
+  for (let i = 0; i < labels.length; i += 1) {
+    seen += buckets[labels[i]!] ?? 0;
+    if (seen >= target) {
+      const lower = i === 0 ? 0 : LATENCY_BUCKET_EDGES_MS[i - 1]!;
+      const upper =
+        i < LATENCY_BUCKET_EDGES_MS.length
+          ? LATENCY_BUCKET_EDGES_MS[i]!
+          : null;
+      return [lower, upper];
+    }
+  }
+  return null;
+}
+
+async function computeLatency(env: Env): Promise<Latency> {
+  const { histograms, truncated } = await readLatencyHistograms(env).catch(
+    () => ({ histograms: {}, truncated: false }),
+  );
+  const routes: Record<string, LatencyRoute> = {};
+  for (const [routeClass, buckets] of Object.entries(histograms)) {
+    const samples = Object.values(buckets).reduce((sum, n) => sum + n, 0);
+    routes[routeClass] = {
+      samples,
+      buckets,
+      p50_ms_range: percentileRange(buckets, 0.5),
+      p95_ms_range: percentileRange(buckets, 0.95),
+    };
+  }
+  return {
+    what_this_is: LATENCY_WHAT,
+    method: LATENCY_METHOD,
+    bucket_edges_ms: [...LATENCY_BUCKET_EDGES_MS],
+    routes,
+    truncated,
+  };
 }
 
 const NOTE =
@@ -190,6 +295,13 @@ export async function computePulse(env: Env): Promise<Pulse> {
    */
   const reclassSplit = await monthReclassAdjustments(env).catch(() => null);
   const reclassTotal = await totalReclassified(env).catch(() => null);
+  /**
+   * Roadmap 0.12. One prefix scan over at most (route classes x buckets)
+   * keys — single digits today, against a ledger walk that reads the
+   * whole month. Cheap enough to sit beside the funnel rather than
+   * earn a surface of its own.
+   */
+  const latency = await computeLatency(env);
 
   for (const month of months) {
     const ledger = await readMonthLedger(env, month);
@@ -314,6 +426,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
         : {}),
     },
     months: windows,
+    latency,
     note: NOTE,
     verify_url: `${base}/api/verify/{id}`,
     signing_key: `${base}/.well-known/scvd-signing-key`,

@@ -944,6 +944,111 @@ export async function reconcileSettles(
   };
 }
 
+/**
+ * SERVER-SIDE TIMING, IN BUCKETS, BECAUSE THE ALTERNATIVE IS A LIE.
+ *
+ * Roadmap 0.12 asks for latency "served with denominators", and the
+ * denominator is the whole reason this is bucketed rather than
+ * averaged. A mean hides the tail that actually loses buyers; a
+ * per-request row would grow the key space without bound and cost more
+ * to keep than the number is worth. Buckets are bounded by
+ * construction — one key per route class per bucket per month — and
+ * they are honest about their own resolution in a way a point estimate
+ * is not.
+ *
+ * WHAT A HISTOGRAM CAN AND CANNOT SAY. From bucket counts you can name
+ * the interval a percentile falls in. You cannot name the percentile.
+ * Everything downstream of this therefore publishes `p50 is in
+ * [250,500)` and never `p50 = 380`, because the second sentence is a
+ * precision we did not measure. Every latency figure in this market is
+ * quoted as a single number with no method beside it; the honest form
+ * is less flattering and more useful.
+ *
+ * THE COUNT IS A FLOOR, NOT A CENSUS, and the publication says so.
+ * bumpBy is a read-modify-write against Workers KV, which is
+ * last-write-wins with no compare-and-swap, so two requests landing in
+ * the same bucket in the same instant can record as one. That biases
+ * the sample count DOWN and never up. Stating it costs a sentence and
+ * keeps the endpoint from claiming a precision the storage layer
+ * cannot give.
+ */
+export const LATENCY_BUCKET_EDGES_MS = [
+  50, 100, 250, 500, 1000, 2000, 5000,
+] as const;
+
+/**
+ * Bucket label for a duration. Labels sort lexically in bucket order
+ * by construction (zero-padded), so a reader of the raw keys sees the
+ * histogram in shape without a lookup table.
+ */
+export function latencyBucket(ms: number): string {
+  for (const edge of LATENCY_BUCKET_EDGES_MS) {
+    if (ms < edge) return `u${String(edge).padStart(5, "0")}`;
+  }
+  return "over";
+}
+
+/**
+ * Record one server-side duration for a route class.
+ *
+ * NEVER CALL THIS ON THE CRITICAL PATH. The 402 leg already awaits two
+ * counter writes before the buyer is told a price; a third would be
+ * this instrument making the thing it measures worse, which is the
+ * oldest way to be wrong about performance. Callers pass this to
+ * waitUntil.
+ *
+ * House and infrastructure traffic are NOT split out here, deliberately
+ * and unlike every other counter in this file: latency is a fact about
+ * our own server doing work, and our own probes exercise the same code
+ * as a stranger's request. Excluding them would shrink the sample for
+ * no gain in truth. The publication says which population it counted.
+ */
+export async function recordRouteTiming(
+  env: Env,
+  routeClass: string,
+  ms: number,
+): Promise<void> {
+  if (!Number.isFinite(ms) || ms < 0) return;
+  await bump(
+    env,
+    KV_KEYS.metric(
+      metricsMonth(),
+      "lat",
+      `${routeClass}:${latencyBucket(ms)}`,
+    ),
+  );
+}
+
+/** route class -> bucket label -> count, for one month. */
+export type LatencyHistograms = Record<string, Record<string, number>>;
+
+/**
+ * Read the month's timing buckets. Same scan shape as the other
+ * readers here: one prefix, one cap, one bulk fetch.
+ */
+export async function readLatencyHistograms(
+  env: Env,
+  month: string = metricsMonth(),
+): Promise<{ histograms: LatencyHistograms; truncated: boolean }> {
+  const prefix = `metric:${month}:lat:`;
+  const listed = await listKeys(env.COUNTERS, { prefix, cap: METRIC_KEY_CAP });
+  const values = await bulkGetText(env.COUNTERS, listed.names);
+  const histograms: LatencyHistograms = {};
+  for (const name of listed.names) {
+    const rest = name.slice(prefix.length);
+    const split = rest.lastIndexOf(":");
+    if (split <= 0) continue;
+    const routeClass = rest.slice(0, split);
+    const bucket = rest.slice(split + 1);
+    const count = parseInt(values.get(name) ?? "0", 10);
+    if (!Number.isFinite(count) || count <= 0) continue;
+    const row = histograms[routeClass] ?? {};
+    row[bucket] = (row[bucket] ?? 0) + count;
+    histograms[routeClass] = row;
+  }
+  return { histograms, truncated: listed.truncated };
+}
+
 /** Everything the month's counters know, organic and house apart. */
 export async function readMonthLedger(
   env: Env,
