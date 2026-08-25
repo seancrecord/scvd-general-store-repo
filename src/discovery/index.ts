@@ -56,6 +56,7 @@ export {
   fetchSelfCatalogs,
   originCatalogFetcher,
   selfPassportDiscoveryModule,
+  selfPassportModules,
 } from "@/discovery/self-module";
 export type {
   CatalogFetcher,
@@ -103,6 +104,7 @@ export {
   schemaNotObserved,
   schemaRowVerdict,
 } from "@/discovery/schema-coherence";
+export { schemaModuleFromCatalogs } from "@/discovery/schema-module";
 export {
   buyRouteFor,
   hashSelectedSurface,
@@ -124,3 +126,20 @@ export type {
   SchemaJoinVerdict,
   SurfaceSchemaClaims,
 } from "@/discovery/schema-coherence";
+export {
+  capabilityFromA2a,
+  capabilityFromMcp,
+  capabilityFromX402,
+  normalizeTransport,
+} from "@/discovery/capability-claims";
+export type { CapabilityClaim } from "@/discovery/capability-claims";
+export {
+  CAPABILITY_COHERENCE_CLASS,
+  capabilityJoinDisagreements,
+  capabilityRowVerdict,
+} from "@/discovery/capability-coherence";
+export type {
+  CapabilityDisagreement,
+  CapabilityJoinVerdict,
+  SurfaceCapabilityClaim,
+} from "@/discovery/capability-coherence";
