@@ -44,9 +44,38 @@ describe("the published record can be trusted by the guard that reads it", () =>
    */
   it("has the bundle that shipped, whenever the store claims that version", () => {
     if (SKILL_VERSION !== PUBLISHED.version) {
-      // Legitimately mid-flight: the constant has been bumped and the
-      // publish has not happened yet. Nothing to check — the record
-      // describes an older release on purpose.
+      /*
+       * MID-FLIGHT IS NOT "NOTHING TO CHECK" — found 2026-08-25, while
+       * this branch was the live one: spec.ts said 3.7.0 and the record
+       * said 3.6.0, so two of this file's three tests were asserting
+       * nothing at all, in a file whose own header calls the record
+       * load-bearing.
+       *
+       * Proven: replacing bundle_sha256 with 64 zeros left it at 3
+       * passed. That hash is what the publish script's fifth refusal
+       * compares against, so a wrong one there disarms the refusal
+       * quietly.
+       *
+       * A record describing an older release still has to be a
+       * COHERENT record of that release. The one thing checkable
+       * without the old bytes is that the version only ever moves
+       * forward: a declared version BEHIND the published one means
+       * somebody reverted the constant and left the record claiming a
+       * release that no longer exists.
+       */
+      const declared = SKILL_VERSION.split(".").map(Number);
+      const published = String(PUBLISHED.version).split(".").map(Number);
+      const ahead = declared.some(
+        (part, index) =>
+          part > (published[index] ?? 0) &&
+          declared.slice(0, index).every((p, i) => p === (published[i] ?? 0)),
+      );
+      expect(
+        ahead,
+        `src/store/spec.ts declares ${SKILL_VERSION} but the publish record says ${PUBLISHED.version} — a declared version BEHIND the published one means the record describes a release the store no longer claims`,
+      ).toBe(true);
+      // And the record still has to look like a record.
+      expect(String(PUBLISHED.bundle_sha256)).toMatch(/^[0-9a-f]{64}$/);
       return;
     }
     expect(

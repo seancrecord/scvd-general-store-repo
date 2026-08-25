@@ -77,6 +77,25 @@ describe("the census", () => {
   });
 
   it("counts a client once however many times it knocks", async () => {
+    /*
+     * THE TITLE PROMISED A COUNT AND THE TEST ASSERTED AN ABSENCE —
+     * found 2026-08-25.
+     *
+     * The only assertion here was `matches).toHaveLength(0)`: twelve
+     * knocks are not a walk, which is true and worth holding. But the
+     * clause after the comma — "and it is one client" — had nothing
+     * behind it. clients_total was never read, so de-duplication could
+     * fail outright and this stayed green.
+     *
+     * Proven: counting `+= Math.max(1, client.challenges)` instead of
+     * `+= 1` in lib/census.ts inflated one client to twelve and left
+     * this file at 8 passed, and the sibling
+     * census-counts-the-buyer.spec.ts green too — its guards are
+     * toBeGreaterThan comparisons that survive inflation.
+     *
+     * So take the count BEFORE and AFTER, and assert the delta.
+     */
+    const before = await takeCensus(testEnv);
     for (let i = 0; i < 12; i += 1) {
       await seedRow(
         row({ user_agent: "census-repeat/1", item: "hello", at: at(i * 5000) }),
@@ -86,8 +105,13 @@ describe("the census", () => {
     const matches = [...census.walkers, ...census.presented_signature].filter(
       (client) => client.user_agent === "census-repeat/1",
     );
-    // Twelve knocks at one door is not a walk, and it is one client.
+    // Twelve knocks at one door is not a walk...
     expect(matches).toHaveLength(0);
+    // ...and it is ONE client, which is the half that was never checked.
+    expect(
+      census.clients_total - before.clients_total,
+      "twelve knocks from one client moved the count by more than one",
+    ).toBe(1);
   });
 });
 

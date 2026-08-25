@@ -53,6 +53,12 @@ describe("the trust list", () => {
     if (!isRecord(body) || !Array.isArray(body.entries)) {
       throw new Error("no entries");
     }
+    // An empty list satisfies every loop below by having nothing to
+    // check. The list is the subject, so prove it exists first.
+    expect(
+      body.entries.length,
+      "the trust list is empty, so the loop below asserted nothing",
+    ).toBeGreaterThan(0);
 
     // The scope guard belongs on the ENTRIES, which is where a vouch
     // would actually live. The attests/note fields legitimately use
@@ -140,6 +146,12 @@ describe("the trust list", () => {
     if (!isRecord(body) || !Array.isArray(body.entries)) {
       throw new Error("no entries");
     }
+    // An empty list satisfies every loop below by having nothing to
+    // check. The list is the subject, so prove it exists first.
+    expect(
+      body.entries.length,
+      "the trust list is empty, so the loop below asserted nothing",
+    ).toBeGreaterThan(0);
     for (const entry of body.entries) {
       expect(isRecord(entry)).toBe(true);
       if (!isRecord(entry)) continue;
