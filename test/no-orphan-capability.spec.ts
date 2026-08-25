@@ -99,6 +99,24 @@ async function discoveryHaystack(): Promise<string> {
   const surfaces: string[] = [];
   for (const url of [
     "https://scvd.store/llms.txt",
+    /*
+     * ADDED 2026-08-25, when /llms.txt became an index.
+     *
+     * Until that day llms.txt WAS the whole guide — 83,441 characters
+     * — and this list quietly depended on that. Splitting the index
+     * from the full document orphaned sixteen doors here, which is
+     * this guard working exactly as intended: it noticed the moment
+     * the inventory moved.
+     *
+     * llms-full.txt is not a loophole. It is served, it is linked
+     * from the first screen of the index under "Fuller copies", and
+     * it is the document the llmstxt.org convention expects a reader
+     * to follow to when the index is not enough. A door listed there
+     * is one link from the front page, which is what "findable"
+     * means. A door listed NOWHERE still fails, which is the claim
+     * this guard actually makes.
+     */
+    "https://scvd.store/llms-full.txt",
     "https://scvd.store/openapi.json",
     "https://scvd.store/.well-known/x402.json",
     "https://scvd.store/skill.md",
@@ -123,7 +141,7 @@ describe("every public door is on a surface an agent reads, or says why not", ()
     }
     expect(
       unaccounted.sort().join("\n"),
-      "these routes appear on NONE of the six discovery surfaces (llms.txt, openapi.json, x402.json, skill.md, menu.json, sitemap.xml) and carry no DELIBERATELY_QUIET reason — either list the door where agents read, or write down why the quiet is correct",
+      "these routes appear on NONE of the seven discovery surfaces (llms.txt, llms-full.txt, openapi.json, x402.json, skill.md, menu.json, sitemap.xml) and carry no DELIBERATELY_QUIET reason — either list the door where agents read, or write down why the quiet is correct",
     ).toBe("");
   });
 
