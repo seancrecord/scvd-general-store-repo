@@ -482,11 +482,17 @@ with B9's evidence capture as the one genuinely new field group.
   against signed_payload. The envelope's key-window citation
   (D-envelope) remains Phase 1's schema work.
 
-- **D6 [ ] — methodology/version absent from most signed bytes.** (P6)
+- **D6 [~] — methodology/version absent from most signed bytes.** (P6)
   Extends B9 beyond the watch: settlement attestations and launch
   checks sign no software version; watch rows sign no battery
   version; only the audit classes sign criteria. Generalize the
   audit-class pattern via the envelope's `methodology` block.
+  ENVELOPE SLICE 2026-08-25: validator requires
+  `methodology.battery_version` (defect
+  `envelope.methodology.battery-missing`); `wrapDiffEnvelope`
+  derives it from the family via `envelopeMethodology`. Schema wrap
+  on #239 writes the same. Still open: attestations, launch-check,
+  watch rows (Codex 1.2).
 
 - **D7 [x-by-design elsewhere / cross-ref] — replayability.** (P6)
   Not a new finding: the reproducible classes already cite chain
