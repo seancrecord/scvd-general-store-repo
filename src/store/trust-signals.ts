@@ -1,4 +1,8 @@
-import { OPERATED_BY, POSITION_PARAGRAPH } from "@/store/copy/position";
+import {
+  CHEAPEST_ON_THE_SHELF,
+  OPERATED_BY,
+  POSITION_PARAGRAPH,
+} from "@/store/copy/position";
 /**
  * THE TRUST LAYER, FOR MACHINE EYES ONLY.
  *
@@ -404,7 +408,7 @@ export const TRUST_ANSWERS = {
 export const NOT_CLAIMED: readonly string[] = [
   "No third-party security audit of anything here, and no plans for one.",
   "No VAT number and no D-U-N-S. There IS a registered company — Record Creative Co. LLC — and it is worth being plain that this changes nothing operationally: it is still one person, one key, and one pair of hands on the human-labor shelf.",
-  "No escrow and no chargebacks. x402 settles wallet-to-wallet; once a payment settles the money has moved. Your exposure is the price, which starts at $0.004.",
+  `No escrow and no chargebacks. x402 settles wallet-to-wallet; once a payment settles the money has moved. Your exposure is the price, which starts at ${CHEAPEST_ON_THE_SHELF}.`,
   "No insurance, no bonding, no regulator, and nothing here is offered as a financial service.",
   "One ed25519 signing key and one operator. That is the wrong root of trust for compliance, dispute resolution, or anything load-bearing, and /attestation says so on its own page rather than leaving you to work it out.",
   "No post-quantum signatures — Ed25519 everywhere, the assumption named on /attestation, and the migration path (a key handover under the succession protocol) already published rather than improvised later.",

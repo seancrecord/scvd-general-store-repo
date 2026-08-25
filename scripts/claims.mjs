@@ -115,15 +115,22 @@ for (const path of sourceFiles(SRC)) {
      * the defect, which is the only kind of narrowing that is free.
      */
     const trimmed = line.trim();
-    if (trimmed.startsWith("*") || trimmed.startsWith("//")) return;
+    if (
+      trimmed.startsWith("*") ||
+      trimmed.startsWith("//") ||
+      trimmed.startsWith("/*")
+    )
+      return;
     const hit = PRICE.test(line) || EXISTENCE.test(line);
     if (!hit) return;
     const bound = INTERPOLATED.test(line) || DATED.test(line);
+    const text = line.trim();
     claims.push({
       file: relative(ROOT, path),
       line: i + 1,
       bound,
-      text: line.trim().slice(0, 100),
+      text,
+      preview: text.slice(0, 100),
     });
   });
 }
@@ -188,21 +195,17 @@ console.log(`Claims register — ${claims.length} claim-shaped lines.\n`);
 if (unbound.length > 0) {
   console.log(`${unbound.length} unbound (neither derived nor dated):`);
   for (const claim of unbound) {
-    console.log(`  ${claim.file}:${claim.line}  ${claim.text}`);
+    console.log(`  ${claim.file}:${claim.line}  ${claim.preview}`);
   }
   console.log("");
 }
 
 /**
- * THE UNBOUND BUDGET, set to the TRUE count on 2026-08-25 rather
- * than to a rounder number that would read as a target already met.
- *
- * It is a RATCHET: down only. A claim leaves this pile by being
- * derived from the code that decides it, or dated so its age is
- * legible. Raising it is allowed and must carry a reason; lowering
- * it needs no permission.
+ * THE UNBOUND BUDGET. Ratchet: down only. 27 on the first CI run,
+ * 0 once the leftover pile was dated, derived, or declined on the
+ * record. Raising it is allowed and must carry a reason.
  */
-const UNBOUND_BUDGET = 27;
+const UNBOUND_BUDGET = 0;
 const byResolution = REGISTER.reduce((tally, entry) => {
   tally[entry.resolution] = (tally[entry.resolution] ?? 0) + 1;
   return tally;

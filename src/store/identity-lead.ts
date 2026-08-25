@@ -35,7 +35,8 @@ export function cheapestUsdc(): number {
 }
 
 /** Formatted for prose: $0.004, not $0.00. */
-function money(usd: number): string {
+export function cheapestLabel(): string {
+  const usd = cheapestUsdc();
   return `$${usd.toFixed(usd < 0.01 ? 3 : 2)}`;
 }
 
@@ -53,7 +54,7 @@ export function identityLead(): string {
 
 /** The store, second, intact. */
 export function storeLead(): string {
-  return `It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 v2 on Base, Polygon or Solana. The cheapest thing on the shelf is ${money(cheapestUsdc())}.`;
+  return `It is also a general store for autonomous agents, kept by a named human, paid in USDC over x402 v2 on Base, Polygon or Solana. The cheapest thing on the shelf is ${cheapestLabel()}.`;
 }
 
 /** Both paragraphs, in the order the canary enforces. */

@@ -1,4 +1,5 @@
 import { storeIdentity } from "@/lib/identity";
+import { CHEAPEST_ON_THE_SHELF } from "@/store/copy/position";
 import { canonicalizeCertificate } from "@/lib/signing";
 import { sendAlert } from "@/lib/alerts";
 import { currentWeekKey } from "@/lib/kv-keys";
@@ -490,7 +491,7 @@ export async function fulfillPurchase(
       ? {
           attest_this_purchase: {
             url: `${env.STORE_BASE_URL}/api/buy/settlement_attestation?tx_hash=${payment.transaction}`,
-            note: "You now hold a settlement transaction — the one input the trust tier's cheapest door requires. $0.004 buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.",
+            note: `You now hold a settlement transaction — the one input the trust tier's cheapest door requires. ${CHEAPEST_ON_THE_SHELF} buys an independent signed observation that YOUR payment settled: a receipt this store signs about the chain, not about itself, verifiable offline forever. The hash is already in the URL.`,
           },
         }
       : {}),
