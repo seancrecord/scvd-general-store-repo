@@ -1,5 +1,10 @@
 import { Hono } from "hono";
 import { jsonLdScript } from "@/lib/jsonld";
+import {
+  isPerRail,
+  type LegacyMarketRails,
+  type MarketRails,
+} from "@/services/market";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -53,6 +58,24 @@ function tallyRow(entry: RegistryWeekEntry): string {
  * — green because the code never ran. The sentence has to be
  * testable on a fixture, not on this week's luck.
  */
+/**
+ * The rail split in prose, honest about which buckets it was taken
+ * under. Percentages are of doors whose challenge parsed, never of
+ * everything probed — the denominator is stated because a share with
+ * an unstated denominator is the easiest number in this file to
+ * misread.
+ */
+function railsSentence(rails: MarketRails | LegacyMarketRails): string {
+  if (rails.of === 0) return "";
+  if (!isPerRail(rails)) {
+    // A week from before the buckets could see Polygon. Reported as
+    // measured, with the limit named rather than papered over.
+    return `Of ${rails.of} doors whose payment challenge parsed, ${rails.both} accepted both Base and Solana, ${rails.base_only} were Base-only, ${rails.solana_only} Solana-only, ${rails.other_only} neither. ${rails.testnet_flagged} quoted testnet networks. This week was measured before the split counted Polygon separately, so a Polygon-only door sits in "neither" and a Base+Polygon door in "Base-only" — the newer weeks below do not have that limit, and this row is not restated because nobody re-probed those doors.`;
+  }
+  const share = (count: number) => `${Math.round((count / rails.of) * 100)}%`;
+  return `Of ${rails.of} doors whose payment challenge parsed: ${rails.base} take Base (${share(rails.base)}), ${rails.polygon} take Polygon (${share(rails.polygon)}), ${rails.solana} take Solana (${share(rails.solana)}). A door can appear in more than one of those, so they do not sum to ${rails.of}: ${rails.multi} accept more than one of the three and ${rails.single} accept exactly one — that single-rail share is the demand a seller turns away by picking one chain. ${rails.other} offered none of the three. ${rails.testnet_flagged} quoted testnet networks: live against test tooling, invisible to every mainnet wallet.`;
+}
+
 export function latestReading(entry: RegistryWeekEntry): string {
   const so = entry.signed_offers;
   const offersLine =
@@ -75,10 +98,20 @@ export function latestReading(entry: RegistryWeekEntry): string {
        */
       ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve signed offers that are present and structurally valid JWS — the rest ask to be paid on their word alone. Signatures are NOT verified by this census: that needs each issuer's key and a second request the weekly probe does not make. The conformance desk verifies them free, one artifact at a time.`
       : "";
-  const railsLine =
-    entry.rails.of > 0
-      ? `Of ${entry.rails.of} doors whose payment challenge parsed, ${entry.rails.both} accept both USDC rails (Base, Polygon, and Solana), ${entry.rails.base_only} are Base-only, ${entry.rails.solana_only} Solana-only — every single-rail door turns away the other rail's buyers. ${entry.rails.testnet_flagged} quoted testnet networks: live against test tooling, invisible to every mainnet wallet.`
-      : "";
+  /*
+   * THIS SENTENCE WAS FALSE UNTIL 2026-08-25, and it was false on the
+   * page this store points people at as the market's rail split.
+   *
+   * It read "N accept both USDC rails (Base, Polygon, and Solana)" —
+   * three chains called "both", off a number computed from Base AND
+   * Solana with Polygon nowhere in it. A Polygon-only door was
+   * counted "neither mainnet"; a Base+Polygon door was counted
+   * Base-only and described as turning away the other rail's buyers.
+   *
+   * It is derived per rail now, and a week measured under the old
+   * buckets says so rather than being silently re-read.
+   */
+  const railsLine = railsSentence(entry.rails);
   const priceLine = entry.price_usdc
     ? `Among ${entry.price_usdc.sample} doors quoting recognizable USDC, the median ask is ${money(entry.price_usdc.median)} (middle half ${money(entry.price_usdc.p25)}–${money(entry.price_usdc.p75)}).`
     : "";

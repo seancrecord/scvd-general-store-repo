@@ -1,5 +1,10 @@
 import { KV_KEYS } from "@/lib/kv-keys";
-import { marketAggregates, type MarketAggregates } from "@/services/market";
+import {
+  marketAggregates,
+  type LegacyMarketRails,
+  type MarketAggregates,
+  type MarketRails,
+} from "@/services/market";
 import { latestWardRound, type WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 
@@ -32,7 +37,13 @@ export interface RegistryWeekEntry {
   ready: number;
   rot: { dead_doors: number; pct: number };
   signed_offers: { serving: number; of_ready: number; pct: number };
-  rails: MarketAggregates["rails"];
+  /**
+   * Either basis. Weeks measured before 2026-08-25 carry the old
+   * Base-vs-Solana buckets and are NOT back-filled — nobody re-probed
+   * those doors, so recomputing their split would be inventing an
+   * observation. `isPerRail()` tells the two apart.
+   */
+  rails: MarketRails | LegacyMarketRails;
   price_usdc: MarketAggregates["price_usdc"];
   /** Counts only — the named top list stays in the office. */
   hosts: number;

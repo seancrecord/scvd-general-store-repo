@@ -179,10 +179,10 @@ export function renderMarketPage(
   const railsSection = section(
     "Rails — who takes what",
     rails.of > 0
-      ? `of ${rails.of} parseable doors: ${rails.both} take both rails, ${rails.base_only} Base-only, ${rails.solana_only} Solana-only, ${rails.other_only} neither mainnet`
+      ? `of ${rails.of} parseable doors: ${rails.base} take Base, ${rails.polygon} Polygon, ${rails.solana} Solana (a door can take more than one); ${rails.multi} take several, ${rails.single} exactly one, ${rails.other} none of the three`
       : "no offer facts captured yet — the next walked round fills this in",
     rails.of > 0
-      ? `A Base-only door turns away every Solana-holding buyer and vice versa. The single-rail share is addressable demand for dual-rail sellers (this store included), and the ${rails.testnet_flagged} testnet-flagged doors are the classic silent failure — working against test tooling, invisible to every mainnet wallet.`
+      ? `A single-rail door turns away every buyer holding the other rails' USDC. Those ${rails.single} are addressable demand for a multi-rail seller (this store included), and the ${rails.testnet_flagged} testnet-flagged doors are the classic silent failure — working against test tooling, invisible to every mainnet wallet.`
       : `The probe started keeping each door's offered rails on 2026-08-19; rounds before that carry verdicts only.`,
   );
 

@@ -156,10 +156,14 @@ describe("the aggregates, recomputable from the rows", () => {
     expect(market.rot.pct).toBe(40);
     // Signed offers: 1 of 3 ready doors.
     expect(market.signed_offers).toEqual({ serving: 1, of_ready: 3, pct: 33 });
-    // Rails among the three parseable doors.
-    expect(market.rails.both).toBe(1);
-    expect(market.rails.base_only).toBe(1);
-    expect(market.rails.solana_only).toBe(1);
+    // Rails among the three parseable doors, per rail. Counts are NOT
+    // exclusive — the dual-rail door is in both `base` and `solana`.
+    expect(market.rails.of).toBe(3);
+    expect(market.rails.base).toBe(2);
+    expect(market.rails.solana).toBe(2);
+    expect(market.rails.multi).toBe(1);
+    expect(market.rails.single).toBe(2);
+    expect(market.rails.basis).toBe("per-rail-v2");
     // Prices: 0.01, 0.1, 1 — median is the middle ask.
     expect(market.price_usdc?.sample).toBe(3);
     expect(market.price_usdc?.median).toBe(0.1);
@@ -261,5 +265,70 @@ describe("the bounty desk on the market page", () => {
     });
     expect(response.status).toBe(302);
     expect(response.headers.get("Location")).toContain("bounty_refused=");
+  });
+});
+
+/**
+ * THE CHAIN THE TELESCOPE COULD NOT SEE.
+ *
+ * Until 2026-08-25 the rail split was computed from Base and Solana
+ * only: `both` meant Base AND Solana, and everything else fell into
+ * `other_only`. So a Polygon-only door — a real seller on a real
+ * mainnet USDC rail — was counted "neither mainnet", indistinguishable
+ * from a typo'd chain id, and a Base+Polygon door was counted
+ * "Base-only" and described on /registry as turning away the other
+ * rail's buyers.
+ *
+ * The store's own books had carried Polygon since 2026-08-20. The
+ * census had not, which for an observatory is the wrong way round:
+ * we could bank the rail and not count it in anybody else's market.
+ */
+describe("the rail split can see every rail the store itself settles on", () => {
+  const polygonRows: WardHostResult[] = [
+    host("polygon-only.example", "ready", {
+      offer: {
+        networks: ["eip155:137"],
+        schemes: ["exact"],
+        min_usdc: 0.5,
+      },
+    }),
+    host("base-and-polygon.example", "ready", {
+      offer: {
+        networks: ["eip155:8453", "eip155:137"],
+        schemes: ["exact"],
+        min_usdc: 0.25,
+      },
+    }),
+    host("elsewhere.example", "ready", {
+      offer: {
+        networks: ["eip155:42161"],
+        schemes: ["exact"],
+        min_usdc: 0.75,
+      },
+    }),
+  ];
+
+  it("counts a Polygon-only door as Polygon, not as 'neither mainnet'", () => {
+    const market = marketAggregates(polygonRows, ["resourceUrl", "type"]);
+    expect(market.rails.polygon, "a Polygon door went uncounted").toBe(2);
+    // The Arbitrum door is the only one genuinely outside the three.
+    expect(market.rails.other).toBe(1);
+  });
+
+  it("does not call a Base+Polygon door single-rail", () => {
+    const market = marketAggregates(polygonRows, ["resourceUrl", "type"]);
+    // base-and-polygon takes two of the three; polygon-only and the
+    // Arbitrum door take one and none respectively.
+    expect(market.rails.multi).toBe(1);
+    expect(market.rails.single).toBe(1);
+    expect(market.rails.base).toBe(1);
+  });
+
+  it("stamps the basis, so a reader can tell which buckets a week used", () => {
+    // Weeks stored before this change carry the old shape and are not
+    // back-filled — nobody re-probed those doors, and recomputing
+    // their split would be inventing an observation.
+    const market = marketAggregates(polygonRows, ["resourceUrl", "type"]);
+    expect(market.rails.basis).toBe("per-rail-v2");
   });
 });
