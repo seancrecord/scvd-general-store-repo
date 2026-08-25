@@ -244,6 +244,13 @@ export const KV_KEYS = {
    */
   discoveryReport: (reportId: string): string => `discovery_report:${reportId}`,
   /**
+   * Latest unsigned catalog look per host. COUNTERS, latest-wins —
+   * the next inventory of the same origin compares against this, then
+   * overwrites it. Not a watch and not a signed artifact.
+   */
+  discoverySnapshot: (host: string): string => `discovery_snapshot:${host}`,
+  discoverySnapshotPrefix: "discovery_snapshot:",
+  /**
    * A purchased signature-agent card: the signed directory
    * observation and the certificate that bound its evidence hash.
    * PATRONS, terminal at write, never scanned — the Once-Over's

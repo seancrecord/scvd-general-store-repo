@@ -34,6 +34,7 @@ function doc(base: string) {
       "Each candidate path: status, sha256 when the body was read, extracted claim values.",
       "Disagreements from the same join we run on ourselves — only_left / only_right, no score.",
       "derived.verdict: agree | conflict | not_observed (not_observed when fewer than two surfaces produced claims).",
+      "compared_to: null on a first look; otherwise the surfaces and claims that moved since the last look we stored. Not a watch. Does not alert.",
     ],
     what_it_cannot_check: [
       "same_operator — refused (G2).",
