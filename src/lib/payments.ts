@@ -47,6 +47,15 @@ import type { Env, MenuItem } from "@/types";
  * path params.
  */
 
+/**
+ * Every payment header the till honours, for the 402's Vary line.
+ * One string, four route sites: when a dialect is added or retired,
+ * this is the only place the advertisement changes — the list going
+ * stale at one site was exactly how an outside instrument caught the
+ * X-PAYMENT omission (2026-08-26, hygiene note, accepted).
+ */
+export const PAYMENT_VARY = "PAYMENT-SIGNATURE, X-PAYMENT";
+
 export const BASE_NETWORK = "eip155:8453";
 /**
  * THE SECOND RAIL (2026-08-04): USDC on Solana mainnet, CAIP-2 form —
@@ -341,7 +350,7 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
       contentType: "application/json",
       body: {
         error: item.note_402,
-        note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign one of the accepts and retry with the PAYMENT-SIGNATURE header.",
+        note: "Payment requirements are in the PAYMENT-REQUIRED response header (base64 JSON). Sign one of the accepts and retry with the PAYMENT-SIGNATURE header; the v1 X-PAYMENT header is honoured too.",
         item_id: item.id,
         min_price_usdc: item.price_usdc,
         pricing: item.pricing,
