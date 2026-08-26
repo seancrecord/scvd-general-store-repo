@@ -1,3 +1,4 @@
+import { CANONICAL_USDC, isCanonicalUsdc } from "@/lib/value-checks";
 import {
   parseJws,
   verifyArtifact,
@@ -611,6 +612,39 @@ export async function checkConformance(
     (check) => check.name === "signature" && check.ok,
   );
   const anyFailed = raw.checks.some((check) => !check.ok);
+  /*
+   * 2.2, ADVISORY BY THE DESK'S OWN CONTRACT. The desk checks
+   * structure, signature and time — value judgments never fold into
+   * its verdict, and this one does not either (verdict below reads
+   * raw.ok alone). But an offer that names a network we settle on and
+   * an asset that is NOT that network's canonical USDC deserves a
+   * note a buyer sees before pricing it in dollars: Ethereum-mainnet
+   * USDC pasted into a Base offer is a real confusion, not a
+   * hypothetical, and until today the desk passed it in silence.
+   * Appended only when the network is one the registry knows —
+   * an unknown network gets no claim either way (rule 52, both
+   * directions).
+   */
+  if (kind === "offer" && parsed.ok) {
+    const payload = (parsed.payload ?? {}) as Record<string, unknown>;
+    const network = String(payload["network"] ?? "");
+    const asset = String(payload["asset"] ?? "");
+    if (network && asset && CANONICAL_USDC[network]) {
+      const canonical = isCanonicalUsdc(network, asset);
+      raw.checks = [
+        ...raw.checks,
+        {
+          name: "asset-canonical-usdc",
+          ok: canonical,
+          advisory: true,
+          detail: canonical
+            ? `the offer's asset is the canonical USDC contract for ${network}`
+            : `the offer's asset ${asset} is not the canonical USDC contract for ${network} (${CANONICAL_USDC[network]}). Not a conformance failure — x402 permits any asset — but a buyer pricing this offer in dollars should know the token is something else before paying.`,
+        },
+      ];
+    }
+  }
+
   const verdict: ConformanceVerdict["verdict"] = raw.ok
     ? "conforms"
     : signatureChecked || !anyFailed

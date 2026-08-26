@@ -4,6 +4,7 @@ import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
+import { KNOWN_TESTNETS, l3bChecks } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
 
@@ -142,18 +143,6 @@ export const ACCEPT_REQUIRED_FIELDS = [
 
 /** Base mainnet, the only network this store's own till accepts. */
 const MAINNET = "eip155:8453";
-/** The testnet that the x402 FAQ names as the #1 stuck point. */
-const KNOWN_TESTNETS: Record<string, string> = {
-  "eip155:84532": "Base Sepolia",
-  "eip155:11155111": "Ethereum Sepolia",
-  // Added 2026-08-25 with the rail split. This store settles on
-  // Polygon mainnet, so a seller pointing at Amoy is making exactly
-  // the mistake this check exists to catch — and until today it went
-  // unflagged, because the list only knew the rails the check was
-  // first written for.
-  "eip155:80002": "Polygon Amoy",
-};
-
 const PROBE_TIMEOUT_MS = 8000;
 const MAX_BODY_BYTES = 256 * 1024;
 
@@ -666,59 +655,13 @@ export function runChecks(
     }
   }
 
-  const payToFailures: string[] = [];
-  const decimalAmounts: string[] = [];
-  const testnetNetworks: string[] = [];
-  for (let index = 0; index < accepts.length; index += 1) {
-    const entry = accepts[index]!;
-    const network = String(entry["network"] ?? "");
-    const verdict = readPayTo(String(entry["payTo"] ?? ""), network);
-    if (!verdict.payable) {
-      payToFailures.push(`accepts[${index}].payTo: ${verdict.detail}`);
-    }
-    const amount = String(entry["amount"] ?? "");
-    if (amount.includes(".")) {
-      decimalAmounts.push(`accepts[${index}].amount "${amount}"`);
-    }
-    if (KNOWN_TESTNETS[network]) {
-      testnetNetworks.push(`accepts[${index}].network ${network} (${KNOWN_TESTNETS[network]})`);
-    }
-  }
-  const l3b: PreflightCheck[] = [
-    payToFailures.length === 0
-      ? {
-          name: "payto-payable",
-          ok: true,
-          detail: "every accepts entry names a payable address for its own network",
-        }
-      : {
-          name: "payto-payable",
-          ok: false,
-          detail: `${payToFailures.join("; ")}. A door whose payTo cannot be credited 402s perfectly and nobody can pay it.`,
-        },
-    decimalAmounts.length === 0
-      ? {
-          name: "amount-atomic",
-          ok: true,
-          detail: "every accepts amount is atomic units, no decimal points",
-        }
-      : {
-          name: "amount-atomic",
-          ok: false,
-          detail: `${decimalAmounts.join("; ")} contains a decimal point — x402 amounts are ATOMIC units (USDC has 6 decimals), so a dollar-typed amount underprices by a factor of a million.`,
-        },
-    testnetNetworks.length === 0
-      ? {
-          name: "network-mainnet",
-          ok: true,
-          detail: "no accepts entry offers a known testnet",
-        }
-      : {
-          name: "network-mainnet",
-          ok: false,
-          detail: `${testnetNetworks.join("; ")}. A testnet offer works against testnet tooling and silently fails for every mainnet buyer.`,
-        },
-  ];
+  /*
+   * 2.2: the trio's construction moved to lib/value-checks so the
+   * battery, the launch check and the desk read the same value
+   * judgments from one module. Same names, same details, same
+   * presence rule — the l3b return contract below is unchanged.
+   */
+  const l3b: PreflightCheck[] = l3bChecks(accepts, readPayTo);
 
   const extensions = (challenge["extensions"] ?? {}) as Record<string, unknown>;
   if ("bazaar" in extensions) {

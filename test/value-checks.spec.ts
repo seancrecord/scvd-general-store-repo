@@ -99,3 +99,86 @@ describe("the launch check refuses to call a stranger's token USDC", () => {
     expect(terms?.detail).toContain("USDC");
   }, 30_000);
 });
+
+describe("the desk notes a non-canonical asset without moving its verdict", () => {
+  /*
+   * The desk's published contract is structure, signature and time —
+   * value judgments never fold into its verdict, and this spec pins
+   * that both ways: the advisory appears, and "conforms" stands. The
+   * fixture's asset is Ethereum-mainnet USDC on a Base-network offer —
+   * a real confusion, and until 2.2 the desk passed it in silence.
+   */
+  async function foreignOffer(asset: string) {
+    const keyPair = (await crypto.subtle.generateKey("Ed25519", true, [
+      "sign",
+      "verify",
+    ])) as CryptoKeyPair;
+    const publicKeyHex = [
+      ...new Uint8Array(
+        (await crypto.subtle.exportKey("raw", keyPair.publicKey)) as ArrayBuffer,
+      ),
+    ]
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    const b64url = (bytes: Uint8Array): string =>
+      btoa(String.fromCharCode(...bytes))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    const encode = (value: unknown): string =>
+      b64url(new TextEncoder().encode(JSON.stringify(value)));
+    const header = { alg: "EdDSA", kid: "did:web:example.test#key-1" };
+    const payload = {
+      version: 1,
+      resourceUrl: "https://example.test/api/buy/thing",
+      scheme: "exact",
+      network: "eip155:8453",
+      asset,
+      payTo: "0x0000000000000000000000000000000000000001",
+      amount: "1000",
+      validUntil: Math.floor(Date.now() / 1000) + 3600,
+    };
+    const signingInput = `${encode(header)}.${encode(payload)}`;
+    const signature = new Uint8Array(
+      await crypto.subtle.sign(
+        "Ed25519",
+        keyPair.privateKey,
+        new TextEncoder().encode(signingInput),
+      ),
+    );
+    return { jws: `${signingInput}.${b64url(signature)}`, publicKeyHex };
+  }
+
+  async function deskCheck(asset: string) {
+    const { SELF } = await import("cloudflare:test");
+    const { jws, publicKeyHex } = await foreignOffer(asset);
+    const response = await SELF.fetch("https://scvd.store/api/conformance/v1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ artifact: jws, public_key_hex: publicKeyHex }),
+    });
+    return (await response.json()) as {
+      verdict: string;
+      checks: { name: string; ok: boolean; advisory?: boolean; detail: string }[];
+    };
+  }
+
+  it("Ethereum USDC on a Base offer draws the advisory; conforms stands", async () => {
+    const json = await deskCheck("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
+    expect(json.verdict).toBe("conforms");
+    const note = json.checks.find((c) => c.name === "asset-canonical-usdc");
+    expect(note).toBeDefined();
+    expect(note!.ok).toBe(false);
+    expect(note!.advisory).toBe(true);
+    expect(note!.detail).toContain("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
+    expect(note!.detail.toLowerCase()).toContain("not the canonical");
+  }, 30_000);
+
+  it("the canonical contract draws the same check, passing", async () => {
+    const json = await deskCheck("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913");
+    expect(json.verdict).toBe("conforms");
+    const note = json.checks.find((c) => c.name === "asset-canonical-usdc");
+    expect(note?.ok).toBe(true);
+    expect(note?.advisory).toBe(true);
+  }, 30_000);
+});
