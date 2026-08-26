@@ -374,6 +374,25 @@ export function contactEmail(entry: OutreachEntry | undefined): string | null {
   return null;
 }
 
+/**
+ * THE WIRE IS PAUSED (keeper's ruling, 2026-08-26), and the pause is
+ * a refusal in the wire rather than a note in a doc.
+ *
+ * On 2026-08-21 Symantec/Bluecoat categorized this domain "Suspicious
+ * and Spam" and FortiGuard "Spam URLs, High Risk". FortiGuard defines
+ * that category as URLs FOUND IN SPAM EMAILS — and the operator notes
+ * this wire sends are the only email this domain has ever sent to
+ * strangers. Within five days two real reviewers behind corporate
+ * filters reported the site down. Every note sent while flagged
+ * deepens the exact signal the recategorization disputes are trying
+ * to reverse, so the wire declines even the keeper's own button.
+ *
+ * TO UNPAUSE: delete WIRE_PAUSED_SINCE and the guard below, after the
+ * vendor categories clear. test/wire-paused.spec.ts pins the pause;
+ * removing both is one edit and one deliberately failing test.
+ */
+export const WIRE_PAUSED_SINCE = "2026-08-26";
+
 export type WireOutcome =
   | { sent: true; to: string; verified_at: string }
   | {
@@ -384,6 +403,7 @@ export type WireOutcome =
         | "door-healed"
         | "not-in-queue"
         | "wire-not-configured"
+        | "wire-paused"
         | "send-failed";
       detail: string;
     };
@@ -401,6 +421,29 @@ export type WireOutcome =
  * one note ever.
  */
 export async function wireNote(
+  env: Env,
+  host: string,
+  prospects: Prospect[],
+  ledger: OutreachLedger,
+): Promise<WireOutcome> {
+  if (WIRE_PAUSED_SINCE) {
+    return {
+      sent: false,
+      reason: "wire-paused",
+      detail: `The wire is paused since ${WIRE_PAUSED_SINCE}: the domain was categorized Spam/Suspicious by FortiGuard and Symantec on 2026-08-21, and outbound notes are the likeliest cause. Sending while flagged deepens the signal the recategorization disputes are reversing. Scouting and drafting still run; only delivery declines.`,
+    };
+  }
+  return deliverWireNote(env, host, prospects, ledger);
+}
+
+/**
+ * THE DELIVERY HALF, split out when the pause landed so the wire's
+ * behavior stays specified while the wire itself declines. Nothing
+ * outside this file and its behavior spec may call this: the routes
+ * go through wireNote, where the pause lives, and
+ * test/wire-paused.spec.ts asserts that structurally.
+ */
+export async function deliverWireNote(
   env: Env,
   host: string,
   prospects: Prospect[],
@@ -547,6 +590,14 @@ export async function wireAllScouted(
   env: Env,
   prospects: Prospect[],
   ledger: OutreachLedger,
+  /**
+   * The sender, injectable so the batch's own mechanics (cap,
+   * eligibility, heal-skip, stop-on-dead-wire) stay specified while
+   * the default sender is paused. The default IS the pause: routes
+   * never pass this, and the structural test in wire-paused.spec
+   * holds them to it.
+   */
+  send: typeof wireNote = wireNote,
 ): Promise<BatchWireReport> {
   const eligible = prospects.filter((p) => {
     const entry = ledger.hosts[p.host];
@@ -561,7 +612,7 @@ export async function wireAllScouted(
     remaining: eligible.length - slice.length,
   };
   for (const prospect of slice) {
-    const outcome = await wireNote(env, prospect.host, prospects, ledger);
+    const outcome = await send(env, prospect.host, prospects, ledger);
     if (outcome.sent) {
       report.sent.push({ host: prospect.host, to: outcome.to });
     } else if (outcome.reason === "door-healed") {
@@ -573,6 +624,7 @@ export async function wireAllScouted(
       // first such refusal instead of logging it ten times.
       if (
         outcome.reason === "wire-not-configured" ||
+        outcome.reason === "wire-paused" ||
         outcome.reason === "send-failed"
       ) {
         break;
