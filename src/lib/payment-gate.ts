@@ -13,6 +13,7 @@ import {
   itemKeyFromPath,
   metricsMonth,
   recordChallengeIssued,
+  recordRouteTiming,
   recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
@@ -593,7 +594,47 @@ class DialectTolerantAdapter extends HonoAdapter {
   }
 }
 
+/**
+ * THE CHALLENGE CLOCK — roadmap 0.12, and the reason it wraps rather
+ * than sits inline.
+ *
+ * The number worth publishing is how long a buyer waits to be told a
+ * price, which is the WHOLE gate: the stack read, the preflight, the
+ * SDK's own work, and the offer-receipt signing that happens after the
+ * 402 is decided. An inline stamp at the top of the 402 branch would
+ * miss that tail, and the tail is where the interesting milliseconds
+ * have always been. So the gate runs inside a wrapper and the wrapper
+ * owns the clock.
+ *
+ * THE WRITE IS DEFERRED AND THAT IS NOT OPTIONAL. This path already
+ * awaits two counter writes before the buyer sees a price. A third,
+ * awaited, would be the latency instrument making the latency worse —
+ * the oldest way to be wrong about performance. waitUntil, or nothing.
+ *
+ * ONLY CHALLENGES ARE TIMED. A free route that falls through to next()
+ * did no payment work, and folding it in would flatter the figure with
+ * requests that never touched the till.
+ */
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const startedAt = Date.now();
+  const response = await runPaymentGate(c, next);
+  const status = response?.status ?? c.res?.status;
+  if (status === 402) {
+    const elapsed = Date.now() - startedAt;
+    try {
+      c.executionCtx.waitUntil(
+        recordRouteTiming(c.env, "challenge", elapsed).catch(() => undefined),
+      );
+    } catch {
+      // No execution context (direct invocation in a test): the timing
+      // is a nicety, the challenge is not. Never let the instrument
+      // fail the response it is measuring.
+    }
+  }
+  return response;
+};
+
+const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new DialectTolerantAdapter(c);
   // The decline slot rides along on the context. The SDK shallow-copies
