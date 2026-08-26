@@ -129,6 +129,70 @@ export const BATTERY_ADDS: Record<PreflightBattery, readonly string[]> = {
 };
 
 /**
+ * 2.3 — THE BATTERY AS DATA, COMPLETE. BATTERY_CHECK_NAMES (2.1a)
+ * named the unconditional core; these registries name the rest, so
+ * /api/preflight/checks can derive the whole manifest from code and
+ * a hand-typed criteria page has nothing left to drift from.
+ */
+export const CONDITIONAL_CHECK_NAMES = [
+  "bazaar-extension",
+  "signed-offers",
+] as const;
+
+/** Checks a battery MAY fold into its verdict beyond the core. */
+export const VERDICT_FOLD_CHECK_NAMES = [
+  "payto-payable",
+  "amount-atomic",
+  "network-mainnet",
+  "solana-rail-receivable",
+] as const;
+
+/** Advisory names, in battery emission order. True and worth knowing, never folded. */
+export const ADVISORY_NAMES = [
+  "nonstandard-scheme",
+  "testnet-network",
+  "payto-is-a-name",
+  "payto-wrong-rail",
+  "payto-not-an-address",
+  "amount-not-atomic",
+  "no-bazaar-extension",
+  "inputs-declared",
+  "no-input-contract",
+  "no-signed-offers",
+  "large-body",
+] as const;
+
+/**
+ * Every dated change to what any battery counts. Append-only; the
+ * manifest serves this verbatim and a spec pins the ordering, so a
+ * criteria change that skips this list fails the build.
+ */
+export const BATTERY_CHANGELOG: readonly {
+  date: string;
+  battery: PreflightBattery;
+  change: string;
+}[] = [
+  {
+    date: "2026-08-03",
+    battery: "v1",
+    change:
+      "v1 ships and freezes: the structural core (status-402, payment-required-header, x402-version, accepts) and nothing else, so a ready recorded under it means the same thing forever.",
+  },
+  {
+    date: "2026-08-23",
+    battery: "v2",
+    change:
+      "v2 begins, folding solana-rail-receivable into the verdict: a door whose payTo cannot be credited is not ready by any reading a buyer would accept. v1 keeps serving; both verdicts render from one probe.",
+  },
+  {
+    date: "2026-08-26",
+    battery: "v2",
+    change:
+      "v2 folds the L3b consistency trio (payto-payable, amount-atomic, network-mainnet): an unpayable 402 stops reading ready. The same observations ride v1 as advisories, outside its verdict.",
+  },
+];
+
+/**
  * The fields an accepts entry must carry, and the derivation matters:
  * this is the exact set isSignableAccept() requires before our own
  * till will sign an offer over an entry. One law, both directions.

@@ -8,6 +8,11 @@ import {
   PREFLIGHT_V2_SINCE,
   preflightUrl,
   type PreflightBattery,
+  ADVISORY_NAMES,
+  BATTERY_CHANGELOG,
+  BATTERY_CHECK_NAMES,
+  CONDITIONAL_CHECK_NAMES,
+  VERDICT_FOLD_CHECK_NAMES,
 } from "@/services/preflight";
 import { lifecycleHeaders } from "@/store/api-lifecycle";
 import type { HonoEnv } from "@/types";
@@ -124,6 +129,49 @@ for (const battery of PREFLIGHT_VERSIONS) {
   );
 }
 preflightRoutes.get("/api/preflight", (c) => c.json(doc(c.env.STORE_BASE_URL)));
+
+/**
+ * 2.3 — THE BATTERY MANIFEST, DERIVED AND DIGESTED. Every field comes
+ * from the same registries runChecks reads; nothing here is typed by
+ * hand, so the criteria cannot drift from the code that renders
+ * verdicts. ruleset_digest is recomputable by a stranger from the
+ * document alone: SHA-256 over JSON.stringify of the covered fields,
+ * in the order ruleset_digest_covers names them.
+ */
+preflightRoutes.get("/api/preflight/checks", async (c) => {
+  const covered: Record<string, unknown> = {
+    core_checks: [...BATTERY_CHECK_NAMES],
+    conditional_checks: [...CONDITIONAL_CHECK_NAMES],
+    verdict_fold_checks: [...VERDICT_FOLD_CHECK_NAMES],
+    advisories: [...ADVISORY_NAMES],
+    batteries: Object.fromEntries(
+      PREFLIGHT_VERSIONS.map((version) => [
+        version,
+        { adds: [...BATTERY_ADDS[version]] },
+      ]),
+    ),
+    changelog: BATTERY_CHANGELOG.map((entry) => ({ ...entry })),
+  };
+  const coversList = Object.keys(covered);
+  const payload = JSON.stringify(
+    Object.fromEntries(coversList.map((f) => [f, covered[f]])),
+  );
+  const digestBytes = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(payload),
+  );
+  const digest = [...new Uint8Array(digestBytes)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return c.json({
+    ...covered,
+    ruleset_digest_covers: coversList.join(", "),
+    ruleset_digest: digest,
+    how_to_recompute:
+      "JSON.stringify an object holding the fields ruleset_digest_covers names, in that order, exactly as served; SHA-256 the UTF-8 bytes; hex-encode. No canonicalizer beyond field order — the served bytes are the canonical form.",
+    note: "Derived from the same registries the battery runs. A criteria page and a verdict can no longer disagree, because both read this.",
+  });
+});
 
 async function handle(
   c: Context<HonoEnv>,
