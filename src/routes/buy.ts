@@ -629,6 +629,25 @@ const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
 };
 
+/** spot_check needs a readable host BEFORE money moves: no host, no charge. */
+const spotCheckGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  if (c.req.path !== "/api/buy/spot_check" || !isBuying(c)) {
+    // Not this route, or only asking the price: let the gate answer.
+    return next();
+  }
+  const { validSpotCheckHost } = await import("@/services/spot-check");
+  if (!validSpotCheckHost(c.req.query("host"))) {
+    return c.json(
+      {
+        error:
+          "Give a bare hostname in the host query parameter — example.com, not a URL. We read our own books about it; no host, no charge.",
+      },
+      400,
+    );
+  }
+  await next();
+};
+
 /** coffees_for_closers needs the win BEFORE money moves: no win, no coffee. */
 const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (c.req.path !== "/api/buy/coffees_for_closers" || !isBuying(c)) {
@@ -973,6 +992,7 @@ buyRoutes.use("/api/buy/*", mandateCheck);
 buyRoutes.use("/api/buy/*", mandateRefCheck);
 buyRoutes.use("/api/buy/*", confessionCheck);
 buyRoutes.use("/api/buy/*", closerCheck);
+buyRoutes.use("/api/buy/*", spotCheckGate);
 buyRoutes.use("/api/buy/*", tagCheck);
 /**
  * The dilemma IS the order (2026-08-19): quick_judgment's prose always
@@ -1082,6 +1102,10 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
     input.statementWallet = c.req.query("wallet") ?? "";
     input.statementHours = c.req.query("hours");
     input.statementNetwork = c.req.query("network");
+  }
+  if (item.id === "spot_check") {
+    // spotCheckGate validated the hostname before the gate.
+    input.spotCheckHost = c.req.query("host") ?? "";
   }
   if (item.id === "coffees_for_closers") {
     // closerCheck validated presence and length before the gate.

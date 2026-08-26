@@ -18,6 +18,7 @@ import { storeWalletStatement } from "@/services/wallet-statement";
 import type { SignedWalletStatement } from "@/services/wallet-statement";
 import type { SignedPassportRefresh } from "@/services/passport-refresh";
 import type { SignedTrustProfile } from "@/services/trust-profile";
+import type { SignedSpotCheck } from "@/services/spot-check";
 import { storeMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
 import { storeOnpageAudit } from "@/services/onpage-audit";
@@ -104,6 +105,8 @@ export interface InstantGoodsInput {
   passportRefresh?: SignedPassportRefresh;
   /** trust_profile only: the commission record, already gated and signed. */
   trustProfile?: SignedTrustProfile;
+  /** spot_check only: the signed reading, already made and bound. */
+  spotCheck?: SignedSpotCheck;
   /** the_mandate only: the mandate record, already made and signed. */
   mandate?: SignedMandate;
   /** settlement_reconciliation only: the observation, already signed. */
@@ -343,6 +346,29 @@ export async function deliverInstantGoods(
           chip_url: `/badges/passport/${observed.host}.svg`,
           verify_note:
             "The observation is signed on its own: verify signed_payload semantics per /spec/scvd-attestation/v1 against the key at /.well-known/scvd-signing-key. Its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the observation too.",
+        },
+      };
+    }
+    case "spot_check": {
+      const spot = input.spotCheck;
+      if (!spot) {
+        throw new Error("spot_check reached goods with no record");
+      }
+      const h = spot.record.history;
+      const seen = spot.record.not_observed
+        ? "We have never observed this host — that absence is the finding, recorded and signed."
+        : `Rounds probed: ${h.rounds_probed} of ${h.rounds_since_first_sighting} since first sighting; last observed ${h.last_observed ?? "never"}.`;
+      return {
+        deliverable: `Spot check for ${spot.record.host}, read from the books at ${spot.record.asked_at}. ${seen} The full signed record rides in extras; the same facts serve free at ${spot.record.free_twin_url} — what you bought is the signed, certificate-bound copy.`,
+        extras: {
+          spot_check: spot.record,
+          evidence_hash: spot.evidence_hash,
+          signed_payload: spot.signed_payload,
+          signature: spot.signature,
+          signature_jcs: spot.signature_jcs,
+          public_key: spot.public_key,
+          how_to_verify:
+            "ed25519_verify(signed_payload, signature) against public_key, also served at /.well-known/scvd-signing-key. The record's evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too.",
         },
       };
     }

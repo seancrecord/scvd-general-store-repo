@@ -168,6 +168,14 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "spot_check") {
+    properties["host"] = {
+      type: "string",
+      description:
+        "A bare hostname, e.g. example.com. We read our own books about it — corpus rounds, verdicts as recorded, coverage, gaps — and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer.",
+    };
+    required.push("host");
+  }
   if (item.id === "trust_profile") {
     properties["url"] = {
       type: "string",
