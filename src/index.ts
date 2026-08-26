@@ -26,6 +26,7 @@ import {
   phantomRoutes,
   porchRoutes,
   practiceCounterRoutes,
+  tillRoutes,
   requestRoutes,
   houseLedgerRoutes,
   neighboursRoutes,
@@ -255,6 +256,7 @@ app.route("/", mcpRoutes);
 app.route("/", porchRoutes);
 app.route("/", whatRoutes);
 app.route("/", practiceCounterRoutes);
+app.route("/", tillRoutes);
 app.route("/", trustListRoutes);
 app.route("/", houseLedgerRoutes);
 app.route("/", neighboursRoutes);

@@ -336,6 +336,13 @@ tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # up for — trial warnings, burn, price drift, signup
                   # friction. Local JSONL, zero deps, its own tests
                   # (npm run tab:test); spec at THE_TAB.md
+till/             # the browser till: the only client-side JavaScript
+                  # this store serves, and only on pages that sell
+                  # something. Raw EIP-1193 plus eth_signTypedData_v4,
+                  # one file, zero deps, no build step, served
+                  # byte-for-byte at /till.js. Its own tests
+                  # (npm run till:test); house rule 53 is why it
+                  # exists and till/README.md is what it refuses to do
 cli/              # scvd: the official command line over the store's
                   # FREE instruments — preflight, the conformance desk,
                   # receipt verification, the on-page desk, the fresh

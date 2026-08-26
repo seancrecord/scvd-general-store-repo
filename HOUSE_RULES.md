@@ -469,6 +469,43 @@ LORE & TRADITION
     of it, and the file says so in those words.
 
 
+53. A BUYER WHO CANNOT PAY IS A DESIGN FAILURE, NOT A SEGMENT WE
+    DON'T SERVE (2026-08-26, the keeper's ruling, from the finding
+    that nobody can buy anything here in a browser). The till must
+    reach the buyer where the buyer already is. An architectural
+    preference — API-first, agent-first, no-JavaScript — is a
+    reason to build one door FIRST. It is never a reason a person
+    holding a funded wallet cannot spend $0.004.
+
+    What prompted it: the whole site shipped with zero payment
+    code in the browser. The only JavaScript served was an
+    analytics beacon. /try — the page whose own copy says "Practice
+    on us. The till is real" — was a page of instructions telling
+    the reader to go and write an HTTP client. Every sale this
+    store has ever made required the buyer to write code or run an
+    MCP client. That was not a considered position; nobody decided
+    it. It was the shape left behind by building the agent door
+    first and never coming back.
+
+    So: when a door exists that buyers arrive at, it gets a till,
+    or the reason it does not is written down where the buyer can
+    read it. "Our API is excellent" is not that reason.
+
+    THE TWO THINGS THIS RULE DOES NOT OVERRIDE, and it is not close:
+
+    Money fails closed (AT_SCALE rule 7). A payment path that is
+    uncertain refuses. Reducing friction never means guessing on
+    somebody's behalf about money, and a browser till is the one
+    place a bug spends a real person's funds.
+
+    The store never asks anyone to run code, install anything, or
+    hand over credentials or key material. A wallet SIGNATURE
+    request is not that, and the distinction is exact: the wallet
+    signs and returns a signature; the key never leaves it. That
+    is bit-for-bit what every agent buying here already does. If
+    it were a violation, the entire product would be one.
+
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the

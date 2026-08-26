@@ -40,6 +40,20 @@ export interface SimplePageOptions {
   extraCss?: string;
   /** Body class, so extraCss can scope itself to this room only. */
   bodyClass?: string;
+  /**
+   * INERT MARKUP APPENDED AFTER THE PAPER — today, the browser till's
+   * JSON island and its <script src> tag (see lib/till-shelf.ts).
+   *
+   * The name is `inertHtml` rather than `scriptHtml` because the
+   * contract is the strict one and the contract is the point:
+   * whatever a caller passes here MUST render as nothing. A room that
+   * put visible markup through this slot would silently change what a
+   * reader with scripting off sees, which is the exact property the
+   * till was built not to touch. Guarded by test/browser-till.spec.ts,
+   * which strips these two tags and compares the rest of the document
+   * byte for byte against the same page rendered without them.
+   */
+  inertHtml?: string;
 }
 
 const SITE_ORIGIN = "https://scvd.store";
@@ -97,7 +111,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
     <div class="fine-print">
       <p><a href="/">Back to the front of the store</a>. Agents: <a href="/llms.txt"><code>/llms.txt</code></a>, <a href="/skill.md"><code>/skill.md</code></a>, or <a href="/menu.json"><code>/menu.json</code></a>.</p>
     </div>
-  </main>
+  </main>${options.inertHtml ? `\n  ${options.inertHtml}` : ""}
 </body>
 </html>`;
 }

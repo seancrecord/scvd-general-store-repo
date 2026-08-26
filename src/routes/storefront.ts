@@ -79,3 +79,35 @@ storefrontRoutes.get("/", async (c) => {
     }),
   );
 });
+
+/**
+ * GET /index.md — the site root, at the URL a markdown convention
+ * points at (2026-08-26).
+ *
+ * The apex already negotiates: `GET /` with `Accept: text/markdown`
+ * has served the operational manual since the readiness audit asked
+ * for it. What it could not serve was a caller that does not
+ * negotiate — an agent handed a bare URL, a crawler that fetches with
+ * a wildcard Accept, a person pasting a link into a tool that strips
+ * headers. The convention those readers know is `/index.md`, and it
+ * answered 404, which reads as "this site publishes no markdown root"
+ * rather than "you asked for it the wrong way".
+ *
+ * THE SAME BYTES, NOT A SECOND DOCUMENT. This calls the exact function
+ * the negotiated root calls, so there is nothing here that can drift
+ * from it — and the canonical link points at `/`, because this is one
+ * document at two addresses and saying otherwise would hand an indexer
+ * a duplicate to adjudicate.
+ */
+storefrontRoutes.get("/index.md", (c) =>
+  c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+    "content-type": MARKDOWN_MEDIA_TYPE,
+    /*
+     * Vary on Accept even though this path does not negotiate: it is
+     * the same resource as `/`, which does, and a cache that learned
+     * one without the other would be able to serve a stale dialect.
+     */
+    Vary: VARY_ACCEPT,
+    Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
+  }),
+);

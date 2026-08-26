@@ -765,7 +765,53 @@ async function handleRpc(
   }
 }
 
-mcpRoutes.post("/mcp", async (c) => {
+/**
+ * THE MCP DOOR, EXPORTED SO THE MANIFEST PATH CAN MOUNT IT TOO
+ * (2026-08-26, after a scanner reported "MCP server in registry but
+ * no live protocol handshake" against a server that has answered
+ * `initialize` since it opened).
+ *
+ * WHAT ACTUALLY HAPPENED. The scanner POSTed its JSON-RPC
+ * `initialize` to `/.well-known/mcp` — the MANIFEST path — instead of
+ * reading `endpoint` out of the manifest and POSTing to `/mcp`. It
+ * got a 405. The 405 body says, in plain English, that the path is
+ * served and the method was wrong; the scanner ignored it, which
+ * means it branches on the status code and never reads the body. So
+ * the store was publishing a correct answer to a caller structurally
+ * incapable of hearing it, and the visible result was "no live
+ * handshake" — indistinguishable, to everyone downstream, from a
+ * store with no MCP server at all.
+ *
+ * The guess is not unreasonable, either. A discovery document that
+ * describes a protocol is, to a scanner that already has a socket
+ * open, the obvious place to speak that protocol. Half of what probes
+ * a well-known path appends `.json` for the same reason, and that
+ * guess already got its own mount here.
+ *
+ * DIRECT HANDLING, NOT A 307 — and this was the real choice. RFC 9110
+ * §15.4.8 does preserve method and body across a 307, so a redirect
+ * would be correct, and it has one genuine advantage: it teaches the
+ * caller the canonical URL, which a silent second mount does not.
+ * It is still the wrong pick. A redirect only works for a client that
+ * FOLLOWS redirects with the body intact, and the client this exists
+ * for is precisely the one that has already demonstrated it does the
+ * cheap thing — status code in, decision out. A scanner that ignores
+ * a 405 body is not a scanner to bet a hop on. Direct handling has no
+ * such dependency: one request, one handshake, no client behaviour
+ * assumed beyond having sent the POST it already sent.
+ *
+ * ONE HANDLER, TWO MOUNTS. The protocol logic is not duplicated —
+ * `/.well-known/mcp` and `/.well-known/mcp.json` call this exact
+ * function (see routes/well-known.ts), so the two paths cannot
+ * negotiate different protocol versions or drift apart. This is a
+ * second DOOR to one server, not a second server.
+ *
+ * GET on those paths is untouched and still returns the manifest;
+ * every other method still falls through to the router-derived 405 in
+ * index.ts, which now reads "takes GET, POST" because it counts the
+ * routes rather than remembering them.
+ */
+export async function handleMcpPost(c: Context<HonoEnv>): Promise<Response> {
   const body: unknown = await c.req.json().catch(() => null);
   if (
     isRecord(body) &&
@@ -775,7 +821,9 @@ mcpRoutes.post("/mcp", async (c) => {
     return handleRpc(c, body as unknown as JsonRpcRequest);
   }
   return rpcError(null, -32700, "That wasn't JSON-RPC. The door takes 2.0.");
-});
+}
+
+mcpRoutes.post("/mcp", handleMcpPost);
 
 /**
  * A 405 THAT TELLS THE CALLER WHAT TO DO INSTEAD.

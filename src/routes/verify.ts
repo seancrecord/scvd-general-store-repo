@@ -6,6 +6,7 @@ import {
 } from "@/lib/jcs";
 import type { Context } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
+import { isUrlTemplatePlaceholder } from "@/lib/url-template";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { storeIdentity } from "@/lib/identity";
 import { recordVerifyCall } from "@/lib/metrics";
@@ -350,6 +351,53 @@ function receiptPageHtml(
 
 verifyRoutes.get("/api/verify/:cert_id", async (c) => {
   const id = c.req.param("cert_id");
+
+  /**
+   * A PLACEHOLDER IS NOT A MISSING ARTIFACT, AND THIS ENDPOINT USED TO
+   * SAY IT WAS (2026-08-26).
+   *
+   * `/api/verify/{id}` is published as a URL template on llms.txt,
+   * agents.md, skill.md, menu.json, the OpenAPI contract and every
+   * purchase response. Some readers treat it as a link and fetch it
+   * literally — a crawler pulling hrefs, a link checker, an agent told
+   * to follow what it finds — and until today they got the ordinary
+   * not-found: `valid: false`, status 404.
+   *
+   * That answer is false in the way that costs most. This store sells
+   * the fact that a stranger can check an artifact without asking us,
+   * and its verification endpoint was answering "no such artifact" to
+   * its own documentation URL. A readiness scan reads that as a broken
+   * link on the page we most want read; a careless agent reads
+   * `valid: false` and has been told something about our goods.
+   *
+   * So a placeholder gets a 200 and usable guidance. TWO PROPERTIES
+   * make that safe, and both are deliberate:
+   *
+   *   - there is NO `valid` field in this response, at all. Not
+   *     `false`, not `true`. Nothing here can be mistaken for a
+   *     verdict on an artifact, because no verdict is expressed.
+   *   - the sample id it hands back is a real artifact that really
+   *     verifies, so a reader following the guidance lands on a
+   *     working example rather than another dead end.
+   *
+   * A real certificate id contains no braces, so nothing that could
+   * have been looked up is swallowed here — see lib/url-template.ts
+   * for why that check is kept narrow on purpose.
+   */
+  if (isUrlTemplatePlaceholder(id)) {
+    return c.json({
+      template: true,
+      not_a_verification_result:
+        "You fetched the URL TEMPLATE rather than a certificate id, so there is nothing here to verify and this response deliberately carries no verdict — no `valid` field, either way. Substitute a real id and this endpoint answers properly.",
+      usage: `${c.env.STORE_BASE_URL}/api/verify/{cert_id}, where cert_id is the id on any artifact this store signed. Free, forever, no account, no key, no rate limit, and it answers for anyone — not only for whoever bought the thing.`,
+      sample_cert_id: SAMPLE_ARTIFACT_ID,
+      sample_verify_url: `${c.env.STORE_BASE_URL}/api/verify/${SAMPLE_ARTIFACT_ID}`,
+      offline_note:
+        "You do not need this endpoint at all. Every purchase response and every verify answer carries signed_payload, signature and public_key, which is everything an ed25519 check needs — and a check you run yourself is the one that carries weight, because an issuer confirming its own signature proves nothing about its honesty.",
+      signing_key: `${c.env.STORE_BASE_URL}/.well-known/scvd-signing-key`,
+      openapi: `${c.env.STORE_BASE_URL}/openapi.json`,
+    });
+  }
 
   /**
    * ECOSYSTEM REPORTS verify here like every artifact class (2026-08-19):
