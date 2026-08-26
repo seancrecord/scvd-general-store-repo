@@ -155,6 +155,8 @@ export interface LatencyRoute {
 export interface Latency {
   what_this_is: string;
   method: string;
+  /** The independent monitor the method text points at. Never ours. */
+  external_monitor: string;
   /** The histogram's resolution, published so the ranges can be read. */
   bucket_edges_ms: number[];
   /** Route class -> histogram. */
@@ -177,6 +179,17 @@ export interface Pulse {
   signing_key: string;
 }
 
+
+/**
+ * THE READING THAT OWES US NO FAVOURS (roadmap 0.12, second half).
+ * Keeper stood the monitor up 2026-08-26 — the day two people
+ * reported the site down and the store had only its own clock to
+ * answer with. External, independently operated, checked from
+ * outside our network. If this URL ever changes, the pin test fails
+ * by name and the new address gets published deliberately.
+ */
+export const EXTERNAL_MONITOR_URL =
+  "https://stats.uptimerobot.com/VuHaG1k2c5";
 
 const LATENCY_WHAT =
   "How long this store's own server took to produce a 402 challenge, in buckets. SERVER-SIDE ONLY: the clock starts when the payment gate is entered and stops when the challenge is ready, so it excludes DNS, TLS, network transit and everything the buyer's own client does. A reader measuring from outside will always see a larger number than this, and the difference is the network, not us.";
@@ -239,6 +252,7 @@ async function computeLatency(env: Env): Promise<Latency> {
   return {
     what_this_is: LATENCY_WHAT,
     method: LATENCY_METHOD,
+    external_monitor: EXTERNAL_MONITOR_URL,
     bucket_edges_ms: [...LATENCY_BUCKET_EDGES_MS],
     routes,
     truncated,
