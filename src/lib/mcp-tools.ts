@@ -163,6 +163,12 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // the history at one URL. The page is bought; what it shows
       // never is.
       "trust_profile",
+      // The observation ALREADY MADE, read back signed: no fresh
+      // look, just what the books hold about a host — including an
+      // honest not_observed. The cheapest thing on the shelf, and
+      // the routine pre-transaction question this cluster exists to
+      // answer.
+      "spot_check",
     ],
   },
   {

@@ -487,6 +487,11 @@ async function callPurchaseTool(
   if (item.id === "context_anchor" && typeof args["summary"] === "string") {
     input.summary = args["summary"].replace(/\0/g, "");
   }
+  if (item.id === "spot_check" && typeof args["host"] === "string") {
+    // Validation happens in performSpotCheck; a bad host refuses
+    // pre-mint and charges nothing, same law as the HTTP door.
+    input.spotCheckHost = args["host"].replace(/\0/g, "");
+  }
   if (item.id === "coffees_for_closers" && typeof args["win"] === "string") {
     const win = args["win"].replace(/\0/g, "");
     input.win = win;
