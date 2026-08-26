@@ -99,6 +99,13 @@ export const PREFLIGHT_BATTERY = `preflight-${PREFLIGHT_VERSION}`;
  */
 export const PREFLIGHT_VERSION_NEXT = "v2";
 
+/**
+ * v2's citable name, DERIVED like v1's rather than typed. A citation
+ * that can drift from the version it names is the defect 2.5 fixes;
+ * it would be a poor joke to reintroduce it in the fix.
+ */
+export const PREFLIGHT_BATTERY_NEXT = `preflight-${PREFLIGHT_VERSION_NEXT}`;
+
 /** Every battery currently served. Ordered oldest first. */
 export const PREFLIGHT_VERSIONS = [
   PREFLIGHT_VERSION,
