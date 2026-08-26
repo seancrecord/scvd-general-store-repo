@@ -632,6 +632,74 @@ export function takeDeclineReason(nonce: string): DeclineReason | undefined {
   return found;
 }
 
+/** Where the facilitator's supported kinds warm between isolates. */
+export const SUPPORTED_KINDS_KV_KEY = "facilitator:supported:v1";
+/** A week: long enough to survive quiet spells, short enough to shed a
+ * kind the facilitator retires. */
+const SUPPORTED_KINDS_TTL_SECONDS = 7 * 86_400;
+
+/**
+ * THE COLD-START TAX, RETIRED (ledger #51; the keeper's directory-score
+ * push, 2026-08-26). Every deploy evicts every isolate, and the first
+ * paid request each cold isolate served awaited a facilitator round
+ * trip — getSupported() — before it could quote a price. Directory
+ * probes knock cold almost by definition (they arrive on their own
+ * schedule, not inside a warm burst), so the latency the scoreboards
+ * measured was disproportionately this tax.
+ *
+ * The kinds now warm in KV: a cold isolate reads the cached response
+ * in single-digit milliseconds and kicks a background refresh; only a
+ * store that has NEVER fetched the kinds pays the round trip. The
+ * refresh promise is deliberately detached — an isolate that dies
+ * before it lands just leaves the last good copy in place, and the
+ * empty-KV path plus long-lived isolates keep the copy current.
+ *
+ * STALENESS, HONESTLY PRICED: this is not a new risk class. Today's
+ * per-isolate cache already serves kinds as old as the isolate, which
+ * on a quiet week is days. A KV copy at most seven days old with a
+ * refresh attempt on every cold start is fresher than what it
+ * replaces; if the facilitator retires a kind inside the window, the
+ * failure is a verify/settle refusal — the same failure the isolate
+ * cache produces today.
+ */
+export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
+  constructor(
+    config: ConstructorParameters<typeof HTTPFacilitatorClient>[0],
+    private readonly kv: KVNamespace,
+  ) {
+    super(config);
+  }
+
+  override async getSupported(): Promise<
+    Awaited<ReturnType<HTTPFacilitatorClient["getSupported"]>>
+  > {
+    type Supported = Awaited<
+      ReturnType<HTTPFacilitatorClient["getSupported"]>
+    >;
+    const cached = await this.kv
+      .get<Supported>(SUPPORTED_KINDS_KV_KEY, "json")
+      .catch(() => null);
+    if (cached) {
+      void super
+        .getSupported()
+        .then((fresh) =>
+          this.kv.put(SUPPORTED_KINDS_KV_KEY, JSON.stringify(fresh), {
+            expirationTtl: SUPPORTED_KINDS_TTL_SECONDS,
+          }),
+        )
+        .catch(() => undefined);
+      return cached;
+    }
+    const fresh = await super.getSupported();
+    await this.kv
+      .put(SUPPORTED_KINDS_KV_KEY, JSON.stringify(fresh), {
+        expirationTtl: SUPPORTED_KINDS_TTL_SECONDS,
+      })
+      .catch(() => undefined);
+    return fresh;
+  }
+}
+
 export interface PaymentStack {
   httpServer: x402HTTPResourceServer;
   initialized: Promise<void>;
@@ -646,8 +714,9 @@ let cachedStack: PaymentStack | undefined;
 export function getPaymentStack(env: Env): PaymentStack {
   if (!cachedStack) {
     installBazaarObserver();
-    const facilitator = new HTTPFacilitatorClient(
+    const facilitator = new KvWarmFacilitatorClient(
       createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET),
+      env.COUNTERS,
     );
     const resourceServer = new x402ResourceServer(facilitator).register(
       BASE_NETWORK,
