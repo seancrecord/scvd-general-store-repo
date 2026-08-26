@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
-import { PENNY_PAGE_USDC } from "@/lib/payments";
+import { PENNY_PAGE_USDC,
+  PAYMENT_VARY,
+} from "@/lib/payments";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -88,7 +90,7 @@ almanacRoutes.get("/almanac", async (c) => {
 const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   c.res.headers.set("Cache-Control", "no-store");
-  c.res.headers.set("Vary", "PAYMENT-SIGNATURE");
+  c.res.headers.set("Vary", PAYMENT_VARY);
 };
 
 almanacRoutes.use("/almanac/:slug", noStore);

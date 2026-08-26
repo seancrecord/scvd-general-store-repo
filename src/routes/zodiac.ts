@@ -2,7 +2,9 @@ import { Hono } from "hono";
 import type { Context, MiddlewareHandler } from "hono";
 import { currentWeekKey } from "@/lib/kv-keys";
 import { paymentGate } from "@/lib/payment-gate";
-import { PENNY_PAGE_USDC } from "@/lib/payments";
+import { PENNY_PAGE_USDC,
+  PAYMENT_VARY,
+} from "@/lib/payments";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -114,7 +116,7 @@ const archiveCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   c.res.headers.set("Cache-Control", "no-store");
-  c.res.headers.set("Vary", "PAYMENT-SIGNATURE");
+  c.res.headers.set("Vary", PAYMENT_VARY);
 };
 
 const ARCHIVE_PATTERN = "/zodiac/archive/:sign/:week{week-[0-9]+}";

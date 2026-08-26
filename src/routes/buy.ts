@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
 import { paymentGate } from "@/lib/payment-gate";
-import { SettlementDeclined } from "@/lib/payments";
+import { SettlementDeclined,
+  PAYMENT_VARY,
+} from "@/lib/payments";
 import { isValidHttpUrl, sanitizeText } from "@/lib/sanitize";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { issuePassport } from "@/services/passport";
@@ -53,7 +55,7 @@ function buyItemId(c: { req: { path: string } }): string {
 const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
   await next();
   c.res.headers.set("Cache-Control", "no-store");
-  c.res.headers.set("Vary", "PAYMENT-SIGNATURE");
+  c.res.headers.set("Vary", PAYMENT_VARY);
 };
 
 /**
