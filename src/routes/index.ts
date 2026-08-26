@@ -1,5 +1,6 @@
 export { storefrontRoutes } from "@/routes/storefront";
 export { developerRoutes } from "@/routes/developers";
+export { deprecationRoutes } from "@/routes/deprecation";
 export { llmsRoutes } from "@/routes/llms";
 export { agentsMdRoutes } from "@/routes/agents-md";
 export { skillRoutes } from "@/routes/skill";

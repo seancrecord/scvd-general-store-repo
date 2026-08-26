@@ -334,6 +334,16 @@ tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # up for — trial warnings, burn, price drift, signup
                   # friction. Local JSONL, zero deps, its own tests
                   # (npm run tab:test); spec at THE_TAB.md
+cli/              # scvd: the official command line over the store's
+                  # FREE instruments — preflight, the conformance desk,
+                  # receipt verification, the on-page desk, the fresh
+                  # set, the corpus, the RFC 9727 catalog, the version
+                  # table. One file, zero deps, its own tests
+                  # (npm run cli:test). It holds no key and cannot
+                  # sign a payment, on purpose. Not on npm until the
+                  # keeper publishes it (DISTRIBUTION.md §4b); every
+                  # surface that names it reads CLI_PUBLISHED in
+                  # src/store/cli.ts and says so until then.
 ```
 
 ### Editing the Town Directory

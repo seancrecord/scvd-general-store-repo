@@ -1,4 +1,6 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
+import { apiCatalog, LINKSET_MEDIA_TYPE } from "@/lib/api-catalog";
+import { DEFAULT_PROTOCOL, PROTOCOL_VERSIONS } from "@/routes/mcp";
 import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
@@ -565,16 +567,67 @@ for (const path of [
  * Descriptive only: this is a pointer, not a second transport. The
  * protocol still happens at /mcp, over POST, exactly as before.
  */
-wellKnownRoutes.get("/.well-known/mcp", (c) => {
-  const base = c.env.STORE_BASE_URL;
-  return c.json({
+/**
+ * TWO PATHS, ONE MANIFEST (2026-08-26).
+ *
+ * The audit that asked for this document went on reporting "no live
+ * MCP protocol handshake" after it shipped, and the handshake was
+ * never the problem: POST /mcp answers `initialize` in production,
+ * with or without an Accept header, and has since the server opened.
+ * What a scanner does with `/.well-known/mcp` is guess — and half of
+ * them guess `.json`, because every other well-known document they
+ * read carries the extension. That guess returned a 404, and a 404 at
+ * the discovery path is indistinguishable from a store with no MCP
+ * server at all.
+ *
+ * So both paths serve the same object. This is the same reasoning
+ * /.well-known/a2a.json, /agent-card.json and /agent.json already
+ * shipped under, for the same reason.
+ */
+function mcpManifest(base: string) {
+  return {
     name: "scvd-general-store",
     title: STORE_SERVICE_NAME,
     description:
       "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
     // The one field a client actually needs.
     endpoint: `${base}/mcp`,
+    /**
+     * `url` beside `endpoint`, because the two names are both in the
+     * wild and a client reading for one and finding only the other
+     * has, as far as it can tell, found a manifest with no server in
+     * it. Same string, no second source of truth.
+     */
+    url: `${base}/mcp`,
     transport: "streamable-http",
+    /** The methods the transport actually accepts, spelled out. */
+    methods: ["POST"],
+    /**
+     * WHAT A SCANNER NEEDS TO COMPLETE A HANDSHAKE WITHOUT GUESSING.
+     * The protocol versions this server will negotiate, the exact
+     * body that starts one, and the plain fact that nothing is
+     * required to make the call — no key, no account, no header.
+     */
+    protocol_versions: [...PROTOCOL_VERSIONS],
+    authentication: {
+      required: false,
+      note: "No key, no account, no header. tools/list, resources/list and resources/read are free; buy_* tools answer with x402 v2 payment terms in error.data and settle per call.",
+    },
+    handshake: {
+      method: "POST",
+      url: `${base}/mcp`,
+      headers: { "Content-Type": "application/json" },
+      body: {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: DEFAULT_PROTOCOL,
+          capabilities: {},
+          clientInfo: { name: "your-client", version: "1.0.0" },
+        },
+      },
+    },
     /** The methods that answer without payment, so a scanner knows what to probe. */
     free_methods: [
       "initialize",
@@ -598,8 +651,25 @@ wellKnownRoutes.get("/.well-known/mcp", (c) => {
     })),
     documentation: `${base}/developers`,
     openapi: `${base}/openapi.json`,
-  });
-});
+  };
+}
+
+for (const path of ["/.well-known/mcp", "/.well-known/mcp.json"] as const) {
+  wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL)));
+}
+
+/**
+ * GET /.well-known/api-catalog — RFC 9727.
+ *
+ * The reasoning is in lib/api-catalog.ts. In one line: /developers
+ * answers a person who guesses a URL, and a machine never guesses.
+ * This is the fixed path a machine is allowed to know.
+ */
+wellKnownRoutes.get("/.well-known/api-catalog", (c) =>
+  c.body(JSON.stringify(apiCatalog(c.env.STORE_BASE_URL), null, 2), 200, {
+    "Content-Type": `${LINKSET_MEDIA_TYPE}; charset=utf-8`,
+  }),
+);
 
 /**
  * GET /.well-known/agent-instructions — WHEN to reach for this store,

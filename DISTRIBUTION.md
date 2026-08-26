@@ -78,6 +78,31 @@ to several months — submit early, it queues.
   agents," which is our positioning at platform scale; being listed
   IN it beats arguing with it.
 
+## 4b. npm — the official CLI, BUILT AND WAITING ON THE KEEPER'S TOKEN
+
+Added 2026-08-26. A readiness audit scored the store partial on "CLI
+tool available": it found `scvd-tab` at /developers and correctly read
+it as a useful package that happens to be ours rather than as a
+command line for THIS store. `cli/` is now that command line — one
+zero-dependency file, MIT, tested (`npm run cli:test`, 13 cases
+against a local stub server so nothing in CI touches production).
+
+It wraps only free instruments, holds no key, and cannot sign a
+payment. That is a design constraint rather than a first version: the
+store never asks anyone for credentials, and a CLI is the easiest
+place in the world to break that quietly.
+
+Keeper's steps (rule 30 — the publish is his hand, not mine):
+
+    cd cli && npm publish --access public
+
+Everything that names the package already points at `npm i -g scvd`:
+/developers (HTML, JSON and markdown), /llms.txt, and the RFC 9727
+catalog at /.well-known/api-catalog. Those are honest as
+INSTRUCTIONS the day the publish runs and are a forward reference
+until then — the same posture as the MCP Registry republish above,
+and worth closing quickly for the same reason.
+
 ## 5. Other client directories (lower priority, same shape)
 
 - Cursor: directory driven by docs.cursor.com MCP listings; community

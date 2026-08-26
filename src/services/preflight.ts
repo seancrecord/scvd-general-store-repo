@@ -200,28 +200,111 @@ export function statedRateLimit(base: string): {
 let probeMinute = "";
 let probesUsed = 0;
 
-function takeProbeBudget(): boolean {
+/**
+ * WHAT A BUCKET LOOKS LIKE FROM THE OUTSIDE.
+ *
+ * The two limiters used to answer yes-or-no, which is everything the
+ * REFUSAL needs and nothing a caller can plan with. A readiness audit
+ * on 2026-08-26 put it exactly right: the ceilings were documented in
+ * the OpenAPI spec and never observed on a live response, so an agent
+ * could learn the budget by reading our prose or by being refused,
+ * and not by looking at the response in its hand.
+ *
+ * So both buckets report their state, and both report it on the way
+ * through rather than only on the way out. `reset` is seconds to the
+ * top of the next wall-clock minute, which is when both buckets
+ * genuinely roll — not an estimate.
+ */
+interface BudgetState {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}
+
+/** Seconds until the wall-clock minute both buckets key on rolls over. */
+function secondsToNextMinute(): number {
+  const now = new Date();
+  return 60 - now.getUTCSeconds();
+}
+
+function takeProbeBudget(): BudgetState {
   const minute = new Date().toISOString().slice(0, 16);
   if (minute !== probeMinute) {
     probeMinute = minute;
     probesUsed = 0;
   }
+  const reset = secondsToNextMinute();
   if (probesUsed >= PROBES_PER_MINUTE) {
-    return false;
+    return { allowed: false, limit: PROBES_PER_MINUTE, remaining: 0, reset };
   }
   probesUsed += 1;
-  return true;
+  return {
+    allowed: true,
+    limit: PROBES_PER_MINUTE,
+    remaining: PROBES_PER_MINUTE - probesUsed,
+    reset,
+  };
 }
 
-async function takeGlobalProbeBudget(env: Env): Promise<boolean> {
+async function takeGlobalProbeBudget(env: Env): Promise<BudgetState> {
   const minute = new Date().toISOString().slice(0, 16);
   const key = `preflight_budget:${minute}`;
   const used = parseInt((await env.COUNTERS.get(key)) ?? "0", 10);
+  const reset = secondsToNextMinute();
   if (used >= GLOBAL_PROBES_PER_MINUTE) {
-    return false;
+    return {
+      allowed: false,
+      limit: GLOBAL_PROBES_PER_MINUTE,
+      remaining: 0,
+      reset,
+    };
   }
   await env.COUNTERS.put(key, String(used + 1), { expirationTtl: 120 });
-  return true;
+  return {
+    allowed: true,
+    limit: GLOBAL_PROBES_PER_MINUTE,
+    /**
+     * SLIGHTLY GENEROUS, NEVER TIGHTER, and the honesty runs the same
+     * direction the published note already commits to: this counter
+     * is a read-modify-write on eventually consistent storage, so a
+     * lost increment makes `remaining` read high. A client that
+     * self-throttles on it is never refused earlier than this number
+     * implied — it may occasionally be refused later.
+     */
+    remaining: Math.max(0, GLOBAL_PROBES_PER_MINUTE - (used + 1)),
+    reset,
+  };
+}
+
+/**
+ * THE RFC RateLimit FIELDS, BOTH DIALECTS, ON EVERY ANSWER.
+ *
+ * `RateLimit-Limit` / `-Remaining` / `-Reset` are the triplet every
+ * client library on earth already parses; `RateLimit` and
+ * `RateLimit-Policy` are the structured fields the current IETF draft
+ * defines and the ones that can carry TWO policies without lying
+ * about which is which. This endpoint has two — a per-isolate bucket
+ * and a global backstop — so emitting only the triplet would mean
+ * picking one and letting the caller throttle against a ceiling that
+ * is not the one about to refuse it.
+ *
+ * The triplet therefore reports the BINDING policy: whichever bucket
+ * has less left. That is the number a client needs, and when the two
+ * disagree the structured fields beside it name both.
+ */
+export function rateLimitHeaders(
+  isolate: BudgetState,
+  global: BudgetState,
+): Record<string, string> {
+  const binding = isolate.remaining <= global.remaining ? isolate : global;
+  return {
+    "RateLimit-Limit": String(binding.limit),
+    "RateLimit-Remaining": String(binding.remaining),
+    "RateLimit-Reset": String(binding.reset),
+    "RateLimit-Policy": `"isolate";q=${isolate.limit};w=60, "global";q=${global.limit};w=60`,
+    RateLimit: `"isolate";r=${isolate.remaining};t=${isolate.reset}, "global";r=${global.remaining};t=${global.reset}`,
+  };
 }
 
 export interface PreflightCheck {
@@ -822,7 +905,12 @@ export async function preflightUrl(
 ): Promise<{
   status: number;
   body: PreflightReport | { error: string };
-  /** Set only where the status needs one; the 429 owes a Retry-After. */
+  /**
+   * Set on every answer the limiter actually metered: the RFC
+   * RateLimit fields, plus Retry-After on the 429. The 400s above
+   * return before a budget is taken and carry none, because a
+   * malformed request never spent one.
+   */
   headers?: Record<string, string>;
 }> {
   const base = env.STORE_BASE_URL;
@@ -870,7 +958,24 @@ export async function preflightUrl(
       },
     };
   }
-  if (!takeProbeBudget() || !(await takeGlobalProbeBudget(env))) {
+  /**
+   * BOTH BUCKETS ARE ASKED, ALWAYS, and the short-circuit that used to
+   * live here is gone on purpose: `a() || b()` never called b() once
+   * a() refused, so a refusal could report only half the state. The
+   * headers below say what BOTH buckets hold, on every answer, which
+   * is the whole point of publishing them.
+   *
+   * The order still matters for cost: the isolate bucket is free and
+   * the global one is a KV read, so the isolate check runs first and
+   * the global read is skipped only when the isolate bucket has
+   * already refused — in which case its own state is what binds.
+   */
+  const isolate = takeProbeBudget();
+  const global = isolate.allowed
+    ? await takeGlobalProbeBudget(env)
+    : { allowed: false, limit: GLOBAL_PROBES_PER_MINUTE, remaining: 0, reset: secondsToNextMinute() };
+  const budgetHeaders = rateLimitHeaders(isolate, global);
+  if (!isolate.allowed || !global.allowed) {
     /*
      * RETRY-AFTER, because two of our own pages already promised it.
      * /developers and the OpenAPI spec both told readers a 429 here
@@ -886,7 +991,14 @@ export async function preflightUrl(
      */
     return {
       status: 429,
-      headers: { "Retry-After": "60" },
+      /*
+       * Retry-After stays a whole minute rather than the computed
+       * remainder: both buckets reset on the wall-clock minute, so a
+       * whole minute is never tighter than the truth. The RateLimit
+       * fields beside it carry the exact remainder in `t`, for a
+       * client that would rather schedule than sleep.
+       */
+      headers: { "Retry-After": "60", ...budgetHeaders },
       body: {
         error:
           "The probe budget for this minute is spent — a cost bound on our side, not a fact about your endpoint. Retry next minute.",
@@ -900,6 +1012,14 @@ export async function preflightUrl(
   } catch (error) {
     return {
       status: 200,
+      /*
+       * THE BUDGET WAS SPENT EITHER WAY. A probe that failed on the
+       * network still cost this store the outbound request, so the
+       * caller's remaining count has genuinely moved and the headers
+       * say so. Reporting the pre-probe figure here would be the one
+       * direction of error that gets a client refused unexpectedly.
+       */
+      headers: budgetHeaders,
       body: report(base, "unreachable", [
         {
           name: "reachable",
@@ -985,6 +1105,7 @@ export async function preflightUrl(
 
   return {
     status: 200,
+    headers: budgetHeaders,
     body: report(base, servedVerdict, servedChecks, advisories, {
       battery: asked,
       alsoUnder: {

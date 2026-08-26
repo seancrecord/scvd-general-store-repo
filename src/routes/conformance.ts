@@ -9,6 +9,7 @@ import type { ConformanceRequest } from "@/services/conformance";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { isRecord } from "@/types";
+import { lifecycleHeaders } from "@/store/api-lifecycle";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -31,6 +32,25 @@ import type { HonoEnv } from "@/types";
  * tells anybody automating to pin the versioned one instead.
  */
 export const conformanceRoutes = new Hono<HonoEnv>();
+
+/**
+ * THE LIFECYCLE HEADERS ON THE PINNED PATH.
+ *
+ * The desk's whole pitch to a CI pipeline is "pin the versioned path,
+ * that contract is frozen" — which is a promise about the future, and
+ * a promise about the future is worth exactly what its notice
+ * mechanism is worth. store/api-lifecycle.ts holds the table; this
+ * asks it, on every answer, whether this path has a sunset date yet.
+ * None today, so nothing goes on the wire today.
+ */
+conformanceRoutes.use(`/api/conformance/${CONFORMANCE_VERSION}`, async (c, next) => {
+  await next();
+  for (const [name, value] of Object.entries(
+    lifecycleHeaders(`/api/conformance/${CONFORMANCE_VERSION}`, c.env.STORE_BASE_URL),
+  )) {
+    c.header(name, value);
+  }
+});
 
 async function handleCheck(c: Context<HonoEnv>) {
   let body: unknown;
