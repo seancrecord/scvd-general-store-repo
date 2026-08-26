@@ -174,6 +174,10 @@ describe("the walk engine, stage by stage", () => {
       "approach",
       "challenge",
       "terms",
+      // 2.4: offer issuance is recorded between reading the terms and
+      // screening the payee — a door with signed offers and one
+      // without are different facts, and both are now written down.
+      "offers",
       "screen",
       "payment",
       "settle",
