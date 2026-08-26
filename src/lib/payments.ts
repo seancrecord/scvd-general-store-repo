@@ -5,6 +5,8 @@ import {
   x402ResourceServer,
 } from "@x402/core/server";
 import type { PaymentOption, RouteConfig, RoutesConfig } from "@x402/core/http";
+import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
+import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { ExactSvmScheme } from "@x402/svm/exact/server";
 import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
@@ -322,6 +324,57 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
     }
   }
   return accepts;
+}
+
+/**
+ * THE SAME OFFERS, IN THE SHAPE A ROUTER READS (2026-08-26).
+ *
+ * Crawlers and agent routers treat a tool as a routable paid call only
+ * when its manifest entry carries challenge-shaped accepts — scheme,
+ * network, atomic amount, asset, payTo. This derives them FROM
+ * railAccepts, the exact function the till builds real 402 terms
+ * with, so the manifest cannot drift from the money path: a rail
+ * opens or closes, a price moves, and both surfaces move together.
+ * Fresh-challenge fields (validBefore, Solana feePayer) are
+ * deliberately absent — they are negotiated per challenge, and a
+ * manifest that froze them would be advertising bytes it cannot honor.
+ */
+export interface ManifestAccept {
+  scheme: "exact";
+  network: string;
+  /** Atomic USDC (6 decimals): $0.001 is "1000". Never a dollar string. */
+  amount: string;
+  asset: string;
+  payTo: string;
+  /** EIP-712 domain params, on EVM entries only — the USDC contract's. */
+  extra?: { name: string; version: string };
+}
+
+const USDC_ASSET_BY_NETWORK: Record<string, string> = {
+  [BASE_NETWORK]: BASE_USDC,
+  [POLYGON_NETWORK]: POLYGON_USDC,
+  [SOLANA_NETWORK]: SOLANA_USDC_MINT,
+};
+
+export function manifestAccepts(
+  env: Env,
+  tiersUsdc: number[],
+): ManifestAccept[] {
+  return railAccepts(env, tiersUsdc).map((option) => {
+    const network = String(option.network);
+    const usdc = Number(String(option.price).replace("$", ""));
+    const entry: ManifestAccept = {
+      scheme: "exact",
+      network,
+      amount: usdcToAtomic(usdc),
+      asset: USDC_ASSET_BY_NETWORK[network] ?? "",
+      payTo: String(option.payTo),
+    };
+    if (network.startsWith("eip155:")) {
+      entry.extra = { name: "USD Coin", version: "2" };
+    }
+    return entry;
+  });
 }
 
 function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {

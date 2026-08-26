@@ -237,7 +237,9 @@ describe("discovery surfaces", () => {
   it("serves both well-known x402 documents", async () => {
     const minimal = await json(await SELF.fetch(`${BASE}/.well-known/x402`));
     expect(minimal["version"]).toBe(1);
-    const resources = minimal["resources"] as string[];
+    const resources = (minimal["resources"] as { resourceUrl: string }[]).map(
+      (resource) => resource.resourceUrl,
+    );
     expect(resources).toContain(`${BASE}/api/buy/hello`);
     expect(resources).toContain(
       `${BASE}/almanac/notes-from-a-tuesday-in-oak-city`,

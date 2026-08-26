@@ -286,9 +286,14 @@ describe("per-item facts agree across the catalogs that quote them", () => {
     const thin = await fetchJson("/.well-known/x402");
     expect(thin["catalog"]).toBe(`${BASE}/.well-known/x402.json`);
     expect(thin["a2a"]).toBe(`${BASE}/.well-known/a2a.json`);
-    const resources = asStringArray(thin["resources"]);
+    const resources = Array.isArray(thin["resources"]) ? thin["resources"] : [];
+    const urls = resources.flatMap((resource) =>
+      isRecord(resource) && typeof resource["resourceUrl"] === "string"
+        ? [resource["resourceUrl"]]
+        : [],
+    );
     for (const item of MENU_ITEMS) {
-      expect(resources, `${item.id} missing from the thin x402 index`).toContain(
+      expect(urls, `${item.id} missing from the thin x402 index`).toContain(
         `${BASE}/api/buy/${item.id}`,
       );
     }

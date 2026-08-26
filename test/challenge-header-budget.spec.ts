@@ -132,14 +132,15 @@ describe("every priced door fits through a stock Node client", () => {
      */
     const discovery = (await (
       await SELF.fetch(`${BASE}/.well-known/x402`)
-    ).json()) as { resources: string[] };
-    expect(discovery.resources.length).toBeGreaterThan(5);
+    ).json()) as { resources: { resourceUrl: string }[] };
+    const resourceUrls = discovery.resources.map((r) => r.resourceUrl);
+    expect(resourceUrls.length).toBeGreaterThan(5);
 
     // Serially: firing every door at once made them answer 500, and a
     // 500 has small headers, so the check went green having measured
     // nothing.
     const measured: { path: string; status: number; bytes: number }[] = [];
-    for (const resource of discovery.resources) {
+    for (const resource of resourceUrls) {
       const path = new URL(resource).pathname;
       const response = await SELF.fetch(`${BASE}${path}`);
       measured.push({ path, status: response.status, bytes: headerBytes(response) });
