@@ -242,10 +242,22 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
  */
 async function structuredPaidResources(env: Env) {
   const base = env.STORE_BASE_URL;
+  /*
+   * `resource`, `type` and `lastUpdated` are the standard
+   * discovered-resource record's field names (the Bazaar list shape);
+   * `resourceUrl` stays beside `resource` for every reader that
+   * learned our earlier spelling. lastUpdated is the catalog's own
+   * as_of — the newest hand-checked date — not a fabricated
+   * per-entry timestamp.
+   */
+  const lastUpdated = freshness().as_of;
   // C1: the fact block tops every catalog entry; S1: the uniform spec
   // rides each resource (indexers that don't know the field ignore it).
   const menuResources = MENU_ITEMS.map((item) => ({
     accepts: manifestAccepts(env, priceTiersUsdc(item)),
+    resource: `${base}/api/buy/${item.id}`,
+    type: "http",
+    lastUpdated,
     resourceUrl: `${base}/api/buy/${item.id}`,
     method: "GET",
     x402Version: 2,
@@ -265,6 +277,9 @@ async function structuredPaidResources(env: Env) {
   }));
   const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
     accepts: manifestAccepts(env, [PENNY_PAGE_USDC]),
+    resource: `${base}/almanac/${entry.slug}`,
+    type: "http",
+    lastUpdated,
     resourceUrl: `${base}/almanac/${entry.slug}`,
     method: "GET",
     x402Version: 2,
@@ -277,6 +292,9 @@ async function structuredPaidResources(env: Env) {
   const issues = await listIssues(env).catch(() => []);
   const gazetteResources = issues.map((issue) => ({
     accepts: manifestAccepts(env, [PENNY_PAGE_USDC]),
+    resource: `${base}/gazette/issue-${issue.issue_number}`,
+    type: "http",
+    lastUpdated,
     resourceUrl: `${base}/gazette/issue-${issue.issue_number}`,
     method: "GET",
     x402Version: 2,

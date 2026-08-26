@@ -53,8 +53,16 @@ describe("the routable manifest", () => {
     expect(resources.length).toBeGreaterThan(0);
     for (const entry of resources) {
       expect(typeof entry).toBe("object");
-      const record = entry as Entry;
+      const record = entry as Entry & {
+        resource: string;
+        type: string;
+        lastUpdated: string;
+      };
       expect(typeof record.resourceUrl).toBe("string");
+      // The standard discovered-resource spelling rides beside ours.
+      expect(record.resource).toBe(record.resourceUrl);
+      expect(record.type).toBe("http");
+      expect(record.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}/);
       expect(record.method).toBe("GET");
       expect(Array.isArray(record.accepts)).toBe(true);
     }

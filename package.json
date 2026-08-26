@@ -1,5 +1,6 @@
 {
   "name": "scvd-general-store",
+  "mcpName": "store.scvd/general-store",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",

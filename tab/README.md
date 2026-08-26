@@ -1,5 +1,7 @@
 # The Tab (`scvd-tab`)
 
+
+mcp-name: store.scvd/tab
 Your agent remembers every tool you sign up for and warns you before
 a trial converts — so you never pay for software you forgot about.
 
