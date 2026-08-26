@@ -680,6 +680,84 @@ export function runChecks(
   return { checks, advisories, accepts };
 }
 
+/**
+ * ROADMAP 2.1a — THE TRI-STATE VECTOR (ledger B1, one layer down).
+ *
+ * runChecks early-returns, so a door that answered 200 emits ONE
+ * check and every downstream check is silently absent. Silence welds
+ * three different truths — "failed", "never ran because an earlier
+ * check stopped the battery", and "does not apply" — into the same
+ * missing row, which is the 0.14 defect at check granularity.
+ *
+ * BATTERY_CHECK_NAMES is the unconditional battery as data: the
+ * checks that run on every door that answers a clean 402, in the
+ * order the battery runs them. It exists as a registry so this
+ * vector and a future published checks.json cannot disagree.
+ * Conditional checks (bazaar-extension, signed-offers) are outside
+ * it on purpose: they exist only when their subject does, and a
+ * registry row for them would force this vector to invent an
+ * "absent subject" observation the probe never made.
+ */
+export const BATTERY_CHECK_NAMES = [
+  "status-402",
+  "payment-required-header",
+  "x402-version",
+  "accepts",
+] as const;
+
+export interface TriStateRow {
+  name: string;
+  state: "pass" | "fail" | "not_reached";
+  /** Set only on not_reached: the name of the check that stopped the battery. */
+  blocked_by?: string;
+  detail: string;
+}
+
+/**
+ * Derives, never re-observes: every row comes from the checks
+ * runChecks already emitted, so verdicts everywhere stay
+ * byte-identical to before this vector existed. A check the battery
+ * never reached says so structurally — which check blocked it —
+ * and carries no observation about the door, because none was made.
+ */
+export function triStateVector(checks: PreflightCheck[]): TriStateRow[] {
+  const ran = new Map(checks.map((check) => [check.name, check]));
+  let blocker = "status-402";
+  for (const name of BATTERY_CHECK_NAMES) {
+    const check = ran.get(name);
+    if (check && !check.ok) {
+      blocker = name;
+    }
+  }
+  const rows: TriStateRow[] = BATTERY_CHECK_NAMES.map((name) => {
+    const check = ran.get(name);
+    if (check) {
+      return {
+        name,
+        state: check.ok ? ("pass" as const) : ("fail" as const),
+        detail: check.detail,
+      };
+    }
+    return {
+      name,
+      state: "not_reached" as const,
+      blocked_by: blocker,
+      detail: `never ran: the ${blocker} check stopped the battery before this one. No observation about the door exists for this row.`,
+    };
+  });
+  const registry = new Set<string>(BATTERY_CHECK_NAMES);
+  for (const check of checks) {
+    if (!registry.has(check.name)) {
+      rows.push({
+        name: check.name,
+        state: check.ok ? "pass" : "fail",
+        detail: check.detail,
+      });
+    }
+  }
+  return rows;
+}
+
 export async function preflightUrl(
   rawUrl: unknown,
   env: Env,
