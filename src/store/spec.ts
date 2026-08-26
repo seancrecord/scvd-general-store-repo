@@ -208,6 +208,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Get a signed readout of what my page actually serves a machine reader — title, metadata, structured data — that I can hand to a third party",
   launch_check:
     "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
+  spot_check:
+    "Ask what the observatory already knows about an x402 host — signed, from its books, before I spend anything at that door",
   the_statement:
     "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
   passport_refresh:
@@ -272,6 +274,8 @@ export const SPEC_WHY_USE: Record<string, string> = {
     "a dated, signed observation that an agent's Web Bot Auth key directory is in order, proof-of-possession verified — free at POST /api/bot-auth/check; this is the same battery with a signature, a certificate binding, and a permanent card URL an origin checks without us. About the document, never the operator.",
   onpage_audit:
     "a dated, signed observation of what one page served a machine reader — title, description, canonical, robots, structured data — free at POST /api/onpage/v1; this is the same battery with a signature, a certificate binding, and a permanent report URL. Reads the HTML as served: what a script renders is named as unseen.",
+  spot_check:
+    "the observatory's books on one host, read before any money moves toward it: rounds, verdicts as recorded, coverage, gaps with reasons — and not_observed stated as the answer it is. The same facts serve free per host; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite to a third party.",
   launch_check:
     "the one observation no probe can substitute: what your buy path does when a real stranger pays it — a genuine EIP-3009 authorization from our declared field wallet, presented at your till, settled or refused, the whole walk signed stage by stage. The field run's method, pointed at your door at your request.",
   the_statement:

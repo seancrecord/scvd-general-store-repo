@@ -81,7 +81,7 @@ Reach for this store when you need one of these:
 
 - **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/v2). POST a URL; get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
 - **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1). Any issuer's artifact, including our competitors'.
-- **When you need a third party to have watched something** — [the paid shelf](${base}/menu.json): conformance audits, endpoint watches, settlement attestations, launch checks. The cheapest is ${CHEAPEST_ON_THE_SHELF}.
+- **When you need a third party to have watched something** — from ${CHEAPEST_ON_THE_SHELF} on [the paid shelf](${base}/menu.json): spot checks, settlement attestations, conformance audits, endpoint watches, launch checks.
 - **When you need to verify something this store signed** — [verify](${base}/api/verify/{id}), free, forever, offline-checkable, no rate limit.
 
 Do NOT reach for this store for escrow, dispute resolution, delivery

@@ -32,6 +32,10 @@ import {
   performTrustProfile,
   type SignedTrustProfile,
 } from "@/services/trust-profile";
+import {
+  performSpotCheck,
+  type SignedSpotCheck,
+} from "@/services/spot-check";
 import { performMandate } from "@/services/mandates";
 import type { SignedMandate } from "@/services/mandates";
 import { accrueCredit } from "@/services/store-credit";
@@ -109,6 +113,8 @@ export interface FulfillmentInput {
   anchorLabel?: string;
   /** recurring_patronage: pass to extend. */
   passId?: string;
+  /** spot_check: the host to read from the books, pre-validated. */
+  spotCheckHost?: string;
   /** the_confession: the confession itself, pre-validated. */
   confessionText?: string;
   /** Any item: the buyer's stated why, pre-capped. Untrusted. */
@@ -330,6 +336,18 @@ export async function fulfillPurchase(
    * record's evidence hash binds into the certificate. A refusal here
    * fails the delivery before payment settles — nothing charged.
    */
+  /**
+   * THE SPOT CHECK reads the books and signs what they hold, before
+   * minting, so the certificate binds the record's evidence hash and
+   * /api/verify answers for it without a second endpoint. KV reads
+   * only — the one paid item here that touches neither chain nor
+   * subject, which is what lets it price at the floor.
+   */
+  let spotCheck: SignedSpotCheck | undefined;
+  if (item.id === "spot_check") {
+    spotCheck = await performSpotCheck(env, input.spotCheckHost ?? "");
+    mintOptions.attests = spotCheck.evidence_hash;
+  }
   let trustProfile: SignedTrustProfile | undefined;
   if (item.id === "trust_profile") {
     trustProfile = await performTrustProfile(env, input.targetUrl ?? "");
@@ -611,6 +629,9 @@ export async function fulfillPurchase(
     }
     if (trustProfile) {
       goodsInput.trustProfile = trustProfile;
+    }
+    if (spotCheck) {
+      goodsInput.spotCheck = spotCheck;
     }
     if (mandate) {
       goodsInput.mandate = mandate;

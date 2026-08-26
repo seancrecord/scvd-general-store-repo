@@ -168,6 +168,14 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "spot_check") {
+    properties["host"] = {
+      type: "string",
+      description:
+        "A bare hostname, e.g. example.com. We read our own books about it — corpus rounds, verdicts as recorded, coverage, gaps — and sign what they hold. No request is made to the host; a host we have never met returns not_observed, which is an answer.",
+    };
+    required.push("host");
+  }
   if (item.id === "trust_profile") {
     properties["url"] = {
       type: "string",
@@ -377,6 +385,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "bitcoin_anchor") {
     example["digest"] = "9f".repeat(32);
+  }
+  if (item.id === "spot_check") {
+    example["host"] = "example.com";
   }
   if (item.id === "settlement_attestation") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);

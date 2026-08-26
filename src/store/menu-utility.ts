@@ -348,6 +348,34 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
       "Per-hash narrowing (payer, recipient, nonce, amount) is the single attestation's feature; the sheaf takes hashes only",
     ],
   },
+  /**
+   * THE SPOT CHECK (roadmap 0.17, keeper-signed 2026-08-26: name,
+   * price, and copy are his call, made). Area J's gate shipped early
+   * on existing data: the routine pre-transaction question answered
+   * from KV alone, at the cheapest price on the shelf — which the
+   * derived floor then advertises on every surface. Rule 43: dated
+   * observations, never a score. Rule 52: not_observed is an answer
+   * about our books, never a verdict about the host.
+   */
+  {
+    id: "spot_check",
+    listed_week: "2026-W35",
+    name: "Spot Check",
+    price_usdc: 0.001,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name a host and get what this observatory already holds on it, signed: corpus rounds and verdicts as recorded, when we last actually knocked, our coverage of the window since we met it, and the gaps with their reasons. Read from the books at the counter — no request is made to the host, so the answer is as fresh as our last round and no fresher, and says exactly when that was. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host. The same facts serve free at /corpus/host/{host}.json; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite.",
+    note_402:
+      "A tenth of a cent for whatever's already on the card. We don't go and look — this is what the shop already saw, dated, with the blanks left blank.",
+    constraints: [
+      "Give the host in the host query parameter: a bare hostname, e.g. example.com",
+      "Reads what we already recorded — no request is made to the subject",
+      "A host we've never met returns not_observed, which is an answer",
+      "Never a score, a rating or a ranking",
+      "Want a live read instead? The preflight at /api/preflight/v2 is free and knocks right now",
+    ],
+  },
   {
     id: "settlement_attestation",
     listed_week: "2026-W31",

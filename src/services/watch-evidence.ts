@@ -106,16 +106,45 @@ export async function captureWatchEvidence(
   response: Response,
   limit = WATCH_EVIDENCE_BODY_LIMIT_BYTES,
 ): Promise<WatchEvidenceCapture> {
+  const { evidence } = await captureWatchEvidenceKeepingBody(response, limit);
+  return evidence;
+}
+
+/**
+ * THE SAME CAPTURE, FOR A CALLER THAT STILL NEEDS THE BODY.
+ *
+ * The launch check (roadmap 1.2, ledger I5) reads the challenge
+ * response's body twice — the non-402 preview and the JSON-challenge
+ * fallback — so a capture that consumed the stream would starve the
+ * walk it is trying to evidence. This variant hands the decoded text
+ * back BESIDE the capture, never inside it: the capture object is
+ * what rides into signed rows, and a full body inside signed bytes
+ * would balloon every producer that stores one.
+ *
+ * `bodyText` is the bytes actually read, decoded. On a truncated
+ * body it is EMPTY — readBoundedBody discards partial reads rather
+ * than keep an unbounded buffer alive — so an oversized challenge
+ * fails to parse the same way it fails to hash, and a preview of a
+ * quarter-megabyte body is honestly absent rather than misleadingly
+ * partial.
+ */
+export async function captureWatchEvidenceKeepingBody(
+  response: Response,
+  limit = WATCH_EVIDENCE_BODY_LIMIT_BYTES,
+): Promise<{ evidence: WatchEvidenceCapture; bodyText: string }> {
   const headers = curatedHeaders(response.headers);
   const body = await readBoundedBody(response, limit);
   const bodySha256 = body.truncated
     ? null
     : hex(await crypto.subtle.digest("SHA-256", body.bytes));
   return {
-    challenge_bytes: response.headers.get("payment-required"),
-    headers,
-    body_sha256: bodySha256,
-    body_bytes: body.bytesRead,
-    body_truncated: body.truncated,
+    evidence: {
+      challenge_bytes: response.headers.get("payment-required"),
+      headers,
+      body_sha256: bodySha256,
+      body_bytes: body.bytesRead,
+      body_truncated: body.truncated,
+    },
+    bodyText: new TextDecoder().decode(body.bytes),
   };
 }

@@ -2,6 +2,10 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { readPayTo } from "@/lib/pay-to";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
+import {
+  captureWatchEvidenceKeepingBody,
+  type WatchEvidenceCapture,
+} from "@/services/watch-evidence";
 import type { Env } from "@/types";
 
 /**
@@ -205,6 +209,17 @@ export interface LaunchCheckObservation {
    * distinction a money claim has to keep.
    */
   authorization_outstanding_until: number | null;
+  /**
+   * RAW EVIDENCE OF THE CHALLENGE (roadmap 1.2, ledger I5): verbatim
+   * PAYMENT-REQUIRED bytes, curated headers, bounded body digest from
+   * the unpaid knock — the walk is the artifact class where a dispute
+   * is likeliest, since money moves on the strength of what this
+   * response said. Absent on walks before 2026-08-26 and on doors
+   * that never answered. The DELIVERY response is deliberately not
+   * here: its body feeds fulfillment on the money path and gets its
+   * own change.
+   */
+  challenge_evidence?: WatchEvidenceCapture;
   evidence_hash: string;
   scope: string;
 }
@@ -444,6 +459,7 @@ export async function performLaunchCheck(
       ? chainalysisScreen(env.SANCTIONS_API_KEY, fetchImpl)
       : oracleScreen(env.BASE_RPC_URL ?? "https://mainnet.base.org", fetchImpl));
 
+  let challengeEvidence: WatchEvidenceCapture | undefined;
   walk: {
     // STAGE 1 — approach, unpaid, calling card out.
     let first: Response;
@@ -462,6 +478,17 @@ export async function performLaunchCheck(
       verdict = "unreachable";
       break walk;
     }
+    /*
+     * ONE READ, KEPT (roadmap 1.2 / I5). The body used to be read
+     * twice ad hoc and unbounded; now the bounded capture reads it
+     * once, the walk consumes the text from the capture, and the
+     * capture itself rides into the signed observation. An oversized
+     * body yields empty text and a null digest — honestly absent
+     * rather than misleadingly partial.
+     */
+    const captured = await captureWatchEvidenceKeepingBody(first);
+    challengeEvidence = captured.evidence;
+    const firstBodyText = captured.bodyText;
     stages.push({
       stage: "approach",
       ok: true,
@@ -469,7 +496,7 @@ export async function performLaunchCheck(
     });
 
     if (first.status !== 402) {
-      const preview = (await first.text()).slice(0, 300);
+      const preview = firstBodyText.slice(0, 300);
       stages.push({
         stage: "challenge",
         ok: false,
@@ -490,7 +517,7 @@ export async function performLaunchCheck(
     const headerChallenge = headerRaw ? decodeBase64Json(headerRaw) : null;
     let bodyChallenge: unknown = null;
     try {
-      bodyChallenge = JSON.parse(await first.text());
+      bodyChallenge = JSON.parse(firstBodyText);
     } catch {
       bodyChallenge = null;
     }
@@ -841,6 +868,7 @@ export async function performLaunchCheck(
     authorization_outstanding_until: authorizationOutstandingUntil,
     tx_hash: txHash,
     field_wallet: signer?.address ?? null,
+    ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
   };
   const observation: LaunchCheckObservation = {
     ...core,

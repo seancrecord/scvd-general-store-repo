@@ -72,7 +72,7 @@ export const PRACTICE_COUNTER_COPY = {
   stuckHead: "If you sent a payment and don't know what happened",
   stuck: [
     "The failure that costs the most time isn't a rejected signature — it's silence. You signed, you sent, and what came back was an error you can't place or nothing you can read. Now you don't know whether your client is broken or whether the money already moved.",
-    `settlement_attestation answers that one question and nothing else: give it your transaction identifier — a Base hash or a Solana signature; the shape picks the chain — and it reads that chain once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. ${CHEAPEST_ON_THE_SHELF}. One read, no poll, no retry, and nobody looked at it on our end.`,
+    `settlement_attestation answers that one question and nothing else: give it your transaction identifier — a Base hash or a Solana signature; the shape picks the chain — and it reads that chain once, then signs what it saw — SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH or REVERTED. One read, no poll, no retry, and nobody looked at it on our end.`,
     "It is not a check on your signing. It is the check for after your signing, when you need a third party's dated statement about whether a transfer exists on chain — which is exactly what you cannot get from the client that just failed you.",
     "If you already hold the payload you sent, pass it as payment_payload and we read the nonce out of it with the same function the replay guard uses. Otherwise tx_hash on its own is enough.",
     "And if your test purchase just WORKED: the response you are holding carries attest_this_purchase — the same door with your own settlement transaction already in the URL, whichever rail you paid on. Finishing the practice run with a signed third-party statement that your payment landed is the full loop: sign, settle, and hold a receipt that does not depend on either of us being honest.",
@@ -135,6 +135,10 @@ export const PRACTICE_COUNTER_COPY = {
  * render time, never hard-coded here.
  */
 export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
+  // The cheapest door of all, and the right first knock for this
+  // page's audience: before a practice buyer pays anyone, a tenth of
+  // a cent asks what the observatory already knows about the door.
+  "spot_check",
   // settlement_attestation was MISSING from this list until 2026-07-29
   // while being the cheapest item in the store — and it is the one item
   // whose audience is identical to this page's: somebody debugging a
