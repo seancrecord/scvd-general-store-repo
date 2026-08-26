@@ -25,30 +25,45 @@ describe("the minimal x402 document says who we are", () => {
     expect(body.tags?.length ?? 0).toBeGreaterThan(0);
   });
 
-  it("keeps version and resources exactly as they were", async () => {
+  it("keeps the structured, priced resource contract pinned", async () => {
     /**
-     * THE CONSTRAINT, AND THE REASON THIS TEST EXISTS. This document
-     * follows a de-facto contract that scanners parse without
-     * negotiating. Additions are safe; a rename, a reorder into a
-     * nested object, or a change of type is not — and the failure
-     * would be silent, since a scanner that stops understanding us
-     * does not send a complaint, it just files us as nothing.
+     * THE CONSTRAINT, RE-PINNED 2026-08-26. This test used to pin
+     * resources as bare URL strings, on the theory that any shape
+     * change silently loses scanners. A verified outside diagnosis
+     * showed the opposite: the bare strings were WHY routers indexed
+     * us as a known origin that never resolves as routable tools,
+     * while the catalog next door served structured objects — two
+     * incompatible shapes for the same tools. The keeper ruled: one
+     * structured, priced shape on both surfaces. The failure mode the
+     * old comment feared is still real, which is exactly why the NEW
+     * contract gets the same pin — a rename, a reorder, or a lost
+     * accepts array fails here before any scanner files us as nothing.
      */
     const body = (await (
       await SELF.fetch(`${BASE}/.well-known/x402`)
     ).json()) as { version: number; resources: unknown };
     expect(body.version).toBe(1);
     expect(Array.isArray(body.resources)).toBe(true);
-    const resources = body.resources as string[];
-    for (const resource of resources) {
-      expect(typeof resource, "a resource stopped being a bare URL string").toBe(
-        "string",
+    const resources = body.resources as {
+      resourceUrl: string;
+      method: string;
+      accepts: unknown[];
+    }[];
+    const urls = resources.map((resource) => {
+      expect(typeof resource, "a resource must be a structured object").toBe(
+        "object",
       );
-      expect(resource).toMatch(/^https:\/\//);
-    }
-    // Every shelf still listed, so enriching did not quietly drop one.
+      expect(resource.resourceUrl).toMatch(/^https:\/\//);
+      expect(resource.method).toBe("GET");
+      expect(
+        Array.isArray(resource.accepts) && resource.accepts.length > 0,
+        "a resource lost its priced accepts",
+      ).toBe(true);
+      return resource.resourceUrl;
+    });
+    // Every shelf still listed, so restructuring did not quietly drop one.
     for (const item of MENU_ITEMS) {
-      expect(resources, `${item.id} fell out of discovery`).toContain(
+      expect(urls, `${item.id} fell out of discovery`).toContain(
         `${BASE}/api/buy/${item.id}`,
       );
     }
