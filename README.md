@@ -3,6 +3,7 @@
 [![scvd-general-store-repo MCP server](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo/badges/card.svg)](https://glama.ai/mcp/servers/seancrecord/scvd-general-store-repo)
 [![smithery badge](https://smithery.ai/badge/seancrecord/scvd-general-store)](https://smithery.ai/servers/seancrecord/scvd-general-store)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
+[![scvd.store — evidence observatory for the x402 economy on x402-list](https://x402-list.com/badge/sean-claude-van-damme-s-general-store.svg?data=uptime)](https://x402-list.com/services/sean-claude-van-damme-s-general-store?utm_source=badge&utm_medium=referral&utm_campaign=embed)
 
 **An evidence observatory for agentic commerce.** Independent signed
 observation of what other people's endpoints, artifacts and payments
