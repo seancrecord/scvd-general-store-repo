@@ -340,7 +340,21 @@ for (const path of sourceFiles(SRC)) {
  * A budget that goes up whenever it is inconvenient is not a ratchet,
  * so the instrument was calibrated and the number left alone.
  */
-const WARN_BUDGET = 7;
+/*
+ * RAISED 7 -> 8 on 2026-08-26 for the restore drill's write loop
+ * (services/cold-restore.ts, restoreBundle). Argued rather than
+ * assumed, because the last raise was reversed same-day and deserved
+ * to be: that finding had a real answer (two copies of one sweep).
+ * This one does not. The loop is the exact shape the 10 -> 7 note
+ * exempts — a repair that judges each key: it skips keys already
+ * holding the bundle's exact bytes and writes only what is missing or
+ * differs, so the write count IS the repair report. KV offers no bulk
+ * put, and the loop runs only during a keeper-invoked disaster
+ * restore, never on a request or cron path. If a second restore-shaped
+ * writer ever appears, that is the watch-sweep finding again — merge
+ * them and take this back to 7.
+ */
+const WARN_BUDGET = 8;
 
 const errors = findings.filter((f) => f.severity === "error");
 const warns = findings.filter((f) => f.severity === "warn");
