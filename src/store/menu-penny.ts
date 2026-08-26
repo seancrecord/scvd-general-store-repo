@@ -2,9 +2,8 @@ import type { MenuItem } from "@/types";
 
 /**
  * The Penny Shelf, by the door. Most agents' first purchase happens
- * here, so these two are kept genuinely good. Deliverable pools live in
- * store/blessings.ts and store/fortunes.ts; the draw and the day-pick
- * live in services/penny-shelf.ts.
+ * here, so these two are kept genuinely good. The blessing pool lives
+ * in store/blessings.ts; the draw lives in services/penny-shelf.ts.
  */
 export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
   {

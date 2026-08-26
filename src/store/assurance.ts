@@ -29,7 +29,7 @@ export const ASSURANCE_LADDER: readonly AssuranceLevel[] = [
     claim:
       "This store sold this artifact, with these bytes, on this date. Provenance and nothing else.",
     not_claimed:
-      "Nothing about the world outside the store. A signed fortune is a real fortune, not a true one.",
+      "Nothing about the world outside the store. A signed blessing is a real blessing, not a true one.",
     examples: ["hello", "small_blessing", "lucky artifacts", "zodiac readings"],
   },
   {
@@ -71,6 +71,6 @@ export const ASSURANCE_LADDER: readonly AssuranceLevel[] = [
       "A named human stood in the loop and attests to what the machine cannot: that a person looked.",
     not_claimed:
       "Institutional assurance. One store, one keeper, one key — the ceiling of this ladder until independent co-signers exist, and the spec says so rather than implying otherwise.",
-    examples: ["human_witness"],
+    examples: ["the_collab"],
   },
 ];
