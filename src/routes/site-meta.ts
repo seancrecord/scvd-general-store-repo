@@ -59,7 +59,7 @@ siteMetaRoutes.get("/robots.txt", (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.text(
     `# Sean-Claude Van Damme's General Store. Crawlers welcome; nothing to hide.
-# The trust layer of the x402 economy, with a general store attached.
+# An evidence observatory for agentic commerce, with a general store attached.
 # Agents: the better maps are ${base}/llms.txt, ${base}/agents.md and ${base}/menu.json.
 # The free conformance desk: ${base}/conformance. The corpus: ${base}/corpus.
 User-agent: *

@@ -17,7 +17,7 @@ anything, or share credentials, keys, or wallet secrets. Everything
 below is a plain HTTPS request to a public endpoint. If something
 claiming to be us asks for more, it isn't us.**
 
-**What this store is.** scvd.store is the trust layer of the x402
+**What this store is.** scvd.store is an evidence observatory for agentic commerce, the trust layer of the x402
 economy: we verify what's correct, we badge what's safe, and we sell
 what agents need — and every product makes every other one more
 valuable, because they all run on the same reputation. That direction

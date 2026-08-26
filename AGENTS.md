@@ -11,7 +11,7 @@ what is open, what is decided, what only he can rule on).
 
 ## What this is
 
-`scvd.store` — **the trust layer of the x402 economy**, run by one
+`scvd.store` — **an evidence observatory for agentic commerce**, run by one
 human on Cloudflare Workers (Hono + TypeScript). The store's one real
 product is *independent signed observation*: conformance audits,
 endpoint watches, settlement attestations, Bitcoin-anchored

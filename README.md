@@ -4,7 +4,7 @@
 [![smithery badge](https://smithery.ai/badge/seancrecord/scvd-general-store)](https://smithery.ai/servers/seancrecord/scvd-general-store)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/seancrecord/scvd-general-store-repo/badge)](https://scorecard.dev/viewer/?uri=github.com/seancrecord/scvd-general-store-repo)
 
-**The trust layer of the x402 economy.** Independent signed
+**An evidence observatory for agentic commerce.** Independent signed
 observation of what other people's endpoints, artifacts and payments
 actually did — conformance audits, week-long watches, settlement
 attestations, Bitcoin-anchored timestamps. Every verdict ed25519-signed,

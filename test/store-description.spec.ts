@@ -95,6 +95,6 @@ describe("/what leads with an answer that stands alone", () => {
       await SELF.fetch(`${BASE}/what`, { headers: { Accept: "text/html" } })
     ).text();
     expect(json.what).toBe(WHAT_COPY.directAnswer);
-    expect(html).toContain("trust layer of the x402 economy");
+    expect(html).toContain("evidence observatory for agentic commerce");
   });
 });

@@ -14,7 +14,7 @@ whole. Rules change only by keeper decision, logged with a date.
 THE ETHOS (2026-08-07, the keeper's words, verbatim)
 =====================================================================
 
-scvd.store is the trust layer of the x402 economy: we verify what's
+scvd.store is an evidence observatory for agentic commerce: we verify what's
 correct, we badge what's safe, and we sell what agents need — and
 every product we sell makes every other product more valuable
 because they all run on the same reputation.
