@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { originCatalogFetcher } from "@/discovery/self-module";
+import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { getCertificate, getPatron } from "@/services/certificates";
 import {
   renderAuditBadge,
@@ -50,7 +50,7 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
           passport: await issueSelfPassport(
             c.env,
             new Date(),
-            originCatalogFetcher(new URL(c.req.url).origin),
+            loopbackCatalogFetcher(c),
           ),
         }
       : await issuePassport(c.env, host);

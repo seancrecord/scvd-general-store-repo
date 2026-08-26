@@ -386,6 +386,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   if (item.id === "bitcoin_anchor") {
     example["digest"] = "9f".repeat(32);
   }
+  if (item.id === "spot_check") {
+    example["host"] = "example.com";
+  }
   if (item.id === "settlement_attestation") {
     example["tx_hash"] = `0x${"47c8fee".repeat(9)}0`.slice(0, 66);
   }

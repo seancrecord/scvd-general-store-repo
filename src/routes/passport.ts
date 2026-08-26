@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { originCatalogFetcher } from "@/discovery/self-module";
+import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
@@ -53,7 +53,7 @@ passportRoutes.get("/passport", async (c) => {
   const self = await issueSelfPassport(
     c.env,
     new Date(),
-    originCatalogFetcher(new URL(c.req.url).origin),
+    loopbackCatalogFetcher(c),
   );
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json({
@@ -101,7 +101,7 @@ passportRoutes.get("/passport/:host", async (c) => {
           passport: await issueSelfPassport(
             c.env,
             new Date(),
-            originCatalogFetcher(new URL(c.req.url).origin),
+            loopbackCatalogFetcher(c),
           ),
         }
       : await issuePassport(c.env, rawHost);

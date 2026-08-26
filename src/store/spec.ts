@@ -208,6 +208,8 @@ export const CAPABILITY_QUERY: Record<string, string> = {
     "Get a signed readout of what my page actually serves a machine reader — title, metadata, structured data — that I can hand to a third party",
   launch_check:
     "See my x402 buy path the way a real paying buyer sees it — a genuine settlement attempt, stage by stage, signed",
+  spot_check:
+    "Ask what the observatory already knows about an x402 host — signed, from its books, before I spend anything at that door",
   the_statement:
     "Get a neutral signed record of everything my agent's wallet actually moved on chain, to audit against its own ledger",
   passport_refresh:
