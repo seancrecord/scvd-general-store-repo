@@ -8,7 +8,7 @@ import {
 import {
   clearStatuses,
   contactEmail,
-  wireNote,
+  deliverWireNote,
   type OutreachLedger,
   type Prospect,
 } from "@/services/outreach";
@@ -154,7 +154,7 @@ describe("the wire holds the verified-fact law", () => {
         },
       },
     };
-    const outcome = await wireNote(testEnv, "broken.example", [prospect], ledger);
+    const outcome = await deliverWireNote(testEnv, "broken.example", [prospect], ledger);
     expect(outcome.sent).toBe(false);
     expect(!outcome.sent && outcome.reason).toBe("already-sent");
   });
@@ -166,7 +166,7 @@ describe("the wire holds the verified-fact law", () => {
         "broken.example": { contacts: ["https://broken.example/contact-form"] },
       },
     };
-    const outcome = await wireNote(testEnv, "broken.example", [prospect], ledger);
+    const outcome = await deliverWireNote(testEnv, "broken.example", [prospect], ledger);
     expect(!outcome.sent && outcome.reason).toBe("no-email-contact");
   });
 
@@ -183,7 +183,7 @@ describe("the wire holds the verified-fact law", () => {
         sends.push(String(init?.body ?? ""));
         return new Response(JSON.stringify({ id: "re_1" }), { status: 200 });
       });
-    const outcome = await wireNote(withKey, "broken.example", [prospect], ledger);
+    const outcome = await deliverWireNote(withKey, "broken.example", [prospect], ledger);
     fetchSpy.mockRestore();
 
     expect(outcome.sent).toBe(true);
@@ -219,7 +219,7 @@ describe("the wire holds the verified-fact law", () => {
       hosts: { "broken.example": { contacts: ["sec@broken.example"] } },
     };
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    const outcome = await wireNote(withKey, "broken.example", [prospect], ledger);
+    const outcome = await deliverWireNote(withKey, "broken.example", [prospect], ledger);
     expect(!outcome.sent && outcome.reason).toBe("door-healed");
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(ledger.hosts["broken.example"]!.status).toBe("fixed");
@@ -259,7 +259,7 @@ describe("the batch wire: one press, ten verified sends, nothing on a clock", ()
       .mockImplementation(async () =>
         new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
       );
-    const report = await wireAllScouted(withKey, prospects, ledger);
+    const report = await wireAllScouted(withKey, prospects, ledger, deliverWireNote);
     fetchSpy.mockRestore();
     expect(report.sent.length).toBe(10);
     expect(report.remaining).toBe(2);
@@ -285,7 +285,7 @@ describe("the batch wire: one press, ten verified sends, nothing on a clock", ()
       .mockImplementation(async () =>
         new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
       );
-    const report = await wireAllScouted(withKey, prospects, ledger);
+    const report = await wireAllScouted(withKey, prospects, ledger, deliverWireNote);
     fetchSpy.mockRestore();
     expect(report.sent.map((s) => s.host)).toEqual(["c.example"]);
     expect(report.remaining).toBe(0);
@@ -310,7 +310,7 @@ describe("the batch wire: one press, ten verified sends, nothing on a clock", ()
       .mockImplementation(async () =>
         new Response(JSON.stringify({ id: "re_1" }), { status: 200 }),
       );
-    const report = await wireAllScouted(withKey, prospects, ledger);
+    const report = await wireAllScouted(withKey, prospects, ledger, deliverWireNote);
     fetchSpy.mockRestore();
     expect(report.healed).toEqual(["healed.example"]);
     expect(report.sent.map((s) => s.host)).toEqual(["still-broken.example"]);
@@ -324,6 +324,7 @@ describe("the batch wire: one press, ten verified sends, nothing on a clock", ()
       { ...testEnv, RESEND_API_KEY: undefined } as unknown as Env,
       names.map(mkProspect),
       mkLedger(names),
+      deliverWireNote,
     );
     expect(report.sent).toEqual([]);
     expect(report.refused.length).toBe(1);
