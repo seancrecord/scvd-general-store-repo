@@ -40,6 +40,48 @@ import { outboundHeaders } from "@/lib/identity";
 /** The tag the architecture draft assigns to request signatures. */
 const REQUEST_TAG = "web-bot-auth";
 /** The tag the directory draft assigns to the directory's own proof. */
+/**
+ * WHEN THE EGRESS KEY ENTERED SERVICE, and why this date and not
+ * another.
+ *
+ * 2026-08-24 is the day the code that uses this key shipped. A key
+ * cannot have signed a request before the module that signs with it
+ * existed, so this is a FLOOR a stranger can check rather than a
+ * claim they have to take: the commit is in the public repository.
+ *
+ * It is deliberately not "today, rolling". `nbf` answers "how early
+ * could this key have signed", and an answer that advances with the
+ * clock would quietly invalidate every signature we ever made — the
+ * exact opposite of what the field is for.
+ *
+ * This is NOT the artifact-signing key, which has its own registry
+ * with real handover dates at store/key-registry.ts. This key signs
+ * outbound probes and nothing else; it has never been rotated, and if
+ * it is, this date moves with it and the old one belongs in a
+ * registry of its own rather than in a comment.
+ */
+export const WBA_KEY_IN_SERVICE_FROM = "2026-08-24";
+
+/**
+ * HOW FAR AHEAD THE DIRECTORY VOUCHES FOR ITS OWN KEY.
+ *
+ * Rolling, and said out loud rather than dressed up as a rotation
+ * promise: `exp` here is a CEILING ON TRUST, not a scheduled
+ * retirement. It means "do not honour a signature from this key, or a
+ * cached copy of this document, beyond this point without fetching
+ * the directory again". The store's own security.txt Expires is
+ * computed the same way and for the same reason — a hand-typed date
+ * in a served document is a thing that goes stale silently, and a
+ * fixed one here would eventually expire our own live key and break
+ * outbound signing with no error anybody would see.
+ *
+ * Thirty days is far enough past the directory's one-day
+ * Cache-Control that no cached copy can expire while still being
+ * served, and near enough that a verifier honouring it re-fetches
+ * about once a month.
+ */
+export const WBA_KEY_TRUST_WINDOW_SECONDS = 30 * 24 * 3600;
+
 const DIRECTORY_TAG = "http-message-signatures-directory";
 /**
  * Where the directory draft says the directory lives. Served by
@@ -76,6 +118,24 @@ export interface Ed25519Jwk {
    * name.
    */
   kid?: string;
+  /**
+   * KEY LIFETIME, IN THE TWO FIELDS A VERIFIER LOOKS FOR (2026-08-26).
+   *
+   * The directory published a key with no validity window at all, so
+   * an origin holding one of our signed requests could confirm the
+   * signature and had nothing to bound it with: no earliest moment
+   * this key could have signed, no latest moment it should be
+   * honoured. A key with no window is a key that is trusted forever
+   * by default, which is not a property any operator should hand out
+   * and not one this store wants held against it.
+   *
+   * Unix seconds, both. Neither moves the RFC 7638 thumbprint — that
+   * is computed over crv, kty and x only, and jwkThumbprint hand-
+   * writes exactly those three, which is the same reason `kid` above
+   * could be added without rotating anything.
+   */
+  nbf?: number;
+  exp?: number;
 }
 
 interface WbaKeyMaterial {
@@ -266,8 +326,25 @@ export async function signedDirectory(
     DIRECTORY_TAG,
   );
   const { signature } = await signMessage(base, material.seedHex);
+  /*
+   * BUCKETED TO THE UTC DAY, not to this instant. The directory is
+   * served with a day of Cache-Control, so a per-request `exp` would
+   * hand two verifiers different windows for the same bytes — and the
+   * one holding the cached copy would be reading a number that was
+   * true when it was minted and is not now. Anchoring to the start of
+   * the day makes every copy served that day agree with itself.
+   */
+  const startOfDay =
+    Math.floor(Date.now() / 1000 / 86400) * 86400;
+  const keys = [
+    {
+      ...material.jwk,
+      nbf: Math.floor(Date.parse(`${WBA_KEY_IN_SERVICE_FROM}T00:00:00Z`) / 1000),
+      exp: startOfDay + WBA_KEY_TRUST_WINDOW_SECONDS,
+    },
+  ];
   return {
-    body: { keys: [material.jwk] },
+    body: { keys },
     headers: {
       "Content-Type": DIRECTORY_CONTENT_TYPE,
       // A day: long enough that verifiers are not hammering the

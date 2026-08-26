@@ -6,6 +6,11 @@ import {
 } from "@/store/copy/position";
 import { Hono } from "hono";
 import {
+  IDEMPOTENCY_KEY_MAX_LENGTH,
+  IDEMPOTENCY_KEY_MIN_LENGTH,
+  IDEMPOTENCY_TTL_SECONDS,
+} from "@/lib/idempotency";
+import {
   GLOBAL_PROBES_PER_MINUTE,
   PREFLIGHT_VERSION_NEXT,
   PREFLIGHT_VERSIONS,
@@ -706,7 +711,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: {
           ...freeOp(
             "One item, up close",
-            "A single menu item as JSON, or markdown when the Accept header prefers text/markdown.",
+            "A single menu item as JSON, or markdown when the Accept header prefers text/markdown, or a readable page when it prefers text/html. The HTML dialect carries a browser till: with an EVM wallet present it signs an EIP-3009 authorization and completes the purchase in the page. JSON is what a wildcard Accept and a bare fetch still get, unchanged.",
           ),
           parameters: [pathParam("item_id", "The item id from /menu.json.")],
         },
@@ -1217,7 +1222,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/.well-known/mcp.json": {
         get: freeOp(
           "The MCP server manifest (.json alias)",
-          "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all.",
+          "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all. Like its sibling, a POST here completes an MCP handshake against the same server behind /mcp.",
         ),
       },
       "/deprecation": {
@@ -1241,7 +1246,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/mcp": {
         post: postOp(
           "The MCP door",
-          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. The manifest is at /.well-known/mcp (also /.well-known/mcp.json); a GET here answers 405 with Allow: POST and the whole handshake in the body.",
+          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
           "One JSON-RPC 2.0 request. `initialize` is the handshake.",
           {
             type: "object",
@@ -1525,7 +1530,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/.well-known/mcp": {
         get: freeOp(
           "Where the MCP server is",
-          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension.",
+          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
         ),
       },
       "/.well-known/agent-instructions": {
@@ -1543,6 +1548,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
     },
   };
   stampOperationIds(document);
+  stampIdempotencyKey(document);
   return c.json(document);
 });
 
@@ -1558,6 +1564,71 @@ openapiRoutes.get("/openapi.json", async (c) => {
  * An id already set by hand is never overwritten: it is API surface
  * the moment a client generates against it.
  */
+/**
+ * THE HEADER THAT STOPS A RETRY BECOMING A SECOND CHARGE, DECLARED.
+ *
+ * `Idempotency-Key` has been honoured on every paid door since the
+ * gate learned it, the suggested value rides in every 402 body, and
+ * /agents.md, /skill.md, /llms.txt and /try all tell a buyer to send
+ * it. The OpenAPI contract — the one document a generated client is
+ * built from — said nothing about it at all. So the readers most
+ * likely to have a naive retry loop were the readers with no way to
+ * find the fix, which is the wrong way round.
+ *
+ * A LAST PASS OVER THE FINISHED DOCUMENT, for the same reason
+ * stampOperationIds is one: adding this inside `paidOp` would cover
+ * the operations that builder makes and silently miss any paid
+ * operation written by hand. This walks what was actually assembled
+ * and keys off `x-payment`, which is the marker every paid operation
+ * carries — so a paid door added tomorrow declares the header the day
+ * it is added, and a free door never claims to honour something it
+ * does not.
+ *
+ * DERIVED, NOT HAND-TYPED. The bounds and the window come from
+ * lib/idempotency.ts, the module the gate validates with. A spec that
+ * advertised 16-128 while the code enforced something else would be
+ * worse than a spec that stayed quiet: a client generated from it
+ * would send keys the door discards, and discarded keys fail silently
+ * by design — the purchase still completes, and still charges.
+ */
+export function stampIdempotencyKey(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const item of Object.values(paths as Record<string, unknown>)) {
+    if (typeof item !== "object" || item === null) continue;
+    for (const operation of Object.values(item as Record<string, unknown>)) {
+      if (typeof operation !== "object" || operation === null) continue;
+      const op = operation as OpenApiObject;
+      if (!op["x-payment"]) continue;
+      const parameters = Array.isArray(op["parameters"])
+        ? (op["parameters"] as OpenApiObject[])
+        : [];
+      if (
+        parameters.some(
+          (parameter) =>
+            String(parameter["name"]).toLowerCase() === "idempotency-key",
+        )
+      ) {
+        continue;
+      }
+      parameters.push({
+        name: "Idempotency-Key",
+        in: "header",
+        required: false,
+        schema: {
+          type: "string",
+          minLength: IDEMPOTENCY_KEY_MIN_LENGTH,
+          maxLength: IDEMPOTENCY_KEY_MAX_LENGTH,
+        },
+        description:
+          `Optional, and it can never refuse a purchase. Repeat the same key for the same item from the same paying wallet within ${IDEMPOTENCY_TTL_SECONDS / 3600} hours and the second call returns the ORIGINAL result from cache, marked idempotent_replay — no settlement, no second charge. The chain already refuses to settle one authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge. A value the 402 body suggests (idempotency.suggested_key) is ready to use and needs nothing fetched first. Treat your own keys as secrets: cache slots are keyed by the verified paying wallet, and a key shorter than ${IDEMPOTENCY_KEY_MIN_LENGTH} characters is treated as absent rather than guessably honoured. Only settled sales replay; errors and 402s stay retryable.`,
+        example: "scvd-your-own-high-entropy-value-0001",
+      });
+      op["parameters"] = parameters;
+    }
+  }
+}
+
 export function stampOperationIds(document: OpenApiObject): void {
   const paths = document["paths"];
   if (typeof paths !== "object" || paths === null) return;

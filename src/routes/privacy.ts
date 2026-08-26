@@ -32,7 +32,8 @@ const SECTIONS: readonly { head: string; body: readonly string[] }[] = [
     head: "What this store does not collect",
     body: [
       "No accounts and no signups exist here, so there is nothing account-shaped to collect: no names required, no email required, no passwords, no profiles.",
-      "No cookies, no client-side tracking, no analytics scripts, no fingerprinting. Pages are served as static-shaped HTML; what you read here is not observed.",
+      "No cookies, no client-side tracking, no analytics scripts, no fingerprinting. What you read here is not observed.",
+      "One script is served, and only on the pages that sell something: /till.js, the browser till, which asks your wallet to sign a payment. It is first-party, unminified, byte-identical to its source in the public repository, and it makes no request to anything but this origin. It sets no cookie and writes nothing to browser storage. It never sees a key — a wallet returns a signature and keeps the key, which is exactly what every agent buying here already does. With scripting off, the page you are reading is unchanged and every instruction on it still works.",
       "The application keeps no IP address logs. Our host (Cloudflare) processes IPs to serve traffic, as every host does; the store's own code neither reads nor stores them.",
       "Uniqueness is deliberately unavailable: the store cannot tell whether two anonymous visits were the same visitor, and treats that inability as a feature.",
     ],

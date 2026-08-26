@@ -1,6 +1,6 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { apiCatalog, LINKSET_MEDIA_TYPE } from "@/lib/api-catalog";
-import { DEFAULT_PROTOCOL, PROTOCOL_VERSIONS } from "@/routes/mcp";
+import { DEFAULT_PROTOCOL, handleMcpPost, PROTOCOL_VERSIONS } from "@/routes/mcp";
 import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
@@ -680,8 +680,29 @@ function mcpManifest(base: string) {
   };
 }
 
+/**
+ * TWO METHODS, TOO (2026-08-26).
+ *
+ * GET is the manifest, unchanged and byte-for-byte what it was. POST
+ * completes an actual MCP handshake, because that is what clients do
+ * here whether or not the document tells them to: a scanner POSTed
+ * `initialize` at this path, took the 405, and reported the store as
+ * having "no live protocol handshake" — against a server that has
+ * answered `initialize` at /mcp since it opened.
+ *
+ * The full reasoning, including why this is direct handling rather
+ * than a 307, is on `handleMcpPost` in routes/mcp.ts. The short
+ * version: the client this exists for is the one that ignored a
+ * 405 body, and that client cannot be trusted to follow a redirect
+ * with its body intact either.
+ *
+ * `handleMcpPost` is imported, not reimplemented. There is one MCP
+ * server behind three URLs, so it is not possible for these paths to
+ * negotiate a different protocol version than /mcp does.
+ */
 for (const path of ["/.well-known/mcp", "/.well-known/mcp.json"] as const) {
   wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL)));
+  wellKnownRoutes.post(path, handleMcpPost);
 }
 
 /**

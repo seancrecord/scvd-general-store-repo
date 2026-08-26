@@ -11,7 +11,14 @@ export function wantsMarkdown(acceptHeader: string | undefined): boolean {
   return (acceptHeader ?? "").includes("text/markdown");
 }
 
-function priceLine(item: MenuItem): string {
+/**
+ * EXPORTED SINCE 2026-08-26, when the item pages grew an HTML dialect
+ * (house rule 53). A paper page that phrased a price in its own words
+ * would be a second source of truth for the one fact on the page a
+ * buyer acts on — and it got it wrong on the first try, printing a
+ * pay-what-it-deserves minimum as though it were a fixed price.
+ */
+export function priceLine(item: MenuItem): string {
   return item.pricing === "fixed"
     ? `$${item.price_usdc} fixed`
     : `$${item.price_usdc} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
@@ -21,7 +28,8 @@ function priceLine(item: MenuItem): string {
         .join(" / ")})`;
 }
 
-function fulfillmentLine(item: MenuItem): string {
+/** Exported for the same reason and on the same day as priceLine. */
+export function fulfillmentLine(item: MenuItem): string {
   if (item.stocked) {
     return "from the keeper's stocked shelf, instant while stocked; sold out honestly at zero";
   }

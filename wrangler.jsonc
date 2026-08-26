@@ -8,7 +8,10 @@
    * in tests — fails the real build. Found 2026-07-30 when the deploy
    * broke and the tests didn't.
    */
-  "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
+  "rules": [
+    { "type": "Text", "globs": ["**/*.md"], "fallthrough": true },
+    { "type": "Text", "globs": ["**/till/till.js"], "fallthrough": true }
+  ],
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "scvd-general-store-repo",
   "main": "src/index.ts",

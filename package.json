@@ -15,7 +15,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "test": "vitest run",
-    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run cli:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
+    "gates": "npm run typecheck && npm run self-row && npm test && npm run tab:test && npm run till:test && npm run cli:test && npm run audit && npm run claims && npm run docs:check && npm run build:check",
     "self-row": "vitest run test/self-row-blocker.spec.ts",
     "typecheck": "tsc --noEmit",
     "keys:generate": "node scripts/generate-signing-key.mjs",
@@ -33,6 +33,7 @@
     "agentic:check": "node scripts/agentic-market-check.mjs",
     "probe:dead-mcp": "node scripts/dead-mcp-probe.mjs",
     "tab:test": "node --test tab/tab.test.mjs",
+    "till:test": "node --test till/till.test.mjs",
     "cli:test": "node --test cli/cli.test.mjs",
     "tab:pager": "node tab/pager.mjs",
     "docs:check": "node scripts/docs-check.mjs"
