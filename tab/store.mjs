@@ -286,6 +286,7 @@ const CAPS = {
   payment_method: 200,
   source_url: 500,
   replaced_with: 80,
+  grant: 80,
 };
 
 /**
@@ -477,6 +478,11 @@ export function validateEvent(input) {
   }
   if (input?.private !== undefined && typeof input.private !== "boolean") {
     problems.push("private must be true or false.");
+  }
+  if (input?.grant !== undefined && typeof input.grant !== "string") {
+    problems.push(
+      "grant must be a string — the label of the authorization this entry spends under, cited as the caller writes it, never parsed.",
+    );
   }
   if (input?.source !== undefined && !SOURCES.includes(input.source)) {
     problems.push(`source must be one of ${SOURCES.join(", ")}.`);
@@ -899,6 +905,9 @@ export function derive(events, now = new Date()) {
       case "paid_started":
         tool.status = "active_paid";
         tool.price = event.price;
+        // The grant the subscription spends under (v0.10). A label,
+        // cited as written, never parsed; latest citation wins.
+        tool.grant = event.grant ?? tool.grant ?? null;
         tool.since = reopening ? at : (tool.since ?? at);
         tool.first_commitment = reopening ? at : (tool.first_commitment ?? at);
         tool.ever_paid = true;
@@ -987,11 +996,95 @@ export function derive(events, now = new Date()) {
     .filter((t) => t.price?.basis === "metered")
     .reduce((sum, t) => sum + monthlyOf(t.price), 0);
 
+  /**
+   * v0.10 — THE SPEND LANE. `once` stays out of the burn (burn means
+   * recurring; that ruling holds), so one-off buys get their own
+   * monthly ledger BESIDE it: this month's `once` purchases, by tool
+   * and by grant. Built for the multi-grant asker: "what did this
+   * agent spend this month and to whom." The month is the event's own
+   * claimed date — a retroactive entry lands in the month it claims,
+   * displayed as a claim like everywhere else.
+   */
+  const month = now.toISOString().slice(0, 7);
+  const onceEvents = events.filter(
+    (e) =>
+      e.event === "paid_started" &&
+      e.price?.period === "once" &&
+      String(eventDate(e) ?? "").slice(0, 7) === month,
+  );
+  const spendByTool = {};
+  const spendByCurrency = {};
+  for (const e of onceEvents) {
+    spendByTool[e.tool_name] = (spendByTool[e.tool_name] ?? 0) + e.price.amount;
+    const cur = e.price.currency ?? "USD";
+    spendByCurrency[cur] = (spendByCurrency[cur] ?? 0) + e.price.amount;
+  }
+  const spendCurrencies = Object.keys(spendByCurrency).sort();
+  const spendTotal = onceEvents.reduce((sum, e) => sum + e.price.amount, 0);
+
+  /**
+   * TWO NUMBERS PER GRANT, ONE PER LANE, NEVER ADDED. A one-off spend
+   * is a flow this month; a subscription is a standing monthly rate.
+   * Summing them is how a burn figure gets polluted, so the tab
+   * refuses to and says so. Money citing no grant lands under its own
+   * name — for the asker running budgets, the ungoverned remainder IS
+   * the finding, and a label that vanished into subtraction would be
+   * the lookup answering "no" with its own blindness.
+   */
+  const NO_GRANT = "(no grant cited)";
+  const byGrant = {};
+  const grantRow = (label) =>
+    (byGrant[label] ??= { one_off: 0, recurring_monthly: 0, currencies: new Set() });
+  for (const e of onceEvents) {
+    const row = grantRow(e.grant ?? NO_GRANT);
+    row.one_off += e.price.amount;
+    row.currencies.add(e.price.currency ?? "USD");
+  }
+  for (const t of activePaid) {
+    const row = grantRow(t.grant ?? NO_GRANT);
+    row.recurring_monthly += monthlyOf(t.price);
+    row.currencies.add(t.price?.currency ?? "USD");
+  }
+  const by_grant = Object.fromEntries(
+    Object.entries(byGrant).map(([label, row]) => [
+      label,
+      {
+        one_off: Math.round(row.one_off * 100) / 100,
+        recurring_monthly: Math.round(row.recurring_monthly * 100) / 100,
+        currency: row.currencies.size > 1 ? "mixed" : ([...row.currencies][0] ?? "USD"),
+      },
+    ]),
+  );
+
   return {
     tools,
     consent,
     active,
     active_paid: activePaid,
+    one_off_spend: {
+      month,
+      amount: Math.round(spendTotal * 100) / 100,
+      currency:
+        spendCurrencies.length > 1 ? "mixed" : (spendCurrencies[0] ?? "USD"),
+      ...(spendCurrencies.length > 1
+        ? {
+            by_currency: Object.fromEntries(
+              spendCurrencies.map((cur) => [
+                cur,
+                Math.round(spendByCurrency[cur] * 100) / 100,
+              ]),
+            ),
+          }
+        : {}),
+      by_tool: Object.fromEntries(
+        Object.entries(spendByTool).map(([name, amt]) => [
+          name,
+          Math.round(amt * 100) / 100,
+        ]),
+      ),
+      note: "One-off purchases (period: once) this month. Kept beside the burn and never added to the burn — the burn means recurring, and a flow summed into a standing rate is a number in neither lane.",
+    },
+    by_grant,
     monthly_burn: {
       amount: Math.round(burn * 100) / 100,
       currency: currencies.length > 1 ? "mixed" : (currencies[0] ?? "USD"),

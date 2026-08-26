@@ -63,6 +63,7 @@ envelope. Every other event carries the tool fields below.
 | occurred_at | ISO date | only with `retroactive` | the caller's claim about the past, displayed as a claim |
 | incomplete | string[] | server (capture lane) | fields capture could not fill; nothing was invented |
 | payment_method | string | no | the builder's own label; never parsed, never contributed |
+| grant | string | no | v0.10: the label of the authorization this entry spends under, cited as the caller writes it; grouped in `by_grant`, never parsed |
 | source_url | string | no | |
 | notes | string | no | **refused on swept entries** |
 
@@ -161,7 +162,7 @@ unparseable fragment of a day vanish as a duplicate.
 
 ## Field caps
 
-`tool_name` 80 · `replaced_with` 80 · `payment_method` 200 ·
+`tool_name` 80 · `replaced_with` 80 · `grant` 80 · `payment_method` 200 ·
 `dedupe_key` 200 · `problem_solved` 500 · `source_url` 500 ·
 `captured_text` 2000 · `notes` 2000.
 
@@ -219,6 +220,29 @@ here and a EUR+USD total labeled USD is a number in no currency at
 all. Trial boundaries are inclusive of their own day: a date-only
 `trial_ends` means THROUGH that day, so "charges you today" is
 reachable on the day it is true, and past-end begins the day after.
+
+## The spend lane (v0.10)
+
+Built 2026-08-26 for a question asked in the wild: *"what did this
+agent spend this month and to whom, when one agent holds multiple
+grants?"* The burn's ruling stands — `once` is not burn, burn means
+recurring — so one-off purchases get their own derived ledger BESIDE
+it:
+
+- `one_off_spend` — this month's `period: once` purchases: total,
+  per-currency split when mixed, `by_tool`. The month is the event's
+  own claimed date, so a retroactive entry lands in the month it
+  claims, displayed as a claim like everywhere else.
+- `by_grant` — **two numbers per grant, one per lane, never added**:
+  `one_off` (this month's flow) and `recurring_monthly` (the standing
+  rate). Summing a flow into a rate is how a burn figure gets
+  polluted, so the tab refuses to. Money citing no grant lands under
+  `(no grant cited)` — for anyone running budgets, the ungoverned
+  remainder is the finding, not a rounding error.
+
+A grant is a label, cited as written, never parsed. Whether it names
+a kairune permission, a mandate id from the store, or a line in a
+spreadsheet is the caller's business; the tab groups and reports.
 
 ## The sidecars
 

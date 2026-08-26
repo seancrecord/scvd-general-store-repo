@@ -2414,3 +2414,145 @@ test("a mixed-currency tab does not label the sum USD", () => {
   const single = derive(events.slice(0, 1), new Date("2026-08-21T12:00:00Z"));
   assert.equal(single.monthly_burn.currency, "USD");
 });
+
+/**
+ * v0.10 — THE SPEND LANE (2026-08-26, built for a live asker: "what
+ * did this agent spend this month and to whom, when one agent holds
+ * multiple grants").
+ *
+ * The burn deliberately excludes `once` — burn means recurring, and
+ * that stays law. The spend lane is the other ledger: one-off buys
+ * rolled up monthly, grouped by tool and by grant, published BESIDE
+ * the burn and never added to it. A grant is a label the caller
+ * cites, never parsed; per grant the tab reports TWO numbers —
+ * one_off and recurring_monthly — because summing a stock and a
+ * flow is how a burn figure gets polluted.
+ */
+test("spend lane: once-purchases roll up monthly, by tool, and never touch the burn", () => {
+  const path = freshPath();
+  appendEvent(path, {
+    ...BASE,
+    event: "paid_started",
+    price: { amount: 29, currency: "USD", period: "month" },
+  });
+  appendEvent(path, {
+    tool_name: "gpu-vendor",
+    problem_solved: "one training run",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 12.5, currency: "USD", period: "once" },
+  });
+  appendEvent(path, {
+    tool_name: "gpu-vendor",
+    problem_solved: "second training run",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 7.5, currency: "USD", period: "once" },
+    dedupe_key: "run-2",
+  });
+  const state = derive(readEvents(path).events);
+  // Burn holds only the subscription; the once-lane holds the rest.
+  assert.equal(state.monthly_burn.amount, 29);
+  assert.equal(state.one_off_spend.amount, 20);
+  assert.equal(state.one_off_spend.currency, "USD");
+  assert.equal(state.one_off_spend.by_tool["gpu-vendor"], 20);
+  // The note is part of the number: the lanes never sum.
+  assert.match(state.one_off_spend.note, /never added to the burn/i);
+});
+
+test("spend lane: only this month's once-purchases count; retroactive uses the claimed date", () => {
+  const path = freshPath();
+  appendEvent(path, {
+    tool_name: "gpu-vendor",
+    problem_solved: "an old run",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 99, currency: "USD", period: "once" },
+    retroactive: true,
+    occurred_at: "2020-01-15",
+  });
+  appendEvent(path, {
+    tool_name: "gpu-vendor",
+    problem_solved: "a fresh run",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 5, currency: "USD", period: "once" },
+    dedupe_key: "fresh",
+  });
+  const state = derive(readEvents(path).events);
+  assert.equal(state.one_off_spend.amount, 5);
+  assert.equal(state.one_off_spend.month, new Date().toISOString().slice(0, 7));
+});
+
+test("grant: a label the caller cites, capped, never parsed — and refused when malformed", () => {
+  assert.equal(
+    validateEvent({
+      ...BASE,
+      event: "paid_started",
+      price: { amount: 1, currency: "USD", period: "once" },
+      grant: "compute-day-cap",
+    }).length,
+    0,
+  );
+  const tooLong = validateEvent({
+    ...BASE,
+    event: "paid_started",
+    price: { amount: 1, currency: "USD", period: "once" },
+    grant: "g".repeat(81),
+  });
+  assert.equal(tooLong.length, 1);
+  assert.match(tooLong[0], /grant/);
+  const wrongType = validateEvent({
+    ...BASE,
+    event: "paid_started",
+    price: { amount: 1, currency: "USD", period: "once" },
+    grant: 7,
+  });
+  assert.match(wrongType[0], /grant/);
+});
+
+test("by_grant: two numbers per grant, one per lane, never added", () => {
+  const path = freshPath();
+  appendEvent(path, {
+    ...BASE,
+    event: "paid_started",
+    price: { amount: 30, currency: "USD", period: "month" },
+    grant: "compute",
+  });
+  appendEvent(path, {
+    tool_name: "gpu-vendor",
+    problem_solved: "one run",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 12.5, currency: "USD", period: "once" },
+    grant: "compute",
+  });
+  appendEvent(path, {
+    tool_name: "scraper-api",
+    problem_solved: "one crawl",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 2, currency: "USD", period: "once" },
+    grant: "research",
+  });
+  appendEvent(path, {
+    tool_name: "mystery-tool",
+    problem_solved: "ungoverned",
+    category: "hosting",
+    event: "paid_started",
+    price: { amount: 1, currency: "USD", period: "once" },
+    dedupe_key: "ungoverned-1",
+  });
+  const state = derive(readEvents(path).events);
+  assert.equal(state.by_grant["compute"].one_off, 12.5);
+  assert.equal(state.by_grant["compute"].recurring_monthly, 30);
+  assert.equal(state.by_grant["compute"].currency, "USD");
+  assert.equal(state.by_grant["research"].one_off, 2);
+  assert.equal(state.by_grant["research"].recurring_monthly, 0);
+  /*
+   * UNGOVERNED SPEND IS THE FINDING for the multi-grant asker: money
+   * that cites no grant lands under its own name rather than
+   * vanishing into a remainder someone has to notice is missing.
+   */
+  assert.equal(state.by_grant["(no grant cited)"].one_off, 1);
+});
