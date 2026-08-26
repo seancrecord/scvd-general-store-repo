@@ -944,6 +944,111 @@ export async function reconcileSettles(
   };
 }
 
+/**
+ * SERVER-SIDE TIMING, IN BUCKETS, BECAUSE THE ALTERNATIVE IS A LIE.
+ *
+ * Roadmap 0.12 asks for latency "served with denominators", and the
+ * denominator is the whole reason this is bucketed rather than
+ * averaged. A mean hides the tail that actually loses buyers; a
+ * per-request row would grow the key space without bound and cost more
+ * to keep than the number is worth. Buckets are bounded by
+ * construction — one key per route class per bucket per month — and
+ * they are honest about their own resolution in a way a point estimate
+ * is not.
+ *
+ * WHAT A HISTOGRAM CAN AND CANNOT SAY. From bucket counts you can name
+ * the interval a percentile falls in. You cannot name the percentile.
+ * Everything downstream of this therefore publishes `p50 is in
+ * [250,500)` and never `p50 = 380`, because the second sentence is a
+ * precision we did not measure. Every latency figure in this market is
+ * quoted as a single number with no method beside it; the honest form
+ * is less flattering and more useful.
+ *
+ * THE COUNT IS A FLOOR, NOT A CENSUS, and the publication says so.
+ * bumpBy is a read-modify-write against Workers KV, which is
+ * last-write-wins with no compare-and-swap, so two requests landing in
+ * the same bucket in the same instant can record as one. That biases
+ * the sample count DOWN and never up. Stating it costs a sentence and
+ * keeps the endpoint from claiming a precision the storage layer
+ * cannot give.
+ */
+export const LATENCY_BUCKET_EDGES_MS = [
+  50, 100, 250, 500, 1000, 2000, 5000,
+] as const;
+
+/**
+ * Bucket label for a duration. Labels sort lexically in bucket order
+ * by construction (zero-padded), so a reader of the raw keys sees the
+ * histogram in shape without a lookup table.
+ */
+export function latencyBucket(ms: number): string {
+  for (const edge of LATENCY_BUCKET_EDGES_MS) {
+    if (ms < edge) return `u${String(edge).padStart(5, "0")}`;
+  }
+  return "over";
+}
+
+/**
+ * Record one server-side duration for a route class.
+ *
+ * NEVER CALL THIS ON THE CRITICAL PATH. The 402 leg already awaits two
+ * counter writes before the buyer is told a price; a third would be
+ * this instrument making the thing it measures worse, which is the
+ * oldest way to be wrong about performance. Callers pass this to
+ * waitUntil.
+ *
+ * House and infrastructure traffic are NOT split out here, deliberately
+ * and unlike every other counter in this file: latency is a fact about
+ * our own server doing work, and our own probes exercise the same code
+ * as a stranger's request. Excluding them would shrink the sample for
+ * no gain in truth. The publication says which population it counted.
+ */
+export async function recordRouteTiming(
+  env: Env,
+  routeClass: string,
+  ms: number,
+): Promise<void> {
+  if (!Number.isFinite(ms) || ms < 0) return;
+  await bump(
+    env,
+    KV_KEYS.metric(
+      metricsMonth(),
+      "lat",
+      `${routeClass}:${latencyBucket(ms)}`,
+    ),
+  );
+}
+
+/** route class -> bucket label -> count, for one month. */
+export type LatencyHistograms = Record<string, Record<string, number>>;
+
+/**
+ * Read the month's timing buckets. Same scan shape as the other
+ * readers here: one prefix, one cap, one bulk fetch.
+ */
+export async function readLatencyHistograms(
+  env: Env,
+  month: string = metricsMonth(),
+): Promise<{ histograms: LatencyHistograms; truncated: boolean }> {
+  const prefix = `metric:${month}:lat:`;
+  const listed = await listKeys(env.COUNTERS, { prefix, cap: METRIC_KEY_CAP });
+  const values = await bulkGetText(env.COUNTERS, listed.names);
+  const histograms: LatencyHistograms = {};
+  for (const name of listed.names) {
+    const rest = name.slice(prefix.length);
+    const split = rest.lastIndexOf(":");
+    if (split <= 0) continue;
+    const routeClass = rest.slice(0, split);
+    const bucket = rest.slice(split + 1);
+    const count = parseInt(values.get(name) ?? "0", 10);
+    if (!Number.isFinite(count) || count <= 0) continue;
+    const row = histograms[routeClass] ?? {};
+    row[bucket] = (row[bucket] ?? 0) + count;
+    histograms[routeClass] = row;
+  }
+  return { histograms, truncated: listed.truncated };
+}
+
 /** Everything the month's counters know, organic and house apart. */
 export async function readMonthLedger(
   env: Env,
@@ -1323,4 +1428,87 @@ export async function listPayers(env: Env, limit = 50): Promise<PayerRecord[]> {
   }
   payers.sort((a, b) => b.last_seen.localeCompare(a.last_seen));
   return payers;
+}
+
+/**
+ * THE STORE COULD NOT SEE ITS OWN 500s.
+ *
+ * Found 2026-08-26, twice in one evening, by an outside checker
+ * rather than by us. It reported four doors dead in one pass, then
+ * two doors serving 500 across two checks thirty minutes apart. Both
+ * times the doors answered every probe we could construct with a
+ * clean 402, and both times we had NOTHING to look at, because:
+ *
+ *   - `app.onError` logged to console and returned a body. No alert,
+ *     no counter, no KV write. `console.error` on Workers goes to a
+ *     stream nobody retains, so a 500 left no trace that outlived the
+ *     request that caused it.
+ *   - The latency histogram records only `status === 402`, so a door
+ *     that failed to produce a challenge was never eligible to appear
+ *     in the one instrument built to watch the payment path.
+ *
+ * The second point is the sharper one. `/pulse.json` published 586
+ * challenge samples and a healthy p95 while a buyer was being handed
+ * 500s, and nothing about that publication was false — it simply
+ * could not see the failures, and its silence read as health. That is
+ * Rule 52 turned on our own instrument: a lookup that cannot see
+ * everything must not answer "no".
+ *
+ * A 500 on a PAID door is not a cosmetic defect. It is a buyer who
+ * came to spend money, was told the shop was broken, and left — and
+ * the store's own books recorded nothing at all.
+ *
+ * WHAT THE KEY DELIBERATELY DOES NOT CARRY: the error message.
+ * Messages contain ids, hashes and addresses, so keying on them would
+ * mint an unbounded row per incident and turn the alert surface into
+ * the noise it already had to be rescued from once. The class and the
+ * route are what an operator acts on; the message rides in the alert
+ * DETAIL, where it is read and never counted.
+ */
+export async function recordServerError(
+  env: Env,
+  routeClass: string,
+  errorName: string,
+): Promise<void> {
+  const safeName = errorName.replace(/[^A-Za-z0-9_]/g, "").slice(0, 40);
+  await bump(
+    env,
+    KV_KEYS.metric(
+      metricsMonth(),
+      "err",
+      `${routeClass}:${safeName || "Unknown"}`,
+    ),
+  );
+}
+
+/** route class -> error class -> count, for one month. */
+export type ServerErrorCounts = Record<string, Record<string, number>>;
+
+/**
+ * Read the month's 500s. Same scan shape as the timing reader.
+ * An empty result means NO RECORDED errors, which is not the same
+ * claim as no errors — this counter began on 2026-08-26 and says
+ * nothing about anything before it.
+ */
+export async function readServerErrors(
+  env: Env,
+  month: string = metricsMonth(),
+): Promise<{ errors: ServerErrorCounts; truncated: boolean }> {
+  const prefix = `metric:${month}:err:`;
+  const listed = await listKeys(env.COUNTERS, { prefix, cap: METRIC_KEY_CAP });
+  const values = await bulkGetText(env.COUNTERS, listed.names);
+  const errors: ServerErrorCounts = {};
+  for (const name of listed.names) {
+    const rest = name.slice(prefix.length);
+    const split = rest.lastIndexOf(":");
+    if (split <= 0) continue;
+    const routeClass = rest.slice(0, split);
+    const errorName = rest.slice(split + 1);
+    const count = parseInt(values.get(name) ?? "0", 10);
+    if (!Number.isFinite(count) || count <= 0) continue;
+    const row = errors[routeClass] ?? {};
+    row[errorName] = count;
+    errors[routeClass] = row;
+  }
+  return { errors, truncated: listed.truncated };
 }

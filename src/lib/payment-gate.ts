@@ -13,6 +13,8 @@ import {
   itemKeyFromPath,
   metricsMonth,
   recordChallengeIssued,
+  recordRouteTiming,
+  recordServerError,
   recordPaymentDecline,
   recordSettlement,
 } from "@/lib/metrics";
@@ -593,7 +595,98 @@ class DialectTolerantAdapter extends HonoAdapter {
   }
 }
 
+/**
+ * THE CHALLENGE CLOCK — roadmap 0.12, and the reason it wraps rather
+ * than sits inline.
+ *
+ * The number worth publishing is how long a buyer waits to be told a
+ * price, which is the WHOLE gate: the stack read, the preflight, the
+ * SDK's own work, and the offer-receipt signing that happens after the
+ * 402 is decided. An inline stamp at the top of the 402 branch would
+ * miss that tail, and the tail is where the interesting milliseconds
+ * have always been. So the gate runs inside a wrapper and the wrapper
+ * owns the clock.
+ *
+ * THE WRITE IS DEFERRED AND THAT IS NOT OPTIONAL. This path already
+ * awaits two counter writes before the buyer sees a price. A third,
+ * awaited, would be the latency instrument making the latency worse —
+ * the oldest way to be wrong about performance. waitUntil, or nothing.
+ *
+ * ONLY CHALLENGES ARE TIMED. A free route that falls through to next()
+ * did no payment work, and folding it in would flatter the figure with
+ * requests that never touched the till.
+ */
 export const paymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
+  const startedAt = Date.now();
+  let response: Response | void;
+  try {
+    response = await runPaymentGate(c, next);
+  } catch (error) {
+    /*
+     * THE GATE THREW, AND THIS USED TO RECORD NOTHING AT ALL.
+     *
+     * Before 2026-08-26 the timing call sat after the await with no
+     * try around it, so an exception in the gate skipped the
+     * instrument entirely on its way to the 500 handler. The one path
+     * most worth measuring — the one where a buyer is turned away —
+     * was the single path guaranteed to leave no trace.
+     */
+    recordGateOutcome(c, "threw");
+    throw error;
+  }
+  const status = response?.status ?? c.res?.status;
+  if (status === 402) {
+    const elapsed = Date.now() - startedAt;
+    try {
+      c.executionCtx.waitUntil(
+        recordRouteTiming(c.env, "challenge", elapsed).catch(() => undefined),
+      );
+    } catch {
+      // No execution context (direct invocation in a test): the timing
+      // is a nicety, the challenge is not. Never let the instrument
+      // fail the response it is measuring.
+    }
+  } else if (response !== undefined && status !== undefined && status >= 500) {
+    /*
+     * A 5xx the gate RETURNED rather than threw. Counted apart from a
+     * throw because they are different bugs with different fixes, and
+     * collapsing them would send an operator to the wrong file.
+     *
+     * Deliberately NOT counted: 2xx, 4xx, and the free pass-through
+     * (`response === undefined`, where the gate called next() and did
+     * no payment work). A door answering 404 is not a payment defect,
+     * and folding those in would bury the failures this exists to
+     * surface.
+     */
+    recordGateOutcome(c, `http${status}`);
+  }
+  return response;
+};
+
+/**
+ * Record how the payment path ended, for the endings the latency
+ * histogram cannot represent.
+ *
+ * The histogram publishes what a SUCCESSFUL challenge cost, which is
+ * the right question and only half of one: a door that throws or 500s
+ * never enters it, so its silence about a broken door is
+ * indistinguishable from health. This counter is the other half, and
+ * it is kept separate rather than folded in so the published
+ * percentiles keep meaning exactly what they said before.
+ */
+function recordGateOutcome(c: Context<HonoEnv>, outcome: string): void {
+  try {
+    c.executionCtx.waitUntil(
+      recordServerError(c.env, itemKeyFromPath(c.req.path), outcome).catch(
+        () => undefined,
+      ),
+    );
+  } catch {
+    // No execution context. Never let the instrument fail the request.
+  }
+}
+
+const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const stack = getPaymentStack(c.env);
   const adapter = new DialectTolerantAdapter(c);
   // The decline slot rides along on the context. The SDK shallow-copies
