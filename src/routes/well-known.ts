@@ -682,6 +682,11 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
 //
 // THE ROUTE OUTLIVED ITS OWN INSTRUCTION THREE TIMES. Each round said
 // remove after confirmation and each round it stayed, so the note is
+// FIFTH round, 2026-08-26. Request 873110de-8d0b-4322-8e22-22cc2f211bfb.
+// Adds the eleven doors the monitor never had — spot_check ($0.001,
+// the shelf floor) among them. The 2026-08-24 token below it replaces
+// had expired unverified; the chore ledger above still stands unpaid.
+//
 // now the fourth copy of an undone chore. Two things this round that
 // the last three did not have: the request id above, which lets the
 // verification be re-run from their API if the page is lost, and the
@@ -693,9 +698,9 @@ wellKnownRoutes.get("/.well-known/security.txt", (c) => {
 wellKnownRoutes.get("/.well-known/x402list.txt", (c) =>
   c.text(
     [
-      "# x402-list.com domain-ownership token, 2026-08-24 listing update.",
+      "# x402-list.com domain-ownership token, 2026-08-26 listing update.",
       "# One-time, expires 72h from issue, removed after verification.",
-      "x402list-verify-DZUc1jh1Vm0fpE-0m_Wh0X3J_Oc5Fmd2srAHm9tQras",
+      "x402list-verify-omm8dbFoih7_idrVxqTCR9gP5Odt0dQ1cH3r2G2g-mw",
     ].join("\n"),
     200,
     { "content-type": "text/plain; charset=utf-8" },
