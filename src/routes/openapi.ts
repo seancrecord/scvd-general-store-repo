@@ -1019,6 +1019,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * in the contract the day it is served rather than the day
        * somebody remembers this file.
        */
+      "/api/preflight/checks": {
+        get: freeOp(
+          "The battery manifest",
+          "Stable check IDs, what each battery folds into its verdict, the dated changelog, and a ruleset digest recomputable from the document alone. Derived from the same registries the battery runs, so criteria and verdicts cannot disagree. Free.",
+        ),
+      },
       ...Object.fromEntries(
         PREFLIGHT_VERSIONS.map((battery) => [
           `/api/preflight/${battery}`,
