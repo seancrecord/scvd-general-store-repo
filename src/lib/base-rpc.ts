@@ -42,6 +42,21 @@ export interface EvmChain {
   caip2: string;
   /** The chain's native USDC contract, lowercase. */
   usdc: string;
+  /**
+   * The widest `eth_getLogs` block range this chain's free endpoints
+   * will actually answer.
+   *
+   * THIS IS A PROPERTY OF THE PROVIDERS, NOT OF THE CHAIN, which is
+   * why it lives beside them rather than as one shared constant. A
+   * range wider than an endpoint allows comes back HTTP 400 — a
+   * REQUEST verdict, identical on every provider that caps at the
+   * same place, and no amount of rotating between them changes it.
+   * The comment above FALLBACK_RPCS already recorded this happening
+   * on Base at a 2,000-block span; on 2026-08-26 it stalled the
+   * Polygon bank walk outright, 400 across all three endpoints, five
+   * attempts, cursor never moving.
+   */
+  logSpan: number;
 }
 
 export const BASE_EVM: EvmChain = {
@@ -49,6 +64,9 @@ export const BASE_EVM: EvmChain = {
   label: "Base",
   caip2: BASE_CHAIN,
   usdc: BASE_USDC,
+  // Unchanged: this span has been answered by Base's endpoints since
+  // the walk was written, and narrowing a working walk buys nothing.
+  logSpan: 2000,
 };
 
 export const POLYGON_EVM: EvmChain = {
@@ -56,6 +74,26 @@ export const POLYGON_EVM: EvmChain = {
   label: "Polygon",
   caip2: POLYGON_CHAIN,
   usdc: POLYGON_USDC,
+  /*
+   * 500, AND THE NUMBER IS CHOSEN CONSERVATIVELY BECAUSE NOBODY HERE
+   * COULD MEASURE THE REAL CAP.
+   *
+   * The three Polygon endpoints are unreachable from the environment
+   * this fix was written in, so the true limit was never observed —
+   * only the 400 in the page. Guessing just under a remembered
+   * provider limit would be the same mistake as the 2,000 that broke:
+   * a number that works until an operator tightens it.
+   *
+   * So the constraint used is the one that can be checked from here.
+   * Polygon mints roughly 1,800 blocks an hour; the hourly run makes
+   * RECONCILE_CATCHUP_PASSES passes, so the walk keeps up whenever
+   * passes x span comfortably exceeds that. At 500 that is 6,000
+   * blocks an hour against 1,800 produced — better than three times
+   * the headroom, with a span well under every cap this walk has met.
+   * `test/polygon-log-span.spec.ts` pins that arithmetic so the
+   * number cannot be lowered into a slow-motion stall.
+   */
+  logSpan: 500,
 };
 
 export const EVM_CHAINS: readonly EvmChain[] = [BASE_EVM, POLYGON_EVM];
