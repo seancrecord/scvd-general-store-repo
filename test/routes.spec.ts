@@ -69,6 +69,9 @@ describe("the storefront", () => {
     // The one persona with observed traffic scans for the smallest
     // number it can settle without asking a human.
     expect(items.map((item) => item.id)).toEqual([
+      // $0.001, the floor since 2026-08-26: the pre-transaction read
+      // sits exactly where the smallest-number scanner looks first.
+      "spot_check",
       "settlement_attestation",
       "small_blessing",
       // $0.006, third by price: the reconciliation is the attestation's
