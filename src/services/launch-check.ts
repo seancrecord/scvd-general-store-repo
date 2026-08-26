@@ -52,6 +52,15 @@ export const LAUNCH_CHECK_UA =
 export const FIELD_SPEND_CAP_USD = 0.05;
 
 /**
+ * The walk's citable battery name (roadmap 1.3 / D6): the fifteen
+ * stages ARE the battery, and a signed walk record now names which
+ * revision of them produced it. Bump when a stage is added, removed,
+ * or changes meaning — replay_rejected's arrival on 2026-08-23 is
+ * the kind of change that would have bumped this had it existed.
+ */
+export const LAUNCH_CHECK_BATTERY = "launch-check-v1";
+
+/**
  * THE LONGEST AUTHORIZATION THIS STORE WILL EVER SIGN (ledger I2).
  *
  * `validBefore` used to be `now + the SELLER'S maxTimeoutSeconds`,
@@ -220,6 +229,8 @@ export interface LaunchCheckObservation {
    * own change.
    */
   challenge_evidence?: WatchEvidenceCapture;
+  /** Which revision of the walk produced this record (1.3 / D6). */
+  battery: string;
   evidence_hash: string;
   scope: string;
 }
@@ -869,6 +880,7 @@ export async function performLaunchCheck(
     tx_hash: txHash,
     field_wallet: signer?.address ?? null,
     ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
+    battery: LAUNCH_CHECK_BATTERY,
   };
   const observation: LaunchCheckObservation = {
     ...core,

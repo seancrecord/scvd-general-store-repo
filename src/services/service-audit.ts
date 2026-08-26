@@ -3,6 +3,7 @@ import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
 import { ProbeTargetRefused } from "@/lib/probe-target";
 import {
+  PREFLIGHT_BATTERY,
   PREFLIGHT_VERSION,
   probeOnce,
   runChecks,
@@ -53,7 +54,7 @@ import type { Env } from "@/types";
  */
 
 /** The criteria the audit runs — the preflight battery, versioned. */
-export const AUDIT_CRITERIA_VERSION = `preflight-${PREFLIGHT_VERSION}`;
+export const AUDIT_CRITERIA_VERSION = PREFLIGHT_BATTERY;
 
 export function auditCriteriaNote(base: string): string {
   return `${AUDIT_CRITERIA_VERSION}: the published check battery documented at ${base}/api/preflight/${PREFLIGHT_VERSION} (GET). The audit runs those checks and no others; the criteria page is the contract.`;

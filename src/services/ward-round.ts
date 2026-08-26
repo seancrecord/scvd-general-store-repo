@@ -5,6 +5,7 @@ import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
+import { PREFLIGHT_BATTERY } from "@/services/preflight";
 import {
   captureWatchEvidence,
   type WatchEvidenceCapture,
@@ -121,6 +122,13 @@ export interface WardHostResult {
    * its exact original preimage, the standing-watch lesson.
    */
   evidence?: WatchEvidenceCapture;
+  /**
+   * WHICH BATTERY PRODUCED THE VERDICT (roadmap 1.3 / D6), riding
+   * verbatim into the signed weekly snapshot like everything else on
+   * this row. Absent on rounds before 2026-08-26 and on unreachable
+   * doors — no response, no battery, no citation.
+   */
+  battery?: string;
   volume_claim?: WardVolumeClaim;
   /**
    * What the door's own 402 OFFERED, read from the header the probe
@@ -534,6 +542,7 @@ export async function probeHost(
       advisories: advisoryNames,
       ...(offer ? { offer } : {}),
       evidence,
+      battery: PREFLIGHT_BATTERY,
     };
   } catch {
     return { verdict: "unreachable", failed: [], advisories: [] };
