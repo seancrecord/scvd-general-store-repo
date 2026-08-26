@@ -245,6 +245,16 @@ export interface PreflightReport {
    * whose side the failure is on.
    */
   verdict: "ready" | "not_ready" | "unreachable";
+  /**
+   * 2.1b: the rung this probe reached and the tri-state vector,
+   * published beside the legacy checks list. `checks` stays exactly
+   * as it was — consumers of the old shape read the same bytes.
+   */
+  reached_level: ReachedLevel;
+  reached_level_meaning: string;
+  /** Present only when reached_level is "none": always "unlocalized". */
+  network_failure?: "unlocalized";
+  checks_vector: TriStateRow[];
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   single_probe_note: string;
@@ -289,9 +299,15 @@ function report(
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
+  const vector = triStateVector(checks);
+  const level = reachedLevel(vector, verdict === "unreachable");
   return {
     version: battery,
     verdict,
+    reached_level: level,
+    reached_level_meaning: REACHED_LEVEL_MEANING,
+    ...(level === "none" ? { network_failure: "unlocalized" as const } : {}),
+    checks_vector: vector,
     checks,
     advisories,
     ...(options.alsoUnder ? { also_under: options.alsoUnder } : {}),
@@ -681,6 +697,41 @@ export function runChecks(
 }
 
 /**
+ * ROADMAP 2.1b — HOW FAR ONE UNPAID PROBE ACTUALLY GOT.
+ *
+ * The ledger's evidence taxonomy runs L0-L6; a single unpaid GET can
+ * honestly claim at most L3a of it. "none" is a probe that never
+ * completed — and because Workers fetch collapses the L0 sub-classes
+ * (DNS, TCP, TLS, timeout all surface as one thrown error), a failed
+ * probe names its failure "unlocalized" rather than fabricating a
+ * sub-class it never observed. L2 requires the 402 AND a parseable
+ * PAYMENT-REQUIRED header: a header that is present but unparseable
+ * scores L1, and the collapse of present-vs-parseable is stated in
+ * the meaning prose rather than hidden in the mapping.
+ */
+export type ReachedLevel = "none" | "L1" | "L2" | "L3a";
+
+export function reachedLevel(
+  vector: TriStateRow[],
+  unreachable: boolean,
+): ReachedLevel {
+  if (unreachable) {
+    return "none";
+  }
+  const state = (name: string): TriStateRow["state"] | undefined =>
+    vector.find((row) => row.name === name)?.state;
+  if (state("payment-required-header") !== "pass") {
+    return "L1";
+  }
+  return state("x402-version") === "pass" && state("accepts") === "pass"
+    ? "L3a"
+    : "L2";
+}
+
+export const REACHED_LEVEL_MEANING =
+  "How far this one unpaid probe got, on the L0-L6 evidence ladder: none = the probe never completed (network failure, sub-class unlocalized — this platform cannot tell DNS from TCP from TLS from timeout, so we refuse to guess); L1 = HTTP answered; L2 = 402 with a parseable PAYMENT-REQUIRED header (a header present but unparseable scores L1 — this battery cannot split presence from parseability); L3a = challenge well-formed (version and accepts). This battery does not measure L3b internal consistency, L3c authenticity, L3d cross-probe consistency, or L4-L6 purchasability through delivery — those rungs are absent because they were not climbed, not because they passed.";
+
+/**
  * ROADMAP 2.1a — THE TRI-STATE VECTOR (ledger B1, one layer down).
  *
  * runChecks early-returns, so a door that answered 200 emits ONE
@@ -722,11 +773,16 @@ export interface TriStateRow {
  */
 export function triStateVector(checks: PreflightCheck[]): TriStateRow[] {
   const ran = new Map(checks.map((check) => [check.name, check]));
+  /*
+   * The blocker is the LAST failing check that ran, whatever its
+   * name — so a probe that never completed (its one check is the
+   * synthetic "reachable" failure) blocks the whole battery under
+   * that name, honestly, instead of pretending status-402 was tried.
+   */
   let blocker = "status-402";
-  for (const name of BATTERY_CHECK_NAMES) {
-    const check = ran.get(name);
-    if (check && !check.ok) {
-      blocker = name;
+  for (const check of checks) {
+    if (!check.ok) {
+      blocker = check.name;
     }
   }
   const rows: TriStateRow[] = BATTERY_CHECK_NAMES.map((name) => {
