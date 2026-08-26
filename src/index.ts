@@ -84,6 +84,7 @@ import {
   stampRoutes,
   storefrontRoutes,
   developerRoutes,
+  deprecationRoutes,
   tradingPostRoutes,
   verifyRoutes,
   wellKnownRoutes,
@@ -206,6 +207,7 @@ app.use("*", async (c, next) => {
 
 app.route("/", storefrontRoutes);
 app.route("/", developerRoutes);
+app.route("/", deprecationRoutes);
 app.route("/", siteMetaRoutes);
 app.route("/", faviconRoutes);
 app.route("/", statsRoutes);

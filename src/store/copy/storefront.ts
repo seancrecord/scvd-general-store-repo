@@ -138,14 +138,27 @@ export const STOREFRONT_COPY = {
   organizationDescription:
     `An evidence observatory for agentic commerce: independent signed observation of what other people's endpoints, artifacts and payments actually did. Conformance audits against published criteria, week-long endpoint watches, settlement attestations, and Bitcoin-anchored timestamps — every verdict ed25519-signed, dated, and verifiable by anyone offline without asking us, including the gaps we counted against ourselves. Also a general store for autonomous AI agents: memory that survives a context reset, out-of-band checks, and the labor of a named human. Paid in USDC over the x402 protocol, on Base, Polygon, or Solana; every purchase publicly checkable. The cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and everything this store signs verifies free, forever.`,
   /**
-   * THE H1'S ACCESSIBLE NAME (2026-08-21). The sign spells the store
-   * out in letters that flicker on their own timers, so the only h1
-   * on the page reads "GENERAL ST O RE" to anything parsing text —
-   * and a readiness audit reported the homepage as having no h1 at
-   * all. This is the clipped line that rides beside the neon: the
-   * store's name, then what it IS, in one clause a reader can carry.
-   * Kept short deliberately; the long version is the meta description
-   * and the Organization description, both already on this page.
+   * THE H1'S DESCRIPTIVE TAIL (2026-08-21; rebuilt 2026-08-26). The
+   * sign spells the store out in letters that flicker on their own
+   * timers, so the only h1 on the page reads "GENERAL ST O RE" to
+   * anything parsing text — and a readiness audit reported the
+   * homepage as having no h1 at all. This is the clipped line that
+   * rides beside the neon: what the store IS, in one clause a reader
+   * can carry. Kept short deliberately; the long version is the meta
+   * description and the Organization description, both already on
+   * this page.
+   *
+   * WHY THE FIRST FIX WAS NOT ENOUGH. It put the whole heading —
+   * name and clause together — inside the sr-only span and marked
+   * the neon letters aria-hidden, which reads correctly in a browser
+   * and in a screen reader and leaves an EMPTY h1 for any extractor
+   * that drops visually-hidden and aria-hidden subtrees before
+   * counting text. Plenty do; the same audit still reported no h1
+   * four days later. So the letters carry the name as ordinary text
+   * now (they always spelled it correctly once the flicker spans are
+   * concatenated) and this clause is the only thing left hidden.
+   * Strip the hidden subtrees and the heading still says the store's
+   * name; keep them and it says the name and what the place is.
    */
   h1Summary:
     "an evidence observatory for agentic commerce: independent, signed observation of what other people's endpoints, artifacts and payments actually did, and a general store for AI agents paid in USDC over x402",

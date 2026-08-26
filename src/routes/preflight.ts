@@ -9,6 +9,7 @@ import {
   preflightUrl,
   type PreflightBattery,
 } from "@/services/preflight";
+import { lifecycleHeaders } from "@/store/api-lifecycle";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -97,9 +98,29 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
   };
 }
 
+/**
+ * THE LIFECYCLE HEADERS, WIRED RATHER THAN PROMISED.
+ *
+ * /deprecation says a retiring version carries RFC 8594 Sunset and
+ * Deprecation for at least ninety days. This is where that sentence
+ * becomes a mechanism: every versioned answer asks the same table the
+ * policy page prints whether its own path is on the way out. Nothing
+ * is today, so this adds nothing to the wire today — and the day a
+ * row in store/api-lifecycle.ts gains a date, the headers appear
+ * without anybody remembering that a second place needed editing.
+ * A policy nobody wired up is a paragraph.
+ */
+function withLifecycle(c: Context<HonoEnv>, path: string): Record<string, string> {
+  return lifecycleHeaders(path, c.env.STORE_BASE_URL);
+}
+
 for (const battery of PREFLIGHT_VERSIONS) {
   preflightRoutes.get(`/api/preflight/${battery}`, (c) =>
-    c.json(doc(c.env.STORE_BASE_URL, battery)),
+    c.json(
+      doc(c.env.STORE_BASE_URL, battery),
+      200,
+      withLifecycle(c, `/api/preflight/${battery}`),
+    ),
   );
 }
 preflightRoutes.get("/api/preflight", (c) => c.json(doc(c.env.STORE_BASE_URL)));
@@ -124,7 +145,9 @@ async function handle(
   const result = await preflightUrl(url, c.env, battery);
   return c.json(result.body, result.status as 200, {
     "Cache-Control": "no-store",
-    // The refusal carries its own headers — a 429 owes Retry-After,
+    ...withLifecycle(c, `/api/preflight/${battery}`),
+    // The answer carries its own headers — the RFC RateLimit fields on
+    // anything the limiter metered, and Retry-After on the refusal,
     // which two of our own pages had already promised readers.
     ...result.headers,
   });

@@ -55,8 +55,14 @@ import { isRecord, type HonoEnv, type MenuItem } from "@/types";
  * comes back as JSON-RPC error 402 with the challenge in error.data.
  */
 
-const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26"];
-const DEFAULT_PROTOCOL = "2025-06-18";
+/**
+ * EXPORTED SINCE 2026-08-26 so /.well-known/mcp can print the exact
+ * versions this server negotiates rather than a second list beside
+ * them. A manifest that advertises a protocol version the server
+ * refuses is worse than a manifest with no versions in it.
+ */
+export const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26"];
+export const DEFAULT_PROTOCOL = "2025-06-18";
 
 /**
  * WHY FIVE GROUPED buy_* TOOLS RATHER THAN ONE PER ITEM — the answer
@@ -771,13 +777,33 @@ mcpRoutes.post("/mcp", async (c) => {
   return rpcError(null, -32700, "That wasn't JSON-RPC. The door takes 2.0.");
 });
 
-mcpRoutes.get("/mcp", (c) =>
-  c.json(
+/**
+ * A 405 THAT TELLS THE CALLER WHAT TO DO INSTEAD.
+ *
+ * RFC 9110 §15.5.6 makes `Allow` MANDATORY on a 405 and this response
+ * shipped without one for months, which matters more here than it
+ * usually would: a scanner probing for an MCP server very often does
+ * a bare GET first, and a 405 with no Allow header reads as "there is
+ * something here and I cannot tell what" — the same dead end as a
+ * 404. The manifest link is the other half: whatever the caller was
+ * looking for, that document has it.
+ */
+mcpRoutes.get("/mcp", (c) => {
+  const base = c.env.STORE_BASE_URL;
+  return c.json(
     {
       error:
         "The MCP door opens on POST (streamable HTTP, JSON-RPC 2.0). No server-initiated streams here; the store speaks when spoken to.",
-      spec: "2025-06-18",
+      spec: DEFAULT_PROTOCOL,
+      protocol_versions: [...PROTOCOL_VERSIONS],
+      manifest: `${base}/.well-known/mcp`,
+      /** The whole handshake, so a prober need not go and read it. */
+      handshake: `curl -sS -X POST ${base}/mcp -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"${DEFAULT_PROTOCOL}","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}'`,
     },
     405,
-  ),
-);
+    {
+      Allow: "POST",
+      Link: `<${base}/.well-known/mcp>; rel="service-desc"; type="application/json"`,
+    },
+  );
+});

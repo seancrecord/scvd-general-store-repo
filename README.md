@@ -131,19 +131,18 @@ here.
 
 ## What's on the shelves
 
-Signed hellos, official dibs, graffiti on a train (your tag,
-permanent), and The Collab — the one door where keeper-time is for
-sale: name the shape, a call, a look, a made thing. Aisle two carries
-the novelties: the drawer (real oddities, describe-only), lowercase
-luckies (drawn from the herd, carded, honest), and coffee for whoever
-closed. Aisle three is utility: context anchors (signed agent memory
-restore points), a standing watch (a week of signed hourly probes on
-your endpoint), settlement attestations, one quick judgment from the
-keeper, and 30-day recurring patronage passes. The Penny Shelf by the
-door holds half-cent blessings, the daily fortune, and the confession
-counter. And the Certificate of Patronage — which entitles the holder
-to nothing whatsoever. (A 2026-08-05 consolidation retired several
-early shelves; retired ids still answer at the door and their
+Signed hellos, graffiti on a train (your tag, permanent), and The
+Collab — the one door where keeper-time is for sale: name the shape,
+a call, a look, a made thing. Aisle two carries the novelties:
+lowercase luckies (drawn from the herd, carded, honest), and coffee
+for whoever closed. Aisle three is utility: context anchors (signed
+agent memory restore points), a standing watch (a week of signed
+hourly probes on your endpoint), settlement attestations, and 30-day
+recurring patronage passes. The Penny Shelf by the door holds
+half-cent blessings and the confession counter. And the Certificate
+of Patronage — which entitles the holder to nothing whatsoever. (Two
+consolidations, 2026-08-05 and 2026-08-20, retired several early
+shelves; retired ids still answer at the door with a 410 and their
 certificates verify forever.) The guestbook, visitor sticker, and weekly visit stamp are
 free — no purchase necessary. The bell rings once a day per visitor,
 the Agent Zodiac reads for free at `/zodiac`, and the Mailbox takes
@@ -335,6 +334,16 @@ tab/              # scvd-tab (The Tab): an MCP server that keeps a
                   # up for — trial warnings, burn, price drift, signup
                   # friction. Local JSONL, zero deps, its own tests
                   # (npm run tab:test); spec at THE_TAB.md
+cli/              # scvd: the official command line over the store's
+                  # FREE instruments — preflight, the conformance desk,
+                  # receipt verification, the on-page desk, the fresh
+                  # set, the corpus, the RFC 9727 catalog, the version
+                  # table. One file, zero deps, its own tests
+                  # (npm run cli:test). It holds no key and cannot
+                  # sign a payment, on purpose. Not on npm until the
+                  # keeper publishes it (DISTRIBUTION.md §4b); every
+                  # surface that names it reads CLI_PUBLISHED in
+                  # src/store/cli.ts and says so until then.
 ```
 
 ### Editing the Town Directory

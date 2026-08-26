@@ -170,6 +170,18 @@ export const ROOMS: readonly Room[] = [
    * you collect" here is mostly "nothing, structurally".
    */
   { path: "/privacy", name: "Privacy" },
+  /**
+   * THE VERSIONING PROMISE, GIVEN A DOOR (2026-08-26). The promise
+   * itself is older — the contract's `x-versioning` block has carried
+   * it since August — and a readiness audit read that spec, found the
+   * URL versioning, and reported "no deprecation or sunset policy
+   * detected" anyway. A vendor extension inside a 900KB JSON document
+   * is not something a reader can be SHOWN, and "the policy is
+   * somewhere you did not look" files as "there is no policy" for the
+   * same reason /about and /terms did. Same disease, same cure: a
+   * room, at a name somebody would type.
+   */
+  { path: "/deprecation", name: "API versioning and deprecation policy" },
   { path: "/wind-down", name: "If the lights go off" },
   { path: "/becoming", name: "What this is trying to prove" },
 ];

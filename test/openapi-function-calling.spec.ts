@@ -79,6 +79,104 @@ describe("every operation is callable by name", () => {
   });
 });
 
+describe("every operation an LLM would call is typed, not described in prose", () => {
+  /**
+   * THE OTHER HALF OF THE SAME AUDIT FINDING. "102/102 operationIds,
+   * 38/102 typed schemas" — and the 64 split cleanly into two
+   * failures that are both invisible to a person reading the spec:
+   *
+   *   Sixteen POST operations published their request shape in the
+   *   DESCRIPTION, as English (`JSON body: { "url": "https://..." }`).
+   *   A function-calling converter reads `requestBody`, finds nothing,
+   *   and emits a tool whose only parameter is "an object" — so the
+   *   model guesses field names out of a sentence.
+   *
+   *   Ten templated GETs declared no `parameters` at all. Braces in
+   *   the path and nothing saying what goes in them is not merely
+   *   untyped; it is invalid OpenAPI, and a generator either drops the
+   *   operation or invents the parameter.
+   *
+   * Both are asserted structurally rather than by count, because a
+   * count passes the day somebody adds a typed operation and an
+   * untyped one in the same commit.
+   */
+  it("declares a parameter for every brace in every path", async () => {
+    const document = await spec();
+    const untyped: string[] = [];
+    for (const entry of operations(document)) {
+      const names = [...entry.path.matchAll(/\{([^}]+)\}/g)].map(
+        (match) => match[1],
+      );
+      if (names.length === 0) continue;
+      const declared = ((entry.op["parameters"] ?? []) as Array<
+        Record<string, unknown>
+      >).filter((parameter) => parameter["in"] === "path");
+      for (const name of names) {
+        const found = declared.find((parameter) => parameter["name"] === name);
+        if (!found || !found["schema"]) {
+          untyped.push(`${entry.method} ${entry.path} → {${name}}`);
+        }
+      }
+    }
+    expect(untyped.sort()).toEqual([]);
+  });
+
+  it("gives every POST a typed request body instead of a sentence", async () => {
+    const document = await spec();
+    const untyped: string[] = [];
+    for (const entry of operations(document)) {
+      if (entry.method !== "post") continue;
+      const body = entry.op["requestBody"] as Record<string, unknown> | undefined;
+      const schema = body
+        ? ((body["content"] as Record<string, Record<string, unknown>>)?.[
+            "application/json"
+          ]?.["schema"] as Record<string, unknown> | undefined)
+        : undefined;
+      // `type` alone is not typing: an operation whose body is a free
+      // object has to SAY it is, which the verify-receipt desk does.
+      if (!schema || !schema["type"]) {
+        untyped.push(`${entry.method} ${entry.path}`);
+      }
+    }
+    expect(untyped.sort()).toEqual([]);
+  });
+
+  it("counts what the audit counts, and clears its bar", async () => {
+    /*
+     * The audit's own arithmetic, reproduced: an operation is typed
+     * when it declares a request body schema or typed parameters. It
+     * read 38/102. This asserts the ratio can never fall back — a new
+     * untyped operation fails here by name rather than in a report
+     * three weeks later.
+     */
+    const all = operations(await spec());
+    const untyped = all.filter((entry) => {
+      const body = entry.op["requestBody"] as Record<string, unknown> | undefined;
+      if (body) return false;
+      const parameters = (entry.op["parameters"] ?? []) as Array<
+        Record<string, unknown>
+      >;
+      if (parameters.length === 0) return true;
+      return !parameters.every((parameter) => parameter["schema"]);
+    });
+    /*
+     * NOT ZERO, AND THE REMAINDER IS NAMED RATHER THAN HIDDEN: a free
+     * GET that takes no input has nothing to type, and inventing a
+     * parameter so a ratio reads better is the exact species of
+     * flattering number this store keeps off its own books. Every one
+     * of these is an input-less GET, and THAT is what is asserted.
+     */
+    for (const entry of untyped) {
+      expect(entry.method, `${entry.path} is an untyped ${entry.method}`).toBe(
+        "get",
+      );
+      expect(entry.path, `${entry.path} has a brace and no parameter`).not.toContain(
+        "{",
+      );
+    }
+  });
+});
+
 describe("the error model, typed", () => {
   it("documents 4xx and 5xx as RFC 9457 problem objects", async () => {
     const all = operations(await spec());
@@ -113,26 +211,47 @@ describe("the error model, typed", () => {
     expect(problem.properties["status"]).toBeTruthy();
   });
 
-  it("does not advertise a rate limit nothing enforces", async () => {
+  it("advertises the rate limit it has, on exactly the paths that have one", async () => {
     /*
-     * The audit asked for RateLimit headers. The first draft of this
-     * change added them, and they would have been false: there is no
-     * limiter in this Worker to produce a number. An agent
-     * self-throttling against a fiction is worse off than one that
-     * was told the truth, and a spec that lies once is a spec.
+     * THE FIRST DRAFT OF THIS FILE ASSERTED THE OPPOSITE, and it was
+     * right at the time: the audit asked for RateLimit headers, and
+     * declaring them everywhere would have been false, because most of
+     * these operations have no limiter to produce a number. An agent
+     * self-throttling against a fiction is worse off than one told the
+     * truth.
+     *
+     * What changed is not the principle. The preflight limiter has
+     * been enforced since 2026-08-03 and reported its state to nobody
+     * — so the ceiling was documented in prose and unobservable on the
+     * wire, which the audit named exactly. Both halves are asserted
+     * here now: the metered paths carry the fields, and everything
+     * else still carries none.
      */
     const document = await spec();
     const policy = document["x-rate-limiting"] as Record<string, unknown>;
-    expect(policy["application_level_limit"]).toBe(false);
-    expect(policy["headers_returned"]).toEqual([]);
+    expect(policy["application_level_limit"]).toBe(true);
+    expect(policy["headers_returned"]).toContain("RateLimit-Limit");
+    expect(policy["headers_returned"]).toContain("RateLimit-Policy");
     expect(String(policy["note"])).toMatch(/Retry-After/);
+    const limited = policy["limited_paths"] as string[];
+    expect(limited.length).toBeGreaterThan(0);
 
-    const all = operations(document);
-    for (const entry of all) {
+    for (const entry of operations(document)) {
       const responses = entry.op["responses"] as Record<string, Operation>;
       const ok = responses["200"] as Operation | undefined;
       const headers = (ok?.["headers"] ?? {}) as Record<string, unknown>;
-      expect(headers["RateLimit-Limit"]).toBeUndefined();
+      const metered = limited.includes(entry.path) && entry.method === "post";
+      if (metered) {
+        expect(
+          headers["RateLimit-Limit"],
+          `${entry.path} is metered and documents no RateLimit-Limit`,
+        ).toBeTruthy();
+      } else {
+        expect(
+          headers["RateLimit-Limit"],
+          `${entry.method} ${entry.path} documents a ceiling nothing enforces`,
+        ).toBeUndefined();
+      }
     }
   });
 
@@ -154,6 +273,14 @@ describe("the versioning promise", () => {
     expect(versioning["sunset_headers"]).toBeTruthy();
     // An empty list is a statement: nothing is being retired today.
     expect(versioning["currently_deprecated"]).toEqual([]);
+    // And the table beside it, so a reader learns WHICH versions exist
+    // rather than only that none of them is ending.
+    const versions = versioning["versions"] as Array<Record<string, unknown>>;
+    expect(versions.length).toBeGreaterThan(0);
+    for (const row of versions) {
+      expect(String(row["path"])).toMatch(/^\/api\//);
+      expect(["current", "supported", "deprecated"]).toContain(row["status"]);
+    }
   });
 
   it("points at a policy page that actually answers", async () => {

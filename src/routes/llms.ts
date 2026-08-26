@@ -9,6 +9,13 @@ import {
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { USE_WHEN } from "@/store/spec";
+import {
+  CLI_INSTALL,
+  CLI_PACKAGE,
+  CLI_PUBLISHED,
+  CLI_RUN_FROM_SOURCE,
+  CLI_SOURCE_URL,
+} from "@/store/cli";
 import { TRUST_LIST_VERSION, trustListCounts } from "@/routes/trust-list";
 import type { HonoEnv, MenuItem } from "@/types";
 
@@ -272,7 +279,28 @@ Developer documentation, one index of all of it: ${base}/developers
 (also at /docs and /api). No account and no API key exists to obtain:
 free shelves are open, paid ones take a signed x402 payment per
 request. The page states the error model, the rate-limit headers and
-the deprecation policy in one place.
+the deprecation policy in one place. HTML by default now — it served
+JSON to anything that sent "Accept: */*" until 2026-08-26, which is
+what curl and most crawlers send, so the one page whose whole job was
+being found read as a wall of JSON to half its readers.
+API catalog, RFC 9727: ${base}/.well-known/api-catalog — every API
+surface at this origin as an RFC 9264 linkset, at the fixed path a
+scanner is allowed to know without guessing.
+Versioning and deprecation policy: ${base}/deprecation — how breaking
+changes arrive, the RFC 8594 Sunset and Deprecation headers a retiring
+version carries, and a live table of every version served. Nothing is
+deprecated today and the table says so.
+Official CLI, ${CLI_PACKAGE} (MIT, zero dependencies): one line per
+instrument — "scvd preflight <url>", "scvd conformance <file>", "scvd
+verify <id>", "scvd catalog", "scvd versions". It holds no key and
+cannot spend money; --json prints this store's own response verbatim.
+${
+  CLI_PUBLISHED
+    ? `Install with ${CLI_INSTALL}.`
+    : `NOT ON npm YET — the publish is the keeper's hand and has not run, so ${CLI_INSTALL} does not work today. The whole tool is one file: ${CLI_SOURCE_URL}, run it with "${CLI_RUN_FROM_SOURCE}".`
+}
+The other package, scvd-tab, IS on npm; it is the local ledger of what
+your agent spent and works against any x402 store.
 When to reach for this store, machine-readable:
 ${base}/.well-known/agent-instructions — the same situations listed
 under "When you'd use this store" below, at a path you can guess.

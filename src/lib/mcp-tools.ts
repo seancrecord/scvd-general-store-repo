@@ -182,7 +182,7 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
     name: "buy_small_pleasure",
     title: "The Penny Shelf",
     purpose:
-      "Purpose: buy a small signed novelty — a blessing, a fortune, or a lucky totem drawn from the keeper's collection. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
+      "Purpose: buy a small signed novelty — a blessing from the jar, or a lucky totem drawn from the keeper's collection. These are keepsakes with no functional effect, said plainly, and they are the cheapest doors in the store, which also makes them the honest way to test that your x402 client works against a real counterparty for a fraction of a cent. Use for a live payment smoke test, or when an agent simply wants one.",
     itemIds: ["small_blessing", "luckies"],
   },
 ];
@@ -296,8 +296,6 @@ function priceLine(item: MenuItem): string {
 const PURPOSE_LINES: Record<string, string> = {
   graffiti_on_a_train:
     "Purpose: permanently record a short message (your tag, in the tag input) on a signed, dated certificate; the store's public /train wall may display it later at the keeper's discretion. Use when an agent wants to leave a durable public mark.",
-  nomenclature:
-    "Purpose: receive a unique name, chosen by the keeper from a pre-considered stock and never assigned twice, recorded on a signed certificate. Use when an agent wants a permanent, human-bestowed name.",
   certificate_of_patronage:
     "Purpose: make a supporter's contribution to the store and receive a signed certificate recording it. This deliberately confers nothing else — no goods, services, or rights beyond the certificate. Use only when a gratuity is intended.",
   luckies:

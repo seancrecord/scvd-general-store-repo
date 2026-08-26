@@ -1,0 +1,36 @@
+{
+  "name": "scvd",
+  "version": "0.1.0",
+  "description": "The official command line for scvd.store: check any x402 door, verify any signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key.",
+  "type": "module",
+  "bin": {
+    "scvd": "scvd.mjs"
+  },
+  "main": "./scvd.mjs",
+  "files": [
+    "scvd.mjs",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "keywords": [
+    "x402",
+    "cli",
+    "conformance",
+    "preflight",
+    "agent-payments",
+    "usdc",
+    "verification",
+    "scvd"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seancrecord/scvd-general-store-repo.git",
+    "directory": "cli"
+  },
+  "license": "MIT",
+  "author": "scvd.store",
+  "homepage": "https://scvd.store/developers"
+}

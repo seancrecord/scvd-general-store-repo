@@ -39,6 +39,44 @@ function stripTags(fragment: string): string {
   return current.replace(/<[^>]*$/, "");
 }
 
+/**
+ * The document as an unfriendly extractor sees it: every subtree a
+ * page marks decorative (`aria-hidden="true"`) or visually hidden
+ * (`class="sr-only"`) removed, WITH ITS CHILDREN, before a single
+ * character is counted.
+ *
+ * Deliberately crude, and that is the point — it is a stand-in for
+ * somebody else's crawler, not a browser. It only has to model the
+ * one behaviour that made the store's h1 read as empty.
+ *
+ * THE NESTING IS THE WHOLE JOB, and the first draft of this helper
+ * got it wrong in the direction that hides a bug: a non-greedy
+ * `[\s\S]*?<\/span>` stops at the first CLOSING tag, so a hidden
+ * span containing a decorative one leaves its own tail behind — and
+ * the tail of the old neon sign still spelled "GENERAL STORE", so
+ * the guard passed against exactly the markup it was written to
+ * fail. Depth is counted here instead.
+ */
+function withoutHiddenSubtrees(html: string): string {
+  const opener = /<span\b[^>]*(?:aria-hidden="true"|class="sr-only")[^>]*>/i;
+  let out = html;
+  for (;;) {
+    const start = opener.exec(out);
+    if (!start) return out;
+    let index = start.index + start[0].length;
+    let depth = 1;
+    const tag = /<(\/?)span\b[^>]*>/gi;
+    tag.lastIndex = index;
+    let match: RegExpExecArray | null;
+    while (depth > 0 && (match = tag.exec(out)) !== null) {
+      depth += match[1] === "/" ? -1 : 1;
+      index = match.index + match[0].length;
+    }
+    // An unbalanced document: drop the rest rather than loop forever.
+    out = out.slice(0, start.index) + " " + out.slice(depth > 0 ? out.length : index);
+  }
+}
+
 describe("the Accept header, parsed rather than guessed at", () => {
   it("honours q-values instead of substring-matching", () => {
     /*
@@ -175,12 +213,57 @@ describe("the store's name, legible to a machine", () => {
 
   it("keeps the neon exactly as it was", async () => {
     // The design is not the price of being legible. The decorative
-    // markup must survive verbatim, hidden from the a11y tree.
+    // markup must survive verbatim.
     const page = await SELF.fetch("https://scvd.store/");
     const html = await page.text();
     expect(html).toContain('<span class="flicker">O</span>');
     expect(html).toContain('class="neon-sub"');
-    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('<span class="flicker-slow">\'</span>');
+  });
+
+  /**
+   * THE SAME FINDING, FOUR DAYS LATER, STILL TRUE (2026-08-26).
+   *
+   * The 2026-08-21 fix put the whole heading inside the sr-only span
+   * and marked the neon letters aria-hidden. Every assertion above
+   * passed and the audit went on reporting "no H1 tag", because an
+   * extractor that drops visually-hidden and aria-hidden subtrees
+   * before counting text — which many do, precisely to skip
+   * boilerplate — was left with an h1 containing nothing at all.
+   *
+   * So the guard is run TWICE: once over the document as served, and
+   * once over the document with every hidden subtree removed first.
+   * A heading that only survives the friendly reading is a heading
+   * half the readers cannot see.
+   */
+  it("still names the store after a reader drops every hidden subtree", async () => {
+    const page = await SELF.fetch("https://scvd.store/");
+    const html = await page.text();
+    const visible = withoutHiddenSubtrees(html);
+    const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(visible)?.[1] ?? "";
+    const text = stripTags(h1).replace(/\s+/g, " ").trim();
+    expect(text.length).toBeGreaterThan(0);
+    expect(text.toLowerCase()).toContain("general store");
+  });
+
+  it("leaves an extractor plenty of prose once markup and hidden text are gone", async () => {
+    /*
+     * "Only 4354 chars of text content" was the other half of the
+     * same finding. The threshold here is not the auditor's — it is
+     * the floor below which the front of the store would have
+     * stopped saying what it is. Measured the hard way: hidden
+     * subtrees dropped, script and style dropped, tags dropped.
+     */
+    const page = await SELF.fetch("https://scvd.store/");
+    const html = await page.text();
+    const prose = stripTags(
+      withoutHiddenSubtrees(html)
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " "),
+    )
+      .replace(/\s+/g, " ")
+      .trim();
+    expect(prose.length).toBeGreaterThan(2000);
   });
 });
 

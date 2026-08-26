@@ -200,28 +200,111 @@ export function statedRateLimit(base: string): {
 let probeMinute = "";
 let probesUsed = 0;
 
-function takeProbeBudget(): boolean {
+/**
+ * WHAT A BUCKET LOOKS LIKE FROM THE OUTSIDE.
+ *
+ * The two limiters used to answer yes-or-no, which is everything the
+ * REFUSAL needs and nothing a caller can plan with. A readiness audit
+ * on 2026-08-26 put it exactly right: the ceilings were documented in
+ * the OpenAPI spec and never observed on a live response, so an agent
+ * could learn the budget by reading our prose or by being refused,
+ * and not by looking at the response in its hand.
+ *
+ * So both buckets report their state, and both report it on the way
+ * through rather than only on the way out. `reset` is seconds to the
+ * top of the next wall-clock minute, which is when both buckets
+ * genuinely roll — not an estimate.
+ */
+interface BudgetState {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+}
+
+/** Seconds until the wall-clock minute both buckets key on rolls over. */
+function secondsToNextMinute(): number {
+  const now = new Date();
+  return 60 - now.getUTCSeconds();
+}
+
+function takeProbeBudget(): BudgetState {
   const minute = new Date().toISOString().slice(0, 16);
   if (minute !== probeMinute) {
     probeMinute = minute;
     probesUsed = 0;
   }
+  const reset = secondsToNextMinute();
   if (probesUsed >= PROBES_PER_MINUTE) {
-    return false;
+    return { allowed: false, limit: PROBES_PER_MINUTE, remaining: 0, reset };
   }
   probesUsed += 1;
-  return true;
+  return {
+    allowed: true,
+    limit: PROBES_PER_MINUTE,
+    remaining: PROBES_PER_MINUTE - probesUsed,
+    reset,
+  };
 }
 
-async function takeGlobalProbeBudget(env: Env): Promise<boolean> {
+async function takeGlobalProbeBudget(env: Env): Promise<BudgetState> {
   const minute = new Date().toISOString().slice(0, 16);
   const key = `preflight_budget:${minute}`;
   const used = parseInt((await env.COUNTERS.get(key)) ?? "0", 10);
+  const reset = secondsToNextMinute();
   if (used >= GLOBAL_PROBES_PER_MINUTE) {
-    return false;
+    return {
+      allowed: false,
+      limit: GLOBAL_PROBES_PER_MINUTE,
+      remaining: 0,
+      reset,
+    };
   }
   await env.COUNTERS.put(key, String(used + 1), { expirationTtl: 120 });
-  return true;
+  return {
+    allowed: true,
+    limit: GLOBAL_PROBES_PER_MINUTE,
+    /**
+     * SLIGHTLY GENEROUS, NEVER TIGHTER, and the honesty runs the same
+     * direction the published note already commits to: this counter
+     * is a read-modify-write on eventually consistent storage, so a
+     * lost increment makes `remaining` read high. A client that
+     * self-throttles on it is never refused earlier than this number
+     * implied — it may occasionally be refused later.
+     */
+    remaining: Math.max(0, GLOBAL_PROBES_PER_MINUTE - (used + 1)),
+    reset,
+  };
+}
+
+/**
+ * THE RFC RateLimit FIELDS, BOTH DIALECTS, ON EVERY ANSWER.
+ *
+ * `RateLimit-Limit` / `-Remaining` / `-Reset` are the triplet every
+ * client library on earth already parses; `RateLimit` and
+ * `RateLimit-Policy` are the structured fields the current IETF draft
+ * defines and the ones that can carry TWO policies without lying
+ * about which is which. This endpoint has two — a per-isolate bucket
+ * and a global backstop — so emitting only the triplet would mean
+ * picking one and letting the caller throttle against a ceiling that
+ * is not the one about to refuse it.
+ *
+ * The triplet therefore reports the BINDING policy: whichever bucket
+ * has less left. That is the number a client needs, and when the two
+ * disagree the structured fields beside it name both.
+ */
+export function rateLimitHeaders(
+  isolate: BudgetState,
+  global: BudgetState,
+): Record<string, string> {
+  const binding = isolate.remaining <= global.remaining ? isolate : global;
+  return {
+    "RateLimit-Limit": String(binding.limit),
+    "RateLimit-Remaining": String(binding.remaining),
+    "RateLimit-Reset": String(binding.reset),
+    "RateLimit-Policy": `"isolate";q=${isolate.limit};w=60, "global";q=${global.limit};w=60`,
+    RateLimit: `"isolate";r=${isolate.remaining};t=${isolate.reset}, "global";r=${global.remaining};t=${global.reset}`,
+  };
 }
 
 export interface PreflightCheck {
@@ -245,6 +328,16 @@ export interface PreflightReport {
    * whose side the failure is on.
    */
   verdict: "ready" | "not_ready" | "unreachable";
+  /**
+   * 2.1b: the rung this probe reached and the tri-state vector,
+   * published beside the legacy checks list. `checks` stays exactly
+   * as it was — consumers of the old shape read the same bytes.
+   */
+  reached_level: ReachedLevel;
+  reached_level_meaning: string;
+  /** Present only when reached_level is "none": always "unlocalized". */
+  network_failure?: "unlocalized";
+  checks_vector: TriStateRow[];
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
   single_probe_note: string;
@@ -289,9 +382,15 @@ function report(
   } = {},
 ): PreflightReport {
   const battery = options.battery ?? PREFLIGHT_VERSION;
+  const vector = triStateVector(checks);
+  const level = reachedLevel(vector, verdict === "unreachable");
   return {
     version: battery,
     verdict,
+    reached_level: level,
+    reached_level_meaning: REACHED_LEVEL_MEANING,
+    ...(level === "none" ? { network_failure: "unlocalized" as const } : {}),
+    checks_vector: vector,
     checks,
     advisories,
     ...(options.alsoUnder ? { also_under: options.alsoUnder } : {}),
@@ -680,6 +779,124 @@ export function runChecks(
   return { checks, advisories, accepts };
 }
 
+/**
+ * ROADMAP 2.1b — HOW FAR ONE UNPAID PROBE ACTUALLY GOT.
+ *
+ * The ledger's evidence taxonomy runs L0-L6; a single unpaid GET can
+ * honestly claim at most L3a of it. "none" is a probe that never
+ * completed — and because Workers fetch collapses the L0 sub-classes
+ * (DNS, TCP, TLS, timeout all surface as one thrown error), a failed
+ * probe names its failure "unlocalized" rather than fabricating a
+ * sub-class it never observed. L2 requires the 402 AND a parseable
+ * PAYMENT-REQUIRED header: a header that is present but unparseable
+ * scores L1, and the collapse of present-vs-parseable is stated in
+ * the meaning prose rather than hidden in the mapping.
+ */
+export type ReachedLevel = "none" | "L1" | "L2" | "L3a";
+
+export function reachedLevel(
+  vector: TriStateRow[],
+  unreachable: boolean,
+): ReachedLevel {
+  if (unreachable) {
+    return "none";
+  }
+  const state = (name: string): TriStateRow["state"] | undefined =>
+    vector.find((row) => row.name === name)?.state;
+  if (state("payment-required-header") !== "pass") {
+    return "L1";
+  }
+  return state("x402-version") === "pass" && state("accepts") === "pass"
+    ? "L3a"
+    : "L2";
+}
+
+export const REACHED_LEVEL_MEANING =
+  "How far this one unpaid probe got, on the L0-L6 evidence ladder: none = the probe never completed (network failure, sub-class unlocalized — this platform cannot tell DNS from TCP from TLS from timeout, so we refuse to guess); L1 = HTTP answered; L2 = 402 with a parseable PAYMENT-REQUIRED header (a header present but unparseable scores L1 — this battery cannot split presence from parseability); L3a = challenge well-formed (version and accepts). This battery does not measure L3b internal consistency, L3c authenticity, L3d cross-probe consistency, or L4-L6 purchasability through delivery — those rungs are absent because they were not climbed, not because they passed.";
+
+/**
+ * ROADMAP 2.1a — THE TRI-STATE VECTOR (ledger B1, one layer down).
+ *
+ * runChecks early-returns, so a door that answered 200 emits ONE
+ * check and every downstream check is silently absent. Silence welds
+ * three different truths — "failed", "never ran because an earlier
+ * check stopped the battery", and "does not apply" — into the same
+ * missing row, which is the 0.14 defect at check granularity.
+ *
+ * BATTERY_CHECK_NAMES is the unconditional battery as data: the
+ * checks that run on every door that answers a clean 402, in the
+ * order the battery runs them. It exists as a registry so this
+ * vector and a future published checks.json cannot disagree.
+ * Conditional checks (bazaar-extension, signed-offers) are outside
+ * it on purpose: they exist only when their subject does, and a
+ * registry row for them would force this vector to invent an
+ * "absent subject" observation the probe never made.
+ */
+export const BATTERY_CHECK_NAMES = [
+  "status-402",
+  "payment-required-header",
+  "x402-version",
+  "accepts",
+] as const;
+
+export interface TriStateRow {
+  name: string;
+  state: "pass" | "fail" | "not_reached";
+  /** Set only on not_reached: the name of the check that stopped the battery. */
+  blocked_by?: string;
+  detail: string;
+}
+
+/**
+ * Derives, never re-observes: every row comes from the checks
+ * runChecks already emitted, so verdicts everywhere stay
+ * byte-identical to before this vector existed. A check the battery
+ * never reached says so structurally — which check blocked it —
+ * and carries no observation about the door, because none was made.
+ */
+export function triStateVector(checks: PreflightCheck[]): TriStateRow[] {
+  const ran = new Map(checks.map((check) => [check.name, check]));
+  /*
+   * The blocker is the LAST failing check that ran, whatever its
+   * name — so a probe that never completed (its one check is the
+   * synthetic "reachable" failure) blocks the whole battery under
+   * that name, honestly, instead of pretending status-402 was tried.
+   */
+  let blocker = "status-402";
+  for (const check of checks) {
+    if (!check.ok) {
+      blocker = check.name;
+    }
+  }
+  const rows: TriStateRow[] = BATTERY_CHECK_NAMES.map((name) => {
+    const check = ran.get(name);
+    if (check) {
+      return {
+        name,
+        state: check.ok ? ("pass" as const) : ("fail" as const),
+        detail: check.detail,
+      };
+    }
+    return {
+      name,
+      state: "not_reached" as const,
+      blocked_by: blocker,
+      detail: `never ran: the ${blocker} check stopped the battery before this one. No observation about the door exists for this row.`,
+    };
+  });
+  const registry = new Set<string>(BATTERY_CHECK_NAMES);
+  for (const check of checks) {
+    if (!registry.has(check.name)) {
+      rows.push({
+        name: check.name,
+        state: check.ok ? "pass" : "fail",
+        detail: check.detail,
+      });
+    }
+  }
+  return rows;
+}
+
 export async function preflightUrl(
   rawUrl: unknown,
   env: Env,
@@ -688,7 +905,12 @@ export async function preflightUrl(
 ): Promise<{
   status: number;
   body: PreflightReport | { error: string };
-  /** Set only where the status needs one; the 429 owes a Retry-After. */
+  /**
+   * Set on every answer the limiter actually metered: the RFC
+   * RateLimit fields, plus Retry-After on the 429. The 400s above
+   * return before a budget is taken and carry none, because a
+   * malformed request never spent one.
+   */
   headers?: Record<string, string>;
 }> {
   const base = env.STORE_BASE_URL;
@@ -736,7 +958,24 @@ export async function preflightUrl(
       },
     };
   }
-  if (!takeProbeBudget() || !(await takeGlobalProbeBudget(env))) {
+  /**
+   * BOTH BUCKETS ARE ASKED, ALWAYS, and the short-circuit that used to
+   * live here is gone on purpose: `a() || b()` never called b() once
+   * a() refused, so a refusal could report only half the state. The
+   * headers below say what BOTH buckets hold, on every answer, which
+   * is the whole point of publishing them.
+   *
+   * The order still matters for cost: the isolate bucket is free and
+   * the global one is a KV read, so the isolate check runs first and
+   * the global read is skipped only when the isolate bucket has
+   * already refused — in which case its own state is what binds.
+   */
+  const isolate = takeProbeBudget();
+  const global = isolate.allowed
+    ? await takeGlobalProbeBudget(env)
+    : { allowed: false, limit: GLOBAL_PROBES_PER_MINUTE, remaining: 0, reset: secondsToNextMinute() };
+  const budgetHeaders = rateLimitHeaders(isolate, global);
+  if (!isolate.allowed || !global.allowed) {
     /*
      * RETRY-AFTER, because two of our own pages already promised it.
      * /developers and the OpenAPI spec both told readers a 429 here
@@ -752,7 +991,14 @@ export async function preflightUrl(
      */
     return {
       status: 429,
-      headers: { "Retry-After": "60" },
+      /*
+       * Retry-After stays a whole minute rather than the computed
+       * remainder: both buckets reset on the wall-clock minute, so a
+       * whole minute is never tighter than the truth. The RateLimit
+       * fields beside it carry the exact remainder in `t`, for a
+       * client that would rather schedule than sleep.
+       */
+      headers: { "Retry-After": "60", ...budgetHeaders },
       body: {
         error:
           "The probe budget for this minute is spent — a cost bound on our side, not a fact about your endpoint. Retry next minute.",
@@ -766,6 +1012,14 @@ export async function preflightUrl(
   } catch (error) {
     return {
       status: 200,
+      /*
+       * THE BUDGET WAS SPENT EITHER WAY. A probe that failed on the
+       * network still cost this store the outbound request, so the
+       * caller's remaining count has genuinely moved and the headers
+       * say so. Reporting the pre-probe figure here would be the one
+       * direction of error that gets a client refused unexpectedly.
+       */
+      headers: budgetHeaders,
       body: report(base, "unreachable", [
         {
           name: "reachable",
@@ -851,6 +1105,7 @@ export async function preflightUrl(
 
   return {
     status: 200,
+    headers: budgetHeaders,
     body: report(base, servedVerdict, servedChecks, advisories, {
       battery: asked,
       alsoUnder: {

@@ -20,7 +20,7 @@ import {
   CORPUS_DATASET_NAME,
 } from "@/store/corpus-dataset";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
-import { EXTERNAL_RECORDS } from "@/store/trust-signals";
+import { EXTERNAL_RECORDS, OPERATOR } from "@/store/trust-signals";
 import type { StoreStats } from "@/services/stats";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
@@ -365,6 +365,64 @@ function corpusDatasetJsonLd(base: string): string {
   });
 }
 
+/**
+ * THE TOWN, AS schema.org SPEAKS IT.
+ *
+ * Split from `OPERATOR.location` rather than typed out beside it, so
+ * the structured data and the trust document cannot come to disagree
+ * about where the store is — the failure this codebase keeps finding
+ * in its own work. "Oak City, North Carolina" is one string in one
+ * file; this is the only place it is taken apart.
+ *
+ * A region that is not there is omitted rather than guessed: an
+ * addressRegion of "undefined" would parse, which is the worst
+ * possible outcome for a field whose entire job is verification.
+ */
+function postalAddress(): object {
+  const [locality, region] = OPERATOR.location.split(",").map((part) => part.trim());
+  return {
+    "@type": "PostalAddress",
+    ...(locality ? { addressLocality: locality } : {}),
+    ...(region ? { addressRegion: region } : {}),
+    addressCountry: "US",
+  };
+}
+
+/**
+ * THE SITE AS ITS OWN ENTITY, WHICH IS NOT THE SAME AS THE COMPANY.
+ *
+ * The Organization block has described the business since July and an
+ * entity resolver reading it learns who runs the shop. What it does
+ * not learn is that "scvd.store", "SCVD General Store" and
+ * "Sean-Claude Van Damme's General Store" are three names for one
+ * WEBSITE — schema.org models that with WebSite, and until now this
+ * page had none.
+ *
+ * WHY THAT MATTERS HERE SPECIFICALLY. A readiness audit searched for
+ * the brand by name and the domain did not appear at all: ten results,
+ * none of them us. Some of that is off-site and none of this fixes it
+ * — a JSON-LD block does not earn a press mention. What it does fix is
+ * the half that is ours: an engine trying to decide whether the string
+ * somebody typed refers to this site had the names scattered across an
+ * Organization's alternateName, a page title, and an og tag, with
+ * nothing saying they are the same site at the same URL.
+ *
+ * `publisher` joins the two nodes rather than repeating the
+ * Organization's fields, which would be a second copy free to drift.
+ */
+function webSiteJsonLd(base: string): string {
+  return jsonLdSafe({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: STORE_SERVICE_NAME,
+    alternateName: [STORE_METADATA.name, "scvd.store", "SCVD"],
+    url: `${base}/`,
+    inLanguage: "en",
+    description: COPY.metaDescription,
+    publisher: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+  });
+}
+
 function organizationJsonLd(base: string, stats?: StoreStats | null): string {
   return jsonLdSafe({
     "@context": "https://schema.org",
@@ -397,20 +455,32 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
      * the OpenAPI contact, llms.txt, the wind-down notice — and was
      * absent from the one block an entity resolver actually reads.
      *
-     * `address` stays off deliberately and is not an oversight: the
-     * only address this store has is where the keeper lives, and
-     * schema.org has no way to say "one person, no premises" other
-     * than by not claiming premises. A PostalAddress here would be
-     * either a home address published to every crawler or an invented
-     * one, and inventing it is the exact failure /corrections exists
-     * to catch. The audit's other half is answered; this half is
-     * declined on the record.
+     * `address` WAS DECLINED ON THE RECORD and is now answered, and
+     * the reasoning that declined it is worth keeping because it was
+     * half right. The objection was that the only address this store
+     * has is where the keeper lives, so a PostalAddress would be
+     * either a home address published to every crawler or an
+     * invention. True of a STREET address. It is not true of the
+     * town, which this store has printed on its own sign, its badges,
+     * its stamps and /trust since July — `OPERATOR.location`, the
+     * same string, imported rather than retyped.
+     *
+     * So the block carries locality, region and country and no
+     * street line. That is not a partial address pretending to be a
+     * whole one: schema.org's PostalAddress has no required
+     * properties, a locality-level address is the ordinary way to
+     * say where a business is without saying where a person sleeps,
+     * and every field in it was already public. The premises note
+     * below stays, because "which floor of which building" still has
+     * no answer and a reader deserves to be told that rather than
+     * left to infer it from a missing field.
      */
+    address: postalAddress(),
     additionalProperty: {
       "@type": "PropertyValue",
       name: "premises",
       value:
-        "There is no premises address — one person, no shop floor. A PostalAddress here would be a home or an invention.",
+        "There is no street address or shop floor — one person, working from the town named in the address. The locality is the whole claim.",
     },
     contactPoint: [
       {
@@ -553,6 +623,7 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
   <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats)}</script>
+  <script type="application/ld+json">${webSiteJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
@@ -564,7 +635,7 @@ export function renderStorefront(data: StorefrontData): string {
 
     <header class="signfront">
       <p class="tube-line">${COPY.tubeLine}</p>
-      <h1 class="neon"><span class="sr-only">${escapeHtml(STORE_SERVICE_NAME)} — ${escapeHtml(COPY.h1Summary)}</span><span aria-hidden="true">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span></h1>
+      <h1 class="neon"><span class="neon-name">SEAN-CLAUDE<br>VAN DAMME<span class="flicker-slow">'</span>S<br><span class="neon-sub">GENERAL ST<span class="flicker">O</span>RE</span></span><span class="sr-only"> (${escapeHtml(STORE_SERVICE_NAME)}) — ${escapeHtml(COPY.h1Summary)}</span></h1>
       <div class="light-pool"></div>
       <p class="open-sign">${openSignForWeek(currentWeekKey())}</p>
       <p class="bell-marquee">\u{1F514} ${escapeHtml(bellLine(data.bellCount).replace("\u{1F514} ", ""))}</p>

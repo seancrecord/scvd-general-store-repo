@@ -1,6 +1,8 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { USE_WHEN } from "@/store/spec";
+import { OPERATOR } from "@/store/trust-signals";
+import { CLI_PACKAGE, CLI_PUBLISHED } from "@/store/cli";
 
 /**
  * THE LIBRARY WAS ALWAYS OPEN. NOBODY COULD FIND THE DOOR.
@@ -36,6 +38,52 @@ describe("the three paths a developer types", () => {
     });
   }
 
+  /**
+   * THE DIALECT A CRAWLER ACTUALLY SPEAKS.
+   *
+   * The route used to pick its representation by asking whether the
+   * Accept header CONTAINED "text/html" — so `* / *`, which is what
+   * curl and most crawlers send, fell through to JSON. The homepage
+   * link was found, followed, and the page behind it reported as
+   * "thin or unreachable" on the strength of 6KB of JSON. A client
+   * with no stated preference asking a documentation page gets the
+   * documentation.
+   */
+  for (const path of PATHS) {
+    it(`serves the page, not the JSON, to a client with no preference at ${path}`, async () => {
+      for (const accept of [undefined, "*/*", "text/plain, */*"]) {
+        const page = await SELF.fetch(`https://scvd.store${path}`, {
+          headers: accept ? { Accept: accept } : {},
+        });
+        expect(page.status).toBe(200);
+        expect(
+          page.headers.get("content-type"),
+          `Accept: ${accept ?? "(none)"}`,
+        ).toContain("text/html");
+        expect(page.headers.get("vary")).toContain("Accept");
+      }
+    });
+  }
+
+  it("still hands JSON to anything that asks for JSON", async () => {
+    // The other half of the same rule: a stated preference is
+    // obeyed exactly, so nothing built against the old default moves.
+    const json = await SELF.fetch("https://scvd.store/developers", {
+      headers: { Accept: "application/json" },
+    });
+    expect(json.headers.get("content-type")).toContain("application/json");
+  });
+
+  it("points every representation at the API catalog", async () => {
+    // RFC 9727: the api-catalog link relation is how a client that
+    // landed on one API resource finds the rest of the surface.
+    const page = await SELF.fetch("https://scvd.store/developers", {
+      headers: { Accept: "text/html" },
+    });
+    expect(page.headers.get("link")).toContain('rel="api-catalog"');
+    expect(page.headers.get("link")).toContain("/.well-known/api-catalog");
+  });
+
   it("names one canonical URL so three paths are not three pages", async () => {
     for (const path of PATHS) {
       const page = await SELF.fetch(`https://scvd.store${path}`, {
@@ -48,11 +96,41 @@ describe("the three paths a developer types", () => {
 
   it("serves the same index as JSON and as markdown", async () => {
     const json = (await (
-      await SELF.fetch("https://scvd.store/developers")
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "application/json" },
+      })
     ).json()) as Record<string, unknown>;
     expect(String(json["openapi"])).toContain("/openapi.json");
     expect(String(json["mcp"])).toContain("/.well-known/mcp");
-    expect((json["cli"] as { npm: string }).npm).toBe("scvd-tab");
+    /*
+     * THE OFFICIAL ONE IS `scvd`, and `scvd-tab` moved under `also`
+     * on 2026-08-26. The distinction is the point of the change: the
+     * tab is a useful package that happens to be ours and works
+     * against any x402 store, and an audit reading this field found
+     * "a CLI tool mentioned" rather than a command line for THIS
+     * store. Both are asserted, so neither can quietly vanish.
+     */
+    const cli = json["cli"] as {
+      npm: string;
+      published: boolean;
+      install_available: boolean;
+      source: string;
+      commands: string[];
+      also: { npm: string };
+    };
+    expect(cli.npm).toBe(CLI_PACKAGE);
+    expect(cli.commands).toContain("scvd preflight <url>");
+    expect(cli.also.npm).toBe("scvd-tab");
+    /*
+     * PUBLISHED IS A FIELD, NOT AN INFERENCE. `npm publish` is the
+     * keeper's hand and an agent reading this decides whether to try
+     * an install — "we intend to" and "you can" are different answers.
+     * Both halves are held: the flag tells the truth, and there is
+     * always a way to run the thing whichever way the flag reads.
+     */
+    expect(cli.published).toBe(CLI_PUBLISHED);
+    expect(cli.install_available).toBe(CLI_PUBLISHED);
+    expect(cli.source).toContain("/cli");
 
     const md = await SELF.fetch("https://scvd.store/developers", {
       headers: { Accept: "text/markdown" },
@@ -66,7 +144,9 @@ describe("the three paths a developer types", () => {
 describe("the questions a developer portal exists to answer", () => {
   it("says there is no auth rather than leaving it to be discovered", async () => {
     const json = (await (
-      await SELF.fetch("https://scvd.store/developers")
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "application/json" },
+      })
     ).json()) as { authentication: string; conventions: Array<{ q: string; a: string }> };
     /*
      * The interesting half: the usual portal exists to issue keys.
@@ -82,7 +162,9 @@ describe("the questions a developer portal exists to answer", () => {
 
   it("documents the deprecation policy the contract points at", async () => {
     const json = (await (
-      await SELF.fetch("https://scvd.store/developers")
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "application/json" },
+      })
     ).json()) as { conventions: Array<{ q: string; a: string }> };
     const versioning = json.conventions.find((row) =>
       row.q.toLowerCase().includes("versioning"),
@@ -96,7 +178,9 @@ describe("the questions a developer portal exists to answer", () => {
 
   it("links only doors that actually open", async () => {
     const json = (await (
-      await SELF.fetch("https://scvd.store/developers")
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "application/json" },
+      })
     ).json()) as {
       sections: Array<{ entries: Array<{ href: string; label: string }> }>;
     };
@@ -198,20 +282,61 @@ describe("the organization, to an entity resolver", () => {
     }
   });
 
-  it("does not invent a postal address it does not have", async () => {
+  it("names the town it is in, and no closer than that", async () => {
     /*
-     * The audit asked for `address` too. There is one address here
-     * and it is where the keeper lives. schema.org has no vocabulary
-     * for "one person, no premises" except declining to claim
-     * premises, and an invented PostalAddress is exactly the kind of
-     * flattering placeholder /corrections exists to catch. Declined
-     * on the record, and pinned so nobody quietly adds one later.
+     * THE FIELD THAT WAS DECLINED, AND WHY IT IS HERE NOW. The audit
+     * asked for `address`; the store refused, on the grounds that the
+     * only address it has is where the keeper lives. That reasoning
+     * holds for a STREET, and it never held for the town — which is
+     * printed on the sign, the badges, the stamps and /trust, and has
+     * been since July.
+     *
+     * So this asserts BOTH halves, because either one alone is the
+     * wrong guard: a locality-level PostalAddress is present, and no
+     * streetAddress or postalCode has quietly joined it later.
      */
     const page = await SELF.fetch("https://scvd.store/");
     const html = await page.text();
     const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
       .map((match) => JSON.parse(match[1] ?? "{}") as Record<string, unknown>);
     const org = blocks.find((block) => block["@type"] === "Organization");
-    expect(org?.["address"]).toBeUndefined();
+    const address = org?.["address"] as Record<string, unknown> | undefined;
+    expect(address).toBeTruthy();
+    expect(address?.["@type"]).toBe("PostalAddress");
+    expect(address?.["addressCountry"]).toBe("US");
+    // Derived from OPERATOR.location, never retyped: the two have to
+    // agree by construction rather than by anyone remembering.
+    const [locality, region] = OPERATOR.location.split(",").map((part) => part.trim());
+    expect(address?.["addressLocality"]).toBe(locality);
+    expect(address?.["addressRegion"]).toBe(region);
+    expect(address?.["streetAddress"]).toBeUndefined();
+    expect(address?.["postalCode"]).toBeUndefined();
+  });
+
+  it("says the three names are one WEBSITE, not only one company", async () => {
+    /*
+     * A readiness audit searched the brand by name and this domain did
+     * not appear in ten results. Most of that is off-site and no
+     * markup fixes it. The half that IS ours: an engine deciding
+     * whether the string somebody typed refers to this site had the
+     * three names scattered across an Organization's alternateName, a
+     * page title and an og tag, with nothing saying they name the same
+     * site at the same URL. schema.org has WebSite for exactly that.
+     */
+    const page = await SELF.fetch("https://scvd.store/");
+    const html = await page.text();
+    const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map((match) => JSON.parse(match[1] ?? "{}") as Record<string, unknown>);
+    const site = blocks.find((block) => block["@type"] === "WebSite");
+    expect(site, "the storefront declares no WebSite").toBeTruthy();
+    expect(site?.["url"]).toBe("https://scvd.store/");
+    const names = site?.["alternateName"] as string[];
+    expect(names).toContain("scvd.store");
+    expect(names).toContain("Sean-Claude Van Damme's General Store");
+    // Joined to the Organization rather than repeating its fields,
+    // which would be a second copy free to drift from the first.
+    const publisher = site?.["publisher"] as Record<string, unknown>;
+    const org = blocks.find((block) => block["@type"] === "Organization");
+    expect(publisher["name"]).toBe(org?.["name"]);
   });
 });

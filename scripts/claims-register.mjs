@@ -49,7 +49,7 @@ export const REGISTER = [
   {
     id: "limits.preflight.rate",
     file: "src/routes/developers.ts",
-    match: "The free preflight at /api/preflight/v2 spends outbound",
+    match: "One family of paths is limited and the rest are not",
     resolution: "derived",
     from: "PROBES_PER_MINUTE / GLOBAL_PROBES_PER_MINUTE",
     why: "Said the opposite for a day after 0.13 shipped a limiter. Now reads the limiter's own constants.",
@@ -57,7 +57,7 @@ export const REGISTER = [
   {
     id: "limits.openapi.rate",
     file: "src/routes/openapi.ts",
-    match: "The free preflight at /api/preflight/v2 is limited",
+    match: "The free preflight is limited — ",
     resolution: "derived",
     from: "PROBES_PER_MINUTE / GLOBAL_PROBES_PER_MINUTE",
     why: "The machine-readable copy of the same stale sentence. Found by this register's first run.",
@@ -79,11 +79,19 @@ export const REGISTER = [
     why: "Same canon, social-card length.",
   },
   {
-    id: "identity.no-premises-address",
+    id: "identity.no-street-address",
     file: "src/pages/storefront-page.ts",
-    match: "There is no premises address — one person, no shop floor",
+    match: "There is no street address or shop floor",
     resolution: "declined",
-    why: "A readiness audit flagged Organization.address missing. The only address is where the keeper lives. A PostalAddress would be a home or an invention, and inventing it is the failure /corrections exists to catch.",
+    why: "A readiness audit flagged Organization.address missing, and the first answer declined the whole field: the only address this store has is where the keeper lives. Half of that held. On 2026-08-26 the block gained a LOCALITY-level PostalAddress derived from OPERATOR.location — the town has been on the sign, the badges and the stamps since July — and the street line stays declined for the original reason, which is the reason this entry still exists.",
+  },
+  {
+    id: "distribution.cli-not-on-npm",
+    file: "src/store/cli.ts",
+    match: "export const CLI_PUBLISHED = false;",
+    resolution: "derived",
+    from: "CLI_PUBLISHED",
+    why: "A readiness audit asked for an official CLI on npm. cli/ is written, tested and MIT; the publish is the keeper's hand (rule 30, DISTRIBUTION.md §4b) and has not run. Every surface that names the package — /developers in three dialects, /llms.txt, the RFC 9727 catalog, the package README — reads this flag rather than asserting an install that would fail, so the claim becomes true in one edit on the day it becomes true.",
   },
   {
     id: "ops.no-automatic-remedy",

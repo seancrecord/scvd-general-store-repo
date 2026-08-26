@@ -3,13 +3,23 @@ import {
   GLOBAL_PROBES_PER_MINUTE,
   PROBES_PER_MINUTE,
 } from "@/services/preflight";
-import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
+import { MARKDOWN_MEDIA_TYPE, negotiate, VARY_ACCEPT } from "@/lib/accept";
 import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
-import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { renderSimplePage } from "@/pages/simple-page";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
 import { STORE_CONTACT_EMAIL, STORE_SERVICE_NAME } from "@/store";
+import { SUNSET_NOTICE_DAYS } from "@/store/api-lifecycle";
+import {
+  CLI_COMMANDS,
+  CLI_INSTALL,
+  CLI_PACKAGE,
+  CLI_PUBLISHED,
+  CLI_REGISTRY_URL,
+  CLI_RUN_FROM_SOURCE,
+  CLI_SOURCE_URL,
+} from "@/store/cli";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -124,9 +134,40 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
       heading: "On the command line",
       entries: [
         {
+          /**
+           * THE LINK THAT WORKS TODAY, WHICH IS THE SOURCE.
+           *
+           * `npm publish` is the keeper's hand (rule 30) and has not
+           * run. Pointing this entry at npmjs.com/package/scvd would
+           * be a link to a 404 in the middle of a page whose whole
+           * job is being trusted — the exact species of claim
+           * /corrections exists to catch. So the href is the source,
+           * the install line is named as the thing it will be, and
+           * the sentence says which is which.
+           */
+          href: `${CLI_SOURCE_URL}`,
+          label: "scvd — the official CLI",
+          what: "`scvd preflight <url>` checks any x402 door, `scvd conformance <file>` reads any issuer's signed offer or receipt, `scvd verify <id>` verifies anything this store ever signed, and `scvd catalog` walks the API catalog. Zero dependencies, MIT, no account and no key — and it holds no key either, so it cannot spend money. `--json` prints this store's own response verbatim. NOT ON npm YET: the package is `scvd` and the install will be `npm i -g scvd`, but publishing is the keeper's hand and has not run. Until it does, the whole tool is one file in the repo: clone and run `node cli/scvd.mjs preflight <url>`.",
+        },
+        {
           href: "https://www.npmjs.com/package/scvd-tab",
           label: "npm i -g scvd-tab",
           what: "The tab: a local, append-only ledger of what your agent spent and what it got, with a pooled corpus you can contribute to. Two binaries — `scvd-tab` and `scvd-tab-pager`. MIT, zero required config, and it works against any x402 store, not only this one.",
+        },
+      ],
+    },
+    {
+      heading: "Fixed paths a machine can know without guessing",
+      entries: [
+        {
+          href: `${base}/.well-known/api-catalog`,
+          label: "/.well-known/api-catalog",
+          what: "RFC 9727. Every API surface at this origin as an RFC 9264 linkset — the HTTP API, the MCP server, each versioned free instrument, the CLI — with the contract, documentation, metadata and status links for each. This page answers a person who guesses a URL; that document answers a scanner, which never guesses.",
+        },
+        {
+          href: `${base}/deprecation`,
+          label: "/deprecation",
+          what: "The versioning and deprecation policy, with a live table of every version served: status, start date, announced sunset. Nothing is deprecated today and the table says so rather than leaving it to be inferred.",
         },
       ],
     },
@@ -146,11 +187,11 @@ function conventions(base: string): Array<{ q: string; a: string }> {
     },
     {
       q: "Rate limits",
-      a: `One path is limited and the rest are not. The free preflight at /api/preflight/v2 spends outbound requests to a host you choose, so it carries ${PROBES_PER_MINUTE} probes per isolate per minute and a global backstop of ${GLOBAL_PROBES_PER_MINUTE} per minute; past either you get a 429 with Retry-After, and the body says plainly that the budget is our cost bound and not a fact about your endpoint. Nothing else here has an application-level ceiling, and so returns no RateLimit-Limit/-Remaining/-Reset headers — a ceiling nothing enforces is worse than no ceiling, because you would throttle against a fiction. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. THESE TWO NUMBERS ARE READ FROM THE LIMITER ITSELF: this sentence said "there is no application-level rate limit" for a day after one shipped, which is exactly what a hand-typed claim does.`,
+      a: `One family of paths is limited and the rest are not. The free preflight spends outbound requests to a host you choose, so it carries ${PROBES_PER_MINUTE} probes per isolate per minute and a global backstop of ${GLOBAL_PROBES_PER_MINUTE} per minute. EVERY answer from it carries the IETF RateLimit fields, so you can pace against the live number instead of discovering the ceiling by being refused: RateLimit-Limit / -Remaining / -Reset report whichever bucket is closer to binding, and RateLimit / RateLimit-Policy name both ("isolate" and "global"). The global backstop is a read-modify-write on eventually consistent storage, so its remaining count reads slightly high under load and never low. Past either ceiling you get a 429 with Retry-After, and the body says plainly that the budget is our cost bound and not a fact about your endpoint. Nothing else here has an application-level ceiling, and so returns no RateLimit headers — a ceiling nothing enforces is worse than no ceiling, because you would throttle against a fiction. A 429 can also arrive from the edge under abuse conditions. A refused request is never charged for. THESE TWO NUMBERS ARE READ FROM THE LIMITER ITSELF: this sentence said "there is no application-level rate limit" for a day after one shipped, which is exactly what a hand-typed claim does.`,
     },
     {
       q: "Versioning and deprecation",
-      a: "Breaking changes arrive as a new version in the URL path (/api/preflight/v1 → /v2). Within a published version, fields are added and never removed or retyped. A version being retired serves RFC 8594 Deprecation and Sunset headers on every response for at least 90 days first, and the date is published here before the headers appear. Nothing is deprecated today.",
+      a: `Breaking changes arrive as a new version in the URL path (/api/preflight/v1 → /v2). Within a published version, fields are added and never removed or retyped. A version being retired serves RFC 8594 Deprecation and Sunset headers on every response for at least ${SUNSET_NOTICE_DAYS} days first, and the date is published before the headers appear. Nothing is deprecated today. The whole policy, and a live table of every version served with its status and sunset date, is at ${base}/deprecation — the routes read that same table before deciding whether to emit the headers, so the page cannot promise a window the wire does not honour.`,
     },
     {
       q: "Content negotiation",
@@ -256,14 +297,50 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
   developerRoutes.get(path, (c) => {
     const base = c.env.STORE_BASE_URL;
     c.header("Vary", VARY_ACCEPT);
-    c.header("Link", `<${base}/developers>; rel="canonical"`);
-    if (prefersMarkdown(c.req.header("Accept"), "text/html")) {
+    c.header(
+      "Link",
+      [
+        `<${base}/developers>; rel="canonical"`,
+        // RFC 9727 §4: the link relation that points a client from any
+        // API-ish resource to the catalog of the whole API surface.
+        `<${base}/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"`,
+      ].join(", "),
+    );
+    /**
+     * HTML IS THE DEFAULT HERE, AND IT WAS NOT UNTIL 2026-08-26.
+     *
+     * The route decided its representation with `wantsHtml`, which
+     * asks whether the Accept header CONTAINS "text/html" — the
+     * store's own accept.ts opens by naming that as the convention's
+     * one famous mistake, and this route made it. `Accept: * / *` is
+     * not a request for JSON; it is a client with no preference, and
+     * a client with no preference asking a DOCUMENTATION page should
+     * be handed the documentation.
+     *
+     * It matters because of who sends it. curl sends `* / *`. So does
+     * most of what crawls a site to find out whether its developer
+     * docs exist. A readiness audit found the link from the homepage,
+     * followed it, got 6KB of JSON where a page should have been, and
+     * reported /developers as "thin or unreachable" — which, in the
+     * dialect it asked in, it was.
+     *
+     * So the whole decision is one `negotiate` call, listed in the
+     * store's own preference order. An explicit `Accept:
+     * application/json` still gets exactly the JSON it always got;
+     * nothing that stated what it wanted sees any change at all.
+     */
+    const representation = negotiate(c.req.header("Accept"), [
+      "text/html",
+      "application/json",
+      "text/markdown",
+    ]);
+    if (representation === "text/markdown") {
       return c.text(developersMarkdown(base), 200, {
         "content-type": MARKDOWN_MEDIA_TYPE,
         Vary: VARY_ACCEPT,
       });
     }
-    if (!wantsHtml(c.req.header("Accept"))) {
+    if (representation === "application/json") {
       return c.json({
         name: `${STORE_SERVICE_NAME} — developer documentation`,
         description: DESCRIPTION,
@@ -273,13 +350,35 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
         guide: `${base}/llms.txt`,
         manual: `${base}/agents.md`,
         mcp: `${base}/.well-known/mcp`,
+        api_catalog: `${base}/.well-known/api-catalog`,
+        deprecation_policy: `${base}/deprecation`,
         cli: {
-          npm: "scvd-tab",
-          install: "npm i -g scvd-tab",
-          bin: ["scvd-tab", "scvd-tab-pager"],
+          npm: CLI_PACKAGE,
+          /**
+           * FALSE UNTIL THE KEEPER RUNS `npm publish`, and stated as a
+           * boolean rather than left to be inferred from a link: an
+           * agent reading this field decides whether to try an
+           * install, and "we intend to" and "you can" are different
+           * answers to that question.
+           */
+          published: CLI_PUBLISHED,
+          install: CLI_INSTALL,
+          install_available: CLI_PUBLISHED,
+          source: CLI_SOURCE_URL,
+          run_from_source: CLI_RUN_FROM_SOURCE,
+          bin: [CLI_PACKAGE],
           license: "MIT",
-          registry: "https://www.npmjs.com/package/scvd-tab",
-          note: "Works against any x402 store, not only this one.",
+          registry: CLI_REGISTRY_URL,
+          commands: [...CLI_COMMANDS],
+          note: "Zero dependencies. Holds no key and cannot spend money; --json prints the store's own response verbatim. The npm publish is the keeper's hand and has not run — until it does, run it from the source.",
+          also: {
+            npm: "scvd-tab",
+            install: "npm i -g scvd-tab",
+            bin: ["scvd-tab", "scvd-tab-pager"],
+            license: "MIT",
+            registry: "https://www.npmjs.com/package/scvd-tab",
+            note: "The tab: a local ledger of what your agent spent. Works against any x402 store, not only this one.",
+          },
         },
         sections: surfaces(base),
         conventions: conventions(base),
