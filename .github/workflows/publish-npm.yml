@@ -1,0 +1,191 @@
+# PUBLISHING A PACKAGE TO npm, FROM THE ACTIONS TAB.
+#
+# Four packages live in this repo — scvd (cli/), scvd-tab (tab/),
+# x402-verify (verifier/) and x402-sign (signer/) — and until now every
+# one of them was published by hand from a laptop. That worked, and it
+# cost two things worth having:
+#
+#   1. PROVENANCE. A hand publish is an unsigned assertion that a
+#      tarball came from this source. `npm publish --provenance` in a
+#      GitHub-hosted runner produces a signed attestation binding the
+#      published bytes to this repo, this commit and this workflow —
+#      verifiable by anyone, which is the exact standard this store
+#      holds everybody else's artifacts to. Publishing our own packages
+#      to a weaker bar than we audit other people at was indefensible.
+#
+#   2. A CHECK SOMEBODY ELSE RUNS. OpenSSF Scorecard's Packaging check
+#      greps this directory for a publishing workflow and reported
+#      "packaging workflow not detected" — accurately. It cannot see
+#      npm; it can only see whether releases are automated from CI. The
+#      three published packages were invisible to it.
+#
+# RULE 30 IS INTACT, AND THAT IS DELIBERATE. workflow_dispatch ONLY:
+# never on push, never on a tag, never on a merge, never on a schedule.
+# Nothing reaches a registry unless a human presses the button. Do not
+# add a trigger to this file.
+#
+# THE VERSION IS CONFIRMED, NOT SET. The number you type must already
+# match the package.json being published, or the run refuses. That
+# keeps the committed, reviewed file as the source of truth and makes
+# the typed input a second pair of eyes rather than a place to invent a
+# number — the same derive-or-refuse rule the rest of the repo lives
+# under (AT_SCALE rule 1). To ship a new version: bump package.json in
+# a commit, then run this and type the same number.
+#
+# ONE-TIME SETUP (browser; a phone is fine):
+#   1. npmjs.com → your avatar → Access Tokens → Generate New Token →
+#      Granular Access Token. Give it Read and write on the four
+#      packages (or on the whole account), and an expiry you will
+#      actually remember to rotate.
+#   2. This repo → Settings → Secrets and variables → Actions →
+#      New repository secret. Name: NPM_TOKEN. Paste the token.
+#   The token is never echoed; npm reads it from the environment.
+name: Publish npm package
+
+# Least privilege (OpenSSF Token-Permissions). `id-token: write` is
+# granted on the job, not here, and is what makes provenance possible:
+# it lets the runner prove its identity to npm without a second secret.
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Which package to publish"
+        required: true
+        type: choice
+        options:
+          - scvd
+          - scvd-tab
+          - x402-verify
+          - x402-sign
+      # NO DEFAULT, ON PURPOSE — the same reasoning as the skill
+      # publisher next door. A prefilled version is a number that reads
+      # as current because nothing marks it as old, and one tap on a
+      # phone would ship it.
+      version:
+        description: "Version being published — must match that package's package.json"
+        required: true
+        type: string
+      dry_run:
+        description: "Pack and check everything, publish nothing"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # provenance, via GitHub OIDC. No extra secret.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # The package name is a choice input, so it cannot be a stray
+      # string — but the DIRECTORY it maps to still has to be resolved
+      # somewhere, and doing it here keeps every later step free of the
+      # mapping.
+      - name: Resolve the package directory
+        id: resolve
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          case "$PACKAGE" in
+            scvd)         DIR=cli ;;
+            scvd-tab)     DIR=tab ;;
+            x402-verify)  DIR=verifier ;;
+            x402-sign)    DIR=signer ;;
+            *) echo "::error::No directory mapped for $PACKAGE"; exit 1 ;;
+          esac
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+          echo "Publishing $PACKAGE from $DIR/"
+
+      # THE REFUSAL THAT MAKES THE TYPED VERSION WORTH TYPING. Three
+      # ways this run stops before it can do damage: the name in
+      # package.json disagrees with the button, the version disagrees
+      # with what was typed, or that version is already on the registry.
+      - name: Check the package against what you typed
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          DIR: ${{ steps.resolve.outputs.dir }}
+        run: |
+          NAME=$(node -p "require('./$DIR/package.json').name")
+          FILE_VERSION=$(node -p "require('./$DIR/package.json').version")
+          if [ "$NAME" != "$PACKAGE" ]; then
+            echo "::error::$DIR/package.json is named $NAME, not $PACKAGE."
+            exit 1
+          fi
+          if [ "$FILE_VERSION" != "$VERSION" ]; then
+            echo "::error::You typed $VERSION; $DIR/package.json says $FILE_VERSION. Bump the file in a commit first — this workflow confirms a version, it does not set one."
+            exit 1
+          fi
+          if npm view "$PACKAGE@$VERSION" version >/dev/null 2>&1; then
+            echo "::error::$PACKAGE@$VERSION is already on the registry. npm versions are immutable; bump and try again."
+            exit 1
+          fi
+          echo "$PACKAGE@$VERSION is new. Proceeding."
+
+      # Every package in this repo is zero-dependency by design, so the
+      # publish job installs nothing and its own supply chain is empty.
+      # The two packages that ship tests run them here anyway: a broken
+      # tarball is not worth a registry slot, and these run in seconds.
+      - name: Run the package's own tests
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          case "$PACKAGE" in
+            scvd)     node --test cli/cli.test.mjs ;;
+            scvd-tab) node --test tab/tab.test.mjs ;;
+            *) echo "$PACKAGE ships no test file of its own; skipping." ;;
+          esac
+
+      # Print the exact tarball contents into the log BEFORE anything is
+      # sent. A publish is irreversible in practice — unpublish windows
+      # are narrow and burn the version number either way — so the last
+      # cheap moment to notice a stray file is here.
+      - name: Show exactly what would be published
+        working-directory: ${{ steps.resolve.outputs.dir }}
+        run: npm pack --dry-run
+
+      - name: Publish
+        if: ${{ !inputs.dry_run }}
+        working-directory: ${{ steps.resolve.outputs.dir }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Say what happened
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            {
+              echo "### Dry run — nothing was published"
+              echo ""
+              echo "\`$PACKAGE@$VERSION\` passed every check and the tarball contents are in the log above."
+              echo "Run again with **dry_run unchecked** to publish it."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Published \`$PACKAGE@$VERSION\`"
+              echo ""
+              echo "- https://www.npmjs.com/package/$PACKAGE"
+              echo "- Provenance attestation is on that page, under the version."
+              echo ""
+              echo "If this was \`scvd\`'s first publish, flip \`CLI_PUBLISHED\` to \`true\` in \`src/store/cli.ts\` and deploy — every surface that names the package reads that constant."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
