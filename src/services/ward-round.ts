@@ -5,6 +5,10 @@ import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
+import {
+  captureWatchEvidence,
+  type WatchEvidenceCapture,
+} from "@/services/watch-evidence";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
@@ -106,6 +110,17 @@ export interface WardHostResult {
    * of the listed/gone delta.
    */
   source?: "discovery" | "leaderboard" | "both" | "revisit";
+  /**
+   * RAW EVIDENCE (roadmap 1.2, B9/G1): the verbatim PAYMENT-REQUIRED
+   * bytes, curated headers, and a bounded complete-body sha256 from
+   * the one fetch this probe already made. The weekly snapshot
+   * freezes rows verbatim and signs them, so a verdict here stops
+   * being reproducible-only-by-trusting-us: the challenge that
+   * produced it rides inside the same signed bytes. Absent on rounds
+   * before 2026-08-26 and on unreachable doors — a legacy row keeps
+   * its exact original preimage, the standing-watch lesson.
+   */
+  evidence?: WatchEvidenceCapture;
   volume_claim?: WardVolumeClaim;
   /**
    * What the door's own 402 OFFERED, read from the header the probe
@@ -476,8 +491,18 @@ export async function probeHost(
         Accept: "application/json",
       }),
     });
-    await response.body?.cancel().catch(() => undefined);
-    const { checks, advisories, accepts } = runChecks(response, false);
+    /*
+     * READ, NOT CANCELLED (1.2). This body used to be thrown away and
+     * runChecks told `false` about truncation it could not have known.
+     * The capture is bounded — a seller-chosen body cannot become an
+     * unbounded allocation — and what it keeps is exactly what a
+     * dispute needs: the challenge bytes and the body digest, signed.
+     */
+    const evidence = await captureWatchEvidence(response);
+    const { checks, advisories, accepts } = runChecks(
+      response,
+      evidence.body_truncated,
+    );
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
     const advisoryNames = advisories.map((advisory) => advisory.name);
 
@@ -508,6 +533,7 @@ export async function probeHost(
       failed,
       advisories: advisoryNames,
       ...(offer ? { offer } : {}),
+      evidence,
     };
   } catch {
     return { verdict: "unreachable", failed: [], advisories: [] };
