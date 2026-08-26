@@ -2,7 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
-import { runChecks } from "@/services/preflight";
+import { PREFLIGHT_BATTERY, runChecks } from "@/services/preflight";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { sweepWatches } from "@/services/watch-sweep";
@@ -81,6 +81,14 @@ export interface WatchProbe {
   /** HTTP status seen, absent when unreachable or refused. */
   status?: number;
   latency_ms?: number;
+  /**
+   * WHICH BATTERY PRODUCED THE VERDICT (roadmap 1.3, ledger D6),
+   * inside the signed bytes. Absent on legacy rows and on rows where
+   * no battery ran — an unreachable door was never checked, and
+   * citing a battery that did not run is the same lie as hashing a
+   * body we did not finish reading.
+   */
+  battery?: string;
   /** Names of failed checks, empty when ready. */
   failed: string[];
   /**
@@ -128,7 +136,7 @@ function newWatchId(): string {
 export function canonicalizeProbe(
   watchId: string,
   url: string,
-  probe: Pick<WatchProbe, "at" | "verdict" | "failed" | "evidence"> & {
+  probe: Pick<WatchProbe, "at" | "verdict" | "failed" | "evidence" | "battery"> & {
     status?: number;
     latency_ms?: number;
   },
@@ -142,9 +150,11 @@ export function canonicalizeProbe(
     latency_ms: probe.latency_ms ?? null,
     failed: probe.failed,
   };
-  // Legacy rows have no evidence field and keep their exact original
-  // preimage. New rows append evidence inside the signed bytes.
+  // Legacy rows have no evidence or battery field and keep their
+  // exact original preimage. New rows append both inside the signed
+  // bytes, in this order — the order is the contract.
   if (probe.evidence) payload["evidence"] = probe.evidence;
+  if (probe.battery) payload["battery"] = probe.battery;
   return JSON.stringify(payload);
 }
 
@@ -246,7 +256,10 @@ async function probeOnce(
   } catch {
     verdict = "unreachable";
   }
-  const body: Pick<WatchProbe, "at" | "verdict" | "failed" | "evidence"> & {
+  const body: Pick<
+    WatchProbe,
+    "at" | "verdict" | "failed" | "evidence" | "battery"
+  > & {
     status?: number;
     latency_ms?: number;
   } = { at, verdict, failed };
@@ -258,6 +271,9 @@ async function probeOnce(
   }
   if (evidence) {
     body.evidence = evidence;
+    // Evidence exists exactly when the response arrived, which is
+    // exactly when the battery ran. One condition, two facts.
+    body.battery = PREFLIGHT_BATTERY;
   }
   const { signature } = await signMessage(
     canonicalizeProbe(record.watch_id, record.url, body),
@@ -430,7 +446,7 @@ export async function readWatch(
     },
     probes: record.probes,
     how_to_verify:
-      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence when present (exactly that order, null for absent numbers) against the row's public_key. Legacy and refused rows omit evidence. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
+      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence and battery when present (exactly that order, null for absent numbers) against the row's public_key. Legacy rows omit evidence and battery; refused and unreachable rows omit both too, because no battery ran. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
       "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched.",
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,

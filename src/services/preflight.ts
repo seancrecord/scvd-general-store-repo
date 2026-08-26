@@ -58,6 +58,14 @@ import { isRecord, type Env } from "@/types";
 export const PREFLIGHT_VERSION = "v1";
 
 /**
+ * The battery's citable name (roadmap 1.3 / D6): what a signed row
+ * writes INSIDE its bytes to say which criteria produced the verdict.
+ * Derived here, beside the version, so the audit's citation and the
+ * rows' citations cannot drift apart.
+ */
+export const PREFLIGHT_BATTERY = `preflight-${PREFLIGHT_VERSION}`;
+
+/**
  * THE SECOND BATTERY, AND THE FIRST ONE KEPT RUNNING (2026-08-23).
  *
  * v2 folds the Solana rail-receivability read into the VERDICT. v1
