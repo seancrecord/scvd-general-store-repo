@@ -68,7 +68,14 @@ describe("the homepage says what the store IS before what it sells", () => {
     expect(what, "no what-this-is section on the storefront").toBeGreaterThan(-1);
     expect(shelves).toBeGreaterThan(-1);
     expect(what, "the catalog still goes first").toBeLessThan(shelves);
-    expect(page).toContain("trust layer of the x402 economy");
+    /*
+     * 2026-08-26, keeper's ruling: "the trust layer of the x402
+     * economy" is retired as the LEAD. It may persist as flavor in a
+     * few places, but a test REQUIRING it would hold the retired line
+     * in place — the offers lesson, where the guard argued for the
+     * violation. The homepage asserts the canonical identity instead.
+     */
+    expect(page).toContain("evidence observatory for agentic commerce");
     expect(page).toContain(OPERATED_BY);
     expect(page).toContain('href="/conformance"');
     expect(page).toContain('href="/corpus"');
@@ -363,7 +370,9 @@ describe("the publish manifests agree with what they publish", () => {
       remotes: Array<{ url: string }>;
     };
     expect(manifest.name).toBe("store.scvd/general-store");
-    expect(manifest.description).toContain("trust layer");
+    expect(manifest.description.toLowerCase()).toContain(
+      "evidence observatory",
+    );
     expect(manifest.description.length).toBeLessThanOrEqual(100);
     expect(manifest.remotes[0]?.url).toBe("https://scvd.store/mcp");
   });

@@ -221,7 +221,7 @@ function storeConcept(base: string, observedAt: string | null): OkfConcept {
   const body = [
     "# Sean-Claude Van Damme's General Store",
     "",
-    "The trust layer of the x402 economy. The store walks the public x402",
+    "An evidence observatory for agentic commerce. The store walks the public x402",
     "directory every week, checks each door against a published battery, and",
     "signs what it saw on the date it saw it — including the doors that failed",
     "and the rounds the watchman missed.",

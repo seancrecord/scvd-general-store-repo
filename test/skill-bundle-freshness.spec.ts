@@ -195,7 +195,7 @@ describe("the published bundle carries the store's current position", () => {
     expect(
       bundle,
       "the bundle does not state the position — a reader in someone else's catalogue learns the wrong thing about us",
-    ).toContain("trust layer of the x402 economy");
+    ).toContain("evidence observatory for agentic commerce");
     // The disclaimer half matters more than the claim half: it is what
     // keeps us out of a category that needs a balance sheet.
     expect(bundle).toContain("Not an escrow");
