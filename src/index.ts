@@ -95,7 +95,11 @@ import {
 } from "@/routes";
 import { sendAlert } from "@/lib/alerts";
 import type { EventSignals } from "@/lib/metrics";
-import { recordPorchVisit } from "@/lib/metrics";
+import {
+  itemKeyFromPath,
+  recordPorchVisit,
+  recordServerError,
+} from "@/lib/metrics";
 import { getMenuItem } from "@/store";
 import { porchSurface } from "@/lib/porch-surface";
 import { STORE_HEADER } from "@/lib/identity";
@@ -404,6 +408,47 @@ app.onError((err, c) => {
     return err.getResponse();
   }
   console.error("Something fell off a shelf:", err);
+
+  /*
+   * A 500 THAT NOBODY RECORDS IS A 500 THAT NEVER HAPPENED, and this
+   * handler used to do exactly that: log to a console stream nobody
+   * retains, then hand the visitor a polite apology. On 2026-08-26 an
+   * outside checker reported paid doors serving 500s twice in one
+   * evening and the store had nothing to show for it — no alert, no
+   * counter, no row. The keeper was never paged for a buyer who was
+   * turned away from a till.
+   *
+   * Both writes are deferred. A visitor already looking at an error
+   * must not also wait on our bookkeeping about it, and an alert that
+   * throws inside the error handler would replace a recorded 500 with
+   * an unrecorded one.
+   *
+   * The dedupe key is ROUTE + ERROR CLASS, never the message: messages
+   * carry ids and addresses, and keying on them would mint a fresh
+   * alert row per incident — the precise failure the alert surface was
+   * already rescued from once. The message rides in the detail, read
+   * by a human and counted by nothing.
+   */
+  const routeClass = itemKeyFromPath(c.req.path);
+  const errorName = err instanceof Error ? err.name : typeof err;
+  try {
+    c.executionCtx.waitUntil(
+      Promise.allSettled([
+        recordServerError(c.env, routeClass, errorName),
+        sendAlert(c.env, {
+          condition: "worker_health",
+          key: `http500:${routeClass}:${errorName}`,
+          detail: `500 on ${c.req.method} ${c.req.path}: ${errorName}: ${
+            err instanceof Error ? err.message : String(err)
+          }. A visitor was handed an error page here.`,
+        }),
+      ]),
+    );
+  } catch {
+    // No execution context (direct invocation in a test). The record
+    // is a nicety; returning the response is not.
+  }
+
   return c.json(
     {
       error:
