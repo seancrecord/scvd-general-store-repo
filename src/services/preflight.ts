@@ -117,7 +117,14 @@ export const PREFLIGHT_V2_SINCE = "2026-08-23";
  */
 export const BATTERY_ADDS: Record<PreflightBattery, readonly string[]> = {
   v1: [],
-  v2: ["solana-rail-receivable"],
+  // 2.1c: the L3b consistency trio joined the rail read in v2's
+  // verdict — same observations v1 carries as advisories, scored.
+  v2: [
+    "payto-payable",
+    "amount-atomic",
+    "network-mainnet",
+    "solana-rail-receivable",
+  ],
 };
 
 /**
@@ -486,6 +493,17 @@ export function runChecks(
    * and never drifts from what the battery actually saw.
    */
   accepts?: Record<string, unknown>[];
+  /**
+   * ROADMAP 2.1c (ledger B3, B-adversarial #3). The L3b consistency
+   * trio — payto-payable, amount-atomic, network-mainnet — in CHECK
+   * shape, from the same observations the advisories above already
+   * carry in advisory voice. Present exactly when accepts parsed
+   * non-empty; absent otherwise, because a trio judged against no
+   * entries would be a fabricated observation. v1's verdict never
+   * reads this (frozen series); v2 folds it in, because a 402 nobody
+   * can pay is not ready by any reading a buyer would accept.
+   */
+  l3b?: PreflightCheck[];
 } {
   const checks: PreflightCheck[] = [];
   const advisories: PreflightAdvisory[] = [];
@@ -648,6 +666,60 @@ export function runChecks(
     }
   }
 
+  const payToFailures: string[] = [];
+  const decimalAmounts: string[] = [];
+  const testnetNetworks: string[] = [];
+  for (let index = 0; index < accepts.length; index += 1) {
+    const entry = accepts[index]!;
+    const network = String(entry["network"] ?? "");
+    const verdict = readPayTo(String(entry["payTo"] ?? ""), network);
+    if (!verdict.payable) {
+      payToFailures.push(`accepts[${index}].payTo: ${verdict.detail}`);
+    }
+    const amount = String(entry["amount"] ?? "");
+    if (amount.includes(".")) {
+      decimalAmounts.push(`accepts[${index}].amount "${amount}"`);
+    }
+    if (KNOWN_TESTNETS[network]) {
+      testnetNetworks.push(`accepts[${index}].network ${network} (${KNOWN_TESTNETS[network]})`);
+    }
+  }
+  const l3b: PreflightCheck[] = [
+    payToFailures.length === 0
+      ? {
+          name: "payto-payable",
+          ok: true,
+          detail: "every accepts entry names a payable address for its own network",
+        }
+      : {
+          name: "payto-payable",
+          ok: false,
+          detail: `${payToFailures.join("; ")}. A door whose payTo cannot be credited 402s perfectly and nobody can pay it.`,
+        },
+    decimalAmounts.length === 0
+      ? {
+          name: "amount-atomic",
+          ok: true,
+          detail: "every accepts amount is atomic units, no decimal points",
+        }
+      : {
+          name: "amount-atomic",
+          ok: false,
+          detail: `${decimalAmounts.join("; ")} contains a decimal point — x402 amounts are ATOMIC units (USDC has 6 decimals), so a dollar-typed amount underprices by a factor of a million.`,
+        },
+    testnetNetworks.length === 0
+      ? {
+          name: "network-mainnet",
+          ok: true,
+          detail: "no accepts entry offers a known testnet",
+        }
+      : {
+          name: "network-mainnet",
+          ok: false,
+          detail: `${testnetNetworks.join("; ")}. A testnet offer works against testnet tooling and silently fails for every mainnet buyer.`,
+        },
+  ];
+
   const extensions = (challenge["extensions"] ?? {}) as Record<string, unknown>;
   if ("bazaar" in extensions) {
     const bazaar = extensions["bazaar"] as Record<string, unknown> | null;
@@ -776,7 +848,7 @@ export function runChecks(
     });
   }
 
-  return { checks, advisories, accepts };
+  return { checks, advisories, accepts, l3b };
 }
 
 /**
@@ -1030,7 +1102,7 @@ export async function preflightUrl(
     };
   }
 
-  const { checks, advisories, accepts } = runChecks(
+  const { checks, advisories, accepts, l3b } = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
   );
@@ -1081,7 +1153,17 @@ export async function preflightUrl(
    * whole reason to run an overlap rather than cut the old series.
    */
   const v1Checks = [...checks];
-  const v2Checks = rail.check ? [...checks, rail.check] : [...checks];
+  /*
+   * 2.1c: v2 counts the L3b consistency trio the same way it counts
+   * the rail read — same observation the advisories carry, scored
+   * instead of shrugged at. v1 stays frozen; the two batteries can
+   * never disagree about what was seen, only about what counts.
+   */
+  const v2Checks = [
+    ...checks,
+    ...(l3b ?? []),
+    ...(rail.check ? [rail.check] : []),
+  ];
   const scoreOf = (entries: PreflightCheck[]): PreflightReport["verdict"] =>
     entries.every((check) => check.ok) ? "ready" : "not_ready";
   const v1Verdict = scoreOf(v1Checks);
@@ -1099,9 +1181,17 @@ export async function preflightUrl(
    * ledger would not answer — the two batteries scored identically and
    * saying so plainly beats implying a distinction that did not apply.
    */
-  const difference = rail.check
-    ? `v2 folds solana-rail-receivable into the verdict; v1 reports it as an advisory. On this probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"}.`
-    : "The rail read did not apply to this endpoint (no Solana rail offered, or the ledger could not be read), so both batteries scored the identical set of checks.";
+  const v2Extras = [
+    ...(l3b ? ["the L3b consistency trio (payto-payable, amount-atomic, network-mainnet)"] : []),
+    ...(rail.check ? ["solana-rail-receivable"] : []),
+  ];
+  const railNote = rail.check
+    ? ""
+    : " The Solana rail read did not apply to this endpoint (no Solana rail offered, or the ledger could not be read).";
+  const difference =
+    v2Extras.length > 0
+      ? `v2 folds ${v2Extras.join(" and ")} into the verdict; v1 reports the same observations as advisories. On this probe the two batteries ${v1Verdict === v2Verdict ? "agreed" : "DISAGREED"}.${railNote}`
+      : "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks.";
 
   return {
     status: 200,
