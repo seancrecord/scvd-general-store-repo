@@ -35,6 +35,27 @@ import type { Env } from "@/types";
  * authorization; our key_history is the authorization record, and the
  * DID document points at it.
  *
+ * CORRECTED 2026-08-25, AND THE CORRECTION IS THE POINT. This file's
+ * first line says the spec was read in full because a paraphrase had
+ * produced three field-level errors. It was read in full, and it still
+ * shipped a fourth: every offer and every receipt carried `payload`
+ * beside `signature`, which the spec's envelope table makes EIP-712
+ * only and forbids outright for JWS — "MUST be omitted (the JWS
+ * compact string already contains the payload)". Nine forbidden copies
+ * per challenge, one per settlement, from launch until today.
+ *
+ * It survived because the tests read `offer.payload.*` to make their
+ * assertions, so passing REQUIRED the violation. A guard that depends
+ * on the defect is not a guard. They now decode the JWS the way the
+ * spec tells a verifier to, and a per-offer byte budget holds the
+ * envelope down: the forbidden field cost 287 bytes an offer, which on
+ * a three-rail three-tier shelf is the difference between a door a
+ * stock Node client can open and one it refuses at 16KB of headers.
+ *
+ * Recorded here rather than quietly fixed, because the store sells
+ * conformance audits and this is the exact class of finding it charges
+ * to produce. It is on /corrections with a date.
+ *
  * FAIL-OPEN, DELIBERATELY, AND THAT IS A REAL DESIGN DECISION. The
  * gate this rides on verifies, settles, and only then mints; it took
  * three rounds to get right and it is the one path between a buyer
@@ -133,9 +154,11 @@ function isSignableAccept(entry: AcceptsEntry): boolean {
  * Sign one offer per accepts entry, exactly the spec's §4.2 payload:
  * version, resourceUrl, scheme, network, asset, payTo, amount,
  * validUntil. `version: 1` is required and a compliant verifier
- * rejects its absence; `acceptIndex` ties the offer to the tier it
- * commits to, because a pay-what-it-deserves shelf offers three
- * amounts and an offer that names none of them commits to nothing.
+ * rejects its absence. `acceptIndex` is an UNSIGNED convenience
+ * pointer at the tier — helpful for a reader, worthless for integrity,
+ * and the spec says so in those terms. The commitment a
+ * pay-what-it-deserves shelf needs comes from the signed amount, not
+ * from the index beside it.
  *
  * Returns null rather than throwing, whatever goes wrong inside.
  */
@@ -156,12 +179,21 @@ export async function signedOffersForChallenge(
      * quotes 3 x 3, and every one of those was a serial ed25519 sign
      * on the 402 an agent is blocked on. They share no state.
      *
-     * THE FILTER HAPPENS FIRST, deliberately. acceptIndex commits each
-     * offer to the tier it is an offer FOR, so mapping over the
-     * unfiltered array and dropping entries afterwards would misalign
-     * every index past the first skip — a signed offer pointing at the
-     * wrong amount, which is worse than no offer at all. Pair the
-     * index to the entry before anything is signed.
+     * THE FILTER HAPPENS FIRST, deliberately — but NOT for the reason
+     * this comment used to give. It claimed acceptIndex "commits each
+     * offer to the tier it is an offer FOR". It cannot: the spec is
+     * explicit that acceptIndex "is NOT part of the signed payload and
+     * MUST NOT be relied upon for integrity or binding", and it is
+     * right, because the field sits outside the JWS and nothing signs
+     * it. The binding is the signed payload's own network, asset,
+     * payTo and amount, which is what the spec tells verifiers to
+     * match on rather than array position.
+     *
+     * The hygiene stands on its own: a misaligned index is a wrong
+     * convenience pointer, and shipping one would invite exactly the
+     * index-trusting verifier the spec warns against. Pair the index
+     * to the entry before anything is signed, and claim nothing more
+     * for it than that.
      */
     const signable = accepts
       .map((entry, index) => ({ entry: entry as AcceptsEntry, index }))
@@ -184,7 +216,13 @@ export async function signedOffersForChallenge(
         return {
           format: "jws",
           acceptIndex: index,
-          payload,
+          // NO `payload` HERE, and it is a MUST not a preference: the
+          // spec's envelope table makes payload EIP-712-only, and says
+          // for JWS it "MUST be omitted (the JWS compact string
+          // already contains the payload)". We shipped it anyway from
+          // 2026-07 until 2026-08-25 — nine forbidden copies per
+          // challenge — and the duplication is exactly the ambiguity
+          // the rule exists to prevent. See the header note.
           signature: await signJws(env, payload),
         };
       }),
@@ -254,7 +292,10 @@ export async function withReceiptHeader(
     };
     const receipt = {
       format: "jws",
-      payload,
+      // Same MUST as the offers above — the spec applies the rule to
+      // receipts in the same sentence, "exactly as with offers". This
+      // one carried no size cost and no test caught it, which is why
+      // it survived a month longer than it should have.
       signature: await signJws(env, payload),
     };
     const existing = isPlainObject(decoded["extensions"])
