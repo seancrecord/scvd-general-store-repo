@@ -29,8 +29,25 @@ import type { HonoEnv, MenuItem } from "@/types";
  * Middleware order matters: unknown items, empty shelves, and malformed
  * inputs are turned away BEFORE the payment gate, so nobody pays for
  * what we can't sell.
+ *
+ * Trailing slashes used to fall through to the storewide 404, which
+ * tells a prober the aisle never existed. A retired door with a stray
+ * slash then looked like a broken listing instead of a closed one —
+ * the exact defect the 410 tombstone was written to prevent. Strict
+ * matching off so `/api/buy/hello` and `/api/buy/hello/` are one door;
+ * identity checks below still canonicalize, because `c.req.path` keeps
+ * the slash even when the route matches.
  */
-export const buyRoutes = new Hono<HonoEnv>();
+export const buyRoutes = new Hono<HonoEnv>({ strict: false });
+
+function buyRequestPath(c: { req: { path: string } }): string {
+  const path = c.req.path;
+  return path.length > 1 && path.endsWith("/") ? path.replace(/\/+$/, "") : path;
+}
+
+function buyItemId(c: { req: { path: string } }): string {
+  return buyRequestPath(c).replace(/^\/api\/buy\//, "");
+}
 
 /** Paid material must never sit in a shared cache. */
 const noStore: MiddlewareHandler<HonoEnv> = async (c, next) => {
@@ -63,7 +80,7 @@ function retirementHeaders(
 
 /** Turns away unknown items (logged as market research) and sold-out shelves. */
 const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  const itemId = c.req.path.replace(/^\/api\/buy\//, "");
+  const itemId = buyItemId(c);
   const item = getMenuItem(itemId);
   if (!item) {
     // A retired shelf answers with what happened — an agent that
@@ -163,7 +180,7 @@ function isBuying(c: Parameters<MiddlewareHandler<HonoEnv>>[0]): boolean {
  * stripped); it is agent-supplied data, never instructions to us.
  */
 const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/context_anchor" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/context_anchor" || !isBuying(c)) {
     // Not this route, or only asking the price: let the gate answer.
     return next();
   }
@@ -201,7 +218,7 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * week of "unreachable" rows about a store that is up.
  */
 const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/standing_watch" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/standing_watch" || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("url");
@@ -254,7 +271,7 @@ const PROBE_ITEM_PATHS = [
 ];
 
 const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (!PROBE_ITEM_PATHS.includes(c.req.path) || !isBuying(c)) {
+  if (!PROBE_ITEM_PATHS.includes(buyRequestPath(c)) || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("url");
@@ -296,7 +313,7 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * the check runs when it matters, not when it was cheap.)
  */
 const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/trust_profile" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/trust_profile" || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("url");
@@ -339,7 +356,7 @@ const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * sentence to show somebody naming a key directory.
  */
 const signatureCardCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/signature_agent_card" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/signature_agent_card" || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("url");
@@ -378,7 +395,7 @@ const signatureCardCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * show somebody naming a page.
  */
 const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/onpage_audit" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/onpage_audit" || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("url");
@@ -418,7 +435,7 @@ const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * than taking five dollars for a walk that cannot pay.
  */
 const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/launch_check" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/launch_check" || !isBuying(c)) {
     return next();
   }
   // Screening needs no secret: the keyless on-chain oracle is the
@@ -467,7 +484,7 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * clamped by the service; only presence and shape gate here.
  */
 const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/the_statement" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/the_statement" || !isBuying(c)) {
     return next();
   }
   const wallet = c.req.query("wallet") ?? "";
@@ -512,7 +529,7 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * expiry signed forever is worse than a refusal now.
  */
 const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/the_mandate" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/the_mandate" || !isBuying(c)) {
     return next();
   }
   const text = (c.req.query("mandate") ?? "").replace(/\0/g, "").trim();
@@ -577,7 +594,7 @@ const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * deliberately: the whole value of the link is that it resolves.
  */
 const mandateRefCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (!c.req.path.startsWith("/api/buy/") || !isBuying(c)) {
+  if (!buyRequestPath(c).startsWith("/api/buy/") || !isBuying(c)) {
     return next();
   }
   const mandateId = c.req.query("mandate_id");
@@ -603,7 +620,7 @@ const mandateRefCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** the_confession needs words BEFORE money moves: nothing to hear, no charge. */
 const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/the_confession" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/the_confession" || !isBuying(c)) {
     // Not this route, or only asking the price: let the gate answer.
     return next();
   }
@@ -631,7 +648,7 @@ const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** spot_check needs a readable host BEFORE money moves: no host, no charge. */
 const spotCheckGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/spot_check" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/spot_check" || !isBuying(c)) {
     // Not this route, or only asking the price: let the gate answer.
     return next();
   }
@@ -650,7 +667,7 @@ const spotCheckGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
 
 /** coffees_for_closers needs the win BEFORE money moves: no win, no coffee. */
 const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/coffees_for_closers" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/coffees_for_closers" || !isBuying(c)) {
     // Not this route, or only asking the price: let the gate answer.
     return next();
   }
@@ -681,7 +698,7 @@ const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * buyer anything. Machine shelves and stocked shelves pass through.
  */
 const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  const itemId = c.req.path.replace(/^\/api\/buy\//, "");
+  const itemId = buyItemId(c);
   const item = getMenuItem(itemId);
   if (item && (await requiresPresentKeeper(c.env, item))) {
     const state = await shutterState(c.env);
@@ -714,7 +731,7 @@ const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * settlement is money taken to be told no.
  */
 const capacityCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  const item = getMenuItem(c.req.path.replace(/^\/api\/buy\//, ""));
+  const item = getMenuItem(buyItemId(c));
   if (item) {
     const verdict = await capacityVerdict(c.env, item);
     if (!verdict.ok) {
@@ -738,7 +755,7 @@ const capacityCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * settle. Real scarcity, checkable, restocked by the keeper's hands.
  */
 const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  const itemId = c.req.path.replace(/^\/api\/buy\//, "");
+  const itemId = buyItemId(c);
   const item = getMenuItem(itemId);
   if (item?.stocked) {
     const count = await stockedShelfCount(c.env, item);
@@ -763,7 +780,7 @@ const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * rule by being charged for a decline is worse manners than we keep.
  */
 const tagCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/graffiti_on_a_train" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/graffiti_on_a_train" || !isBuying(c)) {
     return next();
   }
   const tag = c.req.query("tag");
@@ -816,7 +833,7 @@ export const BUNDLE_MAX_HASHES = 20;
  * the buyer which five were their own repetition.
  */
 const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/attestation_bundle" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/attestation_bundle" || !isBuying(c)) {
     return next();
   }
   const raw = c.req.query("tx_hashes");
@@ -862,7 +879,7 @@ const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 const SHA256_HEX = /^[0-9a-fA-F]{64}$/;
 
 const anchorDigestCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/bitcoin_anchor" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/bitcoin_anchor" || !isBuying(c)) {
     return next();
   }
   const digest = c.req.query("digest");
@@ -895,7 +912,7 @@ const anchorDigestCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
  * a bad input into a different (and cheaper-looking) verdict.
  */
 const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/settlement_reconciliation" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/settlement_reconciliation" || !isBuying(c)) {
     return next();
   }
   const txHash = c.req.query("tx_hash");
@@ -932,7 +949,7 @@ const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
 };
 
 const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/settlement_attestation" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/settlement_attestation" || !isBuying(c)) {
     return next();
   }
   const txHash = c.req.query("tx_hash");
@@ -1002,7 +1019,7 @@ buyRoutes.use("/api/buy/*", tagCheck);
  * order with no question in it is a week of SLA spent asking for one.
  */
 const judgmentCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
-  if (c.req.path !== "/api/buy/quick_judgment" || !isBuying(c)) {
+  if (buyRequestPath(c) !== "/api/buy/quick_judgment" || !isBuying(c)) {
     return next();
   }
   const detail = c.req.query("detail")?.trim() ?? "";

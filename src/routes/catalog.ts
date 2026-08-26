@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { freshness } from "@/lib/freshness";
 import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
@@ -27,6 +27,7 @@ import { getRetiredItem } from "@/store/retired";
  * GET /menu.json, the machine-readable catalog (markdown on request).
  * GET /menu/:item_id, one item up close, JSON or markdown per Accept.
  * Renders at / for humans; this is the same shelf for agents.
+ * Strict matching off so a trailing slash is the same door, not a 404.
  */
 
 interface CatalogItem extends MenuItem {
@@ -77,7 +78,7 @@ async function fulfillmentState(
   };
 }
 
-export const catalogRoutes = new Hono<HonoEnv>();
+export const catalogRoutes = new Hono<HonoEnv>({ strict: false });
 
 const MARKDOWN_HEADERS = {
   "Content-Type": MARKDOWN_MEDIA_TYPE,
@@ -258,11 +259,12 @@ catalogRoutes.get("/menu.json", async (c) => {
   });
 });
 
-catalogRoutes.get("/menu/:item_id", async (c) => {
+async function serveMenuItem(c: Context<HonoEnv>) {
   const base = c.env.STORE_BASE_URL;
-  const item = getMenuItem(c.req.param("item_id"));
+  const itemId = (c.req.param("item_id") ?? "").replace(/\/+$/, "");
+  const item = getMenuItem(itemId);
   if (!item) {
-    const retired = getRetiredItem(c.req.param("item_id"));
+    const retired = getRetiredItem(itemId);
     if (retired) {
       return c.json(
         {
@@ -323,4 +325,7 @@ catalogRoutes.get("/menu/:item_id", async (c) => {
     markdown_note:
       "This same URL serves markdown when the Accept header prefers text/markdown.",
   });
-});
+}
+
+catalogRoutes.get("/menu/:item_id", serveMenuItem);
+catalogRoutes.get("/menu/:item_id/", serveMenuItem);

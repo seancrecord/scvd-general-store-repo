@@ -15,7 +15,7 @@ export const PORCH_AMBIENCE: readonly string[] = [
   "Moths are holding a conference at the O in STORE. The dying tube is the keynote speaker.",
   "You can hear the highway from here if you try. Nobody on this porch is trying.",
   "The bell is asleep. It earned it.",
-  "Chalk dust on the fortune board. Tomorrow's is already decided; it just hasn't been said.",
+  "The penny jar sits where it sat. Half a cent still works.",
   "The luckies are in their crates, doing what they do best. Nothing has ever gone wrong on that shelf.",
   "Heat lightning over the oaks, too far to hear. The sky, arguing properly.",
   "The guestbook is inside on the counter, holding everyone who ever said so.",
