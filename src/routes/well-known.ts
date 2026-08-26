@@ -10,6 +10,7 @@ import {
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { freshness } from "@/lib/freshness";
 import {
+  manifestAccepts,
   PENNY_PAGE_USDC,
   acceptedNetworks,
   priceTiersUsdc,
@@ -49,20 +50,6 @@ import type { Env, HonoEnv } from "@/types";
  */
 export const wellKnownRoutes = new Hono<HonoEnv>();
 
-async function paidResourceUrls(env: Env): Promise<string[]> {
-  const base = env.STORE_BASE_URL;
-  const urls = MENU_ITEMS.map((item) => `${base}/api/buy/${item.id}`);
-  // Both sources: a page written from the office is as real as a page
-  // compiled in, and discovery is where "real" is decided by outsiders.
-  for (const entry of await listAlmanacEntries(env)) {
-    urls.push(`${base}/almanac/${entry.slug}`);
-  }
-  const issues = await listIssues(env).catch(() => []);
-  for (const issue of issues) {
-    urls.push(`${base}/gazette/issue-${issue.issue_number}`);
-  }
-  return urls;
-}
 
 /**
  * THE TRUST DOCUMENT, AT THE URL A CHECKLIST LOOKS FOR.
@@ -214,7 +201,7 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
   const base = c.env.STORE_BASE_URL;
   return c.json({
     version: 1,
-    resources: await paidResourceUrls(c.env),
+    resources: await structuredPaidResources(c.env),
     name: STORE_SERVICE_NAME,
     description: STORE_METADATA.description,
     tags: [...STORE_TAGS],
@@ -238,11 +225,25 @@ wellKnownRoutes.get("/.well-known/x402", async (c) => {
   });
 });
 
-wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
-  const base = c.env.STORE_BASE_URL;
+/**
+ * ONE BUILDER, BOTH SURFACES (2026-08-26, after a verified outside
+ * diagnosis). /.well-known/x402 served `resources` as bare URL strings
+ * while the catalog beside it served structured objects — same tools,
+ * two incompatible shapes, and neither carried accepts. Crawlers parse
+ * the well-known path first, found nothing structured, and indexed the
+ * store as a known origin that never resolves as routable tools. Both
+ * routes now render this list, and the accepts derive from railAccepts
+ * — the till's own terms — so the manifest cannot drift from the
+ * money path. The shape change is deliberate and breaking for readers
+ * that learned the bare-string list; the additive-only law yields here
+ * because the old shape was the reason nothing could route to us.
+ */
+async function structuredPaidResources(env: Env) {
+  const base = env.STORE_BASE_URL;
   // C1: the fact block tops every catalog entry; S1: the uniform spec
   // rides each resource (indexers that don't know the field ignore it).
   const menuResources = MENU_ITEMS.map((item) => ({
+    accepts: manifestAccepts(env, priceTiersUsdc(item)),
     resourceUrl: `${base}/api/buy/${item.id}`,
     method: "GET",
     x402Version: 2,
@@ -260,7 +261,8 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     inputSchema: { type: "object", ...buyInputSchema(item) },
     spec: listingSpec(item, base),
   }));
-  const almanacResources = (await listAlmanacEntries(c.env)).map((entry) => ({
+  const almanacResources = (await listAlmanacEntries(env)).map((entry) => ({
+    accepts: manifestAccepts(env, [PENNY_PAGE_USDC]),
     resourceUrl: `${base}/almanac/${entry.slug}`,
     method: "GET",
     x402Version: 2,
@@ -270,8 +272,9 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     pricing: "fixed",
     fulfillment: "instant",
   }));
-  const issues = await listIssues(c.env).catch(() => []);
+  const issues = await listIssues(env).catch(() => []);
   const gazetteResources = issues.map((issue) => ({
+    accepts: manifestAccepts(env, [PENNY_PAGE_USDC]),
     resourceUrl: `${base}/gazette/issue-${issue.issue_number}`,
     method: "GET",
     x402Version: 2,
@@ -281,6 +284,11 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     pricing: "fixed",
     fulfillment: "instant",
   }));
+  return [...menuResources, ...almanacResources, ...gazetteResources];
+}
+
+wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
   return c.json({
     x402Version: 2,
     // THE NAMING LAW, tier 2: display name, one string everywhere.
@@ -302,7 +310,7 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
     networks: acceptedNetworks(c.env),
     // S3 mirror: the scheduling-signals layer, when to reach for the store.
     when_to_use: SCHEDULING_SIGNALS,
-    resources: [...menuResources, ...almanacResources, ...gazetteResources],
+    resources: await structuredPaidResources(c.env),
     openapi: `${base}/openapi.json`,
     catalog: `${base}/menu.json`,
     stats: `${base}/stats`,

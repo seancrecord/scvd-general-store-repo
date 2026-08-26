@@ -975,7 +975,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/.well-known/x402": {
         get: freeOp(
           "x402 discovery (minimal)",
-          "The de-facto indexer list of payable resources.",
+          "The de-facto indexer entry point. Serves the same structured, priced resources as the full catalog — one builder renders both.",
         ),
       },
       "/.well-known/x402.json": {
