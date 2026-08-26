@@ -45,6 +45,28 @@ export interface Correction {
 
 export const CORRECTIONS: readonly Correction[] = [
   {
+    date: "2026-08-26",
+    what_was_wrong:
+      "The store's paid doors refused valid payments that arrived under the header name X-PAYMENT — x402 v1's name for what v2 calls PAYMENT-SIGNATURE, and still what much of the live ecosystem sends. A buyer holding a correctly signed envelope got a 402 instead of their goods. The store then compounded it: when this was reported, the reporter was told the claim was false, on the strength of three places in our code that read both header names. None of those three accepts a payment. Two write a decline reason after the 402 is already decided and one decides whether pre-payment guards apply; the acceptance decision belongs to a layer below all of them. Call sites were read and mistaken for behaviour.",
+    how_long:
+      "Since the v2 migration, on every paid door. The store never measured how many buyers spoke the older name, so the number of refused sales is unknown and cannot now be recovered.",
+    found_by:
+      "CV reported it from live behaviour and was told he was mistaken. Cairn then settled it with half a cent: the identical envelope sent under both names on a cold walk, 402 under X-PAYMENT and settled under PAYMENT-SIGNATURE, published as a transcript.",
+    what_changed:
+      "The payment adapter now accepts the envelope under either name, and only that name aliases — a blanket fallback would be a guess nobody asked for. A test sends the same envelope under both headers and requires the same outcome, and separately requires that X-PAYMENT-SIGNATURE is NOT treated as an alias, so the shim cannot quietly widen. Nothing else changed: signature verification, schema validation and settlement are untouched, and PAYMENT-SIGNATURE remains what every surface asks for.",
+  },
+  {
+    date: "2026-08-25",
+    what_was_wrong:
+      "Every signed offer and every signed receipt this store issued carried a `payload` field. The x402 Signed Offers and Receipts spec permits `payload` for EIP-712 only and says it MUST be omitted for JWS, which is the format we emit — so the store published a MUST-level conformance violation on every paid door, while selling conformance checking of other people's offers and receipts. The envelope also described `acceptIndex` as binding the offer to a rail; it is not part of the signed payload and must not be relied on for that.",
+    how_long:
+      "From when signed offers shipped until 2026-08-25, on every paid door.",
+    found_by:
+      "Our own reading of the spec, and only barely. The investigation that led there was about header SIZE, and the argument for dropping the field was that nothing was lost by removing a duplicate — true, mechanically, and silent on whether the wire format permitted it. Reading the spec is what turned a tidying into a defect, and it is what found the receipt half, which no byte-counting argument would ever have reached.",
+    what_changed:
+      "The field is gone from both envelopes and the acceptIndex claim is corrected in the text that describes it. Conformance tests now assert the envelope shape against the spec rather than against what the code already emitted — the earlier tests passed because they required the violation.",
+  },
+  {
     date: "2026-08-04",
     what_was_wrong:
       "The public organic-settlement count read 22 when the honest number was 3. The other 19 were the store's own money: cross-model agent-UX test walkers (research into how cheaply-run agents handle x402 purchases) bought real items from freshly spun-up wallets that were not yet listed in the house register, so the till booked family purchases as market demand — the exact corruption the register exists to prevent, caused by our own instrument.",
