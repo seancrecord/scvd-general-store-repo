@@ -589,8 +589,8 @@ export async function reconcileAgainstChain(
    */
   const fromBlock = Number.isFinite(cursor)
     ? Math.max(cursor + 1, head - RECONCILE_MAX_SPAN)
-    : Math.max(0, head - RECONCILE_BLOCK_SPAN);
-  const toBlock = Math.min(head, fromBlock + RECONCILE_BLOCK_SPAN - 1);
+    : Math.max(0, head - chain.logSpan);
+  const toBlock = Math.min(head, fromBlock + chain.logSpan - 1);
   if (toBlock < fromBlock) {
     return { ran: false, reason: "no new blocks since the last pass" };
   }
@@ -779,12 +779,22 @@ async function alertOrphans(
   }
 }
 
-/** A pass that read its full span may have more chain waiting. */
-function readFullSpan(result: ChainReconciliation): boolean {
+/**
+ * A pass that read its full span may have more chain waiting.
+ *
+ * The span is the CHAIN'S, not one shared number: Polygon reads a
+ * narrower window than Base because its endpoints refuse a wider one.
+ * Comparing against the wrong constant here would make every full
+ * Polygon pass look short and quietly stop the catch-up loop.
+ */
+function readFullSpan(
+  result: ChainReconciliation,
+  chain: EvmChain = BASE_EVM,
+): boolean {
   return (
     result.from_block !== undefined &&
     result.to_block !== undefined &&
-    result.to_block - result.from_block + 1 === RECONCILE_BLOCK_SPAN
+    result.to_block - result.from_block + 1 === chain.logSpan
   );
 }
 
@@ -908,7 +918,7 @@ export async function runChainReconciliation(
   let last = merged;
   for (
     let pass = 1;
-    pass < RECONCILE_CATCHUP_PASSES && readFullSpan(last);
+    pass < RECONCILE_CATCHUP_PASSES && readFullSpan(last, chain);
     pass += 1
   ) {
     const result = await reconcileAgainstChain(env, {
