@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { readPayTo } from "@/lib/pay-to";
+import { isCanonicalUsdc } from "@/lib/value-checks";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
 import {
@@ -558,15 +559,40 @@ export async function performLaunchCheck(
     });
 
     // STAGE 3 — choose terms: cheapest Base exact-scheme entry.
-    const base = accepts
-      .filter(
-        (entry) =>
-          (entry.network === "eip155:8453" || entry.network === "base") &&
-          (entry.scheme ?? "exact") === "exact" &&
-          Number.isFinite(amountUsd(entry)),
+    const baseShaped = accepts.filter(
+      (entry) =>
+        (entry.network === "eip155:8453" || entry.network === "base") &&
+        (entry.scheme ?? "exact") === "exact" &&
+        Number.isFinite(amountUsd(entry)),
+    );
+    /*
+     * 2.2: the asset's VALUE is checked before its amount is ever
+     * called a price. amountUsd() divides by 1e6 — six decimals is a
+     * fact about USDC, not about whatever contract a stranger's 402
+     * names — and this artifact is signed. A Base-shaped entry whose
+     * asset is not the canonical USDC contract is refused by name,
+     * not walked and not labeled.
+     */
+    const base = baseShaped
+      .filter((entry) =>
+        isCanonicalUsdc("eip155:8453", String(entry.asset ?? "")),
       )
       .sort((a, b) => amountUsd(a) - amountUsd(b));
+    const imposters = baseShaped.filter(
+      (entry) => !isCanonicalUsdc("eip155:8453", String(entry.asset ?? "")),
+    );
     const chosen = base[0];
+    if (!chosen && imposters.length > 0) {
+      stages.push({
+        stage: "terms",
+        ok: false,
+        detail: `the Base rail's asset is not canonical USDC: ${imposters
+          .map((entry) => String(entry.asset ?? "(absent)"))
+          .join(", ")}. This store's field wallet pays canonical Base USDC only, and it will not price a stranger's token in dollars — the atomic amount offered means whatever that contract says it means, which is exactly why no dollar figure appears here. No payment was attempted and nothing was charged.`,
+      });
+      verdict = "unpaid_by_rule";
+      break walk;
+    }
     if (!chosen || !chosen.payTo || !chosen.asset) {
       stages.push({
         stage: "terms",
