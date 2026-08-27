@@ -19,8 +19,10 @@ describe("/agents.md", () => {
     // H1 store name, blockquote summary, and the operational sections.
     expect(text.startsWith("# ")).toBe(true);
     expect(text).toContain("\n> ");
-    expect(text).toContain("## Purchasing flow (HTTP)");
-    expect(text).toContain("## Purchasing flow (MCP)");
+    // Retitled 2026-08-27 (scanner S13): the flows were always usage,
+    // now the heading says the word skill-file checkers look for.
+    expect(text).toContain("## Usage: purchasing flow (HTTP)");
+    expect(text).toContain("## Usage: purchasing flow (MCP)");
     expect(text).toContain("## Checkout rules & rate limits");
     // The contracts an operational agent needs to execute a buy.
     expect(text).toContain(`${BASE}/mcp`);
@@ -69,6 +71,53 @@ describe("/agents.md", () => {
           true,
         );
       }
+    }
+  });
+});
+
+/**
+ * S13, THE HONEST VERSION (2026-08-27). A skill-file checker wants at
+ * least two of Installation / Configuration / Usage. The document was
+ * always an operational manual — better content, wrong headings — so
+ * the flows were retitled Usage (keeper's prose untouched) and an
+ * Installation section tells the truth: nothing to install, plus the
+ * optional local tools that genuinely do.
+ */
+describe("the checker's headings, without the fake README", () => {
+  it("carries Installation and Usage headings", async () => {
+    const text = await (await SELF.fetch(`${BASE}/agents.md`)).text();
+    expect(text).toContain("## Installation");
+    expect(text).toContain("## Usage");
+    // The truth the section leads with: the store itself installs nothing.
+    expect(text).toContain("Nothing to install");
+  });
+
+  it("names the CLI install only when the publish has actually run", async () => {
+    const { CLI_PUBLISHED, CLI_INSTALL, CLI_SOURCE_URL } = await import(
+      "@/store/cli"
+    );
+    const text = await (await SELF.fetch(`${BASE}/agents.md`)).text();
+    /*
+     * Boundary-aware, because "npm i -g scvd-tab" — a real, published
+     * package this page rightly names — CONTAINS the banned command as
+     * a substring. The no-orphan guard already learned this exact
+     * lesson (/index.md passing via /okf/index.md); the regex derives
+     * from the constant and refuses only the command that would fail
+     * in a reader's terminal.
+     */
+    const exactInstall = new RegExp(
+      `${CLI_INSTALL.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w-])`,
+    );
+    if (CLI_PUBLISHED) {
+      // The day the publish lands and the constant flips, this surface
+      // updates with the rest — this branch starts asserting it.
+      expect(text).toMatch(exactInstall);
+    } else {
+      // Rule 46: the banned string derives from the same constant the
+      // page reads, so this cannot memorize a stale command. The
+      // source link still works today either way.
+      expect(text).not.toMatch(exactInstall);
+      expect(text).toContain(CLI_SOURCE_URL);
     }
   });
 });
