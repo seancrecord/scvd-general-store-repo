@@ -133,7 +133,8 @@ function bountyBoardJsonLd(base: string): string {
     inLanguage: "en",
     estimatedCost: {
       "@type": "MonetaryAmount",
-      currency: "USD",
+      // USDC, one currency storewide — and the payouts really are USDC.
+      currency: "USDC",
       value: 0,
       description:
         "The door's own price, refunded in full on a verified claim, plus a finder's fee.",

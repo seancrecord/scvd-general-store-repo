@@ -214,7 +214,14 @@ describe("/conformance publishes the desk as a free API", () => {
     const api = nodeOfType(await jsonLdNodes("/conformance"), "WebAPI");
     const offer = api.offers as Record<string, unknown>;
     expect(offer.price).toBe("0");
-    expect(offer.priceCurrency).toBe("USD");
+    /*
+     * USDC since 2026-08-27 — the keeper's one-currency ruling.
+     * schema.org's priceCurrency accepts cryptocurrency tickers
+     * alongside ISO 4217, so the literal currency costs nothing, and
+     * the store's own storefront comment had already made the case:
+     * approximately right loses more than unparsed.
+     */
+    expect(offer.priceCurrency).toBe("USDC");
     expect(api.isAccessibleForFree).toBe(true);
   });
 });
