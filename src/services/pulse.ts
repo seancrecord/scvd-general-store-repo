@@ -59,6 +59,17 @@ export interface PulseWindow {
   /** 402s offered to organic traffic. The denominator. */
   organic_challenges: number;
   /**
+   * THE FUNNEL'S MIDDLE (#53), and it is a DERIVATION rather than a
+   * meter: the till books every payment actually presented as exactly
+   * one of settled or declined, so this is their sum and cannot drift
+   * from the two numbers beside it. Five outside reports in a row
+   * had read organic_verifies as this step — the field name read
+   * like the protocol step — and the honest answer was to publish
+   * the real middle, from counters that already existed, with zero
+   * new writes on the paid path.
+   */
+  organic_payments_presented: number;
+  /**
    * Payments that settled from organic traffic, WITH THE HOUSE
    * RECLASSIFICATION ALREADY TAKEN OUT — the same arithmetic /stats
    * does, from the same ledger.
@@ -92,8 +103,20 @@ export interface PulseWindow {
    * it is partial rather than left to discover it by adding up.
    */
   reclass_split_incomplete?: boolean;
-  /** Free re-verifications of artifacts, organic only. */
-  organic_verifies: number;
+  /**
+   * Payments presented and refused, organic only. Each attempt counts
+   * once — a buyer bouncing three times off the same wall is three
+   * refusals, which is what their ledger records too.
+   */
+  organic_declines: number;
+  /**
+   * Free re-checks of ALREADY-ISSUED artifacts at /api/verify,
+   * organic only. RENAMED from organic_verifies (2026-08-27): that
+   * name read like the x402 verify step and four frontier models in
+   * a row built a false funnel out of it. This is a different event
+   * at a different time by different callers, and now says so.
+   */
+  organic_rechecks: number;
   /**
    * settled / challenges. NULL when nothing was ever offered — a rate
    * with a zero denominator is undefined, not zero, and printing 0
@@ -260,7 +283,7 @@ async function computeLatency(env: Env): Promise<Latency> {
 }
 
 const NOTE =
-  "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges and verifies those same wallets generated are still counted organic here. organic_challenges and organic_verifies are therefore ceilings, and the conversion rate computed from them is a floor.";
+  "The whole funnel, not the flattering end of it. Organic only: house traffic is the proprietors' own wallets and tests, flagged at the till and excluded here exactly as it is excluded from /stats. A conversion rate of null means nobody has been offered a price yet in that window, which is different from nobody paying. These are counts and nothing else — no user-agents, no referrers, no wallet addresses, no per-visitor rows — and the counters they read predate this endpoint, so the collection cannot have been tuned to flatter the publication. Every settlement counted here is EXPECTED to have minted a signed artifact you can verify yourself without asking us — and that is a claim with an instrument behind it rather than an assurance. The settlement counter is bumped before the handler that mints, so a sale that settled and then failed to deliver would be counted here with nothing to show for it. Two checks look for exactly that: a delivery audit that flags a settled sale whose goods never went out, and an hourly walk of USDC arriving on Base against the certificates minted, which is independent of every write this store makes. If either ever finds one, it goes on /corrections with a date, like everything else. Settles later reclassified from organic to house are subtracted here, exactly as /stats subtracts them, and the amount taken out is published beside the figure as misbooked_house rather than left implicit. WHAT THAT CORRECTION DOES NOT REACH, said plainly because it inflates the denominator's opposite: the reclassification ledger freezes a SETTLE count per wallet and nothing else, so the challenges, declines and re-checks those same wallets generated are still counted organic here. organic_challenges, organic_declines and organic_rechecks are therefore ceilings, and the conversion rate computed from them is a floor. THE FUNNEL'S MIDDLE IS DERIVED, NOT SEPARATELY METERED: the till books every payment actually presented as exactly one of settled or declined, so organic_payments_presented is their sum and cannot drift from the two numbers published beside it. And a naming correction, dated 2026-08-27: the field once called organic_verifies is now organic_rechecks, because it counts free re-checks of already-issued artifacts at /api/verify — NOT the x402 verify step — and the old name kept being read as the protocol step it never was.";
 
 /**
  * NEVER ROUND A REAL RATE TO ZERO.
@@ -335,6 +358,7 @@ export async function computePulse(env: Env): Promise<Pulse> {
     // not a licence to print a negative settlement count.
     const settled = Math.max(0, recordedSettled - misbooked);
     const verifies = rows.reduce((sum, row) => sum + row.verifies, 0);
+    const declines = rows.reduce((sum, row) => sum + row.declines, 0);
     /**
      * The standing correction, computed on the clock over every row of
      * the month rather than here over a window. Only a COMPLETE walk is
@@ -349,8 +373,11 @@ export async function computePulse(env: Env): Promise<Pulse> {
     windows.push({
       month,
       organic_challenges: challenges,
+      // Derived from the two published beside it, never metered apart.
+      organic_payments_presented: settled + declines,
       organic_settled: settled,
-      organic_verifies: verifies,
+      organic_declines: declines,
+      organic_rechecks: verifies,
       conversion_rate: rate(settled, challenges),
       ...(misbooked > 0 ? { misbooked_house: misbooked } : {}),
       ...(machinery !== undefined
@@ -378,9 +405,10 @@ export async function computePulse(env: Env): Promise<Pulse> {
     (acc, window) => ({
       challenges: acc.challenges + window.organic_challenges,
       settled: acc.settled + window.organic_settled,
-      verifies: acc.verifies + window.organic_verifies,
+      verifies: acc.verifies + window.organic_rechecks,
+      declines: acc.declines + window.organic_declines,
     }),
-    { challenges: 0, settled: 0, verifies: 0 },
+    { challenges: 0, settled: 0, verifies: 0, declines: 0 },
   );
 
   /**
@@ -410,8 +438,13 @@ export async function computePulse(env: Env): Promise<Pulse> {
     house_flag_policy: HOUSE_FLAG_POLICY,
     all_time: {
       organic_challenges: total.challenges,
+      // Same derivation as every window: the published settled plus
+      // the published declines, so the invariant holds on the payload
+      // a reader actually has in hand.
+      organic_payments_presented: allTimeSettled + total.declines,
       organic_settled: allTimeSettled,
-      organic_verifies: total.verifies,
+      organic_declines: total.declines,
+      organic_rechecks: total.verifies,
       conversion_rate: rate(allTimeSettled, total.challenges),
       ...(reclassTotal ? { misbooked_house: reclassTotal } : {}),
       ...(splitIncomplete ? { reclass_split_incomplete: true } : {}),

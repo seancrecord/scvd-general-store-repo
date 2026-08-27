@@ -713,9 +713,11 @@ of intent and not a mechanism, which is also true.
 ## The whole funnel, including the denominator
 
 ${base}/pulse, or ${base}/pulse.json for the machine copy: how many
-agents were offered a price here, how many paid, how many came back to
-re-verify an artifact afterwards. Organic only, house wallets excluded
-at the till. Read the denominator before the rate — a small number of
+agents were offered a price here, how many actually presented a
+payment (settled plus refused — derived from those two counters, not
+metered apart), how many paid, how many came back to re-verify an
+artifact afterwards. Organic only, house wallets excluded at the
+till. Read the denominator before the rate — a small number of
 402s is a fact about how far this store has been found, not a fact
 about the market, and an undefined rate prints as an em dash rather
 than as 0%, because 0% would claim agents were offered something and
