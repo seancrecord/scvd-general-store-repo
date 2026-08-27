@@ -113,6 +113,69 @@ describe("a cold isolate quotes without phoning the facilitator", () => {
     expect(counter.calls()).toBe(1);
   });
 
+  it("a hung facilitator on the empty-cache path costs the supported budget, not the settle deadline", async () => {
+    /*
+     * THE LAST COLD CORNER (the keeper's latency prompt, 2026-08-27).
+     * The KV warm covers every isolate except the one that has NEVER
+     * banked the kinds — and that one used to wait on the library's
+     * default deadline, which is sized for settle, where money is in
+     * flight. Quoting a price is not that: getSupported now runs on
+     * its own short lane (SUPPORTED_TIMEOUT_MS in production; squeezed
+     * here so the suite stays fast), so a dead facilitator becomes a
+     * bounded, honest refusal instead of a half-minute hang in front
+     * of a buyer's first-ever 402.
+     */
+    // The hang honors the abort signal, as real fetch does — the
+    // library's deadline works by AbortSignal, so a stub that ignores
+    // it would prove nothing about the budget.
+    vi.stubGlobal(
+      "fetch",
+      ((_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(
+              Object.assign(new Error("The operation was aborted"), {
+                name: "AbortError",
+              }),
+            ),
+          );
+        })) as unknown as typeof fetch,
+    );
+    const client = new KvWarmFacilitatorClient(
+      { url: "https://facilitator.example" },
+      testEnv.COUNTERS,
+      undefined,
+      120,
+    );
+    const outcome = await Promise.race([
+      client.getSupported().then(
+        () => "answered",
+        () => "refused",
+      ),
+      new Promise<"still-waiting">((resolve) =>
+        setTimeout(() => resolve("still-waiting"), 2000),
+      ),
+    ]);
+    expect(outcome).toBe("refused");
+    // And a refusal banks NOTHING. A cached failure would outlive the
+    // outage it recorded; the next isolate must ask fresh.
+    expect(await testEnv.COUNTERS.get(SUPPORTED_KINDS_KV_KEY)).toBeNull();
+  });
+
+  it("never banks a failure even when the facilitator answers garbage", async () => {
+    vi.stubGlobal(
+      "fetch",
+      (async () =>
+        new Response("bad gateway", { status: 502 })) as unknown as typeof fetch,
+    );
+    const client = new KvWarmFacilitatorClient(
+      { url: "https://facilitator.example" },
+      testEnv.COUNTERS,
+    );
+    await expect(client.getSupported()).rejects.toThrow();
+    expect(await testEnv.COUNTERS.get(SUPPORTED_KINDS_KV_KEY)).toBeNull();
+  });
+
   it("is the client the gate actually constructs — read, and labeled as a read", async () => {
     const source = (
       await import("../src/lib/payments.ts?raw")

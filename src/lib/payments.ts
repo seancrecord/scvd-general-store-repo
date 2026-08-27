@@ -743,14 +743,34 @@ const SUPPORTED_KINDS_TTL_SECONDS = 7 * 86_400;
  * exact symmetry of the settle doctrine below (SETTLE_RETRY_DELAY_MS),
  * pointed at the other end of the same pipe.
  *
- * SETTLE IS DELIBERATELY NOT OVERRIDDEN HERE. A verify timeout means
- * "ask again"; a settle timeout means "the money may have moved" —
- * settle's retry lives in processSettlementWithRetry where the
- * ambiguous-outcome rescue can see it, on the full 30s deadline.
- * test/verify-short-leash.spec.ts pins that into the prototype chain.
+ * SETTLE'S DEADLINE IS DELIBERATELY NOT SHORTENED HERE. A verify
+ * timeout means "ask again"; a settle timeout means "the money may
+ * have moved" — that question gets the full default deadline, and its
+ * retry lives in processSettlementWithRetry where the
+ * ambiguous-outcome rescue can see it. (Seeing it took a fix: the
+ * settle override below converts the timeout's CLASS so the decline
+ * shape actually forms — the deadline itself is untouched.)
+ * test/verify-short-leash.spec.ts pins the verify lane into the
+ * prototype chain.
  */
 export const VERIFY_TIMEOUT_MS = 10_000;
 export const VERIFY_RETRY_DELAY_MS = 400;
+
+/**
+ * THE SUPPORTED SHORT-LEASH (the keeper's latency prompt, 2026-08-27,
+ * closing the last cold corner of ledger #51). The KV warm covers
+ * every isolate except the one that has never banked the kinds — a
+ * brand-new store, or KV wiped — and that one used to wait on the
+ * library's default deadline, which is sized for settle, where money
+ * is in flight. Quoting a price is not that. getSupported is
+ * read-only and retried implicitly by the next request, so it gets a
+ * short lane: a dead facilitator becomes a bounded refusal in front
+ * of the buyer's first-ever 402 instead of a half-minute hang, and
+ * the detached background refresh stops holding an isolate open for
+ * the same half minute. Failures are never banked — the empty-KV
+ * path re-asks fresh, exactly as before.
+ */
+export const SUPPORTED_TIMEOUT_MS = 5_000;
 
 /**
  * The library throws VerifyError when a non-2xx response still carried
@@ -770,16 +790,23 @@ function verifyDeliveredAVerdict(error: unknown): boolean {
 export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
   /** Same facilitator, same auth — shorter deadline, verify only. */
   private readonly verifyLane: HTTPFacilitatorClient;
+  /** And the same again for the supported-kinds read. */
+  private readonly supportedLane: HTTPFacilitatorClient;
 
   constructor(
     config: ConstructorParameters<typeof HTTPFacilitatorClient>[0],
     private readonly kv: KVNamespace,
     verifyTimeoutMs: number = VERIFY_TIMEOUT_MS,
+    supportedTimeoutMs: number = SUPPORTED_TIMEOUT_MS,
   ) {
     super(config);
     this.verifyLane = new HTTPFacilitatorClient({
       ...(config ?? {}),
       timeoutMs: verifyTimeoutMs,
+    });
+    this.supportedLane = new HTTPFacilitatorClient({
+      ...(config ?? {}),
+      timeoutMs: supportedTimeoutMs,
     });
   }
 
@@ -809,7 +836,7 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
       .get<Supported>(SUPPORTED_KINDS_KV_KEY, "json")
       .catch(() => null);
     if (cached) {
-      void super
+      void this.supportedLane
         .getSupported()
         .then((fresh) =>
           this.kv.put(SUPPORTED_KINDS_KV_KEY, JSON.stringify(fresh), {
@@ -819,7 +846,7 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
         .catch(() => undefined);
       return cached;
     }
-    const fresh = await super.getSupported();
+    const fresh = await this.supportedLane.getSupported();
     await this.kv
       .put(SUPPORTED_KINDS_KV_KEY, JSON.stringify(fresh), {
         expirationTtl: SUPPORTED_KINDS_TTL_SECONDS,
@@ -827,6 +854,56 @@ export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
       .catch(() => undefined);
     return fresh;
   }
+
+  /**
+   * A SETTLE TIMEOUT JOINS THE TRANSPORT-DEAD DOCTRINE (2026-08-27,
+   * found auditing the keeper's latency prompt). The deadline is NOT
+   * shortened here — a settle timeout means the money may have moved,
+   * and that question deserves the full budget. What changes is the
+   * CLASS of the failure. The library's FacilitatorTimeoutError
+   * extends FacilitatorResponseError, and processSettlement rethrows
+   * that class instead of folding it into the success:false decline
+   * shape — so a facilitator that 502'd got the whole doctrine (one
+   * retry, the ambiguous-settle rescue, a decline with
+   * payment_declined) while a facilitator that HUNG skipped all three
+   * and surfaced as a bare 500. Same ambiguity, opposite handling.
+   *
+   * The conversion: rethrow the timeout as a PLAIN error whose message
+   * carries the transient shape isTransientSettleFailure keys on. The
+   * library's generic catch then builds the decline response, the
+   * retry fires once (an EIP-3009 nonce settles at most once on-chain,
+   * so this cannot double-charge), and the rescue asks the chain
+   * whether the authorization burned. Money still fails closed: this
+   * turns a hang into a verdict, never into goods. Only the timeout is
+   * reshaped — a facilitator that ANSWERED is never second-guessed.
+   * test/settle-timeout.spec.ts pins both halves.
+   */
+  override async settle(
+    ...args: Parameters<HTTPFacilitatorClient["settle"]>
+  ): Promise<Awaited<ReturnType<HTTPFacilitatorClient["settle"]>>> {
+    try {
+      return await super.settle(...args);
+    } catch (error) {
+      if (isSettleTimeout(error)) {
+        throw new Error(`facilitator settle failed (timeout): ${error.message}`);
+      }
+      throw error;
+    }
+  }
+}
+
+/**
+ * The timeout error's discriminators, since the class itself is not
+ * exported from @x402/core: only FacilitatorTimeoutError carries
+ * operation and timeoutMs among the shapes settle can throw. Matching
+ * operation === "settle" keeps this conversion off every other call.
+ */
+function isSettleTimeout(error: unknown): error is Error {
+  return (
+    error instanceof Error &&
+    (error as { operation?: unknown }).operation === "settle" &&
+    typeof (error as { timeoutMs?: unknown }).timeoutMs === "number"
+  );
 }
 
 export interface PaymentStack {
@@ -991,13 +1068,14 @@ export function getPaymentStack(env: Env): PaymentStack {
 export const SETTLE_RETRY_DELAY_MS = 1500;
 
 /**
- * The @x402/core client's own wording for "the settle endpoint
- * returned a non-OK HTTP status": transport failed, no verdict exists.
- * Everything after the status is the raw response body and is not
- * matched on.
+ * The two wordings for "transport failed, no verdict exists": the
+ * @x402/core client's own string for a non-OK settle status, and the
+ * settle-timeout conversion KvWarmFacilitatorClient makes so a hang
+ * joins the same doctrine (see the settle override). Everything after
+ * the parenthesis is diagnostic detail and is not matched on.
  */
 export function isTransientSettleFailure(errorReason: string | undefined): boolean {
-  return /facilitator settle failed \(5\d\d\)/i.test(errorReason ?? "");
+  return /facilitator settle failed \((5\d\d|timeout)/i.test(errorReason ?? "");
 }
 
 type SettlementArgs = Parameters<x402HTTPResourceServer["processSettlement"]>;
