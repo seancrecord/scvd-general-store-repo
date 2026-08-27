@@ -88,6 +88,23 @@ function die(message, ...fix) {
 
 const argv = process.argv.slice(2);
 const dryRun = argv.includes("--dry-run");
+/**
+ * CI MODE (P10 hardening, 2026-08-27). actions/checkout leaves the
+ * runner on a DETACHED HEAD, where `@{u}` has no meaning — so the
+ * unpushed-HEAD refusal below, run verbatim in CI, would refuse every
+ * workflow publish for the wrong reason. The check's PURPOSE is that
+ * --source-commit names a commit somebody else can fetch; in CI that
+ * is true by construction (the workflow checked the commit out FROM
+ * the remote), so the honest translation is not to delete the check
+ * but to replace it with its CI equivalent: the workflow passes the
+ * commit it dispatched on (--source-commit=<sha>) and this script
+ * refuses unless the working tree IS that commit. The dirty-tree
+ * refusal runs unchanged in both modes.
+ */
+const ciSourceCommit = argv
+  .find((arg) => arg.startsWith("--source-commit="))
+  ?.slice("--source-commit=".length);
+const ciMode = Boolean(ciSourceCommit);
 const [version, changelog] = argv.filter((arg) => !arg.startsWith("--"));
 
 if (!version || !changelog) {
@@ -152,19 +169,31 @@ if (git("status", "--porcelain")) {
 
 const head = git("rev-parse", "HEAD");
 const branch = git("rev-parse", "--abbrev-ref", "HEAD");
-try {
-  const upstream = git("rev-parse", "@{u}");
-  if (upstream !== head) {
+if (ciMode) {
+  // The CI translation of the upstream check — see the note at the
+  // flag parse. A workflow that checked out anything other than the
+  // commit it claims to publish is refused, same spirit, same teeth.
+  if (ciSourceCommit !== head) {
     die(
-      `${branch} is not level with its remote`,
-      "Push first, so --source-commit names a commit somebody else can fetch.",
+      `the checkout (${head.slice(0, 12)}) is not the commit the workflow dispatched on (${ciSourceCommit.slice(0, 12)})`,
+      "--source-commit must equal HEAD in CI; something moved between dispatch and checkout.",
     );
   }
-} catch {
-  die(
-    `${branch} has no upstream`,
-    `Run: git push -u origin ${branch}`,
-  );
+} else {
+  try {
+    const upstream = git("rev-parse", "@{u}");
+    if (upstream !== head) {
+      die(
+        `${branch} is not level with its remote`,
+        "Push first, so --source-commit names a commit somebody else can fetch.",
+      );
+    }
+  } catch {
+    die(
+      `${branch} has no upstream`,
+      `Run: git push -u origin ${branch}`,
+    );
+  }
 }
 
 /**
@@ -397,6 +426,17 @@ if (!dryRun) {
    * off `main`, commit and push where you stand; on `main`, carry the
    * record out on a branch, because that is the only way it lands.
    */
+  if (ciMode) {
+    // The workflow that called this owns the next step: it commits
+    // the record to a branch and opens the PR. Saying so here keeps
+    // the run log honest about who does what.
+    console.log(
+      `CI mode: the workflow now opens a pull request carrying ${RECORD}.\n` +
+        `The publish is not complete until that PR merges — a stale record\n` +
+        `silently disarms the bundle-unchanged refusal for the NEXT publish.\n`,
+    );
+    process.exit(0);
+  }
   const recordBranch = `record-${version}`;
   const steps =
     branch === PROTECTED_BRANCH
