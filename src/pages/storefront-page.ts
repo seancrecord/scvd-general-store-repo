@@ -649,6 +649,14 @@ export function renderStorefront(data: StorefrontData): string {
   <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>
   <style>${STOREFRONT_CSS}</style>
+  <!--
+    THE WEBMCP SURFACE (P7). Registers the store's free, read-only
+    evidence instruments on document.modelContext for an agent living
+    in the visitor's browser; a browser without the API loads a no-op.
+    The tool set derives from the MCP catalog — see routes/webmcp.ts
+    for the two construction guarantees (cannot act, cannot drift).
+  -->
+  <script src="/webmcp.js" defer></script>
 </head>
 <body class="night">
   <div class="stars"></div>

@@ -118,6 +118,13 @@ export function inferChannel(signals: ChannelSignals): Channel {
   if (declared === "clawhub-skill" || declared === "skill") {
     return "skill";
   }
+  // The WebMCP handlers' designed self-identification, same pattern as
+  // the skill: /webmcp.js tags every fetch it makes with ?src=webmcp,
+  // so a browser-resident agent driving the storefront's registered
+  // tools is its own channel rather than noise in "direct".
+  if (declared === "webmcp") {
+    return "webmcp";
+  }
   if (SKILL_HINTS.some((hint) => `${referrer} ${userAgent}`.includes(hint))) {
     return "skill";
   }

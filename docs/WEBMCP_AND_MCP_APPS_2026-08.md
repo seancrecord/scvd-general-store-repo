@@ -983,6 +983,7 @@ test becomes its own rule beside 43 — is struck by it.
 | **VS Code** (Copilot Chat, agent mode, stdio) | **PASS** | Renders inline in the chat sidebar — an inherently narrow viewport, so this doubled as a natural narrow-window test: ladder intact, hatched pills legible, colophon complete. Dark observed. Setup fought back twice, recorded in the kit README: the add-server wizard mangled the command into a literal `v` (`spawn v ENOENT`) — edit `mcp.json` directly, `command` and `args` as separate fields — and an earlier round showed an agent with the repo as its open workspace will grep the fixture and run the server by hand in a terminal rather than call the MCP tool, testing nothing about rendering. Point it at the tool by name, from a non-repo window. Its summary kept the not-climbed list and quoted the misquote line verbatim. |
 | ChatGPT | not yet run (tunnel required) | — |
 | Goose | optional | — |
+| **Claude, custom remote connector** (Desktop/Web, production scvd.store/mcp) | **TOOLS PASS, HOST WITHHOLDS RENDER** — observed 2026-08-27 | The keeper's live production test, first day the cards shipped: all three tools ran end to end over the connector and the narration even kept the ceiling ("L3b/c/d and L4–L6 are absent, not passed") — but no widget. Not our defect: the custom-remote-connector path falls back to text-only for spec-correct servers, a known host-side gap (anthropics/claude-ai-mcp#471, reported June 2026, closed as duplicate, unfixed). The path that renders is local stdio — the rows above — and production is wire-verified correct, so the cards light up with zero changes from us when the host closes the gap. A dated observation about a host, not a score. |
 
 **CORRECTION, 2026-08-27, same day as the error.** An earlier
 revision of this table said Claude Desktop rendered the card, on the
@@ -1373,3 +1374,83 @@ commit, as its guard requires.
   not enthusiasm.
 - **No WebMCP.** Separate surface, separate build (§10); nothing
   here touches the browser.
+
+---
+
+## 12. SHIP RECORD — the second batch (2026-08-27, evening)
+
+Four items at the keeper's word, same day the cards went live.
+
+### 12.1 WebMCP (P7) — built
+
+The store's second executable surface: `GET /webmcp.js`, loaded by the
+storefront, registers the free evidence instruments on
+`document.modelContext` for an agent resident in the visitor's
+browser. API shape re-verified against the spec repo the same day
+(webmachinelearning/webmcp): `registerTool({name, description,
+inputSchema, execute})`, secure context, `tools` permissions policy;
+origin trials live in Chrome 149/Edge 150, ChatGPT Desktop shipping,
+Brave Leo experimental, Mozilla/WebKit positions pending.
+
+The ruling's two questions, answered by construction and pinned in
+test/webmcp.spec.ts:
+
+- **Cannot act.** The registered set derives from the MCP catalog:
+  free AND readOnlyHint only. buy_* cannot register (no itemId ever
+  passes the filter), ring_bell and sign_guestbook fall out as writes,
+  and every handler is a fetch to a public endpoint. No keys, no
+  storage, no cookies — asserted as strings on the served script.
+- **Cannot drift.** Names, descriptions, and schemas are the MCP
+  catalog's own objects serialized at request time — one source, both
+  doors, the MENU_ITEMS pattern. The only hand-written part is the
+  endpoint map; webmcpUnhandledTools() fails the build if derivation
+  outruns it.
+
+P7 tracking: every handler fetch carries `?src=webmcp` — the skill's
+designed-self-identification pattern — and `webmcp` is now its own
+channel in inferChannel, never overriding the MCP door's definitive
+tag. The storefront gained its first CSP with its first first-party
+script: `script-src 'self'; object-src 'none'; base-uri 'none'`.
+
+Discovery is arrival: no directory, no listing, no admin. A browser
+without the API loads a comment and a no-op. ⚑ Keeper's errand if he
+wants Chrome/Edge origin-trial coverage before general availability:
+register scvd.store for the OT tokens (developer.chrome.com origin
+trials console); without them the surface simply waits for GA.
+
+### 12.2 Agent-use vs human-use labeling — shipped as drafts
+
+The keeper's idea, built on the honest cut (every MCP tool is
+agent-invoked by transport; the difference is where the OUTPUT goes):
+
+- **Evidence instruments** — preflight_endpoint, check_conformance,
+  verify_artifact: "the [reading/verdict/answer] is written to be
+  handed to the human behind you" (the preflight adds "gaps at full
+  weight").
+- **Store errands** — read_store_guide, ring_bell, sign_guestbook:
+  "a store errand, for you the visiting agent — nothing here needs a
+  human's decision" (the guestbook notes its words are published).
+
+agents.md's free-tool list now carries the same split. ⚑ The exact
+sentences are the keeper's to re-ink; they ship as drafts under his
+"work on it" instruction. Side effect: the 200-char description floor
+now exempts nothing — the audience sentences carried the last two
+short descriptions over it, and the exemption test states the empty
+set.
+
+### 12.3 The MCP resources, named where strangers read
+
+llms.txt and agents.md now name the whole readable shelf — the six
+scvd:// URIs with one-line jobs, and the two ui:// card templates —
+instead of pointing at a door and letting resources/list be the only
+inventory. The gap the keeper flagged: the resources were findable
+in-protocol and nowhere else.
+
+### 12.4 Still open after this batch
+
+- Expiry label ("stale after" vs "current until") — keeper reviewing
+  drafts; lands with the first stored-reading card.
+- Colophon drawer beyond the one inked line.
+- ChatGPT/Goose render rows; the mcp-remote bridge row.
+- Card family (§8.5a) — waits on demand tags, and on the keeper's
+  read of the connector render gap (§8.5 last row).

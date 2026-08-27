@@ -171,13 +171,23 @@ absolute) instead of the old string. ⚑ Still the keeper's: the expiry
 label call ("stale after" / "current until") — deliberately ABSENT
 from v1, both live cards are seconds-old readings ("one probe, one
 moment"); it lands with the first corpus/stored-reading card.
-⚑ NEW from the keeper, 08-27, unruled: label which tools are
-agent-use vs human-use. Note for the ruling: every MCP tool is
-agent-invoked by transport, so the honest cut is probably
-*evidence instruments* (preflight, conformance, verify — outputs
-built to be handed upward to a human) vs *store errands* (bell,
-guestbook, guide, buy_*); if it ships, it belongs in the tool
-descriptions and annotations, which are keeper's copy (rule 7).
+~~⚑ NEW from the keeper, 08-27, unruled: label which tools are
+agent-use vs human-use~~ — HE SAID BUILD IT, same evening, and it
+shipped as drafts on the evidence-instrument / store-errand cut
+(design doc §12.2); ⚑ the sentences await his re-ink. SAME EVENING,
+THREE MORE AT HIS WORD: the scvd:// and ui:// resources are now
+NAMED in llms.txt and agents.md instead of discoverable-only
+(§12.3, his flag: "that's really important"); the production
+connector test landed its row — Claude's custom-remote-connector
+path runs the tools but withholds the render, a known host gap
+(anthropics/claude-ai-mcp#471), stdio renders, our wire is correct,
+recorded as a dated host observation in §8.5; and WEBMCP IS BUILT
+(§12.1) — /webmcp.js registers the free read-only instruments on
+document.modelContext, derived from the MCP catalog so it cannot
+act and cannot drift (test-pinned), every fetch tagged ?src=webmcp
+as its own channel, and the storefront's first CSP rides along.
+⚑ Keeper's errand if he wants pre-GA Chrome/Edge coverage:
+origin-trial tokens for scvd.store. Expiry label: drafts with him.
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host

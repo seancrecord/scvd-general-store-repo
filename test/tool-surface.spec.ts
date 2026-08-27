@@ -84,7 +84,11 @@ describe("every tool tells a model what it gets back", () => {
     const exempted = catalog
       .filter((tool) => (tool.description ?? "").length < 200)
       .map((tool) => tool.name);
-    expect(exempted.sort()).toEqual(["ring_bell", "sign_guestbook"]);
+    // Empty since 2026-08-27: the audience sentences (evidence
+    // instrument vs store errand) carried the last two short
+    // descriptions over the floor. The hatch stays, stated, for the
+    // next genuinely jobless tool.
+    expect(exempted.sort()).toEqual([]);
     for (const name of exempted) expect(routed.has(name)).toBe(false);
   });
 

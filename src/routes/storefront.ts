@@ -77,6 +77,17 @@ storefrontRoutes.get("/", async (c) => {
     computeStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
   ]);
+  /*
+   * A CSP arrives with the storefront's first first-party script
+   * (webmcp.js), per the P7 ruling: the store's own scripts only,
+   * nothing injected, nothing embedded. The JSON-LD blocks are data
+   * (never prepared as scripts) and the inline <style> is untouched —
+   * only script execution is being fenced, and 'self' is the fence.
+   */
+  c.header(
+    "Content-Security-Policy",
+    "script-src 'self'; object-src 'none'; base-uri 'none'",
+  );
   return c.html(
     renderStorefront({
       base: c.env.STORE_BASE_URL,
