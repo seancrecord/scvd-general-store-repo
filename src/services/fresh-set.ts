@@ -53,7 +53,38 @@ export interface FreshSetRow {
   min_usdc?: number;
   /** This host's full dated history, replayed from the signed chain. */
   history_url: string;
+  /**
+   * H4 (2.5) — THE CONDITIONS THAT TRAVEL WITH THE ROW.
+   *
+   * This is the routing surface: a shopping row, read by something
+   * deciding where to spend. Without these it rendered a CONFORMANT
+   * observation as a PURCHASABLE offer — rails and a price and
+   * nothing attached — which is a state conversion performed by
+   * presentation on the one surface built for spending decisions.
+   *
+   * `battery` cites the criteria; `observed_at` dates THIS row rather
+   * than the round; `conditions` carries the advisories the probe
+   * raised, named rather than summarised; `not_checked` states the
+   * rungs this verdict does not cover, because a row that says
+   * nothing about delivery will be read as promising it.
+   */
+  battery: string;
+  observed_at: string;
+  conditions: string[];
+  not_checked: string[];
 }
+
+/**
+ * What a shape-conformance verdict does not cover, stated on every
+ * row. Not a disclaimer: the specific rungs of the evidence ladder a
+ * reader of this surface is most likely to assume were climbed.
+ */
+const FRESH_SET_NOT_CHECKED: readonly string[] = [
+  "whether a purchase completes: nothing here was bought",
+  "whether the goods are delivered after payment — no probe can see that, and this one did not spend",
+  "whether the door still answers now: this is one observation, at the time in observed_at",
+  "whether the signed offers (if any) verify against their issuer's key",
+];
 
 export interface FreshSet {
   version: 1;
@@ -89,7 +120,12 @@ export interface FreshSet {
   };
 }
 
-function freshRows(round: WardRound, base: string): FreshSetRow[] {
+/**
+ * Exported for the shape law's test: the live endpoint serves an
+ * empty set until a round exists, and a loop over no rows proves
+ * nothing. The builder is where the law binds.
+ */
+export function freshRows(round: WardRound, base: string): FreshSetRow[] {
   const seen = new Set<string>();
   const rows: FreshSetRow[] = [];
   for (const host of round.hosts) {
@@ -109,6 +145,15 @@ function freshRows(round: WardRound, base: string): FreshSetRow[] {
           }
         : {}),
       history_url: `${base}/corpus/host/${host.host}.json`,
+      battery: host.battery ?? "unstated",
+      /*
+       * Per-row where the row knows it, the round's timestamp
+       * otherwise — stated either way rather than left to a reader
+       * to infer from the document it arrived in.
+       */
+      observed_at: round.at,
+      conditions: [...(host.advisories ?? [])],
+      not_checked: [...FRESH_SET_NOT_CHECKED],
     });
   }
   rows.sort((a, b) => (a.host < b.host ? -1 : a.host > b.host ? 1 : 0));
