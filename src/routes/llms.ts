@@ -316,6 +316,10 @@ observatory checks), scvd://when (which door answers which question),
 scvd://fresh-set (this week's routing data) — plus two ui:// card
 templates (MCP Apps) that render the preflight and verify readings in
 hosts that support them; hosts that don't get the same JSON as ever.
+WebMCP, for the agent in a visitor's browser: the storefront at
+${base}/ registers the same free evidence instruments on
+document.modelContext (script at ${base}/webmcp.js, read-only by
+derivation — nothing registered can act or spend on your behalf).
 A2A agent card: ${base}/.well-known/a2a.json (also served at
 /.well-known/agent-card.json and /.well-known/agent.json). A discovery
 card, honestly labeled: skills derive live from the menu, and the
