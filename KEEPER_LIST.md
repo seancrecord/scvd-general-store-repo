@@ -98,6 +98,21 @@ measures as two questions with construction answers: can it act (no
 net risk DOWN) and can it drift (no, if the registration derives
 from the same source as the HTTP route, as MENU_ITEMS and ROOMS
 already do).
+FIRST RENDER LANDED 08-27 and the keeper's read was "excellent" —
+which opened §8.5a: the card is one of a FAMILY (conformance result on
+a competitor's artifact, the shelf, the 402 approval card, a corpus
+round with the misses published against us), and it carries a MAKER'S
+MARK. The distinction that decides that last one, because the obvious
+implementation is forbidden: a BADGE marks the subject ("this endpoint
+is approved") and is a score rule 43 bans outright; a COLOPHON marks
+the artifact ("we took this reading") and is a signature — a hallmark,
+an assayer's stamp, a printer's mark. Drafted as a colophon. The
+rotating line he asked for (the small-blessings treatment) is
+DETERMINISTIC per rule 22, derived from the observation's own id, so
+the same reading always carries the same line and the card stays
+reproducible offline like everything else. ⚑ Six draft lines are
+filed in §8.5a awaiting his pen (rule 7), and one question with them:
+does the colophon carry a line at all, or only the mark?
 The brainstorm below it stands as the reasoning trail, annotated
 where superseded rather than rewritten, at his request.
 ORIGINAL FILING, kept because the findings are what moved the rule:
@@ -224,6 +239,22 @@ four Base hashes in the TASKS archive's NOW block;
 **The frame:** the verification tier is still $0 outside — Assumption
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
+
+- ⚑ **THE KEEPER ASKED FOR THIS ONE, 2026-08-27: a short Twitter demo
+  of the verdict card.** His words — "make a note for me to make a
+  short demo of it to put on Twitter." The subject is the SIDE-BY-SIDE,
+  not the card alone: Treatment A ("Ready", green tick, 4/4) against
+  Treatment B ("Ready at L3a", four unclimbed rungs, 19 days old, "the
+  correct amount of trust to place in this response is none") — same
+  record, both factually true, and the whole point is that the first
+  one is what an agent's summary hands a human today. The demo writes
+  itself because the comparison IS the argument; nothing has to be
+  claimed. Rule 5 applies hard here: if it wants a retweet it dies, so
+  it is a demonstration, not a pitch. Rule 3: no primacy claim. The
+  render lives in the keeper's artifacts gallery ("Does This Read As A
+  Score?"). NOT YET BUILT AND NOT SHIPPED — the card is a draft in
+  scratch; a demo of an unshipped card must say so on its face or it
+  is a claim about a thing that does not exist.
 
 - ~~Swap the corpus denominator~~ — STRUCK 2026-08-20 at the
   re-review: the arXiv figure (13,760 / 420) is already what

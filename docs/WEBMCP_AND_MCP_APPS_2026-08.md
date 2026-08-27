@@ -753,6 +753,82 @@ this reading, correct — *provided* the derivation discipline is in
 the build from the first commit rather than added after the second
 surface disagrees with the first.
 
+### 8.5a The card family, and the maker's mark (keeper, 2026-08-27)
+
+The keeper's read on the first render: **"this is excellent and I'm very
+excited."** Three things came with it, and one of them is a design
+ruling wearing a feature request.
+
+**MORE CARDS.** The verdict card is one of a family, not a one-off.
+The others, in the order they are worth building — each is the same
+component pointed at a different record, exactly as every serious
+item on the shelf is one primitive pointed at a different moment
+(rule 23a):
+
+1. **The verdict card** — `preflight` / passport. Built as a draft.
+2. **A conformance result on somebody else's artifact.** The desk
+   checks competitors. That is precisely where the conflict-of-interest
+   line has to reach a human rather than sit in a field the agent
+   summarised away.
+3. **The shelf** — `read_store_guide`, prices and what each instrument
+   does and does not prove.
+4. **The 402 approval card** — §4.5's third door. Still unruled.
+5. **A corpus round** — a week's coverage with the misses published
+   against us, which is the one card where the gaps *are* the content.
+
+**A REFERENCE TO US ON THE CARD — AND THE DISTINCTION THAT DECIDES
+IT.** The keeper wants the card to be identifiably ours. The instinct
+is right and the obvious implementation is forbidden, so the two need
+separating before anybody draws anything:
+
+> **A badge marks the SUBJECT — "this endpoint is approved" — and is a
+> score. A colophon marks the ARTIFACT — "we took this reading" — and
+> is a signature. They look alike. They are opposite objects.**
+
+Rule 43 forbids the first absolutely. The second is not merely allowed,
+it is what the store already does everywhere else: a hallmark on
+silver, an assayer's stamp, a printer's colophon, a surveyor's
+benchmark — every one of them says *who did the work and when*, and
+none of them says *how good the thing is*. That vocabulary is the
+store's own world and it is a better fit than any verified-tick could
+ever be.
+
+So: **a colophon, at the foot, never a badge anywhere.** Drafted into
+the bench render as a small letterpress mark plus one line.
+
+**THE ROTATING LINE — deterministic, per rule 22.** The keeper asked
+for the small-blessings treatment: a rotating line that shows it is us.
+The mechanism has to be the house's existing one, not novelty —
+`fortunes.ts` is "one fortune per calendar day, same for every buyer
+that day, a chalkboard, not a slot machine." Applied here that means
+**the line is derived from the observation's own id**, so:
+
+- the same observation always carries the same line, forever;
+- the line is reproducible offline like everything else on the card;
+- nothing on the card is random, which matters on an artifact whose
+  entire claim is that it can be re-derived by a stranger.
+
+**One constraint the drafts must respect, and it is easy to miss:**
+the line is about US and our work, never about the FINDING. A wry line
+about the subject undercuts the caveats standing beside it and turns
+the card casual about a decision that is not. Lines that pass point at
+our limits; lines that fail comment on the endpoint.
+
+⚑ DRAFT COPY, NOT CANON — rule 7, the wording is the keeper's:
+
+> "We wrote down what we did not do, too."
+> "One probe, one moment, and a shop that sells things."
+> "This reading expires. That is not a defect."
+> "Nothing here was decided. Something here was seen."
+> "The keeper looked once. Once is what once means."
+> "If it matters, run the file yourself. It is the same file."
+
+**OPEN for the keeper:** does the colophon carry the line at all, or
+only the mark? A card that is doing rule 43's work with four unclimbed
+rungs may not want charm in the same frame — or the charm may be
+exactly what stops it reading as a machine's verdict. That is taste,
+and taste is his.
+
 ### 8.5 The one test that still gates everything
 
 Unchanged by the ruling, and it comes before the P8 shape decision
