@@ -1,3 +1,4 @@
+import { readObserverStatus } from "@/lib/observer-control";
 import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
 import { signerKidsFromChallenge } from "@/services/watch-evidence";
@@ -183,6 +184,16 @@ export interface WardHostResult {
    * doors — no response, no battery, no citation.
    */
   battery?: string;
+  /**
+   * 3.4/B6, the census's copy of the watch's law: whose failure an
+   * unreachable verdict was. "ok" = the control beacon answered in
+   * the same tick, so the outage is the subject's, confirmed.
+   * "degraded" = our vantage was blind; consumers must not count
+   * this row against the host or as coverage. "unchecked" = no
+   * beacon provisioned. Present only on unreachable rows — an
+   * answered door proved the vantage by answering.
+   */
+  observer_status?: "ok" | "degraded" | "unchecked";
   volume_claim?: WardVolumeClaim;
   /**
    * What the door's own 402 OFFERED, read from the header the probe
@@ -621,7 +632,19 @@ export async function probeHost(
       battery: CENSUS_BATTERY,
     };
   } catch {
-    return { verdict: "unreachable", failed: [], advisories: [] };
+    /*
+     * 3.4/B6: the moment we could not reach them is the moment to ask
+     * whether we could reach anything. Rail reads already refused to
+     * book our RPC trouble as the subject's outage (the advisory
+     * above); the outer catch was the last place our blindness still
+     * billed to somebody else's uptime.
+     */
+    return {
+      verdict: "unreachable",
+      failed: [],
+      advisories: [],
+      observer_status: await readObserverStatus(env),
+    };
   }
 }
 

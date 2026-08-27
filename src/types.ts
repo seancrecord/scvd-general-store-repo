@@ -6,6 +6,13 @@ import type { MakerMark } from "@/store/provenance";
 
 export interface Env {
   ORDERS: KVNamespace;
+  /**
+   * The observer control beacon (3.4/B6): a stable, off-store URL the
+   * probes read when a target fails, to tell our outage from theirs.
+   * Optional — unprovisioned, failed probes book as the subject's
+   * with observer_status "unchecked".
+   */
+  CONTROL_BEACON_URL?: string;
   GUESTBOOK: KVNamespace;
   COUNTERS: KVNamespace;
   PATRONS: KVNamespace;
