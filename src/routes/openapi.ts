@@ -624,7 +624,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       // the contract's description travels into other people's
       // catalogs, so it carries the entity and both differentiators.
       description:
-        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base eip155:8453, Polygon eip155:137, or Solana). ${DELIVERY_ORDER} The store never asks a visitor to run code or share credentials, these public endpoints are the whole relationship.`,
+        `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} Free shelves are plain HTTPS; purchases are x402 v2 (USDC on Base eip155:8453, Polygon eip155:137, or Solana). ${DELIVERY_ORDER} Nothing from this store can act without your decision, and it never asks for credentials, keys, or wallet secrets.`,
       // x402scan verifies ownership from this and nothing else; a
       // store that asks to be checked has to be reachable.
       contact: { url: base, email: STORE_CONTACT_EMAIL },

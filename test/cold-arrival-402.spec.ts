@@ -46,11 +46,13 @@ describe("the 402 stands alone for an agent that read nothing else", () => {
   it("states the promise in the terms a scam would not volunteer", async () => {
     const body = await challenge();
     const rule = String(body["house_rule"]).toLowerCase();
-    expect(rule).toContain("never asks you to run code");
+    // The property form, since the 2026-08-27 swap (rule 17): the
+    // promise is about what our surfaces CAN DO, not their mechanism.
+    expect(rule).toContain("act without your decision");
     expect(rule).toContain("credentials");
     // The part that makes it useful rather than decorative: it tells
     // the reader what to do about an impostor.
-    expect(rule).toContain("it is not us");
+    expect(rule).toContain("is not us");
   });
 
   /**
@@ -82,28 +84,37 @@ describe("the promise appears wherever a stranger might first land", () => {
    * pinned one wording would force five documents into one voice to
    * satisfy a checker, which is the wrong trade.
    */
-  // Deliberately permissive on the subject clause. The five surfaces
-  // say "never asks you", "never asks a visitor", "never asks a
-  // visiting agent" — same commitment, five registers, and the first
-  // cut of this regex was strict enough to fail /openapi.json for
-  // saying "a visitor" instead of "a visiting agent". Pinning voice
-  // was never the point.
-  const PROMISE = /never asks?[^.]{0,40}to run code/i;
+  // Deliberately permissive on the subject clause — the surfaces keep
+  // their own registers ("we never ask", "it never asks", "never asks
+  // for") and pinning voice was never the point. Since the 2026-08-27
+  // swap (rule 17, executed with the first rendered surface) the
+  // promise has two halves and both are asserted: the property (our
+  // surfaces cannot act without a decision) and the absolute (never
+  // credentials, keys, or wallet secrets).
+  // \s+ because the plain-text surfaces hard-wrap mid-sentence.
+  const PROMISE_PROPERTY = /act\s+without\s+[^.]{0,30}decision/i;
+  const PROMISE_ABSOLUTE = /never asks?[^.]{0,60}credentials/i;
 
   it.each(["/skill.md", "/llms.txt", "/agents.md", "/openapi.json"])(
     "%s carries the promise in its own words",
     async (path) => {
     const body = await (await SELF.fetch(`${BASE}${path}`)).text();
     expect(
-      PROMISE.test(body),
-      `${path} no longer promises the store will not ask for code or credentials`,
+      PROMISE_PROPERTY.test(body),
+      `${path} no longer promises that nothing of ours can act without a decision`,
+    ).toBe(true);
+    expect(
+      PROMISE_ABSOLUTE.test(body),
+      `${path} no longer promises the store will not ask for credentials`,
     ).toBe(true);
     },
   );
 
   it("and now the 402 does too, which was the gap", async () => {
     const body = await challenge();
-    expect(PROMISE.test(String(body["house_rule"]))).toBe(true);
+    const rule = String(body["house_rule"]);
+    expect(PROMISE_PROPERTY.test(rule)).toBe(true);
+    expect(PROMISE_ABSOLUTE.test(rule)).toBe(true);
   });
 });
 

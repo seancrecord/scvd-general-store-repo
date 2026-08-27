@@ -40,8 +40,10 @@ describe("/skill.md (agentskills.io format)", () => {
     expect(text).toContain("/api/guestbook");
     expect(text).toContain("/api/bell");
     expect(text).toContain("sticker");
-    // The explicit safety statement.
-    expect(text).toContain("never ask you to run code");
+    // The explicit safety statement, property form since 2026-08-27.
+    // The document hard-wraps mid-sentence, so the pin stops at the
+    // wrap point; the full-sentence pin lives in cold-arrival-402.
+    expect(text).toContain("act without your");
     expect(text).toContain("credentials");
   });
 });

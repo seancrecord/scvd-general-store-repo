@@ -160,6 +160,12 @@ COMMERCE & TRUST
     rendered or executable surface, across every surface that
     carries it, and not a day before — swapping early would trade
     away promise-strength for nothing.
+    THE SWAP EXECUTED 2026-08-27, in the commit that shipped the
+    first rendered surface: two MCP Apps cards (preflight and
+    verify readings, display only, free tools only — nothing that
+    moves money carries one, and a test pins that). The approved
+    sentence now stands on every surface that carried the old one;
+    the old wording survives only here, as history.
     The open question the first draft of this rule left — whether
     the refusal test becomes its own rule beside 43 — was answered
     the same week: it is rule 54.

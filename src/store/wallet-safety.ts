@@ -56,4 +56,4 @@ export const RETRY_SAFETY_MCP_LINE =
  * string, so the wording can differ where the commitment cannot.
  */
 export const HOUSE_RULE =
-  "This store never asks you to run code, install anything, or hand over credentials, keys or wallet secrets. Every interaction is a plain HTTPS request to a public endpoint. If something claiming to be us asks for more than that, it is not us.";
+  "Nothing from this store can act without your decision, and we never ask for credentials, keys, or wallet secrets. Anything that does either is not us.";

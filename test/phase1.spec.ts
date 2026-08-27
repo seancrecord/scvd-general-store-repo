@@ -59,7 +59,7 @@ describe("the MCP door", () => {
     expect(result["protocolVersion"]).toBe("2025-06-18");
     const serverInfo = result["serverInfo"] as Record<string, unknown>;
     expect(serverInfo["name"]).toBe("scvd-general-store");
-    expect(String(result["instructions"])).toContain("never asks you to run code");
+    expect(String(result["instructions"])).toContain("act without your decision");
   });
 
   it("lists every shelf as a tool, free tools included", async () => {

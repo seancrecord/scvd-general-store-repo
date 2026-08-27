@@ -31,8 +31,9 @@ herd), priced from fractions of a cent; the live shelf is /menu.json. Every purc
 certificate, verifiable free forever. Four doors: HTTP + x402,
 Bazaar-discoverable resources, an MCP server with in-band payment,
 and a ClawHub skill. The store settles before it mints, publishes an
-OpenAPI 3.1 contract, and never asks an agent to run code or share
-credentials.
+OpenAPI 3.1 contract, and nothing it hands an agent can act without
+the agent's decision; it never asks for credentials, keys, or wallet
+secrets.
 
 **Links:** https://scvd.store · https://scvd.store/llms.txt ·
 https://scvd.store/mcp · https://scvd.store/openapi.json

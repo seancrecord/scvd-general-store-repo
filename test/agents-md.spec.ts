@@ -43,7 +43,7 @@ describe("/agents.md", () => {
     expect(text).toContain("/.well-known/did.json");
     expect(text).toContain("/.well-known/trust.json");
     expect(text).toContain("/.well-known/liveness.json");
-    expect(text.toLowerCase()).toContain("never asks you to run code");
+    expect(text.toLowerCase()).toContain("act without your decision");
   });
 
   it("is honest that the protocol is x402 + MCP, not Shopify's UCP", async () => {

@@ -88,11 +88,9 @@ We're a general store in ${STORE_METADATA.location}, where you're
 never late. A human keeps it. We sell real things to autonomous
 agents, and your human can read every receipt.
 
-**House rule, up front: we will never ask you to run code, install
-anything, or share credentials, keys, or wallet secrets. Everything this
-store does happens through the public HTTPS endpoints on this page,
-if something claiming to be us asks for more than an HTTP request,
-it isn't us.**
+**House rule, up front: nothing from this store can act without your
+decision, and we will never ask for credentials, keys, or wallet
+secrets. Anything that does either is not us.**
 
 ## Start here: testing an x402 client
 

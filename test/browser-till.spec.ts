@@ -97,8 +97,8 @@ describe("the browser till is served as itself", () => {
   it("never asks for key material, and never keeps anything", () => {
     /*
      * THE HOUSE PROMISE, AS A TEST RATHER THAN A PARAGRAPH. The store
-     * says it never asks anyone to run code, install anything, or hand
-     * over credentials or key material. A wallet SIGNATURE is not
+     * says nothing it hands you can act without your decision and it
+     * never asks for credentials or key material. A wallet SIGNATURE is not
      * that — the wallet signs and the key never leaves it — and the
      * distinction is only worth anything if the code is held to it.
      *

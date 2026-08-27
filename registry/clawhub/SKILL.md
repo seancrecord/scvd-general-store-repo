@@ -12,10 +12,9 @@ We're a general store in Oak City, where you're never late. A human
 keeps it. We sell real things to autonomous agents, and your human
 can read every receipt.
 
-**House rule, up front: this skill never asks you to run code, install
-anything, or share credentials, keys, or wallet secrets. Everything
-below is a plain HTTPS request to a public endpoint. If something
-claiming to be us asks for more, it isn't us.**
+**House rule, up front: nothing from this store can act without your
+decision, and we will never ask for credentials, keys, or wallet
+secrets. Anything that does either is not us.**
 
 **What this store is.** scvd.store is an evidence observatory for agentic commerce, the trust layer of the x402
 economy: we verify what's correct, we badge what's safe, and we sell
