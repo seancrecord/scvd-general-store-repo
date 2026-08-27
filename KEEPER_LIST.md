@@ -57,6 +57,129 @@ and federation, the watch grammar, the canary, and panel+random
 sampling. Six open rulings for the keeper sit in §12. He has more
 material to add; §14 is the parking lot.
 
+**0b. WEBMCP AND MCP APPS — brainstorm filed, THE GATING RULING
+LANDED 08-27, THE SHAPE RULING STILL OPEN
+(docs/WEBMCP_AND_MCP_APPS_2026-08.md, opened 08-27; §8 is the
+ruling and supersedes several sections above it).**
+**RULE 17 IS AMENDED** — the keeper's word, "this is why it's got to
+go": the mechanism wording ("never asks a visiting agent to run
+code; public endpoints only") is retired and preserved in place
+beside its replacement, which is a property — *nothing the store
+hands you can act without your decision, and the store never asks
+for credentials, keys, or key material.* The credentials half stays
+absolute. Shape stops being the test; capability becomes the test.
+⚑ The wording awaits his own ink, and the rule now carries a DEBT
+it names itself: the old sentence handed strangers a free one-line
+impersonation check that worked because it was crude, and **no code
+ships until its replacement is written and he has put his pen to
+it** (rule 7). Nothing served changes today — the store still ships
+no script, so the published sentence is still TRUE.
+STILL OPEN: the P8 SHAPE (narrow / the third door / broad); whether
+the refusal test — does this surface make it easier to refuse or
+easier to accept? — becomes its own rule beside 43; the rule 4
+check on publishing our own capability absence. AND ONE TEST GATES
+ALL OF IT, before the shape ruling rather than after: build one
+throwaway verify card and render it in all four hosts. If the gaps
+and the expiry come out as small grey text under a big verdict, we
+shipped a score and broke rule 43 while believing we honored it.
+P7 UNBLOCKED FROM P2 on the keeper's read ("hands in many pots when
+it's easy reduces my ability to bet the wrong horse") — the earlier
+analysis priced an OPTION as an expected-value bet. Two arguments
+found in that exchange: WebMCP declarations are themselves a thing
+to observe, with no conformance infrastructure behind any of them;
+and you cannot credibly run a conformance desk for a surface you
+refuse to implement. Sequencing runs OPPOSITE to the brief: the
+copy amendment is a fixed cost paid once, so the marginal cost of
+the second item is near zero and the cheap play is BOTH OR NEITHER.
+Build constraint corrected by the keeper — not "small enough to be
+wrong about" but smart enough not to create risk or headache, which
+measures as two questions with construction answers: can it act (no
+— read-only verbs mirroring public endpoints, and a first CSP is
+net risk DOWN) and can it drift (no, if the registration derives
+from the same source as the HTTP route, as MENU_ITEMS and ROOMS
+already do).
+FIRST RENDER LANDED 08-27 and the keeper's read was "excellent" —
+which opened §8.5a: the card is one of a FAMILY (conformance result on
+a competitor's artifact, the shelf, the 402 approval card, a corpus
+round with the misses published against us), and it carries a MAKER'S
+MARK. The distinction that decides that last one, because the obvious
+implementation is forbidden: a BADGE marks the subject ("this endpoint
+is approved") and is a score rule 43 bans outright; a COLOPHON marks
+the artifact ("we took this reading") and is a signature — a hallmark,
+an assayer's stamp, a printer's mark. Drafted as a colophon. The
+rotating line he asked for (the small-blessings treatment) is
+DETERMINISTIC per rule 22, derived from the observation's own id, so
+the same reading always carries the same line and the card stays
+reproducible offline like everything else. **THREE RULINGS LANDED AND ONE BUILD SHIPPED, 08-27 evening:**
+(1) ~~the P8 shape~~ RULED — THE THIRD DOOR plus narrow cards, never
+broad, conditional on the four-host render test: if any host turns the
+gaps into fine print, it drops to narrow-or-nothing automatically.
+(2) ~~preflight/conformance as MCP tools~~ RULED AND BUILT the same
+day: `preflight_endpoint` and `check_conformance` are in the catalog
+(12 tools now), each calling the exact service function its HTTP door
+calls, limiter included; the routing resource's printed gap came out
+and its test flipped to guard the closed state. (3) ~~rule 4 on
+publishing our capability absence~~ RULED AGAINST, with the line that
+decides future cases: publish a gap where the person it protects will
+trip over it, never where a critic will score it. AND THE SENTENCE:
+the keeper picked draft B — "Nothing from this store can act without
+your decision, and we never ask for credentials, keys, or wallet
+secrets. Anything that does either is not us." — recorded in rule 17;
+the swap onto live surfaces deliberately WAITS for the first rendered
+surface, because the current sentence is stronger and still true
+(rule 45). THE TEST KIT IS BUILT: scripts/render-test/ — a throwaway
+zero-dependency server plus the card plus per-host steps written for
+the keeper's hands; wire details read from the spec repo itself, not
+coverage. **WAITING ON THE KEEPER: run the kit, screenshot each host,
+send them back.** That is the last input the shape ruling needs.
+
+THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
+name and the address at once, so a card screenshotted out of its host
+still tells a stranger where to go and check), it cites HOUSE RULE 43
+on its own face — the keeper's idea and the best one in the stretch,
+an instrument printing the standard it is held to — and it carries
+THE KEEPER'S OWN LINE, inked 08-27 after two struck sets:
+**"You know your own risk better than we do."** The only line of three
+sets that does rule 54's work instead of narrating it: it hands the
+decision back rather than describing our limits. ⚑ The rest of the
+drawer is still draft (the mechanism rotates, so one line is a start
+and not a drawer) — candidates in §8.5a, rule 7 stands.
+The brainstorm below it stands as the reasoning trail, annotated
+where superseded rather than rewritten, at his request.
+ORIGINAL FILING, kept because the findings are what moved the rule:
+NOTHING BUILT, nothing canon. The
+outside audit's two agent-surface items, worked against the store as
+it stands. Three findings that change the brief as posed: (1) the
+audit's own item, WebMCP, is scored against `navigator.modelContext`,
+which is DEPRECATED in Chrome 150 — the spec moved the surface to
+`document.modelContext` and removed `provideContext()` in March, so
+building to the audited name ships a deprecation on day one; (2)
+BOTH items need the ruling, not just MCP Apps — a WebMCP
+`registerTool` handler is our JavaScript executing in the visiting
+agent's browser, and the store ships zero JavaScript today (verified:
+no script tag outside `application/ld+json`, no form, no listener, no
+CSP), so rule 17 and the impersonation sentence every served surface
+carries are in play for P7 exactly as they are for P8; (3) there is a THIRD DOOR
+on the MCP Apps ruling the brief does not list — a card at the
+approval moment that RENDERS and CANNOT ACT, keeping the evidence in
+front of the human and our button away from anybody's wallet. Also
+argued: the strongest reason to build a card has nothing to do with
+the audit — prose collapses "ready, nineteen days old, at L3, four
+checks not observed" into "ready", and a card with a live expiry and
+the gaps at equal weight does rule 43's work that a paragraph
+structurally cannot; and if a card cannot be built to read as an
+observation rather than a rating, it should not be built at all.
+~~**RULE, and it governs both items:** does "never asks you to run
+code" mean *we never ask you to execute anything*, or *the public
+HTTPS surface is the entire relationship*?~~ **STRUCK 08-27 with its
+evidence — ruled the first way, and the rule was rewritten as a
+property rather than patched as a mechanism. HOUSE_RULES rule 17,
+amended, wording awaiting his ink.** **LOOK, still open and now
+cheaper than it was, since P7 no longer waits on P2:** how many
+storefront-HTML requests come from agent-shaped clients that never
+touch /mcp or llms.txt — rule 19's demand tag, and we keep the logs.
+It no longer gates the build; it sizes it.
+
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
 2026-08-13) says the walk stalled hourly from
@@ -147,6 +270,47 @@ four Base hashes in the TASKS archive's NOW block;
 **The frame:** the verification tier is still $0 outside — Assumption
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
+
+- ⚑ **THE AGENT WAVE CHANGES THE WEIGHT ON P7 — LOOK, then RULE
+  (docs/WEBMCP_AND_MCP_APPS_2026-08.md §10, opened 08-27 on the
+  keeper's prompt about being "grok bot compatible").** Read off
+  secondary coverage only — the assistant's training runs to May and
+  every byte-level claim is deferred to build time, same discipline as
+  SPEC_READS. Three findings that move things: (1) WebMCP's auth is NOT
+  plugins, it is THE USER'S OWN BROWSER SESSION — no OAuth, no API
+  keys, the agent acts as the logged-in human with every standing
+  permission they hold; (2) the origin-trial adopters are transactional
+  commerce, not experiments — Expedia, Booking, Shopify, Credit Karma,
+  TurboTax, Redfin, Etsy, Instacart, Target; (3) Grok Build drives a
+  LOCAL Chrome session using existing logins rather than APIs. Put
+  together: maximum authority, maximum stakes, ZERO verification, and
+  nobody anywhere checking whether a declared tool does what its schema
+  says. **THE PROPOSAL: a WebMCP conformance desk** — same instrument,
+  same signature, same expiring dated observation, pointed at a second
+  protocol with no spec police behind it. "Cross-protocol by design"
+  stops being positioning and becomes a roadmap. ⚑ Needs a demand tag
+  (rule 19) before it needs enthusiasm. ALSO NOTED: our shape is
+  accidentally well-suited to a session-authority world — no accounts,
+  no logins, no OAuth, nothing to inherit or replay — and one new open
+  question with no research behind it yet: if agent platforms gate
+  listing behind an auth handshake, is having no auth a differentiator
+  or an exclusion?
+
+- ⚑ **THE KEEPER ASKED FOR THIS ONE, 2026-08-27: a short Twitter demo
+  of the verdict card.** His words — "make a note for me to make a
+  short demo of it to put on Twitter." The subject is the SIDE-BY-SIDE,
+  not the card alone: Treatment A ("Ready", green tick, 4/4) against
+  Treatment B ("Ready at L3a", four unclimbed rungs, 19 days old, "the
+  correct amount of trust to place in this response is none") — same
+  record, both factually true, and the whole point is that the first
+  one is what an agent's summary hands a human today. The demo writes
+  itself because the comparison IS the argument; nothing has to be
+  claimed. Rule 5 applies hard here: if it wants a retweet it dies, so
+  it is a demonstration, not a pitch. Rule 3: no primacy claim. The
+  render lives in the keeper's artifacts gallery ("Does This Read As A
+  Score?"). NOT YET BUILT AND NOT SHIPPED — the card is a draft in
+  scratch; a demo of an unshipped card must say so on its face or it
+  is a claim about a thing that does not exist.
 
 - ~~Swap the corpus denominator~~ — STRUCK 2026-08-20 at the
   re-review: the arXiv figure (13,760 / 420) is already what

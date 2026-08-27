@@ -4,6 +4,7 @@ import { renderMenuMarkdown } from "@/services/menu-markdown";
 import { buildFreshSet } from "@/services/fresh-set";
 import { MENU_ITEMS } from "@/store";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
+import { whenToBuyMarkdown } from "@/lib/when-to-buy";
 import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
 import type { Env } from "@/types";
 
@@ -88,6 +89,27 @@ function definitions(): ResourceDefinition[] {
         `The named battery every free preflight and every paid audit runs against an x402 endpoint, version ${AUDIT_CRITERIA_VERSION} — each check, what it means, and what a failure does and does not prove. Published so a verdict can be re-derived by anyone rather than taken on trust.`,
       mimeType: "text/markdown",
       read: (_env, base) => criteriaMarkdown(base),
+    },
+    {
+      /*
+       * THE ROUTING SURFACE (2026-08-27). Every resource above says
+       * what the store is, how to pay it, what is on the shelf or
+       * what a check measures. None of them answers the question a
+       * model holds at the instant it picks a tool — *I am in this
+       * situation, which of your things do I want* — and that is
+       * where selection actually fails, silently, because a model
+       * that cannot route guesses or leaves rather than asking.
+       *
+       * Derived from MENU_ITEMS and SHELF_CLUSTERS at read, so a
+       * route can never name an item the shelf no longer carries.
+       */
+      uri: `${SCHEME}://when`,
+      name: "which_instrument",
+      title: "Which instrument for which job",
+      description:
+        "A routing table from a caller's situation to the thing that answers it: about to pay an unknown door, handed a signed offer you cannot place, needing a settlement corroborated, needing to catch a door that breaks midweek, needing memory that outlives your context. Leads with the free instrument wherever one answers the job, names what this store declines to do at all, and prints its own gaps — including the two free instruments that are not reachable as MCP tools.",
+      mimeType: "text/markdown",
+      read: (_env, base) => whenToBuyMarkdown(base),
     },
     {
       uri: `${SCHEME}://fresh-set`,

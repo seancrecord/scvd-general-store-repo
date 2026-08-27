@@ -103,8 +103,66 @@ COMMERCE & TRUST
     on commission; the store never helps an agent impersonate a human
     to a system built to detect agents. No captcha resolution, no
     detection evasion, in any wrapper.
-17. The store never asks a visiting agent to run code or share
-    credentials. Public endpoints only. skill.md states this.
+17. NOTHING THE STORE HANDS YOU CAN ACT WITHOUT YOUR DECISION, AND
+    THE STORE NEVER ASKS FOR CREDENTIALS, KEYS, OR KEY MATERIAL.
+    (AMENDED 2026-08-27, the keeper's ruling — "it's got to go" —
+    from the WebMCP/MCP Apps brainstorm,
+    docs/WEBMCP_AND_MCP_APPS_2026-08.md.)
+    THE OLD WORDING, kept here because a rule that quietly changed
+    shape is worse than one that never changed: "the store never
+    asks a visiting agent to run code or share credentials. Public
+    endpoints only. skill.md states this."
+    WHY IT WENT. It was never this rule's principle. It was this
+    rule's 2026-07 IMPLEMENTATION, written when arbitrary execution
+    was the only execution there was, and correct for exactly as
+    long as that held. It was also the only rule in this file
+    phrased as a MECHANISM rather than a PROPERTY — rule 9 is
+    "deliver first, settle after", rule 43 is "dated observation,
+    never a score", and neither cares what the transport is — which
+    is precisely why it was the only one that went brittle when the
+    medium changed. A mechanism rule wins today's argument and
+    loses the next one. The agent stack grew a sandboxed middle
+    (an MCP host's reviewed iframe, a browser's own origin
+    sandbox), the old wording had no vocabulary for it, and a rule
+    with no vocabulary for the case in front of it gets ignored or
+    gets obeyed stupidly.
+    WHAT DID NOT CHANGE, and this half is absolute: no credentials,
+    no keys, no key material, no wallet secrets, ever, by any
+    mechanism, in any medium, for any reason. That half was never
+    an implementation detail and no ruling reopens it.
+    WHAT CHANGED: a rendered or executable surface is no longer
+    forbidden by its SHAPE. It is judged by this rule's property
+    instead — can the thing we handed you take an action you did
+    not decide to take? If yes it does not ship, whatever the
+    sandbox promises. The keeper's framing, 2026-08-27, and the
+    better sentence: let the chickens fly the coop, but never hand
+    them the thing that hurts them if we can help it.
+    THE VISITOR'S TEST IS A DEBT THIS RULE NOW OWES. The old
+    wording gave strangers a one-line impersonation check for free
+    — "if something asks for more than that, it is not us" — and it
+    worked BECAUSE it was crude. Nothing served changes today: the
+    store still ships no script, so the published sentence is still
+    TRUE and stays exactly as written. But no code ships under this
+    rule before its replacement sentence is written and the keeper
+    has put his pen to it. Rule 7: the wording is his, and this one
+    is load-bearing security copy, not decoration.
+    THE REPLACEMENT SENTENCE IS APPROVED (2026-08-27, the keeper's
+    pick from three drafts — "I like option B"), and the debt above
+    is that far discharged: "NOTHING FROM THIS STORE CAN ACT WITHOUT
+    YOUR DECISION, AND WE NEVER ASK FOR CREDENTIALS, KEYS, OR WALLET
+    SECRETS. ANYTHING THAT DOES EITHER IS NOT US."
+    THE SWAP WAITS ON THE FACTS, NOT ON MORE APPROVAL. The published
+    sentence — "every interaction is a plain HTTPS request to a
+    public endpoint" — is still TRUE and is the STRONGER promise
+    while it holds; free read-only MCP tools are plain HTTPS and do
+    not dent it. Rule 45: words follow facts. The approved sentence
+    replaces it in the SAME COMMIT that ships the store's first
+    rendered or executable surface, across every surface that
+    carries it, and not a day before — swapping early would trade
+    away promise-strength for nothing.
+    The open question the first draft of this rule left — whether
+    the refusal test becomes its own rule beside 43 — was answered
+    the same week: it is rule 54.
 18. Deliverables containing third-party text are labeled untrusted
     data; the store's own metadata contains zero imperative
     instructions aimed at reading agents.
@@ -504,6 +562,75 @@ LORE & TRADITION
     signs and returns a signature; the key never leaves it. That
     is bit-for-bit what every agent buying here already does. If
     it were a violation, the entire product would be one.
+
+54. EVERY SURFACE WE RENDER MUST MAKE REFUSAL EASIER THAN
+    ACCEPTANCE. (2026-08-27, from the MCP Apps card work in
+    docs/WEBMCP_AND_MCP_APPS_2026-08.md §4.6 and §8.5a. The keeper
+    asked for the house rule on the card itself; this is the rule
+    it cites.)
+
+    Rule 43 says what a verdict IS — dated observation, never a
+    score. This says what a verdict must DO once it is drawn. The
+    two are the same conviction at different distances: 43 governs
+    the record, 54 governs every rendering of it, because a record
+    can be impeccable and its picture still argue for a yes.
+
+    THE TEST IS ONE QUESTION, ASKED OF THE FINISHED PICTURE, NOT OF
+    THE DATA BEHIND IT: does this make it easier to refuse, or
+    easier to accept? A verdict card whose expiry, unclimbed rungs
+    and not-observed fields carry the same visual weight as the
+    finding makes refusal easy, and ships. The same fields shrunk to
+    grey footnotes under a large green word make acceptance easy,
+    and do not — even though every byte is identical and nothing on
+    it is false. Colour that decides before a word is read is the
+    commonest way to fail this, and the cheapest to catch.
+
+    WHY THE PICTURE NEEDS ITS OWN RULE. Refusability is the property
+    summarisation destroys first. Prose flattens "ready, at L3a, on
+    one probe, nineteen days ago, four rungs never climbed" into
+    "ready", and no amount of care in the JSON survives that hop. A
+    rendering is the one channel that reaches a human without
+    passing through something that paraphrases — which is exactly
+    why it must not do the flattening itself.
+
+    THE COROLLARY, ON IDENTITY: WE MARK OUR OWN WORK, NEVER THE
+    SUBJECT'S. A BADGE marks the subject — "this endpoint is
+    approved" — and is the score rule 43 already bans, whatever it
+    is called. A COLOPHON marks the artifact — "we took this
+    reading, on this date, under this battery" — and is a signature.
+    They look alike and they are opposite objects. The store's own
+    world already has the right word for the second one several
+    times over: a hallmark on silver, an assayer's stamp, a
+    printer's colophon, a surveyor's benchmark — every one names who
+    did the work and when, and not one says how good the thing is.
+    So: a colophon at the foot, and no badge anywhere.
+
+    THE COLOPHON MAY CARRY A LINE, AND THE LINE IS DETERMINISTIC.
+    Rule 22's mechanism, not a new one: a chalkboard, not a slot
+    machine. The line is derived from the observation's own id, so
+    the same reading carries the same line forever and the card
+    stays reproducible offline like everything else on it. Nothing
+    on an artifact whose whole claim is that a stranger can
+    re-derive it may be random.
+
+    WHAT THE LINE MAY NOT DO, corrected 2026-08-27 the same day it
+    was written, because the first draft of this clause produced a
+    bad line and that is the fastest way to learn a constraint is
+    wrong. The clause said the line must be "about us and our
+    limits" — which corners every draft into congratulating the
+    store on its own honesty, and out came "we wrote down what we
+    did not do, too." Smug, and it explains the card's own mechanic,
+    which is rule 2. The real constraint is narrower and frees the
+    writing rather than trapping it: THE LINE NEVER COMMENTS ON THE
+    SUBJECT'S QUALITY. Anything else is open — the reader's day, the
+    nature of a dated reading, the weather of working in this
+    market. It is a fortune, in the drawer's voice (fortunes.ts,
+    blessings.ts), and a fortune addresses the person holding it.
+
+    NOTHING RENDERED IS EXEMPT because it is small, internal, or a
+    demo. A screenshot of a card is a card.
+
+    ⚑ Wording of this rule awaits the keeper's own ink.
 
 
 =====================================================================

@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify Reading</title>
+<style>
+  /*
+   * THE THROWAWAY VERIFY CARD — Treatment B from the bench, cut down
+   * to the card alone. System font stacks on purpose: MCP Apps hosts
+   * render this in a deny-by-default-CSP iframe, so a webfont link
+   * would silently fall back anyway; better to design for the fonts
+   * the test will actually get.
+   */
+  :root {
+    --ground: #eff2f1; --surface: #fafbfb; --surface-sunk: #e7ecea;
+    --ink: #141d1c; --ink-muted: #596967; --ink-faint: #869593;
+    --rule: #cfd8d6; --rule-strong: #a9b7b4;
+    --structure: #1d4e5a; --attention: #95452b; --ok-flat: #3f5c4e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #101617; --surface: #171f20; --surface-sunk: #0c1213;
+      --ink: #e2e9e7; --ink-muted: #93a29f; --ink-faint: #6d7c7a;
+      --rule: #2a3435; --rule-strong: #3d4a4b;
+      --structure: #79b8c6; --attention: #d5876a; --ok-flat: #8fb3a1;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0; padding: 8px; background: var(--ground); color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .card {
+    max-width: 560px; margin: 0 auto; background: var(--surface);
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+  }
+  .head { padding: 18px 22px 16px; border-bottom: 1px solid var(--rule); }
+  .kicker {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .verdict {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: 25px; font-weight: 600; letter-spacing: -.01em;
+    margin-top: 8px; line-height: 1.15;
+  }
+  .verdict .qual { font-family: inherit; display: block; font-size: 14px; font-weight: 400; color: var(--ink-muted); font-style: italic; margin-top: 2px; }
+  .age {
+    margin-top: 8px; display: flex; gap: 8px 14px; flex-wrap: wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px; color: var(--ink-muted); font-variant-numeric: tabular-nums;
+  }
+  .age b { color: var(--attention); font-weight: 500; }
+  .block { padding: 15px 22px; border-bottom: 1px solid var(--rule); }
+  .label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .11em;
+    text-transform: uppercase; color: var(--structure); margin-bottom: 9px;
+  }
+  .ladder { margin: 0; padding: 0; list-style: none; }
+  .rung {
+    display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 4px 12px;
+    align-items: baseline; padding: 6px 0; border-bottom: 1px dotted var(--rule);
+    font-size: 13px;
+  }
+  .rung:last-child { border-bottom: 0; }
+  .rid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; font-weight: 600; }
+  .climbed .rid { color: var(--ok-flat); }
+  .unclimbed .rid { color: var(--ink-faint); }
+  .unclimbed .rtext { color: var(--ink-muted); }
+  .rtext { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; min-width: 0; }
+  .nc {
+    display: inline-block; padding: 1px 7px; border: 1px dashed var(--rule-strong);
+    border-radius: 3px; font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-faint); white-space: nowrap;
+    background: repeating-linear-gradient(135deg, transparent, transparent 4px, var(--surface-sunk) 4px, var(--surface-sunk) 8px);
+  }
+  .cannot { margin: 0; padding: 0; list-style: none; }
+  .cannot li { font-size: 13px; line-height: 1.5; padding: 3px 0 3px 16px; position: relative; }
+  .cannot li::before { content: "—"; position: absolute; left: 0; color: var(--attention); }
+  .conflict { margin: 0; font-size: 13px; line-height: 1.5; }
+  .conflict b { color: var(--attention); }
+  .foot {
+    padding: 12px 22px; background: var(--surface-sunk);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; line-height: 1.55; color: var(--ink-muted);
+  }
+  .colophon {
+    padding: 13px 22px 16px; border-top: 1px solid var(--rule);
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .mark {
+    flex: none; border: 1px solid var(--rule-strong); border-radius: 2px;
+    padding: 6px 10px 5px; font-family: ui-monospace, Menlo, monospace;
+    font-size: 9px; font-weight: 600; letter-spacing: .18em; text-indent: .18em;
+    line-height: 1.45; text-align: center; color: var(--ink-muted);
+    text-transform: uppercase;
+  }
+  .mark span { display: block; font-weight: 400; }
+  .cline {
+    min-width: 0; flex: 1 1 180px; margin: 0;
+    font-family: ui-serif, Georgia, serif; font-style: italic;
+    font-size: 12.5px; line-height: 1.45; color: var(--ink-muted);
+  }
+  .cline b {
+    display: block; font-family: ui-monospace, Menlo, monospace;
+    font-style: normal; font-weight: 500; font-size: 9px;
+    letter-spacing: .09em; text-transform: uppercase;
+    color: var(--structure); margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+  <article class="card">
+    <div class="head">
+      <div class="kicker"><span>preflight v1</span><span>api.example-issuer.com</span></div>
+      <div class="verdict">Ready at L3a
+        <span class="qual">— the challenge is well-formed. That is the whole claim.</span>
+      </div>
+      <div class="age">
+        <span>observed 2026-08-08</span><span><b>19 days ago</b></span>
+        <span>one probe, one moment</span><span>expires in 11 days</span>
+      </div>
+    </div>
+    <div class="block">
+      <div class="label">The ladder — what was climbed</div>
+      <ul class="ladder">
+        <li class="rung climbed"><span class="rid">L1</span><span class="rtext">HTTP answered</span></li>
+        <li class="rung climbed"><span class="rid">L2</span><span class="rtext">402 with a parseable PAYMENT-REQUIRED header</span></li>
+        <li class="rung climbed"><span class="rid">L3a</span><span class="rtext">Challenge well-formed — version and accepts</span></li>
+        <li class="rung unclimbed"><span class="rid">L3b</span><span class="rtext">Internal consistency <span class="nc">not climbed</span></span></li>
+        <li class="rung unclimbed"><span class="rid">L3c</span><span class="rtext">Authenticity of the signed offers <span class="nc">not climbed</span></span></li>
+        <li class="rung unclimbed"><span class="rid">L3d</span><span class="rtext">Cross-probe consistency <span class="nc">not climbed</span></span></li>
+        <li class="rung unclimbed"><span class="rid">L4&#8211;L6</span><span class="rtext">Purchasable through delivery <span class="nc">not climbed</span></span></li>
+      </ul>
+    </div>
+    <div class="block">
+      <div class="label">What this cannot tell you</div>
+      <ul class="cannot">
+        <li>Whether the service behind the 402 delivers anything after payment. No probe can.</li>
+        <li>Whether the endpoint stays up. This was one request at one moment.</li>
+        <li>Whether the signed offers verify — this probe makes no second request.</li>
+      </ul>
+    </div>
+    <div class="block">
+      <div class="label">Our conflict of interest</div>
+      <p class="conflict">We compete with some of the issuers you might send us. The method is
+        MIT-licensed and identical to the file this endpoint runs, so
+        <b>the correct amount of trust to place in this response is none</b> — reproduce a verdict
+        that matters offline.</p>
+    </div>
+    <div class="foot">Reproduce offline: /verifier — same code, no network needed. If the endpoint
+      and that file ever disagree, the file is right.</div>
+    <div class="colophon">
+      <div class="mark">SCVD<span>Store</span></div>
+      <p class="cline">"You know your own risk better than we do."
+        <b>House rule 43 — dated observation, never a score</b></p>
+    </div>
+  </article>
+</body>
+</html>
