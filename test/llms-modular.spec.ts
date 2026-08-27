@@ -31,7 +31,8 @@ const BASE = "https://scvd.store";
 /**
  * The document as it stood on 2026-08-27, re-taken the same day in
  * the commits that added the corpus trajectory/diff doors (3.5) and
- * the wallet-facts paragraph (3.6, the G2 ruling) to the guide, with the
+ * the wallet-facts and standing-note paragraphs (3.6, the G2 ruling)
+ * to the guide, with the
  * two per-request dates normalised out.
  *
  * A CONSTANT, AND RULE 46 SAYS DERIVE OR REFUSE — so it is worth
@@ -46,7 +47,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "32886c0d90a779b1668e6faf1135abddf4e961d2efefe1b304f83a136cabce68";
+  "672cda963986f6b7a6286bc6c0bc0a1ed45f833ebde387bcabc252d6494c0f7e";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

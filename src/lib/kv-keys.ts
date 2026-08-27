@@ -355,6 +355,12 @@ export const KV_KEYS = {
   bazaarLedger: (invertedTs: string): string => `bazaar_ext:${invertedTs}`,
   bazaarLedgerPrefix: "bazaar_ext:",
   patronageNote: (month: string): string => `patronage_note:${month}`,
+  /**
+   * A standing note (G2 ruling §5): the subject's own dated statement,
+   * riding beside our observation. Subject is `host:<host>` or
+   * `wallet:<pay-to digest>` — never a verbatim address.
+   */
+  standingNote: (subject: string): string => `standing_note:${subject}`,
   metric: (month: string, kind: string, rest: string): string =>
     `metric:${month}:${kind}:${rest}`,
   metricMonthPrefix: (month: string): string => `metric:${month}:`,

@@ -781,6 +781,15 @@ caveat rides every such fact: custodial and platform wallets make
 unrelated doors share one address, so the inference is yours to make
 and yours to defend.
 
+And the subject gets a voice: ${base}/api/standing-note is the
+self-serve lane for attaching your own dated statement to a door or
+wallet this store has observed. Prove control — an EIP-191 wallet
+signature over a statement-bound challenge, or serve the statement's
+sha256 at your /.well-known/scvd-note.txt — and your words ride
+beside the observation on every surface that shows it. Beside, never
+instead: no note alters an observation, and no observation silences a
+note.
+
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
 carries a reason: no feed named it, a feed named it but we did not

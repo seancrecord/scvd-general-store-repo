@@ -56,6 +56,13 @@ export interface HostWalletFact {
   not_captured_reason?: string;
   also_receives_at_other_doors?: number;
   shared_wallet_caveat: string;
+  /**
+   * The wallet-holder's own standing note (G2 ruling §5), attached by
+   * proof of control, riding beside this fact on every door that
+   * advertises the address. Populated by the serving layer, never
+   * derived from the chain.
+   */
+  standing_note?: import("@/services/standing-note").StandingNote;
 }
 
 async function digestsOf(host: WardHostResult): Promise<string[]> {

@@ -1263,6 +1263,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "One point per signed weekly snapshot, every count derived at read from the snapshot's own rows: listed/probed denominators, verdict counts with observer-degraded ticks separated from anyone's outage, offers seen, doors per rail, failure classes. No ratios anywhere — counts travel with their denominators. Each point names the digest it derives from. Free.",
         ),
       },
+      "/api/standing-note": {
+        get: freeOp(
+          "The standing-note lane, explained",
+          "How to attach your own dated statement to a subject this store has observed — your door, or a wallet your doors advertise. Self-serve and evidence-gated: prove control (EIP-191 wallet signature, or serve the statement's sha256 at /.well-known/scvd-note.txt) and the note rides beside the observation on every surface that shows it, never replacing it. Free.",
+        ),
+        post: postOp(
+          "Attach a standing note",
+          "Prove control, attach your statement. Host lane: serve sha256(statement) at your /.well-known/scvd-note.txt first. Wallet lane: EIP-191 personal_sign over the statement-bound challenge the GET shows. A subject no signed round has observed is refused — a note rides an observation. One note per subject, newest wins.",
+          "subject ('host'|'wallet'), statement (<=500 chars), then host, or address+signature.",
+          {
+            type: "object",
+            required: ["subject", "statement"],
+            properties: {
+              subject: { type: "string", enum: ["host", "wallet"] },
+              statement: { type: "string", maxLength: 500 },
+              host: { type: "string" },
+              address: { type: "string" },
+              signature: { type: "string" },
+            },
+          },
+        ),
+      },
       "/corpus/wallet-facts.json": {
         get: freeOp(
           "Shared receiving addresses, counted",
