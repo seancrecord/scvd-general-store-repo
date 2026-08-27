@@ -1,4 +1,8 @@
 import { listCorpus } from "@/services/corpus";
+import {
+  sharedWalletFactFor,
+  type HostWalletFact,
+} from "@/services/operator-facts";
 import { populationHistory, type PopulationRecord } from "@/services/population";
 import type { WardHostResult } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -121,6 +125,9 @@ export interface VerdictChange {
 export interface SubjectHistory {
   host: string;
   asked_at: string;
+  /** T2 (G2 ruling): this door's own shared-wallet fact. Absent when
+   * the chain never met the host. */
+  payment_address?: HostWalletFact;
   /** The enumeration layer's record. Null if never enumerated. */
   listing: PopulationRecord | null;
   rounds_in_chain: number;
@@ -308,9 +315,20 @@ export async function subjectHistory(
   ).length;
   const gapped = sinceFirst - probed;
 
+  /**
+   * T2 under the G2 ruling (2026-08-27): this door's own wallet fact
+   * — its advertised address also receives at N OTHER doors — on its
+   * own page and nowhere else. No other door is named; the caveat
+   * rides inline; a round that captured no address says NOT_CAPTURED
+   * rather than zero. Absent entirely when the chain never met the
+   * host, because there is no observation to state.
+   */
+  const paymentAddress = await sharedWalletFactFor(records, host);
+
   return {
     host,
     asked_at: now.toISOString(),
+    ...(paymentAddress ? { payment_address: paymentAddress } : {}),
     listing,
     rounds_in_chain: records.length,
     rounds_since_first_sighting: sinceFirst,

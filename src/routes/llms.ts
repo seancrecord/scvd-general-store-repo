@@ -769,6 +769,18 @@ terms (price bounds, rails, schemes) between two signed weeks — the
 cheapest honest agent loop is polling that diff. A week the chain does
 not hold gets a 404 naming the weeks it does.
 
+Wallet facts, under the operator-linking ruling of 2026-08-27: the
+store provides the wallet fact and the receiver makes the call.
+${base}/corpus/wallet-facts.json counts, for the latest signed week,
+how many receiving addresses the probed doors advertised and how many
+receive at more than one door — counts with denominators, no
+addresses, no names, never an operator claim. Each door's own page
+carries its payment_address block: whether its advertised address
+also receives at other doors that week, without naming them. The
+caveat rides every such fact: custodial and platform wallets make
+unrelated doors share one address, so the inference is yours to make
+and yours to defend.
+
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
 carries a reason: no feed named it, a feed named it but we did not

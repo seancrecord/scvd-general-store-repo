@@ -4,6 +4,7 @@ import {
   listCorpus,
   verifyCorpusChain,
 } from "@/services/corpus";
+import { deriveWalletFacts } from "@/services/operator-facts";
 import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import {
@@ -227,6 +228,38 @@ corpusRoutes.get("/corpus/diff.json", async (c) => {
   return c.json({
     ...diff,
     how_to_rederive: `Fetch ${c.env.STORE_BASE_URL}/corpus/${diff.from.sequence}.json and ${c.env.STORE_BASE_URL}/corpus/${diff.to.sequence}.json, compare the rounds' rows yourself, and check the digests against the chain.`,
+  });
+});
+
+/**
+ * GET /corpus/wallet-facts.json — T1 under the G2 ruling (roadmap
+ * 3.6; docs/G2_OPERATOR_LINKING_RULING_2026-08.md).
+ *
+ * COUNTS ONLY, latest signed week: how many receiving addresses the
+ * probed doors advertised, how many receive at more than one door,
+ * and the largest cluster — with denominators, and with the
+ * shared-wallet caveat inline. No address, digest, host name or
+ * operator claim is served here, ever: the store provides the wallet
+ * fact and the receiver makes the call, and this surface is the
+ * proof that a market-structure number can be published without
+ * naming anyone.
+ */
+corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const facts = await deriveWalletFacts(await listCorpus(c.env));
+  if (!facts) {
+    return c.json(
+      {
+        error:
+          "The corpus chain is empty, so there is no signed week to count over. The index is at /corpus.json.",
+      },
+      404,
+    );
+  }
+  return c.json({
+    ...facts,
+    how_to_rederive: `Fetch ${base}/corpus/${facts.sequence}.json, digest each row's advertised payment addresses with the documented salt (rows frozen after 2026-08-27 already carry pay_to_digest), cluster by digest, and recount. The snapshot's digest is named above so you know you counted what we counted.`,
+    per_host: `Each door's own page at ${base}/corpus/host/{host}.json carries its payment_address block: whether its advertised address also receives at other doors that week, without naming them.`,
   });
 });
 
