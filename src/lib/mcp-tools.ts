@@ -721,6 +721,21 @@ function frontCounterTool(base: string): McpTool {
       required: ["item_id"],
       additionalProperties: false,
     },
+    /*
+     * THE ONE TOOL THAT WAS TELLING A MODEL NOTHING ABOUT ITS RETURN
+     * (found 2026-08-27 in the tool-surface audit). Every cluster
+     * tool carried an outputSchema; this one did not, and it is the
+     * tool deliberately placed FIRST among the paid ones precisely
+     * because a weak model scanning tools/list reaches for something
+     * early and plausible. So the tool most likely to be reached for
+     * by the least capable caller was the only one that could not
+     * say what came back — the flattering direction, again.
+     *
+     * Derived from the same builder the clusters use, over the same
+     * eligible set, so the front counter's contract cannot drift from
+     * the shelves' the day an item changes fulfillment.
+     */
+    outputSchema: clusterOutputSchema(items),
     /**
      * AN OVERLAY, NOT A SHELF. The five clusters PARTITION the menu —
      * every item on exactly one, enforced by unshelvedItemIds() and

@@ -931,3 +931,92 @@ A TEST in the keeper's taxonomy, not a build. If refusal survives
 four hosts' CSS, the shape ruling is easy. If it does not, the
 answer is narrow-or-nothing and the argument was never needed.
 
+---
+
+## 9. THE TOOL-SURFACE AUDIT (2026-08-27) — and the routing resource
+
+Opened on the keeper's question: *since it's tied to LLMs, does it make
+sense to AEO the hell out of it — different FAQs and use cases — to make
+it clearer to the LLM and more likely to pull it?*
+
+**The instinct is right and the card is the wrong object.** In MCP Apps
+the model reads the TOOL RESULT and the TOOL DESCRIPTION; the host
+fetches the `ui://` resource separately and renders it for the HUMAN.
+The spec requires a text fallback precisely because those are two
+different paths. By the time a card exists the tool call has already
+happened, so FAQ copy inside the card is invisible to the model that
+decides, visible to the human as clutter, and in direct competition
+with the unclimbed rungs for the attention rule 53 says they must win.
+**Layout attention is zero-sum; a card gets shorter under AEO pressure,
+not longer.**
+
+The AEO surface for "will a model pull this" is, in order: the tool
+`description`, the `initialize` instructions, the input/output schemas,
+and the resources. All of which we own, and most of which were already
+good — `verify_artifact` doing negative-space work ("NOT a conformance
+checker for other x402 services") is worth more than another adjective,
+because it prevents mis-selection. The line worth holding: **the win is
+precision, not persuasion.** A description that gets us pulled for jobs
+we do not serve buys a bad verdict and a story about a store that
+oversold itself.
+
+### 9.1 STANDING — what the audit found
+
+| | Finding |
+|---|---|
+| **⚑ THE HOLE** | **The preflight and the conformance desk — the two FREE instruments the store's own positioning leads with — are not MCP tools.** Both are HTTP endpoints. An agent connected over MCP cannot reach our headline free instrument through the channel it is connected by. `verify_artifact` even steers away from it correctly ("NOT a conformance checker for other x402 services") — toward nothing, because there is no tool to steer to. |
+| **FIXED** | `buy_simple` carried no `outputSchema` — the only tool in the catalog without one, and the tool placed FIRST among the paid ones *precisely because* a weak model reaches for something early and plausible. The tool most likely to be reached for by the least capable caller was the one that could not say what came back. Now derived from the same builder the clusters use. |
+| **WATCH** | `buy_observation`'s description is ~9.7k characters against a whole-catalog payload of ~21k. One tool is nearly half the budget every client pays on every connection, before the model has decided anything. Guarded with a loose tripwire rather than trimmed blind — the shelf is the one thing a platform cannot commoditize and its description earns most of its length. |
+| **FALSE ALARM** | Completion criteria looked absent on the buy tools. They are present, phrased "Completes in one call" rather than "Completes when". The regex was wrong, not the catalog. |
+
+### 9.2 STANDING — `scvd://when`, the routing resource
+
+The five existing resources say what the store IS, HOW to transact,
+WHAT is on the shelf, WHAT a check measures, and WHICH doors worked
+this week. **None answers the question a model holds at the instant it
+picks a tool:** *I am in this situation — which of your things do I
+want?* That is where selection actually fails, and it fails silently,
+because a model that cannot route guesses or leaves rather than asking.
+
+`src/lib/when-to-buy.ts`, served as `scvd://when` /
+`which_instrument`. Fifteen jobs in a caller's words, each pointing at
+the free instrument first where one answers, then at the shelf. Every
+row's item name, price and selling tool is **derived from MENU_ITEMS
+and SHELF_CLUSTERS at render**, so a route can never name something the
+shelf no longer carries; only the job phrasing is editorial, because a
+job is a sentence in a caller's head and no field holds it.
+
+It also carries the store's declined list (rule 23a/23b) in the words a
+caller would search with — escrow, arbitration, dead-man's switches —
+because a model routing a job we refuse wastes a call and learns
+nothing. And it prints the §9.1 hole on its own face rather than
+steering around it: publishing the gap beside the finding is the house
+method, and there is no version of it that exempts our own surface.
+
+**Guards, both directions** (`test/when-to-buy.spec.ts`,
+`test/tool-surface.spec.ts`): nothing routed may be off the shelf, and
+nothing on the shelf may be silently unrouted — a new item gets a job
+or a named exemption and the build says which. Every tool must declare
+an `outputSchema`, annotations and a title. A job-bearing tool must
+clear a 200-character description floor, and **the exemption for the
+two jobless novelties is derived, never an allowlist**: give
+`ring_bell` a job tomorrow and the floor starts applying that same
+commit. The first cut of that floor flunked `ring_bell` and
+`sign_guestbook` and the test was what was wrong — a floor that forces
+padding onto a finished sentence makes both the catalog and the budget
+worse.
+
+**Nothing here touches rule 17's debt.** A markdown resource over plain
+HTTPS is exactly the existing relationship: nothing rendered, nothing
+executed, no capability declared, no `ui://` anywhere near it.
+
+### 9.3 OPEN — the hole is a build, and it is the keeper's call
+
+Making `preflight` and `conformance` MCP tools is the single highest-value
+change on this surface: it is free, read-only, already built and running
+behind two HTTP endpoints, and it is the most common job in agentic
+commerce (*check the door before you pay*). It is also two more tools
+against a rubric the store has deliberately managed down before (27 → 5,
+Glama's tool-count band), so it is a decision rather than a fix. Not
+built.
+
