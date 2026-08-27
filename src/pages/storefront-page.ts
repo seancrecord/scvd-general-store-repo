@@ -46,9 +46,16 @@ export interface StorefrontData {
   weekNote: string;
   bellCount: number;
   guestbook: GuestbookEntry[];
-  /** The only public letter facts: how many in, how many answered. */
-  lettersReceived: number;
-  lettersAnswered: number;
+  /**
+   * Weekly corpus entries on the record, counted from the corpus's
+   * own keys — the growth gauge that replaced the mailbox LED
+   * (2026-08-27, the keeper's call; reasoning on gaugeRecord in the
+   * copy file). `recordTruncated` is rule 52 riding along: the count
+   * comes from a capped key-list, and a capped reading that cannot
+   * say "there were more" publishes a floor as a total.
+   */
+  recordWeeks: number;
+  recordTruncated: boolean;
   patronCount: number;
   /** Live books, for the structured data. Absent rather than stale. */
   stats?: StoreStats | null;
@@ -224,9 +231,14 @@ function jsonLdSafe(value: unknown): string {
  * push): every item the page already shows, as schema.org Products
  * with live prices — derived from MENU_ITEMS at render, so the
  * markup can no more go stale than the shelf can disagree with
- * itself. priceCurrency is "USD" because schema.org wants ISO-4217
- * and the shelf prices in dollar-denominated USDC; the description
- * says USDC plainly, so nothing is hidden by the code.
+ * itself. priceCurrency is "USDC" (settled 2026-08-27, the keeper's
+ * call): the same shelf said "USD" here and "USDC" in makesOffer,
+ * which was two currencies for one price list. The earlier reasoning
+ * — "schema.org wants ISO-4217" — was simply out of date: schema.org's
+ * own priceCurrency documentation accepts cryptocurrency ticker
+ * symbols alongside ISO 4217, its examples being "USD" and "BTC". So
+ * the literal truth costs nothing here, and the store's own comment
+ * one node down had already made the argument.
  *
  * FILLED OUT TO MERCHANT-LISTING SHAPE, 2026-08-18, after Search
  * Console read all 23 products and called every one invalid for a
@@ -269,7 +281,7 @@ function offerShippingDetails(item: (typeof MENU_ITEMS)[number]): object {
   const handlingDays = Math.ceil((item.sla_hours ?? 0) / 24);
   return {
     "@type": "OfferShippingDetails",
-    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USDC" },
     shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
     deliveryTime: {
       "@type": "ShippingDeliveryTime",
@@ -308,7 +320,7 @@ function productListJsonLd(base: string): string {
         offers: {
           "@type": "Offer",
           price: String(item.price_usdc),
-          priceCurrency: "USD",
+          priceCurrency: "USDC",
           /**
            * THE ITEM PAGE, NOT THE BUY DOOR. This read /api/buy/{id}
            * until 2026-08-18, which hands every crawler that honors
@@ -660,8 +672,12 @@ export function renderStorefront(data: StorefrontData): string {
         <span class="nixie">${nixieHtml(data.patronCount)}</span>
       </div>
       <div class="gauge">
-        <span class="gauge-label">${COPY.gaugeMailbox}</span>
-        <span class="led"><em class="led-num">${data.lettersReceived}</em> in <span class="led-sep">\u00B7</span> <em class="led-num">${data.lettersAnswered}</em> answered</span>
+        <span class="gauge-label">${COPY.gaugeRecord}</span>
+        ${
+          data.recordWeeks > 0
+            ? `<span class="led"><em class="led-num">${data.recordWeeks}${data.recordTruncated ? "+" : ""}</em> week${data.recordWeeks === 1 && !data.recordTruncated ? "" : "s"} <span class="led-sep">\u00B7</span> signed, chained, anchored</span>`
+            : `<span class="led">first entry pending</span>`
+        }
       </div>
       <div class="gauge">
         <span class="gauge-label">The first dollar</span>
@@ -688,6 +704,7 @@ export function renderStorefront(data: StorefrontData): string {
       </div>
       <p class="shelf-more">${COPY.shelvesMore}
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
+      <p class="shelf-till"><a class="door-cta" href="/menu">${escapeHtml(COPY.shelvesTillCta)}</a> — ${escapeHtml(COPY.shelvesTillBody)}</p>
     </section>
 
     <section class="what-this-is promise">

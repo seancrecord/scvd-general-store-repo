@@ -102,7 +102,6 @@ const READINGS: readonly { tab: AdminTab; href: string; label: string }[] = [
  * that link, so the carve-out cannot quietly become a dead end.
  */
 const PARTNER: readonly { tab: AdminTab; href: string; label: string }[] = [
-  { tab: "cv", href: "/admin/cv", label: "CV's Corner" },
 ];
 
 export function renderAdminShell(

@@ -12,7 +12,7 @@ import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept"
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
-import { tillShelfHtml } from "@/lib/till-shelf";
+import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
@@ -418,8 +418,10 @@ function renderItemPage(
      */
     inertHtml: tillShelfHtml([item], {
       heading: "Buy it from this browser",
+      // Buyer words first, protocol after — same reasoning as /try's
+      // standfirst (the keeper's first live walk, 2026-08-27).
       standfirst:
-        "Your wallet signs one EIP-3009 authorization; the store verifies it, settles, and answers with the goods and a signed certificate you can check afterwards for free, forever.",
+        "Press the button and three things happen: the store quotes the exact price in USDC, your wallet opens once for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. Have your wallet's network set to Base or Polygon first; if it is not, the till says so and nothing gets signed.",
       verifyHint: `${base}/api/verify/{cert_id}`,
     }),
     bodyHtml: `<section>
@@ -434,6 +436,7 @@ function renderItemPage(
         <h2>The facts</h2>
         ${factsHtml}
         ${item.sample_url ? `<p class="menu-meta">A sample, free: <a href="${escapeHtml(item.sample_url)}"><code>${escapeHtml(item.sample_url)}</code></a></p>` : ""}
+        <p class="menu-meta">${escapeHtml(TILL_WALLET_LIMIT)}</p>
       </section>
       <section>
         <h2>What the 402 says</h2>

@@ -20,6 +20,19 @@ export const PRACTICE_COUNTER_COPY = {
   standfirst:
     `Building something that pays over x402? Practice on us. The till is real, the cheapest thing on the shelf is ${CHEAPEST_ON_THE_SHELF}, and everything you buy signs its own receipt.`,
 
+  /**
+   * THE SIGNPOST FOR THE PERSON WHO ISN'T BUILDING ANYTHING (the
+   * keeper's ask, 2026-08-27: "is /try for humans?"). It mostly
+   * isn't — this room is reference for people writing payment
+   * clients, and the deep jargon below is load-bearing for them. But
+   * the room has a door on the front sign, so the first thing a
+   * wandering human reads should tell them what the room is and that
+   * buying takes none of it. Rendered right under the standfirst; the
+   * route appends the /menu link so this constant stays plain text.
+   */
+  plainWords:
+    "In plain words: this room is for people building software that pays for things on its own. Buying something yourself takes no code — every item's page has a Pay button, one signature, no gas fee. The shelf is at",
+
   whyHead: "Why practice here",
   why: [
     "It's a real store, so it's a real settlement: USDC on Base, Polygon, or Solana, x402 v2, no sandbox, no mock facilitator, no test-mode branch that behaves differently than production.",

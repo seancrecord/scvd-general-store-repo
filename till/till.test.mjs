@@ -8,7 +8,9 @@ import {
   base64FromString,
   buildAuthorization,
   buildTypedData,
+  chainName,
   chooseAccept,
+  declineReason,
   decodeChallenge,
   encodePaymentHeader,
   evmChainId,
@@ -120,6 +122,11 @@ function fakeWallet(overrides = {}) {
     wallet.calls.push(method);
     if (method === "eth_chainId") {
       return wallet.chainId;
+    }
+    if (method === "eth_accounts") {
+      // The no-prompt read the wallet line uses: what is ALREADY
+      // connected, which can be less than what requestAccounts grants.
+      return wallet.connected ?? wallet.accounts;
     }
     if (method === "eth_requestAccounts") {
       if (wallet.accountsError) throw wallet.accountsError;
@@ -275,8 +282,99 @@ test("a Solana-only challenge refuses rather than pretending", () => {
       assert.equal(error.stage, "offer");
       assert.match(error.message, /Nothing was signed/);
       assert.match(error.detail[0].problems.join(" "), /not an EVM chain/);
+      // No EVM offer exists, so "switch your network" would be a lie.
+      assert.doesNotMatch(error.message, /switch/i);
       return true;
     },
+  );
+});
+
+/*
+ * THE FIRST LIVE REFUSAL (the keeper, Rainbow on Ethereum mainnet,
+ * 2026-08-27). The till said "offered on chain 8453, and the wallet is
+ * connected to chain 1" — correct, complete, and unreadable by anyone
+ * whose wallet dropdown says "Ethereum" where the refusal said "1".
+ * These tests pin the repair: when the ONLY thing wrong is the wallet's
+ * network, the refusal names both sides in wallet words and says the
+ * two-tap fix; the per-offer diagnostics survive as detail.
+ */
+test("a wallet on the wrong network is told the fix in wallet words", () => {
+  assert.throws(
+    () =>
+      chooseAccept(
+        {
+          accepts: [
+            baseAccept(),
+            baseAccept({ network: "eip155:137" }),
+            SOLANA_ACCEPT,
+          ],
+        },
+        1,
+      ),
+    (error) => {
+      assert.equal(error.stage, "offer");
+      assert.match(error.message, /connected to Ethereum mainnet/);
+      assert.match(error.message, /sells on Base and Polygon/);
+      assert.match(error.message, /switch its network to Base/);
+      assert.match(error.message, /Nothing was signed and no money moved/);
+      // The full reading still rides along, one entry per skipped offer.
+      assert.equal(error.detail.length, 3);
+      return true;
+    },
+  );
+});
+
+test("switch is only suggested when switching would actually work", () => {
+  // The lone EVM offer is broken beyond its chain (no EIP-712 domain),
+  // so sending the buyer to the network picker would strand them there.
+  assert.throws(
+    () =>
+      chooseAccept(
+        { accepts: [baseAccept({ network: "eip155:137", extra: undefined })] },
+        1,
+      ),
+    (error) => {
+      assert.doesNotMatch(error.message, /switch/i);
+      assert.match(error.message, /Nothing was signed/);
+      return true;
+    },
+  );
+});
+
+test("chains are named as a wallet names them, numbers as a fallback", () => {
+  assert.equal(chainName(1), "Ethereum mainnet");
+  assert.equal(chainName(8453), "Base");
+  assert.equal(chainName(137), "Polygon");
+  assert.equal(chainName(999999), "chain 999999");
+});
+
+/*
+ * THE FIRST LIVE DECLINE, same walk: the store's 402 carried reason
+ * "verify_error" (opaque) and message "self_send_not_allowed" (the
+ * story — the keeper had paid from the store's own receiving wallet).
+ * The old declineReason returned whichever string came first.
+ */
+test("a decline the till understands is said in buyer words, code attached", () => {
+  const reason = declineReason({
+    payment_declined: {
+      reason: "verify_error",
+      message: "self_send_not_allowed",
+    },
+  });
+  assert.match(reason, /will not buy from itself/);
+  assert.match(reason, /\(self_send_not_allowed\)/);
+});
+
+test("an unknown decline code is shown as itself, never guessed at", () => {
+  assert.equal(
+    declineReason({
+      payment_declined: { reason: "verify_error", message: "some_new_code" },
+    }),
+    "verify_error",
+  );
+  assert.match(
+    declineReason({}),
+    /gave no readable reason/,
   );
 });
 
@@ -577,10 +675,14 @@ const SHELF = {
   heading: "Buy one from this browser",
   standfirst: "One signature.",
   house_rule: "This store never asks you to run code.",
+  evm_chains: [8453, 137],
   items: [
     { id: "hello", name: "A Signed Hello", price_usdc: 0.001, buy_path: "/api/buy/hello", requires: [] },
   ],
 };
+
+/** The wallet line refreshes off an async read; let it land. */
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 test("with no wallet present, the page gains nothing at all", () => {
   const doc = fakeDocument();
@@ -624,6 +726,115 @@ test("with a wallet present, exactly one section appears", () => {
   assert.match(text, /never asks you to run code/);
 });
 
+/*
+ * THE WALLET LINE. The keeper's ask after the first live walk: three
+ * attempts were spent discovering which account and which network the
+ * wallet was actually offering the page, because nothing on the page
+ * said. The line is display-only — these tests also pin that reading
+ * it never prompts (no eth_requestAccounts) and never gates a buy.
+ */
+test("the wallet line says who is connected and on what, before any button", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet(); // chain 0x2105 = Base, WALLET connected
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.ok(line);
+  assert.equal(line.attributes["data-connected"], "yes");
+  assert.match(line.textContent, /0x2222…2222 on Base/);
+  // Read-only reads only: the line never rang the connect prompt.
+  assert.ok(!wallet.calls.includes("eth_requestAccounts"));
+});
+
+test("a wrong network is named, with the fix, before Pay is pressed", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet({ chainId: "0x1" });
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "wrong-chain");
+  assert.match(line.textContent, /on Ethereum mainnet/);
+  assert.match(line.textContent, /sells on Base and Polygon/);
+  assert.match(line.textContent, /Switch your wallet's network/);
+});
+
+test("no connected account reads as not connected, not as an error", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet({ connected: [] });
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "no");
+  assert.match(line.textContent, /no account is connected to this page/);
+  assert.match(line.textContent, /pressing Pay asks your wallet to connect/);
+});
+
+test("the wallet line follows account and network switches live", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet({ chainId: "0x1" });
+  const listeners = {};
+  wallet.on = (event, handler) => {
+    listeners[event] = handler;
+  };
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "wrong-chain");
+  // The keeper switches Rainbow to Base: the page notices, no reload.
+  wallet.chainId = "0x2105";
+  listeners.chainChanged("0x2105");
+  await settle();
+  assert.equal(line.attributes["data-connected"], "yes");
+  assert.match(line.textContent, /on Base/);
+});
+
+test("a wallet that refuses the read leaves a calm line, not a broken till", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet();
+  const innerRequest = wallet.request;
+  wallet.request = async (args) =>
+    args.method === "eth_accounts"
+      ? Promise.reject(new Error("nope"))
+      : innerRequest(args);
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "unknown");
+  assert.match(line.textContent, /pressing Pay will ask it directly/);
+});
+
+test("the full reading is there, folded, until there is something to read", () => {
+  /*
+   * The buyer's sentence lives in the status line; the raw response
+   * and per-offer diagnostics live behind a <details> fold. Before any
+   * purchase there is nothing to read, so the fold itself is hidden —
+   * not merely closed — and the section shows buttons and prose only.
+   */
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const section = mountTill({ doc, provider: fakeWallet(), shelf: readShelf(doc) });
+  const pane = section.children.find((child) => child.tag === "details");
+  assert.ok(pane, "the forensics pane exists");
+  assert.equal(pane.hidden, true);
+  assert.ok(pane.children.some((child) => child.tag === "summary"));
+  assert.ok(pane.children.some((child) => child.tag === "pre"));
+});
+
 test("a page with no shelf island grows no till, wallet or not", () => {
   const doc = fakeDocument();
   doc.getElementById = () => null;
@@ -660,8 +871,14 @@ test("an item with required inputs will not buy on an empty field", async () => 
     String(child.className).includes("till-status"),
   );
   assert.match(status.textContent, /needs tx_hash/);
-  // Nothing was asked of the wallet, because nothing could be bought.
-  assert.deepEqual(wallet.calls, []);
+  /*
+   * Nothing was ASKED of the wallet, because nothing could be bought.
+   * The wallet line's read-only queries (eth_accounts, eth_chainId)
+   * are allowed — they prompt for nothing — so the pin is on the two
+   * methods that reach a person: connect and sign.
+   */
+  assert.ok(!wallet.calls.includes("eth_requestAccounts"));
+  assert.ok(!wallet.calls.includes("eth_signTypedData_v4"));
 });
 
 test("prices read like prices, at both ends of the shelf", () => {

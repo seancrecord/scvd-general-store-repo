@@ -35,6 +35,13 @@ body.night {
   padding: 0 0.75rem 4rem;
   overflow-x: hidden;
 }
+/*
+ * The backstop the body rule above cannot be: mobile Safari pans the
+ * ROOT element, so overflow hidden on body alone still lets a finger
+ * drag the page sideways into anything that escapes. clip, not
+ * hidden, so the root never becomes a scroll container.
+ */
+html { overflow-x: clip; }
 
 /* Two stars twinkling out of phase; the rest hold still, as stars do. */
 .stars, .stars::before, .stars::after {
@@ -300,6 +307,10 @@ body.night {
 }
 .shelf-line { margin-top: 0.3rem; font-size: 0.88rem; color: var(--night-faded); }
 .shelf-more { text-align: center; margin-top: 1.1rem; font-size: 0.85rem; color: var(--night-faded); }
+.shelf-till { text-align: center; margin-top: 0.9rem; font-size: 0.85rem; color: var(--night-faded); }
+/* The sign is night; the inherited ink-on-paper button would vanish
+ * into it. Teal is this page's "a machine can act here" color. */
+.shelf-till .door-cta { background: var(--teal); color: var(--night) !important; }
 
 /* ---- what this place is: the infrastructure, stated before the shelf ---- */
 .what-this-is {
@@ -317,6 +328,19 @@ body.night {
 /* ---- the two doors ---- */
 .doors { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 2.6rem; }
 @media (min-width: 640px) { .doors { grid-template-columns: 1fr 1fr; } }
+/*
+ * THE PHONE FIX, MEASURED BEFORE IT WAS WRITTEN (2026-08-27). At a
+ * 390px viewport the page laid out 607px wide, and the drag into
+ * blank space the keeper felt was those 217 dead pixels. The culprit
+ * was not a width anywhere: grid items default min-width auto, so the
+ * agent door's nowrap terminal lines pushed their track to ~548px and
+ * the ellipsis rule below never got a container narrow enough to
+ * clip against. min-width: 0 restores the clip; overflow-wrap on the
+ * card's code spans breaks the one-long-token lines (a curl command,
+ * an mcp add) that did the same to the human door.
+ */
+.door { min-width: 0; }
+.door-human code { overflow-wrap: anywhere; }
 .door { border-radius: 4px; padding: 1.2rem 1.3rem 1.4rem; }
 .door h3 { font-size: 0.82rem; letter-spacing: 0.22em; margin-bottom: 0.7rem; }
 /* An index card pinned to the night. */
