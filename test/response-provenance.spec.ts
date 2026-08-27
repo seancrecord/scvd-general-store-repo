@@ -31,7 +31,19 @@ async function goodArtifact(): Promise<{ response: Record<string, unknown>; inpu
     inputs: INPUTS,
     response: {
       endpoint: FP.endpoint,
-      result: FP.result,
+      /*
+       * A COPY, NOT THE MODULE-LEVEL OBJECT.
+       *
+       * Handing back FP.result by reference makes every fixture share
+       * one object, so any case that mutates what it was given edits
+       * the source of every later case. The oversized case below pads
+       * the result past MAX_RESPONSE_PROVENANCE_CHARS; with a shared
+       * reference that padding is permanent, and every subsequent
+       * artifact exceeds the ceiling and comes back
+       * `applies: false, ok: null` instead of the refusal each case
+       * is actually asserting about.
+       */
+      result: structuredClone(FP.result),
       provenance: {
         method: FP.method,
         dataVintage: FP.dataVintage,
