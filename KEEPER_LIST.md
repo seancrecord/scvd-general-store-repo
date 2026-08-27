@@ -248,6 +248,31 @@ four Base hashes in the TASKS archive's NOW block;
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
 
+- ⚑ **THE AGENT WAVE CHANGES THE WEIGHT ON P7 — LOOK, then RULE
+  (docs/WEBMCP_AND_MCP_APPS_2026-08.md §10, opened 08-27 on the
+  keeper's prompt about being "grok bot compatible").** Read off
+  secondary coverage only — the assistant's training runs to May and
+  every byte-level claim is deferred to build time, same discipline as
+  SPEC_READS. Three findings that move things: (1) WebMCP's auth is NOT
+  plugins, it is THE USER'S OWN BROWSER SESSION — no OAuth, no API
+  keys, the agent acts as the logged-in human with every standing
+  permission they hold; (2) the origin-trial adopters are transactional
+  commerce, not experiments — Expedia, Booking, Shopify, Credit Karma,
+  TurboTax, Redfin, Etsy, Instacart, Target; (3) Grok Build drives a
+  LOCAL Chrome session using existing logins rather than APIs. Put
+  together: maximum authority, maximum stakes, ZERO verification, and
+  nobody anywhere checking whether a declared tool does what its schema
+  says. **THE PROPOSAL: a WebMCP conformance desk** — same instrument,
+  same signature, same expiring dated observation, pointed at a second
+  protocol with no spec police behind it. "Cross-protocol by design"
+  stops being positioning and becomes a roadmap. ⚑ Needs a demand tag
+  (rule 19) before it needs enthusiasm. ALSO NOTED: our shape is
+  accidentally well-suited to a session-authority world — no accounts,
+  no logins, no OAuth, nothing to inherit or replay — and one new open
+  question with no research behind it yet: if agent platforms gate
+  listing behind an auth handshake, is having no auth a differentiator
+  or an exclusion?
+
 - ⚑ **THE KEEPER ASKED FOR THIS ONE, 2026-08-27: a short Twitter demo
   of the verdict card.** His words — "make a note for me to make a
   short demo of it to put on Twitter." The subject is the SIDE-BY-SIDE,

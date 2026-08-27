@@ -1020,3 +1020,130 @@ against a rubric the store has deliberately managed down before (27 → 5,
 Glama's tool-count band), so it is a decision rather than a fix. Not
 built.
 
+---
+
+## 10. THE AGENT WAVE — first thoughts (2026-08-27, the keeper's prompt)
+
+> *"How does this work relate to being 'grok bot compatible' — agents in
+> that vein released August 2026. WebMCP, auth with plugins, and have
+> them drive your apps. Build for agents."*
+
+**⚑ STANDING OF THIS SECTION: built on secondary coverage, same
+discipline as `docs/SPEC_READS.md`.** The assistant's own training runs
+to May 2026; everything below about what shipped in August is read off
+search results, not off primary sources. Directional claims are safe to
+reason from; **no byte-level claim here may be built on without
+verification at build time.**
+
+### 10.1 What the read turned up, and why it changes the weight
+
+Three facts, and each one moves something:
+
+1. **WebMCP's auth model is not plugins. It is the user's own browser
+   session** — "no separate OAuth dance and no API key management." The
+   agent acts *inside a session the human already opened*.
+2. **The origin-trial adopter list is not a browser curiosity. It is
+   transactional commerce**: Expedia, Booking.com, Shopify, Credit
+   Karma, TurboTax, Redfin, Etsy, Instacart, Target. Every one is a
+   place where an agent will spend money or file something consequential.
+3. **Grok Build drives a local Chrome session or an isolated cloud
+   browser, using existing logins rather than APIs.** The local option
+   is the notable one: it inherits whatever the human is already signed
+   into.
+
+### 10.2 The consequence nobody has priced: the session IS the authority
+
+Put 1 and 3 together. An agent calling a declared WebMCP tool does it
+**as the logged-in human, carrying every standing permission that human
+has**, and the site cannot distinguish the two at the session layer.
+There is no signature, no receipt, no third party, and no record.
+
+And now put 2 beside it. The pages declaring those tools are TurboTax
+and Target.
+
+So the new surface has, all at once: **maximum authority, maximum
+stakes, and zero verification.** A page declares `checkout(items)`; a
+schema says it is read-only; nobody anywhere is checking whether the
+declaration is true. That is not an adjacent problem to this store's —
+it is *precisely* this store's problem, on the surface where it is
+about to matter most, with a bigger blast radius than an x402 endpoint
+has ever had.
+
+### 10.3 PROPOSED — the WebMCP conformance desk
+
+The strongest thing in this section, and it needs no new primitive:
+
+> **Does a page's declared WebMCP tool do what its schema says it
+> does?**
+
+Named, checkable defects in the vocabulary already published: a tool
+declared read-only that writes; a declared idempotent tool that charges
+twice; an `inputSchema` that accepts values the handler does not honour;
+a declaration that disappears on the next deploy; a tool whose name
+promises one scope and whose handler takes another. **Nobody is running
+this. There is no conformance infrastructure behind WebMCP at all** —
+unlike x402, it has no spec police and no host enforcing anything.
+
+This is the same instrument, the same signature, the same expiring
+dated observation, pointed at a second protocol. "Cross-protocol by
+design" stops being a positioning line and becomes a roadmap.
+
+### 10.4 Where "build for agents" cuts differently for us
+
+The slogan means *make your app drivable*. Two positions fall out of
+it, and the store's real one is the second:
+
+| | What it means | For us |
+|---|---|---|
+| **Be drivable** | declare verbs, be a good citizen of the surface | P7. Table stakes, cheap, and now clearly right |
+| **Be what an agent consults before it drives something ELSE** | the instrument, not the app | The actual business — and **a wave of agent-drivers makes it bigger, not smaller** |
+
+Every agent in that wave is about to touch endpoints it cannot
+evaluate, holding a session it cannot un-hold. Demand for a disinterested
+observer rises with the number of agents acting, not with the number of
+stores selling.
+
+**And the P7 reversal is now vindicated for a sharper reason than
+either of us gave.** §3.1's case — "we have no UI to guess at" —
+described the store's shape, not the ecosystem's direction. The browser
+is becoming the transaction surface for agentic commerce. An evidence
+observatory for agentic commerce that is absent from it is not missing
+a conformance checkbox; it is absent from the market. The keeper's
+"hands in many pots" was the right instinct with the wrong reason
+attached, and the reason is now available.
+
+### 10.5 The positioning gift, already built
+
+In a session-authority world the sharpest risk is *the agent acted as
+you, because it held your session*. Against that, this store's shape is
+unusually clean and entirely accidental:
+
+- **No accounts. No logins. No OAuth. No API keys.** Payment proves
+  entitlement; there is nothing to sign into and therefore nothing to
+  inherit, leak, or replay.
+- **Nothing of yours is held.** Not custody, not credentials, not key
+  material — rule 17's absolute half, which the amendment explicitly
+  did not reopen.
+- **Every artifact verifies offline** without asking us, so trusting
+  the store is never load-bearing.
+
+*"We can only tell you what we saw"* and *"you know your own risk better
+than we do"* both land differently when the alternative counterparty is
+one holding your live session.
+
+⚑ **The open question this raises, and it is new:** if agent platforms
+list or gate participation behind a plugin/auth handshake, does having
+no auth become a **differentiator** (nothing to steal) or an
+**exclusion** (cannot be listed)? Unknown, unresearched, and worth a
+LOOK before it is worth an opinion.
+
+### 10.6 OPEN — what this does NOT settle
+
+- Everything in §8.2 still stands. A wave outside is not a ruling
+  inside, and rule 17's copy debt still gates every line of code.
+- §10.3 is a *product*, not a task. It needs a demand tag (rule 19),
+  not enthusiasm.
+- The specifics above need primary-source verification before anything
+  is built. The API moved twice in six months and secondary coverage
+  lags it.
+
