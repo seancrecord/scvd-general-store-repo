@@ -3,6 +3,8 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
 import { SettlementDeclined } from "@/lib/payments";
+import { closeDeliveryIntent } from "@/services/delivery-audit";
+import { recordDeliveredSettlement } from "@/services/chain-reconciliation";
 import {
   ALSO_A_STORE,
   DELIVERY_ORDER,
@@ -466,6 +468,11 @@ async function callPurchaseTool(
     paymentMeta,
     mcpSignals(c),
     replayCheck,
+    // What the buyer asked for, for the delivery intent: same purpose
+    // as the HTTP gate recording its query string, so a mint that dies
+    // after settlement can still be finished by hand. The payment
+    // rides _meta, never arguments, so nothing here is a credential.
+    Object.keys(args).length > 0 ? JSON.stringify(args).slice(0, 600) : undefined,
   );
   /**
    * The retry that already owns its goods: the pipeline recognised a
@@ -591,6 +598,25 @@ async function callPurchaseTool(
     throw error;
   }
   const settled = outcome.settledSoFar();
+  /**
+   * GOODS WENT OUT, so the delivery-intent row stops existing — the
+   * MCP door's equivalent of the HTTP gate's 2xx seam (task #85).
+   * Reached only when fulfillPurchase returned goods: a decline
+   * unwound above, a throw propagated, and in both of those cases the
+   * row stays behind as the trace that money may have moved without
+   * delivery. Closing never fails the response; a row left open on a
+   * failed delete is a false alarm the keeper can dismiss.
+   */
+  const deliveryKey = outcome.deliveryKeySoFar();
+  if (settled && deliveryKey) {
+    await closeDeliveryIntent(c.env, deliveryKey).catch(() => undefined);
+  }
+  if (settled) {
+    // The chain walk's record that this money BOUGHT SOMETHING — same
+    // write, same seam as the HTTP door, so reconciliation never
+    // depends on which door a buyer came through.
+    await recordDeliveredSettlement(c.env, settled.transaction);
+  }
   const flat = flattenPurchase(response);
   /**
    * Stored under the VERIFIED payer the pipeline carried out, not the

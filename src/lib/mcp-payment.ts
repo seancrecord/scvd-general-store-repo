@@ -49,6 +49,7 @@ import {
   payerOfVerifiedPayload,
   recordSpentNonce,
 } from "@/lib/replay-guard";
+import { openDeliveryIntent } from "@/services/delivery-audit";
 import { isRecord } from "@/types";
 import type { Env } from "@/types";
 
@@ -112,6 +113,14 @@ export type McpPaymentOutcome =
       kind: "authorized";
       pending: PendingPayment;
       settledSoFar: () => SettledPayment | null;
+      /**
+       * The delivery-intent row's key, once settle has opened it (task
+       * #85: the row is transport-agnostic — the failure it exists for
+       * is item-shaped, not door-shaped). Null until money moves, and
+       * null if the audit write failed — which never fails the sale.
+       * The route closes it at its own goods-went-out seam.
+       */
+      deliveryKeySoFar: () => string | null;
       verifiedPayer?: string;
     }
   /**
@@ -166,6 +175,15 @@ export async function runMcpPayment(
   paymentMeta: unknown,
   signals: EventSignals,
   onVerifiedPayer?: VerifiedPayerCheck,
+  /**
+   * What the buyer actually asked for, serialized by the route — the
+   * delivery intent carries it so a mint that dies after settlement
+   * can still be finished by hand (the 2026-08-10 lesson: the one
+   * fact needed to produce the artifact was the one fact nobody
+   * kept). The HTTP door records its query string; this is the MCP
+   * door's equivalent, capped by the caller.
+   */
+  askedFor?: string,
 ): Promise<McpPaymentOutcome> {
   const path = `/api/buy/${itemId}`;
   const stack = getPaymentStack(env);
@@ -333,6 +351,7 @@ export async function runMcpPayment(
   const verifiedRequirementsForSettle = result.paymentRequirements;
   const verifiedExtensionsForSettle = result.declaredExtensions;
   let alreadySettled: SettledPayment | null = null;
+  let deliveryKey: string | null = null;
 
   const settle = async (): Promise<SettledPayment> => {
     if (alreadySettled) return alreadySettled;
@@ -423,6 +442,29 @@ export async function runMcpPayment(
     // not a way around the bound.
     await recordSolanaSettle(env, paidUsdc).catch(() => undefined);
   }
+  /**
+   * THE DELIVERY INTENT, at the same seam the HTTP gate opens it
+   * (task #85): money has moved, the mint has not finished. The
+   * failure this row exists for — settled, then died before the
+   * goods, buyer possibly an agent no longer running — is
+   * item-shaped, not door-shaped, yet until now only the HTTP door
+   * wrote the row: an MCP sale dying in that gap was invisible to
+   * /admin/deliveries, and the desk's "undelivered: []" was only
+   * true of one door.
+   *
+   * NEVER FAILS THE SALE, same law as the gate: a paid customer does
+   * not get an error because an audit row would not write. The route
+   * closes it at its goods-went-out seam; a row left behind is a
+   * false alarm the keeper can dismiss, which beats a silent loss.
+   */
+  deliveryKey = await openDeliveryIntent(env, {
+    path,
+    ...(askedFor ? { query: askedFor.slice(0, 600) } : {}),
+    ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
+    ...(payer ? { payer } : {}),
+    paid_usdc: paidUsdc,
+    settled_at: new Date().toISOString(),
+  }).catch(() => null);
   alreadySettled = payment;
   return payment;
   };
@@ -441,6 +483,7 @@ export async function runMcpPayment(
     pending,
     /** Reads the settled transaction once, and only if it settled. */
     settledSoFar: () => alreadySettled,
+    deliveryKeySoFar: () => deliveryKey,
     ...(verifiedPayer ? { verifiedPayer } : {}),
   };
 }
