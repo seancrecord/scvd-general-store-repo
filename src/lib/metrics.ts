@@ -219,6 +219,17 @@ export async function recordChallengeIssued(
    * is an observable contract here — so the fix keeps every await
    * and removes the QUEUEING instead. Same writes, same guarantees,
    * roughly a quarter of the wall clock.
+   *
+   * SUPERSEDED IN PART, 2026-08-27, by the keeper's ruling in the
+   * worldwide-latency audit: at the GATE, the bare price-check (no
+   * payment header — the path probers and monitors hit all day)
+   * now sends this whole call through ctx.waitUntil, and the suite's
+   * contract moved with it, from write-before-response to
+   * lands-within-the-request (vi.waitFor at the readers). This
+   * function itself is unchanged and still awaits its wave — every
+   * other caller (the paid-attempt branch, crons, unit tests) keeps
+   * the old contract. See the ruling comment at the gate's 402
+   * branch; test/quote-before-tally.spec.ts pins both halves.
    */
   const pending: Array<Promise<void>> = [];
   pending.push(
