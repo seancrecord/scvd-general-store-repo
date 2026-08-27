@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "2";
+export const DEFECT_VOCABULARY_VERSION = "3";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -76,6 +76,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     what_changed:
       "Added EVIDENCE_LABELS, a second and separate register. A defect class describes a property of an ENDPOINT; an evidence label describes the PROVENANCE OF A CLAIM about one. Conflating the two was the gap: both instruments had been making listing-backed claims with no name for what made them weaker than walk-backed ones. First entry: listed-not-walked.",
   },
+  {
+    version: "3",
+    date: "2026-08-27",
+    at_the_instigation_of:
+      "SolomonisBlack (github.com/SolomonisBlack), who named the class; this store registers it as source, not author, at his request",
+    what_changed:
+      "Added nonce-unbound-from-settlement: a till that marks an authorization's nonce spent without recording which settlement spent it, leaving a buyer who paid and lost the response indistinguishable from one who never paid. Registered the same day this store fixed the instance of it on its OWN MCP lane (the HTTP lane bound the transaction already) — found live by an outside reproduction on 2026-08-26, and stated here because a register that lists a class its registrar quietly exhibited would be worth nothing. DefectClass entries gained optional sourced_by/registered fields, the registrar-not-author discipline the evidence labels already carried.",
+  },
 ];
 
 /** The date this file's cross-instrument mappings were last verified. */
@@ -112,6 +120,16 @@ export interface DefectClass {
   falsified_by: string;
   /** The same property, as other published instruments name it. */
   also_known_as?: ForeignName[];
+  /**
+   * Who NAMED the class, when it was not us. The registrar-not-author
+   * distinction the evidence labels already carry, extended here the
+   * day a defect class first arrived from outside: a vocabulary whose
+   * registrar quietly becomes its author is a vocabulary nobody else
+   * can trust. Absent on the classes this store wrote itself.
+   */
+  sourced_by?: string;
+  /** Date the entry entered the register. Present when sourced_by is. */
+  registered?: string;
 }
 
 /**
@@ -295,6 +313,22 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
           "Their check asserting something other than the refusal of an identical already-settled payment.",
       },
     ],
+  },
+  {
+    id: "nonce-unbound-from-settlement",
+    title: "Marks the nonce spent without naming what spent it",
+    asserts:
+      "A till that refuses an already-settled payment can name the settlement transaction that spent the authorization's nonce.",
+    costs:
+      "A buyer who paid and lost the response cannot be told apart from one who never paid. The seller can say 'spent' but not prove WHAT spent it, so honest recovery and fraud look identical — and any paid-retry lane (deliver again for the SAME settlement, charge nothing) has nothing to stand on. The money moved once; the proof of which movement is gone.",
+    detectable: "paid",
+    our_signal:
+      "this store's own replay refusals return the original settlement transaction (HTTP door since the paid-retry lane; MCP door since 2026-08-27 — it exhibited this class until that day's fix, found live by an outside reproduction, and that is recorded here rather than smoothed over).",
+    falsified_by:
+      "The door's replay refusal, or an equivalent receipt surface, producing the settlement transaction hash for the spent nonce at the stated moment.",
+    sourced_by:
+      "SolomonisBlack (github.com/SolomonisBlack), who named the class during the response-provenance collaboration. Registered at his request — source, not author, as agreed.",
+    registered: "2026-08-27",
   },
   {
     id: "settlement-error",
