@@ -1,5 +1,6 @@
 import { newPassId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { signMessage } from "@/lib/signing";
 import type { Env, PatronagePass } from "@/types";
 
@@ -43,7 +44,8 @@ export async function createOrRenewPass(
       existing.expires_at = new Date(extendFrom + PASS_DAYS * DAY_MS)
         .toISOString();
       existing.renewals += 1;
-      await env.PATRONS.put(
+      await kvPut(
+        env.PATRONS,
         KV_KEYS.patronagePass(existing.pass_id),
         JSON.stringify(existing),
       );
@@ -64,7 +66,8 @@ export async function createOrRenewPass(
   if (input.agentName) {
     pass.agent_name = input.agentName;
   }
-  await env.PATRONS.put(
+  await kvPut(
+    env.PATRONS,
     KV_KEYS.patronagePass(pass.pass_id),
     JSON.stringify(pass),
   );
@@ -79,7 +82,7 @@ export async function getPass(
   env: Env,
   passId: string,
 ): Promise<PatronagePass | null> {
-  return env.PATRONS.get<PatronagePass>(KV_KEYS.patronagePass(passId), "json");
+  return kvGetJson<PatronagePass>(env.PATRONS, KV_KEYS.patronagePass(passId));
 }
 
 export function passIsCurrent(pass: PatronagePass): boolean {
