@@ -132,6 +132,13 @@ export interface OfferFacts {
    * whether anyone PAYS an ask, not just quotes one.
    */
   pay_to?: string[];
+  /**
+   * Set only on rows FROZEN into the signed corpus after the G2
+   * ruling (2026-08-27): the salted digest of each pay_to, written by
+   * the snapshot seal in place of the verbatim address. Never set at
+   * probe time — the mutable round keeps verbatim.
+   */
+  pay_to_digest?: string[];
 }
 
 export function offerFacts(response: Response): OfferFacts | null {

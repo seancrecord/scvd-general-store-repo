@@ -9,6 +9,7 @@ import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
 import { kvPut } from "@/lib/kv-retry";
+import { payToDigest } from "@/lib/pay-to-digest";
 
 /**
  * THE CORPUS — the ecosystem's observed history, kept (the keeper's
@@ -252,6 +253,42 @@ export type CorpusPass =
  * chain: the chain is ours and already stored by the time any
  * calendar can disappoint us.
  */
+/**
+ * CHAIN HYGIENE (the G2 ruling, 2026-08-27): the signed snapshot must
+ * not contain a verbatim payment address, because the chain cannot
+ * unsign and a wallet address is personal data when linkable to a
+ * person. Each host row's `offer.pay_to` is replaced with
+ * `offer.pay_to_digest` — the salted, versioned, publicly recomputable
+ * digest (lib/pay-to-digest.ts) — at the freeze, and ONLY at the
+ * freeze: the mutable ward round keeps verbatim, which is where the
+ * current-week views and the keeper's desks read it.
+ *
+ * NEW ROWS ONLY, preimage law: rows signed before this ruling carry
+ * verbatim addresses and stand as history, byte-identical forever;
+ * the derived views join old and new by digesting the legacy value at
+ * read. Field order: `pay_to_digest` lands where `pay_to` sat, so a
+ * row's other bytes do not move.
+ */
+async function sealRoundForChain(round: WardRound): Promise<WardRound> {
+  const hosts = await Promise.all(
+    (round.hosts ?? []).map(async (host) => {
+      const offer = host.offer;
+      if (!offer?.pay_to || offer.pay_to.length === 0) {
+        return host;
+      }
+      const { pay_to, ...rest } = offer;
+      return {
+        ...host,
+        offer: {
+          ...rest,
+          pay_to_digest: await Promise.all(pay_to.map(payToDigest)),
+        },
+      };
+    }),
+  );
+  return { ...round, hosts };
+}
+
 export async function takeCorpusSnapshot(
   env: Env,
   options: SubmitOptions = {},
@@ -260,6 +297,7 @@ export async function takeCorpusSnapshot(
   if (!round) {
     return { taken: false, reason: "no ward round has run yet" };
   }
+  const sealed = await sealRoundForChain(round);
   const previous = await latestCorpusEntry(env);
   if (previous && previous.snapshot.week === round.week) {
     return {
@@ -274,7 +312,7 @@ export async function takeCorpusSnapshot(
     previous_digest: previous?.digest ?? null,
     source: "ward_round",
     week: round.week,
-    round,
+    round: sealed,
   };
   const digest = await digestOf(snapshot);
   const { signature, publicKey } = await signMessage(

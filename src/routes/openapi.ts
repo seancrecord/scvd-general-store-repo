@@ -1263,6 +1263,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "One point per signed weekly snapshot, every count derived at read from the snapshot's own rows: listed/probed denominators, verdict counts with observer-degraded ticks separated from anyone's outage, offers seen, doors per rail, failure classes. No ratios anywhere — counts travel with their denominators. Each point names the digest it derives from. Free.",
         ),
       },
+      "/corpus/wallet-facts.json": {
+        get: freeOp(
+          "Shared receiving addresses, counted",
+          "Latest signed week: how many receiving addresses the probed doors advertised, how many receive at more than one door, and the largest cluster — counts with denominators, no addresses, no names, no operator claims. The shared-wallet caveat rides inline: custodial and platform wallets make unrelated doors share an address, so the observation is served and the inference is yours. Free.",
+        ),
+      },
       "/corpus/diff.json": {
         get: freeOp(
           "What changed since a signed week",
