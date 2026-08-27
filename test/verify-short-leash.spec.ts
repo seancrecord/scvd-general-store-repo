@@ -140,14 +140,55 @@ describe("the verify short-leash", () => {
     );
   });
 
-  it("leaves settle alone: money in motion keeps the full deadline, no retry here", () => {
-    // The leash exists because verify is safe to abandon; settle is
-    // not (a timeout there is indeterminate — the transfer may have
-    // broadcast). The subclass must not override settle: its retry
-    // discipline lives in processSettlementWithRetry, where the
-    // ambiguous-outcome rescue can see it.
-    expect(KvWarmFacilitatorClient.prototype.settle).toBe(
-      HTTPFacilitatorClient.prototype.settle,
+  it("leaves settle's deadline and retry alone: money in motion is never abandoned early", async () => {
+    /*
+     * The leash exists because verify is safe to abandon; settle is
+     * not (a timeout there is indeterminate — the transfer may have
+     * broadcast). The first draft of this guard pinned the MECHANISM —
+     * "the subclass must not override settle", by prototype identity —
+     * and went stale the day settle grew a legitimate override that
+     * changes only the failure's CLASS (the timeout-conversion,
+     * test/settle-timeout.spec.ts). Rule 17's own lesson: a mechanism
+     * pin wins today's argument and loses the next one. So this now
+     * pins the PROPERTY: one wire attempt per settle call (retry
+     * discipline stays in processSettlementWithRetry, where the
+     * ambiguous-settle rescue can see it), on the configured deadline,
+     * not the verify lane's shorter one.
+     */
+    let calls = 0;
+    const started = Date.now();
+    vi.stubGlobal(
+      "fetch",
+      ((_input: RequestInfo | URL, init?: RequestInit) => {
+        calls += 1;
+        return new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(
+              Object.assign(new Error("The operation was aborted"), {
+                name: "AbortError",
+              }),
+            ),
+          );
+        });
+      }) as unknown as typeof fetch,
     );
+    const client = new KvWarmFacilitatorClient(
+      { url: "https://facilitator.example", timeoutMs: 400 },
+      testEnv.COUNTERS,
+      50, // verify lane squeezed far below settle's deadline
+    );
+    await expect(
+      client.settle(
+        { x402Version: 2 } as Parameters<typeof client.settle>[0],
+        {
+          scheme: "exact",
+          network: "eip155:8453",
+        } as unknown as Parameters<typeof client.settle>[1],
+      ),
+    ).rejects.toThrow();
+    const elapsed = Date.now() - started;
+    expect(calls).toBe(1);
+    // Ran on settle's own 400ms deadline, not the 50ms verify lane.
+    expect(elapsed).toBeGreaterThanOrEqual(350);
   });
 });

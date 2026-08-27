@@ -109,6 +109,26 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
           what: "The weekly signed census of the public x402 web, as a dataset.",
         },
         {
+          href: `${base}/corpus/trajectory.json`,
+          label: "GET /corpus/trajectory.json",
+          what: "The chain read as time: one point per signed week — counts with denominators, every point naming the snapshot digest it derives from. Re-derivable from the entries with your own tools.",
+        },
+        {
+          href: `${base}/corpus/diff.json`,
+          label: "GET /corpus/diff.json?since={week}",
+          what: "What changed since a signed week you already saw: doors appeared and disappeared, verdict transitions, drift in a door's own declared terms. The cheapest honest agent loop is polling this.",
+        },
+        {
+          href: `${base}/corpus/wallet-facts.json`,
+          label: "GET /corpus/wallet-facts.json",
+          what: "How many receiving addresses this week's doors advertised and how many receive at more than one door — counts with denominators, no names, no addresses, never an operator claim.",
+        },
+        {
+          href: `${base}/api/standing-note`,
+          label: "GET|POST /api/standing-note",
+          what: "Attach your own dated statement to a door or wallet this store has observed — prove control (wallet signature or well-known file) and your words ride beside the observation, never replacing it.",
+        },
+        {
           href: `${base}/api/verify/{id}`,
           label: "GET /api/verify/{id}",
           what: "Verify anything this store ever signed. No account, no wallet, free forever — including artifacts you did not buy.",
