@@ -1,4 +1,5 @@
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { BASE_NETWORK, POLYGON_NETWORK } from "@/lib/payments";
 import { HOUSE_RULE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
 
@@ -121,6 +122,20 @@ export function tillShelfHtml(
      */
     house_rule: HOUSE_RULE,
     wallet_limit: TILL_WALLET_LIMIT,
+    /**
+     * THE CHAINS THE INDICATOR MAY VOUCH FOR (the keeper's ask,
+     * 2026-08-27: "something that shows connected or not, and which
+     * network"). Derived from the same constants the payment gate
+     * offers on, never retyped — but DISPLAY-ONLY on the other end:
+     * the till's wallet line uses this to warn about a wrong network
+     * before a button is pressed, while the money path keeps deciding
+     * from the live 402's accepts alone. The Polygon rail is
+     * flag-gated server-side; advertising it here when the flag is
+     * down costs a too-broad hint, never a wrong signature.
+     */
+    evm_chains: [BASE_NETWORK, POLYGON_NETWORK].map((network) =>
+      Number(network.split(":")[1]),
+    ),
     verify_hint: "/api/verify/{cert_id}",
     items: items.map(tillShelfItem),
   };

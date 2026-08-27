@@ -123,6 +123,11 @@ function fakeWallet(overrides = {}) {
     if (method === "eth_chainId") {
       return wallet.chainId;
     }
+    if (method === "eth_accounts") {
+      // The no-prompt read the wallet line uses: what is ALREADY
+      // connected, which can be less than what requestAccounts grants.
+      return wallet.connected ?? wallet.accounts;
+    }
     if (method === "eth_requestAccounts") {
       if (wallet.accountsError) throw wallet.accountsError;
       return wallet.accounts;
@@ -670,10 +675,14 @@ const SHELF = {
   heading: "Buy one from this browser",
   standfirst: "One signature.",
   house_rule: "This store never asks you to run code.",
+  evm_chains: [8453, 137],
   items: [
     { id: "hello", name: "A Signed Hello", price_usdc: 0.001, buy_path: "/api/buy/hello", requires: [] },
   ],
 };
+
+/** The wallet line refreshes off an async read; let it land. */
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 test("with no wallet present, the page gains nothing at all", () => {
   const doc = fakeDocument();
@@ -715,6 +724,98 @@ test("with a wallet present, exactly one section appears", () => {
   assert.match(text, /A Signed Hello/);
   // The store's anti-impersonation promise is on the till itself.
   assert.match(text, /never asks you to run code/);
+});
+
+/*
+ * THE WALLET LINE. The keeper's ask after the first live walk: three
+ * attempts were spent discovering which account and which network the
+ * wallet was actually offering the page, because nothing on the page
+ * said. The line is display-only — these tests also pin that reading
+ * it never prompts (no eth_requestAccounts) and never gates a buy.
+ */
+test("the wallet line says who is connected and on what, before any button", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet(); // chain 0x2105 = Base, WALLET connected
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.ok(line);
+  assert.equal(line.attributes["data-connected"], "yes");
+  assert.match(line.textContent, /0x2222…2222 on Base/);
+  // Read-only reads only: the line never rang the connect prompt.
+  assert.ok(!wallet.calls.includes("eth_requestAccounts"));
+});
+
+test("a wrong network is named, with the fix, before Pay is pressed", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet({ chainId: "0x1" });
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "wrong-chain");
+  assert.match(line.textContent, /on Ethereum mainnet/);
+  assert.match(line.textContent, /sells on Base and Polygon/);
+  assert.match(line.textContent, /Switch your wallet's network/);
+});
+
+test("no connected account reads as not connected, not as an error", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet({ connected: [] });
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "no");
+  assert.match(line.textContent, /no account is connected to this page/);
+  assert.match(line.textContent, /pressing Pay asks your wallet to connect/);
+});
+
+test("the wallet line follows account and network switches live", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet({ chainId: "0x1" });
+  const listeners = {};
+  wallet.on = (event, handler) => {
+    listeners[event] = handler;
+  };
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "wrong-chain");
+  // The keeper switches Rainbow to Base: the page notices, no reload.
+  wallet.chainId = "0x2105";
+  listeners.chainChanged("0x2105");
+  await settle();
+  assert.equal(line.attributes["data-connected"], "yes");
+  assert.match(line.textContent, /on Base/);
+});
+
+test("a wallet that refuses the read leaves a calm line, not a broken till", async () => {
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const wallet = fakeWallet();
+  const innerRequest = wallet.request;
+  wallet.request = async (args) =>
+    args.method === "eth_accounts"
+      ? Promise.reject(new Error("nope"))
+      : innerRequest(args);
+  const section = mountTill({ doc, provider: wallet, shelf: readShelf(doc) });
+  await settle();
+  const line = section.children.find((child) =>
+    String(child.className).includes("till-wallet"),
+  );
+  assert.equal(line.attributes["data-connected"], "unknown");
+  assert.match(line.textContent, /pressing Pay will ask it directly/);
 });
 
 test("the full reading is there, folded, until there is something to read", () => {
@@ -770,8 +871,14 @@ test("an item with required inputs will not buy on an empty field", async () => 
     String(child.className).includes("till-status"),
   );
   assert.match(status.textContent, /needs tx_hash/);
-  // Nothing was asked of the wallet, because nothing could be bought.
-  assert.deepEqual(wallet.calls, []);
+  /*
+   * Nothing was ASKED of the wallet, because nothing could be bought.
+   * The wallet line's read-only queries (eth_accounts, eth_chainId)
+   * are allowed — they prompt for nothing — so the pin is on the two
+   * methods that reach a person: connect and sign.
+   */
+  assert.ok(!wallet.calls.includes("eth_requestAccounts"));
+  assert.ok(!wallet.calls.includes("eth_signTypedData_v4"));
 });
 
 test("prices read like prices, at both ends of the shelf", () => {
