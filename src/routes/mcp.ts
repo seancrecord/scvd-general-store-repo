@@ -74,6 +74,17 @@ import { isRecord, type HonoEnv, type MenuItem } from "@/types";
  */
 export const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26"];
 export const DEFAULT_PROTOCOL = "2025-06-18";
+/**
+ * THE ONE VERSION, EXPORTED (scanner finding C2, 2026-08-27). It was
+ * an inline literal in serverInfo while the server card shipped no
+ * version at all — and the SEP-2127 card shape requires one. The
+ * scvd-tab package once carried a handshake saying 0.2.0 while the
+ * package said 0.3.0; a version that exists in two places is a drift
+ * waiting for a quiet week, so the card imports THIS constant and a
+ * test compares the two live documents to each other, never to a
+ * literal.
+ */
+export const MCP_SERVER_VERSION = "0.4.0";
 
 /**
  * WHY FIVE GROUPED buy_* TOOLS RATHER THAN ONE PER ITEM — the answer
@@ -703,7 +714,7 @@ async function handleRpc(
           // client keys on, the title is what it shows a human.
           name: "scvd-general-store",
           title: STORE_SERVICE_NAME,
-          version: "0.4.0",
+          version: MCP_SERVER_VERSION,
         },
         // POSITION_OPENING since 2026-08-10: the handshake is the one
         // sentence an MCP client caches about us, so it carries the

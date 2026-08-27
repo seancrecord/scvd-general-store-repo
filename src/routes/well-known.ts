@@ -6,7 +6,12 @@ import {
   ARD_WELL_KNOWN_PATH,
   ardManifest,
 } from "@/lib/ard-catalog";
-import { DEFAULT_PROTOCOL, handleMcpPost, PROTOCOL_VERSIONS } from "@/routes/mcp";
+import {
+  DEFAULT_PROTOCOL,
+  handleMcpPost,
+  MCP_SERVER_VERSION,
+  PROTOCOL_VERSIONS,
+} from "@/routes/mcp";
 import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
@@ -618,8 +623,28 @@ for (const path of [
  */
 function mcpManifest(base: string) {
   return {
+    /**
+     * SEP-2127's schema identifier. The draft names this exact URI as
+     * the card's $schema and requires the field; the URI itself 404s
+     * today (verified 2026-08-27 — the SEP is Draft status and the
+     * schema is not yet published), which is fine for an identifier
+     * and will simply start resolving the day they publish it.
+     */
+    $schema:
+      "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+    /**
+     * ⚑ KEEPER: SEP-2127 (Draft) constrains `name` to reverse-DNS
+     * with exactly one slash (e.g. "store.scvd/general-store") and
+     * would reject this tier-1 identifier as it stands. The naming
+     * law governs here, the SEP is a draft, and renaming is a keeper
+     * decision — flagged per the C2 instruction ("stop and report
+     * rather than rename"), not changed.
+     */
     name: "scvd-general-store",
     title: STORE_SERVICE_NAME,
+    // Same constant the initialize handler answers with — never a
+    // second copy (C2; the scvd-tab 0.2.0/0.3.0 lesson).
+    version: MCP_SERVER_VERSION,
     description:
       "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
     // The one field a client actually needs.
