@@ -130,8 +130,23 @@ surface, because the current sentence is stronger and still true
 (rule 45). THE TEST KIT IS BUILT: scripts/render-test/ — a throwaway
 zero-dependency server plus the card plus per-host steps written for
 the keeper's hands; wire details read from the spec repo itself, not
-coverage. **WAITING ON THE KEEPER: run the kit, screenshot each host,
-send them back.** That is the last input the shape ruling needs.
+coverage. ~~WAITING ON THE KEEPER: run the kit~~ — HE RAN IT, five
+rounds, 08-27 evening. HOST ONE (Claude Desktop): **FULL PASS** — the
+card renders at full height, size-changed honored, gaps and age at
+full weight, colophon intact; rule 54's eye test passed, dark theme.
+Three findings the rounds paid out: an MCP Apps page must itself
+speak MCP (`ui/initialize` over postMessage) or the host shows
+nothing while its own marker claims otherwise; that "widget rendered"
+marker is an UNVERIFIABLE CLAIM, observed asserting a render nobody
+saw — the artifact-without-verification shape, found in the render
+pipeline of the flagship host; and THE FUNNEL WORKED END TO END — the
+host model read the card, refused correctly ("anyone quoting this as
+'verified' is quoting it past what it says"), and routed to
+`preflight_endpoint`, the live free tool, unprompted. ⚑ ONE COPY FLAG
+with two independent machine readers behind it: "expires in N days"
+reads as a forward warranty; "stale after" / "current until" are the
+candidates, the keeper's pen. STILL OPEN: light + narrow shots on
+host one; VS Code and ChatGPT rounds.
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host
