@@ -963,6 +963,7 @@ const TILL_STYLE = `
 .till-wallet[data-connected=yes]{color:#2f9e44}
 .till-wallet[data-connected=wrong-chain]{color:#d9480f}
 .till-detail summary{cursor:pointer;font-size:.85em;opacity:.75}
+.till-note{font-size:.85em;opacity:.8}
 .till-out{max-height:26rem;overflow:auto;white-space:pre-wrap;word-break:break-word}
 `;
 
@@ -1109,6 +1110,18 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
     provider.on("chainChanged", refreshWalletLine);
   }
   section.appendChild(walletLine);
+
+  /*
+   * The smoke-alarm note, only for readers a signature prompt can
+   * actually reach (this whole section only exists when a wallet
+   * does). Server-authored, carried on the shelf — see
+   * TILL_SIGNATURE_WARNING in till-shelf.ts for why it exists.
+   */
+  if (typeof shelf.signature_warning === "string" && shelf.signature_warning) {
+    section.appendChild(
+      el(doc, "p", "menu-meta till-note", shelf.signature_warning),
+    );
+  }
 
   const status = el(doc, "p", "till-status menu-meta");
   status.setAttribute("role", "status");

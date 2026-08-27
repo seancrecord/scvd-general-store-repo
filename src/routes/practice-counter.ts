@@ -333,6 +333,11 @@ practiceCounterRoutes.get("/try", (c) => {
           <p class="menu-meta">Live sample artifact: <a href="/api/verify/${escapeHtml(SAMPLE_ARTIFACT_ID)}"><code>${escapeHtml(SAMPLE_ARTIFACT_ID)}</code></a></p>
         </section>
         <section>
+          <h2>${escapeHtml(COPY.yourTillHead)}</h2>
+          ${list(COPY.yourTill)}
+          <p class="menu-meta"><code>POST /api/preflight/v1</code> · <code>POST /api/conformance/v1</code> · <a href="/menu/launch_check"><code>/menu/launch_check</code></a> · the full desk at <a href="/conformance">/conformance</a></p>
+        </section>
+        <section>
           <h2>${escapeHtml(COPY.mcpHead)}</h2>
           <p class="menu-desc">${escapeHtml(COPY.mcp)}</p>
         </section>
@@ -401,6 +406,14 @@ practiceCounterRoutes.get("/try", (c) => {
       note: COPY.mcp,
     },
     hand_rolling: HAND_ROLLING,
+    when_its_your_till: {
+      head: COPY.yourTillHead,
+      notes: COPY.yourTill,
+      preflight: `${base}/api/preflight/v1`,
+      conformance_desk: `${base}/api/conformance/v1`,
+      launch_check: `${base}/menu/launch_check`,
+      landing: `${base}/conformance`,
+    },
     when_you_are_stuck: {
       head: COPY.stuckHead,
       notes: COPY.stuck,

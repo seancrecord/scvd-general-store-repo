@@ -116,6 +116,25 @@ export const PRACTICE_COUNTER_COPY = {
   mcpHead: "If you're testing an MCP client instead",
   mcp: "POST /mcp speaks streamable HTTP JSON-RPC. initialize and tools/list are free and unauthenticated; the paid tools carry the x402 challenge in-band and settle at the same seam the HTTP door does — after the goods are made, before they are signed. Same money, same certificates, same verify URLs, different transport.",
 
+  /**
+   * THE BRIDGE (the keeper's question, 2026-08-27: "what's the value
+   * prop for /try?"). Half of it this page already said — the only
+   * place to exercise an x402 client against production for half a
+   * cent, with a signed artifact a test can assert on. The other half
+   * went unsaid: the person practicing a CLIENT here is usually
+   * building a STORE next, and this page never mentioned that the
+   * instruments watching our till all day will read theirs too. The
+   * room taught you to pay us and stayed quiet about proving your own
+   * door works — the wrong order of generosity for an observatory.
+   */
+  yourTillHead: "When it's your till on the line",
+  yourTill: [
+    "Everything above has a mirror. Once your client can pay a 402, your next problem is proving your own 402 can be paid — and the instruments that check our till are pointed at anyone's, most of them free.",
+    "The preflight probes any x402 door, yours included, and names what would stop a buyer before a buyer finds it: POST the URL, get the defects by name. No account, no wallet, no charge.",
+    "The conformance desk reads signed offers and receipts against the spec — send your own artifacts, get a dated verdict with each defect named. Also free, and it is the bytes talking, not our opinion of you.",
+    "When you're about to ship, the launch check is the paid form of the same discipline: we buy from your store with real money, end to end, and sign what we saw.",
+  ],
+
   honestHead: "The honest part",
   honest: [
     "The money is real and so are the goods. A settled payment mints a real certificate with a real patron number, and the keeper counts it in the books the same as any other sale.",

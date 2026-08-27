@@ -675,6 +675,7 @@ const SHELF = {
   heading: "Buy one from this browser",
   standfirst: "One signature.",
   house_rule: "This store never asks you to run code.",
+  signature_warning: "Your wallet may call this signature suspicious.",
   evm_chains: [8453, 137],
   items: [
     { id: "hello", name: "A Signed Hello", price_usdc: 0.001, buy_path: "/api/buy/hello", requires: [] },
@@ -816,6 +817,29 @@ test("a wallet that refuses the read leaves a calm line, not a broken till", asy
   );
   assert.equal(line.attributes["data-connected"], "unknown");
   assert.match(line.textContent, /pressing Pay will ask it directly/);
+});
+
+test("the smoke-alarm note rides the shelf: rendered when sent, absent when not", () => {
+  /*
+   * The wallet-may-flag-this warning is server-authored (see
+   * TILL_SIGNATURE_WARNING in till-shelf.ts) and the till only hangs
+   * it up. A shelf without one — an older cached island, another
+   * site's — must produce no empty paragraph.
+   */
+  const doc = fakeDocument();
+  doc.shelfNode.textContent = JSON.stringify(SHELF);
+  const section = mountTill({ doc, provider: fakeWallet(), shelf: readShelf(doc) });
+  assert.match(JSON.stringify(section), /call this signature suspicious/);
+
+  const bare = fakeDocument();
+  const { signature_warning, ...rest } = SHELF;
+  bare.shelfNode.textContent = JSON.stringify(rest);
+  const bareSection = mountTill({
+    doc: bare,
+    provider: fakeWallet(),
+    shelf: readShelf(bare),
+  });
+  assert.doesNotMatch(JSON.stringify(bareSection), /till-note/);
 });
 
 test("the full reading is there, folded, until there is something to read", () => {
