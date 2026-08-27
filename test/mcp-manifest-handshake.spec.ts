@@ -204,3 +204,29 @@ describe("the MCP handshake, at every path a client actually tries", () => {
     expect(new Set(bodies.map((b) => JSON.stringify(b))).size).toBe(1);
   });
 });
+
+/**
+ * THE CARD'S VERSION IS THE HANDSHAKE'S VERSION (scanner finding C2,
+ * 2026-08-27). The SEP-2127 server-card shape requires name,
+ * description, version — and the card had 15 keys with version not
+ * among them, while the server declared one in every initialize
+ * result. The scvd-tab package once shipped a handshake saying 0.2.0
+ * while the package said 0.3.0; that drift class is what this pins:
+ * ONE fetch of each document, compared to each other, never to a
+ * literal (rule 46).
+ */
+describe("the server card carries the server's own version", () => {
+  it("card.version strictly equals the serverInfo.version initialize returns", async () => {
+    const card = (await (
+      await SELF.fetch(`${BASE}/.well-known/mcp.json`)
+    ).json()) as Record<string, unknown>;
+    const handshake = (await (await initialize("/mcp")).json()) as {
+      result?: { serverInfo?: { version?: unknown } };
+    };
+    const declared = handshake.result?.serverInfo?.version;
+    expect(typeof declared).toBe("string");
+    expect(card["version"]).toBe(declared);
+    // Semver-shaped, never a range — the SEP rejects '^', '~', 'x'.
+    expect(String(card["version"])).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/);
+  });
+});
