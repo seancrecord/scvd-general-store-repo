@@ -113,7 +113,7 @@ your test has something to assert on besides a 200. The whole flow and
 a worked EIP-712 example, including the domain trap that fails
 silently: ${base}/try
 
-**Checking somebody else's work, free.** \`POST ${base}/api/conformance/v1\`
+**Checking somebody else's work, free.** The \`check_conformance\` MCP tool, or \`POST ${base}/api/conformance/v1\`
 with \`{"artifact": "<compact JWS>"}\` takes any x402 signed offer or
 receipt — whoever issued it, including stores we compete with — and
 returns a structured verdict: parse, schema, signature, liveness, and
@@ -156,7 +156,7 @@ the chain, with WHICH ONE WAS OBSERVED stated on the artifact. ${shelfPrice("set
 \`GET ${base}/api/buy/settlement_reconciliation?tx_hash=0x...&src=skill\`
 
 **You're about to trust a stranger's x402 endpoint.** Free, first:
-\`POST ${base}/api/preflight\` runs the published conformance battery —
+\`POST ${base}/api/preflight\` (or the \`preflight_endpoint\` MCP tool) runs the published conformance battery —
 one request, named checks, no wallet. If the answer matters enough to
 show somebody, the signed dated version is \`service_audit\` (${shelfPrice("service_audit")})
 and the standing version is \`conformance_watch\`.
@@ -308,7 +308,7 @@ somebody else's endpoint, artifact or payment, signed by THIS store's
 key rather than by the party it is about — which is the point: a claim
 you sign about yourself is worth what your reputation is worth.
 
-- Free: \`POST ${base}/api/preflight\` runs the published, versioned
+- Free: \`POST ${base}/api/preflight\` — also the \`preflight_endpoint\` MCP tool — runs the published, versioned
   conformance battery against any x402 endpoint and names the checks
   that passed and failed. The paid audit runs these and no others.
 - Paid: \`service_audit\` (a dated point-in-time verdict, failing

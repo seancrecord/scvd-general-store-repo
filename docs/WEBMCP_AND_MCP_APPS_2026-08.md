@@ -343,6 +343,23 @@ Constraints beyond the brief's:
 - Registration is one small module, feature-detected, failing
   silently and completely; no bundler, no framework, no dependency.
   If it needs a build step it is the wrong size.
+- **Channel attribution rides the handlers, or the channel is
+  invisible** (added 2026-08-28, the keeper's question "do we track
+  it in admin?"). Tool registration happens entirely in the
+  visitor's browser — the server never sees it, so "agents who saw
+  our tools" is unknowable. What the server CAN see is a declared
+  tool firing, because every handler calls a public endpoint: each
+  handler tags its fetch with a channel marker and the existing
+  channel ledger picks up `webmcp` beside `mcp` and `http`. No new
+  admin surface; the machinery that already splits channels does
+  the work. The before-number is the LOOK already on the desk:
+  agent-shaped user agents on storefront HTML.
+- **Distribution note, for whoever costs this**: nobody installs a
+  WebMCP surface and no directory lists one — discovery IS arrival,
+  so its entire funnel is whatever puts scvd.store in front of a
+  browsing agent. The one setup act is ours alone: an origin-trial
+  token for the origin (a meta tag or header, expiring — rule 46's
+  guard applies) until the API ships stable. Visitors need nothing.
 - Shipping any script at all means shipping a **CSP** in the same
   commit. We have none today because we had nothing to constrain.
 
@@ -957,6 +974,93 @@ mechanism applied to a card. §8.2's open question — whether the refusal
 test becomes its own rule beside 43 — is struck by it.
 
 ### 8.5 The one test that still gates everything
+
+**RESULTS AS THEY LAND (2026-08-27, the keeper's own laptop):**
+
+| Host | Our ui:// card rendered? | Notes |
+|---|---|---|
+| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **FULL PASS — round five** | Renders at full height: `size-changed` honored, the round-four fold gone. Screenshot-confirmed top to bottom — ladder with all four hatched NOT CLIMBED pills, cannot-tell-you list, conflict-of-interest with the trust line at full rust weight, and the colophon intact (mark, keeper's line, rule citation). Rule 54's eye test passes: the gaps and the age carry the weight the design gave them. **Dark, light, and narrow all observed and passing** — the light palette held (cream surface, rust trust-line, hatched pills legible), and the narrow window kept the ladder intact. Host one is complete. Root cause of rounds 1–3 stands recorded below: a static page never sends `ui/initialize`, and the host waits for it. |
+| **VS Code** (Copilot Chat, agent mode, stdio) | **PASS** | Renders inline in the chat sidebar — an inherently narrow viewport, so this doubled as a natural narrow-window test: ladder intact, hatched pills legible, colophon complete. Dark observed. Setup fought back twice, recorded in the kit README: the add-server wizard mangled the command into a literal `v` (`spawn v ENOENT`) — edit `mcp.json` directly, `command` and `args` as separate fields — and an earlier round showed an agent with the repo as its open workspace will grep the fixture and run the server by hand in a terminal rather than call the MCP tool, testing nothing about rendering. Point it at the tool by name, from a non-repo window. Its summary kept the not-climbed list and quoted the misquote line verbatim. |
+| ChatGPT | not yet run (tunnel required) | — |
+| Goose | optional | — |
+
+**CORRECTION, 2026-08-27, same day as the error.** An earlier
+revision of this table said Claude Desktop rendered the card, on the
+strength of a bracketed line in the tool result: *"This tool call
+rendered an interactive widget in the chat. The user can already see
+the result."* The keeper saw no widget. On the retry, the host model
+itself established that the line is a STANDARD HOST MARKER (it
+appeared on an unrelated Visualizer call too) — injected even though
+no widget was visible to the human, and its presence caused the model
+to skip its own rendering. This document then recorded the marker as
+a render. The observation discipline this store sells is exactly the
+one its author failed here: **a claim of rendering is not a render,
+and only the human in front of the screen can observe the
+difference.** The "card steered the narration" claim built on that
+premise is RETRACTED — the model's good drift-forward narration on
+run two came from the TEXT FALLBACK, not from a rendered card.
+
+**What actually stands from the Claude Desktop runs — three findings,
+each now stated against the evidence that supports it:**
+
+1. **The handshake is real.** Claude Desktop advertises
+   `io.modelcontextprotocol/ui` (mimeTypes `text/html;profile=mcp-app`)
+   on local stdio servers — captured in `render-test-log.json`. What
+   remains unobserved is any render.
+2. **The host's render marker is itself an unverifiable claim** — the
+   surface asserts "the user can already see the result" with no way
+   for the model, the server, or anyone downstream to check it, and
+   the assertion actively suppresses the fallback rendering it
+   preempts. That is precisely the artifact-without-verification
+   shape this store studies, found in the render pipeline itself.
+3. **The strongest specimen is the model's own improvised card.**
+   Told nothing had appeared, the model rebuilt a card from the text
+   fallback alone — and its version kept the age huge ("19 days
+   ago"), the expiry with "Then unusable", a "Narrow claim" pill, and
+   the full not-climbed list. The refusability survived into a
+   rendering WE NEVER DREW, because the text fallback carried it.
+   What its card dropped: the checks vector, the conflict-of-interest
+   block, the colophon, and the keeper's line — the identity and
+   the self-indictment, exactly the parts only our own HTML brings.
+
+~~**Diagnostic still open:** whether Claude Desktop ever fetched the
+`ui://` resource.~~ CLOSED by the keeper's round-three trace: the host
+prefetched the card (`resources/read` 100ms before `tools/call`) and
+displayed nothing — which localized the failure to the iframe side and
+led straight to the missing `ui/initialize`. Round four rendered.
+
+**TWO HOSTS AT FULL WEIGHT SATISFIES THE RULING'S CONDITION.** The
+§4.3 ruling was conditional on no host turning the gaps into fine
+print. Two independent hosts — different vendors, different chrome,
+one a desktop chat and one an editor sidebar — have now rendered the
+gaps at the weight the design gave them. The condition is met; the
+third door plus narrow cards stands. ChatGPT and Goose remain
+worthwhile rows for the record, not gates.
+
+**THE FUNNEL, OBSERVED WORKING END TO END (round five).** With the
+full card rendered, the host model's narration did three things in
+one breath, unprompted: refused correctly ("anyone quoting this as
+'verified' is quoting it past what it says"), read the drift as the
+actionable gap, and **routed to `preflight_endpoint` — the live free
+tool this same branch shipped — as the one-call way to close it.**
+Card → refusability → routing → free instrument. That is the entire
+thesis of this document operating as a chain, on a laptop, on the
+first day all the pieces existed.
+
+**TWO MACHINE READERS, SAME COPY FLAG — production-card note, rule 7,
+the keeper's pen.** Round three's model and round four's model, blind
+to each other, both read "expires in 11 days" as a forward warranty —
+*good until then* — the precise inference the card refuses. Round
+four's phrasing of the fix is the keeper's to take or leave: *"an
+observation of a past moment doesn't expire; what expires is the
+store's willingness to serve it as current — 'stale after' or 'current
+until' says the same thing without lending the observation a shelf
+life it doesn't have."* Two independent model-readers converging on
+one label is as clean as copy evidence gets. The same reader also
+named the not-climbed list's job unprompted: it "turns L3a from
+something a reader could quote as a pass into a stated ceiling" —
+§4.6's design intent, observed working in the wild.
+
 
 Unchanged by the ruling, and it comes before the P8 shape decision
 rather than after: **build one throwaway verify card and render it

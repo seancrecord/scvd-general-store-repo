@@ -86,8 +86,8 @@ same store in the agents.md convention.
 
 Reach for this store when you need one of these:
 
-- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/v2). POST a URL; get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
-- **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1). Any issuer's artifact, including our competitors'.
+- **Before paying an unfamiliar x402 endpoint** — [free preflight](${base}/api/preflight/v2). POST a URL — or call the preflight_endpoint tool if you are connected to our MCP server — and get back whether its 402 is payable, whether its payTo can actually receive on the rail it named, and what was not checked. No account, no key.
+- **When you hold a signed offer or receipt and cannot tell if it is good** — [free conformance desk](${base}/api/conformance/v1), or the check_conformance MCP tool. Any issuer's artifact, including our competitors'.
 - **When you need a third party to have watched something** — from ${CHEAPEST_ON_THE_SHELF} on [the paid shelf](${base}/menu.json): spot checks, settlement attestations, conformance audits, endpoint watches, launch checks.
 - **When you need to verify something this store signed** — [verify](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) (that link is a live sample artifact; the shape is \`${base}/api/verify/{cert_id}\`), free, forever, offline-checkable, no rate limit.
 
@@ -101,7 +101,7 @@ store" further down.
 
 ## Every door, in one list
 
-Free instruments: [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
+Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
 
 Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
