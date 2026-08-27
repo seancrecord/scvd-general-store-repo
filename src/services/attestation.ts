@@ -166,7 +166,7 @@ export interface SignedAttestation extends SettlementObservation {
  * that could drift.
  */
 function evmScope(chain: EvmChain): string {
-  return `This observes public ${chain.label} chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.`;
+  return `This observes public ${chain.label} chain state at the moment shown and nothing else. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND payment will never settle — only that it had not at observed_at. It resolves no dispute and takes no custody. Past stale_after, present this only as history: the observation stays true about its moment, but current-state claims should come from a fresh read, not from this document. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.`;
 }
 
 const SCOPE = evmScope(BASE_EVM);
@@ -181,7 +181,7 @@ const SCOPE = evmScope(BASE_EVM);
  * artifact that silently skipped a check.
  */
 const SOLANA_SCOPE =
-  "This observes public Solana chain state at the moment shown and nothing else, read from the transaction's settled USDC balance outcomes (pre/post token balances), not from its instructions. block_height and chain_head are slots. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND signature will never land — only that it had not at observed_at. EIP-3009 nonce matching is a Base facility and is not evaluated on Solana. It resolves no dispute and takes no custody. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
+  "This observes public Solana chain state at the moment shown and nothing else, read from the transaction's settled USDC balance outcomes (pre/post token balances), not from its instructions. block_height and chain_head are slots. It does not attest that goods or services were delivered. It does not attest that a NOT_FOUND signature will never land — only that it had not at observed_at. EIP-3009 nonce matching is a Base facility and is not evaluated on Solana. It resolves no dispute and takes no custody. Past stale_after, present this only as history: the observation stays true about its moment, but current-state claims should come from a fresh read, not from this document. Produced automatically from one RPC read: no human looked at this, and that is the point, because a party to a payment cannot produce a neutral observation of it.";
 
 function evmReadings(
   chain: EvmChain,
@@ -246,6 +246,26 @@ async function evidenceHash(
  * Unsigned by design: the walk embeds this inside its OWN signed row,
  * and a signature within a signature would be decoration.
  */
+/**
+ * HOW LONG AN ATTESTATION MAY BE PRESENTED AS CURRENT (roadmap 3.3,
+ * ledger D2). The observation never becomes false — it is a statement
+ * about chain state at observed_at, and that moment does not move.
+ * What ages is its use as evidence of NOW: a month-old SETTLED
+ * verified forever and looked current, and a NOT_FOUND goes stale the
+ * moment something could have settled behind it. stale_after is the
+ * artifact saying, in its own signed bytes, when to stop treating it
+ * as a statement about the present and re-read the chain instead.
+ * Twenty-four hours: past one day, current-state claims should come
+ * from the chain, not from us. ⚑ keeper dial.
+ */
+export const ATTESTATION_STALE_AFTER_HOURS = 24;
+
+export function staleAfterFrom(observedAt: string): string {
+  return new Date(
+    new Date(observedAt).getTime() + ATTESTATION_STALE_AFTER_HOURS * 3_600_000,
+  ).toISOString();
+}
+
 export interface TransferClaimRead {
   status: SettlementStatus;
   recipient: string | null;
@@ -363,6 +383,7 @@ function classify(
 export async function observeSettlement(
   env: Env,
   query: AttestationQuery,
+  now: Date = new Date(),
 ): Promise<SignedAttestation> {
   const txHash = query.txHash ?? null;
   /**
@@ -373,14 +394,14 @@ export async function observeSettlement(
    * 08-04; the attestation finally observes both.
    */
   if (txHash && isSolanaSignature(txHash)) {
-    return observeSolanaSettlement(env, query);
+    return observeSolanaSettlement(env, query, now);
   }
   const [receipt, head] = await Promise.all([
     txHash ? getReceipt(env, txHash) : Promise.resolve(null),
     getBlockNumber(env),
   ]);
   if (receipt || !txHash) {
-    return observeWithFacts(env, query, receipt, head);
+    return observeWithFacts(env, query, receipt, head, BASE_EVM, {}, now);
   }
   /**
    * NOT ON BASE IS NOT NOT-FOUND ANY MORE (dark team follow-through,
@@ -401,11 +422,19 @@ export async function observeSettlement(
       polygonReceipt,
       polygonHead,
       POLYGON_EVM,
+      {},
+      now,
     );
   }
-  return observeWithFacts(env, query, null, head, BASE_EVM, {
-    checkedBothEvmChains: true,
-  });
+  return observeWithFacts(
+    env,
+    query,
+    null,
+    head,
+    BASE_EVM,
+    { checkedBothEvmChains: true },
+    now,
+  );
 }
 
 /**
@@ -447,6 +476,7 @@ async function signObservation(
 export async function observeSolanaSettlement(
   env: Env,
   query: AttestationQuery,
+  now: Date = new Date(),
 ): Promise<SignedAttestation> {
   const signature = query.txHash ?? "";
   const [facts, headSlot] = await Promise.all([
@@ -504,8 +534,10 @@ export async function observeSolanaSettlement(
     }
   }
 
+  const solanaObservedAt = now.toISOString();
   const core = {
-    observed_at: new Date().toISOString(),
+    observed_at: solanaObservedAt,
+    stale_after: staleAfterFrom(solanaObservedAt),
     chain: SOLANA_CHAIN,
     tx_hash: query.txHash ?? null,
     recipient,
@@ -543,10 +575,13 @@ export async function observeWithFacts(
   head: number,
   chain: EvmChain = BASE_EVM,
   options: { checkedBothEvmChains?: boolean } = {},
+  now: Date = new Date(),
 ): Promise<SignedAttestation> {
   const verdict = classify(receipt, query, head, chain);
+  const observedAt = now.toISOString();
   const core = {
-    observed_at: new Date().toISOString(),
+    observed_at: observedAt,
+    stale_after: staleAfterFrom(observedAt),
     chain: chain.caip2,
     // Named only when more than one chain was actually read — the
     // NOT_FOUND that checked both EVM rails says so on the artifact.
