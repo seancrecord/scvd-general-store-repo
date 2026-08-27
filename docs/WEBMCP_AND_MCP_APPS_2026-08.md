@@ -975,6 +975,41 @@ test becomes its own rule beside 43 — is struck by it.
 
 ### 8.5 The one test that still gates everything
 
+**RESULTS AS THEY LAND (2026-08-27, the keeper's own laptop):**
+
+| Host | Renders? | Visual judgment |
+|---|---|---|
+| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **YES** | pending the keeper's screenshots (light / dark / narrow) |
+| VS Code | not yet run | — |
+| ChatGPT | not yet run | — |
+| Goose | optional | — |
+
+**Two byte-level findings from the first host, both corrections to
+this document's earlier read:**
+
+1. **The server must declare the extension back, and it is
+   load-bearing, not courtesy.** The spec's negotiation section says
+   the CLIENT advertises `io.modelcontextprotocol/ui`; the first kit
+   run declared nothing back and the card did not render — the host
+   consumed the text fallback. With the server echoing the extension
+   in its own initialize capabilities, the same host rendered the
+   card. The kit logs the handshake either way
+   (`render-test-log.json`, `host_offers_mcp_apps`), and Claude
+   Desktop does advertise the extension on local stdio servers.
+
+2. **Two live specimens of the summarization argument, one run
+   apart, same host, same record.** WITHOUT the card (first run): the
+   model's paraphrase kept the headline hedge, dropped the DATE and
+   AGE entirely, and pivoted to an upsell. WITH the card (second
+   run): the model's own narration put the drift front and centre —
+   "with 19 days of drift and 11 left on the clock, a reader leaning
+   on this card for a purchase decision would be reading past its
+   claim." The rendered card did not merely survive the narration; it
+   STEERED it. That is a stronger effect than §4.6 predicted — the
+   prediction was that the card reaches the human despite the model,
+   and the observation is that it also improves what the model says.
+
+
 Unchanged by the ruling, and it comes before the P8 shape decision
 rather than after: **build one throwaway verify card and render it
 in all four hosts.** Hosts style these themselves. If the gaps and

@@ -95,6 +95,14 @@ CSP, which is why the card uses system fonts — a webfont would fall
 back silently anyway, so the card is designed for the fonts the test
 actually gets.
 
+Learned live, first run vs second: **the server must also declare the
+extension in its own initialize capabilities or Claude Desktop falls
+back to text** — the spec reads as if only the client advertises, and
+that reading cost one round. The kit now declares it and logs the
+client's side of the handshake to `render-test-log.json`, whose
+`host_offers_mcp_apps` boolean is what separates "host does not offer
+the extension here" from "kit bug" on any future no-card result.
+
 The card is STATIC on purpose: the record is baked in, no runtime
 wiring to the tool result. This test measures layout and weight, not
 plumbing — the production card derives from the live record, and that
