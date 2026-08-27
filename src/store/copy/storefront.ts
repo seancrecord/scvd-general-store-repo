@@ -168,7 +168,21 @@ export const STOREFRONT_COPY = {
   intentLine:
     "A partner, a friend, a listening ear. At some point we gotta keep the lights on, brother.",
   gaugePatrons: "Patrons served",
-  gaugeMailbox: "Mailbox:",
+  /**
+   * REPLACED THE MAILBOX GAUGE, 2026-08-27, on the keeper's call. The
+   * mailbox LED read "0 in · 0 answered" for weeks — people chose
+   * other ways to reach him, and a counter that publishes its own
+   * disuse on the front of the building was clogging the momentum the
+   * rest of the gauges show. The DOOR stays: /api/letter still works,
+   * a human still reads every letter, and every promise that names it
+   * still holds. Only the front-page score-keeping went.
+   *
+   * What hangs in its place is the record: how many weekly corpus
+   * entries exist, counted live from the corpus's own keys. It only
+   * ever goes up, it is the store's actual product, and nobody has to
+   * write to it for it to grow — the Sunday anchor does.
+   */
+  gaugeRecord: "The record",
   /**
    * WHAT THIS IS, BEFORE WHAT IT SELLS (2026-08-10). Five outside
    * models were asked "what is scvd.store"; the three that leaned on

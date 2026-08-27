@@ -9,7 +9,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
 import { listGuestbook } from "@/services/guestbook";
-import { letterCounts } from "@/services/letters";
+import { listKeys } from "@/lib/kv-list";
 import { computeStats, storefrontLedgerLine } from "@/services/stats";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
@@ -51,7 +51,7 @@ storefrontRoutes.get("/", async (c) => {
     weekNote,
     bellCountRaw,
     guestbook,
-    letters,
+    corpusKeys,
     patronRaw,
     stats,
     firstDollar,
@@ -59,7 +59,19 @@ storefrontRoutes.get("/", async (c) => {
     c.env.COUNTERS.get(KV_KEYS.weekNote),
     c.env.COUNTERS.get(KV_KEYS.bellCount),
     listGuestbook(c.env, 8).catch(() => []),
-    letterCounts(c.env).catch(() => ({ received: 0, answered: 0 })),
+    /*
+     * The record gauge: keys only, values never read. The corpus keys
+     * are sequence-numbered, so counting names counts weeks, and one
+     * capped list is the whole cost. 1,000 is ~19 years of Sundays;
+     * if it ever truncates, the gauge shows "+" rather than a floor
+     * dressed as a total (rule 52). Fail-soft to zero like every
+     * other gauge read here: a KV hiccup shows "first entry pending",
+     * never a broken front page.
+     */
+    listKeys(c.env.COUNTERS, {
+      prefix: KV_KEYS.corpusPrefix,
+      cap: 1000,
+    }).catch(() => ({ names: [], truncated: false })),
     c.env.COUNTERS.get(KV_KEYS.patronNumber),
     computeStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
@@ -70,8 +82,8 @@ storefrontRoutes.get("/", async (c) => {
       weekNote: weekNote || DEFAULT_WEEK_NOTE,
       bellCount: bellCountRaw ? parseInt(bellCountRaw, 10) : 0,
       guestbook,
-      lettersReceived: letters.received,
-      lettersAnswered: letters.answered,
+      recordWeeks: corpusKeys.names.length,
+      recordTruncated: corpusKeys.truncated,
       patronCount: patronRaw ? parseInt(patronRaw, 10) : 0,
       stats,
       ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
