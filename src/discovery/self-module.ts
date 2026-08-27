@@ -33,7 +33,9 @@ export function originCatalogFetcher(origin: string): CatalogFetcher {
   };
 }
 
-const CATALOG_PATHS = {
+/** Exported so the walkthrough on /passport lists exactly the
+ * surfaces this walk fetches — one source, never a second list. */
+export const CATALOG_PATHS = {
   menu_json: "/menu.json",
   x402_catalog: "/.well-known/x402.json",
   openapi: "/openapi.json",

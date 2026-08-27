@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { CATALOG_PATHS } from "@/discovery/self-module";
 import { loopbackCatalogFetcher } from "@/lib/self-fetch";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
@@ -48,6 +49,60 @@ function passportHtml(passport: EndpointPassport): string {
   </section>`;
 }
 
+/**
+ * THE WALKTHROUGH (outside review, 2026-08-27, accepted): "here is
+ * how SCVD checks itself," readable, on the landing the noun already
+ * owns. It NARRATES the live self-passport — the surface list is the
+ * walk's own CATALOG_PATHS and each verdict/hash is the live
+ * module's — so the prose cannot drift from the instrument. Module
+ * ids the readings table does not know get the honest generic line
+ * rather than silence.
+ */
+const MODULE_READINGS: Record<string, string> = {
+  discovery_coherence:
+    "Do the machine surfaces agents read before paying agree with each other? The walk pulls every claim these catalogs make about the same doors — prices, rails, paths — and compares them. A contradiction between surfaces is exactly the kind of defect this store exhibits on others, so it looks for it here first.",
+  schema_coherence:
+    "Do the schemas these surfaces declare for the same tool agree? A tool whose MCP declaration, OpenAPI contract and catalog entry describe different inputs will break an agent that trusted whichever it read first. Same comparison, on ourselves.",
+};
+
+function walkthroughHtml(base: string, passport: EndpointPassport): string {
+  const surfaces = Object.values(CATALOG_PATHS)
+    .map(
+      (path) =>
+        `<a href="${escapeHtml(path)}"><code>${escapeHtml(path)}</code></a>`,
+    )
+    .join(" · ");
+  const modules = passport.payload.modules
+    .map((module) => {
+      const reading =
+        MODULE_READINGS[module.id] ??
+        "No reading written for this module yet; its own not_checked and does_not_prove lists below are the honest boundary of what it claims.";
+      return `<section data-walkthrough="${escapeHtml(module.id)}">
+      <h3><code>${escapeHtml(module.id)}</code> → <strong>${escapeHtml(module.derived)}</strong></h3>
+      <p class="menu-desc">${escapeHtml(reading)}</p>
+      <p class="menu-meta">evidence hash <code>${escapeHtml(module.evidence_hash.slice(0, 12))}…</code> —
+      the canonical bytes of what was compared, hashed, so this page and the signed object cannot quietly disagree.
+      Not checked: ${escapeHtml(module.not_checked.join("; ") || "—")}.
+      Does not prove: ${escapeHtml(module.does_not_prove.join("; ") || "—")}.</p>
+      </section>`;
+    })
+    .join("\n");
+  return `<section>
+    <h2>How this store checks itself</h2>
+    <p class="menu-desc">Every check this store sells runs on ourselves first,
+    and this is the walk, live: on each request to this page the store fetches
+    its own machine surfaces — ${surfaces} — extracts the claims they make
+    about the same doors, and compares. The verdicts below are not a cached
+    grade; they were derived while this page rendered, and the signed object
+    underneath carries the same values.</p>
+    ${modules}
+    <p class="menu-desc">Nothing here needs trusting: every surface named
+    above is public, so you can fetch them and re-check the comparison with
+    your own tools — which is the only reason a self-issued passport is worth
+    serving at all.</p>
+  </section>`;
+}
+
 passportRoutes.get("/passport", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const self = await issueSelfPassport(
@@ -77,6 +132,7 @@ passportRoutes.get("/passport", async (c) => {
     levels are defined on <a href="/trust">the trust panel</a>; the signature
     verifies per <a href="/spec/scvd-attestation/v1">the spec</a>.</p>
   </section>
+  ${walkthroughHtml(base, self)}
   <section><h2>The example: our own, self-observed and labeled as such</h2></section>
   ${passportHtml(self)}`;
   return c.html(
