@@ -20,6 +20,16 @@ import {
   CORPUS_DATASET_NAME,
 } from "@/store/corpus-dataset";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
+
+/**
+ * Chrome/Edge origin-trial token for WebMCP (feature "WebMCP",
+ * origin https://scvd.store:443, expires 2026-11-17). Registered by
+ * the keeper, 2026-08-27. Origin-bound and inert elsewhere, so it is
+ * public data, not a secret; when the trial ends the API goes back
+ * to feature-detection and /webmcp.js keeps no-opping gracefully.
+ */
+export const WEBMCP_ORIGIN_TRIAL_TOKEN =
+  "AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=";
 import { EXTERNAL_RECORDS, OPERATOR } from "@/store/trust-signals";
 import { ardInPageEntries, ardLinkTags } from "@/lib/ard-catalog";
 import type { StoreStats } from "@/services/stats";
@@ -655,7 +665,15 @@ export function renderStorefront(data: StorefrontData): string {
     in the visitor's browser; a browser without the API loads a no-op.
     The tool set derives from the MCP catalog — see routes/webmcp.ts
     for the two construction guarantees (cannot act, cannot drift).
+    The origin-trial token below unlocks the API in Chrome 149-156
+    (and Chromium kin) ahead of general availability — registered by
+    the keeper 2026-08-27, bound to https://scvd.store:443, feature
+    "WebMCP", expires 2026-11-17 (Google will mail a renewal
+    reminder). Public by design: a token is origin-bound and inert
+    anywhere else. Browsers outside the trial ignore it and the
+    script still no-ops gracefully.
   -->
+  <meta http-equiv="origin-trial" content="${WEBMCP_ORIGIN_TRIAL_TOKEN}">
   <script src="/webmcp.js" defer></script>
 </head>
 <body class="night">
