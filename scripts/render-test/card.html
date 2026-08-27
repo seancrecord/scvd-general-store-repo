@@ -163,5 +163,53 @@
         <b>House rule 43 — dated observation, never a score</b></p>
     </div>
   </article>
+  <script>
+    /*
+     * THE HANDSHAKE A STATIC PAGE NEVER SPOKE — and why nothing showed.
+     * An MCP Apps iframe is an MCP client: the host waits for the page
+     * to send ui/initialize over postMessage and answer with
+     * ui/notifications/initialized before treating the widget as live
+     * (ext-apps SDK, App.connect; protocol 2026-01-26). The keeper's
+     * trace proved the host prefetched this HTML and still rendered
+     * nothing; this is the missing half of the conversation. Raw
+     * JSON-RPC, no SDK — the card stays inert on purpose: it registers
+     * no tools, requests nothing, and ignores everything but the
+     * initialize reply.
+     */
+    (function () {
+      if (window.parent === window) return; // not in a host iframe
+      var pending = 1;
+      window.addEventListener("message", function (event) {
+        var m = event.data;
+        if (!m || m.jsonrpc !== "2.0") return;
+        if (m.id === pending && m.result) {
+          window.parent.postMessage(
+            { jsonrpc: "2.0", method: "ui/notifications/initialized" },
+            "*"
+          );
+        } else if (m.id !== undefined && m.method) {
+          // Answer any host request with an empty result rather than
+          // leaving it hanging; a render test has no opinions.
+          window.parent.postMessage(
+            { jsonrpc: "2.0", id: m.id, result: {} },
+            "*"
+          );
+        }
+      });
+      window.parent.postMessage(
+        {
+          jsonrpc: "2.0",
+          id: pending,
+          method: "ui/initialize",
+          params: {
+            protocolVersion: "2026-01-26",
+            appInfo: { name: "scvd-render-test-card", version: "0.0.1" },
+            appCapabilities: {},
+          },
+        },
+        "*"
+      );
+    })();
+  </script>
 </body>
 </html>
