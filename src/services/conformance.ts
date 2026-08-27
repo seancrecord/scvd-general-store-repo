@@ -9,6 +9,10 @@ import {
 } from "../../verifier/x402-verify.js";
 import { buildAnchorLogDocument } from "@/services/anchor-log";
 import { buildDidDocument } from "@/services/did-document";
+import {
+  checkResponseProvenance,
+  type ProvenanceFinding,
+} from "@/services/response-provenance";
 import type { Env } from "@/types";
 
 /**
@@ -125,6 +129,12 @@ export interface ConformanceRequest {
   public_key_hex?: unknown;
   resolve_key?: unknown;
   check_anchor?: unknown;
+  /**
+   * Opt-in GVP response-provenance re-derivation. { response, inputs } — the response object
+   * (which declares provenance.responseHash) and the body it describes. Present only when the
+   * caller wants the hash checked; absent on every ordinary artifact call. See ProvenanceFinding.
+   */
+  response_provenance?: unknown;
 }
 
 /**
@@ -203,6 +213,12 @@ export interface ConformanceVerdict {
    * `verdict` — see AnchorFinding.
    */
   anchored_key_history: AnchorFinding | null;
+  /**
+   * Present only when response_provenance was supplied. Additive to the frozen v1 contract, and
+   * NEVER folded into `verdict` — a caller with no body to supply is not non-conformant for it.
+   * See ProvenanceFinding and services/response-provenance.ts.
+   */
+  provenance_rederivation?: ProvenanceFinding;
   what_this_means: string;
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
@@ -467,6 +483,10 @@ export async function checkConformance(
   const askedForResolution =
     body.resolve_key === false ? false : publicKeyHex === undefined;
   const wantsAnchor = body.check_anchor === true;
+  const provenanceFinding: ProvenanceFinding | undefined =
+    body.response_provenance !== undefined
+      ? await checkResponseProvenance(body.response_provenance)
+      : undefined;
 
   const parsed = parseJws(artifact);
   const kid =
@@ -721,6 +741,7 @@ export async function checkConformance(
           }
         : {}),
       anchored_key_history: anchor,
+      ...(provenanceFinding ? { provenance_rederivation: provenanceFinding } : {}),
       what_this_means: meaningOf(verdict, kind, live),
       what_this_cannot_tell_you: limitsFor(keyResolution),
       our_conflict_of_interest: CONFLICT,
