@@ -27,6 +27,21 @@ import type { MenuItem } from "@/types";
  * required field cannot be missing from the form.
  */
 
+/**
+ * THE TILL'S WALLET LIMIT, WRITTEN WHERE THE BUYER READS (2026-08-27,
+ * the keeper's own catch, and it is rule 53 applied to rule 53's own
+ * fix). The store sells on Base, Polygon and Solana; the browser till
+ * signs with an EVM wallet only, so a Solana-wallet visitor meets a
+ * page that never explains why there is no button for them — and the
+ * rule says a door gets a till OR the reason is written down. This is
+ * the written reason, ONE constant rendered server-side on /try and
+ * the item pages (visible with scripting off, which is the whole
+ * point) and carried in the shelf JSON so the till itself can say it
+ * too. The Solana pass is filed as a build item, not pretended at.
+ */
+export const TILL_WALLET_LIMIT =
+  "The browser till takes EVM wallets only for now — Base or Polygon, one signature, no gas. Holding Solana USDC? Every agent client and the MCP door settle on Solana today; the browser till's Solana pass is planned and this sentence comes down when it ships.";
+
 export interface TillShelfItem {
   id: string;
   name: string;
@@ -105,6 +120,7 @@ export function tillShelfHtml(
      * drift into a friendlier, weaker version of itself.
      */
     house_rule: HOUSE_RULE,
+    wallet_limit: TILL_WALLET_LIMIT,
     verify_hint: "/api/verify/{cert_id}",
     items: items.map(tillShelfItem),
   };
