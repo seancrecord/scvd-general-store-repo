@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/sanitize";
+import { ardLinkTags } from "@/lib/ard-catalog";
 import { PAPER_CSS } from "@/pages/paper-css";
 import { STORE_METADATA } from "@/store";
 import { ROOMS } from "@/store/rooms";
@@ -98,6 +99,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:image" content="${SITE_ORIGIN}/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}
+  ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
 <body${options.bodyClass ? ` class="${escapeHtml(options.bodyClass)}"` : ""}>

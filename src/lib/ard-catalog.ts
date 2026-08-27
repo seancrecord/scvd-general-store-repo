@@ -91,6 +91,8 @@ const TYPE_SKILL = "application/ai-skill+md";
 const TYPE_OPENAPI = "application/openapi+json;version=3.1";
 
 export interface ArdEntry {
+  /** Present only on in-page copies — see ardInPageEntries. */
+  "@context"?: string;
   identifier: string;
   displayName: string;
   type: string;
@@ -229,4 +231,56 @@ export function ardManifest(base: string): ArdManifest {
   ];
 
   return { entries };
+}
+
+/**
+ * The ARD base context (§4.1). An entry carried as in-page markup
+ * SHOULD name it, because generic JSON-LD tooling reading a page has
+ * not been told these are ARD entries and cannot apply the base
+ * context on its own. An entry inside the well-known manifest does not
+ * need it — a consumer that fetched ard.json already knows.
+ */
+export const ARD_CONTEXT_URL = "https://agenticresourcediscovery.org/context/v1";
+
+/**
+ * ARD's predecessor link relation (§5.1), emitted beside `ard` for the
+ * same reason the predecessor PATH is served: a consumer built against
+ * the older revision honours only this one.
+ */
+export const ARD_PREDECESSOR_LINK_REL = "ai-catalog";
+
+/**
+ * THE HTML LINK TAG (§5.1, mechanism four), for the head of every
+ * page this store renders.
+ *
+ * The well-known path is the mechanism a consumer MUST try; this is
+ * the one it MUST honour when it finds it. They are not redundant —
+ * a crawler that arrived at some deep page has an HTML document in
+ * hand and no reason to go probing well-known paths, and this is the
+ * line that tells it there is a manifest at all.
+ *
+ * Inert in every sense that matters: a <link> in the head renders
+ * nothing, so a reader with scripting off, or with images off, or
+ * reading the page as text, sees exactly what they saw before.
+ */
+export function ardLinkTags(base: string): string {
+  return [
+    `<link rel="${ARD_LINK_REL}" href="${base}${ARD_WELL_KNOWN_PATH}">`,
+    `<link rel="${ARD_PREDECESSOR_LINK_REL}" href="${base}${ARD_PREDECESSOR_PATH}">`,
+  ].join("\n  ");
+}
+
+/**
+ * THE ENTRIES AS IN-PAGE MARKUP (§5.1, mechanism two).
+ *
+ * Same entries, same function, one addition: each node names the ARD
+ * base context, because a JSON-LD reader that found these by ordinary
+ * web crawling has not been told what they are. The manifest's copies
+ * stay terse for the same reason in reverse.
+ */
+export function ardInPageEntries(base: string): ArdEntry[] {
+  return ardManifest(base).entries.map((entry) => ({
+    "@context": ARD_CONTEXT_URL,
+    ...entry,
+  })) as ArdEntry[];
 }

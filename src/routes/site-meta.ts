@@ -1,5 +1,6 @@
 import { OG_IMAGE_PNG_BASE64 } from "@/store/og-image";
 import { Hono } from "hono";
+import { ARD_WELL_KNOWN_PATH } from "@/lib/ard-catalog";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
 import { MENU_ITEMS } from "@/store";
@@ -73,6 +74,12 @@ Allow: /
 Content-Signal: search=yes, ai-train=yes, ai-input=yes
 
 Sitemap: ${base}/sitemap.xml
+# The Agentmap directive: ARD's robots.txt entry-source mechanism
+# (spec section 5.1). Same document a consumer would find at the
+# well-known path; named here because robots.txt is the one file every
+# crawler already reads, so a discovery service that has not learned
+# the well-known path still finds the entries.
+Agentmap: ${base}${ARD_WELL_KNOWN_PATH}
 `,
   );
 });
