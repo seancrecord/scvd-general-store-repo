@@ -808,16 +808,56 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
        * the visitor. The uptime monitors polling these doors see the
        * 402 they came for.
        */
-      await recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
-        (error) => console.error("challenge count lost:", String(error)),
-      );
-      // A marker that reached a priced door. Counted apart from one
-      // that settled, because the gap between them is the signal.
-      await recordReferralFor(c, "arrived").catch(() => undefined);
+      // The referral marker rides along: a marker that reached a
+      // priced door, counted apart from one that settled, because the
+      // gap between them is the signal.
+      const tally = (): Promise<unknown> =>
+        Promise.all([
+          recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
+            (error) => console.error("challenge count lost:", String(error)),
+          ),
+          recordReferralFor(c, "arrived").catch(() => undefined),
+        ]);
       // If a signed payment rode in and still got a 402, that's a
       // decline: tell the payer why and keep the reason in the books.
       const paymentHeader =
         c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT");
+      if (paymentHeader) {
+        // A refused payment ATTEMPT keeps its books ahead of the
+        // response — declines are money-adjacent and rare, and the
+        // decline row below joins the same wave of truth.
+        await tally();
+      } else {
+        /*
+         * THE QUOTE LEAVES FIRST (the keeper's ruling, 2026-08-27:
+         * do it right without breaking the books — and his sharper
+         * point, "the probers don't even pay and they log": the bare
+         * price-check IS the measured path, hit all day by monitors
+         * and directory probes that never present a signature).
+         *
+         * A KV write is not edge-local — the wave above was parallel
+         * but the response still waited for its slowest write to
+         * cross to central storage. The 402 is the product; the
+         * count is bookkeeping; the count now rides waitUntil and
+         * lands within the request's lifetime instead of ahead of
+         * its first byte. What this costs, stated plainly: an
+         * isolate killed mid-flight loses a tally mark — a CHALLENGE
+         * count, never a settle, never a decline; those two stay
+         * awaited on their own paths. The earlier ruling in
+         * metrics.ts ("the test was right — write-before-response is
+         * an observable contract") is superseded by this one for the
+         * bare-quote branch only; the contract is now
+         * lands-within-the-request, and the suite holds it with
+         * vi.waitFor where it used to assume synchrony.
+         */
+        try {
+          c.executionCtx.waitUntil(tally());
+        } catch {
+          // No execution context (bare test invocation): the old
+          // contract, unchanged.
+          await tally();
+        }
+      }
       // Slot first: it is exact and works even when the payload carries
       // no nonce to join on, which is exactly the wrong-network case.
       // The nonce map is the fallback for anything that reached the
