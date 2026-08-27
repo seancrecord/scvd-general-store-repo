@@ -453,6 +453,16 @@ function didWebHost(kid: string | undefined): string | undefined {
 export async function checkConformance(
   body: ConformanceRequest,
   env?: Env,
+  /**
+   * THE READING CLOCK, injected (roadmap 3.3, ledger F4). The
+   * verifier has accepted nowSeconds since it shipped; this desk
+   * never passed one, so its expiry verdict rode the wall clock —
+   * the house testing law (inject the clock on BOTH sides) applied
+   * to the tests and not to the product. Route callers omit it and
+   * get the honest present; a test can finally move the desk's
+   * clock instead of waiting for offers to age.
+   */
+  now: Date = new Date(),
 ): Promise<{ status: number; verdict?: ConformanceVerdict; error?: string }> {
   const artifact = body.artifact;
   if (typeof artifact !== "string" || artifact.trim().length === 0) {
@@ -555,6 +565,7 @@ export async function checkConformance(
     raw = (await verifyArtifact(artifact, {
       ...(requestedKind ? { kind: requestedKind } : {}),
       ...(resolvedHex ? { publicKey: resolvedHex } : {}),
+      nowSeconds: Math.floor(now.getTime() / 1000),
     })) as { ok: boolean; checks: ConformanceCheck[] };
     if (!resolvedHex && resolutionProblem) {
       // Keep the reason visible rather than reporting a bare "no key".
@@ -709,6 +720,38 @@ export async function checkConformance(
           detail: canonical
             ? `the offer's asset is the canonical USDC contract for ${network}`
             : `the offer's asset ${asset} is not the canonical USDC contract for ${network} (${CANONICAL_USDC[network]}). Not a conformance failure — x402 permits any asset — but a buyer pricing this offer in dollars should know the token is something else before paying.`,
+        },
+      ];
+    }
+  }
+
+  /*
+   * IS_STALE IS DERIVED AT READ, NEVER STORED (roadmap 3.3, D2). An
+   * artifact that carries its own stale_after has said when to stop
+   * treating it as current; this desk finishes the sentence with the
+   * reading clock. Advisory, never the verdict: stale is not invalid
+   * — the signature still proves the document, exactly as an expired
+   * offer still conforms. Absent the field, no check appears: a
+   * document that does not age by its own terms is not defective for
+   * saying nothing.
+   */
+  if (
+    parsed.ok &&
+    typeof parsed.payload === "object" &&
+    parsed.payload !== null
+  ) {
+    const staleAfterRaw = (parsed.payload as Record<string, unknown>)["stale_after"];
+    if (typeof staleAfterRaw === "string" && !Number.isNaN(Date.parse(staleAfterRaw))) {
+      const isStale = new Date(staleAfterRaw).getTime() < now.getTime();
+      raw.checks = [
+        ...raw.checks,
+        {
+          name: "staleness",
+          ok: !isStale,
+          advisory: true,
+          detail: isStale
+            ? `the artifact's own stale_after (${staleAfterRaw}) is behind the reading clock (${now.toISOString()}). The signature still proves the document; its issuer says to read it as history now, not as a statement about now. Derived at read — nothing stored.`
+            : `stale_after ${staleAfterRaw} is ahead of the reading clock; the issuer's own terms still permit presenting this as current.`,
         },
       ];
     }

@@ -96,6 +96,8 @@ const EXPIRY_FIELDS = ["expires", "valid_until", "expiry", "expires_at"];
 export async function readReceipt(
   env: Env,
   rawBody: string,
+  /** The reading clock, injected — same law as the desk (3.3/F4). */
+  now: Date = new Date(),
 ): Promise<ReceiptReading> {
   const receiptSha = await sha256Hex(rawBody);
   const checks: ReceiptCheck[] = [];
@@ -259,7 +261,7 @@ export async function readReceipt(
   for (const field of EXPIRY_FIELDS) {
     const value = record[field] ?? (record["payload"] as Record<string, unknown> | undefined)?.[field];
     if (typeof value === "string" && !Number.isNaN(Date.parse(value))) {
-      if (new Date(value).getTime() < Date.now()) expired = true;
+      if (new Date(value).getTime() < now.getTime()) expired = true;
       checks.push({
         name: "expiry",
         outcome: expired ? "fail" : "pass",
@@ -274,6 +276,30 @@ export async function readReceipt(
       outcome: "skipped",
       detail: "No expiry field found; the document does not age by its own terms.",
     });
+  }
+
+  /*
+   * STALENESS BESIDE EXPIRY, deliberately two checks (3.3, D2).
+   * Expiry is the issuer saying REFUSE this document; stale_after is
+   * the issuer saying stop presenting it as current — the document
+   * stays true about its moment. Conflating them would make honest
+   * aging look like invalidity. Derived here at read with the
+   * injected clock; nothing is stored.
+   */
+  {
+    const staleRaw =
+      record["stale_after"] ??
+      (record["payload"] as Record<string, unknown> | undefined)?.["stale_after"];
+    if (typeof staleRaw === "string" && !Number.isNaN(Date.parse(staleRaw))) {
+      const isStale = new Date(staleRaw).getTime() < now.getTime();
+      checks.push({
+        name: "staleness",
+        outcome: isStale ? "fail" : "pass",
+        detail: isStale
+          ? `stale_after ${staleRaw} is behind the reading clock (${now.toISOString()}): the issuer's own terms say to read this as history, not as a statement about now.`
+          : `stale_after ${staleRaw}, still presentable as current by the issuer's own terms.`,
+      });
+    }
   }
 
   return done(expired ? "expired" : "valid", issuer);
