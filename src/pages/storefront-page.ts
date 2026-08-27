@@ -46,9 +46,16 @@ export interface StorefrontData {
   weekNote: string;
   bellCount: number;
   guestbook: GuestbookEntry[];
-  /** The only public letter facts: how many in, how many answered. */
-  lettersReceived: number;
-  lettersAnswered: number;
+  /**
+   * Weekly corpus entries on the record, counted from the corpus's
+   * own keys — the growth gauge that replaced the mailbox LED
+   * (2026-08-27, the keeper's call; reasoning on gaugeRecord in the
+   * copy file). `recordTruncated` is rule 52 riding along: the count
+   * comes from a capped key-list, and a capped reading that cannot
+   * say "there were more" publishes a floor as a total.
+   */
+  recordWeeks: number;
+  recordTruncated: boolean;
   patronCount: number;
   /** Live books, for the structured data. Absent rather than stale. */
   stats?: StoreStats | null;
@@ -660,8 +667,12 @@ export function renderStorefront(data: StorefrontData): string {
         <span class="nixie">${nixieHtml(data.patronCount)}</span>
       </div>
       <div class="gauge">
-        <span class="gauge-label">${COPY.gaugeMailbox}</span>
-        <span class="led"><em class="led-num">${data.lettersReceived}</em> in <span class="led-sep">\u00B7</span> <em class="led-num">${data.lettersAnswered}</em> answered</span>
+        <span class="gauge-label">${COPY.gaugeRecord}</span>
+        ${
+          data.recordWeeks > 0
+            ? `<span class="led"><em class="led-num">${data.recordWeeks}${data.recordTruncated ? "+" : ""}</em> week${data.recordWeeks === 1 && !data.recordTruncated ? "" : "s"} <span class="led-sep">\u00B7</span> signed, chained, anchored</span>`
+            : `<span class="led">first entry pending</span>`
+        }
       </div>
       <div class="gauge">
         <span class="gauge-label">The first dollar</span>
