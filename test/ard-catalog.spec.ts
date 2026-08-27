@@ -1,7 +1,9 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
+  ARD_CONTEXT_URL,
   ARD_LINK_REL,
+  ARD_PREDECESSOR_LINK_REL,
   ARD_PREDECESSOR_PATH,
   ARD_WELL_KNOWN_PATH,
   ardManifest,
@@ -234,5 +236,106 @@ describe("it cannot disagree with what the store already declares", () => {
     expect(ard).not.toEqual(rfc9727);
     expect(Object.keys(ard as object)).toContain("entries");
     expect(Object.keys(rfc9727 as object)).toContain("linkset");
+  });
+});
+
+describe("all four mechanisms this origin can serve, and the fifth named", () => {
+  /**
+   * ARD §5.1 lists five discovery mechanisms. Four are things a Worker
+   * can serve and all four are served; the fifth is DNS, which no code
+   * in this repository can set. That one is stated here rather than
+   * quietly omitted, because a checklist with an unexplained gap reads
+   * as a checklist somebody stopped filling in.
+   */
+
+  it("1. hosts the manifest at the well-known URI", async () => {
+    expect((await fetchManifest(ARD_WELL_KNOWN_PATH)).status).toBe(200);
+  });
+
+  it("2. embeds the entries as in-page markup, with the base context", async () => {
+    /*
+     * §4.1: an entry SHOULD name the base context "when it may be read
+     * by generic JSON-LD tooling that has not been told to apply the
+     * base context — most importantly when embedded as in-page
+     * markup". A crawler that found these by ordinary web crawling is
+     * exactly that reader, so the in-page copies carry @context and
+     * the manifest's copies deliberately do not.
+     */
+    const html = await (
+      await SELF.fetch(`${BASE}/`, { headers: { Accept: "text/html" } })
+    ).text();
+    const blocks = [
+      ...html.matchAll(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+      ),
+    ].map((match) => JSON.parse(match[1]!.replace(/\\u003c/g, "<")) as unknown);
+
+    const embedded = blocks.find(
+      (node): node is Array<Record<string, unknown>> =>
+        Array.isArray(node) &&
+        node.length > 0 &&
+        typeof node[0] === "object" &&
+        node[0] !== null &&
+        "identifier" in (node[0] as object),
+    );
+    expect(embedded, "no ARD entries embedded on the storefront").toBeTruthy();
+
+    for (const entry of embedded!) {
+      expect(entry["@context"]).toBe(ARD_CONTEXT_URL);
+      expect(typeof entry["identifier"]).toBe("string");
+    }
+    // The same entries, not a second set that can drift.
+    expect(embedded!.map((entry) => entry["identifier"])).toEqual(
+      ardManifest(BASE).entries.map((entry) => entry.identifier),
+    );
+  });
+
+  it("3. names the manifest in robots.txt as an Agentmap directive", async () => {
+    const robots = await (await SELF.fetch(`${BASE}/robots.txt`)).text();
+    expect(robots).toContain(`Agentmap: ${BASE}${ARD_WELL_KNOWN_PATH}`);
+    // Points at the canonical path, never the predecessor.
+    expect(robots).not.toContain(ARD_PREDECESSOR_PATH);
+  });
+
+  it("4. carries the HTML link tag in the head of every rendered page", async () => {
+    /*
+     * The mechanism for a crawler that arrived at some deep page with
+     * an HTML document in hand and no reason to probe well-known
+     * paths. Checked on the storefront and on a small room, because
+     * those are two different renderers and a tag in one is not a tag
+     * in the other.
+     */
+    for (const path of ["/", "/try", "/menu/hello"]) {
+      const html = await (
+        await SELF.fetch(`${BASE}${path}`, { headers: { Accept: "text/html" } })
+      ).text();
+      expect(html, path).toContain(
+        `<link rel="${ARD_LINK_REL}" href="${BASE}${ARD_WELL_KNOWN_PATH}">`,
+      );
+      // The predecessor relation too, for a consumer built against the
+      // older revision — same reasoning as the predecessor path.
+      expect(html, path).toContain(
+        `<link rel="${ARD_PREDECESSOR_LINK_REL}" href="${BASE}${ARD_PREDECESSOR_PATH}">`,
+      );
+    }
+  });
+
+  it("5. does not pretend to publish the DNS mechanism", () => {
+    /*
+     * §5.1's fifth mechanism is Service Binding records at
+     * `_entries._agents.<domain>`. That is a zone file, not a route:
+     * nothing in this Worker can create it, and nothing here should
+     * claim it exists. The keeper adds it at the DNS provider or it
+     * does not exist — and either way this store's own documents must
+     * not say otherwise.
+     *
+     * Asserted as an ABSENCE derived from the fact that would change
+     * it: if a record is ever published, the string naming it will
+     * appear in the code that publishes it, and this fails then rather
+     * than quietly continuing to be true.
+     */
+    const manifest = JSON.stringify(ardManifest(BASE));
+    expect(manifest).not.toContain("_agents.");
+    expect(manifest).not.toContain("_entries.");
   });
 });
