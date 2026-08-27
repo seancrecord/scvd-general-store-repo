@@ -3,7 +3,7 @@ import { newRefundId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, RefundRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a refunds scan. Named because an unnamed cap is a silent one. */
 const REFUND_CAP = 500;
@@ -56,7 +56,7 @@ export async function getRefund(
   env: Env,
   refundId: string,
 ): Promise<RefundRecord | null> {
-  return env.ORDERS.get<RefundRecord>(KV_KEYS.refund(refundId), "json");
+  return kvGetJson<RefundRecord>(env.ORDERS, KV_KEYS.refund(refundId), "json");
 }
 
 export async function listRefunds(env: Env): Promise<RefundRecord[]> {

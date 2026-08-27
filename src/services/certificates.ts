@@ -1,4 +1,4 @@
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
@@ -46,11 +46,11 @@ async function claimPatronNumber(
   env: Env,
   record: Omit<PatronRecord, "patron_number">,
 ): Promise<number> {
-  const current = await env.COUNTERS.get(KV_KEYS.patronNumber);
+  const current = await kvGet(env.COUNTERS, KV_KEYS.patronNumber);
   let candidate = (current ? parseInt(current, 10) : 0) + 1;
 
   for (let attempt = 0; attempt < PATRON_CLAIM_RETRIES; attempt += 1) {
-    const existing = await env.PATRONS.get<PatronRecord>(
+    const existing = await kvGetJson<PatronRecord>(env.PATRONS, 
       KV_KEYS.patron(candidate),
       "json",
     );
@@ -62,7 +62,7 @@ async function claimPatronNumber(
       KV_KEYS.patron(candidate),
       JSON.stringify({ ...record, patron_number: candidate }),
     );
-    const readback = await env.PATRONS.get<PatronRecord>(
+    const readback = await kvGetJson<PatronRecord>(env.PATRONS, 
       KV_KEYS.patron(candidate),
       "json",
     );
@@ -347,12 +347,12 @@ export async function getCertificate(
   env: Env,
   certId: string,
 ): Promise<CertificateRecord | null> {
-  return env.PATRONS.get<CertificateRecord>(KV_KEYS.cert(certId), "json");
+  return kvGetJson<CertificateRecord>(env.PATRONS, KV_KEYS.cert(certId), "json");
 }
 
 export async function getPatron(
   env: Env,
   patronNumber: number,
 ): Promise<PatronRecord | null> {
-  return env.PATRONS.get<PatronRecord>(KV_KEYS.patron(patronNumber), "json");
+  return kvGetJson<PatronRecord>(env.PATRONS, KV_KEYS.patron(patronNumber), "json");
 }

@@ -3,7 +3,7 @@ import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import { computeStats } from "@/services/stats";
 import { foundingEditionMarkdown } from "@/store/gazette-founding";
 import type { Env, GazetteIssue } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * The founding edition press. Prints once: renders the paper with the
@@ -51,7 +51,7 @@ export async function printFoundingEdition(
   };
   await kvPut(env.ORDERS, KV_KEYS.foundingEdition, JSON.stringify(edition));
   // The founding edition claims Issue No. 1; the rack numbers onward.
-  const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
+  const countRaw = await kvGet(env.COUNTERS, KV_KEYS.gazetteIssueCount);
   const count = countRaw ? parseInt(countRaw, 10) : 0;
   if (count < 1) {
     await kvPut(env.COUNTERS, KV_KEYS.gazetteIssueCount, "1");
@@ -62,7 +62,7 @@ export async function printFoundingEdition(
 export async function getFoundingEdition(
   env: Env,
 ): Promise<GazetteIssue | null> {
-  return env.ORDERS.get<GazetteIssue>(KV_KEYS.foundingEdition, "json");
+  return kvGetJson<GazetteIssue>(env.ORDERS, KV_KEYS.foundingEdition, "json");
 }
 
 export async function verifyIssueSignature(

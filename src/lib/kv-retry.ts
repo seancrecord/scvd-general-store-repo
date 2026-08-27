@@ -70,18 +70,47 @@ export function kvPut(
   return withKvRetry(() => kv.put(key, value, options));
 }
 
-/** A single-key text read that survives a 500 from the KV service. */
+/**
+ * A single-key read that survives a 500 from the KV service. The
+ * optional "json" argument exists so the #17 sweep could rewrite the
+ * callee of every bare `.get(key)` / `.get(key, "json")` site without
+ * touching its argument list — the mechanical change a reviewer can
+ * verify by prefix alone.
+ */
+export function kvGet(kv: Namespace, key: string): Promise<string | null>;
+export function kvGet<T = unknown>(
+  kv: Namespace,
+  key: string,
+  type: "json",
+): Promise<T | null>;
 export function kvGet(
   kv: Namespace,
   key: string,
-): Promise<string | null> {
-  return withKvRetry(() => kv.get(key));
+  type?: "json",
+): Promise<unknown> {
+  return withKvRetry(() => (type ? kv.get(key, type) : kv.get(key)));
 }
 
-/** The same, for the rows this store keeps as JSON. */
+/**
+ * The same, for the rows this store keeps as JSON. The ignored
+ * trailing argument is the sweep affordance again: a bare
+ * `.get<T>(key, "json")` becomes `kvGetJson<T>(env.NS, key, "json")`
+ * by rewriting only the callee.
+ */
 export function kvGetJson<T>(
   kv: Namespace,
   key: string,
+  _type?: "json",
 ): Promise<T | null> {
   return withKvRetry(() => kv.get<T>(key, "json"));
+}
+
+/** A list page read under the same policy — the corrections-walk
+ * class (2026-08-04) has a list-shaped sibling, and a walk that dies
+ * on page three restarts from nothing. */
+export function kvList(
+  kv: Namespace,
+  options?: Parameters<Namespace["list"]>[0],
+): ReturnType<Namespace["list"]> {
+  return withKvRetry(() => kv.list(options)) as ReturnType<Namespace["list"]>;
 }

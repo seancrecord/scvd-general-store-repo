@@ -13,7 +13,7 @@ import type {
   OnpageCheck,
 } from "@/services/onpage-checks";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE PAID ON-PAGE AUDIT — the Once-Over's exact discipline pointed
@@ -193,7 +193,7 @@ export async function getOnpageAudit(
   env: Env,
   auditId: string,
 ): Promise<OnpageAuditRecord | null> {
-  return env.PATRONS.get<OnpageAuditRecord>(
+  return kvGetJson<OnpageAuditRecord>(env.PATRONS, 
     KV_KEYS.onpageAudit(auditId),
     "json",
   );

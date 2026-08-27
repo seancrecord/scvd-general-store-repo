@@ -3,7 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE PASSPORT REFRESH — the paid fresh check (the keeper's "both"
@@ -58,7 +58,7 @@ export async function readPassportRefresh(
   env: Env,
   host: string,
 ): Promise<RefreshObservation | null> {
-  return env.COUNTERS.get<RefreshObservation>(
+  return kvGetJson<RefreshObservation>(env.COUNTERS, 
     KV_KEYS.passportRefresh(host.toLowerCase()),
     "json",
   );

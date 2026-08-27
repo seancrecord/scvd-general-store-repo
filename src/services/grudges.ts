@@ -3,7 +3,7 @@ import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { createRefund } from "@/services/refunds";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * The grudge register: the register IS the holding. Written at
@@ -62,7 +62,7 @@ async function setGrudgeStatus(
   key: string,
   status: GrudgeStatus,
 ): Promise<GrudgeEntry | null> {
-  const entry = await env.ORDERS.get<GrudgeEntry>(key, "json");
+  const entry = await kvGetJson<GrudgeEntry>(env.ORDERS, key, "json");
   if (!entry) {
     return null;
   }

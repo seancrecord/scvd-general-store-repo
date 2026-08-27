@@ -7,7 +7,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { certificatesForPayer } from "@/services/certificates";
 import { listOrders } from "@/services/orders";
 import { isRecord, type HonoEnv } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE CLAIMS DOOR — context-reset recovery, PROBLEMS.md #17, built.
@@ -223,7 +223,7 @@ claimsRoutes.post("/api/claims", async (c) => {
   }
   const canonical = canonicalAddress(address);
   const kvKey = KV_KEYS.claimChallenge(canonical);
-  const stored = await c.env.COUNTERS.get(kvKey);
+  const stored = await kvGet(c.env.COUNTERS, kvKey);
   if (!stored) {
     return c.json(
       {

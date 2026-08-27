@@ -1,7 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * Belt-and-braces replay protection for payment authorizations.
@@ -60,7 +60,7 @@ export function payerOfVerifiedPayload(
 }
 
 export async function isNonceSpent(env: Env, nonce: string): Promise<boolean> {
-  return (await env.COUNTERS.get(KV_KEYS.paymentNonce(nonce))) !== null;
+  return (await kvGet(env.COUNTERS, KV_KEYS.paymentNonce(nonce))) !== null;
 }
 
 /**
@@ -80,7 +80,7 @@ export async function getSpentNonce(
   env: Env,
   nonce: string,
 ): Promise<SpentNonceRecord | null> {
-  const raw = await env.COUNTERS.get(KV_KEYS.paymentNonce(nonce));
+  const raw = await kvGet(env.COUNTERS, KV_KEYS.paymentNonce(nonce));
   if (raw === null) {
     return null;
   }

@@ -6,7 +6,7 @@ import {
   TREAT_REACTIONS_OUT,
 } from "@/store/porch";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The porch: free, useless, open all night. The ambience is
@@ -44,7 +44,7 @@ export function catIsOut(date: Date = new Date()): boolean {
 /** Take a seat; the counter resets nightly and forgets within days. */
 export async function takeSeat(env: Env, date: Date = new Date()): Promise<number> {
   const key = KV_KEYS.porchSits(date.toISOString().slice(0, 10));
-  const current = await env.COUNTERS.get(key);
+  const current = await kvGet(env.COUNTERS, key);
   const seat = (current ? parseInt(current, 10) : 0) + 1;
   await kvPut(env.COUNTERS, key, String(seat), { expirationTtl: 2 * 86400 });
   return seat;
@@ -77,7 +77,7 @@ export async function leaveTreat(
   date: Date = new Date(),
 ): Promise<LeftTreat> {
   const key = KV_KEYS.porchTreats(date.toISOString().slice(0, 10));
-  const current = await env.COUNTERS.get(key);
+  const current = await kvGet(env.COUNTERS, key);
   const treatsToday = (current ? parseInt(current, 10) : 0) + 1;
   // Nine days so the Gazette's weekly count can still see the rail.
   await kvPut(env.COUNTERS, key, String(treatsToday), {

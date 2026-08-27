@@ -6,7 +6,7 @@ import { REFUSED_CHECK } from "@/services/standing-watch";
 import { sweepWatches } from "@/services/watch-sweep";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE CONFORMANCE WATCH — the Night Watch's shape pointed at
@@ -245,7 +245,7 @@ export async function readConformanceWatch(
   env: Env,
   watchId: string,
 ): Promise<ConformanceWatchHistory | null> {
-  const record = await env.ORDERS.get<ConformanceWatchRecord>(
+  const record = await kvGetJson<ConformanceWatchRecord>(env.ORDERS, 
     KV_KEYS.conformanceWatch(watchId),
     "json",
   );

@@ -21,7 +21,7 @@ import {
   type FieldSigner,
 } from "@/services/launch-check";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE BOUNTY BOARD (BOUNTY_BOARD.md) — mystery shoppers for the x402
@@ -148,7 +148,7 @@ async function saveBounty(env: Env, record: BountyRecord): Promise<void> {
 
 /** Budget spent this week, in USD. One key per ISO week. */
 async function weekSpent(env: Env, weekKey: string): Promise<number> {
-  const raw = await env.COUNTERS.get(KV_KEYS.bountyBudget(weekKey));
+  const raw = await kvGet(env.COUNTERS, KV_KEYS.bountyBudget(weekKey));
   const parsed = Number.parseFloat(raw ?? "0");
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -380,7 +380,7 @@ export async function claimBounty(
   ) {
     throw new BountyRefused("payer and payout_to must be 0x Base addresses");
   }
-  const bounty = await env.COUNTERS.get<BountyRecord>(
+  const bounty = await kvGetJson<BountyRecord>(env.COUNTERS, 
     KV_KEYS.bounty(input.bountyId),
     "json",
   );
@@ -434,7 +434,7 @@ export async function claimBounty(
    */
   const txKey = KV_KEYS.bountyTx(input.txHash.toLowerCase());
   const claimId = `${input.bountyId}:${(options.randomNonce ?? defaultNonce)()}`;
-  if (await env.COUNTERS.get(txKey)) {
+  if (await kvGet(env.COUNTERS, txKey)) {
     throw new BountyRefused(
       "that transaction has already been claimed — one payout per settlement, ever",
     );
@@ -463,7 +463,7 @@ export async function claimBounty(
    */
   let reserved: { week: string; amount: number } | null = null;
   const releaseClaim = async () => {
-    if ((await env.COUNTERS.get(txKey)) === claimId) {
+    if ((await kvGet(env.COUNTERS, txKey)) === claimId) {
       await env.COUNTERS.delete(txKey);
     }
     if (reserved) {
@@ -499,7 +499,7 @@ export async function claimBounty(
      * their claim alone. Anything else means our own write is not
      * visible, so release and let them try again.
      */
-    const seen = await env.COUNTERS.get(txKey);
+    const seen = await kvGet(env.COUNTERS, txKey);
     if (seen !== claimId) {
       if (seen) {
         throw new BountyRefused(

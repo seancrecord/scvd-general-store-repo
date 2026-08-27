@@ -11,7 +11,7 @@ import type { Env } from "@/types";
 import { readTransferClaim } from "@/services/attestation";
 import type { AttestationQuery, TransferClaimRead } from "@/services/attestation";
 import { evmChainOf } from "@/lib/base-rpc";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE LAUNCH CHECK — the walkabout productized for one endpoint
@@ -1179,7 +1179,7 @@ export async function getLaunchCheck(
   env: Env,
   checkId: string,
 ): Promise<LaunchCheckRecord | null> {
-  return env.PATRONS.get<LaunchCheckRecord>(
+  return kvGetJson<LaunchCheckRecord>(env.PATRONS, 
     KV_KEYS.launchCheck(checkId),
     "json",
   );

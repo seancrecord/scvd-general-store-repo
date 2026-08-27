@@ -3,7 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import type { CertificateRecord, Env, PayerRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE PAYER-CASE REPAIR: the books' first Solana buyer arrived and
@@ -65,7 +65,7 @@ export async function repairPayerCase(env: Env): Promise<PayerRepairResult> {
     }
     if (trueCase === stored) continue; // Already right.
     const canonicalKey = KV_KEYS.payer(canonicalAddress(trueCase));
-    const existing = await env.COUNTERS.get<PayerRecord>(
+    const existing = await kvGetJson<PayerRecord>(env.COUNTERS, 
       canonicalKey,
       "json",
     );

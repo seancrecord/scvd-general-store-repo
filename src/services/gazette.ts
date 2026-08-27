@@ -5,7 +5,7 @@ import { signMessage } from "@/lib/signing";
 import { issueStamp } from "@/services/stamps";
 import { setTipStatus } from "@/services/tips";
 import type { Env, GazetteIssue, TipRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a issues scan. Named because an unnamed cap is a silent one. */
 const ISSUE_CAP = 500;
@@ -51,7 +51,7 @@ export async function publishIssue(
   title: string,
   tips: TipRecord[],
 ): Promise<GazetteIssue> {
-  const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
+  const countRaw = await kvGet(env.COUNTERS, KV_KEYS.gazetteIssueCount);
   const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const date = new Date().toISOString();
 
@@ -98,7 +98,7 @@ export async function getIssue(
   if (!Number.isInteger(issueNumber) || issueNumber < 1) {
     return null;
   }
-  return env.ORDERS.get<GazetteIssue>(
+  return kvGetJson<GazetteIssue>(env.ORDERS, 
     KV_KEYS.gazetteIssue(issueNumber),
     "json",
   );

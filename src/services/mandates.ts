@@ -2,7 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE MANDATE (keeper-approved backlog, 2026-08-19; third build) —
@@ -139,5 +139,5 @@ export async function getMandate(
   env: Env,
   mandateId: string,
 ): Promise<MandateRecord | null> {
-  return env.PATRONS.get<MandateRecord>(KV_KEYS.mandate(mandateId), "json");
+  return kvGetJson<MandateRecord>(env.PATRONS, KV_KEYS.mandate(mandateId), "json");
 }

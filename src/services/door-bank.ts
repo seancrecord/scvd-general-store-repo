@@ -2,7 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE DOOR BANK — the ward's memory of declared doors, built for the
@@ -56,7 +56,7 @@ export interface DoorBank {
 }
 
 export async function readDoorBank(env: Env): Promise<DoorBank> {
-  const stored = await env.COUNTERS.get<DoorBank>(KV_KEYS.wardDoorBank, "json");
+  const stored = await kvGetJson<DoorBank>(env.COUNTERS, KV_KEYS.wardDoorBank, "json");
   if (!stored || typeof stored.doors !== "object" || stored.doors === null) {
     return { doors: {}, cursor: null };
   }
@@ -121,7 +121,7 @@ export async function backfillDoorBank(env: Env): Promise<{
   const weekKeys: string[] = [];
   let cursor: string | undefined;
   for (;;) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "ward:",
       limit: 1000,
       ...(cursor ? { cursor } : {}),

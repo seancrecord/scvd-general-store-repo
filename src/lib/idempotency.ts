@@ -1,7 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * IDEMPOTENCY-KEY ENFORCEMENT — the infinite-loop wallet drain,
@@ -238,7 +238,7 @@ export async function lookupIdempotent(
   idempotencyKey: string,
 ): Promise<StoredReplay | null> {
   try {
-    const raw = await env.COUNTERS.get(
+    const raw = await kvGet(env.COUNTERS, 
       await kvKeyFor(surface, payer, idempotencyKey),
     );
     if (!raw) {

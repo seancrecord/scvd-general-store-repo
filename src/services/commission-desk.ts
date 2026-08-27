@@ -9,7 +9,7 @@ import {
   QUOTE_NOTE_CAP,
 } from "@/store/commission-desk";
 import type { CommissionRequest, Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE DESK'S LIFECYCLE, over the request ledger that already existed:
@@ -37,7 +37,7 @@ export async function getCommission(
 ): Promise<CommissionRequest | null> {
   const clean = sanitizeText(id, 60);
   if (!clean) return null;
-  return env.ORDERS.get<CommissionRequest>(
+  return kvGetJson<CommissionRequest>(env.ORDERS, 
     KV_KEYS.commissionRequest(clean),
     "json",
   );

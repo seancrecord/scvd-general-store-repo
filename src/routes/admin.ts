@@ -76,7 +76,7 @@ import { listConfessions, setConfessionStatus } from "@/services/confessions";
 import { listTags, setTagStatus } from "@/services/train";
 import { setMonthlyNote } from "@/services/patronage";
 import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 import {
   addCorrection,
   assembleDraft,
@@ -206,13 +206,13 @@ async function noteAdminAuthFailure(
 ): Promise<void> {
   // Per-address, for the throttle. Doubling wait, capped.
   const ipKey = KV_KEYS.adminFailByIp(ip);
-  const ipFails = Number((await env.COUNTERS.get(ipKey)) ?? "0") + 1;
+  const ipFails = Number((await kvGet(env.COUNTERS, ipKey)) ?? "0") + 1;
   await kvPut(env.COUNTERS, ipKey, String(ipFails), {
     expirationTtl: ADMIN_THROTTLE_MAX_SECONDS,
   });
 
   const key = "admin_auth_fails";
-  const count = Number((await env.COUNTERS.get(key)) ?? "0") + 1;
+  const count = Number((await kvGet(env.COUNTERS, key)) ?? "0") + 1;
   await kvPut(env.COUNTERS, key, String(count), {
     expirationTtl: ADMIN_FAIL_WINDOW_SECONDS,
   });
@@ -259,7 +259,7 @@ const adminGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
    * REQUEST cost something, not the answer.
    */
   const fails = Number(
-    (await c.env.COUNTERS.get(KV_KEYS.adminFailByIp(ip))) ?? "0",
+    (await kvGet(c.env.COUNTERS, KV_KEYS.adminFailByIp(ip))) ?? "0",
   );
   const wait = throttleSeconds(fails);
   if (wait > 0) {
@@ -355,7 +355,7 @@ adminRoutes.get("/admin/counter", async (c) => {
     listCommissions(c.env),
     listFailedItems(c.env),
     listGuestbook(c.env, 30),
-    c.env.COUNTERS.get(KV_KEYS.weekNote),
+    kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     listTips(c.env),
     listLetters(c.env),
     listAlerts(c.env, 5),
@@ -568,16 +568,16 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
     lastRead,
   ] = await Promise.allSettled([
     reconcileSettles(c.env),
-    c.env.COUNTERS.get(KV_KEYS.reconcileCursor),
+    kvGet(c.env.COUNTERS, KV_KEYS.reconcileCursor),
     readSkippedRanges(c.env),
-    c.env.COUNTERS.get(POLYGON_RECONCILE_CURSOR_KEY),
+    kvGet(c.env.COUNTERS, POLYGON_RECONCILE_CURSOR_KEY),
     c.env.COUNTERS.get<{
       ran: boolean;
       reason?: string;
       failed?: boolean;
       at: string;
     }>(POLYGON_RECONCILE_LAST_RESULT_KEY, "json"),
-    c.env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY),
+    kvGet(c.env.COUNTERS, SOLANA_RECONCILE_OK_KEY),
     c.env.COUNTERS.get<{
       ran: boolean;
       reason?: string;
@@ -586,7 +586,7 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
     }>(SOLANA_RECONCILE_LAST_RESULT_KEY, "json"),
     auditDeliveries(c.env),
     listAlerts(c.env, 10),
-    c.env.COUNTERS.get(KV_KEYS.alarmsLastRead),
+    kvGet(c.env.COUNTERS, KV_KEYS.alarmsLastRead),
   ]);
 
   /*
@@ -683,8 +683,8 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
             const tx = settlementTx ?? chainTx;
             if (!tx) return alert;
             const [open, resolved] = await Promise.all([
-              c.env.ORDERS.get(KV_KEYS.deliveryIntent(tx)),
-              c.env.ORDERS.get(`delivery_resolved:${tx}`),
+              kvGet(c.env.ORDERS, KV_KEYS.deliveryIntent(tx)),
+              kvGet(c.env.ORDERS, `delivery_resolved:${tx}`),
             ]);
             /*
              * WHICH RESOLUTION, not just THAT it was resolved.
@@ -987,7 +987,7 @@ adminRoutes.get("/admin/tools", async (c) => {
   const month = today.slice(0, 7);
   const settled = await Promise.allSettled([
     shutterState(c.env),
-    c.env.COUNTERS.get(KV_KEYS.patronageNote(month)),
+    kvGet(c.env.COUNTERS, KV_KEYS.patronageNote(month)),
     getDraft(c.env),
     listKeys(c.env.COUNTERS, { prefix: "inventory:", cap: 200 }),
     listKeeperEntries(c.env),

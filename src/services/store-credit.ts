@@ -9,7 +9,7 @@ import {
   type SanctionsScreen,
 } from "@/services/launch-check";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * STORE CREDIT — the regulars' rebate (keeper's "I like it let's do
@@ -103,7 +103,7 @@ async function signWithRollback<T>(
      * claim, and add the amount back rather than replacing the whole
      * record — which leaves any accrual that landed meanwhile intact.
      */
-    const current = await env.COUNTERS.get<CreditRecord>(creditKey, "json");
+    const current = await kvGetJson<CreditRecord>(env.COUNTERS, creditKey, "json");
     if (current && current.claimed_by === claimId) {
       const restored: CreditRecord = {
         ...current,
@@ -135,7 +135,7 @@ function empty(wallet: string, now: Date): CreditRecord {
 }
 
 async function bumpOutstanding(env: Env, deltaAtomic: bigint): Promise<void> {
-  const raw = await env.COUNTERS.get(KV_KEYS.creditOutstanding);
+  const raw = await kvGet(env.COUNTERS, KV_KEYS.creditOutstanding);
   const current = BigInt(raw ?? "0");
   const next = current + deltaAtomic;
   await kvPut(env.COUNTERS, 
@@ -181,7 +181,7 @@ export async function getCredit(
   now: Date = new Date(),
 ): Promise<CreditRecord> {
   const key = canonicalAddress(wallet);
-  const record = await env.COUNTERS.get<CreditRecord>(
+  const record = await kvGetJson<CreditRecord>(env.COUNTERS, 
     KV_KEYS.credit(key),
     "json",
   );
@@ -461,5 +461,5 @@ export async function redeemCredit(
 
 /** Outstanding credit across every wallet, for the books' eye. */
 export async function creditOutstandingAtomic(env: Env): Promise<bigint> {
-  return BigInt((await env.COUNTERS.get(KV_KEYS.creditOutstanding)) ?? "0");
+  return BigInt((await kvGet(env.COUNTERS, KV_KEYS.creditOutstanding)) ?? "0");
 }

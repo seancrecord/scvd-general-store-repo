@@ -2,7 +2,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { BLESSINGS } from "@/store/blessings";
 import { FORTUNES } from "@/store/fortunes";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The Penny Shelf's delivery logic. Blessings draw at random with a KV
@@ -12,7 +12,7 @@ import { kvPut } from "@/lib/kv-retry";
  */
 
 export async function drawBlessing(env: Env): Promise<string> {
-  const lastRaw = await env.COUNTERS.get(KV_KEYS.blessingLast);
+  const lastRaw = await kvGet(env.COUNTERS, KV_KEYS.blessingLast);
   const last = lastRaw ? parseInt(lastRaw, 10) : -1;
   let index = Math.floor(Math.random() * BLESSINGS.length);
   if (index === last) {

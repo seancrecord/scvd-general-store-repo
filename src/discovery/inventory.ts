@@ -12,7 +12,7 @@ import {
 import { storeIdentity } from "@/lib/identity";
 import { checkProbeTarget } from "@/lib/probe-target";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * FREE DISCOVERY INVENTORY — unsigned view over probeHostCatalogs.
@@ -69,7 +69,7 @@ function takeInventoryBudget(): boolean {
 async function takeGlobalInventoryBudget(env: Env): Promise<boolean> {
   const minute = new Date().toISOString().slice(0, 16);
   const key = `discovery_inventory_budget:${minute}`;
-  const used = parseInt((await env.COUNTERS.get(key)) ?? "0", 10);
+  const used = parseInt((await kvGet(env.COUNTERS, key)) ?? "0", 10);
   if (used >= GLOBAL_INVENTORIES_PER_MINUTE) return false;
   await kvPut(env.COUNTERS, key, String(used + 1), { expirationTtl: 120 });
   return true;

@@ -3,7 +3,7 @@ import { invertedTimestamp } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * P1 alerting. A short list of conditions pages the keeper — see
@@ -211,11 +211,11 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
     console.error(`[P1 ${input.condition}] ${detail}`);
 
     // Does this condition already have a row? If so it keeps it.
-    const existingLogKey = await env.COUNTERS.get(openKey);
+    const existingLogKey = await kvGet(env.COUNTERS, openKey);
     let updated = false;
     let repeats = 1;
     if (existingLogKey) {
-      const row = await env.COUNTERS.get<AlertRow>(existingLogKey, "json");
+      const row = await kvGetJson<AlertRow>(env.COUNTERS, existingLogKey, "json");
       if (row) {
         repeats = (row.repeats ?? 1) + 1;
         await kvPut(env.COUNTERS, 
@@ -261,7 +261,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
      * knows about is how a mailbox stops being read — and the next
      * page after that is the one that mattered.
      */
-    if (await env.COUNTERS.get(pageKey)) return;
+    if (await kvGet(env.COUNTERS, pageKey)) return;
     await kvPut(env.COUNTERS, pageKey, "1", {
       expirationTtl: pageIntervalFor(repeats),
     });

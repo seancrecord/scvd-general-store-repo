@@ -11,7 +11,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE STATEMENT (keeper-approved backlog, 2026-08-19; second build) —
@@ -275,7 +275,7 @@ export async function getWalletStatement(
   env: Env,
   statementId: string,
 ): Promise<WalletStatementRecord | null> {
-  return env.PATRONS.get<WalletStatementRecord>(
+  return kvGetJson<WalletStatementRecord>(env.PATRONS, 
     KV_KEYS.walletStatement(statementId),
     "json",
   );

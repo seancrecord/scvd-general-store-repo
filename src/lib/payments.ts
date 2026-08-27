@@ -29,7 +29,7 @@ import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
 import type { Env, MenuItem } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * x402 v2 payment plumbing. USDC on Base (eip155:8453), Polygon
@@ -145,7 +145,7 @@ export async function recordSolanaSettle(
   paidUsdc: number,
 ): Promise<void> {
   const current = Number(
-    (await env.COUNTERS.get(SOLANA_SETTLED_TOTAL_KEY)) ?? "0",
+    (await kvGet(env.COUNTERS, SOLANA_SETTLED_TOTAL_KEY)) ?? "0",
   );
   const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
   await kvPut(env.COUNTERS, SOLANA_SETTLED_TOTAL_KEY, String(total));
@@ -162,7 +162,7 @@ export async function recordSolanaSettle(
     const { SOLANA_RECONCILE_OK_KEY } = await import(
       "@/services/chain-reconciliation"
     );
-    const lastOk = await env.COUNTERS.get(SOLANA_RECONCILE_OK_KEY);
+    const lastOk = await kvGet(env.COUNTERS, SOLANA_RECONCILE_OK_KEY);
     const walkAlive =
       lastOk !== null &&
       Date.now() - new Date(lastOk).getTime() < 24 * 60 * 60 * 1000;
@@ -175,7 +175,7 @@ export async function recordSolanaSettle(
     const { SOLANA_RECONCILE_LAST_RESULT_KEY } = await import(
       "@/services/chain-reconciliation"
     );
-    const lastResult = await env.COUNTERS.get(
+    const lastResult = await kvGet(env.COUNTERS, 
       SOLANA_RECONCILE_LAST_RESULT_KEY,
     );
     await sendAlert(env, {
@@ -200,7 +200,7 @@ export async function recordPolygonSettle(
   paidUsdc: number,
 ): Promise<void> {
   const current = Number(
-    (await env.COUNTERS.get(POLYGON_SETTLED_TOTAL_KEY)) ?? "0",
+    (await kvGet(env.COUNTERS, POLYGON_SETTLED_TOTAL_KEY)) ?? "0",
   );
   const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
   await kvPut(env.COUNTERS, POLYGON_SETTLED_TOTAL_KEY, String(total));

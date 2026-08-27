@@ -2,7 +2,7 @@ import { newAnchorId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { ContextAnchor, Env, SignedAnchorRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * Context anchors: signed agent memory restore points, bought as the
@@ -74,7 +74,7 @@ export async function getAnchor(
   env: Env,
   anchorId: string,
 ): Promise<SignedAnchorRecord | null> {
-  return env.PATRONS.get<SignedAnchorRecord>(KV_KEYS.anchor(anchorId), "json");
+  return kvGetJson<SignedAnchorRecord>(env.PATRONS, KV_KEYS.anchor(anchorId), "json");
 }
 
 export async function verifyAnchorSignature(

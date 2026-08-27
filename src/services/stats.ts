@@ -6,6 +6,7 @@ import {
   monthsSinceOpening,
 } from "@/lib/metrics";
 import type { Env } from "@/types";
+import { kvGet } from "@/lib/kv-retry";
 
 /** Ceiling on a paid counters scan. An unnamed cap is a silent one. */
 const PAID_METRIC_CAP = 2000;
@@ -153,7 +154,7 @@ export async function computeStatsDiagnosed(
    * artifacts_issued, free shelf included, not a purchase count.
    */
   const artifactsIssued = parseInt(
-    (await env.COUNTERS.get(KV_KEYS.patronNumber)) ?? "0",
+    (await kvGet(env.COUNTERS, KV_KEYS.patronNumber)) ?? "0",
     10,
   );
   let organic = 0;

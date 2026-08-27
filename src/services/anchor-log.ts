@@ -4,7 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { RETIRED_KEYS, retiredKeysFor } from "@/store/key-registry";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE ANCHOR LOG — an append-only hash chain over this store's key
@@ -175,7 +175,7 @@ export async function buildSnapshot(
     retired_on: key.retired_on,
   }));
   const issued = parseInt(
-    (await env.COUNTERS.get(KV_KEYS.patronNumber)) ?? "0",
+    (await kvGet(env.COUNTERS, KV_KEYS.patronNumber)) ?? "0",
     10,
   );
   return {

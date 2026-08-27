@@ -12,7 +12,7 @@ import type {
   OnpageCheck,
 } from "@/services/onpage-checks";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE FREE ON-PAGE DESK — /api/onpage.
@@ -65,7 +65,7 @@ function takeProbeBudget(): boolean {
 async function takeGlobalProbeBudget(env: Env): Promise<boolean> {
   const minute = new Date().toISOString().slice(0, 16);
   const key = `onpage_budget:${minute}`;
-  const used = parseInt((await env.COUNTERS.get(key)) ?? "0", 10);
+  const used = parseInt((await kvGet(env.COUNTERS, key)) ?? "0", 10);
   if (used >= GLOBAL_PROBES_PER_MINUTE) {
     return false;
   }

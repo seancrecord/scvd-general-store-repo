@@ -5,7 +5,7 @@ import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
 import type { Env, LetterRecord, LetterStatus } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 
 /**
@@ -66,11 +66,11 @@ export async function getLetter(
   env: Env,
   letterId: string,
 ): Promise<LetterRecord | null> {
-  const queueKey = await env.ORDERS.get(KV_KEYS.letterById(letterId));
+  const queueKey = await kvGet(env.ORDERS, KV_KEYS.letterById(letterId));
   if (!queueKey) {
     return null;
   }
-  return env.ORDERS.get<LetterRecord>(queueKey, "json");
+  return kvGetJson<LetterRecord>(env.ORDERS, queueKey, "json");
 }
 
 export interface QueuedLetter {
@@ -95,7 +95,7 @@ export async function listLetters(env: Env): Promise<QueuedLetter[]> {
 }
 
 async function saveLetter(env: Env, letterId: string, record: LetterRecord): Promise<void> {
-  const queueKey = await env.ORDERS.get(KV_KEYS.letterById(letterId));
+  const queueKey = await kvGet(env.ORDERS, KV_KEYS.letterById(letterId));
   if (queueKey) {
     await kvPut(env.ORDERS, queueKey, JSON.stringify(record));
   }
@@ -141,7 +141,7 @@ export async function replyToLetter(
 }
 
 async function bumpCounter(env: Env, key: string): Promise<void> {
-  const current = await env.COUNTERS.get(key);
+  const current = await kvGet(env.COUNTERS, key);
   await kvPut(env.COUNTERS, key, String((current ? parseInt(current, 10) : 0) + 1));
 }
 
@@ -153,8 +153,8 @@ export interface LetterCounts {
 /** The only two letter facts the public ever sees. */
 export async function letterCounts(env: Env): Promise<LetterCounts> {
   const [received, answered] = await Promise.all([
-    env.COUNTERS.get(KV_KEYS.lettersReceived),
-    env.COUNTERS.get(KV_KEYS.lettersAnswered),
+    kvGet(env.COUNTERS, KV_KEYS.lettersReceived),
+    kvGet(env.COUNTERS, KV_KEYS.lettersAnswered),
   ]);
   return {
     received: received ? parseInt(received, 10) : 0,

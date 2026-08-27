@@ -4,7 +4,7 @@ import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, DIRECTORY_PATH, DIRECTORY_CONTENT_TYPE } from "@/lib/web-bot-auth";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE SIGNATURE-AGENT CARD — a dated, signed, third-party observation
@@ -403,7 +403,7 @@ export async function getSignatureAgentCard(
   env: Env,
   cardId: string,
 ): Promise<SignatureAgentCardRecord | null> {
-  return env.PATRONS.get<SignatureAgentCardRecord>(
+  return kvGetJson<SignatureAgentCardRecord>(env.PATRONS, 
     KV_KEYS.signatureAgentCard(cardId),
     "json",
   );

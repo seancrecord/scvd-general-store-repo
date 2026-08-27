@@ -2,6 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { readReason } from "@/lib/declines";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
+import { kvList } from "@/lib/kv-retry";
 
 /**
  * THE FUNNEL — the instrument for the sharpest number the ledger has
@@ -121,7 +122,7 @@ export async function auditFunnel(
   let cursor: string | undefined;
 
   while (scanned < scanCap) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: pageSize,
       ...(cursor ? { cursor } : {}),

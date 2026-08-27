@@ -5,7 +5,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a inventory counters scan. An unnamed cap is a silent one. */
 const INVENTORY_CAP = 2000;
@@ -91,7 +91,7 @@ export async function getOrder(
   env: Env,
   orderId: string,
 ): Promise<OrderRecord | null> {
-  return env.ORDERS.get<OrderRecord>(KV_KEYS.order(orderId), "json");
+  return kvGetJson<OrderRecord>(env.ORDERS, KV_KEYS.order(orderId), "json");
 }
 
 export async function listOrders(env: Env): Promise<OrderRecord[]> {
@@ -188,7 +188,7 @@ export async function remainingInventory(
     return null;
   }
   const key = KV_KEYS.inventory(item.id, currentWeekKey());
-  const sold = await env.COUNTERS.get(key);
+  const sold = await kvGet(env.COUNTERS, key);
   return Math.max(0, item.weekly_inventory - (sold ? parseInt(sold, 10) : 0));
 }
 
@@ -217,7 +217,7 @@ export async function recordInventorySale(
     return null;
   }
   const key = KV_KEYS.inventory(item.id, currentWeekKey());
-  const sold = await env.COUNTERS.get(key);
+  const sold = await kvGet(env.COUNTERS, key);
   const now = (sold ? parseInt(sold, 10) : 0) + 1;
   await kvPut(env.COUNTERS, key, String(now));
   return now;

@@ -13,7 +13,7 @@ import {
   type TabDeltaKind,
 } from "@/store/tab-pool";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE AGGREGATION ENDPOINT's working half (layer 3). The Tab's spec
@@ -193,7 +193,7 @@ export async function acceptDelta(
    */
   const day = now.toISOString().slice(0, 10);
   const dayKey = KV_KEYS.tabPoolDay(day);
-  const taken = Number((await env.COUNTERS.get(dayKey)) ?? "0");
+  const taken = Number((await kvGet(env.COUNTERS, dayKey)) ?? "0");
   if (taken >= TAB_POOL_DAILY_CAP) {
     await sendAlert(env, {
       condition: "worker_health",

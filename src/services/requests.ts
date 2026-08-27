@@ -4,7 +4,7 @@ import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { newRequestId } from "@/lib/ids";
 import { sanitizeText } from "@/lib/sanitize";
 import type { CommissionRequest, Env, WaitlistEntry } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a failed-item counters scan. An unnamed cap is a silent one. */
 const FAILED_ITEM_CAP = 1000;
@@ -136,7 +136,7 @@ export async function recordFailedItem(
     return;
   }
   const key = KV_KEYS.failedItem(clean);
-  const count = await env.COUNTERS.get(key);
+  const count = await kvGet(env.COUNTERS, key);
   await kvPut(env.COUNTERS, key, String((count ? parseInt(count, 10) : 0) + 1));
 }
 

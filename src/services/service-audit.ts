@@ -13,7 +13,7 @@ import type {
   PreflightCheck,
 } from "@/services/preflight";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE SERVICE AUDIT — the point-in-time x402 endpoint audit, paid
@@ -226,7 +226,7 @@ export async function getServiceAudit(
   env: Env,
   auditId: string,
 ): Promise<ServiceAuditRecord | null> {
-  return env.PATRONS.get<ServiceAuditRecord>(
+  return kvGetJson<ServiceAuditRecord>(env.PATRONS, 
     KV_KEYS.serviceAudit(auditId),
     "json",
   );
