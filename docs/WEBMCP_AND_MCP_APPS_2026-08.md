@@ -979,7 +979,7 @@ test becomes its own rule beside 43 — is struck by it.
 
 | Host | Our ui:// card rendered? | Notes |
 |---|---|---|
-| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **FULL PASS — round five** | Renders at full height: `size-changed` honored, the round-four fold gone. Screenshot-confirmed top to bottom — ladder with all four hatched NOT CLIMBED pills, cannot-tell-you list, conflict-of-interest with the trust line at full rust weight, and the colophon intact (mark, keeper's line, rule citation). Rule 54's eye test passes: the gaps and the age carry the weight the design gave them. Dark theme observed; light and narrow not yet shot. Root cause of rounds 1–3 stands recorded below: a static page never sends `ui/initialize`, and the host waits for it. |
+| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **FULL PASS — round five** | Renders at full height: `size-changed` honored, the round-four fold gone. Screenshot-confirmed top to bottom — ladder with all four hatched NOT CLIMBED pills, cannot-tell-you list, conflict-of-interest with the trust line at full rust weight, and the colophon intact (mark, keeper's line, rule citation). Rule 54's eye test passes: the gaps and the age carry the weight the design gave them. **Dark, light, and narrow all observed and passing** — the light palette held (cream surface, rust trust-line, hatched pills legible), and the narrow window kept the ladder intact. Host one is complete. Root cause of rounds 1–3 stands recorded below: a static page never sends `ui/initialize`, and the host waits for it. |
 | VS Code | not yet run | — |
 | ChatGPT | not yet run | — |
 | Goose | optional | — |
