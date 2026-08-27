@@ -321,27 +321,39 @@ function rate(settled: number, challenges: number): number | null {
 export async function computePulse(env: Env): Promise<Pulse> {
   const months = monthsSinceOpening().slice(-PULSE_MONTHS).reverse();
   const windows: PulseWindow[] = [];
-  // One read for the whole window, not one per month inside the loop.
-  const corrections = await readCorrections(env).catch(() => null);
-  /**
-   * The reclassification, from the two records that hold it: the
-   * frozen ledger rows give the EXACT lifetime total, and a walk of
-   * the certificates gives the per-month split. The total cannot
-   * truncate; the split can, and the rollup below says so out loud
-   * when the two fail to reconcile.
+  /*
+   * ONE WAVE, NOT A QUEUE — rule 50's pattern, applied to the reading
+   * side (#54, measured 1.6-12s live). Ten independent reads ran here
+   * one after another: four top-level records and then SIX month
+   * ledgers in a serial for-await, so the page's latency was their
+   * SUM. None of them reads what another wrote — the months are
+   * disjoint key prefixes, the corrections and the reclassification
+   * are their own records — so the ordering bought nothing at all.
+   * Same reads, same payload byte for byte (the specs on this surface
+   * are the proof), wall clock now the slowest single read:
+   *
+   * - corrections: one read for the whole window, not one per month.
+   * - the reclassification, from the two records that hold it: the
+   *   frozen ledger rows give the EXACT lifetime total, and a walk of
+   *   the certificates gives the per-month split. The total cannot
+   *   truncate; the split can, and the rollup below says so out loud
+   *   when the two fail to reconcile.
+   * - latency (roadmap 0.12): one prefix scan over at most (route
+   *   classes x buckets) keys — cheap enough to sit beside the funnel
+   *   rather than earn a surface of its own.
    */
-  const reclassSplit = await monthReclassAdjustments(env).catch(() => null);
-  const reclassTotal = await totalReclassified(env).catch(() => null);
-  /**
-   * Roadmap 0.12. One prefix scan over at most (route classes x buckets)
-   * keys — single digits today, against a ledger walk that reads the
-   * whole month. Cheap enough to sit beside the funnel rather than
-   * earn a surface of its own.
-   */
-  const latency = await computeLatency(env);
+  const [corrections, reclassSplit, reclassTotal, latency, ledgers] =
+    await Promise.all([
+      readCorrections(env).catch(() => null),
+      monthReclassAdjustments(env).catch(() => null),
+      totalReclassified(env).catch(() => null),
+      computeLatency(env),
+      Promise.all(months.map((month) => readMonthLedger(env, month))),
+    ]);
 
-  for (const month of months) {
-    const ledger = await readMonthLedger(env, month);
+  for (let index = 0; index < months.length; index += 1) {
+    const month = months[index]!;
+    const ledger = ledgers[index]!;
     const rows = Object.values(ledger.items);
     /**
      * Only the organic columns are read. The house counters live in
