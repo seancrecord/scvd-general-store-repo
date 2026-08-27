@@ -28,6 +28,14 @@ export interface SimplePageOptions {
   description: string;
   /** Absolute path of this page, for the canonical link. */
   path?: string;
+  /**
+   * Path of this page's markdown twin, when one actually answers —
+   * emitted as <link rel="alternate" type="text/markdown">. Left
+   * unset for pages with no twin ON PURPOSE: a link tag to a 404 is
+   * worse than no tag (scanner finding P17). For Accept-negotiated
+   * pages the twin is the page's own path.
+   */
+  markdownAlt?: string;
   /** Pre-escaped HTML sections, rendered inside the paper. */
   bodyHtml: string;
   /**
@@ -83,6 +91,9 @@ export function renderSimplePage(options: SimplePageOptions): string {
   // Suffix shortened 2026-08-20 for SERP truncation; the full name stays on the page header and homepage.
   const title = `${escapeHtml(options.title)}, scvd.store`;
   const description = escapeHtml(options.description);
+  const markdownAlt = options.markdownAlt
+    ? `\n  <link rel="alternate" type="text/markdown" href="${SITE_ORIGIN}${escapeHtml(options.markdownAlt)}">`
+    : "";
   const canonical = options.path
     ? `\n  <link rel="canonical" href="${SITE_ORIGIN}${escapeHtml(options.path)}">`
     : "";
@@ -98,7 +109,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:type" content="website">
   <meta property="og:image" content="${SITE_ORIGIN}/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}
+  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}${markdownAlt}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>

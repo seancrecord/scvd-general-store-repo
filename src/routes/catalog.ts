@@ -416,6 +416,10 @@ function renderItemPage(
      * button this page guessed should not exist. The state is printed
      * beside it either way so nobody is surprised by the refusal.
      */
+    // The markdown twin is this page's own path: the same URL answers
+    // markdown to an Accept that asks for it (P17 — the twin exists,
+    // so the link tag may say so).
+    markdownAlt: `/menu/${item.id}`,
     inertHtml: tillShelfHtml([item], {
       heading: "Buy it from this browser",
       // Buyer words first, protocol after — same reasoning as /try's

@@ -96,9 +96,13 @@ artifact any third party can verify without trusting us.
 - Signed-artifact format spec (scvd-attestation/v1) — canonical forms, encodings, the certificate binding convention, offline verification steps: ${base}/spec/scvd-attestation/v1
 - What is and is NOT claimed: ${base}/.well-known/trust.json
 
+## Sitemap
+
+Both maps render from the same list, so neither can drift from the other: [sitemap.xml](${base}/sitemap.xml) for crawlers, [sitemap.md](${base}/sitemap.md) if you are already reading markdown.
+
 ## Discovery & trust endpoints
 
-- Sitemap: ${base}/sitemap.xml
+- Sitemap: ${base}/sitemap.xml (markdown twin: ${base}/sitemap.md)
 - Developer documentation (one index, no account or key exists): ${base}/developers
 - When to reach for this store, machine-readable: ${base}/.well-known/agent-instructions
 - MCP server pointer and its readable resources: ${base}/.well-known/mcp
