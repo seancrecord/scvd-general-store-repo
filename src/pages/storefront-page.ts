@@ -704,6 +704,7 @@ export function renderStorefront(data: StorefrontData): string {
       </div>
       <p class="shelf-more">${COPY.shelvesMore}
         The whole catalog reads at <a href="/llms.txt"><code>/llms.txt</code></a>.</p>
+      <p class="shelf-till"><a class="door-cta" href="/menu">${escapeHtml(COPY.shelvesTillCta)}</a> — ${escapeHtml(COPY.shelvesTillBody)}</p>
     </section>
 
     <section class="what-this-is promise">

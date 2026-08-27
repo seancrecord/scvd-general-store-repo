@@ -258,6 +258,7 @@ practiceCounterRoutes.get("/try", (c) => {
         path: "/try",
         bodyHtml: `<section>
           <p class="menu-desc">${escapeHtml(COPY.standfirst)}</p>
+          <p class="menu-meta">${escapeHtml(COPY.plainWords)} <a href="/menu">/menu</a>.</p>
           ${
             low
               ? `<p class="menu-meta">The fast path, one line: <code>GET /api/buy/${escapeHtml(low.id)}?src=try</code> — $${low.price_usdc}, no parameters, answers 402 with everything you need. The three steps below are that line, twice more.</p>`

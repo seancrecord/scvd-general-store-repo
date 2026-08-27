@@ -204,6 +204,18 @@ export const STOREFRONT_COPY = {
   shelvesMore:
     `\u2026and more on the menu, from ${CHEAPEST_ON_THE_SHELF} on up. Send the keeper a note if something catches; he'll work with you.`,
   /**
+   * THE TILL, ANNOUNCED ON THE FRONT DOOR (the keeper's ask,
+   * 2026-08-27, and rule 53's answer for `/`). The storefront keeps
+   * no till of its own \u2014 it is the sign, not a room \u2014 so the rule's
+   * till-or-written-reason is met by saying, where every buyer
+   * arrives, exactly where the tills are: one click in, on the item
+   * pages, which show the price and the facts before any wallet is
+   * asked for anything.
+   */
+  shelvesTillCta: "Buy from this browser",
+  shelvesTillBody:
+    "every item's page has a till now. One wallet signature, no gas fee, nothing to install \u2014 and the page says who's connected on which network before you press anything.",
+  /**
    * THE REGULARS STRIP (keeper-ruled 2026-08-20: the money-out rooms
    * follow the held-back path EXCEPT they get "a note for both
    * somewhere on front page and especially a note around recurring
