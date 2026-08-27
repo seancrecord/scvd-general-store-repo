@@ -27,6 +27,10 @@ function landingJson(base: string) {
     census: CENSUS_FINDING,
     data: `${base}/corpus.json`,
     per_host: `${base}/corpus/host/{host}.json`,
+    as_time: `${base}/corpus/trajectory.json`,
+    since_diff: `${base}/corpus/diff.json?since={week}`,
+    wallet_facts: `${base}/corpus/wallet-facts.json`,
+    standing_notes: `${base}/api/standing-note`,
     how_to_verify: `Printed on the document itself, at ${base}/corpus.json — recompute the digests, check the signatures against the published key, and run ots verify on evidence that is not ours.`,
   };
 }
@@ -77,6 +81,9 @@ function landingHtml(base: string): string {
       <h2>Reading it</h2>
       <p class="menu-desc">The whole record, with the live chain check and the verification steps printed on the document itself: <a href="/corpus.json"><code>/corpus.json</code></a>.</p>
       <p class="menu-desc">One host's history, replayed from the signed chain: <code>/corpus/host/{host}.json</code>. Every round we have no verdict for carries a reason — no feed named the host, a feed named it but the round did not reach it, or the instrument itself was degraded that week. The gaps are the point: a timeline with the misses left out reads as continuous coverage, and this one refuses to.</p>
+      <p class="menu-desc">The chain read as time: <a href="/corpus/trajectory.json"><code>/corpus/trajectory.json</code></a> serves one point per signed week — counts with their denominators, never a ratio, every point naming the digest it derives from. What changed since a week you already saw: <code>/corpus/diff.json?since={week}</code> — doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms. A week the chain does not hold gets a 404 naming the weeks it does.</p>
+      <p class="menu-desc">Wallet facts, counted and never judged: <a href="/corpus/wallet-facts.json"><code>/corpus/wallet-facts.json</code></a> says how many receiving addresses the week's doors advertised and how many receive at more than one door — counts only, no names, no addresses, and never an operator claim. Each door's own page carries its <code>payment_address</code> fact. Custodial and platform wallets make unrelated doors share one address; the observation is served, the inference is yours.</p>
+      <p class="menu-desc">And the subject gets a voice: an operator who proves control of a door or a wallet can attach a standing note at <a href="/api/standing-note"><code>/api/standing-note</code></a> — their dated statement, riding beside our observation on every surface that shows it. Beside, never instead.</p>
       <p class="menu-desc">Verification needs nothing from us: recompute any snapshot's sha256, check the signature against the key at <a href="/.well-known/scvd-signing-key"><code>/.well-known/scvd-signing-key</code></a>, walk the previous_digest chain back to the first entry, and run <code>ots verify</code> on the Bitcoin-anchored proof. The exact steps, field order included, ride on <a href="/corpus.json"><code>/corpus.json</code></a> itself.</p>
     </section>
     <section>

@@ -248,13 +248,14 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const facts = await deriveWalletFacts(await listCorpus(c.env));
   if (!facts) {
-    return c.json(
-      {
-        error:
-          "The corpus chain is empty, so there is no signed week to count over. The index is at /corpus.json.",
-      },
-      404,
-    );
+    // An empty chain is fully visible — nothing signed yet is the
+    // honest answer, not a missing door. Same contract as
+    // /corpus/trajectory.json serving an empty weeks array.
+    return c.json({
+      week: null,
+      explanation:
+        "The corpus chain holds no signed week yet, so there is nothing to count over. This surface fills with the first ward round. The index is at /corpus.json.",
+    });
   }
   return c.json({
     ...facts,
