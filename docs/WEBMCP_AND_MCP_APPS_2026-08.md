@@ -979,7 +979,7 @@ test becomes its own rule beside 43 — is struck by it.
 
 | Host | Our ui:// card rendered? | Notes |
 |---|---|---|
-| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **YES — round four, screenshot-confirmed** | root cause of rounds 1–3: the card never sent `ui/initialize`. An MCP Apps page is itself an MCP client and the host waits for its hello (ext-apps `App.connect`, protocol 2026-01-26). Static HTML never speaks; ~30 lines of raw postMessage JSON-RPC fixed it. Dark theme held: serif verdict, rust age, hatched NOT CLIMBED pills all intact. **One viewport finding:** the host gives the widget a short fixed window, so the rungs sat below the fold — verdict and age on first paint, gaps one scroll away, rule 54 failed by viewport rather than by design. `ui/notifications/size-changed` added to the kit as the SDK's remedy; untested as of this row. |
+| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **FULL PASS — round five** | Renders at full height: `size-changed` honored, the round-four fold gone. Screenshot-confirmed top to bottom — ladder with all four hatched NOT CLIMBED pills, cannot-tell-you list, conflict-of-interest with the trust line at full rust weight, and the colophon intact (mark, keeper's line, rule citation). Rule 54's eye test passes: the gaps and the age carry the weight the design gave them. Dark theme observed; light and narrow not yet shot. Root cause of rounds 1–3 stands recorded below: a static page never sends `ui/initialize`, and the host waits for it. |
 | VS Code | not yet run | — |
 | ChatGPT | not yet run | — |
 | Goose | optional | — |
@@ -1028,6 +1028,16 @@ each now stated against the evidence that supports it:**
 prefetched the card (`resources/read` 100ms before `tools/call`) and
 displayed nothing — which localized the failure to the iframe side and
 led straight to the missing `ui/initialize`. Round four rendered.
+
+**THE FUNNEL, OBSERVED WORKING END TO END (round five).** With the
+full card rendered, the host model's narration did three things in
+one breath, unprompted: refused correctly ("anyone quoting this as
+'verified' is quoting it past what it says"), read the drift as the
+actionable gap, and **routed to `preflight_endpoint` — the live free
+tool this same branch shipped — as the one-call way to close it.**
+Card → refusability → routing → free instrument. That is the entire
+thesis of this document operating as a chain, on a laptop, on the
+first day all the pieces existed.
 
 **TWO MACHINE READERS, SAME COPY FLAG — production-card note, rule 7,
 the keeper's pen.** Round three's model and round four's model, blind
