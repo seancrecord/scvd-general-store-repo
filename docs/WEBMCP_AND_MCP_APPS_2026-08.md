@@ -832,17 +832,33 @@ the nature of a dated reading, the weather of working in this market.
 It is a fortune, in the drawer's voice, and a fortune addresses the
 person holding it rather than the shop that wrote it.
 
-⚑ SECOND DRAFTS, NOT CANON — rule 7, the wording is the keeper's.
-Currently on the bench render: the first one.
+⚑ SECOND DRAFTS, ALSO STRUCK 2026-08-27 — "still reads oddly." Right
+again, and this time the fault was register rather than constraint.
+~~"Somebody will quote this at you without the date."~~ is CONSTRUCTED:
+it builds a little scenario, asks the reader to picture a third party,
+and hangs on the odd preposition in "quote this AT you." Clever, which
+is the tell. Rule 5 — if it wants a retweet, it dies.
 
-> "Somebody will quote this at you without the date."
-> "The rung you needed is probably one we did not climb."
-> "You came for a verdict and got a measurement."
-> "A reading gets older every day you keep it."
-> "One shop, one key, one probe. Adjust accordingly."
-> "If you were hoping for a yes, read it again slower."
-> "We sell things in this market too. Weigh that."
-> "Run the file yourself and you never have to wonder."
+**THE REGISTER, read off the drawer we already have.** `fortunes.ts`
+does not do wordplay: *"The error message means exactly what it says
+today. Read it once more, slower."* · *"An old assumption expires
+today. You'll know it by the smell."* · *"Today's blocker is somebody
+else's five-minute fix. Ask earlier than feels polite."* Plain
+sentence, concrete, addressed to a person, wry without reaching. The
+line is a fortune, so it should sound like the fortunes do — and if a
+draft has to be admired before it is understood, it is not one.
+
+⚑ THIRD DRAFTS, NOT CANON — rule 7, the wording is the keeper's.
+Currently on the bench render: the first.
+
+> "The date is the part people skip."
+> "We can only tell you what we saw."
+> "You know your own risk better than we do."
+> "The part you need is usually the part nobody measured."
+> "One look, one day. That is all a look is."
+> "It was true when we wrote it down."
+> "Read it twice if it is going to cost you something."
+> "Nobody checks the date. You could."
 
 ~~**OPEN for the keeper:** does the colophon carry the line at all, or
 only the mark?~~ **ANSWERED 2026-08-27 — "I love it, I love adding the
@@ -854,6 +870,19 @@ held to, on its own face, where anybody looking at the reading can
 also read the constraint the reading was taken under. It is the same
 move as publishing the coverage gaps beside the findings, applied to
 the rendering.
+
+**THE MARK IS A STAMP AND HAS TO BE SET LIKE ONE.** ⚑ The first cut
+looked off-centre and was, for a reason worth writing down because it
+recurs anywhere small caps are centred: **`letter-spacing` puts its gap
+AFTER the last glyph, and the browser counts that gap when it centres
+the line.** Two lines at different sizes and different spacings
+therefore settle at different optical positions while both layout boxes
+measure perfectly symmetric — which is exactly what the first
+measurement showed, and why reading the numbers alone would have
+missed it. The fix is `text-indent` equal to the letter-spacing, which
+pushes the ink back right by precisely the trailing gap, plus one size
+and one spacing across both lines so any residue is identical on each
+and they stay flush.
 
 **THE MARK READS `SCVD / STORE`,** not `SCVD / OAK CITY` — the keeper's
 call, 2026-08-27. Better than the town: it is the name and the address
