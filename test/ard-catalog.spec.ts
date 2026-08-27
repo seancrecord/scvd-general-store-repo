@@ -112,10 +112,23 @@ describe("every entry satisfies what ARD requires of one", () => {
       entries: Array<Record<string, unknown>>;
     };
     for (const entry of body.entries) {
+      /*
+       * PARSED, NOT PATTERN-MATCHED. This built a RegExp out of the
+       * host and escaped dots but not backslashes, which CodeQL
+       * flagged — correctly, and the deeper problem is that a regex
+       * assembled from a value is the wrong instrument for a
+       * five-field colon-delimited URN. Splitting says what Appendix C
+       * actually requires: urn, air, the publisher FQDN, a namespace,
+       * a name, and nothing after it.
+       */
       const identifier = String(entry["identifier"]);
-      expect(identifier).toMatch(
-        new RegExp(`^urn:air:${host.replace(/\./g, "\\.")}:[^:]+:[^:]+$`),
-      );
+      const parts = identifier.split(":");
+      expect(parts.length, identifier).toBe(5);
+      expect(parts[0], identifier).toBe("urn");
+      expect(parts[1], identifier).toBe("air");
+      expect(parts[2], identifier).toBe(host);
+      expect(parts[3], identifier).toBeTruthy();
+      expect(parts[4], identifier).toBeTruthy();
       const trust = entry["trustManifest"] as { identity?: string } | undefined;
       expect(trust?.identity, identifier).toBe(`did:web:${host}`);
     }
@@ -131,7 +144,15 @@ describe("every entry satisfies what ARD requires of one", () => {
       entries: Array<{ url: string; identifier: string }>;
     };
     for (const entry of body.entries) {
-      expect(entry.url.startsWith(BASE), entry.identifier).toBe(true);
+      /*
+       * ORIGIN, NOT PREFIX. `startsWith(BASE)` would accept
+       * https://scvd.store.evil.com/... — the host is a prefix of the
+       * attacker's, and the assertion reads as though it pinned the
+       * origin. CodeQL flagged it on the day this shipped and it was
+       * right: in a document a discovery registry crawls, "the URL is
+       * ours" is exactly the claim that has to be exact.
+       */
+      expect(new URL(entry.url).origin, entry.identifier).toBe(BASE);
       const response = await SELF.fetch(entry.url);
       expect(response.status, `${entry.identifier} -> ${entry.url}`).toBe(200);
     }
