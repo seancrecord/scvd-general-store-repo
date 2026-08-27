@@ -187,7 +187,10 @@ document.modelContext, derived from the MCP catalog so it cannot
 act and cannot drift (test-pinned), every fetch tagged ?src=webmcp
 as its own channel, and the storefront's first CSP rides along.
 ⚑ Keeper's errand if he wants pre-GA Chrome/Edge coverage:
-origin-trial tokens for scvd.store. Expiry label: drafts with him.
+origin-trial tokens for scvd.store. THE EXPIRY LABEL IS RULED,
+same night: draft A, "observed {date} · stale after {date}" —
+decay named, nothing warranted forward. It lands with the first
+stored-reading card (design doc §12.4).
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host

@@ -1448,8 +1448,13 @@ in-protocol and nowhere else.
 
 ### 12.4 Still open after this batch
 
-- Expiry label ("stale after" vs "current until") — keeper reviewing
-  drafts; lands with the first stored-reading card.
+- ~~Expiry label~~ **RULED, 2026-08-27 late: draft A — "observed
+  {date} · stale after {date}"**. One past fact, one decay marker;
+  it names the moment to stop trusting and promises nothing forward,
+  which is rule 54 pointed at copy. "Current until" was declined as
+  the forward warranty in softer clothes; "expires in N days" stays
+  retired (two blind readers read it as a warranty). Lands verbatim
+  on the first stored-reading card; nothing in v1 carries it.
 - Colophon drawer beyond the one inked line.
 - ChatGPT/Goose render rows; the mcp-remote bridge row.
 - Card family (§8.5a) — waits on demand tags, and on the keeper's
