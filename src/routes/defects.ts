@@ -11,6 +11,7 @@ import {
   type DefectClass,
 } from "@/store/defect-vocabulary";
 import type { HonoEnv } from "@/types";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 
 /**
  * GET /defects — the named defect classes, in three dialects.
@@ -41,6 +42,7 @@ function document(base: string) {
     cross_instrument_mappings_read_on: MAPPINGS_READ_ON,
     mapping_caveat:
       "Mappings to another instrument's names are our reading of their published definitions on the date above, not their endorsement. Each carries the path to check it and what would show it wrong. If they change a definition, this file is stale until corrected — say so rather than trusting it.",
+    corrections: CORRECTIONS_POINTER,
     classes: DEFECT_CLASSES,
     /*
      * A SECOND REGISTER, DELIBERATELY NOT MIXED IN. A defect class is

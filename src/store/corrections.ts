@@ -265,3 +265,14 @@ export const CORRECTIONS_HAND_KEPT =
 
 export const CORRECTIONS_INVITATION =
   "If you find another, the mailbox at /api/letter is free and a human reads it. A correction costs us nothing except the writing down, and the writing down is the point.";
+
+/**
+ * The forwarding pointer every evidence surface carries (outside
+ * review, 2026-08-27): signed history cannot be retro-edited, so
+ * discoverability runs the other way — any reader standing on a
+ * claim is one hop from the record of what later proved wrong. One
+ * constant, one wording, every surface (the standing check is
+ * test/corrections-forwarding.spec.ts).
+ */
+export const CORRECTIONS_POINTER =
+  "Things this store said that later proved wrong live at /corrections — dated, with what changed so each cannot recur quietly. If a claim on this surface was ever corrected, that is where the correction stands.";
