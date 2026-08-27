@@ -160,11 +160,21 @@ describe("the sweep", () => {
           body_sha256: string | null;
           body_bytes: number;
           body_truncated: boolean;
+          tls?: string;
         };
       }
     ).evidence;
 
+    /*
+     * 3.1 added `tls` to the capture — a stated non-observation, not
+     * a value: this vantage cannot reach a certificate fingerprint
+     * and the row says so rather than letting a reader assume we
+     * looked. The pin moves deliberately; the preimage law is
+     * asserted separately below (old rows carrying no tls
+     * canonicalize without one, byte-identical forever).
+     */
     expect(evidence).toEqual({
+      tls: "unavailable-from-this-vantage",
       challenge_bytes: challengeBytes,
       headers: {
         "content-type": "application/x402+json",
