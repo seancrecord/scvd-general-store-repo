@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { metricsMonth } from "@/lib/metrics";
 import { parseReferralMarker, readReferrals } from "@/lib/referrals";
 import HOUSE_WALLET_FILE from "@/store/house-wallets.json";
@@ -52,14 +52,30 @@ describe("the referral marker", () => {
     await SELF.fetch("https://scvd.store/api/buy/hello?ref=26", {
       headers: { "User-Agent": "referral-spec/1.0" },
     });
-    const after = await readReferrals(testEnv, metricsMonth());
-    expect(after.total_arrived).toBeGreaterThan(before.total_arrived);
-    expect(after.rows.some((row) => row.marker === 26)).toBe(true);
+    /*
+     * THE CONTRACT MOVED (the keeper's ruling, 2026-08-27, the
+     * worldwide-latency audit): on a bare price-check the 402 leaves
+     * first and the tally rides waitUntil, so the promise is
+     * lands-within-the-request, not before-the-response-byte. The
+     * waitFor is that promise, held: a count that never lands still
+     * fails here.
+     */
+    await vi.waitFor(async () => {
+      const after = await readReferrals(testEnv, metricsMonth());
+      expect(after.total_arrived).toBeGreaterThan(before.total_arrived);
+      expect(after.rows.some((row) => row.marker === 26)).toBe(true);
+    });
   });
 
   it("counts a settle apart from an arrival, because the gap is the signal", async () => {
     const first = await SELF.fetch("https://scvd.store/api/buy/hello?ref=41");
     const accepted = decodePaymentRequired(first).accepts[0];
+    // Let the bare fetch's deferred arrival land before taking the
+    // baseline, so it cannot drift a later test's arithmetic.
+    await vi.waitFor(async () => {
+      const landed = await readReferrals(testEnv, metricsMonth());
+      expect(landed.rows.some((row) => row.marker === 41)).toBe(true);
+    });
     const before = await readReferrals(testEnv, metricsMonth());
     const paid = await SELF.fetch("https://scvd.store/api/buy/hello?ref=41", {
       headers: {
@@ -164,16 +180,21 @@ describe("referrers by host", () => {
         "User-Agent": "Mozilla/5.0 (referrer-spec)",
       },
     });
-    const after = await readReferrerHosts(testEnv);
-    const host = after.hosts.find((row) => row.host === "www.x402scan.com");
-    expect(host, "a real referrer was not counted").toBeTruthy();
-    expect(after.with_referrer).toBeGreaterThan(before.with_referrer);
-    // The path is deliberately dropped: a full URL is unbounded key
-    // space, and the question is which SITE sends traffic.
-    expect(
-      after.hosts.some((row) => row.host.includes("/")),
-      "a path leaked into the host table",
-    ).toBe(false);
+    // Lands-within-the-request, per the 2026-08-27 ruling: the bare
+    // quote's tally rides waitUntil, so the read holds the promise
+    // open instead of assuming synchrony.
+    await vi.waitFor(async () => {
+      const after = await readReferrerHosts(testEnv);
+      const host = after.hosts.find((row) => row.host === "www.x402scan.com");
+      expect(host, "a real referrer was not counted").toBeTruthy();
+      expect(after.with_referrer).toBeGreaterThan(before.with_referrer);
+      // The path is deliberately dropped: a full URL is unbounded key
+      // space, and the question is which SITE sends traffic.
+      expect(
+        after.hosts.some((row) => row.host.includes("/")),
+        "a path leaked into the host table",
+      ).toBe(false);
+    });
   });
 
   it("ignores the house, same as every other organic count", async () => {
