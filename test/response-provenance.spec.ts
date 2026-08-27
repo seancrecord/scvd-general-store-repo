@@ -31,7 +31,7 @@ async function goodArtifact(): Promise<{ response: Record<string, unknown>; inpu
     inputs: INPUTS,
     response: {
       endpoint: FP.endpoint,
-      result: FP.result,
+      result: structuredClone(FP.result), // each test gets its own copy — no shared-fixture mutation leak
       provenance: {
         method: FP.method,
         dataVintage: FP.dataVintage,
