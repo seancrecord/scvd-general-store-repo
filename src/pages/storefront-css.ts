@@ -307,6 +307,10 @@ html { overflow-x: clip; }
 }
 .shelf-line { margin-top: 0.3rem; font-size: 0.88rem; color: var(--night-faded); }
 .shelf-more { text-align: center; margin-top: 1.1rem; font-size: 0.85rem; color: var(--night-faded); }
+.shelf-till { text-align: center; margin-top: 0.9rem; font-size: 0.85rem; color: var(--night-faded); }
+/* The sign is night; the inherited ink-on-paper button would vanish
+ * into it. Teal is this page's "a machine can act here" color. */
+.shelf-till .door-cta { background: var(--teal); color: var(--night) !important; }
 
 /* ---- what this place is: the infrastructure, stated before the shelf ---- */
 .what-this-is {
