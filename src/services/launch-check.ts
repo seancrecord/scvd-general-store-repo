@@ -637,6 +637,64 @@ export async function performLaunchCheck(
       detail: `cheapest Base rail: $${price.toFixed(6)} USDC to ${chosen.payTo}, asset ${chosen.asset}.`,
     });
 
+    /*
+     * 2.4 (ledger I6) — WHO SIGNED THE OFFERS, RECORDED EITHER WAY.
+     *
+     * A door that carries signed offers and a door that carries none
+     * are different observations, and until now both produced the
+     * same silence in this report. Absence is stated, per B12.
+     *
+     * When offers ARE carried, the same rule the desk follows: a
+     * signer host matching the door's host is self-issuance and is
+     * worth something; a different host is recorded WITHOUT the
+     * consequence drawn, because delegation is legitimate and the
+     * spec defines no delegation record to read. No second request is
+     * made — the signatures are not verified here, and the stage says
+     * so rather than implying they were.
+     */
+    const offerExt = ((challenge as Record<string, unknown> | undefined)?.["extensions"] ?? {}) as Record<string, unknown>;
+    const offerBlock = offerExt["offer-receipt"] as
+      | { info?: { offers?: { signature?: unknown }[] } }
+      | undefined;
+    const carried = offerBlock?.info?.offers;
+    if (!Array.isArray(carried) || carried.length === 0) {
+      stages.push({
+        stage: "offers",
+        ok: true,
+        detail:
+          "no signed offers carried in the challenge. Optional in the spec and not a defect — recorded because a door with offers and a door without are different facts, and a report that shows the same silence for both has told you nothing about either.",
+      });
+    } else {
+      const doorHost = new URL(targetUrl).hostname.toLowerCase();
+      const signerHosts = carried.map((offer) => {
+        if (typeof offer?.signature !== "string") return null;
+        const header = offer.signature.split(".")[0];
+        if (!header) return null;
+        try {
+          const kid = (JSON.parse(atob(header.replace(/-/g, "+").replace(/_/g, "/"))) as {
+            kid?: unknown;
+          }).kid;
+          if (typeof kid !== "string" || !kid.startsWith("did:web:")) return null;
+          const host = kid.slice("did:web:".length).split("#")[0]?.split(":")[0];
+          return host ? decodeURIComponent(host).replace(/%3A/gi, ":").toLowerCase() : null;
+        } catch {
+          return null;
+        }
+      });
+      const named = signerHosts.filter((host): host is string => host !== null);
+      const foreign = [...new Set(named.filter((host) => host !== doorHost))];
+      stages.push({
+        stage: "offers",
+        ok: foreign.length === 0 && named.length > 0,
+        detail:
+          named.length === 0
+            ? `${carried.length} signed offer${carried.length === 1 ? "" : "s"} carried, none naming a did:web signer this walk could read. Signatures are not verified here — that needs the issuer's key, a second request this walk does not make.`
+            : foreign.length === 0
+              ? `${carried.length} signed offer${carried.length === 1 ? "" : "s"} carried, self-issued: every signer's did:web host is ${doorHost}, the host serving this door, so the signatures bind the party whose shop it is. Signatures NOT verified here — that needs the issuer's key, a second request this walk does not make; the free conformance desk does it.`
+              : `${carried.length} signed offer${carried.length === 1 ? "" : "s"} carried, third-party issued: signer host${foreign.length === 1 ? "" : "s"} ${foreign.join(", ")} rather than ${doorHost}. This does NOT say the signer was unauthorized — delegation is a legitimate arrangement and the spec defines no delegation record to read, so nobody outside can establish it either way. What is observed: the party that signed is not the party that serves. Signatures NOT verified here.`,
+      });
+    }
+
     // STAGE 4 — this store's own rules, before any money.
     if (price > FIELD_SPEND_CAP_USD) {
       stages.push({

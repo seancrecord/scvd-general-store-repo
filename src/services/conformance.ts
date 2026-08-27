@@ -9,6 +9,10 @@ import {
 } from "../../verifier/x402-verify.js";
 import { buildAnchorLogDocument } from "@/services/anchor-log";
 import { buildDidDocument } from "@/services/did-document";
+import {
+  checkResponseProvenance,
+  type ProvenanceFinding,
+} from "@/services/response-provenance";
 import type { Env } from "@/types";
 
 /**
@@ -125,6 +129,12 @@ export interface ConformanceRequest {
   public_key_hex?: unknown;
   resolve_key?: unknown;
   check_anchor?: unknown;
+  /**
+   * Opt-in GVP response-provenance re-derivation. { response, inputs } — the response object
+   * (which declares provenance.responseHash) and the body it describes. Present only when the
+   * caller wants the hash checked; absent on every ordinary artifact call. See ProvenanceFinding.
+   */
+  response_provenance?: unknown;
 }
 
 /**
@@ -203,6 +213,12 @@ export interface ConformanceVerdict {
    * `verdict` — see AnchorFinding.
    */
   anchored_key_history: AnchorFinding | null;
+  /**
+   * Present only when response_provenance was supplied. Additive to the frozen v1 contract, and
+   * NEVER folded into `verdict` — a caller with no body to supply is not non-conformant for it.
+   * See ProvenanceFinding and services/response-provenance.ts.
+   */
+  provenance_rederivation?: ProvenanceFinding;
   what_this_means: string;
   what_this_cannot_tell_you: string[];
   our_conflict_of_interest: string;
@@ -467,6 +483,10 @@ export async function checkConformance(
   const askedForResolution =
     body.resolve_key === false ? false : publicKeyHex === undefined;
   const wantsAnchor = body.check_anchor === true;
+  const provenanceFinding: ProvenanceFinding | undefined =
+    body.response_provenance !== undefined
+      ? await checkResponseProvenance(body.response_provenance)
+      : undefined;
 
   const parsed = parseJws(artifact);
   const kid =
@@ -613,6 +633,55 @@ export async function checkConformance(
   );
   const anyFailed = raw.checks.some((check) => !check.ok);
   /*
+   * 2.4 — WHO SIGNED THIS, AND WERE THEY THE SHOP? (ledger F2/I6)
+   *
+   * The signature check proves the kid's key signed these bytes.
+   * Nothing bound that DID to the resourceUrl it names, so an offer
+   * signed by a stranger for someone else's shop read exactly like
+   * one the shop signed itself.
+   *
+   * THE HONEST CHECK IS THE POSITIVE ONE. "did:web host does not
+   * match resourceUrl host" is NOT proof of anything wrong:
+   * delegation is a real arrangement — a facilitator or processor
+   * signing on a merchant's behalf — and the offer-receipt spec
+   * defines no delegation record for us to read. A desk that called
+   * that "unauthorized" would be answering a question it cannot see,
+   * about a party it cannot ask. So the check states what IS
+   * verifiable — self-issuance — and, when the hosts differ, records
+   * third-party issuance while explicitly declining the consequence.
+   *
+   * Advisory, like the value note below: this desk's verdict is
+   * structure, signature and time, and a check that moved verdicts
+   * would rewrite what every past "conforms" meant.
+   */
+  if (kind === "offer" && parsed.ok) {
+    const payload = (parsed.payload ?? {}) as Record<string, unknown>;
+    const signerHost = didWebHost(kid);
+    let resourceHost: string | undefined;
+    try {
+      resourceHost = new URL(String(payload["resourceUrl"] ?? "")).hostname.toLowerCase();
+    } catch {
+      resourceHost = undefined;
+    }
+    // No kid, or no readable resourceUrl: no claim either way. An
+    // absent check is honest here; a guessed one is not.
+    if (signerHost && resourceHost) {
+      const selfIssued = signerHost === resourceHost;
+      raw.checks = [
+        ...raw.checks,
+        {
+          name: "offer-self-issued",
+          ok: selfIssued,
+          advisory: true,
+          detail: selfIssued
+            ? `self-issued: the signer's did:web host (${signerHost}) is the host that serves the resource (${resourceHost}), so this signature binds the party whose shop it is.`
+            : `third-party issued: the signer's did:web host (${signerHost}) is not the host that serves the resource (${resourceHost}). This does NOT say the signer was unauthorized — delegation is a legitimate arrangement and the offer-receipt spec defines no delegation record for this desk to read, so we cannot establish either way. What is observed: the party that signed is not the party that serves. Ask the resource's operator whether ${signerHost} signs for them.`,
+        },
+      ];
+    }
+  }
+
+  /*
    * 2.2, ADVISORY BY THE DESK'S OWN CONTRACT. The desk checks
    * structure, signature and time — value judgments never fold into
    * its verdict, and this one does not either (verdict below reads
@@ -672,6 +741,7 @@ export async function checkConformance(
           }
         : {}),
       anchored_key_history: anchor,
+      ...(provenanceFinding ? { provenance_rederivation: provenanceFinding } : {}),
       what_this_means: meaningOf(verdict, kind, live),
       what_this_cannot_tell_you: limitsFor(keyResolution),
       our_conflict_of_interest: CONFLICT,
