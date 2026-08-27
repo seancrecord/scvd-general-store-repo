@@ -960,6 +960,8 @@ const TILL_STYLE = `
 .till-status[data-outcome=delivered]{color:#2f9e44}
 .till-status[data-outcome=declined],.till-status[data-outcome=refused]{color:#d9480f}
 .till-status[data-outcome=uncertain]{color:#e03131;font-weight:700}
+.till-wallet[data-connected=yes]{color:#2f9e44}
+.till-wallet[data-connected=wrong-chain]{color:#d9480f}
 .till-detail summary{cursor:pointer;font-size:.85em;opacity:.75}
 .till-out{max-height:26rem;overflow:auto;white-space:pre-wrap;word-break:break-word}
 `;
@@ -1036,6 +1038,77 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
   if (shelf.house_rule) {
     section.appendChild(el(doc, "p", "menu-meta", shelf.house_rule));
   }
+
+  /*
+   * THE WALLET LINE (the keeper's ask, 2026-08-27, after a live walk
+   * spent three attempts discovering which account and network his
+   * wallet was actually offering this page). One live sentence: which
+   * account is connected HERE and on which network, refreshed the
+   * moment either changes in the wallet — so the wrong-account and
+   * wrong-network discoveries happen before a button is pressed, not
+   * inside a signature prompt.
+   *
+   * Read-only and display-only. eth_accounts and eth_chainId prompt
+   * for nothing, and nothing here gates a purchase: the money path
+   * still decides from the live 402's accepts alone, so a stale or
+   * unreadable line costs a hint, never a signature. The chains it
+   * may warn about come from the shelf the server rendered
+   * (evm_chains, derived from the payment gate's own constants),
+   * never hardcoded here.
+   */
+  const walletLine = el(doc, "p", "till-wallet menu-meta");
+  walletLine.setAttribute("data-connected", "unknown");
+  const shortAddress = (address) =>
+    `${address.slice(0, 6)}…${address.slice(-4)}`;
+  const storeChains = Array.isArray(shelf.evm_chains)
+    ? shelf.evm_chains.filter((id) => Number.isSafeInteger(id))
+    : [];
+  const refreshWalletLine = async () => {
+    try {
+      const accounts = await provider.request({ method: "eth_accounts" });
+      const chainHex = await provider.request({ method: "eth_chainId" });
+      const chainId = Number.parseInt(chainHex, 16);
+      const account =
+        Array.isArray(accounts) && typeof accounts[0] === "string"
+          ? accounts[0]
+          : null;
+      if (!account) {
+        walletLine.setAttribute("data-connected", "no");
+        walletLine.textContent =
+          "○ Wallet found, but no account is connected to this page yet — pressing Pay asks your wallet to connect first.";
+        return;
+      }
+      const wrongChain =
+        storeChains.length > 0 &&
+        Number.isSafeInteger(chainId) &&
+        !storeChains.includes(chainId);
+      walletLine.setAttribute(
+        "data-connected",
+        wrongChain ? "wrong-chain" : "yes",
+      );
+      walletLine.textContent = Number.isSafeInteger(chainId)
+        ? `● Connected as ${shortAddress(account)} on ${chainName(chainId)}${
+            wrongChain
+              ? ` — this store sells on ${storeChains
+                  .map(chainName)
+                  .join(
+                    " and ",
+                  )}. Switch your wallet's network before pressing Pay.`
+              : ". The signature request will come from this account."
+          }`
+        : `● Connected as ${shortAddress(account)}.`;
+    } catch {
+      walletLine.setAttribute("data-connected", "unknown");
+      walletLine.textContent =
+        "The wallet would not say what it has connected; pressing Pay will ask it directly.";
+    }
+  };
+  refreshWalletLine();
+  if (typeof provider.on === "function") {
+    provider.on("accountsChanged", refreshWalletLine);
+    provider.on("chainChanged", refreshWalletLine);
+  }
+  section.appendChild(walletLine);
 
   const status = el(doc, "p", "till-status menu-meta");
   status.setAttribute("role", "status");
