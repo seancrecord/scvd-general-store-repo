@@ -9,7 +9,7 @@ import {
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
-import { tillShelfHtml } from "@/lib/till-shelf";
+import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import {
   CHEAP_DOOR_ITEM_IDS,
@@ -254,6 +254,7 @@ practiceCounterRoutes.get("/try", (c) => {
               ? `<p class="menu-meta">The fast path, one line: <code>GET /api/buy/${escapeHtml(low.id)}?src=try</code> — $${low.price_usdc}, no parameters, answers 402 with everything you need. The three steps below are that line, twice more.</p>`
               : ""
           }
+          <p class="menu-meta">${escapeHtml(TILL_WALLET_LIMIT)}</p>
         </section>
         <section>
           <h2>${escapeHtml(COPY.whyHead)}</h2>

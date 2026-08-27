@@ -12,7 +12,7 @@ import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept"
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
-import { tillShelfHtml } from "@/lib/till-shelf";
+import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
@@ -434,6 +434,7 @@ function renderItemPage(
         <h2>The facts</h2>
         ${factsHtml}
         ${item.sample_url ? `<p class="menu-meta">A sample, free: <a href="${escapeHtml(item.sample_url)}"><code>${escapeHtml(item.sample_url)}</code></a></p>` : ""}
+        <p class="menu-meta">${escapeHtml(TILL_WALLET_LIMIT)}</p>
       </section>
       <section>
         <h2>What the 402 says</h2>
