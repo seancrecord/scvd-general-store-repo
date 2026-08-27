@@ -56,8 +56,25 @@ const TEXT_FALLBACK = [
   "You know your own risk better than we do.",
 ].join("\n");
 
+function trace(line) {
+  try {
+    writeFileSync(
+      join(HERE, "render-test-trace.log"),
+      `${new Date().toISOString()} ${line}\n`,
+      { flag: "a" },
+    );
+  } catch {
+    /* tracing must never break the handshake */
+  }
+}
+
 function handle(msg) {
   const { id, method } = msg;
+  if (method) {
+    const uri =
+      method === "resources/read" ? ` uri=${msg.params?.uri ?? "?"}` : "";
+    trace(`${method}${uri}`);
+  }
   const reply = (result) => ({ jsonrpc: "2.0", id, result });
   switch (method) {
     case "initialize":

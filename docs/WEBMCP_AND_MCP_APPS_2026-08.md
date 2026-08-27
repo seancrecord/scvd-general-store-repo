@@ -977,37 +977,56 @@ test becomes its own rule beside 43 — is struck by it.
 
 **RESULTS AS THEY LAND (2026-08-27, the keeper's own laptop):**
 
-| Host | Renders? | Visual judgment |
+| Host | Our ui:// card rendered? | Notes |
 |---|---|---|
-| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **YES** | pending the keeper's screenshots (light / dark / narrow) |
+| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **NOT OBSERVED — and a host marker claimed otherwise** | see the correction below |
 | VS Code | not yet run | — |
 | ChatGPT | not yet run | — |
 | Goose | optional | — |
 
-**Two byte-level findings from the first host, both corrections to
-this document's earlier read:**
+**CORRECTION, 2026-08-27, same day as the error.** An earlier
+revision of this table said Claude Desktop rendered the card, on the
+strength of a bracketed line in the tool result: *"This tool call
+rendered an interactive widget in the chat. The user can already see
+the result."* The keeper saw no widget. On the retry, the host model
+itself established that the line is a STANDARD HOST MARKER (it
+appeared on an unrelated Visualizer call too) — injected even though
+no widget was visible to the human, and its presence caused the model
+to skip its own rendering. This document then recorded the marker as
+a render. The observation discipline this store sells is exactly the
+one its author failed here: **a claim of rendering is not a render,
+and only the human in front of the screen can observe the
+difference.** The "card steered the narration" claim built on that
+premise is RETRACTED — the model's good drift-forward narration on
+run two came from the TEXT FALLBACK, not from a rendered card.
 
-1. **The server must declare the extension back, and it is
-   load-bearing, not courtesy.** The spec's negotiation section says
-   the CLIENT advertises `io.modelcontextprotocol/ui`; the first kit
-   run declared nothing back and the card did not render — the host
-   consumed the text fallback. With the server echoing the extension
-   in its own initialize capabilities, the same host rendered the
-   card. The kit logs the handshake either way
-   (`render-test-log.json`, `host_offers_mcp_apps`), and Claude
-   Desktop does advertise the extension on local stdio servers.
+**What actually stands from the Claude Desktop runs — three findings,
+each now stated against the evidence that supports it:**
 
-2. **Two live specimens of the summarization argument, one run
-   apart, same host, same record.** WITHOUT the card (first run): the
-   model's paraphrase kept the headline hedge, dropped the DATE and
-   AGE entirely, and pivoted to an upsell. WITH the card (second
-   run): the model's own narration put the drift front and centre —
-   "with 19 days of drift and 11 left on the clock, a reader leaning
-   on this card for a purchase decision would be reading past its
-   claim." The rendered card did not merely survive the narration; it
-   STEERED it. That is a stronger effect than §4.6 predicted — the
-   prediction was that the card reaches the human despite the model,
-   and the observation is that it also improves what the model says.
+1. **The handshake is real.** Claude Desktop advertises
+   `io.modelcontextprotocol/ui` (mimeTypes `text/html;profile=mcp-app`)
+   on local stdio servers — captured in `render-test-log.json`. What
+   remains unobserved is any render.
+2. **The host's render marker is itself an unverifiable claim** — the
+   surface asserts "the user can already see the result" with no way
+   for the model, the server, or anyone downstream to check it, and
+   the assertion actively suppresses the fallback rendering it
+   preempts. That is precisely the artifact-without-verification
+   shape this store studies, found in the render pipeline itself.
+3. **The strongest specimen is the model's own improvised card.**
+   Told nothing had appeared, the model rebuilt a card from the text
+   fallback alone — and its version kept the age huge ("19 days
+   ago"), the expiry with "Then unusable", a "Narrow claim" pill, and
+   the full not-climbed list. The refusability survived into a
+   rendering WE NEVER DREW, because the text fallback carried it.
+   What its card dropped: the checks vector, the conflict-of-interest
+   block, the colophon, and the keeper's line — the identity and
+   the self-indictment, exactly the parts only our own HTML brings.
+
+**Diagnostic still open:** whether Claude Desktop ever fetched the
+`ui://` resource. The kit now traces every method call; a trace with
+no `resources/read` for the ui:// URI means the host never attempted
+the render its marker claimed.
 
 
 Unchanged by the ruling, and it comes before the P8 shape decision
