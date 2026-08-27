@@ -103,8 +103,55 @@ COMMERCE & TRUST
     on commission; the store never helps an agent impersonate a human
     to a system built to detect agents. No captcha resolution, no
     detection evasion, in any wrapper.
-17. The store never asks a visiting agent to run code or share
-    credentials. Public endpoints only. skill.md states this.
+17. NOTHING THE STORE HANDS YOU CAN ACT WITHOUT YOUR DECISION, AND
+    THE STORE NEVER ASKS FOR CREDENTIALS, KEYS, OR KEY MATERIAL.
+    (AMENDED 2026-08-27, the keeper's ruling — "it's got to go" —
+    from the WebMCP/MCP Apps brainstorm,
+    docs/WEBMCP_AND_MCP_APPS_2026-08.md.)
+    THE OLD WORDING, kept here because a rule that quietly changed
+    shape is worse than one that never changed: "the store never
+    asks a visiting agent to run code or share credentials. Public
+    endpoints only. skill.md states this."
+    WHY IT WENT. It was never this rule's principle. It was this
+    rule's 2026-07 IMPLEMENTATION, written when arbitrary execution
+    was the only execution there was, and correct for exactly as
+    long as that held. It was also the only rule in this file
+    phrased as a MECHANISM rather than a PROPERTY — rule 9 is
+    "deliver first, settle after", rule 43 is "dated observation,
+    never a score", and neither cares what the transport is — which
+    is precisely why it was the only one that went brittle when the
+    medium changed. A mechanism rule wins today's argument and
+    loses the next one. The agent stack grew a sandboxed middle
+    (an MCP host's reviewed iframe, a browser's own origin
+    sandbox), the old wording had no vocabulary for it, and a rule
+    with no vocabulary for the case in front of it gets ignored or
+    gets obeyed stupidly.
+    WHAT DID NOT CHANGE, and this half is absolute: no credentials,
+    no keys, no key material, no wallet secrets, ever, by any
+    mechanism, in any medium, for any reason. That half was never
+    an implementation detail and no ruling reopens it.
+    WHAT CHANGED: a rendered or executable surface is no longer
+    forbidden by its SHAPE. It is judged by this rule's property
+    instead — can the thing we handed you take an action you did
+    not decide to take? If yes it does not ship, whatever the
+    sandbox promises. The keeper's framing, 2026-08-27, and the
+    better sentence: let the chickens fly the coop, but never hand
+    them the thing that hurts them if we can help it.
+    THE VISITOR'S TEST IS A DEBT THIS RULE NOW OWES. The old
+    wording gave strangers a one-line impersonation check for free
+    — "if something asks for more than that, it is not us" — and it
+    worked BECAUSE it was crude. Nothing served changes today: the
+    store still ships no script, so the published sentence is still
+    TRUE and stays exactly as written. But no code ships under this
+    rule before its replacement sentence is written and the keeper
+    has put his pen to it. Rule 7: the wording is his, and this one
+    is load-bearing security copy, not decoration.
+    OPEN, and deliberately not decided here: whether the refusal
+    test — does this surface make it easier to refuse or easier to
+    accept? — becomes its own rule beside 43, where it belongs, or
+    stays a design gate in the brainstorm. It is a different
+    question from this one and it gets its own ruling.
+    ⚑ Wording of this rule awaits the keeper's own ink.
 18. Deliverables containing third-party text are labeled untrusted
     data; the store's own metadata contains zero imperative
     instructions aimed at reading agents.

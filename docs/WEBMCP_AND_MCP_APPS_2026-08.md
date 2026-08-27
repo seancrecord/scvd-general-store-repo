@@ -20,6 +20,15 @@ never blur into shipped work:
 - **PROPOSED** — argued for here, not built, not approved.
 - **OPEN** — a question with no answer, or a keeper ruling.
 
+> **⚑ A RULING LANDED WHILE THIS DOCUMENT WAS OPEN (2026-08-27).**
+> Rule 17 is amended: the mechanism wording is gone, replaced by a
+> property. **§8 is the record and it supersedes several sections
+> below.** Those sections are annotated where they are overturned
+> and otherwise left standing — the house records rather than
+> rewrites, and the keeper asked specifically that the reasoning be
+> kept, not just the conclusion. Read §8 last, not first: it is the
+> answer, and §1–§7 are why.
+
 ---
 
 ## 0. The short version
@@ -29,6 +38,8 @@ never blur into shipped work:
    sequenced behind P2. That reading is wrong by one step: WebMCP
    tools execute *in the visiting agent's browser*, from a
    `<script>` we ship. Today the store ships none. §3.4.
+   **→ RULED 08-27: one ruling, both items, and it went the way that
+   unblocks them. §8.**
 2. **The audit is scoring an API that is already half-renamed.**
    `navigator.modelContext` is deprecated in Chrome 150; the spec
    moved the surface to `document.modelContext`. Building to the
@@ -69,6 +80,12 @@ the same house position rule 17 states in words:
 
 > 17. The store never asks a visiting agent to run code or share
 >     credentials. Public endpoints only. skill.md states this.
+
+**⚑ That is the rule as it stood when this section was written. It
+was amended 2026-08-27 and the sentence above is now the OLD
+wording, preserved in `HOUSE_RULES.md` beside its replacement. The
+analysis below is why it was amended, so it is left as written —
+but read it as the case for the ruling, not as current law. §8.**
 
 And the sentence the store publishes wherever a visitor might land —
 the MCP handshake, `skill.md`, `llms.txt`, `openapi.json`,
@@ -230,6 +247,14 @@ months. Rule 6: two audiences always.
 
 ### 3.3 The ordering constraint is right, for a sharper reason
 
+**⚑ SUPERSEDED 08-27 (§8.3). The keeper's read is that this whole
+section prices WebMCP as an expected-value bet when it is an
+OPTION, and that under a moving substrate the option is worth
+holding whether or not the verb story lands. P7 no longer waits on
+P2. The argument below is kept because its design point still
+stands — a page-state verb is the one WebMCP is genuinely better
+at — but it is no longer a reason to wait.**
+
 The brief says: do not build this on an empty page; a page with no
 verbs declares nothing. True, and the sharper version is a design
 rule worth keeping:
@@ -258,6 +283,11 @@ the question after P2; do not treat P2 shipping as the answer.
 
 ### 3.4 ⚑ THE COLLISION THE BRIEF DID NOT FLAG
 
+**⚑ RULED 08-27 (§8.1). The collision was real and it was the
+finding that moved the rule. It is resolved in the direction that
+lets both items proceed, and the impersonation-test debt it names
+is now carried explicitly by rule 17 itself.**
+
 The brief routes P8 to the keeper and treats P7 as sequencing. But
 `registerTool`'s `execute` callback is **our JavaScript, running in
 the visiting agent's browser, invoked by the agent.** An agent that
@@ -281,6 +311,12 @@ rule that means one thing on the web page and another on the MCP
 server.
 
 ### 3.5 PROPOSED — if it goes ahead, the shape
+
+**⚑ AMENDED 08-27 (§8.4). The constraints below stand, but the
+PRINCIPLE behind them was wrong. "Small enough to be wrong about"
+is a bet-sizing rule; the keeper's is a risk rule — smart enough
+not to create risk or headache — and size is not the metric that
+measures either.**
 
 Behind a two-headed detection, read-only, and small:
 
@@ -529,10 +565,13 @@ bad habit.
 
 ## 6. OPEN — for the keeper's pen
 
-1. **THE RULING, and it governs both items, not one.** Does "the
+1. ~~**THE RULING, and it governs both items, not one.** Does "the
    store never asks you to run code" mean *we never ask you to
    execute anything* (P7 and P8 both live) or *the public HTTPS
-   surface is the entire relationship* (both die)? §1, §3.4.
+   surface is the entire relationship* (both die)?~~ **STRUCK
+   2026-08-27 with its evidence: ruled the first way, and the rule
+   was rewritten as a property rather than patched as a mechanism.
+   `HOUSE_RULES.md` rule 17, amended. §8.1.**
 2. **If the rule survives in the second form: does the third door
    (§4.5) count as running code?** Rendering that cannot act is the
    narrowest version of C in the §1 table. If it is still "more than
@@ -566,3 +605,163 @@ bad habit.
 - Whether an origin-trial token, being a dated claim that expires,
   ought to appear in our own freshness surface as a self-observation.
   Half a joke. Only half.
+
+---
+
+## 8. THE RULING (2026-08-27) — and what it supersedes
+
+Recorded the day it was given, in the section it overturns rather
+than in place of it. Everything in §1–§7 stays as written; this is
+what is now true on top of it.
+
+### 8.1 The ruling
+
+The keeper, on the finding in §3.4 — that rule 17 was the only rule
+in the building phrased as an implementation instead of a property,
+which is exactly why it was the only one that went brittle when the
+medium changed:
+
+> **"This is why it's got to go."**
+
+`HOUSE_RULES.md` rule 17 is amended the same day. The mechanism
+wording — *"never asks a visiting agent to run code; public
+endpoints only"* — is retired and preserved in place beside its
+replacement, which is a property:
+
+> **Nothing the store hands you can act without your decision, and
+> the store never asks for credentials, keys, or key material.**
+
+Three things the amendment settles, and they are the reasons it was
+made rather than the ruling's decorations:
+
+- **The absolute half stays absolute.** Credentials, keys, key
+  material, wallet secrets: never, by any mechanism, in any medium.
+  That half was never an implementation detail and the ruling does
+  not reopen it.
+- **Shape stops being the test; capability becomes the test.** A
+  rendered or executable surface is no longer forbidden for being
+  one. It is asked a question instead — *can the thing we handed
+  you take an action you did not decide to take?* — and if the
+  answer is yes it does not ship, whatever the sandbox promises.
+- **The visitor's test became a debt.** The old wording handed
+  strangers a free one-line impersonation check that worked
+  *because* it was crude. The new rule owes a replacement and says
+  so. Nothing served changes today — the store still ships no
+  script, so the published sentence remains TRUE — but **no code
+  ships under this rule until the replacement sentence exists and
+  the keeper has put his pen to it** (rule 7).
+
+The keeper's own framing, which is the better sentence and is
+recorded here for whoever writes that copy: *let the chickens fly
+the coop, but never hand them the thing that hurts them if we can
+help it.*
+
+### 8.2 What the ruling does NOT decide
+
+The rule 17 question was the gate. It is not the whole decision, and
+one habit worth naming: a gate opening is not an instruction to walk
+through it.
+
+- **The P8 shape is still open** — narrow (read-only cards), the
+  third door (§4.5, a card at the approval moment that renders and
+  cannot act), or broad (the approval widget with a button). §4.3.
+- **The refusal test is still open** as a *rule*. Does *"does this
+  surface make it easier to refuse or easier to accept?"* (§4.6)
+  become its own rule beside 43, where it belongs by subject, or
+  stay a design gate in this document? Rule 17 flags it and
+  deliberately declines to answer it.
+- **The rule 4 check on §5.2** — publishing our own capability
+  absence: counted coverage gap, or preemptive denial?
+- **The four-host render test (§8.5)** still gates any card, and it
+  gates it *before* the shape ruling, not after.
+
+### 8.3 P7 unblocks from P2
+
+The keeper's read, and the correction to §3.3:
+
+> *"LLMs are creating browsers now for agents to surf. Things are
+> changing so rapidly and at the very least, even if I don't totally
+> know why it's needed, I do know having hands in many pots when
+> it's easy to do reduces my ability to be wrong or bet the wrong
+> horse."*
+
+§3.3 priced WebMCP as an **expected-value bet** and concluded low
+value because it duplicates verbs we already declare. That is the
+right analysis only if you already know which transport wins. Under
+a moving substrate the correct frame is **option value**: what does
+it cost, and what does it buy if we are wrong. Bounded and small
+against unbounded and on-thesis is a good bet at almost any
+probability, and the EV framing hid that.
+
+Two arguments found in that exchange that neither the brief nor
+§3 contained:
+
+1. **WebMCP declarations are a thing to observe.** Anyone with a
+   webpage can declare a typed verb and there is no conformance
+   infrastructure behind any of it — a declared tool whose schema
+   lies about what it returns is a named defect class in our
+   existing vocabulary, on a surface nobody is checking. §7 parked
+   this under MCP Apps; it is *stronger* for WebMCP, which has
+   neither a spec police nor hosts enforcing anything.
+2. **You cannot credibly run a conformance desk for a surface you
+   refuse to implement.** We check other people's x402 doors and we
+   run x402. Checking WebMCP declarations while having none is the
+   exact shape of credibility gap this store is otherwise paranoid
+   about.
+
+And the thesis the keeper said he had not pulled together is
+already in the store's own copy: **"x402 today, cross-protocol by
+design."** Declining a protocol because we have not yet observed
+demand for it is the store doing to itself precisely what it tells
+customers not to do — **treating an unobserved thing as an absent
+thing.**
+
+**Consequence for sequencing, and it runs the opposite way from the
+brief.** The expensive half of either item is not the code, it is
+amending the impersonation copy across every surface that carries
+it — and that is a **fixed cost paid once**. So the marginal copy
+cost of the second item is near zero, which makes the cheap play
+**both or neither**, not one and then the other. Doing P8 alone and
+P7 later pays the hardest part twice.
+
+### 8.4 The build constraint, corrected
+
+§3.5 argued the build should be *"small enough to be wrong about."*
+The keeper's correction:
+
+> *"It doesn't have to be small enough to be wrong, it has to be
+> smart enough to not create too big of a risk or headache — which I
+> don't know that it would."*
+
+He is right, and the distinction is not pedantic: **size is not the
+metric that measures either risk or headache.** The two real
+metrics, and both have design answers rather than budget answers:
+
+| | The question | The answer, by construction |
+|---|---|---|
+| **Can it act?** | does anything registered do something an unauthenticated `curl` could not? | read-only verbs mirroring public endpoints add ~zero attack surface. And shipping any script means shipping a **CSP**, which we have never had — net risk *down*, not up |
+| **Can it drift?** | can the declaration disagree with the endpoint? | derive the registration from the same source the HTTP route derives from, so it **cannot** drift. The house already does this everywhere (`MENU_ITEMS`, `ROOMS`) — rule 44's sweep does not grow |
+
+Under those two, a build can be as large as it needs to be and stay
+cheap. What stays genuinely expensive is unchanged and small in
+number: **the copy** (§8.1's debt) and **the origin-trial token**,
+which expires silently and must therefore derive any guard's expiry
+from the token itself, never from a date somebody typed (rule 46).
+
+His instinct that it would not create much risk or headache is, on
+this reading, correct — *provided* the derivation discipline is in
+the build from the first commit rather than added after the second
+surface disagrees with the first.
+
+### 8.5 The one test that still gates everything
+
+Unchanged by the ruling, and it comes before the P8 shape decision
+rather than after: **build one throwaway verify card and render it
+in all four hosts.** Hosts style these themselves. If the gaps and
+the expiry render as small grey text under a large verdict, we
+shipped a score and violated rule 43 while believing we honored it.
+
+A TEST in the keeper's taxonomy, not a build. If refusal survives
+four hosts' CSS, the shape ruling is easy. If it does not, the
+answer is narrow-or-nothing and the argument was never needed.
+

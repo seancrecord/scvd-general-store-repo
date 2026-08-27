@@ -57,9 +57,51 @@ and federation, the watch grammar, the canary, and panel+random
 sampling. Six open rulings for the keeper sit in §12. He has more
 material to add; §14 is the parking lot.
 
-**0b. WEBMCP AND MCP APPS — brainstorm filed, TWO RULINGS WAITING
-(docs/WEBMCP_AND_MCP_APPS_2026-08.md, opened 08-27).** Brainstorm
-only at the keeper's direction; NOTHING BUILT, nothing canon. The
+**0b. WEBMCP AND MCP APPS — brainstorm filed, THE GATING RULING
+LANDED 08-27, THE SHAPE RULING STILL OPEN
+(docs/WEBMCP_AND_MCP_APPS_2026-08.md, opened 08-27; §8 is the
+ruling and supersedes several sections above it).**
+**RULE 17 IS AMENDED** — the keeper's word, "this is why it's got to
+go": the mechanism wording ("never asks a visiting agent to run
+code; public endpoints only") is retired and preserved in place
+beside its replacement, which is a property — *nothing the store
+hands you can act without your decision, and the store never asks
+for credentials, keys, or key material.* The credentials half stays
+absolute. Shape stops being the test; capability becomes the test.
+⚑ The wording awaits his own ink, and the rule now carries a DEBT
+it names itself: the old sentence handed strangers a free one-line
+impersonation check that worked because it was crude, and **no code
+ships until its replacement is written and he has put his pen to
+it** (rule 7). Nothing served changes today — the store still ships
+no script, so the published sentence is still TRUE.
+STILL OPEN: the P8 SHAPE (narrow / the third door / broad); whether
+the refusal test — does this surface make it easier to refuse or
+easier to accept? — becomes its own rule beside 43; the rule 4
+check on publishing our own capability absence. AND ONE TEST GATES
+ALL OF IT, before the shape ruling rather than after: build one
+throwaway verify card and render it in all four hosts. If the gaps
+and the expiry come out as small grey text under a big verdict, we
+shipped a score and broke rule 43 while believing we honored it.
+P7 UNBLOCKED FROM P2 on the keeper's read ("hands in many pots when
+it's easy reduces my ability to bet the wrong horse") — the earlier
+analysis priced an OPTION as an expected-value bet. Two arguments
+found in that exchange: WebMCP declarations are themselves a thing
+to observe, with no conformance infrastructure behind any of them;
+and you cannot credibly run a conformance desk for a surface you
+refuse to implement. Sequencing runs OPPOSITE to the brief: the
+copy amendment is a fixed cost paid once, so the marginal cost of
+the second item is near zero and the cheap play is BOTH OR NEITHER.
+Build constraint corrected by the keeper — not "small enough to be
+wrong about" but smart enough not to create risk or headache, which
+measures as two questions with construction answers: can it act (no
+— read-only verbs mirroring public endpoints, and a first CSP is
+net risk DOWN) and can it drift (no, if the registration derives
+from the same source as the HTTP route, as MENU_ITEMS and ROOMS
+already do).
+The brainstorm below it stands as the reasoning trail, annotated
+where superseded rather than rewritten, at his request.
+ORIGINAL FILING, kept because the findings are what moved the rule:
+NOTHING BUILT, nothing canon. The
 outside audit's two agent-surface items, worked against the store as
 it stands. Three findings that change the brief as posed: (1) the
 audit's own item, WebMCP, is scored against `navigator.modelContext`,
@@ -81,14 +123,16 @@ checks not observed" into "ready", and a card with a live expiry and
 the gaps at equal weight does rule 43's work that a paragraph
 structurally cannot; and if a card cannot be built to read as an
 observation rather than a rating, it should not be built at all.
-**RULE, and it governs both items:** does "never asks you to run
+~~**RULE, and it governs both items:** does "never asks you to run
 code" mean *we never ask you to execute anything*, or *the public
-HTTPS surface is the entire relationship*? §6 lists five rulings,
-including a rule 4 check on whether publishing our own capability
-absence is a counted gap or a preemptive denial. **LOOK before P7 is
-costed:** how many storefront-HTML requests come from agent-shaped
-clients that never touch /mcp or llms.txt — that number is rule 19's
-demand tag and we keep the logs.
+HTTPS surface is the entire relationship*?~~ **STRUCK 08-27 with its
+evidence — ruled the first way, and the rule was rewritten as a
+property rather than patched as a mechanism. HOUSE_RULES rule 17,
+amended, wording awaiting his ink.** **LOOK, still open and now
+cheaper than it was, since P7 no longer waits on P2:** how many
+storefront-HTML requests come from agent-shaped clients that never
+touch /mcp or llms.txt — rule 19's demand tag, and we keep the logs.
+It no longer gates the build; it sizes it.
 
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
