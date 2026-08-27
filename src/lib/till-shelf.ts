@@ -40,6 +40,20 @@ import type { MenuItem } from "@/types";
  * point) and carried in the shelf JSON so the till itself can say it
  * too. The Solana pass is filed as a build item, not pretended at.
  */
+/**
+ * THE SMOKE ALARM, EXPLAINED IN ADVANCE (the keeper's screenshot,
+ * 2026-08-27: Rainbow simulated his half-cent correctly and labelled
+ * it "suspicious" anyway). Wallets flag gasless USDC authorizations
+ * from young domains on sight, because the same signature shape is
+ * how drainers strike — the warning is about the pattern, not this
+ * page, and the honest response is not to argue with it but to hand
+ * the buyer the three checks that actually settle the question.
+ * Domain reputation ages in; this sentence outlives the flag either
+ * way, because the checks are worth doing at any store.
+ */
+export const TILL_SIGNATURE_WARNING =
+  'Your wallet may call this signature "suspicious." That warning is about the pattern, not this page: a gasless USDC authorization is also how wallet drainers strike, so wallets flag the shape from young domains on sight. Don’t trust the page or the flag — check three things yourself: the signing account is yours, the amount matches the shelf price, and the token domain reads "USD Coin". If any of them is off, press Cancel — cancelling is free and signs nothing.';
+
 export const TILL_WALLET_LIMIT =
   "The browser till takes EVM wallets only for now — Base or Polygon, one signature, no gas. Holding Solana USDC? Every agent client and the MCP door settle on Solana today; the browser till's Solana pass is planned and this sentence comes down when it ships.";
 
@@ -122,6 +136,7 @@ export function tillShelfHtml(
      */
     house_rule: HOUSE_RULE,
     wallet_limit: TILL_WALLET_LIMIT,
+    signature_warning: TILL_SIGNATURE_WARNING,
     /**
      * THE CHAINS THE INDICATOR MAY VOUCH FOR (the keeper's ask,
      * 2026-08-27: "something that shows connected or not, and which

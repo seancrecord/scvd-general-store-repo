@@ -64,6 +64,37 @@ describe("the practice counter", () => {
     );
   });
 
+  it("points the client-builder at the instruments for their own till", async () => {
+    /*
+     * THE BRIDGE (2026-08-27): the person practicing a client here is
+     * usually building a store next, and until today this page taught
+     * them to pay us and never said the observatory's instruments read
+     * anyone's till. Both dialects carry the pointers; the endpoints
+     * named must be the ones that actually answer, so a route that
+     * moves breaks this before it breaks a visitor.
+     */
+    const body = await json(await SELF.fetch(`${BASE}/try`));
+    const bridge = body.when_its_your_till;
+    expect(isRecord(bridge)).toBe(true);
+    if (!isRecord(bridge)) return;
+    expect(bridge.preflight).toBe(`${BASE}/api/preflight/v1`);
+    expect(bridge.conformance_desk).toBe(`${BASE}/api/conformance/v1`);
+    expect(bridge.launch_check).toBe(`${BASE}/menu/launch_check`);
+
+    // The named doors answer: documentation on GET for the two POST
+    // instruments, the item page for the paid check.
+    expect((await SELF.fetch(`${BASE}/api/preflight`)).status).toBe(200);
+    expect((await SELF.fetch(`${BASE}/menu/launch_check`)).status).toBe(200);
+
+    const html = await (
+      await SELF.fetch(`${BASE}/try`, { headers: { Accept: "text/html" } })
+    ).text();
+    expect(html).toContain("When it&#39;s your till on the line");
+    expect(html).toContain("POST /api/preflight/v1");
+    expect(html).toContain("POST /api/conformance/v1");
+    expect(html).toContain("/menu/launch_check");
+  });
+
   it("says there is no sandbox, because there isn't one", async () => {
     const body = await json(await SELF.fetch(`${BASE}/try`));
     const protocolBlock = body.protocol;
