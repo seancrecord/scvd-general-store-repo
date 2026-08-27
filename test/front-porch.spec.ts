@@ -1,5 +1,5 @@
 import { SELF, env } from "cloudflare:test";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { inferChannel } from "@/lib/channel";
 import { readPorchLedger } from "@/lib/metrics";
 import { installFacilitatorMock } from "./helpers/facilitator-mock";
@@ -150,14 +150,18 @@ describe("the porch log", () => {
   });
 
   it("computes porch-to-purchase as an honest rate", async () => {
-    // One organic challenge against the porch visits above.
+    // One organic challenge against the porch visits above. The bare
+    // quote's tally rides waitUntil (the 2026-08-27 ruling), so the
+    // read holds lands-within-the-request instead of assuming synchrony.
     await SELF.fetch(`${BASE}/api/buy/hello`, {
       headers: { "User-Agent": "friendly-agent/1.0" },
     });
-    const porch = await readPorchLedger(testEnv);
-    expect(porch.organicVisits).toBeGreaterThanOrEqual(2);
-    expect(porch.porchToPurchase).not.toBeNull();
-    expect(porch.porchToPurchase!).toBeGreaterThan(0);
+    await vi.waitFor(async () => {
+      const porch = await readPorchLedger(testEnv);
+      expect(porch.organicVisits).toBeGreaterThanOrEqual(2);
+      expect(porch.porchToPurchase).not.toBeNull();
+      expect(porch.porchToPurchase!).toBeGreaterThan(0);
+    });
   });
 
   it("keeps infrastructure 402s out of the organic falsification counts", async () => {
@@ -167,9 +171,12 @@ describe("the porch log", () => {
     await SELF.fetch(`${BASE}/api/buy/small_blessing`, {
       headers: { "User-Agent": "Googlebot/2.1" },
     });
-    const after = await readMonthLedger(testEnv);
-    expect(after.items["small_blessing"]?.challenges ?? 0).toBe(organicBefore);
-    expect(after.items["small_blessing"]?.challengesInfra).toBeGreaterThanOrEqual(1);
+    // Same contract: the infra tally lands within the request.
+    await vi.waitFor(async () => {
+      const after = await readMonthLedger(testEnv);
+      expect(after.items["small_blessing"]?.challengesInfra).toBeGreaterThanOrEqual(1);
+      expect(after.items["small_blessing"]?.challenges ?? 0).toBe(organicBefore);
+    });
   });
 });
 
