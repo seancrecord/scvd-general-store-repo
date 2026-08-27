@@ -149,6 +149,13 @@ export function readReason(raw: string): {
         "The x402 SDK refused this before the facilitator saw it, and its own words are in the message beside this reading. No hook fires on that path, so this line exists to keep the reason from vanishing.",
     };
   }
+  if (reason === "verify_error") {
+    return {
+      fault: "unknown",
+      reading:
+        "The verify CALL failed — timeout or transport between us and the facilitator, or its own 5xx — so the payload was never judged at all. Bare like this (no +payload suffix), our own preflight found nothing wrong with what the buyer sent: suspicion points at the pipe, not the payer. No money moved; what was lost is the sale. Since 2026-08-27 verify runs on a 10s leash with one fast retry, so a row here means BOTH attempts failed — a cluster of these is an outage window (the 2026-08-27 00:53 incident booked three in four minutes), a steady trickle of singles is worth checking our own egress lane.",
+    };
+  }
   /**
    * BEFORE the substring guesses below, deliberately: everything after
    * "(5xx):" is the facilitator's raw HTTP response body, which is
