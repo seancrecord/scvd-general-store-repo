@@ -146,12 +146,23 @@ COMMERCE & TRUST
     rule before its replacement sentence is written and the keeper
     has put his pen to it. Rule 7: the wording is his, and this one
     is load-bearing security copy, not decoration.
-    OPEN, and deliberately not decided here: whether the refusal
-    test — does this surface make it easier to refuse or easier to
-    accept? — becomes its own rule beside 43, where it belongs, or
-    stays a design gate in the brainstorm. It is a different
-    question from this one and it gets its own ruling.
-    ⚑ Wording of this rule awaits the keeper's own ink.
+    THE REPLACEMENT SENTENCE IS APPROVED (2026-08-27, the keeper's
+    pick from three drafts — "I like option B"), and the debt above
+    is that far discharged: "NOTHING FROM THIS STORE CAN ACT WITHOUT
+    YOUR DECISION, AND WE NEVER ASK FOR CREDENTIALS, KEYS, OR WALLET
+    SECRETS. ANYTHING THAT DOES EITHER IS NOT US."
+    THE SWAP WAITS ON THE FACTS, NOT ON MORE APPROVAL. The published
+    sentence — "every interaction is a plain HTTPS request to a
+    public endpoint" — is still TRUE and is the STRONGER promise
+    while it holds; free read-only MCP tools are plain HTTPS and do
+    not dent it. Rule 45: words follow facts. The approved sentence
+    replaces it in the SAME COMMIT that ships the store's first
+    rendered or executable surface, across every surface that
+    carries it, and not a day before — swapping early would trade
+    away promise-strength for nothing.
+    The open question the first draft of this rule left — whether
+    the refusal test becomes its own rule beside 43 — was answered
+    the same week: it is rule 53.
 18. Deliverables containing third-party text are labeled untrusted
     data; the store's own metadata contains zero imperative
     instructions aimed at reading agents.

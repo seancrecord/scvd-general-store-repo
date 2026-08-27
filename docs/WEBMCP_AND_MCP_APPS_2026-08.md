@@ -383,6 +383,19 @@ HTML is the build, and the copy is the argument.**
 
 ### 4.3 THE RULING, framed
 
+**→ RULED 2026-08-27, with §8.5's test as its condition: THE THIRD
+DOOR, plus narrow read-only cards. Not broad.** The card at the
+approval moment shows everything — amount, chain, who signed the
+offer, whether they were the shop — and has no button; the press
+stays in the client's own chrome, rule 30's spirit applied to
+somebody else's hand. Broad buys almost nothing the host does not
+already provide, and costs the exact replacement sentence rule 17
+now carries ("nothing from this store can act without your
+decision"), which is writable copy precisely because no button of
+ours ever moves money. **Condition: if the four-host render test
+fails — if any host turns the gaps into fine print — the ruling
+drops to narrow-or-nothing automatically, no new ruling needed.**
+
 > **Does the house rule "the store never asks you to run code" forbid
 > returning HTML that an agent host renders in its own sandbox?**
 
@@ -534,7 +547,19 @@ arrives, and the honest answers differ:
   they should be able to refuse. Section 9's 0/100 points at that,
   and §4.6 says why it is real independent of the score.
 
-### 5.2 PROPOSED — the move available today, needing no ruling
+### 5.2 ~~PROPOSED — the move available today, needing no ruling~~ STRUCK 2026-08-27
+
+**Ruled against, and the line that decides it is worth keeping:
+publish a gap where the person it protects will trip over it; never
+where a critic will score it.** The MCP-reachability hole printed
+inside `scvd://when` was the first kind — a caller hits that wall
+mid-task — and it shipped, did its work, and self-deleted through
+its own test the day the tools closed it. A "we lack WebMCP"
+paragraph on the attestation page is the second kind: it answers an
+auditor's rubric no customer ever raised, and every other counted
+gap in the building is a gap in OBSERVATIONS, not capabilities.
+Rule 4 holds. The section below stands as the case that was
+considered and declined.
 
 The store's method is to publish the gaps in its own coverage beside
 the findings, counted against itself. So the cheapest honest
@@ -655,6 +680,15 @@ The keeper's own framing, which is the better sentence and is
 recorded here for whoever writes that copy: *let the chickens fly
 the coop, but never hand them the thing that hurts them if we can
 help it.*
+
+**→ THE DEBT IS DISCHARGED AS FAR AS APPROVAL GOES (2026-08-27):**
+the keeper picked from three drafts — *"Nothing from this store can
+act without your decision, and we never ask for credentials, keys,
+or wallet secrets. Anything that does either is not us."* The swap
+onto the published surfaces waits, deliberately, for the first
+rendered surface to ship — the current sentence is stronger and
+still true, and words follow facts (rule 45). Recorded in rule 17
+itself.
 
 ### 8.2 What the ruling does NOT decide
 
@@ -1010,15 +1044,23 @@ worse.
 HTTPS is exactly the existing relationship: nothing rendered, nothing
 executed, no capability declared, no `ui://` anywhere near it.
 
-### 9.3 OPEN — the hole is a build, and it is the keeper's call
+### 9.3 ~~OPEN — the hole is a build, and it is the keeper's call~~ RULED AND BUILT, 2026-08-27
 
-Making `preflight` and `conformance` MCP tools is the single highest-value
-change on this surface: it is free, read-only, already built and running
-behind two HTTP endpoints, and it is the most common job in agentic
-commerce (*check the door before you pay*). It is also two more tools
-against a rubric the store has deliberately managed down before (27 → 5,
-Glama's tool-count band), so it is a decision rather than a fix. Not
-built.
+The keeper ruled yes the day after the audit, and the counter-argument
+dissolved on arithmetic: the catalog was 10 tools against a rubric
+whose bad band starts at 25+, and the 27→5 consolidation's real test
+was always "a different job", which *check a door before you pay*
+passes by the widest margin on the shelf.
+
+Built as `preflight_endpoint` and `check_conformance`: each handler
+calls the exact service function its HTTP door calls —
+`preflightUrl()` limiter included, so the MCP door cannot be used to
+walk around the rate limit, and `checkConformance()` with its
+offline-when-keyed promise intact. The routing resource's printed gap
+came out the same day, and the test that pinned the gap flipped into
+its successor: it now guards the closed state. Route-level tests pin
+that both doors refuse with the same words, because they are the same
+function.
 
 ---
 

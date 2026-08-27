@@ -88,22 +88,29 @@ describe("the document says what it is for", () => {
     }
   });
 
-  it("publishes the gap it has in its own surface", () => {
+  it("the audit's hole stays closed, and the prose stayed truthful through it", () => {
     /*
-     * The preflight and the conformance desk are the store's headline
-     * FREE instruments and neither is reachable as an MCP tool. The
-     * routing document names that rather than steering around it —
-     * the same discipline the corpus applies to itself weekly. If
-     * either ever becomes a tool, this test is what tells whoever
-     * ships it to come back and correct the prose.
+     * This test's previous body asserted the OPPOSITE: that the
+     * preflight and the conformance desk were not MCP tools and that
+     * the document published that gap on its own face. It was written
+     * to fail the day somebody shipped the tools, so that whoever did
+     * would come back and correct the prose — which is exactly what
+     * happened, 2026-08-27, on the keeper's ruling. Now it guards the
+     * closed state: both instruments reachable as tools, the catalog
+     * carrying them, and no stale gap claim left in the text.
      */
-    const notTools = FREE_INSTRUMENTS.filter((one) => !one.isTool);
-    expect(notTools.map((one) => one.name)).toContain("Preflight");
-    expect(notTools.map((one) => one.name)).toContain("Conformance desk");
-    expect(text).toContain("not an MCP tool");
-    expect(text).toContain(
-      "cannot reach the store's headline free instrument through the",
+    const tools = new Set(mcpToolCatalog(BASE).map((tool) => tool.name));
+    expect(tools.has("preflight_endpoint")).toBe(true);
+    expect(tools.has("check_conformance")).toBe(true);
+    const asTools = FREE_INSTRUMENTS.filter((one) => one.isTool).map(
+      (one) => one.name,
     );
+    expect(asTools).toContain("Preflight");
+    expect(asTools).toContain("Conformance desk");
+    // The corpus is the honest remainder: HTTP-only, and marked so.
+    const corpus = FREE_INSTRUMENTS.find((one) => one.name === "The corpus");
+    expect(corpus?.isTool).toBe(false);
+    expect(text).not.toContain("cannot reach the store's headline free instrument");
   });
 
   it("routes away from the jobs the store declines outright", () => {

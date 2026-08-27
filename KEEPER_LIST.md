@@ -110,7 +110,30 @@ an assayer's stamp, a printer's mark. Drafted as a colophon. The
 rotating line he asked for (the small-blessings treatment) is
 DETERMINISTIC per rule 22, derived from the observation's own id, so
 the same reading always carries the same line and the card stays
-reproducible offline like everything else. THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
+reproducible offline like everything else. **THREE RULINGS LANDED AND ONE BUILD SHIPPED, 08-27 evening:**
+(1) ~~the P8 shape~~ RULED — THE THIRD DOOR plus narrow cards, never
+broad, conditional on the four-host render test: if any host turns the
+gaps into fine print, it drops to narrow-or-nothing automatically.
+(2) ~~preflight/conformance as MCP tools~~ RULED AND BUILT the same
+day: `preflight_endpoint` and `check_conformance` are in the catalog
+(12 tools now), each calling the exact service function its HTTP door
+calls, limiter included; the routing resource's printed gap came out
+and its test flipped to guard the closed state. (3) ~~rule 4 on
+publishing our capability absence~~ RULED AGAINST, with the line that
+decides future cases: publish a gap where the person it protects will
+trip over it, never where a critic will score it. AND THE SENTENCE:
+the keeper picked draft B — "Nothing from this store can act without
+your decision, and we never ask for credentials, keys, or wallet
+secrets. Anything that does either is not us." — recorded in rule 17;
+the swap onto live surfaces deliberately WAITS for the first rendered
+surface, because the current sentence is stronger and still true
+(rule 45). THE TEST KIT IS BUILT: scripts/render-test/ — a throwaway
+zero-dependency server plus the card plus per-host steps written for
+the keeper's hands; wire details read from the spec repo itself, not
+coverage. **WAITING ON THE KEEPER: run the kit, screenshot each host,
+send them back.** That is the last input the shape ruling needs.
+
+THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host
 still tells a stranger where to go and check), it cites HOUSE RULE 43
 on its own face — the keeper's idea and the best one in the stretch,

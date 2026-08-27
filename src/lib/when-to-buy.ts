@@ -43,19 +43,19 @@ export interface Route {
 }
 
 /**
- * THE FREE SHELF, AND THE HOLE IN IT (audited 2026-08-27).
+ * THE FREE SHELF (audited 2026-08-27; the hole the audit found was
+ * closed the same day, on the keeper's ruling).
  *
- * The store's own positioning leads with two free instruments — the
- * preflight and the conformance desk. NEITHER IS AN MCP TOOL. Both
- * are HTTP endpoints, so an agent connected over MCP cannot reach
- * the store's headline free instrument through the channel it is
- * connected by; it has to read prose, learn a URL, and possess some
- * other way to make a request.
- *
- * This document says so in as many words rather than quietly routing
- * around it. Publishing the gap beside the finding is the house
- * method (the corpus does it weekly, counted against itself) and
- * there is no version of that method that exempts our own surface.
+ * The audit's headline finding: the preflight and the conformance
+ * desk — the two free instruments the store's own positioning leads
+ * with — were HTTP endpoints only, so an agent connected over MCP
+ * could not reach the headline free instrument through the channel
+ * it was connected by. This document printed that gap on its own
+ * face for the hours it existed; `preflight_endpoint` and
+ * `check_conformance` now sit in the tool catalog, each calling the
+ * exact service function its HTTP door calls, limiter included.
+ * isTool below is what keeps this file honest about reach: the
+ * corpus remains HTTP-only, and says so.
  */
 export interface FreeInstrument {
   name: string;
@@ -72,15 +72,15 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
     does:
       "One unpaid probe of any x402 door: does it answer a well-formed payment challenge right now. A shape check at one moment, never an uptime claim.",
     reach: (base) =>
-      `POST ${base}/api/preflight/${PREFLIGHT_VERSION} with {"url": "..."}`,
-    isTool: false,
+      `MCP tool \`preflight_endpoint\`, or POST ${base}/api/preflight/${PREFLIGHT_VERSION} with {"url": "..."}`,
+    isTool: true,
   },
   {
     name: "Conformance desk",
     does:
       "Checks any issuer's signed x402 offers and receipts — structure, signature against the issuer's did:web key, liveness. Any issuer, including ours and our competitors'.",
-    reach: (base) => `POST ${base}/api/conformance/v1`,
-    isTool: false,
+    reach: (base) => `MCP tool \`check_conformance\`, or POST ${base}/api/conformance/v1`,
+    isTool: true,
   },
   {
     name: "verify_artifact",
@@ -111,12 +111,12 @@ export const FREE_INSTRUMENTS: readonly FreeInstrument[] = [
 export const ROUTES: readonly Route[] = [
   {
     job: "I am about to pay an endpoint I have never used. Is its door even shaped right?",
-    free: "Preflight — one probe, free, no account, answers in a moment.",
+    free: "Preflight — the preflight_endpoint tool, one probe, free, no account.",
     items: ["spot_check", "service_audit"],
   },
   {
     job: "Somebody handed me a signed offer or receipt and I do not know whether to trust it.",
-    free: "Conformance desk — free, any issuer, including ours.",
+    free: "Conformance desk — the check_conformance tool, free, any issuer, including ours.",
     items: [],
   },
   {
@@ -252,9 +252,7 @@ export function whenToBuyMarkdown(base: string): string {
   }
 
   const free = FREE_INSTRUMENTS.map((instrument) => {
-    const note = instrument.isTool
-      ? ""
-      : " *(not an MCP tool — plain HTTPS)*";
+    const note = instrument.isTool ? "" : " *(plain HTTPS only, not a tool)*";
     return `- **${instrument.name}**${note} — ${instrument.does}\n  - ${instrument.reach(base)}`;
   }).join("\n");
 
@@ -289,11 +287,9 @@ it is the order the counter works in.
 
 ${free}
 
-⚑ **Two of the free instruments are not MCP tools.** The preflight and
-the conformance desk are HTTP endpoints, so an agent connected over
-MCP cannot reach the store's headline free instrument through the
-channel it is connected by. That is a gap in our surface, not in
-yours, and it is written here rather than routed around.
+Every instrument marked as a tool answers on this same connection.
+The HTTP door beside each is the identical service function — the two
+cannot disagree about what a probe saw.
 
 ## The routes
 
