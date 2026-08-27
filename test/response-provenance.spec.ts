@@ -51,7 +51,17 @@ describe("response-provenance re-derivation (GVP)", () => {
     expect(r.applies).toBe(true);
     expect(r.self_ok).toBe(true);
     expect(r.ok).toBe(true);
-    expect(r.class).toBe(RESPONSE_PROVENANCE_CLASS);
+    // A pass carries NO class slug — a defect-class name on a clean host is a false accusation.
+    expect(r.class).toBeNull();
+  });
+
+  it("an oversized response_provenance is refused, not re-derived", async () => {
+    const a = await goodArtifact();
+    (a.response.result as Record<string, unknown>).padding = "x".repeat(70_000);
+    const r = await checkResponseProvenance(a);
+    expect(r.applies).toBe(false);
+    expect(r.ok).toBeNull();
+    expect(r.class).toBeNull();
   });
 
   const mutations: Array<[string, (a: { response: Record<string, unknown>; inputs: unknown }) => void]> = [
