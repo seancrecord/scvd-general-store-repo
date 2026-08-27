@@ -206,6 +206,32 @@ export function decodeChallenge(headerValue) {
   return parsed;
 }
 
+/**
+ * Chain ids, as the words a wallet's own network picker uses.
+ *
+ * Display only — nothing here is consulted when money is decided. The
+ * first live buyer (the keeper, 2026-08-27) was refused with "offered
+ * on chain 8453, and the wallet is connected to chain 1", which is
+ * accurate and useless: a person standing at a till does not know
+ * their wallet's dropdown says "Ethereum" where the refusal says "1".
+ * The map covers the chains this store sells on plus the ones a
+ * wallet commonly wakes up connected to; anything else falls back to
+ * the bare number, which is at least honest about being a number.
+ */
+const CHAIN_NAMES = {
+  1: "Ethereum mainnet",
+  10: "Optimism",
+  56: "BNB Chain",
+  137: "Polygon",
+  8453: "Base",
+  42161: "Arbitrum One",
+  43114: "Avalanche",
+};
+
+export function chainName(chainId) {
+  return CHAIN_NAMES[chainId] || `chain ${chainId}`;
+}
+
 /** The chain id inside an eip155 CAIP-2 network string, or null. */
 export function evmChainId(network) {
   if (typeof network !== "string") {
@@ -311,6 +337,7 @@ export function chooseAccept(challenge, walletChainId) {
   }
   const payable = [];
   const skipped = [];
+  const switchableChains = [];
   for (const accept of accepts) {
     const problems = acceptProblems(accept, walletChainId);
     if (problems.length === 0) {
@@ -320,14 +347,41 @@ export function chooseAccept(challenge, walletChainId) {
         network: (accept && accept.network) || "(no network)",
         problems,
       });
+      /*
+       * Would this offer be signable if the wallet were on ITS chain?
+       * Re-checking against the offer's own chain id isolates "wrong
+       * network" from every other defect, so the refusal below can
+       * say "switch" only when switching would actually work.
+       */
+      const offerChain = evmChainId(accept && accept.network);
+      if (
+        offerChain !== null &&
+        acceptProblems(accept, offerChain).length === 0 &&
+        !switchableChains.includes(offerChain)
+      ) {
+        switchableChains.push(offerChain);
+      }
     }
   }
   if (payable.length === 0) {
-    throw new TillRefusal(
-      "offer",
-      "None of the offered payment terms can be signed by this wallet as it stands. Nothing was signed.",
-      skipped,
-    );
+    /*
+     * THE FIRST SENTENCE IS FOR THE PERSON AT THE TILL. The first live
+     * buyer got the diagnostic list alone and read it as a dev log,
+     * because it was one. The most common way to stand here — wallet
+     * parked on the wrong network — has a fix the buyer can do in two
+     * taps, so when that is the whole story, the refusal says the fix
+     * in wallet words. The per-offer diagnostics still ride along as
+     * `detail` for the reader who wants the till's full reading.
+     */
+    const reason =
+      typeof walletChainId === "number" && switchableChains.length > 0
+        ? `Your wallet is connected to ${chainName(walletChainId)}, but this store sells on ${switchableChains
+            .map(chainName)
+            .join(
+              " and ",
+            )}. Open your wallet, switch its network to ${chainName(switchableChains[0])}, and press the button again. Nothing was signed and no money moved.`
+        : "None of the offered payment terms can be signed by this wallet as it stands. Nothing was signed.";
+    throw new TillRefusal("offer", reason, skipped);
   }
   return payable.reduce((best, next) =>
     BigInt(next.amount) < BigInt(best.amount) ? next : best,
@@ -773,25 +827,61 @@ export async function purchase(options) {
   };
 }
 
+/**
+ * Decline codes this till knows how to say in buyer words.
+ *
+ * The raw code stays in parentheses so nothing is papered over — the
+ * translation is an addition, never a replacement. Only codes whose
+ * meaning is certain are listed; an unknown code is shown as itself,
+ * because a guessed explanation of somebody's declined payment is
+ * worse than a terse one. The first entry is not hypothetical: the
+ * keeper's first live signature was declined with it, because he paid
+ * from the store's own receiving wallet.
+ */
+const DECLINE_TRANSLATIONS = {
+  self_send_not_allowed:
+    "the paying wallet is the same wallet this store gets paid at, and the store will not buy from itself. Pay from any other wallet",
+  insufficient_funds:
+    "the wallet holds less USDC than the price, on the chain you signed on",
+  insufficient_balance:
+    "the wallet holds less USDC than the price, on the chain you signed on",
+};
+
 /** The store's own words for why it said no, when it gave any. */
-function declineReason(body) {
+export function declineReason(body) {
   if (!body || typeof body !== "object") {
     return "The store refused the payment and gave no readable reason.";
   }
+  const candidates = [];
   const declined = body.payment_declined;
   if (declined && typeof declined === "object") {
     for (const key of ["reason", "detail", "message", "error"]) {
       if (typeof declined[key] === "string" && declined[key]) {
-        return declined[key];
+        candidates.push(declined[key]);
       }
     }
   }
   for (const key of ["error", "message", "note"]) {
     if (typeof body[key] === "string" && body[key]) {
-      return body[key];
+      candidates.push(body[key]);
     }
   }
-  return "The store refused the payment and gave no readable reason.";
+  if (candidates.length === 0) {
+    return "The store refused the payment and gave no readable reason.";
+  }
+  /*
+   * Prefer the candidate the till can explain: the keeper's first live
+   * decline arrived as reason "verify_error" (opaque) with message
+   * "self_send_not_allowed" (the actual story), and the old code
+   * returned whichever came first.
+   */
+  for (const candidate of candidates) {
+    const translated = DECLINE_TRANSLATIONS[candidate];
+    if (translated) {
+      return `${translated} (${candidate}).`;
+    }
+  }
+  return candidates[0];
 }
 
 /**
@@ -849,6 +939,16 @@ function refusalResult(error, fallbackStage) {
 /** The id of the inert JSON island the server renders for this till. */
 export const SHELF_ELEMENT_ID = "scvd-till-shelf";
 
+/*
+ * OUTCOME COLORS (the keeper's first live walk, 2026-08-27): a refusal
+ * rendered in the page's own ink read as store prose, not as a state
+ * change. One hue per outcome, picked to hold contrast on the paper
+ * theme's light and dark grounds alike: green means the goods are
+ * yours, amber means no money moved and there is something to fix,
+ * red is reserved for the one state a buyer must actually stop and
+ * read. The left border makes the status a panel, so the eye finds it
+ * before the sentence starts.
+ */
 const TILL_STYLE = `
 .till{border-top:1px solid currentColor;margin-top:2rem;padding-top:1rem}
 .till-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem;margin:.75rem 0}
@@ -856,7 +956,11 @@ const TILL_STYLE = `
 .till-row button[disabled]{opacity:.5;cursor:not-allowed}
 .till-row input{font:inherit;padding:.3rem;border:1px solid currentColor;background:transparent;color:inherit;min-width:14rem}
 .till-status{margin:.75rem 0;white-space:pre-wrap}
-.till-status[data-outcome=uncertain]{font-weight:700}
+.till-status[data-outcome]{border-left:3px solid currentColor;padding:.5rem .75rem}
+.till-status[data-outcome=delivered]{color:#2f9e44}
+.till-status[data-outcome=declined],.till-status[data-outcome=refused]{color:#d9480f}
+.till-status[data-outcome=uncertain]{color:#e03131;font-weight:700}
+.till-detail summary{cursor:pointer;font-size:.85em;opacity:.75}
 .till-out{max-height:26rem;overflow:auto;white-space:pre-wrap;word-break:break-word}
 `;
 
@@ -936,8 +1040,27 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
   const status = el(doc, "p", "till-status menu-meta");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
+  /*
+   * THE FORENSICS, FOLDED (the keeper's first live walk): the raw
+   * response and the per-offer diagnostics are the audit trail and
+   * they stay — but behind a summary line, because the first live
+   * refusal handed a person four lines of protocol reading where the
+   * one sentence that mattered was "switch your wallet's network".
+   * The status line is for the buyer; this pane is for whoever asks
+   * the buyer's next question.
+   */
+  const detailPane = el(doc, "details", "till-detail");
+  detailPane.appendChild(
+    el(doc, "summary", null, "The till's full reading, for the curious"),
+  );
   const output = el(doc, "pre", "till-out menu-desc");
   output.hidden = true;
+  detailPane.appendChild(output);
+  const syncDetail = (open) => {
+    detailPane.hidden = output.hidden;
+    detailPane.open = !output.hidden && Boolean(open);
+  };
+  syncDetail(false);
 
   const buttons = [];
   const say = (text, outcome) => {
@@ -990,9 +1113,12 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
         `Asking the store for terms, then your wallet for one signature. ${item.name}, ${usd(item.price_usdc)}.`,
       );
       output.hidden = true;
+      syncDetail(false);
       purchase({ url, provider, fetchImpl, nowMs, cryptoImpl })
         .then((result) => {
           renderResult({ doc, result, say, output, item });
+          // The goods open the pane; a refusal leaves it folded.
+          syncDetail(result.outcome === "delivered");
         })
         .catch((error) => {
           /*
@@ -1004,6 +1130,7 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
             `The till itself failed after the request went out: ${describeError(error)}. Whether a payment was taken cannot be determined from this page — check ${shelf.verify_hint || "/api/verify"} before trying again.`,
             "uncertain",
           );
+          syncDetail(false);
         })
         .finally(() => {
           for (const other of buttons) {
@@ -1016,7 +1143,7 @@ export function mountTill({ doc, provider, shelf, fetchImpl, nowMs, cryptoImpl }
   }
 
   section.appendChild(status);
-  section.appendChild(output);
+  section.appendChild(detailPane);
   anchor.insertAdjacentElement
     ? anchor.insertAdjacentElement("afterend", section)
     : doc.body.appendChild(section);

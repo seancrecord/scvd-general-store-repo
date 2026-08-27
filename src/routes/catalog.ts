@@ -418,8 +418,10 @@ function renderItemPage(
      */
     inertHtml: tillShelfHtml([item], {
       heading: "Buy it from this browser",
+      // Buyer words first, protocol after — same reasoning as /try's
+      // standfirst (the keeper's first live walk, 2026-08-27).
       standfirst:
-        "Your wallet signs one EIP-3009 authorization; the store verifies it, settles, and answers with the goods and a signed certificate you can check afterwards for free, forever.",
+        "Press the button and three things happen: the store quotes the exact price in USDC, your wallet opens once for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. Have your wallet's network set to Base or Polygon first; if it is not, the till says so and nothing gets signed.",
       verifyHint: `${base}/api/verify/{cert_id}`,
     }),
     bodyHtml: `<section>
