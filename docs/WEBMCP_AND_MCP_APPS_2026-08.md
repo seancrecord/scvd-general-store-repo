@@ -1413,10 +1413,14 @@ tag. The storefront gained its first CSP with its first first-party
 script: `script-src 'self'; object-src 'none'; base-uri 'none'`.
 
 Discovery is arrival: no directory, no listing, no admin. A browser
-without the API loads a comment and a no-op. ⚑ Keeper's errand if he
-wants Chrome/Edge origin-trial coverage before general availability:
-register scvd.store for the OT tokens (developer.chrome.com origin
-trials console); without them the surface simply waits for GA.
+without the API loads a comment and a no-op. ~~⚑ Keeper's errand:
+Chrome/Edge origin-trial tokens~~ — HE REGISTERED THE SAME NIGHT:
+the Chrome token (origin https://scvd.store:443, feature "WebMCP",
+expires 2026-11-17, Chrome 149-156) rides the storefront head as an
+origin-trial meta tag, test-pinned on its binding and expiry so a
+wrong-origin or quietly-expired token fails the build instead of
+silently unlocking nothing. Google mails a renewal reminder before
+the trial ends; Edge's separate trial remains open to him if wanted.
 
 ### 12.2 Agent-use vs human-use labeling — shipped as drafts
 

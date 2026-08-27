@@ -119,6 +119,30 @@ describe("the door itself", () => {
     expect(csp).toContain("script-src 'self'");
   });
 
+  it("carries an origin-trial token bound to this origin and this feature", async () => {
+    // Chrome 149-156 gate document.modelContext behind the trial; the
+    // token is inert data, but a token for the WRONG origin or feature
+    // would silently unlock nothing — so the binding is the assertion.
+    const response = await SELF.fetch(`${BASE}/`);
+    const html = await response.text();
+    const match = /<meta http-equiv="origin-trial" content="([^"]+)">/.exec(
+      html,
+    );
+    expect(match, "the storefront lost its origin-trial meta tag").toBeTruthy();
+    // The token is a binary signature followed by a JSON tail; the
+    // tail alone carries the binding. Signature bytes can contain a
+    // stray "{", so anchor on the JSON's first key, not the brace.
+    const decoded = atob(match![1] ?? "");
+    const payload = JSON.parse(
+      decoded.slice(decoded.indexOf('{"origin"')),
+    ) as Record<string, unknown>;
+    expect(payload["origin"]).toBe("https://scvd.store:443");
+    expect(payload["feature"]).toBe("WebMCP");
+    // A token quietly expiring is a silent no-op in Chrome; surface it
+    // here instead. Bump this on renewal (Google mails a reminder).
+    expect(payload["expiry"]).toBe(1794873600);
+  });
+
   it("?src=webmcp is its own channel, the skill's pattern", () => {
     expect(inferChannel({ declaredSource: "webmcp" })).toBe("webmcp");
     // Claims are claims: the marker never overrides the MCP door's
