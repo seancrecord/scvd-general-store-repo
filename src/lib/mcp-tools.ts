@@ -742,7 +742,7 @@ const FREE_TOOLS: McpTool[] = [
 ];
 
 /**
- * The served catalog: four free tools plus one tool per shelf. The
+ * The served catalog: six free tools plus one tool per shelf. The
  * per-item builder above stays because the shelf schemas are composed
  * from it — one source of truth for what an item takes, whether it is
  * read as its own tool or as a branch of its shelf.

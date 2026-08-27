@@ -54,8 +54,8 @@ artifact any third party can verify without trusting us.
 3. Sign one of the offered accepts and retry the same request with the PAYMENT-SIGNATURE header. Standard x402 v2 clients (e.g. @x402/fetch) do steps 2–3 for you.
 4. The store delivers first and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money. Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
 5. Verify anything you were given, free and forever: GET ${base}/api/verify/{id}.
-6. Check ANY issuer's x402 offer or receipt, free: POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
-7. Check ANY x402 endpoint's shape, free: POST ${base}/api/preflight/v1 with {"url": "..."}. One probe: 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet-network catch. A shape check, never an uptime claim.
+6. Check ANY issuer's x402 offer or receipt, free: the check_conformance MCP tool, or POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Same function behind both doors. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
+7. Check ANY x402 endpoint's shape, free: the preflight_endpoint MCP tool, or POST ${base}/api/preflight/v1 with {"url": "..."}. One probe: 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet-network catch. A shape check, never an uptime claim.
 
 ## Purchasing flow (MCP)
 
