@@ -144,6 +144,7 @@ export type Channel =
   | "mcp"
   | "bazaar"
   | "skill"
+  | "webmcp"
   | "direct"
   | "infrastructure"
   | "unknown";

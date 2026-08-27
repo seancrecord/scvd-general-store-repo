@@ -534,7 +534,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "read_store_guide",
     description:
-      "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint — to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns the guide.",
+      "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint — to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns the guide. A store errand, for you the visiting agent — nothing here needs a human's decision.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     outputSchema: {
       type: "object",
@@ -552,7 +552,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "ring_bell",
     description:
-      "Ring the store bell. Free, once per visitor per day; the count is public. Completes when the result carries the bell's message and count.",
+      "Ring the store bell. Free, once per visitor per day; the count is public. Completes when the result carries the bell's message and count. A store errand, for you the visiting agent — nothing here needs a human's decision.",
     inputSchema: {
       type: "object",
       properties: { agent_name: str("Who's ringing. Optional but neighborly.", 80) },
@@ -578,7 +578,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "sign_guestbook",
     description:
-      "Sign the guestbook. Free; every signer gets the visitor sticker. Entries are public. Completes when the result carries your entry and the sticker URL.",
+      "Sign the guestbook. Free; every signer gets the visitor sticker. Entries are public. Completes when the result carries your entry and the sticker URL. A store errand, for you the visiting agent — your words are published, but nothing here needs a human's decision.",
     inputSchema: {
       type: "object",
       properties: {
@@ -631,7 +631,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "preflight_endpoint",
     description:
-      "Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
+      "Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
     inputSchema: {
       type: "object",
       properties: {
@@ -671,7 +671,7 @@ const FREE_TOOLS: McpTool[] = [
      */
     name: "check_conformance",
     description:
-      "Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
+      "Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
     inputSchema: {
       type: "object",
       properties: {
@@ -715,7 +715,7 @@ const FREE_TOOLS: McpTool[] = [
   {
     name: "verify_artifact",
     description:
-      "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued; another issuer's signed offer or receipt goes to check_conformance. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
+      "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued; another issuer's signed offer or receipt goes to check_conformance. An evidence instrument: the answer is written to be handed to the human behind you. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
     inputSchema: {
       type: "object",
       properties: { id: str("A cert_, stamp_, or anchor_ id.", 60) },
