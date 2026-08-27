@@ -1208,14 +1208,14 @@ export interface LlmsArea {
   /** The room this area's depth belongs under; its llms.txt hangs here. */
   path: string;
   /**
-   * The human page at that path, when there is one — and there is not
-   * always one. `/menu` serves no page of its own: the shelf is
-   * machine-readable at /menu.json and rendered for people on the
-   * front of the store. Saying "drop the /llms.txt and you get the
-   * page" would have been true four times out of five, which is the
-   * kind of almost-true sentence this store's own guards exist to
-   * catch. Absent rather than approximated, and asserted either way
-   * in test/llms-modular.spec.ts.
+   * The human page at that path. Optional because for one day it was
+   * genuinely absent: /menu served nothing when this split shipped,
+   * and claiming "drop the /llms.txt and you get the page" would have
+   * been an almost-true sentence — the kind this store's own guards
+   * exist to catch. The keeper voted for an index page instead of the
+   * absence, so since 2026-08-27 every area carries one; the field
+   * stays optional and asserted BOTH ways in test/llms-modular.spec.ts,
+   * so a future area without a page states that rather than lies.
    */
   page?: string;
   title: string;
@@ -1251,6 +1251,7 @@ export const LLMS_AREAS: readonly LlmsArea[] = [
   {
     slug: "menu",
     path: "/menu",
+    page: "/menu",
     title: "The shelf, the prices, and the money that flows back",
     blurb:
       "Every item with its price, fulfilment and house rules; the free shelf; the reading room; how prices are set and signed; and the two doors where money moves toward you rather than away.",
@@ -1442,8 +1443,8 @@ themselves.
 
 ${map}
 
-The shelf itself has no page of its own: it is machine-readable at
-${base}/menu.json and rendered for people on the front of the store.
+Every one of those areas is also a room a person can read: drop the
+\`/llms.txt\` and you are at its page.
 `;
 }
 
