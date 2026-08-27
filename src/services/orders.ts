@@ -124,10 +124,24 @@ export async function acknowledgeOrder(
   return order;
 }
 
+/**
+ * THE CALLBACK LEASH (the worldwide-latency audit, Part 2,
+ * 2026-08-27). The completion webhook is one attempt at an origin the
+ * BUYER chose, and it fires in two places: the keeper's admin press,
+ * and the stocked-shelf purchase path — inside the buyer's own paid
+ * request, after settlement. Unbudgeted, a hung callback held a
+ * settled purchase open until the runtime killed the subrequest. Ten
+ * seconds is generous for a webhook receiver; past it, the abort
+ * lands in the same catch a dead host does, the miss goes on the
+ * order, and the deliverable waits at the order URL forever.
+ */
+export const ORDER_CALLBACK_TIMEOUT_MS = 10_000;
+
 export async function completeOrder(
   env: Env,
   orderId: string,
   deliverable: string,
+  callbackTimeoutMs: number = ORDER_CALLBACK_TIMEOUT_MS,
 ): Promise<OrderRecord | null> {
   const order = await getOrder(env, orderId);
   if (!order) {
@@ -152,6 +166,10 @@ export async function completeOrder(
     try {
       const response = await fetch(order.callback_url, {
         method: "POST",
+        // On a leash: see ORDER_CALLBACK_TIMEOUT_MS above. A hang at
+        // the buyer's origin becomes the "unreachable" note below,
+        // never a pinned-open settled purchase.
+        signal: AbortSignal.timeout(callbackTimeoutMs),
         // The one outbound call that lands in a BUYER's log. Identity
         // attached for the same reason the certificates are signed:
         // whoever reads it later should be able to trace it back.
