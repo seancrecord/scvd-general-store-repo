@@ -77,7 +77,7 @@ describe("the cheap door leads", () => {
 
   it("reaches llms.txt and menu.json in the same order", async () => {
     const guide = await (
-      await SELF.fetch("https://scvd.store/llms.txt")
+      await SELF.fetch("https://scvd.store/llms-full.txt")
     ).text();
     const first = MENU_ITEMS[0];
     const dear = MENU_ITEMS[MENU_ITEMS.length - 1];
@@ -97,7 +97,7 @@ describe("the cheap door leads", () => {
     // The audience that reads this document top to bottom is the one
     // audience we have actually seen. Serve them before the catalogue.
     const guide = await (
-      await SELF.fetch("https://scvd.store/llms.txt")
+      await SELF.fetch("https://scvd.store/llms-full.txt")
     ).text();
     expect(guide.indexOf("## Practicing on us")).toBeLessThan(
       guide.indexOf("## The menu"),

@@ -52,7 +52,10 @@ describe("llms.txt leads with the infrastructure", () => {
   });
 
   it("names the two landing rooms and the npm packages", async () => {
-    const guide = await text("/llms.txt");
+    // The complete prose, not the index: the packages are named in the
+    // standards section, which files under /developers/llms.txt since
+    // the 2026-08-27 split.
+    const guide = await text("/llms-full.txt");
     expect(guide).toContain(`${BASE}/conformance`);
     expect(guide).toContain(`${BASE}/corpus`);
     expect(guide).toContain("x402-verify");

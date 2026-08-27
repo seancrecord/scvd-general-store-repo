@@ -126,7 +126,7 @@ describe("the live shelf is the same set on every catalog surface", () => {
         : [],
     );
 
-    const llms = await (await fetchOk("/llms.txt")).text();
+    const llms = await (await fetchOk("/llms-full.txt")).text();
     const skillMd = await (await fetchOk("/skill.md")).text();
     const llmsIds = SHELF.filter((id) => llms.includes(`  ${id},`));
     const skillIds = SHELF.filter((id) => skillMd.includes(`\`${id}\``));

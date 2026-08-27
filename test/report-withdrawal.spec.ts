@@ -69,7 +69,7 @@ describe("the withdrawn report stays up and says so", () => {
   });
 
   it("stops advertising the finding on the surfaces that quoted it", async () => {
-    const llms = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    const llms = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     expect(llms).toContain("WITHDRAWN");
     expect(llms).toContain("Do not quote its failure rates");
 

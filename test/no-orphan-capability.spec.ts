@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { LLMS_AREAS } from "@/routes/llms";
 import { app } from "@/index";
 
 /**
@@ -101,8 +102,35 @@ function publicProbes(): Map<string, string[]> {
 
 async function discoveryHaystack(): Promise<string> {
   const surfaces: string[] = [];
+  /*
+   * LLMS.TXT IS NOW A SET OF FILES, NOT ONE FILE (2026-08-27).
+   *
+   * The guide was 90kB against a 30,000-character convention, so it
+   * was split: /llms.txt is an index and each product area carries its
+   * own llms.txt with that area's sections whole. Nothing was deleted
+   * and no prose moved into a second copy — the area files are views
+   * over the same rendered document, and /llms-full.txt still serves
+   * all of it byte for byte.
+   *
+   * The surface this guard reads therefore has to be the SET. Ten
+   * doors were named only in sections that now live in an area file,
+   * and they are no less published than they were yesterday.
+   *
+   * WHAT THIS COSTS, STATED RATHER THAN GLOSSED: a door named only in
+   * an area file is one hop further away than a door named in the
+   * index. The index links every area file and /llms-full.txt still
+   * carries everything, so nothing is unreachable — but "an agent
+   * reads llms.txt and sees the door" is now "an agent reads llms.txt,
+   * follows one link, and sees the door" for those ten. That is a real
+   * weakening of the property this file asserts, and it belongs here
+   * rather than in nobody's memory.
+   */
+  const areaFiles = LLMS_AREAS.map(
+    (area) => `https://scvd.store${area.path}/llms.txt`,
+  );
   for (const url of [
     "https://scvd.store/llms.txt",
+    ...areaFiles,
     "https://scvd.store/openapi.json",
     "https://scvd.store/.well-known/x402.json",
     "https://scvd.store/skill.md",

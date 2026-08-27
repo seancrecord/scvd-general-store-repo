@@ -53,7 +53,14 @@ describe("the things DEMAND_SYNTHESIS called buried", () => {
   });
 
   it("says what visiting properly looks like, and states the clock", async () => {
-    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    /*
+     * The guide split on 2026-08-27: /llms.txt is an index and
+     * /llms-full.txt is the complete prose the convention reserves
+     * that path for. This asserts what the GUIDE says — "Visiting
+     * properly" now files under /developers/llms.txt — so it reads
+     * the guide rather than its table of contents.
+     */
+    const text = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     expect(text).toContain("Visiting properly");
     for (const call of ["/api/bell", "/api/guestbook", "/api/stamp"]) {
       expect(text).toContain(call);

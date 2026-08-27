@@ -17,7 +17,7 @@ const BASE = "https://scvd.store";
  */
 describe("the tab is findable where agents read", () => {
   it("rides llms.txt with the repo path and the honest register", async () => {
-    const llms = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    const llms = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     expect(llms).toContain("scvd-tab");
     expect(llms).toContain("/tree/main/tab");
     // The register survives the listing: facts, never advice.
