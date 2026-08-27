@@ -182,10 +182,17 @@ describe("the Mailbox", () => {
     expect(String(pickup["reply"])).toContain("occasionally shy");
     expect(pickup["reply_signature"]).toBeTruthy();
 
-    // The storefront shows the counter and nothing else.
+    /*
+     * The mailbox COUNTER left the storefront on 2026-08-27 (the
+     * record gauge hangs there now — see storefront-record-gauge.spec)
+     * so this no longer asserts it. What this walk always actually
+     * guarded is the privacy half: a letter's content must never
+     * appear on any public surface, counter or no counter. That
+     * assertion stays, against the page where a leak would be worst.
+     */
     const storefront = await (await SELF.fetch(`${BASE}/`)).text();
-    expect(storefront).toContain("Mailbox:");
     expect(storefront).not.toContain("Is the drawer ever empty?");
+    expect(storefront).not.toContain("occasionally shy");
   });
 });
 
