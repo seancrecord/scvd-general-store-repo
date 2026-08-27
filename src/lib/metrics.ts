@@ -10,6 +10,7 @@ import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
+import { kvPut, withKvRetry } from "@/lib/kv-retry";
 /**
  * The venue register is the allowlist for this file's ?src= counters.
  * The raw string still rides the EVENT row verbatim (a hand test wants
@@ -78,8 +79,19 @@ async function bump(env: Env, key: string): Promise<void> {
 }
 
 async function bumpBy(env: Env, key: string, amount: number): Promise<void> {
-  const current = await env.COUNTERS.get(key);
-  await env.COUNTERS.put(
+  /*
+   * ON THE RETRY, BOTH LEGS (incident 2026-08-27). These counters are
+   * shared keys — one write per second per key is all KV allows — so a
+   * burst of challenges 429s here, and before this guard the throw
+   * rode up through recordChallengeIssued and out of the gate as a 500
+   * to a visitor who was asking the price. The retry absorbs the blip;
+   * a failure that outlives it still throws, and the GATE decides
+   * whether a lost count may cost the caller their answer (it may not
+   * — see the catches in payment-gate.ts).
+   */
+  const current = await withKvRetry(() => env.COUNTERS.get(key));
+  await kvPut(
+    env.COUNTERS,
     key,
     String((current ? parseInt(current, 10) : 0) + amount),
   );
@@ -160,7 +172,7 @@ function buildEvent(
 
 async function writeEvent(env: Env, event: MetricEvent): Promise<void> {
   const key = `evt:${invertedTimestamp(Date.now())}:${Math.random().toString(36).slice(2, 8)}`;
-  await env.COUNTERS.put(key, JSON.stringify(event), {
+  await kvPut(env.COUNTERS, key, JSON.stringify(event), {
     expirationTtl: EVENT_TTL_SECONDS,
   });
 }
