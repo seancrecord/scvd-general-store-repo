@@ -57,6 +57,39 @@ and federation, the watch grammar, the canary, and panel+random
 sampling. Six open rulings for the keeper sit in §12. He has more
 material to add; §14 is the parking lot.
 
+**0b. WEBMCP AND MCP APPS — brainstorm filed, TWO RULINGS WAITING
+(docs/WEBMCP_AND_MCP_APPS_2026-08.md, opened 08-27).** Brainstorm
+only at the keeper's direction; NOTHING BUILT, nothing canon. The
+outside audit's two agent-surface items, worked against the store as
+it stands. Three findings that change the brief as posed: (1) the
+audit's own item, WebMCP, is scored against `navigator.modelContext`,
+which is DEPRECATED in Chrome 150 — the spec moved the surface to
+`document.modelContext` and removed `provideContext()` in March, so
+building to the audited name ships a deprecation on day one; (2)
+BOTH items need the ruling, not just MCP Apps — a WebMCP
+`registerTool` handler is our JavaScript executing in the visiting
+agent's browser, and the store ships zero JavaScript today (verified:
+no script tag outside `application/ld+json`, no form, no listener, no
+CSP), so rule 17 and the impersonation sentence every served surface
+carries are in play for P7 exactly as they are for P8; (3) there is a THIRD DOOR
+on the MCP Apps ruling the brief does not list — a card at the
+approval moment that RENDERS and CANNOT ACT, keeping the evidence in
+front of the human and our button away from anybody's wallet. Also
+argued: the strongest reason to build a card has nothing to do with
+the audit — prose collapses "ready, nineteen days old, at L3, four
+checks not observed" into "ready", and a card with a live expiry and
+the gaps at equal weight does rule 43's work that a paragraph
+structurally cannot; and if a card cannot be built to read as an
+observation rather than a rating, it should not be built at all.
+**RULE, and it governs both items:** does "never asks you to run
+code" mean *we never ask you to execute anything*, or *the public
+HTTPS surface is the entire relationship*? §6 lists five rulings,
+including a rule 4 check on whether publishing our own capability
+absence is a counted gap or a preemptive denial. **LOOK before P7 is
+costed:** how many storefront-HTML requests come from agent-shaped
+clients that never touch /mcp or llms.txt — that number is rule 19's
+demand tag and we keep the logs.
+
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
 2026-08-13) says the walk stalled hourly from
