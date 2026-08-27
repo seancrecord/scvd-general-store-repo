@@ -19,15 +19,14 @@
  *   node server.mjs              stdio  (Claude Desktop, VS Code, Goose)
  *   node server.mjs --http 8765  HTTP   (ChatGPT dev mode, via a tunnel)
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const CARD = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "card.html"),
-  "utf8",
-);
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+const CARD = readFileSync(join(HERE, "card.html"), "utf8");
 const RESOURCE_URI = "ui://scvd-render-test/verify-card.html";
 const MIME = "text/html;profile=mcp-app";
 
@@ -62,9 +61,47 @@ function handle(msg) {
   const reply = (result) => ({ jsonrpc: "2.0", id, result });
   switch (method) {
     case "initialize":
+      /*
+       * THE DIAGNOSTIC THAT DECIDES A "NO CARD" RESULT. The host is
+       * the party that advertises MCP Apps support — via
+       * capabilities.extensions["io.modelcontextprotocol/ui"] in its
+       * initialize params (spec 2026-01-26, Capability Negotiation).
+       * If that key is absent here, the host is not offering the
+       * extension on this connection and a missing card is a
+       * host-capability finding, not a kit bug. Written to a file so
+       * the keeper can read it without spelunking host logs.
+       */
+      try {
+        writeFileSync(
+          join(HERE, "render-test-log.json"),
+          JSON.stringify(
+            {
+              when: new Date().toISOString(),
+              client: msg.params?.clientInfo ?? null,
+              protocolVersion: msg.params?.protocolVersion ?? null,
+              client_capabilities: msg.params?.capabilities ?? null,
+              host_offers_mcp_apps: Boolean(
+                msg.params?.capabilities?.extensions?.[
+                  "io.modelcontextprotocol/ui"
+                ],
+              ),
+            },
+            null,
+            2,
+          ),
+        );
+      } catch {
+        /* a read-only folder loses the log, never the handshake */
+      }
       return reply({
         protocolVersion: msg.params?.protocolVersion ?? "2025-06-18",
-        capabilities: { tools: {}, resources: {} },
+        capabilities: {
+          tools: {},
+          resources: {},
+          extensions: {
+            "io.modelcontextprotocol/ui": { mimeTypes: [MIME] },
+          },
+        },
         serverInfo: { name: "scvd-render-test", version: "0.0.1" },
         instructions:
           "A throwaway render test. Call verify_reading and look at what renders.",
