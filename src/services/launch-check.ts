@@ -8,6 +8,7 @@ import {
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE LAUNCH CHECK — the walkabout productized for one endpoint
@@ -996,7 +997,7 @@ export async function storeLaunchCheck(
     cert_id: certId,
     created_at: new Date().toISOString(),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.launchCheck(check.check_id),
     JSON.stringify(record),
   );

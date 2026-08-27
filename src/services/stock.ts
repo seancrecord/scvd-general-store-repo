@@ -3,6 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newLuckyStockId } from "@/lib/ids";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a stock units scan. An unnamed cap is a silent one. */
 const STOCK_CAP = 500;
@@ -89,7 +90,7 @@ export async function stockUnit(
         refused: `"${value}" has been bestowed (or stocked) before. Names are never reused; that is machine-enforced.`,
       };
     }
-    await env.COUNTERS.put(usedKey, new Date().toISOString());
+    await kvPut(env.COUNTERS, usedKey, new Date().toISOString());
   }
   const unit: StockUnit = {
     unit_id: newLuckyStockId(),
@@ -97,7 +98,7 @@ export async function stockUnit(
     fields,
     stocked_at: now.toISOString(),
   };
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.stockUnit(itemId, unit.unit_id),
     JSON.stringify(unit),
   );

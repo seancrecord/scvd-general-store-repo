@@ -7,6 +7,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { certificatesForPayer } from "@/services/certificates";
 import { listOrders } from "@/services/orders";
 import { isRecord, type HonoEnv } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE CLAIMS DOOR — context-reset recovery, PROBLEMS.md #17, built.
@@ -181,7 +182,7 @@ claimsRoutes.post("/api/claims/challenge", async (c) => {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
   const issuedAt = new Date().toISOString();
-  await c.env.COUNTERS.put(
+  await kvPut(c.env.COUNTERS, 
     KV_KEYS.claimChallenge(canonicalAddress(address)),
     JSON.stringify({ nonce, issued_at: issuedAt } satisfies ChallengeRecord),
     { expirationTtl: CHALLENGE_TTL_SECONDS },

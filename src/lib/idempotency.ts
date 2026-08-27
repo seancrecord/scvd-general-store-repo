@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * IDEMPOTENCY-KEY ENFORCEMENT — the infinite-loop wallet drain,
@@ -268,7 +269,7 @@ export async function storeIdempotent(
       first_served_at: new Date().toISOString(),
       ...(transaction ? { transaction } : {}),
     };
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       await kvKeyFor(surface, payer, idempotencyKey),
       JSON.stringify(record),
       { expirationTtl: IDEMPOTENCY_TTL_SECONDS },

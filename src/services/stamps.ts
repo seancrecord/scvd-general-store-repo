@@ -1,3 +1,4 @@
+import { kvPut } from "@/lib/kv-retry";
 import { newStampId } from "@/lib/ids";
 import { currentWeekKey, KV_KEYS, previousWeekKey } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -111,7 +112,7 @@ async function weekCondition(env: Env, weekKey: string): Promise<string> {
   } else if (hour >= 22 || hour < 5) {
     word = "late";
   }
-  await env.COUNTERS.put(key, word);
+  await kvPut(env.COUNTERS, key, word);
   return word;
 }
 
@@ -149,7 +150,7 @@ export async function issueStamp(
         [];
       if (!visitWeeks.includes(week)) {
         visitWeeks = [...visitWeeks, week];
-        await env.PATRONS.put(
+        await kvPut(env.PATRONS, 
           KV_KEYS.stampCard(slug),
           JSON.stringify(visitWeeks),
         );
@@ -168,7 +169,7 @@ export async function issueStamp(
     signature,
     public_key: publicKey,
   };
-  await env.PATRONS.put(KV_KEYS.stamp(stamp.stamp_id), JSON.stringify(record));
+  await kvPut(env.PATRONS, KV_KEYS.stamp(stamp.stamp_id), JSON.stringify(record));
   return {
     record,
     verifyUrl: `${env.STORE_BASE_URL}/api/verify/${stamp.stamp_id}`,

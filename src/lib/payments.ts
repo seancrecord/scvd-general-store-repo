@@ -29,6 +29,7 @@ import { COMMISSION_RUNGS } from "@/store/commission-desk";
 import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
 import type { Env, MenuItem } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * x402 v2 payment plumbing. USDC on Base (eip155:8453), Polygon
@@ -147,7 +148,7 @@ export async function recordSolanaSettle(
     (await env.COUNTERS.get(SOLANA_SETTLED_TOTAL_KEY)) ?? "0",
   );
   const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
-  await env.COUNTERS.put(SOLANA_SETTLED_TOTAL_KEY, String(total));
+  await kvPut(env.COUNTERS, SOLANA_SETTLED_TOTAL_KEY, String(total));
   if (total > SOLANA_UNRECONCILED_CAP_USDC) {
     /**
      * SELF-RETIRING: the cap exists because unreconciled money is
@@ -202,7 +203,7 @@ export async function recordPolygonSettle(
     (await env.COUNTERS.get(POLYGON_SETTLED_TOTAL_KEY)) ?? "0",
   );
   const total = Math.round((current + paidUsdc) * 1e6) / 1e6;
-  await env.COUNTERS.put(POLYGON_SETTLED_TOTAL_KEY, String(total));
+  await kvPut(env.COUNTERS, POLYGON_SETTLED_TOTAL_KEY, String(total));
   if (total > POLYGON_UNRECONCILED_CAP_USDC) {
     const { sendAlert } = await import("@/lib/alerts");
     await sendAlert(env, {

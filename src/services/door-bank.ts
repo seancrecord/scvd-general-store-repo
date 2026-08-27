@@ -2,6 +2,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE DOOR BANK — the ward's memory of declared doors, built for the
@@ -63,7 +64,7 @@ export async function readDoorBank(env: Env): Promise<DoorBank> {
 }
 
 export async function writeDoorBank(env: Env, bank: DoorBank): Promise<void> {
-  await env.COUNTERS.put(KV_KEYS.wardDoorBank, JSON.stringify(bank));
+  await kvPut(env.COUNTERS, KV_KEYS.wardDoorBank, JSON.stringify(bank));
 }
 
 /**

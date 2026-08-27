@@ -3,6 +3,7 @@ import { listKeys } from "@/lib/kv-list";
 import { sha256Hex } from "@/services/anchor-log";
 import type { ColdExportReport } from "@/services/cold-export";
 import type { Env } from "@/types";
+import { withKvRetry } from "@/lib/kv-retry";
 
 /**
  * THE RESTORE DRILL — the half of roadmap 0.11 that was missing, and
@@ -261,7 +262,7 @@ export async function restoreBundle(
       result.skipped_identical += 1;
       continue;
     }
-    await namespace.put(name, rows[name]!);
+    await withKvRetry(() => namespace.put(name, rows[name]!));
     result.written += 1;
   }
   return result;

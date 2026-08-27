@@ -111,5 +111,5 @@ export async function signedMonthlyNote(env: Env): Promise<SignedMonthlyNote> {
 
 export async function setMonthlyNote(env: Env, note: string): Promise<void> {
   const month = new Date().toISOString().slice(0, 7);
-  await env.COUNTERS.put(KV_KEYS.patronageNote(month), note);
+  await kvPut(env.COUNTERS, KV_KEYS.patronageNote(month), note);
 }

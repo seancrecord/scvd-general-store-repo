@@ -3,6 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import { monthsSinceOpening, railOf } from "@/lib/metrics";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * WHICH CHAIN THE MONEY CAME IN ON — three records, no sale counted
@@ -164,7 +165,7 @@ export async function computeRailSplit(env: Env): Promise<RailSplit> {
 
 export async function refreshRailSplit(env: Env): Promise<RailSplit> {
   const split = await computeRailSplit(env);
-  await env.COUNTERS.put(KV_KEYS.railSplit, JSON.stringify(split));
+  await kvPut(env.COUNTERS, KV_KEYS.railSplit, JSON.stringify(split));
   return split;
 }
 

@@ -78,6 +78,7 @@ import { listConfessions, setConfessionStatus } from "@/services/confessions";
 import { listTags, setTagStatus } from "@/services/train";
 import { setMonthlyNote } from "@/services/patronage";
 import { markKeeperSeen, setShutter, shutterState } from "@/services/shutter";
+import { kvPut } from "@/lib/kv-retry";
 import {
   addCorrection,
   assembleDraft,
@@ -208,13 +209,13 @@ async function noteAdminAuthFailure(
   // Per-address, for the throttle. Doubling wait, capped.
   const ipKey = KV_KEYS.adminFailByIp(ip);
   const ipFails = Number((await env.COUNTERS.get(ipKey)) ?? "0") + 1;
-  await env.COUNTERS.put(ipKey, String(ipFails), {
+  await kvPut(env.COUNTERS, ipKey, String(ipFails), {
     expirationTtl: ADMIN_THROTTLE_MAX_SECONDS,
   });
 
   const key = "admin_auth_fails";
   const count = Number((await env.COUNTERS.get(key)) ?? "0") + 1;
-  await env.COUNTERS.put(key, String(count), {
+  await kvPut(env.COUNTERS, key, String(count), {
     expirationTtl: ADMIN_FAIL_WINDOW_SECONDS,
   });
   if (count >= ADMIN_FAIL_ALERT_AT) {
@@ -615,7 +616,7 @@ adminRoutes.get("/admin/reconciliation", async (c) => {
      * not read, which is the same thing every unread-marker in the
      * world gets wrong, and it is recoverable by looking again.
      */
-    await c.env.COUNTERS.put(KV_KEYS.alarmsLastRead, markedAt);
+    await kvPut(c.env.COUNTERS, KV_KEYS.alarmsLastRead, markedAt);
   }
 
   return c.html(
@@ -1977,7 +1978,7 @@ adminRoutes.post("/admin/note", async (c) => {
   const form = await c.req.parseBody();
   const note = sanitizeText(form["week_note"], 500);
   if (note) {
-    await c.env.COUNTERS.put(KV_KEYS.weekNote, note);
+    await kvPut(c.env.COUNTERS, KV_KEYS.weekNote, note);
   }
   return c.redirect("/admin");
 });

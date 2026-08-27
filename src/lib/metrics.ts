@@ -319,7 +319,7 @@ async function raiseFirstOutsideSignature(
   if (await env.COUNTERS.get(KV_KEYS.firstSignature)) {
     return;
   }
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.firstSignature,
     JSON.stringify({ item: event.item, outcome, at: event.at }),
   );
@@ -669,7 +669,7 @@ export async function recordSettlement(
     pending.push(
       (async () => {
         if (!(await env.COUNTERS.get(KV_KEYS.railMeterStart))) {
-          await env.COUNTERS.put(KV_KEYS.railMeterStart, event.at);
+          await kvPut(env.COUNTERS, KV_KEYS.railMeterStart, event.at);
         }
       })(),
     );
@@ -707,7 +707,7 @@ export async function recordSettlement(
       (async () => {
         const frame = await env.COUNTERS.get(KV_KEYS.firstDollar);
         if (!frame) {
-          await env.COUNTERS.put(
+          await kvPut(env.COUNTERS, 
             KV_KEYS.firstDollar,
             JSON.stringify({
               item: event.item,
@@ -780,7 +780,7 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
         last_seen: now,
         purchases: 1,
       };
-  await env.COUNTERS.put(key, JSON.stringify(record));
+  await kvPut(env.COUNTERS, key, JSON.stringify(record));
 }
 
 export interface LedgerRow {

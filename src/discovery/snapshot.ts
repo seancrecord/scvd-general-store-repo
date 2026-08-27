@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * CATALOG SNAPSHOT — last unsigned look, so the next look can name
@@ -156,7 +157,7 @@ export async function writeCatalogSnapshot(
   env: Env,
   snapshot: CatalogSnapshot,
 ): Promise<void> {
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.discoverySnapshot(hostOf(snapshot.about)),
     JSON.stringify(snapshot),
   );

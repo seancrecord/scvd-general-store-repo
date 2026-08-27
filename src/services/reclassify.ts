@@ -2,6 +2,7 @@ import { inferChannel } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE STANDING CORRECTION — how much of the recorded organic column is
@@ -194,7 +195,7 @@ export async function recomputeCorrections(
     written.push(correction);
   }
   // One write, outside the loop: the whole set at once.
-  await env.COUNTERS.put(CORRECTIONS_KEY, JSON.stringify(set));
+  await kvPut(env.COUNTERS, CORRECTIONS_KEY, JSON.stringify(set));
   return written.sort((a, b) => b.month.localeCompare(a.month));
 }
 
@@ -297,7 +298,7 @@ export async function reclassifyHousePayer(
     at: new Date().toISOString(),
     reason: reason.trim() || "family wallet misbooked organic before listing",
   };
-  await env.COUNTERS.put(key, JSON.stringify(record));
+  await kvPut(env.COUNTERS, key, JSON.stringify(record));
   return { ok: true, record };
 }
 

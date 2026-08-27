@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE POPULATION LAYER — enumeration held apart from observation,
@@ -307,7 +308,7 @@ export async function takeCensus(
     }
   }
 
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.populationRegister,
     JSON.stringify({ hosts: register, last_known: known } satisfies RegisterFile),
   );

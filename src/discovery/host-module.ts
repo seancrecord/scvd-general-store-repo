@@ -5,6 +5,7 @@ import {
 import type { HostCatalogCapture } from "@/discovery/host-probe";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * HOST PASSPORT MODULE — latest discovery_coherence citation per
@@ -41,7 +42,7 @@ export async function writeHostDiscoveryModule(
   host: string,
   module: PassportModule,
 ): Promise<void> {
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.hostDiscoveryModule(host.toLowerCase()),
     JSON.stringify(module),
   );
