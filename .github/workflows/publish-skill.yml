@@ -10,10 +10,24 @@
 # which is the whole point of the keeper's queue. Do not add a trigger
 # to this file.
 #
-# It also fixes the stale-hash problem permanently: --source-commit is
-# stamped from the commit being published rather than copied out of a
-# document written days earlier. Publishing a file under a hash that
-# says otherwise is a worse lie than the missing content.
+# HARDENED 2026-08-27 (P10), four defects closed:
+#   1. inputs.version / inputs.changelog were interpolated straight
+#      into a run: block — a changelog containing shell metacharacters
+#      EXECUTED. Both now travel via env: and are referenced quoted,
+#      the pattern GitHub's hardening guide and CodeQL demand.
+#   2. The workflow bypassed scripts/publish-skill.mjs entirely, so
+#      none of its six refusals ran (SKILL_VERSION match, version
+#      format, dirty tree, source-commit integrity, bundle-unchanged
+#      sha, freshness suite). It now calls `npm run skill:publish`;
+#      the script's CI mode (--source-commit=<sha>) translates the
+#      unpushed-HEAD refusal for a detached-HEAD checkout instead of
+#      deleting it.
+#   3. `npx clawhub@latest` handed CLAWHUB_TOKEN to whatever the
+#      registry served that minute. CLAWHUB_VERSION pins it — every
+#      action here is SHA-pinned and the one npx call was the
+#      exception. Bump the pin deliberately, like any other.
+#   4. dry_run defaulted to false; it is true now, matching
+#      publish-npm.yml — the safe default for a button on a phone.
 #
 # ONE-TIME SETUP (browser, phone is fine):
 #   Settings → Secrets and variables → Actions → New repository secret
@@ -21,8 +35,8 @@
 #   the token page on clawhub. The token never appears in a log here.
 name: Publish ClawHub skill
 
-# Least privilege (OpenSSF Token-Permissions): this workflow only
-# reads the repo; nothing here writes to GitHub.
+# Least privilege (OpenSSF Token-Permissions): the default is read.
+# The publish job alone escalates to open the record PR — see there.
 permissions:
   contents: read
 
@@ -45,11 +59,16 @@ on:
       dry_run:
         description: "Preview without publishing"
         type: boolean
-        default: false
+        default: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # The record PR (below) is why this job writes. Everything else in
+    # this workflow only reads the repo.
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -57,27 +76,74 @@ jobs:
           node-version: 22
           cache: npm
 
-      # The bundle is published as-is, so the shelf it describes has to
-      # be the shelf that exists. A red suite here means do not publish.
       - run: npm ci
-      - name: The skill document still matches the menu
-        run: npx vitest run test/skill-bundle-freshness.spec.ts
 
+      # THE SCRIPT, NOT RAW clawhub. All six refusals live in
+      # scripts/publish-skill.mjs — the freshness suite runs inside it,
+      # so no separate vitest step here to drift out of sync with it.
       - name: Publish
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+          # Pinned (defect 3). 0.23.3 verified working 2026-08-27; the
+          # script honours this variable, so bumping it is one line.
+          CLAWHUB_VERSION: "0.23.3"
+          # Untrusted text stays in the environment, never in the
+          # script body (defect 1): the shell expands "$VERSION", it
+          # never PARSES it.
+          VERSION: ${{ inputs.version }}
+          CHANGELOG: ${{ inputs.changelog }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
           if [ -z "$CLAWHUB_TOKEN" ]; then
             echo "CLAWHUB_TOKEN is not set. Add it under Settings → Secrets and variables → Actions."
             exit 1
           fi
-          npx clawhub@latest login --token "$CLAWHUB_TOKEN" --no-browser
-          npx clawhub@latest skill publish registry/clawhub \
-            --slug scvd-general-store \
-            --name "SCVD General Store" \
-            --version "${{ inputs.version }}" \
-            --changelog "${{ inputs.changelog }}" \
-            --source-repo "${{ github.repository }}" \
-            --source-commit "${{ github.sha }}" \
-            --source-path registry/clawhub \
-            ${{ inputs.dry_run && '--dry-run' || '' }}
+          npx "clawhub@$CLAWHUB_VERSION" login --token "$CLAWHUB_TOKEN" --no-browser
+          EXTRA=""
+          if [ "$DRY_RUN" = "true" ]; then EXTRA="--dry-run"; fi
+          npm run skill:publish -- "$VERSION" "$CHANGELOG" \
+            --source-commit="$GITHUB_SHA" $EXTRA
+
+      # THE RECORD RIDES A PR, OR THE NEXT PUBLISH IS UNGUARDED. The
+      # script writes registry/clawhub/published.json after a real
+      # publish; on a runner that write evaporates with the container,
+      # and a stale record silently disarms the bundle-unchanged
+      # refusal next time. So the job carries the record out on a
+      # branch and opens the PR itself. (Keeper: this PR-per-publish is
+      # the reversible default, not a ruling — veto it in favour of a
+      # manual bump any time by deleting this step.)
+      - name: Open the record PR
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="skill-record-$VERSION"
+          git switch -c "$BRANCH"
+          git add registry/clawhub/published.json
+          git commit -m "Record scvd-general-store skill $VERSION as published"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Record ClawHub skill $VERSION as published" \
+            --body "Written by the publish workflow. The bundle-unchanged refusal in scripts/publish-skill.mjs reads this file's hash — until this merges, that guard is comparing the NEXT publish against a superseded record. Merge promptly."
+          {
+            echo "## Publish is NOT complete yet"
+            echo ""
+            echo "The record PR above must merge before the publish is done —"
+            echo "an unmerged record disarms the bundle-unchanged refusal for"
+            echo "the next publish."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dry-run summary
+        if: ${{ inputs.dry_run }}
+        run: |
+          {
+            echo "## Dry run only"
+            echo ""
+            echo "Nothing was published and no record was written. Re-run with"
+            echo "dry_run unchecked to publish for real."
+          } >> "$GITHUB_STEP_SUMMARY"
