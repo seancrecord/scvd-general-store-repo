@@ -1257,6 +1257,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Weekly signed observations of the public x402 ecosystem: hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, with the live chain check and verification steps on the document. Per-host history at /corpus/host/{host}.json. Free. The readable landing is /corpus.",
         ),
       },
+      "/corpus/trajectory.json": {
+        get: freeOp(
+          "The corpus read as time",
+          "One point per signed weekly snapshot, every count derived at read from the snapshot's own rows: listed/probed denominators, verdict counts with observer-degraded ticks separated from anyone's outage, offers seen, doors per rail, failure classes. No ratios anywhere — counts travel with their denominators. Each point names the digest it derives from. Free.",
+        ),
+      },
+      "/corpus/diff.json": {
+        get: freeOp(
+          "What changed since a signed week",
+          "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
+        ),
+      },
       "/mcp": {
         post: postOp(
           "The MCP door",

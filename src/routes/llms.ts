@@ -759,6 +759,16 @@ arithmetic stands and the raw evidence stays committed, so anyone can
 redo the classification. The store makes no claim about ecosystem
 payment-failure rates until a repaired instrument has walked again.
 
+The chain also reads as time, derived at read from the same signed
+snapshots. ${base}/corpus/trajectory.json serves one point per weekly
+snapshot — counts with their denominators, never a ratio, every point
+naming the digest it derives from. ${base}/corpus/diff.json?since={week}
+answers "what changed since a week I already saw": doors appeared and
+disappeared, verdict transitions, and drift in a door's own declared
+terms (price bounds, rails, schemes) between two signed weeks — the
+cheapest honest agent loop is polling that diff. A week the chain does
+not hold gets a 404 naming the weeks it does.
+
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
 carries a reason: no feed named it, a feed named it but we did not
