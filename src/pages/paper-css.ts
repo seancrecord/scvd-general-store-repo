@@ -67,6 +67,7 @@ export const PAPER_CSS = `
   --line: #372c44;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: clip; }
 body {
   background:
     radial-gradient(120% 80% at 50% -12%, var(--horizon) 0%, var(--dusk) 38%, var(--night) 75%);
@@ -134,14 +135,26 @@ p + p { margin-top: 0.85rem; }
   border-bottom: 1px solid var(--line);
 }
 .menu-item:last-child { border-bottom: 0; }
-.menu-line { display: flex; align-items: baseline; gap: 0.5rem; }
+.menu-line { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
 .menu-name { color: var(--night-text); font-size: 1.08rem; }
 .menu-dots {
   flex: 1;
   border-bottom: 1px dotted var(--line);
   min-width: 1.5rem;
 }
+/*
+ * nowrap ONLY WHERE IT FITS (2026-08-27, measured at 390px). The
+ * price slot carries more than prices: tier strings, contract
+ * addresses, whole GET lines — and a nowrap flex child sets the
+ * row's minimum width, so the longest of them laid /menu out 513px
+ * wide and /try 429px, each a strip of blank space a phone could
+ * drag into. On narrow screens the slot wraps and long tokens break;
+ * the dotted-leader look is untouched everywhere the line fits.
+ */
 .menu-price { white-space: nowrap; color: var(--neon); }
+@media (max-width: 600px) {
+  .menu-price { white-space: normal; overflow-wrap: anywhere; min-width: 0; }
+}
 .menu-desc {
   font-size: 0.98rem;
   color: var(--night-text);
