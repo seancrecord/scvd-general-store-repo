@@ -111,7 +111,7 @@ artifact any third party can verify without trusting us.
 
 ## What this store will NOT do
 
-- Never asks you to run code, install anything, or share keys or key material.
+- Nothing it hands you can act without your decision; never asks for credentials, keys, or key material.
 - Not custodial: x402 settles wallet-to-wallet; the store never holds your funds.
 - Never claims a protocol it does not speak: this is x402 + MCP, not UCP.
 `;

@@ -1296,3 +1296,80 @@ LOOK before it is worth an opinion.
   is built. The API moved twice in six months and secondary coverage
   lags it.
 
+
+---
+
+## 11. SHIP RECORD — the production cards (2026-08-27)
+
+Shipped the same day §8.5's condition closed, at the keeper's word
+("i want that now"). Branch `claude/webmcp-mcp-apps-brainstorm-oujlvs`.
+
+### 11.1 What is live
+
+- **`src/lib/mcp-apps.ts`** — the card module. Two templates and only
+  two: the **preflight card** (verdict + reached_level, the tri-state
+  ladder with the four measured checks mapped to their rungs and the
+  unmeasured rungs — L3b, L3c, L3d, L4–L6 — printed by name at full
+  weight, what-this-cannot-tell-you, the conflict of interest, the
+  single-probe note as the foot) and the **verify card** (valid /
+  kind / note, the "signed by this store's key. Nothing more." qual,
+  the offline-reproduction foot). Both carry the settled colophon:
+  SCVD/STORE mark, the keeper's inked line, the rule 43 citation.
+- **Wired into `src/routes/mcp.ts`**: the extension declared in
+  `initialize` capabilities (`io.modelcontextprotocol/ui`, MIME
+  `text/html;profile=mcp-app`); the two `ui://` templates listed in
+  `resources/list` beside the `scvd://` shelves and served from
+  `resources/read`; `_meta: { ui: { resourceUri } }` (nested, the
+  shape the hosts key on) on the two tool definitions in `tools/list`
+  and repeated on their `tools/call` results.
+- **The bridge is the proven one**: `ui/initialize` →
+  `ui/notifications/initialized` handshake (the load-bearing finding
+  — a silent template renders as nothing while the host's marker
+  claims otherwise), `ui/notifications/tool-result` →
+  `render(structuredContent)`, `ui/notifications/tool-input` for the
+  probed host, `ui/notifications/size-changed` on load and resize
+  (the fold fix). Every value lands via `textContent`; the report
+  quotes third-party bytes and the card must not become their
+  renderer. No network anything: system fonts, inline CSS, no fetch.
+
+### 11.2 What is guarded (test/mcp-apps.spec.ts)
+
+- **The payment-surface guard**: no tool that can take money — by
+  `itemId`/`itemIds` or by `buy_` name — ever carries ui metadata.
+  Rule 17's amended property as an assertion; a future card on a paid
+  tool has to argue with this test in review, not arrive by accident.
+- The handshake strings, textContent-only rendering, no-network
+  self-containment, the colophon and keeper's line, the unmeasured
+  rungs by name, "not an endorsement" on the verify card, nested
+  (never flat) `_meta` shape, and the spec-correct -32002 for an
+  unknown `ui://` URI.
+
+### 11.3 The sentence swap — executed
+
+Rule 17's timing clause said the approved sentence replaces the
+mechanism sentence "in the SAME COMMIT that ships the store's first
+rendered or executable surface." This is that commit. Draft B, the
+keeper's pick, now stands in its per-surface registers on: the 402
+body (`wallet-safety.ts` HOUSE_RULE), skill.md and the clawhub
+bundle, llms.txt, agents.md, openapi.json, the MCP `initialize`
+instructions, /what (three registers), /try, the gazette founding
+edition (kicker kept), and the registry submission draft. The
+promise tests assert both halves — the property (`act without …
+decision`) and the absolute (`never asks … credentials`) — instead
+of the retired string; the llms digest was re-taken in the same
+commit, as its guard requires.
+
+### 11.4 Deliberately absent from v1
+
+- **No expiry line.** Both live cards render seconds-old readings;
+  "observed just now · one probe, one moment" is the honest
+  freshness claim. The stored-reading label — "stale after" vs
+  "current until", two blind machine readers flagged "expires in"
+  as reading like a forward warranty — is the keeper's open copy
+  call and lands with the first corpus card. ⚑
+- **No payment card, no approval card.** The third door means the
+  approval press stays in the client's own chrome. §8.5a's family
+  (conformance card, shelf card, corpus round) waits on demand tags,
+  not enthusiasm.
+- **No WebMCP.** Separate surface, separate build (§10); nothing
+  here touches the browser.

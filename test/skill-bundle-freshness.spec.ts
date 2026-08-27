@@ -41,7 +41,7 @@ describe("the ClawHub bundle keeps up with the shelf", () => {
     // The one line that must survive every republish: it is the store's
     // standing promise and the thing a cautious operator checks first.
     const live = await (await SELF.fetch("https://scvd.store/skill.md")).text();
-    expect(live).toContain("never ask you to run code");
+    expect(live).toContain("act without your");
     expect(live).toContain("credentials");
   });
 
@@ -92,7 +92,7 @@ describe("the published bundle states no fact that expires", () => {
     // The live document and the bundle are maintained separately, so
     // the one line that must survive gets asserted in both places.
     const bundle = (await import("../registry/clawhub/SKILL.md?raw")).default;
-    expect(bundle).toContain("never asks you to run code");
+    expect(bundle).toContain("act without your");
     expect(bundle).toContain("credentials");
   });
 });

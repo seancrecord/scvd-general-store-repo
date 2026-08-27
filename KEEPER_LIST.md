@@ -151,6 +151,34 @@ and colophon intact). **Two independent hosts at full weight — the
 shape ruling's condition is MET and the third door stands.** ChatGPT
 (tunnel) and Goose remain as record rows, not gates.
 
+**PRODUCTION CARDS SHIPPED 08-27, same day the condition closed
+(src/lib/mcp-apps.ts; design doc §11 is the ship record).** Two cards
+on the live MCP door and only two: the preflight reading and the
+signature check — both free tools, display only, populated over the
+proven tool-result bridge, unclimbed rungs and the conflict of
+interest at full weight, colophon with the inked line. NOTHING PAID
+RENDERS: no buy_* tool carries ui metadata and test/mcp-apps.spec.ts
+pins that as the payment-surface guard, beside pins on the handshake
+(the load-bearing finding), textContent-only rendering, and
+no-network self-containment. AND THE SENTENCE SWAP EXECUTED in the
+same commit, per rule 17's own timing clause — this is the store's
+first rendered surface, so draft B replaced the mechanism sentence
+across every surface that carried it (402 body, skill.md + clawhub
+bundle, llms.txt, agents.md, openapi, MCP instructions, /what, /try,
+gazette founding note, registry submission), each in its own
+register; the promise tests now assert both halves (property +
+absolute) instead of the old string. ⚑ Still the keeper's: the expiry
+label call ("stale after" / "current until") — deliberately ABSENT
+from v1, both live cards are seconds-old readings ("one probe, one
+moment"); it lands with the first corpus/stored-reading card.
+⚑ NEW from the keeper, 08-27, unruled: label which tools are
+agent-use vs human-use. Note for the ruling: every MCP tool is
+agent-invoked by transport, so the honest cut is probably
+*evidence instruments* (preflight, conformance, verify — outputs
+built to be handed upward to a human) vs *store errands* (bell,
+guestbook, guide, buy_*); if it ships, it belongs in the tool
+descriptions and annotations, which are keeper's copy (rule 7).
+
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host
 still tells a stranger where to go and check), it cites HOUSE RULE 43

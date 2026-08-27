@@ -1,4 +1,11 @@
 import { mcpResourceCatalog, readMcpResource } from "@/lib/mcp-resources";
+import {
+  MCP_APPS_EXTENSION,
+  UI_MIME,
+  readUiResource,
+  uiMetaFor,
+  uiResourceCatalog,
+} from "@/lib/mcp-apps";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { runMcpPayment } from "@/lib/mcp-payment";
@@ -676,6 +683,17 @@ async function handleRpc(
           tools: { listChanged: false },
           resources: { subscribe: false, listChanged: false },
           prompts: { listChanged: false },
+          /**
+           * MCP Apps (SEP-1865). Two free evidence tools point at
+           * ui:// cards; a host that also declares this extension
+           * prefetches the template and renders the reading for the
+           * human behind the agent. Hosts that don't declare it get
+           * the same JSON they always got — the cards are additive
+           * by construction, and nothing paid carries one (tested).
+           */
+          extensions: {
+            [MCP_APPS_EXTENSION]: { mimeTypes: [UI_MIME] },
+          },
         },
         serverInfo: {
           // S2 identity audit: exactly the storefront/Bazaar/skill names,
@@ -690,7 +708,7 @@ async function handleRpc(
         // POSITION_OPENING since 2026-08-10: the handshake is the one
         // sentence an MCP client caches about us, so it carries the
         // entity and both differentiators, then the operating facts.
-        instructions: `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. The store never asks you to run code or share credentials.`,
+        instructions: `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. Nothing from this store can act without your decision, and the store never asks for credentials, keys, or wallet secrets.`,
       });
     }
     case "ping":
@@ -707,7 +725,10 @@ async function handleRpc(
      * browsable index.
      */
     case "resources/list":
-      return rpcResult(id, { resources: mcpResourceCatalog() });
+      // The scvd:// shelves, then the ui:// card templates (MCP Apps).
+      return rpcResult(id, {
+        resources: [...mcpResourceCatalog(), ...uiResourceCatalog()],
+      });
     case "resources/templates/list":
       // Every resource is a fixed URI; there is no family of them
       // parameterised by anything, so a template list would be a
@@ -717,13 +738,23 @@ async function handleRpc(
       const uri = isRecord(request.params)
         ? String(request.params["uri"] ?? "")
         : "";
+      // ui:// templates are static HTML baked into the worker; the
+      // scvd:// shelves may touch the env, so the cheap check goes
+      // first.
+      const card = readUiResource(uri);
+      if (card) {
+        return rpcResult(id, { contents: [card] });
+      }
       const found = await readMcpResource(c.env, c.env.STORE_BASE_URL, uri);
       if (!found) {
         // -32002 is the spec's "resource not found".
         return rpcError(
           id,
           -32002,
-          `No resource at ${uri || "(no uri given)"}. The shelf: ${mcpResourceCatalog()
+          `No resource at ${uri || "(no uri given)"}. The shelf: ${[
+            ...mcpResourceCatalog(),
+            ...uiResourceCatalog(),
+          ]
             .map((resource) => resource.uri)
             .join(", ")}`,
         );
@@ -751,7 +782,13 @@ async function handleRpc(
     case "tools/list":
       return rpcResult(id, {
         tools: mcpToolCatalog(c.env.STORE_BASE_URL).map(
-          ({ itemId: _itemId, ...tool }) => tool,
+          ({ itemId: _itemId, ...tool }) => {
+            // MCP Apps: the two free evidence tools carry the card
+            // pointer; uiMetaFor returns undefined for everything
+            // else, buy_* by design (a test pins that).
+            const ui = uiMetaFor(tool.name);
+            return ui ? { ...tool, _meta: ui } : tool;
+          },
         ),
       });
     case "tools/call": {
@@ -821,7 +858,11 @@ async function handleRpc(
       if (typeof result === "string") {
         return rpcError(id, -32602, result);
       }
-      return rpcResult(id, toolText(result));
+      // MCP Apps: the call result repeats the card pointer (the
+      // render-test hosts read it from both places).
+      const ui = uiMetaFor(name);
+      const body = toolText(result) as Record<string, unknown>;
+      return rpcResult(id, ui ? { ...body, _meta: ui } : body);
     }
     default:
       if (request.method.startsWith("notifications/")) {

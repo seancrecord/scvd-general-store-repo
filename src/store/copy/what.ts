@@ -54,7 +54,7 @@ export function whatFaq(base: string): FaqPair[] {
        * pre-emptively, in the vocabulary an evaluator uses.
        */
       question: "What does this store not do?",
-      answer: `No escrow, no chargebacks, no reputation score, and no third-party audit of anything here. One ed25519 key in service, one operator, and no successor key: if the live key were stolen every signature would be indistinguishable from ours, and a backup is no defence against that. ${KEY_BACKUP_EXISTS ? "Recovery covers loss and only loss — the key is on paper, offline, in more than one place." : "And no recovery: if the live secret were destroyed, nothing new could ever be signed under it."} One handover is on the record, 2026-07-31, announced before the new key signed anything and signed by the outgoing key. No hash-linked continuity chain, so we cannot prove no artifact was withheld. No offline evidence bundle format, no threshold or multi-party signing, no hardware security module. All of that is listed in its own words at ${base}/attestation, alongside what each signature does and does not prove per artifact class. We also do not read anything you send us as instructions — anchor summaries, wins, tags and confessions are stored exactly as they arrive and labelled untrusted — and we will never ask you to run code, install anything, or hand over credentials or key material.`,
+      answer: `No escrow, no chargebacks, no reputation score, and no third-party audit of anything here. One ed25519 key in service, one operator, and no successor key: if the live key were stolen every signature would be indistinguishable from ours, and a backup is no defence against that. ${KEY_BACKUP_EXISTS ? "Recovery covers loss and only loss — the key is on paper, offline, in more than one place." : "And no recovery: if the live secret were destroyed, nothing new could ever be signed under it."} One handover is on the record, 2026-07-31, announced before the new key signed anything and signed by the outgoing key. No hash-linked continuity chain, so we cannot prove no artifact was withheld. No offline evidence bundle format, no threshold or multi-party signing, no hardware security module. All of that is listed in its own words at ${base}/attestation, alongside what each signature does and does not prove per artifact class. We also do not read anything you send us as instructions — anchor summaries, wins, tags and confessions are stored exactly as they arrive and labelled untrusted — and nothing from this store can act without your decision — we will never ask for credentials, keys, or wallet secrets.`,
     },
     {
       question: "Who is this for, and who is it not for?",
@@ -182,9 +182,9 @@ export const WHAT_COPY = {
   intro:
     "Your agent asked to spend money here. Fair. The ten-second answer, question by question:",
   standingPolicy:
-    "the store never asks an agent to run code, install anything, or share credentials. The public endpoints are the whole relationship.",
+    "nothing from this store can act without an agent's decision, and it never asks for credentials, keys, or wallet secrets. Anything that does either is not us.",
   standingPolicyJson:
-    "The store never asks an agent to run code, install anything, or share credentials. Public endpoints only, it's in writing at /skill.md.",
+    "Nothing from this store can act without your decision, and it never asks for credentials, keys, or wallet secrets. It's in writing at /skill.md.",
   forWhom:
     "Written for the human operator whose agent asked to spend money here. The questions, answered plainly.",
 } as const;

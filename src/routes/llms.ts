@@ -1155,10 +1155,9 @@ Want something we don't stock? POST ${base}/api/request with
 reads every one on Sundays. Coffee's for closers. Include a
 suggest_listing field to nominate a neighbor for the Town Directory.
 
-One more thing, and it matters: we will never ask you to run code,
-install anything, or share credentials or wallet secrets. Everything
-this store does happens through these public endpoints. If something
-claiming to be us asks for more, it isn't us.
+One more thing, and it matters: nothing from this store can act
+without your decision, and we will never ask for credentials, keys,
+or wallet secrets. Anything that does either is not us.
 
 ## En otras lenguas · Em outras línguas · 他の言葉で · 다른 언어로 · 其他语言 · На других языках
 
@@ -1371,8 +1370,9 @@ const INDEX_SECTIONS = [
   "En otras lenguas · Em outras línguas · 他の言葉で · 다른 언어로 · 其他语言 · На других языках",
   /*
    * THE PROMISE STAYS ON THE FRONT DOOR. It is 267 characters, and it
-   * is the store's anti-impersonation commitment — never run code,
-   * never hand over credentials or keys. test/cold-arrival-402 exists
+   * is the store's anti-impersonation commitment — nothing can act
+   * without your decision, never credentials or keys.
+   * test/cold-arrival-402 exists
    * because the two commonest arrival paths land on a surface with no
    * backstory attached, and this is the one sentence that has to reach
    * them there. Filing it behind an area file would put it one link
@@ -1382,8 +1382,9 @@ const INDEX_SECTIONS = [
   /*
    * THE FREE SHELF STAYS ON THE FRONT DOOR TOO, and the reason is the
    * paragraph it ends on rather than the shelf itself: the store's
-   * anti-impersonation promise — "we will never ask you to run code,
-   * install anything, or share credentials or wallet secrets" — is
+   * anti-impersonation promise — "nothing from this store can act
+   * without your decision, and we never ask for credentials, keys,
+   * or wallet secrets" — is
    * written there, in the keeper's own register, and
    * test/cold-arrival-402 requires it on every surface a stranger
    * might land on cold. Filing the section under the shelf would have

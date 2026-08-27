@@ -122,7 +122,7 @@ export const PRACTICE_COUNTER_COPY = {
     // job is saying what this store actually does.
     "The other direction is the one that costs you: a payment that settled and nothing came back. Settling before the goods are made is what makes that possible, so it is not left to you to catch. A delivery audit looks for settlements with no artifact behind them, and an hourly walk compares our books against both chains themselves. Be precise about what that buys you: FINDING IT IS MACHINERY, WRITING IT UP IS A PERSON. Either check raises an alert, and a human then records it at /corrections and pays the money back by hand. Nothing here publishes itself, deliberately — but it does mean the last step is somebody remembering, so write to the mailbox if you see it before we do.",
     "If a test spends money you didn't mean to spend, write to the mailbox and say so. Refunds here are a person keeping his word, not a subroutine.",
-    "House rule, standing: this store will never ask you to run code, install anything, or hand over credentials or key material. Public HTTPS endpoints, that's the whole surface.",
+    "House rule, standing: nothing from this store can act without your decision, and we never ask for credentials, keys, or wallet secrets. Anything that does either is not us.",
   ],
 
   closer:

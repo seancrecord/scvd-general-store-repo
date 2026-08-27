@@ -47,7 +47,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a0a528118fbeb8735003460af96d09b779a1df558b232cdf47a8fe096ec5ccbf";
+  "ee13a64a9e25ebd00798065ec1614fc5ecfe9988aa96147d0655ca243b0f3214";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
