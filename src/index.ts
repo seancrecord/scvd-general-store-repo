@@ -122,6 +122,7 @@ import {
   runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
+import { discoveryCors } from "@/lib/cors";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -151,6 +152,11 @@ app.use("*", async (c, next) => {
     "max-age=31536000; includeSubDomains",
   );
 });
+
+// One middleware, one explicit boundary: CORS on the public
+// discovery surface and the MCP door, nothing stateful, nothing
+// paid. The list and its reasoning live in lib/cors.ts.
+app.use("*", discoveryCors);
 
 // house tradition
 app.use("*", async (c, next) => {
