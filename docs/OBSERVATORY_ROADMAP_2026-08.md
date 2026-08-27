@@ -161,7 +161,7 @@ applicability field — build the registry here if 1.1 didn't.
 
 | #   | Ledger       | What                                                                                                                            | Acceptance                                                          |
 | --- | ------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| 3.1 | G3, G4       | Capture-at-observation-time fields (key material seen, offer bytes, latency) — free now, uncollectable later                    | New rows carry them; test2                                          |
+| 3.1 ✅ 2026-08-27 `4c896af` #273 | G3, G4       | Capture-at-observation-time fields (key material seen, offer bytes, latency) — free now, uncollectable later                    | New rows carry them; test2                                          |
 | 3.2 | C2, I4       | Money-path symmetry: verify seller-claimed tx on chain via the existing attestation reader; until read, label `tx_hash_claimed` | Red test: fabricated PAYMENT-RESPONSE hash currently signed as fact |
 | 3.3 | D2, F4       | Freshness: `stale_after` per class, `is_stale` derived at read; clock injection everywhere both sides                           | Red test: old artifact served without staleness today               |
 | 3.4 | B6, B10, B11 | Observer accounting: `observer_status`, gap attribution, numerator+denominator serving (never bare %)                           | Red tests: our timeout currently booked as subject outage           |
