@@ -234,8 +234,17 @@ practiceCounterRoutes.get("/try", (c) => {
         .filter((item): item is NonNullable<typeof item> => item !== undefined),
       {
         heading: "Buy one from this browser",
+        /*
+         * BUYER WORDS FIRST (the keeper's first live walk, 2026-08-27):
+         * the old standfirst opened with "EIP-3009 authorization",
+         * which is the right sentence for this page's builder audience
+         * and the wrong first sentence for a person holding a wallet.
+         * Now the walk comes first — what happens, in order, and the
+         * one thing to check before pressing — and the protocol name
+         * arrives at the end, where the builder will still find it.
+         */
         standfirst:
-          "Your wallet signs an EIP-3009 authorization; the store verifies it, settles, and hands back a signed certificate. Same door, same code path, same money as the three steps above — this button is the client you were about to write.",
+          "Press a button and three things happen: the store quotes the exact price in USDC, your wallet opens once and asks for a single signature — no gas fee, nothing to install — and the goods land right here with a signed certificate you can verify free, forever. One check first: have your wallet's network set to Base or Polygon. If it is not, the till says so and nothing gets signed. Under the hood this is the same EIP-3009 flow as the three steps above — this button is the client you were about to write.",
         verifyHint: `${base}/api/verify/{cert_id}`,
       },
     );
