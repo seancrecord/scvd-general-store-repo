@@ -2,6 +2,8 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
+import { readObserverStatus } from "@/lib/observer-control";
+import type { ObserverStatus } from "@/lib/observer-control";
 import { PREFLIGHT_BATTERY, runChecks } from "@/services/preflight";
 import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
@@ -79,6 +81,18 @@ export interface WatchProbe {
    * our policy as a fact about somebody's endpoint.
    */
   verdict: "ready" | "not_ready" | "unreachable" | "refused";
+  /**
+   * WHOSE FAILURE A FAILED PROBE WAS (3.4/B6). "ok": the control
+   * beacon answered in the same tick, so an unreachable verdict is
+   * the subject's outage, confirmed rather than assumed. "degraded":
+   * the beacon failed too — OUR vantage was blind, and the tick is
+   * excluded from the subject's stats and from coverage. "unchecked":
+   * no beacon was provisioned; the verdict books as it always did and
+   * this field says the attribution was never verified. Absent on
+   * legacy rows and on refused rows (a refusal is policy, not an
+   * observation to attribute).
+   */
+  observer_status?: ObserverStatus;
   /** HTTP status seen, absent when unreachable or refused. */
   status?: number;
   latency_ms?: number;
@@ -137,7 +151,10 @@ function newWatchId(): string {
 export function canonicalizeProbe(
   watchId: string,
   url: string,
-  probe: Pick<WatchProbe, "at" | "verdict" | "failed" | "evidence" | "battery"> & {
+  probe: Pick<
+    WatchProbe,
+    "at" | "verdict" | "failed" | "evidence" | "battery" | "observer_status"
+  > & {
     status?: number;
     latency_ms?: number;
   },
@@ -156,6 +173,10 @@ export function canonicalizeProbe(
   // bytes, in this order — the order is the contract.
   if (probe.evidence) payload["evidence"] = probe.evidence;
   if (probe.battery) payload["battery"] = probe.battery;
+  // 3.4: appended after battery, same law as every addition — new
+  // rows carry it inside the signed bytes; legacy rows keep their
+  // exact original preimage forever.
+  if (probe.observer_status) payload["observer_status"] = probe.observer_status;
   return JSON.stringify(payload);
 }
 
@@ -198,6 +219,7 @@ async function probeOnce(
   const at = new Date().toISOString();
   const started = Date.now();
   let verdict: WatchProbe["verdict"];
+  let observerStatus: ObserverStatus;
   let status: number | undefined;
   let latency: number | undefined;
   let failed: string[] = [];
@@ -254,16 +276,27 @@ async function probeOnce(
     const { checks } = runChecks(response, evidence.body_truncated);
     failed = checks.filter((check) => !check.ok).map((check) => check.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
+    /*
+     * A tick that observed successfully proved the vantage works by
+     * observing — the beacon has nothing to add and is not consulted.
+     */
+    observerStatus = "ok";
   } catch {
     verdict = "unreachable";
+    /*
+     * 3.4/B6: the moment we could not reach them is exactly the
+     * moment to ask whether we could reach ANYTHING. Same tick, one
+     * control read; the answer decides whose outage this row records.
+     */
+    observerStatus = await readObserverStatus(env);
   }
   const body: Pick<
     WatchProbe,
-    "at" | "verdict" | "failed" | "evidence" | "battery"
+    "at" | "verdict" | "failed" | "evidence" | "battery" | "observer_status"
   > & {
     status?: number;
     latency_ms?: number;
-  } = { at, verdict, failed };
+  } = { at, verdict, failed, observer_status: observerStatus };
   if (status !== undefined) {
     body.status = status;
   }
@@ -387,7 +420,28 @@ export interface WatchHistory {
   complete: boolean;
   summary: {
     hours_elapsed: number;
+    /**
+     * 3.4/B10: the DENOMINATOR, explicit — one probe owed per elapsed
+     * hour. Never a bare percentage anywhere in this artifact: a
+     * reader who wants a ratio computes it from named numbers and
+     * knows exactly what was divided by what.
+     */
+    probes_expected: number;
+    /** Genuine observations only: ready + not_ready + unreachable. */
     probes_recorded: number;
+    /**
+     * 3.4/B11: a refused row is this store's POLICY (the probe guard
+     * declining to dial), not an observation of the subject. It used
+     * to count as one, silently inflating coverage.
+     */
+    probes_refused: number;
+    /**
+     * 3.4/B6: ticks where OUR vantage was blind — the target failed
+     * and the control beacon failed in the same tick. Excluded from
+     * the subject's stats and from probes_recorded, because a claim
+     * made while we could not see anything is not an observation.
+     */
+    probes_observer_degraded: number;
     /**
      * Elapsed hours nobody probed. OUR gaps — a missed cron is the
      * store's failure and it is derived here at read time, never
@@ -396,7 +450,16 @@ export interface WatchHistory {
     hours_unprobed: number;
     ready: number;
     not_ready: number;
+    /** Subject-attributed only: observer-degraded ticks are not here. */
     unreachable: number;
+    /**
+     * 3.4/B10: latency as a DISTRIBUTION, never a mean — one slow
+     * outlier averaged into a comfortable number is how a flaky door
+     * hides. Null when no probe carried a latency.
+     */
+    latency_ms: { p50: number; p90: number; max: number } | null;
+    /** The claim boundary, on the artifact rather than in our heads. */
+    nothing_claimed_between_probes: string;
   };
   probes: WatchProbe[];
   how_to_verify: string;
@@ -429,10 +492,28 @@ export async function readWatch(
     0,
     Math.floor((end - Date.parse(record.started_at)) / 3600_000),
   );
-  const tally = { ready: 0, not_ready: 0, unreachable: 0, refused: 0 };
+  const tally = { ready: 0, not_ready: 0, unreachable: 0 };
+  let refused = 0;
+  let degraded = 0;
+  const latencies: number[] = [];
   for (const probe of record.probes) {
+    if (probe.verdict === "refused") {
+      refused += 1;
+      continue;
+    }
+    if (
+      probe.verdict === "unreachable" &&
+      probe.observer_status === "degraded"
+    ) {
+      degraded += 1;
+      continue;
+    }
     tally[probe.verdict] += 1;
+    if (typeof probe.latency_ms === "number") latencies.push(probe.latency_ms);
   }
+  latencies.sort((a, b) => a - b);
+  const quantile = (q: number): number =>
+    latencies[Math.min(latencies.length - 1, Math.floor(q * latencies.length))]!;
   return {
     watch_id: record.watch_id,
     url: record.url,
@@ -441,13 +522,28 @@ export async function readWatch(
     complete: now > Date.parse(record.ends_at),
     summary: {
       hours_elapsed: hoursElapsed,
-      probes_recorded: record.probes.length,
+      probes_expected: hoursElapsed,
+      probes_recorded: tally.ready + tally.not_ready + tally.unreachable,
+      probes_refused: refused,
+      probes_observer_degraded: degraded,
+      // Hours with no row at ALL — the missed crons. Refused and
+      // degraded rows account for their hour under their own names.
       hours_unprobed: Math.max(0, hoursElapsed - record.probes.length),
       ...tally,
+      latency_ms:
+        latencies.length === 0
+          ? null
+          : {
+              p50: quantile(0.5),
+              p90: quantile(0.9),
+              max: latencies[latencies.length - 1]!,
+            },
+      nothing_claimed_between_probes:
+        "One probe per hour, and NOTHING is claimed between probes: a door can fall and recover inside an hour without a row here. Every count above has its denominator beside it (probes_expected); this artifact serves no ratio, because a percentage with a hidden denominator is how availability lies.",
     },
     probes: record.probes,
     how_to_verify:
-      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence and battery when present (exactly that order, null for absent numbers) against the row's public_key. Legacy rows omit evidence and battery; refused and unreachable rows omit both too, because no battery ran. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
+      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence, battery and observer_status when present (exactly that order, null for absent numbers) against the row's public_key. Legacy rows omit evidence, battery and observer_status; refused rows omit all three, and unreachable rows omit evidence and battery, because no battery ran. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
       "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched.",
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
