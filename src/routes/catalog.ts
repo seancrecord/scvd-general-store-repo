@@ -555,5 +555,78 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   });
 }
 
+/**
+ * GET /menu — the shelf index, for a person (2026-08-27, the keeper's
+ * call: "my vote is index page").
+ *
+ * THE GAP THIS CLOSES. The item pages became real HTML in the till
+ * work, so the store had ~25 browsable product pages and no browsable
+ * parent: a reader who landed on /menu/hello had nothing to climb
+ * back to, and /menu itself — a URL people guess — answered 404. It
+ * was also the one area file of five whose room served no page, which
+ * forced LlmsArea.page to be optional and the index to explain the
+ * absence.
+ *
+ * NOT A SECOND STOREFRONT. The front of the store sells; this lists.
+ * Names, prices and fulfilment come from the same MENU_ITEMS,
+ * priceLine and fulfillmentLine every other surface reads, so nothing
+ * here can drift from the till.
+ *
+ * NO TILL ON THE INDEX, and the reason written per rule 53: every row
+ * links to the item's own page, which carries one. Twenty-five
+ * pay-buttons and their required-input fields on one page is not a
+ * till, it is a wall — the door a buyer arrives at to BUY is the item
+ * page, one click away, and the reason is now on the record rather
+ * than implied.
+ *
+ * A MACHINE CALLER IS REDIRECTED, NOT DUPLICATED FOR. The catalog
+ * already has its machine shape at /menu.json; serving the same JSON
+ * at a second path would be a second surface to keep honest. A bare
+ * fetch gets a 301 to the real one, which is what conventional.ts
+ * already does for every other guessed URL.
+ */
+function renderMenuIndex(base: string): string {
+  const rows = MENU_ITEMS.map(
+    (item) => `<div class="menu-item">
+      <div class="menu-line">
+        <span class="menu-name"><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a></span>
+        <span class="menu-dots"></span>
+        <span class="menu-price">${escapeHtml(priceLine(item))}</span>
+      </div>
+      <p class="menu-desc">${escapeHtml(item.description)}</p>
+      <p class="menu-meta">${escapeHtml(fulfillmentLine(item))} \u2022 <code>GET /api/buy/${escapeHtml(item.id)}</code></p>
+    </div>`,
+  ).join("\n");
+
+  return renderSimplePage({
+    title: "The Shelf",
+    description:
+      "Every item this store sells, with its price, how it is fulfilled, and a link to its own page — where the browser till is.",
+    path: "/menu",
+    bodyHtml: `<section>
+        <p class="menu-desc">Everything on the shelf, one line each. Each item's own page carries the full listing — what is guaranteed, what is not, the exact 402 it answers with — and a till: with an EVM wallet in your browser you can buy it right there.</p>
+      </section>
+      <section>
+        <h2>The items</h2>
+        ${rows}
+      </section>
+      <section>
+        <h2>For machines</h2>
+        <p class="menu-meta">The same shelf, machine-readable: <a href="/menu.json"><code>/menu.json</code></a> (markdown by Accept) \u2022 this area's guide: <a href="/menu/llms.txt"><code>/menu/llms.txt</code></a> \u2022 the whole store: <a href="/llms.txt"><code>/llms.txt</code></a></p>
+      </section>`,
+  });
+}
+
+function serveMenuIndex(c: Context<HonoEnv>) {
+  varyOnAccept(c);
+  if (wantsHtml(c.req.header("Accept"))) {
+    return c.html(renderMenuIndex(c.env.STORE_BASE_URL));
+  }
+  return c.redirect(`${c.env.STORE_BASE_URL}/menu.json`, 301);
+}
+
+catalogRoutes.get("/menu", serveMenuIndex);
+catalogRoutes.get("/menu/", serveMenuIndex);
+
 catalogRoutes.get("/menu/:item_id", serveMenuItem);
 catalogRoutes.get("/menu/:item_id/", serveMenuItem);

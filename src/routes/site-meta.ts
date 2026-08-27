@@ -102,6 +102,13 @@ siteMetaRoutes.get("/sitemap.xml", async (c) => {
      * something the structured data already points at is the minimum,
      * not a stretch.
      */
+    /**
+     * Their parent joined 2026-08-27: the item pages were in the
+     * sitemap for weeks with no browsable index above them, so a
+     * crawler saw ~25 siblings and no way a person climbs between
+     * them. /menu is that index now.
+     */
+    "/menu",
     ...MENU_ITEMS.map((item) => `/menu/${item.id}`),
   ];
   /**
