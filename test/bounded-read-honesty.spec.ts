@@ -71,7 +71,20 @@ const KNOWN_UNACKNOWLEDGED = [
   "../src/services/corpus.ts",
   "../src/services/gazette.ts",
   "../src/services/grudges.ts",
-  "../src/services/guestbook.ts",
+  /*
+   * guestbook.ts CAME OFF THIS LIST ON 2026-08-27, and this comment is
+   * here because the list shrinking is the only thing that makes it
+   * mean anything.
+   *
+   * It was here for the reason most of these are: the register was
+   * listed with a cap and the cap's `truncated` flag was dropped on
+   * the floor, so a reading of the first twenty-five entries was
+   * published as though it were the book. It now walks — the page
+   * carries `has_more`, and a `next_cursor` when and only when there
+   * is a next page. See lib/collection-semantics.ts for why it is the
+   * one collection here that genuinely needed a cursor, and why the
+   * others declare themselves bounded instead of growing one.
+   */
   "../src/services/letters.ts",
   "../src/services/orders.ts",
   "../src/services/patron-anchors.ts",

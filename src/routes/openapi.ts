@@ -5,6 +5,8 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { Hono } from "hono";
+import { ASYNC_JOB, COLLECTIONS } from "@/lib/collection-semantics";
+import { ORDER_STATUSES, TERMINAL_ORDER_STATUSES } from "@/types";
 import {
   IDEMPOTENCY_KEY_MAX_LENGTH,
   IDEMPOTENCY_KEY_MIN_LENGTH,
@@ -1312,10 +1314,63 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/api/order/{order_id}": {
         get: {
           ...freeOp(
-            "Poll an order",
-            "Human-queue orders land here; completed ones carry the deliverable.",
+            "Poll an order (async job status)",
+            `The status endpoint for a human-fulfilled purchase — the poll half of this store's async job pattern. Free, unauthenticated, and the order id from the purchase response is the only thing needed. \`status\` is one of ${ORDER_STATUSES.map((state) => `\`${state}\``).join(" or ")}; ${TERMINAL_ORDER_STATUSES.join(", ")} is terminal and carries the deliverable. Past its promised window the order grows a window_breached block stating what is owed, computed from its own timestamps. Poll no faster than once a minute.`,
           ),
-          parameters: [pathParam("order_id", "From the purchase response.")],
+          parameters: [
+            pathParam(
+              "order_id",
+              "From the purchase response's order_id, or the order_url it hands you whole.",
+            ),
+          ],
+          responses: {
+            "200": {
+              description:
+                "The order's current state. Terminal statuses carry the deliverable.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["order_id", "item_id", "status", "created_at"],
+                    properties: {
+                      order_id: { type: "string" },
+                      item_id: { type: "string" },
+                      item_name: { type: "string" },
+                      status: {
+                        type: "string",
+                        enum: [...ORDER_STATUSES],
+                        description:
+                          "The job's state. Enumerated from the same array the code assigns from, so this cannot name a state that never happens.",
+                      },
+                      created_at: { type: "string", format: "date-time" },
+                      completed_at: { type: "string", format: "date-time" },
+                      sla_hours: {
+                        type: "number",
+                        description:
+                          "The window the keeper promised, in hours from created_at.",
+                      },
+                      deliverable: {
+                        description:
+                          "Present once status is terminal. The goods.",
+                      },
+                      patron_number: { type: "integer" },
+                      badge_url: { type: "string", format: "uri" },
+                      window_breached: {
+                        type: "object",
+                        description:
+                          "Present only past the promised window. States what is owed and that the keeper pays it by hand.",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "404": {
+              description: "No order by that id.",
+              ...JSON_RESPONSE,
+            },
+            ...COMMON_RESPONSES,
+          },
         },
       },
       "/almanac": {
@@ -1561,6 +1616,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
   };
   stampOperationIds(document);
   stampIdempotencyKey(document);
+  stampCollections(document);
+  stampAsyncJob(document);
   return c.json(document);
 });
 
@@ -1603,6 +1660,110 @@ openapiRoutes.get("/openapi.json", async (c) => {
  * would send keys the door discards, and discarded keys fail silently
  * by design — the purchase still completes, and still charges.
  */
+/**
+ * HOW EACH COLLECTION ENDS, ON THE OPERATION THAT SERVES IT.
+ *
+ * A last pass over the assembled document, for the same reason
+ * stampOperationIds is one. `x-collection` says either "walk this with
+ * a cursor, here are the parameters" or "this is bounded, here is what
+ * bounds it" — and the second is a real answer rather than an absence,
+ * which is the whole point. A client that cannot tell a bounded set
+ * from an unpaginated one assumes the worst and either paginates
+ * something finite or gives up on something that grows.
+ *
+ * The registry lives in lib/collection-semantics.ts, beside the
+ * reasoning about which collections genuinely need walking and why
+ * inventing cursors on the rest would be worse than nothing.
+ */
+export function stampCollections(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const [path, item] of Object.entries(paths as Record<string, unknown>)) {
+    const semantics = COLLECTIONS[path];
+    if (!semantics || typeof item !== "object" || item === null) continue;
+    const get = (item as OpenApiObject)["get"];
+    if (typeof get !== "object" || get === null) continue;
+    const operation = get as OpenApiObject;
+    operation["x-collection"] = semantics;
+
+    if (!semantics.cursor) continue;
+    /*
+     * A cursor collection's parameters are DECLARED, not merely
+     * described in prose — a generated client can only send what the
+     * parameters array names, and a documented-but-undeclared cursor
+     * is a cursor no generated client will ever pass.
+     */
+    const parameters = Array.isArray(operation["parameters"])
+      ? (operation["parameters"] as OpenApiObject[])
+      : [];
+    const has = (name: string): boolean =>
+      parameters.some((parameter) => parameter["name"] === name);
+    if (!has(semantics.cursor.parameter)) {
+      parameters.push({
+        name: semantics.cursor.parameter,
+        in: "query",
+        required: false,
+        schema: { type: "string" },
+        description: `Opaque cursor from a previous response's ${semantics.cursor.next_field}. Echo it verbatim; never build one. Omit it for the first page.`,
+      });
+    }
+    if (!has(semantics.cursor.limit_parameter)) {
+      parameters.push({
+        name: semantics.cursor.limit_parameter,
+        in: "query",
+        required: false,
+        schema: {
+          type: "integer",
+          minimum: 1,
+          maximum: semantics.cursor.max_limit,
+          default: semantics.cursor.default_limit,
+        },
+        description: `How many entries this page should hold. Anything above ${semantics.cursor.max_limit} is clamped to it, and the applied value comes back in pagination.limit.`,
+      });
+    }
+    operation["parameters"] = parameters;
+  }
+}
+
+/**
+ * THE ASYNC JOB PATTERN, DECLARED ON THE OPERATIONS THAT USE IT.
+ *
+ * Human-fulfilled purchases have returned an order id, a status and a
+ * poll URL since the queue existed. The contract never said a caller
+ * should poll, what the states are, or which of them end the job — so
+ * a scanner reading the spec correctly concluded there was no async
+ * pattern here, and an agent reading it had to learn the states by
+ * watching them go by.
+ *
+ * Stamped on the poll endpoint and on every paid operation, because
+ * the buy is where a caller first meets the job and the poll is where
+ * it finishes. The states come from the array the OrderStatus type is
+ * derived from, so the contract cannot enumerate a state the code will
+ * not assign.
+ */
+export function stampAsyncJob(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const [path, item] of Object.entries(paths as Record<string, unknown>)) {
+    if (typeof item !== "object" || item === null) continue;
+    for (const operation of Object.values(item as Record<string, unknown>)) {
+      if (typeof operation !== "object" || operation === null) continue;
+      const op = operation as OpenApiObject;
+      const isPoll = path === ASYNC_JOB.poll_url_template;
+      if (!isPoll && !op["x-payment"]) continue;
+      op["x-async-job"] = {
+        ...ASYNC_JOB,
+        role: isPoll ? "poll" : "start",
+        ...(isPoll
+          ? {}
+          : {
+              note: "Instant items complete in this response and carry status 'completed'; human-fulfilled items come back queued, and the job is finished at the poll URL. Which an item is is stated on its menu entry as fulfillment.",
+            }),
+      };
+    }
+  }
+}
+
 export function stampIdempotencyKey(document: OpenApiObject): void {
   const paths = document["paths"];
   if (typeof paths !== "object" || paths === null) return;
