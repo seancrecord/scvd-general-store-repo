@@ -231,9 +231,14 @@ function jsonLdSafe(value: unknown): string {
  * push): every item the page already shows, as schema.org Products
  * with live prices — derived from MENU_ITEMS at render, so the
  * markup can no more go stale than the shelf can disagree with
- * itself. priceCurrency is "USD" because schema.org wants ISO-4217
- * and the shelf prices in dollar-denominated USDC; the description
- * says USDC plainly, so nothing is hidden by the code.
+ * itself. priceCurrency is "USDC" (settled 2026-08-27, the keeper's
+ * call): the same shelf said "USD" here and "USDC" in makesOffer,
+ * which was two currencies for one price list. The earlier reasoning
+ * — "schema.org wants ISO-4217" — was simply out of date: schema.org's
+ * own priceCurrency documentation accepts cryptocurrency ticker
+ * symbols alongside ISO 4217, its examples being "USD" and "BTC". So
+ * the literal truth costs nothing here, and the store's own comment
+ * one node down had already made the argument.
  *
  * FILLED OUT TO MERCHANT-LISTING SHAPE, 2026-08-18, after Search
  * Console read all 23 products and called every one invalid for a
@@ -276,7 +281,7 @@ function offerShippingDetails(item: (typeof MENU_ITEMS)[number]): object {
   const handlingDays = Math.ceil((item.sla_hours ?? 0) / 24);
   return {
     "@type": "OfferShippingDetails",
-    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USD" },
+    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: "USDC" },
     shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
     deliveryTime: {
       "@type": "ShippingDeliveryTime",
@@ -315,7 +320,7 @@ function productListJsonLd(base: string): string {
         offers: {
           "@type": "Offer",
           price: String(item.price_usdc),
-          priceCurrency: "USD",
+          priceCurrency: "USDC",
           /**
            * THE ITEM PAGE, NOT THE BUY DOOR. This read /api/buy/{id}
            * until 2026-08-18, which hands every crawler that honors

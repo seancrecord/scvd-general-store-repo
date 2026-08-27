@@ -142,7 +142,15 @@ function conformanceApiJsonLd(base: string): string {
     offers: {
       "@type": "Offer",
       price: "0",
-      priceCurrency: "USD",
+      /*
+       * USDC everywhere, including on a zero (2026-08-27, the
+       * keeper's one-currency ruling). The currency of a free thing
+       * is arbitrary, which is exactly why it should match the one
+       * currency everything paid here settles in — a document that
+       * prices its free instruments in one currency and its shelf in
+       * another invites a reader to wonder which one is the claim.
+       */
+      priceCurrency: "USDC",
       availability: "https://schema.org/InStock",
     },
     potentialAction: {
