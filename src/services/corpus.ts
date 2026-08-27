@@ -8,6 +8,7 @@ import type { OtsAnchor } from "@/services/anchor-log";
 import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE CORPUS — the ecosystem's observed history, kept (the keeper's
@@ -161,10 +162,10 @@ async function putCorpusRecord(env: Env, record: CorpusRecord): Promise<void> {
       ...(record.ots ? { ots: record.ots } : {}),
       r2_key: r2Key(sequence),
     };
-    await env.COUNTERS.put(corpusKey(sequence), JSON.stringify(pointer));
+    await kvPut(env.COUNTERS, corpusKey(sequence), JSON.stringify(pointer));
     return;
   }
-  await env.COUNTERS.put(corpusKey(sequence), JSON.stringify(record));
+  await kvPut(env.COUNTERS, corpusKey(sequence), JSON.stringify(record));
 }
 
 /** Resolve one stored value — pointer or legacy — to the full record. */

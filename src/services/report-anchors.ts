@@ -8,6 +8,7 @@ import {
 } from "@/services/anchor-submit";
 import { getReport, reportIds } from "@/services/reports";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * REPORT ANCHORS — the ecosystem reports' Bitcoin timestamps, riding
@@ -125,7 +126,7 @@ export async function sweepReportAnchors(
     }
   }
   if (changed) {
-    await env.COUNTERS.put(KV_KEYS.reportAnchors, JSON.stringify(anchors));
+    await kvPut(env.COUNTERS, KV_KEYS.reportAnchors, JSON.stringify(anchors));
   }
   return sweep;
 }

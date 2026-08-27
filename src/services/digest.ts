@@ -9,6 +9,7 @@ import {
 } from "@/services/requests";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { Env, OrderRecord, WeeklyDigest } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * The weekly digest, compiled Sundays 7am ET by the cron trigger.
@@ -63,7 +64,7 @@ export async function compileDigest(env: Env): Promise<WeeklyDigest> {
     unread_letters: unreadLetters,
   };
 
-  await env.COUNTERS.put(KV_KEYS.latestDigest, JSON.stringify(digest));
+  await kvPut(env.COUNTERS, KV_KEYS.latestDigest, JSON.stringify(digest));
   return digest;
 }
 

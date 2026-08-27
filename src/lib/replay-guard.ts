@@ -1,6 +1,7 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * Belt-and-braces replay protection for payment authorizations.
@@ -104,7 +105,7 @@ export async function recordSpentNonce(
   path: string,
   transaction?: string,
 ): Promise<void> {
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.paymentNonce(nonce),
     JSON.stringify({ path, ...(transaction ? { transaction } : {}) }),
     { expirationTtl: NONCE_TTL_SECONDS },

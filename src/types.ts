@@ -202,7 +202,25 @@ export interface MenuItem {
   listed_week: string;
 }
 
-export type OrderStatus = "queued" | "completed";
+/**
+ * THE STATES AN ORDER IS EVER IN, as a value rather than only a type
+ * (2026-08-27).
+ *
+ * The union was type-only, so the OpenAPI contract had no way to
+ * enumerate it and a caller polling an order had to discover the
+ * states by observing them. Declared here as the array the type is
+ * derived FROM, so the contract and the code cannot name different
+ * sets — the enum in the spec is this array, not a copy of it.
+ */
+export const ORDER_STATUSES = ["queued", "completed"] as const;
+
+/**
+ * The states that end the job. A poller that does not know which
+ * states are terminal either stops early or never stops.
+ */
+export const TERMINAL_ORDER_STATUSES = ["completed"] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export interface OrderRecord {
   order_id: string;

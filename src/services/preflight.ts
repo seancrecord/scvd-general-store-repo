@@ -7,6 +7,7 @@ import { readPayTo } from "@/lib/pay-to";
 import { KNOWN_TESTNETS, l3bChecks } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE FREE ENDPOINT PREFLIGHT — /api/preflight.
@@ -98,6 +99,13 @@ export const PREFLIGHT_BATTERY = `preflight-${PREFLIGHT_VERSION}`;
  * what counts.
  */
 export const PREFLIGHT_VERSION_NEXT = "v2";
+
+/**
+ * v2's citable name, DERIVED like v1's rather than typed. A citation
+ * that can drift from the version it names is the defect 2.5 fixes;
+ * it would be a poor joke to reintroduce it in the fix.
+ */
+export const PREFLIGHT_BATTERY_NEXT = `preflight-${PREFLIGHT_VERSION_NEXT}`;
 
 /** Every battery currently served. Ordered oldest first. */
 export const PREFLIGHT_VERSIONS = [
@@ -320,7 +328,7 @@ async function takeGlobalProbeBudget(env: Env): Promise<BudgetState> {
       reset,
     };
   }
-  await env.COUNTERS.put(key, String(used + 1), { expirationTtl: 120 });
+  await kvPut(env.COUNTERS, key, String(used + 1), { expirationTtl: 120 });
   return {
     allowed: true,
     limit: GLOBAL_PROBES_PER_MINUTE,

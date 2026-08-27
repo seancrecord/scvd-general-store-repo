@@ -373,7 +373,16 @@ export async function runMcpPayment(
     );
   }
   if (nonce) {
-    await recordSpentNonce(env, nonce, path);
+    /*
+     * THE TRANSACTION RIDES THE ROW, same as the HTTP door — the link
+     * the paid retry stands on (nonce -> settle -> delivery intent).
+     * This lane recorded the nonce bare until 2026-08-27: spent, with
+     * no way to say WHAT spent it, which is the class the vocabulary
+     * registers as nonce-unbound-from-settlement. CV found it live;
+     * SolomonisBlack named it. Third fix-that-looks-shared-and-isn't
+     * this month, and the spec now pins both doors together.
+     */
+    await recordSpentNonce(env, nonce, path, settlement.transaction);
   }
 
   const minimumUsdc = minimumUsdcQuoted;

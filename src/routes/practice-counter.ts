@@ -9,6 +9,7 @@ import {
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { tillShelfHtml } from "@/lib/till-shelf";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import {
   CHEAP_DOOR_ITEM_IDS,
@@ -215,9 +216,34 @@ practiceCounterRoutes.get("/try", (c) => {
      * who is already stuck; reference follows doors, and the JSON has
      * always had this right — cheapest_settlement is its third key.
      */
+    /**
+     * THE TILL, ON THE PAGE THAT ALREADY PROMISED ONE (house rule 53,
+     * 2026-08-26). This room's own copy says "practice on us, the till
+     * is real", and until today what it actually served a person in a
+     * browser was a set of instructions for writing an HTTP client.
+     *
+     * Only the no-parameter items get a button. `settlement_attestation`
+     * needs a transaction hash and `context_anchor` needs a summary;
+     * the till renders a labelled input for each required field rather
+     * than hiding those items, so the shelf a browser can buy is the
+     * same shelf the page prints rather than a quieter subset of it.
+     */
+    const tillHtml = tillShelfHtml(
+      shelf
+        .map((row) => MENU_ITEMS.find((item) => item.id === row.id))
+        .filter((item): item is NonNullable<typeof item> => item !== undefined),
+      {
+        heading: "Buy one from this browser",
+        standfirst:
+          "Your wallet signs an EIP-3009 authorization; the store verifies it, settles, and hands back a signed certificate. Same door, same code path, same money as the three steps above — this button is the client you were about to write.",
+        verifyHint: `${base}/api/verify/{cert_id}`,
+      },
+    );
+
     return c.html(
       renderSimplePage({
         title: COPY.title,
+        inertHtml: tillHtml,
         description:
           `Practice your x402 client against a real till. No sandbox and no test mode: the cheapest item is ${CHEAPEST_ON_THE_SHELF}, every purchase signs its own receipt.`,
         path: "/try",

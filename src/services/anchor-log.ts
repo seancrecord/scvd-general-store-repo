@@ -4,6 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { RETIRED_KEYS, retiredKeysFor } from "@/store/key-registry";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE ANCHOR LOG — an append-only hash chain over this store's key
@@ -203,7 +204,7 @@ export async function appendAnchor(
     snapshot,
     digest: await digestOf(snapshot),
   };
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     anchorKey(snapshot.sequence),
     JSON.stringify(record),
   );
@@ -215,7 +216,7 @@ export async function saveAnchor(
   env: Env,
   record: AnchorRecord,
 ): Promise<void> {
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     anchorKey(record.snapshot.sequence),
     JSON.stringify(record),
   );

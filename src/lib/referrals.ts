@@ -3,6 +3,7 @@ import { bulkGetText } from "@/lib/kv-bulk";
 import { isHouseWallet } from "@/lib/channel";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a referral counters scan. An unnamed cap is a silent one. */
 const REFERRAL_KEY_CAP = 1000;
@@ -98,7 +99,7 @@ export async function recordReferral(
   }
   const key = KV_KEYS.metric(month, `ref${stage === "settled" ? "s" : "a"}`, String(marker));
   const current = await env.COUNTERS.get(key);
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     key,
     String((current ? Number.parseInt(current, 10) : 0) + 1),
   );

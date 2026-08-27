@@ -3,10 +3,17 @@ import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
 import { freshness } from "@/lib/freshness";
 import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
 import {
+  fulfillmentLine,
+  priceLine,
   renderItemMarkdown,
   renderMenuMarkdown,
 } from "@/services/menu-markdown";
 import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept";
+import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { escapeHtml } from "@/lib/sanitize";
+import { jsonLdScript } from "@/lib/jsonld";
+import { tillShelfHtml } from "@/lib/till-shelf";
+import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
 import { CAPABILITY_QUERY, USE_WHEN } from "@/store/spec";
 import { shutterState } from "@/services/shutter";
@@ -259,6 +266,195 @@ catalogRoutes.get("/menu.json", async (c) => {
   });
 });
 
+/**
+ * ONE ITEM, AS A PAPER PAGE — the same facts the JSON carries, in the
+ * storefront's hand, with a till on the end of it.
+ *
+ * Everything here is derived from the item: the price, the fulfilment
+ * line, the required inputs, the house rules attached to it and the
+ * sentence the 402 itself would print. Nothing is written twice, so a
+ * price that moves on the menu moves here, on the JSON, in the 402 and
+ * in the button, in one edit.
+ */
+/**
+ * SCHEMA.ORG Service, ON THE PAGES THAT ARE ACTUALLY THE SERVICES.
+ *
+ * The storefront has carried Product and Offer nodes for the whole
+ * shelf for weeks, and /what has carried FAQPage. What had no
+ * structured data at all was the ITEM PAGE — every one of them in the
+ * sitemap, each the canonical URL its own Offer already points at,
+ * and until today not even a page a browser could render. A crawler
+ * following that offer landed somewhere with nothing to read.
+ *
+ * Service rather than Product, because that is what these are: the
+ * store performs an observation, signs an artifact, or a person does
+ * a piece of work. Nothing ships.
+ *
+ * WHAT IS DELIBERATELY ABSENT, and this is the important half:
+ * aggregateRating and review. This store has no ratings — no stars,
+ * no review count, nothing anybody has submitted — and emitting the
+ * markup for them would be inventing exactly the kind of claim
+ * /corrections exists to record. It is also the single most tempting
+ * field in this vocabulary, which is why it is named here rather than
+ * merely left out: an absence with no reason beside it is an absence
+ * somebody helpfully fills in later.
+ */
+function itemServiceJsonLd(
+  item: MenuItem,
+  base: string,
+  state: FulfillmentState,
+): string {
+  /*
+   * Availability derived from the live shelf rather than asserted.
+   * A stocked item at zero is out of stock and says so; a human-labour
+   * item behind a closed shutter is refused at the door, so claiming
+   * it is available would be an advertisement the till would decline.
+   */
+  const availability =
+    (state.class === "stocked" && (state.stock ?? 0) === 0) ||
+    (state.shutter === "closed" && state.class === "commission")
+      ? "https://schema.org/OutOfStock"
+      : item.fulfillment === "instant"
+        ? "https://schema.org/InStock"
+        : "https://schema.org/LimitedAvailability";
+
+  return jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: item.name,
+    description: item.description,
+    ...(CAPABILITY_QUERY[item.id]
+      ? { serviceType: CAPABILITY_QUERY[item.id] }
+      : {}),
+    url: `${base}/menu/${item.id}`,
+    provider: { "@type": "Organization", name: STORE_SERVICE_NAME, url: base },
+    termsOfService: `${base}/rights`,
+    offers: {
+      "@type": "Offer",
+      /*
+       * USDC, not USD. Every other Offer this store emits from the
+       * shelf says USDC too, because that is the asset the till takes
+       * — writing "USD" would be a validator-friendly claim to accept
+       * a currency we do not.
+       */
+      priceCurrency: "USDC",
+      ...(item.pricing === "fixed"
+        ? { price: String(item.price_usdc) }
+        : {
+            /*
+             * Pay-what-it-deserves is a FLOOR, and an Offer with a
+             * bare `price` on one would read as a fixed charge. The
+             * tiers above it are the buyer's choice and recorded as a
+             * tip; misstating that as the price is the same defect
+             * the paper page had on its first draft.
+             */
+            priceSpecification: {
+              "@type": "PriceSpecification",
+              minPrice: String(item.price_usdc),
+              priceCurrency: "USDC",
+            },
+          }),
+      availability,
+      url: `${base}/menu/${item.id}`,
+    },
+  });
+}
+
+function renderItemPage(
+  item: MenuItem,
+  base: string,
+  state: FulfillmentState,
+): string {
+  const required = (buyInputSchema(item).required ?? []).filter(
+    (name) => name !== "agent_name",
+  );
+  /*
+   * The price and the fulfilment line are the markdown dialect's own,
+   * imported rather than rephrased. The first draft of this page wrote
+   * both by hand and got the price wrong immediately — printing a
+   * pay-what-it-deserves MINIMUM as though it were a fixed price,
+   * which is the one fact on the page a buyer acts on.
+   */
+  const facts: Array<[string, string]> = [
+    ["Price", `${priceLine(item)} USDC`],
+    ["Fulfilment", fulfillmentLine(item)],
+    ["Item id", item.id],
+    ["Buy", `GET ${base}/api/buy/${item.id}`],
+    ...(required.length > 0
+      ? ([["Required inputs", required.join(", ")]] as Array<[string, string]>)
+      : []),
+    ...(item.weekly_inventory !== undefined
+      ? ([
+          ["Stock", `${item.weekly_inventory} a week; a waitlist opens when the shelf empties`],
+        ] as Array<[string, string]>)
+      : []),
+  ];
+  const factsHtml = facts
+    .map(
+      ([label, value]) => `<div class="menu-item">
+        <div class="menu-line">
+          <span class="menu-name">${escapeHtml(label)}</span>
+          <span class="menu-dots"></span>
+          <span class="menu-price"><code>${escapeHtml(value)}</code></span>
+        </div>
+      </div>`,
+    )
+    .join("\n");
+  const list = (lines: readonly string[]): string =>
+    lines
+      .map((line) => `<p class="menu-desc">${escapeHtml(line)}</p>`)
+      .join("\n");
+
+  return renderSimplePage({
+    title: item.name,
+    description: item.description,
+    path: `/menu/${item.id}`,
+    /**
+     * The till is offered on the item page whether or not the shutter
+     * is down, and the STORE decides — a closed shutter refuses at the
+     * door, with its own reason, which is a better answer than a
+     * button this page guessed should not exist. The state is printed
+     * beside it either way so nobody is surprised by the refusal.
+     */
+    inertHtml: tillShelfHtml([item], {
+      heading: "Buy it from this browser",
+      standfirst:
+        "Your wallet signs one EIP-3009 authorization; the store verifies it, settles, and answers with the goods and a signed certificate you can check afterwards for free, forever.",
+      verifyHint: `${base}/api/verify/{cert_id}`,
+    }),
+    bodyHtml: `<section>
+        <p class="menu-desc">${escapeHtml(item.description)}</p>
+        ${
+          state.shutter === "closed"
+            ? `<p class="menu-meta"><strong>The shutter is down right now.</strong> Purchases needing the keeper's hands are refused at the door until it opens; nothing is taken and nothing is queued.</p>`
+            : ""
+        }
+      </section>
+      <section>
+        <h2>The facts</h2>
+        ${factsHtml}
+        ${item.sample_url ? `<p class="menu-meta">A sample, free: <a href="${escapeHtml(item.sample_url)}"><code>${escapeHtml(item.sample_url)}</code></a></p>` : ""}
+      </section>
+      <section>
+        <h2>What the 402 says</h2>
+        <p class="menu-desc">${escapeHtml(item.note_402)}</p>
+        ${item.constraints?.length ? `<p class="menu-meta">House rules on this item: ${escapeHtml(item.constraints.join("; "))}.</p>` : ""}
+      </section>
+      <section>
+        <h2>Guaranteed</h2>
+        ${list(GUARANTEED)}
+        <h2>Not guaranteed</h2>
+        ${list(NOT_GUARANTEED)}
+      </section>
+      <section>
+        <h2>Checking it afterwards</h2>
+        <p class="menu-desc">Every purchase here ends in an ed25519-signed certificate with a permanent verify URL. That check is free, needs no account, and answers for anyone you show it to — not only for you.</p>
+        <p class="menu-meta">Verify: <code>${escapeHtml(`${base}/api/verify/{cert_id}`)}</code> \u2022 this item as JSON: <code>${escapeHtml(`${base}/menu/${item.id}`)}</code> with <code>Accept: application/json</code> \u2022 the whole shelf: <a href="/menu.json"><code>/menu.json</code></a></p>
+      </section>
+      ${itemServiceJsonLd(item, base, state)}`,
+  });
+}
+
 async function serveMenuItem(c: Context<HonoEnv>) {
   const base = c.env.STORE_BASE_URL;
   const itemId = (c.req.param("item_id") ?? "").replace(/\/+$/, "");
@@ -305,6 +501,38 @@ async function serveMenuItem(c: Context<HonoEnv>) {
   const shutter: ShutterState = await shutterState(c.env).catch(() => ({
     closed: false,
   }));
+
+  /**
+   * A PAPER PAGE FOR A PERSON, AT THE URL THE SITEMAP ALREADY LISTS
+   * (2026-08-26, house rule 53).
+   *
+   * These item pages served JSON to everyone, browsers included — so a
+   * human who followed a link to /menu/hello got a wall of raw JSON,
+   * and had no way to buy the thing it described. That is the same
+   * finding as the one that produced rule 53, one aisle over: the door
+   * existed, buyers arrived at it, and there was no till.
+   *
+   * Content-negotiated exactly like every other room in this store:
+   * markdown when the Accept header asks for it, HTML for a browser,
+   * JSON for everything else. An agent's request is byte-for-byte what
+   * it was: a wildcard Accept and a bare fetch both still get JSON,
+   * because `wantsHtml` requires the caller to have literally asked
+   * for text/html by name.
+   */
+  /*
+   * COMPUTED ONCE, FOR BOTH DIALECTS. The JSON has always carried
+   * fulfillment_state; the paper page needs the same fact to say
+   * whether the thing is actually available, and the structured data
+   * needs it to say so to a crawler. Two readings of the shelf, one
+   * for each dialect, would be two answers to one question.
+   */
+  const state = await fulfillmentState(c.env, item, shutter);
+
+  if (wantsHtml(c.req.header("Accept"))) {
+    c.header("Link", canonical.Link);
+    return c.html(renderItemPage(item, base, state));
+  }
+
   c.header("Link", canonical.Link);
   return c.json({
     ...item,
@@ -314,7 +542,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     spec: listingSpec(item, base),
     guaranteed: GUARANTEED,
     not_guaranteed: NOT_GUARANTEED,
-    fulfillment_state: await fulfillmentState(c.env, item, shutter),
+    fulfillment_state: state,
     ...(item.sample_url ? { sample_url: `${base}${item.sample_url}` } : {}),
     // Only the anchor carries this: guidance derived from handing one
     // cold to a reader with no other context, and publishing what it
@@ -326,6 +554,79 @@ async function serveMenuItem(c: Context<HonoEnv>) {
       "This same URL serves markdown when the Accept header prefers text/markdown.",
   });
 }
+
+/**
+ * GET /menu — the shelf index, for a person (2026-08-27, the keeper's
+ * call: "my vote is index page").
+ *
+ * THE GAP THIS CLOSES. The item pages became real HTML in the till
+ * work, so the store had ~25 browsable product pages and no browsable
+ * parent: a reader who landed on /menu/hello had nothing to climb
+ * back to, and /menu itself — a URL people guess — answered 404. It
+ * was also the one area file of five whose room served no page, which
+ * forced LlmsArea.page to be optional and the index to explain the
+ * absence.
+ *
+ * NOT A SECOND STOREFRONT. The front of the store sells; this lists.
+ * Names, prices and fulfilment come from the same MENU_ITEMS,
+ * priceLine and fulfillmentLine every other surface reads, so nothing
+ * here can drift from the till.
+ *
+ * NO TILL ON THE INDEX, and the reason written per rule 53: every row
+ * links to the item's own page, which carries one. Twenty-five
+ * pay-buttons and their required-input fields on one page is not a
+ * till, it is a wall — the door a buyer arrives at to BUY is the item
+ * page, one click away, and the reason is now on the record rather
+ * than implied.
+ *
+ * A MACHINE CALLER IS REDIRECTED, NOT DUPLICATED FOR. The catalog
+ * already has its machine shape at /menu.json; serving the same JSON
+ * at a second path would be a second surface to keep honest. A bare
+ * fetch gets a 301 to the real one, which is what conventional.ts
+ * already does for every other guessed URL.
+ */
+function renderMenuIndex(base: string): string {
+  const rows = MENU_ITEMS.map(
+    (item) => `<div class="menu-item">
+      <div class="menu-line">
+        <span class="menu-name"><a href="/menu/${escapeHtml(item.id)}">${escapeHtml(item.name)}</a></span>
+        <span class="menu-dots"></span>
+        <span class="menu-price">${escapeHtml(priceLine(item))}</span>
+      </div>
+      <p class="menu-desc">${escapeHtml(item.description)}</p>
+      <p class="menu-meta">${escapeHtml(fulfillmentLine(item))} \u2022 <code>GET /api/buy/${escapeHtml(item.id)}</code></p>
+    </div>`,
+  ).join("\n");
+
+  return renderSimplePage({
+    title: "The Shelf",
+    description:
+      "Every item this store sells, with its price, how it is fulfilled, and a link to its own page — where the browser till is.",
+    path: "/menu",
+    bodyHtml: `<section>
+        <p class="menu-desc">Everything on the shelf, one line each. Each item's own page carries the full listing — what is guaranteed, what is not, the exact 402 it answers with — and a till: with an EVM wallet in your browser you can buy it right there.</p>
+      </section>
+      <section>
+        <h2>The items</h2>
+        ${rows}
+      </section>
+      <section>
+        <h2>For machines</h2>
+        <p class="menu-meta">The same shelf, machine-readable: <a href="/menu.json"><code>/menu.json</code></a> (markdown by Accept) \u2022 this area's guide: <a href="/menu/llms.txt"><code>/menu/llms.txt</code></a> \u2022 the whole store: <a href="/llms.txt"><code>/llms.txt</code></a></p>
+      </section>`,
+  });
+}
+
+function serveMenuIndex(c: Context<HonoEnv>) {
+  varyOnAccept(c);
+  if (wantsHtml(c.req.header("Accept"))) {
+    return c.html(renderMenuIndex(c.env.STORE_BASE_URL));
+  }
+  return c.redirect(`${c.env.STORE_BASE_URL}/menu.json`, 301);
+}
+
+catalogRoutes.get("/menu", serveMenuIndex);
+catalogRoutes.get("/menu/", serveMenuIndex);
 
 catalogRoutes.get("/menu/:item_id", serveMenuItem);
 catalogRoutes.get("/menu/:item_id/", serveMenuItem);

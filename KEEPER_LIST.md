@@ -140,7 +140,7 @@ on its own face — the keeper's idea and the best one in the stretch,
 an instrument printing the standard it is held to — and it carries
 THE KEEPER'S OWN LINE, inked 08-27 after two struck sets:
 **"You know your own risk better than we do."** The only line of three
-sets that does rule 53's work instead of narrating it: it hands the
+sets that does rule 54's work instead of narrating it: it hands the
 decision back rather than describing our limits. ⚑ The rest of the
 drawer is still draft (the mechanism rotates, so one line is a start
 and not a drawer) — candidates in §8.5a, rule 7 stands.

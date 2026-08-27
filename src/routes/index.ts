@@ -18,6 +18,7 @@ export { mcpRoutes } from "@/routes/mcp";
 export { phantomRoutes } from "@/routes/phantom";
 export { porchRoutes } from "@/routes/porch";
 export { practiceCounterRoutes } from "@/routes/practice-counter";
+export { tillRoutes } from "@/routes/till";
 export { houseLedgerRoutes } from "@/routes/house-ledger";
 export { neighboursRoutes } from "@/routes/neighbours";
 export { correctionsRoutes } from "@/routes/corrections";

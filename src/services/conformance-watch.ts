@@ -6,6 +6,7 @@ import { REFUSED_CHECK } from "@/services/standing-watch";
 import { sweepWatches } from "@/services/watch-sweep";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE CONFORMANCE WATCH — the Night Watch's shape pointed at
@@ -114,7 +115,7 @@ export async function startConformanceWatch(
     ...(payer ? { payer: payer.toLowerCase() } : {}),
     passes: [],
   };
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.conformanceWatch(record.watch_id),
     JSON.stringify(record),
   );

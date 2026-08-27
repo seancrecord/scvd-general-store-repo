@@ -11,6 +11,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { newEntryId } from "@/lib/ids";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE STATEMENT (keeper-approved backlog, 2026-08-19; second build) —
@@ -263,7 +264,7 @@ export async function storeWalletStatement(
     cert_id: certId,
     created_at: new Date().toISOString(),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.walletStatement(statement.statement_id),
     JSON.stringify(record),
   );

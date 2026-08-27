@@ -5,6 +5,7 @@ import { signMessage } from "@/lib/signing";
 import { issueStamp } from "@/services/stamps";
 import { setTipStatus } from "@/services/tips";
 import type { Env, GazetteIssue, TipRecord } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a issues scan. Named because an unnamed cap is a silent one. */
 const ISSUE_CAP = 500;
@@ -82,11 +83,11 @@ export async function publishIssue(
     await setTipStatus(env, tip.id, "published");
   }
 
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.gazetteIssue(issueNumber),
     JSON.stringify(issue),
   );
-  await env.COUNTERS.put(KV_KEYS.gazetteIssueCount, String(issueNumber));
+  await kvPut(env.COUNTERS, KV_KEYS.gazetteIssueCount, String(issueNumber));
   return issue;
 }
 

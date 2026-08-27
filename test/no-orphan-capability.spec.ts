@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { LLMS_AREAS } from "@/routes/llms";
 import { app } from "@/index";
 
 /**
@@ -66,6 +67,10 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/badges/stamps":
     "badge_url rides the stamp-minting response; a badge URL with no stamp behind it is a 404",
 
+  // ---- a browser asset, not a capability ----
+  "/till.js":
+    "the browser till (house rule 53): a page asset a browser fetches from the <script> tag on /try and the item pages, never a door an agent calls. An agent buying here uses /api/buy/{item_id} or MCP, which are both listed; naming a JavaScript file on an agent surface would advertise a capability agents cannot use and would not want",
+
   // ---- the porch toy ----
   "/api/treat":
     "free, unmetered, named in prose on /porch where its audience actually is; the paid surfaces list paid capabilities",
@@ -97,8 +102,35 @@ function publicProbes(): Map<string, string[]> {
 
 async function discoveryHaystack(): Promise<string> {
   const surfaces: string[] = [];
+  /*
+   * LLMS.TXT IS NOW A SET OF FILES, NOT ONE FILE (2026-08-27).
+   *
+   * The guide was 90kB against a 30,000-character convention, so it
+   * was split: /llms.txt is an index and each product area carries its
+   * own llms.txt with that area's sections whole. Nothing was deleted
+   * and no prose moved into a second copy — the area files are views
+   * over the same rendered document, and /llms-full.txt still serves
+   * all of it byte for byte.
+   *
+   * The surface this guard reads therefore has to be the SET. Ten
+   * doors were named only in sections that now live in an area file,
+   * and they are no less published than they were yesterday.
+   *
+   * WHAT THIS COSTS, STATED RATHER THAN GLOSSED: a door named only in
+   * an area file is one hop further away than a door named in the
+   * index. The index links every area file and /llms-full.txt still
+   * carries everything, so nothing is unreachable — but "an agent
+   * reads llms.txt and sees the door" is now "an agent reads llms.txt,
+   * follows one link, and sees the door" for those ten. That is a real
+   * weakening of the property this file asserts, and it belongs here
+   * rather than in nobody's memory.
+   */
+  const areaFiles = LLMS_AREAS.map(
+    (area) => `https://scvd.store${area.path}/llms.txt`,
+  );
   for (const url of [
     "https://scvd.store/llms.txt",
+    ...areaFiles,
     "https://scvd.store/openapi.json",
     "https://scvd.store/.well-known/x402.json",
     "https://scvd.store/skill.md",
@@ -117,6 +149,26 @@ describe("every public door is on a surface an agent reads, or says why not", ()
     const haystack = await discoveryHaystack();
     const unaccounted: string[] = [];
     for (const [probe, routes] of publicProbes()) {
+      /*
+       * THIS CHECK'S OWN BLIND SPOT, WRITTEN DOWN RATHER THAN LEFT TO
+       * BE REDISCOVERED (rule 52, 2026-08-26).
+       *
+       * The match is plain substring containment, so a probe that is a
+       * SUFFIX of a longer listed path passes without being listed
+       * itself: `/index.md` was accounted for by the presence of
+       * `/okf/index.md` on the day it shipped, and nobody would have
+       * known. It is now genuinely listed on llms.txt, so the pass is
+       * real — but the mechanism that hid it is still here.
+       *
+       * Left as containment on purpose for now: tightening it to a
+       * boundary match changes the verdict for every route at once,
+       * which is a separate change with its own blast radius and
+       * wants its own pass. The floor this guard establishes is
+       * therefore "no route is unlisted AND unlike anything listed",
+       * which is weaker than the sentence in the failure message. A
+       * reader deciding how much to trust a green run should read
+       * this paragraph, not that sentence.
+       */
       if (haystack.includes(probe)) continue;
       if (probe in DELIBERATELY_QUIET) continue;
       unaccounted.push(...routes.map((key) => `${key}  (probe: ${probe})`));

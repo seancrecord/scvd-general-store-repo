@@ -117,7 +117,17 @@ describe("the sitemap itself", () => {
  */
 describe("a room is published on every surface, or it is not published", () => {
   it("is named in llms.txt", async () => {
-    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    /*
+     * THE COMPLETE GUIDE, since the 2026-08-27 split. /llms.txt is now
+     * an index — 14kB against a 30,000-character convention — and the
+     * depth lives in five per-area files it links. Every room is still
+     * named in the guide; /llms-full.txt is where the guide is served
+     * whole, which is what this assertion was always about.
+     *
+     * That the split loses no section, and duplicates none, is held by
+     * test/llms-modular.spec.ts rather than assumed here.
+     */
+    const text = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     for (const room of ROOMS) {
       expect(text, `llms.txt never mentions ${room.path}`).toContain(room.path);
     }
@@ -353,7 +363,7 @@ describe("the dispute question, in the evaluator's vocabulary", () => {
 
 describe("llms.txt, the map agents actually read", () => {
   it("names the rooms that exist now", async () => {
-    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    const text = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     for (const path of ["/neighbours", "/visitors", "/stack", "/corrections"]) {
       expect(text, `llms.txt never mentions ${path}`).toContain(path);
     }
@@ -365,7 +375,7 @@ describe("llms.txt, the map agents actually read", () => {
     // earlier, which had said "twenty-one items" against a shelf of
     // twenty-three. llms.txt said "five of them" about a corrections
     // record that now holds six.
-    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    const text = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     expect(text).not.toMatch(
       /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty[- ]\w+)\s+(of them|items|corrections|entries|goods)\b/i,
     );

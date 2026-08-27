@@ -10,6 +10,7 @@ import {
 } from "@/lib/sanitize";
 import { verifyMessageSignature } from "@/lib/signing";
 import type { Env, GuestbookEntry } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a guestbook keys scan. An unnamed cap is a silent one. */
 const GUESTBOOK_SCAN_CAP = 1000;
@@ -97,7 +98,7 @@ export async function signGuestbook(
     entry.identity_verified = true;
   }
   const key = KV_KEYS.guestbookEntry(invertedTimestamp(Date.now()), entry.id);
-  await env.GUESTBOOK.put(key, JSON.stringify(entry));
+  await kvPut(env.GUESTBOOK, key, JSON.stringify(entry));
   return { ok: true, result: { entry, key } };
 }
 
@@ -105,11 +106,55 @@ export interface ListedEntry extends GuestbookEntry {
   kv_key: string;
 }
 
+/**
+ * A PAGE OF THE REGISTER, AND WHERE THE NEXT ONE STARTS (2026-08-27).
+ *
+ * The guestbook is the one list here that genuinely has no end: every
+ * visitor may sign, and nobody ever unsigns. It was served as the
+ * first 25 entries with no way to ask for the twenty-sixth and no
+ * statement that there were more — a bounded read published as though
+ * it were the register.
+ *
+ * `entries` is what this page holds; `cursor` is where the next one
+ * begins, present only when there is a next one. Callers that want the
+ * old behaviour pass no cursor and ignore the new field, which is what
+ * the storefront does: three slips on a wall is a wall, not a page.
+ */
+export interface GuestbookPage {
+  entries: ListedEntry[];
+  /** Opaque, from KV. Absent when this page is the end of the register. */
+  cursor?: string;
+  /** True when entries were left unread beyond this page's cap. */
+  truncated: boolean;
+}
+
+export async function listGuestbookPage(
+  env: Env,
+  limit: number,
+  cursor?: string,
+): Promise<GuestbookPage> {
+  const page = await listGuestbookKeys(env, limit, cursor);
+  return page;
+}
+
+/** The original shape, for the callers that only ever wanted a handful. */
 export async function listGuestbook(
   env: Env,
   limit: number,
 ): Promise<ListedEntry[]> {
-  const listed = await listKeys(env.GUESTBOOK, { prefix: KV_KEYS.guestbookPrefix, cap: limit });
+  return (await listGuestbookKeys(env, limit)).entries;
+}
+
+async function listGuestbookKeys(
+  env: Env,
+  limit: number,
+  cursor?: string,
+): Promise<GuestbookPage> {
+  const listed = await listKeys(env.GUESTBOOK, {
+    prefix: KV_KEYS.guestbookPrefix,
+    cap: limit,
+    ...(cursor ? { cursor } : {}),
+  });
   const values = await bulkGetJson<GuestbookEntry>(
     env.GUESTBOOK,
     listed.names,
@@ -134,7 +179,11 @@ export async function listGuestbook(
       });
     }
   }
-  return entries;
+  return {
+    entries,
+    truncated: listed.truncated,
+    ...(listed.cursor ? { cursor: listed.cursor } : {}),
+  };
 }
 
 export async function deleteGuestbookEntry(

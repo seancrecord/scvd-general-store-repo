@@ -3,6 +3,7 @@ import type { Cadence } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bellLine, VOICE } from "@/store";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * The bell, rung from any door. HTTP or MCP, same bell. One ring per
@@ -36,7 +37,7 @@ export async function ringBell(env: Env, who: string): Promise<BellResult> {
     };
   }
   const count = currentCount + 1;
-  await env.COUNTERS.put(KV_KEYS.bellCount, String(count));
-  await env.COUNTERS.put(ringKey, "1", { expirationTtl: DAY_SECONDS });
+  await kvPut(env.COUNTERS, KV_KEYS.bellCount, String(count));
+  await kvPut(env.COUNTERS, ringKey, "1", { expirationTtl: DAY_SECONDS });
   return { message: bellLine(count), count, ...(cadence ? { cadence } : {}) };
 }

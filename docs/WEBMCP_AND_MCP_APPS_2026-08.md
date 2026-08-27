@@ -700,7 +700,7 @@ through it.
   third door (§4.5, a card at the approval moment that renders and
   cannot act), or broad (the approval widget with a button). §4.3.
 - ~~**The refusal test is still open** as a *rule*.~~ **STRUCK
-  2026-08-27: it is `HOUSE_RULES.md` rule 53, drafted and awaiting
+  2026-08-27: it is `HOUSE_RULES.md` rule 54, drafted and awaiting
   the keeper's ink. See §8.5a.**
 - **The rule 4 check on §5.2** — publishing our own capability
   absence: counted coverage gap, or preemptive denial?
@@ -860,7 +860,7 @@ nobody re-derives it:
 > ~~"Nothing here was decided. Something here was seen."~~ — same
 > defect, wearing a better coat.
 
-**THE CORRECTED CONSTRAINT** (now in rule 53): the line never comments
+**THE CORRECTED CONSTRAINT** (now in rule 54): the line never comments
 on the SUBJECT'S QUALITY. Everything else is open — the reader's day,
 the nature of a dated reading, the weather of working in this market.
 It is a fortune, in the drawer's voice, and a fortune addresses the
@@ -887,7 +887,7 @@ a draft:**
 
 > ### "You know your own risk better than we do."
 
-It is the only line in three sets that does rule 53's actual work
+It is the only line in three sets that does rule 54's actual work
 rather than describing it. The others all narrate the reading — its
 age, its limits, what we did not climb — and narration is still the
 card talking about itself. This one **hands the decision back**. It
@@ -944,7 +944,10 @@ at once, so a card screenshotted out of its host still tells a stranger
 where to go and check. Oak City stays store lore (rule 39), off the
 instrument.
 
-**AND IT BECAME A RULE.** `HOUSE_RULES.md` rule 53, drafted 2026-08-27
+**AND IT BECAME A RULE.** `HOUSE_RULES.md` rule 54 — drafted 2026-08-27
+as 53 and renumbered at the merge, because the till rule (a buyer who
+cannot pay is a design failure, 08-26) landed on main first and took
+the number a day ahead of us —
 and awaiting his ink: *every surface we render must make refusal easier
 than acceptance.* Rule 43 says what a verdict IS; 53 says what it must
 DO once drawn, because a record can be impeccable and its picture still
@@ -980,7 +983,7 @@ The spec requires a text fallback precisely because those are two
 different paths. By the time a card exists the tool call has already
 happened, so FAQ copy inside the card is invisible to the model that
 decides, visible to the human as clutter, and in direct competition
-with the unclimbed rungs for the attention rule 53 says they must win.
+with the unclimbed rungs for the attention rule 54 says they must win.
 **Layout attention is zero-sum; a card gets shorter under AEO pressure,
 not longer.**
 

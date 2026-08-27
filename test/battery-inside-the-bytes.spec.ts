@@ -1,6 +1,8 @@
 import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AUDIT_CRITERIA_VERSION } from "@/services/service-audit";
+import { CENSUS_BATTERY } from "@/services/ward-round";
+import { PREFLIGHT_BATTERY } from "@/services/preflight";
 import { LAUNCH_CHECK_BATTERY, performLaunchCheck } from "@/services/launch-check";
 import { canonicalizeProbe } from "@/services/standing-watch";
 import { probeHost } from "@/services/ward-round";
@@ -91,7 +93,19 @@ describe("the battery signs its own name", () => {
   it("ward rows name the battery that produced the verdict", async () => {
     stubDoor();
     const row = await probeHost(testEnv, "https://door.example/x");
-    expect(row.battery).toBe(AUDIT_CRITERIA_VERSION);
+    /*
+     * 2.5: the law is that each producer cites the battery IT
+     * applies — not that two producers cite the same string. This
+     * assertion read `AUDIT_CRITERIA_VERSION` while both happened to
+     * be v1, which quietly encoded a coincidence as a rule and hid a
+     * real divergence: the census has folded the rail read since
+     * 0.14 (a v2 rule) while the paid audit runs runChecks alone (v1),
+     * and both were citing v1. The census now cites v2 because it
+     * applies v2; the audit still cites v1 because it applies v1.
+     */
+    expect(row.battery).toBe(CENSUS_BATTERY);
+    expect(AUDIT_CRITERIA_VERSION).toBe(PREFLIGHT_BATTERY);
+    expect(CENSUS_BATTERY).not.toBe(AUDIT_CRITERIA_VERSION);
   });
 
   it("an unreachable door ran no battery, and the row says none", async () => {

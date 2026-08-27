@@ -21,6 +21,7 @@ import {
 } from "@/store/corpus-dataset";
 import { STOREFRONT_ROOMS } from "@/store/rooms";
 import { EXTERNAL_RECORDS, OPERATOR } from "@/store/trust-signals";
+import { ardInPageEntries, ardLinkTags } from "@/lib/ard-catalog";
 import type { StoreStats } from "@/services/stats";
 import { dareForDay } from "@/store/copy/the-dare";
 import { SPEC_RETURNS, SPEC_WHY_USE } from "@/store/spec";
@@ -622,7 +623,16 @@ export function renderStorefront(data: StorefrontData): string {
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/favicon.ico" sizes="32x32">
   <link rel="manifest" href="/site.webmanifest">
+  ${ardLinkTags(data.base ?? "https://scvd.store")}
   <script type="application/ld+json">${organizationJsonLd(data.base ?? "https://scvd.store", data.stats)}</script>
+  <!--
+    ARD ENTRIES AS IN-PAGE MARKUP (spec section 5.1, mechanism two).
+    The same entries the well-known manifest carries, each naming the
+    ARD base context because a crawler that found them here has not
+    been told what they are. Inert data, on the one page whose whole
+    job is saying what this origin offers.
+  -->
+  <script type="application/ld+json">${jsonLdBody(ardInPageEntries(data.base ?? "https://scvd.store"))}</script>
   <script type="application/ld+json">${webSiteJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${productListJsonLd(data.base ?? "https://scvd.store")}</script>
   <script type="application/ld+json">${corpusDatasetJsonLd(data.base ?? "https://scvd.store")}</script>

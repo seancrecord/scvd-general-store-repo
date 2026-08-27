@@ -162,7 +162,7 @@ COMMERCE & TRUST
     away promise-strength for nothing.
     The open question the first draft of this rule left — whether
     the refusal test becomes its own rule beside 43 — was answered
-    the same week: it is rule 53.
+    the same week: it is rule 54.
 18. Deliverables containing third-party text are labeled untrusted
     data; the store's own metadata contains zero imperative
     instructions aimed at reading agents.
@@ -527,7 +527,43 @@ LORE & TRADITION
     of it, and the file says so in those words.
 
 
-53. EVERY SURFACE WE RENDER MUST MAKE REFUSAL EASIER THAN
+53. A BUYER WHO CANNOT PAY IS A DESIGN FAILURE, NOT A SEGMENT WE
+    DON'T SERVE (2026-08-26, the keeper's ruling, from the finding
+    that nobody can buy anything here in a browser). The till must
+    reach the buyer where the buyer already is. An architectural
+    preference — API-first, agent-first, no-JavaScript — is a
+    reason to build one door FIRST. It is never a reason a person
+    holding a funded wallet cannot spend $0.004.
+
+    What prompted it: the whole site shipped with zero payment
+    code in the browser. The only JavaScript served was an
+    analytics beacon. /try — the page whose own copy says "Practice
+    on us. The till is real" — was a page of instructions telling
+    the reader to go and write an HTTP client. Every sale this
+    store has ever made required the buyer to write code or run an
+    MCP client. That was not a considered position; nobody decided
+    it. It was the shape left behind by building the agent door
+    first and never coming back.
+
+    So: when a door exists that buyers arrive at, it gets a till,
+    or the reason it does not is written down where the buyer can
+    read it. "Our API is excellent" is not that reason.
+
+    THE TWO THINGS THIS RULE DOES NOT OVERRIDE, and it is not close:
+
+    Money fails closed (AT_SCALE rule 7). A payment path that is
+    uncertain refuses. Reducing friction never means guessing on
+    somebody's behalf about money, and a browser till is the one
+    place a bug spends a real person's funds.
+
+    The store never asks anyone to run code, install anything, or
+    hand over credentials or key material. A wallet SIGNATURE
+    request is not that, and the distinction is exact: the wallet
+    signs and returns a signature; the key never leaves it. That
+    is bit-for-bit what every agent buying here already does. If
+    it were a violation, the entire product would be one.
+
+54. EVERY SURFACE WE RENDER MUST MAKE REFUSAL EASIER THAN
     ACCEPTANCE. (2026-08-27, from the MCP Apps card work in
     docs/WEBMCP_AND_MCP_APPS_2026-08.md §4.6 and §8.5a. The keeper
     asked for the house rule on the card itself; this is the rule
@@ -536,7 +572,7 @@ LORE & TRADITION
     Rule 43 says what a verdict IS — dated observation, never a
     score. This says what a verdict must DO once it is drawn. The
     two are the same conviction at different distances: 43 governs
-    the record, 53 governs every rendering of it, because a record
+    the record, 54 governs every rendering of it, because a record
     can be impeccable and its picture still argue for a yes.
 
     THE TEST IS ONE QUESTION, ASKED OF THE FINISHED PICTURE, NOT OF

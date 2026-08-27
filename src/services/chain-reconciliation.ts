@@ -10,7 +10,7 @@ import {
 import type { EvmChain } from "@/lib/base-rpc";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
-import { kvGet, kvGetJson } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import { listPayers, metricsMonth } from "@/lib/metrics";
@@ -202,7 +202,7 @@ async function bankInflow(
     if (amount <= 0) return;
     const key = KV_KEYS.metric(month, kind, chain);
     const current = await kvGet(env.COUNTERS, key);
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       key,
       String((current ? parseInt(current, 10) : 0) + amount),
     );
@@ -210,7 +210,7 @@ async function bankInflow(
   await add("inflow", totals.microUsdc);
   await add("inflowdust", totals.dustMicroUsdc);
   if (!(await kvGet(env.COUNTERS, KV_KEYS.inflowMeterStart(chain)))) {
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       KV_KEYS.inflowMeterStart(chain),
       new Date().toISOString(),
     );
@@ -308,7 +308,7 @@ async function recordSkippedRange(
   }
   record.total_ranges += 1;
   record.total_blocks += skipped.blocks;
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.reconcileSkippedRanges,
     JSON.stringify(record),
   );
@@ -352,7 +352,7 @@ export async function recordDeliveredSettlement(
 ): Promise<void> {
   const tx = transaction?.trim().toLowerCase();
   if (!tx) return;
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.settledDelivery(tx),
     new Date().toISOString(),
     { expirationTtl: SETTLED_DELIVERY_TTL_SECONDS },
@@ -724,7 +724,7 @@ export async function reconcileAgainstChain(
     });
   }
   await bankInflow(env, chain.key, inflow);
-  await env.COUNTERS.put(cursorKey, String(toBlock));
+  await kvPut(env.COUNTERS, cursorKey, String(toBlock));
 
   return {
     ran: true,
@@ -855,7 +855,7 @@ async function recordBaseWalkOutcome(
   result: ChainReconciliation,
   chain: EvmChain = BASE_EVM,
 ): Promise<void> {
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     chain.key === "polygon"
       ? POLYGON_RECONCILE_LAST_RESULT_KEY
       : BASE_RECONCILE_LAST_RESULT_KEY,
@@ -1074,7 +1074,7 @@ export async function reconcileSolanaAgainstChain(
   }
   if (accounts.length === 0) {
     // No USDC has ever arrived; there is genuinely nothing to walk.
-    await env.COUNTERS.put(SOLANA_RECONCILE_OK_KEY, new Date().toISOString());
+    await kvPut(env.COUNTERS, SOLANA_RECONCILE_OK_KEY, new Date().toISOString());
     return { ran: true, transfers_seen: 0, orphans: [] };
   }
 
@@ -1147,9 +1147,9 @@ export async function reconcileSolanaAgainstChain(
   // double-count what a failed one already read.
   await bankInflow(env, "solana", inflow);
   if (newestSignature) {
-    await env.COUNTERS.put(SOLANA_RECONCILE_CURSOR_KEY, newestSignature);
+    await kvPut(env.COUNTERS, SOLANA_RECONCILE_CURSOR_KEY, newestSignature);
   }
-  await env.COUNTERS.put(SOLANA_RECONCILE_OK_KEY, new Date().toISOString());
+  await kvPut(env.COUNTERS, SOLANA_RECONCILE_OK_KEY, new Date().toISOString());
   return {
     ran: true,
     transfers_seen: seen,
@@ -1171,7 +1171,7 @@ export async function runSolanaReconciliation(
   env: Env,
 ): Promise<ChainReconciliation> {
   const result = await reconcileSolanaAgainstChain(env);
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     SOLANA_RECONCILE_LAST_RESULT_KEY,
     JSON.stringify({
       ran: result.ran,

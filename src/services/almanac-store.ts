@@ -3,6 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import type { AlmanacEntry, Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE ALMANAC, WRITABLE FROM THE OFFICE.
@@ -243,7 +244,7 @@ export async function saveAlmanacEntry(
     return { refused: "That title makes no usable slug. Try words." };
   }
   const entry: AlmanacEntry = { slug, title, date, teaser, markdown };
-  await env.ORDERS.put(KV_KEYS.almanacEntry(slug), JSON.stringify(entry));
+  await kvPut(env.ORDERS, KV_KEYS.almanacEntry(slug), JSON.stringify(entry));
   return { saved: entry };
 }
 

@@ -17,6 +17,8 @@ import { performServiceAudit } from "@/services/service-audit";
 import { performSignatureAgentCard } from "@/services/bot-auth-card";
 import type { SignedSignatureAgentCard } from "@/services/bot-auth-card";
 import { performLaunchCheck } from "@/services/launch-check";
+import { readTransferClaim } from "@/services/attestation";
+import { evmChainOf } from "@/lib/base-rpc";
 import type { SignedLaunchCheck } from "@/services/launch-check";
 import {
   performWalletStatement,
@@ -309,7 +311,21 @@ export async function fulfillPurchase(
    */
   let launchCheck: SignedLaunchCheck | undefined;
   if (item.id === "launch_check") {
-    launchCheck = await performLaunchCheck(env, input.targetUrl ?? "");
+    launchCheck = await performLaunchCheck(env, input.targetUrl ?? "", {
+      /*
+       * 3.2: the paid walk gets the real chain reader, so a seller's
+       * claimed settlement hash is read on the rail we paid before it
+       * is signed into the row. Absent this seam the row would say
+       * `claimed` — honest, but the buyer paid for the look.
+       */
+      readClaim: (txHash, query, network) =>
+        readTransferClaim(
+          env,
+          txHash,
+          query,
+          evmChainOf(network) ?? undefined,
+        ),
+    });
     mintOptions.attests = launchCheck.evidence_hash;
   }
   /**

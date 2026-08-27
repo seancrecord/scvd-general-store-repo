@@ -8,6 +8,10 @@ import {
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import type { Env } from "@/types";
+import { readTransferClaim } from "@/services/attestation";
+import type { AttestationQuery, TransferClaimRead } from "@/services/attestation";
+import { evmChainOf } from "@/lib/base-rpc";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE LAUNCH CHECK — the walkabout productized for one endpoint
@@ -155,6 +159,34 @@ export interface LaunchCheckStage {
   detail: string;
 }
 
+export type TxHashStatus =
+  | "claimed"
+  | "confirmed_on_chain"
+  | "contradicted"
+  | "unverifiable_shape";
+
+export interface TxVerification {
+  /** What actually happened at the seam: receipt | not_attempted | failed | skipped_shape. */
+  read: "receipt" | "not_attempted" | "failed" | "skipped_shape";
+  /** CAIP-2 of the rail the walk paid on — the only chain asked. */
+  chain: string;
+  /** The attestation desk's own vocabulary, when a read happened. */
+  chain_status: string | null;
+  block_height: number | null;
+  confirmations: number | null;
+  observed_payer: string | null;
+  observed_recipient: string | null;
+  observed_amount_usdc: number | null;
+  read_at: string;
+  detail: string;
+}
+
+export type TransferClaimReader = (
+  txHash: string,
+  query: AttestationQuery,
+  network: string,
+) => Promise<TransferClaimRead>;
+
 export interface LaunchCheckObservation {
   check_id: string;
   /** The endpoint walked, exactly as the buyer named it. */
@@ -168,6 +200,35 @@ export interface LaunchCheckObservation {
   pay_to: string | null;
   /** From the seller's PAYMENT-RESPONSE header, when one came back. */
   tx_hash: string | null;
+  /**
+   * WHAT THE HASH IS, said inside the signed bytes (roadmap 3.2,
+   * ledger C2/I4). The walk verifies everything the seller says —
+   * schema, signature, replay — and then used to take the one thing
+   * the seller says about MONEY on faith: tx_hash rode into this
+   * signed row bare, sixty-four seller-chosen hex characters recorded
+   * as if this store had seen them on chain. Strict about our money,
+   * credulous about theirs — that asymmetry ends here.
+   *
+   *   claimed            — the seller said it; no chain read has
+   *                        confirmed it. The DEFAULT, including when
+   *                        the read misses (rule 52: a receipt not
+   *                        yet visible is not a receipt that does
+   *                        not exist) and when no reader stood at
+   *                        this seam.
+   *   confirmed_on_chain — a receipt on the rail we paid shows a
+   *                        USDC transfer from our field wallet to the
+   *                        payTo the door itself declared.
+   *   contradicted       — the receipt exists and shows no such
+   *                        transfer, or the transaction reverted.
+   *                        The hash does not evidence our payment.
+   *   unverifiable_shape — the identifier cannot name a transaction
+   *                        on the rail we paid; nothing to read.
+   *
+   * Null exactly when tx_hash is null.
+   */
+  tx_hash_status: TxHashStatus | null;
+  /** The read behind the status, absent when there was no hash. */
+  tx_verification?: TxVerification;
   /** The paying wallet, so the on-chain record is findable. */
   field_wallet: string | null;
   /**
@@ -384,6 +445,15 @@ export interface LaunchCheckOptions {
   fetch?: typeof fetch;
   signer?: FieldSigner;
   screen?: SanctionsScreen;
+  /**
+   * The chain reader for the seller's claimed tx, as a seam like the
+   * screen above. ABSENT means no read happens and the row honestly
+   * says `claimed` — the roadmap's "until read" label — so a caller
+   * that cannot reach a chain never fakes a verification. The paid
+   * production seam (fulfillment) passes the attestation desk's
+   * reader; specs pass fakes or nothing.
+   */
+  readClaim?: TransferClaimReader;
   now?: Date;
   /** Injectable for tests; defaults to crypto.getRandomValues. */
   randomNonce?: () => string;
@@ -456,6 +526,8 @@ export async function performLaunchCheck(
   let authorizationOutstandingUntil: number | null = null;
   let payTo: string | null = null;
   let txHash: string | null = null;
+  /** CAIP-2 of the rail the walk paid on, for the tx read. */
+  let paidNetwork: string | null = null;
 
   const signer =
     options.signer ??
@@ -631,6 +703,7 @@ export async function performLaunchCheck(
     }
     const price = amountUsd(chosen);
     payTo = chosen.payTo;
+    paidNetwork = chosen.network === "base" ? "eip155:8453" : (chosen.network ?? "eip155:8453");
     stages.push({
       stage: "terms",
       ok: true,
@@ -950,6 +1023,103 @@ export async function performLaunchCheck(
     }
   }
 
+  /*
+   * ROADMAP 3.2 — THE MONEY PATH, MADE SYMMETRIC. Everything above
+   * verified what the seller SAID; this verifies what the seller said
+   * about MONEY. One receipt read on the rail we paid, narrowed to
+   * the transfer this walk just made: our field wallet to the payTo
+   * the door itself declared. The status lands INSIDE the signed
+   * bytes, so a fabricated hash can never again be quoted out of this
+   * store's corpus as an unqualified settlement record.
+   */
+  let txHashStatus: TxHashStatus | null = null;
+  let txVerification: TxVerification | undefined;
+  if (txHash !== null) {
+    const network = paidNetwork ?? "eip155:8453";
+    const readAt = new Date().toISOString();
+    const base: Omit<TxVerification, "read" | "detail"> = {
+      chain: network,
+      chain_status: null,
+      block_height: null,
+      confirmations: null,
+      observed_payer: null,
+      observed_recipient: null,
+      observed_amount_usdc: null,
+      read_at: readAt,
+    };
+    if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+      /*
+       * Not a shape that can name a transaction on the rail we paid.
+       * Nothing to read — and worth saying out loud, because a door
+       * that answers an EVM settlement with a non-EVM identifier is
+       * handing its buyers a receipt they can never check.
+       */
+      txHashStatus = "unverifiable_shape";
+      txVerification = {
+        ...base,
+        read: "skipped_shape",
+        detail: `the PAYMENT-RESPONSE identifier is not a 32-byte hex transaction hash, so it cannot name a transaction on ${network}, the rail this walk paid. No read was attempted; there is nothing it could have read.`,
+      };
+    } else if (!options.readClaim || !signer) {
+      txHashStatus = "claimed";
+      txVerification = {
+        ...base,
+        read: "not_attempted",
+        detail: "no chain reader stood at this seam, so the hash is recorded as the seller's claim and nothing more. Anyone can finish the read: POST the hash to /api/attestation and compare.",
+      };
+    } else {
+      try {
+        const read = await options.readClaim(
+          txHash,
+          { txHash, payer: signer.address, recipient: payTo ?? undefined },
+          network,
+        );
+        const detailByStatus: Record<string, string> = {
+          SETTLED: `a receipt on ${network} shows a USDC transfer from this walk's field wallet to the payTo the door declared, ${read.confirmations ?? "?"} blocks deep. The claim is the fact.`,
+          PENDING_FINALITY: `a receipt on ${network} shows the transfer at ${read.confirmations ?? 0} confirmations — real, young. Depth is a property of when we looked, not of the transfer.`,
+          NOT_FOUND: `no receipt visible on ${network} at read time. A receipt not yet visible is not a receipt that does not exist (rule 52) — the read happened moments after settlement and RPC lag is real. The hash stays a claim; finish the read later at /api/attestation.`,
+          REVERTED: `the transaction is mined on ${network} and FAILED. No value moved. The seller answered a settlement with a hash where nothing settled.`,
+          INSUFFICIENT_MATCH: `the transaction is mined on ${network} but its logs show no USDC transfer from this walk's field wallet to the payTo the door declared. Whatever this hash records, it is not our payment reaching them.`,
+        };
+        const upgraded: TxHashStatus =
+          read.status === "SETTLED" || read.status === "PENDING_FINALITY"
+            ? "confirmed_on_chain"
+            : read.status === "NOT_FOUND"
+              ? "claimed"
+              : "contradicted";
+        txHashStatus = upgraded;
+        txVerification = {
+          ...base,
+          read: "receipt",
+          chain_status: read.status,
+          block_height: read.blockHeight,
+          confirmations: read.confirmations,
+          observed_payer: read.payer,
+          observed_recipient: read.recipient,
+          observed_amount_usdc: read.amountUsdc,
+          detail: detailByStatus[read.status] ?? `chain status ${read.status}.`,
+        };
+      } catch (error) {
+        /*
+         * An unreachable RPC is OUR gap, never their defect. The claim
+         * stays a claim; contradiction requires a receipt actually
+         * read.
+         */
+        txHashStatus = "claimed";
+        txVerification = {
+          ...base,
+          read: "failed",
+          detail: `the chain read did not complete (${String(error).slice(0, 200)}). This is a fact about our RPC path at this moment, not about the seller's hash, which stays recorded as their claim.`,
+        };
+      }
+    }
+    stages.push({
+      stage: "tx-verify",
+      ok: txHashStatus !== "contradicted" && txHashStatus !== "unverifiable_shape",
+      detail: txVerification.detail,
+    });
+  }
+
   const core = {
     check_id: `lcheck_${newEntryId()}`,
     url: targetUrl,
@@ -962,6 +1132,8 @@ export async function performLaunchCheck(
     replay_served: replayServed,
     authorization_outstanding_until: authorizationOutstandingUntil,
     tx_hash: txHash,
+    tx_hash_status: txHashStatus,
+    ...(txVerification ? { tx_verification: txVerification } : {}),
     field_wallet: signer?.address ?? null,
     ...(challengeEvidence ? { challenge_evidence: challengeEvidence } : {}),
     battery: LAUNCH_CHECK_BATTERY,
@@ -996,7 +1168,7 @@ export async function storeLaunchCheck(
     cert_id: certId,
     created_at: new Date().toISOString(),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.launchCheck(check.check_id),
     JSON.stringify(record),
   );

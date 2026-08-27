@@ -27,7 +27,7 @@ async function fetchLiveRow(): Promise<FetchedSelfRow> {
     SELF.fetch(`${ABOUT}/.well-known/x402.json`).then((r) => r.json()),
     SELF.fetch(`${ABOUT}/openapi.json`).then((r) => r.json()),
     SELF.fetch(`${ABOUT}/.well-known/a2a.json`).then((r) => r.json()),
-    SELF.fetch(`${ABOUT}/llms.txt`).then((r) => r.text()),
+    SELF.fetch(`${ABOUT}/llms-full.txt`).then((r) => r.text()),
     SELF.fetch(`${ABOUT}/skill.md`).then((r) => r.text()),
   ]);
   return {

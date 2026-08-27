@@ -4,6 +4,7 @@ import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, DIRECTORY_PATH, DIRECTORY_CONTENT_TYPE } from "@/lib/web-bot-auth";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE SIGNATURE-AGENT CARD — a dated, signed, third-party observation
@@ -391,7 +392,7 @@ export async function storeSignatureAgentCard(
     cert_id: certId,
     created_at: new Date().toISOString(),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.signatureAgentCard(card.card_id),
     JSON.stringify(record),
   );

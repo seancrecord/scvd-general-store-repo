@@ -1,11 +1,50 @@
 import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
+import { signerKidsFromChallenge } from "@/services/watch-evidence";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
-import { PREFLIGHT_BATTERY } from "@/services/preflight";
+import {
+  BATTERY_ADDS,
+  PREFLIGHT_BATTERY_NEXT,
+  PREFLIGHT_VERSION_NEXT,
+} from "@/services/preflight";
+
+/**
+ * WHICH BATTERY THE CENSUS ACTUALLY RUNS (2.5, 2026-08-26).
+ *
+ * Every row wrote `battery: "preflight-v1"` — the field that exists
+ * (1.3) to say which criteria produced the verdict. But since 0.14 on
+ * 2026-08-24 this round FOLDS the Solana rail read into its verdict,
+ * a v2 rule that v1 explicitly does not apply, ruled deliberately so
+ * the corpus would stop contradicting /api/preflight/v2 in public.
+ * Then 2.1c gave v2 the L3b consistency trio, which this round did
+ * not fold. The census matched NEITHER published battery: v1-cited,
+ * rail-folded like v2, trio-unfolded like v1 — and those rows ride
+ * verbatim into the hash-chained, Bitcoin-anchored corpus.
+ *
+ * 0.14's own comment named the stakes: an observatory that anchors a
+ * false verdict has published a durable lie with a proof of
+ * authorship attached. Here the LABEL was the lie, not the verdict.
+ *
+ * The fix finishes the decision 0.14 already made — this round must
+ * not contradict the published v2 verdict — by applying v2 in full
+ * and citing v2. Old rows keep their bytes; the correction is dated
+ * and public at /corrections.
+ */
+export const CENSUS_BATTERY = PREFLIGHT_BATTERY_NEXT;
+
+/**
+ * The check names this round can actually fail a door on. Exported so
+ * a test can hold the citation to account: every check the cited
+ * battery adds must appear here, or the row is citing criteria it
+ * does not apply — which is the whole defect above.
+ */
+export function censusFoldedCheckNames(): string[] {
+  return [...BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]];
+}
 import {
   captureWatchEvidence,
   type WatchEvidenceCapture,
@@ -13,6 +52,7 @@ import {
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE WARD ROUND — the weekly in-Worker census of the x402 discovery
@@ -122,6 +162,20 @@ export interface WardHostResult {
    * its exact original preimage, the standing-watch lesson.
    */
   evidence?: WatchEvidenceCapture;
+  /**
+   * 3.1 (ledger G3) — every did:web signer this door presented, read
+   * from the offers' JWS headers without verifying anything. An
+   * observation about what was shown, never a claim the signature is
+   * good. Present (possibly empty) on every answered door: a door
+   * with no signed offers and a door we did not look at are
+   * different facts. THIS IS THE ONE THAT CANNOT BE BACKFILLED — a
+   * key that rotated on Tuesday leaves no trace by Sunday, so the
+   * ecosystem's only key-rotation history exists only if it is
+   * written down at the moment of the knock.
+   */
+  signer_kids?: string[];
+  /** How long this door took to answer, in ms. Free; the probe timed itself anyway. */
+  latency_ms?: number;
   /**
    * WHICH BATTERY PRODUCED THE VERDICT (roadmap 1.3 / D6), riding
    * verbatim into the signed weekly snapshot like everything else on
@@ -487,6 +541,12 @@ export async function probeHost(
   url: string,
 ): Promise<Omit<WardHostResult, "host" | "url">> {
   try {
+    /*
+     * 3.1: the probe times itself. Not writing the number down was
+     * the one loss here that was pure carelessness — every other
+     * dimension at least had a reason.
+     */
+    const startedAt = Date.now();
     const response = await fetch(url, {
       method: "GET",
       redirect: "manual",
@@ -506,8 +566,9 @@ export async function probeHost(
      * unbounded allocation — and what it keeps is exactly what a
      * dispute needs: the challenge bytes and the body digest, signed.
      */
+    const latencyMs = Date.now() - startedAt;
     const evidence = await captureWatchEvidence(response);
-    const { checks, advisories, accepts } = runChecks(
+    const { checks, advisories, accepts, l3b } = runChecks(
       response,
       evidence.body_truncated,
     );
@@ -534,6 +595,19 @@ export async function probeHost(
     if (rail.check && !rail.check.ok) failed.push(rail.check.name);
     if (rail.advisory) advisoryNames.push(rail.advisory.name);
 
+    /*
+     * 2.5: the L3b consistency trio, folded because the citation says
+     * v2 and v2 folds it. A door whose payTo is an unresolvable name,
+     * whose amount carries a decimal point, or whose network is a
+     * testnet is not ready by any reading a buyer would accept — and
+     * until today this round called such doors ready and the free
+     * preflight called them not_ready, about the same door, on the
+     * same day, in public.
+     */
+    for (const check of l3b ?? []) {
+      if (!check.ok) failed.push(check.name);
+    }
+
     // The market desk keeps what this fetch already paid for.
     const offer = offerFacts(response);
     return {
@@ -542,7 +616,9 @@ export async function probeHost(
       advisories: advisoryNames,
       ...(offer ? { offer } : {}),
       evidence,
-      battery: PREFLIGHT_BATTERY,
+      signer_kids: signerKidsFromChallenge(evidence.challenge_bytes),
+      latency_ms: latencyMs,
+      battery: CENSUS_BATTERY,
     };
   } catch {
     return { verdict: "unreachable", failed: [], advisories: [] };
@@ -702,10 +778,10 @@ async function sealRound(
       previous_at: previous?.at ?? "",
     };
   }
-  await env.COUNTERS.put(KV_KEYS.wardRound(round.week), JSON.stringify(round));
-  await env.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
+  await kvPut(env.COUNTERS, KV_KEYS.wardRound(round.week), JSON.stringify(round));
+  await kvPut(env.COUNTERS, KV_KEYS.wardRoundLatest, JSON.stringify(round));
   if (previous && previous.week !== round.week) {
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       KV_KEYS.wardRoundPrevious,
       JSON.stringify(previous),
     );

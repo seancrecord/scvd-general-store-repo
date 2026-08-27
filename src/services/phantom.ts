@@ -5,6 +5,7 @@ import { newCheckId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { Env, PhantomCheckRecord } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a phantom checks scan. Named because an unnamed cap is a silent one. */
 const PHANTOM_CAP = 500;
@@ -32,7 +33,7 @@ export async function schedulePhantomCheck(
     due_at: new Date(now.getTime() + PROBE_DELAY_MS).toISOString(),
     status: "scheduled",
   };
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.phantomCheck(record.check_id),
     JSON.stringify(record),
   );
@@ -95,7 +96,7 @@ export async function observePhantomCheck(
   );
   observed.signature = signature;
   observed.public_key = publicKey;
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.phantomCheck(record.check_id),
     JSON.stringify(observed),
   );

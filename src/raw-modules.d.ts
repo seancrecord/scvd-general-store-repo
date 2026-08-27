@@ -31,3 +31,16 @@ interface ImportMeta {
     options: { query: string; import: string; eager: true },
   ): Record<string, string>;
 }
+
+/**
+ * till/till.js as a Text module. wrangler.jsonc declares the rule for
+ * exactly this one path; the browser till is served byte-for-byte as
+ * it sits in the repository, so it is bytes here rather than code.
+ * Scoped to the one file on purpose — a blanket "*.js" declaration
+ * would tell TypeScript that every JavaScript module in the tree is a
+ * string, which is false and would hide real errors.
+ */
+declare module "*/till/till.js" {
+  const contents: string;
+  export default contents;
+}

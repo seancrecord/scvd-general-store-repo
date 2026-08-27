@@ -3,6 +3,7 @@ import {
   OPERATED_BY,
   POSITION_PARAGRAPH,
 } from "@/store/copy/position";
+import { STANDARDS_POSTURE } from "@/store/standards";
 /**
  * THE TRUST LAYER, FOR MACHINE EYES ONLY.
  *
@@ -76,6 +77,35 @@ export interface ExternalRecord {
  * entry here is one the keeper confirmed by hand.
  */
 export const EXTERNAL_RECORDS: readonly ExternalRecord[] = [
+  {
+    /**
+     * THE SOURCE, AND THE ONE ENTRY THAT IS NOT A LISTING (added
+     * 2026-08-26). Every other record here is somebody else's index
+     * saying we exist. This is the code itself — the same repository
+     * the settlement path, the verifier, the CLI and the conformance
+     * desk already point strangers at from six other surfaces, and
+     * the only URL on this list where a reader can check a claim
+     * rather than check that a claim was filed.
+     *
+     * DERIVED, NOT RETYPED: `code_transparency.repository` is where
+     * this store already publishes its own address. A second copy of
+     * it in a trust document is a second thing to get wrong, and this
+     * is the document where a dead link does the most damage.
+     *
+     * Its absence was found from outside: a diligence scan looks for
+     * Wikipedia, Wikidata and GitHub in `sameAs` specifically, and
+     * scored this store nought for two while the repository sat
+     * public and linked from half the site. The other two stay off
+     * this list — we have no Wikipedia article and no Wikidata item,
+     * and a `sameAs` naming a page that does not exist is exactly the
+     * failure this array's own docblock forbids.
+     */
+    url: STANDARDS_POSTURE.code_transparency.repository,
+    registry: "GitHub (the store's own source)",
+    confirmed: "2026-08-26",
+    what_it_proves:
+      "That the code running this store is public and readable: the settlement path, the signing, the verifier, the CLI and every test that guards them. It proves nothing about the operator and it is not an endorsement or an audit — nobody has paid anyone to review it, which /trust says elsewhere in those words. What it does mean is that every claim made anywhere on this site has a file behind it somebody can go and read, which no directory entry can offer.",
+  },
   {
     url: "https://www.x402scan.com/server/9b04e1cc-ff46-4377-a533-fe7981aa1597",
     registry: "x402scan",
@@ -435,7 +465,8 @@ export const NOT_CLAIMED: readonly string[] = [
  */
 export const DATA_HANDLING = {
   cookies: "None. Not for sessions, not for analytics, not at all.",
-  client_side_tracking: "None. No scripts, no pixels, no beacons.",
+  client_side_tracking:
+    "None. No pixels, no beacons, no third-party script of any kind. One first-party script is served, /till.js, and only on pages that sell something: it asks a wallet for a signature so a person can buy in a browser at all. It reports nothing anywhere, stores nothing in the browser, and talks only to this origin — the source is in the public repository and is served byte-for-byte as it is written there, unminified, so the thing your browser runs is the thing you can read.",
   ip_addresses: "Not stored and not logged by this store.",
   accounts: "None exist. There is nothing to sign up for and no password to lose.",
   what_is_recorded:

@@ -7,6 +7,7 @@ import {
 } from "@/services/market";
 import { latestWardRound, type WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * STATE OF THE REGISTRY — the market desk's aggregates, made public
@@ -119,6 +120,6 @@ export async function publishRegistryWeek(env: Env): Promise<PublishResult> {
       pulse.weeks.splice(0, pulse.weeks.length - REGISTRY_WEEK_CAP);
     }
   }
-  await env.COUNTERS.put(KV_KEYS.registryPulse, JSON.stringify(pulse));
+  await kvPut(env.COUNTERS, KV_KEYS.registryPulse, JSON.stringify(pulse));
   return { ok: true, entry, weeks: pulse.weeks.length, replaced };
 }

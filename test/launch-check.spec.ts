@@ -183,6 +183,13 @@ describe("the walk engine, stage by stage", () => {
       "settle",
       "delivery",
       "replay",
+      /*
+       * 3.2: what the seller said about money gets its own stage. No
+       * reader stands at this spec's seam, so the stage records the
+       * hash as claimed — the label is the point; the read is the
+       * paid seam's job (see money-path-symmetry.spec.ts).
+       */
+      "tx-verify",
     ]);
     const delivery = check.stages.find((stage) => stage.stage === "delivery")!;
     expect(delivery.ok).toBe(true);

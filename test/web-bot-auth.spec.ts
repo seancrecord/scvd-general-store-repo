@@ -188,7 +188,25 @@ describe("the directory", () => {
     expect(response.headers.get("Content-Type")).toBe(DIRECTORY_CONTENT_TYPE);
     const body = (await response.json()) as { keys: Ed25519Jwk[] };
     const jwk = (await webBotAuthJwk(testEnv)) as Ed25519Jwk;
-    expect(body.keys).toEqual([jwk]);
+    /*
+     * THE KEY, PLUS THE LIFETIME THE DOCUMENT ADDS TO IT (2026-08-26).
+     *
+     * `webBotAuthJwk` returns the key MATERIAL — the three RFC 7638
+     * members and the thumbprint that names them — and it is cached
+     * per seed for the life of the isolate. `nbf` and `exp` are a
+     * property of the DOCUMENT rather than of the key: `exp` moves
+     * with the calendar, so freezing it into the cached material
+     * would serve a stale window for as long as the isolate lived.
+     *
+     * So the served entry is the material plus two numbers, and this
+     * asserts exactly that shape: every member of the key itself
+     * unchanged, and the two additions present. Their VALUES are
+     * pinned in test/mechanical-batch.spec.ts, against the constants
+     * they are derived from, which is where that assertion belongs.
+     */
+    expect(body.keys).toEqual([
+      { ...jwk, nbf: expect.any(Number), exp: expect.any(Number) },
+    ]);
   });
 
   it("proves possession: the directory response signs its own authority", async () => {

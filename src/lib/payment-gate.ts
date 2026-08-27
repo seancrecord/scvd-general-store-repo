@@ -739,7 +739,9 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
        * here.
        */
       await Promise.all([
-        recordChallengeIssued(c.env, c.req.path, gateSignals(c)),
+        recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
+          () => undefined,
+        ),
         recordPaymentDecline(
           c.env,
           c.req.path,
@@ -792,9 +794,23 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   if (result.type === "payment-error") {
     if (result.response.status === 402) {
-      // Challenge issued. The monthly gap between these and settlements
-      // is the budget-cap / abandonment signal (RUN1 instrumentation).
-      await recordChallengeIssued(c.env, c.req.path, gateSignals(c));
+      /*
+       * Challenge issued. The monthly gap between these and settlements
+       * is the budget-cap / abandonment signal (RUN1 instrumentation).
+       *
+       * CAUGHT, AS OF THE NIGHT OF 2026-08-27. Five worker_health pages,
+       * four doors, one cause: these counters are shared KV keys, KV
+       * allows one write per second per key, and this await had no
+       * catch — so a burst of price-checks turned the counter's 429
+       * into a 500 handed to a visitor who owed us nothing. The 402 is
+       * the product; the count is bookkeeping. bumpBy retries the blip,
+       * and what still fails is logged and dropped, never charged to
+       * the visitor. The uptime monitors polling these doors see the
+       * 402 they came for.
+       */
+      await recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
+        (error) => console.error("challenge count lost:", String(error)),
+      );
       // A marker that reached a priced door. Counted apart from one
       // that settled, because the gap between them is the signal.
       await recordReferralFor(c, "arrived").catch(() => undefined);
@@ -1265,7 +1281,20 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (till.payer) {
       settlementSignals.payer = till.payer;
     }
-    await recordSettlement(c.env, c.req.path, settlementSignals);
+    /*
+     * CAUGHT — this is the worst seat in the house for a throw. The
+     * money has MOVED (till.settled is set) and openDeliveryIntent has
+     * not run yet, so an uncaught counter 429 here would 500 a PAYING
+     * buyer and prevent the one row that makes the sale recoverable
+     * from ever being written: paid, undelivered, and invisible to the
+     * delivery audit all at once. A settle the books undercount is
+     * findable by the chain reconciliation, which reads Base rather
+     * than our writes; a buyer 500'd after paying is only findable by
+     * the buyer.
+     */
+    await recordSettlement(c.env, c.req.path, settlementSignals).catch(
+      (error) => console.error("settle count lost:", String(error)),
+    );
     await recordReferralFor(c, "settled", till.payer).catch(() => undefined);
     const payment: SettledPayment = {
       paidUsdc,

@@ -4,6 +4,7 @@ import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { newRequestId } from "@/lib/ids";
 import { sanitizeText } from "@/lib/sanitize";
 import type { CommissionRequest, Env, WaitlistEntry } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a failed-item counters scan. An unnamed cap is a silent one. */
 const FAILED_ITEM_CAP = 1000;
@@ -63,7 +64,7 @@ export async function recordCommission(
   if (suggestListing) {
     request.suggest_listing = suggestListing;
   }
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.commissionRequest(request.id),
     JSON.stringify(request),
   );
@@ -103,7 +104,7 @@ export async function joinWaitlist(
   if (callbackUrl) {
     entry.callback_url = callbackUrl;
   }
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.waitlist(itemId, Date.now()),
     JSON.stringify(entry),
   );
@@ -136,7 +137,7 @@ export async function recordFailedItem(
   }
   const key = KV_KEYS.failedItem(clean);
   const count = await env.COUNTERS.get(key);
-  await env.COUNTERS.put(key, String((count ? parseInt(count, 10) : 0) + 1));
+  await kvPut(env.COUNTERS, key, String((count ? parseInt(count, 10) : 0) + 1));
 }
 
 export async function listFailedItems(

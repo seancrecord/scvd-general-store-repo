@@ -45,6 +45,31 @@ export async function withKvRetry<T>(read: () => Promise<T>): Promise<T> {
   throw lastError;
 }
 
+/**
+ * A WRITE THAT SURVIVES THE SAME TRANSIENT CLASS.
+ *
+ * Added 2026-08-27 after "500 on GET /api/buy/recurring_patronage: KV
+ * PUT failed: 429 Too Many Requests. A visitor was handed an error
+ * page here." That write sits PAST settlement, so the buyer had
+ * already paid when it threw — the retry policy the reads got in
+ * August was never extended to the one direction where failing costs
+ * a customer money.
+ *
+ * The rule above is unchanged and matters more here, not less: a
+ * write that outlives the retries STILL THROWS. Swallowing it would
+ * hand the caller a success it did not have, and downstream a 2xx
+ * clears the delivery-intent row that is the only remaining evidence
+ * the sale was never delivered.
+ */
+export function kvPut(
+  kv: Namespace,
+  key: string,
+  value: string,
+  options?: Parameters<Namespace["put"]>[2],
+): Promise<void> {
+  return withKvRetry(() => kv.put(key, value, options));
+}
+
 /** A single-key text read that survives a 500 from the KV service. */
 export function kvGet(
   kv: Namespace,

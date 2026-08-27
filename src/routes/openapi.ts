@@ -5,6 +5,13 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { Hono } from "hono";
+import { ASYNC_JOB, COLLECTIONS } from "@/lib/collection-semantics";
+import { ORDER_STATUSES, TERMINAL_ORDER_STATUSES } from "@/types";
+import {
+  IDEMPOTENCY_KEY_MAX_LENGTH,
+  IDEMPOTENCY_KEY_MIN_LENGTH,
+  IDEMPOTENCY_TTL_SECONDS,
+} from "@/lib/idempotency";
 import {
   GLOBAL_PROBES_PER_MINUTE,
   PREFLIGHT_VERSION_NEXT,
@@ -706,7 +713,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         get: {
           ...freeOp(
             "One item, up close",
-            "A single menu item as JSON, or markdown when the Accept header prefers text/markdown.",
+            "A single menu item as JSON, or markdown when the Accept header prefers text/markdown, or a readable page when it prefers text/html. The HTML dialect carries a browser till: with an EVM wallet present it signs an EIP-3009 authorization and completes the purchase in the page. JSON is what a wildcard Accept and a bare fetch still get, unchanged.",
           ),
           parameters: [pathParam("item_id", "The item id from /menu.json.")],
         },
@@ -1214,10 +1221,22 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Every API surface this origin serves, as an RFC 9264 linkset: the HTTP API, the MCP server, each versioned free instrument with its lifecycle, and the CLI — each with its service-desc (the OpenAPI contract), service-doc, service-meta and status links. Served as application/linkset+json. Free.",
         ),
       },
+      "/.well-known/ard.json": {
+        get: freeOp(
+          "Agentic Resource Discovery manifest",
+          "Every agentic resource this origin publishes, as ARD entries: the MCP server, the A2A agent card, the HTTP API and the store's two skills, each with its IANA media type, its URL, the representative queries a registry indexes it by, and a trust manifest naming this store's did:web. A DIFFERENT document from /.well-known/api-catalog, which is RFC 9727 and answers where the API is documented; this one answers what agentic resources exist here. Free.",
+        ),
+      },
+      "/.well-known/ai-catalog.json": {
+        get: freeOp(
+          "ARD manifest (predecessor path)",
+          "Byte-for-byte the same document as /.well-known/ard.json. ARD §5.1 makes ard.json the path a consumer MUST fetch and names this one its predecessor, which a consumer MAY additionally consult; it is served because a scanner that knows only the old path and gets a 404 cannot tell this origin from one publishing nothing. The Link header on both paths points at ard.json, which is the canonical one.",
+        ),
+      },
       "/.well-known/mcp.json": {
         get: freeOp(
           "The MCP server manifest (.json alias)",
-          "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all.",
+          "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all. Like its sibling, a POST here completes an MCP handshake against the same server behind /mcp.",
         ),
       },
       "/deprecation": {
@@ -1241,7 +1260,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/mcp": {
         post: postOp(
           "The MCP door",
-          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. The manifest is at /.well-known/mcp (also /.well-known/mcp.json); a GET here answers 405 with Allow: POST and the whole handshake in the body.",
+          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
           "One JSON-RPC 2.0 request. `initialize` is the handshake.",
           {
             type: "object",
@@ -1295,10 +1314,63 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/api/order/{order_id}": {
         get: {
           ...freeOp(
-            "Poll an order",
-            "Human-queue orders land here; completed ones carry the deliverable.",
+            "Poll an order (async job status)",
+            `The status endpoint for a human-fulfilled purchase — the poll half of this store's async job pattern. Free, unauthenticated, and the order id from the purchase response is the only thing needed. \`status\` is one of ${ORDER_STATUSES.map((state) => `\`${state}\``).join(" or ")}; ${TERMINAL_ORDER_STATUSES.join(", ")} is terminal and carries the deliverable. Past its promised window the order grows a window_breached block stating what is owed, computed from its own timestamps. Poll no faster than once a minute.`,
           ),
-          parameters: [pathParam("order_id", "From the purchase response.")],
+          parameters: [
+            pathParam(
+              "order_id",
+              "From the purchase response's order_id, or the order_url it hands you whole.",
+            ),
+          ],
+          responses: {
+            "200": {
+              description:
+                "The order's current state. Terminal statuses carry the deliverable.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["order_id", "item_id", "status", "created_at"],
+                    properties: {
+                      order_id: { type: "string" },
+                      item_id: { type: "string" },
+                      item_name: { type: "string" },
+                      status: {
+                        type: "string",
+                        enum: [...ORDER_STATUSES],
+                        description:
+                          "The job's state. Enumerated from the same array the code assigns from, so this cannot name a state that never happens.",
+                      },
+                      created_at: { type: "string", format: "date-time" },
+                      completed_at: { type: "string", format: "date-time" },
+                      sla_hours: {
+                        type: "number",
+                        description:
+                          "The window the keeper promised, in hours from created_at.",
+                      },
+                      deliverable: {
+                        description:
+                          "Present once status is terminal. The goods.",
+                      },
+                      patron_number: { type: "integer" },
+                      badge_url: { type: "string", format: "uri" },
+                      window_breached: {
+                        type: "object",
+                        description:
+                          "Present only past the promised window. States what is owed and that the keeper pays it by hand.",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "404": {
+              description: "No order by that id.",
+              ...JSON_RESPONSE,
+            },
+            ...COMMON_RESPONSES,
+          },
         },
       },
       "/almanac": {
@@ -1525,7 +1597,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
       "/.well-known/mcp": {
         get: freeOp(
           "Where the MCP server is",
-          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension.",
+          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
         ),
       },
       "/.well-known/agent-instructions": {
@@ -1543,6 +1615,9 @@ openapiRoutes.get("/openapi.json", async (c) => {
     },
   };
   stampOperationIds(document);
+  stampIdempotencyKey(document);
+  stampCollections(document);
+  stampAsyncJob(document);
   return c.json(document);
 });
 
@@ -1558,6 +1633,175 @@ openapiRoutes.get("/openapi.json", async (c) => {
  * An id already set by hand is never overwritten: it is API surface
  * the moment a client generates against it.
  */
+/**
+ * THE HEADER THAT STOPS A RETRY BECOMING A SECOND CHARGE, DECLARED.
+ *
+ * `Idempotency-Key` has been honoured on every paid door since the
+ * gate learned it, the suggested value rides in every 402 body, and
+ * /agents.md, /skill.md, /llms.txt and /try all tell a buyer to send
+ * it. The OpenAPI contract — the one document a generated client is
+ * built from — said nothing about it at all. So the readers most
+ * likely to have a naive retry loop were the readers with no way to
+ * find the fix, which is the wrong way round.
+ *
+ * A LAST PASS OVER THE FINISHED DOCUMENT, for the same reason
+ * stampOperationIds is one: adding this inside `paidOp` would cover
+ * the operations that builder makes and silently miss any paid
+ * operation written by hand. This walks what was actually assembled
+ * and keys off `x-payment`, which is the marker every paid operation
+ * carries — so a paid door added tomorrow declares the header the day
+ * it is added, and a free door never claims to honour something it
+ * does not.
+ *
+ * DERIVED, NOT HAND-TYPED. The bounds and the window come from
+ * lib/idempotency.ts, the module the gate validates with. A spec that
+ * advertised 16-128 while the code enforced something else would be
+ * worse than a spec that stayed quiet: a client generated from it
+ * would send keys the door discards, and discarded keys fail silently
+ * by design — the purchase still completes, and still charges.
+ */
+/**
+ * HOW EACH COLLECTION ENDS, ON THE OPERATION THAT SERVES IT.
+ *
+ * A last pass over the assembled document, for the same reason
+ * stampOperationIds is one. `x-collection` says either "walk this with
+ * a cursor, here are the parameters" or "this is bounded, here is what
+ * bounds it" — and the second is a real answer rather than an absence,
+ * which is the whole point. A client that cannot tell a bounded set
+ * from an unpaginated one assumes the worst and either paginates
+ * something finite or gives up on something that grows.
+ *
+ * The registry lives in lib/collection-semantics.ts, beside the
+ * reasoning about which collections genuinely need walking and why
+ * inventing cursors on the rest would be worse than nothing.
+ */
+export function stampCollections(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const [path, item] of Object.entries(paths as Record<string, unknown>)) {
+    const semantics = COLLECTIONS[path];
+    if (!semantics || typeof item !== "object" || item === null) continue;
+    const get = (item as OpenApiObject)["get"];
+    if (typeof get !== "object" || get === null) continue;
+    const operation = get as OpenApiObject;
+    operation["x-collection"] = semantics;
+
+    if (!semantics.cursor) continue;
+    /*
+     * A cursor collection's parameters are DECLARED, not merely
+     * described in prose — a generated client can only send what the
+     * parameters array names, and a documented-but-undeclared cursor
+     * is a cursor no generated client will ever pass.
+     */
+    const parameters = Array.isArray(operation["parameters"])
+      ? (operation["parameters"] as OpenApiObject[])
+      : [];
+    const has = (name: string): boolean =>
+      parameters.some((parameter) => parameter["name"] === name);
+    if (!has(semantics.cursor.parameter)) {
+      parameters.push({
+        name: semantics.cursor.parameter,
+        in: "query",
+        required: false,
+        schema: { type: "string" },
+        description: `Opaque cursor from a previous response's ${semantics.cursor.next_field}. Echo it verbatim; never build one. Omit it for the first page.`,
+      });
+    }
+    if (!has(semantics.cursor.limit_parameter)) {
+      parameters.push({
+        name: semantics.cursor.limit_parameter,
+        in: "query",
+        required: false,
+        schema: {
+          type: "integer",
+          minimum: 1,
+          maximum: semantics.cursor.max_limit,
+          default: semantics.cursor.default_limit,
+        },
+        description: `How many entries this page should hold. Anything above ${semantics.cursor.max_limit} is clamped to it, and the applied value comes back in pagination.limit.`,
+      });
+    }
+    operation["parameters"] = parameters;
+  }
+}
+
+/**
+ * THE ASYNC JOB PATTERN, DECLARED ON THE OPERATIONS THAT USE IT.
+ *
+ * Human-fulfilled purchases have returned an order id, a status and a
+ * poll URL since the queue existed. The contract never said a caller
+ * should poll, what the states are, or which of them end the job — so
+ * a scanner reading the spec correctly concluded there was no async
+ * pattern here, and an agent reading it had to learn the states by
+ * watching them go by.
+ *
+ * Stamped on the poll endpoint and on every paid operation, because
+ * the buy is where a caller first meets the job and the poll is where
+ * it finishes. The states come from the array the OrderStatus type is
+ * derived from, so the contract cannot enumerate a state the code will
+ * not assign.
+ */
+export function stampAsyncJob(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const [path, item] of Object.entries(paths as Record<string, unknown>)) {
+    if (typeof item !== "object" || item === null) continue;
+    for (const operation of Object.values(item as Record<string, unknown>)) {
+      if (typeof operation !== "object" || operation === null) continue;
+      const op = operation as OpenApiObject;
+      const isPoll = path === ASYNC_JOB.poll_url_template;
+      if (!isPoll && !op["x-payment"]) continue;
+      op["x-async-job"] = {
+        ...ASYNC_JOB,
+        role: isPoll ? "poll" : "start",
+        ...(isPoll
+          ? {}
+          : {
+              note: "Instant items complete in this response and carry status 'completed'; human-fulfilled items come back queued, and the job is finished at the poll URL. Which an item is is stated on its menu entry as fulfillment.",
+            }),
+      };
+    }
+  }
+}
+
+export function stampIdempotencyKey(document: OpenApiObject): void {
+  const paths = document["paths"];
+  if (typeof paths !== "object" || paths === null) return;
+  for (const item of Object.values(paths as Record<string, unknown>)) {
+    if (typeof item !== "object" || item === null) continue;
+    for (const operation of Object.values(item as Record<string, unknown>)) {
+      if (typeof operation !== "object" || operation === null) continue;
+      const op = operation as OpenApiObject;
+      if (!op["x-payment"]) continue;
+      const parameters = Array.isArray(op["parameters"])
+        ? (op["parameters"] as OpenApiObject[])
+        : [];
+      if (
+        parameters.some(
+          (parameter) =>
+            String(parameter["name"]).toLowerCase() === "idempotency-key",
+        )
+      ) {
+        continue;
+      }
+      parameters.push({
+        name: "Idempotency-Key",
+        in: "header",
+        required: false,
+        schema: {
+          type: "string",
+          minLength: IDEMPOTENCY_KEY_MIN_LENGTH,
+          maxLength: IDEMPOTENCY_KEY_MAX_LENGTH,
+        },
+        description:
+          `Optional, and it can never refuse a purchase. Repeat the same key for the same item from the same paying wallet within ${IDEMPOTENCY_TTL_SECONDS / 3600} hours and the second call returns the ORIGINAL result from cache, marked idempotent_replay — no settlement, no second charge. The chain already refuses to settle one authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge. A value the 402 body suggests (idempotency.suggested_key) is ready to use and needs nothing fetched first. Treat your own keys as secrets: cache slots are keyed by the verified paying wallet, and a key shorter than ${IDEMPOTENCY_KEY_MIN_LENGTH} characters is treated as absent rather than guessably honoured. Only settled sales replay; errors and 402s stay retryable.`,
+        example: "scvd-your-own-high-entropy-value-0001",
+      });
+      op["parameters"] = parameters;
+    }
+  }
+}
+
 export function stampOperationIds(document: OpenApiObject): void {
   const paths = document["paths"];
   if (typeof paths !== "object" || paths === null) return;

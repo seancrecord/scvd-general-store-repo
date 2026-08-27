@@ -9,6 +9,7 @@ import {
   type SanctionsScreen,
 } from "@/services/launch-check";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * STORE CREDIT — the regulars' rebate (keeper's "I like it let's do
@@ -112,7 +113,7 @@ async function signWithRollback<T>(
         ).toString(),
       };
       delete restored.claimed_by;
-      await env.COUNTERS.put(creditKey, JSON.stringify(restored));
+      await kvPut(env.COUNTERS, creditKey, JSON.stringify(restored));
     }
     throw error;
   }
@@ -137,7 +138,7 @@ async function bumpOutstanding(env: Env, deltaAtomic: bigint): Promise<void> {
   const raw = await env.COUNTERS.get(KV_KEYS.creditOutstanding);
   const current = BigInt(raw ?? "0");
   const next = current + deltaAtomic;
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.creditOutstanding,
     (next < 0n ? 0n : next).toString(),
   );
@@ -166,7 +167,7 @@ async function withExpiry(
     ).toString(),
     updated_at: now.toISOString(),
   };
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.credit(record.wallet),
     JSON.stringify(expired),
   );
@@ -229,7 +230,7 @@ export async function accrueCredit(
   // request's id on every later accrual, forever, which is a stale
   // fact sitting in a record that is otherwise all live ones.
   delete next.claimed_by;
-  await env.COUNTERS.put(KV_KEYS.credit(record.wallet), JSON.stringify(next));
+  await kvPut(env.COUNTERS, KV_KEYS.credit(record.wallet), JSON.stringify(next));
   await bumpOutstanding(env, earned);
   return {
     earned_usd: usd(earned),
@@ -362,7 +363,7 @@ export async function redeemCredit(
     claimed_by: claimId,
   };
   const creditKey = KV_KEYS.credit(record.wallet);
-  await env.COUNTERS.put(creditKey, JSON.stringify(claimed));
+  await kvPut(env.COUNTERS, creditKey, JSON.stringify(claimed));
   const readback = await getCredit(env, wallet, now);
   if (readback.claimed_by !== claimId) {
     /*
@@ -392,7 +393,7 @@ export async function redeemCredit(
     if (!rivalWon) {
       // Case (b): put the balance back before refusing. Nothing was
       // signed, so the buyer must keep their money.
-      await env.COUNTERS.put(creditKey, JSON.stringify(record));
+      await kvPut(env.COUNTERS, creditKey, JSON.stringify(record));
       throw new CreditRefused(
         "the claim on this balance could not be confirmed, so nothing was signed and the balance is untouched — ask again in a moment",
       );

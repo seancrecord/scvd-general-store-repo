@@ -3,6 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE DELIVERY AUDIT — did the goods actually leave the shelf after
@@ -125,7 +126,7 @@ export async function openDeliveryIntent(
 ): Promise<string> {
   const id = intent.transaction ?? `notx-${crypto.randomUUID()}`;
   const key = KV_KEYS.deliveryIntent(id);
-  await env.ORDERS.put(key, JSON.stringify(intent));
+  await kvPut(env.ORDERS, key, JSON.stringify(intent));
   return key;
 }
 
@@ -264,7 +265,7 @@ export async function resolveDeliveryIntent(
     if (priorOutcome === outcome) {
       return { ok: true };
     }
-    await env.ORDERS.put(
+    await kvPut(env.ORDERS, 
       `delivery_resolved:${id}`,
       JSON.stringify({
         outcome,
@@ -300,7 +301,7 @@ export async function resolveDeliveryIntent(
           "No open delivery intent and no alert names that transaction — either already delivered/resolved, or the id is not the one from the alert.",
       };
     }
-    await env.ORDERS.put(
+    await kvPut(env.ORDERS, 
       `delivery_resolved:${id}`,
       JSON.stringify({
         outcome,
@@ -312,7 +313,7 @@ export async function resolveDeliveryIntent(
     );
     return { ok: true };
   }
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     `delivery_resolved:${id}`,
     JSON.stringify({
       outcome,

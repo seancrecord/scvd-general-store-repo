@@ -251,7 +251,10 @@ describe("the machine-readable surfaces teach it", () => {
    * rewritten freely but cannot quietly lose the field name, the
    * window, or the not-a-secret explanation.
    */
-  const surfaces = ["/llms.txt", "/agents.md"];
+  // /llms-full.txt rather than /llms.txt since the 2026-08-27 split:
+  // the retry-safety guidance is part of the paying section, which
+  // files under /developers/llms.txt. The complete prose is the guide.
+  const surfaces = ["/llms-full.txt", "/agents.md"];
 
   it("names the field an agent has to read, on every guide", async () => {
     for (const path of surfaces) {

@@ -4,6 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { getLetter, LETTER_CAP, submitLetter } from "@/services/letters";
 import { isRecord, type HonoEnv } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * The Mailbox, public side. POST /api/letter, free, one per visitor
@@ -60,7 +61,7 @@ letterRoutes.post("/api/letter", async (c) => {
       400,
     );
   }
-  await c.env.COUNTERS.put(sentKey, "1", { expirationTtl: DAY_SECONDS });
+  await kvPut(c.env.COUNTERS, sentKey, "1", { expirationTtl: DAY_SECONDS });
 
   return c.json(
     {

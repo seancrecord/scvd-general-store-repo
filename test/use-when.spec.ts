@@ -40,7 +40,7 @@ describe("the situation index", () => {
   });
 
   it("reaches llms.txt, which is the surface written to be quoted", async () => {
-    const text = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    const text = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     expect(text).toContain("When you'd use this store");
     for (const entry of USE_WHEN) {
       expect(text, entry.when.slice(0, 40)).toContain(entry.when);

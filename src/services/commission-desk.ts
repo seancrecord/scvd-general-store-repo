@@ -9,6 +9,7 @@ import {
   QUOTE_NOTE_CAP,
 } from "@/store/commission-desk";
 import type { CommissionRequest, Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE DESK'S LIFECYCLE, over the request ledger that already existed:
@@ -67,7 +68,7 @@ export function payUrlFor(
 }
 
 async function put(env: Env, request: CommissionRequest): Promise<void> {
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.commissionRequest(request.id),
     JSON.stringify(request),
   );

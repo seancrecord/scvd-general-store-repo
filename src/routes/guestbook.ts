@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cadenceFor } from "@/lib/cadence";
 import { sanitizeText } from "@/lib/sanitize";
-import { listGuestbook, signGuestbook } from "@/services/guestbook";
+import { listGuestbookPage, signGuestbook } from "@/services/guestbook";
 import { VOICE } from "@/store";
 import { isRecord, type HonoEnv } from "@/types";
 
@@ -12,9 +12,60 @@ import { isRecord, type HonoEnv } from "@/types";
  */
 export const guestbookRoutes = new Hono<HonoEnv>();
 
+/** The page size a caller gets without asking, and the most they may ask for. */
+export const GUESTBOOK_PAGE_SIZE = 25;
+export const GUESTBOOK_MAX_PAGE_SIZE = 100;
+
 guestbookRoutes.get("/api/guestbook", async (c) => {
-  const entries = await listGuestbook(c.env, 25);
+  /**
+   * CURSOR PAGINATION, ON THE ONE LIST HERE THAT HAS NO END
+   * (2026-08-27).
+   *
+   * The register grows with every visitor and nobody ever unsigns.
+   * This door served the first 25 entries, said nothing about the
+   * rest, and offered no way to reach them — a bounded read published
+   * as though it were the whole book, which is the shape rule 52
+   * exists to refuse.
+   *
+   * The cursor is KV's own, opaque, echoed back verbatim. It is not a
+   * page NUMBER and there is deliberately no total: counting the
+   * register would mean listing all of it on every request, and a
+   * number that costs a full scan is a number that stops being served
+   * the day it matters.
+   *
+   * NOT INVENTED WHERE IT DOES NOT APPLY. The other list surfaces on
+   * this store return bounded sets — one census round, one week's
+   * corpus entry per week — and they say so in the contract rather
+   * than growing a cursor that would never advance. See
+   * lib/collection-semantics.ts.
+   */
+  const asked = Number.parseInt(c.req.query("limit") ?? "", 10);
+  const limit = Number.isSafeInteger(asked)
+    ? Math.min(Math.max(asked, 1), GUESTBOOK_MAX_PAGE_SIZE)
+    : GUESTBOOK_PAGE_SIZE;
+  const cursor = c.req.query("cursor")?.trim() || undefined;
+  const page = await listGuestbookPage(c.env, limit, cursor);
+  const entries = page.entries;
   return c.json({
+    pagination: {
+      /*
+       * The cap that was actually applied, not the one that was asked
+       * for. A caller that asked for 5,000 and got 100 should be able
+       * to see that from the answer rather than by counting.
+       */
+      limit,
+      max_limit: GUESTBOOK_MAX_PAGE_SIZE,
+      /*
+       * PRESENT ONLY WHEN THERE IS MORE. An always-present next_cursor
+       * is a loop a client cannot tell it has finished, and a null one
+       * is a field somebody will forget to check.
+       */
+      ...(page.cursor ? { next_cursor: page.cursor } : {}),
+      has_more: page.truncated,
+      how: `Pass the next_cursor back as ?cursor=<value> to continue, with an optional ?limit= up to ${GUESTBOOK_MAX_PAGE_SIZE}. When has_more is false you have the whole register. The cursor is opaque: echo it, never build one.`,
+      no_total:
+        "There is deliberately no total. Counting the register means listing all of it on every request, and a number that costs a full scan is a number that stops being served the day it matters.",
+    },
     entries: entries.map(
       ({
         id,

@@ -13,6 +13,7 @@ import type {
   PreflightCheck,
 } from "@/services/preflight";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE SERVICE AUDIT — the point-in-time x402 endpoint audit, paid
@@ -214,7 +215,7 @@ export async function storeServiceAudit(
     cert_id: certId,
     created_at: new Date().toISOString(),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.serviceAudit(audit.audit_id),
     JSON.stringify(record),
   );

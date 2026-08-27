@@ -1,5 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, MenuItem } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * The shutter: the store never promises labor nobody is there to do.
@@ -17,12 +18,12 @@ import type { Env, MenuItem } from "@/types";
 export const PRESENT_WINDOW_HOURS = 48;
 
 export async function markKeeperSeen(env: Env): Promise<void> {
-  await env.COUNTERS.put(KV_KEYS.keeperLastSeen, new Date().toISOString());
+  await kvPut(env.COUNTERS, KV_KEYS.keeperLastSeen, new Date().toISOString());
 }
 
 export async function setShutter(env: Env, closed: boolean): Promise<void> {
   if (closed) {
-    await env.COUNTERS.put(KV_KEYS.shutterOverride, "closed");
+    await kvPut(env.COUNTERS, KV_KEYS.shutterOverride, "closed");
   } else {
     await env.COUNTERS.delete(KV_KEYS.shutterOverride);
     // Opening is proof of presence; the window restarts.

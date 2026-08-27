@@ -13,6 +13,7 @@ import type {
   OnpageCheck,
 } from "@/services/onpage-checks";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE PAID ON-PAGE AUDIT — the Once-Over's exact discipline pointed
@@ -181,7 +182,7 @@ export async function storeOnpageAudit(
     cert_id: certId,
     created_at: new Date().toISOString(),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.onpageAudit(audit.audit_id),
     JSON.stringify(record),
   );
