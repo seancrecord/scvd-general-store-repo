@@ -13,6 +13,7 @@ import { listKeys } from "@/lib/kv-list";
 import { computeStats, storefrontLedgerLine } from "@/services/stats";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { HonoEnv } from "@/types";
+import { kvGet } from "@/lib/kv-retry";
 
 /**
  * GET /, the human storefront. Reads the weekly note, bell count, and
@@ -56,8 +57,8 @@ storefrontRoutes.get("/", async (c) => {
     stats,
     firstDollar,
   ] = await Promise.all([
-    c.env.COUNTERS.get(KV_KEYS.weekNote),
-    c.env.COUNTERS.get(KV_KEYS.bellCount),
+    kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
+    kvGet(c.env.COUNTERS, KV_KEYS.bellCount),
     listGuestbook(c.env, 8).catch(() => []),
     /*
      * The record gauge: keys only, values never read. The corpus keys
@@ -72,7 +73,7 @@ storefrontRoutes.get("/", async (c) => {
       prefix: KV_KEYS.corpusPrefix,
       cap: 1000,
     }).catch(() => ({ names: [], truncated: false })),
-    c.env.COUNTERS.get(KV_KEYS.patronNumber),
+    kvGet(c.env.COUNTERS, KV_KEYS.patronNumber),
     computeStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
   ]);

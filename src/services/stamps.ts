@@ -1,4 +1,4 @@
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { newStampId } from "@/lib/ids";
 import { currentWeekKey, KV_KEYS, previousWeekKey } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -92,14 +92,14 @@ export function consecutiveWeeks(
  */
 async function weekCondition(env: Env, weekKey: string): Promise<string> {
   const key = KV_KEYS.stampCondition(weekKey);
-  const existing = await env.COUNTERS.get(key);
+  const existing = await kvGet(env.COUNTERS, key);
   if (existing) {
     return existing;
   }
   const [corrections, received, answered] = await Promise.all([
-    env.COUNTERS.get<string[]>(KV_KEYS.gazetteCorrections, "json"),
-    env.COUNTERS.get(KV_KEYS.lettersReceived),
-    env.COUNTERS.get(KV_KEYS.lettersAnswered),
+    kvGetJson<string[]>(env.COUNTERS, KV_KEYS.gazetteCorrections, "json"),
+    kvGet(env.COUNTERS, KV_KEYS.lettersReceived),
+    kvGet(env.COUNTERS, KV_KEYS.lettersAnswered),
   ]);
   const unanswered =
     parseInt(received ?? "0", 10) - parseInt(answered ?? "0", 10);
@@ -146,7 +146,7 @@ export async function issueStamp(
     const slug = cardSlug(name);
     if (slug) {
       visitWeeks =
-        (await env.PATRONS.get<string[]>(KV_KEYS.stampCard(slug), "json")) ??
+        (await kvGetJson<string[]>(env.PATRONS, KV_KEYS.stampCard(slug), "json")) ??
         [];
       if (!visitWeeks.includes(week)) {
         visitWeeks = [...visitWeeks, week];
@@ -181,7 +181,7 @@ export async function getStamp(
   env: Env,
   stampId: string,
 ): Promise<SignedStampRecord | null> {
-  return env.PATRONS.get<SignedStampRecord>(KV_KEYS.stamp(stampId), "json");
+  return kvGetJson<SignedStampRecord>(env.PATRONS, KV_KEYS.stamp(stampId), "json");
 }
 
 export async function verifyStampSignature(

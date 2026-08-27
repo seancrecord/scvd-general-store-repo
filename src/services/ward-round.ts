@@ -53,7 +53,7 @@ import {
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE WARD ROUND — the weekly in-Worker census of the x402 discovery
@@ -1052,11 +1052,11 @@ export async function runWardRound(env: Env): Promise<WardRound> {
 }
 
 export async function latestWardRound(env: Env): Promise<WardRound | null> {
-  return env.COUNTERS.get<WardRound>(KV_KEYS.wardRoundLatest, "json");
+  return kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundLatest, "json");
 }
 
 export async function previousWardRound(env: Env): Promise<WardRound | null> {
-  return env.COUNTERS.get<WardRound>(KV_KEYS.wardRoundPrevious, "json");
+  return kvGetJson<WardRound>(env.COUNTERS, KV_KEYS.wardRoundPrevious, "json");
 }
 
 export function wardDelta(

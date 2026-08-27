@@ -9,7 +9,7 @@ import {
 } from "@/services/anchor-submit";
 import type { SubmitOptions } from "@/services/anchor-submit";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * PATRON ANCHORS — the store's own Bitcoin-anchoring machinery, sold
@@ -85,7 +85,7 @@ export async function getPatronAnchor(
   env: Env,
   anchorId: string,
 ): Promise<PatronAnchorRecord | null> {
-  return env.PATRONS.get<PatronAnchorRecord>(
+  return kvGetJson<PatronAnchorRecord>(env.PATRONS, 
     KV_KEYS.patronAnchor(anchorId),
     "json",
   );

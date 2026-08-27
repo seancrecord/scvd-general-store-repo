@@ -17,7 +17,7 @@ import {
   usd,
 } from "@/services/store-credit";
 import type { HonoEnv } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * REGULARS' CREDIT, public face: read any wallet's balance free (the
@@ -268,7 +268,7 @@ creditRoutes.post("/api/credit/redeem", async (c) => {
     );
   }
   const kvKey = KV_KEYS.creditChallenge(address.toLowerCase());
-  const nonce = await c.env.COUNTERS.get(kvKey);
+  const nonce = await kvGet(c.env.COUNTERS, kvKey);
   if (!nonce) {
     return c.json(
       { error: "No live challenge for that address — challenges are single-use and expire in five minutes. Start at POST /api/credit/challenge." },

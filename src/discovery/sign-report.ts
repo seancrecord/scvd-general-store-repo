@@ -14,7 +14,7 @@ import { currentKeyInServiceFrom } from "@/store/key-registry";
 import { SKILL_VERSION } from "@/store/spec";
 import type { EvidenceEnvelope } from "@/evidence";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * SIGNED DISCOVERY REPORT — the free inventory, wrapped and signed.
@@ -105,7 +105,7 @@ export async function readDiscoveryReport(
   env: Env,
   reportId: string,
 ): Promise<DiscoveryReportRecord | null> {
-  const raw = await env.PATRONS.get(KV_KEYS.discoveryReport(reportId));
+  const raw = await kvGet(env.PATRONS, KV_KEYS.discoveryReport(reportId));
   if (!raw) return null;
   return JSON.parse(raw) as DiscoveryReportRecord;
 }

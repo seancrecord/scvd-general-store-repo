@@ -14,7 +14,7 @@ import { signMessage } from "@/lib/signing";
 import { JCS_SIGNATURE_COVERS, signJcs } from "@/lib/jcs";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * SETTLEMENT RECONCILIATION — was the amount taken within the amount
@@ -476,7 +476,7 @@ export async function getReconciliation(
   env: Env,
   reconciliationId: string,
 ): Promise<ReconciliationRecord | null> {
-  return env.PATRONS.get<ReconciliationRecord>(
+  return kvGetJson<ReconciliationRecord>(env.PATRONS, 
     KV_KEYS.settlementReconciliation(reconciliationId),
     "json",
   );

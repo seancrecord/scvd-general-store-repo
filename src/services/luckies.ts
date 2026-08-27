@@ -1,4 +1,4 @@
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newLuckyId } from "@/lib/ids";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -91,7 +91,7 @@ export async function getLucky(
   env: Env,
   luckyId: string,
 ): Promise<SignedLuckyRecord | null> {
-  return env.PATRONS.get<SignedLuckyRecord>(KV_KEYS.lucky(luckyId), "json");
+  return kvGetJson<SignedLuckyRecord>(env.PATRONS, KV_KEYS.lucky(luckyId), "json");
 }
 
 /**

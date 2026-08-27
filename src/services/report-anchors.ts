@@ -8,7 +8,7 @@ import {
 } from "@/services/anchor-submit";
 import { getReport, reportIds } from "@/services/reports";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * REPORT ANCHORS — the ecosystem reports' Bitcoin timestamps, riding
@@ -52,7 +52,7 @@ type ReportAnchorMap = Record<string, ReportAnchorRecord>;
 
 async function readAnchorMap(env: Env): Promise<ReportAnchorMap> {
   return (
-    (await env.COUNTERS.get<ReportAnchorMap>(KV_KEYS.reportAnchors, "json")) ??
+    (await kvGetJson<ReportAnchorMap>(env.COUNTERS, KV_KEYS.reportAnchors, "json")) ??
     {}
   );
 }

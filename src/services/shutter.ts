@@ -1,6 +1,6 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, MenuItem } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The shutter: the store never promises labor nobody is there to do.
@@ -40,8 +40,8 @@ export interface ShutterState {
 
 export async function shutterState(env: Env): Promise<ShutterState> {
   const [override, lastSeen] = await Promise.all([
-    env.COUNTERS.get(KV_KEYS.shutterOverride),
-    env.COUNTERS.get(KV_KEYS.keeperLastSeen),
+    kvGet(env.COUNTERS, KV_KEYS.shutterOverride),
+    kvGet(env.COUNTERS, KV_KEYS.keeperLastSeen),
   ]);
   if (override === "closed") {
     return {

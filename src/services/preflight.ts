@@ -7,7 +7,7 @@ import { readPayTo } from "@/lib/pay-to";
 import { KNOWN_TESTNETS, l3bChecks } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE FREE ENDPOINT PREFLIGHT — /api/preflight.
@@ -318,7 +318,7 @@ function takeProbeBudget(): BudgetState {
 async function takeGlobalProbeBudget(env: Env): Promise<BudgetState> {
   const minute = new Date().toISOString().slice(0, 16);
   const key = `preflight_budget:${minute}`;
-  const used = parseInt((await env.COUNTERS.get(key)) ?? "0", 10);
+  const used = parseInt((await kvGet(env.COUNTERS, key)) ?? "0", 10);
   const reset = secondsToNextMinute();
   if (used >= GLOBAL_PROBES_PER_MINUTE) {
     return {

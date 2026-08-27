@@ -14,7 +14,7 @@ import {
 } from "@/services/watch-evidence";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE STANDING WATCH — seller-pays monitoring as an artifact, not as
@@ -479,7 +479,7 @@ export async function readWatch(
   env: Env,
   watchId: string,
 ): Promise<WatchHistory | null> {
-  const record = await env.ORDERS.get<StandingWatchRecord>(
+  const record = await kvGetJson<StandingWatchRecord>(env.ORDERS, 
     KV_KEYS.standingWatch(watchId),
     "json",
   );

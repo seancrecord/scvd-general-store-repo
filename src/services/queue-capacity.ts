@@ -4,7 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import { MENU_ITEMS } from "@/store";
 import type { Env, MenuItem, OrderRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * HOW MUCH LABOR IS ALREADY PROMISED — the gate the shutter was
@@ -141,7 +141,7 @@ interface OpenLaborIndex {
 
 async function readIndex(env: Env): Promise<OpenLaborIndex> {
   return (
-    (await env.ORDERS.get<OpenLaborIndex>(KV_KEYS.openLaborIndex, "json")) ?? {
+    (await kvGetJson<OpenLaborIndex>(env.ORDERS, KV_KEYS.openLaborIndex, "json")) ?? {
       ids: [],
     }
   );

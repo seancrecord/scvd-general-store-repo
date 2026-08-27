@@ -1,4 +1,4 @@
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { isHouseWallet } from "@/lib/channel";
@@ -52,7 +52,7 @@ const PAPER_FOUNDED = "2026-07-22T00:00:00.000Z";
 export const ORGANIC_EVENT_THRESHOLD = 3;
 
 async function getState(env: Env): Promise<GazetteState> {
-  const state = await env.COUNTERS.get<GazetteState>(
+  const state = await kvGetJson<GazetteState>(env.COUNTERS, 
     KV_KEYS.gazetteWeeklyState,
     "json",
   );
@@ -136,7 +136,7 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
   const since = state.period_start;
 
   const bellNow = parseInt(
-    (await env.COUNTERS.get(KV_KEYS.bellCount)) ?? "0",
+    (await kvGet(env.COUNTERS, KV_KEYS.bellCount)) ?? "0",
     10,
   );
 
@@ -212,7 +212,7 @@ async function collectFacts(env: Env): Promise<EditionFacts> {
   const shelvesRetired = previousIds.filter((id) => !currentIds.includes(id));
 
   const corrections =
-    (await env.COUNTERS.get<string[]>(KV_KEYS.gazetteCorrections, "json")) ??
+    (await kvGetJson<string[]>(env.COUNTERS, KV_KEYS.gazetteCorrections, "json")) ??
     [];
 
   const settleCount = Object.values(settledByItem).reduce((a, b) => a + b, 0);
@@ -477,7 +477,7 @@ export async function assembleDraft(
   if (!handSet && facts.organicEvents < ORGANIC_EVENT_THRESHOLD) {
     return null;
   }
-  const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
+  const countRaw = await kvGet(env.COUNTERS, KV_KEYS.gazetteIssueCount);
   const nextEdition = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const draft: GazetteDraft = {
     week: currentWeekKey(),
@@ -495,7 +495,7 @@ export async function assembleDraft(
 }
 
 export async function getDraft(env: Env): Promise<GazetteDraft | null> {
-  return env.ORDERS.get<GazetteDraft>(KV_KEYS.gazetteDraft, "json");
+  return kvGetJson<GazetteDraft>(env.ORDERS, KV_KEYS.gazetteDraft, "json");
 }
 
 /** No placeholder ever ships: bracketed keeper slots are stripped here. */
@@ -537,7 +537,7 @@ export async function publishEdition(
     throw new StaleDraftError(freshness.changes);
   }
 
-  const countRaw = await env.COUNTERS.get(KV_KEYS.gazetteIssueCount);
+  const countRaw = await kvGet(env.COUNTERS, KV_KEYS.gazetteIssueCount);
   const issueNumber = (countRaw ? parseInt(countRaw, 10) : 0) + 1;
   const printed = stripKeeperSlots(markdown);
   // Signed at press, same as the dispatches.
@@ -562,7 +562,7 @@ export async function publishEdition(
 
   // Snapshot so the next edition reports deltas from this close.
   const bellNow = parseInt(
-    (await env.COUNTERS.get(KV_KEYS.bellCount)) ?? "0",
+    (await kvGet(env.COUNTERS, KV_KEYS.bellCount)) ?? "0",
     10,
   );
   const state: GazetteState = {
@@ -583,7 +583,7 @@ export async function publishEdition(
 
 export async function addCorrection(env: Env, correction: string): Promise<void> {
   const corrections =
-    (await env.COUNTERS.get<string[]>(KV_KEYS.gazetteCorrections, "json")) ??
+    (await kvGetJson<string[]>(env.COUNTERS, KV_KEYS.gazetteCorrections, "json")) ??
     [];
   corrections.push(correction);
   await kvPut(env.COUNTERS, 

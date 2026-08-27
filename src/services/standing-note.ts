@@ -1,6 +1,6 @@
 import { recoverMessageAddress } from "viem";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { normalizePayTo, payToDigest } from "@/lib/pay-to-digest";
 import { listCorpus } from "@/services/corpus";
 import type { CorpusRecord } from "@/services/corpus";
@@ -147,7 +147,7 @@ export async function noteFor(
   env: Env,
   subject: string,
 ): Promise<StandingNote | null> {
-  return env.COUNTERS.get<StandingNote>(
+  return kvGetJson<StandingNote>(env.COUNTERS, 
     KV_KEYS.standingNote(subject),
     "json",
   );

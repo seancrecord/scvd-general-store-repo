@@ -3,7 +3,7 @@ import type { Cadence } from "@/lib/cadence";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { bellLine, VOICE } from "@/store";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The bell, rung from any door. HTTP or MCP, same bell. One ring per
@@ -23,11 +23,11 @@ export async function ringBell(env: Env, who: string): Promise<BellResult> {
   const today = new Date().toISOString().slice(0, 10);
   const ringKey = KV_KEYS.bellRing(who.toLowerCase(), today);
   const currentCount = parseInt(
-    (await env.COUNTERS.get(KV_KEYS.bellCount)) ?? "0",
+    (await kvGet(env.COUNTERS, KV_KEYS.bellCount)) ?? "0",
     10,
   );
   const cadence = cadenceFor("bell");
-  if (await env.COUNTERS.get(ringKey)) {
+  if (await kvGet(env.COUNTERS, ringKey)) {
     // The one response where the clock actually answers a question the
     // caller just asked: it rang, we said no, and now it knows when.
     return {

@@ -14,7 +14,7 @@ import { getCertificate } from "@/services/certificates";
 import { SAMPLE_ARTIFACT_ID } from "@/store/spec";
 import { listOrders } from "@/services/orders";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The hourly rounds. Two of the four P1 conditions live here: the
@@ -28,7 +28,7 @@ async function selfCheck(env: Env): Promise<void> {
   try {
     const probe = `health:${Date.now()}`;
     await kvPut(env.COUNTERS, "health_probe", probe, { expirationTtl: 3600 });
-    const readback = await env.COUNTERS.get("health_probe");
+    const readback = await kvGet(env.COUNTERS, "health_probe");
     if (readback !== probe) {
       throw new Error("KV readback mismatch");
     }

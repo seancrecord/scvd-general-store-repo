@@ -5,7 +5,7 @@ import { listCorpus } from "@/services/corpus";
 import { CORRECTIONS } from "@/store/corrections";
 import { FIRST_KEY_IN_SERVICE_FROM, RETIRED_KEYS } from "@/store/key-registry";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE TRUST PANEL — every trust surface the store keeps, on one page
@@ -76,7 +76,7 @@ async function computeCache(env: Env): Promise<PanelCache> {
 }
 
 async function cachedHalf(env: Env): Promise<PanelCache> {
-  const stored = await env.COUNTERS.get<PanelCache>(
+  const stored = await kvGetJson<PanelCache>(env.COUNTERS, 
     KV_KEYS.trustPanelCache,
     "json",
   );

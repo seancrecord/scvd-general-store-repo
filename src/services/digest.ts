@@ -9,7 +9,7 @@ import {
 } from "@/services/requests";
 import { DEFAULT_WEEK_NOTE } from "@/store";
 import type { Env, OrderRecord, WeeklyDigest } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * The weekly digest, compiled Sundays 7am ET by the cron trigger.
@@ -42,8 +42,8 @@ export async function compileDigest(env: Env): Promise<WeeklyDigest> {
     listWaitlist(env),
     listFailedItems(env),
     listGuestbook(env, 1000),
-    env.COUNTERS.get(KV_KEYS.weekNote),
-    env.COUNTERS.get(KV_KEYS.bellCount),
+    kvGet(env.COUNTERS, KV_KEYS.weekNote),
+    kvGet(env.COUNTERS, KV_KEYS.bellCount),
     unreadLetterCount(env),
   ]);
 
@@ -69,7 +69,7 @@ export async function compileDigest(env: Env): Promise<WeeklyDigest> {
 }
 
 export async function getLatestDigest(env: Env): Promise<WeeklyDigest | null> {
-  return env.COUNTERS.get<WeeklyDigest>(KV_KEYS.latestDigest, "json");
+  return kvGetJson<WeeklyDigest>(env.COUNTERS, KV_KEYS.latestDigest, "json");
 }
 
 function round2(value: number): number {

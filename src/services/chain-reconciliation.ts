@@ -424,7 +424,7 @@ export async function certIdForSettlement(
 
   // The keyed row, written at mint since 2026-08-25. One lookup, and
   // it cannot go blind.
-  const indexed = await env.PATRONS.get(KV_KEYS.settlementCert(wanted));
+  const indexed = await kvGet(env.PATRONS, KV_KEYS.settlementCert(wanted));
   if (indexed) return { certId: indexed, certain: true };
 
   /*

@@ -8,7 +8,7 @@ import type { OtsAnchor } from "@/services/anchor-log";
 import { latestWardRound } from "@/services/ward-round";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 import { payToDigest } from "@/lib/pay-to-digest";
 
 /**
@@ -233,7 +233,7 @@ export async function getCorpusEntry(
   env: Env,
   sequence: number,
 ): Promise<CorpusRecord | null> {
-  const stored = await env.COUNTERS.get<CorpusRecord | CorpusPointer>(
+  const stored = await kvGetJson<CorpusRecord | CorpusPointer>(env.COUNTERS, 
     corpusKey(sequence),
     "json",
   );

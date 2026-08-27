@@ -3,7 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { listKeys } from "@/lib/kv-list";
 import { monthsSinceOpening, railOf } from "@/lib/metrics";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * WHICH CHAIN THE MONEY CAME IN ON — three records, no sale counted
@@ -122,7 +122,7 @@ export interface RailCounts {
  */
 export async function computeRailSplit(env: Env): Promise<RailSplit> {
   const meterStart =
-    (await env.COUNTERS.get(KV_KEYS.railMeterStart)) ?? undefined;
+    (await kvGet(env.COUNTERS, KV_KEYS.railMeterStart)) ?? undefined;
   const { taxRows } = await import("@/services/tax-export");
   const { rows, truncated } = await taxRows(env);
   const split = {
@@ -171,7 +171,7 @@ export async function refreshRailSplit(env: Env): Promise<RailSplit> {
 
 /** The snapshot, or null. Null renders as no split at all, never as zeroes. */
 export async function readRailSplit(env: Env): Promise<RailSplit | null> {
-  const stored = await env.COUNTERS.get<RailSplit>(KV_KEYS.railSplit, "json");
+  const stored = await kvGetJson<RailSplit>(env.COUNTERS, KV_KEYS.railSplit, "json");
   if (
     !stored ||
     typeof stored.base !== "number" ||

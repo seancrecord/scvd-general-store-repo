@@ -1,7 +1,7 @@
 import { listKeys } from "@/lib/kv-list";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { Env, KeyHandover, SignedHandoverRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE HANDOVER ANNOUNCEMENT — the only part of key succession that is a
@@ -131,7 +131,7 @@ export async function getHandover(
   env: Env,
   handoverId: string,
 ): Promise<SignedHandoverRecord | null> {
-  return env.PATRONS.get<SignedHandoverRecord>(
+  return kvGetJson<SignedHandoverRecord>(env.PATRONS, 
     `handover:${handoverId}`,
     "json",
   );

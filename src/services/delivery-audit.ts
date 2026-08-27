@@ -3,7 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE DELIVERY AUDIT — did the goods actually leave the shelf after
@@ -149,7 +149,7 @@ export async function getOpenDeliveryIntent(
   transaction: string,
 ): Promise<{ key: string; intent: DeliveryIntent } | null> {
   const key = KV_KEYS.deliveryIntent(transaction);
-  const intent = await env.ORDERS.get<DeliveryIntent>(key, "json");
+  const intent = await kvGetJson<DeliveryIntent>(env.ORDERS, key, "json");
   return intent ? { key, intent } : null;
 }
 
@@ -233,7 +233,7 @@ export async function resolveDeliveryIntent(
     return { ok: false, refusal: "A settlement transaction id is required." };
   }
   const key = KV_KEYS.deliveryIntent(id);
-  const intent = await env.ORDERS.get(key);
+  const intent = await kvGet(env.ORDERS, key);
 
   /*
    * A SECOND RESOLUTION IS A CORRECTION, NOT A MYSTERY.
@@ -253,7 +253,7 @@ export async function resolveDeliveryIntent(
    * publishes its corrections; a record that quietly changes its mind
    * is worth less than one that shows it did.
    */
-  const priorRaw = await env.ORDERS.get(`delivery_resolved:${id}`);
+  const priorRaw = await kvGet(env.ORDERS, `delivery_resolved:${id}`);
   if (priorRaw) {
     let prior: unknown = null;
     try {

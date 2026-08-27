@@ -10,7 +10,7 @@ import { inferChannel, isHouseTraffic } from "@/lib/channel";
 import type { ChannelSignals, HouseSignals } from "@/lib/channel";
 import { bulkGetJson, bulkGetText } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
-import { kvPut, withKvRetry } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvList, kvPut, withKvRetry } from "@/lib/kv-retry";
 /**
  * The venue register is the allowlist for this file's ?src= counters.
  * The raw string still rides the EVENT row verbatim (a hand test wants
@@ -316,7 +316,7 @@ async function raiseFirstOutsideSignature(
   if (event.house) {
     return;
   }
-  if (await env.COUNTERS.get(KV_KEYS.firstSignature)) {
+  if (await kvGet(env.COUNTERS, KV_KEYS.firstSignature)) {
     return;
   }
   await kvPut(env.COUNTERS, 
@@ -668,7 +668,7 @@ export async function recordSettlement(
   if (rail) {
     pending.push(
       (async () => {
-        if (!(await env.COUNTERS.get(KV_KEYS.railMeterStart))) {
+        if (!(await kvGet(env.COUNTERS, KV_KEYS.railMeterStart))) {
           await kvPut(env.COUNTERS, KV_KEYS.railMeterStart, event.at);
         }
       })(),
@@ -705,7 +705,7 @@ export async function recordSettlement(
     // once, with the first organic settlement, forever.
     pending.push(
       (async () => {
-        const frame = await env.COUNTERS.get(KV_KEYS.firstDollar);
+        const frame = await kvGet(env.COUNTERS, KV_KEYS.firstDollar);
         if (!frame) {
           await kvPut(env.COUNTERS, 
             KV_KEYS.firstDollar,
@@ -745,14 +745,14 @@ async function recordPayerSeen(env: Env, address: string): Promise<void> {
   const canonical = canonicalAddress(address);
   const key = KV_KEYS.payer(canonical);
   const now = new Date().toISOString();
-  let existing = await env.COUNTERS.get<PayerRecord>(key, "json");
+  let existing = await kvGetJson<PayerRecord>(env.COUNTERS, key, "json");
   // Self-heal: rows written before the canonical-address fix live
   // under a lowercased key that, for a base58 address, is not the
   // real wallet. Fold that history into the canonical row and
   // delete the corrupted one, so one wallet never shows as two.
   const legacyKey = `${KV_KEYS.payerPrefix}${address.trim().toLowerCase()}`;
   if (legacyKey !== key) {
-    const legacy = await env.COUNTERS.get<PayerRecord>(legacyKey, "json");
+    const legacy = await kvGetJson<PayerRecord>(env.COUNTERS, legacyKey, "json");
     if (legacy) {
       existing = existing
         ? {
@@ -1344,7 +1344,7 @@ export async function listEventsForItem(
   };
   let cursor: string | undefined;
   while (history.rows_scanned < scanCap) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: 1000,
       ...(cursor ? { cursor } : {}),
@@ -1389,7 +1389,7 @@ export async function listRecentPorchEvents(
   let scanned = 0;
   const SCAN_CAP = 3000;
   while (events.length < limit && scanned < SCAN_CAP) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: 1000,
       ...(cursor ? { cursor } : {}),
@@ -1422,7 +1422,7 @@ export interface FirstDollar {
 
 /** What the frame by the register holds. Null means "It's waiting." */
 export async function getFirstDollar(env: Env): Promise<FirstDollar | null> {
-  return env.COUNTERS.get<FirstDollar>(KV_KEYS.firstDollar, "json");
+  return kvGetJson<FirstDollar>(env.COUNTERS, KV_KEYS.firstDollar, "json");
 }
 
 /** Recent paying wallets, for the cohort/wash-filter review. */

@@ -9,7 +9,7 @@ import {
   type WardVolumeClaim,
 } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE LONG WALK — the architecture past WARD_CAP, greenlit by the
@@ -70,7 +70,7 @@ export interface LongWalkState {
 }
 
 export async function readLongWalk(env: Env): Promise<LongWalkState | null> {
-  return env.COUNTERS.get<LongWalkState>(KV_KEYS.longWalkState, "json");
+  return kvGetJson<LongWalkState>(env.COUNTERS, KV_KEYS.longWalkState, "json");
 }
 
 async function writeLongWalk(env: Env, state: LongWalkState): Promise<void> {

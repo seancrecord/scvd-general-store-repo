@@ -7,7 +7,7 @@ import {
 } from "@/services/market";
 import { latestWardRound, type WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * STATE OF THE REGISTRY — the market desk's aggregates, made public
@@ -63,7 +63,7 @@ export interface RegistryPulse {
 const REGISTRY_WEEK_CAP = 104;
 
 export async function readRegistryPulse(env: Env): Promise<RegistryPulse> {
-  const stored = await env.COUNTERS.get<RegistryPulse>(
+  const stored = await kvGetJson<RegistryPulse>(env.COUNTERS, 
     KV_KEYS.registryPulse,
     "json",
   );

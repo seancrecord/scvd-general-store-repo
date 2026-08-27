@@ -5,7 +5,7 @@ import { newCheckId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
 import type { Env, PhantomCheckRecord } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a phantom checks scan. Named because an unnamed cap is a silent one. */
 const PHANTOM_CAP = 500;
@@ -108,7 +108,7 @@ export async function getPhantomCheck(
   env: Env,
   checkId: string,
 ): Promise<PhantomCheckRecord | null> {
-  const record = await env.ORDERS.get<PhantomCheckRecord>(
+  const record = await kvGetJson<PhantomCheckRecord>(env.ORDERS, 
     KV_KEYS.phantomCheck(checkId),
     "json",
   );
@@ -126,7 +126,7 @@ export async function readPhantomCheck(
   env: Env,
   checkId: string,
 ): Promise<PhantomCheckRecord | null> {
-  return env.ORDERS.get<PhantomCheckRecord>(
+  return kvGetJson<PhantomCheckRecord>(env.ORDERS, 
     KV_KEYS.phantomCheck(checkId),
     "json",
   );

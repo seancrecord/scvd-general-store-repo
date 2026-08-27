@@ -3,6 +3,7 @@ import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
 import { PRESENT_WINDOW_HOURS } from "@/services/shutter";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { HonoEnv } from "@/types";
+import { kvGet } from "@/lib/kv-retry";
 
 /**
  * THE LIVENESS BEACON — the dead-man pattern, made honest.
@@ -56,7 +57,7 @@ function canonicalizeLiveness(payload: {
 
 livenessRoutes.get("/.well-known/liveness.json", async (c) => {
   const base = c.env.STORE_BASE_URL;
-  const lastSeen = await c.env.COUNTERS.get(KV_KEYS.keeperLastSeen);
+  const lastSeen = await kvGet(c.env.COUNTERS, KV_KEYS.keeperLastSeen);
   const withinWindow =
     lastSeen !== null &&
     Date.now() - new Date(lastSeen).getTime() <=

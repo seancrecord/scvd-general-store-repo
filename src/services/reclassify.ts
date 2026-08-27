@@ -2,7 +2,7 @@ import { inferChannel } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvList, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE STANDING CORRECTION — how much of the recorded organic column is
@@ -93,7 +93,7 @@ export interface CorrectionSet {
 export async function readCorrections(
   env: Env,
 ): Promise<CorrectionSet | null> {
-  return env.COUNTERS.get<CorrectionSet>(CORRECTIONS_KEY, "json");
+  return kvGetJson<CorrectionSet>(env.COUNTERS, CORRECTIONS_KEY, "json");
 }
 
 /** The stored correction for one month, or null if none exists yet. */
@@ -127,7 +127,7 @@ export async function recomputeCorrections(
   let pages = 0;
   let complete = false;
   while (pages < MAX_PAGES) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
       ...(cursor ? { cursor } : {}),
@@ -264,14 +264,14 @@ export async function reclassifyHousePayer(
     };
   }
   const key = `${RECLASS_PREFIX}${address}`;
-  if (await env.COUNTERS.get(key)) {
+  if (await kvGet(env.COUNTERS, key)) {
     return {
       ok: false,
       refusal:
         "Already reclassified. The snapshot is frozen on purpose — purchases after listing book house at the till, and correcting twice is over-correcting.",
     };
   }
-  const payer = await env.COUNTERS.get<import("@/types").PayerRecord>(
+  const payer = await kvGetJson<import("@/types").PayerRecord>(env.COUNTERS, 
     KV_KEYS.payer(address),
     "json",
   );

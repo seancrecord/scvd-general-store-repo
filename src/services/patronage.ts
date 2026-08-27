@@ -1,6 +1,6 @@
 import { newPassId } from "@/lib/ids";
 import { KV_KEYS } from "@/lib/kv-keys";
-import { kvGetJson, kvPut } from "@/lib/kv-retry";
+import { kvGet, kvGetJson, kvPut } from "@/lib/kv-retry";
 import { signMessage } from "@/lib/signing";
 import type { Env, PatronagePass } from "@/types";
 
@@ -100,7 +100,7 @@ export interface SignedMonthlyNote {
 export async function signedMonthlyNote(env: Env): Promise<SignedMonthlyNote> {
   const month = new Date().toISOString().slice(0, 7);
   const note =
-    (await env.COUNTERS.get(KV_KEYS.patronageNote(month))) ??
+    (await kvGet(env.COUNTERS, KV_KEYS.patronageNote(month))) ??
     DEFAULT_MONTHLY_NOTE;
   const { signature, publicKey } = await signMessage(
     JSON.stringify({ month, note }),

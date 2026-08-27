@@ -3,7 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { newLuckyStockId } from "@/lib/ids";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a stock units scan. An unnamed cap is a silent one. */
 const STOCK_CAP = 500;
@@ -85,7 +85,7 @@ export async function stockUnit(
   if (definition.uniqueField) {
     const value = fields[definition.uniqueField] ?? "";
     const usedKey = KV_KEYS.bestowedName(nameSlug(value));
-    if (await env.COUNTERS.get(usedKey)) {
+    if (await kvGet(env.COUNTERS, usedKey)) {
       return {
         refused: `"${value}" has been bestowed (or stocked) before. Names are never reused; that is machine-enforced.`,
       };

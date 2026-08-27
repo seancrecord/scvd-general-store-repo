@@ -1,6 +1,7 @@
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Env } from "@/types";
+import { kvList } from "@/lib/kv-retry";
 
 /**
  * THE DECLINE DESK.
@@ -276,7 +277,7 @@ export async function readDeclines(
 
   let cursor: string | undefined;
   while (report.rows_scanned < scanCap) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
       ...(cursor ? { cursor } : {}),
@@ -350,7 +351,7 @@ export async function traceClient(
   let cursor: string | undefined;
   let scanned = 0;
   while (scanned < scanCap) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
       ...(cursor ? { cursor } : {}),

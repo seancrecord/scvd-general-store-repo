@@ -2,6 +2,7 @@ import { inferChannel } from "@/lib/channel";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { MetricEvent } from "@/lib/metrics";
 import type { Channel, Env } from "@/types";
+import { kvList } from "@/lib/kv-retry";
 
 /**
  * THE CENSUS and THE WALK DETECTOR: two questions, one row walk.
@@ -156,7 +157,7 @@ export async function takeCensus(
 
   let cursor: string | undefined;
   while (result.rows_scanned < scanCap) {
-    const listed = await env.COUNTERS.list({
+    const listed = await kvList(env.COUNTERS, {
       prefix: "evt:",
       limit: LIST_PAGE,
       ...(cursor ? { cursor } : {}),

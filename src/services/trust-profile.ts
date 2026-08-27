@@ -6,7 +6,7 @@ import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import { issuePassport } from "@/services/passport";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE HOSTED TRUST PROFILE — the store's first recurring door
@@ -90,7 +90,7 @@ export async function readTrustProfile(
   env: Env,
   host: string,
 ): Promise<SignedTrustProfile | null> {
-  return env.COUNTERS.get<SignedTrustProfile>(
+  return kvGetJson<SignedTrustProfile>(env.COUNTERS, 
     KV_KEYS.trustProfile(host.toLowerCase()),
     "json",
   );

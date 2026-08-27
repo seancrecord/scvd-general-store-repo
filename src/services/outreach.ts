@@ -7,7 +7,7 @@ import type {
   WardVolumeClaim,
 } from "@/services/ward-round";
 import type { Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE OUTREACH DESK — turning the ward's private readings into the
@@ -97,7 +97,7 @@ export interface OutreachLedger {
 }
 
 export async function readOutreachLedger(env: Env): Promise<OutreachLedger> {
-  const stored = await env.COUNTERS.get<OutreachLedger>(
+  const stored = await kvGetJson<OutreachLedger>(env.COUNTERS, 
     KV_KEYS.outreachLedger,
     "json",
   );

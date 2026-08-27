@@ -3,7 +3,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { ALMANAC_ENTRIES } from "@/store/almanac";
 import type { AlmanacEntry, Env } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
  * THE ALMANAC, WRITABLE FROM THE OFFICE.
@@ -84,7 +84,7 @@ export async function findAlmanacEntry(
   env: Env,
   slug: string,
 ): Promise<AlmanacEntry | undefined> {
-  const keeper = await env.ORDERS.get<AlmanacEntry>(
+  const keeper = await kvGetJson<AlmanacEntry>(env.ORDERS, 
     KV_KEYS.almanacEntry(slug),
     "json",
   ).catch(() => null);

@@ -4,7 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { getLetter, LETTER_CAP, submitLetter } from "@/services/letters";
 import { isRecord, type HonoEnv } from "@/types";
-import { kvPut } from "@/lib/kv-retry";
+import { kvGet, kvPut } from "@/lib/kv-retry";
 
 /**
  * The Mailbox, public side. POST /api/letter, free, one per visitor
@@ -37,7 +37,7 @@ letterRoutes.post("/api/letter", async (c) => {
     "a-mysterious-correspondent";
   const today = new Date().toISOString().slice(0, 10);
   const sentKey = KV_KEYS.letterSent(who.toLowerCase(), today);
-  if (await c.env.COUNTERS.get(sentKey)) {
+  if (await kvGet(c.env.COUNTERS, sentKey)) {
     return c.json(
       {
         error:
