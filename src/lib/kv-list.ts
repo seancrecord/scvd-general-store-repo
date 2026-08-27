@@ -29,6 +29,21 @@ export interface ListedKeys {
    * the one thing it can no longer do is not know.
    */
   truncated: boolean;
+  /**
+   * WHERE THE NEXT PAGE STARTS, when there is one (2026-08-27).
+   *
+   * Present exactly when `truncated` is true and KV handed back a
+   * cursor. Until today every reading here started at the beginning of
+   * the prefix and stopped at its cap, which is correct for a bounded
+   * read and useless for a collection that grows — the guestbook could
+   * be listed, capped and told it was capped, and there was no way to
+   * ask for the rest.
+   *
+   * Opaque, and passed back verbatim. Nothing outside KV should parse
+   * one, and a caller that builds a cursor rather than echoing one it
+   * was given is asking KV a question about a keyspace it invented.
+   */
+  cursor?: string;
 }
 
 export interface ListOptions {
@@ -38,6 +53,12 @@ export interface ListOptions {
    * silent limit with extra steps, which is the thing being fixed.
    */
   cap: number;
+  /**
+   * Resume from a cursor a previous call returned. Absent means start
+   * at the beginning of the prefix, which is what every caller did
+   * before pagination existed and what most still do.
+   */
+  cursor?: string;
 }
 
 /** KV's own per-page ceiling. Asking for more in one call does nothing. */
@@ -48,7 +69,7 @@ export async function listKeys(
   options: ListOptions,
 ): Promise<ListedKeys> {
   const names: string[] = [];
-  let cursor: string | undefined;
+  let cursor: string | undefined = options.cursor;
 
   while (names.length < options.cap) {
     const page = await namespace.list({
@@ -60,7 +81,8 @@ export async function listKeys(
       names.push(key.name);
     }
     if (page.list_complete) {
-      // Reached the end of the prefix inside the cap: nothing was lost.
+      // Reached the end of the prefix inside the cap: nothing was lost,
+      // and there is no next page to hand anybody.
       return { names, truncated: false };
     }
     cursor = page.cursor;
@@ -73,7 +95,11 @@ export async function listKeys(
    * paginating without saying it was complete. Both mean the same thing
    * to a reader: this list is a floor.
    */
-  return { names: names.slice(0, options.cap), truncated: true };
+  return {
+    names: names.slice(0, options.cap),
+    truncated: true,
+    ...(cursor ? { cursor } : {}),
+  };
 }
 
 /** The sentence a page shows when a reading hit its cap. */
