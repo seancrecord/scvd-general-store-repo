@@ -231,6 +231,43 @@ async function evidenceHash(
     .join("");
 }
 
+/**
+ * THE READER, HANDED TO THE WALK (roadmap 3.2, ledger C2/I4).
+ *
+ * The launch check settles real money at a stranger's door and gets a
+ * transaction hash back in PAYMENT-RESPONSE. Until now that hash rode
+ * into the signed observation as fact; this store never looked. The
+ * attestation desk already knew how to look — receipt, transfer
+ * match, finality — for anyone who PAID for an observation of our own
+ * settlements. Same read, other direction: the walk narrows to the
+ * transfer it just made (our field wallet, their declared payTo) and
+ * asks the chain whether the seller's hash shows that money moving.
+ *
+ * Unsigned by design: the walk embeds this inside its OWN signed row,
+ * and a signature within a signature would be decoration.
+ */
+export interface TransferClaimRead {
+  status: SettlementStatus;
+  recipient: string | null;
+  payer: string | null;
+  amountUsdc: number | null;
+  blockHeight: number | null;
+  confirmations: number | null;
+}
+
+export async function readTransferClaim(
+  env: Env,
+  txHash: string,
+  query: AttestationQuery,
+  chain: EvmChain = BASE_EVM,
+): Promise<TransferClaimRead> {
+  const [receipt, head] = await Promise.all([
+    getReceipt(env, txHash, chain),
+    getBlockNumber(env, chain),
+  ]);
+  return classify(receipt, query, head, chain);
+}
+
 function classify(
   receipt: RpcReceipt | null,
   query: AttestationQuery,
