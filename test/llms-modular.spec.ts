@@ -45,18 +45,17 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken 2026-08-27 in the commit that put every templated URL in
+ * the guide into inline code (scanner P20 — URL extractors probed
+ * {id} verbatim and reported dead links). Markup only; sentences
+ * untouched.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  // Re-taken 2026-08-28 at the merge of the instrument-audit branch:
-  // both sides had genuinely edited the guide (the audit's caption
-  // pass here; the funnel-middle and refusal work on main), so the
-  // merged text is a third document and neither parent's digest could
-  // stand. Value below is the merged guide's, taken by running this
-  // spec against it — the review moment, forced as designed.
-  "7990da54f1999058fdfffcf4bb8422dcd231a5af3dcdd54ec18ccea776fdb375";
+  "6273f01cb41a75756b346654bf92a3c3399145385bf51da22d48fcb418065f9c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

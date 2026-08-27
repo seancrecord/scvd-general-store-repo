@@ -629,6 +629,7 @@ export function renderStorefront(data: StorefrontData): string {
   <title>${title}</title>
   <meta name="description" content="${COPY.metaDescription}">
   <link rel="canonical" href="${data.base ?? "https://scvd.store"}/">
+  <link rel="alternate" type="text/markdown" href="${data.base ?? "https://scvd.store"}/index.md">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta property="og:url" content="${data.base ?? "https://scvd.store"}/">
