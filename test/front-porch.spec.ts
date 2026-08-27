@@ -173,18 +173,34 @@ describe("the porch log", () => {
   });
 });
 
-describe("nothing client-side", () => {
-  it("serves the storefront with no executable scripts and no cookies", async () => {
+describe("nothing client-side that can act", () => {
+  /*
+   * AMENDED 2026-08-27 with rule 17's rewrite. The old assertion was
+   * ZERO executable scripts — the mechanism form of the promise, and
+   * true while it held. The property form is what the rule says now:
+   * nothing served can act without the visitor's decision. The
+   * storefront ships exactly one first-party script — /webmcp.js,
+   * which registers read-only tools derived from the MCP catalog
+   * (test/webmcp.spec.ts pins that it cannot act and cannot drift) —
+   * fenced by a CSP that refuses every other script origin. Still no
+   * cookies, still nothing third-party, and the count is pinned at
+   * ONE so a second script has to argue with this test in review.
+   */
+  it("serves the storefront with only the fenced WebMCP script and no cookies", async () => {
     const response = await SELF.fetch(`${BASE}/`, {
       headers: { "User-Agent": "browser/1.0" },
     });
     const html = await response.text();
     expect(response.headers.get("Set-Cookie")).toBeNull();
-    // JSON-LD is inert structured data; executable script stays banned.
-    const executableScripts = html.match(
-      /<script(?![^>]*type="application\/ld\+json")/g,
-    );
-    expect(executableScripts).toBeNull();
+    // JSON-LD is inert structured data; executable script is exactly
+    // the one derived, read-only WebMCP surface.
+    const executableScripts =
+      html.match(/<script(?![^>]*type="application\/ld\+json")/g) ?? [];
+    expect(executableScripts).toHaveLength(1);
+    expect(html).toContain('<script src="/webmcp.js" defer>');
+    expect(
+      response.headers.get("Content-Security-Policy") ?? "",
+    ).toContain("script-src 'self'");
     expect(html).toContain('"@type":"Organization"');
   });
 });
