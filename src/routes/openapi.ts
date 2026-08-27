@@ -1219,6 +1219,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Every API surface this origin serves, as an RFC 9264 linkset: the HTTP API, the MCP server, each versioned free instrument with its lifecycle, and the CLI — each with its service-desc (the OpenAPI contract), service-doc, service-meta and status links. Served as application/linkset+json. Free.",
         ),
       },
+      "/.well-known/ard.json": {
+        get: freeOp(
+          "Agentic Resource Discovery manifest",
+          "Every agentic resource this origin publishes, as ARD entries: the MCP server, the A2A agent card, the HTTP API and the store's two skills, each with its IANA media type, its URL, the representative queries a registry indexes it by, and a trust manifest naming this store's did:web. A DIFFERENT document from /.well-known/api-catalog, which is RFC 9727 and answers where the API is documented; this one answers what agentic resources exist here. Free.",
+        ),
+      },
+      "/.well-known/ai-catalog.json": {
+        get: freeOp(
+          "ARD manifest (predecessor path)",
+          "Byte-for-byte the same document as /.well-known/ard.json. ARD §5.1 makes ard.json the path a consumer MUST fetch and names this one its predecessor, which a consumer MAY additionally consult; it is served because a scanner that knows only the old path and gets a 404 cannot tell this origin from one publishing nothing. The Link header on both paths points at ard.json, which is the canonical one.",
+        ),
+      },
       "/.well-known/mcp.json": {
         get: freeOp(
           "The MCP server manifest (.json alias)",

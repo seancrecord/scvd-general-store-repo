@@ -66,6 +66,10 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/badges/stamps":
     "badge_url rides the stamp-minting response; a badge URL with no stamp behind it is a 404",
 
+  // ---- a browser asset, not a capability ----
+  "/till.js":
+    "the browser till (house rule 53): a page asset a browser fetches from the <script> tag on /try and the item pages, never a door an agent calls. An agent buying here uses /api/buy/{item_id} or MCP, which are both listed; naming a JavaScript file on an agent surface would advertise a capability agents cannot use and would not want",
+
   // ---- the porch toy ----
   "/api/treat":
     "free, unmetered, named in prose on /porch where its audience actually is; the paid surfaces list paid capabilities",
@@ -117,6 +121,26 @@ describe("every public door is on a surface an agent reads, or says why not", ()
     const haystack = await discoveryHaystack();
     const unaccounted: string[] = [];
     for (const [probe, routes] of publicProbes()) {
+      /*
+       * THIS CHECK'S OWN BLIND SPOT, WRITTEN DOWN RATHER THAN LEFT TO
+       * BE REDISCOVERED (rule 52, 2026-08-26).
+       *
+       * The match is plain substring containment, so a probe that is a
+       * SUFFIX of a longer listed path passes without being listed
+       * itself: `/index.md` was accounted for by the presence of
+       * `/okf/index.md` on the day it shipped, and nobody would have
+       * known. It is now genuinely listed on llms.txt, so the pass is
+       * real — but the mechanism that hid it is still here.
+       *
+       * Left as containment on purpose for now: tightening it to a
+       * boundary match changes the verdict for every route at once,
+       * which is a separate change with its own blast radius and
+       * wants its own pass. The floor this guard establishes is
+       * therefore "no route is unlisted AND unlike anything listed",
+       * which is weaker than the sentence in the failure message. A
+       * reader deciding how much to trust a green run should read
+       * this paragraph, not that sentence.
+       */
       if (haystack.includes(probe)) continue;
       if (probe in DELIBERATELY_QUIET) continue;
       unaccounted.push(...routes.map((key) => `${key}  (probe: ${probe})`));

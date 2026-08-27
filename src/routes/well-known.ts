@@ -1,5 +1,11 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { apiCatalog, LINKSET_MEDIA_TYPE } from "@/lib/api-catalog";
+import {
+  ARD_LINK_REL,
+  ARD_PREDECESSOR_PATH,
+  ARD_WELL_KNOWN_PATH,
+  ardManifest,
+} from "@/lib/ard-catalog";
 import { DEFAULT_PROTOCOL, handleMcpPost, PROTOCOL_VERSIONS } from "@/routes/mcp";
 import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
@@ -703,6 +709,41 @@ function mcpManifest(base: string) {
 for (const path of ["/.well-known/mcp", "/.well-known/mcp.json"] as const) {
   wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL)));
   wellKnownRoutes.post(path, handleMcpPost);
+}
+
+/**
+ * GET /.well-known/ard.json — Agentic Resource Discovery (2026-08-27).
+ *
+ * The reasoning, the spec quotes and the derivation are all in
+ * lib/ard-catalog.ts. In one line: this is a DIFFERENT document from
+ * /.well-known/api-catalog, which answers "does this origin have an
+ * API and where is it documented" for RFC 9727; this one answers
+ * "what agentic resources does this origin publish" for a discovery
+ * registry, and lists the MCP server, the A2A card, the HTTP API and
+ * the two skills.
+ *
+ * BOTH PATHS, AND THE OLD ONE IS THE OLD ONE. ARD §5.1 makes
+ * /.well-known/ard.json the path a consumer MUST fetch and names
+ * /.well-known/ai-catalog.json as its predecessor, which a consumer
+ * MAY additionally consult. The predecessor is served here as an
+ * alias rather than skipped because a scanner that knows only the old
+ * path and gets a 404 cannot tell this origin from one publishing
+ * nothing — the same reason /.well-known/mcp.json exists beside
+ * /.well-known/mcp. Serving it is not a conformance problem: the spec
+ * says a publisher has no NEED to, never that it must not.
+ */
+for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH] as const) {
+  wellKnownRoutes.get(path, (c) => {
+    const base = c.env.STORE_BASE_URL;
+    /*
+     * The link relation §5.1 makes normative for consumers, on the
+     * document itself, always pointing at the CANONICAL path — so a
+     * reader that arrived at the predecessor is told where the real
+     * one is rather than left on it.
+     */
+    c.header("Link", `<${base}${ARD_WELL_KNOWN_PATH}>; rel="${ARD_LINK_REL}"`);
+    return c.json(ardManifest(base));
+  });
 }
 
 /**

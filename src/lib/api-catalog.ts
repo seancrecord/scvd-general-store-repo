@@ -212,6 +212,37 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
           },
         ],
       }),
+      /**
+       * THE A2A CARD IS AN API SURFACE TOO, and this catalog omitted
+       * it until 2026-08-27 — found by the ARD manifest's cross-check,
+       * which requires every resource it publishes to be a resource
+       * this catalog already knows about, and found the agent card
+       * missing from here rather than extra over there.
+       *
+       * It is the same argument the MCP row above makes, one protocol
+       * over: an agent host that speaks A2A and reads this catalog was
+       * being told about the two surfaces it cannot use and not about
+       * the one it can.
+       */
+      apiEntry({
+        anchor: `${base}/.well-known/a2a.json`,
+        title: `${STORE_SERVICE_NAME} — A2A agent card`,
+        desc: [
+          {
+            href: `${base}/.well-known/a2a.json`,
+            type: "application/json",
+            title:
+              "A2A agent card: skills, input modes, and the x402 terms each paid skill answers with",
+          },
+        ],
+        doc: [
+          {
+            href: `${base}/developers`,
+            type: "text/html",
+            title: "Developer documentation",
+          },
+        ],
+      }),
       ...versionedEntries(base),
       /**
        * The command line, listed as an API surface because that is
