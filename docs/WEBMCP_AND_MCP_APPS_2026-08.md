@@ -665,11 +665,9 @@ through it.
 - **The P8 shape is still open** — narrow (read-only cards), the
   third door (§4.5, a card at the approval moment that renders and
   cannot act), or broad (the approval widget with a button). §4.3.
-- **The refusal test is still open** as a *rule*. Does *"does this
-  surface make it easier to refuse or easier to accept?"* (§4.6)
-  become its own rule beside 43, where it belongs by subject, or
-  stay a design gate in this document? Rule 17 flags it and
-  deliberately declines to answer it.
+- ~~**The refusal test is still open** as a *rule*.~~ **STRUCK
+  2026-08-27: it is `HOUSE_RULES.md` rule 53, drafted and awaiting
+  the keeper's ink. See §8.5a.**
 - **The rule 4 check on §5.2** — publishing our own capability
   absence: counted coverage gap, or preemptive denial?
 - **The four-host render test (§8.5)** still gates any card, and it
@@ -823,11 +821,25 @@ our limits; lines that fail comment on the endpoint.
 > "The keeper looked once. Once is what once means."
 > "If it matters, run the file yourself. It is the same file."
 
-**OPEN for the keeper:** does the colophon carry the line at all, or
-only the mark? A card that is doing rule 43's work with four unclimbed
-rungs may not want charm in the same frame — or the charm may be
-exactly what stops it reading as a machine's verdict. That is taste,
-and taste is his.
+~~**OPEN for the keeper:** does the colophon carry the line at all, or
+only the mark?~~ **ANSWERED 2026-08-27 — "I love it, I love adding the
+house rule and rotation."** The colophon carries three things: the
+mark, the deterministic line, and **a citation of the rule the card is
+built under**. That last one is the keeper's addition and it is the
+best idea in this section: the instrument prints the standard it is
+held to, on its own face, where anybody looking at the reading can
+also read the constraint the reading was taken under. It is the same
+move as publishing the coverage gaps beside the findings, applied to
+the rendering.
+
+**AND IT BECAME A RULE.** `HOUSE_RULES.md` rule 53, drafted 2026-08-27
+and awaiting his ink: *every surface we render must make refusal easier
+than acceptance.* Rule 43 says what a verdict IS; 53 says what it must
+DO once drawn, because a record can be impeccable and its picture still
+argue for a yes. The badge/colophon distinction rides in it as the
+corollary on identity, and the deterministic line as rule 22's
+mechanism applied to a card. §8.2's open question — whether the refusal
+test becomes its own rule beside 43 — is struck by it.
 
 ### 8.5 The one test that still gates everything
 

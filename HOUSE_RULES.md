@@ -516,6 +516,65 @@ LORE & TRADITION
     of it, and the file says so in those words.
 
 
+53. EVERY SURFACE WE RENDER MUST MAKE REFUSAL EASIER THAN
+    ACCEPTANCE. (2026-08-27, from the MCP Apps card work in
+    docs/WEBMCP_AND_MCP_APPS_2026-08.md §4.6 and §8.5a. The keeper
+    asked for the house rule on the card itself; this is the rule
+    it cites.)
+
+    Rule 43 says what a verdict IS — dated observation, never a
+    score. This says what a verdict must DO once it is drawn. The
+    two are the same conviction at different distances: 43 governs
+    the record, 53 governs every rendering of it, because a record
+    can be impeccable and its picture still argue for a yes.
+
+    THE TEST IS ONE QUESTION, ASKED OF THE FINISHED PICTURE, NOT OF
+    THE DATA BEHIND IT: does this make it easier to refuse, or
+    easier to accept? A verdict card whose expiry, unclimbed rungs
+    and not-observed fields carry the same visual weight as the
+    finding makes refusal easy, and ships. The same fields shrunk to
+    grey footnotes under a large green word make acceptance easy,
+    and do not — even though every byte is identical and nothing on
+    it is false. Colour that decides before a word is read is the
+    commonest way to fail this, and the cheapest to catch.
+
+    WHY THE PICTURE NEEDS ITS OWN RULE. Refusability is the property
+    summarisation destroys first. Prose flattens "ready, at L3a, on
+    one probe, nineteen days ago, four rungs never climbed" into
+    "ready", and no amount of care in the JSON survives that hop. A
+    rendering is the one channel that reaches a human without
+    passing through something that paraphrases — which is exactly
+    why it must not do the flattening itself.
+
+    THE COROLLARY, ON IDENTITY: WE MARK OUR OWN WORK, NEVER THE
+    SUBJECT'S. A BADGE marks the subject — "this endpoint is
+    approved" — and is the score rule 43 already bans, whatever it
+    is called. A COLOPHON marks the artifact — "we took this
+    reading, on this date, under this battery" — and is a signature.
+    They look alike and they are opposite objects. The store's own
+    world already has the right word for the second one several
+    times over: a hallmark on silver, an assayer's stamp, a
+    printer's colophon, a surveyor's benchmark — every one names who
+    did the work and when, and not one says how good the thing is.
+    So: a colophon at the foot, and no badge anywhere.
+
+    THE COLOPHON MAY CARRY A LINE, AND THE LINE IS DETERMINISTIC.
+    Rule 22's mechanism, not a new one: a chalkboard, not a slot
+    machine. The line is derived from the observation's own id, so
+    the same reading carries the same line forever and the card
+    stays reproducible offline like everything else on it. Nothing
+    on an artifact whose whole claim is that a stranger can
+    re-derive it may be random. And the line is about US and our
+    limits, never about the finding — a wry line about the subject
+    undercuts the caveats standing beside it and makes the card
+    casual about a decision that is not.
+
+    NOTHING RENDERED IS EXEMPT because it is small, internal, or a
+    demo. A screenshot of a card is a card.
+
+    ⚑ Wording of this rule awaits the keeper's own ink.
+
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the
