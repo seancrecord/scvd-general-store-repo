@@ -30,7 +30,6 @@ import { renderDeclinesPage } from "@/pages/admin/declines-page";
 import { renderRecountPage } from "@/pages/admin/recount-page";
 import { renderCounterPage } from "@/pages/admin/counter-page";
 import { renderOfficePage } from "@/pages/admin/office-page";
-import { renderCvCorner } from "@/pages/admin/cv-corner-page";
 import { renderItemEventsPage } from "@/pages/admin/item-events-page";
 import {
   listAlmanacEntries,
@@ -41,7 +40,6 @@ import {
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetText } from "@/lib/kv-bulk";
 import type { ShutterState } from "@/services/shutter";
-import { readResearchTrails } from "@/lib/research-log";
 import { renderToolsPage } from "@/pages/admin/tools-page";
 import { compileDigest, getLatestDigest } from "@/services/digest";
 import { printFoundingEdition } from "@/services/founding";
@@ -1752,54 +1750,16 @@ adminRoutes.get("/admin/bell", async (c) => {
   return c.html(renderBellPage({ rings }));
 });
 
-/**
- * CV'S CORNER — the partner's spot in the keeper's office.
- *
- * Sits behind the same admin auth as every other room (it reads the
- * store's own books), and is READ-ONLY by construction: no form, no
- * input, no POST target. A test asserts that, because the guardrail is
- * the point of the surface rather than a note about it.
- *
- * A shelf that fails to load is NAMED rather than rendered as a zero.
- * Showing "0 settlements" when the read threw would be the friendlier
- * bug and the worse one, on a page whose whole job is an honest glance.
+/*
+ * CV'S CORNER CAME DOWN, 2026-08-27, on the keeper's call: "we can
+ * probably drop CV's corner, it's not maintained." The page, its
+ * research-trail reader and its spec went together; the research
+ * markdown under research/ stays, because those are records and this
+ * was only a window onto them. An admin page nobody maintains is not
+ * neutral furniture — it is a stale reading served with the same
+ * authority as the live ones beside it, on the one surface whose job
+ * is an honest glance.
  */
-adminRoutes.get("/admin/cv", async (c) => {
-  const loadNotes: string[] = [];
-  const shelf = async <T>(
-    load: Promise<T>,
-    fallback: T,
-    name: string,
-  ): Promise<T> => {
-    try {
-      return await load;
-    } catch {
-      loadNotes.push(name);
-      return fallback;
-    }
-  };
-  const [ledger, guestbook, bellRaw, patronRaw] = await Promise.all([
-    shelf(readMonthLedger(c.env), emptyMonthLedger(), "the month ledger"),
-    shelf(listGuestbook(c.env, 6), [], "the guestbook"),
-    shelf(c.env.COUNTERS.get(KV_KEYS.bellCount), null, "the bell count"),
-    shelf(c.env.COUNTERS.get(KV_KEYS.patronNumber), null, "the patron count"),
-  ]);
-  const asCount = (raw: string | null): number | null => {
-    if (raw === null) return null;
-    const value = Number.parseInt(raw, 10);
-    return Number.isFinite(value) ? value : null;
-  };
-  return c.html(
-    renderCvCorner({
-      ledger,
-      guestbook,
-      bellCount: asCount(bellRaw),
-      patronCount: asCount(patronRaw),
-      trails: readResearchTrails(),
-      loadNotes,
-    }),
-  );
-});
 
 /**
  * THE ALMANAC LEVER. The keeper's own rule — everything manageable from
