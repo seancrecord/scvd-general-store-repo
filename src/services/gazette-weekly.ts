@@ -1,3 +1,4 @@
+import { kvPut } from "@/lib/kv-retry";
 import { listKeys } from "@/lib/kv-list";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { isHouseWallet } from "@/lib/channel";
@@ -489,7 +490,7 @@ export async function assembleDraft(
   if (facts.confessionId) {
     draft.confession_id = facts.confessionId;
   }
-  await env.ORDERS.put(KV_KEYS.gazetteDraft, JSON.stringify(draft));
+  await kvPut(env.ORDERS, KV_KEYS.gazetteDraft, JSON.stringify(draft));
   return draft;
 }
 
@@ -553,11 +554,11 @@ export async function publishEdition(
     contributors: [],
     tip_ids: [],
   };
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.gazetteIssue(issueNumber),
     JSON.stringify(edition),
   );
-  await env.COUNTERS.put(KV_KEYS.gazetteIssueCount, String(issueNumber));
+  await kvPut(env.COUNTERS, KV_KEYS.gazetteIssueCount, String(issueNumber));
 
   // Snapshot so the next edition reports deltas from this close.
   const bellNow = parseInt(
@@ -570,7 +571,7 @@ export async function publishEdition(
     failed_tally: await listFailedItems(env),
     period_start: edition.date,
   };
-  await env.COUNTERS.put(KV_KEYS.gazetteWeeklyState, JSON.stringify(state));
+  await kvPut(env.COUNTERS, KV_KEYS.gazetteWeeklyState, JSON.stringify(state));
   await env.COUNTERS.delete(KV_KEYS.gazetteCorrections);
   if (draft?.confession_id) {
     // Printed at publish, not at draft, a discarded draft prints nothing.
@@ -585,7 +586,7 @@ export async function addCorrection(env: Env, correction: string): Promise<void>
     (await env.COUNTERS.get<string[]>(KV_KEYS.gazetteCorrections, "json")) ??
     [];
   corrections.push(correction);
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.gazetteCorrections,
     JSON.stringify(corrections),
   );

@@ -4,6 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { Env, TrainTagRecord, TrainTagStatus } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE TRAIN. Out past the porch.
@@ -68,7 +69,7 @@ export async function paintTag(
   if (name) {
     record.name = name;
   }
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.trainTag(forwardTimestamp(Date.now()), record.id),
     JSON.stringify(record),
   );
@@ -136,6 +137,6 @@ export async function setTagStatus(
   if (status === "approved" && !found.record.displayed_at) {
     found.record.displayed_at = new Date().toISOString();
   }
-  await env.ORDERS.put(found.kvKey, JSON.stringify(found.record));
+  await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
   return found.record;
 }

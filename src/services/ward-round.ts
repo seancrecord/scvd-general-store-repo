@@ -52,6 +52,7 @@ import {
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { marketAggregates, offerFacts, type MarketAggregates, type OfferFacts } from "@/services/market";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE WARD ROUND — the weekly in-Worker census of the x402 discovery
@@ -777,10 +778,10 @@ async function sealRound(
       previous_at: previous?.at ?? "",
     };
   }
-  await env.COUNTERS.put(KV_KEYS.wardRound(round.week), JSON.stringify(round));
-  await env.COUNTERS.put(KV_KEYS.wardRoundLatest, JSON.stringify(round));
+  await kvPut(env.COUNTERS, KV_KEYS.wardRound(round.week), JSON.stringify(round));
+  await kvPut(env.COUNTERS, KV_KEYS.wardRoundLatest, JSON.stringify(round));
   if (previous && previous.week !== round.week) {
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       KV_KEYS.wardRoundPrevious,
       JSON.stringify(previous),
     );

@@ -13,6 +13,7 @@ import {
   type TabDeltaKind,
 } from "@/store/tab-pool";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE AGGREGATION ENDPOINT's working half (layer 3). The Tab's spec
@@ -203,7 +204,7 @@ export async function acceptDelta(
         "The pool has taken its daily fill and the gate is closed until tomorrow (UTC). Nothing was recorded; send the delta again after the turn of the day.",
     };
   }
-  await env.COUNTERS.put(dayKey, String(taken + 1), {
+  await kvPut(env.COUNTERS, dayKey, String(taken + 1), {
     expirationTtl: 3 * 86400,
   });
 
@@ -226,7 +227,7 @@ export async function acceptDelta(
   );
   // The corpus row: kind and category ride in the key so sample sizes
   // derive from a listing alone, no bulk read.
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.tabDelta(delta.kind, safeCategory(delta.category), receiptId),
     JSON.stringify({ delta, digest, received_at: receipt.received_at }),
   );

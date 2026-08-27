@@ -5,6 +5,7 @@ import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import { signMessage } from "@/lib/signing";
 import type { Env, LetterRecord, LetterStatus } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 
 /**
@@ -51,9 +52,9 @@ export async function submitLetter(
     record.identity_verified = false;
   }
   const queueKey = KV_KEYS.letter(invertedTimestamp(Date.now()), record.letter_id);
-  await env.ORDERS.put(queueKey, JSON.stringify(record));
+  await kvPut(env.ORDERS, queueKey, JSON.stringify(record));
   // Direct-id pointer so pickup doesn't scan the queue.
-  await env.ORDERS.put(KV_KEYS.letterById(record.letter_id), queueKey);
+  await kvPut(env.ORDERS, KV_KEYS.letterById(record.letter_id), queueKey);
   await bumpCounter(env, KV_KEYS.lettersReceived);
   return {
     record,
@@ -96,7 +97,7 @@ export async function listLetters(env: Env): Promise<QueuedLetter[]> {
 async function saveLetter(env: Env, letterId: string, record: LetterRecord): Promise<void> {
   const queueKey = await env.ORDERS.get(KV_KEYS.letterById(letterId));
   if (queueKey) {
-    await env.ORDERS.put(queueKey, JSON.stringify(record));
+    await kvPut(env.ORDERS, queueKey, JSON.stringify(record));
   }
 }
 
@@ -141,7 +142,7 @@ export async function replyToLetter(
 
 async function bumpCounter(env: Env, key: string): Promise<void> {
   const current = await env.COUNTERS.get(key);
-  await env.COUNTERS.put(key, String((current ? parseInt(current, 10) : 0) + 1));
+  await kvPut(env.COUNTERS, key, String((current ? parseInt(current, 10) : 0) + 1));
 }
 
 export interface LetterCounts {

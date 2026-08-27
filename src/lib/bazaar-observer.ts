@@ -3,6 +3,7 @@ import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { isRecord } from "@/types";
 import type { BazaarLedgerEntry, Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * Captures EXTENSION-RESPONSES headers from facilitator verify/settle
@@ -94,7 +95,7 @@ export async function persistBazaarObservations(
   buffer = [];
   for (const observation of drained) {
     const entry: BazaarLedgerEntry = { path, ...observation };
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       KV_KEYS.bazaarLedger(invertedTimestamp(Date.now())),
       JSON.stringify(entry),
       { expirationTtl: LEDGER_TTL_SECONDS },

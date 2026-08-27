@@ -12,6 +12,7 @@ import {
 } from "@/services/watch-evidence";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE STANDING WATCH — seller-pays monitoring as an artifact, not as
@@ -174,7 +175,7 @@ export async function startWatch(
     ...(payer ? { payer: payer.toLowerCase() } : {}),
     probes: [],
   };
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.standingWatch(record.watch_id),
     JSON.stringify(record),
   );

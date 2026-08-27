@@ -4,6 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { Env, TipRecord, TipStatus } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 
 /**
@@ -48,7 +49,7 @@ export async function recordTip(
     record.identity_verified = false;
   }
   const kvKey = KV_KEYS.tip(invertedTimestamp(Date.now()), record.id);
-  await env.ORDERS.put(kvKey, JSON.stringify(record));
+  await kvPut(env.ORDERS, kvKey, JSON.stringify(record));
   return { record, kvKey };
 }
 
@@ -86,6 +87,6 @@ export async function setTipStatus(
     return null;
   }
   stored.record.status = status;
-  await env.ORDERS.put(stored.kvKey, JSON.stringify(stored.record));
+  await kvPut(env.ORDERS, stored.kvKey, JSON.stringify(stored.record));
   return stored.record;
 }

@@ -12,6 +12,7 @@ import {
 } from "@/services/bot-auth-card";
 import { checkProbeTarget } from "@/lib/probe-target";
 import type { Env, HonoEnv } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * GET /.well-known/http-message-signatures-directory — the Web Bot
@@ -79,7 +80,7 @@ async function takeGlobalCheckBudget(env: Env): Promise<boolean> {
   if (used >= GLOBAL_CHECKS_PER_MINUTE) {
     return false;
   }
-  await env.COUNTERS.put(key, String(used + 1), { expirationTtl: 120 });
+  await kvPut(env.COUNTERS, key, String(used + 1), { expirationTtl: 120 });
   return true;
 }
 

@@ -4,6 +4,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
 import type { ConfessionRecord, ConfessionStatus, Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 
 /**
@@ -36,7 +37,7 @@ export async function hearConfession(
   if (name && name.toLowerCase() !== "anonymous") {
     record.sign_as = name;
   }
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.confession(invertedTimestamp(Date.now()), record.id),
     JSON.stringify(record),
   );
@@ -75,7 +76,7 @@ export async function setConfessionStatus(
     return null;
   }
   found.record.status = status;
-  await env.ORDERS.put(found.kvKey, JSON.stringify(found.record));
+  await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
   return found.record;
 }
 

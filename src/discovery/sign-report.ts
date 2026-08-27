@@ -14,6 +14,7 @@ import { currentKeyInServiceFrom } from "@/store/key-registry";
 import { SKILL_VERSION } from "@/store/spec";
 import type { EvidenceEnvelope } from "@/evidence";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * SIGNED DISCOVERY REPORT — the free inventory, wrapped and signed.
@@ -91,7 +92,7 @@ export async function persistDiscoveryReport(
     issued_at: issuedAt,
     envelope,
   };
-  await env.PATRONS.put(KV_KEYS.discoveryReport(report_id), JSON.stringify(record));
+  await kvPut(env.PATRONS, KV_KEYS.discoveryReport(report_id), JSON.stringify(record));
   await writeHostDiscoveryModule(
     env,
     new URL(record.about).host,

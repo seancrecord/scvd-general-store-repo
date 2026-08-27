@@ -10,6 +10,7 @@ import {
 } from "@/lib/sanitize";
 import { verifyMessageSignature } from "@/lib/signing";
 import type { Env, GuestbookEntry } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a guestbook keys scan. An unnamed cap is a silent one. */
 const GUESTBOOK_SCAN_CAP = 1000;
@@ -97,7 +98,7 @@ export async function signGuestbook(
     entry.identity_verified = true;
   }
   const key = KV_KEYS.guestbookEntry(invertedTimestamp(Date.now()), entry.id);
-  await env.GUESTBOOK.put(key, JSON.stringify(entry));
+  await kvPut(env.GUESTBOOK, key, JSON.stringify(entry));
   return { ok: true, result: { entry, key } };
 }
 

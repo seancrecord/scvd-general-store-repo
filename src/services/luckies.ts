@@ -1,3 +1,4 @@
+import { kvPut } from "@/lib/kv-retry";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { newLuckyId } from "@/lib/ids";
 import { signMessage, verifyMessageSignature } from "@/lib/signing";
@@ -190,6 +191,6 @@ async function signAndStore(
     signature,
     public_key: publicKey,
   };
-  await env.PATRONS.put(KV_KEYS.lucky(lucky.lucky_id), JSON.stringify(record));
+  await kvPut(env.PATRONS, KV_KEYS.lucky(lucky.lucky_id), JSON.stringify(record));
   return record;
 }

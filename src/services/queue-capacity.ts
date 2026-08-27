@@ -4,6 +4,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { sendAlert } from "@/lib/alerts";
 import { MENU_ITEMS } from "@/store";
 import type { Env, MenuItem, OrderRecord } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * HOW MUCH LABOR IS ALREADY PROMISED — the gate the shutter was
@@ -204,7 +205,7 @@ async function countFromIndex(
   );
   const counted = tally(orders.values(), now);
   if (counted.openIds.length !== index.ids.length) {
-    await env.ORDERS.put(
+    await kvPut(env.ORDERS, 
       KV_KEYS.openLaborIndex,
       JSON.stringify({ ...index, ids: counted.openIds } satisfies OpenLaborIndex),
     ).catch(() => undefined);
@@ -262,7 +263,7 @@ export async function rebuildOpenLaborIndex(env: Env): Promise<number> {
   const index: OpenLaborIndex = keys.truncated
     ? { ids: open }
     : { ids: open, built_at: new Date().toISOString() };
-  await env.ORDERS.put(KV_KEYS.openLaborIndex, JSON.stringify(index));
+  await kvPut(env.ORDERS, KV_KEYS.openLaborIndex, JSON.stringify(index));
   return open.length;
 }
 
@@ -274,7 +275,7 @@ export async function markLaborOpen(
   if (!LABOR_ITEM_IDS.has(order.item_id)) return;
   const index = await readIndex(env);
   if (index.ids.includes(order.order_id)) return;
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.openLaborIndex,
     JSON.stringify({
       ...index,
@@ -289,7 +290,7 @@ export async function markLaborClosed(
 ): Promise<void> {
   const index = await readIndex(env);
   if (!index.ids.includes(orderId)) return;
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.openLaborIndex,
     JSON.stringify({
       ...index,

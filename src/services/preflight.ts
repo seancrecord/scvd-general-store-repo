@@ -7,6 +7,7 @@ import { readPayTo } from "@/lib/pay-to";
 import { KNOWN_TESTNETS, l3bChecks } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE FREE ENDPOINT PREFLIGHT — /api/preflight.
@@ -327,7 +328,7 @@ async function takeGlobalProbeBudget(env: Env): Promise<BudgetState> {
       reset,
     };
   }
-  await env.COUNTERS.put(key, String(used + 1), { expirationTtl: 120 });
+  await kvPut(env.COUNTERS, key, String(used + 1), { expirationTtl: 120 });
   return {
     allowed: true,
     limit: GLOBAL_PROBES_PER_MINUTE,

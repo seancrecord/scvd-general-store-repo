@@ -3,6 +3,7 @@ import { newRefundId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import type { Env, RefundRecord } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a refunds scan. Named because an unnamed cap is a silent one. */
 const REFUND_CAP = 500;
@@ -44,7 +45,7 @@ export async function createRefund(
   if (input.orderId) {
     record.order_id = input.orderId;
   }
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.refund(record.refund_id),
     JSON.stringify(record),
   );
@@ -85,6 +86,6 @@ export async function markRefundPaid(
   record.status = "refund_paid";
   record.tx_hash = txHash;
   record.paid_at = new Date().toISOString();
-  await env.ORDERS.put(KV_KEYS.refund(refundId), JSON.stringify(record));
+  await kvPut(env.ORDERS, KV_KEYS.refund(refundId), JSON.stringify(record));
   return record;
 }

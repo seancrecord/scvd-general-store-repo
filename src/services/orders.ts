@@ -5,6 +5,7 @@ import { bulkGetJson } from "@/lib/kv-bulk";
 import { newOrderId } from "@/lib/ids";
 import type { Env, MenuItem, OrderRecord } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
+import { kvPut } from "@/lib/kv-retry";
 
 /** Ceiling on a inventory counters scan. An unnamed cap is a silent one. */
 const INVENTORY_CAP = 2000;
@@ -76,7 +77,7 @@ export async function createOrder(
   if (options.referrer) {
     order.referrer = options.referrer;
   }
-  await env.ORDERS.put(KV_KEYS.order(order.order_id), JSON.stringify(order));
+  await kvPut(env.ORDERS, KV_KEYS.order(order.order_id), JSON.stringify(order));
   /*
    * INDEX IT IF IT IS LABOR, so the bench can count what is promised
    * without walking every order the store has ever taken. The order
@@ -119,7 +120,7 @@ export async function acknowledgeOrder(
     return null;
   }
   order.acknowledged_at = new Date().toISOString();
-  await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
+  await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
   return order;
 }
 
@@ -135,7 +136,7 @@ export async function completeOrder(
   order.status = "completed";
   order.deliverable = deliverable;
   order.completed_at = new Date().toISOString();
-  await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
+  await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
   // Finished work stops occupying the bench. A missed delete only ever
   // over-refuses, and the next bench read sweeps it.
   await markLaborClosed(env, orderId);
@@ -170,7 +171,7 @@ export async function completeOrder(
       order.webhook =
         "attempted once, your endpoint was unreachable — not retried; the deliverable stays at this order URL forever";
     }
-    await env.ORDERS.put(KV_KEYS.order(orderId), JSON.stringify(order));
+    await kvPut(env.ORDERS, KV_KEYS.order(orderId), JSON.stringify(order));
   }
   return order;
 }
@@ -218,7 +219,7 @@ export async function recordInventorySale(
   const key = KV_KEYS.inventory(item.id, currentWeekKey());
   const sold = await env.COUNTERS.get(key);
   const now = (sold ? parseInt(sold, 10) : 0) + 1;
-  await env.COUNTERS.put(key, String(now));
+  await kvPut(env.COUNTERS, key, String(now));
   return now;
 }
 

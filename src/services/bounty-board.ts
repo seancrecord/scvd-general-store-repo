@@ -21,6 +21,7 @@ import {
   type FieldSigner,
 } from "@/services/launch-check";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE BOUNTY BOARD (BOUNTY_BOARD.md) — mystery shoppers for the x402
@@ -139,7 +140,7 @@ async function listBountyRecords(env: Env): Promise<BountyRecord[]> {
 }
 
 async function saveBounty(env: Env, record: BountyRecord): Promise<void> {
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.bounty(record.bounty_id),
     JSON.stringify(record),
   );
@@ -438,7 +439,7 @@ export async function claimBounty(
       "that transaction has already been claimed — one payout per settlement, ever",
     );
   }
-  await env.COUNTERS.put(txKey, claimId);
+  await kvPut(env.COUNTERS, txKey, claimId);
 
   /*
    * A budget reservation taken and then abandoned would shrink the
@@ -467,7 +468,7 @@ export async function claimBounty(
     }
     if (reserved) {
       const current = await weekSpent(env, reserved.week);
-      await env.COUNTERS.put(
+      await kvPut(env.COUNTERS, 
         KV_KEYS.bountyBudget(reserved.week),
         String(Math.max(0, current - reserved.amount)),
       );
@@ -569,7 +570,7 @@ export async function claimBounty(
     // every concurrent increment but one, so the weekly cap bounded
     // nothing and /bounties published a figure below what was paid.
     reserved = { week: weekKey, amount: bounty.reward_usd };
-    await env.COUNTERS.put(
+    await kvPut(env.COUNTERS, 
       KV_KEYS.bountyBudget(weekKey),
       String(spent + bounty.reward_usd),
     );

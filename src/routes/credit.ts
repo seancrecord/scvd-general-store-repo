@@ -17,6 +17,7 @@ import {
   usd,
 } from "@/services/store-credit";
 import type { HonoEnv } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * REGULARS' CREDIT, public face: read any wallet's balance free (the
@@ -237,7 +238,7 @@ creditRoutes.post("/api/credit/challenge", async (c) => {
     );
   }
   const nonce = crypto.randomUUID();
-  await c.env.COUNTERS.put(
+  await kvPut(c.env.COUNTERS, 
     KV_KEYS.creditChallenge(address.toLowerCase()),
     nonce,
     { expirationTtl: CHALLENGE_TTL_SECONDS },

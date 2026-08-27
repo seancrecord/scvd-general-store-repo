@@ -2,6 +2,7 @@ import { listKeys } from "@/lib/kv-list";
 import { invertedTimestamp, KV_KEYS } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * The closers list. Every coffees_for_closers win lands here so the
@@ -29,7 +30,7 @@ export async function recordCloser(
     patron_number: patronNumber,
     at: new Date().toISOString(),
   };
-  await env.ORDERS.put(
+  await kvPut(env.ORDERS, 
     KV_KEYS.closer(invertedTimestamp(Date.now())),
     JSON.stringify(entry),
     { expirationTtl: CLOSER_TTL_SECONDS },

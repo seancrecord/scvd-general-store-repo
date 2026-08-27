@@ -1,3 +1,4 @@
+import { kvPut } from "@/lib/kv-retry";
 import { canonicalAddress } from "@/lib/addresses";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { listKeys } from "@/lib/kv-list";
@@ -57,7 +58,7 @@ async function claimPatronNumber(
       candidate += 1;
       continue;
     }
-    await env.PATRONS.put(
+    await kvPut(env.PATRONS, 
       KV_KEYS.patron(candidate),
       JSON.stringify({ ...record, patron_number: candidate }),
     );
@@ -66,18 +67,18 @@ async function claimPatronNumber(
       "json",
     );
     if (readback && readback.cert_id === record.cert_id) {
-      await env.COUNTERS.put(KV_KEYS.patronNumber, String(candidate));
+      await kvPut(env.COUNTERS, KV_KEYS.patronNumber, String(candidate));
       return candidate;
     }
     candidate += 1;
   }
   // Retries exhausted under heavy contention: take the slot anyway rather
   // than turn a paying customer away. Worst case two badges share a number.
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.patron(candidate),
     JSON.stringify({ ...record, patron_number: candidate }),
   );
-  await env.COUNTERS.put(KV_KEYS.patronNumber, String(candidate));
+  await kvPut(env.COUNTERS, KV_KEYS.patronNumber, String(candidate));
   return candidate;
 }
 
@@ -253,12 +254,12 @@ export async function mintCertificate(
     public_key: publicKey,
     signature_jcs: signatureJcs,
   };
-  await env.PATRONS.put(KV_KEYS.cert(certId), JSON.stringify(certRecord));
+  await kvPut(env.PATRONS, KV_KEYS.cert(certId), JSON.stringify(certRecord));
   // The reverse index the paid-retry lane reads, so "did this
   // settlement already mint?" is one lookup rather than a capped scan
   // that silently stops seeing older records.
   if (certificate.settlement_tx) {
-    await env.PATRONS.put(
+    await kvPut(env.PATRONS, 
       KV_KEYS.settlementCert(certificate.settlement_tx.toLowerCase()),
       certId,
     );

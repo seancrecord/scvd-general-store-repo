@@ -6,6 +6,7 @@ import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import { issuePassport } from "@/services/passport";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE HOSTED TRUST PROFILE — the store's first recurring door
@@ -188,6 +189,6 @@ export async function performTrustProfile(
   };
   // Latest-only, like the refresh: the record IS the current term;
   // the purchase certificates are the history of renewals.
-  await env.COUNTERS.put(KV_KEYS.trustProfile(host), JSON.stringify(profile));
+  await kvPut(env.COUNTERS, KV_KEYS.trustProfile(host), JSON.stringify(profile));
   return profile;
 }

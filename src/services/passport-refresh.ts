@@ -3,6 +3,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { signMessage } from "@/lib/signing";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * THE PASSPORT REFRESH — the paid fresh check (the keeper's "both"
@@ -107,7 +108,7 @@ export async function performPassportRefresh(
   };
   // Latest-only: the passport wants the newest observation, and a
   // history of refreshes is what the census chain already is.
-  await env.COUNTERS.put(
+  await kvPut(env.COUNTERS, 
     KV_KEYS.passportRefresh(observation.host),
     JSON.stringify(observation),
   );

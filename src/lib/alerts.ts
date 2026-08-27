@@ -3,6 +3,7 @@ import { invertedTimestamp } from "@/lib/kv-keys";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import type { Env } from "@/types";
 import { outboundHeaders } from "@/lib/identity";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * P1 alerting. A short list of conditions pages the keeper — see
@@ -217,7 +218,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
       const row = await env.COUNTERS.get<AlertRow>(existingLogKey, "json");
       if (row) {
         repeats = (row.repeats ?? 1) + 1;
-        await env.COUNTERS.put(
+        await kvPut(env.COUNTERS, 
           existingLogKey,
           JSON.stringify({
             ...row,
@@ -229,7 +230,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
           } satisfies AlertRow),
           { expirationTtl: ALERT_LOG_TTL_SECONDS },
         );
-        await env.COUNTERS.put(openKey, existingLogKey, {
+        await kvPut(env.COUNTERS, openKey, existingLogKey, {
           expirationTtl: ALERT_LOG_TTL_SECONDS,
         });
         updated = true;
@@ -238,7 +239,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
 
     if (!updated) {
       const logKey = `alert_log:${invertedTimestamp(Date.now())}`;
-      await env.COUNTERS.put(
+      await kvPut(env.COUNTERS, 
         logKey,
         JSON.stringify({
           condition: input.condition,
@@ -249,7 +250,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
         } satisfies AlertRow),
         { expirationTtl: ALERT_LOG_TTL_SECONDS },
       );
-      await env.COUNTERS.put(openKey, logKey, {
+      await kvPut(env.COUNTERS, openKey, logKey, {
         expirationTtl: ALERT_LOG_TTL_SECONDS,
       });
     }
@@ -261,7 +262,7 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
      * page after that is the one that mattered.
      */
     if (await env.COUNTERS.get(pageKey)) return;
-    await env.COUNTERS.put(pageKey, "1", {
+    await kvPut(env.COUNTERS, pageKey, "1", {
       expirationTtl: pageIntervalFor(repeats),
     });
     await emailKeeper(env, input.condition, detail, now);

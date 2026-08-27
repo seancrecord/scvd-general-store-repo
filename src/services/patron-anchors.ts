@@ -9,6 +9,7 @@ import {
 } from "@/services/anchor-submit";
 import type { SubmitOptions } from "@/services/anchor-submit";
 import type { Env } from "@/types";
+import { kvPut } from "@/lib/kv-retry";
 
 /**
  * PATRON ANCHORS — the store's own Bitcoin-anchoring machinery, sold
@@ -73,7 +74,7 @@ export async function createPatronAnchor(
     // says exactly which state it is in.
     ots: await submitDigestToOts(input.digest.toLowerCase(), options),
   };
-  await env.PATRONS.put(
+  await kvPut(env.PATRONS, 
     KV_KEYS.patronAnchor(record.anchor_id),
     JSON.stringify(record),
   );
@@ -128,7 +129,7 @@ export async function sweepPatronAnchors(
       const ots = await submitDigestToOts(record.digest, options);
       if (ots.status !== "failed") {
         sweep.resubmitted += 1;
-        await env.PATRONS.put(
+        await kvPut(env.PATRONS, 
           KV_KEYS.patronAnchor(record.anchor_id),
           JSON.stringify({ ...record, ots }),
         );
@@ -142,7 +143,7 @@ export async function sweepPatronAnchors(
       );
       if (upgraded) {
         sweep.upgraded += 1;
-        await env.PATRONS.put(
+        await kvPut(env.PATRONS, 
           KV_KEYS.patronAnchor(record.anchor_id),
           JSON.stringify({ ...record, ots: upgraded }),
         );
