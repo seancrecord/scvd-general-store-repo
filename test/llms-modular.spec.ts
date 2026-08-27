@@ -152,7 +152,7 @@ describe("the index is an index", () => {
 });
 
 describe("every section is filed exactly once", () => {
-  it("loses no section between the index and the area files", async () => {
+  it("loses no section between the index and the area files", { timeout: 15_000 }, async () => {
     /*
      * THE MAP IS THE ONE HAND-TYPED THING IN THIS SPLIT, so it is the
      * one thing guarded in both directions. A heading in the document
@@ -162,7 +162,21 @@ describe("every section is filed exactly once", () => {
     const rendered = guideHeadings(BASE);
     expect(rendered.length).toBeGreaterThan(30);
 
+    /*
+     * EACH DOCUMENT IS FETCHED ONCE, then every heading is checked
+     * against the in-memory copies. The first cut re-fetched every
+     * area file per heading — thirty-odd headings times every area,
+     * hundreds of identical renders — and on saturated CI runners
+     * (imports alone at 1,700s, twice on 2026-08-27) that loop blew
+     * the 5s default and failed the build on main. Same test timing
+     * out twice is ours by house rule; the fix is the redundant work,
+     * not the assertion.
+     */
     const index = await body("/llms.txt");
+    const areaTexts = new Map<string, string>();
+    for (const area of LLMS_AREAS) {
+      areaTexts.set(`${area.path}/llms.txt`, await body(`${area.path}/llms.txt`));
+    }
     const seen = new Map<string, string[]>();
 
     for (const heading of rendered) {
@@ -170,10 +184,9 @@ describe("every section is filed exactly once", () => {
       if (index.includes(`## ${heading}\n`)) {
         homes.push("/llms.txt");
       }
-      for (const area of LLMS_AREAS) {
-        const text = await body(`${area.path}/llms.txt`);
+      for (const [path, text] of areaTexts) {
         if (text.includes(`## ${heading}\n`)) {
-          homes.push(`${area.path}/llms.txt`);
+          homes.push(path);
         }
       }
       seen.set(heading, homes);
