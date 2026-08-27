@@ -24,6 +24,18 @@ const CURATED_RESPONSE_HEADERS = [
   "content-type",
   "content-length",
   "location",
+  /*
+   * 3.1 (ledger G4) — THE INFRASTRUCTURE DIMENSION, from what the
+   * probe already touched. Zero extra contact and the same consent
+   * posture: these headers arrived in the response we were already
+   * reading. Without them an infra migration or a shared-infra
+   * cluster leaves no tape, and that tape cannot be reconstructed
+   * from a later probe — the server that answered on Tuesday is not
+   * available for questioning on Sunday.
+   */
+  "server",
+  "via",
+  "x-powered-by",
 ] as const;
 
 export interface WatchEvidenceCapture {
@@ -37,6 +49,63 @@ export interface WatchEvidenceCapture {
   body_bytes: number;
   /** True when the full response body exceeded the capture ceiling. */
   body_truncated: boolean;
+  /**
+   * The dimension this vantage cannot reach at all. A Workers `fetch`
+   * hands back a Response carrying no certificate detail, so there is
+   * no TLS fingerprint to record — and the honest move is to say so
+   * on the row rather than leave a reader to assume we looked and
+   * found nothing interesting. Absence stated, not implied.
+   */
+  tls: "unavailable-from-this-vantage";
+}
+
+/**
+ * 3.1 (ledger G3) — KEY IDENTITY, FREE NOW AND UNCOLLECTABLE LATER.
+ *
+ * Signed offers carry a `kid`. The round recorded only THAT offers
+ * existed, which threw away the ecosystem's only possible
+ * key-rotation history — who signs for this host, and since when —
+ * once a week, permanently. A key that rotated on Tuesday leaves no
+ * trace by Sunday; no later probe can reconstruct it.
+ *
+ * Reads the kid out of each offer's JWS header without verifying
+ * anything: this is an observation about what the door presented,
+ * never a claim that the signature is good. Order preserved,
+ * duplicates dropped, and a malformed signature costs only itself.
+ */
+export function signerKidsFromChallenge(
+  challengeBytes: string | null | undefined,
+): string[] {
+  if (!challengeBytes) return [];
+  let challenge: Record<string, unknown>;
+  try {
+    challenge = JSON.parse(atob(challengeBytes)) as Record<string, unknown>;
+  } catch {
+    return [];
+  }
+  const extensions = (challenge["extensions"] ?? {}) as Record<string, unknown>;
+  const block = extensions["offer-receipt"] as
+    | { info?: { offers?: { signature?: unknown }[] } }
+    | undefined;
+  const offers = block?.info?.offers;
+  if (!Array.isArray(offers)) return [];
+  const kids: string[] = [];
+  for (const offer of offers) {
+    if (typeof offer?.signature !== "string") continue;
+    const header = offer.signature.split(".")[0];
+    if (!header) continue;
+    try {
+      const parsed = JSON.parse(
+        atob(header.replace(/-/g, "+").replace(/_/g, "/")),
+      ) as { kid?: unknown };
+      if (typeof parsed.kid === "string" && parsed.kid && !kids.includes(parsed.kid)) {
+        kids.push(parsed.kid);
+      }
+    } catch {
+      // One unreadable signature loses only itself.
+    }
+  }
+  return kids;
 }
 
 function curatedHeaders(headers: Headers): Record<string, string> {
@@ -144,6 +213,7 @@ export async function captureWatchEvidenceKeepingBody(
       body_sha256: bodySha256,
       body_bytes: body.bytesRead,
       body_truncated: body.truncated,
+      tls: "unavailable-from-this-vantage",
     },
     bodyText: new TextDecoder().decode(body.bytes),
   };

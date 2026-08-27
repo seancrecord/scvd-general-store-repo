@@ -1,5 +1,6 @@
 import { createAuthHeader } from "@coinbase/x402";
 import { runChecks } from "@/services/preflight";
+import { signerKidsFromChallenge } from "@/services/watch-evidence";
 import { sendAlert } from "@/lib/alerts";
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
@@ -160,6 +161,20 @@ export interface WardHostResult {
    * its exact original preimage, the standing-watch lesson.
    */
   evidence?: WatchEvidenceCapture;
+  /**
+   * 3.1 (ledger G3) — every did:web signer this door presented, read
+   * from the offers' JWS headers without verifying anything. An
+   * observation about what was shown, never a claim the signature is
+   * good. Present (possibly empty) on every answered door: a door
+   * with no signed offers and a door we did not look at are
+   * different facts. THIS IS THE ONE THAT CANNOT BE BACKFILLED — a
+   * key that rotated on Tuesday leaves no trace by Sunday, so the
+   * ecosystem's only key-rotation history exists only if it is
+   * written down at the moment of the knock.
+   */
+  signer_kids?: string[];
+  /** How long this door took to answer, in ms. Free; the probe timed itself anyway. */
+  latency_ms?: number;
   /**
    * WHICH BATTERY PRODUCED THE VERDICT (roadmap 1.3 / D6), riding
    * verbatim into the signed weekly snapshot like everything else on
@@ -525,6 +540,12 @@ export async function probeHost(
   url: string,
 ): Promise<Omit<WardHostResult, "host" | "url">> {
   try {
+    /*
+     * 3.1: the probe times itself. Not writing the number down was
+     * the one loss here that was pure carelessness — every other
+     * dimension at least had a reason.
+     */
+    const startedAt = Date.now();
     const response = await fetch(url, {
       method: "GET",
       redirect: "manual",
@@ -544,6 +565,7 @@ export async function probeHost(
      * unbounded allocation — and what it keeps is exactly what a
      * dispute needs: the challenge bytes and the body digest, signed.
      */
+    const latencyMs = Date.now() - startedAt;
     const evidence = await captureWatchEvidence(response);
     const { checks, advisories, accepts, l3b } = runChecks(
       response,
@@ -593,6 +615,8 @@ export async function probeHost(
       advisories: advisoryNames,
       ...(offer ? { offer } : {}),
       evidence,
+      signer_kids: signerKidsFromChallenge(evidence.challenge_bytes),
+      latency_ms: latencyMs,
       battery: CENSUS_BATTERY,
     };
   } catch {
