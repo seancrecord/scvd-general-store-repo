@@ -153,7 +153,7 @@ describe("published where an instrument can actually fetch it", () => {
   });
 
   it("is named where agents actually read", async () => {
-    const llms = await (await SELF.fetch("https://scvd.store/llms.txt")).text();
+    const llms = await (await SELF.fetch("https://scvd.store/llms-full.txt")).text();
     expect(llms).toContain("/defects");
     expect(llms).toContain("Named defect classes");
     const devs = await (await SELF.fetch("https://scvd.store/developers")).text();

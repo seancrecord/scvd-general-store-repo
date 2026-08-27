@@ -207,7 +207,7 @@ describe("the bundle is served the way the spec expects to read it", () => {
  */
 describe("the bundle is announced and measured", () => {
   it("is named in llms.txt with the two caveats that matter", async () => {
-    const res = await SELF.fetch("https://scvd.store/llms.txt");
+    const res = await SELF.fetch("https://scvd.store/llms-full.txt");
     const body = await res.text();
     expect(body).toContain("/okf/index.md");
     expect(body).toContain("Open Knowledge Format");

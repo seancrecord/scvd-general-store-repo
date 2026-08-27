@@ -106,7 +106,7 @@ describe("the report serves as a signed artifact, free", () => {
   });
 
   it("is discoverable from llms.txt and the x402 discovery document", async () => {
-    const llms = await (await SELF.fetch(`${BASE}/llms.txt`)).text();
+    const llms = await (await SELF.fetch(`${BASE}/llms-full.txt`)).text();
     expect(llms).toContain(`/api/report/${REPORT_ID}`);
     const x402 = (await (
       await SELF.fetch(`${BASE}/.well-known/x402.json`)

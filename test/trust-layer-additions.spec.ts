@@ -47,7 +47,7 @@ describe("the standards story, front and center", () => {
   });
 
   it("the llms.txt guide teaches the same story in its own section", async () => {
-    const res = await SELF.fetch(`${BASE}/llms.txt`);
+    const res = await SELF.fetch(`${BASE}/llms-full.txt`);
     const text = await res.text();
     expect(text).toContain("## Standards, so you can check us without asking us");
     expect(text).toContain("conformance/offer-receipt-vectors.json");

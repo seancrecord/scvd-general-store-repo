@@ -47,8 +47,15 @@ describe("the storefront", () => {
     expect(xml).not.toContain("/api/");
   });
 
-  it("serves llms.txt with the menu inline", async () => {
-    const response = await SELF.fetch(`${BASE}/llms.txt`);
+  it("serves the complete guide, shelf and all, at llms-full.txt", async () => {
+    /*
+     * Renamed 2026-08-27. The shelf WAS inline in llms.txt, all 27,000
+     * characters of it, which is most of why that file was 90kB
+     * against a 30,000-character convention. It now files under
+     * /menu/llms.txt, and /llms-full.txt is the whole guide — the path
+     * the convention reserves for exactly that.
+     */
+    const response = await SELF.fetch(`${BASE}/llms-full.txt`);
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).toContain("luckies");
