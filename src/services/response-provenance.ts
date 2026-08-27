@@ -37,6 +37,13 @@ import { isRecord } from "@/types";
 
 export const RESPONSE_PROVENANCE_CLASS = "response-hash-not-rederivable" as const;
 
+/**
+ * Ceiling on the serialized response_provenance payload, mirroring the artifact ceiling. Canonicalization
+ * already degrades gracefully on pathological input (deep nesting, many keys — see the catch below), so
+ * this is symmetry and a stated bound, not a hole being closed.
+ */
+export const MAX_RESPONSE_PROVENANCE_CHARS = 65_536;
+
 export const FIXED_POINT_MEMBERS = [
   "endpoint",
   "inputs",
@@ -155,6 +162,30 @@ export async function checkResponseProvenance(supplied: unknown): Promise<Proven
   const response = isRecord(req.response) ? req.response : undefined;
   const inputs = req.inputs;
 
+  // Symmetry with the artifact ceiling: refuse an oversized payload before doing work on it.
+  let suppliedSize = 0;
+  try {
+    suppliedSize = JSON.stringify(supplied ?? null).length;
+  } catch {
+    return {
+      applies: false,
+      self_ok: true,
+      class: null,
+      ok: null,
+      detail:
+        "response_provenance could not be serialized (likely a circular structure); nothing was re-derived.",
+    };
+  }
+  if (suppliedSize > MAX_RESPONSE_PROVENANCE_CHARS) {
+    return {
+      applies: false,
+      self_ok: true,
+      class: null,
+      ok: null,
+      detail: `response_provenance is ${suppliedSize} characters, over the ${MAX_RESPONSE_PROVENANCE_CHARS} ceiling. A response and its inputs are a few KB; something this size is not one.`,
+    };
+  }
+
   if (!response) {
     return {
       applies: false,
@@ -231,7 +262,9 @@ export async function checkResponseProvenance(supplied: unknown): Promise<Proven
     return {
       applies: true,
       self_ok: true,
-      class: RESPONSE_PROVENANCE_CLASS,
+      // A pass is NOT a finding, so it carries no class slug — a defect-class name beside a host that
+      // re-derived cleanly is a false accusation created by presentation, not observation.
+      class: null,
       ok: true,
       detail:
         "The declared responseHash re-derives from the supplied body over the closed fixed point. This proves the response is unaltered and re-derivable — explicitly NOT that it is correct.",

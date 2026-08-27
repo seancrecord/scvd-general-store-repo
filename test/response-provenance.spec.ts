@@ -31,7 +31,19 @@ async function goodArtifact(): Promise<{ response: Record<string, unknown>; inpu
     inputs: INPUTS,
     response: {
       endpoint: FP.endpoint,
-      result: FP.result,
+      /*
+       * A COPY, NOT THE MODULE-LEVEL OBJECT.
+       *
+       * Handing back FP.result by reference makes every fixture share
+       * one object, so any case that mutates what it was given edits
+       * the source of every later case. The oversized case below pads
+       * the result past MAX_RESPONSE_PROVENANCE_CHARS; with a shared
+       * reference that padding is permanent, and every subsequent
+       * artifact exceeds the ceiling and comes back
+       * `applies: false, ok: null` instead of the refusal each case
+       * is actually asserting about.
+       */
+      result: structuredClone(FP.result),
       provenance: {
         method: FP.method,
         dataVintage: FP.dataVintage,
@@ -51,7 +63,17 @@ describe("response-provenance re-derivation (GVP)", () => {
     expect(r.applies).toBe(true);
     expect(r.self_ok).toBe(true);
     expect(r.ok).toBe(true);
-    expect(r.class).toBe(RESPONSE_PROVENANCE_CLASS);
+    // A pass carries NO class slug — a defect-class name on a clean host is a false accusation.
+    expect(r.class).toBeNull();
+  });
+
+  it("an oversized response_provenance is refused, not re-derived", async () => {
+    const a = await goodArtifact();
+    (a.response.result as Record<string, unknown>).padding = "x".repeat(70_000);
+    const r = await checkResponseProvenance(a);
+    expect(r.applies).toBe(false);
+    expect(r.ok).toBeNull();
+    expect(r.class).toBeNull();
   });
 
   const mutations: Array<[string, (a: { response: Record<string, unknown>; inputs: unknown }) => void]> = [
