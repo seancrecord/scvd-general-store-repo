@@ -343,6 +343,23 @@ Constraints beyond the brief's:
 - Registration is one small module, feature-detected, failing
   silently and completely; no bundler, no framework, no dependency.
   If it needs a build step it is the wrong size.
+- **Channel attribution rides the handlers, or the channel is
+  invisible** (added 2026-08-28, the keeper's question "do we track
+  it in admin?"). Tool registration happens entirely in the
+  visitor's browser — the server never sees it, so "agents who saw
+  our tools" is unknowable. What the server CAN see is a declared
+  tool firing, because every handler calls a public endpoint: each
+  handler tags its fetch with a channel marker and the existing
+  channel ledger picks up `webmcp` beside `mcp` and `http`. No new
+  admin surface; the machinery that already splits channels does
+  the work. The before-number is the LOOK already on the desk:
+  agent-shaped user agents on storefront HTML.
+- **Distribution note, for whoever costs this**: nobody installs a
+  WebMCP surface and no directory lists one — discovery IS arrival,
+  so its entire funnel is whatever puts scvd.store in front of a
+  browsing agent. The one setup act is ours alone: an origin-trial
+  token for the origin (a meta tag or header, expiring — rule 46's
+  guard applies) until the API ships stable. Visitors need nothing.
 - Shipping any script at all means shipping a **CSP** in the same
   commit. We have none today because we had nothing to constrain.
 
