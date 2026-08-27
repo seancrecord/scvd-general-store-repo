@@ -50,9 +50,19 @@ const TILL_CODE = tillSource
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/^\s*\/\/.*$/gm, "");
 
-/** Every <script> tag in a document, with its attributes. */
+/**
+ * Every <script> tag in a document, with its attributes.
+ *
+ * CASE-INSENSITIVE, and that is the whole point rather than a detail.
+ * This is the filter behind "no executable script reaches these pages
+ * except the till" — and a filter that matches `<script>` but not
+ * `<SCRIPT>` passes a page carrying the thing it was written to catch.
+ * HTML tag names are case-insensitive; a guard that is not has a hole
+ * exactly the size of a capital letter. CodeQL flagged it the day this
+ * shipped.
+ */
 function scriptTags(html: string): string[] {
-  return [...html.matchAll(/<script\b[^>]*>/g)].map((match) => match[0]);
+  return [...html.matchAll(/<script\b[^>]*>/gi)].map((match) => match[0]);
 }
 
 async function page(path: string): Promise<string> {
@@ -173,7 +183,11 @@ describe("nothing renders that did not render before", () => {
        * script ever appears on a store page, this is where it stops.
        */
       for (const tag of scriptTags(stripped)) {
-        expect(tag, `${path}: ${tag}`).toContain('type="application/ld+json"');
+        // Lower-cased for the same reason the matcher is: a tag this
+        // guard cannot read is a tag it cannot refuse.
+        expect(tag.toLowerCase(), `${path}: ${tag}`).toContain(
+          'type="application/ld+json"',
+        );
       }
       expect(stripped, path).not.toContain("till.js");
     }
