@@ -45,6 +45,17 @@ export interface Correction {
 
 export const CORRECTIONS: readonly Correction[] = [
   {
+    date: "2026-08-27",
+    what_was_wrong:
+      "The market desk published its signed-offer share — '0% of ready doors serve signed offers' — as a fact about the whole ecosystem, and the instrument under it undercounted by construction. The offer-receipt spec places signed offers in the 402 BODY's extensions; the probe read only the challenge HEADER's copy, so a spec-conformant body-only issuer was published as unsigned. The denominator was also narrower than the sentence around it: one registry's listings (the CDP discovery list), with this store's own door excluded by the never-score-ourselves rule — neither of which the caption said.",
+    how_long:
+      "From the first published signed-offer share (the 2026-08-20 round at the latest) until 2026-08-27. How many issuers each past round undercounted cannot be recovered: the census stores verdicts, not the response bodies it would take to re-read, so those rounds are marked non-comparable rather than re-scored.",
+    found_by:
+      "The keeper, reading his own market page and refusing the flattering thesis: he knew of vendors serving signed offers that the number said did not exist, and asked where the number came from instead of quoting it.",
+    what_changed:
+      "The probe now reads offers from the 402 body and the challenge header both, and every instrument that shares runChecks() — the free preflight, the weekly census, the conformance watches — inherits the fix in the same commit; a test holds a body-only 402 to count as signed, so the header-only read cannot quietly return. The caption now names its denominator out loud: ready doors on one registry's list, own door excluded, with rounds before this date flagged as undercounting. Rows already signed keep their bytes, because rewriting a signed artifact to look correct is the failure this record exists to refuse.",
+  },
+  {
     date: "2026-08-26",
     what_was_wrong:
       "Every row of the weekly census cited the wrong criteria. Each row carries a `battery` field whose entire purpose is to say which published battery produced that verdict, and every row said preflight-v1. The round had not run v1 since 2026-08-24, when it was deliberately changed to fold the Solana rail-receivability read into its verdict — a v2 rule that v1 explicitly does not apply — so that the corpus would stop contradicting the free preflight in public. Two days later v2 gained the consistency trio (payable payTo, atomic amount, mainnet network) and the round did not fold that either. So the census matched neither published battery: it cited v1, scored the rail read like v2, and ignored the trio like v1. Those rows are hash-chained and Bitcoin-anchored, which means the mislabel is durable and carries our signature. The verdicts were defensible; the label on them was not, and a verdict that cites criteria nobody applied cannot be checked by the stranger it was published for.",

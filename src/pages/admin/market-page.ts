@@ -160,14 +160,27 @@ export function renderMarketPage(
   const price = market.price_usdc;
   const conc = market.concentration;
 
+  /*
+   * SCOPED 2026-08-27, after the keeper caught the number claiming
+   * more than it measures. He knew vendors with signed offers the
+   * line said didn't exist, and both holes were real: the denominator
+   * is ONE registry's listings (a vendor not on the CDP discovery
+   * list is invisible here whatever they serve, our own door is
+   * skipped by the never-score-ourselves rule), and until the same
+   * day the probe read only the challenge HEADER while the
+   * offer-receipt spec's placement is the 402 BODY — so a
+   * spec-conformant issuer was published as unsigned. The caption now
+   * says what was measured; rounds before the body fix undercount and
+   * are not comparable.
+   */
   const signedOffersSection = section(
     "The trust gap — the store's measured TAM",
     so.of_ready > 0
-      ? `${so.pct}% of ready doors serve signed offers (${so.serving} of ${so.of_ready})`
+      ? `${so.pct}% of ready doors on the CDP discovery list serve signed offers (${so.serving} of ${so.of_ready}; our own door is excluded by the never-score-ourselves rule)`
       : "no ready doors measured yet",
     so.of_ready > 0 && so.pct < 10
-      ? `This is the market thesis as a measured fact: nearly the whole ecosystem quotes prices with nothing a third party can verify. Every one of the ${so.of_ready - so.serving} unsigned doors is a seller whose buyers must take their word — which is precisely what this store sells the antidote to. When this number rises, the market is maturing INTO our category; if it rises without us, competitors are doing the maturing.`
-      : `The share of the ecosystem serving verifiable offers. Watch the direction more than the level: rising means the trust layer is becoming table stakes.`,
+      ? `The market thesis, measured against ONE registry — not the whole market: sellers with signed offers who aren't listed on the CDP discovery list are invisible to this number, and rounds before 2026-08-27 read only the challenge header while the spec places offers in the 402 body, so they undercount. Within that scope the claim holds: ${so.of_ready - so.serving} listed doors quote prices with nothing a third party can verify. When this number rises, the listed market is maturing INTO our category; if it rises without us, competitors are doing the maturing.`
+      : `The share of LISTED ready doors serving verifiable offers (one registry's population, not the market). Watch the direction more than the level: rising means the trust layer is becoming table stakes.`,
   );
 
   const rotSection = section(

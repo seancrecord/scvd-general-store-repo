@@ -67,6 +67,47 @@ describe("the checks catch the mapped failure moments", () => {
     payTo: "0x1111111111111111111111111111111111111111",
   };
 
+  it("finds signed offers in the 402 BODY — the spec's placement (2026-08-27)", () => {
+    /*
+     * The regression that mis-published the market's signed-offer
+     * share: the offer-receipt spec puts offers in the BODY's
+     * extensions, this battery read only the header copy, and every
+     * spec-conformant body-only issuer counted as unsigned. The
+     * keeper caught it against vendors he knew existed.
+     */
+    const seg = (obj: Record<string, unknown>): string =>
+      btoa(JSON.stringify(obj))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    const jws = `${seg({ alg: "EdDSA", kid: "did:web:issuer.test#key-1" })}.${seg(
+      { version: 1, amount: "5000" },
+    )}.c2ln`;
+    const bodyText = JSON.stringify({
+      extensions: { "offer-receipt": { info: { offers: [{ format: "jws", signature: jws }] } } },
+    });
+    const withBody = runChecks(
+      challenge402({ x402Version: 2, accepts: [GOOD_ACCEPT] }),
+      false,
+      bodyText,
+    );
+    const signed = withBody.checks.find((check) => check.name === "signed-offers");
+    expect(signed?.ok).toBe(true);
+    expect(signed?.detail).toContain("the spec's placement");
+    expect(withBody.advisories.map((a) => a.name)).not.toContain(
+      "no-signed-offers",
+    );
+    // Without the body in hand the battery degrades to the header
+    // read — absent there means the advisory, exactly as before.
+    const withoutBody = runChecks(
+      challenge402({ x402Version: 2, accepts: [GOOD_ACCEPT] }),
+      false,
+    );
+    expect(withoutBody.advisories.map((a) => a.name)).toContain(
+      "no-signed-offers",
+    );
+  });
+
   it("a 200 is called what it is: listed but functionally absent", () => {
     const { checks } = runChecks(new Response("ok", { status: 200 }), false);
     const status = checks.find((check) => check.name === "status-402");

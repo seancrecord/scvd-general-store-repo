@@ -47,7 +47,7 @@ export function censusFoldedCheckNames(): string[] {
   return [...BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]];
 }
 import {
-  captureWatchEvidence,
+  captureWatchEvidenceKeepingBody,
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
@@ -578,10 +578,14 @@ export async function probeHost(
      * dispute needs: the challenge bytes and the body digest, signed.
      */
     const latencyMs = Date.now() - startedAt;
-    const evidence = await captureWatchEvidence(response);
+    // Keeping-body variant since 2026-08-27: the census must read the
+    // 402 BODY's extensions too (the offer-receipt spec's placement),
+    // or every body-only issuer publishes as unsigned. See runChecks.
+    const { evidence, bodyText } = await captureWatchEvidenceKeepingBody(response);
     const { checks, advisories, accepts, l3b } = runChecks(
       response,
       evidence.body_truncated,
+      bodyText,
     );
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
     const advisoryNames = advisories.map((advisory) => advisory.name);

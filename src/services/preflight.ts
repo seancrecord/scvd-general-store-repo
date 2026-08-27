@@ -544,6 +544,16 @@ export async function probeOnce(
 export function runChecks(
   response: Response,
   bodyOverLimit: boolean,
+  /**
+   * The 402 body text, when the caller holds it. The offer-receipt
+   * spec places signed offers in the BODY's extensions; until
+   * 2026-08-27 this battery read only the header copy, so a
+   * spec-conformant body-only issuer was counted as unsigned — the
+   * false negative the keeper caught against the market number.
+   * Optional so a caller without the body degrades to the header
+   * read rather than failing.
+   */
+  bodyText?: string,
 ): {
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
@@ -824,11 +834,48 @@ export function runChecks(
     });
   }
 
-  const offerReceipt = extensions["offer-receipt"] as
-    | { info?: { offers?: { signature?: unknown }[] } }
-    | undefined;
-  const offers = offerReceipt?.info?.offers;
-  if (Array.isArray(offers) && offers.length > 0) {
+  /*
+   * SIGNED OFFERS, READ FROM BOTH PLACES THE WIRE PUTS THEM. The
+   * offer-receipt spec's placement is the 402 BODY's extensions; some
+   * issuers (this store included) also mirror them into the challenge
+   * header. Until 2026-08-27 this read the header alone, so a
+   * spec-conformant body-only issuer was published as unsigned — the
+   * false negative behind the market page's signed-offer share, found
+   * when the keeper knew vendors this number said didn't exist.
+   */
+  const offersIn = (source: Record<string, unknown>): unknown => {
+    const offerReceipt = source["offer-receipt"] as
+      | { info?: { offers?: { signature?: unknown }[] } }
+      | undefined;
+    return offerReceipt?.info?.offers;
+  };
+  const headerOffers = offersIn(extensions);
+  let bodyOffers: unknown;
+  if (bodyText) {
+    try {
+      const parsedBody = JSON.parse(bodyText) as Record<string, unknown>;
+      const bodyExtensions = parsedBody["extensions"];
+      if (bodyExtensions && typeof bodyExtensions === "object") {
+        bodyOffers = offersIn(bodyExtensions as Record<string, unknown>);
+      }
+    } catch {
+      // A non-JSON body carries no extensions; the header read stands.
+    }
+  }
+  const offers = (
+    Array.isArray(headerOffers) && headerOffers.length > 0
+      ? headerOffers
+      : Array.isArray(bodyOffers)
+        ? bodyOffers
+        : []
+  ) as { signature?: unknown }[];
+  const placement =
+    Array.isArray(headerOffers) && headerOffers.length > 0
+      ? Array.isArray(bodyOffers) && bodyOffers.length > 0
+        ? "in the 402 body and mirrored in the challenge header"
+        : "in the challenge header"
+      : "in the 402 body (the spec's placement)";
+  if (offers.length > 0) {
     const parsedOffers = offers.map((offer) =>
       typeof offer?.signature === "string"
         ? (parseJws(offer.signature) as { ok: boolean })
@@ -840,7 +887,7 @@ export function runChecks(
         ? {
             name: "signed-offers",
             ok: true,
-            detail: `${offers.length} signed offer${offers.length === 1 ? "" : "s"} present, each a structurally valid JWS. Signatures NOT verified here — that needs the issuer's key, which is a second request this probe refuses to make. The conformance desk does it free.`,
+            detail: `${offers.length} signed offer${offers.length === 1 ? "" : "s"} present ${placement}, each a structurally valid JWS. Signatures NOT verified here — that needs the issuer's key, which is a second request this probe refuses to make. The conformance desk does it free.`,
           }
         : {
             name: "signed-offers",
@@ -852,7 +899,7 @@ export function runChecks(
     advisories.push({
       name: "no-signed-offers",
       detail:
-        "no extensions['offer-receipt'] signed offers. Optional in the spec; without them a buyer has no pre-payment commitment to your terms that would survive a dispute.",
+        "no extensions['offer-receipt'] signed offers in the 402 body or the challenge header. Optional in the spec; without them a buyer has no pre-payment commitment to your terms that would survive a dispute.",
     });
   }
 
@@ -1120,6 +1167,7 @@ export async function preflightUrl(
   const { checks, advisories, accepts, l3b } = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
+    outcome.body,
   );
   /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
