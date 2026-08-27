@@ -848,17 +848,37 @@ sentence, concrete, addressed to a person, wry without reaching. The
 line is a fortune, so it should sound like the fortunes do — and if a
 draft has to be admired before it is understood, it is not one.
 
-⚑ THIRD DRAFTS, NOT CANON — rule 7, the wording is the keeper's.
-Currently on the bench render: the first.
+**THE KEEPER'S LINE, 2026-08-27 — his pen, so this one is his and not
+a draft:**
 
-> "The date is the part people skip."
+> ### "You know your own risk better than we do."
+
+It is the only line in three sets that does rule 53's actual work
+rather than describing it. The others all narrate the reading — its
+age, its limits, what we did not climb — and narration is still the
+card talking about itself. This one **hands the decision back**. It
+does not tell the reader to be careful, or that our probe was
+shallow, or that the date matters; it says the person holding the
+card was always the one who knew the thing that mattered most, and
+lets them do the rest. A card whose job is to make refusal easy ends
+on the sentence that makes refusing obviously the reader's own call.
+
+It also passes every constraint without visible effort, which is the
+mark of the right one: no comment on the subject, no explanation of
+the mechanic, no wordplay, plain sentence, addressed to a person.
+
+⚑ THE REST OF THE DRAWER IS STILL DRAFT — the mechanism rotates, so
+one inked line is a start and not a drawer. Rule 7 stands for the
+remainder; these are candidates only, and the bar just moved:
+
 > "We can only tell you what we saw."
-> "You know your own risk better than we do."
 > "The part you need is usually the part nobody measured."
-> "One look, one day. That is all a look is."
 > "It was true when we wrote it down."
+> "One look, one day. That is all a look is."
 > "Read it twice if it is going to cost you something."
-> "Nobody checks the date. You could."
+> ~~"The date is the part people skip."~~ — plain enough, but it
+> narrates the reading instead of handing anything back. Keep as the
+> shape to beat, not as a line.
 
 ~~**OPEN for the keeper:** does the colophon carry the line at all, or
 only the mark?~~ **ANSWERED 2026-08-27 — "I love it, I love adding the

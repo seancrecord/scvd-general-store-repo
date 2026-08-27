@@ -110,9 +110,17 @@ an assayer's stamp, a printer's mark. Drafted as a colophon. The
 rotating line he asked for (the small-blessings treatment) is
 DETERMINISTIC per rule 22, derived from the observation's own id, so
 the same reading always carries the same line and the card stays
-reproducible offline like everything else. ⚑ Six draft lines are
-filed in §8.5a awaiting his pen (rule 7), and one question with them:
-does the colophon carry a line at all, or only the mark?
+reproducible offline like everything else. THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
+name and the address at once, so a card screenshotted out of its host
+still tells a stranger where to go and check), it cites HOUSE RULE 43
+on its own face — the keeper's idea and the best one in the stretch,
+an instrument printing the standard it is held to — and it carries
+THE KEEPER'S OWN LINE, inked 08-27 after two struck sets:
+**"You know your own risk better than we do."** The only line of three
+sets that does rule 53's work instead of narrating it: it hands the
+decision back rather than describing our limits. ⚑ The rest of the
+drawer is still draft (the mechanism rotates, so one line is a start
+and not a drawer) — candidates in §8.5a, rule 7 stands.
 The brainstorm below it stands as the reasoning trail, annotated
 where superseded rather than rewritten, at his request.
 ORIGINAL FILING, kept because the findings are what moved the rule:
