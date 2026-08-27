@@ -165,7 +165,7 @@ applicability field — build the registry here if 1.1 didn't.
 | 3.2 ✅ 2026-08-27 `70e21bf` #280 | C2, I4       | Money-path symmetry: verify seller-claimed tx on chain via the existing attestation reader; until read, label `tx_hash_claimed` | Red test: fabricated PAYMENT-RESPONSE hash currently signed as fact |
 | 3.3 ✅ 2026-08-27 `6ea9400` #283 | D2, F4       | Freshness: `stale_after` per class, `is_stale` derived at read; clock injection everywhere both sides                           | Red test: old artifact served without staleness today               |
 | 3.4 ✅ 2026-08-27 `6b1c6d6` #286 | B6, B10, B11 | Observer accounting: `observer_status`, gap attribution, numerator+denominator serving (never bare %)                           | Red tests: our timeout currently booked as subject outage           |
-| 3.5 | G5, J2, M3   | Derived views over the corpus chain: subject histories, since-diff, TRAJECTORY SURFACE (weekly time-series per chain/protocol)  | Views derived only from signed snapshots; test re-derives           |
+| 3.5 ✅ 2026-08-27 `1fc57a4` #290 | G5, J2, M3   | Derived views over the corpus chain: subject histories, since-diff, TRAJECTORY SURFACE (weekly time-series per chain/protocol)  | Views derived only from signed snapshots; test re-derives           |
 | 3.6 | G2 ⚑         | Operator linking — DO NOT BUILD before the privacy/attribution ruling                                                           | Ruling recorded first                                               |
 
 
