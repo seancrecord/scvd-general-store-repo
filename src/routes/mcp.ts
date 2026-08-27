@@ -34,6 +34,8 @@ import {
   usableIdempotencyKey,
 } from "@/lib/idempotency";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
+import { preflightUrl } from "@/services/preflight";
+import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
 import { cachedPublicKeyHex, verifyCertificateSignature } from "@/lib/signing";
@@ -204,6 +206,44 @@ async function callFreeTool(
           }
         : {}),
     };
+  }
+  if (name === "preflight_endpoint") {
+    /*
+     * The same preflightUrl() the HTTP route serves, limiter and all —
+     * a caller cannot use this door to walk around the rate limit,
+     * and the two doors cannot disagree about what a probe saw. A
+     * non-200 comes back as the service's own refusal text, unpaid
+     * and uncharged in every sense: this tool is free.
+     */
+    const outcome = await preflightUrl(args["url"], c.env);
+    if (outcome.status !== 200) {
+      const body = outcome.body as { error?: string };
+      return body.error ?? "The preflight could not run. Try again shortly.";
+    }
+    await recordPorchVisit(c.env, "preflight:mcp", mcpSignals(c)).catch(
+      () => undefined,
+    );
+    return outcome.body as unknown as Record<string, unknown>;
+  }
+  if (name === "check_conformance") {
+    const outcome = await checkConformance(
+      {
+        artifact: args["artifact"],
+        kind: typeof args["kind"] === "string" ? args["kind"] : undefined,
+        public_key_hex:
+          typeof args["public_key_hex"] === "string"
+            ? args["public_key_hex"]
+            : undefined,
+      } as Parameters<typeof checkConformance>[0],
+      c.env,
+    );
+    if (!outcome.verdict) {
+      return outcome.error ?? "The conformance desk could not read that.";
+    }
+    await recordPorchVisit(c.env, "conformance:mcp", mcpSignals(c)).catch(
+      () => undefined,
+    );
+    return outcome.verdict as unknown as Record<string, unknown>;
   }
   if (name === "verify_artifact") {
     const id = sanitizeText(args["id"], 60);
@@ -624,7 +664,7 @@ async function handleRpc(
         // POSITION_OPENING since 2026-08-10: the handshake is the one
         // sentence an MCP client caches about us, so it carries the
         // entity and both differentiators, then the operating facts.
-        instructions: `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free conformance desk (POST /api/conformance/v1) checks any issuer's x402 signed offers and receipts; the corpus at /corpus.json is the weekly signed record. The store never asks you to run code or share credentials.`,
+        instructions: `${POSITION_OPENING} ${POSITION_NOT} ${ALSO_A_STORE} tools/list is free. buy_* tools are x402-paid: call once to get the 402 terms in error.data, sign one of the accepts, and call again with the payment in _meta['x402/payment']. ${DELIVERY_ORDER} The free preflight (preflight_endpoint here, or POST /api/preflight/v1) checks any x402 door's shape; the free conformance desk (check_conformance here, or POST /api/conformance/v1) checks any issuer's signed offers and receipts; the corpus at /corpus.json is the weekly signed record. The store never asks you to run code or share credentials.`,
       });
     }
     case "ping":

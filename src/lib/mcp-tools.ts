@@ -619,9 +619,103 @@ const FREE_TOOLS: McpTool[] = [
     },
   },
   {
+    /*
+     * THE HOLE, CLOSED (2026-08-27, the keeper's ruling on the
+     * tool-surface audit). The preflight is the store's headline free
+     * instrument and the mouth of its funnel, and until today it was
+     * reachable only over raw HTTP — an agent connected over MCP had
+     * to read prose, learn a URL, and possess some other way to make
+     * a request. The handler calls the same preflightUrl() the HTTP
+     * route calls, limiter included, so the two doors cannot drift
+     * and the MCP door cannot be used to walk around the rate limit.
+     */
+    name: "preflight_endpoint",
+    description:
+      "Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: str(
+          "The https endpoint a buyer would GET expecting a 402 challenge.",
+          2048,
+        ),
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        verdict: str("ready | not_ready | unreachable."),
+        reached_level: str(
+          "How far the probe got on the evidence ladder: none | L1 | L2 | L3a.",
+        ),
+        reached_level_meaning: str("What that rung does and does not claim."),
+        single_probe_note: str("One request, one moment — the standing caveat."),
+      },
+      required: ["verdict", "reached_level"],
+    },
+    annotations: {
+      title: "Preflight an x402 Endpoint",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
+    /*
+     * The conformance desk's MCP door, same ruling. checkConformance()
+     * carries its own validation, size ceiling and resolution budget;
+     * this tool adds nothing but reach.
+     */
+    name: "check_conformance",
+    description:
+      "Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        artifact: str(
+          "The signed offer or receipt as a compact JWS: header.payload.signature, base64url.",
+          9000,
+        ),
+        kind: str("Optional: offer | receipt. Detected from the artifact when absent."),
+        public_key_hex: str(
+          "Optional ed25519 public key, hex. Supplying it makes the check fully offline.",
+          64,
+        ),
+      },
+      required: ["artifact"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        verdict: str("conforms | does_not_conform | could_not_check."),
+        kind: str("offer | receipt, or null when undetectable."),
+        live: {
+          description:
+            "Separate from conformance: an expired offer can conform and not be payable. Null for receipts.",
+          type: ["boolean", "null"],
+        },
+        key_resolution: str(
+          "offline | did:web | not_attempted | budget_exhausted.",
+        ),
+      },
+      required: ["verdict", "kind"],
+    },
+    annotations: {
+      title: "Conformance Desk",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
     name: "verify_artifact",
     description:
-      "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
+      "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued; another issuer's signed offer or receipt goes to check_conformance. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
     inputSchema: {
       type: "object",
       properties: { id: str("A cert_, stamp_, or anchor_ id.", 60) },
@@ -721,6 +815,21 @@ function frontCounterTool(base: string): McpTool {
       required: ["item_id"],
       additionalProperties: false,
     },
+    /*
+     * THE ONE TOOL THAT WAS TELLING A MODEL NOTHING ABOUT ITS RETURN
+     * (found 2026-08-27 in the tool-surface audit). Every cluster
+     * tool carried an outputSchema; this one did not, and it is the
+     * tool deliberately placed FIRST among the paid ones precisely
+     * because a weak model scanning tools/list reaches for something
+     * early and plausible. So the tool most likely to be reached for
+     * by the least capable caller was the only one that could not
+     * say what came back — the flattering direction, again.
+     *
+     * Derived from the same builder the clusters use, over the same
+     * eligible set, so the front counter's contract cannot drift from
+     * the shelves' the day an item changes fulfillment.
+     */
+    outputSchema: clusterOutputSchema(items),
     /**
      * AN OVERLAY, NOT A SHELF. The five clusters PARTITION the menu —
      * every item on exactly one, enforced by unshelvedItemIds() and
