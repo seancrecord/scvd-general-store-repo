@@ -145,8 +145,11 @@ host model read the card, refused correctly ("anyone quoting this as
 `preflight_endpoint`, the live free tool, unprompted. ⚑ ONE COPY FLAG
 with two independent machine readers behind it: "expires in N days"
 reads as a forward warranty; "stale after" / "current until" are the
-candidates, the keeper's pen. Light + narrow confirmed 08-27 late — host one COMPLETE on all
-three conditions. STILL OPEN: VS Code and ChatGPT rounds.
+candidates, the keeper's pen. Light + narrow confirmed 08-27 late — host one COMPLETE. VS CODE
+PASSED the same night (chat sidebar = a natural narrow test; ladder
+and colophon intact). **Two independent hosts at full weight — the
+shape ruling's condition is MET and the third door stands.** ChatGPT
+(tunnel) and Goose remain as record rows, not gates.
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host

@@ -54,12 +54,34 @@ and the text fallback carrying the same caveats is its own small pass.
 3. Fully quit and reopen Claude Desktop. The hammer/tools icon should
    list `verify_reading`.
 
-## VS Code (Copilot Chat)
+## VS Code (Copilot Chat) — PASSED, with two traps
 
-1. Command palette → **MCP: Add Server** → command (stdio) →
-   `node /ABSOLUTE/PATH/TO/scripts/render-test/server.mjs`
-   (or add the same to `.vscode/mcp.json`).
-2. Open Copilot Chat in agent mode, ask it to verify obs_7f3a.
+Skip the add-server wizard: it has mangled the command into a literal
+`v` (`spawn v ENOENT` in the MCP log). Instead:
+
+1. Command palette → **MCP: Open User Configuration** and add, with
+   command and args as SEPARATE fields:
+
+```json
+{
+  "servers": {
+    "scvd-render-test": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/scripts/render-test/server.mjs"]
+    }
+  }
+}
+```
+
+   If it then says `spawn node ENOENT`, VS Code's GUI PATH is missing
+   node — run `which node` in Terminal and use that full path as
+   `command`.
+2. Open Copilot Chat in **agent mode**, in a window that is NOT this
+   repo — an agent with the repo open will grep the fixture and run
+   the server by hand in a terminal, which tests nothing about
+   rendering — and say: *Call the `verify_reading` tool from the
+   scvd-render-test MCP server.*
 
 ## Goose (optional — skip if it is friction)
 

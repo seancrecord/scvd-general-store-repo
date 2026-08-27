@@ -980,8 +980,8 @@ test becomes its own rule beside 43 — is struck by it.
 | Host | Our ui:// card rendered? | Notes |
 |---|---|---|
 | **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **FULL PASS — round five** | Renders at full height: `size-changed` honored, the round-four fold gone. Screenshot-confirmed top to bottom — ladder with all four hatched NOT CLIMBED pills, cannot-tell-you list, conflict-of-interest with the trust line at full rust weight, and the colophon intact (mark, keeper's line, rule citation). Rule 54's eye test passes: the gaps and the age carry the weight the design gave them. **Dark, light, and narrow all observed and passing** — the light palette held (cream surface, rust trust-line, hatched pills legible), and the narrow window kept the ladder intact. Host one is complete. Root cause of rounds 1–3 stands recorded below: a static page never sends `ui/initialize`, and the host waits for it. |
-| VS Code | not yet run | — |
-| ChatGPT | not yet run | — |
+| **VS Code** (Copilot Chat, agent mode, stdio) | **PASS** | Renders inline in the chat sidebar — an inherently narrow viewport, so this doubled as a natural narrow-window test: ladder intact, hatched pills legible, colophon complete. Dark observed. Setup fought back twice, recorded in the kit README: the add-server wizard mangled the command into a literal `v` (`spawn v ENOENT`) — edit `mcp.json` directly, `command` and `args` as separate fields — and an earlier round showed an agent with the repo as its open workspace will grep the fixture and run the server by hand in a terminal rather than call the MCP tool, testing nothing about rendering. Point it at the tool by name, from a non-repo window. Its summary kept the not-climbed list and quoted the misquote line verbatim. |
+| ChatGPT | not yet run (tunnel required) | — |
 | Goose | optional | — |
 
 **CORRECTION, 2026-08-27, same day as the error.** An earlier
@@ -1028,6 +1028,14 @@ each now stated against the evidence that supports it:**
 prefetched the card (`resources/read` 100ms before `tools/call`) and
 displayed nothing — which localized the failure to the iframe side and
 led straight to the missing `ui/initialize`. Round four rendered.
+
+**TWO HOSTS AT FULL WEIGHT SATISFIES THE RULING'S CONDITION.** The
+§4.3 ruling was conditional on no host turning the gaps into fine
+print. Two independent hosts — different vendors, different chrome,
+one a desktop chat and one an editor sidebar — have now rendered the
+gaps at the weight the design gave them. The condition is met; the
+third door plus narrow cards stands. ChatGPT and Goose remain
+worthwhile rows for the record, not gates.
 
 **THE FUNNEL, OBSERVED WORKING END TO END (round five).** With the
 full card rendered, the host model's narration did three things in
