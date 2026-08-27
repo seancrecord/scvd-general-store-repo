@@ -435,6 +435,18 @@ x402-verify (verification, zero dependencies), with x402-sign beside
 it for issuing your own signed offers and receipts. The desk's
 plain-language landing, with worked examples, is ${base}/conformance.
 
+Fixtures for a fail-closed integration, free:
+${base}/api/conformance/v1/fixtures serves complete artifacts with
+real production signatures — valid, expired, tampered, and
+unknown-signer cases — each carrying the exact canonical string its
+signature covers, the exact desk call to make, and the verdict the
+desk returns. Every fixture is re-verified against the live desk
+before it is served; a fixture the desk disagrees with is refused,
+never served. Pin the set digest, verify the signatures against the
+key registry yourself, and wire the tamper cases into your own test
+suite: building and testing an integration against this store costs
+nothing and asks nobody's permission.
+
 The Tab (scvd-tab), an MCP server for the OTHER side of an agent's
 commerce: the tools its builder signs up for. It keeps a local,
 append-only account of every trial, price, cancel and replacement —

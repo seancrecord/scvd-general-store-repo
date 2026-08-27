@@ -115,7 +115,13 @@ async function kidFor(env: Env): Promise<string> {
  * verifier resolves via did:web are the two protected-header fields
  * the spec marks required.
  */
-async function signJws(
+/**
+ * Exported 2026-08-27 for the fixtures desk (lib/conformance-fixtures)
+ * — which must sign with THIS path and no other, because a fixture
+ * signed by a parallel implementation would attest the wrong thing.
+ * Production callers in this file are unchanged.
+ */
+export async function signJws(
   env: Env,
   payload: Record<string, unknown>,
 ): Promise<string> {
