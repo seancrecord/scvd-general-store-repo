@@ -807,19 +807,42 @@ that day, a chalkboard, not a slot machine." Applied here that means
   entire claim is that it can be re-derived by a stranger.
 
 **One constraint the drafts must respect, and it is easy to miss:**
-the line is about US and our work, never about the FINDING. A wry line
-about the subject undercuts the caveats standing beside it and turns
-the card casual about a decision that is not. Lines that pass point at
-our limits; lines that fail comment on the endpoint.
+the line never comments on the SUBJECT'S QUALITY. A wry line about the
+endpoint undercuts the caveats standing beside it and turns the card
+casual about a decision that is not. ⚑ An earlier version of this
+sentence said the line must be "about us and our limits" — narrower,
+and wrong: it produced a smug draft the keeper struck the same day. The
+line may address the reader, the age of the reading, or the market. It
+may not grade the subject.
 
-⚑ DRAFT COPY, NOT CANON — rule 7, the wording is the keeper's:
+⚑ FIRST DRAFTS, STRUCK 2026-08-27 by the keeper — "I don't love the
+line." He was right and the fault was in the constraint above, not the
+writing: "about us and our limits" corners every draft into
+congratulating the store on its own honesty. The struck set, kept so
+nobody re-derives it:
 
-> "We wrote down what we did not do, too."
-> "One probe, one moment, and a shop that sells things."
-> "This reading expires. That is not a defect."
-> "Nothing here was decided. Something here was seen."
-> "The keeper looked once. Once is what once means."
-> "If it matters, run the file yourself. It is the same file."
+> ~~"We wrote down what we did not do, too."~~ — smug, and it explains
+> the card's own mechanic (rule 2).
+> ~~"Nothing here was decided. Something here was seen."~~ — same
+> defect, wearing a better coat.
+
+**THE CORRECTED CONSTRAINT** (now in rule 53): the line never comments
+on the SUBJECT'S QUALITY. Everything else is open — the reader's day,
+the nature of a dated reading, the weather of working in this market.
+It is a fortune, in the drawer's voice, and a fortune addresses the
+person holding it rather than the shop that wrote it.
+
+⚑ SECOND DRAFTS, NOT CANON — rule 7, the wording is the keeper's.
+Currently on the bench render: the first one.
+
+> "Somebody will quote this at you without the date."
+> "The rung you needed is probably one we did not climb."
+> "You came for a verdict and got a measurement."
+> "A reading gets older every day you keep it."
+> "One shop, one key, one probe. Adjust accordingly."
+> "If you were hoping for a yes, read it again slower."
+> "We sell things in this market too. Weigh that."
+> "Run the file yourself and you never have to wonder."
 
 ~~**OPEN for the keeper:** does the colophon carry the line at all, or
 only the mark?~~ **ANSWERED 2026-08-27 — "I love it, I love adding the
@@ -831,6 +854,12 @@ held to, on its own face, where anybody looking at the reading can
 also read the constraint the reading was taken under. It is the same
 move as publishing the coverage gaps beside the findings, applied to
 the rendering.
+
+**THE MARK READS `SCVD / STORE`,** not `SCVD / OAK CITY` — the keeper's
+call, 2026-08-27. Better than the town: it is the name and the address
+at once, so a card screenshotted out of its host still tells a stranger
+where to go and check. Oak City stays store lore (rule 39), off the
+instrument.
 
 **AND IT BECAME A RULE.** `HOUSE_RULES.md` rule 53, drafted 2026-08-27
 and awaiting his ink: *every surface we render must make refusal easier

@@ -564,10 +564,21 @@ LORE & TRADITION
     the same reading carries the same line forever and the card
     stays reproducible offline like everything else on it. Nothing
     on an artifact whose whole claim is that a stranger can
-    re-derive it may be random. And the line is about US and our
-    limits, never about the finding — a wry line about the subject
-    undercuts the caveats standing beside it and makes the card
-    casual about a decision that is not.
+    re-derive it may be random.
+
+    WHAT THE LINE MAY NOT DO, corrected 2026-08-27 the same day it
+    was written, because the first draft of this clause produced a
+    bad line and that is the fastest way to learn a constraint is
+    wrong. The clause said the line must be "about us and our
+    limits" — which corners every draft into congratulating the
+    store on its own honesty, and out came "we wrote down what we
+    did not do, too." Smug, and it explains the card's own mechanic,
+    which is rule 2. The real constraint is narrower and frees the
+    writing rather than trapping it: THE LINE NEVER COMMENTS ON THE
+    SUBJECT'S QUALITY. Anything else is open — the reader's day, the
+    nature of a dated reading, the weather of working in this
+    market. It is a fortune, in the drawer's voice (fortunes.ts,
+    blessings.ts), and a fortune addresses the person holding it.
 
     NOTHING RENDERED IS EXEMPT because it is small, internal, or a
     demo. A screenshot of a card is a card.
