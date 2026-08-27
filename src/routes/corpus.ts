@@ -4,7 +4,9 @@ import {
   listCorpus,
   verifyCorpusChain,
 } from "@/services/corpus";
+import { deriveWalletFacts } from "@/services/operator-facts";
 import { subjectHistory } from "@/services/subject-history";
+import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
 import {
   CORPUS_DATASET_DESCRIPTION,
   CORPUS_DATASET_LICENSE,
@@ -166,6 +168,99 @@ corpusRoutes.get("/corpus/host/:file{.+\\.json}", async (c) => {
     );
   }
   return c.json(await subjectHistory(c.env, host, c.env.STORE_BASE_URL));
+});
+
+/**
+ * GET /corpus/trajectory.json — the chain read as time (roadmap 3.5,
+ * ledger M3).
+ *
+ * Same law as the per-subject view: DERIVED AT READ from the signed
+ * snapshots, never stored, so it cannot drift from what was signed.
+ * Every point names the digest and sequence of the snapshot it came
+ * from; counts always travel with their denominators and no ratio is
+ * served. This is also the state-of-the-market reporting asset — any
+ * prose about "how the neighbourhood is doing" quotes these numbers,
+ * not a parallel set that could disagree with them.
+ */
+corpusRoutes.get("/corpus/trajectory.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const trajectory = deriveTrajectory(await listCorpus(c.env));
+  return c.json({
+    ...trajectory,
+    how_to_rederive: `Fetch ${base}/corpus/{sequence}.json for each point (sequences are named on the points), recount the round's rows with your own tools, and compare digests against the chain at ${base}/corpus.json. Nothing here exists outside those signed entries.`,
+  });
+});
+
+/**
+ * GET /corpus/diff.json?since={week} — what changed between a named
+ * signed week and the latest one (roadmap 3.5, ledger J2).
+ *
+ * The cheapest real agent loop is "poll the diff, act on transitions",
+ * and until now the transitions existed only as arithmetic a caller
+ * had to run across two full snapshots. `since` must name a week the
+ * chain actually holds: a week we cannot see gets a 404 carrying the
+ * weeks we CAN see, never a guessed baseline (rule 52).
+ */
+corpusRoutes.get("/corpus/diff.json", async (c) => {
+  const records = await listCorpus(c.env);
+  const knownWeeks = records.map((record) => record.snapshot.week);
+  const since = c.req.query("since");
+  if (!since) {
+    return c.json(
+      {
+        error:
+          "Name a baseline week, e.g. /corpus/diff.json?since=2026-W34. The comparison is always against the latest signed snapshot.",
+        known_weeks: knownWeeks,
+      },
+      400,
+    );
+  }
+  const diff = deriveDiff(records, since);
+  if (!diff) {
+    return c.json(
+      {
+        error: `No signed snapshot for week ${since}, so there is no baseline to diff against — this store does not invent one. The weeks the chain holds are listed below.`,
+        known_weeks: knownWeeks,
+      },
+      404,
+    );
+  }
+  return c.json({
+    ...diff,
+    how_to_rederive: `Fetch ${c.env.STORE_BASE_URL}/corpus/${diff.from.sequence}.json and ${c.env.STORE_BASE_URL}/corpus/${diff.to.sequence}.json, compare the rounds' rows yourself, and check the digests against the chain.`,
+  });
+});
+
+/**
+ * GET /corpus/wallet-facts.json — T1 under the G2 ruling (roadmap
+ * 3.6; docs/G2_OPERATOR_LINKING_RULING_2026-08.md).
+ *
+ * COUNTS ONLY, latest signed week: how many receiving addresses the
+ * probed doors advertised, how many receive at more than one door,
+ * and the largest cluster — with denominators, and with the
+ * shared-wallet caveat inline. No address, digest, host name or
+ * operator claim is served here, ever: the store provides the wallet
+ * fact and the receiver makes the call, and this surface is the
+ * proof that a market-structure number can be published without
+ * naming anyone.
+ */
+corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const facts = await deriveWalletFacts(await listCorpus(c.env));
+  if (!facts) {
+    return c.json(
+      {
+        error:
+          "The corpus chain is empty, so there is no signed week to count over. The index is at /corpus.json.",
+      },
+      404,
+    );
+  }
+  return c.json({
+    ...facts,
+    how_to_rederive: `Fetch ${base}/corpus/${facts.sequence}.json, digest each row's advertised payment addresses with the documented salt (rows frozen after 2026-08-27 already carry pay_to_digest), cluster by digest, and recount. The snapshot's digest is named above so you know you counted what we counted.`,
+    per_host: `Each door's own page at ${base}/corpus/host/{host}.json carries its payment_address block: whether its advertised address also receives at other doors that week, without naming them.`,
+  });
 });
 
 corpusRoutes.get("/corpus/:file{[0-9]+\\.json}", async (c) => {

@@ -759,6 +759,37 @@ arithmetic stands and the raw evidence stays committed, so anyone can
 redo the classification. The store makes no claim about ecosystem
 payment-failure rates until a repaired instrument has walked again.
 
+The chain also reads as time, derived at read from the same signed
+snapshots. ${base}/corpus/trajectory.json serves one point per weekly
+snapshot — counts with their denominators, never a ratio, every point
+naming the digest it derives from. ${base}/corpus/diff.json?since={week}
+answers "what changed since a week I already saw": doors appeared and
+disappeared, verdict transitions, and drift in a door's own declared
+terms (price bounds, rails, schemes) between two signed weeks — the
+cheapest honest agent loop is polling that diff. A week the chain does
+not hold gets a 404 naming the weeks it does.
+
+Wallet facts, under the operator-linking ruling of 2026-08-27: the
+store provides the wallet fact and the receiver makes the call.
+${base}/corpus/wallet-facts.json counts, for the latest signed week,
+how many receiving addresses the probed doors advertised and how many
+receive at more than one door — counts with denominators, no
+addresses, no names, never an operator claim. Each door's own page
+carries its payment_address block: whether its advertised address
+also receives at other doors that week, without naming them. The
+caveat rides every such fact: custodial and platform wallets make
+unrelated doors share one address, so the inference is yours to make
+and yours to defend.
+
+And the subject gets a voice: ${base}/api/standing-note is the
+self-serve lane for attaching your own dated statement to a door or
+wallet this store has observed. Prove control — an EIP-191 wallet
+signature over a statement-bound challenge, or serve the statement's
+sha256 at your /.well-known/scvd-note.txt — and your words ride
+beside the observation on every surface that shows it. Beside, never
+instead: no note alters an observation, and no observation silences a
+note.
+
 Ask about one host at ${base}/corpus/host/{host}.json. It replays that
 host out of the signed chain, and every round we have NO verdict for
 carries a reason: no feed named it, a feed named it but we did not

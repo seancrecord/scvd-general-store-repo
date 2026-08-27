@@ -1257,6 +1257,46 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Weekly signed observations of the public x402 ecosystem: hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, with the live chain check and verification steps on the document. Per-host history at /corpus/host/{host}.json. Free. The readable landing is /corpus.",
         ),
       },
+      "/corpus/trajectory.json": {
+        get: freeOp(
+          "The corpus read as time",
+          "One point per signed weekly snapshot, every count derived at read from the snapshot's own rows: listed/probed denominators, verdict counts with observer-degraded ticks separated from anyone's outage, offers seen, doors per rail, failure classes. No ratios anywhere — counts travel with their denominators. Each point names the digest it derives from. Free.",
+        ),
+      },
+      "/api/standing-note": {
+        get: freeOp(
+          "The standing-note lane, explained",
+          "How to attach your own dated statement to a subject this store has observed — your door, or a wallet your doors advertise. Self-serve and evidence-gated: prove control (EIP-191 wallet signature, or serve the statement's sha256 at /.well-known/scvd-note.txt) and the note rides beside the observation on every surface that shows it, never replacing it. Free.",
+        ),
+        post: postOp(
+          "Attach a standing note",
+          "Prove control, attach your statement. Host lane: serve sha256(statement) at your /.well-known/scvd-note.txt first. Wallet lane: EIP-191 personal_sign over the statement-bound challenge the GET shows. A subject no signed round has observed is refused — a note rides an observation. One note per subject, newest wins.",
+          "subject ('host'|'wallet'), statement (<=500 chars), then host, or address+signature.",
+          {
+            type: "object",
+            required: ["subject", "statement"],
+            properties: {
+              subject: { type: "string", enum: ["host", "wallet"] },
+              statement: { type: "string", maxLength: 500 },
+              host: { type: "string" },
+              address: { type: "string" },
+              signature: { type: "string" },
+            },
+          },
+        ),
+      },
+      "/corpus/wallet-facts.json": {
+        get: freeOp(
+          "Shared receiving addresses, counted",
+          "Latest signed week: how many receiving addresses the probed doors advertised, how many receive at more than one door, and the largest cluster — counts with denominators, no addresses, no names, no operator claims. The shared-wallet caveat rides inline: custodial and platform wallets make unrelated doors share an address, so the observation is served and the inference is yours. Free.",
+        ),
+      },
+      "/corpus/diff.json": {
+        get: freeOp(
+          "What changed since a signed week",
+          "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
+        ),
+      },
       "/mcp": {
         post: postOp(
           "The MCP door",

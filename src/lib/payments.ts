@@ -725,12 +725,78 @@ const SUPPORTED_KINDS_TTL_SECONDS = 7 * 86_400;
  * failure is a verify/settle refusal — the same failure the isolate
  * cache produces today.
  */
+/**
+ * THE VERIFY SHORT-LEASH (#49) — the receipt that priced it: three
+ * confirmed lost settles on spot_check in one four-minute window
+ * (2026-08-27, 00:53–00:57 UTC). Each buyer's payload was clean (our
+ * own preflight found nothing to name), and each sale died because
+ * the verify CALL itself errored — the step that only asks a
+ * question. The library's default deadline gives that question the
+ * same 30 seconds settle gets, and no retry at all.
+ *
+ * Verify is the one facilitator call that is unconditionally safe to
+ * retry AND to abandon: it is read-only, no money moves on it, and a
+ * duplicate ask cannot double-anything. So it gets a shorter deadline
+ * per attempt and ONE fast retry — transport failures only. A
+ * facilitator that ANSWERED with a verdict (VerifyError, carrying the
+ * HTTP statusCode) was not a blip and is never second-guessed; the
+ * exact symmetry of the settle doctrine below (SETTLE_RETRY_DELAY_MS),
+ * pointed at the other end of the same pipe.
+ *
+ * SETTLE IS DELIBERATELY NOT OVERRIDDEN HERE. A verify timeout means
+ * "ask again"; a settle timeout means "the money may have moved" —
+ * settle's retry lives in processSettlementWithRetry where the
+ * ambiguous-outcome rescue can see it, on the full 30s deadline.
+ * test/verify-short-leash.spec.ts pins that into the prototype chain.
+ */
+export const VERIFY_TIMEOUT_MS = 10_000;
+export const VERIFY_RETRY_DELAY_MS = 400;
+
+/**
+ * The library throws VerifyError when a non-2xx response still carried
+ * an isValid body — a verdict wearing an error status. The class
+ * itself is not exported from any @x402/core entry point (only its
+ * type), so the discriminator reads the field only VerifyError has
+ * among verify()'s throw shapes: the delivering HTTP statusCode.
+ * Timeouts carry operation/timeoutMs, transport errors carry neither.
+ */
+function verifyDeliveredAVerdict(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    typeof (error as { statusCode?: unknown }).statusCode === "number"
+  );
+}
+
 export class KvWarmFacilitatorClient extends HTTPFacilitatorClient {
+  /** Same facilitator, same auth — shorter deadline, verify only. */
+  private readonly verifyLane: HTTPFacilitatorClient;
+
   constructor(
     config: ConstructorParameters<typeof HTTPFacilitatorClient>[0],
     private readonly kv: KVNamespace,
+    verifyTimeoutMs: number = VERIFY_TIMEOUT_MS,
   ) {
     super(config);
+    this.verifyLane = new HTTPFacilitatorClient({
+      ...(config ?? {}),
+      timeoutMs: verifyTimeoutMs,
+    });
+  }
+
+  override async verify(
+    ...args: Parameters<HTTPFacilitatorClient["verify"]>
+  ): Promise<Awaited<ReturnType<HTTPFacilitatorClient["verify"]>>> {
+    try {
+      return await this.verifyLane.verify(...args);
+    } catch (error) {
+      if (verifyDeliveredAVerdict(error)) {
+        throw error;
+      }
+      await new Promise((resolve) =>
+        setTimeout(resolve, VERIFY_RETRY_DELAY_MS),
+      );
+      return this.verifyLane.verify(...args);
+    }
   }
 
   override async getSupported(): Promise<

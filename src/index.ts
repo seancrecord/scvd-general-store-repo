@@ -51,6 +51,7 @@ import {
   okfRoutes,
   defectRoutes,
   noticeRoutes,
+  standingNoteRoutes,
   trustRoutes,
   passportRoutes,
   profilesRoutes,
@@ -220,6 +221,7 @@ app.route("/", freshSetRoutes);
 app.route("/", okfRoutes);
 app.route("/", defectRoutes);
 app.route("/", noticeRoutes);
+app.route("/", standingNoteRoutes);
 app.route("/", trustRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);
