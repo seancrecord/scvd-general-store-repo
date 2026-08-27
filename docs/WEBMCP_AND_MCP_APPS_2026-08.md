@@ -979,7 +979,7 @@ test becomes its own rule beside 43 — is struck by it.
 
 | Host | Our ui:// card rendered? | Notes |
 |---|---|---|
-| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **NOT OBSERVED — and a host marker claimed otherwise** | see the correction below |
+| **Claude Desktop** (claude-ai 0.1.0, protocol 2025-11-25) | **YES — round four, screenshot-confirmed** | root cause of rounds 1–3: the card never sent `ui/initialize`. An MCP Apps page is itself an MCP client and the host waits for its hello (ext-apps `App.connect`, protocol 2026-01-26). Static HTML never speaks; ~30 lines of raw postMessage JSON-RPC fixed it. Dark theme held: serif verdict, rust age, hatched NOT CLIMBED pills all intact. **One viewport finding:** the host gives the widget a short fixed window, so the rungs sat below the fold — verdict and age on first paint, gaps one scroll away, rule 54 failed by viewport rather than by design. `ui/notifications/size-changed` added to the kit as the SDK's remedy; untested as of this row. |
 | VS Code | not yet run | — |
 | ChatGPT | not yet run | — |
 | Goose | optional | — |
@@ -1023,10 +1023,25 @@ each now stated against the evidence that supports it:**
    block, the colophon, and the keeper's line — the identity and
    the self-indictment, exactly the parts only our own HTML brings.
 
-**Diagnostic still open:** whether Claude Desktop ever fetched the
-`ui://` resource. The kit now traces every method call; a trace with
-no `resources/read` for the ui:// URI means the host never attempted
-the render its marker claimed.
+~~**Diagnostic still open:** whether Claude Desktop ever fetched the
+`ui://` resource.~~ CLOSED by the keeper's round-three trace: the host
+prefetched the card (`resources/read` 100ms before `tools/call`) and
+displayed nothing — which localized the failure to the iframe side and
+led straight to the missing `ui/initialize`. Round four rendered.
+
+**TWO MACHINE READERS, SAME COPY FLAG — production-card note, rule 7,
+the keeper's pen.** Round three's model and round four's model, blind
+to each other, both read "expires in 11 days" as a forward warranty —
+*good until then* — the precise inference the card refuses. Round
+four's phrasing of the fix is the keeper's to take or leave: *"an
+observation of a past moment doesn't expire; what expires is the
+store's willingness to serve it as current — 'stale after' or 'current
+until' says the same thing without lending the observation a shelf
+life it doesn't have."* Two independent model-readers converging on
+one label is as clean as copy evidence gets. The same reader also
+named the not-climbed list's job unprompted: it "turns L3a from
+something a reader could quote as a pass into a stated ceiling" —
+§4.6's design intent, observed working in the wild.
 
 
 Unchanged by the ruling, and it comes before the P8 shape decision

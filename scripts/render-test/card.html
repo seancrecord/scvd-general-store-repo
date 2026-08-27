@@ -187,6 +187,31 @@
             { jsonrpc: "2.0", method: "ui/notifications/initialized" },
             "*"
           );
+          /*
+           * ROUND FOUR'S FINDING: the host gives the widget a short
+           * fixed window, so the unclimbed rungs sat below the fold —
+           * verdict and age on first paint, the gaps one scroll away,
+           * which is rule 54 failed by viewport. The SDK's answer is
+           * size-changed notifications; sent once after layout and on
+           * any resize, so the host can size the frame to the card.
+           */
+          var announce = function () {
+            window.parent.postMessage(
+              {
+                jsonrpc: "2.0",
+                method: "ui/notifications/size-changed",
+                params: {
+                  width: document.documentElement.scrollWidth,
+                  height: document.documentElement.scrollHeight,
+                },
+              },
+              "*"
+            );
+          };
+          requestAnimationFrame(announce);
+          if (window.ResizeObserver) {
+            new ResizeObserver(announce).observe(document.documentElement);
+          }
         } else if (m.id !== undefined && m.method) {
           // Answer any host request with an empty result rather than
           // leaving it hanging; a render test has no opinions.
