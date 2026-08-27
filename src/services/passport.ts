@@ -67,9 +67,43 @@ export function freshnessOf(
   return "expired";
 }
 
+/**
+ * THE SUMMARY BLOCK — the one dead-simple read (outside review,
+ * 2026-08-27, accepted): three answers fast — can it be paid, what
+ * evidence says so, when does that evidence expire — without walking
+ * the module list. Two laws hold it honest: every value is DERIVED
+ * from the same locals as the payload's authoritative fields (AT_SCALE
+ * rule 1 — a summary that could drift from its own passport is worse
+ * than none), and it lives INSIDE the signed payload, because the one
+ * block agents actually read must not be the one block a tamperer
+ * could rewrite freely.
+ */
+export interface PassportSummary {
+  /** Same value as payload.freshness — the one-word answer. */
+  status: FreshnessState;
+  verdict: string | null;
+  observed_at: string | null;
+  /** Same instant as payload.expires. Refuse the passport after it. */
+  valid_until: string;
+  /** Whole days between the observation and this passport's issue. */
+  evidence_age_days: number | null;
+  /** The door's own declared terms, when the observation captured them. */
+  networks?: string[];
+  min_usdc?: number;
+  max_usdc?: number;
+  /** Failing checks on the evidence this passport rides. Stated as []
+   * on a ready-side passport rather than omitted. */
+  failed: string[];
+  verify: string;
+  history_url: string;
+  corrections_url: string;
+}
+
 export interface PassportPayload {
   artifact: "endpoint_passport";
   host: string;
+  /** The three-answer read; every value derived from the fields below. */
+  summary: PassportSummary;
   issued_at: string;
   /** The date past which an agent should refuse this passport. */
   expires: string;
@@ -127,6 +161,52 @@ export type PassportOutcome =
 
 const NOT_A_GUARANTEE =
   "A passport is evidence, not endorsement: it says what this store's instruments observed at the stated moments, nothing about delivery quality, solvency, or anything after expiry. Not an escrow, not a guarantor. Verify the signature yourself and refuse expired evidence.";
+
+/** One builder, both passports: the summary is arithmetic over the
+ * values the payload already states, never a second source. */
+function summarize(parts: {
+  base: string;
+  host: string;
+  issuedAt: string;
+  expires: string;
+  freshness: FreshnessState;
+  verdict: string | null;
+  observedAt: string | null;
+  offer?: { networks: string[]; min_usdc?: number; max_usdc?: number };
+  failed: string[];
+}): PassportSummary {
+  const ageDays =
+    parts.observedAt === null
+      ? null
+      : Math.floor(
+          (new Date(parts.issuedAt).getTime() -
+            new Date(parts.observedAt).getTime()) /
+            86_400_000,
+        );
+  return {
+    status: parts.freshness,
+    verdict: parts.verdict,
+    observed_at: parts.observedAt,
+    valid_until: parts.expires,
+    evidence_age_days: ageDays,
+    ...(parts.offer
+      ? {
+          networks: parts.offer.networks,
+          ...(parts.offer.min_usdc !== undefined
+            ? { min_usdc: parts.offer.min_usdc }
+            : {}),
+          ...(parts.offer.max_usdc !== undefined
+            ? { max_usdc: parts.offer.max_usdc }
+            : {}),
+        }
+      : {}),
+    failed: parts.failed,
+    verify:
+      "ed25519_verify(utf8(signed_payload), hex(signature), hex(public_key)); the key and its Bitcoin-anchored history are at /.well-known/scvd-signing-key.",
+    history_url: `${parts.base}/corpus/host/${parts.host}.json`,
+    corrections_url: `${parts.base}/corrections`,
+  };
+}
 
 function expiryFrom(lastObserved: string): string {
   const expires = new Date(
@@ -208,26 +288,53 @@ export async function issuePassport(
   const lastObserved = refreshIsNewest
     ? refresh.observed_at
     : history.last_observed;
+  const issuedAt = now.toISOString();
+  const expires = expiryFrom(lastObserved ?? issuedAt);
+  const freshness = freshnessOf(lastObserved, effectiveVerdict, now);
+  const offer = refreshIsNewest ? undefined : latestProbed?.offer;
+  const latest = refreshIsNewest
+    ? {
+        verdict: refresh.verdict,
+        observed_at: refresh.observed_at,
+        week: null,
+        source:
+          "paid refresh — buyer-commissioned, census instrument; same probe, same rules, no favor",
+      }
+    : {
+        verdict: latestProbed!.verdict!,
+        observed_at: lastObserved,
+        week: latestProbed!.week,
+        ...(offer
+          ? {
+              networks: offer.networks,
+              ...(offer.min_usdc !== undefined
+                ? { min_usdc: offer.min_usdc }
+                : {}),
+              ...(offer.max_usdc !== undefined
+                ? { max_usdc: offer.max_usdc }
+                : {}),
+            }
+          : {}),
+      };
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
-    issued_at: now.toISOString(),
-    expires: expiryFrom(lastObserved ?? now.toISOString()),
-    freshness: freshnessOf(lastObserved, effectiveVerdict, now),
+    summary: summarize({
+      base,
+      host,
+      issuedAt,
+      expires,
+      freshness,
+      verdict: latest.verdict ?? null,
+      observedAt: latest.observed_at ?? null,
+      ...(offer ? { offer } : {}),
+      failed: refreshIsNewest ? [] : (latestProbed?.failed ?? []),
+    }),
+    issued_at: issuedAt,
+    expires,
+    freshness,
     freshness_rule: `fresh <= ${FRESH_DAYS} days since last observation, aging <= ${AGING_DAYS}, expired after; broken when the latest verdict is not ready; refuse expired passports.`,
-    latest: refreshIsNewest
-      ? {
-          verdict: refresh.verdict,
-          observed_at: refresh.observed_at,
-          week: null,
-          source:
-            "paid refresh — buyer-commissioned, census instrument; same probe, same rules, no favor",
-        }
-      : {
-          verdict: latestProbed!.verdict!,
-          observed_at: lastObserved,
-          week: latestProbed!.week,
-        },
+    latest,
     history: {
       first_observed: history.first_observed,
       rounds_probed: history.rounds_probed,
@@ -267,11 +374,22 @@ export async function issueSelfPassport(
     clock: "injected-request-clock",
     getText,
   });
+  const selfExpires = expiryFrom(at);
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
     host,
+    summary: summarize({
+      base,
+      host,
+      issuedAt: at,
+      expires: selfExpires,
+      freshness: "fresh",
+      verdict: "ready",
+      observedAt: at,
+      failed: [],
+    }),
     issued_at: at,
-    expires: expiryFrom(at),
+    expires: selfExpires,
     freshness: "fresh",
     freshness_rule: `Re-issued on every request from live self-observation; fresh by construction, expires ${AGING_DAYS} days after issue if you keep a copy.`,
     latest: {

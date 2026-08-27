@@ -109,6 +109,13 @@ export interface SubjectRound {
   verdict?: WardHostResult["verdict"];
   failed?: string[];
   advisories?: string[];
+  /**
+   * The door's own declared terms that round, from its 402 — rails
+   * and USDC price bounds only. No payment address rides here (G2
+   * ruling: verbatim addresses stay out of derived cross-host
+   * surfaces; the address digest already has its own lane).
+   */
+  offer?: { networks: string[]; min_usdc?: number; max_usdc?: number };
   /** Which feed named it: discovery, leaderboard, or both. */
   source?: string;
   gap?: GapReason;
@@ -256,6 +263,19 @@ export async function subjectHistory(
         verdict: entry.verdict,
         failed: entry.failed,
         advisories: entry.advisories,
+        ...(entry.offer
+          ? {
+              offer: {
+                networks: entry.offer.networks,
+                ...(entry.offer.min_usdc !== undefined
+                  ? { min_usdc: entry.offer.min_usdc }
+                  : {}),
+                ...(entry.offer.max_usdc !== undefined
+                  ? { max_usdc: entry.offer.max_usdc }
+                  : {}),
+              },
+            }
+          : {}),
         ...(entry.source ? { source: entry.source } : {}),
         note:
           entry.verdict === "ready"
