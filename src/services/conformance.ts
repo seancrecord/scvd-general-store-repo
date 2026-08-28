@@ -110,6 +110,15 @@ const RESOLUTIONS_PER_MINUTE = 60;
 let resolutionMinute = "";
 let resolutionsUsed = 0;
 
+/**
+ * The one resolution failure that is a fact about the DOCUMENT
+ * rather than about our read: the DID document was fetched and
+ * parsed fine, and the kid is not in it. Every other resolution
+ * failure (declined, budget, unreachable, oversize, redirect) is
+ * ours, and the verdict mapping below treats it that way.
+ */
+const KID_NOT_IN_DOCUMENT = "kid is not in the DID document";
+
 function takeResolutionBudget(): boolean {
   const minute = new Date().toISOString().slice(0, 16);
   if (minute !== resolutionMinute) {
@@ -545,7 +554,7 @@ export async function checkConformance(
           .map((byte) => byte.toString(16).padStart(2, "0"))
           .join("");
       } else {
-        resolutionProblem = "kid is not in the DID document";
+        resolutionProblem = KID_NOT_IN_DOCUMENT;
       }
     } else {
       resolutionProblem = resolved.problem;
@@ -566,8 +575,53 @@ export async function checkConformance(
       ...(requestedKind ? { kind: requestedKind } : {}),
       ...(resolvedHex ? { publicKey: resolvedHex } : {}),
       nowSeconds: Math.floor(now.getTime() / 1000),
+      /*
+       * THE VERIFIER NEVER FETCHES (the instrument audit,
+       * 2026-08-28). Resolution happens exactly once, above, through
+       * guardedFetch — redirect-refusing, sized, timed, budgeted,
+       * self-shimmed. Without this option the verifier library falls
+       * back to bare globalThis.fetch whenever no key was
+       * established and the kid is did:web — which is precisely the
+       * resolve_key:false path, the budget-exhausted path, and the
+       * resolution-failed path: a raw request to a stranger's host
+       * on the three paths this desk's own docs promise make none.
+       * The throw surfaces as a failed key-resolution check, whose
+       * detail is rewritten just below to name the desk's actual
+       * state instead of the refusal's stack trace.
+       */
+      fetch: () => {
+        throw new Error(
+          "resolution is the desk's, done once and guarded; the verifier makes no request of its own",
+        );
+      },
     })) as { ok: boolean; checks: ConformanceCheck[] };
-    if (!resolvedHex && resolutionProblem) {
+    /*
+     * THE KEY-RESOLUTION CHECK SPEAKS IN THE DESK'S VOICE when the
+     * desk, not the verifier, decided what happened. Four states,
+     * each named as whose fact it is: declined (the caller's ask),
+     * budget spent (our limit), attempted-and-failed (our read of
+     * their DID host at one moment), kid-not-in-document (a fact
+     * about the artifact's attributability — the one resolution
+     * failure that IS about the document).
+     */
+    if (!resolvedHex && kid?.startsWith("did:web:") && !publicKeyHex) {
+      const deskDetail = !askedForResolution
+        ? "not attempted: the caller declined did:web resolution (resolve_key: false), so shape and time were checked and no request was made in anyone's name — as asked."
+        : !budgetOk
+          ? "not attempted: the did:web resolution budget for this minute is spent. Our limit, not a fact about this artifact — the signature is unchecked, not wrong."
+          : resolutionProblem === KID_NOT_IN_DOCUMENT
+            ? `resolved the DID document and the kid is not in its verificationMethod. A retired key resolves here too if the issuer publishes key history; an unknown kid means the artifact is not attributable to this DID.`
+            : resolutionProblem
+              ? `attempted and failed: ${resolutionProblem}. A fact about our read of the issuer's DID host at this moment, not about the artifact — the signature is unchecked, not wrong.`
+              : undefined;
+      if (deskDetail) {
+        raw.checks = raw.checks.map((check) =>
+          check.name === "key-resolution"
+            ? { ...check, detail: deskDetail }
+            : check,
+        );
+      }
+    } else if (!resolvedHex && resolutionProblem) {
       // Keep the reason visible rather than reporting a bare "no key".
       raw.checks = raw.checks.map((check) =>
         check.name === "key-resolution"
@@ -757,11 +811,41 @@ export async function checkConformance(
     }
   }
 
+  /*
+   * COULD-NOT-CHECK IS FOR OUR GAPS, NOT THEIR DEFECTS (the
+   * instrument audit, 2026-08-28). Two fixes in one mapping. The old
+   * chain sent attempted-and-failed resolution — the issuer's DID
+   * host slow from our vantage for three seconds — and the exhausted
+   * budget to does_not_conform: our blindness booked as the
+   * subject's nonconformance, the failure class observer_status was
+   * invented to end. And it sent a schema-broken artifact under
+   * resolve_key:false to could_not_check: a decided fact hiding
+   * behind our refusal. Now: a failure decided offline (parse,
+   * schema) is does_not_conform whatever the key state; a signature
+   * left unchecked for OUR reasons (declined, budget spent, failed
+   * read) is could_not_check; kid-not-in-document stays
+   * does_not_conform, because unattributability is a fact about the
+   * document.
+   */
+  const onlyKeyPathFailed = raw.checks.every(
+    (check) =>
+      check.ok ||
+      check.advisory === true ||
+      check.name === "key-resolution" ||
+      check.name === "signature",
+  );
+  const signatureUncheckedForOurReasons =
+    !signatureChecked &&
+    (keyResolution === "not_attempted" ||
+      keyResolution === "budget_exhausted" ||
+      (keyResolution === "did:web" &&
+        resolutionProblem !== undefined &&
+        resolutionProblem !== KID_NOT_IN_DOCUMENT));
   const verdict: ConformanceVerdict["verdict"] = raw.ok
     ? "conforms"
     : signatureChecked || !anyFailed
       ? "does_not_conform"
-      : keyResolution === "not_attempted"
+      : onlyKeyPathFailed && signatureUncheckedForOurReasons
         ? "could_not_check"
         : "does_not_conform";
 
