@@ -204,6 +204,58 @@ describe("the audit's honest boundaries", () => {
     expect(audit.checks[0]?.detail).toContain("does not prove the endpoint is down");
   });
 
+  it("carries the same probe scored under v2 beside the v1 verdict — and says when they disagree", async () => {
+    /*
+     * The buyer-protection case the instrument audit (2026-08-28)
+     * found missing: a door with a dollar-typed amount passes every
+     * v1 structural check and cannot be paid at its asked price. The
+     * $5 artifact used to sign "ready" and nothing else while the
+     * free /api/preflight/v2 called the same door not_ready in
+     * public. Now the v2 score rides inside the signed bytes.
+     */
+    const decimalDoor = {
+      x402Version: 2,
+      accepts: [
+        {
+          scheme: "exact",
+          network: "eip155:8453",
+          amount: "0.005",
+          asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          payTo: "0x1111111111111111111111111111111111111111",
+        },
+      ],
+    };
+    const audit = await performServiceAudit(
+      testEnv,
+      "https://decimal.example/api/buy/thing",
+      {
+        fetch: (async () =>
+          new Response("{}", {
+            status: 402,
+            headers: { "PAYMENT-REQUIRED": btoa(JSON.stringify(decimalDoor)) },
+          })) as unknown as typeof fetch,
+      },
+    );
+    expect(audit.verdict).toBe("ready");
+    expect(audit.also_under).toBeDefined();
+    expect(audit.also_under!.battery).toBe("preflight-v2");
+    expect(audit.also_under!.verdict).toBe("not_ready");
+    expect(audit.also_under!.difference).toContain("DISAGREED");
+  });
+
+  it("no battery ran, no also_under — an unreachable audit does not invent a second verdict", async () => {
+    const audit = await performServiceAudit(
+      testEnv,
+      "https://nowhere.example/api/buy/thing",
+      {
+        fetch: (async () => {
+          throw new Error("connection refused");
+        }) as unknown as typeof fetch,
+      },
+    );
+    expect(audit.also_under).toBeUndefined();
+  });
+
   it("marks a shaped-wrong endpoint not_ready with the failing check named", async () => {
     const audit = await performServiceAudit(
       testEnv,

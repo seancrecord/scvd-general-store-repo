@@ -4,10 +4,12 @@ import { signMessage } from "@/lib/signing";
 import { ProbeTargetRefused } from "@/lib/probe-target";
 import {
   PREFLIGHT_BATTERY,
+  PREFLIGHT_BATTERY_NEXT,
   PREFLIGHT_VERSION,
   probeOnce,
   runChecks,
 } from "@/services/preflight";
+import { checkRailReceivable } from "@/services/rail-receivable";
 import type {
   PreflightAdvisory,
   PreflightCheck,
@@ -79,6 +81,24 @@ export interface ServiceAuditObservation {
   verdict: "ready" | "not_ready" | "unreachable" | "refused";
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
+  /**
+   * THE SAME PROBE, SCORED UNDER THE CURRENT BATTERY (the instrument
+   * audit, 2026-08-28). The $5 artifact cited v1 honestly and
+   * carried nothing else — so a door with an unpayable payTo bought
+   * a signed "ready" here while the free /api/preflight/v2 called
+   * the same door not_ready in public, the 0.14 contradiction shape
+   * with the PAID artifact on the wrong side. One probe, both
+   * verdicts, beside each other in the signed bytes; they can never
+   * disagree about what was seen, only about what counts. Appended
+   * under the append-law: new audits only, a stored audit keeps its
+   * exact original preimage. Absent when the probe never completed
+   * (refused / unreachable — no battery ran).
+   */
+  also_under?: {
+    battery: string;
+    verdict: "ready" | "not_ready";
+    difference: string;
+  };
   /** Stable digest of the observed facts above. */
   evidence_hash: string;
   scope: string;
@@ -131,12 +151,51 @@ export async function performServiceAudit(
   let checks: PreflightCheck[];
   let advisories: PreflightAdvisory[];
   let verdict: ServiceAuditObservation["verdict"];
+  let alsoUnder: ServiceAuditObservation["also_under"];
   try {
     const outcome = await probeOnce(url, options.fetch ?? fetch, "", env);
     const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body);
     checks = ran.checks;
     advisories = ran.advisories;
     verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
+    /*
+     * The v2 score, from the free door's own recipe (preflightUrl):
+     * fold the L3b trio and the rail read into the same observation.
+     * The rail read is best-effort exactly as it is everywhere else —
+     * a throw is our RPC trouble, never this door's defect, and the
+     * advisory says so.
+     */
+    const rail = ran.accepts
+      ? await checkRailReceivable(env, ran.accepts).catch(() => ({
+          check: null,
+          advisory: {
+            name: "solana-rail-unread",
+            detail:
+              "the Solana rail read did not complete, so whether that payTo can be credited is unknown. Our gap, not a finding about this endpoint.",
+          },
+        }))
+      : { check: null, advisory: null };
+    if (rail.advisory) advisories.push(rail.advisory);
+    const v2Checks = [
+      ...checks,
+      ...(ran.l3b ?? []),
+      ...(rail.check ? [rail.check] : []),
+    ];
+    const v2Extras = [
+      ...(ran.l3b ? ["the L3b consistency trio"] : []),
+      ...(rail.check ? ["solana-rail-receivable"] : []),
+    ];
+    const v2Verdict = v2Checks.every((check) => check.ok)
+      ? ("ready" as const)
+      : ("not_ready" as const);
+    alsoUnder = {
+      battery: PREFLIGHT_BATTERY_NEXT,
+      verdict: v2Verdict,
+      difference:
+        v2Extras.length > 0
+          ? `${PREFLIGHT_BATTERY_NEXT} folds ${v2Extras.join(" and ")} into the verdict; ${AUDIT_CRITERIA_VERSION} reports the same observations as advisories. On this probe the two batteries ${verdict === v2Verdict ? "agreed" : "DISAGREED"}.`
+          : "No accepts parsed and the rail read did not apply, so both batteries scored the identical set of checks.",
+    };
   } catch (error) {
     /*
      * THIS IS THE ARTIFACT THAT MOST HAD TO STOP SAYING "UNREACHABLE".
@@ -180,6 +239,9 @@ export async function performServiceAudit(
     verdict,
     checks,
     advisories,
+    // Append-law: present only when a battery actually ran, after
+    // advisories, inside evidence_hash and the signature alike.
+    ...(alsoUnder ? { also_under: alsoUnder } : {}),
   };
   const observation: ServiceAuditObservation = {
     ...core,

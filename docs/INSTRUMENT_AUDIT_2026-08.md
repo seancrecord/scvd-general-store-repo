@@ -10,11 +10,19 @@ offer-receipt convention places offers in the 402 body, (b) measured
 one registry's listings while the caption spoke for the market, and
 (c) never said its denominator excluded our own door.
 
-**Status: findings only.** Per rule 30, nothing here publishes and no
-fix lands without the keeper's word. The corrections drafts in §4 are
-DRAFTS — the corrections record is hand-written by a person, on
-purpose, and this document does not touch it. Audited at HEAD
-`2114535`, 2026-08-28. Method: for every quantitative or
+**Status: findings recorded 2026-08-28 at HEAD `2114535`; the
+keeper's word to fix arrived the same day, and the fixes shipped in
+five commits on this branch** ("The words step back…", "The verifier
+never fetches…", "The battery reads both placements…", "Our
+blindness stops booking…", "The paid shelf says what it runs…").
+§9 records what shipped against each table row and what remains
+open. The findings below are left as found — they are the dated
+record of what the instruments were, and the diffs are the record
+of what changed. The corrections drafts in §4 are still DRAFTS —
+the corrections record is hand-written by a person, on purpose, and
+this branch does not touch src/store/corrections.ts; each draft's
+proposed mechanism now exists in code, so an entry the keeper files
+can cite a shipped mechanism rather than an intention. Method: for every quantitative or
 verdict-shaped claim the store publishes, read the caption, read the
 code that computes it, and diff the two. Every finding below was
 verified against the computing code path; the top-ranked rows were
@@ -553,6 +561,59 @@ Nothing below moves without his word (rule 30). Ordered by
    and this audit adds nothing to it but the reminder that three
    cheaper rungs sit below it, unasked.
 
+---
+
+## 9. What shipped, same day — and what stays open
+
+The keeper's word arrived 2026-08-28 and phases 1–5 of §8 shipped on
+this branch, tests green at each step. Against the table:
+
+**Fixed in code:** rows 1 (body read in `runChecks`, all five
+instruments inherit; advisory names the placements read; changelog
+dated on both batteries), 2 (census copy placement-scoped +
+self-exclusion, README matched), 3 (Night Watch copy says shape, not
+payability), 4 (refusing fetch into `verifyArtifact`; per-state
+zero-egress spec), 5 (attempted-failed resolution → `could_not_check`;
+kid-not-in-document stays the document's fact; offline-decidable
+schema failures stop hiding behind our refusal), 6 (profiles fold the
+paid refresh, newest-wins), 7 (`also_under` v2 in the signed audit
+bytes with a DISAGREED sentence; menu copy names both), 8 (battery +
+observer_status appended into the conformance watch's signed preimage
+under the append-law; `passes_observed` beside `passes_recorded`),
+9 (launch check reads both placements; battery bumped to
+launch-check-v2 per its own rule), 10-11 (self-passport derives or
+refuses — a planted-conflict spec proves the fields go dark; the self
+chip wears SELF and refuses on conflict), 12 (degraded weeks book as
+`instrument_degraded` gaps in the paid history), 13
+(`observer_degraded` named and excluded in the market block), 14 (the
+tautology retired for a behavioral trio through `probeHost`), 15
+(JSON-LD vocabulary + counts beside the percent), 17 (diff filters
+revisit and not_probed; `battery_changed` marks cross-epoch
+transitions), 18 (`WeekPoint.battery`), 19 (Polygon USDC recognized
+under `PRICE_BASIS`), 20 (rail identity names Polygon; storefront
+ledger line carries it), 22 (OKF observer derived from the row's own
+battery), 25 (pulse counts quotes, not heads), 27-adjacent
+(fresh-set "probed" caption), 28 (attestation nonce cause + matched
+echo), 30 (`hosts_probed` beside `hosts_observed`), 31 (CI recomputes
+the sealed market block), 32 (self-exclusion stated on /registry,
+/corpus, the census copy, and the admin market page).
+
+**Also fixed:** row 26 — the launch-check purchase note and verify
+step 3 now branch on `tx_hash_status`: "the settlement is on chain"
+is said only when our own chain read confirmed it, and a claimed or
+absent receipt is named as exactly that.
+
+**Still open, deliberately:** row 16 (registry coverage fields
+dropped at publish — needs a `RegistryWeekEntry` shape decision),
+row 21 (fresh-set/OKF `observed_at` on long-walk weeks — needs
+per-row timestamps through `LongWalkState`), row 24 (the CI dogfood
+still proves v1 core only on our own door), the minor residue not
+named above, the whole of §6's depth ladder (each rung its own ask; NOW-6
+stays the keeper's open ruling), and every §4 corrections entry —
+those wait for the keeper's hand, and their mechanisms now exist to
+be cited.
+
 *Filed 2026-08-28. Findings verified against the working tree at
-HEAD 2114535; line numbers are that commit's. This document applies
-no fix. — the instrument audit*
+HEAD 2114535; line numbers in §§1-7 are that commit's. Fixes landed
+the same day under the keeper's word; §9 is the ledger of which. —
+the instrument audit*

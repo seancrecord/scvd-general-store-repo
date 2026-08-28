@@ -156,6 +156,16 @@ export function statementNote(coverage: string): string {
 export function launchCheckNote(
   verdict: string,
   replayServed?: boolean | null,
+  /**
+   * The walk's tx_hash_status (the instrument audit, 2026-08-28).
+   * "settled" means a 2xx after payment presentation — the chain
+   * read can still be "claimed" (seller's hash never verified) or
+   * absent (no PAYMENT-RESPONSE at all), and the old note asserted
+   * "the settlement is on chain" over both. The signed record was
+   * always honest; this note is the copy a hurried seller quotes,
+   * so it now branches on what the chain read actually saw.
+   */
+  txHashStatus?: string | null,
 ): string {
   /*
    * THE FINDING THAT COSTS THEM MONEY LEADS. A door that settles
@@ -171,7 +181,9 @@ export function launchCheckNote(
   }
   switch (verdict) {
     case "settled":
-      return "We walked up to your till as a paying stranger and it took our money. The whole transaction is written down stage by stage, signed — the settlement is on chain from our declared wallet, and the delivery stage says what actually came back for it. Read the delivery line before you celebrate: settled and delivered are different words, and the report uses the right one.";
+      return txHashStatus === "confirmed"
+        ? "We walked up to your till as a paying stranger and it took our money. The whole transaction is written down stage by stage, signed — the settlement is on chain from our declared wallet, verified by our own read of Base, and the delivery stage says what actually came back for it. Read the delivery line before you celebrate: settled and delivered are different words, and the report uses the right one."
+        : "We walked up to your till as a paying stranger, presented a real signed payment, and your door answered 2xx and handed over the goods. What the record can and cannot say: 'settled' here is your till's answer, and the chain read did not confirm a settlement transaction — the tx_hash stage says whether your receipt named a hash we could not verify, or no settlement receipt came back at all. The delivery stage says what actually arrived. Settled, delivered, and confirmed-on-chain are three different words, and the report uses the right ones.";
     case "payment_refused":
       return "We walked up to your till as a paying stranger, presented a real signed payment, and your door refused it. That is the single most common fate of an x402 purchase attempt in the wild, and now you hold the one thing most sellers never get: the refusal, from the buyer's side, stage by stage, signed and dated. The fix usually lives in the stage right before the refusal.";
     case "no_payment_gate":
