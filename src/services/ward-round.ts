@@ -7,11 +7,7 @@ import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { takeCensus, type PopulationCensus, type SourceResult } from "@/services/population";
 import { readFuchssProviders, UNREAD_DIRECTORIES } from "@/services/ward-sources";
 import { checkRailReceivable } from "@/services/rail-receivable";
-import {
-  BATTERY_ADDS,
-  PREFLIGHT_BATTERY_NEXT,
-  PREFLIGHT_VERSION_NEXT,
-} from "@/services/preflight";
+import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 
 /**
  * WHICH BATTERY THE CENSUS ACTUALLY RUNS (2.5, 2026-08-26).
@@ -37,17 +33,18 @@ import {
  */
 export const CENSUS_BATTERY = PREFLIGHT_BATTERY_NEXT;
 
-/**
- * The check names this round can actually fail a door on. Exported so
- * a test can hold the citation to account: every check the cited
- * battery adds must appear here, or the row is citing criteria it
- * does not apply — which is the whole defect above.
+/*
+ * censusFoldedCheckNames() lived here until 2026-08-28: it returned
+ * [...BATTERY_ADDS[v2]] so "a test can hold the citation to account"
+ * — and the test compared that list to BATTERY_ADDS[v2], a constant
+ * against itself, green with every fold deleted. Rule 46, inside the
+ * 2026-08-26 correction's own mechanism. The citation is now held by
+ * behavior: test/census-folds-the-trio.spec.ts and
+ * test/ward-round-rail.spec.ts each walk a defective stubbed door
+ * through probeHost and require the round to fail it.
  */
-export function censusFoldedCheckNames(): string[] {
-  return [...BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]];
-}
 import {
-  captureWatchEvidence,
+  captureWatchEvidenceKeepingBody,
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
@@ -578,10 +575,14 @@ export async function probeHost(
      * dispute needs: the challenge bytes and the body digest, signed.
      */
     const latencyMs = Date.now() - startedAt;
-    const evidence = await captureWatchEvidence(response);
+    // KeepingBody (the instrument audit, 2026-08-28): the battery and
+    // the market desk read both offer placements; the text rides
+    // beside the capture and never enters the signed row.
+    const { evidence, bodyText } = await captureWatchEvidenceKeepingBody(response);
     const { checks, advisories, accepts, l3b } = runChecks(
       response,
       evidence.body_truncated,
+      bodyText,
     );
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
     const advisoryNames = advisories.map((advisory) => advisory.name);
@@ -619,8 +620,9 @@ export async function probeHost(
       if (!check.ok) failed.push(check.name);
     }
 
-    // The market desk keeps what this fetch already paid for.
-    const offer = offerFacts(response);
+    // The market desk keeps what this fetch already paid for — both
+    // placements of it, since 2026-08-28.
+    const offer = offerFacts(response, bodyText);
     return {
       verdict: failed.length === 0 ? "ready" : "not_ready",
       failed,

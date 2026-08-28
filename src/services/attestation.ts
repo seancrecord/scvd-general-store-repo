@@ -195,7 +195,7 @@ function evmReadings(
     PENDING_FINALITY:
       "The transaction is mined and matches, but sits fewer than the stated number of blocks behind the head. Real, and not yet as deep as the rule asks.",
     INSUFFICIENT_MATCH:
-      "The transaction exists and succeeded, but its USDC transfers do not match what was asked about — wrong recipient, wrong amount, or no USDC movement at all. The gap is the finding.",
+      "The transaction exists and succeeded, but it does not match what was asked about — wrong recipient, wrong amount, no USDC movement at all, or (when a nonce was asked about) a nonce absent from the transaction's authorization events. The echoed query says which fields were asked; the gap is the finding.",
     REVERTED: `The transaction was mined and failed. No value moved.`,
   };
 }
@@ -352,11 +352,19 @@ function classify(
 
   const match = matches[0];
   if (!match || !nonceOk) {
+    /*
+     * Echo the transfer that MATCHED the stated fields when one did
+     * (the nonce alone failed), the first transfer otherwise. The
+     * old transfers[0] pick could show a right-recipient buyer some
+     * other leg of the transaction and read as "the seller paid the
+     * wrong party" when the only gap was the nonce.
+     */
+    const echoed = match ?? transfers[0];
     return {
       status: "INSUFFICIENT_MATCH",
-      recipient: transfers[0]?.to ?? null,
-      payer: transfers[0]?.from ?? null,
-      amountUsdc: transfers[0] ? usdcFromUnits(transfers[0].amount) : null,
+      recipient: echoed?.to ?? null,
+      payer: echoed?.from ?? null,
+      amountUsdc: echoed ? usdcFromUnits(echoed.amount) : null,
       blockHeight,
       confirmations,
     };

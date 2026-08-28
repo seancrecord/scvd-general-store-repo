@@ -63,7 +63,11 @@ describe("the door fixtures replay offline", () => {
         status: fixture.status,
         headers: fixture.headers,
       });
-      const { checks } = runChecks(response, false);
+      // The body rides along the way every live caller hands it over
+      // (2026-08-28): the battery reads both offer placements, and a
+      // fixture replay that withheld the body would test a read no
+      // instrument runs.
+      const { checks } = runChecks(response, false, fixture.body);
       const failed = checks.filter((check) => !check.ok).map((check) => check.name);
       expect(failed.sort(), `${path}: collateral damage or a missed defect`).toEqual(
         [...fixture.expect_failed].sort(),

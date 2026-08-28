@@ -77,6 +77,10 @@ badgeRoutes.get("/badges/passport/:chip{[a-z0-9.-]+\\.svg}", async (c) => {
       freshness: payload.freshness,
       observedAt: payload.latest?.observed_at ?? payload.issued_at,
       passportUrl: `${c.env.STORE_BASE_URL}/passport/${host}`,
+      // Our own chip wears SELF on its face: the census never
+      // observes this host, and the chip must not dress a catalog
+      // self-read as a census observation (2026-08-28).
+      selfObserved: host === ownHost,
     }),
     200,
     { ...SVG_HEADERS, "Cache-Control": "public, max-age=21600" },

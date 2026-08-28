@@ -45,6 +45,74 @@ export interface Correction {
 
 export const CORRECTIONS: readonly Correction[] = [
   {
+    date: "2026-08-28",
+    what_was_wrong:
+      "The store's most-quoted fact — '34 of 35 hosts serve no signed offers at all' — and every signed-offers number downstream of the shared battery asserted an absence the instrument could not see. The probe read the offers extension only from the PAYMENT-REQUIRED header, while the offer-receipt convention places offers first in the 402 body — a placement our own till emits and our own battery never parsed. The free preflight served the claim, the $5 audit signed it, the $5 conformance watch signed it daily into paying customers' records, the census sealed it into the Bitcoin-anchored corpus, and /registry captioned it as the market's trust gap. The denominator also silently excluded this store's own door — the one door known to serve signed offers — and no caption said so. Whether any of the 34 served body-placed offers is unknown, which is the defect: 'at all' was published where 'in the one placement we read' was the observation.",
+    how_long:
+      "From the census of 2026-08-03 on the quoted copy, and in every weekly round's signed_offers aggregate since the market desk shipped. The anchored rows keep their bytes: rewriting a signed artifact to look correct is the failure this record exists to refuse — instead every stored week now reads as what it was, because the basis field below is absent from all of them.",
+    found_by:
+      "The keeper, catching the market desk publishing '0% of ready doors serve signed offers' as an ecosystem fact on 2026-08-27, and the instrument audit that followed, which found the same header-only read in the one battery all five instruments share.",
+    what_changed:
+      "The battery reads both placements — header first (the copy our own till reads back), body second — and asserts absence only over the placements actually read; a caller that withholds the body gets an advisory that says so. The market aggregate carries OFFERS_READ_BASIS the way rails carry RAIL_BASIS, so header-only history can never silently mix with post-fix weeks in the anchored chain. A fixture door serving offers only in the body fails the build if the battery ever again claims absence from fewer placements than the store's own till emits (test/offer-placement.spec.ts, test/fixtures/doors/body-offers.json), and every caption that quotes the number now states the placement scope and the self-exclusion. The old census figure stands as a dated finding in its measured scope; the next round's number is a new dated finding, taken with both eyes open.",
+  },
+  {
+    date: "2026-08-28",
+    what_was_wrong:
+      "The 2026-08-26 correction on this page promised 'a test that holds the citation to account… so a row can never again name criteria the code does not apply.' The test that shipped compared the battery's check list to a function that returned that same list — a constant checked against itself. Deleting the checks from the probe would have left it green. The promise in this record was not kept by the mechanism that shipped beside it, which is the worst place in the store for that to be true.",
+    how_long: "Since that correction shipped, 2026-08-26 to 2026-08-28.",
+    found_by:
+      "The instrument audit, reading the test the correction cites against the code it claims to hold.",
+    what_changed:
+      "The citation is held by behavior now: a stubbed door with an unpayable payTo, a decimal amount, and a testnet network must each come back not_ready through the census's own probeHost (test/census-folds-the-trio.spec.ts) — the same red-test shape that already held the rail fold — so deleting a fold turns a door's verdict green in a test that watched it happen, not a list equal to itself. Rule 46 gets this entry as another face: a guard comparing a constant to itself is a guard that argues for the lie, and it argues hardest when it stands inside a correction.",
+  },
+  {
+    date: "2026-08-28",
+    what_was_wrong:
+      "The Night Watch's shelf copy said the hourly probe tries the handle so that 'a buyer could pay.' It never checked that: the watch runs the v1 structural battery — 402, header, version, accepts — and no payability check at all. A door with a name for a payTo, a dollar-typed amount, or a testnet network read ready in 168 signed rows while the store's own free preflight v2 called the same door not ready by any reading a buyer would accept. The signed rows were honest — they cited preflight-v1 all along; the shelf was not.",
+    how_long: "Since the watch was listed with that sentence.",
+    found_by:
+      "The instrument audit, diffing the shelf copy against the battery the rows actually cite.",
+    what_changed:
+      "The copy says what v1 checks — shape, not payability — and points payability at the free v2 preflight by name. Words follow facts; whether the watch should fold the payability battery is a criteria decision that stays the keeper's, and until he makes it the shelf no longer makes it for him. The standing guard is the battery citation inside every signed row, which a test holds inside the signed bytes (test/battery-inside-the-bytes.spec.ts): the shelf can no longer outrun a citation any buyer can check against the row they hold.",
+  },
+  {
+    date: "2026-08-28",
+    what_was_wrong:
+      "The $1 passport refresh was sold with 'the newest observation wins in BOTH directions — a broken finding turns the chip off,' and the $19 trust profile's own copy promised 'a host that breaks mid-term shows broken on its own page.' The passport and the chip kept the promise; the profile page and index never read the refresh at all. A door that broke mid-term, with the break recorded by a paid refresh, went dark on its chip and its passport while staying ready-side on the paid standing page — the one URL its operator hands to counterparties — until the next weekly round.",
+    how_long: "Since hosted profiles shipped.",
+    found_by: "The instrument audit, in-house.",
+    what_changed:
+      "The profile view derives from the same newest-wins fold the passport uses, so the two surfaces can no longer disagree about which observation is newest. A test breaks a profiled host mid-term with a refresh and requires the standing page to say broken that hour and the index to drop the name (test/passport-refresh.spec.ts) — the mechanism is the shared code path plus the test that walks it, not a matching sentence.",
+  },
+  {
+    date: "2026-08-28",
+    what_was_wrong:
+      "After earlier corrections re-worded /registry's prose — signed offers are 'present and structurally valid,' never 'verifiable'; doors are 'answering a well-formed challenge,' never 'working' — the JSON-LD beside that prose kept publishing 'working doors serving verifiable signed offers (percent)' as a bare percentage. The code's own comment says the machine-readable half matters more, because indexers quote it verbatim and cannot see a caveat in a paragraph. It was the half left uncorrected.",
+    how_long: "Since the prose corrections landed.",
+    found_by: "The instrument audit, in-house.",
+    what_changed:
+      "The JSON-LD names use the corrected vocabulary and the percentage ships beside its numerator and denominator as their own properties, so no indexer has to quote a ratio without its population again. A test parses the served structured data, bans the retired words from every variableMeasured name, and requires the count and denominator properties beside the percent (test/registry-claim.spec.ts) — the machine half now has the guard the prose half always had.",
+  },
+  {
+    date: "2026-08-28",
+    what_was_wrong:
+      "The conformance desk's docs promised: resolve_key false 'refuses did:web resolution,' and past the budget 'nothing is denied — signature unchecked.' The verifier library underneath, given no fetch of its own, fell back to the bare platform fetch whenever no key was established and the kid was did:web — which is exactly the declined path, the exhausted-budget path, and the failed-resolution path. On the three paths that promised no request, the desk could make a raw, redirect-following, unbudgeted request to a stranger's host in the caller's name. And a resolution we attempted and failed — the issuer's DID host slow from our vantage for three seconds — was booked as the artifact's does_not_conform: our blindness published as their defect.",
+    how_long: "Since the desk shipped.",
+    found_by:
+      "The instrument audit, reading the verifier's fallback against the desk's promises.",
+    what_changed:
+      "The desk resolves exactly once, through its guarded fetch; the verifier now receives a fetch that refuses, so the fallback cannot fire. A signature left unchecked for our reasons reads could_not_check, never does_not_conform; a kid absent from a document we did read stays the document's fact. The test counts fetch calls per key_resolution state (test/conformance-desk-egress.spec.ts) — the only way a promise about not fetching can be held.",
+  },
+  {
+    date: "2026-08-28",
+    what_was_wrong:
+      "The self-passport's caption said every summary value is 'DERIVED from the same locals' and 'derived while this page rendered.' The verdict, freshness, and empty failed list were literals — stamped ready/fresh whatever the live modules two fields down had concluded, including 'conflict.' The one passport whose subject the census can never probe was the one passport that could not go dark, and its chip — green by construction, dated today by construction — rendered pixel-identical to chips that earn their color the census way.",
+    how_long: "Since the self-passport shipped.",
+    found_by: "The instrument audit, in-house.",
+    what_changed:
+      "The modules are the verdict: every module agreeing is the only way the artifact says ready/fresh; any conflict names the disagreeing modules in failed and renders indeterminate, which the chip route refuses to draw — our chip goes dark the same way anyone's does, and wears SELF on its face either way. A test plants a catalog conflict and requires the fields to turn (test/self-passport-derives.spec.ts).",
+  },
+  {
     date: "2026-08-26",
     what_was_wrong:
       "Every row of the weekly census cited the wrong criteria. Each row carries a `battery` field whose entire purpose is to say which published battery produced that verdict, and every row said preflight-v1. The round had not run v1 since 2026-08-24, when it was deliberately changed to fold the Solana rail-receivability read into its verdict — a v2 rule that v1 explicitly does not apply — so that the corpus would stop contradicting the free preflight in public. Two days later v2 gained the consistency trio (payable payTo, atomic amount, mainnet network) and the round did not fold that either. So the census matched neither published battery: it cited v1, scored the rail read like v2, and ignored the trio like v1. Those rows are hash-chained and Bitcoin-anchored, which means the mislabel is durable and carries our signature. The verdicts were defensible; the label on them was not, and a verdict that cites criteria nobody applied cannot be checked by the stranger it was published for.",

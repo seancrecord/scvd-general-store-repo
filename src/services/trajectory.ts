@@ -36,6 +36,17 @@ export interface WeekPoint {
   hosts_listed: number;
   /** Hosts actually knocked on — the observation denominator. */
   hosts_probed: number;
+  /**
+   * Which battery the week's probed rows cite (the instrument audit,
+   * 2026-08-28 — the RAIL_BASIS law applied to verdicts). The
+   * criteria changed 2026-08-24 and 2026-08-26 with no marker on
+   * this series, so a ready-count drop at a boundary read as market
+   * decay. "mixed" when rows disagree; absent when no probed row
+   * states one (pre-2026-08-26 weeks — those verdicts were rendered
+   * under criteria the rows do not name, and comparing them across
+   * weeks compares rulers as much as doors).
+   */
+  battery?: string;
   ready: number;
   not_ready: number;
   /**
@@ -72,9 +83,30 @@ export interface DriftFact {
 export interface WeekDiff {
   from: { week: string; sequence: number; digest: string };
   to: { week: string; sequence: number; digest: string };
+  /**
+   * Hosts a FEED newly named or dropped (the instrument audit,
+   * 2026-08-28). Revisit rows — "no feed named it THIS round", the
+   * door bank's rotating cursor — are excluded on both sides, or the
+   * instrument's own cursor motion publishes as the ecosystem
+   * churning; the private wardDelta always filtered them, and the
+   * public surface sold as "act on transitions" did not.
+   */
   appeared: string[];
   disappeared: string[];
-  transitions: { host: string; from: string; to: string }[];
+  /**
+   * Verdict changes between two weeks a host was PROBED in both.
+   * not_probed rows are population, not observations — a host moving
+   * between feeds used to publish "ready → not_probed" here as if
+   * the door had changed. `battery_changed` marks a transition
+   * across a criteria boundary (the rows cite different batteries),
+   * where the change may be the ruler's, not the door's.
+   */
+  transitions: {
+    host: string;
+    from: string;
+    to: string;
+    battery_changed?: true;
+  }[];
   /**
    * G5 — drift, minted as dated facts at last: changes in a door's
    * own declared terms between two signed weeks. Derived
@@ -119,12 +151,14 @@ export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
       failure_classes: {},
       coverage_suspect: record.snapshot.round.coverage_suspect === true,
     };
+    const batteries = new Set<string>();
     for (const host of hosts) {
       if (host.verdict === "not_probed") {
         point.not_probed += 1;
         continue;
       }
       point.hosts_probed += 1;
+      if (host.battery) batteries.add(host.battery);
       if (isDegraded(host)) {
         point.observer_degraded += 1;
       } else if (host.verdict === "ready") {
@@ -143,6 +177,11 @@ export function deriveTrajectory(records: CorpusRecord[]): Trajectory {
       for (const name of host.failed ?? []) {
         point.failure_classes[name] = (point.failure_classes[name] ?? 0) + 1;
       }
+    }
+    if (batteries.size === 1) {
+      point.battery = [...batteries][0]!;
+    } else if (batteries.size > 1) {
+      point.battery = "mixed";
     }
     return point;
   });
@@ -192,16 +231,48 @@ export function deriveDiff(
   const fromHosts = new Map(hostsOf(from).map((host) => [host.host, host]));
   const toHosts = new Map(hostsOf(to).map((host) => [host.host, host]));
 
-  const appeared = [...toHosts.keys()].filter((host) => !fromHosts.has(host));
-  const disappeared = [...fromHosts.keys()].filter((host) => !toHosts.has(host));
+  /*
+   * The instrument's own motion is not the ecosystem's (2026-08-28).
+   * A revisit row means no feed named the host THIS round — the door
+   * bank walked it from an earlier listing — so its presence in a
+   * week says nothing about anybody listing or dropping anything.
+   * wardDelta's comments named this exact failure; the public diff
+   * never inherited the filter.
+   */
+  const listedIn = (hosts: Map<string, WardHostResult>): Set<string> =>
+    new Set(
+      [...hosts.values()]
+        .filter((host) => host.source !== "revisit")
+        .map((host) => host.host),
+    );
+  const fromListed = listedIn(fromHosts);
+  const toListed = listedIn(toHosts);
+  const appeared = [...toListed].filter((host) => !fromListed.has(host));
+  const disappeared = [...fromListed].filter((host) => !toListed.has(host));
 
   const transitions: WeekDiff["transitions"] = [];
   const drift: DriftFact[] = [];
   for (const [name, was] of fromHosts) {
     const now = toHosts.get(name);
     if (!now) continue;
-    if (was.verdict !== now.verdict && !isDegraded(now) && !isDegraded(was)) {
-      transitions.push({ host: name, from: was.verdict, to: now.verdict });
+    if (
+      was.verdict !== now.verdict &&
+      // not_probed is population, not an observation: no probe ran.
+      was.verdict !== "not_probed" &&
+      now.verdict !== "not_probed" &&
+      !isDegraded(now) &&
+      !isDegraded(was)
+    ) {
+      const batteryChanged =
+        was.battery !== undefined &&
+        now.battery !== undefined &&
+        was.battery !== now.battery;
+      transitions.push({
+        host: name,
+        from: was.verdict,
+        to: now.verdict,
+        ...(batteryChanged ? { battery_changed: true as const } : {}),
+      });
     }
     const before = was.offer;
     const after = now.offer;

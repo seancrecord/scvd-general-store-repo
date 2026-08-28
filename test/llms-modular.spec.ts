@@ -50,7 +50,13 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "84ce8819d7e6ccb5f59d22b393677b22af648270ac42b0a5308746957a373168";
+  // Re-taken 2026-08-28 at the merge of the instrument-audit branch:
+  // both sides had genuinely edited the guide (the audit's caption
+  // pass here; the funnel-middle and refusal work on main), so the
+  // merged text is a third document and neither parent's digest could
+  // stand. Value below is the merged guide's, taken by running this
+  // spec against it — the review moment, forced as designed.
+  "7990da54f1999058fdfffcf4bb8422dcd231a5af3dcdd54ec18ccea776fdb375";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

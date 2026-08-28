@@ -161,6 +161,15 @@ export interface PassportChipOptions {
   freshness: "fresh" | "aging" | "expired";
   observedAt: string;
   passportUrl: string;
+  /**
+   * The store's own chip (the instrument audit, 2026-08-28). A census
+   * chip's sub-caption says "observed inside one census cadence" —
+   * false for our own host, which the census structurally cannot
+   * probe. A self chip says what it is on its face, because it
+   * renders pixel-adjacent to chips earned the census way and a
+   * reader comparing them deserves to know they are two instruments.
+   */
+  selfObserved?: boolean;
 }
 
 /**
@@ -179,16 +188,20 @@ export function renderPassportChip(options: PassportChipOptions): string {
   const state = CHIP_STATE[options.freshness];
   const date = options.observedAt.slice(0, 10);
   const host = fitName(options.host, 34);
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} ${options.freshness}, observed ${date}">
+  const sub = options.selfObserved
+    ? "self-read of our own catalogs at render, not a census probe"
+    : state.sub;
+  const label = options.selfObserved ? "SCVD PASSPORT · SELF" : "SCVD PASSPORT";
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="56" viewBox="0 0 300 56" role="img" aria-label="Endpoint passport: ${escapeHtml(options.host)} ${options.freshness}${options.selfObserved ? " (self-observed)" : ""}, observed ${date}">
   <rect width="300" height="56" fill="${PAPER}" rx="6"/>
   <rect x="4" y="4" width="292" height="48" fill="none" stroke="${INK}" stroke-width="1.5" rx="4"/>
-  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="${FADED}">SCVD PASSPORT</text>
+  <text x="14" y="21" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="${FADED}">${label}</text>
   <text x="14" y="38" font-family="Georgia, serif" font-size="12" fill="${INK}">${escapeHtml(host)}</text>
   <text x="286" y="21" text-anchor="end" font-family="Georgia, serif" font-weight="bold" font-size="12" fill="${state.color}">${options.freshness.toUpperCase()} • ${date}</text>
   <a xlink:href="${escapeHtml(options.passportUrl)}" href="${escapeHtml(options.passportUrl)}">
     <text x="286" y="38" text-anchor="end" font-family="Georgia, serif" font-size="8.5" fill="${FADED}" text-decoration="underline">verify: ${escapeHtml(options.passportUrl)}</text>
   </a>
-  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(state.sub)} — a dated observation, never a score</text>
+  <text x="14" y="49" font-family="Georgia, serif" font-style="italic" font-size="7.5" fill="${FADED}">${escapeHtml(sub)} — a dated observation, never a score</text>
 </svg>`;
 }
 

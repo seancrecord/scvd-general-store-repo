@@ -427,7 +427,11 @@ export async function deliverInstantGoods(
       }
       await storeLaunchCheck(env, walk, input.certId ?? "");
       return {
-        deliverable: launchCheckNote(walk.verdict, walk.replay_served),
+        deliverable: launchCheckNote(
+          walk.verdict,
+          walk.replay_served,
+          walk.tx_hash_status,
+        ),
         extras: {
           check_id: walk.check_id,
           verdict: walk.verdict,

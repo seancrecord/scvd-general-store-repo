@@ -124,7 +124,15 @@ describe("the trust family says only what the census actually did", () => {
     const bundle = await buildOkfBundle(testEnv);
     const concept = bundle!.files.get("/host/good.example.md") ?? "";
     expect(concept).toContain("verified:");
-    expect(concept).toContain("scvd-census/preflight-v1");
+    /*
+     * The actor cites the ROW's battery. This fixture row predates
+     * the battery field, so the concept must SAY so rather than
+     * stamp whatever version the census runs today — the earlier
+     * assertion here pinned "preflight-v1" and kept passing for two
+     * days after the census moved to v2, which is the label defect
+     * the 2026-08-26 correction recorded.
+     */
+    expect(concept).toContain("scvd-census/battery-unstated");
     /*
      * THE LINE. OKF derives "human-reviewed" from a `human:` actor in
      * `verified`. Nobody reviewed the weekly rounds by hand, so no
@@ -133,6 +141,20 @@ describe("the trust family says only what the census actually did", () => {
      * against.
      */
     expect(concept).not.toContain("human:");
+  });
+
+  it("cites the row's own battery, derived — a sentinel version proves it is not memorized", async () => {
+    const cited = host("good.example", "ready", {
+      offer: { networks: ["eip155:8453"], schemes: ["exact"], min_usdc: 1 },
+      battery: "preflight-v9",
+    } as Partial<WardHostResult>);
+    await seed(round([cited]));
+    const bundle = await buildOkfBundle(testEnv);
+    const concept = bundle!.files.get("/host/good.example.md") ?? "";
+    // A version no battery has ever shipped under: the only way this
+    // passes is by reading the row, which is the contract.
+    expect(concept).toContain("scvd-census/preflight-v9");
+    expect(concept).not.toContain("battery-unstated");
   });
 
   it("carries a stale_after so a consumer can expire it without asking us", async () => {

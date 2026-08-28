@@ -1,4 +1,4 @@
-import { BASE_USDC } from "@/lib/base-rpc";
+import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 
@@ -25,12 +25,41 @@ import type { WardHostResult, WardRound } from "@/services/ward-round";
  *     can improve without rewriting chained history.
  */
 
-/** USDC's two homes, the only asset the price map counts — imported
- * from the RPC readers so the desk can never disagree with the till. */
+/**
+ * USDC's three homes, the only asset the price map counts — imported
+ * from the RPC readers so the desk can never disagree with the till.
+ *
+ * POLYGON JOINED 2026-08-28 (the instrument audit). Until then this
+ * set held Base and Solana only, so every Polygon-USDC-priced door
+ * silently dropped out of the published price sample and median —
+ * the exact sibling of the rail-bucket defect documented on
+ * MarketRails, in the price dimension, while the comment above
+ * claimed the desk could never disagree with the till. Weeks
+ * measured under the two-mint set are NOT re-read: PRICE_BASIS
+ * below marks the recognition set a stored week's prices were
+ * captured under, the same law RAIL_BASIS enforces for rails.
+ */
 const USDC_ASSETS = new Set([
   BASE_USDC.toLowerCase(),
+  POLYGON_USDC.toLowerCase(),
   SOLANA_USDC_MINT.toLowerCase(),
 ]);
+
+/** Which USDC mints the week's price sample recognized. Absent on a
+ * stored week = the two-mint era (Base + Solana, pre-2026-08-28). */
+export const PRICE_BASIS = "usdc-base-polygon-solana" as const;
+
+/**
+ * Which challenge placements the week's offer read parsed. Absent on
+ * a stored week = the header-only era: the read that produced "0% of
+ * ready doors serve signed offers" while never opening the placement
+ * the offer-receipt convention names first. The RAIL_BASIS law,
+ * applied to the read that needed it most — post-fix weeks can never
+ * silently mix with header-only history in the anchored chain. This
+ * basis governs `signed_offers` and, because offerFacts shares the
+ * read, the population behind `rails.of` and the price sample too.
+ */
+export const OFFERS_READ_BASIS = "challenge-header-and-body" as const;
 
 const BASE_MAINNET = "eip155:8453";
 const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
@@ -108,8 +137,11 @@ export function isPerRail(
   return rails.basis === RAIL_BASIS;
 }
 
-/** What one probed 402 actually offered. Read from the header the
- * probe already fetched; never a second request. */
+/** What one probed 402 actually offered. Read from the header and —
+ * since 2026-08-28, the keeper's catch — from the 402 body the probe
+ * already fetched, header winning when both parse; never a second
+ * request. OFFERS_READ_BASIS below marks which era measured a stored
+ * week. */
 export interface OfferFacts {
   networks: string[];
   schemes: string[];
@@ -141,15 +173,43 @@ export interface OfferFacts {
   pay_to_digest?: string[];
 }
 
-export function offerFacts(response: Response): OfferFacts | null {
+export function offerFacts(
+  response: Response,
+  bodyText?: string,
+): OfferFacts | null {
+  /*
+   * HEADER FIRST, BODY SECOND (the instrument audit, 2026-08-28 —
+   * the market desk's own caught defect, fixed where it was caught).
+   * This read the header only, so a door serving its challenge in
+   * the 402 body — a placement real buyers read, our own launch
+   * check included — contributed nothing to rails, prices, or the
+   * signed-offers aggregate, and the desk called that the door's
+   * absence. Header wins when both parse, the launch check's law.
+   */
   const header = response.headers.get("PAYMENT-REQUIRED");
-  if (!header) return null;
-  let challenge: Record<string, unknown>;
-  try {
-    challenge = JSON.parse(atob(header)) as Record<string, unknown>;
-  } catch {
-    return null;
+  let challenge: Record<string, unknown> | null = null;
+  if (header) {
+    try {
+      challenge = JSON.parse(atob(header)) as Record<string, unknown>;
+    } catch {
+      challenge = null;
+    }
   }
+  if (!challenge && bodyText !== undefined) {
+    try {
+      const parsedBody = JSON.parse(bodyText) as unknown;
+      if (
+        parsedBody !== null &&
+        typeof parsedBody === "object" &&
+        Array.isArray((parsedBody as Record<string, unknown>)["accepts"])
+      ) {
+        challenge = parsedBody as Record<string, unknown>;
+      }
+    } catch {
+      challenge = null;
+    }
+  }
+  if (!challenge) return null;
   const accepts = Array.isArray(challenge["accepts"])
     ? (challenge["accepts"] as Record<string, unknown>[])
     : [];
@@ -276,10 +336,29 @@ export function operatorOf(host: string): string {
 export interface MarketAggregates {
   probed: number;
   ready: number;
-  /** Listed doors that answer no 402 at all (wrong status or dead). */
+  /**
+   * Rows where OUR vantage was blind that week — the probe's own
+   * control beacon failed in the same tick (B6). The row contract
+   * (ward-round.ts) says consumers must not count these against the
+   * host or as coverage; until 2026-08-28 this desk counted every
+   * one as ecosystem rot and signed the arithmetic into the anchored
+   * chain. Excluded from `probed` and `rot`, counted here by name.
+   * Absent on stored weeks sealed before the field existed.
+   */
+  observer_degraded?: number;
+  /** Probed doors that answer no 402 at all (wrong status or dead). */
   rot: { dead_doors: number; pct: number };
-  /** The trust layer's measured TAM: ready doors serving signed offers. */
-  signed_offers: { serving: number; of_ready: number; pct: number };
+  /** Ready doors serving signed offers, structurally valid JWS only —
+   * signatures are never verified by the census, and our own
+   * offer-serving door is structurally outside every count here (a
+   * Worker cannot probe itself). `basis` says which placements the
+   * week's read parsed; absent = the header-only era. */
+  signed_offers: {
+    serving: number;
+    of_ready: number;
+    pct: number;
+    basis?: typeof OFFERS_READ_BASIS;
+  };
   /** Among hosts whose 402 was parseable. */
   rails: MarketRails;
   /** USDC-priced doors only, cheapest ask per door, whole USDC. */
@@ -290,6 +369,9 @@ export interface MarketAggregates {
     median: number;
     p75: number;
     max: number;
+    /** Recognition set the sample was taken under. Absent on weeks
+     * stored before 2026-08-28: the two-mint era (Base + Solana). */
+    basis?: typeof PRICE_BASIS;
   } | null;
   schemes: Record<string, number>;
   concentration: {
@@ -315,7 +397,25 @@ export function marketAggregates(
   hosts: WardHostResult[],
   discoveryFieldsSeen?: string[],
 ): MarketAggregates {
-  const probedRows = hosts.filter((h) => h.verdict !== "not_probed");
+  /*
+   * OUR BLINDNESS IS NOT THEIR ROT (the instrument audit,
+   * 2026-08-28). An unreachable row whose observer_status is
+   * "degraded" means the control beacon failed in the same tick —
+   * we could not see ANYTHING, and the row's own contract forbids
+   * counting it against the host or as coverage. deriveTrajectory
+   * and the private delta already obeyed; this desk, whose
+   * arithmetic freezes into the Bitcoin-anchored chain, did not:
+   * one week of egress trouble would have signed a fabricated
+   * mass-death as ecosystem fact.
+   */
+  const degradedRows = hosts.filter(
+    (h) => h.verdict === "unreachable" && h.observer_status === "degraded",
+  );
+  const probedRows = hosts.filter(
+    (h) =>
+      h.verdict !== "not_probed" &&
+      !(h.verdict === "unreachable" && h.observer_status === "degraded"),
+  );
   const ready = probedRows.filter((h) => h.verdict === "ready");
   const dead = probedRows.filter(
     (h) =>
@@ -377,6 +477,7 @@ export function marketAggregates(
   return {
     probed: probedRows.length,
     ready: ready.length,
+    observer_degraded: degradedRows.length,
     rot: {
       dead_doors: dead.length,
       pct: probedRows.length
@@ -389,6 +490,7 @@ export function marketAggregates(
       pct: ready.length
         ? Math.round((serving.length / ready.length) * 100)
         : 0,
+      basis: OFFERS_READ_BASIS,
     },
     rails: {
       of: withOffer.length,
@@ -412,6 +514,7 @@ export function marketAggregates(
             median: percentile(prices, 0.5),
             p75: percentile(prices, 0.75),
             max: prices[prices.length - 1]!,
+            basis: PRICE_BASIS,
           }
         : null,
     schemes,

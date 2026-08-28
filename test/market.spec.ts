@@ -2,6 +2,7 @@ import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
+  OFFERS_READ_BASIS,
   marketAggregates,
   offerFacts,
   operatorOf,
@@ -154,8 +155,15 @@ describe("the aggregates, recomputable from the rows", () => {
     // Rot: the status-402 failure and the unreachable door.
     expect(market.rot.dead_doors).toBe(2);
     expect(market.rot.pct).toBe(40);
-    // Signed offers: 1 of 3 ready doors.
-    expect(market.signed_offers).toEqual({ serving: 1, of_ready: 3, pct: 33 });
+    // Signed offers: 1 of 3 ready doors, and the read carries its
+    // basis so post-fix weeks never mix silently with the
+    // header-only era (2026-08-28).
+    expect(market.signed_offers).toEqual({
+      serving: 1,
+      of_ready: 3,
+      pct: 33,
+      basis: OFFERS_READ_BASIS,
+    });
     // Rails among the three parseable doors, per rail. Counts are NOT
     // exclusive — the dual-rail door is in both `base` and `solana`.
     expect(market.rails.of).toBe(3);

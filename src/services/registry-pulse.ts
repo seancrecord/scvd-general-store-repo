@@ -37,7 +37,9 @@ export interface RegistryWeekEntry {
   probed: number;
   ready: number;
   rot: { dead_doors: number; pct: number };
-  signed_offers: { serving: number; of_ready: number; pct: number };
+  /** Carries the round's `basis` through (2026-08-28): absent on a
+   * stored week = the header-only offer read, a floor not a total. */
+  signed_offers: MarketAggregates["signed_offers"];
   /**
    * Either basis. Weeks measured before 2026-08-25 carry the old
    * Base-vs-Solana buckets and are NOT back-filled — nobody re-probed

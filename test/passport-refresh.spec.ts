@@ -115,6 +115,46 @@ describe("the paid refresh folds in, newest wins, no favor", () => {
     expect(chip.status).toBe(403);
   });
 
+  it("the $19 standing page and its index fold the refresh too — broken mid-term shows broken that hour", async () => {
+    /*
+     * The instrument audit (2026-08-28) caught the third surface: the
+     * chip and passport folded the refresh; the hosted profile — the
+     * one URL an operator hands to counterparties, sold with "a host
+     * that breaks mid-term shows broken on its own page" — read the
+     * weekly census only, and stayed ready-side for up to a week
+     * after a paid refresh recorded the break. Same newest-wins fold
+     * now; this is the test the correction cites.
+     */
+    const { performPassportRefresh } = await import(
+      "@/services/passport-refresh"
+    );
+    const { performTrustProfile } = await import("@/services/trust-profile");
+    const { probeHost } = await import("@/services/ward-round");
+    await seedCensus("profiled.example", "ready", "2026-08-19T00:00:00.000Z");
+    await testEnv.COUNTERS.delete(KV_KEYS.passportRefresh("profiled.example"));
+    await performTrustProfile(testEnv, "https://profiled.example/api/x");
+
+    (probeHost as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      verdict: "not_ready",
+      failed: ["amount-atomic"],
+      advisories: [],
+    });
+    await performPassportRefresh(testEnv, "https://profiled.example/api/x");
+
+    const page = (await (
+      await SELF.fetch(`${BASE}/profiles/profiled.example`)
+    ).json()) as { freshness: string; latest_verdict: string | null };
+    expect(page.latest_verdict).toBe("not_ready");
+    expect(page.freshness).toBe("broken");
+
+    const index = (await (await SELF.fetch(`${BASE}/profiles`)).json()) as {
+      profiles: { host: string }[];
+    };
+    expect(index.profiles.map((row) => row.host)).not.toContain(
+      "profiled.example",
+    );
+  });
+
   it("refuses to refresh our own hostname, before any money question", async () => {
     const { performPassportRefresh } = await import(
       "@/services/passport-refresh"

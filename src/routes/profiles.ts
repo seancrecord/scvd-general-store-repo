@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { freshnessOf } from "@/services/passport";
+import { readPassportRefresh } from "@/services/passport-refresh";
 import {
   PROFILE_TERM_DAYS,
   listTrustProfiles,
@@ -41,16 +42,36 @@ async function viewOf(
   const latestProbed = [...history.timeline]
     .reverse()
     .find((round) => round.probed && round.verdict);
+  /*
+   * THE PAID REFRESH FOLDS IN HERE TOO (the instrument audit,
+   * 2026-08-28). The refresh was sold with "the newest observation
+   * wins in BOTH directions" and this page's own copy promises "a
+   * host that breaks mid-term shows broken on its own page" — and
+   * this view read the weekly census only. So a $1 refresh that
+   * found the door broken turned the chip dark and made the
+   * passport refuse while the $19 standing page — the URL the
+   * operator hands to counterparties — stayed ready-side for up to
+   * a week. Same newest-wins comparison the passport uses; the two
+   * surfaces can no longer disagree about which observation is
+   * newest.
+   */
+  const refresh = await readPassportRefresh(c.env, profile.record.host);
+  const censusObserved = latestProbed ? history.last_observed : null;
+  const refreshIsNewest =
+    refresh !== null &&
+    (censusObserved === null || refresh.observed_at > censusObserved);
+  const effectiveVerdict = refreshIsNewest
+    ? refresh.verdict
+    : (latestProbed?.verdict ?? null);
+  const effectiveObserved = refreshIsNewest
+    ? refresh.observed_at
+    : history.last_observed;
   return {
     profile,
     in_term: profile.record.expires > now.toISOString(),
-    freshness: freshnessOf(
-      history.last_observed,
-      latestProbed?.verdict,
-      now,
-    ),
-    latest_verdict: latestProbed?.verdict ?? null,
-    last_observed: history.last_observed,
+    freshness: freshnessOf(effectiveObserved, effectiveVerdict ?? undefined, now),
+    latest_verdict: effectiveVerdict,
+    last_observed: effectiveObserved,
   };
 }
 

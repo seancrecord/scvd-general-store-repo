@@ -1,6 +1,7 @@
 import { AGING_DAYS } from "@/services/passport";
 import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import { listCorpus } from "@/services/corpus";
+import { PREFLIGHT_BATTERY_NEXT } from "@/services/preflight";
 import type { Env } from "@/types";
 
 /**
@@ -33,8 +34,17 @@ import type { Env } from "@/types";
 
 export const OKF_VERSION = "0.2";
 
-/** The census instrument, in OKF's `<producer>/<version>` actor form. */
-export const OKF_OBSERVER = "scvd-census/preflight-v1";
+/**
+ * The census instrument, in OKF's `<producer>/<version>` actor form.
+ *
+ * DERIVED, 2026-08-28 (the instrument audit). This was the typed
+ * literal "scvd-census/preflight-v1" — stamped on every generated
+ * and verified block two days after the census moved to v2, the
+ * exact label defect the 2026-08-26 correction recorded for the
+ * census rows themselves. A typed battery name is a claim with a
+ * timer on it; this one now moves when the census's does.
+ */
+export const OKF_OBSERVER = `scvd-census/${PREFLIGHT_BATTERY_NEXT}`;
 
 /** A host that could name a path. Anything else never becomes a file. */
 const HOST_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
@@ -97,11 +107,17 @@ function hostConcept(row: FreshSetRow, set: FreshSet): OkfConcept {
     `tags: ${yamlList(tags)}`,
     `status: ${yamlString("stable")}`,
     `stale_after: ${yamlString(staleAfter(set.observed_at))}`,
+    /*
+     * The ROW's cited battery where the row states one — a host
+     * concept must name the criteria that produced ITS verdict, not
+     * whatever the census runs today. "battery-unstated" rather than
+     * a guess when the row predates the field (derive or refuse).
+     */
     "generated:",
-    `  by: ${yamlString(OKF_OBSERVER)}`,
+    `  by: ${yamlString(row.battery !== "unstated" ? `scvd-census/${row.battery}` : "scvd-census/battery-unstated")}`,
     `  at: ${yamlString(set.observed_at)}`,
     "verified:",
-    `  - by: ${yamlString(OKF_OBSERVER)}`,
+    `  - by: ${yamlString(row.battery !== "unstated" ? `scvd-census/${row.battery}` : "scvd-census/battery-unstated")}`,
     `    at: ${yamlString(set.observed_at)}`,
     "sources:",
     `  - id: ${yamlString("history")}`,
