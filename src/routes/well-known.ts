@@ -688,6 +688,20 @@ function mcpManifest(base: string) {
     // Same constant the initialize handler answers with — never a
     // second copy (C2; the scvd-tab 0.2.0/0.3.0 lesson).
     version: MCP_SERVER_VERSION,
+    /**
+     * The card's face (scanner, 2026-08-28: name and description but
+     * no icon — the anonymous grey square in a host's picker).
+     * SEP-2127 lists icons as optional; the src is the favicon the
+     * site already serves, so there is no second asset to go stale,
+     * and the test fetches it rather than assuming it answers.
+     */
+    icons: [
+      {
+        src: `${base}/favicon.svg`,
+        mimeType: "image/svg+xml",
+        sizes: ["any"],
+      },
+    ],
     description:
       "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
     // The one field a client actually needs.

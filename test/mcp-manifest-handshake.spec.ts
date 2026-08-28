@@ -230,3 +230,24 @@ describe("the server card carries the server's own version", () => {
     expect(String(card["version"])).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/);
   });
 });
+
+describe("the card has a face", () => {
+  it("carries icons whose src actually answers", async () => {
+    // Scanner, 2026-08-28: name and description but no icon. SEP-2127
+    // lists icons as optional; a card in a host picker without one is
+    // the anonymous grey square. The src is fetched, not assumed — an
+    // icon URL that 404s is worse than none.
+    const card = (await (
+      await SELF.fetch(`${BASE}/.well-known/mcp.json`)
+    ).json()) as { icons?: Array<{ src: string; mimeType: string }> };
+    expect(Array.isArray(card.icons)).toBe(true);
+    expect(card.icons!.length).toBeGreaterThanOrEqual(1);
+    for (const icon of card.icons!) {
+      const response = await SELF.fetch(icon.src);
+      expect(response.status, icon.src).toBe(200);
+      expect(response.headers.get("Content-Type") ?? "").toContain(
+        icon.mimeType.split("/")[0] ?? "",
+      );
+    }
+  });
+});
