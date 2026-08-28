@@ -25,11 +25,13 @@ import type { DeclineSlot } from "@/lib/payments";
 import {
   atomicToUsdc,
   getPaymentStack,
+  isTransientSettleFailure,
   minimumUsdcForPath,
   processSettlementWithRetry,
   rescueAmbiguousSettle,
   tipFromPaid,
 } from "@/lib/payments";
+import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { PendingPayment, SettledPayment } from "@/lib/payments";
 import { SettlementDeclined } from "@/lib/payments";
 
@@ -368,6 +370,15 @@ export async function runMcpPayment(
       { request: context },
     );
   } catch (error) {
+    // Machine 1 (#56): no verdict at all — same row as the HTTP door,
+    // so the hourly resolver can answer what this call could not.
+    await recordSettlementUnknown(env, {
+      path,
+      door: "mcp",
+      reason: `threw:${String(error).slice(0, 200)}`,
+      network: verifiedRequirementsForSettle.network,
+      ...(paymentHeader ? { paymentHeader } : {}),
+    });
     await sendAlert(env, {
       condition: "settlement_failure",
       detail: `MCP processSettlement threw for ${itemId}: ${String(error)}`,
@@ -402,6 +413,20 @@ export async function runMcpPayment(
         : {}),
     });
     if (!rescued) {
+      // Machine 1 (#56): a rescue attempted and unanswered is an OPEN
+      // question, not a decline verdict — same law as the HTTP door.
+      if (
+        isTransientSettleFailure(settlement.errorReason) ||
+        settlement.transaction
+      ) {
+        await recordSettlementUnknown(env, {
+          path,
+          door: "mcp",
+          reason: `settle:${settlement.errorReason}`.slice(0, 300),
+          network: verifiedRequirementsForSettle.network,
+          ...(paymentHeader ? { paymentHeader } : {}),
+        });
+      }
       await recordPaymentDecline(
         env,
         path,

@@ -581,6 +581,26 @@ const worker: ExportedHandler<Env> = {
         ),
       ),
     );
+    /**
+     * MACHINE 1's resolver rides the same hourly firing (#56): every
+     * open settlement_unknown row gets the chain asked where a chain
+     * can answer, on a per-row cursor. Bounded per pass; a failure
+     * keeps rows open rather than answering, and the age-out inside
+     * the service is the only clock that closes an unanswerable row.
+     */
+    ctx.waitUntil(
+      import("@/services/settlement-unknown").then(
+        ({ resolveSettlementUnknowns }) =>
+          resolveSettlementUnknowns(env).then(
+            () => undefined,
+            (error) =>
+              sendAlert(env, {
+                condition: "worker_health",
+                detail: `settlement_unknown resolver pass failed: ${String(error)}. Open rows stay open; a repeat means the row list or the RPC path is broken.`,
+              }),
+          ),
+      ),
+    );
     ctx.waitUntil(
       sweepPhantomChecks(env).catch((error) =>
         sendAlert(env, {
