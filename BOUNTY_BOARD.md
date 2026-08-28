@@ -2,9 +2,7 @@
 
 Status: BUILT 2026-08-19 (the keeper's ruling stands: build and
 iterate, no spec gate) — this document describes what runs and
-iterates with it. ⚑ KEEPER REVIEW: the caps in "The dials," the
-public copy, and this document's standing are the keeper's to
-confirm; the board opens no bounty until his hand posts one.
+iterates with it.
 
 ## The idea, which is older than the internet
 

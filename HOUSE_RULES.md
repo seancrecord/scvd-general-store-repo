@@ -636,8 +636,6 @@ LORE & TRADITION
     NOTHING RENDERED IS EXEMPT because it is small, internal, or a
     demo. A screenshot of a card is a card.
 
-    ⚑ Wording of this rule awaits the keeper's own ink.
-
 
 55. EVERY CLAIM SHIPS WITH A PATH A READER CAN WALK. (Adopted
     2026-08-27 from the standing task list; the practice has been
@@ -660,8 +658,6 @@ LORE & TRADITION
     how_to_rederive; every signed artifact verifies offline. A new
     claim-bearing surface takes a check of this shape with it, per
     rule 46's practice — proven red before it is trusted.
-
-    ⚑ Wording of this rule awaits the keeper's own ink.
 
 
 56. A CLAIM THAT LOSES ITS CHECK IS WITHDRAWN OUT LOUD. (Adopted
@@ -687,8 +683,6 @@ LORE & TRADITION
     only property this store actually sells. The withdrawal is not
     the embarrassing part. The claim standing after its check fell
     is.
-
-    ⚑ Wording of this rule awaits the keeper's own ink.
 
 
 =====================================================================

@@ -19,8 +19,6 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     // Preset since the keeper's ruling 2026-07-25: the herd never
     // sells out, the store draws at purchase, no keeper action ever.
     fulfillment: "instant",
-    // ⚑ KEEPER REVIEW: description recut for the preset herd; the
-    // closing two sentences are his ink, untouched.
     description:
       "One of the herd: pocket dinosaurs and safari animals, luck unevenly distributed. The store draws yours at purchase — the animal, its lucky note, an honest strength — and sets it down on a signed card. The herd stays with the keeper; the card and the luck are yours. Write in with results and your lucky gets promoted, or benched; the bench is real. He knows they don't work. His OCD doesn't care, and neither will yours.",
     note_402:

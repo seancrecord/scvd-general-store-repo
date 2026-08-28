@@ -290,8 +290,7 @@ export async function computeStatsDiagnosed(
 
 /**
  * The honest track-record line, including at zero. Rewrites itself as
- * the ledger grows; never needs marketing review. ⚑ KEEPER REVIEW
- * PENDING on the connective wording (the numbers are not editable).
+ * the ledger grows; never needs marketing review.
  */
 export function trackRecordLine(stats: StoreStats, base: string): string {
   /**

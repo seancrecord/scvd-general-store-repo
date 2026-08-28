@@ -39,7 +39,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * carve-out is needed. Rule 43: a dated observation on an artifact
    * (the 402 response), never a score on an actor; the criteria page
    * (GET /api/preflight/v1) existed before this shipped.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "service_audit",
@@ -70,7 +69,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * deploys. Demand tag: ANTICIPATED DEMAND under amended rule 19
    * (same pipeline as the audit: operators proving a door to
    * directories and buyers, now across time).
-   * ⚑ KEEPER REVIEW: copy is drafted, not canon.
    */
   {
     id: "conformance_watch",
@@ -140,7 +138,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * write. Rule 43: an observation of a DOCUMENT (the served HTML),
    * never a score on whoever runs the site — and never a ranking
    * claim, which is somebody else's casino.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "onpage_audit",
@@ -174,7 +171,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * an unpaid verdict is framed as this store's rules, never the
    * seller's failing; no badge, no score, and x402station's $1 badge
    * is the counterexample the copy is written against.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "launch_check",
@@ -209,7 +205,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * moment, terminal at write. Rule 43 by construction: counts and
    * sums, never a judgment — we never see the agent's own ledger, so
    * no comparison is even possible from here.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "the_statement",
@@ -242,7 +237,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * standard exists. Rule 23a-clean: one record, terminal at write.
    * The register is the product: chain-of-custody, never
    * truth-of-intent, and the artifact says so on itself.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "the_mandate",
@@ -273,7 +267,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * marketplace audit). Rule 23a-clean by shape: one payment, one
    * digest, one submission — the proof upgrade is completing delivery
    * of a bounded purchase, not monitoring, and the listing says so.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "bitcoin_anchor",
@@ -326,8 +319,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * Deliberately STATELESS: one payment, N observations, everything
    * delivered in the response — no stored balance, no future
    * obligation, so it is pure rule-23a observation with nothing for
-   * the carve-out to even carry. ⚑ KEEPER REVIEW: name and copy are
-   * drafted, not canon; recut freely.
+   * the carve-out to even carry.
    */
   {
     id: "attestation_bundle",
@@ -414,7 +406,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * same single receipt read doing more work with it, and pricing a
    * subtraction like a second product would be the exact thing the
    * copy below refuses to do.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "settlement_reconciliation",
@@ -478,8 +469,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * host that breaks mid-term shows broken on its own profile, and
    * only in-term ready-side hosts appear on the index (the consent
    * line, everywhere).
-   * ⚑ KEEPER REVIEW: price ($19) drafted inside the keeper's named
-   * $9–49 shape; name and copy drafted, not canon.
    */
   {
     id: "trust_profile",

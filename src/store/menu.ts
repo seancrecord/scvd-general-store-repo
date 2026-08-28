@@ -57,7 +57,6 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     waitlist: true,
     // 2026-08-05 consolidation: five keeper-time listings became this
     // one door. The retired four live on as named examples below.
-    // ⚑ KEEPER REVIEW: the closing sentence is new ink for the fold.
     description:
       "Let's make some magic. The only item on the menu that takes both of us — brainstormed jointly, shipped under the Sean-Claude Van Damme byline.",
     note_402:

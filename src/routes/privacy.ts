@@ -20,10 +20,7 @@ import type { HonoEnv } from "@/types";
  *
  * EVERY CLAIM DERIVES FROM ARCHITECTURE, not policy intention. "We
  * don't keep IP logs" is checkable in the public repository; "no
- * cookies" is checkable in any response. ⚑ KEEPER REVIEW — the words
- * are new public ink, but every sentence is an existing fact of the
- * code, most already stated elsewhere (trust.json, /rights, the
- * letters desk).
+ * cookies" is checkable in any response.
  */
 export const privacyRoutes = new Hono<HonoEnv>();
 
