@@ -3,8 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   INFLOW_ADDRESS_CEILING,
+  INFLOW_SPAN_BUDGET,
+  INFLOW_WINDOW_BLOCKS,
+  SPAN_CONCURRENCY,
   advertisedEvmAddresses,
   readInflowCensus,
+  spansFor,
   watchList,
 } from "@/services/inflow-census";
 import type { WardRound } from "@/services/ward-round";
@@ -492,5 +496,97 @@ describe("a provider that refuses a long list costs calls, not coverage", () => 
     for (const window of census!.windows) {
       expect(window.calls).toBeLessThanOrEqual(8);
     }
+  }, 30_000);
+});
+
+/**
+ * THE CLOCK, WHICH THE SPAN BUDGET DID NOT COVER.
+ *
+ * 2026-08-28, second evening: the keeper opened the page and it never
+ * finished loading. Raising the span budget to 120 fixed coverage and
+ * created a latency defect — ~109 getLogs walked strictly one after
+ * another is a minute of round trips inside one pageview. The
+ * subrequest ceiling had been sized; the clock had not.
+ *
+ * Spans now go out six at a time in ORDERED batches. Ordered is the
+ * load-bearing word: firing them all at once would be faster and
+ * would let a walk cut short report a window with holes in it — a
+ * from/to pair claiming blocks nobody read, which is the defect this
+ * file had just finished removing.
+ */
+describe("the spans are decided by arithmetic, before any I/O", () => {
+  it("covers the window with no gap and no overlap", () => {
+    const head = 1_000_000;
+    const spans = spansFor(head, INFLOW_WINDOW_BLOCKS, 500, INFLOW_SPAN_BUDGET);
+    expect(spans[0]!.to).toBe(head);
+    for (let i = 0; i < spans.length - 1; i += 1) {
+      expect(
+        spans[i]!.from,
+        "a gap or an overlap between spans is a window claiming blocks nobody read",
+      ).toBe(spans[i + 1]!.to + 1);
+    }
+    const lowest = spans[spans.length - 1]!.from;
+    expect(lowest).toBe(head - INFLOW_WINDOW_BLOCKS + 1);
+  });
+
+  it("stops at the span budget rather than running past it", () => {
+    const spans = spansFor(1_000_000, INFLOW_WINDOW_BLOCKS, 500, 4);
+    expect(spans.length).toBe(4);
+  });
+
+  it("never walks below genesis on a young chain", () => {
+    const spans = spansFor(500, INFLOW_WINDOW_BLOCKS, 2000, INFLOW_SPAN_BUDGET);
+    expect(spans[spans.length - 1]!.from).toBe(0);
+    expect(spans[0]!.to).toBe(500);
+  });
+});
+
+describe("a reading that runs out of clock says so", () => {
+  it("reports the budget, not a silent short window", async () => {
+    await seed(round([[ADDR_A]]));
+    stubChain({ head: 1_000_000, receivedBy: [] });
+    const census = await readInflowCensus(testEnv, new Date(), { timeBudgetMs: 0 });
+    for (const window of census!.windows) {
+      expect(window.truncated).toBe(true);
+      expect(window.unread).toContain("budget ran out");
+    }
+    // A reading that saw nothing is a floor, never a rate.
+    expect(census!.windows_equal).toBe(false);
+    expect(census!.addresses_received).toBe(0);
+  });
+});
+
+describe("spans go out in parallel, but bounded", () => {
+  it("runs more than one at a time and never more than the batch", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: unknown, init?: { body?: string }) => {
+        const request = JSON.parse(init?.body ?? "{}") as { method?: string };
+        if (request.method === "eth_blockNumber") {
+          return new Response(
+            JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0xf4240" }),
+          );
+        }
+        if (request.method === "eth_getLogs") {
+          inFlight += 1;
+          peak = Math.max(peak, inFlight);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          inFlight -= 1;
+          return new Response(
+            JSON.stringify({ jsonrpc: "2.0", id: 1, result: [] }),
+          );
+        }
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: null }));
+      }),
+    );
+    await seed(round([[ADDR_A]]));
+    await readInflowCensus(testEnv);
+    expect(peak, "the spans are still walking one at a time").toBeGreaterThan(1);
+    expect(
+      peak,
+      "more in flight than the batch allows — the ordered-batch guarantee is gone",
+    ).toBeLessThanOrEqual(SPAN_CONCURRENCY);
   }, 30_000);
 });

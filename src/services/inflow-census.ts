@@ -264,12 +264,65 @@ function callBudget(limit: number) {
 const MAX_HARD_REFUSALS = 3;
 
 /**
- * One chain's walk: spans backward from the head until the window or
- * the budget runs out, whichever binds first, reporting which did.
- * A chain that will not answer is recorded as OUR gap — the reading
- * loses that chain rather than quietly counting it as zero.
+ * SPANS GO OUT IN PARALLEL, IN ORDERED BATCHES (2026-08-28, second
+ * evening: the keeper opened the page and it never finished loading).
  *
- * ADAPTIVE, WITH MEMORY. The address list goes out whole; on a
+ * Raising the span budget to 120 fixed the coverage defect and
+ * created a wall-clock one: ~109 getLogs walked strictly one after
+ * another is a minute or more of round trips inside a single
+ * pageview, and the browser gives up first. The subrequest ceiling
+ * was sized; the clock was not, which is the same species of miss as
+ * the budget it replaced.
+ *
+ * SIX AT A TIME, kept deliberately under the Workers guidance on
+ * simultaneous outbound connections, and BATCHED IN ORDER so that
+ * coverage is always a contiguous prefix walking back from the head.
+ * Firing every span at once would be faster and would let a walk cut
+ * short by the clock report a window with HOLES in it — a from/to
+ * pair claiming blocks nobody read. That is the defect this file
+ * just finished removing, and it is not being reintroduced for
+ * latency.
+ */
+export const SPAN_CONCURRENCY = 6;
+
+/**
+ * The whole reading's wall-clock budget, shared across both chains.
+ * When it binds the walk stops and the window says the clock stopped
+ * it — a coverage fact like any other, published rather than hidden
+ * behind a page that simply never renders.
+ */
+export const INFLOW_TIME_BUDGET_MS = 20_000;
+
+/** The spans one chain will walk, decided before any I/O so the
+ * intended window is a fact about arithmetic rather than about how
+ * the network behaved. */
+export function spansFor(
+  head: number,
+  windowBlocks: number,
+  logSpan: number,
+  spanBudget: number,
+): Array<{ from: number; to: number }> {
+  const target = Math.max(0, head - windowBlocks + 1);
+  const spans: Array<{ from: number; to: number }> = [];
+  let to = head;
+  while (to >= target && spans.length < spanBudget) {
+    const from = Math.max(target, to - logSpan + 1);
+    spans.push({ from, to });
+    to = from - 1;
+  }
+  return spans;
+}
+
+/** Shared, mutable state for one chain's walk: the learned chunk
+ * size and the refusal count, both of which outlive a single span. */
+interface WalkState {
+  chunkSize: number;
+  hardRefusals: number;
+  abandoned?: string;
+}
+
+/**
+ * One span, read in chunks. The address list goes out whole; on a
  * refusal or a suspiciously round row count the chunk size HALVES and
  * the same slice is re-asked, and the size that worked is kept for
  * every later span. Discovery is paid once per run, not once per
@@ -277,11 +330,76 @@ const MAX_HARD_REFUSALS = 3;
  * advance that a third of the market would go unwatched forever, to
  * avoid a refusal nobody had measured.
  */
+async function readSpan(
+  env: Env,
+  chain: EvmChain,
+  addresses: readonly string[],
+  from: number,
+  to: number,
+  budget: ReturnType<typeof callBudget>,
+  state: WalkState,
+): Promise<{ counts: Map<string, number>; transfers: number; unread: string[] }> {
+  const counts = new Map<string, number>();
+  const unread: string[] = [];
+  let transfers = 0;
+  let index = 0;
+  while (index < addresses.length) {
+    if (state.abandoned) {
+      unread.push(...addresses.slice(index));
+      break;
+    }
+    if (!budget.take()) {
+      unread.push(...addresses.slice(index));
+      break;
+    }
+    const size = state.chunkSize;
+    const slice = addresses.slice(index, index + size);
+    let rows: Array<{ to: string }> | null = null;
+    try {
+      rows = await usdcTransfersToAny(env, slice, from, to, chain);
+    } catch {
+      rows = null;
+    }
+    const suspect = rows !== null && SUSPECT_ROUND_COUNTS.has(rows.length);
+    if (rows === null || suspect) {
+      if (state.chunkSize > MIN_CHUNK) {
+        // Halve and re-ask the SAME slice; the smaller size sticks
+        // for the rest of the run.
+        state.chunkSize = Math.max(MIN_CHUNK, Math.floor(state.chunkSize / 2));
+        continue;
+      }
+      // As small as we go. This slice is our gap, not a zero.
+      unread.push(...slice);
+      state.hardRefusals += 1;
+      index += size;
+      if (state.hardRefusals >= MAX_HARD_REFUSALS) {
+        state.abandoned = `provider refused ${state.hardRefusals} reads at ${MIN_CHUNK} addresses; chain abandoned rather than ground`;
+      }
+      continue;
+    }
+    transfers += rows.length;
+    for (const row of rows) {
+      const key = row.to.toLowerCase();
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    index += size;
+  }
+  return { counts, transfers, unread };
+}
+
+/**
+ * One chain's walk: every span the window asks for, run six at a time
+ * in order, until the window, the span budget or the clock runs out —
+ * reporting which. A chain that will not answer is recorded as OUR
+ * gap; the reading loses that chain rather than quietly counting it
+ * as zero.
+ */
 async function walkChain(
   env: Env,
   chain: EvmChain,
   addresses: readonly string[],
   spanBudget: number,
+  deadline: number,
 ): Promise<{ window: InflowChainWindow; perAddress: Map<string, number> }> {
   const perAddress = new Map<string, number>();
   const budget = callBudget(spanBudget);
@@ -306,62 +424,45 @@ async function walkChain(
       perAddress,
     };
   }
-  // Inclusive lower bound, so the intended window is exactly
-  // INFLOW_WINDOW_BLOCKS blocks rather than one short of it.
-  const target = Math.max(0, head - INFLOW_WINDOW_BLOCKS + 1);
-  let to = head;
-  let lowestWalked = head + 1;
+  const spans = spansFor(head, INFLOW_WINDOW_BLOCKS, chain.logSpan, spanBudget);
+  const wanted = Math.max(0, head - INFLOW_WINDOW_BLOCKS + 1);
+  const state: WalkState = { chunkSize: Math.max(1, addresses.length), hardRefusals: 0 };
   let transfers = 0;
-  let chunkSize = Math.max(1, addresses.length);
-  let hardRefusals = 0;
-  let unread: string | undefined;
+  let lowestWalked = head + 1;
+  let ranOutOfTime = false;
 
-  outer: while (to >= target && budget.spent() < spanBudget) {
-    const from = Math.max(target, to - chain.logSpan + 1);
-    let index = 0;
-    while (index < addresses.length) {
-      if (!budget.take()) {
-        for (const address of addresses.slice(index)) unreadAddresses.add(address);
-        break;
-      }
-      const slice = addresses.slice(index, index + chunkSize);
-      let rows: Array<{ to: string }> | null = null;
-      try {
-        rows = await usdcTransfersToAny(env, slice, from, to, chain);
-      } catch {
-        rows = null;
-      }
-      const suspect = rows !== null && SUSPECT_ROUND_COUNTS.has(rows.length);
-      if (rows === null || suspect) {
-        if (chunkSize > MIN_CHUNK) {
-          // Halve and re-ask the SAME slice; the smaller size sticks
-          // for the rest of the run.
-          chunkSize = Math.max(MIN_CHUNK, Math.floor(chunkSize / 2));
-          continue;
-        }
-        // As small as we go. This slice is our gap, not a zero.
-        for (const address of slice) unreadAddresses.add(address);
-        hardRefusals += 1;
-        index += chunkSize;
-        if (hardRefusals >= MAX_HARD_REFUSALS) {
-          unread = `provider refused ${hardRefusals} reads at ${MIN_CHUNK} addresses; chain abandoned rather than ground`;
-          break outer;
-        }
-        continue;
-      }
-      transfers += rows.length;
-      for (const row of rows) {
-        const key = row.to.toLowerCase();
-        perAddress.set(key, (perAddress.get(key) ?? 0) + 1);
-      }
-      index += chunkSize;
+  for (let cursor = 0; cursor < spans.length; cursor += SPAN_CONCURRENCY) {
+    if (Date.now() >= deadline) {
+      ranOutOfTime = true;
+      break;
     }
-    lowestWalked = Math.min(lowestWalked, from);
-    to = from - 1;
+    const batch = spans.slice(cursor, cursor + SPAN_CONCURRENCY);
+    const results = await Promise.all(
+      batch.map((span) =>
+        readSpan(env, chain, addresses, span.from, span.to, budget, state),
+      ),
+    );
+    for (const result of results) {
+      transfers += result.transfers;
+      for (const [address, count] of result.counts) {
+        perAddress.set(address, (perAddress.get(address) ?? 0) + count);
+      }
+      for (const address of result.unread) unreadAddresses.add(address);
+    }
+    // Coverage is the contiguous prefix these ordered batches walked.
+    lowestWalked = Math.min(lowestWalked, ...batch.map((span) => span.from));
+    if (state.abandoned) break;
   }
+
   const walked = lowestWalked <= head;
   const fromBlock = walked ? lowestWalked : 0;
   const toBlock = walked ? head : 0;
+  const short = !walked || fromBlock > wanted;
+  const why = state.abandoned
+    ? state.abandoned
+    : ranOutOfTime
+      ? `the ${INFLOW_TIME_BUDGET_MS}ms reading budget ran out before the window closed`
+      : undefined;
   return {
     window: {
       chain: chain.label,
@@ -371,11 +472,11 @@ async function walkChain(
       // separately. The two disagreed by one in the first version.
       blocks: walked ? toBlock - fromBlock + 1 : 0,
       calls: budget.spent(),
-      truncated: to >= target,
+      truncated: short,
       received: perAddress.size,
       transfers,
       addresses_unread: unreadAddresses.size,
-      ...(unread ? { unread } : {}),
+      ...(why ? { unread: why } : {}),
     },
     perAddress,
   };
@@ -447,9 +548,10 @@ export async function readInflowCensus(
    * reach is a branch that rots, which is how the old budget shipped
    * mis-sized in the first place.
    */
-  options: { spanBudget?: number } = {},
+  options: { spanBudget?: number; timeBudgetMs?: number } = {},
 ): Promise<InflowCensus | null> {
   const spanBudget = options.spanBudget ?? INFLOW_SPAN_BUDGET;
+  const deadline = Date.now() + (options.timeBudgetMs ?? INFLOW_TIME_BUDGET_MS);
   const round = await latestWardRound(env);
   if (!round) return null;
   const advertised = advertisedEvmAddresses(round);
@@ -458,8 +560,21 @@ export async function readInflowCensus(
   const perAddress = new Map<string, number>();
   const windows: InflowChainWindow[] = [];
   let transfers = 0;
-  for (const chain of [BASE_EVM, POLYGON_EVM]) {
-    const walk = await walkChain(env, chain, watched, spanBudget);
+  /*
+   * FAIR SHARE OF THE CLOCK, WITH SLACK INHERITED. A single shared
+   * deadline lets the first chain eat the budget and leaves the
+   * second reporting a short window it never had a chance at — which
+   * would recreate the unequal-windows defect by a different route,
+   * this time as a property of walk order rather than of the span
+   * budget. Each chain gets what is left divided by the chains still
+   * to walk, so an early finisher hands its slack to the next one.
+   */
+  const chains = [BASE_EVM, POLYGON_EVM];
+  for (const [index, chain] of chains.entries()) {
+    const chainsLeft = chains.length - index;
+    const remaining = Math.max(0, deadline - Date.now());
+    const chainDeadline = Date.now() + Math.floor(remaining / chainsLeft);
+    const walk = await walkChain(env, chain, watched, spanBudget, chainDeadline);
     windows.push(walk.window);
     transfers += walk.window.transfers;
     for (const [address, count] of walk.perAddress) {
