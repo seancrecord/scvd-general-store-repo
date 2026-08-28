@@ -1413,6 +1413,30 @@ adminRoutes.get("/admin/deliveries", async (c) => {
   });
 });
 
+adminRoutes.get("/admin/settlement-unknown", async (c) => {
+  const { listSettlementUnknowns, AGE_OUT_DAYS } = await import(
+    "@/services/settlement-unknown"
+  );
+  const rows = await listSettlementUnknowns(c.env, 100);
+  const open = rows.filter((entry) => entry.row.state === "open");
+  return c.json({
+    what_this_is:
+      "Machine 1 (#56): settle attempts that ended with NO VERDICT — the call threw, or both attempts died in transport and the inline rescue could not answer. Each row is a QUESTION the hourly resolver keeps asking the chain, not a decline: rendering this state as a decline is how 2026-08-07 booked three landed transfers as refusals.",
+    verdict:
+      open.length === 0
+        ? "No open questions. Every ambiguous settle on record has been resolved by the chain, expired by its own clock, or aged out with the gap stated."
+        : `${open.length} settle(s) still UNRESOLVED. The resolver re-asks hourly; settled_late rows surface at /admin/deliveries the moment the chain answers.`,
+    states: {
+      settled_late:
+        "the money moved after all — the delivery-intent desk holds the case",
+      expired_unused:
+        "the window was covered, validBefore passed, nothing burned — the decline was right",
+      aged_out_unresolved: `nothing could answer within ${AGE_OUT_DAYS} days — 'we could not answer', never 'no'; monthly reconciliation remains the backstop`,
+    },
+    rows: rows.map((entry) => entry.row),
+  });
+});
+
 adminRoutes.get("/admin/census", async (c) => {
   const census = await takeCensus(c.env);
   return c.html(renderCensusPage({ census, catalog_size: MENU_ITEMS.length }));

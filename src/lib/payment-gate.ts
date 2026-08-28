@@ -80,11 +80,13 @@ import {
   priceTiersUsdc,
   usdcToAtomic,
   getPaymentStack,
+  isTransientSettleFailure,
   minimumUsdcForPath,
   processSettlementWithRetry,
   rescueAmbiguousSettle,
   tipFromPaid,
 } from "@/lib/payments";
+import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { SettledPayment } from "@/lib/payments";
 import { SettlementDeclined } from "@/lib/payments";
 import {
@@ -1170,7 +1172,19 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         { request: context },
       );
     } catch (error) {
-      // P1: the settle call errored outright.
+      // P1: the settle call errored outright — NO VERDICT, which is
+      // Machine 1's whole subject: the row keeps the question open so
+      // the hourly resolver can ask the chain, instead of this state
+      // being findable only by hand reconciliation (2026-08-07).
+      await recordSettlementUnknown(c.env, {
+        path: c.req.path,
+        door: "http",
+        reason: `threw:${String(error).slice(0, 200)}`,
+        network: verifiedRequirements.network,
+        ...(c.req.header("PAYMENT-SIGNATURE")
+          ? { paymentHeader: c.req.header("PAYMENT-SIGNATURE") }
+          : {}),
+      });
       await sendAlert(c.env, {
         condition: "settlement_failure",
         detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
@@ -1211,6 +1225,29 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       if (!rescued) {
         // Verified but didn't settle — and the chain agrees, or the
         // question didn't apply. Same instrument, settle-side reason.
+        //
+        // MACHINE 1 (#56): when the rescue was ATTEMPTED and came back
+        // empty, the state may still be genuinely unknown — the RPC
+        // could have been down, the rail may have no inline reader, or
+        // the burn may land seconds later. The decline is served (money
+        // fails closed for delivery NOW), and the row keeps the
+        // question open for the hourly resolver. A plain verdict
+        // decline (insufficient_funds and kin) is ANSWERED and writes
+        // no row.
+        if (
+          isTransientSettleFailure(settlement.errorReason) ||
+          settlement.transaction
+        ) {
+          await recordSettlementUnknown(c.env, {
+            path: c.req.path,
+            door: "http",
+            reason: `settle:${settlement.errorReason}`.slice(0, 300),
+            network: verifiedRequirements.network,
+            ...(c.req.header("PAYMENT-SIGNATURE")
+              ? { paymentHeader: c.req.header("PAYMENT-SIGNATURE") }
+              : {}),
+          });
+        }
         await recordPaymentDecline(
           c.env,
           c.req.path,

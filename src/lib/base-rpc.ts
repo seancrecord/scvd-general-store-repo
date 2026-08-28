@@ -651,6 +651,36 @@ export async function findAuthorizationUse(
     : null;
 }
 
+/**
+ * The same one question over an EXPLICIT block range, for callers that
+ * walk history in chain-sized chunks (Machine 1's resolver re-asks
+ * hours after the ambiguous settle, which can sit past the one-call
+ * window findAuthorizationUse scans — especially on Polygon, whose
+ * public getLogs cap is 500 blocks).
+ */
+export async function findAuthorizationUseInRange(
+  env: Env,
+  authorizer: string,
+  nonce: string,
+  fromBlock: number,
+  toBlock: number,
+  chain: EvmChain = BASE_EVM,
+): Promise<{ txHash: string } | null> {
+  const padded = `0x${authorizer.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+  const logs = await rpc<Array<{ transactionHash: string }>>(env, "eth_getLogs", [
+    {
+      address: chain.usdc,
+      fromBlock: `0x${Math.max(0, fromBlock).toString(16)}`,
+      toBlock: `0x${Math.max(0, toBlock).toString(16)}`,
+      topics: [AUTHORIZATION_USED_TOPIC, padded, nonce.toLowerCase()],
+    },
+  ], chain);
+  const found = (logs ?? [])[0];
+  return found?.transactionHash
+    ? { txHash: String(found.transactionHash).toLowerCase() }
+    : null;
+}
+
 /** 32-byte topic word -> lowercase 20-byte address. */
 export function addressFromTopic(topic: string): string {
   return `0x${topic.slice(-40)}`.toLowerCase();
