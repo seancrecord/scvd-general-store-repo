@@ -613,7 +613,57 @@ stays the keeper's open ruling), and every §4 corrections entry —
 those wait for the keeper's hand, and their mechanisms now exist to
 be cited.
 
+## 10. The instrument audited itself, badly, on its first live run
+
+The inflow census shipped in the afternoon. The keeper ran it, pasted
+the reading back, and it carried four defects — three of them the
+exact classes §§1-3 of this document were written to catch. Recorded
+here rather than in the corrections register because nothing was
+published: rule 30's press was never made, so there is no public
+claim to correct. There is only an instrument that would have lied
+if it had been pressed.
+
+The reading said, verbatim: *"153 of 300 advertised addresses
+received USDC"*, with 448 advertised.
+
+| # | What was wrong | Class | Fixed by |
+|---|---|---|---|
+| 1 | `what_this_counts` named a denominator of 448 under a number computed over 300 | Caption ≠ computation — §1's defect, ours now | The caption is derived from the figures it describes, never frozen prose |
+| 2 | Base walked 43,200 blocks, Polygon 20,000; the two chains' recipients were unioned and stated as one rate | Rule 52 — a capped reading published as a total | `INFLOW_SPAN_BUDGET` 40 → 120 so both chains reach the window; per-chain counts on the record; `windows_equal` false forbids any percentage |
+| 3 | 8,714 transfers over 153 addresses, with a field comment claiming a reader could "tell one busy address from many" from a bare total | Rule 46 — a claim the instrument does not earn | Median, max and top-decile share published beside the total, plus a derived sentence when the traffic is concentrated |
+| 4 | `blocks` disagreed by one with the endpoints printed beside it on any chain that reached its window | Two computations of one fact | `blocks` derived as `to_block - from_block + 1` |
+
+**And the cap itself, which the keeper asked about directly.** The
+old `INFLOW_ADDRESS_CAP = 300` sampled by sorting the advertised
+addresses and keeping the first 300 — so it dropped the *same* 148
+every week. A permanent hole, not a rotating sample. It was also
+unnecessary: `eth_getLogs` ORs an array at a topic position, so 448
+addresses cost the same subrequests as 300. The cap guarded a cost
+that did not exist.
+
+Best practice for a population you can enumerate is to enumerate it.
+The real constraint is rows per response, and the answer to that is
+adaptive splitting with memory — send the whole list, halve the chunk
+on a refusal or a suspiciously round row count, keep the size that
+worked for the rest of the run. Discovery is paid once, not once per
+span, and `MAX_HARD_REFUSALS` stops a refusing provider being ground
+through every chunk of every span. What remains of the cap is
+`INFLOW_ADDRESS_CEILING = 2_000` — far above the observed 448, and
+when it does bind the watch list *rotates* by a stable per-week
+offset and the reading says so, so the unwatched remainder differs
+week to week instead of being the same tail forever.
+
+**The lesson worth keeping.** Every one of these was visible in the
+code at review time, and none was visible to me until a real reading
+made the numbers sit next to each other. The audit's own bar — an
+instrument re-earns its claims before serving — is not met by a
+caption written once beside a number computed later. It is met by
+deriving the caption from the number, which is what §10 shipped.
+An instrument's first live reading is part of its test suite, and
+this one should have been run before the merge, not after.
+
 *Filed 2026-08-28. Findings verified against the working tree at
 HEAD 2114535; line numbers in §§1-7 are that commit's. Fixes landed
-the same day under the keeper's word; §9 is the ledger of which. —
-the instrument audit*
+the same day under the keeper's word; §9 is the ledger of which.
+§10 was added the same evening, after the instrument's first live
+reading audited its builder. — the instrument audit*
