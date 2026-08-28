@@ -45,12 +45,41 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken 2026-08-28 on the rebase that joined the CLI publish to
+ * the audit's burst sentence: each side had correctly re-taken its
+ * own digest, so the merged guide is a third text neither value
+ * describes. Both sides' sentences confirmed present before this was
+ * taken.
+ *
+ * Re-taken 2026-08-28 when CLI_PUBLISHED flipped: the guide's CLI
+ * paragraph carries a different sentence once the package is really
+ * on npm ("install it with" rather than "the publish has not run"),
+ * and it swapped itself from the constant — this digest moving is
+ * that derivation working, not prose being edited.
+ *
  * Re-taken again 2026-08-28 on the second rebase, over the instrument
  * audit (#311) as well: three lines of work have now edited this guide
  * in a day, each correctly re-taking its own digest, so every rebase
  * produces a fourth text none of the parents' values describe. Each
  * side's sections were confirmed present in the served guide before
  * this value was taken.
+ *
+ * Re-taken 2026-08-28 in the commit that disclosed the client spend
+ * cap (#52 part 1): the guide's "How paying works here" section gained
+ * the paragraph naming @x402/core's default per-payment ceiling, since
+ * step 3 there is the exact claim that ceiling falsifies. Taken at the
+ * rebased head, with the CLI-published and burst-sentence re-takes
+ * already in — three correct values for three different documents,
+ * none of which survived the merge. Both of the other sides' sentences
+ * were confirmed present in the served text before this was taken.
+ *
+ * AND A NEW WAY TO TRIP THIS GUARD, worth knowing before it surprises
+ * someone: that paragraph interpolates two counts DERIVED from the
+ * live shelf (doors above the ceiling, priced doors total). A price
+ * change that moves a door across the ceiling now changes the guide's
+ * bytes and fails this test. That is correct — the served document
+ * genuinely changed — but the fix in that case is the same re-take,
+ * not a hunt for an edit nobody made.
  *
  * Re-taken again 2026-08-28 when this batch rebased onto main: the
  * batch and main's own PR #310 had each re-taken the digest for their
@@ -87,7 +116,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3a898041c81bab74213fa7419a78c0a73a196dddfcca78e06aece9f3c33bb485";
+  "cebd3fe68848210f4fe8a8687f8d2dc568d869b115d8e15bdbde92f1e82c8af6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

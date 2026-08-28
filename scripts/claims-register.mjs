@@ -86,12 +86,12 @@ export const REGISTER = [
     why: "A readiness audit flagged Organization.address missing, and the first answer declined the whole field: the only address this store has is where the keeper lives. Half of that held. On 2026-08-26 the block gained a LOCALITY-level PostalAddress derived from OPERATOR.location — the town has been on the sign, the badges and the stamps since July — and the street line stays declined for the original reason, which is the reason this entry still exists.",
   },
   {
-    id: "distribution.cli-not-on-npm",
+    id: "distribution.cli-on-npm",
     file: "src/store/cli.ts",
-    match: "export const CLI_PUBLISHED = false;",
+    match: "export const CLI_PUBLISHED = true;",
     resolution: "derived",
     from: "CLI_PUBLISHED",
-    why: "A readiness audit asked for an official CLI on npm. cli/ is written, tested and MIT; the publish is the keeper's hand (rule 30, DISTRIBUTION.md §4b) and has not run. Every surface that names the package — /developers in three dialects, /llms.txt, the RFC 9727 catalog, the package README — reads this flag rather than asserting an install that would fail, so the claim becomes true in one edit on the day it becomes true.",
+    why: "A readiness audit asked for an official CLI on npm. The keeper published it on 2026-08-28 — scvd-cli@0.1.0, from CI with provenance — and this flag turned every surface that names the package over with it: /developers in three dialects, /llms.txt, the RFC 9727 catalog, the package README. The entry stays after the publish rather than being deleted, because the flag is what keeps the install line honest in BOTH directions, and this register is where that guarantee is written down. It also earned its keep at the flip: this file pinned the old literal, so the register failed the build the moment the constant moved and the copy had not all followed.",
   },
   {
     id: "ops.no-automatic-remedy",

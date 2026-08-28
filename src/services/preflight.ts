@@ -4,7 +4,7 @@ import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
-import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
+import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
 import { KNOWN_TESTNETS, isCanonicalUsdc, l3bChecks } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
@@ -860,16 +860,20 @@ export function runChecks(
     .map((entry) => String(entry["amount"] ?? ""))
     .filter((amount) => /^\d+$/.test(amount))
     .map((amount) => Number(amount) / 1e6);
-  const capLabel = String(DEFAULT_MAX_AMOUNT_PER_PAYMENT);
-  const capUsd = Number(capLabel.replace(/[^\d.]/g, ""));
-  if (usdcAsksUsd.length > 0 && Number.isFinite(capUsd) && capUsd > 0) {
-    const cheapestUsd = Math.min(...usdcAsksUsd);
-    if (cheapestUsd > capUsd) {
-      advisories.push({
-        name: "above-default-client-cap",
-        detail: `the cheapest USDC ask here is $${cheapestUsd}, above the ${capLabel} that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs — it just sees no demand. Offer one tier at or under ${capLabel}, or tell buyers plainly that they must raise their client's spend ceiling first.`,
-      });
-    }
+  /*
+   * ONE READER FOR THE CEILING, added with #52. This advisory and the
+   * disclosure our OWN over-cap doors publish are the same fact told
+   * to two audiences, and they were about to be two parsers of the
+   * same constant. Telling other operators one figure while telling
+   * our buyers another would be the exact defect this battery exists
+   * to find, committed by the battery.
+   */
+  const capReading = readAgainstCap(usdcAsksUsd);
+  if (capReading?.blocked === true) {
+    advisories.push({
+      name: "above-default-client-cap",
+      detail: `the cheapest USDC ask here is $${capReading.cheapestUsd}, above the ${CLIENT_CAP_LABEL} that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs — it just sees no demand. Offer one tier at or under ${CLIENT_CAP_LABEL}, or tell buyers plainly that they must raise their client's spend ceiling first.`,
+    });
   }
 
   /*

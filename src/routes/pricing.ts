@@ -10,6 +10,9 @@ import {
   PRICING_CHARTER_EFFECTIVE,
   PRICING_CHARTER_VERSION,
 } from "@/store/pricing-charter";
+import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
+import { priceTiersUsdc } from "@/lib/payments";
+import { MENU_ITEMS } from "@/store";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -27,6 +30,22 @@ import type { HonoEnv } from "@/types";
  * the same words, and a changed word is a changed signature.
  */
 export const pricingRoutes = new Hono<HonoEnv>();
+
+/**
+ * Counted off the live shelf on every render, never typed. The charter
+ * already holds this discipline for the floor price ("a typed number
+ * would be a promise with an expiry date"); the same reasoning applies
+ * to a count that moves the next time a price does.
+ */
+function overCapDoorCount(): number {
+  return MENU_ITEMS.filter(
+    (item) => readAgainstCap(priceTiersUsdc(item))?.blocked === true,
+  ).length;
+}
+
+function pricedDoorCount(): number {
+  return MENU_ITEMS.filter((item) => item.price_usdc > 0).length;
+}
 
 function pricingJsonLd(base: string, floorUsd: number): string {
   return jsonLdScript({
@@ -105,6 +124,25 @@ pricingRoutes.get("/pricing", async (c) => {
           signature_absent:
             "No signing key is configured in this environment, so the charter is served unsigned rather than with a fabricated signature. The live store serves it signed.",
         }),
+    /**
+     * NOT A CLAUSE, AND SAID SO IN ITS OWN KEY (#52). The charter is
+     * about how THIS STORE sets prices; this is a fact about the
+     * BUYER'S client, and it sits outside `charterSignedSubset()` on
+     * purpose — signing someone else's constant would be a promise we
+     * have no standing to make, and it would change every time they
+     * shipped a release.
+     */
+    a_ceiling_that_is_not_ours: {
+      what: `The stock x402 client (@x402/core) applies a default ceiling of ${CLIENT_CAP_LABEL} per payment, inside selectPaymentRequirements and BEFORE it picks an accept. Above that figure an unconfigured client throws without signing.`,
+      doors_above_it: overCapDoorCount(),
+      priced_doors: pricedDoorCount(),
+      what_to_do:
+        "Raise maxAmountPerPayment, or pass spendControls: false if you mean to. It is your operator's safety control; we disclose it and do not route around it.",
+      why_we_mention_it:
+        "The refusal happens entirely on your side, so we cannot see it: we record a price check and then silence, which is shaped exactly like a shopper changing their mind. Each affected 402 repeats this in its own body.",
+      not_part_of_the_charter:
+        "This figure is read from the installed client package, not promised by us, and it is deliberately outside the signed payload above.",
+    },
     the_shelf: `${base}/menu.json`,
     the_promise_if_we_miss: `${base}/rights`,
   };
@@ -142,6 +180,12 @@ pricingRoutes.get("/pricing", async (c) => {
         <p class="menu-meta"><code>${escapeHtml(signature)}</code></p>`
             : `<p class="menu-desc">No signing key is configured in this environment, so the charter is served unsigned rather than with a fabricated signature.</p>`
         }
+      </section>
+      <section>
+        <h2>A ceiling that isn&rsquo;t ours</h2>
+        <p class="menu-desc">The stock x402 client (<code>@x402/core</code>) applies a default ceiling of <strong>${escapeHtml(CLIENT_CAP_LABEL)}</strong> per payment &mdash; inside <code>selectPaymentRequirements</code>, and <em>before</em> it picks an accept. Above that figure an unconfigured client throws without signing anything. <strong>${overCapDoorCount()}</strong> of this store&rsquo;s ${pricedDoorCount()} priced doors sit above it, counted from the live shelf as this page rendered.</p>
+        <p class="menu-desc">Raise <code>maxAmountPerPayment</code>, or pass <code>spendControls: false</code> if you mean to. It is your operator&rsquo;s safety control and we do not ship anything to route around it &mdash; a store selling evidence does not sell a way past someone else&rsquo;s spending limit.</p>
+        <p class="menu-meta">We volunteer this because the refusal happens entirely on your side: we record a price check and then silence, which looks exactly like changing your mind. This is not a charter clause &mdash; it is a fact about your client, read from the installed package, and it is deliberately outside the signed payload above.</p>
       </section>
       <section>
         <h2>Where the promises meet the money</h2>

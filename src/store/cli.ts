@@ -10,11 +10,15 @@
  * the easiest place in the world to break that quietly.
  *
  * PUBLISHED IS A FIELD, NOT A LINK. `npm publish` is the keeper's hand
- * (rule 30) and has not run. Every surface that names the CLI reads
- * these constants, so the day it does run there is ONE line to change
- * and no page left saying the wrong thing — and until then, no page
- * hands a reader an install command that fails or a registry link that
- * 404s. The steps are written down in DISTRIBUTION.md §4b.
+ * (rule 30). He ran it on 2026-08-28 — from CI, with provenance — and
+ * flipping the constant below was the whole of the change: every
+ * surface that names the CLI reads these, so the install line, the
+ * registry href and the "run it from source instead" sentence all
+ * turned over at once, with no page left saying the wrong thing. That
+ * was the point of building it this way, and it is worth noting that
+ * the one surface which had hard-typed its own version of the
+ * sentence is the one that had to be found and fixed by hand. The
+ * steps are written down in DISTRIBUTION.md §4b.
  *
  * THE PACKAGE AND THE COMMAND ARE TWO NAMES (2026-08-28). The first
  * publish attempt hit npm's typosquat guard: 403, "too similar to
@@ -31,8 +35,8 @@ export const CLI_PACKAGE = "scvd-cli";
 /** The installed command. NOT the package name; see above. */
 export const CLI_BIN = "scvd";
 
-/** Flip to true in the same commit as the publish, never before. */
-export const CLI_PUBLISHED = false;
+/** Flipped 2026-08-28, the commit after the registry served the package. */
+export const CLI_PUBLISHED = true;
 
 export const CLI_INSTALL = `npm i -g ${CLI_PACKAGE}`;
 

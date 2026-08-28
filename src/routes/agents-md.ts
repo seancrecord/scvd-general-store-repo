@@ -6,7 +6,9 @@ import {
 } from "@/store/copy/position";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
 import { CLI_INSTALL, CLI_PUBLISHED, CLI_SOURCE_URL } from "@/store/cli";
-import { STORE_METADATA } from "@/store";
+import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
+import { priceTiersUsdc } from "@/lib/payments";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -28,6 +30,39 @@ import type { HonoEnv } from "@/types";
  * where things actually live.
  */
 export const agentsMdRoutes = new Hono<HonoEnv>();
+
+/**
+ * THE ONE PLACE THE STEP ABOVE IS NOT TRUE (#52, part 1 of the
+ * keeper's ruling of 2026-08-25), and it belongs here rather than in
+ * a footnote because step 3 is exactly the claim it qualifies: a
+ * stock client does NOT do steps 2-3 for you above the ceiling. It
+ * throws on your machine, before signing, and the store sees a price
+ * check followed by silence — indistinguishable from a shopper who
+ * changed their mind.
+ *
+ * Both numbers are derived: the ceiling from the client package's own
+ * exported constant, the count from this store's own shelf. Neither
+ * can go stale without the other moving with it, which is the only
+ * reason a figure like this is worth printing in a manual at all.
+ */
+function spendCapParagraph(): string {
+  const blocked = MENU_ITEMS.filter(
+    (item) => readAgainstCap(priceTiersUsdc(item))?.blocked === true,
+  ).length;
+  const priced = MENU_ITEMS.filter((item) => item.price_usdc > 0).length;
+  return `   **Before you spend a round trip on an expensive door:** the stock
+   x402 client (\`@x402/core\`) applies a default ceiling of
+   ${CLIENT_CAP_LABEL} per payment, inside \`selectPaymentRequirements\`
+   and BEFORE it picks an accept \u2014 so above that figure an
+   unconfigured client throws without signing anything. ${blocked} of
+   this store's ${priced} priced doors sit above it. Raise
+   \`maxAmountPerPayment\`, or pass \`spendControls: false\` if you mean
+   to; the ceiling is your operator's safety control and we do not
+   route around it. We say so here because the refusal happens
+   entirely on your side: we see the price check and then nothing, so
+   we cannot tell it from you changing your mind. Each affected 402
+   repeats this in its own body.`;
+}
 
 export function agentsMd(base: string): string {
   return `# ${STORE_METADATA.name}
@@ -72,6 +107,7 @@ ${
 1. Read the catalog: GET ${base}/menu.json — every item id, price, and input schema.
 2. Request an item: GET ${base}/api/buy/{item_id} — the store answers HTTP 402 with the payment terms in the PAYMENT-REQUIRED header (base64 JSON), plus a plain-English note in the body.
 3. Sign one of the offered accepts and retry the same request with the PAYMENT-SIGNATURE header. Standard x402 v2 clients (e.g. @x402/fetch) do steps 2–3 for you.
+${spendCapParagraph()}
 4. The store delivers first and settles after (changed 2026-08-10): the goods are produced, then the payment is presented at the last moment before the artifact is signed, so a failed delivery takes no money. Instant items arrive in the response body, human-fulfilled items as an order id to poll at ${base}/api/order/{order_id}.
 5. Verify anything you were given, free and forever: GET ${base}/api/verify/{id}.
 6. Check ANY issuer's x402 offer or receipt, free: the check_conformance MCP tool, or POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Same function behind both doors. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
