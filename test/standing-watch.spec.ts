@@ -106,7 +106,7 @@ describe("the sweep", () => {
   it("probes an active watch once, signs the row, and the signature is real", async () => {
     const { record } = await startWatch(testEnv, "https://watched.example/api/buy/x");
     vi.stubGlobal("fetch", async () => watch402(GOOD_CHALLENGE));
-    const probed = await sweepStandingWatches(testEnv);
+    const probed = await sweepStandingWatches(testEnv, { burstGapMs: 0 });
     expect(probed).toBeGreaterThanOrEqual(1);
 
     const stored = await testEnv.ORDERS.get<StandingWatchRecord>(
@@ -146,7 +146,7 @@ describe("the sweep", () => {
         }),
     );
 
-    await sweepStandingWatches(testEnv);
+    await sweepStandingWatches(testEnv, { burstGapMs: 0 });
     const stored = await testEnv.ORDERS.get<StandingWatchRecord>(
       KV_KEYS.standingWatch(record.watch_id),
       "json",
@@ -209,8 +209,8 @@ describe("the sweep", () => {
   it("a doubled cron tick does not double-probe the hour", async () => {
     const { record } = await startWatch(testEnv, "https://watched2.example/api/buy/x");
     vi.stubGlobal("fetch", async () => watch402(GOOD_CHALLENGE));
-    await sweepStandingWatches(testEnv);
-    await sweepStandingWatches(testEnv);
+    await sweepStandingWatches(testEnv, { burstGapMs: 0 });
+    await sweepStandingWatches(testEnv, { burstGapMs: 0 });
     const stored = await testEnv.ORDERS.get<StandingWatchRecord>(
       KV_KEYS.standingWatch(record.watch_id),
       "json",
@@ -229,7 +229,7 @@ describe("the sweep", () => {
       fetched += 1;
       return watch402(GOOD_CHALLENGE);
     });
-    await sweepStandingWatches(testEnv);
+    await sweepStandingWatches(testEnv, { burstGapMs: 0 });
     expect(fetched).toBe(0);
   });
 
@@ -238,7 +238,7 @@ describe("the sweep", () => {
     vi.stubGlobal("fetch", async () => {
       throw new TypeError("connection refused");
     });
-    await sweepStandingWatches(testEnv);
+    await sweepStandingWatches(testEnv, { burstGapMs: 0 });
     const stored = await testEnv.ORDERS.get<StandingWatchRecord>(
       KV_KEYS.standingWatch(record.watch_id),
       "json",

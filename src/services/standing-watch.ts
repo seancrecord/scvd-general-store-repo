@@ -339,6 +339,16 @@ async function probeOnce(
    * probe it was, rather than as three that agreed.
    */
   mayBurst = false,
+  /**
+   * How far apart the burst's extra looks are staggered. A PARAMETER
+   * and not the constant, because CI proved why (2026-08-28): the
+   * sweep sleeps this long per watch, so a suite that drives a real
+   * sweep pays it in wall clock and two tests that had nothing to do
+   * with the burst timed out on a loaded runner. A test should not
+   * have to sleep 2.4 seconds to prove a signature verifies.
+   * Production passes nothing and gets BURST_GAP_MS.
+   */
+  burstGapMs: number = BURST_GAP_MS,
 ): Promise<WatchProbe> {
   const at = new Date().toISOString();
   const started = Date.now();
@@ -463,7 +473,7 @@ async function probeOnce(
   if (mayBurst) {
     const extras = await Promise.all(
       Array.from({ length: BURST_PROBES - 1 }, (_, index) =>
-        burstProbe(env, record, (index + 1) * BURST_GAP_MS),
+        burstProbe(env, record, (index + 1) * burstGapMs),
       ),
     );
     const primary: BurstProbe = {
@@ -495,7 +505,11 @@ async function probeOnce(
  * walk itself is the store's one shared watch sweep (2026-08-07):
  * this file supplies the shelf, the spacing and the observation.
  */
-export async function sweepStandingWatches(env: Env): Promise<number> {
+export async function sweepStandingWatches(
+  env: Env,
+  options: { burstGapMs?: number } = {},
+): Promise<number> {
+  const burstGapMs = options.burstGapMs ?? BURST_GAP_MS;
   let bursts = 0;
   return sweepWatches<StandingWatchRecord, WatchProbe>({
     kv: env.ORDERS,
@@ -513,7 +527,7 @@ export async function sweepStandingWatches(env: Env): Promise<number> {
     observe: (record) => {
       const mayBurst = bursts < BURST_BUDGET_PER_SWEEP;
       if (mayBurst) bursts += 1;
-      return probeOnce(env, record, mayBurst);
+      return probeOnce(env, record, mayBurst, burstGapMs);
     },
   });
 }
