@@ -1,5 +1,6 @@
 import { listAlerts } from "@/lib/alerts";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import type { TakeSummary } from "@/services/books-summary";
 import type { Env } from "@/types";
 
 /**
@@ -49,6 +50,19 @@ export interface Glance {
   /** The month's take, organic, in USDC. */
   take_usdc: number;
   /**
+   * THE DESK'S HEADLINE TABLE, CACHED WHOLE.
+   *
+   * The 2026-08-05 consolidation ruled that the desk LEADS with the
+   * all-time take split by shelf kind, because the keeper twice read
+   * the month figure first and thought the store had shrunk. Moving
+   * that table off the desk for speed would have undone a fix made
+   * for a real confusion — so it stays where he put it and arrives
+   * from here instead, dated, with the live walk one link away.
+   */
+  take: TakeSummary | null;
+  /** The all-time organic/house split that rides beside the take. */
+  all_time: { organic: number; house: number } | null;
+  /**
    * True when a source walk hit its own cap. The desk says so rather
    * than presenting a partial count as a complete one — the same rule
    * the corpus and the take already live under.
@@ -88,7 +102,8 @@ export async function readGlance(env: Env): Promise<Glance | null> {
  * the walks it needs are being paid for anyway.
  */
 export async function writeGlance(env: Env): Promise<Glance> {
-  const [orders, tips, confessions, refunds, alerts, take] = await Promise.all([
+  const [orders, tips, confessions, refunds, alerts, take, stats] =
+    await Promise.all([
     import("@/services/orders").then(({ listOrders }) => listOrders(env)),
     import("@/services/tips").then(({ listTips }) => listTips(env)),
     import("@/services/confessions").then(({ listConfessions }) =>
@@ -99,6 +114,7 @@ export async function writeGlance(env: Env): Promise<Glance> {
     import("@/services/books-summary").then(({ takeSummary }) =>
       takeSummary(env),
     ),
+    import("@/services/stats").then(({ computeStats }) => computeStats(env)),
   ]);
 
   const glance: Glance = {
@@ -112,8 +128,34 @@ export async function writeGlance(env: Env): Promise<Glance> {
     open_alerts: alerts.length,
     organic_settlements: take.total.organic_sales,
     take_usdc: take.total.organic_usdc,
+    take,
+    all_time: {
+      organic: stats.organic_settlements,
+      house: stats.house_settlements,
+    },
     truncated: take.truncated,
   };
   await kvPut(env.COUNTERS, GLANCE_KEY, JSON.stringify(glance));
   return glance;
+}
+
+/**
+ * READ, OR FILL ONCE AND READ.
+ *
+ * The desk leads with the all-time take (the 2026-08-05 ruling), and
+ * a cache that is empty for an hour after every deploy would take
+ * that headline away exactly when the keeper is most likely to be
+ * looking — right after a change shipped. So a cold read computes
+ * the blob, stores it, and returns it: slow once, warm thereafter,
+ * and the cron keeps it current from then on.
+ *
+ * This is the ONLY path by which the desk may pay for a walk, and it
+ * pays at most once per empty cache rather than once per open, which
+ * is the whole difference. If the fill fails, the caller gets null
+ * and the page says the numbers have not been read — never zeros.
+ */
+export async function ensureGlance(env: Env): Promise<Glance | null> {
+  const existing = await readGlance(env);
+  if (existing) return existing;
+  return writeGlance(env).catch(() => null);
 }
