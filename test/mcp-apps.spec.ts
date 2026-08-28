@@ -238,3 +238,39 @@ describe("the call result repeats the card pointer", () => {
     expect(result["_meta"]).toBeUndefined();
   });
 });
+
+describe("the card declares its scheme and its fence", () => {
+  /*
+   * Scanner findings, 2026-08-28. Two gaps in the card HTML itself:
+   * no color-scheme meta (the CSS has carried a dark block since the
+   * first render, so "light dark" is a fact, not a wish) and no CSP.
+   * The card is served over MCP, not HTTP, so <meta http-equiv> is
+   * the only channel a policy can ride — and the policy matches what
+   * the card actually is: inline style and the bridge script allowed,
+   * NOTHING else. connect-src 'none' is the load-bearing directive —
+   * the bridge speaks postMessage to its host and the card can reach
+   * no network at all, which is the "cannot act" property as a
+   * machine-enforced fence rather than a promise. frame-ancestors is
+   * deliberately absent: the CSP spec says it MUST be ignored when
+   * delivered via meta, and this store does not ship directives that
+   * are defined to do nothing.
+   */
+  it("every ui:// card carries the color-scheme meta and the meta CSP", () => {
+    for (const resource of uiResourceCatalog()) {
+      const html = readUiResource(resource.uri)!.text;
+      expect(html, resource.uri).toContain(
+        '<meta name="color-scheme" content="light dark">',
+      );
+      const cspMatch = html.match(
+        /<meta http-equiv="Content-Security-Policy" content="([^"]+)">/,
+      );
+      expect(cspMatch, `${resource.uri} has no meta CSP`).toBeTruthy();
+      const csp = cspMatch![1] ?? "";
+      expect(csp).toContain("default-src 'none'");
+      expect(csp).toContain("connect-src 'none'");
+      expect(csp).toContain("form-action 'none'");
+      expect(csp).toContain("base-uri 'none'");
+      expect(csp).not.toContain("frame-ancestors");
+    }
+  });
+});
