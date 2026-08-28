@@ -71,6 +71,22 @@ const BASE = "https://scvd.store";
  * accept, pays once, never tries the others. The cap paragraph and the
  * CLI line were both confirmed still present before this was taken.
  *
+ * Re-taken 2026-08-28 by the FIRST PRICE MOVE SINCE THE CAP
+ * PARAGRAPH LANDED — the coupling the note below predicted, and worth
+ * reading as a worked example rather than a chore. Four doors dropped
+ * to $0.99 under the stock client's ceiling, so the DERIVED count in
+ * the guide moved and the bytes moved with it. No sentence was edited
+ * by hand. The guard fired because the served document genuinely
+ * changed, which is exactly what it is for.
+ *
+ * A FIFTH WAS PLANNED AND REVERTED, recorded here because the reason
+ * is worth keeping: the launch check pays out from the field wallet on
+ * every check, and test/field-spend-invariant.spec.ts requires its
+ * price to be 50x that cap — "slightly more is not a business" once a
+ * facilitator fee and gas are counted. $0.99 gave 19.8. The floor that
+ * satisfies the invariant is $2.50, above the client ceiling, so that
+ * door cannot be both sound and reachable. It stays at $5, disclosed.
+ *
  * Re-taken 2026-08-28 in the commit that disclosed the client spend
  * cap (#52 part 1): the guide's "How paying works here" section gained
  * the paragraph naming @x402/core's default per-payment ceiling, since
@@ -123,7 +139,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "40c1ea6458f6d2c7f981e0b0f5075474dd79cee573b24fd5df629f340f37db20";
+  "PLACEHOLDER";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

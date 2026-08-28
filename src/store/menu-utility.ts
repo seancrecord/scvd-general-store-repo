@@ -111,7 +111,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "signature_agent_card",
     listed_week: "2026-W33",
     name: "The Calling Card",
-    price_usdc: 2,
+    price_usdc: 0.99,
     pricing: "fixed",
     fulfillment: "instant",
     description:
@@ -215,7 +215,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "the_statement",
     listed_week: "2026-W34",
     name: "The Statement",
-    price_usdc: 2,
+    price_usdc: 0.99,
     pricing: "fixed",
     fulfillment: "instant",
     description:

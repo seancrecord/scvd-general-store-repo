@@ -14,7 +14,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     listed_week: "2026-W30",
     // lowercase, the keeper's orthography, not a typo
     name: "a lucky",
-    price_usdc: 5,
+    price_usdc: 0.99,
     pricing: "pay_what_it_deserves",
     // Preset since the keeper's ruling 2026-07-25: the herd never
     // sells out, the store draws at purchase, no keeper action ever.
@@ -36,7 +36,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     id: "coffees_for_closers",
     listed_week: "2026-W30",
     name: "Coffee's for Closers",
-    price_usdc: 3,
+    price_usdc: 0.99,
     pricing: "fixed",
     // Instant since 2026-07-24 (keeper load ruling): the certificate
     // records the win at purchase; the Sunday coffee covers the week's
