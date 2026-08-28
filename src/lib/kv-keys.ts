@@ -273,6 +273,9 @@ export const KV_KEYS = {
    * a page instead of a payment door.
    */
   onpageAudit: (auditId: string): string => `onpage_audit:${auditId}`,
+
+  /** The signed payment dry run (#96), served free forever. */
+  goodBuyerReading: (readingId: string): string => `good_buyer:${readingId}`,
   /**
    * A purchased launch check: the signed stage-by-stage record of one
    * real purchase attempt from the field wallet, and the certificate

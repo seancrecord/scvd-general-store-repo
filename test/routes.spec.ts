@@ -113,7 +113,16 @@ describe("the storefront", () => {
        * ladder's stated preference (the smallest number a
        * client-builder can settle should be easy to find), applied to
        * a shelf that changed under it.
+       *
+       * good_buyer JOINED THE BLOCK ON 2026-08-28 (#96) and leads it
+       * by the same rule, not by preference: it sits earliest in the
+       * utility shelf's file order among the $0.99 ties. Its price is
+       * DERIVED from the same ceiling that created this block — one
+       * cent under @x402/core's own cap — so if that constant ever
+       * moves, this door moves out of the block with the rest rather
+       * than being stranded here at a number somebody typed.
        */
+      "good_buyer",
       "signature_agent_card",
       "the_statement",
       "luckies",

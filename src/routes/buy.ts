@@ -270,6 +270,18 @@ const PROBE_ITEM_PATHS = [
   // The Refresh rides the same law: a validated https target, our own
   // hostname refused, nothing charged without a real door to look at.
   "/api/buy/passport_refresh",
+  /*
+   * The Good Buyer (#96) joins the same list rather than growing a
+   * fourth copy of the rule. Its probe is the audit's probe; a door
+   * with its own opinions about probeable targets is how the
+   * private-address hole got in, and one law in one place is what
+   * closed it. The own-host refusal reads a little differently here
+   * — we would happily tell you what your client does with OUR
+   * accepts — but the platform kills self-fetch either way, and a
+   * reading we sign about our own door is worth nothing to whoever
+   * you would show it to.
+   */
+  "/api/buy/good_buyer",
 ];
 
 const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
@@ -1097,6 +1109,25 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
   if (item.id === "passport_refresh") {
     // serviceAuditCheck validated the URL (and refused our own host).
     input.targetUrl = c.req.query("url") ?? "";
+  }
+  if (item.id === "good_buyer") {
+    // serviceAuditCheck validated the URL (and refused our own host).
+    input.targetUrl = c.req.query("url") ?? "";
+    /*
+     * The buyer's declared client configuration, carried as they sent
+     * it. Read leniently and recorded as THEIR claim on the artifact:
+     * a malformed value narrows to "declared nothing", which is the
+     * unconfigured-client reading and the conservative direction.
+     * This store never verifies a stranger's account of their own
+     * machine, and the signed bytes say so.
+     */
+    const capRaw = Number(c.req.query("max_usd"));
+    if (Number.isFinite(capRaw) && capRaw > 0) {
+      input.buyerCapUsd = capRaw;
+    }
+    if (c.req.query("no_spend_controls") === "true") {
+      input.buyerSpendControlsOff = true;
+    }
   }
   if (item.id === "trust_profile") {
     // trustProfileCheck validated the URL, refused our own host, and

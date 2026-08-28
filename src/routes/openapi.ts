@@ -926,6 +926,15 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * contract. The purchase responses carry them; the spec now
        * does too.
        */
+      "/api/good-buyer/{reading_id}": {
+        get: {
+          ...freeOp(
+              "A purchased payment dry run, served forever",
+              "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
+          ),
+          parameters: [pathParam("reading_id", "From the purchase response; starts gbuy_.")],
+        },
+      },
       "/api/service-audit/{audit_id}": {
         get: {
           ...freeOp(

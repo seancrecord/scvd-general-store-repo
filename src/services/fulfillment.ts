@@ -50,6 +50,10 @@ import type {
 } from "@/services/settlement-reconciliation";
 import type { SignedServiceAudit } from "@/services/service-audit";
 import {
+  performGoodBuyerReading,
+  type SignedGoodBuyerReading,
+} from "@/services/good-buyer";
+import {
   completeOrder,
   createOrder,
   recordInventorySale,
@@ -87,6 +91,14 @@ export interface FulfillmentInput {
   summary?: string;
   /** phantom_check, standing_watch, service_audit: pre-validated URL. */
   targetUrl?: string;
+  /**
+   * good_buyer: the buyer's own account of how their client is
+   * configured. Carried, recorded as theirs on the artifact, never
+   * verified — this store has no way to see a stranger's machine and
+   * will not sign as if it did.
+   */
+  buyerCapUsd?: number;
+  buyerSpendControlsOff?: boolean;
   /** the_statement: pre-validated 0x address and raw hours. */
   statementWallet?: string;
   statementHours?: string;
@@ -276,6 +288,25 @@ export async function fulfillPurchase(
   if (item.id === "service_audit") {
     serviceAudit = await performServiceAudit(env, input.targetUrl ?? "");
     mintOptions.attests = serviceAudit.evidence_hash;
+  }
+  /**
+   * THE GOOD BUYER reads first and mints second, the audit's exact
+   * discipline: the certificate binds the reading's evidence hash, so
+   * /api/verify answers "THIS reading is the one that purchase
+   * bought" with no new endpoint asked to be trusted. The probe wears
+   * the free preflight's guards; a network failure becomes a signed
+   * `unreachable` rather than a throw, because a dated did-not-answer
+   * is itself the observation.
+   */
+  let goodBuyer: SignedGoodBuyerReading | undefined;
+  if (item.id === "good_buyer") {
+    goodBuyer = await performGoodBuyerReading(env, input.targetUrl ?? "", {
+      ...(input.buyerCapUsd !== undefined
+        ? { max_amount_per_payment_usd: input.buyerCapUsd }
+        : {}),
+      ...(input.buyerSpendControlsOff ? { spend_controls_disabled: true } : {}),
+    });
+    mintOptions.attests = goodBuyer.evidence_hash;
   }
   /**
    * THE SIGNATURE-AGENT CARD observes first and mints second, the
@@ -624,6 +655,9 @@ export async function fulfillPurchase(
     }
     if (reconciliation) {
       goodsInput.reconciliation = reconciliation;
+    }
+    if (goodBuyer) {
+      goodsInput.goodBuyer = goodBuyer;
     }
     if (serviceAudit) {
       goodsInput.serviceAudit = serviceAudit;

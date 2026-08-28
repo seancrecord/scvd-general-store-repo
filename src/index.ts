@@ -68,6 +68,8 @@ import {
   conformanceRoutes,
   conformanceLandingRoutes,
   corpusLandingRoutes,
+  beforeYouPayRoutes,
+  goodBuyerRoutes,
   preflightRoutes,
   discoveryRoutes,
   launchCheckRoutes,
@@ -245,6 +247,11 @@ app.route("/", conformanceRoutes);
 app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", preflightRoutes);
+/* The buyer's half of the same ladder: one probe, then the stock
+ * client's own selection replayed over what it served. */
+app.route("/", beforeYouPayRoutes);
+/* The signed half of the same reading, served forever and free. */
+app.route("/", goodBuyerRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", bountyRoutes);
