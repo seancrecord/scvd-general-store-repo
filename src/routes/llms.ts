@@ -9,6 +9,7 @@ import {
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
+import { declinedPositions } from "@/store/copy/declined";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -535,6 +536,12 @@ It proves WHEN a key state was committed and never WHO SHOULD HAVE
 held it — a thief with our key could timestamp exactly as validly.
 That is forensics, not a defence, and the difference matters enough to
 say it here rather than let you infer more than it gives you.
+
+## What we don't do, on purpose
+
+${declinedPositions(base)
+  .map((position) => `**${position.heading}.** ${position.body}`)
+  .join("\n\n")}
 
 ## When we get it wrong
 
@@ -1321,6 +1328,8 @@ const SECTION_AREAS: Record<string, string> = {
   "Practicing on us": "developers",
   "How paying works here": "developers",
   "Standards, so you can check us without asking us": "developers",
+  // P12: the declined positions file where a scorecard reader looks.
+  "What we don't do, on purpose": "developers",
   "The obstacle course — rehearse failure before it costs you": "developers",
   "Visiting properly": "developers",
   "Privacy, structurally": "developers",

@@ -196,4 +196,31 @@ export const REGISTER = [
     asOf: "2026-07-27",
     why: "Superseded scheduling-signal list, kept for the record and explicitly voided. Not served.",
   },
+  /**
+   * THE DECLINED POSITIONS (P12, 2026-08-27) — the section on
+   * /developers that publishes scanner recommendations we refuse,
+   * with reasons, the way /corrections publishes mistakes.
+   */
+  {
+    id: "declined.ai-train",
+    file: "src/store/copy/declined.ts",
+    match: "Training is distribution here, not leakage",
+    resolution: "declined",
+    why: "Scanners award a point for ai-train=no; this store wants to be in the corpus models learn from. The policy line itself derives from CONTENT_SIGNAL, the same constant robots.txt serves, so the quote cannot drift from the file.",
+  },
+  {
+    id: "declined.wikipedia",
+    file: "src/store/copy/declined.ts",
+    match: "a deleted article is worse than none",
+    resolution: "declined",
+    why: "Diligence scans want Wikipedia/Wikidata in sameAs. A month-old company fails notability; an article written to game the checklist gets deleted; a sameAs to a missing page is a false claim in machine form. Revisit at real notability.",
+  },
+  {
+    id: "declined.browser-surfaces",
+    file: "src/store/copy/declined.ts",
+    match: "on document.modelContext for agents resident in the visitor's browser",
+    resolution: "derived",
+    from: "webmcpTools() and uiResourceCatalog() — the tool list, its count, and the card count render from the same derivations the surfaces serve",
+    why: "The first draft nearly said 'scoped, not built' against a surface another desk shipped the same week; the sentence now reads the live catalog so the next release cannot falsify it.",
+  },
 ];

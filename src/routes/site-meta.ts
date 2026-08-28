@@ -42,6 +42,14 @@ export const HUMAN_SURFACES: readonly string[] = [
 ];
 
 /**
+ * The Content-Signal policy, ONE constant: robots.txt serves it and
+ * the declined-positions section on /developers quotes it (P12). Two
+ * hand-typed copies of a policy line is how one of them goes stale
+ * arguing with the other.
+ */
+export const CONTENT_SIGNAL = "search=yes, ai-train=yes, ai-input=yes";
+
+/**
  * The social card: the keeper's dino, pixel-drawn by
  * scripts/generate-og-image.mjs into a committed module — the same
  * bytes forever, no asset pipeline, cacheable hard.
@@ -71,7 +79,7 @@ Allow: /
 # the corpus a model learns from: that is distribution, not leakage.
 # Everything here is already free to fetch, most of it CC BY 4.0, and
 # a policy we would not enforce is one we should not print.
-Content-Signal: search=yes, ai-train=yes, ai-input=yes
+Content-Signal: ${CONTENT_SIGNAL}
 
 Sitemap: ${base}/sitemap.xml
 # The Agentmap directive: ARD's robots.txt entry-source mechanism

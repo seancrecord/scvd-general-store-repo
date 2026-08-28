@@ -398,3 +398,26 @@ describe("6. the item pages carry structured data, and never a rating", () => {
     expect(questions.length).toBeGreaterThan(3);
   });
 });
+
+describe("the keeper's own account is in sameAs", () => {
+  it("rides beside the external records, from its own constant", async () => {
+    /*
+     * His word, 2026-08-28: "@keeper_scvd — is my twitter in the
+     * schemas?" It was not. KEEPER_SOCIAL is deliberately NOT an
+     * EXTERNAL_RECORDS entry — that array promises independent
+     * records, and an owned account is not one — but sameAs is
+     * exactly the field for it, and this derives from the constant
+     * rather than retyping the handle.
+     */
+    const { KEEPER_SOCIAL } = await import("@/store/trust-signals");
+    expect(KEEPER_SOCIAL.length).toBeGreaterThanOrEqual(1);
+    const html = await (
+      await SELF.fetch("https://scvd.store/", {
+        headers: { "User-Agent": "browser/1" },
+      })
+    ).text();
+    for (const url of KEEPER_SOCIAL) {
+      expect(html, `sameAs missing ${url}`).toContain(url);
+    }
+  });
+});

@@ -364,6 +364,21 @@ export const RECORDS_NOT_LISTED =
  * checkable fact and goes here; until then the honest answer is that
  * you are dealing with one named person and a published wallet.
  */
+/**
+ * THE KEEPER'S OWN SOCIAL ACCOUNT (his word, 2026-08-28: "@keeper_scvd
+ * — is my twitter in the schemas?"). It was not, anywhere. It rides
+ * sameAs beside EXTERNAL_RECORDS — a social profile is the textbook
+ * sameAs use, and it is the one identity link here that is
+ * self-controlled rather than somebody else's index, which is why it
+ * is its own constant instead of an EXTERNAL_RECORDS entry: that
+ * array's docblock promises independent records, and a store that
+ * quietly reclassifies its own account as independent record is
+ * arguing with its own definitions.
+ */
+export const KEEPER_SOCIAL: readonly string[] = [
+  "https://x.com/keeper_scvd",
+];
+
 export const OPERATOR = {
   kind: "individual",
   /**
