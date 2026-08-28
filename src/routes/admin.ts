@@ -1758,19 +1758,44 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
   const windows = census.windows
     .map(
       (window) =>
-        `<li>${escapeHtml(window.chain)}: ${window.blocks} blocks (${window.from_block}–${window.to_block})${
+        `<li><strong>${escapeHtml(window.chain)}</strong>: ${window.received} received, ${window.transfers} transfer${window.transfers === 1 ? "" : "s"},
+        over ${window.blocks.toLocaleString()} blocks (${window.from_block}–${window.to_block}) in ${window.calls} call${window.calls === 1 ? "" : "s"}${
           window.truncated ? " — <strong>cut short by the span budget</strong>" : ""
+        }${
+          window.addresses_unread > 0
+            ? ` — <strong>${window.addresses_unread} addresses unread</strong>`
+            : ""
         }${window.unread ? ` — <strong>unread: ${escapeHtml(window.unread)}</strong>` : ""}</li>`,
     )
     .join("");
+  /*
+   * NO PERCENTAGE WHEN THE WINDOWS DISAGREE (rule 52). The first
+   * reading of this instrument stated "153 of 300" as a rate while
+   * Base had been watched for a full day and Polygon for eleven
+   * hours. A union across unequal windows is a floor; the page says
+   * floor, and says which chain was short.
+   */
+  const headline = census.windows_equal
+    ? `<strong>${census.addresses_received} of ${census.addresses_checked}</strong>
+       (${Math.round((census.addresses_received / Math.max(1, census.addresses_checked)) * 100)}%)
+       watched addresses received USDC over the window below.`
+    : `<strong>At least ${census.addresses_received} of ${census.addresses_checked}</strong>
+       watched addresses received USDC — <strong>a floor, not a rate</strong>: the chains below were
+       not walked over the same window, so no percentage is stated.`;
+  const shape = census.distribution;
   return c.html(
     renderAdminShell(
       "market",
       `<h1>Inflows — week ${escapeHtml(census.week)}</h1>
-      <p class="lead"><strong>${census.addresses_received} of ${census.addresses_checked}</strong>
-      advertised addresses received USDC in the window below.
-      ${census.addresses_capped ? `<strong>The address cap bound:</strong> the round advertised ${census.addresses_advertised} and this check watched ${census.addresses_checked}.` : ""}
+      <p class="lead">${headline}
+      ${census.addresses_capped ? `<strong>The ceiling bound:</strong> the round advertised ${census.addresses_advertised} and this run watched ${census.addresses_checked} on a rotating window.` : ""}
       ${census.transfers_seen} transfer${census.transfers_seen === 1 ? "" : "s"} seen.</p>
+      <h2>How the traffic is shaped</h2>
+      <p>Median <strong>${shape.median_transfers}</strong> transfers per receiving address;
+      busiest single address <strong>${shape.max_transfers}</strong>;
+      busiest tenth hold
+      <strong>${shape.top_decile_share_pct === null ? "n/a" : `${shape.top_decile_share_pct}%`}</strong>
+      of everything seen. A high share here is shared or facilitator wallets, not many small sales.</p>
       <h2>What was actually covered</h2>
       <ul>${windows}</ul>
       <h2>What this counts</h2>

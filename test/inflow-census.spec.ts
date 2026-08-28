@@ -2,9 +2,10 @@ import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
-  INFLOW_ADDRESS_CAP,
+  INFLOW_ADDRESS_CEILING,
   advertisedEvmAddresses,
   readInflowCensus,
+  watchList,
 } from "@/services/inflow-census";
 import type { WardRound } from "@/services/ward-round";
 import type { Env } from "@/types";
@@ -165,24 +166,60 @@ describe("the reading counts recipients, with its denominators", () => {
 
   it("says when the span budget cut the walk short of its window", async () => {
     await seed(round([[ADDR_A]]));
-    // A head far past the window forces Polygon's 500-block span to
-    // run out of budget before it covers a day.
+    // Driven through the budget rather than through a lucky head:
+    // at the shipped budget of 120 spans Polygon reaches its window,
+    // which is the whole point of raising it from 40.
     stubChain({ head: 1_000_000, receivedBy: [] });
-    const census = await readInflowCensus(testEnv);
+    const census = await readInflowCensus(testEnv, new Date(), { spanBudget: 4 });
     const polygon = census!.windows.find((w) => w.chain === "Polygon");
     expect(polygon!.truncated).toBe(true);
   });
 
-  it("says when the address cap bound, rather than checking a subset silently", async () => {
-    const many = Array.from({ length: INFLOW_ADDRESS_CAP + 5 }, (_, index) => [
+  it("the shipped budget actually covers the window on the slower chain", async () => {
+    // The defect this replaced: 40 spans x 500 blocks stopped Polygon
+    // at 20,000 of a 43,200-block window while Base got all of it.
+    await seed(round([[ADDR_A]]));
+    stubChain({ head: 1_000_000, receivedBy: [] });
+    const census = await readInflowCensus(testEnv);
+    for (const window of census!.windows) {
+      expect(window.truncated, `${window.chain} still cannot reach its window`).toBe(false);
+      expect(window.blocks).toBe(43_200);
+    }
+  });
+
+  it("watches every advertised address — the ceiling does not bind at real sizes", async () => {
+    // The first live reading watched 300 of 448 because a constant
+    // capped it, and the 148 it dropped were the same 148 every week.
+    // eth_getLogs ORs the whole list at one topic position, so the
+    // cap was guarding a cost that did not exist.
+    const many = Array.from({ length: 448 }, (_, index) => [
       `0x${index.toString(16).padStart(40, "0")}`,
     ]);
     await seed(round(many));
     stubChain({ head: 500, receivedBy: [] });
     const census = await readInflowCensus(testEnv);
-    expect(census!.addresses_capped).toBe(true);
-    expect(census!.addresses_checked).toBe(INFLOW_ADDRESS_CAP);
-    expect(census!.addresses_advertised).toBeGreaterThan(INFLOW_ADDRESS_CAP);
+    expect(census!.addresses_checked).toBe(448);
+    expect(census!.addresses_advertised).toBe(448);
+    expect(census!.addresses_capped).toBe(false);
+  });
+
+  it("above the ceiling it ROTATES rather than dropping the same tail forever", () => {
+    const advertised = Array.from(
+      { length: INFLOW_ADDRESS_CEILING + 500 },
+      (_, index) => `0x${index.toString(16).padStart(40, "0")}`,
+    ).sort();
+    const w35 = watchList(advertised, "2026-W35");
+    const w36 = watchList(advertised, "2026-W36");
+    expect(w35.length).toBe(INFLOW_ADDRESS_CEILING);
+    expect(w36.length).toBe(INFLOW_ADDRESS_CEILING);
+    // Different weeks watch different slices — the whole point. A
+    // fixed slice would make these identical and leave a permanent
+    // hole, which is what the first version shipped.
+    expect(w35).not.toEqual(w36);
+    // And every address is reachable across weeks rather than being
+    // structurally invisible.
+    const union = new Set([...w35, ...w36]);
+    expect(union.size).toBeGreaterThan(INFLOW_ADDRESS_CEILING);
   });
 });
 
@@ -216,4 +253,244 @@ describe("T1 is counts, no addresses, no hosts — walked, not assumed", () => {
     stubChain({ head: 500 });
     expect(await readInflowCensus(testEnv)).toBeNull();
   });
+});
+
+/**
+ * THE FOUR DEFECTS THE FIRST LIVE READING SHOWED, one case each.
+ *
+ * 2026-08-28: the instrument built to catch caption-versus-computation
+ * published "153 of 300 advertised addresses" under a caption naming
+ * 448, unioned a full Base window with a half-length Polygon one as a
+ * rate, gave a transfer total with no way to tell one busy wallet from
+ * many, and printed a block count that disagreed with its own
+ * endpoints. These are the guards that would have caught each.
+ */
+describe("the caption names the denominator the number used", () => {
+  it("states the watched count, not the advertised count, when they differ", async () => {
+    const advertised = Array.from(
+      { length: INFLOW_ADDRESS_CEILING + 10 },
+      (_, index) => [`0x${index.toString(16).padStart(40, "0")}`],
+    );
+    await seed(round(advertised));
+    stubChain({ head: 500, receivedBy: [] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.addresses_capped).toBe(true);
+    // The caption must carry the number the count was computed over.
+    expect(census!.what_this_counts).toContain(
+      `of ${census!.addresses_checked}`,
+    );
+    // And it must not silently present the bigger number as the base.
+    expect(census!.what_this_counts).toContain("rotates week to week");
+  });
+
+  it("the caption's figures are the reading's figures, always", async () => {
+    await seed(round([[ADDR_A], [ADDR_B], [ADDR_C]]));
+    stubChain({ head: 500, receivedBy: [ADDR_A] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.what_this_counts).toContain(
+      `${census!.addresses_received} of ${census!.addresses_checked}`,
+    );
+  });
+});
+
+describe("unequal windows are a floor, never a rate", () => {
+  it("marks the reading unequal when one chain was cut short", async () => {
+    await seed(round([[ADDR_A]]));
+    // Far past the window, so Polygon's 500-block span runs out of
+    // budget while Base's 2,000-block span does not.
+    stubChain({ head: 1_000_000, receivedBy: [] });
+    const census = await readInflowCensus(testEnv, new Date(), { spanBudget: 4 });
+    expect(census!.windows_equal).toBe(false);
+    // And the two chains really did cover different amounts of chain.
+    expect(new Set(census!.windows.map((w) => w.blocks)).size).toBe(2);
+  });
+
+  it("is equal only when every chain reached the same window", async () => {
+    await seed(round([[ADDR_A]]));
+    stubChain({ head: 500, receivedBy: [] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.windows_equal).toBe(true);
+    expect(new Set(census!.windows.map((w) => w.blocks)).size).toBe(1);
+  });
+
+  it("reports what each chain saw on its own, not only the union", async () => {
+    await seed(round([[ADDR_A], [ADDR_B]]));
+    stubChain({ head: 500, receivedBy: [ADDR_A] });
+    const census = await readInflowCensus(testEnv);
+    for (const window of census!.windows) {
+      expect(typeof window.received).toBe("number");
+      expect(typeof window.transfers).toBe("number");
+    }
+    // The union can never be less than any single chain's count.
+    for (const window of census!.windows) {
+      expect(census!.addresses_received).toBeGreaterThanOrEqual(window.received);
+    }
+  });
+});
+
+describe("a transfer total cannot tell one busy wallet from many", () => {
+  it("publishes the shape beside the volume", async () => {
+    await seed(round([[ADDR_A], [ADDR_B], [ADDR_C]]));
+    // One address takes eight transfers; two take one each. The
+    // total alone (10) reads identically to ten modest doors.
+    stubChain({
+      head: 500,
+      receivedBy: [
+        ADDR_A, ADDR_A, ADDR_A, ADDR_A, ADDR_A, ADDR_A, ADDR_A, ADDR_A,
+        ADDR_B,
+        ADDR_C,
+      ],
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.addresses_received).toBe(3);
+    expect(census!.distribution.max_transfers).toBeGreaterThanOrEqual(8);
+    expect(census!.distribution.median_transfers).toBeLessThan(
+      census!.distribution.max_transfers,
+    );
+    expect(census!.distribution.top_decile_share_pct).toBeGreaterThanOrEqual(50);
+    // Words follow facts: a concentrated reading says so in prose.
+    expect(census!.what_this_is_not).toContain("facilitator wallets in the list");
+  });
+
+  it("says nothing about concentration when there is nothing to say", async () => {
+    await seed(round([[ADDR_A], [ADDR_B]]));
+    stubChain({ head: 500, receivedBy: [] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.distribution.top_decile_share_pct).toBeNull();
+    expect(census!.what_this_is_not).not.toContain("facilitator wallets in the list");
+  });
+});
+
+describe("the block count agrees with the blocks beside it", () => {
+  it("blocks is exactly the inclusive span its own endpoints name", async () => {
+    await seed(round([[ADDR_A]]));
+    stubChain({ head: 90_000, receivedBy: [] });
+    const census = await readInflowCensus(testEnv);
+    for (const window of census!.windows) {
+      if (window.unread) continue;
+      expect(
+        window.blocks,
+        `${window.chain} printed a block count its own endpoints contradict`,
+      ).toBe(window.to_block - window.from_block + 1);
+    }
+  });
+
+  it("holds on a walk that reaches its window and one that is cut short", async () => {
+    for (const head of [500, 1_000_000]) {
+      await seed(round([[ADDR_A]]));
+      stubChain({ head, receivedBy: [] });
+      const census = await readInflowCensus(testEnv);
+      for (const window of census!.windows) {
+        if (window.unread) continue;
+        expect(window.blocks).toBe(window.to_block - window.from_block + 1);
+      }
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+/**
+ * ADAPTIVE SPLITTING — why there is no sample any more.
+ *
+ * The old cap dropped 148 of 448 addresses because a provider MIGHT
+ * refuse a list that long. The answer to "might refuse" is to ask and
+ * bisect on refusal, not to decide in advance which third of the
+ * market goes unwatched forever.
+ */
+describe("a provider that refuses a long list costs calls, not coverage", () => {
+  /** Refuses any getLogs whose address list exceeds `limit`. */
+  function stubPickyChain(limit: number, receivedBy: string[]): { calls: () => number } {
+    let calls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: unknown, init?: { body?: string }) => {
+        const request = JSON.parse(init?.body ?? "{}") as {
+          method?: string;
+          params?: Array<{ topics?: unknown[] }>;
+        };
+        if (request.method === "eth_blockNumber") {
+          return new Response(
+            JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x1f4" }),
+          );
+        }
+        if (request.method === "eth_getLogs") {
+          calls += 1;
+          const wanted = (request.params?.[0]?.topics?.[2] ?? []) as string[];
+          if (wanted.length > limit) {
+            return new Response("too many addresses", { status: 400 });
+          }
+          const logs = receivedBy
+            .filter((address) => wanted.includes(topicOf(address)))
+            .map((address) => ({
+              transactionHash: `0x${"1".repeat(64)}`,
+              topics: [
+                `0x${"d".repeat(64)}`,
+                topicOf("0x1111111111111111111111111111111111111111"),
+                topicOf(address),
+              ],
+              data: "0x64",
+              blockNumber: "0x1f4",
+            }));
+          return new Response(
+            JSON.stringify({ jsonrpc: "2.0", id: 1, result: logs }),
+          );
+        }
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: null }));
+      }),
+    );
+    return { calls: () => calls };
+  }
+
+  it("bisects until the provider answers, and loses no address", async () => {
+    const addresses = Array.from(
+      { length: 120 },
+      (_, index) => `0x${index.toString(16).padStart(40, "0")}`,
+    );
+    await seed(round(addresses.map((address) => [address])));
+    // Two recipients, one of them in the far tail — the half a fixed
+    // sorted slice would have thrown away.
+    const stub = stubPickyChain(40, [addresses[3]!, addresses[119]!]);
+    const census = await readInflowCensus(testEnv);
+
+    expect(census!.addresses_checked).toBe(120);
+    expect(census!.addresses_received).toBe(2);
+    for (const window of census!.windows) {
+      expect(window.addresses_unread, `${window.chain} lost addresses`).toBe(0);
+    }
+    // It cost extra calls, which is the trade: calls are cheap and
+    // recoverable, a permanently unwatched tail is neither.
+    expect(stub.calls()).toBeGreaterThan(2);
+  });
+
+  /*
+   * DELIBERATELY THE SLOW PATH, and given room to be slow. Every
+   * refused read pays the transport layer's own endpoint walk and
+   * backoff before it comes back, so proving a chain unreadable costs
+   * real seconds. That is the honest cost of establishing "we could
+   * not see this" rather than printing a zero, and MAX_HARD_REFUSALS
+   * is what stops it being unbounded. The generous timeout here is
+   * the test admitting what the path costs, not hiding it.
+   */
+  it("a chunk that will not answer even split is counted as OUR gap", async () => {
+    const addresses = Array.from(
+      { length: 60 },
+      (_, index) => `0x${index.toString(16).padStart(40, "0")}`,
+    );
+    await seed(round(addresses.map((address) => [address])));
+    // Refuses everything, at every chunk size.
+    stubPickyChain(0, []);
+    const census = await readInflowCensus(testEnv);
+    expect(census!.addresses_received).toBe(0);
+    for (const window of census!.windows) {
+      expect(
+        window.addresses_unread,
+        "a total refusal must show as unread addresses, never as a clean zero",
+      ).toBeGreaterThan(0);
+      expect(window.unread, "an abandoned chain must say it was abandoned").toBeTruthy();
+    }
+    // And it stopped rather than grinding every chunk of every span.
+    for (const window of census!.windows) {
+      expect(window.calls).toBeLessThanOrEqual(8);
+    }
+  }, 30_000);
 });
