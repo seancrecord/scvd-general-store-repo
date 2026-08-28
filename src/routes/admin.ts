@@ -331,6 +331,78 @@ function stockNotice(
     : `Stocked ${count}${where}. They're on the shelf and the listing is live.`;
 }
 
+/**
+ * GET /admin/glance — the phone view, and one KV read.
+ *
+ * The keeper's ask was three words: fast, scannable, works on a
+ * phone. The desk fails all three for one structural reason —
+ * seventeen loads before a number appears, three of them heavy walks
+ * over every month the store has been open. That restructure is its
+ * own pass. This is the door he opens when the question is only
+ * "does anything need me", answered from the hourly blob in
+ * services/glance.ts.
+ *
+ * IT STATES ITS OWN AGE, always. A cached number that presents as
+ * live would have him deciding on figures of unknown vintage, which
+ * is the failure this whole store exists to argue against — and an
+ * unwritten blob renders as "not computed yet" rather than as five
+ * zeros, because a zero is a claim ("I looked; there were none") and
+ * nothing has looked. Same rule as the shelf: say what you saw and
+ * when, or say you have not seen.
+ */
+adminRoutes.get("/admin/glance", async (c) => {
+  const { readGlance } = await import("@/services/glance");
+  const glance = await readGlance(c.env);
+  const shell = (body: string) => `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The glance \u00B7 SCVD</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.5 ui-sans-serif, system-ui, sans-serif; margin: 0; padding: 1.25rem; max-width: 32rem; }
+  h1 { font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 1rem; }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+  li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+       padding: .75rem .9rem; border: 1px solid currentColor; border-radius: .5rem; }
+  .n { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .when { margin-top: 1rem; font-size: .85rem; opacity: .75; }
+  a { color: inherit; }
+</style></head><body>${body}
+<p class="when"><a href="/admin">The whole desk</a></p>
+</body></html>`;
+  if (!glance) {
+    return c.html(
+      shell(
+        `<h1>The glance</h1><p>These numbers have <strong>not been computed</strong> yet \u2014 the hourly round has not written them since this worker last deployed. Nothing here is zero; nothing here has been counted. <a href="/admin">The desk</a> computes everything live.</p>`,
+      ),
+      200,
+    );
+  }
+  const rows: Array<[string, string]> = [
+    ["Orders waiting", String(glance.pending_orders)],
+    ["Needs your review", String(glance.pending_reviews)],
+    ["Open alarms", String(glance.open_alerts)],
+    ["Sales this month", String(glance.organic_settlements)],
+    ["Take this month", `$${glance.take_usdc.toFixed(2)}`],
+  ];
+  return c.html(
+    shell(
+      `<h1>The glance</h1><ol>${rows
+        .map(
+          ([label, value]) =>
+            `<li><span>${escapeHtml(label)}</span><span class="n">${escapeHtml(value)}</span></li>`,
+        )
+        .join("")}</ol>
+      <p class="when">Read ${escapeHtml(glance.computed_at)}, on the hourly round.${
+        glance.truncated
+          ? " One of the source walks hit its cap, so the money figures are a floor rather than a total."
+          : ""
+      }</p>`,
+    ),
+    200,
+  );
+});
+
 adminRoutes.get("/admin/counter", async (c) => {
   const notes: string[] = [];
   const [
