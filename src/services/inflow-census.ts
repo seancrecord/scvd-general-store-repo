@@ -251,6 +251,40 @@ export interface InflowCensus {
     addresses: number;
     sole_addresses: number;
   };
+  /**
+   * WHO SENT THE MONEY — the discriminator the first three readings
+   * could not make, because the reader dropped the sender before
+   * anyone could count it (2026-08-28, defect 7).
+   *
+   * A market has MANY payers. A dust campaign has one sprayer
+   * reaching hundreds of addresses. A facilitator has one sender
+   * moving a lot to a few. An operator funding itself sends from an
+   * address it also advertised. All four produce the same transfer
+   * count and the same tiny amounts; only the sender tells them
+   * apart.
+   *
+   * Counts only, by ruling: no sender is named or nameable here.
+   */
+  senders: {
+    /** Distinct sending addresses across every transfer seen. */
+    distinct: number;
+    /** Share of all transfers from the single busiest sender. */
+    top_sender_share_pct: number | null;
+    /** Median distinct senders per receiving address. Customers are
+     * many; a dusted address has one. */
+    median_senders_per_receiver: number;
+    /** Receiving addresses whose ENTIRE inflow came from one sender. */
+    single_sender_receivers: number;
+    /** Transfers whose sender is itself an address advertised in a
+     * 402 — money moving between advertised wallets rather than in
+     * from outside the set. */
+    from_advertised: number;
+    /** Senders reaching BROADCASTER_REACH or more distinct receiving
+     * addresses, and what share of all transfers they account for. */
+    broadcasters: number;
+    broadcaster_transfers: number;
+    broadcaster_share_pct: number | null;
+  };
   /** Per chain, what was actually covered — or why it was not. */
   windows: InflowChainWindow[];
   what_this_counts: string;
@@ -380,6 +414,26 @@ function callBudget(limit: number) {
  */
 const MAX_HARD_REFUSALS = 3;
 
+/** One transfer, as this reader needs it. */
+interface InflowRow {
+  to: string;
+  from: string;
+  usdc: number;
+}
+
+/**
+ * How many distinct receiving addresses one sender must reach before
+ * it is counted as a BROADCASTER rather than a customer.
+ *
+ * The third live reading returned 10,158 transfers with a median size
+ * of $0.006 and roughly three per address — a shape that fits a
+ * low-volume micropayment market and ALSO fits address poisoning,
+ * which is endemic on Base. Nobody buys from ten different doors in a
+ * day at six-tenths of a cent; a duster sprays hundreds. The two are
+ * indistinguishable in a transfer count and separate cleanly here.
+ */
+const BROADCASTER_REACH = 10;
+
 /**
  * SPANS GO OUT IN PARALLEL, IN ORDERED BATCHES (2026-08-28, second
  * evening: the keeper opened the page and it never finished loading).
@@ -455,8 +509,8 @@ async function readSpan(
   to: number,
   budget: ReturnType<typeof callBudget>,
   state: WalkState,
-): Promise<{ rows: Array<{ to: string; usdc: number }>; unread: string[] }> {
-  const kept: Array<{ to: string; usdc: number }> = [];
+): Promise<{ rows: Array<InflowRow>; unread: string[] }> {
+  const kept: InflowRow[] = [];
   const unread: string[] = [];
   let index = 0;
   while (index < addresses.length) {
@@ -470,7 +524,7 @@ async function readSpan(
     }
     const size = state.chunkSize;
     const slice = addresses.slice(index, index + size);
-    let rows: Array<{ to: string; amount: bigint }> | null = null;
+    let rows: Array<{ to: string; from: string; amount: bigint }> | null = null;
     try {
       rows = await usdcTransfersToAny(env, slice, from, to, chain);
     } catch {
@@ -496,6 +550,10 @@ async function readSpan(
     for (const row of rows) {
       kept.push({
         to: row.to.toLowerCase(),
+        // WHO SENT IT (2026-08-28, defect 7). The RPC has always
+        // returned this and the reader has always dropped it — the
+        // third field in a row discarded and then missed.
+        from: row.from.toLowerCase(),
         // USDC is six decimals on both rails. Number is exact well
         // past any amount an x402 door quotes.
         usdc: Number(row.amount) / 1_000_000,
@@ -523,10 +581,10 @@ async function walkChain(
 ): Promise<{
   window: InflowChainWindow;
   perAddress: Map<string, number>;
-  rows: Array<{ to: string; usdc: number }>;
+  rows: InflowRow[];
 }> {
   const perAddress = new Map<string, number>();
-  const kept: Array<{ to: string; usdc: number }> = [];
+  const kept: InflowRow[] = [];
   const budget = callBudget(spanBudget);
   const unreadAddresses = new Set<string>();
   let head: number;
@@ -688,7 +746,7 @@ function whatThisCounts(facts: {
     capped +
     ` ${chains}` +
     ` Both numbers are here because a share without its denominator is how a market lies, and the windows are here because a walk cut short and a quiet day produce the same count.` +
-    ` OF THE ${facts.soleWatched} ADDRESSES ONLY ONE DOOR ADVERTISED, ${facts.soleReceived} received — that is the narrower number, and the one worth reading: an address several doors point at is shared infrastructure by construction, and its traffic is not any door's sales.` +
+    ` OF THE ${facts.soleWatched} ADDRESSES ONLY ONE DOOR ADVERTISED, ${facts.soleReceived} received. That is the narrower number because an address several doors point at is shared infrastructure by construction — but it is NOT the converse: one door pointing at a custodian is still one door, and this split does not establish that a sole-advertised address is a door's own till.` +
     ` ${facts.bandTransfers} transfer${facts.bandTransfers === 1 ? "" : "s"} landed inside the USDC range the advertising door itself quoted, across ${facts.bandSoleAddresses} sole-advertised address${facts.bandSoleAddresses === 1 ? "" : "es"} — a floor on plausible payments, not a count of sales.`
   );
 }
@@ -720,7 +778,7 @@ export async function readInflowCensus(
 
   const perAddress = new Map<string, number>();
   const windows: InflowChainWindow[] = [];
-  const rows: Array<{ to: string; usdc: number }> = [];
+  const rows: InflowRow[] = [];
   let transfers = 0;
   /*
    * FAIR SHARE OF THE CLOCK, WITH SLACK INHERITED. A single shared
@@ -785,6 +843,41 @@ export async function readInflowCensus(
       : sorted.length % 2 === 0
         ? ((sorted[sorted.length / 2 - 1] ?? 0) + (sorted[sorted.length / 2] ?? 0)) / 2
         : (sorted[(sorted.length - 1) / 2] ?? 0);
+  /*
+   * THE SENDER SIDE. Four shapes that a transfer count cannot tell
+   * apart and a sender list can.
+   */
+  const sendersOf = new Map<string, Set<string>>();
+  const reachOf = new Map<string, Set<string>>();
+  const sentBy = new Map<string, number>();
+  const watchedSet = new Set(watched);
+  let fromAdvertised = 0;
+  for (const row of rows) {
+    const senders = sendersOf.get(row.to) ?? new Set<string>();
+    senders.add(row.from);
+    sendersOf.set(row.to, senders);
+    const reach = reachOf.get(row.from) ?? new Set<string>();
+    reach.add(row.to);
+    reachOf.set(row.from, reach);
+    sentBy.set(row.from, (sentBy.get(row.from) ?? 0) + 1);
+    if (watchedSet.has(row.from)) fromAdvertised += 1;
+  }
+  const perReceiver = [...sendersOf.values()]
+    .map((set) => set.size)
+    .sort((a, b) => a - b);
+  const medianSenders =
+    perReceiver.length === 0
+      ? 0
+      : (perReceiver[Math.floor((perReceiver.length - 1) / 2)] ?? 0);
+  const broadcasterKeys = [...reachOf.entries()]
+    .filter(([, reach]) => reach.size >= BROADCASTER_REACH)
+    .map(([sender]) => sender);
+  const broadcasterTransfers = broadcasterKeys.reduce(
+    (sum, sender) => sum + (sentBy.get(sender) ?? 0),
+    0,
+  );
+  const busiestSender = Math.max(0, ...[...sentBy.values()]);
+
   const banded = rows.filter((row) => inQuotedBand(row.usdc, facts.get(row.to)));
   const bandedAddresses = new Set(banded.map((row) => row.to));
   const bandedSole = [...bandedAddresses].filter(
@@ -805,6 +898,18 @@ export async function readInflowCensus(
       under_1_usdc: rows.filter((row) => row.usdc < 1).length,
       under_10_usdc: rows.filter((row) => row.usdc < 10).length,
       over_100_usdc: rows.filter((row) => row.usdc > 100).length,
+    },
+    senders: {
+      distinct: sentBy.size,
+      top_sender_share_pct:
+        transfers === 0 ? null : Math.round((busiestSender / transfers) * 100),
+      median_senders_per_receiver: medianSenders,
+      single_sender_receivers: perReceiver.filter((count) => count === 1).length,
+      from_advertised: fromAdvertised,
+      broadcasters: broadcasterKeys.length,
+      broadcaster_transfers: broadcasterTransfers,
+      broadcaster_share_pct:
+        transfers === 0 ? null : Math.round((broadcasterTransfers / transfers) * 100),
     },
     in_quoted_band: {
       transfers: banded.length,
@@ -829,6 +934,35 @@ export async function readInflowCensus(
       ? ` The busiest tenth of receiving addresses account for ${shape.top_decile_share_pct}% of all transfers seen, and the busiest single address for ${shape.max_transfers} of ${transfers}: that is the shape of shared or facilitator wallets in the list, not of many doors making small sales, and this reading cannot tell those apart.`
       : "";
 
+  /*
+   * WORDS FOLLOW FACTS (rule 45), on the sender side. Each of these
+   * fires only when its own number says it, and each names a shape a
+   * transfer count cannot distinguish on its own.
+   */
+  const senderNotes: string[] = [];
+  if (broadcasterKeys.length > 0 && transfers > 0) {
+    const share = Math.round((broadcasterTransfers / transfers) * 100);
+    if (share >= 25) {
+      senderNotes.push(
+        `${broadcasterKeys.length} sender${broadcasterKeys.length === 1 ? "" : "s"} reached ${BROADCASTER_REACH} or more of these addresses each and account for ${share}% of every transfer seen: nobody buys from ${BROADCASTER_REACH} different doors in a day at these amounts, so that is the shape of a spray across the set rather than of many buyers at many doors.`,
+      );
+    }
+  }
+  if (perReceiver.length > 0 && medianSenders <= 1) {
+    senderNotes.push(
+      `Half the receiving addresses took their whole inflow from a SINGLE sender, which is what dusting and self-funding look like and is not what a customer base looks like.`,
+    );
+  }
+  if (fromAdvertised > 0 && transfers > 0) {
+    const share = Math.round((fromAdvertised / transfers) * 100);
+    if (share >= 5) {
+      senderNotes.push(
+        `${share}% of transfers came FROM an address advertised in a 402 itself — money moving inside the advertised set rather than arriving from outside it.`,
+      );
+    }
+  }
+  const senderNote = senderNotes.length > 0 ? ` ${senderNotes.join(" ")}` : "";
+
   return {
     ...core,
     what_this_counts: whatThisCounts({
@@ -846,6 +980,7 @@ export async function readInflowCensus(
     what_this_is_not:
       WHAT_THIS_IS_NOT_BASE +
       skew +
+      senderNote +
       " The quoted-band count is a BAND and not a receipt: a door quoting a wide range makes a wide band, a facilitator's fee moves an amount off the quote, and nothing here has seen a receipt. It rules out the transfers that plainly are not purchases; it does not prove that the rest are.",
   };
 }

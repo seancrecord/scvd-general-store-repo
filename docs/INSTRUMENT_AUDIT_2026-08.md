@@ -718,6 +718,61 @@ floor, not a count of sales: a band is not a receipt, a door quoting
 $0.001–$5 makes a wide one, and a facilitator's fee moves an amount
 off the quote. The reading says all of that on itself.
 
+## 12. The third reading disproves two of my own distinctions
+
+Sharpened, the instrument returned: 181 of 386 sole-advertised
+addresses received (47%), 5,964 transfers inside the quoted band,
+median transfer size **$0.006**, 97% of transfers under a dollar,
+busiest single address 4,458 transfers.
+
+**Both distinctions §11 added failed, and the reading is what
+showed it.**
+
+**Sole versus shared filtered the wrong direction.** The shared
+bucket holds 42 receiving addresses and 414 transfers *in total*.
+The busiest single address holds 4,458 — so it cannot be shared; it
+is advertised by exactly one door. And the buckets run backwards:
+sole traffic averages 53.8 transfers per receiving address against
+shared's 9.9, **5.4× more concentrated**. "Advertised by several
+doors is shared by construction" remains true. The converse — that
+sole-advertised approximates a door's own till — was never
+established and is now contradicted. One door pointing at a
+custodian is still one door. The caption's claim that the sole rate
+was "the one worth reading" was an overclaim and has been struck.
+
+**The quoted band could not discriminate.** With a median transfer
+of $0.006 and doors quoting from $0.001, the band's floor sits
+below essentially all traffic. 61% of sole transfers landing in
+band says the band is wide, not that anyone paid.
+
+### Defect 7, and the pattern behind it
+
+10,158 transfers a day, median $0.006, about three per address.
+That shape fits a low-volume micropayment market. It also fits
+**address poisoning**, which is endemic on Base. A transfer count
+cannot separate them.
+
+The discriminator was already in hand and being discarded:
+`usdcTransfersToAny` returns `from`, and this reader dropped it —
+exactly as it dropped `amount` one build earlier. Four shapes
+produce identical transfer counts and separate cleanly on the
+sender: a market has many payers; a dust campaign has one sprayer
+reaching hundreds; a facilitator has one sender; an operator
+funding itself sends from an address it also advertised.
+
+**The pattern worth naming: three of seven defects on this
+instrument are the same mistake — a field the RPC handed us,
+dropped at the boundary, and then missed downstream.** Not a
+reasoning error. A plumbing habit.
+
+### What is publishable from the third reading
+
+One thing, and it survives both failed heuristics because it has a
+real denominator: **223 of 440 addresses whose doors quoted Base
+received there (51%); 2 of 44 that quoted Polygon did (4.5%).**
+Doors advertise Polygon and almost nothing arrives. That is a
+denominated fact about advertised-versus-actual rails.
+
 ### The ceiling, stated plainly
 
 Even sharpened, this instrument cannot prove a purchase. It can only

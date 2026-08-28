@@ -79,6 +79,8 @@ const topicOf = (address: string): string =>
 function stubChain(options: {
   head: number;
   receivedBy?: string[];
+  /** One sender per entry in receivedBy; defaults to a single payer. */
+  sentBy?: string[];
   failHead?: boolean;
   failLogs?: boolean;
 }): void {
@@ -101,11 +103,14 @@ function stubChain(options: {
         if (options.failLogs) return new Response("down", { status: 503 });
         const logs = served
           ? []
-          : (options.receivedBy ?? []).map((address) => ({
+          : (options.receivedBy ?? []).map((address, index) => ({
               transactionHash: `0x${"1".repeat(64)}`,
               topics: [
                 `0x${"d".repeat(64)}`,
-                topicOf("0x1111111111111111111111111111111111111111"),
+                topicOf(
+                  options.sentBy?.[index] ??
+                    "0x1111111111111111111111111111111111111111",
+                ),
                 topicOf(address),
               ],
               data: "0x64",
@@ -774,5 +779,118 @@ describe("the size of the money is counted, not just its existence", () => {
     stubChain({ head: 500, receivedBy: [ADDR_A] });
     const census = await readInflowCensus(testEnv);
     expect(census!.what_this_is_not).toContain("BAND and not a receipt");
+  });
+});
+
+/**
+ * WHO SENT IT (defect 7, 2026-08-28).
+ *
+ * The third live reading returned 10,158 transfers, median size
+ * $0.006, roughly three per address. That fits a low-volume
+ * micropayment market and it fits address poisoning, which is
+ * endemic on Base, and the two are indistinguishable in a transfer
+ * count. The RPC has returned the sender all along; this reader
+ * dropped it, exactly as it dropped the amount a build earlier.
+ *
+ * Four shapes, one field.
+ */
+const PAYER_1 = "0x1111111111111111111111111111111111111111";
+const PAYER_2 = "0x2222222222222222222222222222222222222222";
+const PAYER_3 = "0x3333333333333333333333333333333333333333";
+
+describe("a transfer count cannot tell a market from a spray", () => {
+  it("counts distinct senders and the busiest one's share", async () => {
+    await seed(round([[ADDR_A], [ADDR_B]]));
+    stubChain({
+      head: 500,
+      receivedBy: [ADDR_A, ADDR_A, ADDR_A, ADDR_B],
+      sentBy: [PAYER_1, PAYER_1, PAYER_1, PAYER_2],
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.senders.distinct).toBe(2);
+    // Three of four transfers from one sender.
+    expect(census!.senders.top_sender_share_pct).toBe(75);
+  });
+
+  it("a receiver funded entirely by one sender is counted as such", async () => {
+    await seed(round([[ADDR_A], [ADDR_B]]));
+    stubChain({
+      head: 500,
+      receivedBy: [ADDR_A, ADDR_A, ADDR_B],
+      sentBy: [PAYER_1, PAYER_1, PAYER_2],
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.senders.single_sender_receivers).toBe(2);
+    expect(census!.senders.median_senders_per_receiver).toBe(1);
+    // And it says so, because half the receivers is the whole point.
+    expect(census!.what_this_is_not).toContain("SINGLE sender");
+  });
+
+  it("many payers per receiver reads as a market, and says nothing alarming", async () => {
+    await seed(round([[ADDR_A]]));
+    stubChain({
+      head: 500,
+      receivedBy: [ADDR_A, ADDR_A, ADDR_A],
+      sentBy: [PAYER_1, PAYER_2, PAYER_3],
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.senders.distinct).toBe(3);
+    expect(census!.senders.median_senders_per_receiver).toBe(3);
+    expect(census!.senders.single_sender_receivers).toBe(0);
+    expect(census!.what_this_is_not).not.toContain("SINGLE sender");
+    expect(census!.what_this_is_not).not.toContain("shape of a spray");
+  });
+
+  it("one sender reaching many addresses is named as a spray, not as buyers", async () => {
+    // Twelve doors, one sender hitting every one of them. In a
+    // transfer count this is a healthy market; it is a duster.
+    const many = Array.from({ length: 12 }, (_, index) =>
+      `0x${(index + 10).toString(16).padStart(40, "0")}`,
+    );
+    await seed(round(many.map((address) => [address])));
+    stubChain({
+      head: 500,
+      receivedBy: many,
+      sentBy: many.map(() => PAYER_1),
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.senders.broadcasters).toBe(1);
+    expect(census!.senders.broadcaster_share_pct).toBe(100);
+    expect(census!.what_this_is_not).toContain("shape of a spray");
+  });
+
+  it("names money moving between advertised wallets rather than in from outside", async () => {
+    // ADDR_B is itself an advertised payTo, and it is paying ADDR_A.
+    await seed(round([[ADDR_A], [ADDR_B]]));
+    stubChain({
+      head: 500,
+      receivedBy: [ADDR_A, ADDR_A],
+      sentBy: [ADDR_B, ADDR_B],
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.senders.from_advertised).toBe(census!.transfers_seen);
+    expect(census!.what_this_is_not).toContain("inside the advertised set");
+  });
+
+  it("still leaks no sender — T1 covers who paid as well as who was paid", async () => {
+    await seed(round([[ADDR_A]]));
+    stubChain({ head: 500, receivedBy: [ADDR_A], sentBy: [PAYER_2] });
+    const census = await readInflowCensus(testEnv);
+    const serialized = JSON.stringify(census).toLowerCase();
+    expect(serialized, "a sender leaked into a T1 reading").not.toContain(
+      PAYER_2.toLowerCase(),
+    );
+  });
+});
+
+describe("the caption stops claiming what the third reading disproved", () => {
+  it("does not present sole-advertised as proof of a door's own till", async () => {
+    await seed(round([[ADDR_A], [ADDR_B]]));
+    stubChain({ head: 500, receivedBy: [ADDR_A] });
+    const census = await readInflowCensus(testEnv);
+    // The live data had the BUSIEST address sole-advertised, so the
+    // old wording — "the one worth reading" — was an overclaim.
+    expect(census!.what_this_counts).not.toContain("the one worth reading");
+    expect(census!.what_this_counts).toContain("is still one door");
   });
 });

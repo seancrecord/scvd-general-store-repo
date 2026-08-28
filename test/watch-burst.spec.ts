@@ -1,6 +1,7 @@
 import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  BURST_GAP_MS,
   BURST_PROBES,
   canonicalizeProbe,
   startWatch,
@@ -98,7 +99,7 @@ async function oneTick(script: ("ready" | "dead")[]) {
   const { sweepStandingWatches, readWatch } = await import(
     "@/services/standing-watch"
   );
-  await sweepStandingWatches(testEnv);
+  await sweepStandingWatches(testEnv, { burstGapMs: 0 });
   const history = await readWatch(testEnv, record.watch_id);
   return { history, door };
 }
@@ -166,5 +167,28 @@ describe("the burst catches what one look never could", () => {
   it("takes three looks, not one — the cost is real and paid for", async () => {
     const { door } = await oneTick(["ready", "ready", "ready"]);
     expect(door.calls()).toBe(BURST_PROBES);
+  });
+});
+
+/**
+ * THE STAGGER IS THE POINT, AND IT STAYS REAL IN PRODUCTION.
+ *
+ * CI went red on 2026-08-28 because the sweep sleeps BURST_GAP_MS per
+ * watch and two tests that had nothing to do with the burst timed out
+ * on a loaded runner. The fix was to let TESTS pass a gap of zero —
+ * and the obvious wrong fix, the one this guard exists to block, is
+ * to make production's gap small or zero so the suite goes quiet.
+ *
+ * Three looks a few milliseconds apart are one look. The whole reason
+ * the burst catches a door disagreeing with itself is that the looks
+ * are far enough apart to land on different states.
+ */
+describe("the burst's stagger is not a test convenience", () => {
+  it("keeps production's gap wide enough to be a second look", () => {
+    expect(
+      BURST_GAP_MS,
+      "a burst whose looks are milliseconds apart is one look wearing three hats",
+    ).toBeGreaterThanOrEqual(1000);
+    expect(BURST_PROBES).toBeGreaterThanOrEqual(2);
   });
 });
