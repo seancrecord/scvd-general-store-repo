@@ -583,6 +583,30 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
  * only stops punishing clients that speak the ecosystem's older name
  * correctly.
  */
+/** The header x402 v2 documents, and the v1 name much of the ecosystem still sends. */
+export const PAYMENT_HEADER = "PAYMENT-SIGNATURE";
+export const PAYMENT_HEADER_V1_ALIAS = "X-PAYMENT";
+
+/**
+ * THE ENVELOPE, IN WHICHEVER DIALECT IT ARRIVED (task #50).
+ *
+ * The adapter below taught the SDK to ACCEPT the old name. Everything
+ * in this file that reads the envelope for its own purposes — the
+ * local preflight, payer attribution, the ambiguous-settle rescue,
+ * Machine 1's row — went on reading only the v2 name, so an X-PAYMENT
+ * buyer could take the door while the door learned nothing about
+ * them: no named diagnosis, no payer for the house flag, and no nonce
+ * to ask the chain with when a settle died in transport.
+ *
+ * That is the SAME bug the adapter fixed, one layer up, and it stayed
+ * hidden the same way: the alias was present in the file, so the file
+ * looked dialect-aware. So there is exactly one reader now, and
+ * test/no-bare-payment-header.spec.ts fails if a second appears.
+ */
+function paymentHeaderOf(c: Context<HonoEnv>): string | undefined {
+  return c.req.header(PAYMENT_HEADER) ?? c.req.header(PAYMENT_HEADER_V1_ALIAS);
+}
+
 class DialectTolerantAdapter extends HonoAdapter {
   override getHeader(name: string): string | undefined {
     const direct = super.getHeader(name);
@@ -591,8 +615,8 @@ class DialectTolerantAdapter extends HonoAdapter {
     }
     // Only this one header aliases. A blanket fallback would be a
     // guess about headers nobody asked us to guess about.
-    return name.toLowerCase() === "payment-signature"
-      ? super.getHeader("X-PAYMENT")
+    return name.toLowerCase() === PAYMENT_HEADER.toLowerCase()
+      ? super.getHeader(PAYMENT_HEADER_V1_ALIAS)
       : undefined;
   }
 }
@@ -715,7 +739,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // means a malformed payload comes back named and instant instead of
   // cryptic and slow. Only definitively-wrong fields refuse here; see
   // `blocking` in requirement-match.ts for what we decline to judge.
-  const offeredHeader = c.req.header("PAYMENT-SIGNATURE");
+  const offeredHeader = paymentHeaderOf(c);
   if (offeredHeader) {
     const preflight = preflightBlockers(offeredHeader);
     const first = preflight[0];
@@ -823,7 +847,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
       // If a signed payment rode in and still got a 402, that's a
       // decline: tell the payer why and keep the reason in the books.
       const paymentHeader =
-        c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT");
+        paymentHeaderOf(c);
       if (paymentHeader) {
         // A refused payment ATTEMPT keeps its books ahead of the
         // response — declines are money-adjacent and rare, and the
@@ -1221,8 +1245,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         door: "http",
         reason: `threw:${String(error).slice(0, 200)}`,
         network: verifiedRequirements.network,
-        ...(c.req.header("PAYMENT-SIGNATURE")
-          ? { paymentHeader: c.req.header("PAYMENT-SIGNATURE") }
+        ...(paymentHeaderOf(c)
+          ? { paymentHeader: paymentHeaderOf(c) }
           : {}),
       });
       await sendAlert(c.env, {
@@ -1253,7 +1277,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     } else {
       const rescued = await rescueAmbiguousSettle(c.env, {
         errorReason: settlement.errorReason,
-        paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
+        paymentHeader: paymentHeaderOf(c),
         network: verifiedRequirements.network,
         // #55: a failed settle whose response NAMES a transaction is
         // the duplicate-submission answer with the receipt attached —
@@ -1283,8 +1307,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
             door: "http",
             reason: `settle:${settlement.errorReason}`.slice(0, 300),
             network: verifiedRequirements.network,
-            ...(c.req.header("PAYMENT-SIGNATURE")
-              ? { paymentHeader: c.req.header("PAYMENT-SIGNATURE") }
+            ...(paymentHeaderOf(c)
+              ? { paymentHeader: paymentHeaderOf(c) }
               : {}),
           });
         }
@@ -1360,7 +1384,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // debited; when both are present they are the same address.
     till.payer =
       till.settled.payer ??
-      payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
+      payerFromPaymentHeader(paymentHeaderOf(c));
     if (till.payer) {
       settlementSignals.payer = till.payer;
     }
@@ -1461,8 +1485,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   c.set("pending", {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
-    ...(payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"))
-      ? { payer: payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE")) }
+    ...(payerFromPaymentHeader(paymentHeaderOf(c))
+      ? { payer: payerFromPaymentHeader(paymentHeaderOf(c)) }
       : {}),
     settle: settleNow,
   });
