@@ -1,3 +1,4 @@
+import { WEBMCP_ORIGIN_TRIAL_TOKEN } from "@/pages/storefront-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { ardLinkTags } from "@/lib/ard-catalog";
 import { PAPER_CSS } from "@/pages/paper-css";
@@ -28,6 +29,17 @@ export interface SimplePageOptions {
   description: string;
   /** Absolute path of this page, for the canonical link. */
   path?: string;
+  /**
+   * Opt-in for the WebMCP declaration (P8, 2026-08-28): the
+   * origin-trial meta and the /webmcp.js script tag, exactly as the
+   * storefront carries them. Set on the pages where a browser agent
+   * has a next step worth declaring — the till pages — and nowhere by
+   * default: the script feature-detects document.modelContext and
+   * no-ops everywhere else, the token is inert data, and a page that
+   * opts in must also send FIRST_PARTY_SCRIPT_CSP (the P7 ruling's
+   * condition on any first-party script).
+   */
+  webmcp?: boolean;
   /**
    * Path of this page's markdown twin, when one actually answers —
    * emitted as <link rel="alternate" type="text/markdown">. Left
@@ -91,6 +103,9 @@ export function renderSimplePage(options: SimplePageOptions): string {
   // Suffix shortened 2026-08-20 for SERP truncation; the full name stays on the page header and homepage.
   const title = `${escapeHtml(options.title)}, scvd.store`;
   const description = escapeHtml(options.description);
+  const webmcp = options.webmcp
+    ? `\n  <meta http-equiv="origin-trial" content="${WEBMCP_ORIGIN_TRIAL_TOKEN}">\n  <script src="/webmcp.js" defer></script>`
+    : "";
   const markdownAlt = options.markdownAlt
     ? `\n  <link rel="alternate" type="text/markdown" href="${SITE_ORIGIN}${escapeHtml(options.markdownAlt)}">`
     : "";
@@ -109,7 +124,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:type" content="website">
   <meta property="og:image" content="${SITE_ORIGIN}/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}${markdownAlt}
+  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}${markdownAlt}${webmcp}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
