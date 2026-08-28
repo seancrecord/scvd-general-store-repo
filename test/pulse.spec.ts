@@ -15,8 +15,10 @@ const BASE = "https://scvd.store";
 interface PulseWindow {
   month?: string;
   organic_challenges: number;
+  organic_payments_presented: number;
   organic_settled: number;
-  organic_verifies: number;
+  organic_declines: number;
+  organic_rechecks: number;
   conversion_rate: number | null;
 }
 interface PulseBody {
@@ -59,8 +61,10 @@ describe("the public pulse", () => {
     const body = await pulse();
     for (const field of [
       "organic_challenges",
+      "organic_payments_presented",
       "organic_settled",
-      "organic_verifies",
+      "organic_declines",
+      "organic_rechecks",
       "conversion_rate",
     ] as const) {
       expect(Object.hasOwn(body.all_time, field), `all_time is missing ${field}`).toBe(
@@ -159,6 +163,69 @@ describe("house traffic never reaches the public funnel", () => {
     expect(after.all_time.organic_settled).toBeGreaterThan(
       before.all_time.organic_settled,
     );
+  });
+});
+
+/**
+ * THE FUNNEL'S MIDDLE (#53). Five outside reports in a row read
+ * organic_verifies as the x402 verify step, because the field name
+ * reads like the protocol step — it actually counted free re-checks
+ * of already-issued artifacts at /api/verify, a different event at a
+ * different time by different callers. Two fixes, both here: the
+ * middle is now PUBLISHED, and the misreadable name is gone.
+ *
+ * The middle is a DERIVATION, not a new meter. The till books every
+ * payment actually presented as exactly one of settled or declined —
+ * both counters predate this publication — so presented is their sum
+ * and cannot drift from the numbers beside it, and the hot path
+ * gains zero KV writes (the lesson of the KV-429 incident and the
+ * /pulse latency ticket both).
+ */
+describe("the funnel's middle is published, derived rather than metered", () => {
+  beforeAll(() => {
+    installFacilitatorMock();
+  });
+
+  it("derives presented = settled + declined on every window", async () => {
+    const body = await pulse();
+    for (const window of [body.all_time, ...body.months]) {
+      expect(
+        window.organic_payments_presented,
+        `${window.month ?? "all_time"} middle drifted from its parts`,
+      ).toBe(window.organic_settled + window.organic_declines);
+    }
+  });
+
+  it("counts an organic refusal into the middle", async () => {
+    const before = await pulse();
+    // A payment header that cannot verify: presented, and refused.
+    await SELF.fetch(`${BASE}/api/buy/hello`, {
+      headers: {
+        "PAYMENT-SIGNATURE": btoa(JSON.stringify({ x402Version: 2 })),
+      },
+    });
+    const after = await pulse();
+    expect(after.all_time.organic_declines).toBeGreaterThan(
+      before.all_time.organic_declines,
+    );
+    expect(after.all_time.organic_payments_presented).toBeGreaterThan(
+      before.all_time.organic_payments_presented,
+    );
+  });
+
+  it("no longer serves the name that read like the protocol step", async () => {
+    const body = (await (
+      await SELF.fetch(`${BASE}/pulse.json`)
+    ).json()) as Record<string, unknown>;
+    // Scan the DATA, not the prose: the note is ALLOWED to say
+    // "organic_verifies" — a dated correction must name the thing it
+    // corrects, or nobody can join the old payloads to the new.
+    const { note: _note, ...data } = body;
+    expect(JSON.stringify(data)).not.toContain("organic_verifies");
+    expect(String(body["note"])).toContain("organic_verifies");
+    expect(
+      Object.hasOwn(body["all_time"] as object, "organic_rechecks"),
+    ).toBe(true);
   });
 });
 
@@ -364,9 +431,9 @@ describe("the rendered rate agrees with the row it is on", () => {
       const cells = [...row.matchAll(/<td>([\s\S]*?)<\/td>/g)].map((m) =>
         m[1]!.replace(/<[^>]*>/g, "").trim(),
       );
-      if (cells.length < 6) continue;
-      const settled = Number(cells[3]);
-      const rate = cells[5] ?? "";
+      if (cells.length < 7) continue;
+      const settled = Number(cells[4]);
+      const rate = cells[6] ?? "";
       if (Number.isFinite(settled) && settled > 0) {
         expect(
           rate,

@@ -75,6 +75,34 @@ week and the line should quote the live surface, not freeze it.)
 > rides beside our observation everywhere it appears. We never edit
 > the observation; you never need our permission.
 
+### B6. The changelog note — "what changed, what we now observe, what we still do not" (keeper voice)
+
+(The review asked for one short, untriumphal note after this batch.
+Draft below; publish wherever you publish — gazette, a corpus landing
+line, or nowhere.)
+
+> This week the record learned three things it could not do before:
+> read itself as time (/corpus/trajectory.json and the since-diff),
+> count shared receiving addresses without judging anyone
+> (/corpus/wallet-facts.json), and carry the subject's own words
+> beside our observations (standing notes, self-serve, evidence-
+> gated). The passport now answers the three questions an agent
+> actually has — can it be paid, what evidence says so, when does
+> that evidence expire — in one signed block, and every defect class
+> now says what fixes it, not only what broke.
+>
+> What we now observe that we did not: payment-address reuse across
+> doors, as counts with denominators; drift in a door's own declared
+> terms between signed weeks; our own instrument's blindness, booked
+> against ourselves instead of against operators.
+>
+> What we still do not observe: anything between weekly rounds;
+> delivery quality; whether a shared wallet means a shared operator
+> (custodial and platform wallets make strangers share an address —
+> we publish the count, the inference stays yours); and everything
+> each module's own not_checked list names. The gaps are in the
+> record beside the findings, where they have always been.
+
 ## C. Remaining gaps, deliberately not closed here
 
 - The provenance check ships nothing until K3 pricing (spec:

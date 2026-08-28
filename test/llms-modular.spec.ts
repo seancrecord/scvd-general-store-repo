@@ -30,10 +30,13 @@ const BASE = "https://scvd.store";
 
 /**
  * The document as it stood on 2026-08-27, re-taken the same day in
- * the commits that added the corpus trajectory/diff doors (3.5) and
- * the wallet-facts and standing-note paragraphs (3.6, the G2 ruling)
- * to the guide, with the
- * two per-request dates normalised out.
+ * the commits that added the corpus trajectory/diff doors (3.5), the
+ * wallet-facts and standing-note paragraphs (3.6, the G2 ruling),
+ * the WebMCP door paragraphs (the keeper's own chats, #307/#308),
+ * and the funnel's-middle sentence in the pulse paragraph (#53) —
+ * this last pin taken on the rebase that joined the two lines of
+ * work, over the guide carrying both. The two per-request dates are
+ * normalised out.
  *
  * A CONSTANT, AND RULE 46 SAYS DERIVE OR REFUSE — so it is worth
  * saying why this one is neither a memorised value nor a guard that
@@ -47,10 +50,13 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  // Re-taken 2026-08-28, the instrument-audit copy pass: the guide's
-  // words moved where its numbers' captions did (Night Watch shape
-  // not payability, the census placement scope, quotes not heads).
-  "aed6c8631a2c109fa5e66553cdaf8199334aebc7f7d6c2c80099ce582548786c";
+  // Re-taken 2026-08-28 at the merge of the instrument-audit branch:
+  // both sides had genuinely edited the guide (the audit's caption
+  // pass here; the funnel-middle and refusal work on main), so the
+  // merged text is a third document and neither parent's digest could
+  // stand. Value below is the merged guide's, taken by running this
+  // spec against it — the review moment, forced as designed.
+  "7990da54f1999058fdfffcf4bb8422dcd231a5af3dcdd54ec18ccea776fdb375";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

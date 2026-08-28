@@ -28,6 +28,18 @@ export interface FacilitatorMockState {
    * trigger a retry.
    */
   settleTransient502s: number;
+  /**
+   * Consecutive settle calls answered with the V1 DUPLICATE shape,
+   * byte-for-byte what CV's run recorded against the real CDP
+   * facilitator on 2026-08-25: HTTP 400, success:false,
+   * errorReason "invalid_payload" (overloaded — the same code means
+   * "malformed"), errorMessage "authorization nonce already
+   * submitted; transaction already on-chain", and — the load-bearing
+   * field — the ORIGINAL transaction hash, populated on the FAILED
+   * response. This is the answer a settle retry gets when the first
+   * attempt landed but its response was lost.
+   */
+  settleDuplicateAnswers: number;
   /** Every settle call, verdicts and 502s alike — the retry counter. */
   settleCalls: number;
   /**
@@ -113,6 +125,7 @@ export function installFacilitatorMock(): FacilitatorMockState {
     settleShouldFail: false,
     verifyShouldFail: false,
     settleTransient502s: 0,
+    settleDuplicateAnswers: 0,
     settleCalls: 0,
     settleOmitsPayer: false,
     webhookCalls: [],
@@ -166,6 +179,26 @@ export function installFacilitatorMock(): FacilitatorMockState {
         // not JSON, which is what makes @x402/core throw the
         // "Facilitator settle failed (502): ..." string the retry keys on.
         return new Response("error code: 502", { status: 502 });
+      }
+      if (state.settleDuplicateAnswers > 0) {
+        state.settleDuplicateAnswers -= 1;
+        // The V1 shape, verbatim fields (see the knob's comment). The
+        // 400 status matters: the SDK throws SettleError for a non-OK
+        // body carrying `success`, and processSettlement rebuilds the
+        // failure WITH the body's transaction field — the wire this
+        // knob exists to test.
+        return Response.json(
+          {
+            success: false,
+            errorReason: "invalid_payload",
+            errorMessage:
+              "authorization nonce already submitted; transaction already on-chain",
+            transaction: TEST_TRANSACTION,
+            network: "eip155:8453",
+            payer: TEST_PAYER,
+          },
+          { status: 400 },
+        );
       }
       if (state.settleShouldFail) {
         return Response.json({

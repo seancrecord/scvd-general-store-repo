@@ -1135,9 +1135,32 @@ export async function rescueAmbiguousSettle(
     errorReason: string | undefined;
     paymentHeader: string | undefined;
     network: string | undefined;
+    /**
+     * The `transaction` field off the FAILED settle response, when the
+     * facilitator populated one (#55). CV's V1 run (2026-08-25, Base
+     * Sepolia, real CDP facilitator) proved the duplicate answer is a
+     * 400 "invalid_payload" / "authorization nonce already submitted;
+     * transaction already on-chain" CARRYING the original tx hash — the
+     * shape a settle retry gets when the first attempt landed but its
+     * response was lost. Discriminated on STRUCTURE, never prose:
+     * errorReason there is invalid_payload, which is overloaded
+     * (malformed AND already-settled), and errorMessage is vendor
+     * English that can reword without notice. A genuine rejection
+     * carries no tx hash.
+     *
+     * A populated hash widens the rescue's TRIGGER, not its verdict:
+     * the chain below still judges, because V1 tested only the
+     * duplicate-after-confirmation case and a failure naming a
+     * REVERTED transaction must keep failing closed. V2 (in-flight
+     * race), V3 (abort-then-retry) and mainnet confirmation are open;
+     * until they close, the hash is a claim and AuthorizationUsed is
+     * the fact.
+     */
+    failureTransaction?: string;
   },
 ): Promise<RescuedSettle | null> {
-  if (!isTransientSettleFailure(options.errorReason)) {
+  const namedTransaction = (options.failureTransaction ?? "").length > 0;
+  if (!namedTransaction && !isTransientSettleFailure(options.errorReason)) {
     return null;
   }
   if (options.network !== BASE_CHAIN) {

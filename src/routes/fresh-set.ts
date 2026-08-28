@@ -4,6 +4,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import type { HonoEnv } from "@/types";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 
 /**
  * GET /fresh-set — the walkable set, served. One door, two dialects:
@@ -80,12 +81,13 @@ freshSetRoutes.get("/fresh-set", async (c) => {
       return c.json(
         {
           rows: [],
+          corrections: CORRECTIONS_POINTER,
           note: "No census round has completed yet; the first walk populates this surface.",
         },
         200,
       );
     }
-    return c.json(set);
+    return c.json({ ...set, corrections: CORRECTIONS_POINTER });
   }
 
   const bodyHtml = set

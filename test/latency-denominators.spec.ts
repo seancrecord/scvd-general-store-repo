@@ -97,7 +97,28 @@ describe("published latency, with its denominators", () => {
     const response = await SELF.fetch(`${BASE}/api/buy/small_blessing`);
     expect(response.status).toBe(402);
 
-    const after = (await computePulse(testEnv)).latency.routes["challenge"];
+    /*
+     * The write this waits for is DEFERRED BY CONTRACT: the method
+     * line published on the surface says "bumped after the response
+     * is sent so the instrument never slows the thing it measures",
+     * so the sample is not promised to be visible the instant the 402
+     * lands. This test used to pass anyway because computePulse read
+     * its ten records one after another and the queue was an
+     * accidental sleep; when #54 collapsed the queue into one wave,
+     * the read arrived before the waitUntil and the race surfaced.
+     * Polling is the honest phrasing — and the wiring claim survives:
+     * mutate the waitUntil out of paymentGate and no amount of
+     * waiting makes the sample appear.
+     */
+    let after = (await computePulse(testEnv)).latency.routes["challenge"];
+    for (
+      let tries = 0;
+      tries < 40 && (after?.samples ?? 0) <= beforeSamples;
+      tries += 1
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      after = (await computePulse(testEnv)).latency.routes["challenge"];
+    }
     expect(after).toBeDefined();
     expect(after!.samples).toBeGreaterThan(beforeSamples);
     expect(after!.p50_ms_range).not.toBeNull();
