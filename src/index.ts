@@ -68,6 +68,7 @@ import {
   conformanceRoutes,
   conformanceLandingRoutes,
   corpusLandingRoutes,
+  beforeYouPayRoutes,
   preflightRoutes,
   discoveryRoutes,
   launchCheckRoutes,
@@ -245,6 +246,9 @@ app.route("/", conformanceRoutes);
 app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", preflightRoutes);
+/* The buyer's half of the same ladder: one probe, then the stock
+ * client's own selection replayed over what it served. */
+app.route("/", beforeYouPayRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", bountyRoutes);

@@ -1280,6 +1280,21 @@ export async function preflightUrl(
    * malformed request never spent one.
    */
   headers?: Record<string, string>;
+  /**
+   * THE ACCEPTS THIS PROBE PARSED, handed back to the caller and NOT
+   * added to the served body (#96, 2026-08-28). The payment dry run
+   * needs the same accepts the battery just read, and the one thing
+   * it must not do is knock a second time: two probes are two
+   * moments, and a door that changed between them would have the
+   * store publishing a shape check and a payability reading that
+   * quietly describe different bytes. One probe, one moment, both
+   * readings — the same discipline that makes v1 and v2 share an
+   * observation and differ only in what they count.
+   *
+   * Absent when the probe never reached parseable accepts, which is
+   * the preflight's finding to report, not the dry run's.
+   */
+  accepts?: Record<string, unknown>[];
 }> {
   const base = env.STORE_BASE_URL;
   if (typeof rawUrl !== "string" || rawUrl.trim().length === 0) {
@@ -1503,6 +1518,7 @@ export async function preflightUrl(
   return {
     status: 200,
     headers: budgetHeaders,
+    ...(accepts ? { accepts } : {}),
     body: report(base, servedVerdict, servedChecks, advisories, {
       battery: asked,
       alsoUnder: {

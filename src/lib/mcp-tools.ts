@@ -665,6 +665,80 @@ const FREE_TOOLS: McpTool[] = [
   },
   {
     /*
+     * THE BUYER'S SIDE OF THE LADDER (#96, 2026-08-28), and it belongs
+     * on MCP more than any other free tool here.
+     *
+     * The preflight and the desk are instruments an agent reaches for
+     * deliberately, about somebody else's work. This one answers the
+     * question an agent has WHILE IT IS ABOUT TO SPEND — and the
+     * failure it catches is silent on both sides of the wire. The
+     * operator sees a request for a price and then nothing. The buyer
+     * gets an exception thrown from inside a library it did not
+     * write, before any signature exists. Neither party has an error
+     * string to search for, so the tool has to be where the agent
+     * already is rather than somewhere it would have to know to look.
+     */
+    name: "check_before_you_pay",
+    description:
+      "Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: str("The https x402 door you are about to pay.", 2048),
+        client_profile: {
+          type: "object",
+          description:
+            "Optional. What your client is configured with. Leave it off and you get the reading for a client configured with NOTHING, which is the case that loses money quietly.",
+          properties: {
+            max_amount_per_payment_usd: {
+              type: ["number", "boolean"],
+              description:
+                "Your spendControls.maxAmountPerPayment, in dollars; false if you set it to false.",
+            },
+            spend_controls_disabled: {
+              type: "boolean",
+              description:
+                "True if you pass spendControls: false — the one escape from the whole filter.",
+            },
+          },
+          additionalProperties: false,
+        },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object",
+      properties: {
+        will_your_client_pay: str(
+          "would_sign | would_throw | cannot_simulate. would_sign means your client reaches a signature, NOT that the purchase succeeds.",
+        ),
+        your_client: {
+          type: "object",
+          description:
+            "The replay: the accept it picks, everything dropped and at which stage, the hazards on the one it picked, and what this simulation cannot see.",
+        },
+        the_door: {
+          type: "object",
+          description:
+            "The free preflight's report on the same probe. One knock, two readings, so they can never describe different bytes.",
+        },
+        these_are_different_questions: str(
+          "Why a well-shaped door can still be unpayable by you.",
+        ),
+      },
+      required: ["will_your_client_pay", "your_client"],
+    },
+    annotations: {
+      title: "Will My Client Pay This?",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
+    /*
      * The conformance desk's MCP door, same ruling. checkConformance()
      * carries its own validation, size ceiling and resolution budget;
      * this tool adds nothing but reach.
