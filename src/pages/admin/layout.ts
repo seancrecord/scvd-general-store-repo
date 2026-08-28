@@ -60,6 +60,13 @@ export type AdminTab =
    * than by remembering.
    */
   | "events"
+  /**
+   * The money walks, moved off the desk 2026-08-28 so the desk stops
+   * paying for three of them just to open. Demoted like the rest:
+   * reached from the desk's take section, not from the top nav, which
+   * the keeper asked to keep scannable.
+   */
+  | "take"
   | "funnel"
   | "market"
   | "outreach";

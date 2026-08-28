@@ -41,6 +41,13 @@ export interface OfficePageData {
    * window states itself (AT_SCALE rule 4), especially at the desk.
    */
   allTime: { organic: number; house: number } | null;
+  /**
+   * When the take above was read. The desk's headline table comes
+   * from the hourly glance now rather than from a walk this request
+   * paid for, and a cached number that does not say so is exactly
+   * the kind of claim this store spends its time refusing.
+   */
+  takeReadAt?: string | null;
   /** Settle counters against payer rows, all-time on both sides. */
   reconciliation: SettleReconciliation | null;
   /**
@@ -184,7 +191,13 @@ function trendHtml(ledger: MonthLedger): string {
  * every dollar here is chain-verifiable — and the same caveats
  * apply, stated under the table rather than assumed known.
  */
-function takeHtml(
+/**
+ * Exported 2026-08-28 so /admin/take can render the same table the
+ * desk used to. One function, two callers — the alternative was a
+ * second copy of the store's money table, which is the exact defect
+ * class this repo spends its time closing.
+ */
+export function takeSectionHtml(
   take: TakeSummary | null,
   allTime: { organic: number; house: number } | null,
 ): string {
@@ -555,7 +568,18 @@ export function renderOfficePage(data: OfficePageData): string {
   const body = `
   <section>
     <h2>The take — all-time</h2>
-    ${takeHtml(data.take, data.allTime)}
+    ${
+      data.take
+        ? `${takeSectionHtml(data.take, data.allTime)}
+           <p><small>Read ${data.takeReadAt ? escapeHtml(data.takeReadAt) : "on the last hourly round"} \u2014 this table
+           comes from the hourly round rather than a walk this page
+           paid for, which is why the desk opens now instead of
+           counting every certificate first. A walk taken this second
+           is at <a href="/admin/take">the take</a>.</small></p>`
+        : `<p>The hourly round has not written the take yet, so there is nothing
+           cached to show \u2014 nothing here is zero, nothing here has been
+           counted. A walk taken this second is at <a href="/admin/take">the take</a>.</p>`
+    }
     ${workStrip}
   </section>
 
@@ -601,9 +625,19 @@ export function renderOfficePage(data: OfficePageData): string {
   <section>
     <h2>Do the books agree with themselves</h2>
     ${
-      data.reconciliation && data.reconciliation.unexplained === 0
-        ? `<p><strong style="color:#2f6b2f">They do.</strong> Full verdicts — counters, chain, deliveries, alarms — at <a href="/admin/reconciliation">the books check</a>.</p>`
-        : `<p><strong style="color:#8c2f1b">Something to chase.</strong> Verdicts and arithmetic at <a href="/admin/reconciliation">the books check</a>.</p>`
+      /*
+       * THREE STATES, NOT TWO — and the third is why this changed.
+       * The line used to read `agree ? "they do" : "chase it"`, so the
+       * day reconciliation stopped being computed on this page it
+       * would have announced "something to chase" about books that
+       * were perfectly fine: an alarm invented by a speed change.
+       * A walk that has not run is not a walk that found something.
+       */
+      data.reconciliation === null
+        ? `<p>Not checked here \u2014 the chain walk runs at <a href="/admin/reconciliation">the books check</a>, which is where its verdicts belong. This page no longer pays for one to print a sentence about it.</p>`
+        : data.reconciliation.unexplained === 0
+          ? `<p><strong style="color:#2f6b2f">They do.</strong> Full verdicts — counters, chain, deliveries, alarms — at <a href="/admin/reconciliation">the books check</a>.</p>`
+          : `<p><strong style="color:#8c2f1b">Something to chase.</strong> ${data.reconciliation.unexplained} unexplained. Verdicts and arithmetic at <a href="/admin/reconciliation">the books check</a>.</p>`
     }
   </section>
 

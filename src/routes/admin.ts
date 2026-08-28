@@ -19,6 +19,7 @@ import {
   reconcileSettles,
 } from "@/lib/metrics";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
+import { renderTakePage } from "@/pages/admin/take-page";
 import { recountFromRows } from "@/lib/recount";
 import { computeStats } from "@/services/stats";
 import { renderAdminShell } from "@/pages/admin/layout";
@@ -350,6 +351,45 @@ function stockNotice(
  * nothing has looked. Same rule as the shelf: say what you saw and
  * when, or say you have not seen.
  */
+/**
+ * GET /admin/take — the money walks, where they cost what they cost.
+ *
+ * computeStats scans every month's metric keys; takeSummary walks
+ * every certificate. Both are honest work and neither is fast, and
+ * until today they ran on /admin — gating the first section of the
+ * page, so opening the office to see whether anything needed the
+ * keeper meant waiting for the full books first.
+ *
+ * They are the same numbers, computed the same way. The only change
+ * is that a reader now asks for them, rather than paying for them on
+ * the way to something else.
+ */
+adminRoutes.get("/admin/take", async (c) => {
+  const notes: string[] = [];
+  const [take, allTimeStats] = await Promise.allSettled([
+    import("@/services/books-summary").then(({ takeSummary }) =>
+      takeSummary(c.env),
+    ),
+    computeStats(c.env),
+    /**
+     * The rail split rides the certificate walk again, which is where
+     * it always belonged: this page is the one paying for that walk
+     * now, so opening it still brings the shopfront's Base/Solana
+     * split current instead of waiting out the hour. Never blocks —
+     * a failure leaves the last snapshot standing.
+     */
+  ]);
+  const stats = shelf(allTimeStats, null, "all-time stats", notes);
+  const body = renderTakePage({
+    take: shelf(take, null, "the take", notes),
+    allTime: stats
+      ? { organic: stats.organic_settlements, house: stats.house_settlements }
+      : null,
+    loadNotes: notes,
+  });
+  return c.html(body);
+});
+
 adminRoutes.get("/admin/glance", async (c) => {
   const { readGlance } = await import("@/services/glance");
   const glance = await readGlance(c.env);
@@ -504,10 +544,8 @@ adminRoutes.get("/admin", async (c) => {
     confessions,
     refunds,
     alerts,
-    reconciliation,
-    allTimeStats,
     monthReclass,
-    take,
+    glance,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -521,26 +559,43 @@ adminRoutes.get("/admin", async (c) => {
     listConfessions(c.env),
     listRefunds(c.env),
     listAlerts(c.env, 5),
-    reconcileSettles(c.env),
-    computeStats(c.env),
     import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
       monthReclassAdjustments(c.env),
     ),
-    import("@/services/books-summary").then(({ takeSummary }) =>
-      takeSummary(c.env),
-    ),
-    /**
-     * The rail split snapshot, refreshed here as well as on the cron.
-     * The desk is already paying for the certificate walk to build the
-     * take; this writes what it learned into the one key the front of
-     * the store reads, so the keeper opening his own office is enough
-     * to bring the shopfront's Base/Solana split current instead of
-     * waiting out the hour. Never blocks the desk: a failure here
-     * leaves the last snapshot standing.
+    /*
+     * The take arrives from the hourly glance — one read — rather
+     * than from a fresh certificate walk on every open. The
+     * 2026-08-05 ruling that the desk leads with the all-time take
+     * stands; only the cost of satisfying it moved to the cron.
+     *
+     * ensureGlance rather than readGlance, because an empty cache
+     * lasts an hour after each deploy and that is exactly when the
+     * keeper opens the desk. Cold: compute once, store, show it.
+     * Warm: one read. Either way, never a walk per open.
      */
-    import("@/services/rails").then(({ refreshRailSplit }) =>
-      refreshRailSplit(c.env).catch(() => null),
+    import("@/services/glance").then(({ ensureGlance }) =>
+      ensureGlance(c.env),
     ),
+    /*
+     * THE FOUR THAT LEFT, 2026-08-28, and where they went.
+     *
+     * computeStats scans the metric keys for every month the store has
+     * been open; takeSummary walks every certificate; reconcileSettles
+     * walks the chain. All three gated the FIRST section of the page,
+     * so opening the office to see whether anything needed the keeper
+     * cost three full walks before a single figure appeared. They live
+     * at /admin/take now, opened when the question is actually money.
+     *
+     * reconcileSettles was the plainest waste: a whole chain walk so
+     * this page could print one sentence above a link to
+     * /admin/reconciliation, which does the real work anyway. The
+     * hourly glance carries that verdict now.
+     *
+     * refreshRailSplit rode along because the desk "is already paying
+     * for the certificate walk" — true then, false now, and the cron
+     * refreshes the same snapshot on its own schedule, so nothing is
+     * lost by letting it go.
+     */
   ]);
   const emptyLedger = emptyMonthLedger();
   const pendingReviews =
@@ -569,8 +624,13 @@ adminRoutes.get("/admin", async (c) => {
       ),
       payers: shelf(payers, [], "payers", notes),
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
-      reconciliation: shelf(reconciliation, null, "reconciliation", notes),
-      take: shelf(take, null, "the take", notes),
+      /*
+       * Null on purpose: these are the money walks, and they run at
+       * /admin/take now. The page renders both as "not read here"
+       * rather than as zero or as an alarm — see the books line.
+       */
+      reconciliation: null,
+      take: shelf(glance, null, "the glance", notes)?.take ?? null,
       monthReclass: (() => {
         const adjustments = shelf(monthReclass, null, "reclass ledger", notes);
         const current = adjustments?.months[metricsMonth()];
@@ -581,15 +641,8 @@ adminRoutes.get("/admin", async (c) => {
         }
         return current ?? null;
       })(),
-      allTime: (() => {
-        const stats = shelf(allTimeStats, null, "all-time stats", notes);
-        return stats
-          ? {
-              organic: stats.organic_settlements,
-              house: stats.house_settlements,
-            }
-          : null;
-      })(),
+      allTime: shelf(glance, null, "the glance", notes)?.all_time ?? null,
+      takeReadAt: shelf(glance, null, "the glance", notes)?.computed_at ?? null,
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(
