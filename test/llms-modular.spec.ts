@@ -139,7 +139,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "PLACEHOLDER";
+  "1d190feb2bd48e73cd249f1996bcd952e4fcba4d80d429a7d6579bb3301c2579";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
