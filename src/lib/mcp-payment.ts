@@ -27,6 +27,7 @@ import {
   getPaymentStack,
   minimumUsdcForPath,
   processSettlementWithRetry,
+  rescueAmbiguousSettle,
   tipFromPaid,
 } from "@/lib/payments";
 import type { PendingPayment, SettledPayment } from "@/lib/payments";
@@ -374,22 +375,62 @@ export async function runMcpPayment(
     throw error;
   }
   await persistBazaarObservations(env, path);
+  /*
+   * ONE SETTLED OUTCOME FOR BOTH ROADS IN — the same law the HTTP gate
+   * has carried since 2026-08-07, wired here on 2026-08-27 because the
+   * MCP till had NO rescue at all: the fourth
+   * fix-that-looks-shared-and-isn't this month (this file names the
+   * pattern forty lines down), caught before it cost a live sale.
+   * Both triggers ride: the transport-dead shape, and #55's settle
+   * refusal that NAMES the landed transaction. The chain judges
+   * either way; a rescued settle carries no facilitator headers, and
+   * the certificate naming the found transaction is the receipt.
+   */
+  let settledFacts: {
+    transaction: string;
+    network?: string;
+    payer?: string;
+    headers: Record<string, string>;
+  };
   if (!settlement.success) {
-    await recordPaymentDecline(
-      env,
-      path,
-      `settle:${settlement.errorReason}`,
-      signals,
-    ).catch(() => undefined);
-    /*
-     * Thrown, not returned: by the time this runs the caller is deep
-     * inside fulfillment with its goods built. The MCP route catches
-     * it and answers with the decline, so no fulfillment path has to
-     * carry a decline branch of its own.
-     */
-    throw new SettlementDeclined(
-      jsonDeclineResponse(settlement.response.body),
-    );
+    const rescued = await rescueAmbiguousSettle(env, {
+      errorReason: settlement.errorReason,
+      paymentHeader,
+      network: verifiedRequirementsForSettle.network,
+      ...(settlement.transaction
+        ? { failureTransaction: settlement.transaction }
+        : {}),
+    });
+    if (!rescued) {
+      await recordPaymentDecline(
+        env,
+        path,
+        `settle:${settlement.errorReason}`,
+        signals,
+      ).catch(() => undefined);
+      /*
+       * Thrown, not returned: by the time this runs the caller is deep
+       * inside fulfillment with its goods built. The MCP route catches
+       * it and answers with the decline, so no fulfillment path has to
+       * carry a decline branch of its own.
+       */
+      throw new SettlementDeclined(
+        jsonDeclineResponse(settlement.response.body),
+      );
+    }
+    settledFacts = {
+      transaction: rescued.transaction,
+      network: rescued.network,
+      payer: rescued.payer,
+      headers: {},
+    };
+  } else {
+    settledFacts = {
+      transaction: settlement.transaction,
+      headers: settlement.headers,
+      ...(settlement.network ? { network: settlement.network } : {}),
+      ...(settlement.payer ? { payer: settlement.payer } : {}),
+    };
   }
   if (nonce) {
     /*
@@ -401,7 +442,7 @@ export async function runMcpPayment(
      * SolomonisBlack named it. Third fix-that-looks-shared-and-isn't
      * this month, and the spec now pins both doors together.
      */
-    await recordSpentNonce(env, nonce, path, settlement.transaction);
+    await recordSpentNonce(env, nonce, path, settledFacts.transaction);
   }
 
   const minimumUsdc = minimumUsdcQuoted;
@@ -414,12 +455,12 @@ export async function runMcpPayment(
   // Same till, same meter: the MCP door books a rail exactly as the
   // HTTP door does, or the split would quietly depend on which door a
   // buyer came through.
-  if (settlement.network) {
-    settlementSignals.network = settlement.network;
+  if (settledFacts.network) {
+    settlementSignals.network = settledFacts.network;
   }
   // Same fallback as the HTTP door: a settle with no payer would book
   // as organic, and the house flag is decided by wallet.
-  const payer = settlement.payer ?? payerFromPaymentHeader(paymentHeader);
+  const payer = settledFacts.payer ?? payerFromPaymentHeader(paymentHeader);
   if (payer) {
     settlementSignals.payer = payer;
   }
@@ -428,14 +469,14 @@ export async function runMcpPayment(
   const payment: SettledPayment = {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
-    transaction: settlement.transaction,
-    settleHeaders: settlement.headers,
+    transaction: settledFacts.transaction,
+    settleHeaders: settledFacts.headers,
   };
-  if (settlement.network) {
-    payment.network = settlement.network;
+  if (settledFacts.network) {
+    payment.network = settledFacts.network;
   }
-  if (settlement.payer) {
-    payment.payer = settlement.payer;
+  if (settledFacts.payer) {
+    payment.payer = settledFacts.payer;
   }
   if (payment.network === SOLANA_NETWORK) {
     // Same unreconciled-cap meter as the HTTP gate; the MCP door is
@@ -460,7 +501,7 @@ export async function runMcpPayment(
   deliveryKey = await openDeliveryIntent(env, {
     path,
     ...(askedFor ? { query: askedFor.slice(0, 600) } : {}),
-    ...(settlement.transaction ? { transaction: settlement.transaction } : {}),
+    ...(settledFacts.transaction ? { transaction: settledFacts.transaction } : {}),
     ...(payer ? { payer } : {}),
     paid_usdc: paidUsdc,
     settled_at: new Date().toISOString(),

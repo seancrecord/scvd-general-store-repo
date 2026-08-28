@@ -7,6 +7,7 @@ import { notesForHost, type StandingNote } from "@/services/standing-note";
 import { populationHistory, type PopulationRecord } from "@/services/population";
 import type { WardHostResult } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 
 /**
  * WHAT HAS THIS STORE OBSERVED ABOUT ONE HOST, OVER TIME — the index
@@ -133,6 +134,9 @@ export interface VerdictChange {
 export interface SubjectHistory {
   host: string;
   asked_at: string;
+  /** The forwarding pointer to the corrections desk — every evidence
+   * surface carries it (test/corrections-forwarding.spec.ts). */
+  corrections: string;
   /** The host's own standing note (G2 ruling §5), when one is attached. */
   standing_note?: StandingNote;
   /** T2 (G2 ruling): this door's own shared-wallet fact. Absent when
@@ -362,6 +366,7 @@ export async function subjectHistory(
   return {
     host,
     asked_at: now.toISOString(),
+    corrections: CORRECTIONS_POINTER,
     ...(hostNote ? { standing_note: hostNote } : {}),
     ...(paymentAddress ? { payment_address: paymentAddress } : {}),
     listing,

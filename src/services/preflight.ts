@@ -4,7 +4,8 @@ import { storeIdentity } from "@/lib/identity";
 import { ProbeTargetRefused, checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
 import { readPayTo } from "@/lib/pay-to";
-import { KNOWN_TESTNETS, l3bChecks } from "@/lib/value-checks";
+import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
+import { KNOWN_TESTNETS, isCanonicalUsdc, l3bChecks } from "@/lib/value-checks";
 import { checkRailReceivable } from "@/services/rail-receivable";
 import { isRecord, type Env } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
@@ -163,6 +164,7 @@ export const ADVISORY_NAMES = [
   "payto-wrong-rail",
   "payto-not-an-address",
   "amount-not-atomic",
+  "above-default-client-cap",
   "no-bazaar-extension",
   "inputs-declared",
   "no-input-contract",
@@ -723,6 +725,41 @@ export function runChecks(
       advisories.push({
         name: "amount-not-atomic",
         detail: `accepts amount "${amount}" contains a decimal point. x402 amounts are ATOMIC units (USDC has 6 decimals: $0.005 is "5000"). A dollar-typed amount here underprices by a factor of a million.`,
+      });
+    }
+  }
+
+  /**
+   * THE DEFAULT CLIENT CAP, read across the WHOLE catalogue rather
+   * than per entry (#59). The stock @x402/core client ships a spend
+   * ceiling — DEFAULT_MAX_AMOUNT_PER_PAYMENT, "$1" today — and
+   * refuses any offer above it BEFORE signing, so the seller's side
+   * of the refusal is pure silence: no payment attempt, no error in
+   * their logs, zero demand at a door that 402s perfectly. The read
+   * is the CHEAPEST USDC-legible ask, because one sub-cap tier
+   * anywhere gives the unconfigured buyer a way in. Only canonical
+   * USDC at integer atomic amounts is legible as dollars (rule 52:
+   * a non-USDC asset or a decimal-typed amount cannot be priced, so
+   * it is not answered about — amount-not-atomic already names the
+   * decimal case). The ceiling itself is IMPORTED from the client
+   * package, never retyped, so this advisory can only disagree with
+   * the client it describes by being out of date in lockstep.
+   */
+  const usdcAsksUsd = accepts
+    .filter((entry) =>
+      isCanonicalUsdc(String(entry["network"] ?? ""), String(entry["asset"] ?? "")),
+    )
+    .map((entry) => String(entry["amount"] ?? ""))
+    .filter((amount) => /^\d+$/.test(amount))
+    .map((amount) => Number(amount) / 1e6);
+  const capLabel = String(DEFAULT_MAX_AMOUNT_PER_PAYMENT);
+  const capUsd = Number(capLabel.replace(/[^\d.]/g, ""));
+  if (usdcAsksUsd.length > 0 && Number.isFinite(capUsd) && capUsd > 0) {
+    const cheapestUsd = Math.min(...usdcAsksUsd);
+    if (cheapestUsd > capUsd) {
+      advisories.push({
+        name: "above-default-client-cap",
+        detail: `the cheapest USDC ask here is $${cheapestUsd}, above the ${capLabel} that @x402/core's DEFAULT_MAX_AMOUNT_PER_PAYMENT allows per payment. A stock client refuses before signing, so an unconfigured buyer's refusal never reaches this door's logs — it just sees no demand. Offer one tier at or under ${capLabel}, or tell buyers plainly that they must raise their client's spend ceiling first.`,
       });
     }
   }

@@ -92,8 +92,9 @@ function row(window: PulseWindow, label: string): string {
         ? "&mdash;"
         : `${window.corrected_challenges} <small>(&minus;${window.known_machinery})</small>`
     }</td>
+    <td>${window.organic_payments_presented}</td>
     <td>${window.organic_settled}</td>
-    <td>${window.organic_verifies}</td>
+    <td>${window.organic_rechecks}</td>
     <td>${escapeHtml(rateText(window))}</td>
   </tr>`;
 }
@@ -120,7 +121,7 @@ pulseRoutes.get("/pulse", async (c) => {
       </section>
       <section>
         <table border="1" cellpadding="6">
-          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
+          <tr><th>window</th><th>402s offered, as recorded</th><th>less known machinery</th><th>payments presented</th><th>settled</th><th>re-verifies</th><th>rate</th></tr>
           ${row(pulse.all_time, "all time")}
           ${pulse.months.map((window) => row(window, window.month ?? "")).join("\n")}
         </table>

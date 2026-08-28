@@ -141,6 +141,29 @@ function pageIntervalFor(repeats: number): number {
 }
 const ALERT_LOG_TTL_SECONDS = 30 * 86400;
 
+/**
+ * ELEVEN PAGES FOR A PASS (task #25, 2026-08-27). A conformance
+ * instrument walked our door with deliberately varied bad payments —
+ * both instruments doing their jobs — and every distinct refusal
+ * minted a distinct payment_declined page, so the keeper's phone read
+ * eleven incidents where zero had happened. Being probeable is this
+ * store's own posture (we probe everyone else's doors), so probe
+ * traffic is a standing condition, not an anomaly.
+ *
+ * The remedy is a BUDGET, not a filter. No heuristic here decides
+ * which decline is "really" a probe, because a heuristic that guesses
+ * wrong eats a real buyer's only signal — 2026-07-28 is the day that
+ * cost is named after. Every decline still writes its row and the
+ * desk stays complete; what caps is the EMAIL: a spread of distinct
+ * declines inside one hour is one fact about the door, not that many
+ * incidents, and the last email under the budget says the fold is
+ * happening. Conditions not listed here are unbudgeted — for an
+ * undelivered sale, every page IS an incident.
+ */
+export const HOURLY_EMAIL_BUDGET: Partial<Record<AlertCondition, number>> = {
+  payment_declined: 3,
+};
+
 export interface AlertInput {
   condition: AlertCondition;
   detail: string;
@@ -262,10 +285,31 @@ export async function sendAlert(env: Env, input: AlertInput): Promise<void> {
      * page after that is the one that mattered.
      */
     if (await kvGet(env.COUNTERS, pageKey)) return;
+
+    /*
+     * THE HOURLY BUDGET, spent only by pages that would actually send
+     * (a repeat inside its dedupe window returned above and costs
+     * nothing). Over budget: the row is already written, the desk is
+     * already current, and the phone stays quiet until the hour turns.
+     */
+    const budget = HOURLY_EMAIL_BUDGET[input.condition];
+    let foldNotice = "";
+    if (budget !== undefined) {
+      const budgetKey = `alert_email_budget:${input.condition}:${now.slice(0, 13)}`;
+      const spent = Number((await kvGet(env.COUNTERS, budgetKey)) ?? "0");
+      if (spent >= budget) return;
+      await kvPut(env.COUNTERS, budgetKey, String(spent + 1), {
+        expirationTtl: 2 * 60 * 60,
+      });
+      if (spent + 1 === budget) {
+        foldNotice = `\n\nThis is the last "${input.condition}" email this hour: several distinct ones inside one hour is the signature of an instrument walking the door, not a queue of separate incidents. Every further one still lands as a row at /admin — the phone just stops repeating the same fact.`;
+      }
+    }
+
     await kvPut(env.COUNTERS, pageKey, "1", {
       expirationTtl: pageIntervalFor(repeats),
     });
-    await emailKeeper(env, input.condition, detail, now);
+    await emailKeeper(env, input.condition, detail + foldNotice, now);
   } catch (error) {
     // The alarm must never take down the till it watches.
     console.error("Alert plumbing failed:", error);

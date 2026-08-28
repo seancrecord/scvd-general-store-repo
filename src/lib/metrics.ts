@@ -792,6 +792,9 @@ export interface LedgerRow {
   verifies: number;
   verifiesHouse: number;
   verifiesInfra: number;
+  /** Payments presented and refused; with `settled`, the funnel's middle. */
+  declines: number;
+  declinesHouse: number;
   tiers: Record<string, number>;
 }
 
@@ -829,6 +832,8 @@ function emptyRow(): LedgerRow {
     verifies: 0,
     verifiesHouse: 0,
     verifiesInfra: 0,
+    declines: 0,
+    declinesHouse: 0,
     tiers: {},
   };
 }
@@ -1153,6 +1158,11 @@ export async function readMonthLedger(
     else if (kind === "verify") row.verifies = value;
     else if (kind === "verifyh") row.verifiesHouse = value;
     else if (kind === "verifyi") row.verifiesInfra = value;
+    // Declines never bucket as infrastructure (bucketSuffix is called
+    // with allowInfra false at the write): a crawler that presents a
+    // payment and is refused is a refused buyer.
+    else if (kind === "decl") row.declines = value;
+    else if (kind === "declh") row.declinesHouse = value;
   }
   if (month === FOUNDING_BACKFILL.month) {
     const row = (ledger.items[FOUNDING_BACKFILL.item] ??= emptyRow());

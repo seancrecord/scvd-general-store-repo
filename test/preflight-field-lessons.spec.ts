@@ -1,3 +1,4 @@
+import { DEFAULT_MAX_AMOUNT_PER_PAYMENT } from "@x402/core/client";
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import type { Env } from "@/types";
@@ -282,5 +283,63 @@ describe("no bounty is opened on a door nobody can be paid to visit", () => {
         { fetch: challengeWith("shop.base.eth") },
       ),
     ).rejects.toThrow(BountyRefused);
+  });
+});
+
+describe("the default client cap, read before anyone burns a signed call (#59)", () => {
+  /**
+   * The stock @x402/core client ships with a spend ceiling —
+   * DEFAULT_MAX_AMOUNT_PER_PAYMENT — and refuses any offer above it
+   * BEFORE signing. The seller's side of that refusal is silence: no
+   * payment attempt, no error in their logs, just zero demand at a
+   * door that 402s perfectly. A catalogue priced entirely above the
+   * cap has locked out every unconfigured buyer and nothing anywhere
+   * says so. This advisory does. The number is imported from the
+   * client package, never retyped, so the advisory can only ever
+   * disagree with the client by being out of date in lockstep.
+   */
+  it("a door whose cheapest USDC ask is above the cap gets the advisory, derived from the client's own constant", () => {
+    const advisory = runChecks(
+      challenge([{ ...BASE_ACCEPT, amount: "1500000" }]),
+      false,
+    ).advisories.find((entry) => entry.name === "above-default-client-cap");
+    expect(advisory, "a $1.50-only door passed silently").toBeDefined();
+    expect(advisory!.detail).toContain("DEFAULT_MAX_AMOUNT_PER_PAYMENT");
+    expect(advisory!.detail).toContain(DEFAULT_MAX_AMOUNT_PER_PAYMENT);
+    expect(advisory!.detail).toContain("$1.5");
+  });
+
+  it("one sub-cap tier anywhere clears it — the stock client has a way in", () => {
+    expect(
+      advisoryNames(
+        challenge([{ ...BASE_ACCEPT, amount: "1500000" }, { ...BASE_ACCEPT }]),
+      ),
+    ).not.toContain("above-default-client-cap");
+  });
+
+  it("exactly the cap is reachable, not above it", () => {
+    expect(
+      advisoryNames(challenge([{ ...BASE_ACCEPT, amount: "1000000" }])),
+    ).not.toContain("above-default-client-cap");
+  });
+
+  it("a non-USDC ask is never read as dollars (rule 52: cannot see, do not answer)", () => {
+    expect(
+      advisoryNames(
+        challenge([
+          {
+            ...BASE_ACCEPT,
+            asset: "0x0000000000000000000000000000000000000001",
+            amount: "1500000",
+          },
+        ]),
+      ),
+    ).not.toContain("above-default-client-cap");
+  });
+
+  it("a decimal amount is illegible here — amount-not-atomic already names that defect", () => {
+    const names = advisoryNames(challenge([{ ...BASE_ACCEPT, amount: "1.50" }]));
+    expect(names).toContain("amount-not-atomic");
+    expect(names).not.toContain("above-default-client-cap");
   });
 });

@@ -170,6 +170,12 @@ Credibility is the product.
 | **Cheapest check** | Rename the JSON key to `organic_rechecks` (or ship `organic_verifies` as an alias that dies). The HTML already did the honest job. |
 | **Cost right now** | Every outside funnel that cites us. We have already watched this one travel. |
 
+**Done, 2026-08-27 (task #53):** the key is `organic_rechecks`, the
+pulse `note` carries the dated naming correction, and the middle the
+five reports were reaching for exists now — `organic_payments_presented`,
+derived as settled + declined from counters that already ran, with
+zero new writes on the paid path. `test/pulse.spec.ts` holds all of it.
+
 ---
 
 ### Worse than the truth — still real money, already making us look unwanted
