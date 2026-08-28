@@ -1877,6 +1877,22 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       (${census.in_quoted_band.addresses} including shared ones).
       A floor on plausible payments — a band is not a receipt.</p>
 
+      <h2>Who sent it</h2>
+      <p>A market has many payers; a dust campaign has one sprayer; a facilitator has one sender;
+      an operator funding itself sends from a wallet it also advertised. All four look identical
+      in a transfer count.</p>
+      <ul>
+        <li><strong>${census.senders.distinct}</strong> distinct senders across ${census.transfers_seen} transfers;
+        the busiest single sender accounts for
+        <strong>${census.senders.top_sender_share_pct === null ? "n/a" : `${census.senders.top_sender_share_pct}%`}</strong></li>
+        <li>Median <strong>${census.senders.median_senders_per_receiver}</strong> distinct senders per receiving address;
+        <strong>${census.senders.single_sender_receivers}</strong> addresses took their entire inflow from one sender</li>
+        <li><strong>${census.senders.broadcasters}</strong> sender${census.senders.broadcasters === 1 ? "" : "s"} reached 10+ of these
+        addresses, accounting for <strong>${census.senders.broadcaster_share_pct === null ? "n/a" : `${census.senders.broadcaster_share_pct}%`}</strong>
+        of all transfers — the spray signature</li>
+        <li><strong>${census.senders.from_advertised}</strong> transfers came from an address advertised in a 402 itself</li>
+      </ul>
+
       <h2>Sole versus shared</h2>
       <p>An address several doors point at is shared infrastructure <em>by construction</em> — read off our
       own record of who advertised it, not guessed from the wallet.</p>
