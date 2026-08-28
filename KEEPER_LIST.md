@@ -272,11 +272,38 @@ docs/AUDIT_RULINGS_2026-08.md):**
   Watch line (shape, not payability) and the seven corrections filed
   2026-08-28 stand as written. Rule 7's drafted-not-canon flag is
   struck on both.
-- STILL OPEN on that sheet, answered back to the keeper 2026-08-28
-  and awaiting his word: the payTo inflow reader and which tier it
-  may publish at (the G2 tiers were ruled for ADVERTISEMENT history,
-  not for inflows — a different fact needing its own ruling), and
-  L3c endpoint-side signature verification.
+- THE payTo INFLOW READER: APPROVED, T1 ONLY — "agree with rest,"
+  on the recommendation that inflows publish as counts with no names
+  and never land on a named host's page in this market. NOTE THE
+  CORRECTION THIS RULING CARRIES: the G2 tiers were ruled for
+  ADVERTISEMENT history (which doors advertise which address), and
+  an inflow is a different fact — what a party EARNED, which they
+  did not publish about themselves. The tier SHAPES transfer; G2's
+  authorization did not, so this is that fact's own first ruling.
+  T1 is the whole of it: "N of the doors we walked received USDC at
+  their advertised address this week," captioned as addresses that
+  RECEIVED, never as doors that made sales — an inflow at an
+  advertised address is not proof of a sale (treasury movement, a
+  shared or facilitator wallet, an operator funding themselves).
+  T2 and T3 stay unruled and unbuilt; the three reasons T2 was held
+  are the damaging zero (rule 52 — the modal case in a market this
+  young is the least reliable and most harmful number), shared
+  wallets making inflows unattributable to the door whose page they
+  would print on, and that "has been paid" as a published trust
+  signal is bought for a few cents of self-payment.
+- L3c ENDPOINT-SIDE SIGNATURE VERIFICATION: DEFERRED by the keeper —
+  "maybe we just wait on the forgery piece and save it for later on
+  down the road." Not declined; parked. The standing facts for
+  whenever it comes back: no probe path verifies a signature (the
+  battery passes a door on a JWS PARSE), so a forged live signature
+  has never been observed and CANNOT be by anything we run — the
+  count is zero either way. What we have seen is one door of 35
+  attempting signed offers and serving ones that fail to parse.
+  The exposure is insurance against our own success: the day signed
+  offers become a signal buyers act on, faking one is free and our
+  instrument is what gets faked past. Cheap when it comes back —
+  $0, and it can run RETROACTIVELY over the challenge bytes the
+  chain already stores.
 
 
 **1. The bank walk — LOOK, first, because the records disagree.**
