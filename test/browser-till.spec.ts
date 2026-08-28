@@ -179,13 +179,22 @@ describe("nothing renders that did not render before", () => {
       /*
        * With the till's two tags removed, every remaining <script> on
        * the page must be a data island — the JSON-LD these rooms have
-       * carried since long before the till. If a second executable
-       * script ever appears on a store page, this is where it stops.
+       * carried since long before the till — or the ONE other
+       * first-party script the store serves: /webmcp.js, the P8
+       * declaration, which is read-only by its own pinned test
+       * (test/webmcp.spec.ts, "nothing that can take money reaches
+       * the browser surface") and rides the same CSP fence. This
+       * census is an ALLOWLIST of two, not a ban that grew a hole:
+       * any third executable script still stops here.
        */
       for (const tag of scriptTags(stripped)) {
         // Lower-cased for the same reason the matcher is: a tag this
         // guard cannot read is a tag it cannot refuse.
-        expect(tag.toLowerCase(), `${path}: ${tag}`).toContain(
+        const lower = tag.toLowerCase();
+        if (lower.includes('src="/webmcp.js"')) {
+          continue;
+        }
+        expect(lower, `${path}: ${tag}`).toContain(
           'type="application/ld+json"',
         );
       }

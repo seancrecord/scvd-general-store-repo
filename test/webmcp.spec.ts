@@ -119,6 +119,30 @@ describe("the door itself", () => {
     expect(csp).toContain("script-src 'self'");
   });
 
+  it("the till pages carry the declaration too — the room where the verb lives", async () => {
+    /*
+     * P8 (2026-08-28): the storefront had the declaration and the
+     * till did not — the one page whose whole point is a browser
+     * agent's next step. Same script, same read-only set, same CSP
+     * fence; the purchase tool P8 sketched stays OFF this surface,
+     * blocked not by the API but by the P7 ruling and the no-money
+     * pin two tests up — overturning a ruling is the keeper's pen,
+     * not a trailer.
+     */
+    for (const path of ["/try", "/menu/hello"]) {
+      const response = await SELF.fetch(`${BASE}${path}`, {
+        headers: { Accept: "text/html" },
+      });
+      const html = await response.text();
+      expect(html, `${path} misses the script`).toContain('src="/webmcp.js"');
+      expect(html, `${path} misses the trial token`).toContain(
+        'http-equiv="origin-trial"',
+      );
+      const csp = response.headers.get("Content-Security-Policy") ?? "";
+      expect(csp, `${path} script fence`).toContain("script-src 'self'");
+    }
+  });
+
   it("carries an origin-trial token bound to this origin and this feature", async () => {
     // Chrome 149-156 gate document.modelContext behind the trial; the
     // token is inert data, but a token for the WRONG origin or feature

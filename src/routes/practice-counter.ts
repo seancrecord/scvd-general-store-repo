@@ -9,6 +9,7 @@ import {
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
+import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import {
@@ -249,9 +250,14 @@ practiceCounterRoutes.get("/try", (c) => {
       },
     );
 
+    // The WebMCP declaration reaches the room where the verb lives
+    // (P8): same read-only tool set as the storefront, same CSP fence
+    // per the P7 ruling's shipping-a-script condition.
+    c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
     return c.html(
       renderSimplePage({
         title: COPY.title,
+        webmcp: true,
         inertHtml: tillHtml,
         description:
           `Practice your x402 client against a real till. No sandbox and no test mode: the cheapest item is ${CHEAPEST_ON_THE_SHELF}, every purchase signs its own receipt.`,
