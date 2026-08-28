@@ -6,6 +6,7 @@ import {
 import { MARKDOWN_MEDIA_TYPE, negotiate, VARY_ACCEPT } from "@/lib/accept";
 import { jsonLdScript } from "@/lib/jsonld";
 import { escapeHtml } from "@/lib/sanitize";
+import { declinedPositions } from "@/store/copy/declined";
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
 import { renderSimplePage } from "@/pages/simple-page";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
@@ -244,6 +245,12 @@ ${sections}
 
 ${rules}
 
+## What we don't do, on purpose
+
+${declinedPositions(base)
+  .map((position) => `### ${position.heading}\n\n${position.body}`)
+  .join("\n\n")}
+
 ## Contact
 
 A person reads this address: ${STORE_CONTACT_EMAIL}
@@ -281,6 +288,13 @@ function developersHtml(base: string): string {
     ${sections}
     <h2>Conventions</h2>
     ${rules}
+    <h2>What we don't do, on purpose</h2>
+    ${declinedPositions(base)
+      .map(
+        (position) =>
+          `<h3>${escapeHtml(position.heading)}</h3><p>${escapeHtml(position.body)}</p>`,
+      )
+      .join("")}
     <h2>Contact</h2>
     <p>A person reads this address:
       <a href="mailto:${escapeHtml(STORE_CONTACT_EMAIL)}">${escapeHtml(STORE_CONTACT_EMAIL)}</a>.</p>
@@ -402,6 +416,10 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
         },
         sections: surfaces(base),
         conventions: conventions(base),
+        // The gaps beside the findings, same as /corrections: a
+        // scanner recommendation declined is a decision, and
+        // decisions publish with their reasons (P12).
+        declined_on_purpose: declinedPositions(base),
         contact: STORE_CONTACT_EMAIL,
       });
     }

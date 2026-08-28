@@ -45,6 +45,10 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken again 2026-08-28 in the commit that added the declined-
+ * positions section to the guide (P12), filed under the developers
+ * area.
+ *
  * Re-taken 2026-08-27 in the commit that put every templated URL in
  * the guide into inline code (scanner P20 — URL extractors probed
  * {id} verbatim and reported dead links). Markup only; sentences
@@ -55,7 +59,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6273f01cb41a75756b346654bf92a3c3399145385bf51da22d48fcb418065f9c";
+  "f196b984d713f3714122aa397450409a34bba3cf483eba3dcc4cde53e167677a";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

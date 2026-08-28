@@ -340,3 +340,84 @@ describe("the organization, to an entity resolver", () => {
     expect(publisher["name"]).toBe(org?.["name"]);
   });
 });
+
+/**
+ * THE DECLINED POSITIONS, PUBLISHED (P12, 2026-08-27). The store
+ * refuses several scanner recommendations on purpose, and the
+ * reasoning lived only in internal docs where no scorecard reader
+ * could see it. Same practice as /corrections: the gap publishes
+ * beside the finding, in every dialect, from one array.
+ */
+describe("what we don't do, on purpose", () => {
+  it("renders the section in all three dialects, from the one array", async () => {
+    const { declinedPositions } = await import("@/store/copy/declined");
+    const positions = declinedPositions("https://scvd.store");
+    expect(positions.length).toBeGreaterThanOrEqual(3);
+
+    const html = await (
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    const md = await (
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "text/markdown" },
+      })
+    ).text();
+    const json = (await (
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "application/json" },
+      })
+    ).json()) as { declined_on_purpose?: Array<{ heading: string }> };
+
+    for (const position of positions) {
+      expect(html, `HTML missing: ${position.heading}`).toContain(
+        position.heading,
+      );
+      expect(md, `markdown missing: ${position.heading}`).toContain(
+        position.heading,
+      );
+    }
+    expect(json.declined_on_purpose?.map((p) => p.heading)).toEqual(
+      positions.map((p) => p.heading),
+    );
+  });
+
+  it("the ai-train sentence and robots.txt serve the same policy line", async () => {
+    // One constant renders both (CONTENT_SIGNAL); this reads the two
+    // live surfaces and refuses the day anybody forks them.
+    const { CONTENT_SIGNAL } = await import("@/routes/site-meta");
+    const robots = await (
+      await SELF.fetch("https://scvd.store/robots.txt")
+    ).text();
+    const md = await (
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "text/markdown" },
+      })
+    ).text();
+    expect(robots).toContain(`Content-Signal: ${CONTENT_SIGNAL}`);
+    expect(md).toContain(CONTENT_SIGNAL);
+  });
+
+  it("the WebMCP sentence derives from the live browser-tool catalog", async () => {
+    const { webmcpTools } = await import("@/routes/webmcp");
+    const md = await (
+      await SELF.fetch("https://scvd.store/developers", {
+        headers: { Accept: "text/markdown" },
+      })
+    ).text();
+    for (const tool of webmcpTools()) {
+      expect(md, `section missing browser tool ${tool.name}`).toContain(
+        tool.name,
+      );
+    }
+  });
+
+  it("files the same section under the developers llms area", async () => {
+    const area = await (
+      await SELF.fetch("https://scvd.store/developers/llms.txt")
+    ).text();
+    expect(area).toContain("What we don't do, on purpose");
+    expect(area).toContain("Training is distribution here, not leakage");
+  });
+});
