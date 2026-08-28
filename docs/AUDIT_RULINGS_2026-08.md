@@ -17,6 +17,25 @@ unbuilt.
 
 ---
 
+## STATUS — the keeper's word, 2026-08-28
+
+Four ruled the same day, recorded in KEEPER_LIST.md NOW item 0c with
+his own words. Two came back as questions and are answered below
+their entries; they stay open until he rules.
+
+| # | Ask | State |
+|---|---|---|
+| 1 | payTo inflow reader + tier | **OPEN** — he asked what publishing T2/T3 costs. Answered under the entry. |
+| 2 | L3c signature verification | **OPEN** — he asked whether a forged live signature is a risk or an observation. Answered under the entry: a risk, never observed, and not observable by anything we run today. |
+| 3 | L3d burst on paid watches | **RULED YES** — "yes paid." Paid watches only; census unchanged. |
+| 4 | Fold any depth-pass advisory | **HELD, with a revisit** — criteria in 0c. |
+| 5 | NOW-6 restated | **Acknowledged** — stays open, 1–3 first. |
+| 6 | Registry coverage fields | **RULED YES** — "yes safer better." |
+| 7 | The copy in his voice | **CONFIRMED** — "i think these are fine." Rule 7 flag struck. |
+
+
+---
+
 ## 1. RULE: the payTo inflow reader, and which G2 tier it publishes at
 
 **The ask.** We have captured every door's payTo since 2026-08-20,
