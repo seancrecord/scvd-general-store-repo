@@ -57,6 +57,52 @@ export const WATCH_DURATION_HOURS = 168;
 export const WATCH_PROBE_TIMEOUT_MS = 8000;
 
 /**
+ * THE INTRA-TICK BURST (ledger B5; the keeper's ruling 2026-08-28,
+ * "yes paid").
+ *
+ * Every observation this store took was ONE GET, from one vantage,
+ * on a predictable cron phase, wearing one signed identity. A door
+ * that flaps between probes, or that answers differently per backend,
+ * read as a clean hour — 168 identical looks a week, none of which
+ * could disagree with another because there was never another.
+ *
+ * PAID WATCHES ONLY, by the ruling. Consent is already in hand here
+ * — the buyer named their own door — where bursting 750 strangers in
+ * the census is a different question, gated on the etiquette ceiling
+ * (Observatory 12.3) and deliberately not taken.
+ *
+ * WHAT IT CAN AND CANNOT SEE, because the gap matters: two extra
+ * probes staggered inside the same tick catch a door that is
+ * inconsistent ACROSS BACKENDS or flapping on a scale of seconds.
+ * They do not catch a door that flaps on a scale of minutes, and
+ * they say nothing about the 59 minutes this watch is not looking.
+ * The tick is still a moment; it is now a moment with width.
+ */
+export const BURST_PROBES = 3;
+
+/** Stagger between burst probes. The three are launched together
+ * with offset starts, so a tick costs one gap-span of wall time
+ * rather than three round trips end to end. */
+export const BURST_GAP_MS = 1200;
+
+/**
+ * How many watches in one sweep get a burst. The sweep walks watches
+ * sequentially, so an unbounded burst multiplies wall time by the
+ * watch count and would eventually eat the cron. Past the budget a
+ * watch still gets its ordinary single probe, and the row says which
+ * it got — a cap nobody can see in the output is the exact defect
+ * this store keeps finding in other people's instruments.
+ */
+export const BURST_BUDGET_PER_SWEEP = 25;
+
+/** One probe inside a burst: what it saw, nothing signed on its own. */
+export interface BurstProbe {
+  verdict: "ready" | "not_ready" | "unreachable";
+  status?: number;
+  latency_ms?: number;
+}
+
+/**
  * The cap on watches one sweep will even read. Far above plausible
  * sales; named so the day it binds, the sweep says so instead of
  * silently probing a subset (kv-list's law).
@@ -107,6 +153,19 @@ export interface WatchProbe {
   /** Names of failed checks, empty when ready. */
   failed: string[];
   /**
+   * THE BURST (B5, 2026-08-28): the extra probes this tick took,
+   * INCLUDING the primary one, so `burst[0]` is the probe the rest
+   * of this row describes. Absent on legacy rows, on refused rows,
+   * and on ticks past the sweep's burst budget — a row without it
+   * is a single-probe row and does not pretend otherwise.
+   *
+   * `burst_agreed` false is the finding: the same door answered two
+   * different ways inside one tick, which a single probe per hour
+   * could never have seen.
+   */
+  burst?: BurstProbe[];
+  burst_agreed?: boolean;
+  /**
    * The response material this verdict came from. Absent only on
    * legacy rows and refused rows where this store made no request.
    */
@@ -153,7 +212,14 @@ export function canonicalizeProbe(
   url: string,
   probe: Pick<
     WatchProbe,
-    "at" | "verdict" | "failed" | "evidence" | "battery" | "observer_status"
+    | "at"
+    | "verdict"
+    | "failed"
+    | "evidence"
+    | "battery"
+    | "observer_status"
+    | "burst"
+    | "burst_agreed"
   > & {
     status?: number;
     latency_ms?: number;
@@ -177,6 +243,14 @@ export function canonicalizeProbe(
   // rows carry it inside the signed bytes; legacy rows keep their
   // exact original preimage forever.
   if (probe.observer_status) payload["observer_status"] = probe.observer_status;
+  // B5 (2026-08-28), appended after observer_status by the same law.
+  // The burst rides INSIDE the signature: a disagreement a buyer can
+  // show somebody has to be as un-editable as the verdict it
+  // qualifies.
+  if (probe.burst) {
+    payload["burst"] = probe.burst;
+    payload["burst_agreed"] = probe.burst_agreed === true;
+  }
   return JSON.stringify(payload);
 }
 
@@ -212,9 +286,59 @@ export async function startWatch(
  * is long: the host can change hands, so the guards stay up on every
  * probe, not just the first.
  */
+/**
+ * One extra look inside the same tick, for the burst. Deliberately
+ * thinner than the primary probe: a verdict, a status, a latency,
+ * and nothing else. It captures no evidence and signs nothing on its
+ * own — the row's evidence is the primary probe's, and three copies
+ * of a 402 body inside one signed row would balloon the artifact to
+ * say what one copy already says.
+ */
+async function burstProbe(
+  env: Env,
+  record: StandingWatchRecord,
+  delayMs: number,
+): Promise<BurstProbe> {
+  if (delayMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  const started = Date.now();
+  try {
+    const response = await fetch(record.url, {
+      method: "GET",
+      redirect: "manual",
+      signal: AbortSignal.timeout(WATCH_PROBE_TIMEOUT_MS),
+      headers: await webBotAuthHeaders(env, record.url, {
+        Accept: "application/json",
+      }),
+    });
+    const latency = Date.now() - started;
+    const kept = await captureWatchEvidenceKeepingBody(response);
+    const { checks } = runChecks(
+      response,
+      kept.evidence.body_truncated,
+      kept.bodyText,
+      record.url,
+    );
+    return {
+      verdict: checks.every((check) => check.ok) ? "ready" : "not_ready",
+      status: response.status,
+      latency_ms: latency,
+    };
+  } catch {
+    return { verdict: "unreachable" };
+  }
+}
+
 async function probeOnce(
   env: Env,
   record: StandingWatchRecord,
+  /**
+   * Whether this tick may burst. False past the sweep's budget, and
+   * the row then simply carries no burst — which reads as the single
+   * probe it was, rather than as three that agreed.
+   */
+  mayBurst = false,
 ): Promise<WatchProbe> {
   const at = new Date().toISOString();
   const started = Date.now();
@@ -296,7 +420,14 @@ async function probeOnce(
   }
   const body: Pick<
     WatchProbe,
-    "at" | "verdict" | "failed" | "evidence" | "battery" | "observer_status"
+    | "at"
+    | "verdict"
+    | "failed"
+    | "evidence"
+    | "battery"
+    | "observer_status"
+    | "burst"
+    | "burst_agreed"
   > & {
     status?: number;
     latency_ms?: number;
@@ -312,6 +443,39 @@ async function probeOnce(
     // Evidence exists exactly when the response arrived, which is
     // exactly when the battery ran. One condition, two facts.
     body.battery = PREFLIGHT_BATTERY;
+  }
+  /*
+   * THE BURST (B5). Two more looks inside the same tick, staggered,
+   * with the primary probe as burst[0] so the array is the whole
+   * tick rather than an appendix to it.
+   *
+   * The primary probe still decides `verdict`: this series has meant
+   * "what one probe at the top of the hour saw" for its whole life,
+   * and quietly redefining it would break every stored row's
+   * comparability — the frozen-series law the batteries live under.
+   * What the burst adds is `burst_agreed`, and a false there is the
+   * finding: the same door answered two ways inside one tick, which
+   * 168 single looks a week could never have caught.
+   */
+  // No refused guard here: a refused target returns far above this,
+  // before any request is made, so a refused row can never reach the
+  // burst. The compiler says so, which is better than a comment.
+  if (mayBurst) {
+    const extras = await Promise.all(
+      Array.from({ length: BURST_PROBES - 1 }, (_, index) =>
+        burstProbe(env, record, (index + 1) * BURST_GAP_MS),
+      ),
+    );
+    const primary: BurstProbe = {
+      verdict: verdict as BurstProbe["verdict"],
+      ...(status !== undefined ? { status } : {}),
+      ...(latency !== undefined ? { latency_ms: latency } : {}),
+    };
+    const burst = [primary, ...extras];
+    body.burst = burst;
+    body.burst_agreed = burst.every(
+      (probe) => probe.verdict === burst[0]!.verdict,
+    );
   }
   const { signature } = await signMessage(
     canonicalizeProbe(record.watch_id, record.url, body),
@@ -332,13 +496,25 @@ async function probeOnce(
  * this file supplies the shelf, the spacing and the observation.
  */
 export async function sweepStandingWatches(env: Env): Promise<number> {
+  let bursts = 0;
   return sweepWatches<StandingWatchRecord, WatchProbe>({
     kv: env.ORDERS,
     prefix: KV_KEYS.standingWatchPrefix,
     scanCap: WATCH_SCAN_CAP,
     minSpacingMs: 55 * 60_000,
     entriesOf: (record) => record.probes,
-    observe: (record) => probeOnce(env, record),
+    /*
+     * B5's budget, spent in order. The sweep walks watches
+     * sequentially, so bursting every one multiplies wall time by
+     * the watch count; past the budget a watch gets its ordinary
+     * single probe and its row carries no burst, which is the honest
+     * rendering of what happened rather than a silent downgrade.
+     */
+    observe: (record) => {
+      const mayBurst = bursts < BURST_BUDGET_PER_SWEEP;
+      if (mayBurst) bursts += 1;
+      return probeOnce(env, record, mayBurst);
+    },
   });
 }
 
@@ -462,6 +638,16 @@ export interface WatchHistory {
      * hides. Null when no probe carried a latency.
      */
     latency_ms: { p50: number; p90: number; max: number } | null;
+    /**
+     * B5 (2026-08-28): ticks that took a burst, and of those, ticks
+     * where the burst DISAGREED — the same door answering two ways
+     * inside one tick. Its own denominator, because a disagreement
+     * count without the number of bursts is unreadable, and because
+     * ticks past the sweep's burst budget took a single probe and
+     * cannot be counted either way.
+     */
+    ticks_burst: number;
+    ticks_burst_disagreed: number;
     /** The claim boundary, on the artifact rather than in our heads. */
     nothing_claimed_between_probes: string;
   };
@@ -542,12 +728,16 @@ export async function readWatch(
               p90: quantile(0.9),
               max: latencies[latencies.length - 1]!,
             },
+      ticks_burst: record.probes.filter((probe) => probe.burst).length,
+      ticks_burst_disagreed: record.probes.filter(
+        (probe) => probe.burst && probe.burst_agreed === false,
+      ).length,
       nothing_claimed_between_probes:
-        "One probe per hour, and NOTHING is claimed between probes: a door can fall and recover inside an hour without a row here. Every count above has its denominator beside it (probes_expected); this artifact serves no ratio, because a percentage with a hidden denominator is how availability lies.",
+        "One probe per hour — three inside the tick where a burst ran — and NOTHING is claimed between probes: a door can fall and recover inside an hour without a row here. A burst widens the moment to a few seconds; it does not widen it to the hour. Every count above has its denominator beside it (probes_expected, ticks_burst); this artifact serves no ratio, because a percentage with a hidden denominator is how availability lies.",
     },
     probes: record.probes,
     how_to_verify:
-      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence, battery and observer_status when present (exactly that order, null for absent numbers) against the row's public_key. Legacy rows omit evidence, battery and observer_status; refused rows omit all three, and unreachable rows omit evidence and battery, because no battery ran. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
+      "Each probe row is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, latency_ms, failed, then evidence, battery, observer_status, and finally burst with burst_agreed when present (exactly that order, null for absent numbers) against the row's public_key. Legacy rows omit evidence, battery and observer_status; refused rows omit all three, and unreachable rows omit evidence and battery, because no battery ran. A single row survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
       "Not a ranking, not a directory badge, not a claim about anyone but the endpoint its buyer asked us to watch. hours_unprobed counts the hours WE missed — our gaps, stated, because a history that hides the watcher's absences is vouching for hours nobody watched.",
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
