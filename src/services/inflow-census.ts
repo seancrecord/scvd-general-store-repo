@@ -1,6 +1,7 @@
 import {
   BASE_EVM,
   POLYGON_EVM,
+  evmChainOf,
   getBlockNumber,
   usdcTransfersToAny,
   type EvmChain,
@@ -147,6 +148,13 @@ export interface InflowChainWindow {
   transfers: number;
   /** Addresses in chunks that never answered, even split. Our gap. */
   addresses_unread: number;
+  /** Watched addresses whose doors actually QUOTED this chain — the
+   * denominator `received_advertised` belongs over. */
+  advertised_here: number;
+  /** Of those, how many received here. */
+  received_advertised: number;
+  /** Received here having never quoted this rail at all. */
+  received_unadvertised: number;
   /** Set when the chain would not answer at all: our gap, never a
    * finding. */
   unread?: string;
@@ -197,6 +205,52 @@ export interface InflowCensus {
      * receiving addresses. Null when nothing was received. */
     top_decile_share_pct: number | null;
   };
+  /**
+   * SOLE VERSUS SHARED, and the reason this reader stops being a
+   * wallet-activity meter (2026-08-28, the second live reading: one
+   * address took 4,876 of 11,404 transfers).
+   *
+   * An address advertised by exactly ONE door is the closest thing
+   * to a door's own till. An address advertised by SEVERAL is shared
+   * infrastructure by construction — we are not guessing who runs a
+   * wallet, we are reading our own record of who pointed at it. The
+   * inflow rate over sole addresses is the number that means
+   * something; the rate over everything is the number that reads
+   * well and says little.
+   */
+  by_exclusivity: {
+    sole: { watched: number; received: number; transfers: number };
+    shared: { watched: number; received: number; transfers: number };
+  };
+  /**
+   * WHAT SIZE THE MONEY WAS. x402 doors quote cents to a few
+   * dollars. A five-figure transfer is many things; an agentic
+   * purchase is not one of them. The first two readings counted
+   * those identically.
+   */
+  amounts: {
+    median_usdc: number;
+    under_1_usdc: number;
+    under_10_usdc: number;
+    over_100_usdc: number;
+  };
+  /**
+   * THE CLOSEST THING THE CHAIN ALONE CAN SAY about whether anyone
+   * paid an ask: a transfer whose size lands inside the USDC range
+   * the doors advertising that address actually quoted, at an
+   * address only one door advertised.
+   *
+   * Still not proof of a purchase — a band is not an exact match, a
+   * door quoting $0.001-$5 makes a wide one, and nothing here sees a
+   * receipt. It is a floor on plausible payments, and it is the
+   * first number in this instrument that a treasury movement cannot
+   * walk into by accident.
+   */
+  in_quoted_band: {
+    transfers: number;
+    addresses: number;
+    sole_addresses: number;
+  };
   /** Per chain, what was actually covered — or why it was not. */
   windows: InflowChainWindow[];
   what_this_counts: string;
@@ -206,17 +260,80 @@ export interface InflowCensus {
 const WHAT_THIS_IS_NOT_BASE =
   "Not sales, not revenue, and not a fact about any named door. An inflow at an advertised address can be treasury movement, a shared or facilitator wallet, or an operator funding themselves — this store cannot tell those apart from a transfer, and does not guess. A zero is not evidence that nobody paid: an operator who rotated addresses, settles on a rail we do not read, nets through a facilitator, or opened after the window began is invisible here, and so is anyone whose payment fell outside it. Counts only, by ruling: no addresses, no hosts, and nothing about this rides on any single door's page.";
 
-/** Every distinct 0x address the round's doors advertised. */
-export function advertisedEvmAddresses(round: WardRound): string[] {
-  const found = new Set<string>();
+/**
+ * WHAT THE ROUND ALREADY KNEW ABOUT EACH ADDRESS, and this reader
+ * threw away until 2026-08-28. Three facts, all of them ours,
+ * none of them a guess about anybody's identity:
+ *
+ *   hosts   — how many DISTINCT doors advertised this address. An
+ *             address advertised by several is shared BY
+ *             CONSTRUCTION. That is a fact about our own record, not
+ *             an accusation about a wallet.
+ *   chains  — which rails its doors actually quoted, so a per-chain
+ *             count can have a per-chain denominator.
+ *   band    — the USDC range its doors asked for, so a transfer can
+ *             be compared against the ask it supposedly answers.
+ */
+export interface AdvertisedAddress {
+  /** Distinct hosts advertising it. 1 = sole; >1 = shared. */
+  hosts: number;
+  /** Chain keys its doors quoted ("base", "polygon"). */
+  chains: Set<string>;
+  /** Cheapest and dearest USDC ask across every door advertising it. */
+  min_usdc?: number;
+  max_usdc?: number;
+}
+
+export function addressFacts(round: WardRound): Map<string, AdvertisedAddress> {
+  const facts = new Map<string, AdvertisedAddress>();
+  const seenHosts = new Map<string, Set<string>>();
   for (const host of round.hosts ?? []) {
+    const chains = new Set<string>();
+    for (const network of host.offer?.networks ?? []) {
+      const chain = evmChainOf(network);
+      if (chain) chains.add(chain.key);
+    }
     for (const payTo of host.offer?.pay_to ?? []) {
-      if (/^0x[0-9a-fA-F]{40}$/.test(payTo)) {
-        found.add(payTo.toLowerCase());
+      if (!/^0x[0-9a-fA-F]{40}$/.test(payTo)) continue;
+      const key = payTo.toLowerCase();
+      const found = facts.get(key) ?? { hosts: 0, chains: new Set<string>() };
+      const hosts = seenHosts.get(key) ?? new Set<string>();
+      hosts.add(host.host);
+      seenHosts.set(key, hosts);
+      found.hosts = hosts.size;
+      for (const chain of chains) found.chains.add(chain);
+      const min = host.offer?.min_usdc;
+      const max = host.offer?.max_usdc ?? min;
+      if (typeof min === "number") {
+        found.min_usdc = found.min_usdc === undefined ? min : Math.min(found.min_usdc, min);
       }
+      if (typeof max === "number") {
+        found.max_usdc = found.max_usdc === undefined ? max : Math.max(found.max_usdc, max);
+      }
+      facts.set(key, found);
     }
   }
-  return [...found].sort();
+  return facts;
+}
+
+/** Every distinct 0x address the round's doors advertised. */
+export function advertisedEvmAddresses(round: WardRound): string[] {
+  return [...addressFacts(round).keys()].sort();
+}
+
+/**
+ * Did this transfer land inside the range the doors advertising this
+ * address actually quoted? A BAND, not an exact match — a door that
+ * quotes $0.001 to $5 makes a wide one, and a facilitator's fee moves
+ * an amount off the quote. The point is not precision; it is that a
+ * $40,000 transfer is not an agentic purchase and a five-cent one
+ * might be.
+ */
+export function inQuotedBand(usdc: number, facts: AdvertisedAddress | undefined): boolean {
+  if (!facts || facts.min_usdc === undefined) return false;
+  const low = facts.min_usdc * 0.99;
+  const high = (facts.max_usdc ?? facts.min_usdc) * 1.01;
+  return usdc >= low && usdc <= high;
 }
 
 /**
@@ -338,10 +455,9 @@ async function readSpan(
   to: number,
   budget: ReturnType<typeof callBudget>,
   state: WalkState,
-): Promise<{ counts: Map<string, number>; transfers: number; unread: string[] }> {
-  const counts = new Map<string, number>();
+): Promise<{ rows: Array<{ to: string; usdc: number }>; unread: string[] }> {
+  const kept: Array<{ to: string; usdc: number }> = [];
   const unread: string[] = [];
-  let transfers = 0;
   let index = 0;
   while (index < addresses.length) {
     if (state.abandoned) {
@@ -354,7 +470,7 @@ async function readSpan(
     }
     const size = state.chunkSize;
     const slice = addresses.slice(index, index + size);
-    let rows: Array<{ to: string }> | null = null;
+    let rows: Array<{ to: string; amount: bigint }> | null = null;
     try {
       rows = await usdcTransfersToAny(env, slice, from, to, chain);
     } catch {
@@ -377,14 +493,17 @@ async function readSpan(
       }
       continue;
     }
-    transfers += rows.length;
     for (const row of rows) {
-      const key = row.to.toLowerCase();
-      counts.set(key, (counts.get(key) ?? 0) + 1);
+      kept.push({
+        to: row.to.toLowerCase(),
+        // USDC is six decimals on both rails. Number is exact well
+        // past any amount an x402 door quotes.
+        usdc: Number(row.amount) / 1_000_000,
+      });
     }
     index += size;
   }
-  return { counts, transfers, unread };
+  return { rows: kept, unread };
 }
 
 /**
@@ -400,8 +519,14 @@ async function walkChain(
   addresses: readonly string[],
   spanBudget: number,
   deadline: number,
-): Promise<{ window: InflowChainWindow; perAddress: Map<string, number> }> {
+  facts: Map<string, AdvertisedAddress>,
+): Promise<{
+  window: InflowChainWindow;
+  perAddress: Map<string, number>;
+  rows: Array<{ to: string; usdc: number }>;
+}> {
   const perAddress = new Map<string, number>();
+  const kept: Array<{ to: string; usdc: number }> = [];
   const budget = callBudget(spanBudget);
   const unreadAddresses = new Set<string>();
   let head: number;
@@ -419,9 +544,15 @@ async function walkChain(
         received: 0,
         transfers: 0,
         addresses_unread: addresses.length,
+        advertised_here: addresses.filter((address) =>
+          facts.get(address)?.chains.has(chain.key),
+        ).length,
+        received_advertised: 0,
+        received_unadvertised: 0,
         unread: `head unreadable: ${String(error)}`,
       },
       perAddress,
+      rows: kept,
     };
   }
   const spans = spansFor(head, INFLOW_WINDOW_BLOCKS, chain.logSpan, spanBudget);
@@ -443,9 +574,10 @@ async function walkChain(
       ),
     );
     for (const result of results) {
-      transfers += result.transfers;
-      for (const [address, count] of result.counts) {
-        perAddress.set(address, (perAddress.get(address) ?? 0) + count);
+      transfers += result.rows.length;
+      for (const row of result.rows) {
+        perAddress.set(row.to, (perAddress.get(row.to) ?? 0) + 1);
+        kept.push(row);
       }
       for (const address of result.unread) unreadAddresses.add(address);
     }
@@ -476,9 +608,31 @@ async function walkChain(
       received: perAddress.size,
       transfers,
       addresses_unread: unreadAddresses.size,
+      /*
+       * THE PER-CHAIN DENOMINATOR (2026-08-28, defect 6, visible in
+       * the second live reading). "Polygon: 2 received" out of WHAT?
+       * The walk watches every address on every chain, so both lines
+       * carried an implicit denominator of the whole watch list —
+       * but an address whose doors only ever quoted Base has no
+       * business receiving Polygon USDC, and counting it in the
+       * denominator makes a healthy rail look dead. The round knew
+       * which rails each door quoted the whole time.
+       */
+      advertised_here: addresses.filter((address) =>
+        facts.get(address)?.chains.has(chain.key),
+      ).length,
+      received_advertised: [...perAddress.keys()].filter((address) =>
+        facts.get(address)?.chains.has(chain.key),
+      ).length,
+      /* Money arriving on a rail the door never quoted. Not an
+       * error — an observation, and an interesting one. */
+      received_unadvertised: [...perAddress.keys()].filter(
+        (address) => !facts.get(address)?.chains.has(chain.key),
+      ).length,
       ...(why ? { unread: why } : {}),
     },
     perAddress,
+    rows: kept,
   };
 }
 
@@ -518,6 +672,10 @@ function whatThisCounts(facts: {
   addresses_capped: boolean;
   windows_equal: boolean;
   windowsText: string;
+  soleWatched: number;
+  soleReceived: number;
+  bandTransfers: number;
+  bandSoleAddresses: number;
 }): string {
   const chains = facts.windows_equal
     ? `Both chains were walked over the same ${INFLOW_WINDOW_BLOCKS.toLocaleString()}-block window, roughly a day each.`
@@ -529,7 +687,9 @@ function whatThisCounts(facts: {
     `${facts.addresses_received} of ${facts.addresses_checked} — addresses that RECEIVED USDC inside the block window each chain line names, out of the ${facts.addresses_checked} distinct EVM addresses this reading actually watched.` +
     capped +
     ` ${chains}` +
-    ` Both numbers are here because a share without its denominator is how a market lies, and the windows are here because a walk cut short and a quiet day produce the same count.`
+    ` Both numbers are here because a share without its denominator is how a market lies, and the windows are here because a walk cut short and a quiet day produce the same count.` +
+    ` OF THE ${facts.soleWatched} ADDRESSES ONLY ONE DOOR ADVERTISED, ${facts.soleReceived} received — that is the narrower number, and the one worth reading: an address several doors point at is shared infrastructure by construction, and its traffic is not any door's sales.` +
+    ` ${facts.bandTransfers} transfer${facts.bandTransfers === 1 ? "" : "s"} landed inside the USDC range the advertising door itself quoted, across ${facts.bandSoleAddresses} sole-advertised address${facts.bandSoleAddresses === 1 ? "" : "es"} — a floor on plausible payments, not a count of sales.`
   );
 }
 
@@ -554,11 +714,13 @@ export async function readInflowCensus(
   const deadline = Date.now() + (options.timeBudgetMs ?? INFLOW_TIME_BUDGET_MS);
   const round = await latestWardRound(env);
   if (!round) return null;
-  const advertised = advertisedEvmAddresses(round);
+  const facts = addressFacts(round);
+  const advertised = [...facts.keys()].sort();
   const watched = watchList(advertised, round.week);
 
   const perAddress = new Map<string, number>();
   const windows: InflowChainWindow[] = [];
+  const rows: Array<{ to: string; usdc: number }> = [];
   let transfers = 0;
   /*
    * FAIR SHARE OF THE CLOCK, WITH SLACK INHERITED. A single shared
@@ -574,9 +736,10 @@ export async function readInflowCensus(
     const chainsLeft = chains.length - index;
     const remaining = Math.max(0, deadline - Date.now());
     const chainDeadline = Date.now() + Math.floor(remaining / chainsLeft);
-    const walk = await walkChain(env, chain, watched, spanBudget, chainDeadline);
+    const walk = await walkChain(env, chain, watched, spanBudget, chainDeadline, facts);
     windows.push(walk.window);
     transfers += walk.window.transfers;
+    rows.push(...walk.rows);
     for (const [address, count] of walk.perAddress) {
       perAddress.set(address, (perAddress.get(address) ?? 0) + count);
     }
@@ -599,6 +762,34 @@ export async function readInflowCensus(
     windows.every((window) => !window.truncated && !window.unread) &&
     new Set(windows.map((window) => window.blocks)).size === 1;
   const shape = shapeOf([...perAddress.values()]);
+
+  /* Sole versus shared, over the addresses actually watched. */
+  const tally = () => ({ watched: 0, received: 0, transfers: 0 });
+  const sole = tally();
+  const shared = tally();
+  for (const address of watched) {
+    const bucket = (facts.get(address)?.hosts ?? 1) > 1 ? shared : sole;
+    bucket.watched += 1;
+    const count = perAddress.get(address) ?? 0;
+    if (count > 0) {
+      bucket.received += 1;
+      bucket.transfers += count;
+    }
+  }
+
+  /* Sizes, and the band. */
+  const sorted = [...rows.map((row) => row.usdc)].sort((a, b) => a - b);
+  const median =
+    sorted.length === 0
+      ? 0
+      : sorted.length % 2 === 0
+        ? ((sorted[sorted.length / 2 - 1] ?? 0) + (sorted[sorted.length / 2] ?? 0)) / 2
+        : (sorted[(sorted.length - 1) / 2] ?? 0);
+  const banded = rows.filter((row) => inQuotedBand(row.usdc, facts.get(row.to)));
+  const bandedAddresses = new Set(banded.map((row) => row.to));
+  const bandedSole = [...bandedAddresses].filter(
+    (address) => (facts.get(address)?.hosts ?? 1) === 1,
+  );
   const core = {
     observed_at: now.toISOString(),
     week: round.week,
@@ -608,6 +799,18 @@ export async function readInflowCensus(
     addresses_received: perAddress.size,
     transfers_seen: transfers,
     windows_equal: windowsEqual,
+    by_exclusivity: { sole, shared },
+    amounts: {
+      median_usdc: Math.round(median * 1_000_000) / 1_000_000,
+      under_1_usdc: rows.filter((row) => row.usdc < 1).length,
+      under_10_usdc: rows.filter((row) => row.usdc < 10).length,
+      over_100_usdc: rows.filter((row) => row.usdc > 100).length,
+    },
+    in_quoted_band: {
+      transfers: banded.length,
+      addresses: bandedAddresses.size,
+      sole_addresses: bandedSole.length,
+    },
     windows,
     distribution: shape,
   };
@@ -635,7 +838,14 @@ export async function readInflowCensus(
       addresses_capped: core.addresses_capped,
       windows_equal: core.windows_equal,
       windowsText,
+      soleWatched: sole.watched,
+      soleReceived: sole.received,
+      bandTransfers: banded.length,
+      bandSoleAddresses: bandedSole.length,
     }),
-    what_this_is_not: WHAT_THIS_IS_NOT_BASE + skew,
+    what_this_is_not:
+      WHAT_THIS_IS_NOT_BASE +
+      skew +
+      " The quoted-band count is a BAND and not a receipt: a door quoting a wide range makes a wide band, a facilitator's fee moves an amount off the quote, and nothing here has seen a receipt. It rules out the transfers that plainly are not purchases; it does not prove that the rest are.",
   };
 }

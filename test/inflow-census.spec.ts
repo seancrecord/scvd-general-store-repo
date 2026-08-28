@@ -6,7 +6,9 @@ import {
   INFLOW_SPAN_BUDGET,
   INFLOW_WINDOW_BLOCKS,
   SPAN_CONCURRENCY,
+  addressFacts,
   advertisedEvmAddresses,
+  inQuotedBand,
   readInflowCensus,
   spansFor,
   watchList,
@@ -34,7 +36,10 @@ const ADDR_A = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const ADDR_B = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const ADDR_C = "0xcccccccccccccccccccccccccccccccccccccccc";
 
-function round(payTos: string[][]): WardRound {
+function round(
+  payTos: string[][],
+  offer?: { networks?: string[]; min_usdc?: number; max_usdc?: number },
+): WardRound {
   return {
     week: "2026-W35",
     at: "2026-08-26T00:00:00.000Z",
@@ -48,7 +53,13 @@ function round(payTos: string[][]): WardRound {
       verdict: "ready",
       failed: [],
       advisories: [],
-      offer: { networks: ["eip155:8453"], schemes: ["exact"], pay_to },
+      offer: {
+        networks: offer?.networks ?? ["eip155:8453"],
+        schemes: ["exact"],
+        pay_to,
+        ...(offer?.min_usdc !== undefined ? { min_usdc: offer.min_usdc } : {}),
+        ...(offer?.max_usdc !== undefined ? { max_usdc: offer.max_usdc } : {}),
+      },
     })),
   } as unknown as WardRound;
 }
@@ -589,4 +600,179 @@ describe("spans go out in parallel, but bounded", () => {
       "more in flight than the batch allows — the ordered-batch guarantee is gone",
     ).toBeLessThanOrEqual(SPAN_CONCURRENCY);
   }, 30_000);
+});
+
+/**
+ * THE SHARPENING (2026-08-28, after the second live reading).
+ *
+ * That reading said 52% of advertised addresses received USDC, and
+ * one address took 4,876 of 11,404 transfers. Both true; together
+ * they say the instrument was measuring WALLET ACTIVITY, not
+ * payments. These are the three distinctions that make it answer the
+ * question it was built for — every one of them derived from the
+ * round's own record rather than guessed about anybody's wallet.
+ */
+describe("what the round already knew about each address", () => {
+  it("counts DISTINCT doors, so shared is a fact and not a guess", () => {
+    // ADDR_A advertised by two doors, ADDR_B by one.
+    const facts = addressFacts(round([[ADDR_A], [ADDR_A, ADDR_B]]));
+    expect(facts.get(ADDR_A)!.hosts).toBe(2);
+    expect(facts.get(ADDR_B)!.hosts).toBe(1);
+  });
+
+  it("does not inflate the host count when one door repeats an address", () => {
+    const one = round([[ADDR_A, ADDR_A]]);
+    expect(addressFacts(one).get(ADDR_A)!.hosts).toBe(1);
+  });
+
+  it("records which rails the doors actually quoted", () => {
+    const facts = addressFacts(
+      round([[ADDR_A]], { networks: ["eip155:137"] }),
+    );
+    expect([...facts.get(ADDR_A)!.chains]).toEqual(["polygon"]);
+  });
+
+  it("widens the band to the cheapest and dearest across advertising doors", () => {
+    const facts = addressFacts(round([[ADDR_A]], { min_usdc: 0.05, max_usdc: 2 }));
+    expect(facts.get(ADDR_A)!.min_usdc).toBe(0.05);
+    expect(facts.get(ADDR_A)!.max_usdc).toBe(2);
+  });
+});
+
+describe("a transfer is compared against the ask it supposedly answers", () => {
+  const band = { hosts: 1, chains: new Set<string>(), min_usdc: 0.05, max_usdc: 2 };
+
+  it("accepts an amount inside the quoted range", () => {
+    expect(inQuotedBand(0.05, band)).toBe(true);
+    expect(inQuotedBand(1, band)).toBe(true);
+    expect(inQuotedBand(2, band)).toBe(true);
+  });
+
+  it("rejects the treasury movement that the old count could not see", () => {
+    expect(inQuotedBand(40_000, band)).toBe(false);
+    expect(inQuotedBand(0.0001, band)).toBe(false);
+  });
+
+  it("refuses to judge an address whose doors quoted no USDC price", () => {
+    // No price, no band, no claim — never a silent pass.
+    expect(inQuotedBand(1, { hosts: 1, chains: new Set() })).toBe(false);
+    expect(inQuotedBand(1, undefined)).toBe(false);
+  });
+});
+
+describe("the per-chain count gets a per-chain denominator", () => {
+  it("does not count Base-only addresses against Polygon", async () => {
+    // Both doors quote Base only. Polygon's denominator must be 0,
+    // not 2 — the defect that made a rail nobody quoted look dead.
+    await seed(round([[ADDR_A], [ADDR_B]], { networks: ["eip155:8453"] }));
+    stubChain({ head: 500, receivedBy: [] });
+    const census = await readInflowCensus(testEnv);
+    const base = census!.windows.find((w) => w.chain === "Base")!;
+    const polygon = census!.windows.find((w) => w.chain === "Polygon")!;
+    expect(base.advertised_here).toBe(2);
+    expect(polygon.advertised_here).toBe(0);
+  });
+
+  it("names money arriving on a rail the door never quoted", async () => {
+    await seed(round([[ADDR_A]], { networks: ["eip155:8453"] }));
+    // Its own stub: the shared one serves logs on the FIRST getLogs
+    // only, so Base would eat them and Polygon would look quiet for
+    // the wrong reason. Here every span answers, on both rails.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: unknown, init?: { body?: string }) => {
+        const request = JSON.parse(init?.body ?? "{}") as { method?: string };
+        if (request.method === "eth_blockNumber") {
+          return new Response(
+            JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x1f4" }),
+          );
+        }
+        if (request.method === "eth_getLogs") {
+          return new Response(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              result: [
+                {
+                  transactionHash: `0x${"1".repeat(64)}`,
+                  topics: [
+                    `0x${"d".repeat(64)}`,
+                    topicOf("0x1111111111111111111111111111111111111111"),
+                    topicOf(ADDR_A),
+                  ],
+                  data: "0x64",
+                  blockNumber: "0x1f4",
+                },
+              ],
+            }),
+          );
+        }
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: null }));
+      }),
+    );
+    const census = await readInflowCensus(testEnv);
+    const polygon = census!.windows.find((w) => w.chain === "Polygon")!;
+    const base = census!.windows.find((w) => w.chain === "Base")!;
+    // Base is where it said it takes money, and it did.
+    expect(base.received_advertised).toBe(1);
+    expect(base.received_unadvertised).toBe(0);
+    // Polygon is money on a rail this door never quoted — an
+    // observation worth having, and one the old shape could not make.
+    expect(polygon.received_unadvertised).toBe(1);
+    expect(polygon.received_advertised).toBe(0);
+    expect(polygon.advertised_here).toBe(0);
+  });
+});
+
+describe("sole-advertised is the number that means something", () => {
+  it("splits the rate by exclusivity and leads the caption with the narrow one", async () => {
+    // ADDR_A is shared (two doors), ADDR_B and ADDR_C are sole.
+    await seed(
+      round([[ADDR_A], [ADDR_A], [ADDR_B], [ADDR_C]], { min_usdc: 0.0001, max_usdc: 1 }),
+    );
+    stubChain({ head: 500, receivedBy: [ADDR_A, ADDR_A, ADDR_B] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.by_exclusivity.shared.watched).toBe(1);
+    expect(census!.by_exclusivity.sole.watched).toBe(2);
+    expect(census!.by_exclusivity.sole.received).toBe(1);
+    // The caption must carry the narrow number, not only the broad one.
+    expect(census!.what_this_counts).toContain("ONLY ONE DOOR ADVERTISED");
+    expect(census!.what_this_counts).toContain(
+      `${census!.by_exclusivity.sole.received} received`,
+    );
+  });
+});
+
+describe("the size of the money is counted, not just its existence", () => {
+  it("bands the transfers and reports a median size", async () => {
+    await seed(round([[ADDR_A]], { min_usdc: 0.0001, max_usdc: 1 }));
+    // The stub sends data "0x64" = 100 atomic units = $0.0001.
+    stubChain({ head: 500, receivedBy: [ADDR_A, ADDR_A] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.amounts.median_usdc).toBeCloseTo(0.0001, 6);
+    expect(census!.amounts.under_1_usdc).toBe(census!.transfers_seen);
+    expect(census!.amounts.over_100_usdc).toBe(0);
+    // And those amounts sit inside the door's own quote.
+    expect(census!.in_quoted_band.transfers).toBe(census!.transfers_seen);
+    expect(census!.in_quoted_band.sole_addresses).toBe(1);
+  });
+
+  it("a transfer far outside the door's quote is not counted as an answer to it", async () => {
+    // Door quotes $5-$5; the stub's transfers are $0.0001.
+    await seed(round([[ADDR_A]], { min_usdc: 5, max_usdc: 5 }));
+    stubChain({ head: 500, receivedBy: [ADDR_A] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.addresses_received).toBe(1);
+    expect(
+      census!.in_quoted_band.transfers,
+      "a transfer nowhere near the ask must not count as paying it",
+    ).toBe(0);
+  });
+
+  it("says out loud that a band is not a receipt", async () => {
+    await seed(round([[ADDR_A]], { min_usdc: 0.0001 }));
+    stubChain({ head: 500, receivedBy: [ADDR_A] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.what_this_is_not).toContain("BAND and not a receipt");
+  });
 });
