@@ -56,7 +56,10 @@ on:
         required: true
         type: choice
         options:
-          - scvd
+          # scvd-cli, not scvd: npm's typosquat guard 403'd the bare
+          # name ("too similar to scss, save, send") on the first
+          # publish attempt, 2026-08-28. The command is still `scvd`.
+          - scvd-cli
           - scvd-tab
           - x402-verify
           - x402-sign
@@ -102,7 +105,7 @@ jobs:
           PACKAGE: ${{ inputs.package }}
         run: |
           case "$PACKAGE" in
-            scvd)         DIR=cli ;;
+            scvd-cli)     DIR=cli ;;
             scvd-tab)     DIR=tab ;;
             x402-verify)  DIR=verifier ;;
             x402-sign)    DIR=signer ;;
@@ -146,7 +149,7 @@ jobs:
           PACKAGE: ${{ inputs.package }}
         run: |
           case "$PACKAGE" in
-            scvd)     node --test cli/cli.test.mjs ;;
+            scvd-cli) node --test cli/cli.test.mjs ;;
             scvd-tab) node --test tab/tab.test.mjs ;;
             *) echo "$PACKAGE ships no test file of its own; skipping." ;;
           esac

@@ -5,9 +5,14 @@ read the weekly signed corpus — from a terminal, in one line, with no
 account and no key.
 
 ```
-npm i -g scvd
+npm i -g scvd-cli
 scvd preflight https://some-endpoint.example/api/thing
 ```
+
+The package is `scvd-cli`; the installed command is `scvd`. npm's
+typosquat guard refuses the bare name `scvd` outright ("too similar
+to scss, save, send"), and it only polices package names, so the
+command keeps the short one.
 
 Zero dependencies. Node 18.17+. MIT.
 

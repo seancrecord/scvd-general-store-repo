@@ -14,6 +14,7 @@ import { STORE_CONTACT_EMAIL, STORE_SERVICE_NAME } from "@/store";
 import { SUNSET_NOTICE_DAYS } from "@/store/api-lifecycle";
 import {
   CLI_COMMANDS,
+  CLI_BIN,
   CLI_INSTALL,
   CLI_PACKAGE,
   CLI_PUBLISHED,
@@ -159,7 +160,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
            * THE LINK THAT WORKS TODAY, WHICH IS THE SOURCE.
            *
            * `npm publish` is the keeper's hand (rule 30) and has not
-           * run. Pointing this entry at npmjs.com/package/scvd would
+           * run. Pointing this entry at npmjs.com/package/scvd-cli would
            * be a link to a 404 in the middle of a page whose whole
            * job is being trusted — the exact species of claim
            * /corrections exists to catch. So the href is the source,
@@ -168,7 +169,7 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
            */
           href: `${CLI_SOURCE_URL}`,
           label: "scvd — the official CLI",
-          what: "`scvd preflight <url>` checks any x402 door, `scvd conformance <file>` reads any issuer's signed offer or receipt, `scvd verify <id>` verifies anything this store ever signed, and `scvd catalog` walks the API catalog. Zero dependencies, MIT, no account and no key — and it holds no key either, so it cannot spend money. `--json` prints this store's own response verbatim. NOT ON npm YET: the package is `scvd` and the install will be `npm i -g scvd`, but publishing is the keeper's hand and has not run. Until it does, the whole tool is one file in the repo: clone and run `node cli/scvd.mjs preflight <url>`.",
+          what: "`scvd preflight <url>` checks any x402 door, `scvd conformance <file>` reads any issuer's signed offer or receipt, `scvd verify <id>` verifies anything this store ever signed, and `scvd catalog` walks the API catalog. Zero dependencies, MIT, no account and no key — and it holds no key either, so it cannot spend money. `--json` prints this store's own response verbatim. NOT ON npm YET: the package is `scvd-cli` (npm refused the bare name `scvd` as too close to scss/save/send — the command is still `scvd`) and the install will be `npm i -g scvd-cli`, but publishing is the keeper's hand and has not run. Until it does, the whole tool is one file in the repo: clone and run `node cli/scvd.mjs preflight <url>`.",
         },
         {
           href: "https://www.npmjs.com/package/scvd-tab",
@@ -400,7 +401,7 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
           install_available: CLI_PUBLISHED,
           source: CLI_SOURCE_URL,
           run_from_source: CLI_RUN_FROM_SOURCE,
-          bin: [CLI_PACKAGE],
+          bin: [CLI_BIN],
           license: "MIT",
           registry: CLI_REGISTRY_URL,
           commands: [...CLI_COMMANDS],
