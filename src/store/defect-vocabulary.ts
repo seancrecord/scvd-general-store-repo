@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "3";
+export const DEFECT_VOCABULARY_VERSION = "4";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -84,6 +84,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
     what_changed:
       "Added nonce-unbound-from-settlement: a till that marks an authorization's nonce spent without recording which settlement spent it, leaving a buyer who paid and lost the response indistinguishable from one who never paid. Registered the same day this store fixed the instance of it on its OWN MCP lane (the HTTP lane bound the transaction already) — found live by an outside reproduction on 2026-08-26, and stated here because a register that lists a class its registrar quietly exhibited would be worth nothing. DefectClass entries gained optional sourced_by/registered fields, the registrar-not-author discipline the evidence labels already carried.",
   },
+  {
+    version: "4",
+    date: "2026-08-27",
+    at_the_instigation_of:
+      "an outside strategic review of the evidence layer, accepted the same day",
+    what_changed:
+      "Every defect class gains repair_hint: what the operator does, in their own systems, to clear the class. Additive only — no id, assertion, or falsified_by changed; a hint is advice about a door, never a judgment about its operator, and falsified_by remains the only authority on presence.",
+  },
 ];
 
 /** The date this file's cross-instrument mappings were last verified. */
@@ -118,6 +126,15 @@ export interface DefectClass {
   our_signal: string | null;
   /** What observation would disprove a finding of this class. */
   falsified_by: string;
+  /**
+   * What the operator DOES, in their own systems, to clear the class
+   * (v4, at an outside review's instigation): a named defect that
+   * only names the break sends the operator to a search engine at
+   * exactly the moment they were ready to act. Advice about a door,
+   * never a judgment about its operator; falsified_by remains the
+   * only authority on whether the defect is present.
+   */
+  repair_hint: string;
   /** The same property, as other published instruments name it. */
   also_known_as?: ForeignName[];
   /**
@@ -200,6 +217,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     our_signal: "status-402",
     falsified_by:
       "The same URL answering 402 with a parseable challenge to an unauthenticated GET at the stated moment. A 402 that appears only for some callers is a different finding, not this one.",
+    repair_hint:
+      "Serve 402 with a PAYMENT-REQUIRED challenge at the exact URL your listing names. The commonest causes are a listing that points at a marketing page instead of the paid resource, and a proxy or CDN answering before your x402 middleware does. If the door moved, update the listing.",
   },
   {
     id: "unparseable-challenge",
@@ -212,6 +231,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     our_signal: "payment-required-header",
     falsified_by:
       "The header decoding to valid JSON by any conforming base64 + JSON reader at the stated moment.",
+    repair_hint:
+      "Emit PAYMENT-REQUIRED as base64 over UTF-8 JSON, unwrapped and untruncated — check for a proxy that rewrites or size-caps headers, and for double encoding. Decode your own header with an independent client before relisting; the free preflight does exactly that.",
   },
   {
     id: "unsignable-offer",
@@ -224,6 +245,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     our_signal: "accepts",
     falsified_by:
       "Every accepts entry carrying the published required fields at the stated moment.",
+    repair_hint:
+      "Fill every accepts entry with the v2-required fields, as strings, and regenerate the offer from your server's own config rather than hand-editing JSON. The free preflight names the missing field.",
   },
   {
     id: "unpayable-payto",
@@ -236,6 +259,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     our_signal: "accepts",
     falsified_by:
       "The payTo parsing as a valid address for the rail its own entry names.",
+    repair_hint:
+      "Give each accepts entry its own rail's address format: a 20-byte 0x address on EVM entries, a base58 pubkey on Solana entries. The commonest cause is one wallet string pasted across every rail's entry.",
   },
   {
     id: "rail-cannot-receive",
@@ -257,6 +282,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
           "Their published definition describing a different observable property than the one asserted here.",
       },
     ],
+    repair_hint:
+      "Create the associated token account for the offered mint on the payTo address — one transaction from any wallet tooling — or point payTo at an address that already holds one. Re-run getTokenAccountsByOwner yourself to confirm before relisting.",
   },
   {
     id: "wrong-network",
@@ -269,6 +296,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     our_signal: "testnet-network",
     falsified_by:
       "The entry naming a mainnet chain id the buyer's client supports.",
+    repair_hint:
+      "Replace the testnet chain id in accepts with the mainnet rail you settle on, and keep test offers behind a separate listing. If you meant mainnet, look for a deploy-time environment default leaking into production.",
   },
   {
     id: "amount-not-atomic",
@@ -280,6 +309,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     detectable: "unpaid",
     our_signal: "amount-not-atomic",
     falsified_by: "The amount parsing as an integer string.",
+    repair_hint:
+      "Write amount as an integer string of atomic units — for USDC, dollars times ten to the sixth — and derive it from one constant so the menu and the challenge cannot disagree.",
   },
   {
     id: "inputs-undeclared",
@@ -292,6 +323,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     our_signal: "no-input-contract",
     falsified_by:
       "A declared input contract in the challenge, or the resource succeeding with no parameters.",
+    repair_hint:
+      "Declare required parameters in the challenge itself, before payment, so a buyer learns them by reading rather than by being refused after signing. If the resource can serve a sensible default, accept a bare call too.",
   },
   {
     id: "replay-accepted",
@@ -313,6 +346,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
           "Their check asserting something other than the refusal of an identical already-settled payment.",
       },
     ],
+    repair_hint:
+      "Record each settled authorization nonce at settle time and refuse a byte-identical presentation BEFORE fulfillment runs — one keyed read at the till. Refusing with a reference to the original settlement also keeps you clear of the nonce-unbound class below.",
   },
   {
     id: "nonce-unbound-from-settlement",
@@ -329,6 +364,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     sourced_by:
       "SolomonisBlack (github.com/SolomonisBlack), who named the class during the response-provenance collaboration. Registered at his request — source, not author, as agreed.",
     registered: "2026-08-27",
+    repair_hint:
+      "Store the settlement transaction hash beside the nonce when you mark it spent, and return it on the replay refusal — one extra column, and a buyer's honest recovery becomes distinguishable from fraud.",
   },
   {
     id: "settlement-error",
@@ -350,6 +387,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
           "Their class covering refusals of INVALID payments, which is conformant behaviour and not this defect.",
       },
     ],
+    repair_hint:
+      "Read your settle-path logs: the failure sits after payment verification, most often a facilitator timeout, an unhandled fulfillment exception, or a dead upstream. Fail BEFORE money moves or deliver after it — never answer a settled payment with a 500.",
   },
   {
     id: "delivered-nothing",
@@ -361,6 +400,8 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
     detectable: "paid",
     our_signal: "launch_check stage: delivery",
     falsified_by: "A non-empty response body accompanying the 2xx.",
+    repair_hint:
+      "Produce the goods before presenting the settlement, and treat an empty body as a failed delivery that aborts the charge — deliver-first ordering makes this class impossible by construction.",
   },
 ];
 

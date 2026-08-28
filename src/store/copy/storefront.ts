@@ -25,8 +25,22 @@ export interface FeaturedShelf {
   line: string;
 }
 
-/** The six shelves on the sign. The rest live in the catalog. Keeper's ink, Batch 3 (2026-07-23). */
+/** The shelves on the sign. The rest live in the catalog. Keeper's ink, Batch 3 (2026-07-23). */
 export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
+  {
+    /**
+     * ON THE SIGN 2026-08-28, the keeper's call from the live page:
+     * "we are supposed to go bottom up and we have a .001 item thats
+     * not there." The floor of the whole menu — the number every
+     * surface advertises — had no card. The line is the keeper's own
+     * ink, lifted whole from the item's note_402 (name, price and
+     * copy keeper-signed 2026-08-26). ⚑ KEEPER REVIEW — only the
+     * lifting onto the sign is new.
+     */
+    id: "spot_check",
+    name: "Spot Check",
+    line: "A tenth of a cent for whatever's already on the card. We don't go and look — this is what the shop already saw, dated, with the blanks left blank.",
+  },
   {
     // "(custodial)" dropped 2026-07-25: luckies are preset draws from
     // the herd now; the line itself is the keeper's ink, untouched.

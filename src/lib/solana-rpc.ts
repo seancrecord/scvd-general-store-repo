@@ -102,17 +102,51 @@ async function rpc<T>(env: Env, method: string, params: unknown[]): Promise<T> {
   );
 }
 
+export interface UsdcTokenAccount {
+  pubkey: string;
+  /**
+   * The account's jsonParsed state ("initialized", "frozen", …).
+   * USDC's freeze authority can freeze an account, and a frozen
+   * account exists and still cannot be credited — the RPC was
+   * already answering this and the reader threw it away (the depth
+   * pass, 2026-08-28). Undefined when the RPC omitted it; an unknown
+   * state must never be read as frozen.
+   */
+  state?: string;
+}
+
+/** Every USDC token account the owner holds, with the state the RPC
+ * already returns. */
+export async function usdcTokenAccountsDetailed(
+  env: Env,
+  owner: string,
+): Promise<UsdcTokenAccount[]> {
+  const result = await rpc<{
+    value?: Array<{
+      pubkey: string;
+      account?: { data?: { parsed?: { info?: { state?: string } } } };
+    }>;
+  }>(env, "getTokenAccountsByOwner", [
+    owner,
+    { mint: SOLANA_USDC_MINT },
+    { encoding: "jsonParsed" },
+  ]);
+  return (result?.value ?? []).map((entry) => ({
+    pubkey: entry.pubkey,
+    ...(typeof entry.account?.data?.parsed?.info?.state === "string"
+      ? { state: entry.account.data.parsed.info.state }
+      : {}),
+  }));
+}
+
 /** Every USDC token account the receive wallet owns (usually one). */
 export async function usdcTokenAccountsOf(
   env: Env,
   owner: string,
 ): Promise<string[]> {
-  const result = await rpc<{ value?: Array<{ pubkey: string }> }>(
-    env,
-    "getTokenAccountsByOwner",
-    [owner, { mint: SOLANA_USDC_MINT }, { encoding: "jsonParsed" }],
+  return (await usdcTokenAccountsDetailed(env, owner)).map(
+    (entry) => entry.pubkey,
   );
-  return (result?.value ?? []).map((entry) => entry.pubkey);
 }
 
 export interface SolanaSignatureInfo {

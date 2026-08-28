@@ -12,6 +12,7 @@ import { MARKDOWN_MEDIA_TYPE, prefersMarkdown, VARY_ACCEPT } from "@/lib/accept"
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { jsonLdScript } from "@/lib/jsonld";
+import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
 import { TILL_WALLET_LIMIT, tillShelfHtml } from "@/lib/till-shelf";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { stockedShelfCount } from "@/services/fulfillment";
@@ -416,6 +417,13 @@ function renderItemPage(
      * button this page guessed should not exist. The state is printed
      * beside it either way so nobody is surprised by the refusal.
      */
+    // The markdown twin is this page's own path: the same URL answers
+    // markdown to an Accept that asks for it (P17 — the twin exists,
+    // so the link tag may say so).
+    markdownAlt: `/menu/${item.id}`,
+    // P8: the WebMCP declaration on every till page; the caller sends
+    // FIRST_PARTY_SCRIPT_CSP alongside.
+    webmcp: true,
     inertHtml: tillShelfHtml([item], {
       heading: "Buy it from this browser",
       // Buyer words first, protocol after — same reasoning as /try's
@@ -533,6 +541,8 @@ async function serveMenuItem(c: Context<HonoEnv>) {
 
   if (wantsHtml(c.req.header("Accept"))) {
     c.header("Link", canonical.Link);
+    // P8: the page carries /webmcp.js, so the P7 script fence rides too.
+    c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
     return c.html(renderItemPage(item, base, state));
   }
 

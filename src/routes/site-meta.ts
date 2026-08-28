@@ -42,6 +42,14 @@ export const HUMAN_SURFACES: readonly string[] = [
 ];
 
 /**
+ * The Content-Signal policy, ONE constant: robots.txt serves it and
+ * the declined-positions section on /developers quotes it (P12). Two
+ * hand-typed copies of a policy line is how one of them goes stale
+ * arguing with the other.
+ */
+export const CONTENT_SIGNAL = "search=yes, ai-train=yes, ai-input=yes";
+
+/**
  * The social card: the keeper's dino, pixel-drawn by
  * scripts/generate-og-image.mjs into a committed module — the same
  * bytes forever, no asset pipeline, cacheable hard.
@@ -71,7 +79,7 @@ Allow: /
 # the corpus a model learns from: that is distribution, not leakage.
 # Everything here is already free to fetch, most of it CC BY 4.0, and
 # a policy we would not enforce is one we should not print.
-Content-Signal: search=yes, ai-train=yes, ai-input=yes
+Content-Signal: ${CONTENT_SIGNAL}
 
 Sitemap: ${base}/sitemap.xml
 # The Agentmap directive: ARD's robots.txt entry-source mechanism
@@ -84,11 +92,15 @@ Agentmap: ${base}${ARD_WELL_KNOWN_PATH}
   );
 });
 
-siteMetaRoutes.get("/sitemap.xml", async (c) => {
-  const base = c.env.STORE_BASE_URL;
-  // Directory listings are derived rather than listed by hand, so a
-  // neighbor added to directory.json is crawlable the same day
-  // instead of whenever somebody remembers this file exists.
+/**
+ * ONE LIST, TWO MAPS (scanner finding S10/S11, 2026-08-27). The XML
+ * sitemap and /sitemap.md render from this same walk, so the two can
+ * no more disagree than either can disagree with ROOMS. Directory
+ * listings and item pages are derived rather than listed by hand, so
+ * a neighbor added to directory.json is crawlable the same day
+ * instead of whenever somebody remembers this file exists.
+ */
+async function sitemapPaths(env: HonoEnv["Bindings"]): Promise<string[]> {
   const paths = [
     ...HUMAN_SURFACES,
     ...directoryData.listings.map((listing) => `/directory/${listing.slug}`),
@@ -110,6 +122,11 @@ siteMetaRoutes.get("/sitemap.xml", async (c) => {
      */
     "/menu",
     ...MENU_ITEMS.map((item) => `/menu/${item.id}`),
+    // The markdown twin of this very map (S10/S11). Listing it here
+    // puts it on a surface agents read (the no-orphan guard's rule)
+    // and costs the XML one line; the twin listing itself is just a
+    // map that admits it has two faces.
+    "/sitemap.md",
   ];
   /**
    * THE FOUNDING EDITION IS CONDITIONAL, and it was not — it sat in the
@@ -119,9 +136,15 @@ siteMetaRoutes.get("/sitemap.xml", async (c) => {
    * claim that a page exists; making one we cannot keep is the same
    * class as every other entry on /corrections.
    */
-  if (await getFoundingEdition(c.env).catch(() => null)) {
+  if (await getFoundingEdition(env).catch(() => null)) {
     paths.push("/gazette/founding");
   }
+  return paths;
+}
+
+siteMetaRoutes.get("/sitemap.xml", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const paths = await sitemapPaths(c.env);
   // lastmod on every entry: a crawler deciding whether to re-read us
   // has nothing else to go on, and "no date" reads as "never changed".
   const lastmod = catalogLastUpdated();
@@ -139,5 +162,32 @@ ${urls}
 `,
     200,
     { "Content-Type": "application/xml; charset=utf-8" },
+  );
+});
+
+/**
+ * GET /sitemap.md — the same map, for readers whose native format is
+ * markdown (S10/S11). Rendered from the same sitemapPaths walk as the
+ * XML, so nothing here can be listed in one map and missing from the
+ * other. Listed in /index.md's Sitemap section, so it is not an
+ * orphan the day it ships.
+ */
+siteMetaRoutes.get("/sitemap.md", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const paths = await sitemapPaths(c.env);
+  const lines = paths
+    .map((path) => `- [${base}${path}](${base}${path})`)
+    .join("\n");
+  return c.text(
+    `# Sitemap — Sean-Claude Van Damme's General Store
+
+Every public page, one line each — the same list [sitemap.xml](${base}/sitemap.xml) serves, in the format you are already reading. Machine maps: [llms.txt](${base}/llms.txt), [menu.json](${base}/menu.json), [openapi.json](${base}/openapi.json).
+
+Updated: ${catalogLastUpdated()}
+
+${lines}
+`,
+    200,
+    { "Content-Type": "text/markdown; charset=utf-8" },
   );
 });

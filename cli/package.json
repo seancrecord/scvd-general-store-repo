@@ -1,5 +1,5 @@
 {
-  "name": "scvd",
+  "name": "scvd-cli",
   "version": "0.1.0",
   "description": "The official command line for scvd.store: check any x402 door, verify any signed offer or receipt, read the weekly corpus and the fresh set, and verify anything the store ever signed. Zero dependencies, no account, no key.",
   "type": "module",

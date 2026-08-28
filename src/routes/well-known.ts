@@ -6,7 +6,12 @@ import {
   ARD_WELL_KNOWN_PATH,
   ardManifest,
 } from "@/lib/ard-catalog";
-import { DEFAULT_PROTOCOL, handleMcpPost, PROTOCOL_VERSIONS } from "@/routes/mcp";
+import {
+  DEFAULT_PROTOCOL,
+  handleMcpPost,
+  MCP_SERVER_VERSION,
+  PROTOCOL_VERSIONS,
+} from "@/routes/mcp";
 import { USE_WHEN } from "@/store/spec";
 import { Hono } from "hono";
 import { NOT_AFFILIATED } from "@/store/copy/position";
@@ -518,6 +523,16 @@ wellKnownRoutes.get(
  */
 function a2aCard(base: string) {
   return {
+    /**
+     * BOTH DIALECTS ON ONE CARD (scanner finding C5, 2026-08-27; the
+     * mcp/mcp.json posture). A2A v1.0 consolidated preferredTransport
+     * and additionalInterfaces into supportedInterfaces[] and dropped
+     * the top-level protocolVersion; scanners validating against
+     * a2a.proto v1.0.0 read only the new field, while 0.3 readers
+     * still read the old ones. So the 0.3 fields stay exactly as they
+     * were and supportedInterfaces rides beside them — the spec moved
+     * under the card, the card serves both generations.
+     */
     protocolVersion: "0.3.0",
     name: STORE_SERVICE_NAME,
     description: `${WHAT_IT_IS} This card is a discovery document: the store's machine doors are MCP (POST ${base}/mcp, tools/list free) and plain x402 HTTP starting at ${base}/llms.txt. It does not speak the A2A message protocol today; if your framework needs a true A2A endpoint, say so at ${base}/api/letter — demand decides what gets built here.`,
@@ -526,6 +541,36 @@ function a2aCard(base: string) {
     additionalInterfaces: [
       { url: `${base}/mcp`, transport: "MCP" },
       { url: `${base}/llms.txt`, transport: "HTTP+x402" },
+    ],
+    /**
+     * THE HONESTY PROBLEM, SOLVED BY THE v1.0 SPEC'S OWN DOOR. Each
+     * entry here declares a protocol binding at a URL, and the three
+     * canonical bindings (JSONRPC, GRPC, HTTP+JSON) are all claims
+     * that A2A message/send works there — which it does not, and a
+     * card is a false claim in machine form the moment it says so.
+     * §5.8: "Custom protocol bindings SHOULD be identified by a URI."
+     * So the bindings ARE the protocols this store actually speaks,
+     * named by their canonical URIs: a strict v1 client correctly
+     * concludes there is no interface it can use (the accurate
+     * outcome, same as 0.3's "MCP" string), and a harvester still
+     * gets every name, skill and door it came for. First entry is
+     * the preferred interface, per §8.3.1 — same door the 0.3
+     * dialect prefers. protocolVersion is per-interface in v1.0 and
+     * carries each protocol's OWN version: MCP's negotiated protocol
+     * date (the same constant the initialize handler serves), and
+     * x402's major version.
+     */
+    supportedInterfaces: [
+      {
+        url: `${base}/mcp`,
+        protocolBinding: "https://modelcontextprotocol.io",
+        protocolVersion: DEFAULT_PROTOCOL,
+      },
+      {
+        url: `${base}/llms.txt`,
+        protocolBinding: "https://www.x402.org",
+        protocolVersion: "2",
+      },
     ],
     provider: {
       organization: OPERATOR.legal_entity,
@@ -537,6 +582,9 @@ function a2aCard(base: string) {
       streaming: false,
       pushNotifications: false,
       stateTransitionHistory: false,
+      // v1.0 relocated supportsAuthenticatedExtendedCard to here; the
+      // top-level 0.3 field stays below, and both say no.
+      extendedAgentCard: false,
     },
     defaultInputModes: ["application/json"],
     defaultOutputModes: ["application/json"],
@@ -618,8 +666,42 @@ for (const path of [
  */
 function mcpManifest(base: string) {
   return {
+    /**
+     * SEP-2127's schema identifier. The draft names this exact URI as
+     * the card's $schema and requires the field; the URI itself 404s
+     * today (verified 2026-08-27 — the SEP is Draft status and the
+     * schema is not yet published), which is fine for an identifier
+     * and will simply start resolving the day they publish it.
+     */
+    $schema:
+      "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+    /**
+     * ⚑ KEEPER: SEP-2127 (Draft) constrains `name` to reverse-DNS
+     * with exactly one slash (e.g. "store.scvd/general-store") and
+     * would reject this tier-1 identifier as it stands. The naming
+     * law governs here, the SEP is a draft, and renaming is a keeper
+     * decision — flagged per the C2 instruction ("stop and report
+     * rather than rename"), not changed.
+     */
     name: "scvd-general-store",
     title: STORE_SERVICE_NAME,
+    // Same constant the initialize handler answers with — never a
+    // second copy (C2; the scvd-tab 0.2.0/0.3.0 lesson).
+    version: MCP_SERVER_VERSION,
+    /**
+     * The card's face (scanner, 2026-08-28: name and description but
+     * no icon — the anonymous grey square in a host's picker).
+     * SEP-2127 lists icons as optional; the src is the favicon the
+     * site already serves, so there is no second asset to go stale,
+     * and the test fetches it rather than assuming it answers.
+     */
+    icons: [
+      {
+        src: `${base}/favicon.svg`,
+        mimeType: "image/svg+xml",
+        sizes: ["any"],
+      },
+    ],
     description:
       "Independent signed observation of x402 endpoints, artifacts and settlements, plus a general store for AI agents. Tools are free to list; purchases are x402 v2 in USDC.",
     // The one field a client actually needs.

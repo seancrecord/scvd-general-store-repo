@@ -30,10 +30,13 @@ const BASE = "https://scvd.store";
 
 /**
  * The document as it stood on 2026-08-27, re-taken the same day in
- * the commits that added the corpus trajectory/diff doors (3.5) and
- * the wallet-facts and standing-note paragraphs (3.6, the G2 ruling)
- * to the guide, with the
- * two per-request dates normalised out.
+ * the commits that added the corpus trajectory/diff doors (3.5), the
+ * wallet-facts and standing-note paragraphs (3.6, the G2 ruling),
+ * the WebMCP door paragraphs (the keeper's own chats, #307/#308),
+ * and the funnel's-middle sentence in the pulse paragraph (#53) —
+ * this last pin taken on the rebase that joined the two lines of
+ * work, over the guide carrying both. The two per-request dates are
+ * normalised out.
  *
  * A CONSTANT, AND RULE 46 SAYS DERIVE OR REFUSE — so it is worth
  * saying why this one is neither a memorised value nor a guard that
@@ -42,12 +45,41 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken again 2026-08-28 on the second rebase, over the instrument
+ * audit (#311) as well: three lines of work have now edited this guide
+ * in a day, each correctly re-taking its own digest, so every rebase
+ * produces a fourth text none of the parents' values describe. Each
+ * side's sections were confirmed present in the served guide before
+ * this value was taken.
+ *
+ * Re-taken again 2026-08-28 when this batch rebased onto main: the
+ * batch and main's own PR #310 had each re-taken the digest for their
+ * own guide edits, so the rebase left a conflict between two correct
+ * values and neither survived contact with the merged document. This
+ * value is the guide with BOTH sets of edits, taken at the rebased
+ * head — the review moment the guard exists to force, checked by
+ * confirming each side's sections are still in the served text.
+ *
+ * Re-taken 2026-08-28 in the commit that renamed the npm package to
+ * scvd-cli (the registry's typosquat guard refuses bare `scvd`; the
+ * command is still `scvd`) — the guide interpolates CLI_PACKAGE and
+ * CLI_INSTALL, so the CLI paragraph's bytes moved with the rename.
+ *
+ * Re-taken again 2026-08-28 in the commit that added the declined-
+ * positions section to the guide (P12), filed under the developers
+ * area.
+ *
+ * Re-taken 2026-08-27 in the commit that put every templated URL in
+ * the guide into inline code (scanner P20 — URL extractors probed
+ * {id} verbatim and reported dead links). Markup only; sentences
+ * untouched.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "a1f78bb75c243630b794f4bcfe4ad2408324c8ad90fd93814692bf4c1cad8138";
+  "9d6a0a47566c89d961ec1e9f0575b4e4f7ae414f197491999ce529366090e8ff";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

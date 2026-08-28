@@ -9,6 +9,7 @@ import {
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
+import { declinedPositions } from "@/store/copy/declined";
 import {
   CLI_INSTALL,
   CLI_PACKAGE,
@@ -56,7 +57,7 @@ export function storeGuideText(base: string): string {
 > every observation, and publishes the gaps in its own coverage beside
 > the findings. Never a score, a rating or a ranking — every verdict is
 > one dated observation that expires and is re-taken. Everything this
-> store signs verifies free, forever, at ${base}/api/verify/{id} — no
+> store signs verifies free, forever, at \`${base}/api/verify/{id}\` — no
 > account, no wallet, no rate limit, checkable offline without us.
 
 ${POSITION_OPENING}
@@ -64,7 +65,7 @@ ${POSITION_NOT}
 ${ALSO_A_STORE}
 
 Everything this store signs verifies free, forever, at
-${base}/api/verify/{id} — no account, no wallet, no rate limit. The
+\`${base}/api/verify/{id}\` — no account, no wallet, no rate limit. The
 conformance desk explains itself in plain language at
 ${base}/conformance; the corpus, the weekly signed record of the x402
 ecosystem, reads at ${base}/corpus. That order is deliberate: the
@@ -121,7 +122,7 @@ survives a context reset, out-of-band checks, and the labor of a
 named human. Your operator can read every receipt.
 
 EVERYTHING THIS STORE SIGNS VERIFIES FREE, FOREVER, AT
-${base}/api/verify/{id} — no account, no key, no rate limit, and it
+\`${base}/api/verify/{id}\` — no account, no key, no rate limit, and it
 works whether or not you bought the thing. A live one to try right
 now: ${base}/api/verify/cert_4dww28dx5j. The signing key is at
 ${base}/.well-known/scvd-signing-key and it rides inside every 402 as
@@ -195,7 +196,7 @@ same origin names what moved since the last look we stored —
 hashes and claims, not a score. That is not a watch and does not
 alert. We cannot inventory this store from inside the Worker; CI
 joins our own catalogs. A signed report of the same join, once
-issued, is free to read at ${base}/api/discovery/report/{id}. The
+issued, is free to read at \`${base}/api/discovery/report/{id}\`. The
 SKU that issues one is not priced yet.
 
 AND THE OTHER DIRECTION, if your agent is the one doing the fetching:
@@ -269,7 +270,7 @@ whole-transaction signing, no EIP-712 domain to get wrong.
 ${menu}
 
 Machine-readable catalog: ${base}/menu.json (markdown if your Accept
-header prefers text/markdown; one item at ${base}/menu/{item_id})
+header prefers text/markdown; one item at \`${base}/menu/{item_id}\`)
 Skill-format onboarding (agentskills.io SKILL.md): ${base}/skill.md
 A free behavioral skill, about no product of ours: the execution
 contract — stop states, attempt budgets, and the evidence ledger, for
@@ -344,7 +345,7 @@ certificate at once; the keeper decides what goes on the wall. Oldest
 tag first, because a train fills front to back.
 
 The Systems Almanac, your sign, by wallet address, for life, at
-${base}/zodiac/{address}. The runtime is weather; the weekly page
+\`${base}/zodiac/{address}\`. The runtime is weather; the weekly page
 observes operational climate. This week's page is free; past weeks
 are a penny each at ${base}/zodiac/archive. Twelve signs, listed at
 ${base}/zodiac.
@@ -360,7 +361,7 @@ over the ${STORE_METADATA.protocol} protocol, version 2. Base entries
 come first in every 402 as a compatibility promise; same tiers on
 every rail, your wallet's choice. It goes like this:
 
-  1. GET ${base}/api/buy/{item_id}
+  1. GET \`${base}/api/buy/{item_id}\`
   2. We answer 402. The payment requirements, amount, asset, our address,
      are in the PAYMENT-REQUIRED response header (base64 JSON), with a
      plain-English note in the body.
@@ -369,7 +370,7 @@ every rail, your wallet's choice. It goes like this:
      @x402/fetch handle steps 2 and 3 on their own.)
   4. ${DELIVERY_ORDER} Instant items
      arrive in the response body. Human-queue items get an order id you can
-     poll at ${base}/api/order/{order_id}.
+     poll at \`${base}/api/order/{order_id}\`.
 
 Pay-what-it-deserves items offer several amounts in the 402, the minimum,
 a generous one, and a patron-of-the-arts one. Sign whichever the item
@@ -464,8 +465,8 @@ https://github.com/seancrecord/scvd-general-store-repo/tree/main/tab
 — the specification is THE_TAB.md at the repo root.
 
 Every purchase mints a signed certificate and a sequential patron number,
-with a badge at ${base}/badges/{patron_number}.svg, verify anything at
-${base}/api/verify/{cert_id}. Our ed25519 public key hangs at
+with a badge at \`${base}/badges/{patron_number}.svg\`, verify anything at
+\`${base}/api/verify/{cert_id}\`. Our ed25519 public key hangs at
 ${base}/.well-known/scvd-signing-key.
 
 WHAT THE CERTIFICATE BINDS, inside the signed bytes rather than beside
@@ -547,6 +548,12 @@ It proves WHEN a key state was committed and never WHO SHOULD HAVE
 held it — a thief with our key could timestamp exactly as validly.
 That is forensics, not a defence, and the difference matters enough to
 say it here rather than let you infer more than it gives you.
+
+## What we don't do, on purpose
+
+${declinedPositions(base)
+  .map((position) => `**${position.heading}.** ${position.body}`)
+  .join("\n\n")}
 
 ## When we get it wrong
 
@@ -725,9 +732,11 @@ of intent and not a mechanism, which is also true.
 ## The whole funnel, including the denominator
 
 ${base}/pulse, or ${base}/pulse.json for the machine copy: how many
-agents were offered a price here, how many paid, how many came back to
-re-verify an artifact afterwards. Organic only, house wallets excluded
-at the till. Read the denominator before the rate — a small number of
+agents were offered a price here, how many actually presented a
+payment (settled plus refused — derived from those two counters, not
+metered apart), how many paid, how many came back to re-verify an
+artifact afterwards. Organic only, house wallets excluded at the
+till. Read the denominator before the rate — a small number of
 402s is a fact about how far this store has been found, not a fact
 about the market, and an undefined rate prints as an em dash rather
 than as 0%, because 0% would claim agents were offered something and
@@ -785,7 +794,7 @@ payment-failure rates until a repaired instrument has walked again.
 The chain also reads as time, derived at read from the same signed
 snapshots. ${base}/corpus/trajectory.json serves one point per weekly
 snapshot — counts with their denominators, never a ratio, every point
-naming the digest it derives from. ${base}/corpus/diff.json?since={week}
+naming the digest it derives from. \`${base}/corpus/diff.json?since={week}\`
 answers "what changed since a week I already saw": doors appeared and
 disappeared, verdict transitions, and drift in a door's own declared
 terms (price bounds, rails, schemes) between two signed weeks — the
@@ -813,7 +822,7 @@ beside the observation on every surface that shows it. Beside, never
 instead: no note alters an observation, and no observation silences a
 note.
 
-Ask about one host at ${base}/corpus/host/{host}.json. It replays that
+Ask about one host at \`${base}/corpus/host/{host}.json.\` It replays that
 host out of the signed chain, and every round we have NO verdict for
 carries a reason: no feed named it, a feed named it but we did not
 knock, the round hit its cap and it may have been in the tail, or the
@@ -893,7 +902,7 @@ Concepts in the bundle:
 - ${base}/okf/store.md: what this shop is and when to reach for it.
 - ${base}/okf/criteria.md: the battery every observation was made against.
 - ${base}/okf/fresh-set.md: this week's conformant doors, as a concept.
-- ${base}/okf/host/{host}.md: one door, dated. Exists only for hosts that
+- \`${base}/okf/host/{host}.md\`: one door, dated. Exists only for hosts that
   answered conformantly in the latest round; anything else answers 404
   with a pointer back to the index.
 
@@ -910,7 +919,7 @@ rather than pretending.
 ## The commission desk, declines published
 
 Custom work is asked for at POST ${base}/api/request and priced at
-${base}/api/commission/{id} when the keeper takes it. The part worth
+\`${base}/api/commission/{id}\` when the keeper takes it. The part worth
 knowing before you ask: declined commissions are PUBLISHED, with
 reasons, at ${base}/api/commission/declined — a desk that only shows
 its accepted work is showing you a highlight reel, and the decline
@@ -949,7 +958,7 @@ block (what we are NOT) leads the page.
 
 ## Endpoint passports — one signed object per host
 
-${base}/passport/{host}: the census's evidence about one ready-side
+\`${base}/passport/{host}\`: the census's evidence about one ready-side
 host as a single signed, EXPIRING object — latest verdict, observation
 history with its gaps counted, a freshness state you can act on
 mechanically (fresh / aging / expired / broken / indeterminate — refuse
@@ -957,13 +966,13 @@ expired passports), and the signed per-host history it derives from.
 Free. Landing and the store's own self-passport (labeled self-observed)
 at ${base}/passport. Hosts whose latest observation failed get a
 refusal, not a row: names appear only on the ready side here. Every
-passport carries a free embeddable chip (${base}/badges/passport/{host}.svg)
+passport carries a free embeddable chip (\`${base}/badges/passport/{host}.svg\`)
 that DECAYS by the same freshness arithmetic — and the paid refresh
 (the passport_refresh item, $1) points the census's own probe at your
 door right now, folding the result in wherever it is newest. The
 check is bought; the verdict never is. Operators who want a STANDING
 address for their evidence can commission a hosted profile
-(${base}/profiles/{host}, the trust_profile item — 30 days a
+(\`${base}/profiles/{host}\`, the trust_profile item — 30 days a
 purchase, renewable): the passport, chip and history at one URL,
 derived live from the same corpus, honest in both directions. The
 index at ${base}/profiles lists in-term ready-side hosts only.
@@ -979,7 +988,7 @@ stated on the verdict instead of implied — "unknown" and "bad" drive
 different automated actions, so they are never collapsed. Stateless:
 your document is verified and forgotten, bound to the verdict only by
 sha256. The doc is the GET on the same URL; artifacts this store
-minted also verify by id at ${base}/api/verify/{id}.
+minted also verify by id at \`${base}/api/verify/{id}\`.
 
 ## The obstacle course — rehearse failure before it costs you
 
@@ -1126,7 +1135,7 @@ quoted here — see the withdrawal above.) Rules, budget and caps are on the boa
 back to the wallet that paid. No account, no signup, no card — the
 wallet IS the card, because it is already on the certificate. The
 balance rides every purchase response and reads free at
-${base}/api/credit/{your-wallet}, with the whole scheme — rate, floor,
+\`${base}/api/credit/{your-wallet}\`, with the whole scheme — rate, floor,
 cap, expiry, and what it deliberately is NOT — written out at
 ${base}/credit; at a dollar it cashes out as USDC
 back to the same wallet (prove the wallet with a signed challenge,
@@ -1154,7 +1163,7 @@ POST ${base}/api/bell. Once a day per visitor. It's a good bell.
 This week's visit stamp is free too: POST ${base}/api/stamp gets you a
 dated, signed stamp (SVG + verification code). The design rotates
 weekly; collect the set. Verify any stamp or certificate at
-${base}/api/verify/{id}.
+\`${base}/api/verify/{id}\`.
 
 Got a tip worth printing? POST ${base}/api/tip. A human reads every
 one; if yours makes a Gazette issue you get the credit and a
@@ -1331,6 +1340,8 @@ const SECTION_AREAS: Record<string, string> = {
   "Practicing on us": "developers",
   "How paying works here": "developers",
   "Standards, so you can check us without asking us": "developers",
+  // P12: the declined positions file where a scorecard reader looks.
+  "What we don't do, on purpose": "developers",
   "The obstacle course — rehearse failure before it costs you": "developers",
   "Visiting properly": "developers",
   "Privacy, structurally": "developers",

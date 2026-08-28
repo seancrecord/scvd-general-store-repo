@@ -347,7 +347,7 @@ function railSentence(rail: NonNullable<StoreStats["organic_by_rail"]>): string 
 export function storefrontLedgerLine(stats: StoreStats): string {
   const sales = `${stats.organic_settlements} organic ${stats.organic_settlements === 1 ? "sale" : "sales"}`;
   const rail = stats.organic_by_rail;
-  if (!rail || rail.base + rail.solana === 0) {
+  if (!rail || rail.base + rail.polygon + rail.solana === 0) {
     return `${sales}, from wallets we don't control.`;
   }
   /**
@@ -360,6 +360,7 @@ export function storefrontLedgerLine(stats: StoreStats): string {
    */
   const parts = [
     ...(rail.base > 0 ? [`${rail.base} on Base`] : []),
+    ...(rail.polygon > 0 ? [`${rail.polygon} on Polygon`] : []),
     ...(rail.solana > 0 ? [`${rail.solana} on Solana`] : []),
     ...(rail.rail_not_recorded > 0
       ? [`${rail.rail_not_recorded} from before we logged the rail`]

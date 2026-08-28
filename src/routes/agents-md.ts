@@ -5,6 +5,7 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { MARKDOWN_MEDIA_TYPE, VARY_ACCEPT } from "@/lib/accept";
+import { CLI_INSTALL, CLI_PUBLISHED, CLI_SOURCE_URL } from "@/store/cli";
 import { STORE_METADATA } from "@/store";
 import type { HonoEnv } from "@/types";
 
@@ -47,7 +48,26 @@ first). Two doors, same catalog: an
 HTTP door and an MCP door. Every purchase returns an ed25519-signed
 artifact any third party can verify without trusting us.
 
-## Purchasing flow (HTTP)
+## Installation
+
+Nothing to install for the store itself: every interaction is one
+plain HTTPS request to a public endpoint — no account, no key, no SDK
+required. The two purchasing flows below are the whole integration.
+
+Optional local tools, for builders who want them:
+
+- **scvd-tab** — the running account of what your agent signs up for
+  (local, append-only, MIT): \`npm i -g scvd-tab\`
+- **MCP stdio bridge** — for hosts that speak stdio rather than
+  Streamable HTTP: \`bin/scvd-mcp-bridge.mjs\` in the repo, pointed at
+  ${base}/mcp.
+${
+  CLI_PUBLISHED
+    ? `- **The scvd CLI** — the free instruments from a terminal: \`${CLI_INSTALL}\``
+    : `- **The scvd CLI** — the free instruments from a terminal; not yet on npm (the publish is the keeper's hand and has not run — no page here hands you an install command that fails). Source, runnable today: ${CLI_SOURCE_URL}`
+}
+
+## Usage: purchasing flow (HTTP)
 
 1. Read the catalog: GET ${base}/menu.json — every item id, price, and input schema.
 2. Request an item: GET ${base}/api/buy/{item_id} — the store answers HTTP 402 with the payment terms in the PAYMENT-REQUIRED header (base64 JSON), plus a plain-English note in the body.
@@ -57,7 +77,7 @@ artifact any third party can verify without trusting us.
 6. Check ANY issuer's x402 offer or receipt, free: the check_conformance MCP tool, or POST ${base}/api/conformance with {"artifact": "<compact JWS>"}. Same function behind both doors. Structure, signature and liveness, reported separately. Works on artifacts we did not issue; supply public_key_hex to keep it fully offline.
 7. Check ANY x402 endpoint's shape, free: the preflight_endpoint MCP tool, or POST ${base}/api/preflight/v1 with {"url": "..."}. One probe: 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet-network catch. A shape check, never an uptime claim.
 
-## Purchasing flow (MCP)
+## Usage: purchasing flow (MCP)
 
 - Endpoint: ${base}/mcp — Streamable HTTP, JSON-RPC 2.0. \`tools/list\` is free and unauthenticated.
 - Readable resources over the same door (\`resources/list\`, free): \`scvd://guide\`, \`scvd://manual\`, \`scvd://catalog\`, \`scvd://criteria\`, \`scvd://when\`, \`scvd://fresh-set\` — plus \`ui://\` card templates (MCP Apps) that render the preflight and verify readings in hosts that support them.
@@ -97,9 +117,13 @@ artifact any third party can verify without trusting us.
 - Signed-artifact format spec (scvd-attestation/v1) — canonical forms, encodings, the certificate binding convention, offline verification steps: ${base}/spec/scvd-attestation/v1
 - What is and is NOT claimed: ${base}/.well-known/trust.json
 
+## Sitemap
+
+Both maps render from the same list, so neither can drift from the other: [sitemap.xml](${base}/sitemap.xml) for crawlers, [sitemap.md](${base}/sitemap.md) if you are already reading markdown.
+
 ## Discovery & trust endpoints
 
-- Sitemap: ${base}/sitemap.xml
+- Sitemap: ${base}/sitemap.xml (markdown twin: ${base}/sitemap.md)
 - Developer documentation (one index, no account or key exists): ${base}/developers
 - When to reach for this store, machine-readable: ${base}/.well-known/agent-instructions
 - MCP server pointer and its readable resources: ${base}/.well-known/mcp

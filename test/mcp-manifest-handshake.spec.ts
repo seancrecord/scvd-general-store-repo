@@ -204,3 +204,50 @@ describe("the MCP handshake, at every path a client actually tries", () => {
     expect(new Set(bodies.map((b) => JSON.stringify(b))).size).toBe(1);
   });
 });
+
+/**
+ * THE CARD'S VERSION IS THE HANDSHAKE'S VERSION (scanner finding C2,
+ * 2026-08-27). The SEP-2127 server-card shape requires name,
+ * description, version — and the card had 15 keys with version not
+ * among them, while the server declared one in every initialize
+ * result. The scvd-tab package once shipped a handshake saying 0.2.0
+ * while the package said 0.3.0; that drift class is what this pins:
+ * ONE fetch of each document, compared to each other, never to a
+ * literal (rule 46).
+ */
+describe("the server card carries the server's own version", () => {
+  it("card.version strictly equals the serverInfo.version initialize returns", async () => {
+    const card = (await (
+      await SELF.fetch(`${BASE}/.well-known/mcp.json`)
+    ).json()) as Record<string, unknown>;
+    const handshake = (await (await initialize("/mcp")).json()) as {
+      result?: { serverInfo?: { version?: unknown } };
+    };
+    const declared = handshake.result?.serverInfo?.version;
+    expect(typeof declared).toBe("string");
+    expect(card["version"]).toBe(declared);
+    // Semver-shaped, never a range — the SEP rejects '^', '~', 'x'.
+    expect(String(card["version"])).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/);
+  });
+});
+
+describe("the card has a face", () => {
+  it("carries icons whose src actually answers", async () => {
+    // Scanner, 2026-08-28: name and description but no icon. SEP-2127
+    // lists icons as optional; a card in a host picker without one is
+    // the anonymous grey square. The src is fetched, not assumed — an
+    // icon URL that 404s is worse than none.
+    const card = (await (
+      await SELF.fetch(`${BASE}/.well-known/mcp.json`)
+    ).json()) as { icons?: Array<{ src: string; mimeType: string }> };
+    expect(Array.isArray(card.icons)).toBe(true);
+    expect(card.icons!.length).toBeGreaterThanOrEqual(1);
+    for (const icon of card.icons!) {
+      const response = await SELF.fetch(icon.src);
+      expect(response.status, icon.src).toBe(200);
+      expect(response.headers.get("Content-Type") ?? "").toContain(
+        icon.mimeType.split("/")[0] ?? "",
+      );
+    }
+  });
+});

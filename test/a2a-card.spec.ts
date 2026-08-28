@@ -69,3 +69,58 @@ describe("the A2A agent card", () => {
     expect(x402.a2a).toBe(`${BASE}/.well-known/a2a.json`);
   });
 });
+
+/**
+ * THE v1.0 DIALECT, BESIDE THE 0.3 ONE (scanner finding C5,
+ * 2026-08-27). A2A v1.0 consolidated preferredTransport +
+ * additionalInterfaces into supportedInterfaces[] — each entry
+ * {url, protocolBinding, protocolVersion}, first entry preferred —
+ * and scanners validating against a2a.proto v1.0.0 read only the new
+ * field. Both dialects ride the same card, the mcp/mcp.json posture.
+ *
+ * The honesty constraint survives the upgrade through the spec's own
+ * door: §5.8 says custom protocol bindings SHOULD be identified by a
+ * URI. The store's real doors are MCP and x402-over-HTTP, so the
+ * bindings are those protocols' URIs — and never one of the three
+ * A2A message bindings, which would invite message/send calls the
+ * till cannot answer.
+ */
+describe("the A2A card speaks v1.0 without lying about transports", () => {
+  it("carries supportedInterfaces in the v1.0 shape, first entry preferred", async () => {
+    const card = await json("/.well-known/agent-card.json");
+    const interfaces = card.supportedInterfaces;
+    expect(Array.isArray(interfaces)).toBe(true);
+    expect(interfaces.length).toBeGreaterThanOrEqual(2);
+    for (const entry of interfaces) {
+      expect(typeof entry.url).toBe("string");
+      expect(typeof entry.protocolBinding).toBe("string");
+      expect(typeof entry.protocolVersion).toBe("string");
+    }
+    // First entry is the preferred door, and it is the MCP endpoint —
+    // the same URL the 0.3 dialect's preferredTransport points at.
+    expect(interfaces[0].url).toBe(card.url);
+  });
+
+  it("never claims an A2A message binding it cannot answer", async () => {
+    const card = await json("/.well-known/agent-card.json");
+    for (const entry of card.supportedInterfaces) {
+      // §5.8: custom bindings are URIs. The three canonical A2A
+      // message bindings are exactly the claims that would be false.
+      expect(["JSONRPC", "GRPC", "HTTP+JSON"]).not.toContain(
+        entry.protocolBinding,
+      );
+      expect(entry.protocolBinding).toMatch(/^https?:\/\//);
+    }
+  });
+
+  it("keeps the 0.3 dialect beside it for older readers", async () => {
+    const card = await json("/.well-known/agent-card.json");
+    // The both-spellings posture: nothing the 0.3 reader used goes away.
+    expect(card.protocolVersion).toBe("0.3.0");
+    expect(card.preferredTransport).toBe("MCP");
+    expect(Array.isArray(card.additionalInterfaces)).toBe(true);
+    // And v1.0's relocated extended-card flag says no in both homes.
+    expect(card.supportsAuthenticatedExtendedCard).toBe(false);
+    expect(card.capabilities.extendedAgentCard).toBe(false);
+  });
+});

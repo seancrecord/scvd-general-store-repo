@@ -1,6 +1,8 @@
 import { KV_KEYS } from "@/lib/kv-keys";
 import { cachedPublicKeyHex, signMessage } from "@/lib/signing";
-import { probeOnce, runChecks } from "@/services/preflight";
+import { readObserverStatus } from "@/lib/observer-control";
+import type { ObserverStatus } from "@/lib/observer-control";
+import { PREFLIGHT_BATTERY, probeOnce, runChecks } from "@/services/preflight";
 import { ProbeTargetRefused } from "@/lib/probe-target";
 import { REFUSED_CHECK } from "@/services/standing-watch";
 import { sweepWatches } from "@/services/watch-sweep";
@@ -58,6 +60,23 @@ export interface ConformancePass {
   failed: string[];
   /** Names of advisories raised — true, never folded into the verdict. */
   advisories: string[];
+  /**
+   * WHICH BATTERY PRODUCED THE VERDICT (D6), inside the signed bytes
+   * — the one paid artifact class the D6 fix skipped, found by the
+   * instrument audit 2026-08-28 in the month the battery moved
+   * twice. Absent on legacy rows and on rows where no battery ran
+   * (unreachable, refused); citing a battery that did not run is the
+   * standing watch's own words for the lie this avoids.
+   */
+  battery?: string;
+  /**
+   * WHOSE FAILURE A FAILED PASS WAS (B6) — the standing watch's
+   * accounting, adopted here 2026-08-28. "degraded" means our own
+   * control beacon failed in the same tick: our vantage was blind,
+   * and the day must not book against the endpoint. Absent on legacy
+   * rows and on refused rows.
+   */
+  observer_status?: ObserverStatus;
   /** ed25519 over canonicalizeConformancePass(); each day quotable alone. */
   signature: string;
   public_key: string;
@@ -84,11 +103,14 @@ function newWatchId(): string {
 export function canonicalizeConformancePass(
   watchId: string,
   url: string,
-  pass: Pick<ConformancePass, "at" | "verdict" | "failed" | "advisories"> & {
+  pass: Pick<
+    ConformancePass,
+    "at" | "verdict" | "failed" | "advisories" | "battery" | "observer_status"
+  > & {
     status?: number;
   },
 ): string {
-  return JSON.stringify({
+  const payload: Record<string, unknown> = {
     watch_id: watchId,
     url,
     at: pass.at,
@@ -96,7 +118,14 @@ export function canonicalizeConformancePass(
     status: pass.status ?? null,
     failed: pass.failed,
     advisories: pass.advisories,
-  });
+  };
+  // The append-law (standing-watch's canonicalizeProbe, twice
+  // demonstrated): legacy rows keep their exact original preimage;
+  // rows recorded from 2026-08-28 append battery, then
+  // observer_status, when present — the order is the contract.
+  if (pass.battery) payload["battery"] = pass.battery;
+  if (pass.observer_status) payload["observer_status"] = pass.observer_status;
+  return JSON.stringify(payload);
 }
 
 export async function startConformanceWatch(
@@ -140,13 +169,16 @@ async function passOnce(
   let status: number | undefined;
   let failed: string[] = [];
   let advisories: string[] = [];
+  let battery: string | undefined;
+  let observerStatus: ObserverStatus | undefined;
   try {
     const outcome = await probeOnce(record.url, fetch, "", env);
     status = outcome.response.status;
-    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body);
+    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body, record.url);
     failed = ran.checks.filter((check) => !check.ok).map((check) => check.name);
     advisories = ran.advisories.map((advisory) => advisory.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
+    battery = PREFLIGHT_BATTERY;
   } catch (error) {
     /*
      * REFUSED IS NOT UNREACHABLE. probeOnce carries this store's own
@@ -160,15 +192,20 @@ async function passOnce(
       failed = [REFUSED_CHECK];
     } else {
       verdict = "unreachable";
+      // B6: could WE see anything that tick? A blind vantage must
+      // not book a paying customer's day as their outage.
+      observerStatus = await readObserverStatus(env);
     }
   }
   const body: Pick<
     ConformancePass,
-    "at" | "verdict" | "failed" | "advisories"
+    "at" | "verdict" | "failed" | "advisories" | "battery" | "observer_status"
   > & { status?: number } = { at, verdict, failed, advisories };
   if (status !== undefined) {
     body.status = status;
   }
+  if (battery) body.battery = battery;
+  if (observerStatus) body.observer_status = observerStatus;
   const { signature } = await signMessage(
     canonicalizeConformancePass(record.watch_id, record.url, body),
     env.SIGNING_KEY,
@@ -208,6 +245,13 @@ export interface ConformanceWatchHistory {
   summary: {
     days_elapsed: number;
     passes_recorded: number;
+    /**
+     * Rows that actually observed the endpoint: refused rows are our
+     * policy and degraded-unreachable rows are our blind vantage
+     * (B11, adopted 2026-08-28). The denominator to judge the door
+     * by; passes_recorded keeps counting every row.
+     */
+    passes_observed: number;
     /**
      * Elapsed days nobody checked. OUR gaps — derived at read time,
      * never stored, so they cannot be edited into politeness.
@@ -264,8 +308,18 @@ export async function readConformanceWatch(
   // pass's failed names and compare across the week. Unreachable
   // passes are excluded; a network moment is not a conformance change.
   const readouts = new Set<string>();
+  let observed = 0;
   for (const pass of record.passes) {
     tally[pass.verdict] += 1;
+    // B11's arithmetic, adopted from the standing watch 2026-08-28:
+    // a refused row is our policy and a degraded-unreachable row is
+    // our blindness; neither is an observation of the endpoint.
+    if (
+      pass.verdict !== "refused" &&
+      !(pass.verdict === "unreachable" && pass.observer_status === "degraded")
+    ) {
+      observed += 1;
+    }
     if (pass.verdict !== "unreachable" && pass.verdict !== "refused") {
       readouts.add(JSON.stringify([...pass.failed].sort()));
     }
@@ -280,15 +334,23 @@ export async function readConformanceWatch(
     summary: {
       days_elapsed: daysElapsed,
       passes_recorded: record.passes.length,
+      /**
+       * Rows that actually OBSERVED the endpoint: refused rows are
+       * our policy, degraded-unreachable rows are our blind vantage,
+       * and neither says anything about the door. passes_recorded
+       * keeps its historical meaning (every row); this is the
+       * denominator a reader should judge the endpoint by (B11).
+       */
+      passes_observed: observed,
       days_unchecked: Math.max(0, daysElapsed - record.passes.length),
       ...tally,
       drift_detected: drift,
     },
     passes: record.passes,
     how_to_verify:
-      "Each pass is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, failed, advisories (exactly that order, null for an absent status) against the pass's public_key. A single day survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
+      "Each pass is signed on its own: ed25519_verify over JSON with keys watch_id, url, at, verdict, status, failed, advisories (exactly that order, null for an absent status) against the pass's public_key. Rows recorded from 2026-08-28 append battery, then observer_status, after advisories when present — legacy rows keep their exact original preimage. A single day survives being quoted alone; the key's continuity policy is at /.well-known/scvd-signing-key.",
     what_this_is_not:
-      "Not a ranking, not a badge, not uptime (one pass a day cannot be — the hourly product is the Night Watch), and not a claim about anyone but the endpoint its buyer asked us to check. days_unchecked counts the days WE missed — our gaps, stated. drift_detected is arithmetic over the signed rows — the sorted failed-check sets of reachable passes compared across the week — recomputable without us.",
+      "Not a ranking, not a badge, not uptime (one pass a day cannot be — the hourly product is the Night Watch), and not a claim about anyone but the endpoint its buyer asked us to check. days_unchecked counts the days WE missed — our gaps, stated; passes_observed excludes our refusals and our blind days, so nobody's outage is booked to this endpoint. drift_detected is arithmetic over the signed rows — the sorted failed-check sets of reachable passes compared across the week — recomputable without us.",
     who_pays_and_what_it_buys: WHO_PAYS_AND_WHAT_IT_BUYS,
   };
 }

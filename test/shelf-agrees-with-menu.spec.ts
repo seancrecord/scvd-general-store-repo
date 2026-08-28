@@ -64,6 +64,24 @@ describe("the six shelves on the sign", () => {
     expect(shown).toEqual(expected);
   });
 
+  it("gives the menu's floor item a card at all", () => {
+    // The keeper caught this from the live page (2026-08-28): the
+    // sign led with the half-cent blessing while the menu's actual
+    // floor — spot_check at a tenth of a cent, the number every
+    // surface advertises as CHEAPEST_ON_THE_SHELF — had no card. The
+    // ordering test below can only order the cards that exist; this
+    // one says the cheapest thing on the menu must BE a card, whatever
+    // it is this week. Derived, so a future floor item fails here the
+    // day it lands, not the day somebody notices.
+    const floor = [...MENU_ITEMS].sort(
+      (a, b) => a.price_usdc - b.price_usdc,
+    )[0]!;
+    expect(
+      FEATURED_SHELVES.some((shelf) => shelf.id === floor.id),
+      `the menu's cheapest item (${floor.id} at $${floor.price_usdc}) has no shelf card on the sign`,
+    ).toBe(true);
+  });
+
   it("puts the cheapest thing first, like every other surface", async () => {
     // The whole point of the reorder: an agent scanning for the
     // smallest number it can settle without asking a human should not

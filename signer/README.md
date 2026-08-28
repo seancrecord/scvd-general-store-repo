@@ -28,8 +28,12 @@ npm install x402-sign
 A census of every host on the x402 discovery list (2026-08-03, one
 GET each, reproducible by anyone via the free public checker at
 `POST https://scvd.store/api/preflight/v1`) found **34 of 35 hosts
-serve no signed offers at all** — and the one attempting them serves
-offers that fail JWS parsing before a verifier reads a single field.
+serve no signed offers in the challenge header that probe reads** —
+offers placed only in the 402 body were beyond that instrument's
+read — and the one attempting them serves offers that fail JWS
+parsing before a verifier reads a single field. (The census cannot
+probe its own host, so scvd.store's own offer-serving door is not in
+the 35.)
 
 A 402 without a signed offer asks the buyer to pay against terms
 nobody committed to. With one, the buyer holds a pre-payment

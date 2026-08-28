@@ -80,11 +80,13 @@ import {
   priceTiersUsdc,
   usdcToAtomic,
   getPaymentStack,
+  isTransientSettleFailure,
   minimumUsdcForPath,
   processSettlementWithRetry,
   rescueAmbiguousSettle,
   tipFromPaid,
 } from "@/lib/payments";
+import { recordSettlementUnknown } from "@/services/settlement-unknown";
 import type { SettledPayment } from "@/lib/payments";
 import { SettlementDeclined } from "@/lib/payments";
 import {
@@ -581,6 +583,30 @@ function gateSignals(c: Context<HonoEnv>): EventSignals {
  * only stops punishing clients that speak the ecosystem's older name
  * correctly.
  */
+/** The header x402 v2 documents, and the v1 name much of the ecosystem still sends. */
+export const PAYMENT_HEADER = "PAYMENT-SIGNATURE";
+export const PAYMENT_HEADER_V1_ALIAS = "X-PAYMENT";
+
+/**
+ * THE ENVELOPE, IN WHICHEVER DIALECT IT ARRIVED (task #50).
+ *
+ * The adapter below taught the SDK to ACCEPT the old name. Everything
+ * in this file that reads the envelope for its own purposes — the
+ * local preflight, payer attribution, the ambiguous-settle rescue,
+ * Machine 1's row — went on reading only the v2 name, so an X-PAYMENT
+ * buyer could take the door while the door learned nothing about
+ * them: no named diagnosis, no payer for the house flag, and no nonce
+ * to ask the chain with when a settle died in transport.
+ *
+ * That is the SAME bug the adapter fixed, one layer up, and it stayed
+ * hidden the same way: the alias was present in the file, so the file
+ * looked dialect-aware. So there is exactly one reader now, and
+ * test/no-bare-payment-header.spec.ts fails if a second appears.
+ */
+function paymentHeaderOf(c: Context<HonoEnv>): string | undefined {
+  return c.req.header(PAYMENT_HEADER) ?? c.req.header(PAYMENT_HEADER_V1_ALIAS);
+}
+
 class DialectTolerantAdapter extends HonoAdapter {
   override getHeader(name: string): string | undefined {
     const direct = super.getHeader(name);
@@ -589,8 +615,8 @@ class DialectTolerantAdapter extends HonoAdapter {
     }
     // Only this one header aliases. A blanket fallback would be a
     // guess about headers nobody asked us to guess about.
-    return name.toLowerCase() === "payment-signature"
-      ? super.getHeader("X-PAYMENT")
+    return name.toLowerCase() === PAYMENT_HEADER.toLowerCase()
+      ? super.getHeader(PAYMENT_HEADER_V1_ALIAS)
       : undefined;
   }
 }
@@ -713,7 +739,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   // means a malformed payload comes back named and instant instead of
   // cryptic and slow. Only definitively-wrong fields refuse here; see
   // `blocking` in requirement-match.ts for what we decline to judge.
-  const offeredHeader = c.req.header("PAYMENT-SIGNATURE");
+  const offeredHeader = paymentHeaderOf(c);
   if (offeredHeader) {
     const preflight = preflightBlockers(offeredHeader);
     const first = preflight[0];
@@ -808,16 +834,56 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
        * the visitor. The uptime monitors polling these doors see the
        * 402 they came for.
        */
-      await recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
-        (error) => console.error("challenge count lost:", String(error)),
-      );
-      // A marker that reached a priced door. Counted apart from one
-      // that settled, because the gap between them is the signal.
-      await recordReferralFor(c, "arrived").catch(() => undefined);
+      // The referral marker rides along: a marker that reached a
+      // priced door, counted apart from one that settled, because the
+      // gap between them is the signal.
+      const tally = (): Promise<unknown> =>
+        Promise.all([
+          recordChallengeIssued(c.env, c.req.path, gateSignals(c)).catch(
+            (error) => console.error("challenge count lost:", String(error)),
+          ),
+          recordReferralFor(c, "arrived").catch(() => undefined),
+        ]);
       // If a signed payment rode in and still got a 402, that's a
       // decline: tell the payer why and keep the reason in the books.
       const paymentHeader =
-        c.req.header("PAYMENT-SIGNATURE") ?? c.req.header("X-PAYMENT");
+        paymentHeaderOf(c);
+      if (paymentHeader) {
+        // A refused payment ATTEMPT keeps its books ahead of the
+        // response — declines are money-adjacent and rare, and the
+        // decline row below joins the same wave of truth.
+        await tally();
+      } else {
+        /*
+         * THE QUOTE LEAVES FIRST (the keeper's ruling, 2026-08-27:
+         * do it right without breaking the books — and his sharper
+         * point, "the probers don't even pay and they log": the bare
+         * price-check IS the measured path, hit all day by monitors
+         * and directory probes that never present a signature).
+         *
+         * A KV write is not edge-local — the wave above was parallel
+         * but the response still waited for its slowest write to
+         * cross to central storage. The 402 is the product; the
+         * count is bookkeeping; the count now rides waitUntil and
+         * lands within the request's lifetime instead of ahead of
+         * its first byte. What this costs, stated plainly: an
+         * isolate killed mid-flight loses a tally mark — a CHALLENGE
+         * count, never a settle, never a decline; those two stay
+         * awaited on their own paths. The earlier ruling in
+         * metrics.ts ("the test was right — write-before-response is
+         * an observable contract") is superseded by this one for the
+         * bare-quote branch only; the contract is now
+         * lands-within-the-request, and the suite holds it with
+         * vi.waitFor where it used to assume synchrony.
+         */
+        try {
+          c.executionCtx.waitUntil(tally());
+        } catch {
+          // No execution context (bare test invocation): the old
+          // contract, unchanged.
+          await tally();
+        }
+      }
       // Slot first: it is exact and works even when the payload carries
       // no nonce to join on, which is exactly the wrong-network case.
       // The nonce map is the fallback for anything that reached the
@@ -1170,7 +1236,19 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         { request: context },
       );
     } catch (error) {
-      // P1: the settle call errored outright.
+      // P1: the settle call errored outright — NO VERDICT, which is
+      // Machine 1's whole subject: the row keeps the question open so
+      // the hourly resolver can ask the chain, instead of this state
+      // being findable only by hand reconciliation (2026-08-07).
+      await recordSettlementUnknown(c.env, {
+        path: c.req.path,
+        door: "http",
+        reason: `threw:${String(error).slice(0, 200)}`,
+        network: verifiedRequirements.network,
+        ...(paymentHeaderOf(c)
+          ? { paymentHeader: paymentHeaderOf(c) }
+          : {}),
+      });
       await sendAlert(c.env, {
         condition: "settlement_failure",
         detail: `processSettlement threw on ${c.req.path}: ${String(error)}`,
@@ -1199,12 +1277,41 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     } else {
       const rescued = await rescueAmbiguousSettle(c.env, {
         errorReason: settlement.errorReason,
-        paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
+        paymentHeader: paymentHeaderOf(c),
         network: verifiedRequirements.network,
+        // #55: a failed settle whose response NAMES a transaction is
+        // the duplicate-submission answer with the receipt attached —
+        // the rescue fires on it and the chain confirms or refuses.
+        ...(settlement.transaction
+          ? { failureTransaction: settlement.transaction }
+          : {}),
       });
       if (!rescued) {
         // Verified but didn't settle — and the chain agrees, or the
         // question didn't apply. Same instrument, settle-side reason.
+        //
+        // MACHINE 1 (#56): when the rescue was ATTEMPTED and came back
+        // empty, the state may still be genuinely unknown — the RPC
+        // could have been down, the rail may have no inline reader, or
+        // the burn may land seconds later. The decline is served (money
+        // fails closed for delivery NOW), and the row keeps the
+        // question open for the hourly resolver. A plain verdict
+        // decline (insufficient_funds and kin) is ANSWERED and writes
+        // no row.
+        if (
+          isTransientSettleFailure(settlement.errorReason) ||
+          settlement.transaction
+        ) {
+          await recordSettlementUnknown(c.env, {
+            path: c.req.path,
+            door: "http",
+            reason: `settle:${settlement.errorReason}`.slice(0, 300),
+            network: verifiedRequirements.network,
+            ...(paymentHeaderOf(c)
+              ? { paymentHeader: paymentHeaderOf(c) }
+              : {}),
+          });
+        }
         await recordPaymentDecline(
           c.env,
           c.req.path,
@@ -1277,7 +1384,7 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     // debited; when both are present they are the same address.
     till.payer =
       till.settled.payer ??
-      payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"));
+      payerFromPaymentHeader(paymentHeaderOf(c));
     if (till.payer) {
       settlementSignals.payer = till.payer;
     }
@@ -1378,8 +1485,8 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   c.set("pending", {
     paidUsdc,
     tipUsdc: tipFromPaid(paidUsdc, minimumUsdc),
-    ...(payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE"))
-      ? { payer: payerFromPaymentHeader(c.req.header("PAYMENT-SIGNATURE")) }
+    ...(payerFromPaymentHeader(paymentHeaderOf(c))
+      ? { payer: payerFromPaymentHeader(paymentHeaderOf(c)) }
       : {}),
     settle: settleNow,
   });

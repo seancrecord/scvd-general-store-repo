@@ -590,6 +590,36 @@ export async function getBlockNumber(
 }
 
 /**
+ * isBlacklisted(address) on the chain's canonical USDC contract —
+ * FiatToken's own read, selector 0xfe575a87 (the depth pass,
+ * 2026-08-28). USDC carries a compliance blacklist, and a
+ * blacklisted payTo cannot be credited: the transfer reverts in
+ * simulation before it can broadcast, exactly the failure shape the
+ * Solana token-account read already catches on the other rail. One
+ * eth_call of public state, unpaid, repeatable by anyone. Throws
+ * when no endpoint answers — the caller decides what an unread
+ * ledger means, and it is never a fact about the address.
+ */
+export async function usdcBlacklisted(
+  env: Env,
+  chain: EvmChain,
+  address: string,
+): Promise<boolean> {
+  const clean = address.toLowerCase().replace(/^0x/, "");
+  if (!/^[0-9a-f]{40}$/.test(clean)) {
+    throw new Error(`not an EVM address: ${address}`);
+  }
+  const data = `0xfe575a87${"0".repeat(24)}${clean}`;
+  const result = await rpc<string>(
+    env,
+    "eth_call",
+    [{ to: chain.usdc, data }, "latest"],
+    chain,
+  );
+  return BigInt(result === "0x" ? "0x0" : result) === 1n;
+}
+
+/**
  * When was this block mined? One header read, no transactions. Built
  * for the till sentinel (2026-08-20): its walk rides an hourly cursor
  * that can run a day behind, and an alert that prints only a block
@@ -642,6 +672,36 @@ export async function findAuthorizationUse(
       address: chain.usdc,
       fromBlock: `0x${Math.max(0, head - blockWindow).toString(16)}`,
       toBlock: "latest",
+      topics: [AUTHORIZATION_USED_TOPIC, padded, nonce.toLowerCase()],
+    },
+  ], chain);
+  const found = (logs ?? [])[0];
+  return found?.transactionHash
+    ? { txHash: String(found.transactionHash).toLowerCase() }
+    : null;
+}
+
+/**
+ * The same one question over an EXPLICIT block range, for callers that
+ * walk history in chain-sized chunks (Machine 1's resolver re-asks
+ * hours after the ambiguous settle, which can sit past the one-call
+ * window findAuthorizationUse scans — especially on Polygon, whose
+ * public getLogs cap is 500 blocks).
+ */
+export async function findAuthorizationUseInRange(
+  env: Env,
+  authorizer: string,
+  nonce: string,
+  fromBlock: number,
+  toBlock: number,
+  chain: EvmChain = BASE_EVM,
+): Promise<{ txHash: string } | null> {
+  const padded = `0x${authorizer.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+  const logs = await rpc<Array<{ transactionHash: string }>>(env, "eth_getLogs", [
+    {
+      address: chain.usdc,
+      fromBlock: `0x${Math.max(0, fromBlock).toString(16)}`,
+      toBlock: `0x${Math.max(0, toBlock).toString(16)}`,
       topics: [AUTHORIZATION_USED_TOPIC, padded, nonce.toLowerCase()],
     },
   ], chain);

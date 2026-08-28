@@ -24,7 +24,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, a buyer could pay. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
+      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
   },
   /**
@@ -49,13 +49,13 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the same published battery the free preflight runs, and signs the whole readout: verdict, every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
+      "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the published preflight battery, and signs the whole readout: the frozen v1 verdict this series has always cited, the same probe scored under the current v2 battery beside it (payability folded in — the two can disagree, and the report says when they do), every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
     note_402:
       "Five dollars. The looking is free and always will be — what costs money is the part where somebody else has to believe you.",
     constraints: [
       "Give the endpoint in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
       "One GET at one moment, signed; never a monitor — the week-long look is The Night Watch",
-      "The criteria are the free preflight's published battery (GET /api/preflight/v1); the audit runs those checks and no others",
+      "The cited criteria are the frozen v1 battery (GET /api/preflight/v1); the signed report also carries the same probe scored under v2 (also_under), so the paid artifact can never quietly say less than the free door",
       "We refuse our own hostname — an audit of ourselves signed by ourselves would be the instrument vouching for itself",
       "The report URL is free to read forever",
     ],
@@ -80,7 +80,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the full published preflight battery against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
+      "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the published preflight battery (v1, the frozen structural series — the battery each signed pass names inside its own bytes) against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers in either placement — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
     note_402:
       "Five dollars for the week — seventy-one cents a day, near enough. One look each day, signed. Deploy something on a Tuesday that quietly breaks your challenge, and this is the page that knows. Our own missed days are on it too.",
     constraints: [

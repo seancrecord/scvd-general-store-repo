@@ -70,6 +70,7 @@ export function l3bChecks(
 ): ValueCheck[] {
   const payToFailures: string[] = [];
   const decimalAmounts: string[] = [];
+  const malformedAmounts: string[] = [];
   const testnetNetworks: string[] = [];
   for (let index = 0; index < accepts.length; index += 1) {
     const entry = accepts[index]!;
@@ -79,8 +80,19 @@ export function l3bChecks(
       payToFailures.push(`accepts[${index}].payTo: ${verdict.detail ?? "not payable"}`);
     }
     const amount = String(entry["amount"] ?? "");
+    /*
+     * THE WHOLE GRAMMAR, NOT ONE TYPO (the depth pass, 2026-08-28,
+     * ledger B13's residue). This caught only the decimal point,
+     * so "-5000", "5e3", "0x1388" and "" all read as atomic and
+     * sound — amounts no client can sign an authorization for. An
+     * x402 amount is a non-negative integer string of atomic units;
+     * anything else is unsignable, and the check now says which
+     * way it is wrong.
+     */
     if (amount.includes(".")) {
       decimalAmounts.push(`accepts[${index}].amount "${amount}"`);
+    } else if (!/^[0-9]+$/.test(amount)) {
+      malformedAmounts.push(`accepts[${index}].amount "${amount}"`);
     }
     if (KNOWN_TESTNETS[network]) {
       testnetNetworks.push(`accepts[${index}].network ${network} (${KNOWN_TESTNETS[network]})`);
@@ -98,16 +110,26 @@ export function l3bChecks(
           ok: false,
           detail: `${payToFailures.join("; ")}. A door whose payTo cannot be credited 402s perfectly and nobody can pay it.`,
         },
-    decimalAmounts.length === 0
+    decimalAmounts.length === 0 && malformedAmounts.length === 0
       ? {
           name: "amount-atomic",
           ok: true,
-          detail: "every accepts amount is atomic units, no decimal points",
+          detail:
+            "every accepts amount is a non-negative integer string of atomic units",
         }
       : {
           name: "amount-atomic",
           ok: false,
-          detail: `${decimalAmounts.join("; ")} contains a decimal point — x402 amounts are ATOMIC units (USDC has 6 decimals), so a dollar-typed amount underprices by a factor of a million.`,
+          detail: [
+            decimalAmounts.length > 0
+              ? `${decimalAmounts.join("; ")} contains a decimal point — x402 amounts are ATOMIC units (USDC has 6 decimals), so a dollar-typed amount underprices by a factor of a million.`
+              : "",
+            malformedAmounts.length > 0
+              ? `${malformedAmounts.join("; ")} is not a non-negative integer string — negative, exponent, hex, or empty amounts cannot be signed into an authorization by any client.`
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" "),
         },
     testnetNetworks.length === 0
       ? {

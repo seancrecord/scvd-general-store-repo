@@ -9,7 +9,7 @@ import { checkProbeTarget } from "@/lib/probe-target";
 import { webBotAuthHeaders } from "@/lib/web-bot-auth";
 import { sweepWatches } from "@/services/watch-sweep";
 import {
-  captureWatchEvidence,
+  captureWatchEvidenceKeepingBody,
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import { WHO_PAYS_AND_WHAT_IT_BUYS } from "@/store/copy/who-pays";
@@ -272,8 +272,12 @@ async function probeOnce(
     });
     latency = Date.now() - started;
     status = response.status;
-    evidence = await captureWatchEvidence(response);
-    const { checks } = runChecks(response, evidence.body_truncated);
+    // KeepingBody so the battery reads BOTH offer placements (the
+    // instrument audit, 2026-08-28); the text rides beside the
+    // capture, never inside the signed row.
+    const kept = await captureWatchEvidenceKeepingBody(response);
+    evidence = kept.evidence;
+    const { checks } = runChecks(response, evidence.body_truncated, kept.bodyText, record.url);
     failed = checks.filter((check) => !check.ok).map((check) => check.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
     /*

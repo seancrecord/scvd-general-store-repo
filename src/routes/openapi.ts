@@ -1790,6 +1790,21 @@ export function stampCollections(document: OpenApiObject): void {
 export function stampAsyncJob(document: OpenApiObject): void {
   const paths = document["paths"];
   if (typeof paths !== "object" || paths === null) return;
+  /**
+   * THE POLL'S OWN NAME, READ FROM THE DOCUMENT (scanner, 2026-08-28).
+   * A pattern scanner reported "no async job pattern found" — it reads
+   * the spec-native markers, not our x-async-job extension. The 202
+   * stays declined (the store answers 200 with partial goods;
+   * why_not_202 is the written reason), but OpenAPI `links` is the
+   * vocabulary built for exactly this start→poll relationship, so
+   * every start operation's 200 now links the poll operation. The
+   * operationId is read off the poll op right here rather than
+   * retyped, so a renamed operation moves every link the same render.
+   */
+  const pollItem = (paths as Record<string, unknown>)[
+    ASYNC_JOB.poll_url_template
+  ] as Record<string, OpenApiObject> | undefined;
+  const pollOperationId = pollItem?.["get"]?.["operationId"];
   for (const [path, item] of Object.entries(paths as Record<string, unknown>)) {
     if (typeof item !== "object" || item === null) continue;
     for (const operation of Object.values(item as Record<string, unknown>)) {
@@ -1806,6 +1821,25 @@ export function stampAsyncJob(document: OpenApiObject): void {
               note: "Instant items complete in this response and carry status 'completed'; human-fulfilled items come back queued, and the job is finished at the poll URL. Which an item is is stated on its menu entry as fulfillment.",
             }),
       };
+      if (!isPoll && typeof pollOperationId === "string") {
+        const responses = op["responses"] as
+          | Record<string, OpenApiObject>
+          | undefined;
+        const ok = responses?.["200"];
+        if (ok && typeof ok === "object") {
+          ok["links"] = {
+            ...(typeof ok["links"] === "object" && ok["links"] !== null
+              ? (ok["links"] as OpenApiObject)
+              : {}),
+            order: {
+              operationId: pollOperationId,
+              parameters: { order_id: "$response.body#/order_id" },
+              description:
+                "Human-fulfilled purchases return an order_id; poll it here until status is terminal. Instant items complete in the buy response itself and never need this link.",
+            },
+          };
+        }
+      }
     }
   }
 }

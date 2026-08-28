@@ -126,7 +126,15 @@ describe("the summary answers the three questions fast", () => {
     expect(outcome.passport.signed_payload).toContain('"summary"');
   });
 
-  it("the self-passport carries the same block, fresh by construction", async () => {
+  it("the self-passport carries the same block, fresh because the live modules agree", async () => {
+    /*
+     * "Fresh by construction" retired 2026-08-28: the summary used to
+     * be hardcoded ready/fresh whatever the modules concluded (rule
+     * 46's shape on the flagship trust artifact). It is DERIVED now —
+     * this passes because the live catalogs agree at render, and
+     * test/self-passport-derives.spec.ts proves a planted conflict
+     * turns the same fields dark.
+     */
     const json = (await (
       await SELF.fetch("https://scvd.store/passport", {
         headers: { Accept: "application/json" },

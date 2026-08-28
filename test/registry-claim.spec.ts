@@ -114,4 +114,45 @@ describe("the registry claims only what the census measured", () => {
     );
     expect(body).not.toContain("cryptographically verify");
   });
+
+  it("the MACHINE half uses the corrected vocabulary too, with counts beside the percent", async () => {
+    /*
+     * THE RELAPSE THIS GUARDS (the instrument audit, 2026-08-28).
+     * A2/H1 retired "verifiable" and "working" from the prose — and
+     * the JSON-LD beside it, the half the route's own comment says
+     * matters MORE because indexers quote it verbatim, kept saying
+     * both, as a bare percent. The retired words are banned from the
+     * structured data, and the signed-offers ratio must travel with
+     * its numerator and denominator as their own properties (B10).
+     */
+    await (env as unknown as Env).COUNTERS.put(
+      KV_KEYS.registryPulse,
+      JSON.stringify({ version: 1, weeks: [WITH_OFFERS] }),
+    );
+    const body = await (
+      await SELF.fetch(`${BASE}/registry`, { headers: { Accept: "text/html" } })
+    ).text();
+    const ldMatch = body.match(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+    );
+    expect(ldMatch, "the page serves no JSON-LD block").toBeTruthy();
+    const ld = JSON.parse(ldMatch![1]!) as {
+      variableMeasured?: { name: string; value: unknown }[];
+    };
+    const names = (ld.variableMeasured ?? []).map((entry) => entry.name);
+    expect(names.length, "no variableMeasured rendered").toBeGreaterThan(0);
+    for (const name of names) {
+      expect(name).not.toMatch(/verifiable/i);
+      expect(name).not.toMatch(/\bworking\b/i);
+    }
+    // B10: every percent property has count properties beside it.
+    expect(
+      names.some((name) => name.includes("(count")),
+      "the serving count does not ride beside the percent",
+    ).toBe(true);
+    expect(
+      names.some((name) => name.includes("denominator")),
+      "the denominator does not ride beside the percent",
+    ).toBe(true);
+  });
 });

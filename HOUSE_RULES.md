@@ -639,6 +639,58 @@ LORE & TRADITION
     ⚑ Wording of this rule awaits the keeper's own ink.
 
 
+55. EVERY CLAIM SHIPS WITH A PATH A READER CAN WALK. (Adopted
+    2026-08-27 from the standing task list; the practice has been
+    house law in code since the vocabulary shipped, borrowed openly
+    from Cairn's wake-124 evidence discipline, and this entry makes
+    it a rule about ALL of the store's claims rather than one
+    file's.)
+
+    A claim that cannot be falsified is not a finding, it is an
+    opinion with a name. So every claim this store publishes
+    carries one of exactly two things: a path a reader can walk
+    WITHOUT TRUSTING US — a command, a URL, an offline verify, a
+    stated recomputation — or an explicit label saying it rests on
+    inference, plus what would falsify it. There is no third state
+    where a sentence just asserts.
+
+    THE STANDING CHECKS ALREADY HOLDING IT: every defect class must
+    state asserts / falsified_by / detectable
+    (test/defect-vocabulary.spec.ts); every corpus surface says
+    how_to_rederive; every signed artifact verifies offline. A new
+    claim-bearing surface takes a check of this shape with it, per
+    rule 46's practice — proven red before it is trusted.
+
+    ⚑ Wording of this rule awaits the keeper's own ink.
+
+
+56. A CLAIM THAT LOSES ITS CHECK IS WITHDRAWN OUT LOUD. (Adopted
+    2026-08-27 from the standing task list; the precedent is the
+    store's own — the "37/37 clean" figure got its dated public
+    correction the day the board it came from moved, and the 176-
+    endpoint report was withdrawn by name when its reading of fault
+    proved wrong.)
+
+    Rule 55 says a claim ships with its path; this says what
+    happens when the path stops holding. A published claim whose
+    backing check has failed, been deleted, or turned out to prove
+    something narrower than the sentence says does not get quietly
+    reworded — it gets a dated, public withdrawal at the
+    corrections desk, findable from the claim itself (the
+    corrections pointer every evidence surface now carries,
+    test/corrections-forwarding.spec.ts). Same for the house's own
+    rules: a rule nothing checks and nothing cites is not
+    tradition, it is drift, and it is retracted the same way.
+
+    WHY OUT LOUD. A quiet fix optimizes for looking never-wrong; a
+    dated withdrawal optimizes for being checkable, which is the
+    only property this store actually sells. The withdrawal is not
+    the embarrassing part. The claim standing after its check fell
+    is.
+
+    ⚑ Wording of this rule awaits the keeper's own ink.
+
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the

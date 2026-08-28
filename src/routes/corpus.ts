@@ -13,6 +13,7 @@ import {
   CORPUS_DATASET_NAME,
 } from "@/store/corpus-dataset";
 import type { HonoEnv } from "@/types";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 
 /**
  * GET /corpus.json — the ecosystem's observed history, published.
@@ -126,8 +127,9 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "4. Check `previous_digest` equals the prior entry's digest, back to sequence 1 — that is the whole chain.",
       "5. Base64-decode `ots.proof_base64` and run `ots verify` against the digest: a Bitcoin-confirmed proof means the snapshot existed by that block, on evidence that is not ours.",
     ],
+    corrections: CORRECTIONS_POINTER,
     honest_limits:
-      "The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. A host absent from the round was unlisted or unreachable that week, nothing more. The chain proves the record has not been rewritten; it cannot prove the round saw everything, and coverage caveats ride inside each round verbatim (capped, coverage_suspect, coverage_drop).",
+      "The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. A host absent from a round was unlisted that week, beyond the round's stated caps, or dropped by our own coverage — the round's own coverage fields say which, so absence alone proves nothing about the host. One structural exclusion, stated because it flatters our trust-gap numbers: the round can never probe this store's own host (a Worker cannot fetch itself), so our own door is in no denominator here. The chain proves the record has not been rewritten; it cannot prove the round saw everything, and coverage caveats ride inside each round verbatim (capped, coverage_suspect, coverage_drop).",
     latest: records[records.length - 1] ?? null,
     index: records.map((record) => ({
       sequence: record.snapshot.sequence,
@@ -136,7 +138,18 @@ corpusRoutes.get("/corpus.json", async (c) => {
       digest: record.digest,
       previous_digest: record.snapshot.previous_digest,
       ots_status: record.ots?.status ?? "unsubmitted",
+      /*
+       * hosts_observed keeps its historical meaning (every row the
+       * round carries, `not_probed` population rows included) under
+       * the frozen-fields law; hosts_probed beside it is the number
+       * its name always suggested. Two fields, because renaming a
+       * served field is a rewrite and a row nobody probed was never
+       * "observed" in any sense a reader would accept.
+       */
       hosts_observed: record.snapshot.round.hosts.length,
+      hosts_probed: record.snapshot.round.hosts.filter(
+        (host) => host.verdict !== "not_probed",
+      ).length,
       url: `${base}/corpus/${record.snapshot.sequence}.json`,
     })),
   });
@@ -187,6 +200,7 @@ corpusRoutes.get("/corpus/trajectory.json", async (c) => {
   const trajectory = deriveTrajectory(await listCorpus(c.env));
   return c.json({
     ...trajectory,
+    corrections: CORRECTIONS_POINTER,
     how_to_rederive: `Fetch ${base}/corpus/{sequence}.json for each point (sequences are named on the points), recount the round's rows with your own tools, and compare digests against the chain at ${base}/corpus.json. Nothing here exists outside those signed entries.`,
   });
 });
@@ -253,12 +267,14 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
     // /corpus/trajectory.json serving an empty weeks array.
     return c.json({
       week: null,
+      corrections: CORRECTIONS_POINTER,
       explanation:
         "The corpus chain holds no signed week yet, so there is nothing to count over. This surface fills with the first ward round. The index is at /corpus.json.",
     });
   }
   return c.json({
     ...facts,
+    corrections: CORRECTIONS_POINTER,
     how_to_rederive: `Fetch ${base}/corpus/${facts.sequence}.json, digest each row's advertised payment addresses with the documented salt (rows frozen after 2026-08-27 already carry pay_to_digest), cluster by digest, and recount. The snapshot's digest is named above so you know you counted what we counted.`,
     per_host: `Each door's own page at ${base}/corpus/host/{host}.json carries its payment_address block: whether its advertised address also receives at other doors that week, without naming them.`,
   });

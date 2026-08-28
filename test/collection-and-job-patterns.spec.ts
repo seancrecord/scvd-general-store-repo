@@ -297,3 +297,41 @@ describe("the async job is declared where a caller meets it", () => {
     expect(ORDER_STATUSES).toContain(order["status"] as never);
   });
 });
+
+describe("the async job speaks OpenAPI's own vocabulary too", () => {
+  it("every start operation links its poll operation, derived from the document", async () => {
+    /*
+     * Scanner, 2026-08-28: "no async job pattern found" — it reads
+     * the spec-native markers (202s, callbacks, links), not our
+     * x-async-job extension. The 202 stays declined (the store
+     * answers 200 with partial goods; why_not_202 says why), but
+     * OpenAPI `links` is the vocabulary made for exactly this
+     * relationship, so the buy operations now carry
+     * responses.200.links.order pointing at the poll operation BY
+     * THE OPERATIONID READ FROM THE DOCUMENT — never retyped, so a
+     * renamed poll operation moves every link the same render.
+     */
+    const document = (await (
+      await SELF.fetch("https://scvd.store/openapi.json")
+    ).json()) as {
+      paths: Record<string, Record<string, any>>;
+    };
+    const pollId =
+      document.paths["/api/order/{order_id}"]?.get?.operationId;
+    expect(typeof pollId).toBe("string");
+    const starts = Object.entries(document.paths).filter(([, item]) =>
+      Object.values(item).some(
+        (op) => op && typeof op === "object" && op["x-payment"],
+      ),
+    );
+    expect(starts.length).toBeGreaterThan(10);
+    for (const [path, item] of starts) {
+      for (const op of Object.values(item)) {
+        if (!op || typeof op !== "object" || !op["x-payment"]) continue;
+        const link = op.responses?.["200"]?.links?.order;
+        expect(link, `${path} missing 200 links.order`).toBeTruthy();
+        expect(link.operationId, path).toBe(pollId);
+      }
+    }
+  });
+});

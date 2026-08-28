@@ -4,6 +4,7 @@ import { escapeHtml } from "@/lib/sanitize";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import { buildFreshSet, type FreshSet, type FreshSetRow } from "@/services/fresh-set";
 import type { HonoEnv } from "@/types";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 
 /**
  * GET /fresh-set — the walkable set, served. One door, two dialects:
@@ -52,7 +53,13 @@ function freshSetDatasetJsonLd(base: string, set: FreshSet): string {
       },
       {
         "@type": "PropertyValue",
-        name: "listed doors probed",
+        /*
+         * H2's lesson, kept here too: `probed` includes revisit rows
+         * — doors no feed named THIS round, walked from an earlier
+         * listing — so "listed doors" was the substitution the
+         * per-host page already corrected.
+         */
+        name: "doors probed (named by a feed this round, or revisited from an earlier listing)",
         value: set.aggregates.probed,
       },
     ],
@@ -74,12 +81,13 @@ freshSetRoutes.get("/fresh-set", async (c) => {
       return c.json(
         {
           rows: [],
+          corrections: CORRECTIONS_POINTER,
           note: "No census round has completed yet; the first walk populates this surface.",
         },
         200,
       );
     }
-    return c.json(set);
+    return c.json({ ...set, corrections: CORRECTIONS_POINTER });
   }
 
   const bodyHtml = set
@@ -96,7 +104,8 @@ freshSetRoutes.get("/fresh-set", async (c) => {
   </section>
   <section>
     <h2>Week ${escapeHtml(set.week)}: ${set.aggregates.ready} doors answered</h2>
-    <p class="menu-meta">${set.aggregates.probed} listed doors probed:
+    <p class="menu-meta">${set.aggregates.probed} doors probed (named by a
+    feed this round, or revisited from an earlier listing):
     ${set.aggregates.ready} answered a conformant challenge,
     ${set.aggregates.not_ready} answered something that was not one,
     ${set.aggregates.unreachable} did not answer at all.

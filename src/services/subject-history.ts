@@ -7,6 +7,7 @@ import { notesForHost, type StandingNote } from "@/services/standing-note";
 import { populationHistory, type PopulationRecord } from "@/services/population";
 import type { WardHostResult } from "@/services/ward-round";
 import type { Env } from "@/types";
+import { CORRECTIONS_POINTER } from "@/store/corrections";
 
 /**
  * WHAT HAS THIS STORE OBSERVED ABOUT ONE HOST, OVER TIME — the index
@@ -133,6 +134,9 @@ export interface VerdictChange {
 export interface SubjectHistory {
   host: string;
   asked_at: string;
+  /** The forwarding pointer to the corrections desk — every evidence
+   * surface carries it (test/corrections-forwarding.spec.ts). */
+  corrections: string;
   /** The host's own standing note (G2 ruling §5), when one is attached. */
   standing_note?: StandingNote;
   /** T2 (G2 ruling): this door's own shared-wallet fact. Absent when
@@ -224,7 +228,23 @@ export async function subjectHistory(
     };
     const entry = round.hosts.find((candidate) => candidate.host === host);
 
-    if (entry && entry.verdict !== "not_probed") {
+    /*
+     * OUR BLIND WEEK IS NOT THEIR VERDICT (the instrument audit,
+     * 2026-08-28). An unreachable row whose observer_status is
+     * "degraded" means the probe's own control beacon failed in the
+     * same tick — the row's contract forbids counting it against the
+     * host or as coverage. This history counted it as a probed round
+     * and published `ready → unreachable` — in a signed, sold
+     * artifact — as the subject's change. It books below as an
+     * instrument_degraded gap instead, and the verdict thread runs
+     * across it untouched.
+     */
+    const degradedRow =
+      entry !== undefined &&
+      entry.verdict === "unreachable" &&
+      entry.observer_status === "degraded";
+
+    if (entry && entry.verdict !== "not_probed" && !degradedRow) {
       probed += 1;
       firstObserved ??= snapshot.taken_at;
       lastObserved = snapshot.taken_at;
@@ -290,7 +310,9 @@ export async function subjectHistory(
      * round WALKED, so on its own it can only ever say "walked"; the
      * register's window is what actually answers "did we know of it".
      */
-    const listedInRound = Boolean(entry);
+    // H2's rule holds here too: a revisit row was walked from the
+    // door bank, not named by a feed, so it is not "listed".
+    const listedInRound = Boolean(entry) && entry?.source !== "revisit";
     const listedInRegister =
       listing !== null &&
       listing.first_seen <= snapshot.taken_at &&
@@ -299,7 +321,11 @@ export async function subjectHistory(
 
     let gap: GapReason;
     let note: string;
-    if (!metByThen(snapshot)) {
+    if (degradedRow) {
+      gap = "instrument_degraded";
+      note =
+        "We knocked, and our own control beacon failed in the same tick: our vantage was blind, and an 'unreachable' seen from a blind vantage is not an observation of this host. Counted against us, not them.";
+    } else if (!metByThen(snapshot)) {
       gap = "before_first_sighting";
       note = "This round predates our first sight of this host. Not a miss — we had not met.";
     } else if (listedThatRound) {
@@ -362,6 +388,7 @@ export async function subjectHistory(
   return {
     host,
     asked_at: now.toISOString(),
+    corrections: CORRECTIONS_POINTER,
     ...(hostNote ? { standing_note: hostNote } : {}),
     ...(paymentAddress ? { payment_address: paymentAddress } : {}),
     listing,

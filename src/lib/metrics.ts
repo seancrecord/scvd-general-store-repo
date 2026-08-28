@@ -219,6 +219,17 @@ export async function recordChallengeIssued(
    * is an observable contract here — so the fix keeps every await
    * and removes the QUEUEING instead. Same writes, same guarantees,
    * roughly a quarter of the wall clock.
+   *
+   * SUPERSEDED IN PART, 2026-08-27, by the keeper's ruling in the
+   * worldwide-latency audit: at the GATE, the bare price-check (no
+   * payment header — the path probers and monitors hit all day)
+   * now sends this whole call through ctx.waitUntil, and the suite's
+   * contract moved with it, from write-before-response to
+   * lands-within-the-request (vi.waitFor at the readers). This
+   * function itself is unchanged and still awaits its wave — every
+   * other caller (the paid-attempt branch, crons, unit tests) keeps
+   * the old contract. See the ruling comment at the gate's 402
+   * branch; test/quote-before-tally.spec.ts pins both halves.
    */
   const pending: Array<Promise<void>> = [];
   pending.push(
@@ -792,6 +803,9 @@ export interface LedgerRow {
   verifies: number;
   verifiesHouse: number;
   verifiesInfra: number;
+  /** Payments presented and refused; with `settled`, the funnel's middle. */
+  declines: number;
+  declinesHouse: number;
   tiers: Record<string, number>;
 }
 
@@ -829,6 +843,8 @@ function emptyRow(): LedgerRow {
     verifies: 0,
     verifiesHouse: 0,
     verifiesInfra: 0,
+    declines: 0,
+    declinesHouse: 0,
     tiers: {},
   };
 }
@@ -1153,6 +1169,11 @@ export async function readMonthLedger(
     else if (kind === "verify") row.verifies = value;
     else if (kind === "verifyh") row.verifiesHouse = value;
     else if (kind === "verifyi") row.verifiesInfra = value;
+    // Declines never bucket as infrastructure (bucketSuffix is called
+    // with allowInfra false at the write): a crawler that presents a
+    // payment and is refused is a refused buyer.
+    else if (kind === "decl") row.declines = value;
+    else if (kind === "declh") row.declinesHouse = value;
   }
   if (month === FOUNDING_BACKFILL.month) {
     const row = (ledger.items[FOUNDING_BACKFILL.item] ??= emptyRow());

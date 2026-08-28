@@ -100,19 +100,21 @@ setup, then a button:
     2. Repo → Settings → Secrets and variables → Actions → New
        repository secret, named NPM_TOKEN.
     3. Actions tab → "Publish npm package" → Run workflow.
-       package: scvd · version: 0.1.0 · dry_run: checked  (look at the
+       package: scvd-cli · version: 0.1.0 · dry_run: checked  (look at the
        tarball listing in the log), then run it again unchecked.
 
 The workflow is `.github/workflows/publish-npm.yml`: workflow_dispatch
 only, refuses if the typed version disagrees with package.json or is
 already on the registry, and publishes with `--provenance` so the
 tarball carries a signed attestation binding it to this repo and
-commit. It covers all four packages here — scvd, scvd-tab, x402-verify,
+commit. It covers all four packages here — scvd-cli, scvd-tab, x402-verify,
 x402-sign — so the next publish of any of them is the same button.
 `cd cli && npm publish --access public` from a laptop still works and
 produces no provenance; prefer the button.
 
-Everything that names the package already points at `npm i -g scvd`:
+Everything that names the package already points at `npm i -g scvd-cli`
+(npm refused the bare name `scvd` — typosquat guard, 2026-08-28 — so
+the package is `scvd-cli` and the command stays `scvd`):
 /developers (HTML, JSON and markdown), /llms.txt, and the RFC 9727
 catalog at /.well-known/api-catalog. Those are honest as
 INSTRUCTIONS the day the publish runs and are a forward reference

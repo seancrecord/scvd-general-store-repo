@@ -5,6 +5,7 @@ import {
   VARY_ACCEPT,
 } from "@/lib/accept";
 import { agentsMd } from "@/routes/agents-md";
+import { FIRST_PARTY_SCRIPT_CSP } from "@/lib/csp";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
@@ -84,10 +85,7 @@ storefrontRoutes.get("/", async (c) => {
    * (never prepared as scripts) and the inline <style> is untouched —
    * only script execution is being fenced, and 'self' is the fence.
    */
-  c.header(
-    "Content-Security-Policy",
-    "script-src 'self'; object-src 'none'; base-uri 'none'",
-  );
+  c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
   return c.html(
     renderStorefront({
       base: c.env.STORE_BASE_URL,

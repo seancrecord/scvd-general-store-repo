@@ -6,6 +6,7 @@ import {
   wardDelta,
   type WardRound,
 } from "@/services/ward-round";
+import { marketAggregates } from "@/services/market";
 import type { Env } from "@/types";
 
 /**
@@ -153,6 +154,29 @@ describe("the round itself, with the outside world stubbed", () => {
     expect(round.our_search_presence).toBe(true);
     const stored = await latestWardRound(testEnv);
     expect(stored?.week).toBe(round.week);
+  });
+
+  it("the sealed market block IS the arithmetic of its own rows — claimed recomputable, and here recomputed", async () => {
+    /*
+     * The round promises its aggregates are "plain arithmetic anyone
+     * can recompute from the round's own rows" — and until
+     * 2026-08-28 nothing anywhere recomputed one: chain verification
+     * proves bytes, not derivation. This is the promise kept the way
+     * a stranger would keep it, before the block freezes into the
+     * anchored corpus.
+     */
+    stubWorld({
+      listedUrls: [
+        "https://shop-a.example/api/buy/x",
+        "https://shop-b.example/api/buy/z",
+      ],
+    });
+    await runWardRound(testEnv);
+    const stored = await latestWardRound(testEnv);
+    expect(stored?.market).toBeTruthy();
+    expect(stored!.market).toEqual(
+      marketAggregates(stored!.hosts, stored!.market!.discovery_fields_seen),
+    );
   });
 
   it("an unreadable search is 'could not check', never 'absent', and no alarm fires", async () => {

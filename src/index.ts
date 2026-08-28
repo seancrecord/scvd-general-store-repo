@@ -122,6 +122,7 @@ import {
   runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
+import { discoveryCors } from "@/lib/cors";
 import type { Env, HonoEnv } from "@/types";
 
 /**
@@ -151,6 +152,11 @@ app.use("*", async (c, next) => {
     "max-age=31536000; includeSubDomains",
   );
 });
+
+// One middleware, one explicit boundary: CORS on the public
+// discovery surface and the MCP door, nothing stateful, nothing
+// paid. The list and its reasoning live in lib/cors.ts.
+app.use("*", discoveryCors);
 
 // house tradition
 app.use("*", async (c, next) => {
@@ -579,6 +585,26 @@ const worker: ExportedHandler<Env> = {
               detail: `Long walk pass failed: ${String(error)}. The week's walk resumes on the next hourly firing; a repeat means the roster read or the state write is broken.`,
             }),
         ),
+      ),
+    );
+    /**
+     * MACHINE 1's resolver rides the same hourly firing (#56): every
+     * open settlement_unknown row gets the chain asked where a chain
+     * can answer, on a per-row cursor. Bounded per pass; a failure
+     * keeps rows open rather than answering, and the age-out inside
+     * the service is the only clock that closes an unanswerable row.
+     */
+    ctx.waitUntil(
+      import("@/services/settlement-unknown").then(
+        ({ resolveSettlementUnknowns }) =>
+          resolveSettlementUnknowns(env).then(
+            () => undefined,
+            (error) =>
+              sendAlert(env, {
+                condition: "worker_health",
+                detail: `settlement_unknown resolver pass failed: ${String(error)}. Open rows stay open; a repeat means the row list or the RPC path is broken.`,
+              }),
+          ),
       ),
     );
     ctx.waitUntil(

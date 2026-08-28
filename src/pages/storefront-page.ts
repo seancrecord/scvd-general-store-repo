@@ -30,7 +30,7 @@ import { STOREFRONT_ROOMS } from "@/store/rooms";
  */
 export const WEBMCP_ORIGIN_TRIAL_TOKEN =
   "AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=";
-import { EXTERNAL_RECORDS, OPERATOR } from "@/store/trust-signals";
+import { EXTERNAL_RECORDS, KEEPER_SOCIAL, OPERATOR } from "@/store/trust-signals";
 import { ardInPageEntries, ardLinkTags } from "@/lib/ard-catalog";
 import type { StoreStats } from "@/services/stats";
 import { dareForDay } from "@/store/copy/the-dare";
@@ -535,8 +535,16 @@ function organizationJsonLd(base: string, stats?: StoreStats | null): string {
      * follows, and a broken one in the middle of an identity claim is
      * the strongest possible argument that the identity is not real.
      */
-    ...(EXTERNAL_RECORDS.length > 0
-      ? { sameAs: EXTERNAL_RECORDS.map((record) => record.url) }
+    // KEEPER_SOCIAL rides along: the keeper's own account is textbook
+    // sameAs material, kept apart from EXTERNAL_RECORDS because those
+    // promise independent records and an owned account is not one.
+    ...(EXTERNAL_RECORDS.length > 0 || KEEPER_SOCIAL.length > 0
+      ? {
+          sameAs: [
+            ...EXTERNAL_RECORDS.map((record) => record.url),
+            ...KEEPER_SOCIAL,
+          ],
+        }
       : {}),
     /**
      * A NUMBER TO PARSE INSTEAD OF A PARAGRAPH TO INTERPRET.
@@ -629,6 +637,7 @@ export function renderStorefront(data: StorefrontData): string {
   <title>${title}</title>
   <meta name="description" content="${COPY.metaDescription}">
   <link rel="canonical" href="${data.base ?? "https://scvd.store"}/">
+  <link rel="alternate" type="text/markdown" href="${data.base ?? "https://scvd.store"}/index.md">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta property="og:url" content="${data.base ?? "https://scvd.store"}/">

@@ -374,6 +374,25 @@ export async function issueSelfPassport(
     clock: "injected-request-clock",
     getText,
   });
+  /*
+   * DERIVE OR REFUSE (rule 46; the instrument audit, 2026-08-28).
+   * This summary was captioned "DERIVED from the same locals" and
+   * was not derived — verdict:"ready", freshness:"fresh", failed:[]
+   * were literals, stamped whatever the modules two fields down had
+   * concluded. The one passport whose subject the census can never
+   * probe was the one passport whose verdict could not go dark. Now
+   * the modules ARE the verdict: every module agreeing is the only
+   * way this artifact says ready/fresh, any other derivation names
+   * the disagreeing modules in failed and renders indeterminate —
+   * which also turns the chip off, the same gate every census host
+   * lives under.
+   */
+  const disagreeing = modules
+    .filter((module) => module.derived !== "agree")
+    .map((module) => module.id);
+  const selfVerdict = disagreeing.length === 0 ? "ready" : "self-conflict";
+  const selfFreshness: FreshnessState =
+    disagreeing.length === 0 ? "fresh" : "indeterminate";
   const selfExpires = expiryFrom(at);
   const payload: PassportPayload = {
     artifact: "endpoint_passport",
@@ -383,17 +402,17 @@ export async function issueSelfPassport(
       host,
       issuedAt: at,
       expires: selfExpires,
-      freshness: "fresh",
-      verdict: "ready",
+      freshness: selfFreshness,
+      verdict: selfVerdict,
       observedAt: at,
-      failed: [],
+      failed: disagreeing,
     }),
     issued_at: at,
     expires: selfExpires,
-    freshness: "fresh",
-    freshness_rule: `Re-issued on every request from live self-observation; fresh by construction, expires ${AGING_DAYS} days after issue if you keep a copy.`,
+    freshness: selfFreshness,
+    freshness_rule: `Re-issued on every request from live self-observation; fresh exactly while every self-module derives "agree" (a conflict renders indeterminate and the chip refuses), expires ${AGING_DAYS} days after issue if you keep a copy.`,
     latest: {
-      verdict: "ready",
+      verdict: selfVerdict,
       observed_at: at,
       week: null,
     },
