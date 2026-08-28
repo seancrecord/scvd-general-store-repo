@@ -20,6 +20,67 @@ import { kvGet, kvGetJson, kvList, kvPut, withKvRetry } from "@/lib/kv-retry";
 import { venueCounterKey } from "@/store/venues";
 import type { Channel, Env, PayerRecord } from "@/types";
 
+/**
+ * HOW MANY KEYS EACH HOT COUNTER IS SPREAD OVER (task #87, rung 2).
+ *
+ * KV allows ONE WRITE PER SECOND PER KEY. Two counters take a write
+ * on essentially every 402 — the channel counter and the day counter
+ * — so the store as a whole was capped near one challenge per second
+ * before visitors began paying for the contention in latency and
+ * lost increments. The failure direction is backwards: the busier we
+ * get, the worse the books. The 2026-08-27 KV-429 incident was this
+ * arriving early; the retry that ended it absorbs bursts and does
+ * not raise the ceiling.
+ *
+ * Ten shards, chosen at random per write, is ~10x the headroom for
+ * one line of arithmetic and no new service. The read sums them, so
+ * NO SURFACE CHANGES: every caller still asks for the same totals.
+ *
+ * WHAT THIS COSTS, stated rather than discovered: each sharded bucket
+ * now occupies up to ten keys. Against METRIC_KEY_CAP that is ~310 day
+ * keys (31 days x 10) and ten per channel per bucket kind — hundreds
+ * against a 5,000 cap, with the truncation flag already honoured by
+ * the listing.
+ *
+ * THE WRITE SHARDS ON ONE LINE AND THE READER SPLITS IT. `src402`
+ * and `src402h` come off the same sharded write, so BOTH read
+ * branches sum. A branch that forgot to would not throw — it would
+ * quietly report one channel as ten, each with a tenth of the
+ * traffic. The spec asserts the shape, not just the total.
+ *
+ * Rung 3 is Analytics Engine, and it is a roadmap row rather than a
+ * patch: it moves the read side to SQL and needs a retention ruling
+ * against the monthly-books contract. Evidence rows stay in KV in
+ * every version of this — they are the product; this is bookkeeping.
+ */
+export const COUNTER_SHARDS = 10;
+
+/** The shard marker. NOT ":" — the key parser splits on that. */
+const SHARD_MARK = "#s";
+
+/**
+ * One counter bucket, spread. Random rather than round-robin: an
+ * isolate has no shared cursor to round-robin with.
+ *
+ * Both callers pass a value from a closed set — the `Channel` union
+ * and a two-digit day — so neither can contain SHARD_MARK and be
+ * truncated by `unsharded`. The spec asserts no marker reaches a
+ * printed name, which is the same fact from the other end.
+ */
+function sharded(rest: string): string {
+  return `${rest}${SHARD_MARK}${Math.floor(Math.random() * COUNTER_SHARDS)}`;
+}
+
+/**
+ * The bucket a key belongs to, sharded or not. Keys written before
+ * sharding carry no marker and read as their own bucket, so a month
+ * that began unsharded and ended sharded still totals as one month.
+ */
+function unsharded(tail: string): string {
+  const at = tail.lastIndexOf(SHARD_MARK);
+  return at === -1 ? tail : tail.slice(0, at);
+}
+
 /** Ceiling on a metric counters scan. Named because an unnamed cap is a silent one. */
 const METRIC_KEY_CAP = 5000;
 /** Ceiling on a payer rows scan. Named because an unnamed cap is a silent one. */
@@ -270,12 +331,14 @@ export async function recordChallengeIssued(
     // Who's window-shopping, by channel, the diagnosis column for
     // "challenges without settles: shoppers or scanners?"
     pending.push(
-      bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, event.channel)),
+      bump(env, KV_KEYS.metric(metricsMonth(), `src402${suffix}`, sharded(event.channel))),
     );
   }
   if (suffix === "") {
     // Organic day counter for the trend table.
-    pending.push(bump(env, KV_KEYS.metric(metricsMonth(), "d402", dayKey())));
+    pending.push(
+      bump(env, KV_KEYS.metric(metricsMonth(), "d402", sharded(dayKey()))),
+    );
   }
   if (event.declared_source && !event.house) {
     // ?src= venue markers: the free-papers measurement.
@@ -1113,9 +1176,14 @@ export async function readMonthLedger(
       continue; // The porch table reads these; the ledger doesn't.
     }
     if (kind === "d402" || kind === "dpaid") {
-      const day = (ledger.days[tail] ??= { challenges: 0, settles: 0 });
-      if (kind === "d402") day.challenges = value;
-      else day.settles = value;
+      // Summed, not assigned: one bucket may be spread over shards
+      // (task #87) and may also carry a pre-sharding key.
+      const day = (ledger.days[unsharded(tail)] ??= {
+        challenges: 0,
+        settles: 0,
+      });
+      if (kind === "d402") day.challenges += value;
+      else day.settles += value;
       continue;
     }
     if (kind === "venue") {
@@ -1141,15 +1209,27 @@ export async function readMonthLedger(
       continue;
     }
     if (kind === "src402") {
-      ledger.channels402[tail] = value;
+      const channel = unsharded(tail);
+      ledger.channels402[channel] = (ledger.channels402[channel] ?? 0) + value;
       continue;
     }
     if (kind === "src402h") {
-      ledger.channels402House[tail] = value;
+      // Same sharded write line as src402 above — the suffix picks the
+      // kind, so the house column must sum exactly as the organic one
+      // does or one channel reads as ten.
+      const channel = unsharded(tail);
+      ledger.channels402House[channel] =
+        (ledger.channels402House[channel] ?? 0) + value;
       continue;
     }
     if (kind === "src402i") {
-      ledger.channels402Infra[tail] = value;
+      // Never sharded today (the noise floor takes no write at all),
+      // summed anyway: unsharded() is identity on an unmarked key, and
+      // the alternative is a branch that breaks the day the write
+      // changes without saying so.
+      const channel = unsharded(tail);
+      ledger.channels402Infra[channel] =
+        (ledger.channels402Infra[channel] ?? 0) + value;
       continue;
     }
     if (kind === "tier" || kind === "tierh") {
