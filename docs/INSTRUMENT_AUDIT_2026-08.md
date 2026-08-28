@@ -653,6 +653,25 @@ when it does bind the watch list *rotates* by a stable per-week
 offset and the reading says so, so the unwatched remainder differs
 week to week instead of being the same tail forever.
 
+**A fifth, found the same evening by opening the page.** The keeper
+loaded `/admin/market/inflows` and it never finished. Raising the
+span budget to 120 fixed the coverage defect and created a
+wall-clock one: ~109 `getLogs` walked strictly one after another is
+a minute of round trips inside a single pageview, and the browser
+gives up first. The subrequest ceiling had been sized against the
+Workers limit; the clock had never been sized against anything.
+
+Spans now go out six at a time in **ordered batches**, and the
+reading carries a 20-second budget shared across both chains, each
+chain taking what is left divided by the chains still to walk so an
+early finisher hands on its slack. Ordered is the load-bearing word:
+firing every span at once would be faster and would let a walk cut
+short by the clock report a window with *holes* in it — a from/to
+pair claiming blocks nobody read, which is defect 4 again by a
+different route. A walk stopped by the clock now says so on the
+window, as a coverage fact like any other, rather than as a page
+that never renders.
+
 **The lesson worth keeping.** Every one of these was visible in the
 code at review time, and none was visible to me until a real reading
 made the numbers sit next to each other. The audit's own bar — an
