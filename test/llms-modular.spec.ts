@@ -45,6 +45,21 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken again 2026-08-28 on the second rebase, over the instrument
+ * audit (#311) as well: three lines of work have now edited this guide
+ * in a day, each correctly re-taking its own digest, so every rebase
+ * produces a fourth text none of the parents' values describe. Each
+ * side's sections were confirmed present in the served guide before
+ * this value was taken.
+ *
+ * Re-taken again 2026-08-28 when this batch rebased onto main: the
+ * batch and main's own PR #310 had each re-taken the digest for their
+ * own guide edits, so the rebase left a conflict between two correct
+ * values and neither survived contact with the merged document. This
+ * value is the guide with BOTH sets of edits, taken at the rebased
+ * head — the review moment the guard exists to force, checked by
+ * confirming each side's sections are still in the served text.
+ *
  * Re-taken 2026-08-28 in the commit that renamed the npm package to
  * scvd-cli (the registry's typosquat guard refuses bare `scvd`; the
  * command is still `scvd`) — the guide interpolates CLI_PACKAGE and
@@ -64,7 +79,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "0b605b135fabc8cacae6d46e45bdd743fc4a02cd9f9fd34f4e3d55d43cdb1ea4";
+  "978a282fd3f6109ab6465c8b073ab7a38edb8f883ff2a840749e242025e2643c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
