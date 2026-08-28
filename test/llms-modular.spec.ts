@@ -47,7 +47,10 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6802c8a6def9fb51be1f150059d25507d1523574e46034ddcc409102d1df59da";
+  // Re-taken 2026-08-28, the instrument-audit copy pass: the guide's
+  // words moved where its numbers' captions did (Night Watch shape
+  // not payability, the census placement scope, quotes not heads).
+  "aed6c8631a2c109fa5e66553cdaf8199334aebc7f7d6c2c80099ce582548786c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
