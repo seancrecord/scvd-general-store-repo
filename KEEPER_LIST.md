@@ -186,11 +186,27 @@ recorded as a dated host observation in §8.5; and WEBMCP IS BUILT
 document.modelContext, derived from the MCP catalog so it cannot
 act and cannot drift (test-pinned), every fetch tagged ?src=webmcp
 as its own channel, and the storefront's first CSP rides along.
-⚑ Keeper's errand if he wants pre-GA Chrome/Edge coverage:
-origin-trial tokens for scvd.store. THE EXPIRY LABEL IS RULED,
-same night: draft A, "observed {date} · stale after {date}" —
-decay named, nothing warranted forward. It lands with the first
-stored-reading card (design doc §12.4).
+~~⚑ Keeper's errand: origin-trial tokens~~ — REGISTERED AND LIVE
+same night (Chrome token in the storefront head, test-pinned on
+binding and expiry). THE EXPIRY LABEL IS RULED, same night: draft
+A, "observed {date} · stale after {date}" — decay named, nothing
+warranted forward. It lands with the first stored-reading card
+(design doc §12.4).
+SECOND BRAINSTORM RULED, 08-28 (design doc §13, the full record):
+build list = check_this_store (renamed off "scam" at his word),
+draft_purpose/cite_mandate, THE WEBMCP CONFORMANCE INSTRUMENT (his
+strongest yes — "sellable to indexers and users alike"),
+is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
+miniature: porch-class writes only — free, publish nothing, touch
+no money; guestbook stays off because it publishes words). The
+co-piloted till is PARKED on his frictionless argument, reasoning
+kept in §13.2. HIS GRAFFITI WALL is speced (§13.3): day's highest
+bidder on the home page, rides graffiti_on_a_train's existing
+pay-what-it-deserves as the auction, labeled paid, his approval
+gates display, empty wall on a no-bid day. THE POP-OFF CANDIDATE
+(§13.4, scvd.store/check/{host} — the shareable endpoint report
+page, the SSL-Labs wedge) is HELD SPECED: worth building on his
+read, not sold on readiness — built on his word, not before.
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host
