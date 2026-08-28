@@ -171,6 +171,17 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // page's audience: before a practice buyer pays anyone, a tenth of
   // a cent asks what the observatory already knows about the door.
   "spot_check",
+  /*
+   * THE READING THAT BELONGS ON THIS PAGE MOST OF ALL (#96,
+   * 2026-08-28). Every other cheap door here answers a question about
+   * somebody else. This one answers the question this page's reader
+   * IS: an agent making its first real payments, with a client nobody
+   * configured, about to meet a $1 ceiling it does not know exists.
+   * The reading is free at /api/before-you-pay/v1 and the practice
+   * counter says so; what sits here is the signed copy, priced under
+   * the ceiling on purpose so the buyer it was built for can reach it.
+   */
+  "good_buyer",
   // settlement_attestation was MISSING from this list until 2026-07-29
   // while being the cheapest item in the store — and it is the one item
   // whose audience is identical to this page's: somebody debugging a

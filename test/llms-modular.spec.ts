@@ -134,12 +134,34 @@ const BASE = "https://scvd.store";
  * along with the declined-positions and scvd-cli sections from the
  * earlier re-takes, before this value was taken.
  *
+ * Re-taken 2026-08-28 in the commit that added the payment dry run
+ * and The Good Buyer (#96). NOBODY EDITED THE GUIDE — this is the
+ * derived case the note above anticipates, and the review it forces
+ * was worth having, because the two moved figures are the whole point
+ * of the change:
+ *
+ *   - the shelf gained `good_buyer, The Good Buyer, $0.99 fixed`,
+ *     interpolated from the menu like every other door;
+ *   - the ceiling sentence went from "9 of 25 priced doors sit above
+ *     it" to "9 of 26". The over-cap count HELD while the total rose,
+ *     which is the arithmetic proof that the new door landed under
+ *     the ceiling rather than adding to the problem it reports on. A
+ *     door about the $1 cap that had pushed that numerator up would
+ *     have been the joke, and this is where it would have shown.
+ *
+ * Confirmed present in the served text before this value was taken:
+ * `good_buyer`, `check_before_you_pay` and `/api/before-you-pay`
+ * (the new tool reaches the guide through the MCP catalog and the
+ * when-to-buy routes, not by hand), alongside the scvd-cli paragraph,
+ * the Night Watch's three-tries sentence and the declined positions
+ * from the earlier re-takes.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1d190feb2bd48e73cd249f1996bcd952e4fcba4d80d429a7d6579bb3301c2579";
+  "505e31b80ce434acbb21dc1e19c6a9ec41cc67fcef3c1632c873568651b6809f";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

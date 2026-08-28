@@ -47,6 +47,14 @@ const TOOL_ENDPOINTS: Readonly<
 > = {
   read_store_guide: { method: "GET", path: "/llms.txt" },
   preflight_endpoint: { method: "POST", path: "/api/preflight/v2" },
+  /*
+   * The dry run belongs on the browser surface for the same reason it
+   * belongs on MCP: the moment it serves is the moment before a
+   * payment, and an agent in someone's browser is as likely to be
+   * standing in that moment as one in a tool loop. Free, read-only,
+   * one probe, nothing signed.
+   */
+  check_before_you_pay: { method: "POST", path: "/api/before-you-pay/v1" },
   check_conformance: { method: "POST", path: "/api/conformance/v1" },
   verify_artifact: { method: "GET", path: "/api/verify/{id}" },
 };

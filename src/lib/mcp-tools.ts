@@ -127,6 +127,14 @@ export const SHELF_CLUSTERS: readonly ShelfCluster[] = [
       // The point-in-time audit is the shelf's namesake shape: one
       // look at one endpoint, signed, servable to a third party.
       "service_audit",
+      // The same look, turned around to face the buyer: the accepts
+      // that door served, and what a stock client would have done
+      // with them. Still a third-party observation — the door's
+      // bytes and a named library's behaviour are both outside the
+      // buyer, which is why it belongs on this shelf rather than
+      // among the errands. What the buyer says about their own
+      // client rides as their declaration, never as our finding.
+      "good_buyer",
       // And the audit across time: the same battery daily for a week,
       // drift derived from the signed rows.
       "conformance_watch",

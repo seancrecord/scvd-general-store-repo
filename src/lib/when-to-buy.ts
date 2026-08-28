@@ -115,6 +115,18 @@ export const ROUTES: readonly Route[] = [
     items: ["spot_check", "service_audit"],
   },
   {
+    /*
+     * THE ROUTE FOR THE OTHER HALF OF THE SAME MOMENT (#96). The
+     * route above asks whether the DOOR is shaped right. This asks
+     * whether the buyer's own client will get through it — the
+     * question the $1 ceiling made expensive to not ask, and the one
+     * an agent has while its hand is already on the money.
+     */
+    job: "I am about to pay a door and I do not know whether my own client will even sign it.",
+    free: "The payment dry run — the check_before_you_pay tool, one probe, free, no wallet touched.",
+    items: ["good_buyer"],
+  },
+  {
     job: "Somebody handed me a signed offer or receipt and I do not know whether to trust it.",
     free: "Conformance desk — the check_conformance tool, free, any issuer, including ours.",
     items: [],

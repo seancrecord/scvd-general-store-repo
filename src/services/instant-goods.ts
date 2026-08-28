@@ -26,6 +26,10 @@ import type { SignedOnpageAudit } from "@/services/onpage-audit";
 import { storeReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedReconciliation } from "@/services/settlement-reconciliation";
 import type { SignedServiceAudit } from "@/services/service-audit";
+import {
+  storeGoodBuyerReading,
+  type SignedGoodBuyerReading,
+} from "@/services/good-buyer";
 import { startWatch } from "@/services/standing-watch";
 import { startConformanceWatch } from "@/services/conformance-watch";
 import {
@@ -50,6 +54,7 @@ import {
   statementNote,
   phantomCheckNote,
   reconciliationNote,
+  goodBuyerNote,
   serviceAuditNote,
   signatureCardNote,
   standingWatchNote,
@@ -93,6 +98,8 @@ export interface InstantGoodsInput {
   anchorLabel?: string;
   /** service_audit only: the report, already made and signed. */
   serviceAudit?: SignedServiceAudit;
+  /** good_buyer only: the dry run, already read and signed. */
+  goodBuyer?: SignedGoodBuyerReading;
   /** signature_agent_card only: the card, already made and signed. */
   signatureAgentCard?: SignedSignatureAgentCard;
   /** onpage_audit only: the page report, already made and signed. */
@@ -492,6 +499,30 @@ export async function deliverInstantGoods(
           badge_url: `/badges/audit/${audit.audit_id}.svg`,
           verify_note:
             "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The report is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into the certificate for this purchase, so /api/verify/{cert_id} answers for the report too — the endpoint that already existed, not a new one. The report URL serves the record free, forever.",
+        },
+      };
+    }
+    case "good_buyer": {
+      /*
+       * Already read and signed upstream, so its evidence hash could
+       * be bound into the certificate. Storage happens HERE, after
+       * the mint, so the envelope carries the cert id — the binding
+       * runs one direction, through `attests`.
+       */
+      const reading = input.goodBuyer;
+      if (!reading) {
+        throw new Error("good_buyer reached goods with no reading");
+      }
+      await storeGoodBuyerReading(env, reading, input.certId ?? "");
+      return {
+        deliverable: goodBuyerNote(reading.verdict),
+        extras: {
+          reading_id: reading.reading_id,
+          verdict: reading.verdict,
+          reading,
+          report_url: `/api/good-buyer/${reading.reading_id}`,
+          verify_note:
+            "Two ways to check this, neither of which requires trusting us or whoever commissioned it. The reading is signed on its own: re-serialize every field above `signature` against the key at /.well-known/scvd-signing-key. And its evidence_hash is bound into this purchase's certificate, so /api/verify/{cert_id} answers for the reading too. The accepts are printed as served, so the selection can be re-derived from the artifact by anyone holding a copy of @x402/core — including without us. The report URL serves the record free, forever.",
         },
       };
     }

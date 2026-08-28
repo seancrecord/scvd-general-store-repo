@@ -194,6 +194,26 @@ export function launchCheckNote(
   }
 }
 
+/**
+ * good_buyer (#96). The note leads with WHICH WAY IT WENT, because
+ * the two endings mean opposite things to the buyer and a reader who
+ * skims the wrong one has bought the opposite of what they got.
+ */
+export function goodBuyerNote(verdict: string): string {
+  switch (verdict) {
+    case "would_sign":
+      return "Read that door once, wrote down the accepts exactly as it served them, and replayed the stock client's own selection over them: your client gets to a signature, at the accept named on the record. That is not a promise the purchase succeeds — nothing short of paying establishes that — it means the refusal that happens on your own machine will not happen here. The accepts are printed as served, so anyone can re-derive the choice without us. Signed, dated, and served at that URL forever.";
+    case "would_throw":
+      return "Read that door once and found the thing you would otherwise have found by losing a round trip: a stock client refuses it on YOUR machine, before any signature exists. The record names the stage that decided it and the setting that answers it. This is the failure nobody gets an error message for — the operator sees a request for a price and then silence, indistinguishable from a buyer who changed their mind. Now it is written down, dated, and signed.";
+    case "cannot_simulate":
+      return "Read that door once and it served nothing a client could select among — no parseable accepts, so there was no selection to replay. The record says exactly that rather than rendering a payability verdict on bytes that do not exist. What the door's challenge did serve is the free preflight's question, and it is free at /api/preflight/v1. You paid for a dated look and got one; it just found the problem one rung earlier than this instrument reports on.";
+    case "refused":
+      return "We did not knock. That target failed this store's published probe-target law, and the record says so as a fact about OUR rule rather than about that endpoint — we did not look, so we report nothing about what is there. The buy door refuses these before money moves, so if you are reading this something got past it, and the honest artifact is the one that admits it.";
+    default:
+      return "We knocked. Nobody came. From where we stood, at that minute, the door didn't answer — that's the whole finding, signed and dated. It says nothing about their uptime, and a buyer elsewhere may reach it fine. That restraint is what the signature is worth.";
+  }
+}
+
 /** service_audit. */
 export function serviceAuditNote(verdict: string): string {
   return verdict === "ready"

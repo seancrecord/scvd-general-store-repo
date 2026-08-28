@@ -1,5 +1,28 @@
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
+import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import type { MenuItem } from "@/types";
+
+/**
+ * THE GOOD BUYER'S PRICE IS DERIVED, AND THE DERIVATION IS THE ARGUMENT.
+ *
+ * This door's whole audience is stock clients that have not raised
+ * their spend ceiling — that is the condition it exists to diagnose.
+ * Priced anywhere above @x402/core's own ceiling it would refuse
+ * exactly the buyers it was built for, silently, on their own
+ * machines, while being the thing that would have told them why. A
+ * door that teaches you to raise your cap has to be payable BEFORE
+ * you have raised it, or it is a joke at the buyer's expense.
+ *
+ * So the price is not a number somebody liked. It is one cent under
+ * the imported ceiling, computed from it: raise `$1` upstream and
+ * this door follows without anyone remembering it had to. The
+ * fallback exists for the case rule 52 covers — a ceiling the reader
+ * cannot parse must not silently become a price, so the door keeps
+ * the figure the shelf already carries for its cheap tier.
+ */
+const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
+  ? Math.round((CLIENT_CAP_USD - 0.01) * 1e6) / 1e6
+  : 0.99;
 
 /**
  * The utility aisle (aisle three), added in v0.3: things an agent can
@@ -26,6 +49,48 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     description:
       "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Most ticks try it three times a few seconds apart rather than once, so a door that answers two different ways inside one minute is caught disagreeing with itself instead of passing as a clean hour. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
+  },
+  /**
+   * THE GOOD BUYER (#96, keeper-approved 2026-08-28: "I definitely
+   * think we should offer this"). The buyer-side artifact, and the
+   * first thing on this shelf that is about the PURCHASER rather than
+   * about somebody else's door.
+   *
+   * WHY IT IS A SEPARATE PRODUCT rather than a field on the audit:
+   * folding a payability reading into service_audit changes what that
+   * battery counts, which renames the criteria on every artifact this
+   * store has ever signed under it. That is the keeper's call (#82 is
+   * the standing example of what happens when two instruments start
+   * disagreeing in public), not a side effect of adding a check. This
+   * answers its own question and points at the others.
+   *
+   * Rule 23a-clean: one GET, one replay, terminal at write — nothing
+   * recurs. Rule 43: a dated observation on an artifact (the accepts
+   * as served), never a score on the operator or on the buyer. The
+   * buyer's declared client configuration is recorded as THEIR claim,
+   * printed as such, never verified — this store cannot see a
+   * stranger's machine and will not sign as though it could.
+   */
+  {
+    id: "good_buyer",
+    listed_week: "2026-W35",
+    name: "The Good Buyer",
+    price_usdc: GOOD_BUYER_PRICE_USDC,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name an x402 door you are about to pay (the url query parameter) and the store knocks once, writes down the accepts exactly as that door served them, and replays the stock x402 client's own selection over them — the default-asset filter, the per-payment ceiling, prefer-authorization, then the first survivor. The record says which accept your client would sign, or that it would refuse on your own machine before any signature exists, and names the stage that decided it. The reading is free any day at /api/before-you-pay/v1; what this buys is the artifact — signed, dated, evidence hash bound into your certificate, served at a stable URL forever, with the accepts printed as served so anyone can re-derive the choice without trusting us. For the human who later asks why the money went where it went. Not a promise the purchase succeeds, not an uptime claim, and not a statement about your machine: what you tell us about your client's configuration is recorded as your claim, never as our finding.",
+    note_402:
+      "Under a dollar, deliberately — the whole point is that a client which cannot pay a dollar can still afford to be told why.",
+    constraints: [
+      "Give the door in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
+      "Optional: max_usd, your client's maxAmountPerPayment in dollars, and no_spend_controls=true if you pass spendControls: false. Leave both off and you get the reading for a client configured with nothing",
+      "Your client's configuration is recorded as YOUR declaration and never verified — we cannot see your machine",
+      "One GET at one moment, signed; nothing is signed on your behalf and no wallet is touched",
+      "The simulation models @x402/core at the version this store has installed, named on the record; a different version is a different answer",
+      "We refuse our own hostname — the platform kills self-fetch, and a reading we sign about our own door is worth nothing to whoever you would show it to",
+      "The report URL is free to read forever",
+    ],
   },
   /**
    * MARKETPLACE-ERA ITEM THREE (Part 6 step 3; the first Tier 3
