@@ -96,7 +96,11 @@ export function latestReading(entry: RegistryWeekEntry): string {
        * already do it free both overstates the census and makes the
        * paid product look redundant.
        */
-      ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve signed offers that are present and structurally valid JWS — the rest ask to be paid on their word alone. Signatures are NOT verified by this census: that needs each issuer's key and a second request the weekly probe does not make. The conformance desk verifies them free, one artifact at a time.`
+      ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve signed offers that are present and structurally valid JWS — the rest ask to be paid on their word alone. ${
+          so.basis
+            ? "Both offer placements were read (challenge header and 402 body)."
+            : "This week was measured under the header-only read — offers placed only in the 402 body were invisible to it, so treat the serving count as a floor."
+        } Signatures are NOT verified by this census: that needs each issuer's key and a second request the weekly probe does not make. The conformance desk verifies them free, one artifact at a time. Our own door, which serves signed offers, is structurally outside this denominator — a census cannot probe its own host.`
       : "";
   /*
    * THIS SENTENCE WAS FALSE UNTIL 2026-08-25, and it was false on the

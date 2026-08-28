@@ -160,19 +160,33 @@ export function renderMarketPage(
   const price = market.price_usdc;
   const conc = market.concentration;
 
+  /*
+   * SAID IN THE SCOPE IT WAS MEASURED (2026-08-27, the keeper's
+   * catch; 2026-08-28, the fix). This section published "0% of ready
+   * doors serve signed offers" as an ecosystem fact off a read that
+   * (a) opened only the challenge header while the offer-receipt
+   * convention places offers in the 402 body, (b) covered one
+   * registry's listings, and (c) excluded our own offer-serving door
+   * without saying so. The read is fixed at the probe (both
+   * placements, `so.basis` says which era measured a stored week),
+   * and the words now carry the denominator's edges with them.
+   */
+  const basisNote = so.basis
+    ? "Both offer placements read (header and body)."
+    : "HEADER-ONLY ERA: this week's read never opened the 402 body placement — treat the count as a floor.";
   const signedOffersSection = section(
-    "The trust gap — the store's measured TAM",
+    "The trust gap — the probed slice, not the ecosystem",
     so.of_ready > 0
-      ? `${so.pct}% of ready doors serve signed offers (${so.serving} of ${so.of_ready})`
+      ? `${so.pct}% of ready probed doors serve signed offers, structurally valid JWS (${so.serving} of ${so.of_ready})`
       : "no ready doors measured yet",
     so.of_ready > 0 && so.pct < 10
-      ? `This is the market thesis as a measured fact: nearly the whole ecosystem quotes prices with nothing a third party can verify. Every one of the ${so.of_ready - so.serving} unsigned doors is a seller whose buyers must take their word — which is precisely what this store sells the antidote to. When this number rises, the market is maturing INTO our category; if it rises without us, competitors are doing the maturing.`
-      : `The share of the ecosystem serving verifiable offers. Watch the direction more than the level: rising means the trust layer is becoming table stakes.`,
+      ? `The market thesis, in the scope actually measured: among the ${so.of_ready} shape-ready doors this round probed (one registry's listings, our own door structurally excluded — a Worker cannot probe itself), ${so.of_ready - so.serving} quote prices with no signed commitment a third party could hold them to. ${basisNote} Signatures are never verified by the census. When this number rises, the market is maturing INTO our category; if it rises without us, competitors are doing the maturing.`
+      : `The share of ready probed doors serving structurally valid signed offers (${basisNote} signatures not verified; our own door excluded). Watch the direction more than the level: rising means the trust layer is becoming table stakes.`,
   );
 
   const rotSection = section(
     "Registry rot",
-    `${market.rot.pct}% of listed doors answer no 402 at all (${market.rot.dead_doors} of ${market.probed})`,
+    `${market.rot.pct}% of probed doors answer no 402 at all (${market.rot.dead_doors} of ${market.probed})`,
     `These hosts are LISTED as x402 endpoints and functionally absent — wrong status, no challenge header, or dead. Two meanings at once: every directory quoting raw listing counts overstates the market by roughly this factor (deflate outside claims accordingly), and every rotting door is an outreach lead — an operator who cared enough to list and hasn't noticed they broke.`,
   );
 

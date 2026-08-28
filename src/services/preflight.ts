@@ -198,6 +198,18 @@ export const BATTERY_CHANGELOG: readonly {
     change:
       "v2 folds the L3b consistency trio (payto-payable, amount-atomic, network-mainnet): an unpayable 402 stops reading ready. The same observations ride v1 as advisories, outside its verdict.",
   },
+  {
+    date: "2026-08-28",
+    battery: "v1",
+    change:
+      "The signed-offers conditional check reads BOTH placements — the PAYMENT-REQUIRED header and the 402 body — where it had read the header only and told issuers placing offers where the offer-receipt convention says (the body) that they served nothing. Conditional and outside the verdict, so a v1 ready is unchanged; reports and advisories now name the placements actually read.",
+  },
+  {
+    date: "2026-08-28",
+    battery: "v2",
+    change:
+      "Same placement widening as v1's entry of this date: signed-offers reads the header and the body. Conditional, outside the v2 verdict.",
+  },
 ];
 
 /**
@@ -544,6 +556,16 @@ export async function probeOnce(
 export function runChecks(
   response: Response,
   bodyOverLimit: boolean,
+  /**
+   * The 402 body, already read by the caller's bounded fetch. Since
+   * 2026-08-28 the signed-offers conditional check reads BOTH
+   * placements — the offer-receipt convention puts offers in the
+   * body (lib/offer-receipt.ts), the header splice is our till's
+   * additional placement — so a caller that withholds the body gets
+   * a header-only read, and the advisory says so rather than
+   * asserting an absence it could not see.
+   */
+  bodyText?: string,
 ): {
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
@@ -736,6 +758,28 @@ export function runChecks(
   const l3b: PreflightCheck[] = l3bChecks(accepts, readPayTo);
 
   const extensions = (challenge["extensions"] ?? {}) as Record<string, unknown>;
+
+  /*
+   * THE SECOND PLACEMENT (the instrument audit, 2026-08-28). A JSON
+   * 402 body can carry the same challenge shape, and the
+   * offer-receipt convention places signed offers there FIRST — the
+   * header copy is the extra placement our own till splices in. The
+   * body was fetched, bounded, and thrown away while this battery
+   * told body-placing issuers they served nothing. Parsed here only
+   * when the caller handed it over and it stayed under the ceiling;
+   * a non-JSON body is ordinary and decides nothing.
+   */
+  let bodyExtensions: Record<string, unknown> = {};
+  if (bodyText !== undefined && !bodyOverLimit) {
+    try {
+      const parsedBody = JSON.parse(bodyText) as unknown;
+      if (isRecord(parsedBody) && isRecord(parsedBody["extensions"])) {
+        bodyExtensions = parsedBody["extensions"] as Record<string, unknown>;
+      }
+    } catch {
+      // Not JSON, or not a challenge. The header remains the read.
+    }
+  }
   if ("bazaar" in extensions) {
     const bazaar = extensions["bazaar"] as Record<string, unknown> | null;
     const info =
@@ -771,7 +815,7 @@ export function runChecks(
     advisories.push({
       name: "no-bazaar-extension",
       detail:
-        "no extensions.bazaar block. Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present.",
+        "no extensions.bazaar block in the PAYMENT-REQUIRED header (the placement this check reads, because it is the one discovery ingesters read). Not a defect, and the rest of this sentence is inference rather than measurement: ingestion-based directories are documented as discovering services from this block, so without one we expect this endpoint to be findable mainly by buyers who already hold the URL. We do not run a directory ingester and have not watched one skip it. Falsified by this endpoint appearing in an ingestion-built directory with no bazaar block present.",
     });
   }
 
@@ -824,9 +868,35 @@ export function runChecks(
     });
   }
 
-  const offerReceipt = extensions["offer-receipt"] as
-    | { info?: { offers?: { signature?: unknown }[] } }
-    | undefined;
+  /*
+   * BOTH PLACEMENTS, HEADER FIRST (the instrument audit, 2026-08-28
+   * — the defect the keeper caught at the market desk, fixed at its
+   * root). This check read `extensions` off the header-parsed
+   * challenge only, then asserted door-level absence — in the free
+   * report, the $5 audit, the $5 watch's signed passes, and the
+   * census aggregate alike — against issuers who placed offers
+   * exactly where the convention says. Header first because that is
+   * the copy our own till reads back; body second; absence asserted
+   * only over the placements actually read. Conditional, outside
+   * every verdict, so a v1 `ready` still means what it always meant;
+   * BATTERY_CHANGELOG carries the date.
+   */
+  const headerOfferReceipt = extensions["offer-receipt"];
+  const bodyOfferReceipt = bodyExtensions["offer-receipt"];
+  const offerReceipt = (
+    isRecord(headerOfferReceipt)
+      ? headerOfferReceipt
+      : isRecord(bodyOfferReceipt)
+        ? bodyOfferReceipt
+        : undefined
+  ) as { info?: { offers?: { signature?: unknown }[] } } | undefined;
+  const offerPlacement = isRecord(headerOfferReceipt)
+    ? "the PAYMENT-REQUIRED header"
+    : "the 402 body";
+  const placementsRead =
+    bodyText === undefined
+      ? "the PAYMENT-REQUIRED header (this caller handed the battery no body, so the body placement was not read)"
+      : "the PAYMENT-REQUIRED header or the 402 body — both placements read";
   const offers = offerReceipt?.info?.offers;
   if (Array.isArray(offers) && offers.length > 0) {
     const parsedOffers = offers.map((offer) =>
@@ -840,19 +910,18 @@ export function runChecks(
         ? {
             name: "signed-offers",
             ok: true,
-            detail: `${offers.length} signed offer${offers.length === 1 ? "" : "s"} present, each a structurally valid JWS. Signatures NOT verified here — that needs the issuer's key, which is a second request this probe refuses to make. The conformance desk does it free.`,
+            detail: `${offers.length} signed offer${offers.length === 1 ? "" : "s"} present in ${offerPlacement}, each a structurally valid JWS. Signatures NOT verified here — that needs the issuer's key, which is a second request this probe refuses to make. The conformance desk does it free.`,
           }
         : {
             name: "signed-offers",
             ok: false,
-            detail: `${broken} of ${offers.length} offers are not parseable JWS — a verifier rejects them before reading a field.`,
+            detail: `${broken} of ${offers.length} offers (in ${offerPlacement}) are not parseable JWS — a verifier rejects them before reading a field.`,
           },
     );
   } else {
     advisories.push({
       name: "no-signed-offers",
-      detail:
-        "no extensions['offer-receipt'] signed offers. Optional in the spec; without them a buyer has no pre-payment commitment to your terms that would survive a dispute.",
+      detail: `no extensions['offer-receipt'] signed offers in ${placementsRead}. Optional in the spec; without them a buyer has no pre-payment commitment to your terms that would survive a dispute.`,
     });
   }
 
@@ -1120,6 +1189,7 @@ export async function preflightUrl(
   const { checks, advisories, accepts, l3b } = runChecks(
     outcome.response,
     outcome.bodyOverLimit,
+    outcome.body,
   );
   /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.

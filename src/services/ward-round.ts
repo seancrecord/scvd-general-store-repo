@@ -47,7 +47,7 @@ export function censusFoldedCheckNames(): string[] {
   return [...BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]];
 }
 import {
-  captureWatchEvidence,
+  captureWatchEvidenceKeepingBody,
   type WatchEvidenceCapture,
 } from "@/services/watch-evidence";
 import { webBotAuthHeaders, type WbaEnv } from "@/lib/web-bot-auth";
@@ -578,10 +578,14 @@ export async function probeHost(
      * dispute needs: the challenge bytes and the body digest, signed.
      */
     const latencyMs = Date.now() - startedAt;
-    const evidence = await captureWatchEvidence(response);
+    // KeepingBody (the instrument audit, 2026-08-28): the battery and
+    // the market desk read both offer placements; the text rides
+    // beside the capture and never enters the signed row.
+    const { evidence, bodyText } = await captureWatchEvidenceKeepingBody(response);
     const { checks, advisories, accepts, l3b } = runChecks(
       response,
       evidence.body_truncated,
+      bodyText,
     );
     const failed = checks.filter((check) => !check.ok).map((check) => check.name);
     const advisoryNames = advisories.map((advisory) => advisory.name);
@@ -619,8 +623,9 @@ export async function probeHost(
       if (!check.ok) failed.push(check.name);
     }
 
-    // The market desk keeps what this fetch already paid for.
-    const offer = offerFacts(response);
+    // The market desk keeps what this fetch already paid for — both
+    // placements of it, since 2026-08-28.
+    const offer = offerFacts(response, bodyText);
     return {
       verdict: failed.length === 0 ? "ready" : "not_ready",
       failed,

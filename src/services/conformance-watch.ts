@@ -143,7 +143,7 @@ async function passOnce(
   try {
     const outcome = await probeOnce(record.url, fetch, "", env);
     status = outcome.response.status;
-    const ran = runChecks(outcome.response, outcome.bodyOverLimit);
+    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body);
     failed = ran.checks.filter((check) => !check.ok).map((check) => check.name);
     advisories = ran.advisories.map((advisory) => advisory.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";

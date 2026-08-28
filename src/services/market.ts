@@ -49,6 +49,18 @@ const USDC_ASSETS = new Set([
  * stored week = the two-mint era (Base + Solana, pre-2026-08-28). */
 export const PRICE_BASIS = "usdc-base-polygon-solana" as const;
 
+/**
+ * Which challenge placements the week's offer read parsed. Absent on
+ * a stored week = the header-only era: the read that produced "0% of
+ * ready doors serve signed offers" while never opening the placement
+ * the offer-receipt convention names first. The RAIL_BASIS law,
+ * applied to the read that needed it most — post-fix weeks can never
+ * silently mix with header-only history in the anchored chain. This
+ * basis governs `signed_offers` and, because offerFacts shares the
+ * read, the population behind `rails.of` and the price sample too.
+ */
+export const OFFERS_READ_BASIS = "challenge-header-and-body" as const;
+
 const BASE_MAINNET = "eip155:8453";
 const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 const POLYGON_MAINNET = "eip155:137";
@@ -125,8 +137,11 @@ export function isPerRail(
   return rails.basis === RAIL_BASIS;
 }
 
-/** What one probed 402 actually offered. Read from the header the
- * probe already fetched; never a second request. */
+/** What one probed 402 actually offered. Read from the header and —
+ * since 2026-08-28, the keeper's catch — from the 402 body the probe
+ * already fetched, header winning when both parse; never a second
+ * request. OFFERS_READ_BASIS below marks which era measured a stored
+ * week. */
 export interface OfferFacts {
   networks: string[];
   schemes: string[];
@@ -158,15 +173,43 @@ export interface OfferFacts {
   pay_to_digest?: string[];
 }
 
-export function offerFacts(response: Response): OfferFacts | null {
+export function offerFacts(
+  response: Response,
+  bodyText?: string,
+): OfferFacts | null {
+  /*
+   * HEADER FIRST, BODY SECOND (the instrument audit, 2026-08-28 —
+   * the market desk's own caught defect, fixed where it was caught).
+   * This read the header only, so a door serving its challenge in
+   * the 402 body — a placement real buyers read, our own launch
+   * check included — contributed nothing to rails, prices, or the
+   * signed-offers aggregate, and the desk called that the door's
+   * absence. Header wins when both parse, the launch check's law.
+   */
   const header = response.headers.get("PAYMENT-REQUIRED");
-  if (!header) return null;
-  let challenge: Record<string, unknown>;
-  try {
-    challenge = JSON.parse(atob(header)) as Record<string, unknown>;
-  } catch {
-    return null;
+  let challenge: Record<string, unknown> | null = null;
+  if (header) {
+    try {
+      challenge = JSON.parse(atob(header)) as Record<string, unknown>;
+    } catch {
+      challenge = null;
+    }
   }
+  if (!challenge && bodyText !== undefined) {
+    try {
+      const parsedBody = JSON.parse(bodyText) as unknown;
+      if (
+        parsedBody !== null &&
+        typeof parsedBody === "object" &&
+        Array.isArray((parsedBody as Record<string, unknown>)["accepts"])
+      ) {
+        challenge = parsedBody as Record<string, unknown>;
+      }
+    } catch {
+      challenge = null;
+    }
+  }
+  if (!challenge) return null;
   const accepts = Array.isArray(challenge["accepts"])
     ? (challenge["accepts"] as Record<string, unknown>[])
     : [];
@@ -295,8 +338,17 @@ export interface MarketAggregates {
   ready: number;
   /** Listed doors that answer no 402 at all (wrong status or dead). */
   rot: { dead_doors: number; pct: number };
-  /** The trust layer's measured TAM: ready doors serving signed offers. */
-  signed_offers: { serving: number; of_ready: number; pct: number };
+  /** Ready doors serving signed offers, structurally valid JWS only —
+   * signatures are never verified by the census, and our own
+   * offer-serving door is structurally outside every count here (a
+   * Worker cannot probe itself). `basis` says which placements the
+   * week's read parsed; absent = the header-only era. */
+  signed_offers: {
+    serving: number;
+    of_ready: number;
+    pct: number;
+    basis?: typeof OFFERS_READ_BASIS;
+  };
   /** Among hosts whose 402 was parseable. */
   rails: MarketRails;
   /** USDC-priced doors only, cheapest ask per door, whole USDC. */
@@ -409,6 +461,7 @@ export function marketAggregates(
       pct: ready.length
         ? Math.round((serving.length / ready.length) * 100)
         : 0,
+      basis: OFFERS_READ_BASIS,
     },
     rails: {
       of: withOffer.length,

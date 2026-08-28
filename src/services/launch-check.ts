@@ -62,8 +62,16 @@ export const FIELD_SPEND_CAP_USD = 0.05;
  * revision of them produced it. Bump when a stage is added, removed,
  * or changes meaning — replay_rejected's arrival on 2026-08-23 is
  * the kind of change that would have bumped this had it existed.
+ *
+ * v2, 2026-08-28 (the instrument audit): the offers stage changed
+ * meaning. v1 read signed offers off the header-wins challenge
+ * object only, so "no signed offers carried in the challenge" in a
+ * v1 record means "none in the placement the walk read" — a door
+ * with body-placed offers behind a header challenge was told it
+ * carried none. v2 reads both placements and asserts absence only
+ * over both.
  */
-export const LAUNCH_CHECK_BATTERY = "launch-check-v1";
+export const LAUNCH_CHECK_BATTERY = "launch-check-v2";
 
 /**
  * THE LONGEST AUTHORIZATION THIS STORE WILL EVER SIGN (ledger I2).
@@ -725,8 +733,22 @@ export async function performLaunchCheck(
      * made — the signatures are not verified here, and the stage says
      * so rather than implying they were.
      */
-    const offerExt = ((challenge as Record<string, unknown> | undefined)?.["extensions"] ?? {}) as Record<string, unknown>;
-    const offerBlock = offerExt["offer-receipt"] as
+    /*
+     * BOTH PLACEMENTS (the instrument audit, 2026-08-28). Stage 2's
+     * `challenge` is header-wins for the TERMS a buyer signs, which
+     * is right — but reading offers off that one object meant a door
+     * serving a normal header challenge with its signed offers only
+     * in the body (the offer-receipt convention's first placement)
+     * bought a $5 record stating, in signed bytes, that it carried
+     * none. Offers are looked for in the header's extensions first,
+     * then the body's, and absence is asserted only over both.
+     */
+    const extensionsOf = (source: unknown): Record<string, unknown> =>
+      ((source as Record<string, unknown> | undefined)?.["extensions"] ??
+        {}) as Record<string, unknown>;
+    const headerOfferBlock = extensionsOf(headerChallenge)["offer-receipt"];
+    const bodyOfferBlock = extensionsOf(bodyChallenge)["offer-receipt"];
+    const offerBlock = (headerOfferBlock ?? bodyOfferBlock) as
       | { info?: { offers?: { signature?: unknown }[] } }
       | undefined;
     const carried = offerBlock?.info?.offers;
@@ -735,7 +757,7 @@ export async function performLaunchCheck(
         stage: "offers",
         ok: true,
         detail:
-          "no signed offers carried in the challenge. Optional in the spec and not a defect — recorded because a door with offers and a door without are different facts, and a report that shows the same silence for both has told you nothing about either.",
+          "no signed offers carried in the challenge — neither the PAYMENT-REQUIRED header's extensions nor the 402 body's, both read. Optional in the spec and not a defect — recorded because a door with offers and a door without are different facts, and a report that shows the same silence for both has told you nothing about either.",
       });
     } else {
       const doorHost = new URL(targetUrl).hostname.toLowerCase();
