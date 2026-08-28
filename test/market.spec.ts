@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { KV_KEYS } from "@/lib/kv-keys";
 import {
   OFFERS_READ_BASIS,
+  SIGNED_OFFERS_LIMITS,
   marketAggregates,
   offerFacts,
   operatorOf,
@@ -162,6 +163,11 @@ describe("the aggregates, recomputable from the rows", () => {
       serving: 1,
       of_ready: 3,
       pct: 33,
+      // The remainder is counted rather than left to the reader
+      // (task #73): these three account for of_ready exactly.
+      not_found_in_challenge: 2,
+      present_but_unparseable: 0,
+      cannot_distinguish: SIGNED_OFFERS_LIMITS,
       basis: OFFERS_READ_BASIS,
     });
     // Rails among the three parseable doors, per rail. Counts are NOT
