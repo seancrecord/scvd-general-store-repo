@@ -10,6 +10,7 @@ import {
   runChecks,
 } from "@/services/preflight";
 import { checkRailReceivable } from "@/services/rail-receivable";
+import { checkEvmReceivable } from "@/services/evm-receivable";
 import type {
   PreflightAdvisory,
   PreflightCheck,
@@ -154,7 +155,7 @@ export async function performServiceAudit(
   let alsoUnder: ServiceAuditObservation["also_under"];
   try {
     const outcome = await probeOnce(url, options.fetch ?? fetch, "", env);
-    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body);
+    const ran = runChecks(outcome.response, outcome.bodyOverLimit, outcome.body, url);
     checks = ran.checks;
     advisories = ran.advisories;
     verdict = checks.every((check) => check.ok) ? "ready" : "not_ready";
@@ -176,6 +177,19 @@ export async function performServiceAudit(
         }))
       : { check: null, advisory: null };
     if (rail.advisory) advisories.push(rail.advisory);
+    /*
+     * The EVM blacklist read (the depth pass, 2026-08-28) — advisory
+     * on this single-door paid instrument for the same reason it is
+     * advisory on the free one: the census cannot afford it, so a
+     * fold would split the v2 citation. The $5 buyer still gets the
+     * deeper reading in the signed bytes.
+     */
+    if (ran.accepts) {
+      const evm = await checkEvmReceivable(env, ran.accepts).catch(() => ({
+        advisories: [],
+      }));
+      advisories.push(...evm.advisories);
+    }
     const v2Checks = [
       ...checks,
       ...(ran.l3b ?? []),

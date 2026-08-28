@@ -164,7 +164,17 @@ export const ADVISORY_NAMES = [
   "payto-wrong-rail",
   "payto-not-an-address",
   "amount-not-atomic",
+  /*
+   * The depth pass, 2026-08-28 — four new readings over bytes every
+   * probe already held. Advisories, not verdict folds: each is true
+   * and worth a buyer's knowing today; whether any joins a verdict
+   * is a battery decision that stays the keeper's.
+   */
+  "missing-eip712-domain-extra",
+  "conflicting-amounts",
   "above-default-client-cap",
+  "placement-mismatch",
+  "resource-host-mismatch",
   "no-bazaar-extension",
   "inputs-declared",
   "no-input-contract",
@@ -211,6 +221,12 @@ export const BATTERY_CHANGELOG: readonly {
     battery: "v2",
     change:
       "Same placement widening as v1's entry of this date: signed-offers reads the header and the body. Conditional, outside the v2 verdict.",
+  },
+  {
+    date: "2026-08-28",
+    battery: "v2",
+    change:
+      "The depth pass, two deepenings of checks v2 already folds. amount-atomic covers the whole grammar: an amount that is not a non-negative integer string (negative, exponent, hex, empty) now fails beside the decimal case — no client can sign an authorization for any of them. solana-rail-receivable reads the account state the RPC always returned: an owner whose every USDC token account is explicitly FROZEN cannot be credited and now fails; an account whose state the ledger omitted still passes, because an unknown state read as frozen would fabricate a defect. Advisory-side, outside every verdict, five new readings ship the same day: missing-eip712-domain-extra, conflicting-amounts, placement-mismatch, resource-host-mismatch, and the EVM USDC blacklist read (payto-usdc-blacklisted / evm-rail-receivable / evm-rail-unread) on the PAID single-door audit only — the free preflight keeps its one-outbound-request promise and the census cannot afford one eth_call per EVM door, so folding what they cannot run would split the v2 citation.",
   },
 ];
 
@@ -568,6 +584,14 @@ export function runChecks(
    * asserting an absence it could not see.
    */
   bodyText?: string,
+  /**
+   * The URL this probe actually knocked on, for the
+   * resource-host-mismatch read (the depth pass, 2026-08-28). Falls
+   * back to response.url where the platform set it; a synthetic
+   * Response with neither simply skips the comparison — absence of
+   * the read, never a fabricated pass.
+   */
+  probedUrl?: string,
 ): {
   checks: PreflightCheck[];
   advisories: PreflightAdvisory[];
@@ -748,7 +772,63 @@ export function runChecks(
         name: "amount-not-atomic",
         detail: `accepts amount "${amount}" contains a decimal point. x402 amounts are ATOMIC units (USDC has 6 decimals: $0.005 is "5000"). A dollar-typed amount here underprices by a factor of a million.`,
       });
+    } else if (!/^[0-9]+$/.test(amount)) {
+      // The rest of the grammar (the depth pass, 2026-08-28): a
+      // negative, exponent, hex, or empty amount is unsignable —
+      // no client can put it in an authorization.
+      advisories.push({
+        name: "amount-not-atomic",
+        detail: `accepts amount "${amount}" is not a non-negative integer string. x402 amounts are ATOMIC-unit integer strings; a client cannot sign an authorization for this and the refusal happens silently, before any payment attempt reaches you.`,
+      });
     }
+    /*
+     * EIP-712 SIGNABILITY, POINTED OUTWARD (the depth pass,
+     * 2026-08-28). Our own suite has guarded every EVM entry on our
+     * own doors for extra.name/version since roadmap 0.15 — without
+     * them a standard client cannot build the EIP-712 domain, so it
+     * cannot sign, and x402-list's signability check reads unknown.
+     * The check existed in-house and was never pointed at anyone
+     * else; a subject's door deserves the same reading ours gets.
+     */
+    if (network.startsWith("eip155:")) {
+      const extra = entry["extra"];
+      const extraOk =
+        isRecord(extra) &&
+        typeof extra["name"] === "string" &&
+        typeof extra["version"] === "string";
+      if (!extraOk) {
+        advisories.push({
+          name: "missing-eip712-domain-extra",
+          detail: `accepts entry on ${network} carries no extra.name/extra.version. A standard EVM client builds its EIP-712 signing domain from that object; without it the client cannot sign, the refusal is silent on your side, and signability-filtered directories read your door as unknown.`,
+        });
+      }
+    }
+  }
+
+  /*
+   * ACCEPTS THAT DISAGREE WITH EACH OTHER (ledger B14, the depth
+   * pass 2026-08-28). Two entries offering the same network and
+   * asset at different amounts leave a buyer's client to guess which
+   * price is the price — and a guess about money is the one guess a
+   * client must not make.
+   */
+  const askedBy = new Map<string, Set<string>>();
+  for (const entry of accepts) {
+    const key = `${String(entry["network"] ?? "")}|${String(entry["asset"] ?? "").toLowerCase()}`;
+    const amounts = askedBy.get(key) ?? new Set<string>();
+    amounts.add(String(entry["amount"] ?? ""));
+    askedBy.set(key, amounts);
+  }
+  const conflicting = [...askedBy.entries()].filter(
+    ([, amounts]) => amounts.size > 1,
+  );
+  if (conflicting.length > 0) {
+    advisories.push({
+      name: "conflicting-amounts",
+      detail: `the accepts array offers the same network and asset at different amounts (${conflicting
+        .map(([key, amounts]) => `${key.split("|")[0]}: ${[...amounts].join(" vs ")}`)
+        .join("; ")}). A client meeting two prices for one rail has to guess which one you meant, and a guess about money is the one guess a payment client must not make. If the tiers are different products, different resources are the spec's shape for that.`,
+    });
   }
 
   /**
@@ -807,14 +887,75 @@ export function runChecks(
    * a non-JSON body is ordinary and decides nothing.
    */
   let bodyExtensions: Record<string, unknown> = {};
+  let bodyChallenge: Record<string, unknown> | null = null;
   if (bodyText !== undefined && !bodyOverLimit) {
     try {
       const parsedBody = JSON.parse(bodyText) as unknown;
-      if (isRecord(parsedBody) && isRecord(parsedBody["extensions"])) {
-        bodyExtensions = parsedBody["extensions"] as Record<string, unknown>;
+      if (isRecord(parsedBody)) {
+        bodyChallenge = parsedBody;
+        if (isRecord(parsedBody["extensions"])) {
+          bodyExtensions = parsedBody["extensions"] as Record<string, unknown>;
+        }
       }
     } catch {
       // Not JSON, or not a challenge. The header remains the read.
+    }
+  }
+
+  /*
+   * TWO CHALLENGES THAT DISAGREE (the depth pass, 2026-08-28). Our
+   * own till mirrors the challenge into the body byte-compatibly;
+   * a door whose body challenge offers DIFFERENT accepts than its
+   * header is showing two prices for one knock — buyers reading
+   * different placements will sign against different terms.
+   */
+  if (
+    bodyChallenge !== null &&
+    Array.isArray(bodyChallenge["accepts"]) &&
+    (bodyChallenge["accepts"] as unknown[]).length > 0 &&
+    JSON.stringify(bodyChallenge["accepts"]) !== JSON.stringify(accepts)
+  ) {
+    advisories.push({
+      name: "placement-mismatch",
+      detail:
+        "the 402 body carries a challenge whose accepts differ from the PAYMENT-REQUIRED header's. Buyers read either placement (many read only the header; some read only the body), so the two must agree — a door showing different terms per placement is quoting two prices for one knock.",
+    });
+  }
+
+  /*
+   * THE BAIT-AND-SWITCH READ (ledger B15, the depth pass
+   * 2026-08-28). The challenge names the resource it sells — the
+   * field our own till binds its signed offers to — and nothing
+   * checked that it names the door that was knocked on. A challenge
+   * pointing at a different host read exactly as sound as one
+   * pointing at itself.
+   */
+  const resourceField = challenge["resource"];
+  const resourceUrlRaw =
+    typeof resourceField === "string"
+      ? resourceField
+      : isRecord(resourceField) && typeof resourceField["url"] === "string"
+        ? (resourceField["url"] as string)
+        : undefined;
+  const probedHost = (() => {
+    try {
+      const from = probedUrl ?? (response.url || undefined);
+      return from ? new URL(from).host.toLowerCase() : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+  if (resourceUrlRaw !== undefined && probedHost !== undefined) {
+    try {
+      const resourceHost = new URL(resourceUrlRaw).host.toLowerCase();
+      if (resourceHost !== probedHost) {
+        advisories.push({
+          name: "resource-host-mismatch",
+          detail: `the challenge's resource field names ${resourceHost}, but this probe knocked on ${probedHost}. A signed offer binds to the resource the challenge names, so terms served under one host for a resource on another cannot be held to the door a buyer actually paid — the bait-and-switch shape, whatever the intent here.`,
+        });
+      }
+    } catch {
+      // An unparseable resource URL decides nothing by itself.
     }
   }
   if ("bazaar" in extensions) {
@@ -1227,6 +1368,7 @@ export async function preflightUrl(
     outcome.response,
     outcome.bodyOverLimit,
     outcome.body,
+    url.toString(),
   );
   /*
    * THE RAIL READ, added 2026-08-23, DELIBERATELY AS AN ADVISORY.
@@ -1258,6 +1400,15 @@ export async function preflightUrl(
       }))
     : { check: null, advisory: null };
   if (rail.advisory) advisories.push(rail.advisory);
+
+  /*
+   * The EVM blacklist read (checkEvmReceivable) deliberately does
+   * NOT run here: this free door's load-bearing promise is one
+   * outbound request, held by test as a count, and an eth_call with
+   * transport retries is several. It runs on the paid single-door
+   * audit, where the five dollars is the meter and the probe runs
+   * post-settle — the response's signed_report pointer says so.
+   */
 
   /*
    * ONE PROBE, TWO BATTERIES (2026-08-23).

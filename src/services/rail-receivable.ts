@@ -1,4 +1,4 @@
-import { SOLANA_CHAIN, SOLANA_USDC_MINT, usdcTokenAccountsOf } from "@/lib/solana-rpc";
+import { SOLANA_CHAIN, SOLANA_USDC_MINT, usdcTokenAccountsDetailed } from "@/lib/solana-rpc";
 import type { PreflightAdvisory, PreflightCheck } from "@/services/preflight";
 import type { Env } from "@/types";
 
@@ -91,10 +91,27 @@ export async function checkRailReceivable(
 
   const unreachable: string[] = [];
   const cannotReceive: string[] = [];
+  const frozen: string[] = [];
   for (const payTo of payTos) {
     try {
-      const accounts = await usdcTokenAccountsOf(env, payTo);
-      if (accounts.length === 0) cannotReceive.push(payTo);
+      const accounts = await usdcTokenAccountsDetailed(env, payTo);
+      if (accounts.length === 0) {
+        cannotReceive.push(payTo);
+      } else if (
+        /*
+         * FROZEN IS NOT RECEIVABLE (the depth pass, 2026-08-28). The
+         * same RPC response always carried the account state and the
+         * reader discarded it, so an owner whose every USDC account
+         * is frozen — exists, and cannot be credited — read as
+         * receivable. Only an EXPLICIT "frozen" on every account
+         * fails the door; an account whose state the RPC omitted
+         * stays usable, because an unknown state read as frozen
+         * would fabricate a defect (derive or refuse, both ways).
+         */
+        accounts.every((account) => account.state === "frozen")
+      ) {
+        frozen.push(payTo);
+      }
     } catch {
       /*
        * The ledger did not answer us. That is a fact about our read,
@@ -106,12 +123,22 @@ export async function checkRailReceivable(
     }
   }
 
-  if (cannotReceive.length > 0) {
+  if (cannotReceive.length > 0 || frozen.length > 0) {
+    const parts = [
+      cannotReceive.length > 0
+        ? `the Solana payTo ${cannotReceive.join(", ")} owns no USDC token account, so a payment to it has nowhere to land and fails in simulation before it can broadcast — opening an associated token account for ${SOLANA_USDC_MINT} fixes it`
+        : "",
+      frozen.length > 0
+        ? `the Solana payTo ${frozen.join(", ")} owns only FROZEN USDC token account(s) — the account exists and the mint's freeze authority has frozen it, so a transfer to it fails just as surely as to a missing account, and only the freeze authority can lift that`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("; ");
     return {
       check: {
         name: RECEIVABLE_CHECK,
         ok: false,
-        detail: `the Solana payTo ${cannotReceive.join(", ")} owns no USDC token account, so a payment to it has nowhere to land and fails in simulation before it can broadcast. The 402 is well-formed and the address is real — it simply cannot be credited in this mint yet. Opening an associated token account for ${SOLANA_USDC_MINT} fixes it. Read once from the public ledger, unpaid; anyone can repeat it.`,
+        detail: `${parts}. The 402 is well-formed and the address is real — it simply cannot be credited in this mint right now. Read once from the public ledger, unpaid; anyone can repeat it.`,
       },
       advisory: null,
     };

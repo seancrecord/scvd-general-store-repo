@@ -277,7 +277,7 @@ async function probeOnce(
     // capture, never inside the signed row.
     const kept = await captureWatchEvidenceKeepingBody(response);
     evidence = kept.evidence;
-    const { checks } = runChecks(response, evidence.body_truncated, kept.bodyText);
+    const { checks } = runChecks(response, evidence.body_truncated, kept.bodyText, record.url);
     failed = checks.filter((check) => !check.ok).map((check) => check.name);
     verdict = failed.length === 0 ? "ready" : "not_ready";
     /*
