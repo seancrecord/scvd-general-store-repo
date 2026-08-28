@@ -48,6 +48,38 @@ export interface RegistryWeekEntry {
    */
   rails: MarketRails | LegacyMarketRails;
   price_usdc: MarketAggregates["price_usdc"];
+  /**
+   * WHAT THE ROUND COULD NOT SEE, CARRIED TO PUBLISH (the keeper's
+   * ruling 2026-08-28, "yes safer better" — the instrument audit's
+   * rule-52 row).
+   *
+   * The round has always recorded its own coverage honestly, and
+   * this builder threw every field away, so /registry published a
+   * capped walk under a sentence about knocking on every listed
+   * door with nothing beside the number to say it was a floor.
+   *
+   * Absent on weeks published before this shipped. A reader must
+   * treat missing as NOT RECORDED — never as coverage that was
+   * fine, which is the flattering reading and the wrong one.
+   */
+  coverage?: {
+    /** The round hit its host cap; the tail was never walked. */
+    capped: boolean;
+    /** A full page arrived with no recognizable cursor. */
+    coverage_suspect: boolean;
+    /** Set when this round probed under 60% of the last one's. */
+    coverage_drop?: {
+      previous_hosts: number;
+      this_round: number;
+      previous_at: string;
+    };
+    /** The population layer's denominator: every host the feeds
+     * named, how many were walked, and the ratio. Absent on rounds
+     * that predate that layer — again, not measured, not 100%. */
+    population_known?: number;
+    population_walked?: number;
+    coverage_pct?: number | null;
+  };
   /** Counts only — the named top list stays in the office. */
   hosts: number;
   operators: number;
@@ -88,6 +120,18 @@ export function buildRegistryWeek(
     signed_offers: market.signed_offers,
     rails: market.rails,
     price_usdc: market.price_usdc,
+    coverage: {
+      capped: round.capped === true,
+      coverage_suspect: round.coverage_suspect === true,
+      ...(round.coverage_drop ? { coverage_drop: round.coverage_drop } : {}),
+      ...(round.population
+        ? {
+            population_known: round.population.population_known,
+            population_walked: round.population.population_walked,
+            coverage_pct: round.population.coverage_pct,
+          }
+        : {}),
+    },
     hosts: market.concentration.hosts,
     operators: market.concentration.operators,
     top5_share_pct: market.concentration.top5_share_pct,

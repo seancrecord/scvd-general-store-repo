@@ -239,6 +239,73 @@ storefront-HTML requests come from agent-shaped clients that never
 touch /mcp or llms.txt — rule 19's demand tag, and we keep the logs.
 It no longer gates the build; it sizes it.
 
+**0c. RULINGS LANDED 2026-08-28 (the instrument audit's sheet,
+docs/AUDIT_RULINGS_2026-08.md):**
+- L3d BURST ON PAID WATCHES: APPROVED — "yes paid." Three probes a
+  tick on a watch somebody bought, published as a distribution
+  rather than a single look. The census stays single-probe until the
+  etiquette ceiling (Observatory 12.3) is ruled: bursting 750
+  strangers is a different question from bursting a door its owner
+  paid us to watch. Unbuilt; the sheet holds the design.
+- THE DEPTH PASS ADVISORIES: HELD, WITH A REVISIT — "okay, but note
+  we need to revisit and what we need to do when revisited." None of
+  the five folds into a verdict yet.
+  WHEN: after four weekly rounds carry them (about 2026-09-25), or
+  sooner if any one of them fires on more than a tenth of probed
+  doors.
+  WHAT TO BRING: per advisory, the per-round count, and three doors
+  it fired on checked BY HAND — the point is proving the finding is
+  a real defect and not an artifact of how we read.
+  THE TEST TO FOLD: it fires on true defects when hand-checked, AND
+  every instrument citing the battery can actually run it. The EVM
+  blacklist read fails that second half today — the census cannot
+  afford an eth_call per door — so folding it needs a budget change
+  or a battery the census does not cite, not just a ruling.
+  LIKELIEST TO EARN IT: `resource-host-mismatch`. A challenge naming
+  another host is not a door a buyer can safely pay.
+- THE REGISTRY'S DROPPED COVERAGE FIELDS: APPROVED — "yes safer
+  better." The round already records `capped`, `coverage_suspect`
+  and `coverage_drop` honestly and the publish step throws them
+  away; they carry through to the published week now and print
+  beside the tally. Additive fields, no stored week rewritten.
+- THE AUDIT'S COPY: CONFIRMED — "i think these are fine." The Night
+  Watch line (shape, not payability) and the seven corrections filed
+  2026-08-28 stand as written. Rule 7's drafted-not-canon flag is
+  struck on both.
+- THE payTo INFLOW READER: APPROVED, T1 ONLY — "agree with rest,"
+  on the recommendation that inflows publish as counts with no names
+  and never land on a named host's page in this market. NOTE THE
+  CORRECTION THIS RULING CARRIES: the G2 tiers were ruled for
+  ADVERTISEMENT history (which doors advertise which address), and
+  an inflow is a different fact — what a party EARNED, which they
+  did not publish about themselves. The tier SHAPES transfer; G2's
+  authorization did not, so this is that fact's own first ruling.
+  T1 is the whole of it: "N of the doors we walked received USDC at
+  their advertised address this week," captioned as addresses that
+  RECEIVED, never as doors that made sales — an inflow at an
+  advertised address is not proof of a sale (treasury movement, a
+  shared or facilitator wallet, an operator funding themselves).
+  T2 and T3 stay unruled and unbuilt; the three reasons T2 was held
+  are the damaging zero (rule 52 — the modal case in a market this
+  young is the least reliable and most harmful number), shared
+  wallets making inflows unattributable to the door whose page they
+  would print on, and that "has been paid" as a published trust
+  signal is bought for a few cents of self-payment.
+- L3c ENDPOINT-SIDE SIGNATURE VERIFICATION: DEFERRED by the keeper —
+  "maybe we just wait on the forgery piece and save it for later on
+  down the road." Not declined; parked. The standing facts for
+  whenever it comes back: no probe path verifies a signature (the
+  battery passes a door on a JWS PARSE), so a forged live signature
+  has never been observed and CANNOT be by anything we run — the
+  count is zero either way. What we have seen is one door of 35
+  attempting signed offers and serving ones that fail to parse.
+  The exposure is insurance against our own success: the day signed
+  offers become a signal buyers act on, faking one is free and our
+  instrument is what gets faked past. Cheap when it comes back —
+  $0, and it can run RETROACTIVELY over the challenge bytes the
+  chain already stores.
+
+
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
 2026-08-13) says the walk stalled hourly from

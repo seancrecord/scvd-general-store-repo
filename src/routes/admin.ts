@@ -1722,6 +1722,65 @@ adminRoutes.post("/admin/outreach/clear-statuses", async (c) => {
  * read the round. Idempotent per week — a re-press replaces the
  * week's row with the round as it stands now.
  */
+/**
+ * THE INFLOW CENSUS — its own door, deliberately (the keeper's T1
+ * ruling, 2026-08-28).
+ *
+ * NOT folded into /admin/market, because this reading costs roughly
+ * sixty getLogs across two chains and a page that scans the chain on
+ * every load is the shape this store already refuses elsewhere (the
+ * passport chip's cache note says it in as many words). The keeper
+ * asks for it; it does not happen to him.
+ *
+ * T1 ONLY: counts, no addresses, no hosts. Publication to the public
+ * tally stays a separate press under rule 30, exactly like the
+ * registry week — the reading being available is not the reading
+ * being published.
+ */
+adminRoutes.get("/admin/market/inflows", async (c) => {
+  const { readInflowCensus } = await import("@/services/inflow-census");
+  const census = await readInflowCensus(c.env);
+  if (!census) {
+    return wantsHtml(c.req.header("Accept"))
+      ? c.html(
+          (await import("@/pages/admin/layout")).renderAdminShell(
+            "market",
+            "<h1>Inflows</h1><p class='empty'>No ward round yet — there are no advertised addresses to watch.</p>",
+          ),
+        )
+      : c.json({ error: "no ward round yet" }, 404);
+  }
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(census);
+  }
+  const { renderAdminShell } = await import("@/pages/admin/layout");
+  const { escapeHtml } = await import("@/lib/sanitize");
+  const windows = census.windows
+    .map(
+      (window) =>
+        `<li>${escapeHtml(window.chain)}: ${window.blocks} blocks (${window.from_block}–${window.to_block})${
+          window.truncated ? " — <strong>cut short by the span budget</strong>" : ""
+        }${window.unread ? ` — <strong>unread: ${escapeHtml(window.unread)}</strong>` : ""}</li>`,
+    )
+    .join("");
+  return c.html(
+    renderAdminShell(
+      "market",
+      `<h1>Inflows — week ${escapeHtml(census.week)}</h1>
+      <p class="lead"><strong>${census.addresses_received} of ${census.addresses_checked}</strong>
+      advertised addresses received USDC in the window below.
+      ${census.addresses_capped ? `<strong>The address cap bound:</strong> the round advertised ${census.addresses_advertised} and this check watched ${census.addresses_checked}.` : ""}
+      ${census.transfers_seen} transfer${census.transfers_seen === 1 ? "" : "s"} seen.</p>
+      <h2>What was actually covered</h2>
+      <ul>${windows}</ul>
+      <h2>What this counts</h2>
+      <p>${escapeHtml(census.what_this_counts)}</p>
+      <h2>What this is not</h2>
+      <p>${escapeHtml(census.what_this_is_not)}</p>`,
+    ),
+  );
+});
+
 adminRoutes.post("/admin/market/publish-registry", async (c) => {
   const { publishRegistryWeek } = await import("@/services/registry-pulse");
   const result = await publishRegistryWeek(c.env);

@@ -76,6 +76,57 @@ function railsSentence(rails: MarketRails | LegacyMarketRails): string {
   return `Of ${rails.of} doors whose payment challenge parsed: ${rails.base} take Base (${share(rails.base)}), ${rails.polygon} take Polygon (${share(rails.polygon)}), ${rails.solana} take Solana (${share(rails.solana)}). A door can appear in more than one of those, so they do not sum to ${rails.of}: ${rails.multi} accept more than one of the three and ${rails.single} accept exactly one — that single-rail share is the demand a seller turns away by picking one chain. ${rails.other} offered none of the three. ${rails.testnet_flagged} quoted testnet networks: live against test tooling, invisible to every mainnet wallet.`;
 }
 
+/**
+ * WHAT THAT WEEK COULD NOT SEE, printed beside what it saw (the
+ * keeper's ruling 2026-08-28, "yes safer better").
+ *
+ * NEVER SILENT, in any of its three states, because silence here
+ * reads as a clean walk and only one of the three is one: the round
+ * recorded trouble (say which), the round recorded none (say that),
+ * or the week predates the carry-through and coverage was never
+ * recorded at all (say THAT, and do not let it pass for a clean
+ * walk). Rule 52: the reading publishes its own incompleteness or
+ * it does not publish.
+ */
+export function coverageCaveat(entry: RegistryWeekEntry): string {
+  const coverage = entry.coverage;
+  if (!coverage) {
+    return "Coverage was not recorded for this week — it was published before the round's own coverage fields were carried through. That is not a claim that the walk was complete.";
+  }
+  const notes: string[] = [];
+  if (coverage.capped) {
+    notes.push(
+      "the round hit its host cap, so doors in the tail were never walked and every count here is a floor",
+    );
+  }
+  if (coverage.coverage_suspect) {
+    notes.push(
+      "the discovery feed's own paging looked unreliable this round (a full page arrived with no cursor), so the denominator may undercount",
+    );
+  }
+  if (coverage.coverage_drop) {
+    notes.push(
+      `this round probed ${coverage.coverage_drop.this_round} hosts against the previous round's ${coverage.coverage_drop.previous_hosts} — a drop that large is our instrument, not the market, and week-over-week comparisons are unsafe until it recovers`,
+    );
+  }
+  if (
+    coverage.population_known !== undefined &&
+    coverage.population_walked !== undefined
+  ) {
+    notes.push(
+      `the feeds named ${coverage.population_known} hosts and this round walked ${coverage.population_walked}${
+        coverage.coverage_pct !== null && coverage.coverage_pct !== undefined
+          ? ` (${coverage.coverage_pct}% of them)`
+          : ""
+      }`,
+    );
+  }
+  if (notes.length === 0) {
+    return "The round recorded no coverage trouble: it did not hit its cap, and the discovery feed paged cleanly.";
+  }
+  return `What this week could not see: ${notes.join("; ")}.`;
+}
+
 export function latestReading(entry: RegistryWeekEntry): string {
   const so = entry.signed_offers;
   const offersLine =
@@ -253,9 +304,12 @@ registryRoutes.get("/registry", async (c) => {
   const latest = pulse.weeks[pulse.weeks.length - 1];
   const newestFirst = [...pulse.weeks].reverse();
   const bodyHtml = `<section>
-    <p class="menu-desc">Every week this store's census knocks once on every
-    door listed in public x402 discovery — one signed GET per host, verifiable
-    in the host's own logs — and keeps what the doors answered. This page is
+    <p class="menu-desc">Every week this store's census knocks once on as many
+    doors as one round can reach from public x402 discovery — one signed GET
+    per host, verifiable in the host's own logs — and keeps what the doors
+    answered. The walk is capped, and where a week's round hit that cap or
+    lost coverage it says so under its own reading below: a tally that cannot
+    see everything must not read as a total. This page is
     the running tally of what the listings are actually worth: how many
     listed endpoints work, how many ask for verifiable trust, and what the
     market charges. <strong>Aggregates only, no names</strong> — numbers
@@ -267,6 +321,7 @@ registryRoutes.get("/registry", async (c) => {
       ? `<section>
     <h2>Week ${escapeHtml(latest.week)}</h2>
     ${latestReading(latest)}
+    <p class="menu-meta">${escapeHtml(coverageCaveat(latest))}</p>
   </section>
   <section>
     <h2>The running tally</h2>
