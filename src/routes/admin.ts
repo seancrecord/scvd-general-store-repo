@@ -1758,14 +1758,18 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
   const windows = census.windows
     .map(
       (window) =>
-        `<li><strong>${escapeHtml(window.chain)}</strong>: ${window.received} received, ${window.transfers} transfer${window.transfers === 1 ? "" : "s"},
+        `<li><strong>${escapeHtml(window.chain)}</strong>: ${window.received_advertised} of ${window.advertised_here} addresses whose doors quoted this rail received here${
+          window.received_unadvertised > 0
+            ? `, plus ${window.received_unadvertised} that never quoted it at all`
+            : ""
+        }. ${window.transfers} transfer${window.transfers === 1 ? "" : "s"},
         over ${window.blocks.toLocaleString()} blocks (${window.from_block}–${window.to_block}) in ${window.calls} call${window.calls === 1 ? "" : "s"}${
-          window.truncated ? " — <strong>cut short by the span budget</strong>" : ""
+          window.truncated ? " — <strong>cut short</strong>" : ""
         }${
           window.addresses_unread > 0
             ? ` — <strong>${window.addresses_unread} addresses unread</strong>`
             : ""
-        }${window.unread ? ` — <strong>unread: ${escapeHtml(window.unread)}</strong>` : ""}</li>`,
+        }${window.unread ? ` — <strong>${escapeHtml(window.unread)}</strong>` : ""}</li>`,
     )
     .join("");
   /*
@@ -1775,27 +1779,52 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
    * hours. A union across unequal windows is a floor; the page says
    * floor, and says which chain was short.
    */
+  const pct = (part: number, whole: number): string =>
+    `${Math.round((part / Math.max(1, whole)) * 100)}%`;
+  const sole = census.by_exclusivity.sole;
+  const shared = census.by_exclusivity.shared;
   const headline = census.windows_equal
-    ? `<strong>${census.addresses_received} of ${census.addresses_checked}</strong>
-       (${Math.round((census.addresses_received / Math.max(1, census.addresses_checked)) * 100)}%)
-       watched addresses received USDC over the window below.`
-    : `<strong>At least ${census.addresses_received} of ${census.addresses_checked}</strong>
-       watched addresses received USDC — <strong>a floor, not a rate</strong>: the chains below were
-       not walked over the same window, so no percentage is stated.`;
+    ? `<strong>${sole.received} of ${sole.watched}</strong> (${pct(sole.received, sole.watched)})
+       addresses that <strong>only one door advertised</strong> received USDC over the window below.`
+    : `<strong>At least ${sole.received} of ${sole.watched}</strong> sole-advertised addresses received USDC —
+       <strong>a floor, not a rate</strong>: the chains below were not walked over the same window,
+       so no percentage is stated.`;
   const shape = census.distribution;
   return c.html(
     renderAdminShell(
       "market",
       `<h1>Inflows — week ${escapeHtml(census.week)}</h1>
       <p class="lead">${headline}
-      ${census.addresses_capped ? `<strong>The ceiling bound:</strong> the round advertised ${census.addresses_advertised} and this run watched ${census.addresses_checked} on a rotating window.` : ""}
-      ${census.transfers_seen} transfer${census.transfers_seen === 1 ? "" : "s"} seen.</p>
+      ${census.addresses_capped ? `<strong>The ceiling bound:</strong> the round advertised ${census.addresses_advertised} and this run watched ${census.addresses_checked} on a rotating window.` : ""}</p>
+
+      <h2>Did anyone pay an ask?</h2>
+      <p>The narrowest honest answer this instrument can give:
+      <strong>${census.in_quoted_band.transfers}</strong> transfer${census.in_quoted_band.transfers === 1 ? "" : "s"}
+      landed inside the USDC range the advertising door itself quoted, across
+      <strong>${census.in_quoted_band.sole_addresses}</strong> sole-advertised address${census.in_quoted_band.sole_addresses === 1 ? "" : "es"}
+      (${census.in_quoted_band.addresses} including shared ones).
+      A floor on plausible payments — a band is not a receipt.</p>
+
+      <h2>Sole versus shared</h2>
+      <p>An address several doors point at is shared infrastructure <em>by construction</em> — read off our
+      own record of who advertised it, not guessed from the wallet.</p>
+      <ul>
+        <li><strong>Sole-advertised</strong>: ${sole.received} of ${sole.watched} received
+        (${pct(sole.received, sole.watched)}), ${sole.transfers} transfers</li>
+        <li><strong>Shared</strong>: ${shared.received} of ${shared.watched} received
+        (${pct(shared.received, shared.watched)}), ${shared.transfers} transfers</li>
+      </ul>
+
       <h2>How the traffic is shaped</h2>
-      <p>Median <strong>${shape.median_transfers}</strong> transfers per receiving address;
+      <p>Across all ${census.addresses_received} receiving addresses and ${census.transfers_seen} transfers:
+      median <strong>${shape.median_transfers}</strong> transfers per receiving address;
       busiest single address <strong>${shape.max_transfers}</strong>;
       busiest tenth hold
-      <strong>${shape.top_decile_share_pct === null ? "n/a" : `${shape.top_decile_share_pct}%`}</strong>
-      of everything seen. A high share here is shared or facilitator wallets, not many small sales.</p>
+      <strong>${shape.top_decile_share_pct === null ? "n/a" : `${shape.top_decile_share_pct}%`}</strong>.
+      Median transfer size <strong>$${census.amounts.median_usdc}</strong>;
+      ${census.amounts.under_1_usdc} under $1, ${census.amounts.under_10_usdc} under $10,
+      ${census.amounts.over_100_usdc} over $100.</p>
+
       <h2>What was actually covered</h2>
       <ul>${windows}</ul>
       <h2>What this counts</h2>

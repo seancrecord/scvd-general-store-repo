@@ -672,6 +672,61 @@ different route. A walk stopped by the clock now says so on the
 window, as a coverage fact like any other, rather than as a page
 that never renders.
 
+## 11. What the second reading forced, and what it could not answer
+
+The rebuilt instrument ran clean: 448 of 448 watched, both chains at
+the full 43,200 blocks, block arithmetic agreeing with its own
+endpoints, caption naming the denominator the number used. It
+returned **232 of 448 (52%) received, 11,404 transfers** — and, in
+the distribution the rebuild added, **one address holding 4,876 of
+those transfers**, 43% of everything, alone.
+
+Both numbers are true and together they say something the headline
+did not: this was measuring **wallet activity, not payments**. An
+address taking 3.4 transfers a minute for a day is a facilitator, a
+router, or an exchange wallet. Its presence in the watch list is
+proof, not suspicion, that the advertised-address space is not
+door-specific. And a median of 4 transfers across 232 addresses is
+not credible as x402 purchase volume in a market this size — it is
+credible as ordinary USDC business at wallets that happen also to be
+advertised in a 402.
+
+**Defect 6, visible in that same output.** `Polygon: 2 received` —
+out of what? The walk watches every address on every chain, so both
+chain lines carried an implicit denominator of the whole watch list.
+But an address whose doors only ever quoted Base has no business
+receiving Polygon USDC, and counting it in the denominator makes a
+rail nobody quoted look dead. The round has carried `offer.networks`
+the whole time; the reader ignored it. A per-chain count with no
+per-chain denominator is the B10 shape, and it was ours.
+
+### Three distinctions, all derived from our own record
+
+None of these is a guess about who runs a wallet. Each is read off
+what the round already wrote down.
+
+| Distinction | Why it is not a judgement call |
+|---|---|
+| **Sole vs shared** — how many DISTINCT doors advertised an address | An address several doors point at is shared *by construction*. We are reading our own record of who advertised it, not inferring anything about the wallet. |
+| **Per-chain denominator** — which rails an address's doors actually quoted | `offer.networks`, already captured per host. |
+| **Quoted band** — did the transfer's size land inside the USDC range the advertising door asked for | `min_usdc`/`max_usdc`, already captured per host, against an amount `usdcTransfersToAny` already returned and the reader was discarding. |
+
+The narrow number — **transfers inside the quoted band, at
+sole-advertised addresses** — is the first figure in this instrument
+that a treasury movement cannot walk into by accident. It is still a
+floor, not a count of sales: a band is not a receipt, a door quoting
+$0.001–$5 makes a wide one, and a facilitator's fee moves an amount
+off the quote. The reading says all of that on itself.
+
+### The ceiling, stated plainly
+
+Even sharpened, this instrument cannot prove a purchase. It can only
+narrow what a transfer might be. Answering "does anyone actually pay
+these asks" needs evidence the chain does not carry — a sampled real
+purchase, or receipt-level data. **That is the cost-benefit case for
+NOW-6**, and the second reading is what made it with numbers rather
+than with an argument.
+
 **The lesson worth keeping.** Every one of these was visible in the
 code at review time, and none was visible to me until a real reading
 made the numbers sit next to each other. The audit's own bar — an
