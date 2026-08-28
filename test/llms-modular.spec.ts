@@ -45,6 +45,18 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken 2026-08-28 on the rebase that joined the CLI publish to
+ * the audit's burst sentence: each side had correctly re-taken its
+ * own digest, so the merged guide is a third text neither value
+ * describes. Both sides' sentences confirmed present before this was
+ * taken.
+ *
+ * Re-taken 2026-08-28 when CLI_PUBLISHED flipped: the guide's CLI
+ * paragraph carries a different sentence once the package is really
+ * on npm ("install it with" rather than "the publish has not run"),
+ * and it swapped itself from the constant — this digest moving is
+ * that derivation working, not prose being edited.
+ *
  * Re-taken again 2026-08-28 on the second rebase, over the instrument
  * audit (#311) as well: three lines of work have now edited this guide
  * in a day, each correctly re-taking its own digest, so every rebase
@@ -87,7 +99,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3a898041c81bab74213fa7419a78c0a73a196dddfcca78e06aece9f3c33bb485";
+  "1fdd10ab354ebe802cb685d3b76410ca50395f5e499d32929175f2c4c06c2279";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

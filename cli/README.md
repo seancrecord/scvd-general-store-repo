@@ -16,13 +16,31 @@ command keeps the short one.
 
 Zero dependencies. Node 18.17+. MIT.
 
-> **Not on npm yet.** Publishing is the keeper's hand and has not run,
-> so the install line above is what it will be rather than what it is.
-> Until then the whole tool is this one file — clone the repo and run
-> `node cli/scvd.mjs preflight <url>`. Every surface that names the
-> package (`/developers`, `/llms.txt`, `/.well-known/api-catalog`)
-> says the same thing, from the same constant, and changes in one
-> place the day it publishes.
+> Published from CI with `npm publish --provenance`, so the tarball
+> carries a signed attestation binding it to this repo and the commit
+> it was built from — the same bar this store holds everybody else's
+> artifacts to. No install needed either way: the whole tool is this
+> one file, and `node cli/scvd.mjs preflight <url>` works from a clone.
+
+<!--
+  THE FIRST TARBALL COULD NOT TELL THE TRUTH, and it is worth knowing
+  why before anyone writes another status line here.
+
+  0.1.0 was published on 2026-08-28 carrying a README that said "not
+  on npm yet" — accurately, at the moment it was built, since the
+  publish is the thing that made it false. npm renders a version's
+  README from inside its own tarball and versions are immutable, so
+  that page said the package did not exist while the package existed,
+  and no edit could reach it. 0.1.1 is the correction.
+
+  The lesson is in the tense: this file is read from inside the
+  artifact it describes, so it must not assert a publication STATE
+  that the act of publishing changes. Say what the tool is and how it
+  is built — both true in the tarball and on the registry page — and
+  leave the published-or-not question to the constants in
+  src/store/cli.ts, which every served surface reads and which can be
+  edited after the fact.
+-->
 
 ## What it does
 
