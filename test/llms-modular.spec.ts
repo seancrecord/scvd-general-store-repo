@@ -64,6 +64,13 @@ const BASE = "https://scvd.store";
  * side's sections were confirmed present in the served guide before
  * this value was taken.
  *
+ * Re-taken 2026-08-28 in the commit that narrowed the rail-choice
+ * claim (#89): the guide's paying section lost "same tiers on every
+ * rail, your wallet's choice" and gained STOCK_CLIENT_RAIL_NOTE, which
+ * says what a stock client actually does — takes the first surviving
+ * accept, pays once, never tries the others. The cap paragraph and the
+ * CLI line were both confirmed still present before this was taken.
+ *
  * Re-taken 2026-08-28 in the commit that disclosed the client spend
  * cap (#52 part 1): the guide's "How paying works here" section gained
  * the paragraph naming @x402/core's default per-payment ceiling, since
@@ -116,7 +123,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "cebd3fe68848210f4fe8a8687f8d2dc568d869b115d8e15bdbde92f1e82c8af6";
+  "40c1ea6458f6d2c7f981e0b0f5075474dd79cee573b24fd5df629f340f37db20";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
