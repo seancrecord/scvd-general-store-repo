@@ -74,12 +74,20 @@ const BASE = "https://scvd.store";
  * {id} verbatim and reported dead links). Markup only; sentences
  * untouched.
  *
+ * Re-taken 2026-08-28 in the commit that gave the Night Watch its
+ * intra-tick burst: the menu description now says most ticks try the
+ * door three times a few seconds apart rather than once, and the menu
+ * copy is interpolated into the guide, so the words moved with the
+ * instrument. The sentence was confirmed present in the served text,
+ * along with the declined-positions and scvd-cli sections from the
+ * earlier re-takes, before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "978a282fd3f6109ab6465c8b073ab7a38edb8f883ff2a840749e242025e2643c";
+  "3a898041c81bab74213fa7419a78c0a73a196dddfcca78e06aece9f3c33bb485";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
