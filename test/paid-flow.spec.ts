@@ -2,6 +2,20 @@ import { SELF, env } from "cloudflare:test";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Env } from "@/types";
 import { getMenuItem } from "@/store";
+import { priceTiersUsdc, usdcToAtomic } from "@/lib/payments";
+
+/*
+ * THE COLLAB'S TIERS, DERIVED. These were three typed atomic amounts
+ * (25/50/125 million) and a typed $50 tip figure until 2026-08-28,
+ * when the door went from a $25 floor to $300. The prices were never
+ * what either test was about — one checks the SHAPE of a v2 challenge,
+ * the other that a tier above the minimum is recorded as a tip — so
+ * they read the shelf now and compare it against what the door
+ * actually served. That is a stronger assertion than the literals
+ * were: it catches the door quoting terms the catalogue does not hold.
+ */
+const COLLAB_TIERS = priceTiersUsdc(getMenuItem("the_collab")!);
+const COLLAB_ATOMIC = COLLAB_TIERS.map(usdcToAtomic);
 import { KV_KEYS, currentWeekKey } from "@/lib/kv-keys";
 import { isRecord } from "@/types";
 import {
@@ -62,7 +76,7 @@ describe("the 402 challenge (x402 v2)", () => {
      * Two rails since 2026-08-04, Base entries FIRST (accepts[0] is a
      * compatibility promise — clients that blindly sign the first
      * offer predate the second rail). Three pay-what-it-deserves
-     * tiers per rail: $25, $50, $125 in USDC atomic units.
+     * tiers per rail, in USDC atomic units, read from the shelf.
      */
     const baseEntries = required.accepts.filter(
       (a) => a.network === "eip155:8453",
@@ -74,16 +88,8 @@ describe("the 402 challenge (x402 v2)", () => {
       required.accepts.length,
     );
     expect(required.accepts[0]!.network).toBe("eip155:8453");
-    expect(baseEntries.map((a) => a.amount)).toEqual([
-      "25000000",
-      "50000000",
-      "125000000",
-    ]);
-    expect(solanaEntries.map((a) => a.amount)).toEqual([
-      "25000000",
-      "50000000",
-      "125000000",
-    ]);
+    expect(baseEntries.map((a) => a.amount)).toEqual(COLLAB_ATOMIC);
+    expect(solanaEntries.map((a) => a.amount)).toEqual(COLLAB_ATOMIC);
     for (const requirement of baseEntries) {
       expect(requirement.scheme).toBe("exact");
       expect(requirement.payTo).toBe(testEnv.PAY_TO_ADDRESS);
@@ -103,7 +109,7 @@ describe("the 402 challenge (x402 v2)", () => {
 
     const body = await json(response);
     expect(body["error"]).toContain("high-dollar hourly rates");
-    expect(body["min_price_usdc"]).toBe(25);
+    expect(body["min_price_usdc"]).toBe(COLLAB_TIERS[0]);
   });
 
   it("shows humans with browsers to the front porch", async () => {
@@ -144,13 +150,15 @@ describe("paid purchases", () => {
   });
 
   it("queues a human item and records a generous tier as a tip", async () => {
-    // Tier 1 on the_collab = $50 against a $25 minimum: $25 tip.
+    // Tier 1 is the generous rung: whatever it is, the difference from
+    // the floor is the tip. Derived so the assertion states the RULE
+    // rather than one shelf's arithmetic.
     const response = await buyPaid("the_collab", 1);
     expect(response.status).toBe(200);
     const body = await json(response);
     expect(body["status"]).toBe("queued");
-    expect(body["paid_usdc"]).toBe(50);
-    expect(body["tip_usdc"]).toBe(25);
+    expect(body["paid_usdc"]).toBe(COLLAB_TIERS[1]);
+    expect(body["tip_usdc"]).toBe(COLLAB_TIERS[1]! - COLLAB_TIERS[0]!);
     expect(body["message"]).toContain("give him the week");
 
     const orderId = body["order_id"] as string;

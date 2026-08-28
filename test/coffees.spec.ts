@@ -5,10 +5,24 @@ import {
   buildPaymentSignature,
   decodePaymentRequired,
 } from "./helpers/payment";
+import { getMenuItem } from "@/store";
 import type { Certificate, Env } from "@/types";
 
+/*
+ * DERIVED FROM THE SHELF, NOT TYPED. These two assertions used to
+ * carry a literal 3, which made every reprice a test edit and — worse
+ * — asserted nothing about whether the served price MATCHES the shelf.
+ * Read from the menu, the same lines now catch the defect they were
+ * always closest to: the door quoting a price the catalogue does not
+ * hold. Repriced to $0.99 on 2026-08-28 under the stock client's $1
+ * ceiling; nothing here needed changing for that, which is the point.
+ */
+const SHELF_PRICE = getMenuItem("coffees_for_closers")?.price_usdc;
+
 /**
- * coffees_for_closers: $3 flat, the buyer names the win, the
+ * coffees_for_closers: $0.99 flat (repriced 2026-08-28 under the
+ * stock client's $1 ceiling — a joke door nobody's client could hear
+ * was a joke nobody heard), the buyer names the win, the
  * certificate records it verbatim, the keeper drinks the Sunday
  * coffee in the buyer's name and completes the order by hand.
  */
@@ -51,7 +65,7 @@ describe("coffee's for closers", () => {
     expect(String(body["error"])).toContain(
       "Coffee's for closers, and you closed",
     );
-    expect(body["min_price_usdc"]).toBe(3);
+    expect(body["min_price_usdc"]).toBe(SHELF_PRICE);
   });
 
   it("refuses the sale without a win: no win, no charge", async () => {
@@ -78,7 +92,7 @@ describe("coffee's for closers", () => {
     const body = await json(response);
     // Instant since the keeper-load ruling: no queue, no keeper action.
     expect(body["order_id"]).toBeUndefined();
-    expect(body["paid_usdc"]).toBe(3);
+    expect(body["paid_usdc"]).toBe(SHELF_PRICE);
     expect(String(body["deliverable"])).toContain(win);
     expect(String(body["deliverable"])).toContain("closers");
 
