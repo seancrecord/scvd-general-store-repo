@@ -100,8 +100,25 @@ setup, then a button:
     2. Repo → Settings → Secrets and variables → Actions → New
        repository secret, named NPM_TOKEN.
     3. Actions tab → "Publish npm package" → Run workflow.
-       package: scvd-cli · version: 0.1.0 · dry_run: checked  (look at the
-       tarball listing in the log), then run it again unchecked.
+       package: scvd-cli · version: the number in cli/package.json ·
+       dry_run: checked (look at the tarball listing in the log), then
+       run it again unchecked.
+
+DONE 2026-08-28: `scvd-cli@0.1.0` is on the registry, published from CI
+with provenance. Two things were learned at the counter and are worth
+keeping:
+
+  * npm refuses the bare name `scvd` permanently — its typosquat guard
+    calls it too close to scss/save/send. The package is `scvd-cli`;
+    the installed command is still `scvd`, because npm polices package
+    names and not bin names.
+  * A first publish cannot ship an accurate README. npm renders each
+    version's README from inside that version's own tarball, and
+    versions are immutable — so 0.1.0's page says "not on npm yet"
+    forever, because that was true in the tree that produced it. 0.1.1
+    is the correction, and cli/README.md no longer asserts a
+    publication state at all. Publish-state lives in
+    src/store/cli.ts, which every served surface reads.
 
 The workflow is `.github/workflows/publish-npm.yml`: workflow_dispatch
 only, refuses if the typed version disagrees with package.json or is
