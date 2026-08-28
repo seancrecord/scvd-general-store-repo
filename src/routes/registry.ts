@@ -168,13 +168,33 @@ function registryDatasetJsonLd(
         },
         {
           "@type": "PropertyValue",
-          name: "listed doors serving no valid payment challenge (percent)",
+          name: "listed doors serving no valid payment challenge (percent, of doors probed)",
           value: latest.rot.pct,
           unitText: "PERCENT",
         },
+        /*
+         * THE MACHINE HALF KEPT THE WORD THE PROSE GAVE UP (the
+         * instrument audit, 2026-08-28). After A2/H1 retired
+         * "verifiable" and "working" from the prose, this block —
+         * which the H1 note above says matters MORE, because
+         * indexers quote it verbatim — still said both, as a bare
+         * percent. B10: the counts now ride beside the ratio, and
+         * the words say what the census measured: JWS structure,
+         * signatures never verified, from the placement it reads.
+         */
         {
           "@type": "PropertyValue",
-          name: "working doors serving verifiable signed offers (percent)",
+          name: "shape-ready doors serving structurally valid signed offers (count; JWS parse only, signatures not verified by the census)",
+          value: latest.signed_offers.serving,
+        },
+        {
+          "@type": "PropertyValue",
+          name: "shape-ready doors checked for signed offers (denominator)",
+          value: latest.signed_offers.of_ready,
+        },
+        {
+          "@type": "PropertyValue",
+          name: "shape-ready doors serving structurally valid signed offers (percent, of shape-ready doors probed)",
           value: latest.signed_offers.pct,
           unitText: "PERCENT",
         },
@@ -190,7 +210,7 @@ function registryDatasetJsonLd(
     "@type": "Dataset",
     name: "State of the x402 registry — weekly census of public payment endpoints",
     description:
-      "A weekly running tally of the public x402 registry: how many listed payment endpoints answer as working, how many serve verifiable signed offers, how many are listed but functionally absent, and how many distinct operators the hosts collapse to. Aggregates only, never rows about a named operator. Measured by one signed GET per listed host, recorded in a hash-chained, Bitcoin-anchored corpus.",
+      "A weekly running tally of the public x402 registry: how many listed payment endpoints answer a well-formed x402 challenge (shape only, one vantage, one moment), how many of those serve structurally valid signed offers (JWS parse only — signatures are not verified by the census), how many are listed but functionally absent, and how many distinct operators the hosts collapse to. Aggregates only, never rows about a named operator. Measured by one signed GET per listed host, recorded in a hash-chained, Bitcoin-anchored corpus. The store's own door is not in any denominator here: a census cannot probe its own host.",
     url: `${base}/registry`,
     license: "https://creativecommons.org/licenses/by/4.0/",
     isAccessibleForFree: true,
@@ -243,9 +263,10 @@ registryRoutes.get("/registry", async (c) => {
       ${newestFirst.map(tallyRow).join("\n")}
     </table>
     <p class="menu-meta">Rot: listed doors answering no valid 402 challenge.
-    Signed offers: doors serving offers a third party can verify, of doors
-    working at all. Median ask: middle USDC price among doors quoting a
-    recognizable USDC asset. Operators: hosts grouped by registrable domain
+    Signed offers: doors serving structurally valid signed offers (JWS parse
+    only — signatures are not verified by the census), of doors answering a
+    well-formed challenge. Median ask: middle USDC price among doors quoting
+    a recognizable USDC asset. Operators: hosts grouped by registrable domain
     (platform subdomains counted as their own operators). An em dash means
     that week's round predates the capture of that measurement.</p>
   </section>`
@@ -274,7 +295,10 @@ registryRoutes.get("/registry", async (c) => {
     nothing here speaks to delivery quality, and nothing here sees the buy
     side. Probes are signed (Web Bot Auth) and identify themselves. Grouping
     into operators is a heuristic, stated above. These are observations of
-    moments, not scores on anybody.</p>
+    moments, not scores on anybody. One structural blindness, stated because
+    it flatters the trust-gap numbers: the census cannot probe this store's
+    own host (a Worker cannot fetch itself), so our own door — which serves
+    signed offers — is in no denominator on this page.</p>
     <p class="menu-meta">Disclosure, so the incentive is on the table: this
     store sells verification — signed audits and standing watches at
     <a href="/conformance">the conformance desk</a> — which means we benefit

@@ -35,7 +35,7 @@ import type { HonoEnv } from "@/types";
 export const pulseRoutes = new Hono<HonoEnv>();
 
 const STANDFIRST =
-  "The whole funnel, not the flattering end of it: how many agents were offered a price here, how many paid, and how many came back to re-check an artifact afterwards. Organic only — the proprietors' own wallets and tests are flagged at the till and excluded, the same way they are excluded from /stats.";
+  "The whole funnel, not the flattering end of it: how many times this store quoted a price (each 402 answered, as recorded — a count of price quotes, not of distinct agents, which this meter deliberately cannot count), how many purchases settled, and how many artifacts were re-checked afterwards. Organic only — the proprietors' own wallets and tests are flagged at the till and excluded, the same way they are excluded from /stats.";
 
 /**
  * THE CORRECTION EXPLAINED WHERE IT IS SHOWN, not in a commit message.
@@ -69,18 +69,26 @@ function rateText(window: PulseWindow): string {
   return `${shown}% (1 in ${oneIn.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")})`;
 }
 
-/** The funnel as a sentence, which is the point of showing it whole. */
+/**
+ * The funnel as a sentence, which is the point of showing it whole.
+ *
+ * COUNTS QUOTES, NOT HEADS (the instrument audit, 2026-08-28). This
+ * used to read "N agents were offered a price" — but the meter
+ * counts 402 responses, and the porch's own accounting refuses to
+ * count unique heads on purpose. One agent retrying is many quotes;
+ * the sentence now says what the number is.
+ */
 function sentence(window: PulseWindow): string {
   if (window.organic_challenges === 0) {
-    return "Nobody has been offered a price here yet.";
+    return "No price has been quoted here yet.";
   }
   const paid =
     window.organic_settled === 0
-      ? "none of them paid"
-      : `${window.organic_settled} paid`;
-  return `${window.organic_challenges} agent${
-    window.organic_challenges === 1 ? " was" : "s were"
-  } offered a price, and ${paid}.`;
+      ? "no purchase settled"
+      : `${window.organic_settled} purchase${window.organic_settled === 1 ? "" : "s"} settled`;
+  return `A price was quoted ${window.organic_challenges} time${
+    window.organic_challenges === 1 ? "" : "s"
+  } (402s answered, not distinct agents), and ${paid}.`;
 }
 
 function row(window: PulseWindow, label: string): string {
@@ -112,7 +120,7 @@ pulseRoutes.get("/pulse", async (c) => {
     renderSimplePage({
       title: "The pulse",
       description:
-        "The whole funnel for this x402 store, organic only: how many agents were offered a price, how many paid, and how many re-verified an artifact afterwards.",
+        "The whole funnel for this x402 store, organic only: how many times a price was quoted (402s answered, not distinct agents), how many purchases settled, and how many artifacts were re-verified afterwards.",
       path: "/pulse",
       bodyHtml: `<section>
         <p class="menu-desc">${escapeHtml(STANDFIRST)}</p>

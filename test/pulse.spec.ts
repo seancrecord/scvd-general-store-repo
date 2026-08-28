@@ -252,7 +252,14 @@ describe("the pulse has a face", () => {
     const page = await (
       await SELF.fetch(`${BASE}/pulse`, { headers: { Accept: "text/html" } })
     ).text();
-    expect(page).toMatch(/offered a price|Nobody has been offered a price/);
+    /*
+     * The sentence counts QUOTES, not heads (the instrument audit,
+     * 2026-08-28): the meter records 402 responses and deliberately
+     * cannot count distinct agents, so the page must not say
+     * "N agents were offered a price".
+     */
+    expect(page).toMatch(/price was quoted|No price has been quoted/);
+    expect(page).not.toMatch(/agents? (was|were) offered a price/);
     // No ranking shape anywhere: that is the competitor's mistake.
     expect(page).not.toMatch(/\brank(ed|ing)?\b/i);
     expect(page).not.toMatch(/top\s+(agent|buyer|patron)/i);

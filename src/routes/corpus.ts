@@ -127,7 +127,7 @@ corpusRoutes.get("/corpus.json", async (c) => {
       "5. Base64-decode `ots.proof_base64` and run `ots verify` against the digest: a Bitcoin-confirmed proof means the snapshot existed by that block, on evidence that is not ours.",
     ],
     honest_limits:
-      "The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. A host absent from the round was unlisted or unreachable that week, nothing more. The chain proves the record has not been rewritten; it cannot prove the round saw everything, and coverage caveats ride inside each round verbatim (capped, coverage_suspect, coverage_drop).",
+      "The observations are ours: one instrument, weekly cadence, the hosts the discovery list declared. A host absent from a round was unlisted that week, beyond the round's stated caps, or dropped by our own coverage — the round's own coverage fields say which, so absence alone proves nothing about the host. One structural exclusion, stated because it flatters our trust-gap numbers: the round can never probe this store's own host (a Worker cannot fetch itself), so our own door is in no denominator here. The chain proves the record has not been rewritten; it cannot prove the round saw everything, and coverage caveats ride inside each round verbatim (capped, coverage_suspect, coverage_drop).",
     latest: records[records.length - 1] ?? null,
     index: records.map((record) => ({
       sequence: record.snapshot.sequence,
@@ -136,7 +136,18 @@ corpusRoutes.get("/corpus.json", async (c) => {
       digest: record.digest,
       previous_digest: record.snapshot.previous_digest,
       ots_status: record.ots?.status ?? "unsubmitted",
+      /*
+       * hosts_observed keeps its historical meaning (every row the
+       * round carries, `not_probed` population rows included) under
+       * the frozen-fields law; hosts_probed beside it is the number
+       * its name always suggested. Two fields, because renaming a
+       * served field is a rewrite and a row nobody probed was never
+       * "observed" in any sense a reader would accept.
+       */
       hosts_observed: record.snapshot.round.hosts.length,
+      hosts_probed: record.snapshot.round.hosts.filter(
+        (host) => host.verdict !== "not_probed",
+      ).length,
       url: `${base}/corpus/${record.snapshot.sequence}.json`,
     })),
   });

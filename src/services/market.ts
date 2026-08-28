@@ -1,4 +1,4 @@
-import { BASE_USDC } from "@/lib/base-rpc";
+import { BASE_USDC, POLYGON_USDC } from "@/lib/base-rpc";
 import { SOLANA_USDC_MINT } from "@/lib/solana-rpc";
 import type { WardHostResult, WardRound } from "@/services/ward-round";
 
@@ -25,12 +25,29 @@ import type { WardHostResult, WardRound } from "@/services/ward-round";
  *     can improve without rewriting chained history.
  */
 
-/** USDC's two homes, the only asset the price map counts — imported
- * from the RPC readers so the desk can never disagree with the till. */
+/**
+ * USDC's three homes, the only asset the price map counts — imported
+ * from the RPC readers so the desk can never disagree with the till.
+ *
+ * POLYGON JOINED 2026-08-28 (the instrument audit). Until then this
+ * set held Base and Solana only, so every Polygon-USDC-priced door
+ * silently dropped out of the published price sample and median —
+ * the exact sibling of the rail-bucket defect documented on
+ * MarketRails, in the price dimension, while the comment above
+ * claimed the desk could never disagree with the till. Weeks
+ * measured under the two-mint set are NOT re-read: PRICE_BASIS
+ * below marks the recognition set a stored week's prices were
+ * captured under, the same law RAIL_BASIS enforces for rails.
+ */
 const USDC_ASSETS = new Set([
   BASE_USDC.toLowerCase(),
+  POLYGON_USDC.toLowerCase(),
   SOLANA_USDC_MINT.toLowerCase(),
 ]);
+
+/** Which USDC mints the week's price sample recognized. Absent on a
+ * stored week = the two-mint era (Base + Solana, pre-2026-08-28). */
+export const PRICE_BASIS = "usdc-base-polygon-solana" as const;
 
 const BASE_MAINNET = "eip155:8453";
 const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
@@ -290,6 +307,9 @@ export interface MarketAggregates {
     median: number;
     p75: number;
     max: number;
+    /** Recognition set the sample was taken under. Absent on weeks
+     * stored before 2026-08-28: the two-mint era (Base + Solana). */
+    basis?: typeof PRICE_BASIS;
   } | null;
   schemes: Record<string, number>;
   concentration: {
@@ -412,6 +432,7 @@ export function marketAggregates(
             median: percentile(prices, 0.5),
             p75: percentile(prices, 0.75),
             max: prices[prices.length - 1]!,
+            basis: PRICE_BASIS,
           }
         : null,
     schemes,

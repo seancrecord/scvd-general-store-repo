@@ -52,7 +52,13 @@ function freshSetDatasetJsonLd(base: string, set: FreshSet): string {
       },
       {
         "@type": "PropertyValue",
-        name: "listed doors probed",
+        /*
+         * H2's lesson, kept here too: `probed` includes revisit rows
+         * — doors no feed named THIS round, walked from an earlier
+         * listing — so "listed doors" was the substitution the
+         * per-host page already corrected.
+         */
+        name: "doors probed (named by a feed this round, or revisited from an earlier listing)",
         value: set.aggregates.probed,
       },
     ],
@@ -96,7 +102,8 @@ freshSetRoutes.get("/fresh-set", async (c) => {
   </section>
   <section>
     <h2>Week ${escapeHtml(set.week)}: ${set.aggregates.ready} doors answered</h2>
-    <p class="menu-meta">${set.aggregates.probed} listed doors probed:
+    <p class="menu-meta">${set.aggregates.probed} doors probed (named by a
+    feed this round, or revisited from an earlier listing):
     ${set.aggregates.ready} answered a conformant challenge,
     ${set.aggregates.not_ready} answered something that was not one,
     ${set.aggregates.unreachable} did not answer at all.
