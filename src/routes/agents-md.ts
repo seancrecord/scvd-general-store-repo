@@ -80,6 +80,7 @@ ${
 ## Usage: purchasing flow (MCP)
 
 - Endpoint: ${base}/mcp — Streamable HTTP, JSON-RPC 2.0. \`tools/list\` is free and unauthenticated.
+- Which door to use (remote vs local stdio vs the browser surface vs no MCP), what renders where, and what is not built yet: ${base}/mcp.md
 - Readable resources over the same door (\`resources/list\`, free): \`scvd://guide\`, \`scvd://manual\`, \`scvd://catalog\`, \`scvd://criteria\`, \`scvd://when\`, \`scvd://fresh-set\` — plus \`ui://\` card templates (MCP Apps) that render the preflight and verify readings in hosts that support them.
 - Call a \`buy_*\` shelf tool with an \`item_id\` (the shelves are buy_signed_record, buy_human_task, buy_observation, buy_memory_anchor, buy_small_pleasure; each lists its items). Without payment it returns JSON-RPC error 402 with the terms in \`error.data\`. Sign one accept and retry with the payment in \`_meta['x402/payment']\`.
 - Free tools need no payment. Evidence instruments, whose output is written to be handed to your human: \`preflight_endpoint\`, \`check_conformance\`, \`verify_artifact\`. Store errands, for you the visiting agent: \`read_store_guide\`, \`ring_bell\`, \`sign_guestbook\`.
