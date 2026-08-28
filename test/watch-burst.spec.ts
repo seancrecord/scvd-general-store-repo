@@ -50,8 +50,27 @@ function stubDoor(script: ("ready" | "dead")[]): { calls: () => number } {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: unknown) => {
-      const url = String(input);
-      if (!url.startsWith("https://burst.example")) {
+      /*
+       * HOSTNAME, NOT PREFIX — the third time this repo has written
+       * this shape and the third time CodeQL has called it high, so
+       * it gets the fix the other two got rather than a suppression.
+       * `startsWith("https://burst.example")` also answers for
+       * https://burst.example.evil.com, and a stub that answers for
+       * hosts it was never meant to answer for makes the test pass
+       * for a request the sweep should never have sent. The whole
+       * point of these cases is WHICH door got knocked on, how many
+       * times; a loose matcher would hide exactly that.
+       */
+      const target = String(input);
+      let isDoor = false;
+      try {
+        const parsed = new URL(target);
+        isDoor =
+          parsed.protocol === "https:" && parsed.hostname === "burst.example";
+      } catch {
+        isDoor = false;
+      }
+      if (!isDoor) {
         return new Response("{}", { status: 200 });
       }
       const answer = script[Math.min(call, script.length - 1)]!;
