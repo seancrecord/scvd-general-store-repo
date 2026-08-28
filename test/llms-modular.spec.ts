@@ -45,6 +45,11 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken 2026-08-28 in the commit that renamed the npm package to
+ * scvd-cli (the registry's typosquat guard refuses bare `scvd`; the
+ * command is still `scvd`) — the guide interpolates CLI_PACKAGE and
+ * CLI_INSTALL, so the CLI paragraph's bytes moved with the rename.
+ *
  * Re-taken again 2026-08-28 in the commit that added the declined-
  * positions section to the guide (P12), filed under the developers
  * area.
@@ -59,7 +64,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "f196b984d713f3714122aa397450409a34bba3cf483eba3dcc4cde53e167677a";
+  "0b605b135fabc8cacae6d46e45bdd743fc4a02cd9f9fd34f4e3d55d43cdb1ea4";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

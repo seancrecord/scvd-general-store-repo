@@ -122,6 +122,20 @@ describe("the three paths a developer types", () => {
     expect(cli.commands).toContain("scvd preflight <url>");
     expect(cli.also.npm).toBe("scvd-tab");
     /*
+     * THE PACKAGE AND THE COMMAND ARE TWO NAMES NOW. npm refused the
+     * bare name `scvd` outright (403, "too similar to scss, save,
+     * send" — the registry's typosquat guard, permanent), so the
+     * package publishes as scvd-cli while the installed command stays
+     * `scvd`. These two pins are what the rename would have silently
+     * broken: bin derived from the package name would claim a command
+     * that does not exist, and run_from_source derived from it would
+     * name a file that does not exist.
+     */
+    expect((cli as unknown as { bin: string[] }).bin).toEqual(["scvd"]);
+    expect(
+      (cli as unknown as { run_from_source: string }).run_from_source,
+    ).toContain("cli/scvd.mjs");
+    /*
      * PUBLISHED IS A FIELD, NOT AN INFERENCE. `npm publish` is the
      * keeper's hand and an agent reading this decides whether to try
      * an install — "we intend to" and "you can" are different answers.
