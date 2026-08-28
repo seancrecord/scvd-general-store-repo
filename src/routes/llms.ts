@@ -8,6 +8,8 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
+import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
 import {
@@ -43,6 +45,23 @@ function menuLine(item: MenuItem): string {
     ? ` House rules: ${item.constraints.join("; ").toLowerCase()}.`
     : "";
   return `  ${item.id}, ${item.name}, ${price}, ${timing}.\n    ${item.description}${stock}${constraints}`;
+}
+
+/**
+ * Both counts are read off the live shelf every time this file is
+ * served (#52). A typed count would be right on the day it was typed
+ * and quietly wrong on the day a price moved — and this particular
+ * number exists to be trusted by an agent deciding whether to spend a
+ * round trip, which is the worst place to keep a stale figure.
+ */
+function overCapDoorCount(): number {
+  return MENU_ITEMS.filter(
+    (item) => readAgainstCap(priceTiersUsdc(item))?.blocked === true,
+  ).length;
+}
+
+function pricedDoorCount(): number {
+  return MENU_ITEMS.filter((item) => item.price_usdc > 0).length;
 }
 
 export const llmsRoutes = new Hono<HonoEnv>();
@@ -376,6 +395,21 @@ Pay-what-it-deserves items offer several amounts in the 402, the minimum,
 a generous one, and a patron-of-the-arts one. Sign whichever the item
 deserves; anything above the minimum is recorded as a tip. The keeper
 notices tips.
+
+A CEILING THAT IS NOT OURS, and step 3 is where it bites. The stock
+x402 client (@x402/core) applies a default limit of ${CLIENT_CAP_LABEL}
+per payment — inside selectPaymentRequirements, BEFORE it picks an
+accept — so above that figure an unconfigured client throws without
+signing anything at all. ${overCapDoorCount()} of this store's
+${pricedDoorCount()} priced doors sit above it, counted off the shelf
+as this file was served. Raise maxAmountPerPayment, or pass
+spendControls: false if you mean to. It is your operator's safety
+control: we disclose it and we do not ship anything that routes around
+it, because a store whose product is evidence does not also sell a way
+past someone else's spending limit. We volunteer it because the
+refusal is invisible to us — we record your price check and then
+silence, which looks exactly like you changing your mind — and every
+affected 402 repeats it in its own body.
 
 TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
