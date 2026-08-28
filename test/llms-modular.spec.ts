@@ -64,6 +64,23 @@ const BASE = "https://scvd.store";
  * side's sections were confirmed present in the served guide before
  * this value was taken.
  *
+ * Re-taken 2026-08-28 in the commit that disclosed the client spend
+ * cap (#52 part 1): the guide's "How paying works here" section gained
+ * the paragraph naming @x402/core's default per-payment ceiling, since
+ * step 3 there is the exact claim that ceiling falsifies. Taken at the
+ * rebased head, with the CLI-published and burst-sentence re-takes
+ * already in — three correct values for three different documents,
+ * none of which survived the merge. Both of the other sides' sentences
+ * were confirmed present in the served text before this was taken.
+ *
+ * AND A NEW WAY TO TRIP THIS GUARD, worth knowing before it surprises
+ * someone: that paragraph interpolates two counts DERIVED from the
+ * live shelf (doors above the ceiling, priced doors total). A price
+ * change that moves a door across the ceiling now changes the guide's
+ * bytes and fails this test. That is correct — the served document
+ * genuinely changed — but the fix in that case is the same re-take,
+ * not a hunt for an edit nobody made.
+ *
  * Re-taken again 2026-08-28 when this batch rebased onto main: the
  * batch and main's own PR #310 had each re-taken the digest for their
  * own guide edits, so the rebase left a conflict between two correct
@@ -99,7 +116,7 @@ const BASE = "https://scvd.store";
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1fdd10ab354ebe802cb685d3b76410ca50395f5e499d32929175f2c4c06c2279";
+  "cebd3fe68848210f4fe8a8687f8d2dc568d869b115d8e15bdbde92f1e82c8af6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

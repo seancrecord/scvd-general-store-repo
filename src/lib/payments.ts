@@ -16,6 +16,11 @@ import {
   requiredParamsNote,
 } from "@/lib/bazaar-discovery";
 import { installBazaarObserver } from "@/lib/bazaar-observer";
+import {
+  blockedDoorNotice,
+  readAgainstCap,
+  tipCappedNotice,
+} from "@/lib/client-spend-cap";
 import { extractPaymentNonce, payerOfVerifiedPayload } from "@/lib/replay-guard";
 import { BASE_CHAIN, findAuthorizationUse } from "@/lib/base-rpc";
 import {
@@ -387,6 +392,29 @@ export function manifestAccepts(
   });
 }
 
+/**
+ * What a door says about the buyer's OWN spend ceiling, or nothing.
+ *
+ * Three states, and the third is the one that keeps the other two
+ * worth reading: a door the ceiling cannot touch says NOTHING,
+ * because a warning printed on every response is a warning nobody
+ * reads. See lib/client-spend-cap.ts for why the store discloses this
+ * rather than routing around it.
+ */
+function spendCapNote(tiers: number[]): Record<string, string> {
+  const reading = readAgainstCap(tiers);
+  if (reading === null) {
+    return {};
+  }
+  if (reading.blocked) {
+    return { client_spend_cap: blockedDoorNotice(reading.cheapestUsd) };
+  }
+  if (reading.tipCapped) {
+    return { client_spend_cap_tiers: tipCappedNotice(reading.tiersAboveCap) };
+  }
+  return {};
+}
+
 function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
   const accepts = railAccepts(env, priceTiersUsdc(item));
   return {
@@ -427,6 +455,20 @@ function buyRouteConfig(item: MenuItem, env: Env): RouteConfig {
               refund_promise: `Delivered within ${item.sla_hours ?? 168} hours of settlement or your money back — full amount, tip included, paid by the keeper himself with the transaction hash on the public record at ${env.STORE_BASE_URL}/fulfillment-log. The written commitment: ${env.STORE_BASE_URL}/rights.`,
             }
           : {}),
+        /**
+         * THE REFUSAL THAT HAPPENS ON THE BUYER'S OWN MACHINE (#52,
+         * part 1 of the keeper's ruling of 2026-08-25). Same law as
+         * refund_promise directly above: derived from the item's own
+         * tiers and from the client package's own constant, never a
+         * typed number, and present only where it is actually true.
+         *
+         * It earns its bytes because this failure is invisible from
+         * BOTH sides. The stock client throws before signing, so the
+         * buyer sees a library error rather than a price they could
+         * have cleared; we record a challenge and then nothing, which
+         * on our books is shaped exactly like a shopper wandering off.
+         */
+        ...spendCapNote(priceTiersUsdc(item)),
         want_something_else: `Can't pay, or want something we don't stock? POST ${env.STORE_BASE_URL}/api/request, the keeper reads every one on Sundays.`,
       },
     }),
