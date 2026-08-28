@@ -44,6 +44,7 @@ import {
   POLYGON_NETWORK,
   recordPolygonSettle,
   recordSolanaSettle,
+  SIGNING_WINDOW_SECONDS,
   takeDeclineReason,
 } from "@/lib/payments";
 import type { DeclineReason, DeclineSlot } from "@/lib/payments";
@@ -280,10 +281,20 @@ function payloadTemplate(
   if (typeof payTo !== "string" || typeof amount !== "string") {
     return null;
   }
+  /*
+   * THE ACCEPT'S OWN WINDOW, and the store's constant behind it — not
+   * a third typed 300 (#90). The sentence below promises the
+   * hand-roller that their validBefore is "good for the
+   * maxTimeoutSeconds above"; that is only true while this reads the
+   * same number the accept carries. Before #90 there were THREE
+   * copies of five minutes — the library's fallback, the accepts that
+   * inherited it, and this line — none of them chosen, any of which
+   * could have drifted from the others in silence.
+   */
   const timeout =
     typeof accept["maxTimeoutSeconds"] === "number"
       ? accept["maxTimeoutSeconds"]
-      : 300;
+      : SIGNING_WINDOW_SECONDS;
   return {
     x402Version: 2,
     // Copied whole, which is also the rule: any field you rebuild by

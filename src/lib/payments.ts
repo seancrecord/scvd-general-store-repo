@@ -309,12 +309,50 @@ function storeServiceMetadata(
  * forever, because clients that sign the first offer without reading
  * the rest exist and were working before the second rail did.
  */
+/**
+ * HOW LONG A SIGNED AUTHORIZATION STAYS GOOD (task #90).
+ *
+ * THIS NUMBER WAS NEVER DECIDED UNTIL NOW, which is the only reason
+ * the constant exists. `@x402/core` builds every requirement with
+ * `maxTimeoutSeconds: resourceConfig.maxTimeoutSeconds || 300`
+ * (dist/esm/chunk-BA2VL4DT.mjs:1061), and `railAccepts` did not set
+ * the field — so a fallback in someone else's package became this
+ * store's contract with its buyers by omission, and could have moved
+ * on their release schedule without a line of our code changing.
+ *
+ * THE VALUE IS UNCHANGED AT FIVE MINUTES, deliberately: setting it is
+ * the fix, moving it is a separate decision with buyers on both sides
+ * of it. Written down so the next person inherits the reasoning
+ * rather than the number:
+ *
+ *   TOO SHORT and a slow signer fails at the last step. A human
+ *   approval in the loop, a queued or cold wallet, an agent that
+ *   fetches the price and comes back — each of those spends real
+ *   seconds between the challenge and the signature, and the refusal
+ *   reaches the buyer as a rejected payment rather than as a rule
+ *   they could have read in advance.
+ *
+ *   TOO LONG and a signed authorization stays spendable longer than
+ *   we would like. The replay guard (lib/replay-guard.ts) is what
+ *   actually stops a reuse, but a narrow window is the cheaper
+ *   defence, and every second of width is a second in which a
+ *   captured envelope is still worth something.
+ *
+ * ⚑ KEEPER: five minutes is inherited, not chosen. If it should be
+ * something else, this is the one line to change and the spec's
+ * bounds (60s-3600s) are what hold it honest.
+ */
+export const SIGNING_WINDOW_SECONDS = 300;
+
 export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
   const accepts: PaymentOption[] = tiersUsdc.map((tierUsdc) => ({
     scheme: "exact",
     network: BASE_NETWORK,
     price: `$${tierUsdc}`,
     payTo: env.PAY_TO_ADDRESS,
+    // Set on every accept, on every rail, so the library's `|| 300`
+    // can never bind again. See SIGNING_WINDOW_SECONDS.
+    maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
   }));
   const polygon = polygonPayTo(env);
   if (polygon) {
@@ -324,6 +362,7 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
         network: POLYGON_NETWORK,
         price: `$${tierUsdc}`,
         payTo: polygon,
+        maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
       });
     }
   }
@@ -335,6 +374,7 @@ export function railAccepts(env: Env, tiersUsdc: number[]): PaymentOption[] {
         network: SOLANA_NETWORK,
         price: `$${tierUsdc}`,
         payTo: solana,
+        maxTimeoutSeconds: SIGNING_WINDOW_SECONDS,
       });
     }
   }
