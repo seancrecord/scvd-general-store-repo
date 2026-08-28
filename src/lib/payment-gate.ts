@@ -1201,6 +1201,12 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
         errorReason: settlement.errorReason,
         paymentHeader: c.req.header("PAYMENT-SIGNATURE"),
         network: verifiedRequirements.network,
+        // #55: a failed settle whose response NAMES a transaction is
+        // the duplicate-submission answer with the receipt attached —
+        // the rescue fires on it and the chain confirms or refuses.
+        ...(settlement.transaction
+          ? { failureTransaction: settlement.transaction }
+          : {}),
       });
       if (!rescued) {
         // Verified but didn't settle — and the chain agrees, or the
