@@ -258,11 +258,39 @@ const BRIDGE_JS = `
 `;
 
 function page(body: string, renderJs: string): string {
+  /*
+   * TWO META TAGS THE SCANNERS ASKED FOR, EACH TRUE (2026-08-28).
+   *
+   * color-scheme: the CSS below has carried a prefers-color-scheme
+   * dark block since the first render, so "light dark" states a fact
+   * — a host's dark theme gets dark form controls instead of a white
+   * flash.
+   *
+   * THE CSP RIDES A META TAG BECAUSE THERE IS NO HEADER: the card is
+   * served over MCP resources/read, not HTTP, so <meta http-equiv> is
+   * the only channel a policy can travel. The policy is the card's
+   * actual shape: the inline style and the inline bridge script are
+   * allowed ('unsafe-inline' is honest here — the only author of this
+   * document is this function, the host prefetches and reviews it,
+   * and with connect-src 'none' an injected script would have nowhere
+   * to send anything), and NOTHING else: no network at all (the
+   * bridge speaks postMessage to its host), no forms, no frames, no
+   * base rewriting. connect-src 'none' is the load-bearing line — it
+   * turns the "display only, cannot act" ruling from a promise into a
+   * machine-enforced fence the host can verify by parsing one tag.
+   *
+   * frame-ancestors is DELIBERATELY absent: CSP3 says the directive
+   * MUST be ignored when delivered via meta, and this store does not
+   * ship directives defined to do nothing — a scanner awarding points
+   * for one would be awarding points for decoration.
+   */
   return `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; base-uri 'none'">
 <style>${CARD_CSS}</style>
 </head>
 <body>
