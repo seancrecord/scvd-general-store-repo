@@ -336,7 +336,17 @@ export function operatorOf(host: string): string {
 export interface MarketAggregates {
   probed: number;
   ready: number;
-  /** Listed doors that answer no 402 at all (wrong status or dead). */
+  /**
+   * Rows where OUR vantage was blind that week — the probe's own
+   * control beacon failed in the same tick (B6). The row contract
+   * (ward-round.ts) says consumers must not count these against the
+   * host or as coverage; until 2026-08-28 this desk counted every
+   * one as ecosystem rot and signed the arithmetic into the anchored
+   * chain. Excluded from `probed` and `rot`, counted here by name.
+   * Absent on stored weeks sealed before the field existed.
+   */
+  observer_degraded?: number;
+  /** Probed doors that answer no 402 at all (wrong status or dead). */
   rot: { dead_doors: number; pct: number };
   /** Ready doors serving signed offers, structurally valid JWS only —
    * signatures are never verified by the census, and our own
@@ -387,7 +397,25 @@ export function marketAggregates(
   hosts: WardHostResult[],
   discoveryFieldsSeen?: string[],
 ): MarketAggregates {
-  const probedRows = hosts.filter((h) => h.verdict !== "not_probed");
+  /*
+   * OUR BLINDNESS IS NOT THEIR ROT (the instrument audit,
+   * 2026-08-28). An unreachable row whose observer_status is
+   * "degraded" means the control beacon failed in the same tick —
+   * we could not see ANYTHING, and the row's own contract forbids
+   * counting it against the host or as coverage. deriveTrajectory
+   * and the private delta already obeyed; this desk, whose
+   * arithmetic freezes into the Bitcoin-anchored chain, did not:
+   * one week of egress trouble would have signed a fabricated
+   * mass-death as ecosystem fact.
+   */
+  const degradedRows = hosts.filter(
+    (h) => h.verdict === "unreachable" && h.observer_status === "degraded",
+  );
+  const probedRows = hosts.filter(
+    (h) =>
+      h.verdict !== "not_probed" &&
+      !(h.verdict === "unreachable" && h.observer_status === "degraded"),
+  );
   const ready = probedRows.filter((h) => h.verdict === "ready");
   const dead = probedRows.filter(
     (h) =>
@@ -449,6 +477,7 @@ export function marketAggregates(
   return {
     probed: probedRows.length,
     ready: ready.length,
+    observer_degraded: degradedRows.length,
     rot: {
       dead_doors: dead.length,
       pct: probedRows.length

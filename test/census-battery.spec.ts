@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { CORRECTIONS } from "@/store/corrections";
 import {
-  BATTERY_ADDS,
   PREFLIGHT_BATTERY,
   PREFLIGHT_BATTERY_NEXT,
   PREFLIGHT_VERSION_NEXT,
 } from "@/services/preflight";
-import { CENSUS_BATTERY, censusFoldedCheckNames } from "@/services/ward-round";
+import { CENSUS_BATTERY } from "@/services/ward-round";
 
 /**
  * ROADMAP 2.5 — THE CENSUS CITES THE BATTERY IT ACTUALLY RUNS.
@@ -41,18 +40,19 @@ describe("the census battery citation", () => {
     expect(CENSUS_BATTERY).not.toBe(PREFLIGHT_BATTERY);
   });
 
-  it("the rules the citation promises are the rules the round folds", () => {
-    /*
-     * The citation is only worth anything if it is checkable. Every
-     * check v2 adds must be a check the census can fail a door on —
-     * otherwise the row cites criteria it does not apply, which is
-     * the defect this row exists to close.
-     */
-    const folded = new Set(censusFoldedCheckNames());
-    for (const name of BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]) {
-      expect(folded.has(name), `census cites v2 but never folds ${name}`).toBe(true);
-    }
-  });
+  /*
+   * THE TAUTOLOGY, RETIRED (the instrument audit, 2026-08-28). A
+   * test here compared BATTERY_ADDS[v2] to censusFoldedCheckNames(),
+   * which returned [...BATTERY_ADDS[v2]] — a constant checked
+   * against itself, green with the fold deleted: rule 46's exact
+   * shape, inside the mechanism this correction promised. The
+   * citation is now held the only way a citation can be — by
+   * BEHAVIOR: test/census-folds-the-trio.spec.ts walks a stubbed
+   * door per trio check through probeHost and requires not_ready,
+   * and test/ward-round-rail.spec.ts holds the rail fold the same
+   * way. Deleting a fold now turns a door's verdict green in a test
+   * that watched it happen, not a list equal to itself.
+   */
 
   it("the mislabel is on the corrections record, with a mechanism", () => {
     const entry = CORRECTIONS.find((c) =>
