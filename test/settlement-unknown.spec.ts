@@ -122,7 +122,7 @@ describe("capture: the ambiguous seam writes the row, the answered one does not"
     });
     expect(declined.status).toBe(402);
 
-    const rows = await listSettlementUnknowns(testEnv);
+    const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows).toHaveLength(1);
     const row = rows[0]!.row;
     expect(row.state).toBe("open");
@@ -151,7 +151,7 @@ describe("capture: the ambiguous seam writes the row, the answered one does not"
     facilitator.settleTransient502s = 2;
     await expect(outcome.pending.settle()).rejects.toThrow();
 
-    const rows = await listSettlementUnknowns(testEnv);
+    const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows).toHaveLength(1);
     expect(rows[0]!.row.door).toBe("mcp");
   }, 30_000);
@@ -167,7 +167,7 @@ describe("capture: the ambiguous seam writes the row, the answered one does not"
     } finally {
       facilitator.settleShouldFail = false;
     }
-    expect(await listSettlementUnknowns(testEnv)).toHaveLength(0);
+    expect((await listSettlementUnknowns(testEnv)).rows).toHaveLength(0);
   }, 30_000);
 });
 
@@ -197,7 +197,7 @@ describe("the resolver's three honest endings", () => {
     const { resolved } = await resolveSettlementUnknowns(testEnv);
     expect(resolved).toBe(1);
 
-    const rows = await listSettlementUnknowns(testEnv);
+    const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows[0]!.row.state).toBe("settled_late");
     expect(rows[0]!.row.transaction).toBe(`0x${"cd".repeat(32)}`);
     // Money moved, goods did not: the delivery-intent desk — the one
@@ -215,7 +215,7 @@ describe("the resolver's three honest endings", () => {
     });
 
     await resolveSettlementUnknowns(testEnv);
-    const rows = await listSettlementUnknowns(testEnv);
+    const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows[0]!.row.state).toBe("expired_unused");
   });
 
@@ -227,7 +227,7 @@ describe("the resolver's three honest endings", () => {
       at: new Date(Date.now() - (AGE_OUT_DAYS + 1) * 86_400_000).toISOString(),
     });
     await resolveSettlementUnknowns(testEnv);
-    const rows = await listSettlementUnknowns(testEnv);
+    const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows[0]!.row.state).toBe("aged_out_unresolved");
   });
 
@@ -236,7 +236,7 @@ describe("the resolver's three honest endings", () => {
     await seedRow({});
     const { resolved } = await resolveSettlementUnknowns(testEnv);
     expect(resolved).toBe(0);
-    const rows = await listSettlementUnknowns(testEnv);
+    const { rows } = await listSettlementUnknowns(testEnv);
     expect(rows[0]!.row.state).toBe("open");
   });
 });

@@ -181,20 +181,33 @@ export async function recordSettlementUnknown(
   }
 }
 
+export interface SettlementUnknownListing {
+  rows: Array<{ key: string; row: SettlementUnknownRow }>;
+  /**
+   * The list stopped at its cap with the prefix unfinished. Rows
+   * beyond it are newest-last (the keys sort by inverted timestamp),
+   * so a truncated read means the OLDEST questions are the unseen
+   * ones — exactly the rows nearest their age-out. Every reader
+   * surfaces this rather than treating the cap as the population
+   * (rule 52).
+   */
+  truncated: boolean;
+}
+
 export async function listSettlementUnknowns(
   env: Env,
   cap = 50,
-): Promise<Array<{ key: string; row: SettlementUnknownRow }>> {
+): Promise<SettlementUnknownListing> {
   const listed = await listKeys(env.COUNTERS, {
     prefix: SETTLEMENT_UNKNOWN_PREFIX,
     cap,
   });
-  const out: Array<{ key: string; row: SettlementUnknownRow }> = [];
+  const rows: Array<{ key: string; row: SettlementUnknownRow }> = [];
   for (const key of listed.names) {
     const row = await kvGetJson<SettlementUnknownRow>(env.COUNTERS, key, "json");
-    if (row) out.push({ key, row });
+    if (row) rows.push({ key, row });
   }
-  return out;
+  return { rows, truncated: listed.truncated };
 }
 
 async function persist(
@@ -304,10 +317,17 @@ export async function resolveSettlementUnknowns(
   env: Env,
   now: Date = new Date(),
 ): Promise<{ touched: number; resolved: number }> {
-  const rows = await listSettlementUnknowns(env, 100);
+  const listing = await listSettlementUnknowns(env, 100);
+  if (listing.truncated) {
+    // More open questions than one pass can even SEE. Say so loudly:
+    // the unseen rows are the oldest, the ones nearest their age-out.
+    console.error(
+      "settlement_unknown listing truncated at 100 — oldest rows unseen this pass",
+    );
+  }
   let touched = 0;
   let resolved = 0;
-  for (const { key, row } of rows) {
+  for (const { key, row } of listing.rows) {
     if (row.state !== "open") continue;
     if (touched >= ROWS_PER_PASS) break;
     touched += 1;

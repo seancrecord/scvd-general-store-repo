@@ -1417,7 +1417,8 @@ adminRoutes.get("/admin/settlement-unknown", async (c) => {
   const { listSettlementUnknowns, AGE_OUT_DAYS } = await import(
     "@/services/settlement-unknown"
   );
-  const rows = await listSettlementUnknowns(c.env, 100);
+  const listing = await listSettlementUnknowns(c.env, 100);
+  const rows = listing.rows;
   const open = rows.filter((entry) => entry.row.state === "open");
   return c.json({
     what_this_is:
@@ -1433,6 +1434,12 @@ adminRoutes.get("/admin/settlement-unknown", async (c) => {
         "the window was covered, validBefore passed, nothing burned — the decline was right",
       aged_out_unresolved: `nothing could answer within ${AGE_OUT_DAYS} days — 'we could not answer', never 'no'; monthly reconciliation remains the backstop`,
     },
+    ...(listing.truncated
+      ? {
+          truncated:
+            "Showing the newest 100 rows; there are more, and the unseen ones are the OLDEST — a floor, not a total.",
+        }
+      : {}),
     rows: rows.map((entry) => entry.row),
   });
 });
