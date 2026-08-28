@@ -178,7 +178,7 @@ export const ADVISORY_NAMES = [
   "no-bazaar-extension",
   "inputs-declared",
   "no-input-contract",
-  "no-signed-offers",
+  "signed-offers-not-in-challenge",
   "large-body",
 ] as const;
 
@@ -227,6 +227,12 @@ export const BATTERY_CHANGELOG: readonly {
     battery: "v2",
     change:
       "The depth pass, two deepenings of checks v2 already folds. amount-atomic covers the whole grammar: an amount that is not a non-negative integer string (negative, exponent, hex, empty) now fails beside the decimal case — no client can sign an authorization for any of them. solana-rail-receivable reads the account state the RPC always returned: an owner whose every USDC token account is explicitly FROZEN cannot be credited and now fails; an account whose state the ledger omitted still passes, because an unknown state read as frozen would fabricate a defect. Advisory-side, outside every verdict, five new readings ship the same day: missing-eip712-domain-extra, conflicting-amounts, placement-mismatch, resource-host-mismatch, and the EVM USDC blacklist read (payto-usdc-blacklisted / evm-rail-receivable / evm-rail-unread) on the PAID single-door audit only — the free preflight keeps its one-outbound-request promise and the census cannot afford one eth_call per EVM door, so folding what they cannot run would split the v2 citation.",
+  },
+  {
+    date: "2026-08-28",
+    battery: "v1",
+    change:
+      "The advisory `no-signed-offers` is renamed `signed-offers-not-in-challenge`, and its detail now names the three readings one absent-from-the-challenge observation cannot separate, with a falsifier. NOTHING ABOUT THE MEASUREMENT CHANGED — the same bytes are read at the same placements and the same doors are flagged. What changed is the claim: the old name asserted a fact about the endpoint that this probe never established. Rows sealed before this date carry the old name and stand as history; the market desk joins both.",
   },
 ];
 
@@ -1097,9 +1103,33 @@ export function runChecks(
           },
     );
   } else {
+    /*
+     * NAMED FOR WHAT WAS OBSERVED (task #73 / CV-2, and the worked
+     * example docs/OBSERVATORY.md §18 calls its most urgent item).
+     *
+     * This read `no-signed-offers`, which asserts a fact about the
+     * ENDPOINT. What the probe establishes is narrower: this one
+     * challenge, at this one path, carried none. That collapsed three
+     * different observations —
+     *
+     *   A) the endpoint does not support signed offers;
+     *   B) it does, somewhere this probe did not look;
+     *   C) it does at this path and our read missed them.
+     *
+     * — of which only (A) is about the door. (B) and (C) are about
+     * US, which is rule 52's exact shape. The old name published all
+     * three as (A), and the census sentence derived from it went
+     * further still.
+     *
+     * So the name states the observation, the detail states the
+     * readings it cannot separate, and the falsifier rides along: an
+     * operator who serves them elsewhere can say so, and one who
+     * serves them here can re-run this probe for free and watch the
+     * advisory disappear.
+     */
     advisories.push({
-      name: "no-signed-offers",
-      detail: `no extensions['offer-receipt'] signed offers in ${placementsRead}. Optional in the spec; without them a buyer has no pre-payment commitment to your terms that would survive a dispute.`,
+      name: "signed-offers-not-in-challenge",
+      detail: `no extensions['offer-receipt'] signed offers in ${placementsRead}, on the one path this probe walked. THAT IS WHAT WAS OBSERVED, and it does not distinguish three different things: a door that does not serve signed offers at all, a door that serves them somewhere this probe did not look, and a door that serves them here under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Signed offers are optional in the spec — where they are absent, a buyer has no pre-payment commitment to your terms that would survive a dispute. TO FALSIFY: serve them in the challenge at this path and re-run this check, which is free and needs no account; if you already serve them at another surface, that is the case this advisory cannot see and the corrections desk will record it.`,
     });
   }
 

@@ -96,7 +96,15 @@ export function latestReading(entry: RegistryWeekEntry): string {
        * already do it free both overstates the census and makes the
        * paid product look redundant.
        */
-      ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve signed offers that are present and structurally valid JWS — the rest ask to be paid on their word alone. ${
+      ? `Of the ${so.of_ready} doors that do answer correctly, ${so.serving} (${so.pct}%) serve signed offers that are present and structurally valid JWS.${
+          so.not_found_in_challenge === undefined
+            ? ""
+            : ` The remainder is counted, not assumed: ${so.not_found_in_challenge} carried no offers in the challenge we read${
+                so.present_but_unparseable
+                  ? `, and ${so.present_but_unparseable} carried offers that would not parse as JWS`
+                  : ""
+              }. WE DID NOT FIND THEM IS NOT THEY DO NOT HAVE THEM — that count cannot separate a door that serves none from one that serves them at a placement or path this probe did not look at, or under a convention this census does not recognize. Where an operator says otherwise, the corrections desk records it.`
+        } ${
           so.basis
             ? "Both offer placements were read (challenge header and 402 body)."
             : "This week was measured under the header-only read — offers placed only in the 402 body were invisible to it, so treat the serving count as a floor."

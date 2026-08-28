@@ -61,6 +61,20 @@ export const PRICE_BASIS = "usdc-base-polygon-solana" as const;
  */
 export const OFFERS_READ_BASIS = "challenge-header-and-body" as const;
 
+/**
+ * WHAT `not_found_in_challenge` CANNOT TELL APART (task #73 / CV-2).
+ *
+ * Published beside the number rather than left for a reader to
+ * assume, because the assumption runs one way — toward "the
+ * ecosystem does not comply" — and this store sells compliance
+ * checking. A statistic that makes our own product look necessary is
+ * the one kind of wrong this house cannot survive, so the limits ride
+ * with the figure everywhere it goes.
+ */
+export const SIGNED_OFFERS_LIMITS =
+  "A door counted in not_found_in_challenge served no extensions['offer-receipt'] offers in the challenge this census read, on the one path it walked. That single observation does not separate a door that does not serve signed offers, a door that serves them at another placement or path this probe did not look at, or a door that serves them here under a signing convention this census does not recognize. Only the first would be a fact about the door; the other two are facts about our probe, and this census will not publish them as the door's.";
+
+
 const BASE_MAINNET = "eip155:8453";
 const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
 const POLYGON_MAINNET = "eip155:137";
@@ -354,9 +368,28 @@ export interface MarketAggregates {
    * Worker cannot probe itself). `basis` says which placements the
    * week's read parsed; absent = the header-only era. */
   signed_offers: {
+    /** Ready doors whose challenge carried offers, all parseable JWS. */
     serving: number;
     of_ready: number;
     pct: number;
+    /**
+     * THE REMAINDER, COUNTED RATHER THAN IMPLIED (task #73 / CV-2).
+     *
+     * These two plus `serving` account for `of_ready` exactly. Before
+     * this, only the numerator was published and the rest was left to
+     * the reader — who reasonably read "0 of 633 serve signed offers"
+     * as 633 doors that do not serve them. That is not what was
+     * observed: `not_found_in_challenge` is the count of doors whose
+     * CHALLENGE carried none at the placements this read parsed, and
+     * `cannot_distinguish` says what that count cannot tell apart.
+     * Absent on weeks sealed before 2026-08-28.
+     */
+    not_found_in_challenge?: number;
+    /** Offers were there and at least one was not a parseable JWS —
+     * a different observation from absence, and never folded into it. */
+    present_but_unparseable?: number;
+    /** The readings this census cannot separate, published as limits. */
+    cannot_distinguish?: string;
     basis?: typeof OFFERS_READ_BASIS;
   };
   /** Among hosts whose 402 was parseable. */
@@ -423,10 +456,33 @@ export function marketAggregates(
       h.failed.includes("status-402") ||
       h.failed.includes("payment-required-header"),
   );
+  /*
+   * BOTH NAMES JOIN. The advisory was renamed on 2026-08-28
+   * (`no-signed-offers` -> `signed-offers-not-in-challenge`) because
+   * the old name asserted a fact about the endpoint the probe never
+   * established. Rows sealed before that carry the old name and are
+   * history: they are read, never rewritten. Same law as the pay-to
+   * digest join and the rail basis.
+   */
+  const ABSENT_FROM_CHALLENGE = [
+    "signed-offers-not-in-challenge",
+    "no-signed-offers",
+  ];
+  const notFoundInChallenge = ready.filter((h) =>
+    h.advisories.some((advisory) => ABSENT_FROM_CHALLENGE.includes(advisory)),
+  );
+  const presentButUnparseable = ready.filter(
+    (h) =>
+      h.failed.includes("signed-offers") &&
+      !h.advisories.some((advisory) =>
+        ABSENT_FROM_CHALLENGE.includes(advisory),
+      ),
+  );
   const serving = ready.filter(
     (h) =>
-      !h.advisories.includes("no-signed-offers") &&
-      !h.failed.includes("signed-offers"),
+      !h.advisories.some((advisory) =>
+        ABSENT_FROM_CHALLENGE.includes(advisory),
+      ) && !h.failed.includes("signed-offers"),
   );
 
   const withOffer = probedRows.filter((h) => h.offer);
@@ -490,6 +546,9 @@ export function marketAggregates(
       pct: ready.length
         ? Math.round((serving.length / ready.length) * 100)
         : 0,
+      not_found_in_challenge: notFoundInChallenge.length,
+      present_but_unparseable: presentButUnparseable.length,
+      cannot_distinguish: SIGNED_OFFERS_LIMITS,
       basis: OFFERS_READ_BASIS,
     },
     rails: {
