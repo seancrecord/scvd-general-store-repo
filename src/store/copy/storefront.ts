@@ -34,8 +34,7 @@ export const FEATURED_SHELVES: readonly FeaturedShelf[] = [
      * not there." The floor of the whole menu — the number every
      * surface advertises — had no card. The line is the keeper's own
      * ink, lifted whole from the item's note_402 (name, price and
-     * copy keeper-signed 2026-08-26). ⚑ KEEPER REVIEW — only the
-     * lifting onto the sign is new.
+     * copy keeper-signed 2026-08-26).
      */
     id: "spot_check",
     name: "Spot Check",
@@ -235,15 +234,14 @@ export const STOREFRONT_COPY = {
    * somewhere on front page and especially a note around recurring
    * patronage" — his words). Three sentences, three ways money comes
    * back: the board pays strangers, the credit pays regulars, the
-   * pass is the standing arrangement. ⚑ KEEPER REVIEW — the phrasing
-   * is new ink; the ruling that the strip exists is his.
+   * pass is the standing arrangement.
    */
   /**
    * THE PROMISE STRIP (the Price Club rung, 2026-08-20: "loud refund
    * promise"). The sentence is STORE_METADATA.refund_policy — the
    * keeper's already-approved ink, imported where it renders, never
    * retyped — so the only new words here are the heading and the
-   * pointer line. ⚑ KEEPER REVIEW on those two.
+   * pointer line.
    */
   promiseHead: "THE PROMISE",
   promisePointer:
@@ -266,7 +264,7 @@ export const STOREFRONT_COPY = {
    * plain instruction any agent with a browser can follow, and the
    * MCP door for clients that speak it. Copy-paste is the whole
    * design; the lines render in <code> so they read as things to
-   * carry, not things to read. ⚑ KEEPER REVIEW — new ink.
+   * carry, not things to read.
    */
   doorHumanHandoffLead: "Got your agent with you? Hand it either line, verbatim:",
   doorHumanHandoffRead: "Read https://scvd.store/llms.txt and tell me what's useful here.",

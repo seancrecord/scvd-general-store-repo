@@ -43,11 +43,6 @@ function challengeText(address: string, nonce: string): string {
  * was to already know the URL and hold an address to put in it. A
  * loyalty scheme nobody can discover rewards nobody.
  *
- * ⚑ KEEPER REVIEW — new prose: the standfirst, the "what it is not"
- * paragraph, and the closing line about the books. The numbers are
- * read from the constants, never typed, so a rate change moves the
- * page.
- *
  * WHAT IT IS NOT is on the page deliberately and near the top. A
  * store that says "points" and means "token" is the shape of every
  * scheme that ends in a regulator's letter; saying closed-loop rebate

@@ -48,7 +48,7 @@ export function standingWatchNote(url: string, endsAt: string): string {
   return `Paid and posted. We'll walk past ${url} every hour until ${endsAt}, write down what we saw, and sign each entry. The history is free to read forever, and the hours we miss are counted against us in it.`;
 }
 
-/** conformance_watch. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** conformance_watch. */
 export function conformanceWatchNote(url: string, endsAt: string): string {
   return `Paid and posted. Once a day until ${endsAt.slice(0, 10)} we'll run the full published battery against ${url}, write down every check and advisory, and sign that day's page on its own. If your door drifts mid-week, the history shows the day it happened — and the days WE miss go on the same record, counted against us in the same arithmetic.`;
 }
@@ -62,7 +62,6 @@ export const CONFESSION_COUNTER_SIGN =
 
 /**
  * Handed over when a lucky is drawn from the herd and its card inked.
- * ⚑ KEEPER REVIEW: recut for the preset draw (2026-07-25).
  */
 export function luckyNote(options: {
   name: string;
@@ -80,13 +79,12 @@ export function luckyNote(options: {
 
 /**
  * Instant since the keeper-load ruling (2026-07-24): same note every
- * time, consistent by design. ⚑ KEEPER REVIEW: recut freely.
+ * time, consistent by design.
  */
 export function coffeeNote(win: string): string {
   return `Your win is on the certificate, verbatim and signed: "${win}". Sunday, the keeper's coffee gets drunk to the week's closers, no exceptions, and you're on the list. The store likes seeing its patrons win.`;
 }
 
-/** ⚑ KEEPER REVIEW: stocked-shelf notes, registrar-plain drafts. */
 export function drawerNote(item: string, does: string): string {
   return `The drawer opened and gave: ${item}. What it does, as listed: ${does}. Written down exactly, signed, under your name. The drawer's decision is final.`;
 }
@@ -95,7 +93,6 @@ export function bestowedNameNote(name: string): string {
   return `The keeper bestows: ${name}. From his considered stock, yours alone, never to be bestowed again. Wear it well.`;
 }
 
-/** ⚑ KEEPER REVIEW: the instant grudge acknowledgement. */
 export function grudgeNote(grievance: string): string {
   return `Held, as of this moment: "${grievance}". The keeper reads every new grudge on Sundays and holds them all with equal spite. Write in to release it; until then it only ages.`;
 }
@@ -113,7 +110,7 @@ export function attestationNote(status: string): string {
 }
 
 /** Same register as the single, at volume. Statuses named, not summarized. */
-/** bitcoin_anchor. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** bitcoin_anchor. */
 export function bitcoinAnchorNote(otsStatus: string): string {
   return otsStatus === "pending"
     ? "Your digest is in the calendar's hands and on its way into a Bitcoin block — typically confirmed within a few hours. The proof URL is yours forever; check back once and it'll say complete."
@@ -122,7 +119,7 @@ export function bitcoinAnchorNote(otsStatus: string): string {
       : "Anchored. It's in Bitcoin's memory now, which runs longer than yours, ours, and this store's put together.";
 }
 
-/** signature_agent_card. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** signature_agent_card. */
 export function signatureCardNote(verdict: string): string {
   return verdict === "directory_ready"
     ? "Fetched your directory once, checked every brick, signed the readout: the document serves, the keys are shaped right, and the proof-of-possession holds. Show the card to anyone who wants more than your word — the URL serves it free forever, and it never claims more than the moment it covers."
@@ -131,7 +128,7 @@ export function signatureCardNote(verdict: string): string {
       : "We knocked. Nobody came. From where we stood, at that minute, the directory didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
-/** onpage_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** onpage_audit. */
 export function onpageAuditNote(verdict: string): string {
   return verdict === "ready"
     ? "Read your page once, the way a machine passerby does, and signed what it served: every check passed at that moment. The report is yours to show around — the URL serves it free forever, blind spots printed on it, and it never claims more than the HTML it was handed."
@@ -140,19 +137,19 @@ export function onpageAuditNote(verdict: string): string {
       : "We knocked. Nobody came. From where we stood, at that minute, the page didn't answer — that's the whole finding, signed and dated. It says nothing about your uptime, and that restraint is what the signature is worth.";
 }
 
-/** the_mandate. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** the_mandate. */
 export function mandateNote(): string {
   return "Wrote down what you say you're authorized to do, before you did it — dated, signed, held by somebody who is neither you nor your principal. Cite the mandate_id on any purchase here and it rides that certificate. Plainly, because this page may be read in a dispute someday: this records that the claim was made, not that it was true. That restraint is the whole reason it will be worth quoting.";
 }
 
-/** the_statement. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** the_statement. */
 export function statementNote(coverage: string): string {
   return coverage === "complete"
     ? "Read the chain's side of that wallet's story and signed it: every USDC transfer in and out over the window stated, counted and summed, each row a transaction hash anyone can look up without us. Now set it beside the ledger the agent kept — the rows that appear in only one of the two are the whole reason this page exists. We never saw that ledger, and that's what the signature is worth."
     : "The chain didn't answer us for that window, and the statement says exactly that, signed and dated — a fact about our read at that minute, not about the wallet. The window is printed on the record; the same statement bought again when the RPC is answering covers it properly.";
 }
 
-/** launch_check. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** launch_check. */
 export function launchCheckNote(
   verdict: string,
   replayServed?: boolean | null,
@@ -197,7 +194,7 @@ export function launchCheckNote(
   }
 }
 
-/** service_audit. ⚑ KEEPER REVIEW: drafted, recut freely. */
+/** service_audit. */
 export function serviceAuditNote(verdict: string): string {
   return verdict === "ready"
     ? "Looked once, wrote down what we saw, signed it: every check passed at that moment. The report is yours to show around — the URL serves it free forever, and it never claims more than the moment it covers."
@@ -210,7 +207,6 @@ export function serviceAuditNote(verdict: string): string {
  * settlement_reconciliation. The note leads with WHICH KIND OF ANSWER
  * this is, because a buyer who skims "within cap" off a ceiling they
  * supplied themselves has bought nothing and does not know it.
- * ⚑ KEEPER REVIEW: drafted, recut freely.
  */
 export function reconciliationNote(
   verdict: string,

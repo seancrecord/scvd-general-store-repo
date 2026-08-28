@@ -76,9 +76,7 @@ export const HERD_PROVENANCE =
 
 /**
  * THE LUCKY NOTES — one rides each drawn lucky, fortune-cookie
- * adjacent, keeper-canon dry. ⚑ KEEPER REVIEW: machine-drafted to his
- * spec ("obscure, kinda funny, luck-related"); recut freely, the draw
- * mechanism never needs touching for a wording change.
+ * adjacent, keeper-canon dry.
  */
 export const LUCKY_NOTES: readonly string[] = [
   "Luck arrives on the second retry.",

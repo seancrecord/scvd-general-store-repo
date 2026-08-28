@@ -2,10 +2,6 @@
  * KEEPER-EDITABLE machine-legibility copy (synthesis build pass,
  * 2026-07-23). Registrar-plain by doctrine: every figure true or
  * absent, no adjectives, no claims a signature can't back.
- *
- * ⚑ KEEPER REVIEW PENDING on SPEC_RETURNS: these lines were drafted by
- * the machine to the canonical "Returns:" form; recut freely, the
- * spec plumbing never needs touching for a wording change.
  */
 import { RETIRED_KEYS } from "@/store/key-registry";
 
@@ -385,7 +381,7 @@ export const SPEC_RETURNS: Record<string, string> = {
 
 /**
  * S3: scheduling signals, when an agent should reach for this store.
- * Concrete trigger conditions, not narrative. ⚑ KEEPER REVIEW PENDING.
+ * Concrete trigger conditions, not narrative.
  */
 /**
  * THE REVERSE INDEX: situation → item.

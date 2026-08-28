@@ -86,7 +86,7 @@ whatRoutes.get("/what", (c) => {
          * whole job is answering "what is this". A meta description
          * is the sentence search engines quote; it now mirrors the
          * directAnswer's shape instead of paraphrasing a store that
-         * stopped existing in August. ⚑ KEEPER REVIEW — new ink.
+         * stopped existing in August.
          */
         description:
           "What scvd.store is, what it costs, and how to check the signatures: an evidence observatory for agentic commerce — free conformance checks, signed observations.",

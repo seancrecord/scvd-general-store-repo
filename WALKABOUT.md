@@ -83,10 +83,6 @@ The data was good and the boundary was not. Both facts stay written
 down here, because a program whose first entry is a rule bent quietly
 is a program nobody should trust with rule 3.
 
-⚑ KEEPER REVIEW — ratification of run zero ($0.05, after the fact),
-the default caps in rule 1, and this document's standing are all the
-keeper's to confirm; nothing further walks until he does.
-
 ## The Launch Check — one door, walked on commission
 
 Productized 2026-08-19 (the keeper-approved backlog's first build):
@@ -109,9 +105,6 @@ these clarifications:
 - The raw record ships as the signed artifact itself (stage-by-stage
   at /api/launch-check/{check_id}, free forever) rather than a
   research/ ledger — same rawness, same re-derivability, per-buyer.
-
-⚑ KEEPER REVIEW — this section, the standing approval it claims, and
-the launch_check item copy are the keeper's to confirm.
 
 ## What a run delivers
 
