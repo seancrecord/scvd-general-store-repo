@@ -360,3 +360,33 @@ describe("all four mechanisms this origin can serve, and the fifth named", () =>
     expect(manifest).not.toContain("_entries.");
   });
 });
+
+describe("the manifest carries its envelope, not only its entries", () => {
+  it("specVersion, trustManifest and updatedAt ride beside entries", async () => {
+    /*
+     * Scanner finding, 2026-08-28: "ard.json invalid — missing
+     * specVersion." Checked against the spec's own schema first
+     * (ard-entry.schema.json defines ArdManifest): `entries` is the
+     * ONLY required field and specVersion appears NOWHERE in the
+     * spec — the scanner validates a field the spec never defined.
+     * But the schema says additionalProperties: true and the spec
+     * calls extra members "transport-defined", so declaring the
+     * revision we publish against is legal, true, and free — and
+     * trustManifest/updatedAt were already being computed and then
+     * dropped on the floor, which was just a leak.
+     */
+    const { ardManifest, ARD_SPEC_VERSION } = await import(
+      "@/lib/ard-catalog"
+    );
+    const manifest = ardManifest("https://scvd.store") as unknown as Record<
+      string,
+      unknown
+    >;
+    expect(manifest["specVersion"]).toBe(ARD_SPEC_VERSION);
+    expect(manifest["trustManifest"]).toEqual({
+      identity: "did:web:scvd.store",
+    });
+    expect(typeof manifest["updatedAt"]).toBe("string");
+    expect(Array.isArray(manifest["entries"])).toBe(true);
+  });
+});

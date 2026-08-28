@@ -107,6 +107,19 @@ export interface ArdEntry {
 }
 
 export interface ArdManifest {
+  /**
+   * NOT A SPEC FIELD, AND SAID SO (scanner finding, 2026-08-28). A
+   * scanner reported the manifest "invalid: missing specVersion" —
+   * checked against the spec's own ard-entry.schema.json, `entries`
+   * is the ONLY required member and specVersion appears nowhere in
+   * ARD at all. But the schema sets additionalProperties: true and
+   * §5.1 calls extra members "transport-defined", so declaring the
+   * revision we publish against is legal, true, and free. The value
+   * is the spec document's own version header.
+   */
+  specVersion: string;
+  updatedAt: string;
+  trustManifest: { identity: string };
   entries: ArdEntry[];
 }
 
@@ -230,7 +243,10 @@ export function ardManifest(base: string): ArdManifest {
     },
   ];
 
-  return { entries };
+  // The envelope was being computed and dropped — trustManifest and
+  // updatedAt existed right here and never left the function. See the
+  // interface for why specVersion joins them.
+  return { specVersion: ARD_SPEC_VERSION, updatedAt, trustManifest, entries };
 }
 
 /**
