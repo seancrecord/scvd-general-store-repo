@@ -2,8 +2,8 @@
 
 **Status: SPECCED, NOT BUILT. PRICED 2026-08-29 — $5 for a query
 about somebody else's address, FREE for an operator querying their
-own. Shelf copy still waits on the keeper's pen (M5), and one
-retention question is open; both are named below.** Ruling:
+own, with the consent offer in v1 (ruled 2026-08-29). Shelf copy is
+the last thing outstanding — the keeper's pen, M5.** Ruling:
 docs/G2_OPERATOR_LINKING_RULING_2026-08.md (2026-08-27). This spec is
 the tier-3 lane that ruling authorizes: named evidence, by consent or
 by purchase, inside a signed dated artifact — never on a public
@@ -123,10 +123,28 @@ public, attributable good for both sides. That is a thing to offer at
 the end of a free answer, in the open, with a yes required — not a
 thing to take because they showed up.
 
-⚑ ONE OPEN QUESTION FOR THE KEEPER, and the build waits on it rather
-than guessing: is the consent offer part of v1, or does v1 ship as the
-free answer alone with the offer added later? Either is defensible;
-the difference is whether the funnel closes on day one.
+RULED 2026-08-29: THE CONSENT OFFER IS IN v1. Asked whether it ships
+with the free answer or arrives later, the keeper said yes to v1.
+
+That settles the build order, and it settles something else worth
+naming: a free answer with no offer at the end is not a funnel, it is
+a giveaway we would have called a funnel in our own notes. The offer
+IS the mechanism. Shipping the answer first and the offer "later" would
+have meant running the free tier for weeks while calling it customer
+acquisition, and measuring nothing.
+
+WHAT v1 THEREFORE OWES, all three or none:
+  - the free answer, unchanged and unconditional — the offer is never
+    a price on the reading;
+  - the offer, in the open, at the end, with a yes required and a
+    plain statement of what a listing is and is not;
+  - the weekly integer of self-audits run. Count the ask, not the
+    asker.
+
+A consent flow that is easier to say yes to than to read is not
+consent, so the offer states in the same breath what a listing
+publishes, that it is public, and that declining costs the reader
+nothing they have already been given.
 
 Shelf copy: M5 gate — keeper words it.
 
