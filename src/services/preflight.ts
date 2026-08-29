@@ -171,6 +171,14 @@ export const ADVISORY_NAMES = [
    * is a battery decision that stays the keeper's.
    */
   "missing-eip712-domain-extra",
+  /*
+   * The keeper's relay, 2026-08-29 — the preflight half of the
+   * transfer-method finding. The launch check refuses to sign at a
+   * door asking for a method it cannot produce; this is the same
+   * reading, free, before anybody spends.
+   */
+  "nonstandard-transfer-method",
+  "unrecognized-transfer-method",
   "conflicting-amounts",
   "above-default-client-cap",
   "placement-mismatch",
@@ -178,6 +186,14 @@ export const ADVISORY_NAMES = [
   "no-bazaar-extension",
   "inputs-declared",
   "no-input-contract",
+  /*
+   * 2026-08-29, from CV's note on where the double-charge gap is
+   * left: hand-rolled retry paths, not SDK users. A buyer's retry
+   * logic is invisible to a probe; what a probe CAN read is whether
+   * the door gave that buyer anything to key a retry on.
+   */
+  "retry-key-declared",
+  "retry-key-not-in-challenge",
   "signed-offers-not-in-challenge",
   "large-body",
 ] as const;
@@ -234,6 +250,18 @@ export const BATTERY_CHANGELOG: readonly {
     change:
       "The advisory `no-signed-offers` is renamed `signed-offers-not-in-challenge`, and its detail now names the three readings one absent-from-the-challenge observation cannot separate, with a falsifier. NOTHING ABOUT THE MEASUREMENT CHANGED — the same bytes are read at the same placements and the same doors are flagged. What changed is the claim: the old name asserted a fact about the endpoint that this probe never established. Rows sealed before this date carry the old name and stand as history; the market desk joins both.",
   },
+  {
+    date: "2026-08-29",
+    battery: "v2",
+    change:
+      "accepts[].extra.assetTransferMethod is read, on every rail, in both batteries: nonstandard-transfer-method when a door asks for a recognized method that is not eip3009 (permit2, erc7710), unrecognized-transfer-method when it asks for something no published client can build. NO VERDICT MOVED — both are advisories, neither battery folds them, and every ready recorded before this date means exactly what it meant. The field decides whether a buyer's signature is acceptable at all, and this battery had read extra.name and extra.version out of the same object while stepping over it. The paid launch check began refusing to sign at such a door on 2026-08-29; this is the same reading, free, before anybody spends. Whether either verdict ever folds it is a battery decision and stays unmade.",
+  },
+  {
+    date: "2026-08-29",
+    battery: "v2",
+    change:
+      "The input contract is read for a retry key: retry-key-declared when a declared input names a field a buyer can hold steady across a retry (idempotency key, order id, request id, client reference, purchase id), retry-key-not-in-challenge when inputs are declared and none of them is one. Advisory in both batteries, folded by neither, and read ONLY where inputs are declared — a door declaring no input contract already draws that advisory, and counting one silence twice would inflate a finding. The absent case names the three readings it cannot separate and carries a falsifier, the same discipline signed-offers-not-in-challenge took on 08-28: a door may key idempotency on a header this probe never sees. Occasioned by an outside reading (CV, 2026-08-28) that the ecosystem absorbed the double-charge lesson at the SDK layer, leaving hand-rolled authorization paths — where a retry signs a fresh nonce, which the x402 nonce rule does not protect.",
+  },
 ];
 
 /**
@@ -241,6 +269,28 @@ export const BATTERY_CHANGELOG: readonly {
  * this is the exact set isSignableAccept() requires before our own
  * till will sign an offer over an entry. One law, both directions.
  */
+/**
+ * WHAT A DOOR ASKS THE BUYER TO SIGN.
+ *
+ * `accepts[].extra.assetTransferMethod` names the authorization
+ * standard the seller's facilitator will accept — the field that
+ * decides whether a buyer's signature is acceptable at all.
+ * `eip3009` (TransferWithAuthorization) is what a generic x402
+ * client produces; `permit2` and `erc7710` are different signatures
+ * over different types. One law, both directions: the launch check
+ * signs DEFAULT_TRANSFER_METHOD and refuses to knock at a door
+ * asking for anything else, and this battery reads the same field
+ * from the same place before a buyer spends anything.
+ */
+export const DEFAULT_TRANSFER_METHOD = "eip3009";
+
+/** The methods a published x402 client knows how to produce. */
+export const KNOWN_TRANSFER_METHODS: readonly string[] = [
+  "eip3009",
+  "permit2",
+  "erc7710",
+];
+
 export const ACCEPT_REQUIRED_FIELDS = [
   "scheme",
   "network",
@@ -809,6 +859,44 @@ export function runChecks(
         });
       }
     }
+    /*
+     * WHAT THE DOOR ASKS THE BUYER TO SIGN, read at last
+     * (2026-08-29, the keeper's relay). This battery read
+     * extra.name and extra.version out of that object and nothing
+     * else for a month — the same shape as the signed-offer
+     * undercount, one rich object half read, and the half we
+     * skipped is the one that decides whether a signature is
+     * acceptable at all.
+     *
+     * Advisory in both batteries and folded by neither. A door
+     * declaring `permit2` is not defective: it is telling the truth
+     * about itself in the place the spec provides. What a buyer is
+     * owed is having READ it before signing, which is the entire
+     * job of a preflight. Whether either verdict ever folds this is
+     * a battery decision and stays the keeper's.
+     *
+     * Read on every rail, not only eip155: a declaration made on
+     * the wire is a declaration, and a probe that ignores one
+     * because it did not expect it there is the habit this finding
+     * exists to break.
+     */
+    const declared = isRecord(entry["extra"])
+      ? (entry["extra"] as Record<string, unknown>)["assetTransferMethod"]
+      : undefined;
+    if (typeof declared === "string" && declared.trim() !== "") {
+      const method = declared.trim().toLowerCase();
+      if (!KNOWN_TRANSFER_METHODS.includes(method)) {
+        advisories.push({
+          name: "unrecognized-transfer-method",
+          detail: `accepts entry declares extra.assetTransferMethod "${declared}", which is none of the methods a published x402 client knows how to build (${KNOWN_TRANSFER_METHODS.join(", ")}). A buyer who reads the field has nothing to construct from it; a buyer who ignores it signs blind. Either way the refusal lands before any payment reaches you, and your logs record it as nobody wanting the goods. If this names a method your own stack defines, publishing what it means is the difference between a door generic clients can walk and one only your clients can.`,
+        });
+      } else if (method !== DEFAULT_TRANSFER_METHOD) {
+        advisories.push({
+          name: "nonstandard-transfer-method",
+          detail: `accepts entry asks for extra.assetTransferMethod "${method}" rather than "${DEFAULT_TRANSFER_METHOD}" (EIP-3009 TransferWithAuthorization). THIS IS A LEGAL DECLARATION AND SAYS NOTHING AGAINST YOUR DOOR — you are naming what you accept in the place the spec provides. It is here because a generic x402 client signs ${DEFAULT_TRANSFER_METHOD}, will be refused here correctly, and will log that refusal as your endpoint failing. Buyers whose clients sign ${method} transact here normally.`,
+        });
+      }
+    }
   }
 
   /*
@@ -1054,6 +1142,49 @@ export function runChecks(
       detail:
         "the challenge declares no input contract (no extensions.bazaar.info.input). If this resource needs parameters, a buyer cannot discover that before paying — they sign, get refused for a missing field, and their logs record it as your endpoint failing. In the August 2026 field run this shape was the largest single cause of refused purchases at endpoints that were otherwise working. If the resource genuinely needs nothing, this advisory costs you nothing.",
     });
+  }
+
+  /**
+   * SOMETHING TO KEY A RETRY ON (2026-08-29, from CV's reading of
+   * where the double-charge gap actually sits now).
+   *
+   * The ecosystem absorbed the idempotency lesson at the SDK layer.
+   * What is left is the hand-rolled path: a buyer building its own
+   * authorization, without @x402/fetch, whose retry signs a FRESH
+   * nonce on the second attempt. The x402 nonce stops a replay of
+   * the same authorization; it does nothing about two honest
+   * authorizations for one intended purchase, and a door with
+   * nothing to key on cannot tell them apart. That is a double
+   * charge produced by two parties both behaving correctly.
+   *
+   * This store built the strongest idempotency machinery it knows
+   * how to build for its own till and made it a named
+   * differentiator — and never once asked whether anybody else's
+   * door has any. That gap, not the finding, is what the audit
+   * recorded.
+   *
+   * WHAT IS OBSERVABLE, and it is narrow: whether the input contract
+   * a door already declares names a field a buyer could use to tie
+   * a retry to one logical purchase. Read ONLY where inputs are
+   * declared — a door with no input contract at all already draws
+   * the louder advisory above, and firing twice for one silence
+   * would be counting the same absence as two findings.
+   */
+  const RETRY_KEY_SHAPES =
+    /(idempotenc|^order[_-]?id$|^request[_-]?id$|^client[_-]?(?:token|ref|reference)$|^purchase[_-]?id$)/i;
+  if (declaredNames.length > 0) {
+    const keys = declaredNames.filter((name) => RETRY_KEY_SHAPES.test(name));
+    if (keys.length > 0) {
+      advisories.push({
+        name: "retry-key-declared",
+        detail: `the declared input contract includes ${keys.join(", ")} — a field a buyer can hold steady across a retry, so a client that re-sends after a lost response has a way to say "this is the same purchase". Read as a shape, not verified: what your till does with the field is on your side of the door and this probe never paid to find out.`,
+      });
+    } else {
+      advisories.push({
+        name: "retry-key-not-in-challenge",
+        detail: `the challenge declares inputs (${declaredNames.join(", ")}) and none of them is a field a buyer could hold steady across a retry. THAT IS WHAT WAS OBSERVED, and it does not distinguish three things: a door with no retry-safety at all, a door that keys idempotency on something it never asks the buyer for (a header, a session, the settlement itself), and a door that names such a field under a convention this battery does not recognize. Only the first is a fact about your endpoint; the other two are facts about our probe, and we will not publish them as yours. Why a buyer cares: the x402 nonce stops a REPLAY of one authorization and does nothing about two honest authorizations for one intended purchase — a client that hand-rolls its retry signs a fresh nonce on the second attempt, and a door with nothing to key on cannot tell that from a second sale. TO FALSIFY: name the field in your input contract and re-run this check, which is free; if you honour an Idempotency-Key header instead, that is the case this advisory cannot see and the corrections desk will record it.`,
+      });
+    }
   }
 
   /*

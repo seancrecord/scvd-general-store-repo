@@ -32,13 +32,17 @@ describe("every defect class says what fixes it", () => {
     }
   });
 
-  it("the governed version moved and the changelog says why", () => {
-    expect(DEFECT_VOCABULARY_VERSION).toBe("4");
-    const current = VOCABULARY_CHANGELOG.find(
-      (change) => change.version === DEFECT_VOCABULARY_VERSION,
+  it("the version that introduced the hints still says so", () => {
+    // Pinned to v4 by name, not to "whatever is current": the
+    // register keeps moving, and what this guards is that the
+    // entry which introduced repair_hint stays readable at its own
+    // version forever. Editing a definition in place is the one
+    // thing this file forbids.
+    const introduced = VOCABULARY_CHANGELOG.find(
+      (change) => change.version === "4",
     );
-    expect(current).toBeDefined();
-    expect(current!.what_changed).toMatch(/repair_hint/);
+    expect(introduced).toBeDefined();
+    expect(introduced!.what_changed).toMatch(/repair_hint/);
   });
 
   it("the public vocabulary serves the hints", async () => {
@@ -48,7 +52,7 @@ describe("every defect class says what fixes it", () => {
       version: string;
       classes: Array<{ id: string; repair_hint?: string }>;
     };
-    expect(body.version).toBe("4");
+    expect(body.version).toBe(DEFECT_VOCABULARY_VERSION);
     for (const entry of body.classes) {
       expect(entry.repair_hint, entry.id).toBeDefined();
     }

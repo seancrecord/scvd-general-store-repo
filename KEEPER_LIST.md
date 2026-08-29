@@ -519,6 +519,20 @@ without their fix. **Production reads 23 of 26 met.**
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
 
+- ⚑ **RULE (five minutes): does a transfer-method reading belong in a
+  VERDICT?** Shipped 08-29 as two advisories, folded by neither
+  battery: `nonstandard-transfer-method` (a door asks for permit2 or
+  erc7710 — legal, and a generic client will be refused there) and
+  `unrecognized-transfer-method` (a method no published client can
+  build, registered as defect class `transfer-method-unrecognized`,
+  vocabulary v5). v1 is frozen and cannot take either. The open
+  question is v2 and only for the second one: an entry naming a
+  method nobody can build is unsignable in the same sense
+  `amount-atomic` is, which is already a v2 fold. Folding it moves
+  ready for doors we have already published rows about; leaving it
+  advisory keeps every row meaning what it meant. No work happens
+  until the ruling — the reading itself is live and free either way.
+
 - ⚑ **THE AGENT WAVE CHANGES THE WEIGHT ON P7 — LOOK, then RULE
   (docs/WEBMCP_AND_MCP_APPS_2026-08.md §10, opened 08-27 on the
   keeper's prompt about being "grok bot compatible").** Read off
