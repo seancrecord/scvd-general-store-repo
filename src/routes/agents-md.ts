@@ -116,6 +116,7 @@ ${spendCapParagraph()}
 ## Usage: purchasing flow (MCP)
 
 - Endpoint: ${base}/mcp — Streamable HTTP, JSON-RPC 2.0. \`tools/list\` is free and unauthenticated.
+- Which door to use (remote vs local stdio vs the browser surface vs no MCP), what renders where, and what is not built yet: ${base}/mcp.md
 - Readable resources over the same door (\`resources/list\`, free): \`scvd://guide\`, \`scvd://manual\`, \`scvd://catalog\`, \`scvd://criteria\`, \`scvd://when\`, \`scvd://fresh-set\` — plus \`ui://\` card templates (MCP Apps) that render the preflight and verify readings in hosts that support them.
 - Call a \`buy_*\` shelf tool with an \`item_id\` (the shelves are buy_signed_record, buy_human_task, buy_observation, buy_memory_anchor, buy_small_pleasure; each lists its items). Without payment it returns JSON-RPC error 402 with the terms in \`error.data\`. Sign one accept and retry with the payment in \`_meta['x402/payment']\`.
 - Free tools need no payment. Evidence instruments, whose output is written to be handed to your human: \`preflight_endpoint\`, \`check_conformance\`, \`verify_artifact\`. Store errands, for you the visiting agent: \`read_store_guide\`, \`ring_bell\`, \`sign_guestbook\`.
@@ -137,6 +138,7 @@ ${spendCapParagraph()}
 ## Free tools from this store
 
 - The conformance desk — POST any issuer's x402 signed offer or receipt, get a structured verdict (parse, schema, signature, liveness). Free, no account, no wallet. Landing with examples: ${base}/conformance; pinned contract: ${base}/api/conformance/v1.
+- Fixtures for a fail-closed integration — GET ${base}/api/conformance/v1/fixtures: complete artifacts with real production signatures (valid, expired, tampered, unknown-signer), the exact canonical string each signature covers, and the verdict the desk returns for each. Re-verified against the live desk on every serve; pin the digest and wire the tamper cases into your own suite. Building and testing against us costs nothing.
 - The corpus — weekly signed, Bitcoin-anchored observations of the x402 ecosystem, hash-chained and free to read: ${base}/corpus (data at ${base}/corpus.json, per-host at ${base}/corpus/host/{host}.json).
 - x402-verify on npm — the desk's method as an MIT, zero-dependency package, works on any issuer's artifacts: https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
 - x402-sign on npm — issue your own x402 signed offers and receipts (MIT, zero deps): https://github.com/seancrecord/scvd-general-store-repo/tree/main/signer

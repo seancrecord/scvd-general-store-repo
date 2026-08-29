@@ -147,7 +147,7 @@ Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.js
 
 Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
-Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
+Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
 Every one of those is described in its own section below. This list is
 the map; the sections are the territory.
@@ -347,6 +347,9 @@ under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 Coverage matrix (class × chain × depth, absence stated as none):
 ${base}/.well-known/coverage.json and ${base}/coverage.json
+Which MCP door to use — remote, local stdio, the browser surface, or
+no MCP at all — with what renders where and what is not built yet:
+${base}/mcp.md
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
 free; paid tools carry x402 in-band, delivered first and settled after.
 The same door serves readable resources (resources/list, no tool call
@@ -490,6 +493,18 @@ rival is worth only its method. The same code is on npm as
 x402-verify (verification, zero dependencies), with x402-sign beside
 it for issuing your own signed offers and receipts. The desk's
 plain-language landing, with worked examples, is ${base}/conformance.
+
+Fixtures for a fail-closed integration, free:
+${base}/api/conformance/v1/fixtures serves complete artifacts with
+real production signatures — valid, expired, tampered, and
+unknown-signer cases — each carrying the exact canonical string its
+signature covers, the exact desk call to make, and the verdict the
+desk returns. Every fixture is re-verified against the live desk
+before it is served; a fixture the desk disagrees with is refused,
+never served. Pin the set digest, verify the signatures against the
+key registry yourself, and wire the tamper cases into your own test
+suite: building and testing an integration against this store costs
+nothing and asks nobody's permission.
 
 The Tab (scvd-tab), an MCP server for the OTHER side of an agent's
 commerce: the tools its builder signs up for. It keeps a local,

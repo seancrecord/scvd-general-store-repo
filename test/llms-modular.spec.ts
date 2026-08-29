@@ -214,12 +214,19 @@ const BASE = "https://scvd.store";
  * truncates. "Start here, by what you came to do" now leads, filed
  * under developers, and names the atlas beside it.
  *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work,
+ * and this resolution needed a hand rather than a script: the two
+ * sides had added notes to this same block AND re-taken the value,
+ * so an automated splice ate part of the second conflict and left
+ * the file with two digest lines. Both notes are kept because both
+ * edits are in the served bytes; the value is the merged text's own.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "b5faeec850ff70a18b8a5d7599e625f1d1739fc9a44ad0fb13554b4ffba8b78c";
+  "623c1369fcd2f6da80e864421f15ddce75b5372e394e578211565ac5cbfa5d9b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
