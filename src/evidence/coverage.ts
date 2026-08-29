@@ -235,5 +235,13 @@ export function publicCoverageDocument(base: string): Record<string, unknown> {
     matrix: coverageMatrix(),
     does_not_prove:
       "That a given door on a covered chain will be observed, or that a till rail is lit on this deployment (Polygon and Solana are flag-gated).",
+    /*
+     * This document is evidence about the OBSERVER — where our own
+     * looking stops — which makes the hop to the corrections record
+     * more load-bearing here than on a dataset, not less: a reader
+     * standing on our stated coverage is exactly the reader who needs
+     * to know what we later found we had stated wrong.
+     */
+    corrections_url: `${base}/corrections`,
   };
 }

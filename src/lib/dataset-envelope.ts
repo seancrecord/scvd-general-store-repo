@@ -79,6 +79,19 @@ export function datasetEnvelope(
     },
     isAccessibleForFree: true,
     conditionsOfAccess: "Free to read. No account, no key, no rate limit.",
+    /*
+     * THE POINTER, ON THE ENVELOPE RATHER THAN ON EACH SURFACE
+     * (2026-08-29). The house rule is that every evidence surface is
+     * one hop from the record of what this store later got wrong —
+     * because signed history is never retro-edited, so the correction
+     * has to be reachable FROM the stale claim. /registry and
+     * /inflows were serving numbers to machines with no such hop:
+     * the pointer was in their HTML and not in their JSON, which is
+     * the same inversion this envelope was built to fix one field
+     * over. Derived from the dataset's own url, so a surface cannot
+     * carry the envelope and miss the pointer.
+     */
+    corrections_url: `${new URL(input.url).origin}/corrections`,
     measurementTechnique: input.measurementTechnique,
     variableMeasured: input.variableMeasured.map((variable) => ({
       "@type": "PropertyValue",

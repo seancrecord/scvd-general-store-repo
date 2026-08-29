@@ -36,6 +36,14 @@ function landingJson(base: string) {
     battery_delta: `${base}/corpus/battery-delta.json`,
     standing_notes: `${base}/api/standing-note`,
     how_to_verify: `Printed on the document itself, at ${base}/corpus.json — recompute the digests, check the signatures against the published key, and run ots verify on evidence that is not ours.`,
+    /*
+     * This body hands a machine a FINDING (census, above) and the
+     * address of every other corpus door. Signed history is never
+     * retro-edited here, so a reader standing on a claim has to be
+     * able to reach the record of what we later found wrong from the
+     * claim itself — and this is the door that names all the others.
+     */
+    corrections: `${base}/corrections`,
   };
 }
 
