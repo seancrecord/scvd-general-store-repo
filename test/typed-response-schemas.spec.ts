@@ -316,3 +316,62 @@ describe("the free instruments declare what they return", () => {
     },
   );
 });
+
+describe("every paid door declares its shape, not just the ones walked", () => {
+  /*
+   * The envelope test next door buys real goods through the till and
+   * checks what comes back, but it can only walk instant shelves that
+   * need no invented inputs. This is the other half: EVERY buy door
+   * in the document must declare something, derived from the document
+   * itself rather than from a list somebody maintains. A shelf added
+   * tomorrow is covered tomorrow, and a shelf that quietly reverted
+   * to `{type:"object"}` fails here even though nothing bought from
+   * it in a test.
+   */
+  it("no /api/buy door is left as 'an object'", async () => {
+    const doc = await document();
+    const paths = doc["paths"] as Record<string, any>;
+    const bare: string[] = [];
+    for (const [path, ops] of Object.entries(paths)) {
+      if (!path.startsWith("/api/buy/")) continue;
+      for (const [method, op] of Object.entries(ops as Record<string, any>)) {
+        const schema =
+          op?.["responses"]?.["200"]?.["content"]?.["application/json"]?.[
+            "schema"
+          ];
+        if (schema && !schema["properties"]) bare.push(`${method} ${path}`);
+      }
+    }
+    expect(bare, `paid doors still declaring nothing: ${bare.join(", ")}`).toEqual(
+      [],
+    );
+  });
+
+  it("promises a certificate on instant shelves and a poll id on human ones", async () => {
+    /*
+     * The two envelopes must stay DIFFERENT. Handing a client the
+     * same shape for both would let it believe it holds goods when it
+     * holds a promise that a human will do some work — the one
+     * confusion a store selling human labour cannot afford.
+     */
+    const { MENU_ITEMS } = await import("@/store");
+    const doc = await document();
+    const paths = doc["paths"] as Record<string, any>;
+    for (const item of MENU_ITEMS) {
+      const op = paths[`/api/buy/${item.id}`]?.["get"];
+      if (!op) continue;
+      const properties =
+        op["responses"]?.["200"]?.["content"]?.["application/json"]?.["schema"]?.[
+          "properties"
+        ] ?? {};
+      if (item.fulfillment === "instant") {
+        expect("certificate" in properties, `${item.id} is instant`).toBe(true);
+      } else {
+        expect("order_id" in properties, `${item.id} is human-queue`).toBe(true);
+        expect("certificate" in properties, `${item.id} is human-queue`).toBe(
+          false,
+        );
+      }
+    }
+  });
+});

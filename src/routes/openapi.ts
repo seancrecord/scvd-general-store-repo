@@ -1007,6 +1007,126 @@ const PRACTICE_SCHEMA: OpenApiObject = {
 };
 
 /**
+ * WHAT A PAID DOOR HANDS BACK — and there are two shapes, because
+ * there are two kinds of shelf. The operation description beside
+ * every buy door has always said which ("Delivered in the response"
+ * versus "carries an order id to poll"); until now the contract said
+ * that in prose and `{type:"object"}` in the schema, so an agent
+ * reading the machine half could not tell a delivered artifact from
+ * a queue ticket. Both are picked by the SAME `item.fulfillment`
+ * flag the sentence reads, so they cannot disagree.
+ *
+ * WHY THIS MATTERS MORE HERE THAN ANYWHERE ELSE ON THE CONTRACT. A
+ * client that cannot see the response shape learns it by calling —
+ * and calling these costs real USDC. Every field left undeclared on
+ * a paid door is a field somebody pays to discover.
+ */
+const DELIVERY_ENVELOPE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "message",
+    "item_id",
+    "deliverable",
+    "paid_usdc",
+    "certificate",
+    "signature",
+    "public_key",
+    "algorithm",
+    "verify_url",
+    "verification",
+  ],
+  properties: {
+    message: { type: "string", description: "The counter's own words." },
+    item_id: { type: "string" },
+    deliverable: {
+      description:
+        "The goods. Its shape is the item's own — a note, a reading, a record — which is why this field is deliberately untyped here rather than falsely narrowed to one item's payload.",
+    },
+    paid_usdc: { type: "number" },
+    tip_usdc: {
+      type: "number",
+      description: "What was paid above the ask, where anything was.",
+    },
+    patron_number: { type: "integer" },
+    badge_url: { type: "string", format: "uri" },
+    certificate: {
+      type: "object",
+      description: "The signed record of this purchase.",
+    },
+    signature: { type: "string" },
+    public_key: { type: "string" },
+    algorithm: { type: "string", description: "ed25519." },
+    signed_payload: { type: "string" },
+    signature_covers: {
+      type: "string",
+      description: "Exactly which bytes were signed.",
+    },
+    signature_jcs: { type: "string" },
+    signature_jcs_discipline: { type: "string" },
+    signature_jcs_covers: { type: "string" },
+    verify_url: {
+      type: "string",
+      format: "uri",
+      description:
+        "Where this purchase verifies — free, forever, by anyone, including people who did not buy it.",
+    },
+    store_identity: { type: "object" },
+    verification: {
+      type: "object",
+      description: "How to check the signature without asking us.",
+    },
+    attest_this_purchase: { type: "object" },
+    store_credit: { type: "object", description: "What banked back to the paying wallet." },
+    show_your_human: { type: "string" },
+    receipt_for_your_human: { type: "string" },
+    which_check_is_worth_doing: {
+      type: "string",
+      description:
+        "The store naming the one check worth running on what it just sold you.",
+    },
+  },
+};
+
+/**
+ * A QUEUE TICKET, which is what a human-fulfilled shelf hands back.
+ * No certificate here and no `deliverable` — the work has not been
+ * done yet — and saying so in the schema is the point: the same
+ * response shape for both would let a client believe it had received
+ * goods when it holds a promise.
+ */
+const ORDER_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "order_id", "status", "order_url", "paid_usdc"],
+  properties: {
+    message: { type: "string" },
+    order_id: { type: "string" },
+    status: {
+      type: "string",
+      description:
+        "queued until a human does the work; completed once they have.",
+    },
+    sla_hours: {
+      type: "integer",
+      description:
+        "The promised window. Miss it and the money comes back — the commitment this number exists to make checkable.",
+    },
+    deliverable: {
+      description:
+        "The goods, present ONLY when the work was finished inside this request. Absent while the order is still queued, which is the normal case for a human shelf.",
+    },
+    order_url: {
+      type: "string",
+      format: "uri",
+      description: "Where to poll it.",
+    },
+    paid_usdc: { type: "number" },
+    tip_usdc: { type: "number" },
+    patron_number: { type: "integer" },
+    badge_url: { type: "string", format: "uri" },
+  },
+};
+
+/**
  * THE RETURN SHAPE, DECLARED — the request side's defect facing the
  * other way.
  *
@@ -1429,7 +1549,8 @@ function buyItemOperation(item: MenuItem): OpenApiObject {
     },
   );
   return {
-    ...paidOp(
+    ...returns(
+      paidOp(
       // A1: the summary is the first line a spec reader shows, so it
       // carries the query an agent would run rather than our label
       // for the thing. Falls back to the name where no query exists.
@@ -1440,6 +1561,17 @@ function buyItemOperation(item: MenuItem): OpenApiObject {
           : `Fulfilled by a human within ${item.sla_hours ?? 168} hours; the response carries an order id to poll.`
       }`,
       priceTiersUsdc(item),
+      ),
+      /*
+       * The SAME flag the sentence above reads, so the prose and the
+       * schema cannot drift: an instant shelf hands back the goods
+       * and a signed certificate; a human shelf hands back a queue
+       * ticket with an id to poll and no certificate, because the
+       * work has not happened yet.
+       */
+      item.fulfillment === "instant"
+        ? DELIVERY_ENVELOPE_SCHEMA
+        : ORDER_RECEIPT_SCHEMA,
     ),
     parameters,
   };
