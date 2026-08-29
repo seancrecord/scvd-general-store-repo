@@ -156,12 +156,40 @@ const BASE = "https://scvd.store";
  * the Night Watch's three-tries sentence and the declined positions
  * from the earlier re-takes.
  *
+ * Re-taken 2026-08-29 in the commit carrying the keeper's rulings.
+ * THIS ONE IS THE CASE THE GUARD IS ACTUALLY FOR — a keeper edit, not
+ * a derived drift — and the review it forced caught a real mistake of
+ * mine before it shipped.
+ *
+ * What legitimately moved, each verified present in the served text
+ * before this value was taken:
+ *
+ *   - `trust_profile ... $21 fixed` where the shelf said $19. The
+ *     keeper's price, ruled. `$19` no longer appears anywhere in the
+ *     guide, which is the check that the change is complete rather
+ *     than half-applied.
+ *   - `confirmed_on_chain` — the launch_check line he approved (D3),
+ *     reaching the guide through the menu interpolation.
+ *
+ * AND WHAT THE RE-TAKE CAUGHT: the storefront line he approved (D1)
+ * was NOT in the served bytes, because I had added
+ * `STOREFRONT_COPY.recordReadsAsTime` and wired it to nothing. A
+ * constant no surface renders is copy that does not exist — the
+ * "machinery nobody can find" failure this store has a rule about,
+ * committed while shipping the keeper's own approved words. It now
+ * renders in the storefront's "what this is" section, which is where
+ * the draft said it belonged.
+ *
+ * It is deliberately absent from the GUIDE: D1 was specced as a
+ * storefront line and the guide carries its own "what this is" prose.
+ * Absence there is the design, not a second miss.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "505e31b80ce434acbb21dc1e19c6a9ec41cc67fcef3c1632c873568651b6809f";
+  "00a1a203b00e68fcfd530afa1aa1a69b24631dfcdbd0758aac83d368cc6dfa54";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

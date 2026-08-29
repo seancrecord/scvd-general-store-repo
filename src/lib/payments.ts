@@ -428,9 +428,11 @@ function storeServiceMetadata(
  *   defence, and every second of width is a second in which a
  *   captured envelope is still worth something.
  *
- * ⚑ KEEPER: five minutes is inherited, not chosen. If it should be
- * something else, this is the one line to change and the spec's
- * bounds (60s-3600s) are what hold it honest.
+ * RULED 2026-08-29. Put to the keeper with both failure modes named
+ * and the spec's bounds (60s-3600s) beside them, he answered "300".
+ * The number did not move; what moved is that it is now a decision
+ * rather than a fallback nobody looked at, which is the entire point
+ * of having raised it. ⚑ marks his call.
  */
 export const SIGNING_WINDOW_SECONDS = 300;
 
