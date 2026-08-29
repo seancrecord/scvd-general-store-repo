@@ -9,6 +9,28 @@ import { STORE_METADATA } from "@/store/metadata";
  * and their AIs query, and the answer is the trust check — not a
  * product. The route that hangs these up is src/routes/what.ts; the
  * words are all here.
+ *
+ * HONEST IS NOT THE SAME AS MASOCHISTIC (the keeper, 2026-08-28, and
+ * it is a correction to a real drift). This store publishes its gaps
+ * on purpose, and the discipline had started paying itself compound
+ * interest: answers leading with limitations, a caveat given more
+ * words than the capability it qualifies, "one honest wrinkle" as a
+ * throat-clear, and the store congratulating itself for disclosing
+ * — "that gap is published, not hidden" — which is bragging wearing
+ * humility's coat.
+ *
+ * The rule that replaces it, and it costs no honesty at all:
+ *   - State the capability first. It is why the reader is here.
+ *   - A limit gets a CLAUSE, not a paragraph, unless the limit is
+ *     the answer to the question actually asked.
+ *   - Never editorialise about our own transparency. Publishing the
+ *     gap is the disclosure; saying "and look, we published it" is
+ *     an advertisement.
+ *   - Where a neutral true framing and an unflattering true framing
+ *     both exist, neutral wins. Rule 45 asks that words follow
+ *     facts; it never asked them to grovel.
+ * Nothing here licenses hiding anything. Every gap that was
+ * published stays published — shorter, and without the flinch.
  */
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 
@@ -135,7 +157,7 @@ export function whatFaq(base: string): FaqPair[] {
        * copy.
        */
       question: "How do I connect my agent to this store?",
-      answer: `Four ways, and ${base}/mcp.md is the page that picks one for you. Remote MCP is the main door: point your client at ${base}/mcp, no install and no API key — tools/list is free and the paid tools carry their x402 terms in-band. Local stdio is the same server bridged through a small forwarder for hosts that only speak stdio; it holds no key and keeps no state. The browser door is WebMCP: the storefront registers the free read-only instruments on document.modelContext, so an agent living in a visitor's browser finds them by arriving — nothing to configure. And plain HTTPS is a first-class fourth answer: every free instrument has an ordinary endpoint, and an agent with fetch needs nothing else. One honest wrinkle, dated 2026-08-28: the free instruments return evidence cards — the reading rendered, with the checks never run shown at the same weight as the ones that passed — and whether you SEE the card depends on your host, not on us. In the hosts tested so far the local stdio path renders and the remote-connector path returns the same JSON it always did. That gap is published, not hidden, and it costs nothing either way: the verdict is identical in both.`,
+      answer: `Four ways, laid out side by side at ${base}/mcp.md. Remote MCP is the main door: point your client at ${base}/mcp, no install and no API key — tools/list is free and the paid tools carry their x402 terms in-band. Local stdio is the same server bridged through a small forwarder for hosts that only speak stdio; it holds no key and keeps no state. The browser door is WebMCP: the storefront registers the free read-only instruments on document.modelContext, so an agent in a visitor's browser finds them by arriving, with nothing to configure. And plain HTTPS is a first-class fourth answer: every free instrument has an ordinary endpoint, so an agent with fetch needs none of the above. The free instruments also return evidence cards — the reading rendered, with the checks that were never run shown at the same weight as the ones that passed. Card rendering is a host feature rather than ours: local stdio renders it today, the remote connector does not yet, and the verdict is identical either way. ${base}/mcp.md carries the current table.`,
     },
     {
       /**
