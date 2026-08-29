@@ -145,8 +145,20 @@ describe("the porch log", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
     });
-    const porch = await readPorchLedger(testEnv);
-    expect(porch.surfaces["mcp:tools/list"]?.["organic:mcp"]).toBeGreaterThanOrEqual(1);
+    /*
+     * The MCP door's counters ride waitUntil as of 2026-08-29 (rule
+     * 50: bookkeeping goes beside the answer, never in front of it),
+     * so the read holds for the write to land instead of assuming
+     * synchrony — the same shape as the bare quote's tally below,
+     * ruled 2026-08-27. What is asserted is unchanged: the surface is
+     * logged, and with the definitive MCP channel.
+     */
+    await vi.waitFor(async () => {
+      const porch = await readPorchLedger(testEnv);
+      expect(
+        porch.surfaces["mcp:tools/list"]?.["organic:mcp"],
+      ).toBeGreaterThanOrEqual(1);
+    });
   });
 
   it("computes porch-to-purchase as an honest rate", async () => {

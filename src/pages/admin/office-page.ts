@@ -387,6 +387,12 @@ function surfaceLabel(surface: string): string {
  * this table exists to answer — is that traffic a handful of crawlers
  * on a loop, or a real spread of agents — is answered by the shape of
  * the top few rows.
+ *
+ * ⚑ Keeper's pen on the section heading and both sentences below,
+ * under rule 7. Drafted, not canon: this went up unflagged on 08-29
+ * and the flag is the correction. The empty-state line is the one
+ * worth his eye — it refuses to read an empty table as "no traffic",
+ * which is the only thing it is actually for.
  */
 function mcpClientHtml(clients: Record<string, number> | undefined): string {
   const rows = Object.entries(clients ?? {}).sort((a, b) => b[1] - a[1]);

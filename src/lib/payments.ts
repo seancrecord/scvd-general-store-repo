@@ -35,6 +35,7 @@ import { SPEC_RETURNS } from "@/store/spec";
 import { isRecord } from "@/types";
 import type { Env, MenuItem } from "@/types";
 import { kvGet, kvPut } from "@/lib/kv-retry";
+import { decodeBase64Json } from "@/lib/base64-json";
 
 /**
  * x402 v2 payment plumbing. USDC on Base (eip155:8453), Polygon
@@ -1366,7 +1367,7 @@ export async function rescueAmbiguousSettle(
   }
   let payload: unknown;
   try {
-    payload = JSON.parse(atob(options.paymentHeader ?? ""));
+    payload = decodeBase64Json(options.paymentHeader ?? "");
   } catch {
     return null;
   }

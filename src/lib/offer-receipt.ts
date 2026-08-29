@@ -1,6 +1,8 @@
 import * as ed25519 from "@noble/ed25519";
 import { cachedPublicKeyHex } from "@/lib/signing";
 import { retiredKeysFor } from "@/store/key-registry";
+import { decodeBase64Json } from "@/lib/base64-json";
+import { isRecord } from "@/types";
 import type { Env } from "@/types";
 
 /**
@@ -352,5 +354,90 @@ export async function verifyOwnJws(
   return {
     valid,
     payload: JSON.parse(atob(padded(body))) as Record<string, unknown>,
+  };
+}
+
+/**
+ * Signed offers, sourced from the PAYMENT-REQUIRED header — because on
+ * THIS store the 402 body is the keeper's prose, not the standard
+ * payment-required JSON. The accepts[] a client actually signs against
+ * travel base64-encoded in the header, which is where the first cut of
+ * this looked for them in the body and found nothing; the probe test
+ * caught it before it shipped. Reading the header means the offers
+ * commit to exactly the terms a client pays, never a copy.
+ */
+export async function offerExtensionsFor(
+  env: Env,
+  headers: Record<string, string>,
+): Promise<Record<string, unknown> | null> {
+  try {
+    const headerName = Object.keys(headers).find(
+      (name) => name.toLowerCase() === "payment-required",
+    );
+    if (!headerName) {
+      return null;
+    }
+    const decoded = decodeBase64Json(
+      headers[headerName] as string,
+    ) as Record<string, unknown>;
+    const resource = decoded["resource"];
+    const resourceUrl =
+      typeof resource === "string"
+        ? resource
+        : isRecord(resource) && typeof resource["url"] === "string"
+          ? resource["url"]
+          : undefined;
+    if (!resourceUrl) {
+      return null;
+    }
+    return await signedOffersForChallenge(
+      env,
+      resourceUrl,
+      decoded["accepts"],
+      Math.floor(Date.now() / 1000),
+    );
+  } catch {
+    // Fail open: a 402 without offers is a working 402.
+    return null;
+  }
+}
+
+/**
+ * The same commitments, for a door that relays the challenge as an
+ * OBJECT instead of a header — the MCP door, which calls the payment
+ * stack directly and so never passed through the HTTP gate's splice.
+ *
+ * Until 2026-08-29 that meant MCP buyers got extensions {bazaar}
+ * where HTTP buyers got {bazaar, offer-receipt}: the store's signed
+ * commitment to its own quoted terms, the exact discipline this
+ * business sells to other issuers, missing from the one channel it
+ * most wants to sell through. mcp-payment.ts already carried the
+ * warning in its own comments — "this door had its own copy of the
+ * pipeline and therefore none of the diagnosis... a fix that looks
+ * shared and isn't" — written about the preflight. The preflight got
+ * shared. The offer did not, and nothing failed when it didn't.
+ *
+ * Fails open exactly like the header splice: a 402 without offers is
+ * a working 402, and no decoration is worth blocking the till.
+ */
+export async function withSignedOffers(
+  env: Env,
+  headers: Record<string, string>,
+  challenge: unknown,
+): Promise<unknown> {
+  if (!challenge || typeof challenge !== "object") {
+    return challenge;
+  }
+  const offers = await offerExtensionsFor(env, headers);
+  if (!offers) {
+    return challenge;
+  }
+  const existing = (challenge as Record<string, unknown>)["extensions"];
+  return {
+    ...(challenge as Record<string, unknown>),
+    extensions: {
+      ...(existing && typeof existing === "object" ? existing : {}),
+      ...offers,
+    },
   };
 }

@@ -513,6 +513,72 @@ without their fix. **Production reads 23 of 26 met.**
   visitors' browsers and the analytics behind it are thinner than they
   look. Worth ten minutes with the browser console.
 
+**FILED 2026-08-29 — the CLI shipped, the desk was rebuilt, and four
+things stayed open.** (This whole stretch of work went unfiled until
+the keeper said so out loud, which is the rule 29 failure, not a
+footnote to it. Filed now with what is TRUE and OPEN only; the closed
+work is in git.)
+
+- **LOOK, in a few days, not today: who is actually knocking at the
+  MCP door.** `/admin` → "Who knocked at the MCP door". 12,280
+  handshakes and 11,803 tool listings in a month against no
+  purchases, and until 08-29 the door threw away the one field that
+  could tell a registry crawler from an agent bouncing off a price —
+  every MCP client names itself in the handshake and we kept only a
+  User-Agent most of them do not set. The census starts from its own
+  deploy, so it is EMPTY on purpose right now and the page says so.
+  Nothing about the MCP funnel should be asserted by anyone,
+  including the agents, until that table has rows.
+
+- **A number I gave the keeper was never a measurement, and it is
+  written here so it does not get re-cited.** I said ~11,800 MCP
+  clients "called nothing at all," citing 25 calls. `tools/call` was
+  not recorded at all: five handlers logged themselves and the other
+  eight — the whole buy_* shelf, `read_store_guide`,
+  `verify_artifact` — were invisible either way. The right sentence
+  was "we cannot tell." Not a published claim, so this is not a rule
+  56 corrections-desk item; it is a desk note so the wrong figure
+  does not walk into one.
+
+- **The publish workflow's `version` input has no default, and that
+  is why the "Run workflow" button greys out on a phone.** Deliberate
+  when it was written — a typed version that must match
+  `cli/package.json` cannot have a safe default, and the guard caught
+  exactly that on run #1 (typed 2.1, package said 0.1.0). But the
+  cost lands on the keeper's hand under rule 30, at the one moment
+  the rule says the hand must be his. RULE: keep the friction, or
+  default the field to the version already in `cli/package.json` and
+  let the guard stay the thing that refuses a mismatch.
+
+- **RULE 50 WAS BEING BROKEN AT THE MCP DOOR, AND HAD BEEN BEFORE I
+  ADDED TO IT.** The 08-29 census shipped its per-tool counter
+  AWAITED: one KV write sitting in front of the answer on every
+  `tools/call`, the paid buy_* shelf included — the exact door the
+  rule was written about after outside monitors clocked it at 977ms
+  and 1424ms. Writing the guard for it then found five more already
+  there, plus one on every JSON-RPC method: SIX awaited bookkeeping
+  writes in front of the answer, none of them mine. All seven now go
+  out beside the answer through one deferral, and
+  `test/mcp-door-defers-its-bookkeeping.spec.ts` reads the source so
+  the next counter cannot be written the old way. Nothing on the
+  response path reads a porch surface back — checked before
+  deferring, which is the proof rule 50 asks for.
+  STILL OPEN, and it is the LOOK here: this door is fixed, the rest
+  of the site is unmeasured. The same shape (an awaited courtesy
+  write in front of a paid answer) is worth a sweep of the HTTP buy
+  path, and rule 50's own closing line still stands — the honest
+  latency value is `not_observed` until the preflight captures it on
+  the doors it already walks.
+
+- **64 of ~121 OpenAPI operations are still untyped, and the stopping
+  point was evidence, not fatigue.** 57 are typed and bound by live
+  probes. The remaining ones are per-artifact readers the keeper's
+  own porch table shows almost nobody walks — and that table already
+  corrected me once, when I recommended skipping the watch readers
+  and it showed 262 and 111 organic reads, so the two watch histories
+  were typed. Filed so the stop is a decision with a reason attached
+  rather than a thing that quietly restarts.
+
 ## NEXT## NEXT
 
 **The frame:** the verification tier is still $0 outside — Assumption

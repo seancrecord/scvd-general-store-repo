@@ -49,8 +49,18 @@ beforeEach(async () => {
 });
 
 describe("the MCP client census", () => {
-  it("records nothing before anyone knocks", async () => {
+  it("reads empty before anyone knocks, and only before", async () => {
+    /*
+     * An empty read is the other unfalsifiable shape rule 46 names: a
+     * reader hard-wired to return {} would pass an emptiness assertion
+     * forever, and the store would have a test arguing that its census
+     * works while it counted nothing. So the emptiness is bound to the
+     * knock that ends it — same call, same month, one before and one
+     * after — and the pair fails if either half stops being true.
+     */
     expect(await readMcpClients(testEnv)).toEqual({});
+    await recordMcpClient(testEnv, "first-knock", "1");
+    expect(await readMcpClients(testEnv)).toEqual({ "first-knock": 1 });
   });
 
   it("counts each client by name", async () => {
@@ -99,6 +109,9 @@ describe("the MCP client census", () => {
   it("never lets a hostile name become a key", async () => {
     await recordMcpClient(testEnv, "../../etc/passwd\n<script>", "1");
     const names = Object.keys(await readMcpClients(testEnv));
+    // A for-loop over an empty list asserts nothing, so the census
+    // has to have recorded something before the charset is checked.
+    expect(names.length, "the hostile knock was not recorded at all").toBe(1);
     for (const name of names) {
       expect(name).toMatch(/^[a-z0-9._-]+$/);
     }
