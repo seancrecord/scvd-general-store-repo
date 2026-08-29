@@ -226,6 +226,284 @@ function freeOp(summary: string, description: string): OpenApiObject {
   };
 }
 
+/** A list of prose lines, as several free doors publish them. */
+const TEXT_LIST: OpenApiObject = { type: "array", items: { type: "string" } };
+
+/** A list of records whose own shape each door documents in prose. */
+const RECORD_LIST: OpenApiObject = {
+  type: "array",
+  items: { type: "object" },
+};
+
+/**
+ * THE CORPUS. A schema.org Dataset envelope wrapped around the
+ * store's own weekly record, which is why the JSON-LD keys sit beside
+ * the plain ones: a reader who speaks Dataset gets a Dataset, and a
+ * reader who wants the chain gets the chain.
+ */
+const CORPUS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["@context", "@type", "name", "entries", "chain", "latest", "index"],
+  properties: {
+    "@context": { type: "string", description: "schema.org." },
+    "@type": { type: "string", description: "Dataset." },
+    name: { type: "string" },
+    description: { type: "string" },
+    license: { type: "string" },
+    url: { type: "string", format: "uri" },
+    creator: { type: "object", description: "Who signs it." },
+    isAccessibleForFree: { type: "boolean" },
+    conditionsOfAccess: { type: "string" },
+    temporalCoverage: {
+      type: "string",
+      description:
+        "The span the record covers. Absent until there is a first signed week — an empty corpus has no span, and saying so beats inventing one.",
+    },
+    dateModified: {
+      type: "string",
+      description:
+        "When the record last grew. Absent until there is a first signed week to date.",
+    },
+    measurementTechnique: { type: "string" },
+    variableMeasured: { ...TEXT_LIST, description: "What each week records." },
+    distribution: { ...RECORD_LIST, description: "Where to fetch it." },
+    what_this_is: { type: "string" },
+    what_this_is_not: {
+      type: "string",
+      description:
+        "The refusal, published beside the data: observations, never a score or a ranking.",
+    },
+    per_subject: { type: "object" },
+    started: {
+      type: ["string", "null"],
+      description:
+        "The first signed week. Null — not absent — before there is one: the field is always present so a reader never has to distinguish a missing key from an empty record.",
+    },
+    entries: {
+      type: "integer",
+      description: "Signed weeks on the record. Only ever goes up.",
+    },
+    chain: {
+      type: "object",
+      description:
+        "The hash chain's head and its Bitcoin anchoring state — what makes the record checkable without asking us.",
+    },
+    how_to_verify: {
+      ...TEXT_LIST,
+      description: "The steps for checking the chain offline.",
+    },
+    corrections: { type: "string", format: "uri" },
+    honest_limits: {
+      type: "string",
+      description: "The gaps this store counts against itself.",
+    },
+    latest: {
+      type: ["object", "null"],
+      description:
+        "The newest signed week. Null — not absent — before there is one, for the same reason `started` is.",
+    },
+    index: { ...RECORD_LIST, description: "Every week, oldest first." },
+  },
+};
+
+/**
+ * THE FRESH SET, IN BOTH ITS SHAPES.
+ *
+ * This door answers two genuinely different ways: a completed census,
+ * and the state before any census has run — `{rows: [], note}`. The
+ * second is not an error and not an empty version of the first; it is
+ * a store that has not yet looked. Only `rows` and `corrections`
+ * survive both, so only those are promised, and every other field
+ * says here when it is absent rather than leaving a client to find
+ * out by reading undefined.
+ */
+const FRESH_SET_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["rows", "corrections"],
+  properties: {
+    version: {
+      type: "integer",
+      description:
+        "The document's own version. Absent until the first census round has completed.",
+    },
+    week: {
+      type: "string",
+      description:
+        "ISO week the census ran. Absent until the first census round has completed.",
+    },
+    observed_at: {
+      type: "string",
+      description:
+        "When the walk took its readings. Absent until the first census round has completed.",
+    },
+    what_this_is: {
+      type: "string",
+      description: "Absent until the first census round has completed.",
+    },
+    what_this_is_not: {
+      type: "string",
+      description:
+        "The refusal that rides with the data: routing, never a ranking. Absent until the first census round has completed.",
+    },
+    rows: {
+      ...RECORD_LIST,
+      description:
+        "One row per door that answered a conformant challenge: host, rails, cheapest ask, and a link to its signed history. Empty before the first census — an empty list is a store that has not looked, and the note beside it says so.",
+    },
+    truncated: {
+      type: "boolean",
+      description:
+        "True when the walk hit its cap, so the rows are a floor rather than the whole week. Absent until the first census round has completed.",
+    },
+    aggregates: {
+      type: "object",
+      description: "Absent until the first census round has completed.",
+    },
+    coverage: {
+      type: "object",
+      description:
+        "What the week could not see, counted against us. Absent until the first census round has completed.",
+    },
+    evidence: {
+      type: "object",
+      description: "Absent until the first census round has completed.",
+    },
+    note: {
+      type: "string",
+      description:
+        "Present ONLY before the first census round has completed, saying so in words. Absent once there is a real reading.",
+    },
+    corrections: { type: "string", format: "uri" },
+  },
+};
+
+/** THE DEFECT VOCABULARY: stable names for the ways a door breaks. */
+const DEFECTS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["version", "classes", "evidence_labels"],
+  properties: {
+    version: { type: "string" },
+    url: { type: "string", format: "uri" },
+    what_this_is: { type: "string" },
+    what_this_is_not: { type: "string" },
+    the_method_line: { type: "string" },
+    cross_instrument_mappings_read_on: { type: "string" },
+    mapping_caveat: { type: "string" },
+    corrections: { type: "string", format: "uri" },
+    classes: {
+      ...RECORD_LIST,
+      description:
+        "Each named defect: what it asserts, what falsifies it, and whether an unpaid probe can see it at all.",
+    },
+    evidence_labels: {
+      ...RECORD_LIST,
+      description: "How strongly a finding is held, as a named label.",
+    },
+    what_evidence_labels_are: { type: "string" },
+    changelog: { ...RECORD_LIST, description: "Dated vocabulary changes." },
+    governance: { type: "string" },
+    license: { type: "string" },
+  },
+};
+
+/**
+ * VERIFICATION. Free forever, including artifacts the caller did not
+ * buy — so this is the shape a stranger checking our work receives.
+ * Both signature forms are reported: the original and the JCS
+ * canonicalisation, each with what it covers, because "valid" without
+ * "over what" is not a check anybody can repeat.
+ */
+const VERIFY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["valid", "certificate", "signature", "public_key", "algorithm"],
+  properties: {
+    valid: { type: "boolean", description: "Did the signature check out." },
+    store_identity: { type: "object" },
+    certificate: { type: "object", description: "The signed artifact itself." },
+    signature: { type: "string" },
+    public_key: { type: "string" },
+    signed_by: {
+      type: "object",
+      description:
+        "Which key signed it, current or retired — a retired key verifying is the key history working, not a fault.",
+    },
+    algorithm: { type: "string", description: "ed25519." },
+    signed_payload: { type: "string" },
+    artifact_hash: { type: "string" },
+    signature_covers: {
+      type: "string",
+      description: "Exactly which bytes the signature is over.",
+    },
+    signature_jcs: { type: "string" },
+    signature_jcs_valid: { type: "boolean" },
+    signature_jcs_payload: { type: "string" },
+    signature_jcs_covers: { type: "string" },
+    note: { type: "string" },
+  },
+};
+
+/**
+ * THE CONFORMANCE DESK'S VERDICT, and the fields that are null on
+ * purpose. A malformed artifact has no `kind` and no live reading —
+ * the desk says so rather than guessing, and the schema says
+ * ["string", "null"] rather than pretending the field is always
+ * there. The three published refusals ride on every verdict: what it
+ * means, what it cannot tell you, and our conflict of interest.
+ */
+const CONFORMANCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "version",
+    "verdict",
+    "checks",
+    "what_this_means",
+    "what_this_cannot_tell_you",
+    "our_conflict_of_interest",
+    "run_it_yourself",
+  ],
+  properties: {
+    version: { type: "string" },
+    verdict: {
+      type: "string",
+      description: "The dated observation, never a score.",
+    },
+    kind: {
+      type: ["string", "null"],
+      description:
+        "Offer or receipt, once the artifact parses well enough to tell. Null when it does not.",
+    },
+    checks: {
+      ...RECORD_LIST,
+      description:
+        "Every named check and what it found — the same list whether the verdict is yes or no.",
+    },
+    live: {
+      type: ["object", "null"],
+      description: "A live reading where one was taken; null where none was.",
+    },
+    liveness: { type: "string" },
+    key_resolution: {
+      type: "string",
+      description: "How the issuer's key was found, or why it was not.",
+    },
+    anchored_key_history: { type: ["object", "null"] },
+    what_this_means: { type: "string" },
+    what_this_cannot_tell_you: {
+      ...TEXT_LIST,
+      description: "Published beside the verdict, counted against us.",
+    },
+    our_conflict_of_interest: {
+      type: "string",
+      description:
+        "Stated on every verdict, including verdicts on competitors' artifacts.",
+    },
+    run_it_yourself: {
+      type: "string",
+      description: "How to reproduce this offline, without us.",
+    },
+  },
+};
+
 /**
  * THE RETURN SHAPE, DECLARED — the request side's defect facing the
  * other way.
@@ -1129,9 +1407,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/fresh-set": {
-        get: freeOp(
-          "The fresh set",
-          "The doors that answered a spec-conformant x402 challenge in the latest weekly census — named, dated, with the rails and cheapest USDC ask each door's own 402 offered, every row linking its signed per-host history in the corpus. Routing data, never a ranking; failing doors appear only as counts. HTML for browsers, full JSON otherwise. Free.",
+        get: returns(
+          freeOp(
+            "The fresh set",
+            "The doors that answered a spec-conformant x402 challenge in the latest weekly census — named, dated, with the rails and cheapest USDC ask each door's own 402 offered, every row linking its signed per-host history in the corpus. Routing data, never a ranking; failing doors appear only as counts. HTML for browsers, full JSON otherwise. Free.",
+          ),
+          FRESH_SET_SCHEMA,
         ),
       },
       "/corrections": {
@@ -1151,7 +1432,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The conformance desk, described",
           "What the free desk is and the exact request shape, as JSON. The readable landing is /conformance.",
         ),
-        post: postOp(
+        post: returns(
+          postOp(
           "Check any issuer's x402 signed offer or receipt",
           "Structured verdict — parse, schema, EdDSA signature against the kid, liveness — free, no wallet, no account. Works on artifacts this store did not issue; supply public_key_hex to keep it fully offline.",
           "The artifact, plus whichever of the three switches you want.",
@@ -1187,6 +1469,8 @@ openapiRoutes.get("/openapi.json", async (c) => {
               },
             },
           },
+          ),
+          CONFORMANCE_SCHEMA,
         ),
       },
       /**
@@ -1426,10 +1710,35 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "The ed25519 key the store signs its outbound probes with, as a JWK Set with the directory draft's proof-of-possession signature over its own authority. Answers 404 rather than an empty key set when no egress key is configured — those are different statements.",
         ),
       },
+      /**
+       * THE DEFECT VOCABULARY, WHICH THE CONTRACT DID NOT LIST UNTIL
+       * 2026-08-28 — found by the response-schema pass, and worth
+       * naming as its own defect rather than folding into that work.
+       *
+       * /defects.json is a free instrument. It is linked from
+       * /developers, published under CC BY 4.0, and it is the file
+       * that gives this store's findings stable names other people
+       * can cite. It was simply absent from the OpenAPI document, so
+       * an agent that discovered the store through its contract —
+       * the path this store spends most of its effort on — could not
+       * see it at all.
+       */
+      "/defects.json": {
+        get: returns(
+          freeOp(
+            "The defect vocabulary",
+            "Stable names for the ways an x402 endpoint can be broken: what each class asserts, what would falsify a finding, and whether an unpaid probe can observe it at all. The evidence labels say how strongly a finding is held. CC BY 4.0, free, citable.",
+          ),
+          DEFECTS_SCHEMA,
+        ),
+      },
       "/corpus.json": {
-        get: freeOp(
-          "The corpus",
-          "Weekly signed observations of the public x402 ecosystem: hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, with the live chain check and verification steps on the document. Per-host history at /corpus/host/{host}.json. Free. The readable landing is /corpus.",
+        get: returns(
+          freeOp(
+            "The corpus",
+            "Weekly signed observations of the public x402 ecosystem: hash-chained, ed25519-signed, Bitcoin-anchored via OpenTimestamps, with the live chain check and verification steps on the document. Per-host history at /corpus/host/{host}.json. Free. The readable landing is /corpus.",
+          ),
+          CORPUS_SCHEMA,
         ),
       },
       "/corpus/trajectory.json": {
@@ -1754,9 +2063,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/verify/{id}": {
         get: {
-          ...freeOp(
-            "Verify a signature",
-            "Checks any certificate or stamp the store has ever signed.",
+          ...returns(
+            freeOp(
+              "Verify a signature",
+              "Checks any certificate or stamp the store has ever signed.",
+            ),
+            VERIFY_SCHEMA,
           ),
           parameters: [pathParam("id", "A cert_id or stamp_id.")],
         },
