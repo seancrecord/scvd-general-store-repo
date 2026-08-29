@@ -156,6 +156,34 @@ const BASE = "https://scvd.store";
  * the Night Watch's three-tries sentence and the declined positions
  * from the earlier re-takes.
  *
+ * Re-taken 2026-08-29 in the commit carrying the keeper's rulings.
+ * THIS ONE IS THE CASE THE GUARD IS ACTUALLY FOR — a keeper edit, not
+ * a derived drift — and the review it forced caught a real mistake of
+ * mine before it shipped.
+ *
+ * What legitimately moved, each verified present in the served text
+ * before this value was taken:
+ *
+ *   - `trust_profile ... $21 fixed` where the shelf said $19. The
+ *     keeper's price, ruled. `$19` no longer appears anywhere in the
+ *     guide, which is the check that the change is complete rather
+ *     than half-applied.
+ *   - `confirmed_on_chain` — the launch_check line he approved (D3),
+ *     reaching the guide through the menu interpolation.
+ *
+ * AND WHAT THE RE-TAKE CAUGHT: the storefront line he approved (D1)
+ * was NOT in the served bytes, because I had added
+ * `STOREFRONT_COPY.recordReadsAsTime` and wired it to nothing. A
+ * constant no surface renders is copy that does not exist — the
+ * "machinery nobody can find" failure this store has a rule about,
+ * committed while shipping the keeper's own approved words. It now
+ * renders in the storefront's "what this is" section, which is where
+ * the draft said it belonged.
+ *
+ * It is deliberately absent from the GUIDE: D1 was specced as a
+ * storefront line and the guide carries its own "what this is" prose.
+ * Absence there is the design, not a second miss.
+ *
  * Re-taken 2026-08-29 in the commit that gave /inflows its section.
  * The no-orphan-capability guard caught the new public page listed on
  * no surface an agent reads, so the room joined rooms.ts and the
@@ -163,12 +191,20 @@ const BASE = "https://scvd.store";
  * with the words, as they should. Filed under the corpus area beside
  * the registry: both are readings off the weekly census.
  *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work.
+ * Each had correctly re-taken the digest for its own edit, so the
+ * merge produced a third text neither value describes — the recurring
+ * shape this pin has now hit four times. Both notes above are kept
+ * because both edits are in the served bytes: the keeper's priced and
+ * approved lines, and /inflows' section. Verified present together
+ * before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "60b69199b5c672c6efc4c4bc257198a895e597762079199cec2b0b3eb8ed0aec";
+  "5aef2160e616857efbd40f7a1163b3289a1b7987cac2fb9cd564f03d2b04f647";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
