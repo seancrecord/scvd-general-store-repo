@@ -82,7 +82,7 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
     path: "/defects.json",
     name: "The defect vocabulary",
     description:
-      "The named defect classes this store's instruments report, so two tools can compare notes about the same failure in the same words.",
+      "The named defect classes this store's instruments report, so separate tools can compare notes about the same failure in the same words.",
     caution:
       "A vocabulary, not a severity ranking. A named defect describes what was observed, not how much it matters to you.",
     cadence: "changes when a class is added or retired",

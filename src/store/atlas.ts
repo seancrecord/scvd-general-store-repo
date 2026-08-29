@@ -160,7 +160,7 @@ const JOURNEYS: readonly AtlasJourney[] = [
         endpoint: "/defects.json",
         method: "GET",
         cost: "free",
-        expect: "The named class, in words two tools can share.",
+        expect: "The named class, in words separate tools can share.",
       },
       {
         do: "Check the issuer's history if the artifact is ours",
