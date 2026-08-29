@@ -115,6 +115,35 @@ const PROBES: Probe[] = [
     call: () => SELF.fetch(`${BASE}/api/conformance/v1`),
   },
   {
+    path: "/.well-known/api-catalog",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/.well-known/api-catalog`),
+  },
+  {
+    path: "/.well-known/ard.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/.well-known/ard.json`),
+  },
+  {
+    path: "/.well-known/ai-catalog.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/.well-known/ai-catalog.json`),
+  },
+  {
+    path: "/.well-known/mcp.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/.well-known/mcp.json`),
+  },
+  {
+    path: "/deprecation",
+    method: "get",
+    // JSON by Accept; the HTML twin is for browsers.
+    call: () =>
+      SELF.fetch(`${BASE}/deprecation`, {
+        headers: { Accept: "application/json" },
+      }),
+  },
+  {
     path: "/api/conformance/v1",
     method: "post",
     /*

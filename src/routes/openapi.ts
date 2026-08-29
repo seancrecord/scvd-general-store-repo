@@ -671,6 +671,131 @@ const PULSE_SCHEMA: OpenApiObject = {
 };
 
 /**
+ * RFC 9727's api-catalog: a linkset, and nothing else at the top
+ * level. The shape is the RFC's, not ours — which is the point of
+ * declaring it, since a client that knows the RFC can be certain
+ * before it parses.
+ */
+const API_CATALOG_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["linkset"],
+  properties: {
+    linkset: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "One anchor per developer resource, each with its link relations, per RFC 9727.",
+    },
+  },
+};
+
+/**
+ * THE AGENT-READY DISCOVERY MANIFEST, served at two paths for two
+ * dialects of the same young spec (ARD v0.91). `entries` is the only
+ * field the spec itself requires; the rest are ours, and the shared
+ * schema is the honest way to say the two documents are one document.
+ */
+const ARD_MANIFEST_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["entries"],
+  properties: {
+    specVersion: {
+      type: "string",
+      description:
+        "The ARD revision this follows. Not a field the spec defines — added because a reader of a young spec needs to know which revision they are holding.",
+    },
+    updatedAt: { type: "string" },
+    trustManifest: {
+      type: "object",
+      description: "The did:web identity behind the entries.",
+    },
+    entries: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "The store's callable surfaces. The one field ARD v0.91 requires.",
+    },
+  },
+};
+
+/**
+ * THE MCP SERVER CARD. What a client reads before it connects: where
+ * the server is, which protocol versions it speaks, and — the part
+ * that matters for a paid store — which methods cost nothing.
+ */
+const MCP_CARD_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "version", "endpoint", "transport", "protocol_versions"],
+  properties: {
+    $schema: {
+      type: "string",
+      description:
+        "The SEP-2127 schema URI. The draft's own URI does not resolve yet; it is published as the identifier the spec names, not as a fetchable document.",
+    },
+    name: { type: "string" },
+    title: { type: "string" },
+    version: {
+      type: "string",
+      description: "Derived from the server's one version constant.",
+    },
+    icons: { type: "array", items: { type: "object" } },
+    description: { type: "string" },
+    endpoint: { type: "string", format: "uri" },
+    url: { type: "string", format: "uri" },
+    transport: { type: "string", description: "Streamable HTTP." },
+    methods: { type: "array", items: { type: "string" } },
+    protocol_versions: { type: "array", items: { type: "string" } },
+    authentication: {
+      type: "object",
+      description:
+        "There is nothing to issue: free tools are open and paid ones take a signed x402 payment per call.",
+    },
+    handshake: { type: "object" },
+    free_methods: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "The methods that never cost anything — tools/list among them, so a client can look before it pays.",
+    },
+    capabilities: { type: "object" },
+    resources: { type: "array", items: { type: "object" } },
+    documentation: { type: "string", format: "uri" },
+    openapi: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * THE DEPRECATION POLICY, as a document rather than a promise in
+ * prose. minimum_notice_days is the number a client can actually
+ * plan against, and currently_deprecated being empty is a fact worth
+ * serving rather than an absence worth inferring.
+ */
+const DEPRECATION_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["policy", "minimum_notice_days", "currently_deprecated", "versions"],
+  properties: {
+    policy: { type: "object" },
+    minimum_notice_days: {
+      type: "integer",
+      description:
+        "The Sunset notice this store commits to before any version goes away.",
+    },
+    currently_deprecated: {
+      type: "array",
+      items: { type: "object" },
+      description: "Empty is the normal state, and is served as an empty list rather than omitted.",
+    },
+    versions: {
+      type: "array",
+      items: { type: "object" },
+      description: "Every API version served, with its status.",
+    },
+    contract: { type: "string", format: "uri" },
+    developer_documentation: { type: "string", format: "uri" },
+  },
+};
+
+/**
  * THE RETURN SHAPE, DECLARED — the request side's defect facing the
  * other way.
  *
@@ -1853,33 +1978,48 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * answers a scanner, which never guesses.
        */
       "/.well-known/api-catalog": {
-        get: freeOp(
-          "The API catalog (RFC 9727)",
-          "Every API surface this origin serves, as an RFC 9264 linkset: the HTTP API, the MCP server, each versioned free instrument with its lifecycle, and the CLI — each with its service-desc (the OpenAPI contract), service-doc, service-meta and status links. Served as application/linkset+json. Free.",
+        get: returns(
+          freeOp(
+            "The API catalog (RFC 9727)",
+            "Every API surface this origin serves, as an RFC 9264 linkset: the HTTP API, the MCP server, each versioned free instrument with its lifecycle, and the CLI — each with its service-desc (the OpenAPI contract), service-doc, service-meta and status links. Served as application/linkset+json. Free.",
+          ),
+          API_CATALOG_SCHEMA,
         ),
       },
       "/.well-known/ard.json": {
-        get: freeOp(
-          "Agentic Resource Discovery manifest",
-          "Every agentic resource this origin publishes, as ARD entries: the MCP server, the A2A agent card, the HTTP API and the store's two skills, each with its IANA media type, its URL, the representative queries a registry indexes it by, and a trust manifest naming this store's did:web. A DIFFERENT document from /.well-known/api-catalog, which is RFC 9727 and answers where the API is documented; this one answers what agentic resources exist here. Free.",
+        get: returns(
+          freeOp(
+            "Agentic Resource Discovery manifest",
+            "Every agentic resource this origin publishes, as ARD entries: the MCP server, the A2A agent card, the HTTP API and the store's two skills, each with its IANA media type, its URL, the representative queries a registry indexes it by, and a trust manifest naming this store's did:web. A DIFFERENT document from /.well-known/api-catalog, which is RFC 9727 and answers where the API is documented; this one answers what agentic resources exist here. Free.",
+          ),
+          ARD_MANIFEST_SCHEMA,
         ),
       },
       "/.well-known/ai-catalog.json": {
-        get: freeOp(
-          "ARD manifest (predecessor path)",
-          "Byte-for-byte the same document as /.well-known/ard.json. ARD §5.1 makes ard.json the path a consumer MUST fetch and names this one its predecessor, which a consumer MAY additionally consult; it is served because a scanner that knows only the old path and gets a 404 cannot tell this origin from one publishing nothing. The Link header on both paths points at ard.json, which is the canonical one.",
+        get: returns(
+          freeOp(
+            "ARD manifest (predecessor path)",
+            "Byte-for-byte the same document as /.well-known/ard.json. ARD §5.1 makes ard.json the path a consumer MUST fetch and names this one its predecessor, which a consumer MAY additionally consult; it is served because a scanner that knows only the old path and gets a 404 cannot tell this origin from one publishing nothing. The Link header on both paths points at ard.json, which is the canonical one.",
+          ),
+          ARD_MANIFEST_SCHEMA,
         ),
       },
       "/.well-known/mcp.json": {
-        get: freeOp(
-          "The MCP server manifest (.json alias)",
-          "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all. Like its sibling, a POST here completes an MCP handshake against the same server behind /mcp.",
+        get: returns(
+          freeOp(
+            "The MCP server manifest (.json alias)",
+            "Byte-for-byte the same document as /.well-known/mcp. Two paths because a scanner either knows a fixed path or knows nothing, and a 404 at the one it guessed is indistinguishable from having no MCP server at all. Like its sibling, a POST here completes an MCP handshake against the same server behind /mcp.",
+          ),
+          MCP_CARD_SCHEMA,
         ),
       },
       "/deprecation": {
-        get: freeOp(
-          "API versioning and deprecation policy",
-          "How breaking changes arrive, the RFC 8594 Sunset and Deprecation headers a retiring version carries, the minimum notice window, and a live table of every version currently served with its status and sunset date. HTML for browsers, JSON or markdown by Accept. Free.",
+        get: returns(
+          freeOp(
+            "API versioning and deprecation policy",
+            "How breaking changes arrive, the RFC 8594 Sunset and Deprecation headers a retiring version carries, the minimum notice window, and a live table of every version currently served with its status and sunset date. HTML for browsers, JSON or markdown by Accept. Free.",
+          ),
+          DEPRECATION_SCHEMA,
         ),
       },
       "/.well-known/http-message-signatures-directory": {
