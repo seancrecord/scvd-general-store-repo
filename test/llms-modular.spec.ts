@@ -206,12 +206,20 @@ const BASE = "https://scvd.store";
  * from the one map an agent reads before anything else. Adding them
  * moved the guide's bytes.
  *
+ * Re-taken 2026-08-29 in the commit that gave the guide a goal-first
+ * opener and published the atlas. Vetting the site as an arriving
+ * agent found a map and no route: both entry points open with ten
+ * lines of what the store IS before anything actionable, and a
+ * reader on a tight context budget loses the map when the file
+ * truncates. "Start here, by what you came to do" now leads, filed
+ * under developers, and names the atlas beside it.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "bed8386d61f41d1141b6e846d35032c684b5a5b907abd2fedbb8870477737372";
+  "b5faeec850ff70a18b8a5d7599e625f1d1739fc9a44ad0fb13554b4ffba8b78c";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

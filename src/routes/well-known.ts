@@ -461,6 +461,10 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
       cadence: dataset.cadence,
       format: "JSON on the same URL via Accept: application/json; HTML otherwise",
     })),
+    /* The goal-first map of the whole store. Experimental; see
+     * src/store/atlas.ts for why it exists and how we will know
+     * whether it was worth serving. */
+    atlas: `${base}/atlas.json`,
     corrections: `${base}/corrections`,
     mcp: {
       endpoint: `${base}/mcp`,

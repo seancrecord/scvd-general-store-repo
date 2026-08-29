@@ -297,6 +297,24 @@ function registryDatasetJsonLd(
 }
 
 /**
+ * THE ATLAS — /atlas.json, and it is an experiment.
+ *
+ * The keeper's idea, 2026-08-29: "idk if anybody does this so don't
+ * be afraid to try... and just see if agents like it." Every other
+ * surface here answers "what exists". None of them answers the
+ * question a reader actually arrives with, which is "I want to do X —
+ * what do I call, does it cost anything, and what comes back?"
+ *
+ * JSON ONLY, DELIBERATELY. It is a machine surface; a human has the
+ * whole store to read. Counted on the porch like every other door, so
+ * whether agents want this gets a number instead of an argument.
+ */
+registryRoutes.get("/atlas.json", async (c) => {
+  const { buildAtlas } = await import("@/store/atlas");
+  return c.json(buildAtlas(c.env.STORE_BASE_URL));
+});
+
+/**
  * THE INFLOW TALLY, PUBLIC — /inflows.
  *
  * Its own page rather than a block on /registry, because it answers a
