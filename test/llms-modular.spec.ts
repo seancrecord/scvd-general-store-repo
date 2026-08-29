@@ -250,6 +250,13 @@ const BASE = "https://scvd.store";
  * and the opener, atlas and registry/inflows/fresh-set links.
  * Verified present together before this value was taken.
  *
+ * Re-taken 2026-08-29 for /samples — the free specimen of the paid
+ * Once-Over (#31). The guide gained a paragraph in the corpus area,
+ * and the paragraph had a defect on its first draft: it wrote the
+ * verify template as a bare URL, which
+ * test/markdown-discoverability.spec.ts refuses, because a scanner
+ * probes the braces verbatim and files us a dead link. It travels as
+ * code now. This digest is the corrected text.
  * Re-taken again 2026-08-29 on the merge of the conformance form with
  * /doors and the /mcp.md section — the SEVENTH time this shape has
  * landed, and by now the pattern is the finding rather than the
@@ -259,12 +266,18 @@ const BASE = "https://scvd.store";
  * served guide, before this value was taken: the desk's form sentence,
  * /doors' paragraphs, and the /mcp.md section.
  *
+ * Re-taken again 2026-08-29 on the merge of /samples with the
+ * conformance form — the EIGHTH. Both notes above are kept; both
+ * sides' edits are in these bytes (the /samples paragraph in the
+ * corpus area, and the form/doors/mcp.md work), verified present
+ * together before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "9c5133b6857fe9f836c990b239938ea053a1f4d31ccbadc165ac6d2fa984f32d";
+  "08e6a6c0d0627e4c246a83bdf0b30ae4c75dca57da6ce708feb26e6241878541";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
