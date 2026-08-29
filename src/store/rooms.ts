@@ -72,6 +72,15 @@ export const ROOMS: readonly Room[] = [
   { path: "/conformance", name: "The conformance desk" },
   { path: "/corpus", name: "The corpus" },
   /**
+   * THE LIST THE CORPUS NEVER HAD (#26, 2026-08-29). /corpus.json
+   * indexes snapshots and /corpus/host/{host}.json needs a hostname
+   * you already know, so "which doors do you have?" — the first
+   * question anybody asks — had no door of its own. On the front of
+   * the store because it is the most legible free thing here: one
+   * page, every endpoint, no ranking.
+   */
+  { path: "/doors", name: "Every door we have checked" },
+  /**
    * The WBA line's room, 2026-08-11: what signed crawler identity is,
    * the free directory check, and the paid card. On the front like the
    * conformance desk it is modeled on — the keeper's call, same day it

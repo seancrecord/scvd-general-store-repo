@@ -172,6 +172,13 @@ export type HonoEnv = {
 };
 
 export type ItemPricing = "fixed" | "pay_what_it_deserves";
+
+/**
+ * One payment for one thing ("one_off"), or one payment for a stated
+ * stretch of time ("term"). There is deliberately no third value: a
+ * recurring charge would need a mechanism this store does not have.
+ */
+export type ItemCadence = "one_off" | "term";
 export type ItemFulfillment = "instant" | "human_queue";
 
 export interface MenuItem {
@@ -180,6 +187,39 @@ export interface MenuItem {
   /** Minimum (or fixed) price in USDC. */
   price_usdc: number;
   pricing: ItemPricing;
+  /**
+   * WHAT A BUYER IS COMMITTING TO, STATED RATHER THAN IMPLIED (house
+   * rule 57.3, adopted 2026-08-29 on the keeper's words: "it should
+   * be clear if it's free or paid and if so how much at what
+   * frequency and if recurring or one off").
+   *
+   * The shelf answered "how much" everywhere and "for how long"
+   * nowhere structured. Four items sell a TERM — seven days of
+   * watching, thirty days of standing — and every one of them said so
+   * only inside its own prose description. A buying agent reading
+   * menu.json saw a price and no duration, and the only way to learn
+   * that $5 bought a week rather than a look was to parse English.
+   *
+   * REQUIRED, WITH NO DEFAULT, deliberately: a new item cannot be
+   * added without answering this, because the failure this closes is
+   * exactly the silent one. TypeScript refuses the omission.
+   *
+   * AND THE THIRD ANSWER IS ONE WE CAN GIVE FLATLY: nothing here
+   * recurs. There is no subscription, no stored mandate that charges
+   * again, no card on file — a term item simply expires and has to be
+   * bought again by a buyer who decides to. `SHELF_NEVER_AUTO_RENEWS`
+   * says so on the surfaces, and it is a fact about the architecture
+   * rather than a promise about our intentions: this store has no
+   * mechanism that could charge a second time.
+   */
+  cadence: ItemCadence;
+  /**
+   * How many days one purchase of a term item covers. Required when
+   * cadence is "term" (held by test/shelf-cadence.spec.ts, since the
+   * type system cannot express the dependency without reshaping every
+   * item literal), and absent otherwise.
+   */
+  term_days?: number;
   fulfillment: ItemFulfillment;
   /** Delivery promise for human_queue items, in hours. */
   sla_hours?: number;

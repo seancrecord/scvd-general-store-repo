@@ -19,14 +19,48 @@ export function wantsMarkdown(acceptHeader: string | undefined): boolean {
  * pay-what-it-deserves minimum as though it were a fixed price.
  */
 export function priceLine(item: MenuItem): string {
-  return item.pricing === "fixed"
-    ? `$${item.price_usdc} fixed`
-    : `$${item.price_usdc} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
-        item,
-      )
-        .map((tier) => `$${tier}`)
-        .join(" / ")})`;
+  const amount =
+    item.pricing === "fixed"
+      ? `$${item.price_usdc} fixed`
+      : `$${item.price_usdc} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
+          item,
+        )
+          .map((tier) => `$${tier}`)
+          .join(" / ")})`;
+  return `${amount}, ${cadenceLine(item)}`;
 }
+
+/**
+ * THE HALF OF THE PRICE THAT WAS NEVER SAID (house rule 57.3,
+ * 2026-08-29). "How much" was on every surface; "for how long" was on
+ * none of them in a form a caller could read. Four items on this
+ * shelf sell a stretch of time and every one of them said so only
+ * inside its English description, so an agent holding menu.json could
+ * see $5 and had no way to learn it bought a week.
+ *
+ * It joins priceLine rather than living beside it because priceLine
+ * is already the one place the price is phrased — MCP tool listings,
+ * the catalog, the markdown menu and the item pages all read it — and
+ * a second function would be a second thing to remember to call.
+ */
+export function cadenceLine(item: MenuItem): string {
+  return item.cadence === "term"
+    ? `covering a ${item.term_days}-day term, one payment; ${NEVER_AUTO_RENEWS}`
+    : `${ONE_OFF}; ${NEVER_AUTO_RENEWS}`;
+}
+
+/** What a one-off purchase is, in the words the store uses for it. */
+export const ONE_OFF = "one-off";
+
+/**
+ * THE FLAT ANSWER TO "IS THIS RECURRING", and it is a statement about
+ * the architecture rather than a promise about our intentions: this
+ * store holds no card, keeps no mandate that can charge again, and
+ * has no mechanism by which a second payment could happen without a
+ * buyer deciding to make it. A term item expires. That is all it does.
+ */
+export const NEVER_AUTO_RENEWS =
+  "nothing here charges again by itself, ever \u2014 there is no mechanism that could";
 
 /** Exported for the same reason and on the same day as priceLine. */
 export function fulfillmentLine(item: MenuItem): string {

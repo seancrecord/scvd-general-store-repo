@@ -199,12 +199,18 @@ const BASE = "https://scvd.store";
  * approved lines, and /inflows' section. Verified present together
  * before this value was taken.
  *
+ * Re-taken 2026-08-29 for /doors — the list of every host the census
+ * has ever carried (#26). The guide gained two paragraphs in the
+ * corpus area: what the list is, how to filter it, and the sentence
+ * that it is not a scoreboard and never becomes one. That last line
+ * is the one worth having reviewed every time these bytes move.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5aef2160e616857efbd40f7a1163b3289a1b7987cac2fb9cd564f03d2b04f647";
+  "fdfc361cc4831feda9b48d36f6585fd2cd86fa00c128fcf3ac5de69d117f1369";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
