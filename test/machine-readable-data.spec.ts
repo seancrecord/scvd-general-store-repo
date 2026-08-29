@@ -192,3 +192,48 @@ describe("an agent can find the evidence, not just the shop", () => {
     }
   });
 });
+
+/**
+ * THE FRONT DOOR, FOR A CALLER WHO ARRIVED IN JSON.
+ *
+ * Vetting the site as an arriving agent (2026-08-29) found the apex
+ * answering `Accept: application/json` with 84KB of neon storefront —
+ * an agent's very FIRST request, spent on something it cannot parse.
+ *
+ * The narrow rule is the point. The blunt test used on data pages
+ * ("does Accept mention text/html") treats `*​/*` as not-html, which
+ * is right for a tally and wrong for the storefront: bare curl, many
+ * HTTP libraries and some crawlers send `*​/*`, and handing all of
+ * them JSON would trade a search listing for a convenience.
+ */
+describe("the apex answers in the dialect it was asked in", () => {
+  it("gives a browser the storefront, untouched", async () => {
+    const response = await SELF.fetch(BASE, {
+      headers: { Accept: "text/html,application/xhtml+xml,*/*;q=0.8" },
+    });
+    expect(response.headers.get("content-type")).toContain("text/html");
+  });
+
+  it("gives */* the storefront too — crawlers must not be handed JSON", async () => {
+    const response = await SELF.fetch(BASE, { headers: { Accept: "*/*" } });
+    expect(
+      response.headers.get("content-type"),
+      "a wildcard client got JSON; that is a search listing traded for a convenience",
+    ).toContain("text/html");
+  });
+
+  it("gives a caller who asked for JSON the atlas", async () => {
+    const response = await SELF.fetch(BASE, {
+      headers: { Accept: "application/json" },
+    });
+    expect(response.headers.get("content-type")).toContain("application/json");
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body["start_here"], "the apex JSON is not the atlas").toBeTruthy();
+    expect(body["what_this_is_not"]).toBeTruthy();
+  });
+
+  it("varies on Accept, so a cache cannot cross the two", async () => {
+    const response = await SELF.fetch(BASE, { headers: { Accept: "*/*" } });
+    expect(String(response.headers.get("Vary") ?? "")).toContain("Accept");
+  });
+});

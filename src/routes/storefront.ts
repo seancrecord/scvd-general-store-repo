@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   MARKDOWN_MEDIA_TYPE,
+  prefersJson,
   prefersMarkdown,
   VARY_ACCEPT,
 } from "@/lib/accept";
@@ -42,6 +43,28 @@ storefrontRoutes.get("/", async (c) => {
    * porch.
    */
   c.header("Vary", VARY_ACCEPT);
+  /*
+   * AND IN JSON, FOR THE CALLER WHO ASKED IN JSON (2026-08-29).
+   *
+   * Vetting the site as an arriving agent found the apex answering
+   * `Accept: application/json` with the neon page — an agent's very
+   * first request, spent on 84KB it cannot parse. The markdown door
+   * above has been open since the readiness audit; the JSON one was
+   * not, for no reason anybody had decided.
+   *
+   * It hands back the atlas: the goal-first map of the whole store,
+   * which is what a caller arriving at the front door in JSON is
+   * actually looking for. Narrow by construction — only a client
+   * that ranked JSON above HTML sees it, so browsers and `*​/*`
+   * crawlers keep the storefront exactly as it is.
+   */
+  if (prefersJson(c.req.header("Accept"))) {
+    const { buildAtlas } = await import("@/store/atlas");
+    return c.json(buildAtlas(c.env.STORE_BASE_URL), 200, {
+      Vary: VARY_ACCEPT,
+      Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
+    });
+  }
   if (prefersMarkdown(c.req.header("Accept"), "text/html")) {
     return c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
       "content-type": MARKDOWN_MEDIA_TYPE,
