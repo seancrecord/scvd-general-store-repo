@@ -285,6 +285,37 @@ export interface InflowCensus {
     broadcaster_transfers: number;
     broadcaster_share_pct: number | null;
   };
+  /**
+   * THE NARROWEST FIGURE THIS INSTRUMENT CAN PRODUCE, and the end of
+   * what chain data can do (2026-08-28, the fourth reading).
+   *
+   * Every broader number here has an innocent explanation that
+   * swallows it. 217 addresses received — mostly wallet activity.
+   * 6,640 transfers in band — the band is wide because doors quote
+   * from a tenth of a cent. Half the receivers had exactly ONE
+   * payer, which is what self-funding and dusting look like.
+   *
+   * So: sole-advertised addresses which took IN-BAND transfers from
+   * MORE THAN ONE distinct payer. The payer count is taken over the
+   * in-band transfers only — otherwise a door with one real customer
+   * and fifty dust senders would read as popular.
+   *
+   * It is STILL not proof. One operator with two wallets paying its
+   * own door clears this bar, and nothing here has seen a receipt.
+   * It is the floor beneath which the chain cannot go, and the
+   * reason the next rung has to be a bought good rather than a
+   * cleverer read of the same data.
+   */
+  narrowest: {
+    /** The denominator: sole-advertised addresses watched. */
+    watched: number;
+    /** Of those, how many took in-band transfers from 2+ payers. */
+    multi_payer_in_band: number;
+    /** In-band transfers at those addresses. */
+    transfers: number;
+    /** Median distinct in-band payers among them. */
+    median_payers: number;
+  };
   /** Per chain, what was actually covered — or why it was not. */
   windows: InflowChainWindow[];
   what_this_counts: string;
@@ -734,6 +765,9 @@ function whatThisCounts(facts: {
   soleReceived: number;
   bandTransfers: number;
   bandSoleAddresses: number;
+  narrowestAddresses: number;
+  narrowestTransfers: number;
+  narrowestWatched: number;
 }): string {
   const chains = facts.windows_equal
     ? `Both chains were walked over the same ${INFLOW_WINDOW_BLOCKS.toLocaleString()}-block window, roughly a day each.`
@@ -747,7 +781,8 @@ function whatThisCounts(facts: {
     ` ${chains}` +
     ` Both numbers are here because a share without its denominator is how a market lies, and the windows are here because a walk cut short and a quiet day produce the same count.` +
     ` OF THE ${facts.soleWatched} ADDRESSES ONLY ONE DOOR ADVERTISED, ${facts.soleReceived} received. That is the narrower number because an address several doors point at is shared infrastructure by construction — but it is NOT the converse: one door pointing at a custodian is still one door, and this split does not establish that a sole-advertised address is a door's own till.` +
-    ` ${facts.bandTransfers} transfer${facts.bandTransfers === 1 ? "" : "s"} landed inside the USDC range the advertising door itself quoted, across ${facts.bandSoleAddresses} sole-advertised address${facts.bandSoleAddresses === 1 ? "" : "es"} — a floor on plausible payments, not a count of sales.`
+    ` ${facts.bandTransfers} transfer${facts.bandTransfers === 1 ? "" : "s"} landed inside the USDC range the advertising door itself quoted, across ${facts.bandSoleAddresses} sole-advertised address${facts.bandSoleAddresses === 1 ? "" : "es"} — a floor on plausible payments, not a count of sales.` +
+    ` NARROWEST OF ALL: ${facts.narrowestAddresses} of those ${facts.narrowestWatched} sole-advertised addresses took in-band transfers from MORE THAN ONE distinct payer (${facts.narrowestTransfers} such transfers). That is as far as chain data reaches, and it is still not proof — one operator with two wallets paying its own door clears this bar, and nothing here has seen a receipt.`
   );
 }
 
@@ -883,6 +918,32 @@ export async function readInflowCensus(
   const bandedSole = [...bandedAddresses].filter(
     (address) => (facts.get(address)?.hosts ?? 1) === 1,
   );
+
+  /*
+   * THE NARROWEST CROSS-TABULATION. Payers counted over the in-band
+   * transfers only: a door with one customer and fifty dust senders
+   * must not read as popular, and it would if the payer set came
+   * from every transfer the address ever took.
+   */
+  const inBandPayers = new Map<string, Set<string>>();
+  const inBandCount = new Map<string, number>();
+  for (const row of banded) {
+    if ((facts.get(row.to)?.hosts ?? 1) !== 1) continue;
+    const payers = inBandPayers.get(row.to) ?? new Set<string>();
+    payers.add(row.from);
+    inBandPayers.set(row.to, payers);
+    inBandCount.set(row.to, (inBandCount.get(row.to) ?? 0) + 1);
+  }
+  const multiPayer = [...inBandPayers.entries()].filter(
+    ([, payers]) => payers.size >= 2,
+  );
+  const multiPayerCounts = multiPayer
+    .map(([, payers]) => payers.size)
+    .sort((a, b) => a - b);
+  const narrowestTransfers = multiPayer.reduce(
+    (sum, [address]) => sum + (inBandCount.get(address) ?? 0),
+    0,
+  );
   const core = {
     observed_at: now.toISOString(),
     week: round.week,
@@ -910,6 +971,15 @@ export async function readInflowCensus(
       broadcaster_transfers: broadcasterTransfers,
       broadcaster_share_pct:
         transfers === 0 ? null : Math.round((broadcasterTransfers / transfers) * 100),
+    },
+    narrowest: {
+      watched: sole.watched,
+      multi_payer_in_band: multiPayer.length,
+      transfers: narrowestTransfers,
+      median_payers:
+        multiPayerCounts.length === 0
+          ? 0
+          : (multiPayerCounts[Math.floor((multiPayerCounts.length - 1) / 2)] ?? 0),
     },
     in_quoted_band: {
       transfers: banded.length,
@@ -976,6 +1046,9 @@ export async function readInflowCensus(
       soleReceived: sole.received,
       bandTransfers: banded.length,
       bandSoleAddresses: bandedSole.length,
+      narrowestAddresses: multiPayer.length,
+      narrowestTransfers: narrowestTransfers,
+      narrowestWatched: sole.watched,
     }),
     what_this_is_not:
       WHAT_THIS_IS_NOT_BASE +
