@@ -1,6 +1,7 @@
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { isRecord } from "@/types";
+import type { Env } from "@/types";
 
 const BASE = "https://scvd.store";
 
@@ -54,6 +55,56 @@ const PROBES: Probe[] = [
     path: "/api/preflight/checks",
     method: "get",
     call: () => SELF.fetch(`${BASE}/api/preflight/checks`),
+  },
+  {
+    path: "/corpus.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/corpus.json`),
+  },
+  {
+    path: "/fresh-set",
+    method: "get",
+    // JSON is what a bare fetch gets; the HTML dialect is for browsers.
+    call: () => SELF.fetch(`${BASE}/fresh-set`),
+  },
+  {
+    path: "/defects.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/defects.json`),
+  },
+  {
+    path: "/api/verify/{id}",
+    method: "get",
+    /*
+     * Verification needs something signed to verify, so this probe
+     * mints one first. That is the point of the endpoint — it checks
+     * artifacts, including ones the caller did not buy — and a schema
+     * asserted against a 404 would assert nothing.
+     */
+    call: async () => {
+      const { mintCertificate } = await import("@/services/certificates");
+      const minted = await mintCertificate(env as unknown as Env, {
+        itemId: "hello",
+      });
+      return SELF.fetch(`${BASE}/api/verify/${minted.certificate.cert_id}`);
+    },
+  },
+  {
+    path: "/api/conformance/v1",
+    method: "post",
+    /*
+     * A deliberately malformed artifact. The desk's whole posture is
+     * that a verdict of "no" is as fully-shaped an answer as a
+     * verdict of "yes" — same fields, same checks list — so the
+     * cheapest honest probe is one that fails conformance rather than
+     * one that needs a real signed offer to exist.
+     */
+    call: () =>
+      SELF.fetch(`${BASE}/api/conformance/v1`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artifact: "aaa.bbb.ccc" }),
+      }),
   },
 ];
 
@@ -111,15 +162,54 @@ describe("the free instruments declare what they return", () => {
       expect(response.status, probe.path).toBe(200);
       const body = (await response.json()) as Record<string, unknown>;
       for (const [name, declared] of Object.entries(properties)) {
-        expect(
-          name in body,
-          `${probe.path} declares "${name}" and the store does not send it`,
-        ).toBe(true);
-        const type = declared?.["type"];
-        if (typeof type === "string") {
+        /*
+         * DECLARED IS NOT THE SAME AS ALWAYS SENT, and the first
+         * version of this test conflated them. /corpus.json omits
+         * temporalCoverage entirely until there is a first week to
+         * cover, which is honest — an empty corpus has no span — and
+         * the schema is right to name the field. What would NOT be
+         * honest is a contract naming a field that never arrives and
+         * nobody noticing.
+         *
+         * So the rule is: a declared field must either be in the
+         * response, or its description must say WHEN it is absent.
+         * That keeps the bite (a phantom field with no such sentence
+         * still fails) while letting a genuinely conditional field
+         * exist — and it forces the condition into the contract,
+         * where a reader can act on it, instead of leaving them to
+         * discover it by getting undefined at runtime.
+         */
+        if (!(name in body)) {
+          const description = String(declared?.["description"] ?? "");
           expect(
-            matchesType(body[name], type),
-            `${probe.path}: "${name}" is declared ${type} and is not one`,
+            /absent|omitted|only when|until there|when there|none was|null when/i.test(
+              description,
+            ),
+            `${probe.path} declares "${name}", the store did not send it, and the schema does not say when it is absent`,
+          ).toBe(true);
+          continue;
+        }
+        /*
+         * OpenAPI 3.1 spells nullable as a UNION — type: ["object",
+         * "null"] — and several honest fields here are genuinely
+         * absent-or-a-value (a conformance verdict on a malformed
+         * artifact cannot report a `kind`). A union passes if the
+         * value matches any member, which is what the document says.
+         */
+        const type = declared?.["type"];
+        const declaredTypes = Array.isArray(type)
+          ? (type as string[])
+          : typeof type === "string"
+            ? [type]
+            : [];
+        if (declaredTypes.length > 0) {
+          expect(
+            declaredTypes.some((each) =>
+              each === "null"
+                ? body[name] === null
+                : matchesType(body[name], each),
+            ),
+            `${probe.path}: "${name}" is declared ${declaredTypes.join("|")} and is not one`,
           ).toBe(true);
         }
       }
