@@ -31,6 +31,33 @@ import { STORE_METADATA } from "@/store/metadata";
  *     facts; it never asked them to grovel.
  * Nothing here licenses hiding anything. Every gap that was
  * published stays published — shorter, and without the flinch.
+ *
+ * AMENDED SAME DAY, because the symptom kept coming back after
+ * being named, which means the first version described the tic and
+ * missed the cause. The keeper's diagnosis: "it's like we are
+ * scared to sell."
+ *
+ * That is exactly it. The groveling is not humility, it is
+ * INSURANCE — a hedge bought against the fear that saying plainly
+ * what a thing does will be read as overclaiming it. So the copy
+ * pre-apologises, pads the caveat, and points at its own honesty,
+ * all to buy protection against an accusation nobody made.
+ *
+ * The insurance is redundant, and that is the whole argument. This
+ * store's honesty is structural, not tonal. It is carried by the
+ * published gaps, the corrections record, the tests that fail the
+ * build, and artifacts a stranger can verify without asking us. The
+ * PROSE is not what keeps us honest and never was — so prose that
+ * grovels is paying twice for one guarantee, and paying in the only
+ * currency the store is short of: a reader who takes us seriously.
+ *
+ * SELLING IS NOT LYING. Stating what an instrument does, in the
+ * plainest strongest true words available, is not a claim that
+ * needs a hedge attached — it is the reason the instrument was
+ * built. A limitation is published because a reader needs it, never
+ * to prove we are the sort of people who publish limitations. If a
+ * sentence hedges and you cannot name the reader it protects, it is
+ * protecting us from a fear, and it comes out.
  */
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 
@@ -143,6 +170,32 @@ export function whatFaq(base: string): FaqPair[] {
     {
       question: "Is there a free x402 conformance check?",
       answer: `Yes — the conformance desk at ${base}/api/conformance/v1 takes any issuer's x402 signed offer or receipt and returns a structured verdict: parse, schema, ed25519 signature, liveness. Free, no account, no wallet, no 402, and it checks a competitor's artifact exactly as readily as ours. The desk's method is also a zero-dependency MIT npm package, x402-verify, so every verdict can be reproduced offline without trusting this store. The landing with worked curl examples is ${base}/conformance. Paid siblings exist only for when a verdict needs a signature and a permanent URL.`,
+    },
+    {
+      /**
+       * THE FOUR PROBLEM-SHAPED QUESTIONS, drafted and KEEPER-APPROVED
+       * 2026-08-28 — "I approve each." These are not questions about
+       * this store; they are the queries somebody types when they
+       * HAVE the problem an instrument here solves, which is the only
+       * kind of question an answer engine can route on. Each names a
+       * live surface, and each leads with the capability: the copy
+       * rule at the top of this file was written the same hour.
+       */
+      question: "How do I test my x402 payment client without a sandbox?",
+      answer: `There is no sandbox here and that is the point — the till is real, so what you test is what ships. ${CHEAPEST_ON_THE_SHELF} buys a real settlement on Base, Polygon, or Solana against a live store: your client gets a real 402, signs a real payment, and walks off with a signed certificate it can verify. The practice counter at ${base}/try lays out the whole flow, cheapest door first, plus the one test worth running deliberately — buy the same item twice with the same idempotency key and assert you were charged once.`,
+    },
+    {
+      question: "My agent's retry loop paid twice — how do I stop that?",
+      answer: `Send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16-128 characters, kept private. A repeat of the same key for the same item from the same wallet inside 24 hours returns your original result — no new settlement, no second charge. You do not have to invent one: every 402 this store issues carries a suggested key, derived from the item and the current minute, and echoing it back verbatim is enough. Both mechanisms are free and live on every paid door here. The reason it matters: the chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge.`,
+    },
+    {
+      question:
+        "I paid an x402 endpoint and got nothing back — how do I find out what happened?",
+      answer: `The expensive failure is not a rejected signature, it is silence: you signed, you sent, and what came back was an error you cannot place or nothing you can read. settlement_attestation answers one question and nothing else — give it your transaction identifier, a Base or Polygon hash or a Solana signature, and this store reads that chain once and signs what it saw: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH, or REVERTED. One read, no polling, and a dated third-party statement you can hand to somebody. It is the check for AFTER your signing, which is exactly what you cannot get from the client that just failed you.`,
+    },
+    {
+      question: "Which x402 endpoints actually work right now?",
+      answer: `${base}/fresh-set lists this week's doors that answered a conformant challenge, with the rails each one takes and the cheapest ask per host — routing data, CC BY 4.0, free, no account. The weekly census behind it publishes as aggregates at ${base}/registry, and the signed record is ${base}/corpus.json. Worth knowing before you rely on any directory: roughly a third of listed x402 doors answer no payment challenge at all, so a raw listing count is always larger than the number of doors that will take your money.`,
     },
     {
       /**
