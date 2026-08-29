@@ -1875,6 +1875,14 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
         )
       : c.json({ error: "no ward round yet" }, 404);
   }
+  /*
+   * WHAT IS SHOWN IS WHAT MAY BE PRESSED. Stashed as the page
+   * renders, so publishInflowWeek publishes the numbers on this
+   * screen rather than a fresh walk nobody has seen. Rule 30 is "he
+   * reads the round first"; this makes that mechanical.
+   */
+  const { stashRenderedReading } = await import("@/services/inflow-pulse");
+  await stashRenderedReading(c.env, census);
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json(census);
   }
@@ -1981,7 +1989,29 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       <h2>What this counts</h2>
       <p>${escapeHtml(census.what_this_counts)}</p>
       <h2>What this is not</h2>
-      <p>${escapeHtml(census.what_this_is_not)}</p>`,
+      <p>${escapeHtml(census.what_this_is_not)}</p>
+
+      <h2>Publish this week</h2>
+      ${
+        c.req.query("refused")
+          ? `<p class="empty"><strong>Refused:</strong> ${escapeHtml(c.req.query("refused") ?? "")}</p>`
+          : ""
+      }
+      ${
+        c.req.query("published")
+          ? `<p><strong>Published week ${escapeHtml(c.req.query("published") ?? "")}</strong>${
+              c.req.query("replaced") === "true" ? " (replaced an earlier press)" : ""
+            } — now live at <a href="/inflows">/inflows</a>.</p>`
+          : ""
+      }
+      <p>Nothing above reaches the public page until this is pressed. The press
+      snapshots the counts as they stand now, and refuses outright if the chains
+      were not walked over the same window or if any address went unread — a
+      reading that does not know its own denominator has no business on a public
+      tally.</p>
+      <form method="post" action="/admin/market/publish-inflows">
+        <button type="submit">Publish week ${escapeHtml(census.week)} to /inflows</button>
+      </form>`,
     ),
   );
 });
@@ -2072,6 +2102,27 @@ adminRoutes.get("/admin/market/authenticity", async (c) => {
       <h2>What this is not</h2>
       <p>${escapeHtml(reading.what_this_is_not)}</p>`,
     ),
+  );
+});
+
+/**
+ * THE INFLOW PRESS (rule 30). The census has been readable since
+ * 2026-08-28 and unpublished the whole time — not by a ruling, but
+ * because nobody had built this. It refuses rather than publishing a
+ * reading whose coverage cannot support a share.
+ */
+adminRoutes.post("/admin/market/publish-inflows", async (c) => {
+  const { publishInflowWeek } = await import("@/services/inflow-pulse");
+  const result = await publishInflowWeek(c.env);
+  if (!result.ok) {
+    return c.redirect(
+      `/admin/market/inflows?refused=${encodeURIComponent(result.refusal.slice(0, 300))}`,
+      303,
+    );
+  }
+  return c.redirect(
+    `/admin/market/inflows?published=${encodeURIComponent(result.entry.week)}&replaced=${result.replaced}`,
+    303,
   );
 });
 
