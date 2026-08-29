@@ -42,8 +42,16 @@ describe("the page describes the live surfaces", () => {
     const page = mcpMd(BASE);
     expect(page).toContain("2026-08-2");
     expect(page).toContain("one operator's dated observation");
-    // The honest half: not our defect, AND not our fix to claim.
-    expect(page).toContain("not our defect");
+    /*
+     * THE PROPERTY, NOT THE PHRASING (amended 2026-08-28 at the
+     * keeper's word: this page is functionality, not us arguing
+     * about fault). What must survive is that a reader who sees no
+     * card learns three things — the path that DOES render, that
+     * the verdict is identical either way, and where the host-side
+     * gap is tracked. How that gets said is copy, and copy moves.
+     */
+    expect(page).toContain("use the stdio path");
+    expect(page).toContain("the verdict is identical");
     expect(page).toContain("claude-ai-mcp#471");
     // Hosts we did not test are named as untested, never as passing.
     expect(page).toContain("not tested by us");

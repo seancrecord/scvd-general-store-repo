@@ -105,13 +105,16 @@ what a single probe cannot tell you, and our conflict of interest.
 | Claude, custom remote connector | yes | **no** |
 | ChatGPT, Goose | not tested by us | not tested by us |
 
-The remote-connector row is not our defect and not our fix: our wire
-shape is verified correct against production (nested \`_meta\`,
-\`text/html;profile=mcp-app\`, the extension declared in
-\`initialize\`), and the same server renders over stdio. It matches a
-known host-side gap reported publicly as anthropics/claude-ai-mcp#471
-(June 2026, closed as duplicate, unfixed at time of writing). When
-that closes, our cards light up with no change from us.
+If you want cards today, use the stdio path — same server, same
+tools, and it renders. Nothing is wrong with your setup and there is
+nothing to configure on ours: the wire shape is the same either way
+(nested \`_meta\`, \`text/html;profile=mcp-app\`, the extension
+declared in \`initialize\`), and you can check it yourself in one
+\`resources/list\` call. The remote-connector row tracks a known
+host-side gap, public as anthropics/claude-ai-mcp#471 (June 2026,
+unfixed at time of writing); when it closes, cards appear there with
+no change from you or from us. Either way the verdict is identical —
+the card is how a reading is displayed, never what it says.
 
 This is one operator's dated observation on the machines named, not a
 survey and not a score. If your host renders differently, we would
@@ -173,13 +176,10 @@ required.
 ## Tell us what would help
 
 This list is ordered by our guess, and our guess is worth less than
-your use. If a door is missing, a tool is shaped wrong, or something
-here reads as confident where it should not, write to the mailbox —
-\`POST ${base}/api/letter\`, free, a human reads it — or open an
-issue. Outside reports have changed this store before, and the
-record is public rather than a boast: ${base}/corrections names who
-found what — including the time somebody reported a real defect and
-was told he was mistaken.
+your use. If a door is missing, a tool is shaped wrong, or a host
+renders differently than the table above says, write to the mailbox
+— \`POST ${base}/api/letter\`, free, a human reads it — or open an
+issue.
 `;
 }
 
