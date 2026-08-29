@@ -54,6 +54,8 @@ import {
 } from "@/lib/replay-guard";
 import { openDeliveryIntent } from "@/services/delivery-audit";
 import { isRecord } from "@/types";
+import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
+import { withSignedOffers } from "@/lib/offer-receipt";
 import type { Env } from "@/types";
 
 /**
@@ -150,7 +152,7 @@ function encodePaymentMeta(meta: unknown): string | undefined {
     return meta;
   }
   if (meta && typeof meta === "object") {
-    return btoa(JSON.stringify(meta));
+    return encodeBase64Json(meta);
   }
   return undefined;
 }
@@ -159,7 +161,9 @@ function decodeChallengeHeader(headers: Record<string, string>): unknown {
   for (const [name, value] of Object.entries(headers)) {
     if (name.toLowerCase() === "payment-required") {
       try {
-        return JSON.parse(atob(value)) as unknown;
+        // UTF-8, not one-char-per-byte: this line is why every MCP
+        // buyer read the store's terms as mojibake until 2026-08-29.
+        return decodeBase64Json(value);
       } catch {
         return undefined;
       }
@@ -302,7 +306,13 @@ export async function runMcpPayment(
     };
     const challenge = decodeChallengeHeader(result.response.headers);
     if (challenge !== undefined) {
-      outcome.challenge = challenge;
+      // The store's signed offer rides along here, the way it rides
+      // the header on the HTTP door. Same commitment, both channels.
+      outcome.challenge = await withSignedOffers(
+        env,
+        result.response.headers,
+        challenge,
+      );
     }
     return outcome;
   }

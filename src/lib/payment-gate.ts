@@ -4,6 +4,8 @@ import type {
   HTTPResponseInstructions,
 } from "@x402/core/server";
 import type { Context, MiddlewareHandler } from "hono";
+import { decodeBase64Json, encodeBase64Json } from "@/lib/base64-json";
+import { offerExtensionsFor } from "@/lib/offer-receipt";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { sendAlert } from "@/lib/alerts";
 import { isHouseTraffic } from "@/lib/channel";
@@ -138,51 +140,6 @@ import type { HonoEnv } from "@/types";
  * lives in it, not one fetch away. Menu items also carry their
  * uniform spec and the C1 fact block in-payload.
  */
-/**
- * Signed offers, sourced from the PAYMENT-REQUIRED header — because on
- * THIS store the 402 body is the keeper's prose, not the standard
- * payment-required JSON. The accepts[] a client actually signs against
- * travel base64-encoded in the header, which is where the first cut of
- * this looked for them in the body and found nothing; the probe test
- * caught it before it shipped. Reading the header means the offers
- * commit to exactly the terms a client pays, never a copy.
- */
-async function offerExtensionsFor(
-  env: Env,
-  headers: Record<string, string>,
-): Promise<Record<string, unknown> | null> {
-  try {
-    const headerName = Object.keys(headers).find(
-      (name) => name.toLowerCase() === "payment-required",
-    );
-    if (!headerName) {
-      return null;
-    }
-    const decoded = JSON.parse(atob(headers[headerName] as string)) as Record<
-      string,
-      unknown
-    >;
-    const resource = decoded["resource"];
-    const resourceUrl =
-      typeof resource === "string"
-        ? resource
-        : isRecord(resource) && typeof resource["url"] === "string"
-          ? resource["url"]
-          : undefined;
-    if (!resourceUrl) {
-      return null;
-    }
-    return await signedOffersForChallenge(
-      env,
-      resourceUrl,
-      decoded["accepts"],
-      Math.floor(Date.now() / 1000),
-    );
-  } catch {
-    // Fail open: a 402 without offers is a working 402.
-    return null;
-  }
-}
 
 /** Splice the signed offers into the PAYMENT-REQUIRED header's JSON. */
 function withOfferHeader(
@@ -196,10 +153,9 @@ function withOfferHeader(
     if (!headerName) {
       return headers;
     }
-    const decoded = JSON.parse(atob(headers[headerName] as string)) as Record<
-      string,
-      unknown
-    >;
+    const decoded = decodeBase64Json(
+      headers[headerName] as string,
+    ) as Record<string, unknown>;
     const merged = {
       ...decoded,
       extensions: {
@@ -207,7 +163,7 @@ function withOfferHeader(
         ...offers,
       },
     };
-    return { ...headers, [headerName]: btoa(JSON.stringify(merged)) };
+    return { ...headers, [headerName]: encodeBase64Json(merged) };
   } catch {
     return headers;
   }
