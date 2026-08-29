@@ -199,6 +199,18 @@ const BASE = "https://scvd.store";
  * approved lines, and /inflows' section. Verified present together
  * before this value was taken.
  *
+ * Re-taken 2026-08-29 for /doors — the list of every host the census
+ * has ever carried (#26). The guide gained two paragraphs in the
+ * corpus area: what the list is, how to filter it, and the sentence
+ * that it is not a scoreboard and never becomes one. That last line
+ * is the one worth having reviewed every time these bytes move.
+ *
+ * Re-taken again 2026-08-29 on the merge with /mcp.md's section —
+ * the FIFTH time this shape has landed. Each branch correctly
+ * re-took the digest for its own edit; the merge is a sixth text
+ * neither value describes. Both edits are in these bytes: /doors'
+ * two paragraphs and the /mcp.md section. Verified present together
+ * before this value was taken.
  * Re-taken 2026-08-29 in the commit that vetted the site's
  * discoverability for agents. The index's "Evidence and record" line
  * named the corpus and the coverage file and omitted /registry,
@@ -221,12 +233,20 @@ const BASE = "https://scvd.store";
  * the file with two digest lines. Both notes are kept because both
  * edits are in the served bytes; the value is the merged text's own.
  *
+ * Re-taken again 2026-08-29 on the merge of /doors with the
+ * goal-first opener and the atlas — the SIXTH. Both sides' notes are
+ * kept above because both sides' edits are in these bytes: /doors in
+ * the corpus area and on the index's evidence line (which the merge
+ * had to join by hand, each side having rewritten the same list),
+ * and the opener, atlas and registry/inflows/fresh-set links.
+ * Verified present together before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "623c1369fcd2f6da80e864421f15ddce75b5372e394e578211565ac5cbfa5d9b";
+  "1d5ac96a73e0e7490415a679141faf2c8f95813eb262873d6538be8a821572b6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

@@ -2685,6 +2685,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           },
         ),
       },
+      "/doors": {
+        get: freeOp(
+          "Every door we have checked",
+          "The human room for the same list /doors.json serves: every x402 endpoint the weekly ward round has observed, alphabetical, with the most recent dated observation of each. Serves HTML to a browser and the JSON body to everything else. Free.",
+        ),
+      },
+      "/doors.json": {
+        get: freeOp(
+          "Every endpoint observed, listed",
+          "One entry per host the signed chain has ever carried: first_seen, last_seen, rounds_present, rounds_scored, the most recent verdict with the week it was taken, and the URL of that host's full replayed history. Alphabetical and deliberately NOT ranked \u2014 no ratio, no standing, no accumulated score on any operator; rounds_scored is published as a denominator and the division is left to the reader. ?verdict= filters to one of ready, not_ready, unreachable, not_probed; anything else answers 400 naming the four. An empty list with total_hosts 0 means the chain holds no signed week yet and is not an error. Derived at read from signed snapshots, with the recipe to rebuild it published beside it. Free.",
+        ),
+      },
       "/corpus/battery-delta.json": {
         get: freeOp(
           "What the stricter battery catches that the frozen one misses",

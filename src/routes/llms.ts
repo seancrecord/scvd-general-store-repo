@@ -143,7 +143,7 @@ find out.
 
 Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
 
-Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
 Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
@@ -879,6 +879,21 @@ sha256 at your /.well-known/scvd-note.txt — and your words ride
 beside the observation on every surface that shows it. Beside, never
 instead: no note alters an observation, and no observation silences a
 note.
+
+${base}/doors.json is the LIST of every host the chain has ever
+carried — one entry each, alphabetical, with the most recent dated
+verdict, the week it was taken, how many rounds reached a real
+verdict, and the URL of that host's full history. Filter it with
+\`?verdict=not_ready\` (the four values are ready, not_ready,
+unreachable and not_probed; anything else is a 400 that names them).
+It is free, it needs no key, and it exists because until 2026-08-29
+this store published hundreds of per-host histories and no way to
+find out which hosts it had — ${base}/corpus.json indexes SNAPSHOTS,
+and the per-host read is a template you must already know a hostname
+to use. The human page is at ${base}/doors.
+
+It is not a scoreboard and there is no ranking in it. The list is
+alphabetical and each row is one observation with its date.
 
 Ask about one host at \`${base}/corpus/host/{host}.json.\` It replays that
 host out of the signed chain, and every round we have NO verdict for

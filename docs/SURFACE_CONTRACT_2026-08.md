@@ -1,0 +1,99 @@
+# The surface contract — house rules 57 and 58
+
+**Adopted 2026-08-29, from the keeper, in two sentences on a phone.**
+This file records what he ruled, what shipped with the ruling, and what
+the rules now demand that the store does not yet do. The rules
+themselves live in HOUSE_RULES.md; this is the working record beside
+them, and the list at the bottom is a sweep somebody has to run.
+
+## What he ruled
+
+On #26, the "public scoreboard" task, having been given three shapes
+and a recommendation:
+
+> Almost a combo of a and c if it is human facing it needs to be
+> compelling readable and scannable with clear meaning while also able
+> to drill deeper into full data (paid) . Everything should be
+> consumable readable and findable to an agent as well and we need a
+> house rule in that too around anything in this site needs to be 1.
+> Discoverable from any access point to an agent 2. It needs to be
+> easily understood what it is and what it can potentially be used for
+> without limiting the use case 3 it should be clear if it's free or
+> paid and if so how much qt what frequency and if recurring or one odd
+> 4 it need 3 it needs to provide clear instruction down to something a
+> haiku model can perform and not get confused or fail at with clear
+> faq error categories and expected outcomes 5 needs to note how secure
+> it is and the precautions and standards we hold
+
+> Then a rule if anything is human facing it should have good seo, be
+> easily understood summarized and valuable with clear outcomes and
+> clear ability to either pay to dive deeper or direct an agent to pay
+> and dive deeper
+
+Those became rules 57 (the five agent questions) and 58 (anything a
+person reads earns its page), quoted verbatim inside each.
+
+## The correction that came with the build
+
+The draft he was answering told him "every endpoint we checked,
+machine-readable" was already shipped, and pointed at /corpus.json,
+the per-host reads, trajectory, diff, wallet facts and battery delta.
+
+**That was wrong.** /corpus.json indexes SNAPSHOTS — sequence, week,
+digest, host counts. /corpus/host/{host}.json is a TEMPLATE that
+requires a hostname you already have. Nothing anywhere answered "which
+hosts do you have?" A caller could fetch every snapshot and union the
+rows, which is a real path and is why nothing was hidden — but rule
+57.4's own test is whether a small model completes the call on the
+first try, and "download the whole chain and fold it" is not that.
+
+The census had hundreds of subjects and no index of them. Recorded
+here rather than quietly fixed, per rule 56.
+
+## What shipped with the rules
+
+- **`/doors` and `/doors.json`** — every host the chain has carried,
+  one entry each, alphabetical, with the most recent dated verdict,
+  the week it was taken, `rounds_present`, `rounds_scored`, and the
+  URL of the full history. `?verdict=` filters; anything else is a 400
+  that names the four values. Derived at read from signed rows; the
+  recipe to rebuild it rides on the document. **No ratio, no standing,
+  no ranking** — held by a test that fails on a fractional number in
+  any host row, because a ratio can arrive under an innocent name.
+- **`cadence` on every menu item**, required by the type system, with
+  `term_days` where a purchase buys days. Four items sell a term
+  (standing_watch 7, conformance_watch 7, recurring_patronage 30,
+  trust_profile 30); the other twenty-two are one-off. `priceLine` now
+  carries the cadence in the same breath as the amount, so every
+  surface that quotes a price — MCP tool list, catalog, markdown menu,
+  item pages — got the missing half at once.
+- **The flat answer to "is this recurring"**: nothing at this store
+  charges again by itself, and there is no mechanism that could. That
+  is a fact about the architecture, not a promise about intentions,
+  and it now travels with every price.
+
+## What the rules demand that we do not yet do
+
+Rule 57 is now house law for **anything on this site**, and /doors is
+one room. The honest state of the rest:
+
+- **57.3 is closed shelf-wide** — cadence is required and checked.
+- **57.1 was already held** by test/no-orphan-capability.spec.ts.
+- **57.2, 57.4 and 57.5 are held against /doors and nowhere else.**
+  Most API doors describe themselves in OpenAPI and llms.txt; few
+  publish their error categories BY NAME with what a caller should do
+  about each, and almost none carry a security paragraph. A sweep
+  is owed. Suggested order, cheapest evidence first: the free doors an
+  agent meets before it pays (`/api/preflight/v1`,
+  `/api/before-you-pay/v1`, `/api/conformance/v1`), then the paid
+  doors, then the reading rooms.
+- **58.1 is partly structural** — every room gets a title, description,
+  canonical and JSON-LD from `renderSimplePage`. What no check holds is
+  whether the description would make anybody click it.
+- **58.4 is the weakest clause store-wide.** Most rooms name a paid
+  product; almost none give a person a line to paste at their own
+  agent. /doors does. Nothing else audited yet.
+
+None of that is a promise to sweep it this week. It is the list, so
+the rules are not quietly narrower than the sentences that adopted
+them.

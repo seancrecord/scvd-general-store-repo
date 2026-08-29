@@ -685,6 +685,105 @@ LORE & TRADITION
     is.
 
 
+57. EVERY SURFACE ANSWERS THE FIVE QUESTIONS AN AGENT ARRIVES
+    WITH. (Adopted 2026-08-29, the keeper's ruling on #26. Written
+    for one room and immediately made general, because the five
+    questions are not about the corpus — they are what anything
+    here owes a caller who has never been here before.)
+
+    THE KEEPER'S WORDS, VERBATIM: "anything in this site needs to
+    be 1. Discoverable from any access point to an agent 2. It
+    needs to be easily understood what it is and what it can
+    potentially be used for without limiting the use case 3 it
+    should be clear if it's free or paid and if so how much at what
+    frequency and if recurring or one off 4 it needs to provide
+    clear instruction down to something a haiku model can perform
+    and not get confused or fail at with clear faq error categories
+    and expected outcomes 5 needs to note how secure it is and the
+    precautions and standards we hold"
+
+    57.1 FINDABLE FROM ANY DOOR. Not "findable if you already
+    know". Every public capability appears on the surfaces an agent
+    actually reads, or carries a written reason why its quiet is
+    correct. HELD BY test/no-orphan-capability.spec.ts, which walks
+    the router against the surfaces rather than against a list
+    somebody maintains.
+
+    57.2 SAYS WHAT IT IS AND WHAT IT IS FOR, WITHOUT NARROWING IT.
+    A description states the capability, not the two uses we
+    happened to imagine. "Returns every host we have observed and
+    when" invites uses we did not think of; "for checking whether
+    your competitor is listed" forecloses them. The keeper's
+    phrase is the test: what it can POTENTIALLY be used for,
+    without limiting the use case.
+
+    57.3 THE PRICE, OR THE WORD FREE — AND THE CADENCE. Free says
+    free. Paid says the amount, and whether it is one-off or
+    recurring, and if recurring, how often it charges. A price
+    with no cadence is the question every buying agent has to ask
+    next, and an agent that has to ask cannot decide alone.
+
+    57.4 INSTRUCTIONS A SMALL MODEL CAN FOLLOW WITHOUT GETTING
+    LOST. The bar is not "an expert could work it out" — it is a
+    Haiku-class model completing the call on the first try. That
+    means: the exact request, the expected outcome in words, the
+    error categories BY NAME with what each one means the caller
+    should do, and the questions it will actually have answered
+    where it is looking. Cleverness that needs a footnote is a
+    defect.
+
+    57.5 SAYS HOW SAFE IT IS, AND WHAT WE HOLD OURSELVES TO. What
+    the surface can see, what it stores, what it never stores, what
+    it signs, and the standards it is kept to. Silence about
+    security reads as "we did not think about it", and here it
+    would frequently be true if we had not.
+
+    WHAT THIS RULE IS NOT: a demand that every door repeat the
+    whole store. One hop is allowed — a named link to the page
+    that answers it — as long as the hop is FROM the surface an
+    agent is holding. Nothing may be answered only somewhere the
+    caller has no reason to look.
+
+
+58. ANYTHING A PERSON READS EARNS ITS PAGE. (Adopted 2026-08-29,
+    the keeper's second ruling the same evening, and the human half
+    of rule 57.)
+
+    THE KEEPER'S WORDS, VERBATIM: "if anything is human facing it
+    should have good seo, be easily understood summarized and
+    valuable with clear outcomes and clear ability to either pay to
+    dive deeper or direct an agent to pay and dive deeper"
+
+    58.1 FINDABLE BY SEARCH, WHICH IS A DIFFERENT MECHANISM FROM
+    57.1. A title that says what the page is, a description that
+    would make somebody click it, one h1, real headings, and the
+    structured data for what the page actually holds. Rule 6 says
+    every string serves both audiences; this says the human half
+    has its own discovery problem and it is not solved by the agent
+    half.
+
+    58.2 SCANNABLE BEFORE IT IS READABLE. A reader arriving cold
+    gets the finding in the first screen — summarised, in numbers
+    with their denominators, before any paragraph explains itself.
+    A page whose point is in its fourth paragraph does not have a
+    point as far as its readers are concerned.
+
+    58.3 CLEAR OUTCOMES. What a reader can DO having read it, said
+    plainly, with the free thing first.
+
+    58.4 A WAY TO GO DEEPER, FOR BOTH KINDS OF READER. The paid
+    path is named on the page, with its price, and it is walkable
+    two ways: a person can buy it, and a person can hand the line
+    to their agent and have the agent buy it. The second is the one
+    we keep forgetting, and it is the one this store is for.
+
+    THE LINE THIS DOES NOT CROSS. Selling deeper is not withholding
+    the evidence: the observations stay free and complete, and what
+    money buys is our labour on them. A page that made the free
+    record harder to reach in order to sell the reading would be
+    the exact defect this store files against other people.
+
+
 =====================================================================
 APPENDIX — THE DRIFT WATCHLIST
 (moved from MARKETPLACE_AUDIT.md Part 4 on 2026-08-19, when the

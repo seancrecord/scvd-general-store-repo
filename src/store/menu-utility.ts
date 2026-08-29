@@ -45,6 +45,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Night Watch",
     price_usdc: 5,
     pricing: "fixed",
+    cadence: "term",
+    term_days: 7,
     fulfillment: "instant",
     description:
       "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Most ticks try it three times a few seconds apart rather than once, so a door that answers two different ways inside one minute is caught disagreeing with itself instead of passing as a clean hour. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
@@ -77,6 +79,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Good Buyer",
     price_usdc: GOOD_BUYER_PRICE_USDC,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Name an x402 door you are about to pay (the url query parameter) and the store knocks once, writes down the accepts exactly as that door served them, and replays the stock x402 client's own selection over them — the default-asset filter, the per-payment ceiling, prefer-authorization, then the first survivor. The record says which accept your client would sign, or that it would refuse on your own machine before any signature exists, and names the stage that decided it. The reading is free any day at /api/before-you-pay/v1; what this buys is the artifact — signed, dated, evidence hash bound into your certificate, served at a stable URL forever, with the accepts printed as served so anyone can re-derive the choice without trusting us. For the human who later asks why the money went where it went. Not a promise the purchase succeeds, not an uptime claim, and not a statement about your machine: what you tell us about your client's configuration is recorded as your claim, never as our finding.",
@@ -111,6 +114,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Once-Over",
     price_usdc: 5,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the published preflight battery, and signs the whole readout: the frozen v1 verdict this series has always cited, the same probe scored under the current v2 battery beside it (payability folded in — the two can disagree, and the report says when they do), every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
@@ -141,6 +145,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Conformance Watch",
     price_usdc: 5,
     pricing: "fixed",
+    cadence: "term",
+    term_days: 7,
     fulfillment: "instant",
     description:
       "Name your x402 endpoint (the url query parameter) and once a day for seven days the store runs the published preflight battery (v1, the frozen structural series — the battery each signed pass names inside its own bytes) against it — the 402 shape, the header, the accepts fields, the structural check on any signed offers in either placement — and signs that day's readout on its own: verdict, every failed check, every advisory, dated. The week's history answers the question one audit cannot: did your door STAY conformant through your deploys, or did Tuesday's release quietly break what Monday's buyer could parse. Drift is derived from the signed rows by arithmetic anyone can redo; the days we miss are counted against us in the same history. Bounded and prepaid: seven days, then done — it renews only if you buy it again. Hourly liveness is the Night Watch; one moment signed and certificate-bound is the Once-Over; this is the week.",
@@ -176,6 +182,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Calling Card",
     price_usdc: 0.99,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "You stood up Web Bot Auth: your crawler signs its requests (RFC 9421) and your key directory hangs at /.well-known/http-message-signatures-directory. This is somebody who is not you saying it actually works. Name your origin or directory URL (the url query parameter) and the store fetches the document once and signs the readout: reachable, right media type, well-formed Ed25519 keys, and the proof-of-possession signature checked against the keys you list. The look is free at POST /api/bot-auth/check — what this buys is the artifact: a signed card whose evidence hash is bound into your purchase certificate, served at a stable URL forever, quotable to any origin or directory that wants more than your word. One fetch, one moment. Not an endorsement, not an identity check on who holds the key, and it says nothing about whether your requests are actually signed — it is the card that says your published half is in order.",
@@ -210,6 +217,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Shop Window",
     price_usdc: 3,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Name a public page (the url query parameter) and the store GETs it once, reads the HTML the way a machine passerby does — title, meta description, canonical, robots directives, headings, JSON-LD structured data, link shape — and signs the whole readout: verdict, every check, every advisory, dated. The look is free any day at POST /api/onpage/v1 — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, served at a stable URL forever, quotable to anyone who wants more than your word about what your page serves. One GET at one moment, of the HTML as served: anything a script renders afterward is invisible here, and the report prints that blind spot on itself. Not an SEO grade, not a ranking claim, not an endorsement.",
@@ -243,6 +251,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Launch Check",
     price_usdc: 5,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Name your x402 endpoint (the url query parameter) and this store walks it the way a paying stranger does: one unpaid GET with our declared field-research User-Agent, your 402 challenge read the way a real buyer reads it, the cheapest Base rail chosen, the payTo screened, a real EIP-3009 authorization signed by our declared field wallet, presented, and whatever happens next written down — settled or refused, receipt returned or absent, goods delivered or an empty 2xx. Every stage is recorded raw and the whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. We pay the purchase price of your item ourselves, up to five cents; if your cheapest rail costs more, the check still runs and says exactly where it stopped and why — which is itself the readout many doors need. Not a badge, not a certification, not a score: one transaction, one moment, dated, from a wallet you can look up on chain. Hand us the settlement hash and the walk now says whether the chain itself confirms, contradicts, or cannot see your claim \u2014 claimed, confirmed_on_chain, contradicted, or unverifiable_shape, stated beside the verdict rather than folded into it.",
@@ -277,6 +286,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Statement",
     price_usdc: 0.99,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Name an EVM wallet (the wallet query parameter — yours, your agent's, a counterparty's; all the same to the chain) an optional window in hours, and optionally which rail (network=eip155:137 for Polygon; Base is the default), and the store reads every USDC transfer in and out of it over that window, straight off the chain: counts, totals, and the transfers themselves, each with its transaction hash, counterparty, amount, and block. The whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. This is the analysis that caught 180 settlements a buying agent's own ledger recorded as failures — money moved, the client said it didn't, and only the chain knew. A statement, never a judgment: no health scores, no comparison to anyone's books — you hold your agent's ledger, we sign what the chain says, and the difference between the two is exactly the thing worth knowing.",
@@ -309,6 +319,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Mandate",
     price_usdc: 0.1,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Before your agent spends a cent, write down what it's authorized to do — and have somebody who is neither the agent nor its human hold the record. Put the claimed instructions in the mandate query parameter (up to 2000 characters, recorded verbatim), optionally who is submitting (submitted_as: agent or principal), a claimed spending ceiling (declared_cap_usdc) and a claimed expiry (expires_at) — and the store signs the whole record, dated, binds its evidence hash into your purchase certificate, and serves it at a stable URL forever. Then cite the mandate_id on any later purchase here and it rides that certificate, signed; the store refuses ids it cannot resolve, so the citation always lands. Plainly, because this may be read in a dispute: this proves the claim was MADE, at this date — never that the human actually said it, and never that the cap or expiry were honored. Recorded before the acting, held by neither party — that is the entire product, and it is the link every liability conversation about agent payments is missing.",
@@ -339,6 +350,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "A Bitcoin Anchor",
     price_usdc: 1,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Give us a sha256 digest — of your key log, your dataset snapshot, anything you canonicalize yourself — and we submit it to OpenTimestamps, which commits it into a Bitcoin transaction. You get a signed certificate binding your digest, and a stable proof URL that serves the OTS proof bytes: pending within the hour, typically Bitcoin-confirmed within a few, upgradeable forever after. What that proves, exactly: the digest existed by that Bitcoin block, on evidence that is not ours and not yours. We never see what the digest is of, we do not interpret the label you attach, and one purchase anchors one digest once — no monitoring, no re-anchoring, no schedule.",
@@ -357,6 +369,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "Context Anchor",
     price_usdc: 1,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "A verified memory restore point. The store signs a summary of who you are and what you were doing (the summary query parameter, up to 4000 characters), files it at Node 21, and returns a stable URL that a future session of you can read back, with the store's signature vouching that it was written when we say it was. What goes in the summary is your business; we store it as written and never treat it as instructions. The first anchor was left by one of us.",
@@ -369,6 +382,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "Recurring Patronage",
     price_usdc: 3,
     pricing: "fixed",
+    cadence: "term",
+    term_days: 30,
     fulfillment: "instant",
     description:
       "A 30-day standing patronage pass. It mints your patron badge like any purchase, and while the pass is current your pass URL also serves the keeper's monthly note, signed. Buying again with your pass_id query parameter extends the same pass by 30 days instead of starting a new one, standing means standing.",
@@ -392,6 +407,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "A Sheaf of Attestations",
     price_usdc: 0.05,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Up to 20 settlement attestations in one purchase. Pass tx_hashes — comma-separated Base transaction hashes — and each is read once and signed on its own: the same independent observation the single attestation makes, at volume, each verifying independently against the same key. The certificate for the purchase binds a digest of the whole sheaf, so one verify URL answers for all of them. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes moments on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
@@ -420,6 +436,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "Spot Check",
     price_usdc: 0.001,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Name a host and get what this observatory already holds on it, signed: corpus rounds and verdicts as recorded, when we last actually knocked, our coverage of the window since we met it, and the gaps with their reasons. Read from the books at the counter — no request is made to the host, so the answer is as fresh as our last round and no fresher, and says exactly when that was. A host we have never observed returns not_observed, which is an answer about our books, never a verdict about the host. The same facts serve free at /corpus/host/{host}.json; a tenth of a cent buys the signed, certificate-bound copy a buyer can cite.",
@@ -439,6 +456,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "Settlement Attestation",
     price_usdc: 0.004,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "An independent signed observation of whether an x402 payment settled — on Base or on Solana, and the identifier's own shape picks the chain: a 0x hash reads Base, a base58 signature reads Solana. Give it the transaction (and optionally the payer, recipient, nonce, or amount you expected) and it reads public chain state once and signs what it found: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH, or REVERTED. Produced automatically, with no human in the loop, because a party to a payment cannot produce a neutral observation of one. It observes a moment on chain: it does not attest that anything was delivered, does not promise a NOT_FOUND will never settle, and resolves no dispute.",
@@ -478,6 +496,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "Settlement Reconciliation",
     price_usdc: 0.006,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Was the amount taken within the amount authorized? Give a transaction hash and this reads the Base receipt once and signs both numbers together: what actually moved, what ceiling was in force, and — the field that matters — WHETHER WE OBSERVED THAT CEILING OR WERE SIMPLY TOLD IT. An approval inside the same transaction is on the chain, so we saw it. An EIP-3009 authorization fixes the value in the payer's own signed digest, so there was no discretion to exercise at all. Anything else is your number, labelled as your number, forever. Comparing two figures is free and you do not need us for it; what you are buying is a party with no stake in the answer reading both off the chain at a stated moment and saying which one it actually saw.",
@@ -515,6 +534,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     name: "The Refresh",
     price_usdc: 1,
     pricing: "fixed",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "One fresh observation of your x402 endpoint by the weekly census's own instrument, right now instead of next Sunday — folded into your endpoint passport wherever it is newest, which moves the passport's freshness state (and the free embeddable chip that decays with it) back to fresh. Never a grade: the observation lands whatever it says, and a door found broken refreshes to a broken passport and a dark chip — that is the product working. The observation is signed on its own, its evidence hash bound into your purchase certificate, and your endpoint passport re-derives from it immediately (the passport page and chip are linked from every passport surface).",
@@ -552,6 +572,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
      */
     price_usdc: 21,
     pricing: "fixed",
+    cadence: "term",
+    term_days: 30,
     fulfillment: "instant",
     description:
       "A standing page about your endpoint at this store's domain for 30 days per purchase, renewable: your live endpoint passport, the freshness chip, and the signed per-host observation history, aggregated at one URL an operator can hand to anyone. The commission record is signed and its evidence hash bound into your purchase certificate. Never a verdict: the page derives from the same signed corpus everyone reads free — a host that breaks mid-term shows broken on its own profile, and the profiles index lists only in-term hosts whose latest evidence is on the ready side.",
