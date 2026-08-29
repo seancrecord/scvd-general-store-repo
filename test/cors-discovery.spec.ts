@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { app } from "@/index";
 
 const BASE = "https://scvd.store";
 
@@ -14,11 +15,107 @@ const BASE = "https://scvd.store";
  * identical for every caller; an absent ACAO header on such a surface
  * protects nothing and only breaks the browser caller.
  *
- * The boundary matters as much as the header: the allowance is an
- * explicit list of discovery paths (plus the MCP JSON-RPC door, which
- * needs the OPTIONS preflight answered), never app-wide. /admin and
- * every stateful room stay outside it, and a test below pins that.
+ * The boundary matters as much as the header: the allowance is not
+ * app-wide. /admin and every HTML room stay outside it, and a test
+ * below pins that.
+ *
+ * AND THE ROSTER IS THE ROUTER NOW (2026-08-29). This file listed
+ * thirteen paths by hand, which meant it tested the doors somebody
+ * remembered on 2026-08-27 and nothing built since. When the list was
+ * finally measured against the whole router it was covering 34 public
+ * doors out of 131 — and among the 97 with no header were
+ * /corpus.json, the signed record this store's argument rests on, and
+ * /atlas.json, whose only purpose is telling an arriving agent where
+ * things are. Neither was a decision; they were just built after the
+ * list was written.
+ *
+ * So the walk below is derived: every static GET door the app
+ * registers, fetched, and held to the rule. A new published document
+ * is covered the day it ships, and a room that starts answering JSON
+ * is noticed rather than assumed.
  */
+
+/**
+ * Every static GET door, with its status, content type and ACAO —
+ * fetched once, read by every test in this file.
+ */
+interface Probe {
+  path: string;
+  status: number;
+  type: string;
+  acao: string | null;
+}
+
+let PROBES: Probe[] | undefined;
+async function probes(): Promise<Probe[]> {
+  if (PROBES) return PROBES;
+  const paths = new Set<string>();
+  for (const route of app.routes) {
+    if (route.method !== "GET") continue;
+    const path = route.path;
+    if (path.startsWith("/admin")) continue;
+    if (path.includes(":") || path.includes("*") || path.includes("{")) continue;
+    paths.add(path);
+  }
+  const seen: Probe[] = [];
+  for (const path of [...paths].sort()) {
+    const response = await SELF.fetch(`${BASE}${path}`, {
+      headers: {
+        Origin: "https://example-agent-host.test",
+        Accept: path.includes(".") ? "*/*" : "text/html",
+      },
+      redirect: "manual",
+    });
+    seen.push({
+      path,
+      status: response.status,
+      type: (response.headers.get("Content-Type") ?? "").split(";")[0] ?? "",
+      acao: response.headers.get("Access-Control-Allow-Origin"),
+    });
+  }
+  PROBES = seen;
+  return seen;
+}
+
+/** The same class the middleware derives, restated independently. */
+const MACHINE_READABLE =
+  /^(application\/(json|xml|[\w.+-]+\+json)|text\/(markdown|plain|xml))$/;
+
+describe("every published document is readable from a browser, not just the ones somebody listed", () => {
+  it("holds across every static GET door the router registers", async () => {
+    const unreadable = (await probes())
+      .filter((p) => p.status === 200 && MACHINE_READABLE.test(p.type))
+      .filter((p) => p.acao !== "*")
+      .map((p) => `${p.path} (${p.type})`);
+    expect(
+      unreadable,
+      `a published document a browser-based agent cannot read — the fetch dies in the browser whatever we answered:\n${unreadable.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("covers the doors the typed list never reached", async () => {
+    // Named because they are the concrete cost of the typed list, not
+    // as a new list to maintain: the assertion above is the guard.
+    const byPath = new Map((await probes()).map((p) => [p.path, p]));
+    for (const path of ["/corpus.json", "/atlas.json", "/doors.json", "/AGENTS.md"]) {
+      expect(byPath.get(path)?.acao, `${path} is unreadable cross-origin`).toBe(
+        "*",
+      );
+    }
+  });
+
+  it("does not leak past the boundary: HTML rooms stay same-origin", async () => {
+    const leaked = (await probes())
+      .filter((p) => p.status === 200 && p.type === "text/html")
+      .filter((p) => p.acao === "*")
+      .map((p) => p.path);
+    expect(
+      leaked,
+      `an HTML room answered any origin — the allowance is for published documents, not rooms:\n${leaked.join("\n")}`,
+    ).toEqual([]);
+  });
+});
+
 describe("the discovery surface answers browsers from any origin", () => {
   const DISCOVERY_GETS = [
     "/.well-known/mcp.json",

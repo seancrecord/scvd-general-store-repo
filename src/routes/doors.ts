@@ -103,6 +103,32 @@ function deeperItems(): { item: MenuItem; answers: string }[] {
   });
 }
 
+/**
+ * How many of the deeper reads carry a stated term, and which — read
+ * off the shelf rather than counted by a person.
+ *
+ * This sentence shipped typed, as "Two of them cover a stated term of
+ * days", and it was wrong the day it shipped: three of the five carry
+ * term_days (the two watches at 7, the Hosted Profile at 30). Nobody
+ * miscounted on purpose — the Hosted Profile was added to the deeper
+ * list and the sentence beneath it was not re-read, which is the exact
+ * failure mode the derived-not-typed guard exists for. The JSON body
+ * above never had the bug, because it publishes term_days per item
+ * instead of a tally.
+ */
+function termLine(): string {
+  const termed = deeperItems().filter(
+    ({ item }) => typeof item.term_days === "number",
+  );
+  if (termed.length === 0) {
+    return "None of them covers a stated term of days";
+  }
+  const named = termed
+    .map(({ item }) => `${item.name} (${String(item.term_days)} days)`)
+    .join(", ");
+  return `${termed.length} of the ${deeperItems().length} cover a stated term of days &mdash; ${escapeHtml(named)}`;
+}
+
 /* ------------------------------------------------------------------ */
 /* THE FIVE ANSWERS RULE 57 REQUIRES, WRITTEN ONCE AND SERVED TWICE.  */
 /* The JSON body and the human page read the same constants, so the   */
@@ -311,7 +337,7 @@ function landingHtml(base: string, index: DoorIndex): string {
       <p class="menu-desc"><strong>Free, and first:</strong> the machine copy of this page is at <a href="/doors.json"><code>/doors.json</code></a>, filterable with <code>?verdict=not_ready</code>. One door's whole signed history is at <code>/corpus/host/{host}.json</code>. The battery we run is free to run yourself against your own door at <a href="/conformance">/conformance</a>, and a client can ask <a href="/api/before-you-pay/v1"><code>/api/before-you-pay/v1</code></a> whether a door it is about to pay is payable at all. None of that costs anything and none of it ever will.</p>
       <p class="menu-desc"><strong>Paid, if you want our labour on it:</strong></p>
       <ul class="menu-desc">${deeper}</ul>
-      <p class="menu-desc">Every one of those is a single payment. Two of them cover a stated term of days; none of them is a subscription, and this store holds no mechanism that could charge you a second time.</p>
+      <p class="menu-desc">Every one of those is a single payment. ${termLine()}; none of them is a subscription, and this store holds no mechanism that could charge you a second time.</p>
       <p class="menu-desc"><strong>Or hand it to your agent.</strong> Paste this and it will do the whole thing without you: <em>&ldquo;Read ${base}/doors.json, find the entry for my domain, then buy the Once-Over for it at ${base}/api/buy/service_audit?url=&hellip; over x402.&rdquo;</em> The shelf speaks x402 at <a href="/menu.json"><code>/menu.json</code></a> and MCP at <code>POST /mcp</code> (not a page &mdash; a browser gets a 405 there, which is the protocol working); an agent needs nothing from this page but the URL.</p>
     </section>
     <section>
