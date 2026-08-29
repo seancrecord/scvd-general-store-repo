@@ -222,6 +222,28 @@ export const REGISTER = [
     resolution: "declined",
     why: "Diligence scans want Wikipedia/Wikidata in sameAs. A month-old company fails notability; an article written to game the checklist gets deleted; a sameAs to a missing page is a false claim in machine form. Revisit at real notability.",
   },
+  /**
+   * THE FREE DOORS' PRICE (rule 57.3 sweep, 2026-08-29). "Free" is
+   * the one claim on an instrument a reader cannot check by reading
+   * it, so both halves are bound to behaviour rather than to a
+   * sentence.
+   */
+  {
+    id: "price.free-instruments.amount",
+    file: "src/store/surface-contract.ts",
+    match: 'amount: "$0.00"',
+    resolution: "derived",
+    from: "the absence of a payment gate on the routes themselves — test/free-doors-answer-rule-57.spec.ts POSTs every free door the atlas advertises with no payment and no credentials and fails if any answers 402, 401 or 403, or emits a PAYMENT-REQUIRED header",
+    why: "A price of $0.00 typed beside a door that later grew a paywall is the same class of lie as a stale item count, and worse: it is the sentence an agent reads before deciding to call. The test proves the door takes no money rather than the file promising it does not.",
+  },
+  {
+    id: "price.free-instruments.cadence",
+    file: "src/store/surface-contract.ts",
+    match: "There is no metered tier above it and no key that unlocks more of it",
+    resolution: "derived",
+    from: "the same assertion — a metered tier or a key would have to answer 402 or 401 to an unpaid, unauthenticated POST, and the test fails if any free door does",
+    why: "Rule 57.3 asks for the cadence of anything paid; the honest cadence of a free door is that there is not one, and 'no key unlocks more of it' is checkable in exactly the same breath as 'it takes no money'.",
+  },
   {
     id: "declined.browser-surfaces",
     file: "src/store/copy/declined.ts",

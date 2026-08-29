@@ -37,6 +37,15 @@
  * already parsing `weeks` keeps working. The envelope is additive.
  */
 
+/**
+ * The terms on everything this store publishes free — the datasets
+ * and the free instruments' answers alike. Exported because the free
+ * doors quote it too: "no licence" was nearly written on three of
+ * them while every dataset here carried CC-BY, and a store whose
+ * terms depend on which door you came through has no terms.
+ */
+export const PUBLISHED_LICENCE = "https://creativecommons.org/licenses/by/4.0/";
+
 export interface DatasetVariable {
   /** What the field is, in words a stranger can read. */
   name: string;
@@ -71,7 +80,7 @@ export function datasetEnvelope(
     name: input.name,
     description: input.description,
     url: input.url,
-    license: "https://creativecommons.org/licenses/by/4.0/",
+    license: PUBLISHED_LICENCE,
     creator: {
       "@type": "Organization",
       name: "scvd.store",

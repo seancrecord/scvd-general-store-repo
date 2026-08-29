@@ -1,3 +1,9 @@
+import { PUBLISHED_LICENCE } from "@/lib/dataset-envelope";
+import {
+  freeInstrumentPrice,
+  surfaceSecurity,
+  type SurfaceError,
+} from "@/store/surface-contract";
 import { Hono, type Context } from "hono";
 import {
   BEFORE_YOU_PAY_VERSION,
@@ -29,6 +35,53 @@ export const beforeYouPayRoutes = new Hono<HonoEnv>();
  * Neither of them has an error message to search for, which is
  * exactly why the phrases belong here.
  */
+/**
+ * WHAT THIS DOOR ITSELF CAN REFUSE, by name (rule 57.4).
+ *
+ * `common_failures_this_catches` is about the payment you are about
+ * to attempt. These are about THIS call.
+ */
+const BEFORE_YOU_PAY_ERRORS: readonly SurfaceError[] = [
+  {
+    code: "missing_url",
+    http: 400,
+    means: "the request body carried no `url` field, or it was not a string",
+    what_to_do:
+      'POST {"url": "https://the.door/you-are-about-to-pay"} as JSON. Add client_profile only if you want the answer for a configured client; leaving it off answers for a client configured with nothing, which is the case that loses money quietly.',
+  },
+  {
+    code: "unsupported_url",
+    http: 400,
+    means:
+      "the URL was not https, named a private, loopback or link-local address, or named this store's own hostname",
+    what_to_do:
+      "Give a public https URL on the open internet. The refusals are the same ones the preflight makes and for the same reasons.",
+  },
+  {
+    code: "bad_client_profile",
+    http: 400,
+    means:
+      "client_profile was present but not an object we could read — a number where a ceiling object belonged, or an unknown shape",
+    what_to_do:
+      'Send {"max_amount_per_payment_usd": 5} or {"spend_controls_disabled": true}, or omit the field entirely. We do not guess at a profile we cannot parse, because the guess would be the answer.',
+  },
+  {
+    code: "rate_limited",
+    http: 429,
+    means: "you passed one of the two ceilings this door shares with the preflight",
+    what_to_do:
+      "Wait and retry. The cap is our cost bound, not a fact about the door you named, and nothing you can buy raises it.",
+  },
+  {
+    code: "unreachable",
+    http: 200,
+    means:
+      "the door did not answer, so there is no challenge to replay the selector over. This is a VERDICT, not an error status",
+    what_to_do:
+      "Read the reason beside it. There is nothing to configure on your side yet: the question this tool answers only exists once a 402 comes back.",
+  },
+] as const;
+
 function doc(base: string) {
   return {
     title: "Before you pay — the x402 payment dry run",
@@ -69,6 +122,35 @@ function doc(base: string) {
     },
     our_conflict_of_interest:
       "This store sells x402 goods, so it has an interest in agents being able to pay for things. That cuts against alarmism, not for it: every refusal this tool reports is a sale we did not make. It also runs against our own doors — the reading that named thirteen unpayable listings here is the reading that produced this tool.",
+
+    /* ---- the five answers rule 57 requires (2026-08-29) ---- */
+
+    what_you_can_use_it_for:
+      `Anything a dry run of your own payment client is good for. Some obvious ones: finding out why an agent reports 'the endpoint is broken' when the operator's logs show a clean 402 and silence, checking which rail your client would actually pick before it picks one, tuning a spend ceiling against a door you intend to buy from repeatedly, or auditing your own configuration before you point an autonomous buyer at anything. There is no use case we are reserving, and the answer is yours under the same terms as every dataset here: ${PUBLISHED_LICENCE}.`,
+
+    expected_outcome:
+      "HTTP 200 and a JSON object saying which accept the stock client would select — or that it would refuse locally before signing, with the control that stopped it named — plus the signing window that accept actually carried and the @x402/core version the answer was modelled against. A refusal is a successful call: the answer is about your configuration standing in front of that door. Only a 4xx or 5xx is a failure of ours.",
+
+    errors: BEFORE_YOU_PAY_ERRORS,
+
+    price: freeInstrumentPrice(base, [
+      {
+        id: "good_buyer",
+        instead:
+          "this exact reading, signed and served forever at its own URL — for the human who asks why their agent spent the money, or did not",
+      },
+    ]),
+
+    security: surfaceSecurity({
+      what_this_surface_reads:
+        "One HTTPS GET to the URL you name, from our infrastructure, with no credentials of yours and no payment attached — the same knock the preflight makes. The optional client_profile you send is configuration, never a key: this door has no field for a wallet, a seed or a signature, and would have nowhere to put one.",
+      what_it_stores_about_you:
+        "No account, no cookie, no key, and no wallet — there is nothing here that could hold one. The URL and the verdict are counted for rate limiting and the store's published traffic tallies; the client_profile is used for the one answer and not retained.",
+      what_the_data_is:
+        "One observation of a PUBLIC endpoint plus a replay of an open-source client's own selection logic over what came back. Nothing is signed, no payment is made, no wallet is touched, and no authentication is bypassed to produce it.",
+      integrity:
+        "THIS ANSWER IS NOT SIGNED, and it models the @x402/core version THIS STORE has installed — which the response names, because a dry run against a different version is a different answer. If you need something you can hand to somebody else, the signed rung is above. Do not represent a free dry run as a guarantee that a purchase will succeed: this walks selection logic, not settlement.",
+    }),
   };
 }
 

@@ -174,7 +174,13 @@ const JOURNEYS: readonly AtlasJourney[] = [
 ] as const;
 
 /** Doors that cost nothing and are not on the menu. */
-const FREE_DOORS: readonly AtlasDoor[] = [
+/**
+ * EXPORTED so test/free-doors-answer-rule-57.spec.ts can walk it. The
+ * atlas is what an arriving agent reads to find what is free; a door
+ * advertised there and unable to answer the five questions rule 57
+ * requires is the gap the rule was written to close.
+ */
+export const FREE_DOORS: readonly AtlasDoor[] = [
   {
     path: "/api/preflight/v2",
     name: "Preflight",
@@ -182,6 +188,22 @@ const FREE_DOORS: readonly AtlasDoor[] = [
     method: "POST",
     purpose: "Check any x402 door's challenge shape and whether its payTo can be credited.",
     caution: "Shape and receivability, not delivery. A pass is not a promise the goods arrive.",
+  },
+  {
+    /*
+     * ADDED 2026-08-29. The buyer's half of the free ladder was on
+     * llms.txt and the OpenAPI contract and absent from the atlas —
+     * the one surface arranged by the goal a reader arrives with,
+     * and "will my client actually pay this" is a goal.
+     */
+    path: "/api/before-you-pay/v1",
+    name: "Before you pay",
+    access: "free",
+    method: "POST",
+    purpose:
+      "Replay the stock x402 client's own selection logic over a door's challenge: which accept YOUR client would sign, or why it would refuse locally before signing anything.",
+    caution:
+      "A fact about your configuration, not about the door. It walks selection, never settlement — nothing is signed and no wallet is touched.",
   },
   {
     path: "/api/conformance/v1",

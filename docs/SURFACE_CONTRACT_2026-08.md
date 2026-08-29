@@ -79,14 +79,35 @@ one room. The honest state of the rest:
 
 - **57.3 is closed shelf-wide** — cadence is required and checked.
 - **57.1 was already held** by test/no-orphan-capability.spec.ts.
-- **57.2, 57.4 and 57.5 are held against /doors and nowhere else.**
+- **57.2, 57.4 and 57.5 were held against /doors and nowhere else.**
   Most API doors describe themselves in OpenAPI and llms.txt; few
   publish their error categories BY NAME with what a caller should do
-  about each, and almost none carry a security paragraph. A sweep
-  is owed. Suggested order, cheapest evidence first: the free doors an
-  agent meets before it pays (`/api/preflight/v1`,
-  `/api/before-you-pay/v1`, `/api/conformance/v1`), then the paid
-  doors, then the reading rooms.
+  about each, and almost none carry a security paragraph.
+
+  **The first leg of the sweep ran 2026-08-29**, in the order named
+  here — the free doors an agent meets before it pays. The preflight,
+  the conformance desk and the buyer's dry run each gained
+  `what_you_can_use_it_for`, `expected_outcome`, `errors` (named
+  categories about THIS call, distinct from the failures each tool
+  reports about its subject), a `price` block that says free with its
+  cadence and prices any paid rung off the menu, and a `security`
+  paragraph. The house-wide safety clauses live once in
+  `src/store/surface-contract.ts`; everything door-specific is
+  required by the type, so an instrument cannot import the shape and
+  leave the substance blank.
+
+  Two things the sweep turned up. `/api/before-you-pay/v1` was absent
+  from the atlas's free-door roster — on llms.txt and in the OpenAPI
+  contract, missing from the one surface arranged by the goal a reader
+  arrives with. And the conformance desk has no paid rung selling the
+  same reading signed; rather than point at an item answering a
+  different question, its price block says the rung is absent and why.
+
+  `test/free-doors-answer-rule-57.spec.ts` holds all of it, walking
+  the atlas's own FREE_DOORS rather than a list written in the test,
+  so an instrument added to the atlas tomorrow is held tomorrow.
+
+  **Still owed:** the paid doors, then the reading rooms.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.
