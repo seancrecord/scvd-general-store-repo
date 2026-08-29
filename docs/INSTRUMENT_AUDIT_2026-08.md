@@ -948,7 +948,7 @@ and nothing else in that object. Two consequences:
   rules, never about the seller, which is the escape hatch that
   product already has and already explains.
 
-### 14.2 Idempotency, never turned outward (CV)
+### 14.2 Idempotency, never turned outward (CV) → **READ 2026-08-29**
 
 CV's note, same day: the ecosystem absorbed the double-charge lesson
 at the SDK layer, and the remaining gap shape is hand-rolled header
@@ -965,6 +965,34 @@ made it a named differentiator — and never once asked whether
 anybody else's door has any. A door with no idempotency support
 turns every hand-rolled buyer retry into a double charge, which is
 precisely the population CV says is left.
+
+**Turned outward the same day, and narrowly on purpose.** The
+battery now reads the input contract a door already declares for a
+field a buyer could hold steady across a retry — an idempotency
+key, an order id, a request id, a client reference, a purchase id.
+`retry-key-declared` credits one; `retry-key-not-in-challenge`
+names the absence.
+
+Three decisions are the whole of it:
+
+1. **It reads only where inputs are DECLARED.** A door with no
+   input contract at all already draws the louder advisory, and
+   counting one silence as two findings would inflate a number we
+   would then have to publish.
+2. **The absence is not a defect class, and takes none.** One
+   observation cannot separate a door with no retry-safety from a
+   door that keys idempotency on a header this probe never sees,
+   from a door naming such a field under a convention we do not
+   recognize. The advisory says so in those words and carries a
+   falsifier, the discipline `signed-offers-not-in-challenge` took
+   on 08-28. Only the first reading is a fact about the endpoint;
+   the other two are facts about our probe.
+3. **No verdict moved,** in either battery, and a test pins that
+   the same door one field apart produces identical checks.
+
+What stays true and unread: whether the till behind the door honours
+anything it does not ask for. That is on the far side of a payment
+and this instrument does not pretend to see it.
 
 ### 14.3 The generalization, which is the keeper's
 
@@ -984,5 +1012,8 @@ starts with three known instances instead of a blank page.
 
 **14.1 is built and closed, both halves (above): the paid walk
 refuses to sign what it cannot sign, and the free battery reads the
-same field before anybody spends. 14.2 and 14.3 are not built, and
-nothing else here changed a served surface.**
+same field before anybody spends. 14.2 is read, in the narrow shape
+an unpaid probe can honestly claim, and its limit is stated in the
+advisory itself rather than here. 14.3 is not built: it is an audit
+pass, not a patch, and it starts with three known instances instead
+of a blank page.**
