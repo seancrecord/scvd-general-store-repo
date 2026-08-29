@@ -41,14 +41,14 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import {
+  AS_A_BROWSER,
   DOORS,
   OBSERVATION_FRESH_DAYS,
   REVIEW_EVERY_DAYS,
   compare,
-  declaresWebmcp,
   readDoors,
   reviewsDue,
-  sitemapRooms,
+  sweepRooms,
 } from "./lib/doors.mjs";
 
 const RECORD = new URL("../docs/six-doors/observation.json", import.meta.url);
@@ -123,39 +123,6 @@ async function mcpToolsList() {
   return row;
 }
 
-/**
- * Sweep every room the sitemap publishes for the browser-door
- * declaration. The denominator is our own sitemap on purpose: it is
- * the list we tell the world is the store, so it is the list the
- * coverage number has to be honest about.
- */
-async function sweepRooms(sitemapXml) {
-  const urls = sitemapRooms(sitemapXml, base);
-  if (urls.length === 0) return { total: 0, declaring: 0, missing: [] };
-  const missing = [];
-  let declaring = 0;
-  let unreachable = 0;
-  const queue = [...urls];
-  const worker = async () => {
-    for (let url = queue.shift(); url !== undefined; url = queue.shift()) {
-      const row = await get(url);
-      if (!row.ok) {
-        unreachable += 1;
-        continue;
-      }
-      if (declaresWebmcp(row.text)) declaring += 1;
-      else missing.push(url.slice(base.length) || "/");
-    }
-  };
-  await Promise.all(Array.from({ length: 6 }, worker));
-  return {
-    total: urls.length - unreachable,
-    declaring,
-    unreachable,
-    missing: missing.sort(),
-  };
-}
-
 async function collect() {
   const [
     home,
@@ -171,7 +138,7 @@ async function collect() {
     preflightNoAuth,
     registry,
   ] = await Promise.all([
-    get(`${base}/`),
+    get(`${base}/`, { headers: AS_A_BROWSER }),
     get(`${base}/openapi.json`),
     get(`${base}/.well-known/api-catalog`),
     get(`${base}/.well-known/x402.json`),
@@ -190,7 +157,7 @@ async function collect() {
     }),
     get("https://registry.modelcontextprotocol.io/v0/servers?search=scvd"),
   ]);
-  const rooms = await sweepRooms(sitemap.text);
+  const rooms = await sweepRooms(sitemap.text, base, get);
   return {
     home,
     openapi,
@@ -205,7 +172,22 @@ async function collect() {
     preflightNoAuth,
     registry,
     rooms,
+    // The manifest a republish would actually send. Read from disk
+    // rather than described in prose, so the registry criterion
+    // compares two real strings instead of a keyword against a hope.
+    serverJson: readServerJson(),
   };
+}
+
+/** server.json, or null — an unreadable manifest is `unknown`, not a finding. */
+function readServerJson() {
+  try {
+    return JSON.parse(
+      readFileSync(new URL("../server.json", import.meta.url), "utf8"),
+    );
+  } catch {
+    return null;
+  }
 }
 
 /* ── the record ─────────────────────────────────────────────────────── */

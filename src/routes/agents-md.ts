@@ -136,7 +136,7 @@ ${spendCapParagraph()}
 
 ## Free tools from this store
 
-- The conformance desk — POST any issuer's x402 signed offer or receipt, get a structured verdict (parse, schema, signature, liveness). Free, no account, no wallet. Landing with examples: ${base}/conformance; pinned contract: ${base}/api/conformance/v1.
+- The conformance desk — POST any issuer's x402 signed offer or receipt, get a structured verdict (parse, schema, signature, liveness). Free, no account, no wallet. Landing with examples AND a form you can paste into (declared to browser agents with WebMCP's toolname attributes; an agent may fill it, a human presses submit): ${base}/conformance; pinned contract: ${base}/api/conformance/v1.
 - The corpus — weekly signed, Bitcoin-anchored observations of the x402 ecosystem, hash-chained and free to read: ${base}/corpus (data at ${base}/corpus.json, per-host at ${base}/corpus/host/{host}.json).
 - x402-verify on npm — the desk's method as an MIT, zero-dependency package, works on any issuer's artifacts: https://github.com/seancrecord/scvd-general-store-repo/tree/main/verifier
 - x402-sign on npm — issue your own x402 signed offers and receipts (MIT, zero deps): https://github.com/seancrecord/scvd-general-store-repo/tree/main/signer

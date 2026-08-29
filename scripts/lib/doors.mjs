@@ -82,6 +82,17 @@ function reached(snap, key) {
   return null;
 }
 
+/**
+ * A form annotated for the declarative WebMCP API. `toolname` is the
+ * attribute the browser compiles a tool definition from — the
+ * lineup's cheapest declaration, two attributes on a form you already
+ * have. Attribute names read first-hand from the spec repo's
+ * declarative-api explainer on 2026-08-29, not from the write-up.
+ */
+export function declaresFormTool(html) {
+  return /<form[^>]+toolname=/.test(String(html ?? ""));
+}
+
 /** Read a served page's script tags for the browser door's declaration. */
 export function declaresWebmcp(html) {
   return /<script[^>]+src=["']\/webmcp\.js["']/.test(String(html ?? ""));
@@ -125,6 +136,65 @@ export function originTrialExpiry(html) {
     }
   }
   return null;
+}
+
+/**
+ * WHAT A BROWSER ASKS FOR, WHICH IS NOT WHAT curl ASKS FOR.
+ *
+ * This store content-negotiates: several rooms answer markdown to a
+ * wildcard Accept and HTML only to a request that says it wants HTML.
+ * The first cut of the room sweep sent curl's default and counted the
+ * browser door as declared on 1 of 68 rooms — because it had been
+ * reading the markdown twins, where a script tag correctly does not
+ * appear. The number was published before it was checked, and it was
+ * wrong by a factor of twenty-eight.
+ *
+ * So every probe of a PAGE sends what a browser sends. Probes of JSON
+ * and asset paths keep the default: they are not negotiated, and
+ * dressing up as a browser to fetch /openapi.json would be theatre.
+ */
+export const AS_A_BROWSER = Object.freeze({
+  accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+});
+
+/**
+ * Sweep every room the sitemap publishes for the browser-door
+ * declaration.
+ *
+ * The denominator is our own sitemap on purpose: it is the list we
+ * tell the world is the store, so it is the list the coverage number
+ * has to be honest about. `get` is injected so this can be tested
+ * against a server that negotiates content the way ours does — which
+ * is the only way the Accept header above stays load-bearing.
+ */
+export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
+  const urls = sitemapRooms(sitemapXml, base);
+  if (urls.length === 0) return { total: 0, declaring: 0, unreachable: 0, missing: [] };
+  const missing = [];
+  const annotatedForms = [];
+  let declaring = 0;
+  let unreachable = 0;
+  const queue = [...urls];
+  const worker = async () => {
+    for (let url = queue.shift(); url !== undefined; url = queue.shift()) {
+      const row = await get(url, { headers: AS_A_BROWSER });
+      if (!row.ok) {
+        unreachable += 1;
+        continue;
+      }
+      if (declaresWebmcp(row.text)) declaring += 1;
+      else missing.push(url.slice(base.length) || "/");
+      if (declaresFormTool(row.text)) annotatedForms.push(url.slice(base.length) || "/");
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return {
+    total: urls.length - unreachable,
+    declaring,
+    unreachable,
+    missing: missing.sort(),
+    annotatedForms: annotatedForms.sort(),
+  };
 }
 
 /** Same-origin page URLs the sitemap publishes, which is our own denominator. */
@@ -340,27 +410,56 @@ export const DOORS = [
       },
       {
         id: "registry_description_current",
-        asks: "Does the public registry repeat what the store is today?",
-        how: "curl -s 'https://registry.modelcontextprotocol.io/v0/servers?search=scvd'",
+        asks: "Does the public registry repeat the description we currently publish?",
+        how: "compare server.json's description against the isLatest entry at https://registry.modelcontextprotocol.io/v0/servers?search=scvd",
+        /**
+         * DERIVED, NOT GUESSED — and the first cut was neither.
+         *
+         * It took the FIRST search hit and ran a keyword regex over it.
+         * The registry returns every version ever published, oldest
+         * first, so the first hit was the 2026-07-30 listing this store
+         * retired two positionings ago — and the reader confidently
+         * reported a stale registry while the current entry was fine.
+         * Two defects in one line: reading the wrong row, and asking a
+         * regex what only our own manifest can answer.
+         *
+         * Both are now closed the same way. The row is the one the
+         * registry itself marks `isLatest`, and the comparison is
+         * against `server.json` — the manifest a republish would
+         * actually send — so the criterion cannot pass on a keyword
+         * while the published sentence is a generation behind.
+         */
         read(snap) {
           const row = snap.registry;
           if (!row || row.error || !row.ok) {
             return unknown(`registry: ${row?.error ?? `answered ${row?.status}`}`);
           }
-          const servers = row.json?.servers ?? row.json?.data ?? [];
-          const ours = (Array.isArray(servers) ? servers : []).find((entry) =>
-            JSON.stringify(entry).includes("scvd"),
+          const ours = snap.serverJson;
+          if (!ours?.name || !ours?.description) {
+            return unknown("server.json unreadable — nothing to compare against");
+          }
+          const entries = Array.isArray(row.json?.servers) ? row.json.servers : [];
+          const mine = entries.filter((entry) => entry?.server?.name === ours.name);
+          if (mine.length === 0) {
+            return unmet(`no entry named ${ours.name} in the registry`);
+          }
+          const latest = mine.find(
+            (entry) =>
+              entry?._meta?.["io.modelcontextprotocol.registry/official"]?.isLatest,
           );
-          if (!ours) return unmet("no scvd entry found in the registry");
-          const description = JSON.stringify(ours);
-          // The reversal's own word. A listing written before the store
-          // became an observatory sells the old shop to every aggregator
-          // downstream of it.
-          if (/observ|evidence|conformance/i.test(description)) {
-            return met("registry entry carries the observatory description");
+          if (!latest) {
+            return unknown(
+              `${mine.length} entries for ${ours.name}, none marked isLatest`,
+            );
+          }
+          const published = latest.server;
+          if (published.description === ours.description) {
+            return met(
+              `published ${published.version} repeats server.json's description`,
+            );
           }
           return unmet(
-            "registry entry still carries the pre-reversal description (DISTRIBUTION.md §1)",
+            `published ${published.version} says "${published.description}" — server.json (${ours.version}) says "${ours.description}"`,
           );
         },
       },
@@ -497,26 +596,47 @@ export const DOORS = [
         id: "stable_hooks",
         asks: "Is there anything on the page a script can hold that is not a style class?",
         how: "curl -s https://scvd.store/ | grep -o 'data-[a-z-]*=\\|id=\"[^\"]*\"' | sort -u",
+        /**
+         * FIRST-PARTY HOOKS ONLY, AND THE LANDMARK HAS TO CARRY ONE.
+         *
+         * The first cut counted every `data-` attribute on the page and
+         * read `met` off a single one — which turned out to be
+         * `data-cf-beacon`, on a script Cloudflare injects. The store
+         * had shipped no hook at all and the criterion said it had. A
+         * guard that passes on somebody else's analytics tag is a guard
+         * arguing for the lie (rule 46).
+         *
+         * So: third-party attributes are excluded by prefix, and the
+         * question is asked about the element automation actually
+         * reaches for first — the page's own main landmark. A hook
+         * somewhere in the markup is not a handle on the content.
+         */
         read(snap) {
           const miss = reached(snap, "home");
           if (miss) return miss;
           const html = snap.home.text ?? "";
           const data = new Set(
-            (html.match(/\sdata-[a-z-]+=/g) ?? []).map((match) => match.trim()),
+            (html.match(/\sdata-[a-z-]+=/g) ?? [])
+              .map((match) => match.trim())
+              // Injected by the edge, not by us; it is not ours to hold.
+              .filter((attribute) => !attribute.startsWith("data-cf-")),
           );
           const ids = new Set(html.match(/\sid="[^"]+"/g) ?? []);
-          const hooks = data.size + ids.size;
-          if (hooks === 0) {
+          const main = /<main[^>]*>/.exec(html)?.[0] ?? "";
+          const landmarkHooked = /\sid="|\sdata-(?!cf-)[a-z-]+=/.test(main);
+          if (data.size === 0 && ids.size === 0) {
             return unmet(
-              "no data-* attributes and no ids: every hook is a style class, which redesigns move",
+              "no first-party data-* attributes and no ids: every hook is a style class, which redesigns move",
             );
           }
-          if (data.size === 0) {
+          if (!landmarkHooked) {
             return partial(
-              `${ids.size} ids and no data-* attributes — ids exist for anchors, not for automation`,
+              `${data.size} first-party data-* kinds and ${ids.size} ids, but <main> carries none — the element a script reaches for first has no handle`,
             );
           }
-          return met(`${data.size} data-* attribute kinds, ${ids.size} ids`);
+          return met(
+            `<main> is hooked; ${data.size} first-party data-* kinds, ${ids.size} ids`,
+          );
         },
       },
       {
@@ -664,19 +784,26 @@ export const DOORS = [
       },
       {
         id: "declarative_forms",
-        asks: "Is the zero-JavaScript path — toolname on a form we already have — taken anywhere?",
-        how: "curl -s https://scvd.store/ | grep -c 'toolname='",
+        asks: "Is the zero-JavaScript path — toolname on a form — taken anywhere in the store?",
+        how: "fetch every URL in /sitemap.xml as a browser and grep for '<form ... toolname='",
+        /*
+         * ASKED OF THE WHOLE STORE, not the front door. The first cut
+         * looked only at `/` — where there is no form and never will
+         * be — so it would have gone on reporting `unmet` after the
+         * declaration shipped on the room that actually has a verb.
+         * A criterion that cannot see the fix is a criterion that
+         * argues against making it.
+         */
         read(snap) {
-          const miss = reached(snap, "home");
-          if (miss) return miss;
-          const html = snap.home.text ?? "";
-          if (/toolname=/.test(html)) return met("annotated form served");
-          if (!/<form/.test(html)) {
+          const rooms = snap.rooms;
+          if (!rooms || rooms.total === 0) return unknown("rooms were not swept");
+          const found = rooms.annotatedForms ?? [];
+          if (found.length === 0) {
             return unmet(
-              "no public form exists to annotate — the cheapest declaration in the lineup has no target here",
+              "no annotated form in any published room — the cheapest declaration in the lineup is untaken",
             );
           }
-          return unmet("public forms exist and none carries toolname");
+          return met(`annotated forms on ${found.join(", ")}`);
         },
       },
     ],

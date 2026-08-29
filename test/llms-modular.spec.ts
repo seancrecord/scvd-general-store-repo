@@ -199,12 +199,21 @@ const BASE = "https://scvd.store";
  * approved lines, and /inflows' section. Verified present together
  * before this value was taken.
  *
+ * Re-taken 2026-08-29 for the conformance desk's form. The desk had
+ * been free and public since it opened and unusable without a
+ * terminal; it now takes a pasted artifact in a browser, declared to
+ * browser agents with WebMCP's `toolname` attributes and deliberately
+ * without `toolautosubmit` — an agent may fill it, a human presses
+ * submit. The guide names that, because a free instrument that gained
+ * a door an agent can see is exactly the kind of fact this document
+ * exists to carry.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5aef2160e616857efbd40f7a1163b3289a1b7987cac2fb9cd564f03d2b04f647";
+  "46fc9e894f9f85a51ea5d40e985a0e729ba3703d4284cd099d8f8b21da71e713";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

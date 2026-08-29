@@ -1,6 +1,6 @@
 {
-  "taken_at": "2026-08-29T17:12:34.162Z",
-  "expires_at": "2026-09-28T17:12:34.162Z",
+  "taken_at": "2026-08-29T18:01:19.623Z",
+  "expires_at": "2026-09-28T18:01:19.623Z",
   "doors": [
     {
       "id": "raw_api",
@@ -19,7 +19,7 @@
           "asks": "Is there a machine-readable description of every HTTP door?",
           "how": "curl -s https://scvd.store/openapi.json | head",
           "verdict": "met",
-          "note": "111 paths described"
+          "note": "112 paths described"
         },
         {
           "id": "catalog_discoverable",
@@ -93,10 +93,10 @@
         },
         {
           "id": "registry_description_current",
-          "asks": "Does the public registry repeat what the store is today?",
-          "how": "curl -s 'https://registry.modelcontextprotocol.io/v0/servers?search=scvd'",
+          "asks": "Does the public registry repeat the description we currently publish?",
+          "how": "compare server.json's description against the isLatest entry at https://registry.modelcontextprotocol.io/v0/servers?search=scvd",
           "verdict": "unmet",
-          "note": "registry entry still carries the pre-reversal description (DISTRIBUTION.md §1)"
+          "note": "published 0.2.1 says \"The trust layer of the x402 economy: free conformance checks, attestation, corpus, agent store.\" — server.json (0.2.2) says \"Evidence observatory for agentic commerce: free x402 conformance checks, corpus, agent store.\""
         }
       ]
     },
@@ -117,7 +117,7 @@
           "asks": "Is the content in the served HTML, or does it need a client to build it?",
           "how": "curl -s https://scvd.store/ | grep -c '<main'",
           "verdict": "met",
-          "note": "content server-rendered; 1 executable script tag(s) on the page"
+          "note": "content server-rendered; 2 executable script tag(s) on the page"
         },
         {
           "id": "front_door_within_budget",
@@ -166,7 +166,7 @@
           "asks": "Is there anything on the page a script can hold that is not a style class?",
           "how": "curl -s https://scvd.store/ | grep -o 'data-[a-z-]*=\\|id=\"[^\"]*\"' | sort -u",
           "verdict": "unmet",
-          "note": "no data-* attributes and no ids: every hook is a style class, which redesigns move"
+          "note": "no first-party data-* attributes and no ids: every hook is a style class, which redesigns move"
         },
         {
           "id": "navigation_is_links",
@@ -190,8 +190,8 @@
       "name": "WebMCP",
       "stance": null,
       "tally": {
-        "met": 3,
-        "partial": 1,
+        "met": 4,
+        "partial": 0,
         "unmet": 1,
         "unknown": 0
       },
@@ -214,8 +214,8 @@
           "id": "declared_where_agents_arrive",
           "asks": "Do the rooms an agent lands in declare the door, or only the front page?",
           "how": "fetch every URL in /sitemap.xml and grep for the /webmcp.js script tag",
-          "verdict": "partial",
-          "note": "1 of 68 published rooms declare it (1%), against a stated target of 33%"
+          "verdict": "met",
+          "note": "28 of 68 published rooms declare it (41%)"
         },
         {
           "id": "origin_trial_unexpired",
@@ -226,10 +226,10 @@
         },
         {
           "id": "declarative_forms",
-          "asks": "Is the zero-JavaScript path — toolname on a form we already have — taken anywhere?",
-          "how": "curl -s https://scvd.store/ | grep -c 'toolname='",
+          "asks": "Is the zero-JavaScript path — toolname on a form — taken anywhere in the store?",
+          "how": "fetch every URL in /sitemap.xml as a browser and grep for '<form ... toolname='",
           "verdict": "unmet",
-          "note": "no public form exists to annotate — the cheapest declaration in the lineup has no target here"
+          "note": "no annotated form in any published room — the cheapest declaration in the lineup is untaken"
         }
       ]
     },

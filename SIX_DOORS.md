@@ -70,11 +70,57 @@ The checker goes red for either. Both are work; neither is a crash.
 
 ---
 
-## The reading, 2026-08-29
+## Withdrawn, 2026-08-29 — three findings the first reading got wrong
 
-**22 of 26 criteria met, 1 partial, 3 unmet.** Taken against
-production, recorded in `docs/six-doors/observation.json`, re-derivable
-by anyone with `npm run doors:check`.
+This file published a reading before its instrument had been checked,
+and three of the four misses it named were the instrument's, not the
+store's. Rule 56 says that gets a dated withdrawal out loud rather than
+a quiet edit, so here it is, and the corrected reading follows below.
+
+**"WebMCP is declared on 1 of 68 rooms."** Withdrawn. The sweep sent no
+`Accept` header, so every content-negotiated room answered with its
+markdown twin — where a script tag correctly does not appear. The
+number is **28 of 68**, above the stated target, and the till pages
+have carried the declaration since 2026-08-28. The sweep now sends
+what a browser sends, and a test stands up a server that negotiates
+the way ours does and fails if it stops.
+
+**"The MCP registry still carries the pre-reversal description."**
+Withdrawn. The registry API returns every version ever published,
+oldest first, and the reader took the first row — a listing retired
+two positionings ago. The keeper had already republished twice. The
+real gap is narrower: `server.json` was edited after the 0.2.1 publish
+without a version bump, and a published version is immutable, so the
+live listing is one positioning behind. Bumped to 0.2.2; the reader
+now selects the row the registry marks `isLatest` and compares it
+against `server.json` rather than against a keyword.
+
+**"Not one `data-*` attribute or `id` on the front door."** Stands, and
+the check that reported it did not. Under a browser `Accept` the page
+carries exactly one `data-` attribute — `data-cf-beacon`, on a script
+Cloudflare injects — and the criterion read `met` off it. A guard that
+passes on somebody else's analytics tag is a guard arguing for the lie.
+Third-party prefixes are now excluded and the question is asked about
+the element automation reaches for first: the page's own `<main>`,
+which carries no handle. The finding survived; the instrument did not.
+
+The pattern in all three is one thing, and it is the thing this store
+sells against: **a confident reading taken with an instrument nobody
+had pointed at a known answer first.** Each now has a test that fails
+without its fix, and each was shown to fail before it was trusted.
+
+## The reading, 2026-08-29 (second, after the instrument was fixed)
+
+**23 of 26 criteria met, 3 unmet.** Taken against production, recorded
+in `docs/six-doors/observation.json`, re-derivable by anyone with
+`npm run doors:check`.
+
+Two of the three misses have their fix sitting in this tree rather
+than on the live store, and the reading says so instead of counting
+them early: the registry bump (0.2.2, waiting on a button) and the
+declarative form (waiting on this branch to deploy). The number goes
+to 25 of 26 when both land, and the checker will say so on its own
+rather than being told.
 
 ### 1. The raw API — 5/5
 
@@ -96,20 +142,20 @@ JSON Schema, and described in prose a model can route on. Six of them
 are purchasable and each names how payment is presented, so an agent
 can buy without leaving the door it arrived through.
 
-**The miss: the public MCP registry still carries the pre-reversal
-description.** It sells a general store that takes USDC. We are an
-evidence observatory. Every aggregator downstream of that listing —
-PulseMCP among them — repeats it, so the single most-read sentence
-about this store is one we retired. DISTRIBUTION.md §1 has the fix and
-it is two commands; it has been waiting on the keeper's DNS login
-since 2026-08-11. **Highest yield-per-minute item in this file.**
+**The miss: the published listing is one positioning behind.** The
+registry's latest entry (0.2.1) says "The trust layer of the x402
+economy"; `server.json` says "Evidence observatory for agentic
+commerce". Editing the file changed nothing, because a published
+version is immutable — the fix is a bump, and 0.2.2 is in the tree
+waiting for the button. DISTRIBUTION.md §1 has the corrected story and
+the workflow.
 
 ### 3. Computer use — 4/4
 
 101 KB on the front door against a stated 195 KB budget, content
-server-rendered, one executable script tag on the page, no interstitial
-and no bot wall, and `robots.txt` points a pixel-reading agent at the
-cheaper text road before it starts paying for screenshots.
+server-rendered, no interstitial and no bot wall, and `robots.txt`
+points a pixel-reading agent at the cheaper text road before it starts
+paying for screenshots.
 
 Read honestly, this door is met because of decisions made for other
 reasons — the store renders on the server because it is a Worker
@@ -122,38 +168,47 @@ Landmarks, 42 plain links, and a machine-readable twin linked from the
 head, so an automation tool never has to scrape a page whose JSON it
 could have fetched.
 
-**The miss: not one `data-*` attribute or `id` on the front door.**
-Every hook a script could hold is a style class, and style classes are
-exactly what a redesign moves. This is the failure mode the lineup
+**The miss: no first-party hook anywhere, and none on `<main>`.** Every
+handle a script could hold is a style class, and style classes are
+exactly what a redesign moves. This is the failure the lineup
 describes — *the agent is left inferring meaning from anonymous
 divs* — and we ship it. The fix is small and mechanical: a `data-room`
-on each page's `<main>` and a `data-shelf`/`data-item` on the catalog
-rows, derived from the same ids the menu already uses.
+on each page's `<main>` and a `data-item` on the catalog rows, derived
+from ids the menu already has.
 
-### 5. WebMCP — 3/5, one partial
+### 5. WebMCP — 4/5 today, 5/5 on the next deploy
 
-The browser door is real: `/webmcp.js` registers 5 free read-only
-tools, every one derived from the MCP catalog rather than hand-typed
-beside it, so a tool renamed on one door changes on the other in the
-same deploy. The origin-trial token is valid until **2026-11-17**,
-79 days out.
+The browser door is real and now declares itself two ways.
 
-Three things are honestly short:
+**Imperative:** `/webmcp.js` registers 5 free read-only tools, every
+one derived from the MCP catalog rather than hand-typed beside it, so
+a tool renamed on one door changes on the other in the same deploy.
+Declared on 28 of 68 published rooms — the front door, `/try`, every
+till page, and now the conformance desk.
 
-- **1 of 68 published rooms declares the door.** Only the front page
-  carries the script. An agent that arrives at `/conformance` or
-  `/menu` — which is where an agent with a next step actually lands —
-  finds nothing declared. The stated target is a third of rooms, and
-  the target is a dial the keeper sets, not a fact.
-- **The origin trial ends on a date, and nothing on the page will say
-  so when it does.** The API goes back to feature-detection, the
-  script no-ops gracefully, and the door is shut with no error
-  anywhere. That date is now a checked criterion rather than a comment.
-- **No public form exists to annotate.** The lineup's cheapest
-  starting point is two attributes on a form you already have; we have
-  zero public forms — every one in the tree is behind the admin
-  password. Not a defect, but it means the cheap path is closed to us
-  and every declaration here costs real JavaScript.
+**Declarative, built 2026-08-29 and not yet deployed:** the conformance
+desk has a form. It carries `toolname`, `tooldescription` and a
+`toolparamdescription` on each input, so the browser compiles the input
+schema itself and there is no second definition to drift. It is the
+lineup's own cheapest path, and it closes two gaps at once: the desk
+had been free and public since it opened and unusable without a
+terminal. Until it deploys, the criterion reads `unmet` against
+production, which is the correct answer to "is this true of the live
+store" — a fix in a branch is not a fix on the door.
+
+**`toolautosubmit` is deliberately absent, and that missing attribute
+is the whole ruling.** With it, an agent submits on the visitor's
+behalf. Without it, the browser focuses the button and the person
+presses it — rule 17 exactly. An agent may prepare this check; only a
+human runs it. A test asserts the absence, because a future edit that
+added it would pass every other test in the file.
+
+The origin-trial token is valid until **2026-11-17**, and when it
+expires the API goes back to feature-detection, the script no-ops
+gracefully, and the door shuts with no error anywhere. That date is a
+checked criterion rather than a comment. Edge runs its own trial with
+its own registration, which we have not made — so Edge visitors'
+agents do not have this door today.
 
 ### 6. The site's built-in assistant — 3/3, deliberately not taken
 
@@ -166,8 +221,6 @@ have explained is published instead as text any model can read —
 
 The criteria check that the refusal still holds, because a position
 nothing checks is a preference, and preferences drift.
-
----
 
 ## What the lineup says about this product, beyond our own doors
 
