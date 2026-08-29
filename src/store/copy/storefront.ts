@@ -84,7 +84,18 @@ export function openSignForWeek(weekKey: string): string {
 }
 
 export const STOREFRONT_COPY = {
-  /**
+    /**
+   * THE RECORD READS AS TIME (D1, keeper-approved 2026-08-29). The
+   * storefront said what the store HAS; this says what the record
+   * DOES, which is the half a reader could not get anywhere else.
+   * Every noun in it is a live free surface, and rule 55 means each
+   * one is walkable: the trajectory and the diff on the corpus, the
+   * wallet facts at /corpus/wallet-facts.json.
+   */
+  recordReadsAsTime:
+    "The record now reads as time: week-over-week trajectory, a diff any agent can poll, and wallet facts nobody else counts — all derived from the signed chain, all free.",
+
+/**
    * THE SEARCH TITLE. The store's name is its identity and stays
    * first; what follows is what a stranger needs to know before they
    * click. Kept under ~65 characters of visible weight.

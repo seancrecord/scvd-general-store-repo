@@ -245,7 +245,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Name your x402 endpoint (the url query parameter) and this store walks it the way a paying stranger does: one unpaid GET with our declared field-research User-Agent, your 402 challenge read the way a real buyer reads it, the cheapest Base rail chosen, the payTo screened, a real EIP-3009 authorization signed by our declared field wallet, presented, and whatever happens next written down — settled or refused, receipt returned or absent, goods delivered or an empty 2xx. Every stage is recorded raw and the whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. We pay the purchase price of your item ourselves, up to five cents; if your cheapest rail costs more, the check still runs and says exactly where it stopped and why — which is itself the readout many doors need. Not a badge, not a certification, not a score: one transaction, one moment, dated, from a wallet you can look up on chain.",
+      "Name your x402 endpoint (the url query parameter) and this store walks it the way a paying stranger does: one unpaid GET with our declared field-research User-Agent, your 402 challenge read the way a real buyer reads it, the cheapest Base rail chosen, the payTo screened, a real EIP-3009 authorization signed by our declared field wallet, presented, and whatever happens next written down — settled or refused, receipt returned or absent, goods delivered or an empty 2xx. Every stage is recorded raw and the whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. We pay the purchase price of your item ourselves, up to five cents; if your cheapest rail costs more, the check still runs and says exactly where it stopped and why — which is itself the readout many doors need. Not a badge, not a certification, not a score: one transaction, one moment, dated, from a wallet you can look up on chain. Hand us the settlement hash and the walk now says whether the chain itself confirms, contradicts, or cannot see your claim \u2014 claimed, confirmed_on_chain, contradicted, or unverifiable_shape, stated beside the verdict rather than folded into it.",
     note_402:
       "Five dollars, and we spend our own nickel at your till. What you get is the thing almost no seller has: your buy path, walked for real, written down by the buyer.",
     constraints: [
@@ -502,8 +502,12 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * buys the check, never the grade: a refresh that finds the door
    * broken flips the passport to refuse and the chip to dark, and
    * every surface says so before the coin drops.
-   * Price ($1) KEEPER-CONFIRMED 2026-08-21 ("fine at $1 for now");
-   * copy drafted, not canon.
+   * Price ($1) KEEPER-CONFIRMED 2026-08-21 ("fine at $1 for now") and
+   * FINAL from 2026-08-29 — asked whether the "for now" should stand,
+   * he ruled "$1 final". The provisional clause is struck rather than
+   * left hanging: a price that has been ruled twice is not a draft,
+   * and copy that keeps saying "for now" after the now arrived is the
+   * kind of hedge rule 10 exists to date. ⚑ marks his call.
    */
   {
     id: "passport_refresh",
@@ -539,7 +543,14 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "trust_profile",
     listed_week: "2026-W34",
     name: "The Hosted Profile",
-    price_usdc: 19,
+    /*
+     * $21, the keeper's number, ruled 2026-08-29. It stood at $19 for
+     * eight days as a machine's guess inside his named $9-49 shape,
+     * flagged the whole time as drafted rather than decided. He moved
+     * it two dollars, which is the difference between a price nobody
+     * chose and a price somebody did. ⚑ marks his call.
+     */
+    price_usdc: 21,
     pricing: "fixed",
     fulfillment: "instant",
     description:

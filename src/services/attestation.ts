@@ -256,7 +256,9 @@ async function evidenceHash(
  * artifact saying, in its own signed bytes, when to stop treating it
  * as a statement about the present and re-read the chain instead.
  * Twenty-four hours: past one day, current-state claims should come
- * from the chain, not from us. ⚑ keeper dial.
+ * from the chain, not from us. RULED 2026-08-29 — put to the keeper
+ * as an open dial with the trade named, he answered "24". Inherited
+ * became chosen, which is the whole difference. ⚑ marks his call.
  */
 export const ATTESTATION_STALE_AFTER_HOURS = 24;
 
