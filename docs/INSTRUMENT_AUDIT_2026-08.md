@@ -858,7 +858,7 @@ sharp one touches a PAID product's verdict and the fix is a
 keeper-copy change, not a code tweak. None of these is a bug in
 what we compute; all three are things we do not look at.
 
-### 14.1 `accepts[].extra.assetTransferMethod` — unread → **GUARDED 2026-08-29**
+### 14.1 `accepts[].extra.assetTransferMethod` — unread → **CLOSED 2026-08-29**
 
 **FIXED, at the keeper's word, the day after it was recorded.** The
 launch check now reads `extra.assetTransferMethod` at the TERMS
@@ -875,9 +875,39 @@ and the code agree.
 
 Three tests pin it, and the guard was mutation-checked rather than
 trusted: disabling the condition fails exactly the two refusal tests
-and leaves the two walk-on tests green. The preflight half of this
-finding — `ready` still says nothing about the field — is NOT built
-and stays open below.
+and leaves the two walk-on tests green.
+
+**The preflight half shipped the same day, and it is the half that
+is free.** The battery now reads `extra.assetTransferMethod` on
+every accepts entry, on every rail, and emits one of two advisories:
+`nonstandard-transfer-method` when a door asks for a recognized
+method that is not `eip3009` — a legal declaration that says nothing
+against the door, carried because a generic client signs `eip3009`,
+will be refused there correctly, and will log that refusal as the
+seller's failure — and `unrecognized-transfer-method` when the value
+is outside every method a published client can build. Silence is
+still the ordinary case and draws nothing.
+
+NO VERDICT MOVED. Both are advisories, neither battery folds them,
+and a test pins that a door asking for `permit2` produces
+byte-identical checks to one that says nothing — so every `ready`
+recorded before this date means exactly what it meant. Whether v2
+should fold the unrecognized case, which is unsignable in the same
+sense `amount-atomic` already is, is a battery decision and sits on
+the keeper's list as a RULE.
+
+`ASSET_TRANSFER_METHOD_SIGNED` in the launch check is now the
+preflight's exported `DEFAULT_TRANSFER_METHOD`, imported rather than
+retyped: the free battery that tells a stranger their door is
+unusual and the paid walk that refuses to knock at it cannot drift
+apart on what "usual" means.
+
+The defect register took one class, not two —
+`transfer-method-unrecognized` (vocabulary v5). A door asking for
+`permit2` gets no class, because naming a recognized method in the
+place the spec provides is not a defect, and a register that called
+it one would be charging an operator for telling the truth about
+themselves.
 
 The finding as first recorded follows.
 
@@ -952,5 +982,7 @@ verdict against the FIELDS IT DID NOT READ. That is a real piece of
 work and it is not this document's — recorded here so the next pass
 starts with three known instances instead of a blank page.
 
-**14.1 is built (above). 14.2 and 14.3 are not, and nothing else
-here changed a served surface.**
+**14.1 is built and closed, both halves (above): the paid walk
+refuses to sign what it cannot sign, and the free battery reads the
+same field before anybody spends. 14.2 and 14.3 are not built, and
+nothing else here changed a served surface.**

@@ -171,6 +171,14 @@ export const ADVISORY_NAMES = [
    * is a battery decision that stays the keeper's.
    */
   "missing-eip712-domain-extra",
+  /*
+   * The keeper's relay, 2026-08-29 — the preflight half of the
+   * transfer-method finding. The launch check refuses to sign at a
+   * door asking for a method it cannot produce; this is the same
+   * reading, free, before anybody spends.
+   */
+  "nonstandard-transfer-method",
+  "unrecognized-transfer-method",
   "conflicting-amounts",
   "above-default-client-cap",
   "placement-mismatch",
@@ -234,6 +242,12 @@ export const BATTERY_CHANGELOG: readonly {
     change:
       "The advisory `no-signed-offers` is renamed `signed-offers-not-in-challenge`, and its detail now names the three readings one absent-from-the-challenge observation cannot separate, with a falsifier. NOTHING ABOUT THE MEASUREMENT CHANGED — the same bytes are read at the same placements and the same doors are flagged. What changed is the claim: the old name asserted a fact about the endpoint that this probe never established. Rows sealed before this date carry the old name and stand as history; the market desk joins both.",
   },
+  {
+    date: "2026-08-29",
+    battery: "v2",
+    change:
+      "accepts[].extra.assetTransferMethod is read, on every rail, in both batteries: nonstandard-transfer-method when a door asks for a recognized method that is not eip3009 (permit2, erc7710), unrecognized-transfer-method when it asks for something no published client can build. NO VERDICT MOVED — both are advisories, neither battery folds them, and every ready recorded before this date means exactly what it meant. The field decides whether a buyer's signature is acceptable at all, and this battery had read extra.name and extra.version out of the same object while stepping over it. The paid launch check began refusing to sign at such a door on 2026-08-29; this is the same reading, free, before anybody spends. Whether either verdict ever folds it is a battery decision and stays unmade.",
+  },
 ];
 
 /**
@@ -241,6 +255,28 @@ export const BATTERY_CHANGELOG: readonly {
  * this is the exact set isSignableAccept() requires before our own
  * till will sign an offer over an entry. One law, both directions.
  */
+/**
+ * WHAT A DOOR ASKS THE BUYER TO SIGN.
+ *
+ * `accepts[].extra.assetTransferMethod` names the authorization
+ * standard the seller's facilitator will accept — the field that
+ * decides whether a buyer's signature is acceptable at all.
+ * `eip3009` (TransferWithAuthorization) is what a generic x402
+ * client produces; `permit2` and `erc7710` are different signatures
+ * over different types. One law, both directions: the launch check
+ * signs DEFAULT_TRANSFER_METHOD and refuses to knock at a door
+ * asking for anything else, and this battery reads the same field
+ * from the same place before a buyer spends anything.
+ */
+export const DEFAULT_TRANSFER_METHOD = "eip3009";
+
+/** The methods a published x402 client knows how to produce. */
+export const KNOWN_TRANSFER_METHODS: readonly string[] = [
+  "eip3009",
+  "permit2",
+  "erc7710",
+];
+
 export const ACCEPT_REQUIRED_FIELDS = [
   "scheme",
   "network",
@@ -806,6 +842,44 @@ export function runChecks(
         advisories.push({
           name: "missing-eip712-domain-extra",
           detail: `accepts entry on ${network} carries no extra.name/extra.version. A standard EVM client builds its EIP-712 signing domain from that object; without it the client cannot sign, the refusal is silent on your side, and signability-filtered directories read your door as unknown.`,
+        });
+      }
+    }
+    /*
+     * WHAT THE DOOR ASKS THE BUYER TO SIGN, read at last
+     * (2026-08-29, the keeper's relay). This battery read
+     * extra.name and extra.version out of that object and nothing
+     * else for a month — the same shape as the signed-offer
+     * undercount, one rich object half read, and the half we
+     * skipped is the one that decides whether a signature is
+     * acceptable at all.
+     *
+     * Advisory in both batteries and folded by neither. A door
+     * declaring `permit2` is not defective: it is telling the truth
+     * about itself in the place the spec provides. What a buyer is
+     * owed is having READ it before signing, which is the entire
+     * job of a preflight. Whether either verdict ever folds this is
+     * a battery decision and stays the keeper's.
+     *
+     * Read on every rail, not only eip155: a declaration made on
+     * the wire is a declaration, and a probe that ignores one
+     * because it did not expect it there is the habit this finding
+     * exists to break.
+     */
+    const declared = isRecord(entry["extra"])
+      ? (entry["extra"] as Record<string, unknown>)["assetTransferMethod"]
+      : undefined;
+    if (typeof declared === "string" && declared.trim() !== "") {
+      const method = declared.trim().toLowerCase();
+      if (!KNOWN_TRANSFER_METHODS.includes(method)) {
+        advisories.push({
+          name: "unrecognized-transfer-method",
+          detail: `accepts entry declares extra.assetTransferMethod "${declared}", which is none of the methods a published x402 client knows how to build (${KNOWN_TRANSFER_METHODS.join(", ")}). A buyer who reads the field has nothing to construct from it; a buyer who ignores it signs blind. Either way the refusal lands before any payment reaches you, and your logs record it as nobody wanting the goods. If this names a method your own stack defines, publishing what it means is the difference between a door generic clients can walk and one only your clients can.`,
+        });
+      } else if (method !== DEFAULT_TRANSFER_METHOD) {
+        advisories.push({
+          name: "nonstandard-transfer-method",
+          detail: `accepts entry asks for extra.assetTransferMethod "${method}" rather than "${DEFAULT_TRANSFER_METHOD}" (EIP-3009 TransferWithAuthorization). THIS IS A LEGAL DECLARATION AND SAYS NOTHING AGAINST YOUR DOOR — you are naming what you accept in the place the spec provides. It is here because a generic x402 client signs ${DEFAULT_TRANSFER_METHOD}, will be refused here correctly, and will log that refusal as your endpoint failing. Buyers whose clients sign ${method} transact here normally.`,
         });
       }
     }
