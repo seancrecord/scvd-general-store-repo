@@ -546,6 +546,7 @@ adminRoutes.get("/admin", async (c) => {
     alerts,
     monthReclass,
     glance,
+    mcpClients,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -575,6 +576,10 @@ adminRoutes.get("/admin", async (c) => {
      */
     import("@/services/glance").then(({ ensureGlance }) =>
       ensureGlance(c.env),
+    ),
+    // One key. The census the MCP door started keeping 2026-08-29.
+    import("@/services/mcp-clients").then(({ readMcpClients }) =>
+      readMcpClients(c.env),
     ),
     /*
      * THE FOUR THAT LEFT, 2026-08-28, and where they went.
@@ -643,6 +648,7 @@ adminRoutes.get("/admin", async (c) => {
       })(),
       allTime: shelf(glance, null, "the glance", notes)?.all_time ?? null,
       takeReadAt: shelf(glance, null, "the glance", notes)?.computed_at ?? null,
+      mcpClients: shelf(mcpClients, {}, "the mcp census", notes),
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(

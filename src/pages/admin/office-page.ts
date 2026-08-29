@@ -23,6 +23,12 @@ import type { BazaarLedgerEntry, GazetteIssue, PayerRecord } from "@/types";
 export interface OfficePageData {
   monthLedger: MonthLedger;
   porchLedger: PorchLedger;
+  /**
+   * WHO KNOCKED AT THE MCP DOOR, by the name each client announced.
+   * Empty until the first handshake after this shipped — the census
+   * starts from its own deploy, like the porch table above it.
+   */
+  mcpClients?: Record<string, number>;
   payers: PayerRecord[];
   recentChallenges: MetricEvent[];
   /**
@@ -376,6 +382,29 @@ function surfaceLabel(surface: string): string {
     : `/${surface}`;
 }
 
+/**
+ * The MCP client census. Sorted busiest first, because the question
+ * this table exists to answer — is that traffic a handful of crawlers
+ * on a loop, or a real spread of agents — is answered by the shape of
+ * the top few rows.
+ */
+function mcpClientHtml(clients: Record<string, number> | undefined): string {
+  const rows = Object.entries(clients ?? {}).sort((a, b) => b[1] - a[1]);
+  if (rows.length === 0) {
+    return `<p>No handshake has named itself yet. That is not zero traffic \u2014 it is a census that has not run long enough to say anything, which is a different claim.</p>`;
+  }
+  return `
+    <table border="1" cellpadding="4">
+      <tr><th>client</th><th>handshakes this month</th></tr>
+      ${rows
+        .map(
+          ([name, count]) =>
+            `<tr><td>${escapeHtml(name)}</td><td>${count}</td></tr>`,
+        )
+        .join("\n")}
+    </table>`;
+}
+
 function porchHtml(porch: PorchLedger): string {
   const surfaces = Object.entries(porch.surfaces);
   const rows =
@@ -647,6 +676,18 @@ export function renderOfficePage(data: OfficePageData): string {
       <p>Free-tier visits by surface. Infrastructure is the noise floor made visible, never organic, never house.
       This table counts from its own deploy; <a href="/admin/bell">the bell, ring by ring</a> reads the raw rows and remembers further back.</p>
       ${porchHtml(data.porchLedger)}
+    </details>
+  </section>
+
+  <section>
+    <details>
+      <summary>Who knocked at the MCP door</summary>
+      <p>Every MCP client names itself in the handshake. The door used to
+      drop that field, so a month of connections was anonymous and the
+      question "are these crawlers or customers" had no answer here.
+      Counts start from this feature's own deploy. Concurrent handshakes
+      can lose an increment, so read these as a floor.</p>
+      ${mcpClientHtml(data.mcpClients)}
     </details>
   </section>
 
