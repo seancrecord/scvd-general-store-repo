@@ -476,9 +476,25 @@ below serves the first outside dollar.
   claimed. Rule 5 applies hard here: if it wants a retweet it dies, so
   it is a demonstration, not a pitch. Rule 3: no primacy claim. The
   render lives in the keeper's artifacts gallery ("Does This Read As A
-  Score?"). NOT YET BUILT AND NOT SHIPPED — the card is a draft in
-  scratch; a demo of an unshipped card must say so on its face or it
-  is a claim about a thing that does not exist.
+  Score?"). ~~NOT YET BUILT AND NOT SHIPPED~~ — **SHIPPED 2026-08-27
+  and the keeper posted it the same day; Coinbase replied.** The
+  unshipped-card caveat is spent.
+
+  **THE FOLLOW-UP TWEETS ARE SCRAPPED, 2026-08-28, at his word** —
+  filed here rather than deleted so nobody drafts them a third time.
+  Four were queued and none will be posted: the /try practice-counter
+  tweet (three drafts, his pick was A), the cards follow-up ("Update:
+  endpoint evidence cards are live" — his own line, better than any
+  of mine), the token-stance reply, and the Reddit reply to the
+  fixtures post. The token-stance reply is the one worth keeping
+  legible because the ANSWER outlived the tweet: no token, ever, and
+  the reason is that a token turns every verdict we sign into a trade
+  we are on one side of. That belongs in copy somewhere permanent —
+  /credit already says "never a token, never transferable" — rather
+  than in a reply nobody can find next month.
+
+  What this leaves standing: the demo above was posted and is done.
+  Anything new gets drafted when he asks, not kept warm on a list.
 
 - ~~Swap the corpus denominator~~ — STRUCK 2026-08-20 at the
   re-review: the arXiv figure (13,760 / 420) is already what
