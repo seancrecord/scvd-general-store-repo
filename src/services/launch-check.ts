@@ -318,7 +318,7 @@ export interface LaunchCheckRecord {
 }
 
 const CHECK_SCOPE =
-  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. The payment was presented in the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. When a payment settles, the identical already-settled payment is then presented once more and the answer recorded: a door that serves it again is giving product away against an authorization whose nonce is spent, so nothing can reach the seller twice. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
+  "One purchase attempt at one moment, from this store's declared field wallet, recorded stage by stage. The payment was presented in the x402 v2 shape (PAYMENT-SIGNATURE header, EIP-3009 authorization on Base): a seller serving only the v1 X-PAYMENT shape will refuse it, and this report says exactly that rather than guessing. A seller asking for a different transfer method — extra.assetTransferMethod of permit2 or erc7710 — is read at the terms stage and the walk stops there unpaid, naming this instrument's reach as the reason, because presenting an envelope we knew would bounce and then reporting the bounce would say something false about your door. Not a badge, not a certification, not a statement about any other moment or any other buyer — an unpaid verdict that begins 'unpaid_by_rule' is a statement about this store's own published rules, never about the seller. When a payment settles, the identical already-settled payment is then presented once more and the answer recorded: a door that serves it again is giving product away against an authorization whose nonce is spent, so nothing can reach the seller twice. Produced automatically; no human looked, and that is the point: a check commissioned by anyone reads the same.";
 
 /**
  * The buyer-side signer, as a seam: production builds one from
@@ -475,8 +475,40 @@ interface AcceptEntry {
   payTo?: string;
   asset?: string;
   maxTimeoutSeconds?: number;
-  extra?: { name?: string; version?: string };
+  extra?: {
+    name?: string;
+    version?: string;
+    /**
+     * WHAT THE SELLER WANTS SIGNED, and the field this walk read
+     * past until 2026-08-29. `eip3009` | `permit2` | `erc7710` in
+     * the shapes seen so far. See ASSET_TRANSFER_METHOD_SIGNED.
+     */
+    assetTransferMethod?: string;
+  };
 }
+
+/**
+ * THE ONE TRANSFER METHOD THIS WALK CAN SIGN.
+ *
+ * The signer below builds a `TransferWithAuthorization` typed-data
+ * payload — EIP-3009, unconditionally, because that is what the Base
+ * USDC contract takes and what every door this walk has met has
+ * asked for. A seller may instead advertise `permit2` or `erc7710`
+ * in `accepts[].extra.assetTransferMethod`, and a seller who does is
+ * asking for a DIFFERENT SIGNATURE over different types.
+ *
+ * Presenting our EIP-3009 envelope to such a door gets it refused,
+ * correctly, by a healthy server. Before today the walk did exactly
+ * that and recorded the refusal without naming the cause, so a paid
+ * report could read as a finding about the seller when it was a fact
+ * about this instrument's reach. That is the defect class this store
+ * charges to find in other people's code.
+ *
+ * `undefined` is NOT a mismatch: the field is optional, most doors
+ * omit it, and EIP-3009 is the settled default for USDC on Base.
+ * Absence means "the ordinary thing", and the walk proceeds.
+ */
+const ASSET_TRANSFER_METHOD_SIGNED = "eip3009";
 
 function defaultNonce(): string {
   const bytes = new Uint8Array(32);
@@ -705,6 +737,29 @@ export async function performLaunchCheck(
         stage: "terms",
         ok: false,
         detail: `${payToRead.detail} No payment was attempted and nothing was charged for the attempt: this is a defect in the offer itself, not a fact about the network or about your server.`,
+      });
+      verdict = "unpaid_by_rule";
+      break walk;
+    }
+    /**
+     * WHAT THIS WALK CAN SIGN, read before it signs anything. See
+     * ASSET_TRANSFER_METHOD_SIGNED: a door asking for permit2 or
+     * erc7710 wants a different signature over different types, and
+     * our EIP-3009 envelope is refused by a healthy server. Refusing
+     * the walk here — unpaid_by_rule, this store's own rule, never a
+     * statement about the seller — is the honest answer; presenting
+     * an envelope we know will bounce and recording the bounce is
+     * how a paid report becomes a false finding.
+     */
+    const declaredMethod = chosen.extra?.assetTransferMethod;
+    if (
+      typeof declaredMethod === "string" &&
+      declaredMethod.trim().toLowerCase() !== ASSET_TRANSFER_METHOD_SIGNED
+    ) {
+      stages.push({
+        stage: "terms",
+        ok: false,
+        detail: `the Base rail asks for extra.assetTransferMethod "${declaredMethod}" and this walk signs ${ASSET_TRANSFER_METHOD_SIGNED} (EIP-3009 TransferWithAuthorization) only. That is a limit of THIS INSTRUMENT, not a defect in your door: a buyer whose client signs "${declaredMethod}" may transact here perfectly well. No payment was attempted and nothing was charged. Presenting an envelope we already knew your server would refuse, and then reporting the refusal, would tell you something false about your own endpoint.`,
       });
       verdict = "unpaid_by_rule";
       break walk;
