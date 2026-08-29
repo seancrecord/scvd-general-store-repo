@@ -108,6 +108,16 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/registry", name: "State of the registry", on_storefront: false },
   /**
+   * The inflow tally, 2026-08-29. The registry says what the listings
+   * are WORTH — how many doors work, what they charge. This says what
+   * ARRIVED at the addresses those doors advertise, which is a fact
+   * about money and reads as a revenue claim the moment it sits under
+   * a heading about listings, so it gets its own room. Counts only,
+   * no names, and pressed by hand like the tally beside it. Off the
+   * storefront on the same terms as /registry and /pulse.
+   */
+  { path: "/inflows", name: "Inflows", on_storefront: false },
+  /**
    * The other half of the registry bargain, 2026-08-20: the tally
    * publishes failures without names, the set publishes names only on
    * the ready side. Built the day the keeper hand-ran the first full

@@ -1229,6 +1229,21 @@ This is not a build. It is a **wording and measurement correction**,
 and the corrections log exists for exactly this. It should be fixed
 before any scaling work makes it 6,330 instead of 633.
 
+> **DONE — 2026-08-28 (task #73).** The advisory is
+> `signed-offers-not-in-challenge`: the observation, not a verdict on
+> the door. Its detail names (A), (B) and (C) as readings it cannot
+> separate and carries a falsifier an operator can walk for free. The
+> census publishes the remainder as counts —
+> `not_found_in_challenge`, `present_but_unparseable` — which sum
+> with `serving` to the denominator exactly, plus
+> `cannot_distinguish` beside every figure. The public sentence no
+> longer says the remainder "ask to be paid on their word alone".
+> Rows sealed under the old name stand as history and are joined at
+> read. Dated in the corrections log and pinned by
+> `test/signed-offers-granularity.spec.ts`; the buckets the probe
+> genuinely cannot fill (an unrecognized signing convention, another
+> placement) are published as limits rather than invented as numbers.
+
 ### Where each non-equivalence is enforced
 
 | Non-equivalence | Enforced by | State |

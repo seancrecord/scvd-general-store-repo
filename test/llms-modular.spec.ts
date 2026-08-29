@@ -45,12 +45,64 @@ const BASE = "https://scvd.store";
  * would mean deriving it from the document, which would make it agree
  * with itself forever and assert nothing at all.
  *
+ * Re-taken 2026-08-28 on the rebase that joined the CLI publish to
+ * the audit's burst sentence: each side had correctly re-taken its
+ * own digest, so the merged guide is a third text neither value
+ * describes. Both sides' sentences confirmed present before this was
+ * taken.
+ *
+ * Re-taken 2026-08-28 when CLI_PUBLISHED flipped: the guide's CLI
+ * paragraph carries a different sentence once the package is really
+ * on npm ("install it with" rather than "the publish has not run"),
+ * and it swapped itself from the constant — this digest moving is
+ * that derivation working, not prose being edited.
+ *
  * Re-taken again 2026-08-28 on the second rebase, over the instrument
  * audit (#311) as well: three lines of work have now edited this guide
  * in a day, each correctly re-taking its own digest, so every rebase
  * produces a fourth text none of the parents' values describe. Each
  * side's sections were confirmed present in the served guide before
  * this value was taken.
+ *
+ * Re-taken 2026-08-28 in the commit that narrowed the rail-choice
+ * claim (#89): the guide's paying section lost "same tiers on every
+ * rail, your wallet's choice" and gained STOCK_CLIENT_RAIL_NOTE, which
+ * says what a stock client actually does — takes the first surviving
+ * accept, pays once, never tries the others. The cap paragraph and the
+ * CLI line were both confirmed still present before this was taken.
+ *
+ * Re-taken 2026-08-28 by the FIRST PRICE MOVE SINCE THE CAP
+ * PARAGRAPH LANDED — the coupling the note below predicted, and worth
+ * reading as a worked example rather than a chore. Four doors dropped
+ * to $0.99 under the stock client's ceiling, so the DERIVED count in
+ * the guide moved and the bytes moved with it. No sentence was edited
+ * by hand. The guard fired because the served document genuinely
+ * changed, which is exactly what it is for.
+ *
+ * A FIFTH WAS PLANNED AND REVERTED, recorded here because the reason
+ * is worth keeping: the launch check pays out from the field wallet on
+ * every check, and test/field-spend-invariant.spec.ts requires its
+ * price to be 50x that cap — "slightly more is not a business" once a
+ * facilitator fee and gas are counted. $0.99 gave 19.8. The floor that
+ * satisfies the invariant is $2.50, above the client ceiling, so that
+ * door cannot be both sound and reachable. It stays at $5, disclosed.
+ *
+ * Re-taken 2026-08-28 in the commit that disclosed the client spend
+ * cap (#52 part 1): the guide's "How paying works here" section gained
+ * the paragraph naming @x402/core's default per-payment ceiling, since
+ * step 3 there is the exact claim that ceiling falsifies. Taken at the
+ * rebased head, with the CLI-published and burst-sentence re-takes
+ * already in — three correct values for three different documents,
+ * none of which survived the merge. Both of the other sides' sentences
+ * were confirmed present in the served text before this was taken.
+ *
+ * AND A NEW WAY TO TRIP THIS GUARD, worth knowing before it surprises
+ * someone: that paragraph interpolates two counts DERIVED from the
+ * live shelf (doors above the ceiling, priced doors total). A price
+ * change that moves a door across the ceiling now changes the guide's
+ * bytes and fails this test. That is correct — the served document
+ * genuinely changed — but the fix in that case is the same re-take,
+ * not a hunt for an edit nobody made.
  *
  * Re-taken again 2026-08-28 when this batch rebased onto main: the
  * batch and main's own PR #310 had each re-taken the digest for their
@@ -74,12 +126,85 @@ const BASE = "https://scvd.store";
  * {id} verbatim and reported dead links). Markup only; sentences
  * untouched.
  *
+ * Re-taken 2026-08-28 in the commit that gave the Night Watch its
+ * intra-tick burst: the menu description now says most ticks try the
+ * door three times a few seconds apart rather than once, and the menu
+ * copy is interpolated into the guide, so the words moved with the
+ * instrument. The sentence was confirmed present in the served text,
+ * along with the declined-positions and scvd-cli sections from the
+ * earlier re-takes, before this value was taken.
+ *
+ * Re-taken 2026-08-28 in the commit that added the payment dry run
+ * and The Good Buyer (#96). NOBODY EDITED THE GUIDE — this is the
+ * derived case the note above anticipates, and the review it forces
+ * was worth having, because the two moved figures are the whole point
+ * of the change:
+ *
+ *   - the shelf gained `good_buyer, The Good Buyer, $0.99 fixed`,
+ *     interpolated from the menu like every other door;
+ *   - the ceiling sentence went from "9 of 25 priced doors sit above
+ *     it" to "9 of 26". The over-cap count HELD while the total rose,
+ *     which is the arithmetic proof that the new door landed under
+ *     the ceiling rather than adding to the problem it reports on. A
+ *     door about the $1 cap that had pushed that numerator up would
+ *     have been the joke, and this is where it would have shown.
+ *
+ * Confirmed present in the served text before this value was taken:
+ * `good_buyer`, `check_before_you_pay` and `/api/before-you-pay`
+ * (the new tool reaches the guide through the MCP catalog and the
+ * when-to-buy routes, not by hand), alongside the scvd-cli paragraph,
+ * the Night Watch's three-tries sentence and the declined positions
+ * from the earlier re-takes.
+ *
+ * Re-taken 2026-08-29 in the commit carrying the keeper's rulings.
+ * THIS ONE IS THE CASE THE GUARD IS ACTUALLY FOR — a keeper edit, not
+ * a derived drift — and the review it forced caught a real mistake of
+ * mine before it shipped.
+ *
+ * What legitimately moved, each verified present in the served text
+ * before this value was taken:
+ *
+ *   - `trust_profile ... $21 fixed` where the shelf said $19. The
+ *     keeper's price, ruled. `$19` no longer appears anywhere in the
+ *     guide, which is the check that the change is complete rather
+ *     than half-applied.
+ *   - `confirmed_on_chain` — the launch_check line he approved (D3),
+ *     reaching the guide through the menu interpolation.
+ *
+ * AND WHAT THE RE-TAKE CAUGHT: the storefront line he approved (D1)
+ * was NOT in the served bytes, because I had added
+ * `STOREFRONT_COPY.recordReadsAsTime` and wired it to nothing. A
+ * constant no surface renders is copy that does not exist — the
+ * "machinery nobody can find" failure this store has a rule about,
+ * committed while shipping the keeper's own approved words. It now
+ * renders in the storefront's "what this is" section, which is where
+ * the draft said it belonged.
+ *
+ * It is deliberately absent from the GUIDE: D1 was specced as a
+ * storefront line and the guide carries its own "what this is" prose.
+ * Absence there is the design, not a second miss.
+ *
+ * Re-taken 2026-08-29 in the commit that gave /inflows its section.
+ * The no-orphan-capability guard caught the new public page listed on
+ * no surface an agent reads, so the room joined rooms.ts and the
+ * guide gained a section describing it — and the guide's bytes moved
+ * with the words, as they should. Filed under the corpus area beside
+ * the registry: both are readings off the weekly census.
+ *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work.
+ * Each had correctly re-taken the digest for its own edit, so the
+ * merge produced a third text neither value describes — the recurring
+ * shape this pin has now hit four times. Both notes above are kept
+ * because both edits are in the served bytes: the keeper's priced and
+ * approved lines, and /inflows' section. Verified present together
+ * before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1d5a2ad70597fa61251ff4e7cf3841534e51e8fd091318448a587cc0183fe279";
+  "dbd0c281501234fe8de8dd396d55c945d0385d787d4e3441efb06da6dbbfdfbe";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

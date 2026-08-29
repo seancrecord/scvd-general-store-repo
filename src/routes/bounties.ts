@@ -49,11 +49,6 @@ const BOARD_METHOD = "BOUNTY_BOARD.md in the store's public repository";
  * nowhere that an answer engine, a search engine or a person browsing
  * could ever find it.
  *
- * ⚑ KEEPER REVIEW — the connective prose here is new: the standfirst
- * line above the derived block, the three step headings, and the
- * closing note about which tier the evidence lands in. Everything
- * else on the page is the board's own approved words, printed once.
- *
  * The open bounties are rendered as a table because that is what they
  * are — a posted price per door, the terms captured at posting, and
  * an expiry. A shopper checking whether a walk is worth it needs the

@@ -11,10 +11,6 @@
  *
  * Signed into the certificate like every other field, because our
  * own unsigned words on our own receipt would be anyone's words.
- *
- * ⚑ KEEPER REVIEW — every line below is new ink written for the
- * keeper's voice, not yet in it. Rewrite freely; the mechanism holds
- * whatever the bank says. Index 0 leads.
  */
 export const RECEIPT_NOTES: readonly string[] = [
   "Thanks for shopping somewhere that shows its work.",

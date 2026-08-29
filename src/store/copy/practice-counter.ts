@@ -171,6 +171,17 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   // page's audience: before a practice buyer pays anyone, a tenth of
   // a cent asks what the observatory already knows about the door.
   "spot_check",
+  /*
+   * THE READING THAT BELONGS ON THIS PAGE MOST OF ALL (#96,
+   * 2026-08-28). Every other cheap door here answers a question about
+   * somebody else. This one answers the question this page's reader
+   * IS: an agent making its first real payments, with a client nobody
+   * configured, about to meet a $1 ceiling it does not know exists.
+   * The reading is free at /api/before-you-pay/v1 and the practice
+   * counter says so; what sits here is the signed copy, priced under
+   * the ceiling on purpose so the buyer it was built for can reach it.
+   */
+  "good_buyer",
   // settlement_attestation was MISSING from this list until 2026-07-29
   // while being the cheapest item in the store — and it is the one item
   // whose audience is identical to this page's: somebody debugging a
@@ -191,4 +202,26 @@ export const CHEAP_DOOR_ITEM_IDS: readonly string[] = [
   "hello",
   "context_anchor",
   "bitcoin_anchor",
+  /*
+   * FOUR THAT BECAME CHEAP DOORS ON 2026-08-28, and they belong here
+   * for the page's own reason rather than because the arithmetic moved
+   * them. Each was priced above the stock x402 client's $1 ceiling,
+   * which means the exact reader of this page — somebody making their
+   * first real payments with an unconfigured client — could not buy
+   * any of them and would not have been told why. They were repriced
+   * to $0.99 to end that, so this is the list they should have been on
+   * all along.
+   */
+  // The card is the practice buyer's own identity at someone else's
+  // door: the thing you present before you are trusted to pay.
+  "signature_agent_card",
+  // A signed record of what actually moved. The audience debugging a
+  // payment wants the attestation; the audience that already made one
+  // wants this.
+  "the_statement",
+  // Two novelties, and practice on a novelty is still practice: a real
+  // settlement, a real signature, a real artifact at the end — with
+  // nothing riding on it if the first attempt goes wrong.
+  "luckies",
+  "coffees_for_closers",
 ] as const;

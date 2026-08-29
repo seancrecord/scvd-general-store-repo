@@ -44,6 +44,7 @@ import {
 } from "@/lib/idempotency";
 import { requiresPresentKeeper, shutterState } from "@/services/shutter";
 import { preflightUrl } from "@/services/preflight";
+import { beforeYouPay, readProfile } from "@/services/before-you-pay";
 import { checkConformance } from "@/services/conformance";
 import { getStamp, verifyStampSignature } from "@/services/stamps";
 import { TAG_CAP, tagHasUrl } from "@/services/train";
@@ -241,6 +242,32 @@ async function callFreeTool(
       return body.error ?? "The preflight could not run. Try again shortly.";
     }
     await recordPorchVisit(c.env, "preflight:mcp", mcpSignals(c)).catch(
+      () => undefined,
+    );
+    return outcome.body as unknown as Record<string, unknown>;
+  }
+  if (name === "check_before_you_pay") {
+    /*
+     * The buyer-side reading, over MCP because MCP is where the buyer
+     * is. An agent about to spend money is inside a tool loop, not
+     * reading a docs page — and the whole finding this tool exists
+     * for is that the refusal happens on that agent's own machine,
+     * silently, with nothing to search for.
+     *
+     * It calls the same beforeYouPay() the HTTP door serves, which
+     * calls the same preflightUrl() both preflight doors serve: one
+     * probe, one limiter, one law. Three doors, one observation.
+     */
+    const outcome = await beforeYouPay(
+      args["url"],
+      c.env,
+      readProfile(args["client_profile"]),
+    );
+    if (outcome.status !== 200) {
+      const body = outcome.body as { error?: string };
+      return body.error ?? "The dry run could not complete. Try again shortly.";
+    }
+    await recordPorchVisit(c.env, "before-you-pay:mcp", mcpSignals(c)).catch(
       () => undefined,
     );
     return outcome.body as unknown as Record<string, unknown>;

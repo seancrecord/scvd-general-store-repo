@@ -613,14 +613,244 @@ stays the keeper's open ruling), and every §4 corrections entry —
 those wait for the keeper's hand, and their mechanisms now exist to
 be cited.
 
+## 10. The instrument audited itself, badly, on its first live run
+
+The inflow census shipped in the afternoon. The keeper ran it, pasted
+the reading back, and it carried four defects — three of them the
+exact classes §§1-3 of this document were written to catch. Recorded
+here rather than in the corrections register because nothing was
+published: rule 30's press was never made, so there is no public
+claim to correct. There is only an instrument that would have lied
+if it had been pressed.
+
+The reading said, verbatim: *"153 of 300 advertised addresses
+received USDC"*, with 448 advertised.
+
+| # | What was wrong | Class | Fixed by |
+|---|---|---|---|
+| 1 | `what_this_counts` named a denominator of 448 under a number computed over 300 | Caption ≠ computation — §1's defect, ours now | The caption is derived from the figures it describes, never frozen prose |
+| 2 | Base walked 43,200 blocks, Polygon 20,000; the two chains' recipients were unioned and stated as one rate | Rule 52 — a capped reading published as a total | `INFLOW_SPAN_BUDGET` 40 → 120 so both chains reach the window; per-chain counts on the record; `windows_equal` false forbids any percentage |
+| 3 | 8,714 transfers over 153 addresses, with a field comment claiming a reader could "tell one busy address from many" from a bare total | Rule 46 — a claim the instrument does not earn | Median, max and top-decile share published beside the total, plus a derived sentence when the traffic is concentrated |
+| 4 | `blocks` disagreed by one with the endpoints printed beside it on any chain that reached its window | Two computations of one fact | `blocks` derived as `to_block - from_block + 1` |
+
+**And the cap itself, which the keeper asked about directly.** The
+old `INFLOW_ADDRESS_CAP = 300` sampled by sorting the advertised
+addresses and keeping the first 300 — so it dropped the *same* 148
+every week. A permanent hole, not a rotating sample. It was also
+unnecessary: `eth_getLogs` ORs an array at a topic position, so 448
+addresses cost the same subrequests as 300. The cap guarded a cost
+that did not exist.
+
+Best practice for a population you can enumerate is to enumerate it.
+The real constraint is rows per response, and the answer to that is
+adaptive splitting with memory — send the whole list, halve the chunk
+on a refusal or a suspiciously round row count, keep the size that
+worked for the rest of the run. Discovery is paid once, not once per
+span, and `MAX_HARD_REFUSALS` stops a refusing provider being ground
+through every chunk of every span. What remains of the cap is
+`INFLOW_ADDRESS_CEILING = 2_000` — far above the observed 448, and
+when it does bind the watch list *rotates* by a stable per-week
+offset and the reading says so, so the unwatched remainder differs
+week to week instead of being the same tail forever.
+
+**A fifth, found the same evening by opening the page.** The keeper
+loaded `/admin/market/inflows` and it never finished. Raising the
+span budget to 120 fixed the coverage defect and created a
+wall-clock one: ~109 `getLogs` walked strictly one after another is
+a minute of round trips inside a single pageview, and the browser
+gives up first. The subrequest ceiling had been sized against the
+Workers limit; the clock had never been sized against anything.
+
+Spans now go out six at a time in **ordered batches**, and the
+reading carries a 20-second budget shared across both chains, each
+chain taking what is left divided by the chains still to walk so an
+early finisher hands on its slack. Ordered is the load-bearing word:
+firing every span at once would be faster and would let a walk cut
+short by the clock report a window with *holes* in it — a from/to
+pair claiming blocks nobody read, which is defect 4 again by a
+different route. A walk stopped by the clock now says so on the
+window, as a coverage fact like any other, rather than as a page
+that never renders.
+
+## 11. What the second reading forced, and what it could not answer
+
+The rebuilt instrument ran clean: 448 of 448 watched, both chains at
+the full 43,200 blocks, block arithmetic agreeing with its own
+endpoints, caption naming the denominator the number used. It
+returned **232 of 448 (52%) received, 11,404 transfers** — and, in
+the distribution the rebuild added, **one address holding 4,876 of
+those transfers**, 43% of everything, alone.
+
+Both numbers are true and together they say something the headline
+did not: this was measuring **wallet activity, not payments**. An
+address taking 3.4 transfers a minute for a day is a facilitator, a
+router, or an exchange wallet. Its presence in the watch list is
+proof, not suspicion, that the advertised-address space is not
+door-specific. And a median of 4 transfers across 232 addresses is
+not credible as x402 purchase volume in a market this size — it is
+credible as ordinary USDC business at wallets that happen also to be
+advertised in a 402.
+
+**Defect 6, visible in that same output.** `Polygon: 2 received` —
+out of what? The walk watches every address on every chain, so both
+chain lines carried an implicit denominator of the whole watch list.
+But an address whose doors only ever quoted Base has no business
+receiving Polygon USDC, and counting it in the denominator makes a
+rail nobody quoted look dead. The round has carried `offer.networks`
+the whole time; the reader ignored it. A per-chain count with no
+per-chain denominator is the B10 shape, and it was ours.
+
+### Three distinctions, all derived from our own record
+
+None of these is a guess about who runs a wallet. Each is read off
+what the round already wrote down.
+
+| Distinction | Why it is not a judgement call |
+|---|---|
+| **Sole vs shared** — how many DISTINCT doors advertised an address | An address several doors point at is shared *by construction*. We are reading our own record of who advertised it, not inferring anything about the wallet. |
+| **Per-chain denominator** — which rails an address's doors actually quoted | `offer.networks`, already captured per host. |
+| **Quoted band** — did the transfer's size land inside the USDC range the advertising door asked for | `min_usdc`/`max_usdc`, already captured per host, against an amount `usdcTransfersToAny` already returned and the reader was discarding. |
+
+The narrow number — **transfers inside the quoted band, at
+sole-advertised addresses** — is the first figure in this instrument
+that a treasury movement cannot walk into by accident. It is still a
+floor, not a count of sales: a band is not a receipt, a door quoting
+$0.001–$5 makes a wide one, and a facilitator's fee moves an amount
+off the quote. The reading says all of that on itself.
+
+## 12. The third reading disproves two of my own distinctions
+
+Sharpened, the instrument returned: 181 of 386 sole-advertised
+addresses received (47%), 5,964 transfers inside the quoted band,
+median transfer size **$0.006**, 97% of transfers under a dollar,
+busiest single address 4,458 transfers.
+
+**Both distinctions §11 added failed, and the reading is what
+showed it.**
+
+**Sole versus shared filtered the wrong direction.** The shared
+bucket holds 42 receiving addresses and 414 transfers *in total*.
+The busiest single address holds 4,458 — so it cannot be shared; it
+is advertised by exactly one door. And the buckets run backwards:
+sole traffic averages 53.8 transfers per receiving address against
+shared's 9.9, **5.4× more concentrated**. "Advertised by several
+doors is shared by construction" remains true. The converse — that
+sole-advertised approximates a door's own till — was never
+established and is now contradicted. One door pointing at a
+custodian is still one door. The caption's claim that the sole rate
+was "the one worth reading" was an overclaim and has been struck.
+
+**The quoted band could not discriminate.** With a median transfer
+of $0.006 and doors quoting from $0.001, the band's floor sits
+below essentially all traffic. 61% of sole transfers landing in
+band says the band is wide, not that anyone paid.
+
+### Defect 7, and the pattern behind it
+
+10,158 transfers a day, median $0.006, about three per address.
+That shape fits a low-volume micropayment market. It also fits
+**address poisoning**, which is endemic on Base. A transfer count
+cannot separate them.
+
+The discriminator was already in hand and being discarded:
+`usdcTransfersToAny` returns `from`, and this reader dropped it —
+exactly as it dropped `amount` one build earlier. Four shapes
+produce identical transfer counts and separate cleanly on the
+sender: a market has many payers; a dust campaign has one sprayer
+reaching hundreds; a facilitator has one sender; an operator
+funding itself sends from an address it also advertised.
+
+**The pattern worth naming: three of seven defects on this
+instrument are the same mistake — a field the RPC handed us,
+dropped at the boundary, and then missed downstream.** Not a
+reasoning error. A plumbing habit.
+
+### What is publishable from the third reading
+
+One thing, and it survives both failed heuristics because it has a
+real denominator: **223 of 440 addresses whose doors quoted Base
+received there (51%); 2 of 44 that quoted Polygon did (4.5%).**
+Doors advertise Polygon and almost nothing arrives. That is a
+denominated fact about advertised-versus-actual rails.
+
+## 13. The fourth reading, and where the chain stops
+
+The sender field settled the question the third reading could not.
+
+**The spray hypothesis is dead.** Only **2 senders reached 10 or more
+of the watched addresses, accounting for 7% of transfers**. Address
+poisoning would look like the opposite — many sprayers, wide reach.
+Ruling it out matters: it was the strongest innocent explanation for
+10,000 tiny transfers a day, and it is gone.
+
+**So is the market hypothesis.** 537 distinct senders, but a **median
+of 1 distinct sender per receiving address**, and **110 of 217
+addresses took their entire inflow from a single payer**. A door with
+customers has many payers. Half of these have exactly one, which is
+what self-funding and single-counterparty flows look like. The
+busiest sender accounts for 38% of transfers and the busiest
+receiving address holds 4,849 — close enough that one high-frequency
+pair is very likely most of the traffic.
+
+Across three readings an hour apart the shape held: 232 / 223 / 217
+receiving addresses, busiest 4,458 / 4,849, median transfer $0.006
+every time. A steady-state process, not a spike.
+
+### The narrowest figure, and why it is the last one
+
+Every broader number has an innocent explanation that swallows it, so
+the reading now computes the intersection: **sole-advertised
+addresses taking in-band transfers from more than one distinct
+payer.** The load-bearing detail is that payers are counted over the
+*in-band* transfers only — otherwise a door with one real customer
+and fifty dust senders reads as popular, which is the failure mode
+every previous refinement fell into.
+
+It is still not proof, and the reading says so on itself: one
+operator with two wallets paying its own door clears this bar, and
+nothing here has seen a receipt.
+
+**This is where chain-only analysis ends.** Not because the data ran
+out — because the question is about intent, and a transfer does not
+carry intent. Four rebuilds established that with numbers rather than
+with an argument. The next rung has to be a bought good: **NOW-6.**
+
+### What survived, and is publishable
+
+| Finding | Why it holds |
+|---|---|
+| **Base 217/440 (49%) vs Polygon 2/44 (4.5%)** of addresses whose doors quoted that rail | Real per-rail denominators; untouched by either failed heuristic |
+| **110 of 217 receiving addresses took their whole inflow from one payer** | A denominated structural fact, not an inference |
+| **2 senders reached 10+ addresses, 7% of transfers** | The honest exclusion of the obvious alternative |
+| **Busiest tenth hold 87%; busiest single address 44% of all transfers** | Concentration, stable across readings |
+
+### The ceiling, stated plainly
+
+Even sharpened, this instrument cannot prove a purchase. It can only
+narrow what a transfer might be. Answering "does anyone actually pay
+these asks" needs evidence the chain does not carry — a sampled real
+purchase, or receipt-level data. **That is the cost-benefit case for
+NOW-6**, and the second reading is what made it with numbers rather
+than with an argument.
+
+**The lesson worth keeping.** Every one of these was visible in the
+code at review time, and none was visible to me until a real reading
+made the numbers sit next to each other. The audit's own bar — an
+instrument re-earns its claims before serving — is not met by a
+caption written once beside a number computed later. It is met by
+deriving the caption from the number, which is what §10 shipped.
+An instrument's first live reading is part of its test suite, and
+this one should have been run before the merge, not after.
+
 *Filed 2026-08-28. Findings verified against the working tree at
 HEAD 2114535; line numbers in §§1-7 are that commit's. Fixes landed
-the same day under the keeper's word; §9 is the ledger of which. —
-the instrument audit*
+the same day under the keeper's word; §9 is the ledger of which.
+§10 was added the same evening, after the instrument's first live
+reading audited its builder. — the instrument audit*
 
 ---
 
-## 10. THREE FINDINGS FROM OUTSIDE, 2026-08-28 (the keeper's relay)
+## 14. THREE FINDINGS FROM OUTSIDE, 2026-08-28 (the keeper's relay)
 
 Same defect class as the signed-offer undercount, arriving from two
 outside readers on the same afternoon. Recorded, not fixed: the

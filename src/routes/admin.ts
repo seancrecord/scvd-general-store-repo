@@ -19,6 +19,7 @@ import {
   reconcileSettles,
 } from "@/lib/metrics";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
+import { renderTakePage } from "@/pages/admin/take-page";
 import { recountFromRows } from "@/lib/recount";
 import { computeStats } from "@/services/stats";
 import { renderAdminShell } from "@/pages/admin/layout";
@@ -331,6 +332,117 @@ function stockNotice(
     : `Stocked ${count}${where}. They're on the shelf and the listing is live.`;
 }
 
+/**
+ * GET /admin/glance — the phone view, and one KV read.
+ *
+ * The keeper's ask was three words: fast, scannable, works on a
+ * phone. The desk fails all three for one structural reason —
+ * seventeen loads before a number appears, three of them heavy walks
+ * over every month the store has been open. That restructure is its
+ * own pass. This is the door he opens when the question is only
+ * "does anything need me", answered from the hourly blob in
+ * services/glance.ts.
+ *
+ * IT STATES ITS OWN AGE, always. A cached number that presents as
+ * live would have him deciding on figures of unknown vintage, which
+ * is the failure this whole store exists to argue against — and an
+ * unwritten blob renders as "not computed yet" rather than as five
+ * zeros, because a zero is a claim ("I looked; there were none") and
+ * nothing has looked. Same rule as the shelf: say what you saw and
+ * when, or say you have not seen.
+ */
+/**
+ * GET /admin/take — the money walks, where they cost what they cost.
+ *
+ * computeStats scans every month's metric keys; takeSummary walks
+ * every certificate. Both are honest work and neither is fast, and
+ * until today they ran on /admin — gating the first section of the
+ * page, so opening the office to see whether anything needed the
+ * keeper meant waiting for the full books first.
+ *
+ * They are the same numbers, computed the same way. The only change
+ * is that a reader now asks for them, rather than paying for them on
+ * the way to something else.
+ */
+adminRoutes.get("/admin/take", async (c) => {
+  const notes: string[] = [];
+  const [take, allTimeStats] = await Promise.allSettled([
+    import("@/services/books-summary").then(({ takeSummary }) =>
+      takeSummary(c.env),
+    ),
+    computeStats(c.env),
+    /**
+     * The rail split rides the certificate walk again, which is where
+     * it always belonged: this page is the one paying for that walk
+     * now, so opening it still brings the shopfront's Base/Solana
+     * split current instead of waiting out the hour. Never blocks —
+     * a failure leaves the last snapshot standing.
+     */
+  ]);
+  const stats = shelf(allTimeStats, null, "all-time stats", notes);
+  const body = renderTakePage({
+    take: shelf(take, null, "the take", notes),
+    allTime: stats
+      ? { organic: stats.organic_settlements, house: stats.house_settlements }
+      : null,
+    loadNotes: notes,
+  });
+  return c.html(body);
+});
+
+adminRoutes.get("/admin/glance", async (c) => {
+  const { readGlance } = await import("@/services/glance");
+  const glance = await readGlance(c.env);
+  const shell = (body: string) => `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The glance \u00B7 SCVD</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.5 ui-sans-serif, system-ui, sans-serif; margin: 0; padding: 1.25rem; max-width: 32rem; }
+  h1 { font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 1rem; }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+  li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+       padding: .75rem .9rem; border: 1px solid currentColor; border-radius: .5rem; }
+  .n { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .when { margin-top: 1rem; font-size: .85rem; opacity: .75; }
+  a { color: inherit; }
+</style></head><body>${body}
+<p class="when"><a href="/admin">The whole desk</a></p>
+</body></html>`;
+  if (!glance) {
+    return c.html(
+      shell(
+        `<h1>The glance</h1><p>These numbers have <strong>not been computed</strong> yet \u2014 the hourly round has not written them since this worker last deployed. Nothing here is zero; nothing here has been counted. <a href="/admin">The desk</a> computes everything live.</p>`,
+      ),
+      200,
+    );
+  }
+  const rows: Array<[string, string]> = [
+    ["Orders waiting", String(glance.pending_orders)],
+    ["Needs your review", String(glance.pending_reviews)],
+    ["Open alarms", String(glance.open_alerts)],
+    ["Sales this month", String(glance.organic_settlements)],
+    ["Take this month", `$${glance.take_usdc.toFixed(2)}`],
+  ];
+  return c.html(
+    shell(
+      `<h1>The glance</h1><ol>${rows
+        .map(
+          ([label, value]) =>
+            `<li><span>${escapeHtml(label)}</span><span class="n">${escapeHtml(value)}</span></li>`,
+        )
+        .join("")}</ol>
+      <p class="when">Read ${escapeHtml(glance.computed_at)}, on the hourly round.${
+        glance.truncated
+          ? " One of the source walks hit its cap, so the money figures are a floor rather than a total."
+          : ""
+      }</p>`,
+    ),
+    200,
+  );
+});
+
 adminRoutes.get("/admin/counter", async (c) => {
   const notes: string[] = [];
   const [
@@ -432,10 +544,8 @@ adminRoutes.get("/admin", async (c) => {
     confessions,
     refunds,
     alerts,
-    reconciliation,
-    allTimeStats,
     monthReclass,
-    take,
+    glance,
   ] = await Promise.allSettled([
     readMonthLedger(c.env),
     readPorchLedger(c.env),
@@ -449,26 +559,43 @@ adminRoutes.get("/admin", async (c) => {
     listConfessions(c.env),
     listRefunds(c.env),
     listAlerts(c.env, 5),
-    reconcileSettles(c.env),
-    computeStats(c.env),
     import("@/services/reclassify").then(({ monthReclassAdjustments }) =>
       monthReclassAdjustments(c.env),
     ),
-    import("@/services/books-summary").then(({ takeSummary }) =>
-      takeSummary(c.env),
-    ),
-    /**
-     * The rail split snapshot, refreshed here as well as on the cron.
-     * The desk is already paying for the certificate walk to build the
-     * take; this writes what it learned into the one key the front of
-     * the store reads, so the keeper opening his own office is enough
-     * to bring the shopfront's Base/Solana split current instead of
-     * waiting out the hour. Never blocks the desk: a failure here
-     * leaves the last snapshot standing.
+    /*
+     * The take arrives from the hourly glance — one read — rather
+     * than from a fresh certificate walk on every open. The
+     * 2026-08-05 ruling that the desk leads with the all-time take
+     * stands; only the cost of satisfying it moved to the cron.
+     *
+     * ensureGlance rather than readGlance, because an empty cache
+     * lasts an hour after each deploy and that is exactly when the
+     * keeper opens the desk. Cold: compute once, store, show it.
+     * Warm: one read. Either way, never a walk per open.
      */
-    import("@/services/rails").then(({ refreshRailSplit }) =>
-      refreshRailSplit(c.env).catch(() => null),
+    import("@/services/glance").then(({ ensureGlance }) =>
+      ensureGlance(c.env),
     ),
+    /*
+     * THE FOUR THAT LEFT, 2026-08-28, and where they went.
+     *
+     * computeStats scans the metric keys for every month the store has
+     * been open; takeSummary walks every certificate; reconcileSettles
+     * walks the chain. All three gated the FIRST section of the page,
+     * so opening the office to see whether anything needed the keeper
+     * cost three full walks before a single figure appeared. They live
+     * at /admin/take now, opened when the question is actually money.
+     *
+     * reconcileSettles was the plainest waste: a whole chain walk so
+     * this page could print one sentence above a link to
+     * /admin/reconciliation, which does the real work anyway. The
+     * hourly glance carries that verdict now.
+     *
+     * refreshRailSplit rode along because the desk "is already paying
+     * for the certificate walk" — true then, false now, and the cron
+     * refreshes the same snapshot on its own schedule, so nothing is
+     * lost by letting it go.
+     */
   ]);
   const emptyLedger = emptyMonthLedger();
   const pendingReviews =
@@ -497,8 +624,13 @@ adminRoutes.get("/admin", async (c) => {
       ),
       payers: shelf(payers, [], "payers", notes),
       recentChallenges: shelf(recentChallenges, [], "window-shoppers", notes),
-      reconciliation: shelf(reconciliation, null, "reconciliation", notes),
-      take: shelf(take, null, "the take", notes),
+      /*
+       * Null on purpose: these are the money walks, and they run at
+       * /admin/take now. The page renders both as "not read here"
+       * rather than as zero or as an alarm — see the books line.
+       */
+      reconciliation: null,
+      take: shelf(glance, null, "the glance", notes)?.take ?? null,
       monthReclass: (() => {
         const adjustments = shelf(monthReclass, null, "reclass ledger", notes);
         const current = adjustments?.months[metricsMonth()];
@@ -509,15 +641,8 @@ adminRoutes.get("/admin", async (c) => {
         }
         return current ?? null;
       })(),
-      allTime: (() => {
-        const stats = shelf(allTimeStats, null, "all-time stats", notes);
-        return stats
-          ? {
-              organic: stats.organic_settlements,
-              house: stats.house_settlements,
-            }
-          : null;
-      })(),
+      allTime: shelf(glance, null, "the glance", notes)?.all_time ?? null,
+      takeReadAt: shelf(glance, null, "the glance", notes)?.computed_at ?? null,
       bazaarLedger: shelf(bazaarLedger, [], "bazaar ledger", notes),
       gazetteIssues: shelf(gazetteIssues, [], "gazette rack", notes),
       almanacSlugs: (await listAlmanacEntries(c.env).catch(() => [])).map(
@@ -1722,6 +1847,285 @@ adminRoutes.post("/admin/outreach/clear-statuses", async (c) => {
  * read the round. Idempotent per week — a re-press replaces the
  * week's row with the round as it stands now.
  */
+/**
+ * THE INFLOW CENSUS — its own door, deliberately (the keeper's T1
+ * ruling, 2026-08-28).
+ *
+ * NOT folded into /admin/market, because this reading costs roughly
+ * sixty getLogs across two chains and a page that scans the chain on
+ * every load is the shape this store already refuses elsewhere (the
+ * passport chip's cache note says it in as many words). The keeper
+ * asks for it; it does not happen to him.
+ *
+ * T1 ONLY: counts, no addresses, no hosts. Publication to the public
+ * tally stays a separate press under rule 30, exactly like the
+ * registry week — the reading being available is not the reading
+ * being published.
+ */
+adminRoutes.get("/admin/market/inflows", async (c) => {
+  const { readInflowCensus } = await import("@/services/inflow-census");
+  const census = await readInflowCensus(c.env);
+  if (!census) {
+    return wantsHtml(c.req.header("Accept"))
+      ? c.html(
+          (await import("@/pages/admin/layout")).renderAdminShell(
+            "market",
+            "<h1>Inflows</h1><p class='empty'>No ward round yet — there are no advertised addresses to watch.</p>",
+          ),
+        )
+      : c.json({ error: "no ward round yet" }, 404);
+  }
+  /*
+   * WHAT IS SHOWN IS WHAT MAY BE PRESSED. Stashed as the page
+   * renders, so publishInflowWeek publishes the numbers on this
+   * screen rather than a fresh walk nobody has seen. Rule 30 is "he
+   * reads the round first"; this makes that mechanical.
+   */
+  const { stashRenderedReading } = await import("@/services/inflow-pulse");
+  await stashRenderedReading(c.env, census);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(census);
+  }
+  const { renderAdminShell } = await import("@/pages/admin/layout");
+  const { escapeHtml } = await import("@/lib/sanitize");
+  const windows = census.windows
+    .map(
+      (window) =>
+        `<li><strong>${escapeHtml(window.chain)}</strong>: ${window.received_advertised} of ${window.advertised_here} addresses whose doors quoted this rail received here${
+          window.received_unadvertised > 0
+            ? `, plus ${window.received_unadvertised} that never quoted it at all`
+            : ""
+        }. ${window.transfers} transfer${window.transfers === 1 ? "" : "s"},
+        over ${window.blocks.toLocaleString()} blocks (${window.from_block}–${window.to_block}) in ${window.calls} call${window.calls === 1 ? "" : "s"}${
+          window.truncated ? " — <strong>cut short</strong>" : ""
+        }${
+          window.addresses_unread > 0
+            ? ` — <strong>${window.addresses_unread} addresses unread</strong>`
+            : ""
+        }${window.unread ? ` — <strong>${escapeHtml(window.unread)}</strong>` : ""}</li>`,
+    )
+    .join("");
+  /*
+   * NO PERCENTAGE WHEN THE WINDOWS DISAGREE (rule 52). The first
+   * reading of this instrument stated "153 of 300" as a rate while
+   * Base had been watched for a full day and Polygon for eleven
+   * hours. A union across unequal windows is a floor; the page says
+   * floor, and says which chain was short.
+   */
+  const pct = (part: number, whole: number): string =>
+    `${Math.round((part / Math.max(1, whole)) * 100)}%`;
+  const sole = census.by_exclusivity.sole;
+  const shared = census.by_exclusivity.shared;
+  const headline = census.windows_equal
+    ? `<strong>${sole.received} of ${sole.watched}</strong> (${pct(sole.received, sole.watched)})
+       addresses that <strong>only one door advertised</strong> received USDC over the window below.`
+    : `<strong>At least ${sole.received} of ${sole.watched}</strong> sole-advertised addresses received USDC —
+       <strong>a floor, not a rate</strong>: the chains below were not walked over the same window,
+       so no percentage is stated.`;
+  const shape = census.distribution;
+  return c.html(
+    renderAdminShell(
+      "market",
+      `<h1>Inflows — week ${escapeHtml(census.week)}</h1>
+      <p class="lead">${headline}
+      ${census.addresses_capped ? `<strong>The ceiling bound:</strong> the round advertised ${census.addresses_advertised} and this run watched ${census.addresses_checked} on a rotating window.` : ""}</p>
+
+      <h2>Did anyone pay an ask?</h2>
+      <p>The narrowest honest answer this instrument can give:
+      <strong>${census.in_quoted_band.transfers}</strong> transfer${census.in_quoted_band.transfers === 1 ? "" : "s"}
+      landed inside the USDC range the advertising door itself quoted, across
+      <strong>${census.in_quoted_band.sole_addresses}</strong> sole-advertised address${census.in_quoted_band.sole_addresses === 1 ? "" : "es"}
+      (${census.in_quoted_band.addresses} including shared ones).
+      A floor on plausible payments — a band is not a receipt.</p>
+
+      <h2>The narrowest figure, and the end of what the chain can do</h2>
+      <p><strong>${census.narrowest.multi_payer_in_band}</strong> of ${census.narrowest.watched}
+      sole-advertised addresses took in-band transfers from <strong>more than one</strong> distinct
+      payer — ${census.narrowest.transfers} such transfers, median
+      ${census.narrowest.median_payers} payers each. Payers counted over the in-band transfers only,
+      so a door with one customer and fifty dust senders does not read as popular.</p>
+      <p><em>Still not proof.</em> One operator with two wallets paying its own door clears this bar,
+      and nothing here has seen a receipt. This is the floor beneath which chain data cannot go —
+      the next rung has to be a bought good, not a cleverer read of the same rows.</p>
+
+      <h2>Who sent it</h2>
+      <p>A market has many payers; a dust campaign has one sprayer; a facilitator has one sender;
+      an operator funding itself sends from a wallet it also advertised. All four look identical
+      in a transfer count.</p>
+      <ul>
+        <li><strong>${census.senders.distinct}</strong> distinct senders across ${census.transfers_seen} transfers;
+        the busiest single sender accounts for
+        <strong>${census.senders.top_sender_share_pct === null ? "n/a" : `${census.senders.top_sender_share_pct}%`}</strong></li>
+        <li>Median <strong>${census.senders.median_senders_per_receiver}</strong> distinct senders per receiving address;
+        <strong>${census.senders.single_sender_receivers}</strong> addresses took their entire inflow from one sender</li>
+        <li><strong>${census.senders.broadcasters}</strong> sender${census.senders.broadcasters === 1 ? "" : "s"} reached 10+ of these
+        addresses, accounting for <strong>${census.senders.broadcaster_share_pct === null ? "n/a" : `${census.senders.broadcaster_share_pct}%`}</strong>
+        of all transfers — the spray signature</li>
+        <li><strong>${census.senders.from_advertised}</strong> transfers came from an address advertised in a 402 itself</li>
+      </ul>
+
+      <h2>Sole versus shared</h2>
+      <p>An address several doors point at is shared infrastructure <em>by construction</em> — read off our
+      own record of who advertised it, not guessed from the wallet.</p>
+      <ul>
+        <li><strong>Sole-advertised</strong>: ${sole.received} of ${sole.watched} received
+        (${pct(sole.received, sole.watched)}), ${sole.transfers} transfers</li>
+        <li><strong>Shared</strong>: ${shared.received} of ${shared.watched} received
+        (${pct(shared.received, shared.watched)}), ${shared.transfers} transfers</li>
+      </ul>
+
+      <h2>How the traffic is shaped</h2>
+      <p>Across all ${census.addresses_received} receiving addresses and ${census.transfers_seen} transfers:
+      median <strong>${shape.median_transfers}</strong> transfers per receiving address;
+      busiest single address <strong>${shape.max_transfers}</strong>;
+      busiest tenth hold
+      <strong>${shape.top_decile_share_pct === null ? "n/a" : `${shape.top_decile_share_pct}%`}</strong>.
+      Median transfer size <strong>$${census.amounts.median_usdc}</strong>;
+      ${census.amounts.under_1_usdc} under $1, ${census.amounts.under_10_usdc} under $10,
+      ${census.amounts.over_100_usdc} over $100.</p>
+
+      <h2>What was actually covered</h2>
+      <ul>${windows}</ul>
+      <h2>What this counts</h2>
+      <p>${escapeHtml(census.what_this_counts)}</p>
+      <h2>What this is not</h2>
+      <p>${escapeHtml(census.what_this_is_not)}</p>
+
+      <h2>Publish this week</h2>
+      ${
+        c.req.query("refused")
+          ? `<p class="empty"><strong>Refused:</strong> ${escapeHtml(c.req.query("refused") ?? "")}</p>`
+          : ""
+      }
+      ${
+        c.req.query("published")
+          ? `<p><strong>Published week ${escapeHtml(c.req.query("published") ?? "")}</strong>${
+              c.req.query("replaced") === "true" ? " (replaced an earlier press)" : ""
+            } — now live at <a href="/inflows">/inflows</a>.</p>`
+          : ""
+      }
+      <p>Nothing above reaches the public page until this is pressed. The press
+      snapshots the counts as they stand now, and refuses outright if the chains
+      were not walked over the same window or if any address went unread — a
+      reading that does not know its own denominator has no business on a public
+      tally.</p>
+      <form method="post" action="/admin/market/publish-inflows">
+        <button type="submit">Publish week ${escapeHtml(census.week)} to /inflows</button>
+      </form>`,
+    ),
+  );
+});
+
+/**
+ * L3c, ENDPOINT SIDE — its own door, like the inflow census, and for
+ * the same reason: it costs did:web resolutions across every issuer
+ * the round saw, which is not a thing that should happen on a
+ * pageview somebody else opens.
+ *
+ * COUNTS ARE THE READING; the named rows below it are the keeper's
+ * own screen. "This door's signature does not verify" is a heavier
+ * claim than anything this store publishes today and needs its own
+ * ruling before it reaches anybody.
+ */
+adminRoutes.get("/admin/market/authenticity", async (c) => {
+  const { readOfferAuthenticityDetail } = await import(
+    "@/services/offer-authenticity"
+  );
+  const walked = await readOfferAuthenticityDetail(c.env);
+  if (!walked) {
+    return wantsHtml(c.req.header("Accept"))
+      ? c.html(
+          (await import("@/pages/admin/layout")).renderAdminShell(
+            "market",
+            "<h1>Offer authenticity</h1><p class='empty'>No ward round yet — there are no stored challenges to verify.</p>",
+          ),
+        )
+      : c.json({ error: "no ward round yet" }, 404);
+  }
+  const { reading, rows } = walked;
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({ reading, rows });
+  }
+  const { renderAdminShell } = await import("@/pages/admin/layout");
+  const { escapeHtml } = await import("@/lib/sanitize");
+  const verdicts = Object.entries(reading.by_verdict)
+    .map(
+      ([verdict, count]) =>
+        `<li><strong>${escapeHtml(verdict)}</strong>: ${count}</li>`,
+    )
+    .join("");
+  const interesting = rows.filter(
+    (row) => row.verdict === "failed" || row.verdict === "kid_not_in_document",
+  );
+  const flagged = interesting.length
+    ? `<h2>Doors worth a human look — NOT PUBLISHED</h2>
+       <p>A signature that does not verify is a serious claim about a named party. These rows
+       are here for you, and nothing renders them anywhere else.</p>
+       <ul>${interesting
+         .map(
+           (row) =>
+             `<li><strong>${escapeHtml(row.host)}</strong>: ${escapeHtml(row.verdict)} —
+              ${row.offers_failed} of ${row.offers_seen} offers, issuers
+              ${escapeHtml(row.issuers.join(", ") || "none named")}${
+                row.detail ? ` — ${escapeHtml(row.detail)}` : ""
+              }</li>`,
+         )
+         .join("")}</ul>`
+    : `<h2>Doors worth a human look</h2><p>None: no signature failed and no issuer disowned a key this round.</p>`;
+  return c.html(
+    renderAdminShell(
+      "market",
+      `<h1>Offer authenticity — week ${escapeHtml(reading.week)}</h1>
+      <p class="lead"><strong>${reading.hosts_serving_signed} of ${reading.hosts_with_evidence}</strong>
+      doors whose challenge this round stored serve a signed offer at all — that is the entire
+      population this instrument can speak about, and the honest measure of whether it is worth having.</p>
+
+      <h2>What the signatures said</h2>
+      <p><strong>${reading.offers_verified}</strong> of ${reading.offers_seen} signed offers verified
+      against the key their own issuer publishes; <strong>${reading.offers_failed}</strong> did not.
+      ${reading.offers_schema_failed} also failed the offer schema — counted apart, because a signed
+      offer with a sloppy field is not a forgery.</p>
+      <ul>${verdicts}</ul>
+
+      <h2>What it cost</h2>
+      <p>${reading.resolutions_spent} did:web resolutions across ${reading.issuers_seen} distinct issuers
+      (${reading.issuers_resolved} resolved, ${reading.issuers_unreachable} would not)${
+        reading.budget_bound
+          ? ` — <strong>the ${reading.resolution_budget}-resolution budget bound</strong>`
+          : ""
+      }. No door was knocked on for this: every byte verified here was already in the round.</p>
+
+      ${flagged}
+
+      <h2>What this counts</h2>
+      <p>${escapeHtml(reading.what_this_counts)}</p>
+      <h2>What this is not</h2>
+      <p>${escapeHtml(reading.what_this_is_not)}</p>`,
+    ),
+  );
+});
+
+/**
+ * THE INFLOW PRESS (rule 30). The census has been readable since
+ * 2026-08-28 and unpublished the whole time — not by a ruling, but
+ * because nobody had built this. It refuses rather than publishing a
+ * reading whose coverage cannot support a share.
+ */
+adminRoutes.post("/admin/market/publish-inflows", async (c) => {
+  const { publishInflowWeek } = await import("@/services/inflow-pulse");
+  const result = await publishInflowWeek(c.env);
+  if (!result.ok) {
+    return c.redirect(
+      `/admin/market/inflows?refused=${encodeURIComponent(result.refusal.slice(0, 300))}`,
+      303,
+    );
+  }
+  return c.redirect(
+    `/admin/market/inflows?published=${encodeURIComponent(result.entry.week)}&replaced=${result.replaced}`,
+    303,
+  );
+});
+
 adminRoutes.post("/admin/market/publish-registry", async (c) => {
   const { publishRegistryWeek } = await import("@/services/registry-pulse");
   const result = await publishRegistryWeek(c.env);

@@ -555,6 +555,57 @@ export async function usdcTransfersTo(
  * Same indexed-topic trick as usdcTransfersTo, position 1 instead of
  * 2: the node filters, we receive only this wallet's outflows.
  */
+/**
+ * EVERY USDC TRANSFER INTO ANY OF THESE ADDRESSES, in ONE call.
+ *
+ * The inflow census (2026-08-28, the keeper's T1 ruling) watches a
+ * few hundred advertised payTos at once. One getLogs per address
+ * would be a few hundred subrequests per block span and would blow
+ * the Worker's budget before it covered an hour. eth_getLogs takes
+ * an ARRAY at a topic position and ORs it, so the whole watch list
+ * costs one call per span per chain.
+ *
+ * Returns the matched `to` address on every row, because the caller
+ * is counting distinct recipients and a flat list of amounts cannot
+ * answer that.
+ */
+export async function usdcTransfersToAny(
+  env: Env,
+  toAddresses: readonly string[],
+  fromBlock: number,
+  toBlock: number,
+  chain: EvmChain = BASE_EVM,
+): Promise<Array<{ txHash: string; from: string; to: string; amount: bigint; block: number }>> {
+  const padded = [
+    ...new Set(
+      toAddresses
+        .filter((address) => /^0x[0-9a-fA-F]{40}$/.test(address))
+        .map(
+          (address) =>
+            `0x${address.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`,
+        ),
+    ),
+  ];
+  if (padded.length === 0) return [];
+  const logs = await rpc<
+    Array<{ transactionHash: string; topics: string[]; data: string; blockNumber: string }>
+  >(env, "eth_getLogs", [
+    {
+      address: chain.usdc,
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: `0x${toBlock.toString(16)}`,
+      topics: [TRANSFER_TOPIC, null, padded],
+    },
+  ], chain);
+  return (logs ?? []).map((log) => ({
+    txHash: String(log.transactionHash ?? "").toLowerCase(),
+    from: addressFromTopic(log.topics?.[1] ?? ""),
+    to: addressFromTopic(log.topics?.[2] ?? ""),
+    amount: BigInt(log.data && log.data !== "0x" ? log.data : "0x0"),
+    block: Number.parseInt(log.blockNumber ?? "0x0", 16),
+  }));
+}
+
 export async function usdcTransfersFrom(
   env: Env,
   fromAddress: string,

@@ -196,3 +196,67 @@ describe("the page cadence, which was nagging", () => {
     expect((await pageKeys()).length).toBe(1);
   });
 });
+
+/**
+ * THE SAME BUG, STILL OPEN ON THE ONE PATH THAT VARIES ITS OWN TEXT.
+ *
+ * The keeper, 2026-08-28: five worker_health alerts he could not
+ * clear, all of them the bank walk. They were not five problems. A
+ * keyless alert dedupes on its detail string — deliberately, so that
+ * distinct worker_health failures cannot hide behind whichever fired
+ * first — and the chain-reconciliation alert embeds `String(error)`
+ * in its detail. "KV GET failed: 429 Too Many Requests" and "500
+ * Internal Server Error" and the next variant hash three different
+ * ways, so one rail failing its hourly walk all night mints a fresh
+ * row per error text and pushes real alarms off the bottom of a
+ * surface that returns the newest N.
+ *
+ * The identity of this condition is THE RAIL'S WALK IS FAILING. The
+ * error string is diagnosis, not identity, which is exactly what the
+ * `key` discriminator is for. With it, the night collapses to one row
+ * per rail whose `repeats` says how bad it got and whose `detail`
+ * carries the most recent error.
+ *
+ * WHY NOT AN ACK BUTTON, which is the other thing five stuck rows
+ * suggest. These rows are not stale: every one records an hourly walk
+ * that really did fail and really did not finish. A dismiss lever
+ * would let a keeper clear the evidence of an ongoing outage without
+ * fixing it, and the walk would keep silently not running. Collapsing
+ * duplicates is the honest half; the condition itself clears when the
+ * walk succeeds and the row stops repeating.
+ */
+describe("a rail whose walk keeps failing", () => {
+  it("is one row per rail, not one row per error message", async () => {
+    const { reconcileChainFailureAlert } = await import(
+      "@/services/chain-reconciliation"
+    );
+    for (const error of [
+      "KV GET failed: 429 Too Many Requests",
+      "KV GET failed: 500 Internal Server Error",
+      "KV GET failed: 429 Too Many Requests (retry 3)",
+    ]) {
+      await reconcileChainFailureAlert(testEnv, "Base", error);
+    }
+    const rows = await listAlerts(testEnv, 20);
+    const walks = rows.filter((row) => row.detail.includes("reconciliation failed"));
+    expect(
+      walks.length,
+      `three error strings from one rail made ${walks.length} rows`,
+    ).toBe(1);
+    expect(walks[0]?.repeats).toBe(3);
+    // The row carries the LATEST error, so the newest diagnosis is the
+    // one on screen rather than whichever arrived first.
+    expect(walks[0]?.detail).toContain("retry 3");
+  });
+
+  it("keeps the two rails apart, because they fail independently", async () => {
+    const { reconcileChainFailureAlert } = await import(
+      "@/services/chain-reconciliation"
+    );
+    await reconcileChainFailureAlert(testEnv, "Base", "KV GET failed: 429");
+    await reconcileChainFailureAlert(testEnv, "Polygon", "KV GET failed: 429");
+    const rows = await listAlerts(testEnv, 20);
+    const walks = rows.filter((row) => row.detail.includes("reconciliation failed"));
+    expect(walks.length).toBe(2);
+  });
+});

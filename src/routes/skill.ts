@@ -9,6 +9,7 @@ import { PENNY_PAGE_USDC } from "@/lib/payments";
 import { computeStats, trackRecordLine } from "@/services/stats";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
 import { OPERATED_BY } from "@/store/copy/position";
+import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
 import {
   SAMPLE_ARTIFACT_ID,
   IDENTITY_POLICY,
@@ -222,10 +223,11 @@ the door, identifying this skill file, never you. Leave it on.
 1. \`GET ${base}/api/buy/{item_id}?src=skill\` (worked example: \`GET ${base}/api/buy/hello?src=skill\`)
 2. We answer \`402 Payment Required\`. Machine-readable terms ride the
    \`PAYMENT-REQUIRED\` response header (base64 JSON): scheme \`exact\`,
-   Base entries (\`eip155:8453\`) first, Solana entries after — same
-   tiers, your wallet's choice of rail — USDC asset, amount, our
-   address per rail. The JSON
+   Base entries (\`eip155:8453\`) first, Solana entries after — USDC
+   asset, amount, our address per rail. The JSON
    body carries the same item's spec and the verification block.
+
+   ${STOCK_CLIENT_RAIL_NOTE}
 3. Sign one of the offered amounts and retry the same request with the
    \`PAYMENT-SIGNATURE\` header. A standard v2 client (e.g.
    \`@x402/fetch\`) does steps 2\u20133 on its own:

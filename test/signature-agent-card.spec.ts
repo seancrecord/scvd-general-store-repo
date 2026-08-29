@@ -1,6 +1,7 @@
 import { SELF, env } from "cloudflare:test";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { MENU_ITEMS } from "@/store";
+import { CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import { performSignatureAgentCard } from "@/services/bot-auth-card";
 import { signedDirectory } from "@/lib/web-bot-auth";
@@ -78,11 +79,28 @@ function stubAgentOrigin(response: () => Promise<Response>): void {
  * evidence binding, and the card surviving at its URL.
  */
 describe("the calling card", () => {
-  it("sits on the shelf at $2 with url as its one required input", () => {
+  it("sits on the shelf under the client ceiling, with url as its one required input", () => {
     const item = MENU_ITEMS.find(
       (entry) => entry.id === "signature_agent_card",
     );
-    expect(item?.price_usdc).toBe(2);
+    /*
+     * NOT A TYPED PRICE, AND NOT A TAUTOLOGY EITHER — the second draft
+     * of this line was `item.price_usdc` against `getMenuItem(...)`,
+     * which is the same object compared to itself and passes forever.
+     *
+     * What is worth asserting is the PROPERTY the reprice bought: this
+     * door is reachable by a stock x402 client. It dropped from $2 to
+     * $0.99 on 2026-08-28 because @x402/core refuses anything over its
+     * default ceiling locally, before signing, and the refusal is
+     * invisible to us. Putting it back over that line would make the
+     * card unbuyable again without a single test noticing — so the
+     * line reads the ceiling, not the price.
+     */
+    const price = item?.price_usdc ?? Number.POSITIVE_INFINITY;
+    expect(
+      price,
+      "the calling card is back above the stock client's spend ceiling — unbuyable by an unconfigured buyer, and silently so",
+    ).toBeLessThanOrEqual(CLIENT_CAP_USD);
     expect(item?.fulfillment).toBe("instant");
     // The free door is named on the listing, and the listing never
     // claims more than the document: no endorsement, no identity.

@@ -227,6 +227,166 @@ function freeOp(summary: string, description: string): OpenApiObject {
 }
 
 /**
+ * THE RETURN SHAPE, DECLARED — the request side's defect facing the
+ * other way.
+ *
+ * `freeOp` gives every operation a 200 of `{type: "object"}`, which
+ * is true and carries nothing: a readiness scan on 2026-08-28 read
+ * the live document and found 115 of 117 operations declaring exactly
+ * that, so a function-calling host converting this contract emits
+ * tools whose return value is "some JSON". A model then learns the
+ * fields by provoking a response, which is the discovery cost
+ * operationIds and `jsonBody` were added to remove on the other side.
+ *
+ * A SCHEMA HERE IS A FLOOR, NOT A CENSUS. `additionalProperties` is
+ * left open deliberately: the store sends more than it promises in
+ * places, and a schema that forbids what the endpoint actually
+ * returns is the same species of lie as one that promises what it
+ * does not. What is declared must exist; what exists need not be
+ * declared.
+ *
+ * The binding is in test/typed-response-schemas.spec.ts: every
+ * declared property is fetched from the real endpoint and checked to
+ * be there with the declared type, and everything in `required` is
+ * checked to have actually arrived. That is what keeps these from
+ * being a second copy of the handler that drifts (rule 46) — they
+ * cannot describe a store that does not exist without failing.
+ */
+function returns(
+  operation: OpenApiObject,
+  schema: OpenApiObject,
+): OpenApiObject {
+  const responses = operation["responses"] as OpenApiObject;
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "200": {
+        description: "OK",
+        content: { "application/json": { schema } },
+      },
+    },
+  };
+}
+
+/** A list of stable identifiers, as the registries publish them. */
+const ID_LIST: OpenApiObject = { type: "array", items: { type: "string" } };
+
+/**
+ * THE CATALOG'S OWN SHAPE. Read from the served document rather than
+ * imagined: the spec beside this one fetches /menu.json and fails if
+ * any field named here stopped arriving.
+ */
+const MENU_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["as_of", "checked_at", "description", "store", "items"],
+  properties: {
+    as_of: {
+      type: "string",
+      description: "ISO week the catalog was last written, e.g. 2026-W35.",
+    },
+    checked_at: {
+      type: "string",
+      description: "The date a human last re-read this catalog by hand.",
+    },
+    note: { type: "string", description: "The keeper's line about the shelf." },
+    description: {
+      type: "string",
+      description: "What this store is, in the sentence every surface uses.",
+    },
+    store: {
+      type: "object",
+      description:
+        "Who keeps the shop, how to reach a human, the rails money moves on, and the refund promise.",
+    },
+    use_when: {
+      type: "array",
+      items: { type: "object" },
+      description: "Which shelf answers which situation, one row per item.",
+    },
+    items: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "Every item on the menu: id, name, price_usdc, pricing, fulfillment, the buy URL, and what it needs from you.",
+    },
+    reading_room: {
+      type: "object",
+      description: "The free rooms — corpus, defect vocabulary, attestation.",
+    },
+    free_shelf: {
+      type: "object",
+      description:
+        "The instruments that cost nothing: preflight, the conformance desk, verification.",
+    },
+  },
+};
+
+/**
+ * THE BATTERY MANIFEST'S SHAPE. The digest fields are the load-bearing
+ * half — they are what lets somebody recompute the ruleset from this
+ * document and prove the criteria a verdict cites are the criteria
+ * that ran.
+ */
+const PREFLIGHT_CHECKS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "core_checks",
+    "conditional_checks",
+    "verdict_fold_checks",
+    "advisories",
+    "batteries",
+    "ruleset_digest",
+    "ruleset_digest_covers",
+    "how_to_recompute",
+  ],
+  properties: {
+    core_checks: {
+      ...ID_LIST,
+      description: "Check IDs every battery runs against every door.",
+    },
+    conditional_checks: {
+      ...ID_LIST,
+      description: "Check IDs that only apply when the door's shape invites them.",
+    },
+    verdict_fold_checks: {
+      ...ID_LIST,
+      description:
+        "The subset whose failure changes the verdict rather than riding as an advisory.",
+    },
+    advisories: {
+      ...ID_LIST,
+      description:
+        "Checks reported beside the verdict and never folded into it.",
+    },
+    batteries: {
+      type: "object",
+      description:
+        "Each published battery version and what it folds, so a dated verdict stays readable after the next one ships.",
+    },
+    changelog: {
+      type: "array",
+      items: { type: "object" },
+      description: "Dated ruleset changes, newest first.",
+    },
+    ruleset_digest: {
+      type: "string",
+      description:
+        "SHA-256 over the covered fields, recomputable from this document alone.",
+    },
+    ruleset_digest_covers: {
+      type: "string",
+      description: "Exactly which fields the digest is taken over.",
+    },
+    how_to_recompute: {
+      type: "string",
+      description: "The recipe for checking the digest without asking us.",
+    },
+    note: { type: "string", description: "What this manifest does not claim." },
+  },
+};
+
+/**
  * A TYPED REQUEST BODY, WHICH SIXTEEN POST OPERATIONS DID NOT HAVE.
  *
  * The shapes were all published — in the operation DESCRIPTION, as
@@ -704,9 +864,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
     },
     paths: {
       "/menu.json": {
-        get: freeOp(
-          "The catalog",
-          "Machine-readable menu with prices, buy URLs, and pointers to every free shelf. Serves markdown when the Accept header prefers text/markdown.",
+        get: returns(
+          freeOp(
+            "The catalog",
+            "Machine-readable menu with prices, buy URLs, and pointers to every free shelf. Serves markdown when the Accept header prefers text/markdown.",
+          ),
+          MENU_SCHEMA,
         ),
       },
       "/menu/{item_id}": {
@@ -763,6 +926,15 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * contract. The purchase responses carry them; the spec now
        * does too.
        */
+      "/api/good-buyer/{reading_id}": {
+        get: {
+          ...freeOp(
+              "A purchased payment dry run, served forever",
+              "The signed reading a purchase minted: the accepts that door served verbatim, the buyer's declared client configuration recorded as their claim, and the replay — which accept a stock client selects, or the stage that made it refuse. Free to read forever. The accepts print as served, so the selection re-derives from the artifact without trusting us.",
+          ),
+          parameters: [pathParam("reading_id", "From the purchase response; starts gbuy_.")],
+        },
+      },
       "/api/service-audit/{audit_id}": {
         get: {
           ...freeOp(
@@ -1033,9 +1205,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * somebody remembers this file.
        */
       "/api/preflight/checks": {
-        get: freeOp(
-          "The battery manifest",
-          "Stable check IDs, what each battery folds into its verdict, the dated changelog, and a ruleset digest recomputable from the document alone. Derived from the same registries the battery runs, so criteria and verdicts cannot disagree. Free.",
+        get: returns(
+          freeOp(
+            "The battery manifest",
+            "Stable check IDs, what each battery folds into its verdict, the dated changelog, and a ruleset digest recomputable from the document alone. Derived from the same registries the battery runs, so criteria and verdicts cannot disagree. Free.",
+          ),
+          PREFLIGHT_CHECKS_SCHEMA,
         ),
       },
       ...Object.fromEntries(
@@ -1289,6 +1464,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
               signature: { type: "string" },
             },
           },
+        ),
+      },
+      "/corpus/battery-delta.json": {
+        get: freeOp(
+          "What the stricter battery catches that the frozen one misses",
+          "Per signed week and overall: how many door rows both preflight batteries scored, how many they agreed on, and how many doors v1 would have called ready that v2 caught — broken out by which v2-only check did the catching. v2's checks are v1's plus four, so the disagreement runs one way only. Derived at read from the check names each signed row already carries, so it covers the whole history rather than starting a series; the answer names how to recount it yourself from the snapshots. A scorecard for our own instrument, published on the same terms as the gaps we count against ourselves. Free.",
         ),
       },
       "/corpus/wallet-facts.json": {

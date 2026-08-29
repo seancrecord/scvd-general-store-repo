@@ -149,8 +149,7 @@ export const WATCHED: readonly Watched[] = [
      * retirement. The keeper's words: "In all honesty we wanna be
      * Costco for agents" — and the page this direction belongs on is
      * this one, in this register: decided, dated, gated on facts,
-     * never presented as stock. ⚑ KEEPER REVIEW — the phrasings are
-     * new ink; the direction is his verbatim.
+     * never presented as stock.
      */
     item: "The membership store — Costco's architecture, translated to agents. Decided 2026-08-19: the long direction is the one the warehouse model proved — membership as the product (the standing relationship, not the per-item markup, carries the business), radical curation over endless shelves (the second retirement was this direction acting, not housekeeping), and house-made equivalents only where equal-or-better at lower cost is provable. The trajectory is Price Club's, deliberately: earn the builders first, dress the membership later.",
     trigger:

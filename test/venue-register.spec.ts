@@ -146,7 +146,14 @@ describe("the venue register is a document a hand can work from", () => {
         venue.url,
         `${venue.marker} has a URL that does not carry its own marker — copying it would measure nothing`,
       ).toContain(`src=${venue.marker}`);
-      expect(venue.url.startsWith("https://scvd.store")).toBe(true);
+      // HOSTNAME, NOT PREFIX: the prefix form is also true of
+      // https://scvd.store.evil.com, so it would wave through the
+      // one URL in this list a reader must not be handed.
+      expect(
+        new URL(venue.url).hostname,
+        `${venue.marker} points somewhere that is not this store`,
+      ).toBe("scvd.store");
+      expect(new URL(venue.url).protocol).toBe("https:");
     }
   });
 

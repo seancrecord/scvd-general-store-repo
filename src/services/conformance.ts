@@ -907,6 +907,11 @@ export function conformanceDoc(base: string) {
       "The signature verifies against the key named in the kid.",
       "Optionally (check_anchor), whether the key appears in the issuer's externally anchored key history — a different and harder question than signature validity, reported in its own block.",
       "Whether the offer is still live — reported separately as `live`, never folded into the verdict, because an expired offer is a valid artifact you simply cannot pay against.",
+      // D4, the keeper's approval 2026-08-29. The two facts were
+      // already reported separately; what was missing was the
+      // sentence saying WHY they are separate, which is the thing a
+      // reader needs before they can use either one.
+      "Artifacts now carry stale_after: past it, a document is still validly signed history — just no longer a statement about now. The desk reads both facts separately and says which one failed.",
     ],
     required_fields: {
       offer: OFFER_REQUIRED_FIELDS,

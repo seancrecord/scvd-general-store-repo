@@ -112,10 +112,16 @@ describe("the way prices are written", () => {
     const lucky = MENU_ITEMS.find((item) => item.id === "luckies");
     // Half a cent earns its fraction; whole dollars lose the .00; a
     // pay-what-it-deserves floor takes the plus that says so.
+    //
+    // The lucky's floor moved from $5 to $0.99 on 2026-08-28 (under
+    // the stock client's ceiling), which makes it a BETTER worked
+    // example than it was: it now shows a floor keeping its cents AND
+    // taking the plus, where before it only showed the plus. The rule
+    // itself is swept in the test below; these are its instances.
     expect(priceLabel(bless!)).toBe("½¢");
     expect(priceLabel(hello!)).toBe("$0.50");
     expect(priceLabel(anchor!)).toBe("$1");
-    expect(priceLabel(lucky!)).toBe("$5+");
+    expect(priceLabel(lucky!)).toBe("$0.99+");
   });
 
   it("never prints a floor as though it were the price", () => {

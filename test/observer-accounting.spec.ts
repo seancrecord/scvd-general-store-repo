@@ -78,7 +78,7 @@ function envWithBeacon(): Env {
 }
 
 async function sweepAndRead(env: Env, watchId: string) {
-  await sweepStandingWatches(env);
+  await sweepStandingWatches(env, { burstGapMs: 0 });
   const history = await readWatch(env, watchId);
   expect(history).not.toBeNull();
   return history!;

@@ -121,6 +121,12 @@ export const KV_KEYS = {
    * publish press, never on the clock (rule 30).
    */
   registryPulse: "registry_pulse",
+  /** The published inflow tally — the keeper's press, rule 30. */
+  inflowPulse: "inflow_pulse",
+  /** The reading last RENDERED to the keeper, so the press can
+   * publish the number he actually looked at rather than a fresh
+   * walk he has never seen. Short-lived by design. */
+  inflowPending: "inflow_pending",
   phantomPrefix: "phantom:",
   letter: (invertedTs: string, id: string): string =>
     `letter:${invertedTs}:${id}`,
@@ -273,6 +279,9 @@ export const KV_KEYS = {
    * a page instead of a payment door.
    */
   onpageAudit: (auditId: string): string => `onpage_audit:${auditId}`,
+
+  /** The signed payment dry run (#96), served free forever. */
+  goodBuyerReading: (readingId: string): string => `good_buyer:${readingId}`,
   /**
    * A purchased launch check: the signed stage-by-stage record of one
    * real purchase attempt from the field wallet, and the certificate

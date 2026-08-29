@@ -1,5 +1,28 @@
 import { FIELD_SPEND_CAP_USD } from "@/services/launch-check";
+import { CLIENT_CAP_READABLE, CLIENT_CAP_USD } from "@/lib/client-spend-cap";
 import type { MenuItem } from "@/types";
+
+/**
+ * THE GOOD BUYER'S PRICE IS DERIVED, AND THE DERIVATION IS THE ARGUMENT.
+ *
+ * This door's whole audience is stock clients that have not raised
+ * their spend ceiling — that is the condition it exists to diagnose.
+ * Priced anywhere above @x402/core's own ceiling it would refuse
+ * exactly the buyers it was built for, silently, on their own
+ * machines, while being the thing that would have told them why. A
+ * door that teaches you to raise your cap has to be payable BEFORE
+ * you have raised it, or it is a joke at the buyer's expense.
+ *
+ * So the price is not a number somebody liked. It is one cent under
+ * the imported ceiling, computed from it: raise `$1` upstream and
+ * this door follows without anyone remembering it had to. The
+ * fallback exists for the case rule 52 covers — a ceiling the reader
+ * cannot parse must not silently become a price, so the door keeps
+ * the figure the shelf already carries for its cheap tier.
+ */
+const GOOD_BUYER_PRICE_USDC = CLIENT_CAP_READABLE
+  ? Math.round((CLIENT_CAP_USD - 0.01) * 1e6) / 1e6
+  : 0.99;
 
 /**
  * The utility aisle (aisle three), added in v0.3: things an agent can
@@ -24,8 +47,50 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
+      "Day shift included; we just liked the name. Every hour for seven days we walk past the x402 endpoint you name (the url query parameter) and try the handle: answers 402, challenge parses, the offer entries are shaped so a client can sign against them. Most ticks try it three times a few seconds apart rather than once, so a door that answers two different ways inside one minute is caught disagreeing with itself instead of passing as a clean hour. Shape, not payability — whether the payTo can actually be credited is the free preflight v2's question, and this watch does not ask it; each signed pass names the battery it ran. Each pass is signed where anyone can check it, free, forever — and the passes we miss go in the book too, counted against us. A watchman who leaves his naps out of the log isn't one. Name your own door; that's a rule of the house, not a check we can run. This is the week-long look, hour by hour, signed.",
     note_402: "That'll be $5, friend. Your door goes on the rounds tonight.",
+  },
+  /**
+   * THE GOOD BUYER (#96, keeper-approved 2026-08-28: "I definitely
+   * think we should offer this"). The buyer-side artifact, and the
+   * first thing on this shelf that is about the PURCHASER rather than
+   * about somebody else's door.
+   *
+   * WHY IT IS A SEPARATE PRODUCT rather than a field on the audit:
+   * folding a payability reading into service_audit changes what that
+   * battery counts, which renames the criteria on every artifact this
+   * store has ever signed under it. That is the keeper's call (#82 is
+   * the standing example of what happens when two instruments start
+   * disagreeing in public), not a side effect of adding a check. This
+   * answers its own question and points at the others.
+   *
+   * Rule 23a-clean: one GET, one replay, terminal at write — nothing
+   * recurs. Rule 43: a dated observation on an artifact (the accepts
+   * as served), never a score on the operator or on the buyer. The
+   * buyer's declared client configuration is recorded as THEIR claim,
+   * printed as such, never verified — this store cannot see a
+   * stranger's machine and will not sign as though it could.
+   */
+  {
+    id: "good_buyer",
+    listed_week: "2026-W35",
+    name: "The Good Buyer",
+    price_usdc: GOOD_BUYER_PRICE_USDC,
+    pricing: "fixed",
+    fulfillment: "instant",
+    description:
+      "Name an x402 door you are about to pay (the url query parameter) and the store knocks once, writes down the accepts exactly as that door served them, and replays the stock x402 client's own selection over them — the default-asset filter, the per-payment ceiling, prefer-authorization, then the first survivor. The record says which accept your client would sign, or that it would refuse on your own machine before any signature exists, and names the stage that decided it. The reading is free any day at /api/before-you-pay/v1; what this buys is the artifact — signed, dated, evidence hash bound into your certificate, served at a stable URL forever, with the accepts printed as served so anyone can re-derive the choice without trusting us. For the human who later asks why the money went where it went. Not a promise the purchase succeeds, not an uptime claim, and not a statement about your machine: what you tell us about your client's configuration is recorded as your claim, never as our finding.",
+    note_402:
+      "Under a dollar, deliberately — the whole point is that a client which cannot pay a dollar can still afford to be told why.",
+    constraints: [
+      "Give the door in the url query parameter: https, default port, on the public internet, the URL a buyer would GET expecting a 402",
+      "Optional: max_usd, your client's maxAmountPerPayment in dollars, and no_spend_controls=true if you pass spendControls: false. Leave both off and you get the reading for a client configured with nothing",
+      "Your client's configuration is recorded as YOUR declaration and never verified — we cannot see your machine",
+      "One GET at one moment, signed; nothing is signed on your behalf and no wallet is touched",
+      "The simulation models @x402/core at the version this store has installed, named on the record; a different version is a different answer",
+      "We refuse our own hostname — the platform kills self-fetch, and a reading we sign about our own door is worth nothing to whoever you would show it to",
+      "The report URL is free to read forever",
+    ],
   },
   /**
    * MARKETPLACE-ERA ITEM THREE (Part 6 step 3; the first Tier 3
@@ -39,7 +104,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * carve-out is needed. Rule 43: a dated observation on an artifact
    * (the 402 response), never a score on an actor; the criteria page
    * (GET /api/preflight/v1) existed before this shipped.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "service_audit",
@@ -70,7 +134,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * deploys. Demand tag: ANTICIPATED DEMAND under amended rule 19
    * (same pipeline as the audit: operators proving a door to
    * directories and buyers, now across time).
-   * ⚑ KEEPER REVIEW: copy is drafted, not canon.
    */
   {
     id: "conformance_watch",
@@ -111,7 +174,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     id: "signature_agent_card",
     listed_week: "2026-W33",
     name: "The Calling Card",
-    price_usdc: 2,
+    price_usdc: 0.99,
     pricing: "fixed",
     fulfillment: "instant",
     description:
@@ -140,7 +203,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * write. Rule 43: an observation of a DOCUMENT (the served HTML),
    * never a score on whoever runs the site — and never a ranking
    * claim, which is somebody else's casino.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "onpage_audit",
@@ -174,7 +236,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * an unpaid verdict is framed as this store's rules, never the
    * seller's failing; no badge, no score, and x402station's $1 badge
    * is the counterexample the copy is written against.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "launch_check",
@@ -184,7 +245,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     pricing: "fixed",
     fulfillment: "instant",
     description:
-      "Name your x402 endpoint (the url query parameter) and this store walks it the way a paying stranger does: one unpaid GET with our declared field-research User-Agent, your 402 challenge read the way a real buyer reads it, the cheapest Base rail chosen, the payTo screened, a real EIP-3009 authorization signed by our declared field wallet, presented, and whatever happens next written down — settled or refused, receipt returned or absent, goods delivered or an empty 2xx. Every stage is recorded raw and the whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. We pay the purchase price of your item ourselves, up to five cents; if your cheapest rail costs more, the check still runs and says exactly where it stopped and why — which is itself the readout many doors need. Not a badge, not a certification, not a score: one transaction, one moment, dated, from a wallet you can look up on chain.",
+      "Name your x402 endpoint (the url query parameter) and this store walks it the way a paying stranger does: one unpaid GET with our declared field-research User-Agent, your 402 challenge read the way a real buyer reads it, the cheapest Base rail chosen, the payTo screened, a real EIP-3009 authorization signed by our declared field wallet, presented, and whatever happens next written down — settled or refused, receipt returned or absent, goods delivered or an empty 2xx. Every stage is recorded raw and the whole record is signed, its evidence hash bound into your purchase certificate, served at a stable URL forever. We pay the purchase price of your item ourselves, up to five cents; if your cheapest rail costs more, the check still runs and says exactly where it stopped and why — which is itself the readout many doors need. Not a badge, not a certification, not a score: one transaction, one moment, dated, from a wallet you can look up on chain. Hand us the settlement hash and the walk now says whether the chain itself confirms, contradicts, or cannot see your claim \u2014 claimed, confirmed_on_chain, contradicted, or unverifiable_shape, stated beside the verdict rather than folded into it.",
     note_402:
       "Five dollars, and we spend our own nickel at your till. What you get is the thing almost no seller has: your buy path, walked for real, written down by the buyer.",
     constraints: [
@@ -209,13 +270,12 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * moment, terminal at write. Rule 43 by construction: counts and
    * sums, never a judgment — we never see the agent's own ledger, so
    * no comparison is even possible from here.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "the_statement",
     listed_week: "2026-W34",
     name: "The Statement",
-    price_usdc: 2,
+    price_usdc: 0.99,
     pricing: "fixed",
     fulfillment: "instant",
     description:
@@ -242,7 +302,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * standard exists. Rule 23a-clean: one record, terminal at write.
    * The register is the product: chain-of-custody, never
    * truth-of-intent, and the artifact says so on itself.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "the_mandate",
@@ -273,7 +332,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * marketplace audit). Rule 23a-clean by shape: one payment, one
    * digest, one submission — the proof upgrade is completing delivery
    * of a bounded purchase, not monitoring, and the listing says so.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "bitcoin_anchor",
@@ -326,8 +384,7 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * Deliberately STATELESS: one payment, N observations, everything
    * delivered in the response — no stored balance, no future
    * obligation, so it is pure rule-23a observation with nothing for
-   * the carve-out to even carry. ⚑ KEEPER REVIEW: name and copy are
-   * drafted, not canon; recut freely.
+   * the carve-out to even carry.
    */
   {
     id: "attestation_bundle",
@@ -414,7 +471,6 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * same single receipt read doing more work with it, and pricing a
    * subtraction like a second product would be the exact thing the
    * copy below refuses to do.
-   * ⚑ KEEPER REVIEW: name, price and copy are drafted, not canon.
    */
   {
     id: "settlement_reconciliation",
@@ -446,8 +502,12 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * buys the check, never the grade: a refresh that finds the door
    * broken flips the passport to refuse and the chip to dark, and
    * every surface says so before the coin drops.
-   * Price ($1) KEEPER-CONFIRMED 2026-08-21 ("fine at $1 for now");
-   * copy drafted, not canon.
+   * Price ($1) KEEPER-CONFIRMED 2026-08-21 ("fine at $1 for now") and
+   * FINAL from 2026-08-29 — asked whether the "for now" should stand,
+   * he ruled "$1 final". The provisional clause is struck rather than
+   * left hanging: a price that has been ruled twice is not a draft,
+   * and copy that keeps saying "for now" after the now arrived is the
+   * kind of hedge rule 10 exists to date. ⚑ marks his call.
    */
   {
     id: "passport_refresh",
@@ -478,14 +538,19 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
    * host that breaks mid-term shows broken on its own profile, and
    * only in-term ready-side hosts appear on the index (the consent
    * line, everywhere).
-   * ⚑ KEEPER REVIEW: price ($19) drafted inside the keeper's named
-   * $9–49 shape; name and copy drafted, not canon.
    */
   {
     id: "trust_profile",
     listed_week: "2026-W34",
     name: "The Hosted Profile",
-    price_usdc: 19,
+    /*
+     * $21, the keeper's number, ruled 2026-08-29. It stood at $19 for
+     * eight days as a machine's guess inside his named $9-49 shape,
+     * flagged the whole time as drafted rather than decided. He moved
+     * it two dollars, which is the difference between a price nobody
+     * chose and a price somebody did. ⚑ marks his call.
+     */
+    price_usdc: 21,
     pricing: "fixed",
     fulfillment: "instant",
     description:

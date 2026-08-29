@@ -730,6 +730,7 @@ export function renderStorefront(data: StorefrontData): string {
       <p class="what-line what-lead">${escapeHtml(POSITION_OPENING)}</p>
       <p class="what-line">${COPY.whatThisIsDoors}</p>
       <p class="what-line">${escapeHtml(COPY.whatThisIsShop)}</p>
+      <p class="what-line">${escapeHtml(COPY.recordReadsAsTime)}</p>
     </section>
 
     <section class="shelves">

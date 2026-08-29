@@ -69,6 +69,8 @@ import {
   conformanceRoutes,
   conformanceLandingRoutes,
   corpusLandingRoutes,
+  beforeYouPayRoutes,
+  goodBuyerRoutes,
   preflightRoutes,
   discoveryRoutes,
   launchCheckRoutes,
@@ -246,6 +248,11 @@ app.route("/", conformanceRoutes);
 app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", preflightRoutes);
+/* The buyer's half of the same ladder: one probe, then the stock
+ * client's own selection replayed over what it served. */
+app.route("/", beforeYouPayRoutes);
+/* The signed half of the same reading, served forever and free. */
+app.route("/", goodBuyerRoutes);
 app.route("/", discoveryRoutes);
 app.route("/", launchCheckRoutes);
 app.route("/", bountyRoutes);
@@ -648,6 +655,25 @@ const worker: ExportedHandler<Env> = {
       ),
     );
     ctx.waitUntil(runHealthChecks(env));
+    /**
+     * THE GLANCE, WRITTEN WHERE THE WALKS ARE ALREADY PAID FOR. The
+     * keeper's desk used to recompute seventeen loads on every open,
+     * three of them heavy, before showing him a single number. Now
+     * the five he actually opens it for are read once an hour here
+     * and stored as one blob; /admin reads one key and paints.
+     *
+     * Never blocks and never pages: a glance that fails to write
+     * leaves the previous one standing with its own `computed_at`
+     * visible, and the desk says how old it is. A stale reading that
+     * announces its age is honest; the failure mode worth alerting on
+     * would be a number that looks current and is not, which is
+     * exactly what this shape prevents.
+     */
+    ctx.waitUntil(
+      import("@/services/glance").then(({ writeGlance }) =>
+        writeGlance(env).catch(() => undefined),
+      ),
+    );
     /**
      * THE DELIVERY AUDIT. The one failure this store cannot be told
      * about: a payment settled, the handler never delivered, and the

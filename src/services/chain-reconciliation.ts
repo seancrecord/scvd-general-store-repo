@@ -979,6 +979,42 @@ export async function runChainReconciliation(
  * The walks still run independently in every other respect: a failing
  * Polygon pass cannot stop the Base cursor, and vice versa.
  */
+/**
+ * ONE ROW PER RAIL WHOSE WALK IS FAILING, however many ways it fails.
+ *
+ * The keeper, 2026-08-28: five worker_health alerts he could not
+ * clear, all of them this walk. They were not five problems. A
+ * keyless alert dedupes on its own detail text — deliberately, so
+ * distinct worker_health failures cannot hide behind whichever fired
+ * first — and this detail embeds the error string. "429 Too Many
+ * Requests" and "500 Internal Server Error" and the next variant hash
+ * three different ways, so one rail failing its hourly walk all night
+ * minted a fresh row per error text, on a surface that shows the
+ * newest N and therefore drops real alarms off the bottom.
+ *
+ * The identity of this condition is THE RAIL'S WALK IS FAILING; the
+ * error is diagnosis, not identity, and `key` is the discriminator
+ * that says so. Keyed by rail, because the two rails fail
+ * independently and collapsing them would hide one behind the other —
+ * the same mistake one level up.
+ *
+ * The alert still fires every time and still pages: nothing here
+ * makes a failure quieter, it makes a repeated failure countable.
+ * `repeats` is how bad the night got and `detail` carries the most
+ * recent error.
+ */
+export async function reconcileChainFailureAlert(
+  env: Env,
+  label: string,
+  error: string,
+): Promise<void> {
+  await sendAlert(env, {
+    condition: "worker_health",
+    detail: `${label} reconciliation failed: ${error}`,
+    key: `chainwalk:${label}`,
+  });
+}
+
 export async function runEvmReconciliations(
   env: Env,
   options: { now?: Date } = {},
@@ -1014,10 +1050,9 @@ export async function runEvmReconciliations(
        * with two rails live is a page that tells the keeper to go
        * look at everything, which is the same as telling him nothing.
        */
-      await sendAlert(env, {
-        condition: "worker_health",
-        detail: `${chain.label} reconciliation failed: ${String(error)}`,
-      }).catch(() => undefined);
+      await reconcileChainFailureAlert(env, chain.label, String(error)).catch(
+        () => undefined,
+      );
       return {
         ran: false,
         failed: true,

@@ -167,19 +167,24 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
       entries: [
         {
           /**
-           * THE LINK THAT WORKS TODAY, WHICH IS THE SOURCE.
+           * THE LINK THAT WORKS TODAY, WHICHEVER DAY IT IS.
            *
-           * `npm publish` is the keeper's hand (rule 30) and has not
-           * run. Pointing this entry at npmjs.com/package/scvd-cli would
-           * be a link to a 404 in the middle of a page whose whole
-           * job is being trusted — the exact species of claim
-           * /corrections exists to catch. So the href is the source,
-           * the install line is named as the thing it will be, and
-           * the sentence says which is which.
+           * Before the publish this pointed at the source, because an
+           * npmjs.com link to a package that 404s, in the middle of a
+           * page whose whole job is being trusted, is the exact
+           * species of claim /corrections exists to catch. The keeper
+           * published on 2026-08-28, so it points at the registry now
+           * — and it moved by reading CLI_PUBLISHED rather than by
+           * anyone remembering this line existed, which is the whole
+           * reason these constants are constants.
            */
-          href: `${CLI_SOURCE_URL}`,
-          label: "scvd — the official CLI",
-          what: "`scvd preflight <url>` checks any x402 door, `scvd conformance <file>` reads any issuer's signed offer or receipt, `scvd verify <id>` verifies anything this store ever signed, and `scvd catalog` walks the API catalog. Zero dependencies, MIT, no account and no key — and it holds no key either, so it cannot spend money. `--json` prints this store's own response verbatim. NOT ON npm YET: the package is `scvd-cli` (npm refused the bare name `scvd` as too close to scss/save/send — the command is still `scvd`) and the install will be `npm i -g scvd-cli`, but publishing is the keeper's hand and has not run. Until it does, the whole tool is one file in the repo: clone and run `node cli/scvd.mjs preflight <url>`.",
+          href: CLI_PUBLISHED ? CLI_REGISTRY_URL : CLI_SOURCE_URL,
+          label: `${CLI_BIN} — the official CLI`,
+          what: `\`${CLI_BIN} preflight <url>\` checks any x402 door, \`${CLI_BIN} conformance <file>\` reads any issuer's signed offer or receipt, \`${CLI_BIN} verify <id>\` verifies anything this store ever signed, and \`${CLI_BIN} catalog\` walks the API catalog. Zero dependencies, MIT, no account and no key — and it holds no key either, so it cannot spend money. \`--json\` prints this store's own response verbatim. ${
+            CLI_PUBLISHED
+              ? `Install it with \`${CLI_INSTALL}\`. The package is \`${CLI_PACKAGE}\` and the command is \`${CLI_BIN}\`: npm's typosquat guard refuses the bare name, and it polices package names rather than commands. Or skip the install — the whole tool is one file: \`${CLI_RUN_FROM_SOURCE}\`.`
+              : `NOT ON npm YET: the package is \`${CLI_PACKAGE}\` (npm refused the bare name \`${CLI_BIN}\` as too close to scss/save/send — the command is still \`${CLI_BIN}\`) and the install will be \`${CLI_INSTALL}\`, but publishing is the keeper's hand and has not run. Until it does, the whole tool is one file in the repo: clone and run \`${CLI_RUN_FROM_SOURCE}\`.`
+          }`,
         },
         {
           href: "https://www.npmjs.com/package/scvd-tab",
@@ -415,7 +420,11 @@ for (const path of ["/developers", "/docs", "/api"] as const) {
           license: "MIT",
           registry: CLI_REGISTRY_URL,
           commands: [...CLI_COMMANDS],
-          note: "Zero dependencies. Holds no key and cannot spend money; --json prints the store's own response verbatim. The npm publish is the keeper's hand and has not run — until it does, run it from the source.",
+          note: `Zero dependencies. Holds no key and cannot spend money; --json prints the store's own response verbatim. ${
+            CLI_PUBLISHED
+              ? `On npm as ${CLI_PACKAGE}, installing the ${CLI_BIN} command; it also runs straight from the source with no install at all.`
+              : "The npm publish is the keeper's hand and has not run — until it does, run it from the source."
+          }`,
           also: {
             npm: "scvd-tab",
             install: "npm i -g scvd-tab",

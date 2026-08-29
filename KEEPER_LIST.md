@@ -255,6 +255,73 @@ storefront-HTML requests come from agent-shaped clients that never
 touch /mcp or llms.txt — rule 19's demand tag, and we keep the logs.
 It no longer gates the build; it sizes it.
 
+**0c. RULINGS LANDED 2026-08-28 (the instrument audit's sheet,
+docs/AUDIT_RULINGS_2026-08.md):**
+- L3d BURST ON PAID WATCHES: APPROVED — "yes paid." Three probes a
+  tick on a watch somebody bought, published as a distribution
+  rather than a single look. The census stays single-probe until the
+  etiquette ceiling (Observatory 12.3) is ruled: bursting 750
+  strangers is a different question from bursting a door its owner
+  paid us to watch. Unbuilt; the sheet holds the design.
+- THE DEPTH PASS ADVISORIES: HELD, WITH A REVISIT — "okay, but note
+  we need to revisit and what we need to do when revisited." None of
+  the five folds into a verdict yet.
+  WHEN: after four weekly rounds carry them (about 2026-09-25), or
+  sooner if any one of them fires on more than a tenth of probed
+  doors.
+  WHAT TO BRING: per advisory, the per-round count, and three doors
+  it fired on checked BY HAND — the point is proving the finding is
+  a real defect and not an artifact of how we read.
+  THE TEST TO FOLD: it fires on true defects when hand-checked, AND
+  every instrument citing the battery can actually run it. The EVM
+  blacklist read fails that second half today — the census cannot
+  afford an eth_call per door — so folding it needs a budget change
+  or a battery the census does not cite, not just a ruling.
+  LIKELIEST TO EARN IT: `resource-host-mismatch`. A challenge naming
+  another host is not a door a buyer can safely pay.
+- THE REGISTRY'S DROPPED COVERAGE FIELDS: APPROVED — "yes safer
+  better." The round already records `capped`, `coverage_suspect`
+  and `coverage_drop` honestly and the publish step throws them
+  away; they carry through to the published week now and print
+  beside the tally. Additive fields, no stored week rewritten.
+- THE AUDIT'S COPY: CONFIRMED — "i think these are fine." The Night
+  Watch line (shape, not payability) and the seven corrections filed
+  2026-08-28 stand as written. Rule 7's drafted-not-canon flag is
+  struck on both.
+- THE payTo INFLOW READER: APPROVED, T1 ONLY — "agree with rest,"
+  on the recommendation that inflows publish as counts with no names
+  and never land on a named host's page in this market. NOTE THE
+  CORRECTION THIS RULING CARRIES: the G2 tiers were ruled for
+  ADVERTISEMENT history (which doors advertise which address), and
+  an inflow is a different fact — what a party EARNED, which they
+  did not publish about themselves. The tier SHAPES transfer; G2's
+  authorization did not, so this is that fact's own first ruling.
+  T1 is the whole of it: "N of the doors we walked received USDC at
+  their advertised address this week," captioned as addresses that
+  RECEIVED, never as doors that made sales — an inflow at an
+  advertised address is not proof of a sale (treasury movement, a
+  shared or facilitator wallet, an operator funding themselves).
+  T2 and T3 stay unruled and unbuilt; the three reasons T2 was held
+  are the damaging zero (rule 52 — the modal case in a market this
+  young is the least reliable and most harmful number), shared
+  wallets making inflows unattributable to the door whose page they
+  would print on, and that "has been paid" as a published trust
+  signal is bought for a few cents of self-payment.
+- L3c ENDPOINT-SIDE SIGNATURE VERIFICATION: DEFERRED by the keeper —
+  "maybe we just wait on the forgery piece and save it for later on
+  down the road." Not declined; parked. The standing facts for
+  whenever it comes back: no probe path verifies a signature (the
+  battery passes a door on a JWS PARSE), so a forged live signature
+  has never been observed and CANNOT be by anything we run — the
+  count is zero either way. What we have seen is one door of 35
+  attempting signed offers and serving ones that fail to parse.
+  The exposure is insurance against our own success: the day signed
+  offers become a signal buyers act on, faking one is free and our
+  instrument is what gets faked past. Cheap when it comes back —
+  $0, and it can run RETROACTIVELY over the challenge bytes the
+  chain already stores.
+
+
 **1. The bank walk — LOOK, first, because the records disagree.**
 The TASKS archive (docs/archive/TASKS_2026-08-20.md, entry written
 2026-08-13) says the walk stalled hourly from
@@ -291,13 +358,39 @@ Regenerate `providers/scvd/store/openapi.json` from the live
 /openapi.json and /menu.json now that the dual-rail build deployed;
 the Solana directory's two Greptile blockers dissolve.
 
-**6. RULE: the settlement-attempt lane.** The biggest open ruling: a
-parseable 402 says nothing about whether PAYING it gets goods, and
-testing that means real spends at strangers' doors under the wallet
-law ($25/month funding discipline, ask-first above $1, ruled
-2026-08-18). The August field run (1,707 attempts, signed report) was
-this done once by hand; the ruling is whether it becomes a standing
-lane. Yes / no / conditions.
+**6. RULED 2026-08-29 — the settlement-attempt lane: YES, the
+sampled lane.** Open since 2026-08-18; the keeper's word is the
+hard-capped sampled lane, aggregate-only publication, private notice
+to the host when a purchase fails. 20 doors a week, at most $0.05 a
+probe (the August run averaged $0.0005), under the standing wallet
+law: $25/month funding discipline, ask-first above $1.
+
+WHAT MADE THE CASE, and it was not appetite. The inflow census was
+rebuilt four times across 2026-08-28/29 trying to answer "does
+anyone actually PAY these asks" from chain data alone. It cannot,
+and the reason is not that the data ran out: a transfer does not
+carry intent. The instrument's own numbers established the ceiling —
+a median of one distinct payer per receiving address, one address
+holding 44% of every transfer seen, and a narrowest-possible figure
+that one operator with two wallets would clear. `docs/
+INSTRUMENT_AUDIT_2026-08.md` §§10-13 is the whole record.
+
+WHAT THE KEEPER IS BUYING, stated plainly because it is the part
+worth weighing: real money at strangers' doors, consuming a unit of
+something they sell, without them asking us to. The same posture the
+ward round already takes by knocking uninvited — but this one
+spends, and a shop being bought from is a normal act only as long as
+the caps and the notice hold.
+
+STILL HIS HAND, NOT THE CLOCK (rule 30). The ruling authorises the
+lane to EXIST. It does not authorise a cron to spend: the lane is
+pressed, hard-capped, and refuses rather than overruns. Nothing in
+this ruling lets money leave without a person.
+
+Consenting-panel and self-only variants were both on the table and
+were not chosen: a panel that agreed to be measured is a biased
+sample and cannot speak for the market, which is the whole reason
+the lane is worth having.
 
 **7. RULE: the ERC-8183 evaluator key.** The read is DONE and the
 position RULED 2026-08-18 (`docs/ERC8183_EVALUATOR.md`, on /becoming)

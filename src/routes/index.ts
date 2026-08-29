@@ -72,6 +72,8 @@ export { claimsRoutes } from "@/routes/claims";
 export { conformanceRoutes } from "@/routes/conformance";
 export { conformanceLandingRoutes } from "@/routes/conformance-landing";
 export { corpusLandingRoutes } from "@/routes/corpus-landing";
+export { beforeYouPayRoutes } from "@/routes/before-you-pay";
+export { goodBuyerRoutes } from "@/routes/good-buyer";
 export { preflightRoutes } from "@/routes/preflight";
 export { discoveryRoutes } from "@/routes/discovery";
 export { launchCheckRoutes } from "@/routes/launch-check";

@@ -4,6 +4,7 @@ import type { Env } from "@/types";
 import { mintCertificate } from "@/services/certificates";
 import { verifyCertificateSignature } from "@/lib/signing";
 import { isRecord } from "@/types";
+import { getMenuItem } from "@/store";
 
 const testEnv = env as unknown as Env;
 const BASE = "https://scvd.store";
@@ -59,7 +60,12 @@ describe("the storefront", () => {
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).toContain("luckies");
-    expect(text).toContain("$5 minimum");
+    // Derived: luckies moved to $0.99 on 2026-08-28 and this line
+    // asserted a typed $5. What it is really checking is that the
+    // guide quotes the SHELF, so read the shelf.
+    expect(text).toContain(
+      `$${getMenuItem("luckies")?.price_usdc} minimum`,
+    );
     expect(text).toContain("x402");
     expect(text).toContain("you get your money back");
   });
@@ -92,6 +98,35 @@ describe("the storefront", () => {
       // the first prices a scanning agent sees.
       "the_mandate",
       "hello",
+      /*
+       * THE $0.99 BLOCK, new on 2026-08-28 and the shelf's own rule
+       * doing its job rather than a hand-placement. Five doors that a
+       * stock x402 client could never buy — its default ceiling is $1
+       * and it refuses locally, before signing — were repriced under
+       * that ceiling. The ladder puts everything at or under a dollar
+       * first, cheapest first, so they moved here on their own. All
+       * five tie at $0.99 and hold LADDER order among themselves:
+       * utility shelf in file order, then the novelty shelf.
+       *
+       * The cost, stated: a scanner now meets thirteen sub-dollar
+       * doors before anything dearer, where it met eight. That is the
+       * ladder's stated preference (the smallest number a
+       * client-builder can settle should be easy to find), applied to
+       * a shelf that changed under it.
+       *
+       * good_buyer JOINED THE BLOCK ON 2026-08-28 (#96) and leads it
+       * by the same rule, not by preference: it sits earliest in the
+       * utility shelf's file order among the $0.99 ties. Its price is
+       * DERIVED from the same ceiling that created this block — one
+       * cent under @x402/core's own cap — so if that constant ever
+       * moves, this door moves out of the block with the rest rather
+       * than being stranded here at a number somebody typed.
+       */
+      "good_buyer",
+      "signature_agent_card",
+      "the_statement",
+      "luckies",
+      "coffees_for_closers",
       // $1 ties hold LADDER order (stable sort): the anchor was listed
       // above the context anchor on the utility shelf, so it leads.
       "bitcoin_anchor",
@@ -106,26 +141,33 @@ describe("the storefront", () => {
       // shelf — same ladder, adjacent rungs.
       "service_audit",
       "conformance_watch",
-      // The WBA line's demand test rides the same utility shelf,
-      // listed after the conformance watch it sits beside in the file.
-      "signature_agent_card",
-      // The on-page battery, listed beside the card whose shape it
-      // shares: same shelf, one rung down in price.
+      // The on-page battery: two of its old shelf-mates (the card and
+      // the statement) moved to the $0.99 block above, so it now
+      // follows the conformance watch directly.
       "onpage_audit",
-      // The $5 tie continues in file order: the walkabout's paid door
-      // rides the utility shelf right after the batteries it extends.
+      /*
+       * THE LAUNCH CHECK STAYED AT $5, and the reason is an economic
+       * invariant rather than a preference. It pays out from the field
+       * wallet on every check — it actually buys the door it walks —
+       * and test/field-spend-invariant.spec.ts requires the price to
+       * be at least 50x FIELD_SPEND_CAP_USD, because "slightly more"
+       * is not a business once a facilitator fee and gas are counted.
+       * $0.99 gave a ratio of 19.8. The floor that satisfies the
+       * invariant is $2.50, which is ABOVE the stock client's ceiling
+       * — so this door cannot be both sound and reachable by an
+       * unconfigured buyer. It is disclosed instead, which is what
+       * #52 part 1 was for.
+       */
       "launch_check",
-      // The statement follows its shelf-mate in file order — the
-      // ladder past the cheap doors runs by shelf, not by price.
-      "the_statement",
       "recurring_patronage",
       // The hosted profile's $19 slots between the patronages by
       // price — the ladder's stable sort, nothing hand-picked.
       "trust_profile",
       "certificate_of_patronage",
+      // The collab closes the ladder as the dearest thing here, and
+      // the novelty shelf that used to trail it moved to the $0.99
+      // block.
       "the_collab",
-      "luckies",
-      "coffees_for_closers",
     ]);
     const store = body["store"] as Record<string, unknown>;
     expect(store["protocol"]).toBe("x402");

@@ -8,6 +8,9 @@ import {
   POSITION_OPENING,
 } from "@/store/copy/position";
 import { MENU_ITEMS, STORE_METADATA } from "@/store";
+import { CLIENT_CAP_LABEL, readAgainstCap } from "@/lib/client-spend-cap";
+import { STOCK_CLIENT_RAIL_NOTE } from "@/store/copy/rails";
+import { priceTiersUsdc } from "@/lib/payments";
 import { SAMPLE_ARTIFACT_ID, USE_WHEN } from "@/store/spec";
 import { declinedPositions } from "@/store/copy/declined";
 import {
@@ -43,6 +46,23 @@ function menuLine(item: MenuItem): string {
     ? ` House rules: ${item.constraints.join("; ").toLowerCase()}.`
     : "";
   return `  ${item.id}, ${item.name}, ${price}, ${timing}.\n    ${item.description}${stock}${constraints}`;
+}
+
+/**
+ * Both counts are read off the live shelf every time this file is
+ * served (#52). A typed count would be right on the day it was typed
+ * and quietly wrong on the day a price moved — and this particular
+ * number exists to be trusted by an agent deciding whether to spend a
+ * round trip, which is the worst place to keep a stale figure.
+ */
+function overCapDoorCount(): number {
+  return MENU_ITEMS.filter(
+    (item) => readAgainstCap(priceTiersUsdc(item))?.blocked === true,
+  ).length;
+}
+
+function pricedDoorCount(): number {
+  return MENU_ITEMS.filter((item) => item.price_usdc > 0).length;
 }
 
 export const llmsRoutes = new Hono<HonoEnv>();
@@ -361,8 +381,7 @@ them ${base}/what.
 We take ${STORE_METADATA.currency} on Base (eip155:8453), Polygon
 (eip155:137), or Solana (solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp)
 over the ${STORE_METADATA.protocol} protocol, version 2. Base entries
-come first in every 402 as a compatibility promise; same tiers on
-every rail, your wallet's choice. It goes like this:
+come first in every 402 as a compatibility promise. It goes like this:
 
   1. GET \`${base}/api/buy/{item_id}\`
   2. We answer 402. The payment requirements, amount, asset, our address,
@@ -375,10 +394,27 @@ every rail, your wallet's choice. It goes like this:
      arrive in the response body. Human-queue items get an order id you can
      poll at \`${base}/api/order/{order_id}\`.
 
+${STOCK_CLIENT_RAIL_NOTE}
+
 Pay-what-it-deserves items offer several amounts in the 402, the minimum,
 a generous one, and a patron-of-the-arts one. Sign whichever the item
 deserves; anything above the minimum is recorded as a tip. The keeper
 notices tips.
+
+A CEILING THAT IS NOT OURS, and step 3 is where it bites. The stock
+x402 client (@x402/core) applies a default limit of ${CLIENT_CAP_LABEL}
+per payment — inside selectPaymentRequirements, BEFORE it picks an
+accept — so above that figure an unconfigured client throws without
+signing anything at all. ${overCapDoorCount()} of this store's
+${pricedDoorCount()} priced doors sit above it, counted off the shelf
+as this file was served. Raise maxAmountPerPayment, or pass
+spendControls: false if you mean to. It is your operator's safety
+control: we disclose it and we do not ship anything that routes around
+it, because a store whose product is evidence does not also sell a way
+past someone else's spending limit. We volunteer it because the
+refusal is invisible to us — we record your price check and then
+silence, which looks exactly like you changing your mind — and every
+affected 402 repeats it in its own body.
 
 TWO MECHANISMS THAT PROTECT YOUR WALLET FROM YOUR OWN BUGS, both free:
 
@@ -937,6 +973,21 @@ charges. Aggregates only and no names, updated by the keeper's hand
 each week; JSON at the same URL. If you operate a listed endpoint,
 the free check for your own door is POST ${base}/api/preflight.
 
+## Inflows — what arrived at the addresses doors advertise
+
+${base}/inflows: the weekly census files the payment addresses public
+x402 doors advertise in their own 402s; this reads what actually
+ARRIVED at them on Base and Polygon over roughly a day. It is not
+sales and not revenue — a transfer into an advertised address can be
+treasury movement, a shared or facilitator wallet, or an operator
+funding itself, and no reading here can tell those apart. So every
+number carries the denominator it was computed over and the coverage
+the walk actually had, down to the narrowest figure chain data can
+produce: addresses only one door advertised, taking transfers inside
+the range that door itself quoted, from more than one distinct payer.
+That is a floor on plausible payments, never a count of sales.
+Counts only, no names, pressed by hand; JSON at the same URL.
+
 ## The fresh set — where to spend, dated
 
 ${base}/fresh-set: the doors that answered a spec-conformant x402
@@ -1358,6 +1409,10 @@ const SECTION_AREAS: Record<string, string> = {
   "The same evidence as an OKF bundle": "corpus",
   "The tab's pooled corpus, taking contributions": "corpus",
   "State of the registry": "corpus",
+  /* The registry says what the listings are worth; this says what
+   * arrived at the addresses they advertise. Same evidence area —
+   * both are readings off the weekly census. */
+  "Inflows — what arrived at the addresses doors advertise": "corpus",
   "The fresh set — where to spend, dated": "corpus",
   "The trust panel — every trust surface, one page": "corpus",
   "Endpoint passports — one signed object per host": "corpus",

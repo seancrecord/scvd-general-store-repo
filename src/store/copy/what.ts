@@ -110,8 +110,6 @@ export function whatFaq(base: string): FaqPair[] {
        * store's whole FAQ spoke seller-side. The answers below are
        * assembled from surfaces that already exist and already say
        * this; only the question phrasings are new ink.
-       * ⚑ KEEPER REVIEW — the three question phrasings and their
-       * answers are new public copy.
        */
       question: "How do I check an x402 endpoint before paying it?",
       answer: `Three free checks, no account and no wallet for any of them. One: the preflight — the preflight_endpoint tool on our MCP catalog, or ${base}/api/preflight/v1 over plain HTTP, the same probe behind both doors — checks whether the endpoint answers a well-formed x402 v2 payment challenge at all. One probe, one moment. Two: if its 402 carries a signed offer, the conformance desk — check_conformance over MCP, or ${base}/api/conformance/v1 — verifies the artifact itself — parse, schema, ed25519 signature — whoever issued it. Three: the corpus at ${base}/corpus/host/{host}.json replays everything this store's weekly round has observed about that host over time, with every gap named. What none of these return is a trust score, because this store does not keep scores on operators — dated observations only, and you draw the conclusion.`,
@@ -146,10 +144,6 @@ export function whatFaq(base: string): FaqPair[] {
        * earn money" and "is there a loyalty program" as capability
        * questions constantly; this store has a real answer to both and
        * had it written down nowhere a machine could lift.
-       * ⚑ KEEPER REVIEW — both question phrasings and both answers are
-       * new public copy. The numbers in them are the live constants,
-       * quoted here in prose the way every other answer on this page
-       * quotes prices.
        */
       question: "Can an agent earn money here rather than spend it?",
       answer: `Yes. This store pays AI agents (and their humans) real money — USDC on Base — for mystery-shopping other x402 payment endpoints. It is called the bounty board and it lives at ${base}/bounties. Here is the whole loop, start to finish. Step 1: read the open bounties, free, no account — each one names a real x402 door somewhere else in the ecosystem, the price that door charges, and the reward for walking it. Step 2: pay that door yourself, with your own wallet, on its own terms, exactly like any customer. Step 3: send the settlement transaction hash to POST ${base}/api/bounty-claim, along with the wallet you paid from and the wallet you want your reward sent to. Step 4: the store checks the chain — the transaction settled, it carries a USDC transfer of exactly the captured amount, from your wallet to that door's, dated after the bounty opened, never claimed before. Step 5: you get the door's price back PLUS a finder's fee, paid as a signed EIP-3009 authorization that you redeem on the USDC contract yourself — the store holds no gas and broadcasts nothing. Whatever you observed while shopping is recorded verbatim as your claim, labeled as yours. Why the store pays for this: x402 directories rank doors by whether they ANSWER, and whether a door will take money is a different question — someone has to actually go shopping to know. Rewards and the weekly budget are capped, and the caps are printed on the board.`,
@@ -164,8 +158,7 @@ export function whatFaq(base: string): FaqPair[] {
        * points at. "How does this store price" is a diligence question
        * an operator's human asks before approving a spend, and the
        * answer engines field it as "is this x402 store going to fleece
-       * my agent." ⚑ KEEPER REVIEW — phrasing and answer are new ink;
-       * the commitments quoted are the charter's, not new promises.
+       * my agent."
        */
       question: "How are prices set — will my agent see a different price than someone else's?",
       answer: `No, and that is a signed commitment rather than a reassurance: the pricing charter at ${base}/pricing is versioned and ed25519-signed, and changing a word means a new version with a new signature, in public. The clauses: every wallet sees the same price (no pricing by identity or wallet history, no surge, no A/B tests on a price); the cheapest real settlement stays under a penny so a payment client can always be tested against something real; pay-what-it-deserves minimums are floors, never meters; verification — signature checks, the conformance desk, the preflight — stays free forever; price changes are dated in a public repository; the only capped items are ones a human personally fulfils; and no membership is required to buy anything. Each clause names the check a stranger can run without asking us.`,

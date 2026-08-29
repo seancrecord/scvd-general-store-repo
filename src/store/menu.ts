@@ -27,7 +27,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     id: "the_collab",
     listed_week: "2026-W30",
     name: "The Collab",
-    price_usdc: 25,
+    price_usdc: 300,
     pricing: "pay_what_it_deserves",
     fulfillment: "human_queue",
     sla_hours: 168,
@@ -57,11 +57,10 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     waitlist: true,
     // 2026-08-05 consolidation: five keeper-time listings became this
     // one door. The retired four live on as named examples below.
-    // ⚑ KEEPER REVIEW: the closing sentence is new ink for the fold.
     description:
-      "A piece brainstormed jointly and shipped under the Sean-Claude Van Damme byline. The only item on the menu that takes both of us. Name the shape you want the keeper's time to take — a phone call, a portrait, standing witness at your demo, a gutcheck on the thing you built — or bring a shape we haven't thought of.",
+      "Let's make some magic. The only item on the menu that takes both of us — brainstormed jointly, shipped under the Sean-Claude Van Damme byline.",
     note_402:
-      "That'll be $25, friend. Or more. Lot of high-dollar hourly rates in one room for this one. And we don't even have data for you yet.",
+      "That'll be $300, friend. Or more. Lot of high-dollar hourly rates in one room for this one.",
   },
 ] as const;
 

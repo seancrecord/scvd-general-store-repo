@@ -16,10 +16,6 @@ import { CONTENT_SIGNAL } from "@/routes/site-meta";
  * and markdown, and the llms guide files the same section under the
  * developers area — the surfaces()/conventions() pattern, so the
  * positions cannot disagree between doors.
- *
- * ⚑ KEEPER REVIEW: new public prose, drafted not canon; recut freely
- * (rule 7). The FACTS in each entry are derived or register-bound;
- * the sentences are mine until they are yours.
  */
 export interface DeclinedPosition {
   heading: string;

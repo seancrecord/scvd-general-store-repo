@@ -142,6 +142,26 @@ describe("the three paths a developer types", () => {
      * Both halves are held: the flag tells the truth, and there is
      * always a way to run the thing whichever way the flag reads.
      */
+    /*
+     * NO SURFACE OUTLIVES THE PUBLISH (2026-08-28). Every "not on npm
+     * yet" sentence was written to be true on the day it was typed and
+     * false the hour the keeper pressed the button. /llms.txt already
+     * derived its line from the constant; these two did not, so the
+     * portal a builder reads would have gone on telling them to clone
+     * the repo while `npm i -g scvd-cli` worked. Derived from
+     * CLI_PUBLISHED rather than pinned to today's value, so this test
+     * is honest in both directions and fails whichever way drifts.
+     */
+    const prose = `${JSON.stringify(json)}`;
+    for (const stale of ["has not run", "NOT ON npm YET", "Not on npm yet"]) {
+      if (CLI_PUBLISHED) {
+        expect(
+          prose.includes(stale),
+          `the CLI is published and /developers still says "${stale}"`,
+        ).toBe(false);
+      }
+    }
+
     expect(cli.published).toBe(CLI_PUBLISHED);
     expect(cli.install_available).toBe(CLI_PUBLISHED);
     expect(cli.source).toContain("/cli");

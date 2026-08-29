@@ -7,11 +7,12 @@ whole chain and it is important — and it evolves composably, each
 link accessible on its own, with room for why the thing was bought
 and a word from the store. Built the same day: `purpose` (signed,
 any item, 280-char cap), `from_the_store` (weekly bank at
-src/store/copy/receipt-notes.ts — ⚑ the lines await the keeper's
-rewrite), the HTML receipt page on /api/verify/{id}, and
-`receipt_for_your_human` in every purchase response, taught in
-skill.md. The reserved `mandate_id` link was BUILT later the same
-day (the keeper's "lets fucking do it"): see section 5.
+src/store/copy/receipt-notes.ts — the lines stood as drafted on the
+keeper's ruling of 2026-08-28), the HTML receipt page on
+/api/verify/{id}, and `receipt_for_your_human` in every purchase
+response, taught in skill.md. The reserved `mandate_id` link was
+BUILT later the same day (the keeper's "lets fucking do it"): see
+section 5.
 
 ## The principle: one chain, every link stands alone
 
@@ -61,8 +62,6 @@ shop writes something at the bottom of yours:
 - Keeper-authored bank, rotating by week like OPEN_SIGNS and the
   stamp mottos — never generated per-order, never personalized from
   buyer data (nothing here reads the purchase to compose a message).
-  ⚑ KEEPER REVIEW — the bank's lines are the keeper's ink, to be
-  written by him or flagged for his pen before shipping.
 - Distinct from the existing `note` field, which stays what it is:
   the shelf witness mark for first-week purchases.
 - Charm, labeled as charm. It proves nothing and the attestation

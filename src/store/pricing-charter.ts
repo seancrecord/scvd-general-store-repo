@@ -13,12 +13,6 @@ import { MENU_ITEMS } from "@/store/menu";
  * against them: no pricing by identity, no surge, no bait, and the
  * verification layer free forever.
  *
- * ⚑ KEEPER REVIEW — every clause is new public ink, and clauses are
- * PROMISES, the most expensive kind of copy this store writes. The
- * charter is versioned and signed; changing a word is a new version
- * with a new signature, which is the point: a promise you can edit
- * silently is not one.
- *
  * DERIVE-OR-REFUSE applies to the numbers: the floor price is
  * computed from the live menu, never typed here, so the charter
  * cannot drift from the shelf it governs.

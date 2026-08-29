@@ -90,6 +90,25 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     };
     required.push("url");
   }
+  if (item.id === "good_buyer") {
+    properties["url"] = {
+      type: "string",
+      format: "uri",
+      description:
+        "The x402 door you are about to pay: https, default port, on the public internet, the URL a buyer would GET expecting a 402. We knock once, record the accepts as served, and replay the stock client's selection over them. We refuse our own hostname.",
+    };
+    properties["max_usd"] = {
+      type: "string",
+      description:
+        "Optional. Your client's spendControls.maxAmountPerPayment, in dollars. Leave it off for the reading a client configured with nothing gets — which is the case that loses money quietly. Recorded as your declaration, never verified.",
+    };
+    properties["no_spend_controls"] = {
+      type: "string",
+      description:
+        "Optional, \"true\" if you pass spendControls: false — the one escape from the whole filter. Recorded as your declaration, never verified.",
+    };
+    required.push("url");
+  }
   if (item.id === "service_audit") {
     properties["url"] = {
       type: "string",
@@ -412,6 +431,9 @@ function buyInputExample(item: MenuItem): Record<string, unknown> {
   }
   if (item.id === "service_audit") {
     example["url"] = "https://your-shop.example/api/buy/thing";
+  }
+  if (item.id === "good_buyer") {
+    example["url"] = "https://somebody-elses-shop.example/api/buy/thing";
   }
   if (item.id === "conformance_watch") {
     example["url"] = "https://your-shop.example/api/buy/thing";

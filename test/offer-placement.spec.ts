@@ -61,7 +61,7 @@ function door(
 const signedOffers = (checks: { name: string; ok: boolean; detail: string }[]) =>
   checks.find((check) => check.name === "signed-offers");
 const noOffers = (advisories: { name: string; detail: string }[]) =>
-  advisories.find((advisory) => advisory.name === "no-signed-offers");
+  advisories.find((advisory) => advisory.name === "signed-offers-not-in-challenge");
 
 describe("the signed-offers check reads both placements", () => {
   it("sees offers placed ONLY in the 402 body — the convention's first placement", () => {
