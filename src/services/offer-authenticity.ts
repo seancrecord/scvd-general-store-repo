@@ -58,8 +58,23 @@ export type AuthenticityVerdict =
   | "kid_not_in_document"
   /** The door served offers, none of them signed. Not a failure. */
   | "unsigned"
-  /** No readable challenge stored for this door. Nothing to say. */
-  | "not_served";
+  /** The door answered, and the round stored no challenge bytes for
+   * it — it served none, or served something unreadable. */
+  | "not_served"
+  /**
+   * THE ROUND ITSELF CARRIES NO EVIDENCE for this door — no capture
+   * block at all, because the round predates the capture (shipped
+   * 2026-08-26) or the door was never probed.
+   *
+   * SEPARATE FROM not_served ON PURPOSE, and the distinction cost a
+   * live reading to learn. The first real run returned "0 of 0 doors
+   * serve a signed offer at all" across 972 doors, which reads as a
+   * finding about the market and was nothing of the kind: the round
+   * on file was sealed before evidence capture existed, so this
+   * instrument had nothing to read. Our gap, wearing their absence —
+   * the exact defect this store's whole audit is about.
+   */
+  | "evidence_absent";
 
 export interface HostAuthenticity {
   host: string;
@@ -220,7 +235,18 @@ async function walk(
 
   for (const host of round.hosts ?? []) {
     const signatures = signedOffersFromChallenge(host.evidence?.challenge_bytes);
-    if (!host.evidence?.challenge_bytes) {
+    if (!host.evidence) {
+      hosts.push({
+        host: host.host,
+        verdict: "evidence_absent",
+        offers_seen: 0,
+        offers_verified: 0,
+        offers_failed: 0,
+        issuers: [],
+      });
+      continue;
+    }
+    if (!host.evidence.challenge_bytes) {
       hosts.push({
         host: host.host,
         verdict: "not_served",
@@ -374,10 +400,13 @@ async function walk(
     kid_not_in_document: 0,
     unsigned: 0,
     not_served: 0,
+    evidence_absent: 0,
   };
   for (const row of hosts) byVerdict[row.verdict] += 1;
 
-  const withEvidence = hosts.filter((row) => row.verdict !== "not_served").length;
+  const withEvidence = hosts.filter(
+    (row) => row.verdict !== "not_served" && row.verdict !== "evidence_absent",
+  ).length;
   const servingSigned = hosts.filter((row) => row.offers_seen > 0).length;
   const resolved = [...resolutions.values()].filter((r) => r.ok).length;
 
@@ -398,7 +427,11 @@ async function walk(
     resolutions_spent: spent,
     resolution_budget: budget,
     budget_bound: budgetBound,
-    what_this_counts: `${offersVerified} of ${offersSeen} signed offers, served by ${servingSigned} of the ${withEvidence} doors whose challenge this round stored, carried a signature that verified against the key their own issuer publishes. ${offersFailed} did not. Read from bytes already captured — no door was knocked on for this, and the only outbound requests were ${spent} did:web resolutions across ${issuerHosts.size} distinct issuers. Authenticity here is the signature check alone: ${offersSchemaFailed} signed offers also failed the offer schema, which is counted separately because a genuinely signed offer with a sloppy field is not a forgery.`,
+    what_this_counts: (byVerdict.evidence_absent > 0 && withEvidence === 0
+      ? `THIS INSTRUMENT COULD NOT LOOK. All ${byVerdict.evidence_absent} doors in this round carry no stored challenge bytes at all — the round predates the evidence capture that shipped 2026-08-26, or its doors were never probed. That is OUR gap and says nothing whatever about whether anyone serves signed offers; the first round sealed after the capture will be the first this can read. `
+      : byVerdict.evidence_absent > 0
+        ? `${byVerdict.evidence_absent} doors carry no stored challenge bytes and are excluded from every figure below rather than counted as serving nothing. `
+        : "") + `${offersVerified} of ${offersSeen} signed offers, served by ${servingSigned} of the ${withEvidence} doors whose challenge this round stored, carried a signature that verified against the key their own issuer publishes. ${offersFailed} did not. Read from bytes already captured — no door was knocked on for this, and the only outbound requests were ${spent} did:web resolutions across ${issuerHosts.size} distinct issuers. Authenticity here is the signature check alone: ${offersSchemaFailed} signed offers also failed the offer schema, which is counted separately because a genuinely signed offer with a sloppy field is not a forgery.`,
     what_this_is_not: `Not a claim about any named door: counts only, because "this door's signature does not verify" is a far heavier accusation than anything this store publishes today and it needs its own ruling first. An unreachable issuer is OUR gap and is never counted as a door's failure. A door serving unsigned offers has not failed anything — x402 does not require signed offers, and ${byVerdict.unsigned} doors here simply do not serve them. Verifying a signature says the named key signed those bytes; it does not say the signer was authorised to sell that resource, which the offer-receipt spec gives nobody a way to establish.`,
   };
   return { reading, rows: hosts };

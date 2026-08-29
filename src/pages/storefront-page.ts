@@ -638,6 +638,16 @@ export function renderStorefront(data: StorefrontData): string {
   <meta name="description" content="${COPY.metaDescription}">
   <link rel="canonical" href="${data.base ?? "https://scvd.store"}/">
   <link rel="alternate" type="text/markdown" href="${data.base ?? "https://scvd.store"}/index.md">
+  <!--
+    THE MACHINE MAP, IN THE HEAD (vetted 2026-08-29, probing the live
+    site as an arriving agent). robots.txt already names llms.txt,
+    agents.md and menu.json — and an agent that fetches the page and
+    parses <head>, which many do instead of reading robots.txt, found
+    a markdown alternate and a web manifest and no route to any of it.
+    The map existed; the doorway did not.
+  -->
+  <link rel="alternate" type="text/plain" href="${data.base ?? "https://scvd.store"}/llms.txt" title="Guide for language models">
+  <link rel="alternate" type="application/json" href="${data.base ?? "https://scvd.store"}/openapi.json" title="OpenAPI contract">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${COPY.ogDescription}">
   <meta property="og:url" content="${data.base ?? "https://scvd.store"}/">

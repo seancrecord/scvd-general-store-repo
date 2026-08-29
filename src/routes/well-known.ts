@@ -53,6 +53,7 @@ import {
   WHAT_IT_IS,
 } from "@/store/trust-signals";
 import type { Env, HonoEnv } from "@/types";
+import { PUBLISHED_DATASETS } from "@/store/datasets";
 
 /**
  * Origin-hosted x402 discovery. The core x402 spec doesn't define a
@@ -434,6 +435,36 @@ wellKnownRoutes.get("/.well-known/x402.json", async (c) => {
      * the corpus. JSON at the same URL via Accept.
      */
     registry: `${base}/registry`,
+    /**
+     * THE DATASET CATALOGUE (2026-08-29, the keeper's question about
+     * whether an agent can actually find any of this).
+     *
+     * An agent could find the SHOP the moment it arrived — menu.json,
+     * this document, the OpenAPI contract all announce what is for
+     * sale. It could find the EVIDENCE only by luck: /registry and
+     * /corpus.json happened to be named above, /inflows, /fresh-set
+     * and /defects.json were named nowhere a machine looks, and
+     * nothing anywhere said "these are the datasets, here is what
+     * each one is and what it must not be read as".
+     *
+     * A store whose whole argument is its evidence had a
+     * machine-readable catalogue of its products and none of its
+     * findings. Each entry carries its own caution, because a reader
+     * choosing which dataset to pull should learn what it is NOT
+     * before it spends a request finding out.
+     */
+    datasets: PUBLISHED_DATASETS.map((dataset) => ({
+      name: dataset.name,
+      url: `${base}${dataset.path}`,
+      description: dataset.description,
+      caution: dataset.caution,
+      cadence: dataset.cadence,
+      format: "JSON on the same URL via Accept: application/json; HTML otherwise",
+    })),
+    /* The goal-first map of the whole store. Experimental; see
+     * src/store/atlas.ts for why it exists and how we will know
+     * whether it was worth serving. */
+    atlas: `${base}/atlas.json`,
     corrections: `${base}/corrections`,
     mcp: {
       endpoint: `${base}/mcp`,

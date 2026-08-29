@@ -199,12 +199,34 @@ const BASE = "https://scvd.store";
  * approved lines, and /inflows' section. Verified present together
  * before this value was taken.
  *
+ * Re-taken 2026-08-29 in the commit that vetted the site's
+ * discoverability for agents. The index's "Evidence and record" line
+ * named the corpus and the coverage file and omitted /registry,
+ * /inflows and /fresh-set — the store's weekly findings, missing
+ * from the one map an agent reads before anything else. Adding them
+ * moved the guide's bytes.
+ *
+ * Re-taken 2026-08-29 in the commit that gave the guide a goal-first
+ * opener and published the atlas. Vetting the site as an arriving
+ * agent found a map and no route: both entry points open with ten
+ * lines of what the store IS before anything actionable, and a
+ * reader on a tight context budget loses the map when the file
+ * truncates. "Start here, by what you came to do" now leads, filed
+ * under developers, and names the atlas beside it.
+ *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work,
+ * and this resolution needed a hand rather than a script: the two
+ * sides had added notes to this same block AND re-taken the value,
+ * so an automated splice ate part of the second conflict and left
+ * the file with two digest lines. Both notes are kept because both
+ * edits are in the served bytes; the value is the merged text's own.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "dbd0c281501234fe8de8dd396d55c945d0385d787d4e3441efb06da6dbbfdfbe";
+  "623c1369fcd2f6da80e864421f15ddce75b5372e394e578211565ac5cbfa5d9b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

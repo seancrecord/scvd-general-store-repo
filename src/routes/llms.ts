@@ -120,13 +120,32 @@ That is the short answer. The long one — ${USE_WHEN.length} concrete moments,
 each naming the door that answers it — is under "When you'd use this
 store" further down.
 
+## Start here, by what you came to do
+
+If you want to do one thing and leave, these are the calls. Nothing
+below costs money unless it says so.
+
+- **Check an x402 door before paying it** — \`POST ${base}/api/preflight/v2\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
+- **Check a signed offer or receipt somebody handed you** — \`POST ${base}/api/conformance/v1\`. Free, on anyone's artifacts including our competitors' and our own.
+- **Check something WE signed, without trusting us** — \`GET ${base}/api/verify/{id}\`. Free forever, the exact bytes, verifiable offline.
+- **See what the x402 market actually looks like** — [${base}/registry](${base}/registry) for what the listings are worth, [${base}/inflows](${base}/inflows) for what arrived at the addresses they advertise. Free, JSON on the same URLs.
+- **Learn the payment flow before spending on anything real** — [${base}/try](${base}/try), a live till priced not to matter.
+- **Buy something** — [${base}/menu.json](${base}/menu.json) is the catalogue with prices.
+- **Tell us we got something wrong** — [${base}/corrections](${base}/corrections) is where the ones we know about live.
+
+Everything, arranged by goal and with the cost of each step stated
+before you commit, is one fetch away at
+[${base}/atlas.json](${base}/atlas.json). That file is an experiment —
+we do not know whether agents want it, and we are counting fetches to
+find out.
+
 ## Every door, in one list
 
 Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
 
-Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-Catalog and contracts: [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
 Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
@@ -1408,6 +1427,9 @@ const SECTION_AREAS: Record<string, string> = {
   "The corpus": "corpus",
   "The same evidence as an OKF bundle": "corpus",
   "The tab's pooled corpus, taking contributions": "corpus",
+  /* The goal-first opener belongs with the developer material: it is
+   * the first thing somebody building against this store reads. */
+  "Start here, by what you came to do": "developers",
   "State of the registry": "corpus",
   /* The registry says what the listings are worth; this says what
    * arrived at the addresses they advertise. Same evidence area —

@@ -112,6 +112,20 @@ export function renderSimplePage(options: SimplePageOptions): string {
   const canonical = options.path
     ? `\n  <link rel="canonical" href="${SITE_ORIGIN}${escapeHtml(options.path)}">`
     : "";
+  /*
+   * THE MACHINE MAP, ON EVERY ROOM (vetted 2026-08-29 by probing the
+   * live site as an arriving agent would).
+   *
+   * robots.txt names llms.txt, agents.md and menu.json, and does it
+   * well. But an agent that lands on a room, fetches it, and parses
+   * <head> — which many do instead of reading robots.txt — found a
+   * markdown alternate and nothing else. The map existed and the
+   * doorway did not, and a reader who arrives deep in the site
+   * rather than at the front door had no way back to it.
+   */
+  const machineMap =
+    `\n  <link rel="alternate" type="text/plain" href="${SITE_ORIGIN}/llms.txt" title="Guide for language models">` +
+    `\n  <link rel="alternate" type="application/json" href="${SITE_ORIGIN}/openapi.json" title="OpenAPI contract">`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -124,7 +138,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <meta property="og:type" content="website">
   <meta property="og:image" content="${SITE_ORIGIN}/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}${markdownAlt}${webmcp}
+  <meta name="twitter:image" content="${SITE_ORIGIN}/og.png">${verificationMetaTags()}${canonical}${machineMap}${markdownAlt}${webmcp}
   ${ardLinkTags(SITE_ORIGIN)}
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
