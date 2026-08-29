@@ -166,6 +166,34 @@ conformanceRoutes.get(`/api/conformance/${CONFORMANCE_VERSION}`, (c) => {
 conformanceRoutes.post(`/api/conformance/${CONFORMANCE_VERSION}`, handleCheck);
 
 /**
+ * THE FIXTURES DESK — complete signed artifacts for building a
+ * fail-closed integration without paying anything. Reasoning and the
+ * serve-time self-check live in lib/conformance-fixtures.ts; this is
+ * the door. A self-check failure is an honest 500 naming the fixture,
+ * never a stale fixture served with a straight face.
+ */
+conformanceRoutes.get(
+  `/api/conformance/${CONFORMANCE_VERSION}/fixtures`,
+  async (c) => {
+    try {
+      const { buildFixtureSet } = await import("@/lib/conformance-fixtures");
+      const set = await buildFixtureSet(c.env);
+      c.header("Cache-Control", "public, max-age=300");
+      return c.json(set as unknown as Record<string, unknown>);
+    } catch (error) {
+      return c.json(
+        {
+          error:
+            "The fixture set failed its own self-check against the live desk, so nothing was served — a wrong fixture is worse than none. Tell the keeper; the mailbox is free.",
+          detail: error instanceof Error ? error.message : String(error),
+        },
+        500,
+      );
+    }
+  },
+);
+
+/**
  * The unversioned door. It works — refusing it would be pointless
  * friction for somebody exploring — but it names the pinned path and
  * says which one an automated caller should be using.
