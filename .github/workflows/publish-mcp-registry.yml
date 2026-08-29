@@ -1,0 +1,158 @@
+# REPUBLISHING THE REGISTRY LISTING, FROM THE ACTIONS TAB.
+#
+# The official MCP registry is the single most-repeated sentence about
+# this store: PulseMCP and every other aggregator reads it and carries
+# it forward, so whatever the listing says is what the ecosystem says
+# we are. On 2026-08-29 the published entry (0.2.1) still read "The
+# trust layer of the x402 economy" while server.json — edited after
+# that publish, without a version bump — read "Evidence observatory for
+# agentic commerce". One positioning behind, everywhere downstream.
+#
+# THE LESSON WORTH KEEPING, and it is the npm one again: A PUBLISHED
+# VERSION IS IMMUTABLE. Editing server.json changes nothing on the
+# registry; only a NEW version number republishes. 0.2.1 will say what
+# it said forever. That is why this workflow refuses a version already
+# on the registry instead of silently no-opping, and why the fix for a
+# wrong description is always a bump.
+#
+# RULE 30 IS INTACT AND THAT IS DELIBERATE. workflow_dispatch ONLY:
+# never on push, never on a tag, never on a merge, never on a schedule.
+# Nothing reaches the registry unless a human presses the button. Do
+# not add a trigger to this file.
+#
+# THE INVOCATION IS VERIFIED, NOT GUESSED. The install one-liner and
+# the `login dns --domain <domain> --private-key <key>` form were both
+# read off the tool itself on 2026-08-29 (`mcp-publisher login --help`)
+# rather than off a doc that might describe another version. A button
+# that fails at the moment somebody presses it is worse than no button.
+name: Publish MCP registry listing
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish — must match server.json exactly"
+        required: true
+      dry_run:
+        description: "Validate and check the registry, publish nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # THE TYPED VERSION MUST AGREE WITH THE MANIFEST. The publisher
+      # reads server.json and ignores anything typed into this form, so
+      # without this step the input is decoration — and decoration on a
+      # publish button is how the wrong thing goes out believing it was
+      # confirmed.
+      - name: The typed version must match server.json
+        env:
+          TYPED: ${{ inputs.version }}
+        run: |
+          MANIFEST=$(node -p "require('./server.json').version")
+          NAME=$(node -p "require('./server.json').name")
+          echo "server.json: $NAME @ $MANIFEST"
+          if [ "$MANIFEST" != "$TYPED" ]; then
+            echo "::error::You typed '$TYPED'; server.json says '$MANIFEST'. Bump the manifest or fix the input."
+            exit 1
+          fi
+
+      # A PUBLISHED VERSION CANNOT BE CORRECTED, so refuse before
+      # authenticating rather than discovering it at the API.
+      - name: Refuse a version the registry already holds
+        run: |
+          NAME=$(node -p "require('./server.json').name")
+          VERSION=$(node -p "require('./server.json').version")
+          curl -sS "https://registry.modelcontextprotocol.io/v0/servers?search=scvd" > registry.json
+          ALREADY=$(node -e '
+            const rows = require("./registry.json").servers ?? [];
+            const [name, version] = process.argv.slice(1);
+            process.stdout.write(
+              rows.some((r) => r.server?.name === name && r.server?.version === version)
+                ? "yes" : "no",
+            );
+          ' "$NAME" "$VERSION")
+          if [ "$ALREADY" = "yes" ]; then
+            echo "::error::$NAME@$VERSION is already on the registry, and a published version is immutable. Bump server.json."
+            exit 1
+          fi
+          echo "$NAME@$VERSION is not on the registry yet."
+
+      - name: Install mcp-publisher
+        run: |
+          curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" \
+            | tar xz mcp-publisher
+          ./mcp-publisher --help > /dev/null
+
+      # Validation needs no credentials, so it runs on every invocation
+      # including the dry one — the check that costs nothing happens
+      # before the step that cannot be undone.
+      - name: Validate the manifest against the registry's schema
+        run: ./mcp-publisher validate
+
+      - name: What would be published
+        run: |
+          echo "--- server.json as it would be sent ---"
+          cat server.json
+
+      - name: Stop here on a dry run
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "Dry run: validated and checked, nothing published."
+          echo "Re-run with dry_run unchecked to publish."
+
+      # DNS AUTH, on the store.scvd namespace. The private key is an
+      # ed25519 seed whose public half sits in a TXT record on
+      # scvd.store; it is a repo secret and never printed. The key is
+      # passed through env rather than interpolated into the run block,
+      # which is the hardening the skill-publish workflow learned the
+      # expensive way (P10, 2026-08-27): a value interpolated straight
+      # into a shell line is a value that can execute.
+      - name: Authenticate against the domain namespace
+        if: ${{ !inputs.dry_run }}
+        env:
+          MCP_KEY: ${{ secrets.MCP_REGISTRY_KEY }}
+        run: |
+          if [ -z "$MCP_KEY" ]; then
+            echo "::error::MCP_REGISTRY_KEY is not set. Repo → Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          ./mcp-publisher login dns --domain scvd.store --private-key "$MCP_KEY"
+
+      - name: Publish
+        if: ${{ !inputs.dry_run }}
+        run: ./mcp-publisher publish
+
+      # PROVE IT LANDED, rather than trusting the exit code. The same
+      # question the weekly door battery asks: does the published entry
+      # now repeat what server.json says?
+      - name: Read the listing back
+        if: ${{ !inputs.dry_run }}
+        run: |
+          sleep 5
+          curl -sS "https://registry.modelcontextprotocol.io/v0/servers?search=scvd" > after.json
+          node -e '
+            const rows = require("./after.json").servers ?? [];
+            const mine = require("./server.json");
+            const live = rows.filter((r) => r.server?.name === mine.name);
+            const latest = live.find(
+              (r) => r._meta?.["io.modelcontextprotocol.registry/official"]?.isLatest,
+            );
+            if (!latest) {
+              console.error("Published, but no entry is marked isLatest yet. Re-check in a minute.");
+              process.exit(1);
+            }
+            console.log("live latest:", latest.server.version, "-", latest.server.description);
+            if (latest.server.description !== mine.description) {
+              console.error("The registry latest does not repeat server.json. Something else is newest.");
+              process.exit(1);
+            }
+            console.log("The registry now repeats what we publish.");
+          '

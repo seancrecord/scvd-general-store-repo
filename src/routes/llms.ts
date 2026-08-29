@@ -87,8 +87,11 @@ ${ALSO_A_STORE}
 Everything this store signs verifies free, forever, at
 \`${base}/api/verify/{id}\` — no account, no wallet, no rate limit. The
 conformance desk explains itself in plain language at
-${base}/conformance; the corpus, the weekly signed record of the x402
-ecosystem, reads at ${base}/corpus. That order is deliberate: the
+${base}/conformance and now takes a pasted artifact in a form on that
+page — declared to browser agents with WebMCP's \`toolname\` attributes,
+and deliberately without \`toolautosubmit\`, so an agent may fill it and
+a human presses submit; the corpus, the weekly signed record of the
+x402 ecosystem, reads at ${base}/corpus. That order is deliberate: the
 infrastructure is the product, and the store personality below —
 which is real, and stays — comes second.
 

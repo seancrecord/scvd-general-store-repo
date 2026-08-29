@@ -1,0 +1,281 @@
+{
+  "taken_at": "2026-08-29T18:01:19.623Z",
+  "expires_at": "2026-09-28T18:01:19.623Z",
+  "doors": [
+    {
+      "id": "raw_api",
+      "number": 1,
+      "name": "The raw API",
+      "stance": null,
+      "tally": {
+        "met": 5,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "criteria": [
+        {
+          "id": "openapi_served",
+          "asks": "Is there a machine-readable description of every HTTP door?",
+          "how": "curl -s https://scvd.store/openapi.json | head",
+          "verdict": "met",
+          "note": "112 paths described"
+        },
+        {
+          "id": "catalog_discoverable",
+          "asks": "Can an agent find that description without being told where it is?",
+          "how": "curl -s https://scvd.store/.well-known/api-catalog",
+          "verdict": "met",
+          "note": "RFC 9727 catalog served at the well-known path"
+        },
+        {
+          "id": "payment_terms_declared",
+          "asks": "Are the payment terms readable before anyone spends?",
+          "how": "curl -s https://scvd.store/.well-known/x402.json",
+          "verdict": "met",
+          "note": "x402 discovery document served"
+        },
+        {
+          "id": "no_credential_to_be_refused",
+          "asks": "Does a free instrument answer a caller holding no key at all?",
+          "how": "curl -s -o /dev/null -w \"%{http_code}\" -X POST https://scvd.store/api/preflight/v2 -H \"content-type: application/json\" -d \"{}\"",
+          "verdict": "met",
+          "note": "answered 400 to an anonymous, keyless call"
+        },
+        {
+          "id": "paid_doors_documented",
+          "asks": "Does the description cover the paid doors, not just the free ones?",
+          "how": "curl -s https://scvd.store/openapi.json | grep -c '\"402\"'",
+          "verdict": "met",
+          "note": "27 documented 402 responses"
+        }
+      ]
+    },
+    {
+      "id": "backend_mcp",
+      "number": 2,
+      "name": "A backend MCP server",
+      "stance": null,
+      "tally": {
+        "met": 4,
+        "partial": 0,
+        "unmet": 1,
+        "unknown": 0
+      },
+      "criteria": [
+        {
+          "id": "mcp_endpoint_live",
+          "asks": "Does the MCP door answer tools/list over streamable HTTP?",
+          "how": "curl -s -X POST https://scvd.store/mcp -H \"content-type: application/json\" -H \"accept: application/json, text/event-stream\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\"}'",
+          "verdict": "met",
+          "note": "13 tools listed"
+        },
+        {
+          "id": "tools_annotated",
+          "asks": "Does every tool declare whether it is read-only before it runs?",
+          "how": "the same tools/list call; check each tool for annotations.readOnlyHint",
+          "verdict": "met",
+          "note": "all 13 tools annotated"
+        },
+        {
+          "id": "tools_described_for_a_model",
+          "asks": "Is every tool described in prose a model can route on, with a typed input schema?",
+          "how": "the same tools/list call; check description length and inputSchema",
+          "verdict": "met",
+          "note": "all 13 tools typed and described"
+        },
+        {
+          "id": "payment_rides_the_same_door",
+          "asks": "Can an agent buy without leaving MCP for a browser?",
+          "how": "the same tools/list call; look for buy_* tools and their x402 terms",
+          "verdict": "met",
+          "note": "6 buy tools, each naming its payment path"
+        },
+        {
+          "id": "registry_description_current",
+          "asks": "Does the public registry repeat the description we currently publish?",
+          "how": "compare server.json's description against the isLatest entry at https://registry.modelcontextprotocol.io/v0/servers?search=scvd",
+          "verdict": "unmet",
+          "note": "published 0.2.1 says \"The trust layer of the x402 economy: free conformance checks, attestation, corpus, agent store.\" — server.json (0.2.2) says \"Evidence observatory for agentic commerce: free x402 conformance checks, corpus, agent store.\""
+        }
+      ]
+    },
+    {
+      "id": "computer_use",
+      "number": 3,
+      "name": "Computer use",
+      "stance": null,
+      "tally": {
+        "met": 4,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "criteria": [
+        {
+          "id": "renders_without_script",
+          "asks": "Is the content in the served HTML, or does it need a client to build it?",
+          "how": "curl -s https://scvd.store/ | grep -c '<main'",
+          "verdict": "met",
+          "note": "content server-rendered; 2 executable script tag(s) on the page"
+        },
+        {
+          "id": "front_door_within_budget",
+          "asks": "Is one look at the front door cheap?",
+          "how": "curl -s -o /dev/null -w \"%{size_download}\" https://scvd.store/",
+          "verdict": "met",
+          "note": "101 KB, budget 195 KB"
+        },
+        {
+          "id": "cheaper_road_advertised",
+          "asks": "Does a pixel-reading agent get told there is a text road it could take instead?",
+          "how": "curl -s https://scvd.store/robots.txt; curl -s https://scvd.store/llms.txt | head",
+          "verdict": "met",
+          "note": "robots.txt names the text maps; llms.txt answers"
+        },
+        {
+          "id": "no_wall_in_front",
+          "asks": "Does an unremarkable client get the page, or a challenge?",
+          "how": "curl -s -o /dev/null -w \"%{http_code}\" -A \"agent-probe/1.0\" https://scvd.store/",
+          "verdict": "met",
+          "note": "plain fetch, no challenge, robots allows"
+        }
+      ]
+    },
+    {
+      "id": "browser_automation",
+      "number": 4,
+      "name": "Browser automation",
+      "stance": null,
+      "tally": {
+        "met": 3,
+        "partial": 0,
+        "unmet": 1,
+        "unknown": 0
+      },
+      "criteria": [
+        {
+          "id": "semantic_landmarks",
+          "asks": "Can a generic tool find the content by structure alone?",
+          "how": "curl -s https://scvd.store/ | grep -o '<main\\|<h1\\|<section'",
+          "verdict": "met",
+          "note": "landmarks present: <main <h1 <section"
+        },
+        {
+          "id": "stable_hooks",
+          "asks": "Is there anything on the page a script can hold that is not a style class?",
+          "how": "curl -s https://scvd.store/ | grep -o 'data-[a-z-]*=\\|id=\"[^\"]*\"' | sort -u",
+          "verdict": "unmet",
+          "note": "no first-party data-* attributes and no ids: every hook is a style class, which redesigns move"
+        },
+        {
+          "id": "navigation_is_links",
+          "asks": "Is getting around the site real hrefs rather than script handlers?",
+          "how": "curl -s https://scvd.store/ | grep -c '<a href='",
+          "verdict": "met",
+          "note": "42 plain links; navigation needs no script"
+        },
+        {
+          "id": "machine_twin_linked",
+          "asks": "Does each page point at its own machine-readable twin, so nobody has to scrape it?",
+          "how": "curl -s https://scvd.store/ | grep 'rel=\"alternate\"'",
+          "verdict": "met",
+          "note": "alternate representation linked from the page head"
+        }
+      ]
+    },
+    {
+      "id": "webmcp",
+      "number": 5,
+      "name": "WebMCP",
+      "stance": null,
+      "tally": {
+        "met": 4,
+        "partial": 0,
+        "unmet": 1,
+        "unknown": 0
+      },
+      "criteria": [
+        {
+          "id": "script_served",
+          "asks": "Is there a browser-door script at all?",
+          "how": "curl -s https://scvd.store/webmcp.js | head",
+          "verdict": "met",
+          "note": "registerTool declarations served"
+        },
+        {
+          "id": "declarations_derive_from_the_mcp_door",
+          "asks": "Are the browser's tool names the same objects the MCP door serves, or a second hand-typed list?",
+          "how": "compare the names in /webmcp.js against the names in the MCP tools/list answer",
+          "verdict": "met",
+          "note": "5 browser tools, every one a read-only tool the MCP door also serves"
+        },
+        {
+          "id": "declared_where_agents_arrive",
+          "asks": "Do the rooms an agent lands in declare the door, or only the front page?",
+          "how": "fetch every URL in /sitemap.xml and grep for the /webmcp.js script tag",
+          "verdict": "met",
+          "note": "28 of 68 published rooms declare it (41%)"
+        },
+        {
+          "id": "origin_trial_unexpired",
+          "asks": "Will a shipping Chrome still enable the API on our origin tomorrow?",
+          "how": "read the origin-trial meta on https://scvd.store/ and base64-decode its payload",
+          "verdict": "met",
+          "note": "origin trial valid until 2026-11-17 (79 days)"
+        },
+        {
+          "id": "declarative_forms",
+          "asks": "Is the zero-JavaScript path — toolname on a form — taken anywhere in the store?",
+          "how": "fetch every URL in /sitemap.xml as a browser and grep for '<form ... toolname='",
+          "verdict": "unmet",
+          "note": "no annotated form in any published room — the cheapest declaration in the lineup is untaken"
+        }
+      ]
+    },
+    {
+      "id": "site_assistant",
+      "number": 6,
+      "name": "The site's built-in assistant",
+      "stance": "deliberately not taken",
+      "tally": {
+        "met": 3,
+        "partial": 0,
+        "unmet": 0,
+        "unknown": 0
+      },
+      "criteria": [
+        {
+          "id": "no_hosted_chat_surface",
+          "asks": "Does the store put its own model between a visitor and the shelf?",
+          "how": "curl -s https://scvd.store/ | grep -ci 'chat\\|assistant widget'",
+          "verdict": "met",
+          "note": "no chat box; the visiting agent is the visitor"
+        },
+        {
+          "id": "guide_instead_of_gatekeeper",
+          "asks": "Is the thing a chat box would have explained published as text any model can read?",
+          "how": "curl -s https://scvd.store/llms.txt; curl -s https://scvd.store/agents.md",
+          "verdict": "met",
+          "note": "llms.txt (19 KB) and /agents.md carry the guide"
+        },
+        {
+          "id": "no_model_lock_in",
+          "asks": "Can any model use the doors, or does one host have to be in the loop?",
+          "how": "the MCP tools/list answer: JSON Schema inputs, no host-specific fields",
+          "verdict": "met",
+          "note": "all 13 tools typed in plain JSON Schema"
+        }
+      ]
+    }
+  ],
+  "base": "https://scvd.store",
+  "reviewed_at": {
+    "raw_api": "2026-08-29T17:12:36.203Z",
+    "backend_mcp": "2026-08-29T17:12:36.264Z",
+    "computer_use": "2026-08-29T17:12:36.309Z",
+    "browser_automation": "2026-08-29T17:12:36.355Z",
+    "webmcp": "2026-08-29T17:12:36.405Z",
+    "site_assistant": "2026-08-29T17:12:36.452Z"
+  }
+}
