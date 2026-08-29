@@ -126,6 +126,7 @@ import {
   runEvmReconciliations,
   runSolanaReconciliation,
 } from "@/services/chain-reconciliation";
+import { conditionalGet } from "@/lib/conditional-get";
 import { discoveryCors } from "@/lib/cors";
 import type { Env, HonoEnv } from "@/types";
 
@@ -161,6 +162,15 @@ app.use("*", async (c, next) => {
 // discovery surface and the MCP door, nothing stateful, nothing
 // paid. The list and its reasoning live in lib/cors.ts.
 app.use("*", discoveryCors);
+/*
+ * AFTER the cross-origin middleware, deliberately. Hono runs
+ * post-next code in reverse registration order, so this builds the
+ * 304 first and discoveryCors then puts its header on it — a
+ * revalidating browser that got no ACAO on the 304 would see the
+ * fetch die on the cheap path and succeed on the expensive one,
+ * which is the worst possible way for a cache to behave.
+ */
+app.use("*", conditionalGet);
 
 // house tradition
 app.use("*", async (c, next) => {

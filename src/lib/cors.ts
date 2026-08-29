@@ -99,7 +99,11 @@ function servesPublishedDocument(c: {
 }): boolean {
   if (c.req.method !== "GET" && c.req.method !== "HEAD") return false;
   if (c.req.path.startsWith("/admin")) return false;
-  if (c.res.status !== 200) return false;
+  // 304 as well as 200: the conditional-GET layer answers the
+  // revalidation of a document that WAS in this class, and a browser
+  // that can read the body but not the "you already have it" is a
+  // cache that only works when it does not help.
+  if (c.res.status !== 200 && c.res.status !== 304) return false;
   if (c.res.headers.has("Set-Cookie")) return false;
   return READABLE_DOCUMENT.test(c.res.headers.get("Content-Type") ?? "");
 }
@@ -111,7 +115,7 @@ export const discoveryCors: MiddlewareHandler<HonoEnv> = async (c, next) => {
       c.res.headers.set("Access-Control-Allow-Origin", "*");
       c.res.headers.set(
         "Access-Control-Expose-Headers",
-        "Content-Type, Link, mcp-session-id, mcp-protocol-version",
+        "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
       );
     }
     return;
@@ -137,7 +141,7 @@ export const discoveryCors: MiddlewareHandler<HonoEnv> = async (c, next) => {
     c.res.headers.set("Access-Control-Allow-Origin", "*");
     c.res.headers.set(
       "Access-Control-Expose-Headers",
-      "Content-Type, Link, mcp-session-id, mcp-protocol-version",
+      "Content-Type, ETag, Link, mcp-session-id, mcp-protocol-version",
     );
   }
 };
