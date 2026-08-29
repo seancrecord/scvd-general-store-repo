@@ -958,6 +958,21 @@ charges. Aggregates only and no names, updated by the keeper's hand
 each week; JSON at the same URL. If you operate a listed endpoint,
 the free check for your own door is POST ${base}/api/preflight.
 
+## Inflows — what arrived at the addresses doors advertise
+
+${base}/inflows: the weekly census files the payment addresses public
+x402 doors advertise in their own 402s; this reads what actually
+ARRIVED at them on Base and Polygon over roughly a day. It is not
+sales and not revenue — a transfer into an advertised address can be
+treasury movement, a shared or facilitator wallet, or an operator
+funding itself, and no reading here can tell those apart. So every
+number carries the denominator it was computed over and the coverage
+the walk actually had, down to the narrowest figure chain data can
+produce: addresses only one door advertised, taking transfers inside
+the range that door itself quoted, from more than one distinct payer.
+That is a floor on plausible payments, never a count of sales.
+Counts only, no names, pressed by hand; JSON at the same URL.
+
 ## The fresh set — where to spend, dated
 
 ${base}/fresh-set: the doors that answered a spec-conformant x402
@@ -1379,6 +1394,10 @@ const SECTION_AREAS: Record<string, string> = {
   "The same evidence as an OKF bundle": "corpus",
   "The tab's pooled corpus, taking contributions": "corpus",
   "State of the registry": "corpus",
+  /* The registry says what the listings are worth; this says what
+   * arrived at the addresses they advertise. Same evidence area —
+   * both are readings off the weekly census. */
+  "Inflows — what arrived at the addresses doors advertise": "corpus",
   "The fresh set — where to spend, dated": "corpus",
   "The trust panel — every trust surface, one page": "corpus",
   "Endpoint passports — one signed object per host": "corpus",

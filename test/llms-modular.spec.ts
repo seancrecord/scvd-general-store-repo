@@ -156,12 +156,19 @@ const BASE = "https://scvd.store";
  * the Night Watch's three-tries sentence and the declined positions
  * from the earlier re-takes.
  *
+ * Re-taken 2026-08-29 in the commit that gave /inflows its section.
+ * The no-orphan-capability guard caught the new public page listed on
+ * no surface an agent reads, so the room joined rooms.ts and the
+ * guide gained a section describing it — and the guide's bytes moved
+ * with the words, as they should. Filed under the corpus area beside
+ * the registry: both are readings off the weekly census.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "505e31b80ce434acbb21dc1e19c6a9ec41cc67fcef3c1632c873568651b6809f";
+  "60b69199b5c672c6efc4c4bc257198a895e597762079199cec2b0b3eb8ed0aec";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
