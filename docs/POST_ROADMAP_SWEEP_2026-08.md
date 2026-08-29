@@ -25,7 +25,7 @@ kinds of content here, kept strictly apart:
 | Standing notes (3.6, #296) | ✅ | ✅ | ✅ (this change) | ✅ (this change) | n/a (free) |
 | Verify short-leash + declines reading (#292) | internal | internal | n/a | n/a | n/a |
 | Delivery intents on both doors (#293) | internal | internal | n/a | n/a | n/a |
-| Provenance check (T3) | NOT BUILT | — | — | — | ⚑ K3 price + M5 copy first |
+| Provenance check (T3) | NOT BUILT | — | — | — | price ruled $5/free 2026-08-29; ⚑ M5 copy drafted at B7, keeper's pen |
 
 This change closes the two "this change" columns: the corpus landing
 and /developers now name the trajectory, diff, wallet-facts and
@@ -35,6 +35,14 @@ standing-note surfaces.
 
 None of the following is wired anywhere. Each block names its target
 surface. Approve, reword, or strike.
+
+⚑ A NUMBERING COLLISION, RECORDED RATHER THAN TIDIED (2026-08-29):
+there are two blocks numbered **B6** — the changelog note and the
+patronage sell-up copy. The keeper has ruled on "B6" meaning the
+sell-up copy, so renumbering now would move a heading he has already
+cited. It is noted here instead, the same way HOUSE_RULES' numbering
+gap was investigated and written down rather than closed. Cite the
+sell-up block as **B6 (D5)**, which is how it was ruled on.
 
 ### B1. Storefront / "what this is" — one added line — ✅ APPROVED 2026-08-29, SHIPPED
 
@@ -187,12 +195,129 @@ That is honest and it is also the closest this store has come to
 selling by comparison. If it reads as a sales move rather than a
 plain fact, strike the first sentence and keep the second.
 
+### B7. Provenance check shelf copy — ⚑ DRAFTED 2026-08-29, KEEPER'S PEN
+
+The last thing standing between the provenance check's spec and a
+build (docs/PROVENANCE_CHECK_SPEC_2026-08.md). Price is ruled: **$5**
+for a query about somebody else's address, **free** for an operator
+who proves control of their own, consent offer in v1. What is not
+ruled is what the shelf calls it and how it asks.
+
+**THE HARD PART, AND IT IS NOT THE PROSE.** This is the only thing on
+the shelf that answers a question about a third party. Every honest
+version has to sell the evidence and refuse the inference in the same
+breath — because the inference is what a buyer actually wants and the
+inference is the thing this store does not sell. A line that oversells
+here does not just embarrass us; it makes us the reputation bureau the
+whole design refuses to be. All three drafts carry that refusal. They
+differ in how much of the buyer's real question they are willing to
+say out loud.
+
+Shared facts, not selling copy, common to all three (these go in
+`constraints[]` and are stated rather than drafted):
+
+- Give the address in the `address` query parameter, or a door's
+  hostname to cover every address it has advertised.
+- Free for an operator who proves control (EIP-191 signature, or the
+  sha256 of the request served at your own `/.well-known/`).
+- Covers only signed weeks the chain holds; weeks we did not observe
+  are named as gaps, never omitted.
+- Every line names the snapshot digest it derives from; the whole
+  artifact re-derives from `/corpus.json` without trusting us.
+- The subject's standing note, if they have filed one, rides on the
+  artifact verbatim.
+- One address or one host per purchase. One-off; nothing renews.
+
+#### B7a. "The Provenance Check" — keep the working name
+
+> Name a receiving address and this reads the signed chain back to
+> you: every door that advertised it, in which week, with that week's
+> verdict and any drift in the door's own declared terms — each line
+> naming the snapshot digest it came from, so the whole artifact
+> re-derives from the public record without trusting us. It is an
+> account of what was publicly advertised, dated and signed. It is not
+> a risk score, not an identity claim and not a compliance verdict,
+> and the artifact says so on its face. Asking about your own address
+> is free once you prove it is yours; five dollars is the price of
+> asking about somebody else's.
+
+> **402:** That'll be five dollars to ask about an address that isn't
+> yours. Yours is free — prove it and ask.
+
+*Plainest, and the name is the one the spec and the ruling already
+use, so nothing has to be renamed downstream. Costs the most in
+legibility: "provenance" is a word a buyer has to already know, and it
+promises rather more than an advertisement history delivers.*
+
+#### B7b. "The Wallet's Other Doors" — name the buyer's question
+
+> One question, answered out of the signed record: what else has this
+> receiving address been behind? Every door that advertised it, week
+> by week, with that week's verdict and any change in the door's own
+> declared terms, and the digest of the snapshot each line came from —
+> so you can check the answer against the chain rather than against
+> us. Custodial and platform wallets put unrelated doors behind one
+> address all day long; we serve the observation and the inference
+> stays yours. Not a score, not an identity, not a clearance. An
+> operator asking about their own address pays nothing.
+
+> **402:** Five dollars, friend. That buys the doors, the weeks and
+> the digests. It does not buy an opinion about whoever is behind
+> them.
+
+*The most legible of the three — a buyer knows in six words whether
+this is the thing they wanted. Also the most dangerous: the name is
+the accusation, and an operator who finds their door named by it will
+read the shelf as pointed at them. The body works hard to take that
+back, which is a sign the name is doing something the body has to
+undo.*
+
+#### B7c. "The Company an Address Keeps" — the store's own register
+
+> A dated, signed answer to the question the free surfaces count but
+> never name: which doors have advertised this receiving address, and
+> when. You get the hosts, the signed weeks, that week's verdict, the
+> drift in the door's own terms, and the snapshot digest behind every
+> line — enough to rebuild the whole thing from the public chain
+> without taking our word for any of it. What you do not get is a
+> judgment. Shared addresses are ordinary, custodians are common, and
+> this store does not grade operators. An operator asking about their
+> own address pays nothing.
+
+> **402:** Five dollars for somebody else's address. Nothing at all
+> for your own, once you have proved it is your own.
+
+*Closest to the house voice, and the only name of the three that is
+neither jargon nor an accusation. Costs legibility in a machine
+listing: an agent scanning `menu.json` for wallet tooling will match
+on the description, not on this. Rule 57.2 says the description
+carries that load — but it is a real cost and it is being paid on
+purpose.*
+
+#### B7d. What I would pick, and the one line I would argue with
+
+**B7c**, with B7b's second sentence grafted in if you want the
+buyer's question said plainly inside the body. B7a's name is the
+safest and the least honest: "provenance" implies origin, and what
+this artifact holds is advertisement history, which is a narrower and
+more checkable thing.
+
+⚑ **THE PART TO ARGUE WITH:** all three say "an operator asking about
+their own address pays nothing," and none of them says that the free
+self-audit ends with an offer to publish the result. That is in the
+v1 ruling and it is the funnel. Leaving it out of the shelf copy is
+defensible — the offer appears at the moment it applies, not on the
+shelf — but it is also the store selling a free thing without
+mentioning what the free thing asks for afterward, and that is close
+enough to the line to be your call rather than mine.
+
 ## C. Remaining gaps, deliberately not closed here
 
 - The provenance check ships nothing until K3 pricing (spec:
   docs/PROVENANCE_CHECK_SPEC_2026-08.md).
-- The scoreboard (#26), replay census (#37) and adoptable-spec
-  extraction (#83) are features, not surfacing — they stay on the
-  task list.
+- The replay census (#37) and adoptable-spec extraction (#83) are
+  features, not surfacing — they stay on the task list. (#26 SHIPPED
+  2026-08-29 as /doors, and not as the scoreboard its title asked
+  for; this line named it as open until then.)
 - README/repo docs describe the codebase, not the store, and were
   left alone.
