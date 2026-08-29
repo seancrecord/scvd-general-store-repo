@@ -1930,6 +1930,16 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       (${census.in_quoted_band.addresses} including shared ones).
       A floor on plausible payments — a band is not a receipt.</p>
 
+      <h2>The narrowest figure, and the end of what the chain can do</h2>
+      <p><strong>${census.narrowest.multi_payer_in_band}</strong> of ${census.narrowest.watched}
+      sole-advertised addresses took in-band transfers from <strong>more than one</strong> distinct
+      payer — ${census.narrowest.transfers} such transfers, median
+      ${census.narrowest.median_payers} payers each. Payers counted over the in-band transfers only,
+      so a door with one customer and fifty dust senders does not read as popular.</p>
+      <p><em>Still not proof.</em> One operator with two wallets paying its own door clears this bar,
+      and nothing here has seen a receipt. This is the floor beneath which chain data cannot go —
+      the next rung has to be a bought good, not a cleverer read of the same rows.</p>
+
       <h2>Who sent it</h2>
       <p>A market has many payers; a dust campaign has one sprayer; a facilitator has one sender;
       an operator funding itself sends from a wallet it also advertised. All four look identical

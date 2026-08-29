@@ -773,6 +773,57 @@ received there (51%); 2 of 44 that quoted Polygon did (4.5%).**
 Doors advertise Polygon and almost nothing arrives. That is a
 denominated fact about advertised-versus-actual rails.
 
+## 13. The fourth reading, and where the chain stops
+
+The sender field settled the question the third reading could not.
+
+**The spray hypothesis is dead.** Only **2 senders reached 10 or more
+of the watched addresses, accounting for 7% of transfers**. Address
+poisoning would look like the opposite — many sprayers, wide reach.
+Ruling it out matters: it was the strongest innocent explanation for
+10,000 tiny transfers a day, and it is gone.
+
+**So is the market hypothesis.** 537 distinct senders, but a **median
+of 1 distinct sender per receiving address**, and **110 of 217
+addresses took their entire inflow from a single payer**. A door with
+customers has many payers. Half of these have exactly one, which is
+what self-funding and single-counterparty flows look like. The
+busiest sender accounts for 38% of transfers and the busiest
+receiving address holds 4,849 — close enough that one high-frequency
+pair is very likely most of the traffic.
+
+Across three readings an hour apart the shape held: 232 / 223 / 217
+receiving addresses, busiest 4,458 / 4,849, median transfer $0.006
+every time. A steady-state process, not a spike.
+
+### The narrowest figure, and why it is the last one
+
+Every broader number has an innocent explanation that swallows it, so
+the reading now computes the intersection: **sole-advertised
+addresses taking in-band transfers from more than one distinct
+payer.** The load-bearing detail is that payers are counted over the
+*in-band* transfers only — otherwise a door with one real customer
+and fifty dust senders reads as popular, which is the failure mode
+every previous refinement fell into.
+
+It is still not proof, and the reading says so on itself: one
+operator with two wallets paying its own door clears this bar, and
+nothing here has seen a receipt.
+
+**This is where chain-only analysis ends.** Not because the data ran
+out — because the question is about intent, and a transfer does not
+carry intent. Four rebuilds established that with numbers rather than
+with an argument. The next rung has to be a bought good: **NOW-6.**
+
+### What survived, and is publishable
+
+| Finding | Why it holds |
+|---|---|
+| **Base 217/440 (49%) vs Polygon 2/44 (4.5%)** of addresses whose doors quoted that rail | Real per-rail denominators; untouched by either failed heuristic |
+| **110 of 217 receiving addresses took their whole inflow from one payer** | A denominated structural fact, not an inference |
+| **2 senders reached 10+ addresses, 7% of transfers** | The honest exclusion of the obvious alternative |
+| **Busiest tenth hold 87%; busiest single address 44% of all transfers** | Concentration, stable across readings |
+
 ### The ceiling, stated plainly
 
 Even sharpened, this instrument cannot prove a purchase. It can only

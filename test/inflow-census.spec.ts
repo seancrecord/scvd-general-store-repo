@@ -894,3 +894,96 @@ describe("the caption stops claiming what the third reading disproved", () => {
     expect(census!.what_this_counts).toContain("is still one door");
   });
 });
+
+/**
+ * THE NARROWEST FIGURE (2026-08-28, after the fourth reading).
+ *
+ * Every broader number this instrument produces has an innocent
+ * explanation that swallows it: 217 received is mostly wallet
+ * activity; 6,640 in band is a wide band; half the receivers had
+ * exactly one payer, which is dusting and self-funding. What is left
+ * is sole-advertised addresses taking IN-BAND transfers from more
+ * than one distinct payer — and the load-bearing detail is that the
+ * payers are counted over the in-band transfers ONLY.
+ */
+describe("the narrowest figure the chain can produce", () => {
+  it("counts payers over in-band transfers only, so dust cannot inflate a door", async () => {
+    // ADDR_A: one in-band payer, plus two dust senders whose amounts
+    // are nowhere near the quote. Naively that is three payers.
+    await seed(round([[ADDR_A]], { min_usdc: 0.0001, max_usdc: 0.0002 }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: unknown, init?: { body?: string }) => {
+        const request = JSON.parse(init?.body ?? "{}") as { method?: string };
+        if (request.method === "eth_blockNumber") {
+          return new Response(
+            JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x1f4" }),
+          );
+        }
+        if (request.method === "eth_getLogs") {
+          const row = (from: string, data: string) => ({
+            transactionHash: `0x${"1".repeat(64)}`,
+            topics: [`0x${"d".repeat(64)}`, topicOf(from), topicOf(ADDR_A)],
+            data,
+            blockNumber: "0x1f4",
+          });
+          return new Response(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              result: [
+                row(PAYER_1, "0x64"), // $0.0001 — in band
+                row(PAYER_2, "0x5f5e100"), // $100 — nowhere near the ask
+                row(PAYER_3, "0x5f5e100"), // $100 — likewise
+              ],
+            }),
+          );
+        }
+        return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: null }));
+      }),
+    );
+    const census = await readInflowCensus(testEnv);
+    // Three senders overall, but only ONE of them answered the ask.
+    expect(census!.senders.distinct).toBe(3);
+    expect(
+      census!.narrowest.multi_payer_in_band,
+      "dust senders must not promote a one-customer door to multi-payer",
+    ).toBe(0);
+  });
+
+  it("counts an address with two genuine in-band payers", async () => {
+    await seed(round([[ADDR_A], [ADDR_B]], { min_usdc: 0.0001, max_usdc: 1 }));
+    stubChain({
+      head: 500,
+      receivedBy: [ADDR_A, ADDR_A, ADDR_B],
+      sentBy: [PAYER_1, PAYER_2, PAYER_3],
+    });
+    const census = await readInflowCensus(testEnv);
+    // ADDR_A has two in-band payers; ADDR_B has one.
+    expect(census!.narrowest.multi_payer_in_band).toBe(1);
+    expect(census!.narrowest.median_payers).toBe(2);
+    expect(census!.narrowest.watched).toBe(2);
+  });
+
+  it("excludes shared addresses, however many payers they have", async () => {
+    // ADDR_A advertised by two doors — shared by construction, so it
+    // cannot stand in for a door's own customers no matter who paid.
+    await seed(round([[ADDR_A], [ADDR_A]], { min_usdc: 0.0001, max_usdc: 1 }));
+    stubChain({
+      head: 500,
+      receivedBy: [ADDR_A, ADDR_A],
+      sentBy: [PAYER_1, PAYER_2],
+    });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.narrowest.multi_payer_in_band).toBe(0);
+  });
+
+  it("says on itself that the narrowest figure is still not proof", async () => {
+    await seed(round([[ADDR_A]], { min_usdc: 0.0001, max_usdc: 1 }));
+    stubChain({ head: 500, receivedBy: [ADDR_A, ADDR_A], sentBy: [PAYER_1, PAYER_2] });
+    const census = await readInflowCensus(testEnv);
+    expect(census!.what_this_counts).toContain("NARROWEST OF ALL");
+    expect(census!.what_this_counts).toContain("still not proof");
+    expect(census!.what_this_counts).toContain("two wallets paying its own door");
+  });
+});
