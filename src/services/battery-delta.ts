@@ -128,3 +128,42 @@ export function batteryDelta(rows: readonly ScoredRow[]): BatteryDelta {
     what_this_does_not_settle: NOT_SETTLED,
   };
 }
+
+
+/**
+ * THE WHOLE CHAIN, WEEK BY WEEK. Every signed round we hold, read for
+ * the same question — which is possible only because this derives
+ * from `failed` names that rows have always carried. A tally that
+ * needed a new field would have started its series today and told the
+ * keeper nothing until December.
+ *
+ * Per week AND cumulative, because they answer different halves: a
+ * single week says what the market looks like now, the total says
+ * whether the stricter battery has ever been worth its cost.
+ */
+export interface BatteryDeltaSeries {
+  weeks: Array<{ week: string; sequence: number } & BatteryDelta>;
+  overall: BatteryDelta;
+  v2_only_checks: readonly string[];
+  what_this_is: string;
+}
+
+const WHAT_THIS_IS =
+  "How often the current battery (v2) reaches a different verdict than the frozen one (v1), over every signed week this store holds. v2's checks are v1's plus four, so the disagreement runs one way only: a door v1 would have called ready that v2 caught. Derived at read time from the check names each row already carries — no row was rewritten and nothing was resigned to produce this, so it covers the whole history rather than starting the day somebody thought to count.";
+
+/** Fold a set of already-scored rounds into per-week and overall tallies. */
+export function batteryDeltaSeries(
+  rounds: readonly { week: string; sequence: number; rows: readonly ScoredRow[] }[],
+): BatteryDeltaSeries {
+  const weeks = rounds.map((round) => ({
+    week: round.week,
+    sequence: round.sequence,
+    ...batteryDelta(round.rows),
+  }));
+  return {
+    weeks,
+    overall: batteryDelta(rounds.flatMap((round) => [...round.rows])),
+    v2_only_checks: V2_ONLY_CHECKS,
+    what_this_is: WHAT_THIS_IS,
+  };
+}

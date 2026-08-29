@@ -1,3 +1,4 @@
+import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import {
   batteryDelta,
@@ -135,5 +136,32 @@ describe("what v2 catches that v1 misses", () => {
       overlap,
       "a v2 addition is already in v1's core, so the two sets are not baseline-plus-extras and the one-way disagreement argument no longer holds",
     ).toEqual([]);
+  });
+});
+
+/**
+ * THE SURFACE, because a number nobody can read is not a measurement
+ * either — and I shipped exactly that mistake earlier the same day
+ * with a storefront line wired to nothing. A module the store never
+ * calls is the same failure with more ceremony.
+ */
+describe("the tally is served, not merely computed", () => {
+  it("answers at its own door with the shape a reader needs", async () => {
+    const response = await SELF.fetch(
+      "https://scvd.store/corpus/battery-delta.json",
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as Record<string, any>;
+    // The denominator and both halves, always — a disagreement count
+    // with no denominator is the shape this store refuses elsewhere.
+    expect(body.overall).toHaveProperty("scored");
+    expect(body.overall).toHaveProperty("agreed");
+    expect(body.overall).toHaveProperty("caught_by_v2_only");
+    expect(Array.isArray(body.weeks)).toBe(true);
+    // Derived, so a reader can recount without trusting us (rule 55).
+    expect(body.how_to_rederive).toContain("failed[]");
+    expect(body.v2_only_checks).toEqual(BATTERY_ADDS[PREFLIGHT_VERSION_NEXT]);
+    // The number is an input to the keeper's call and says so here too.
+    expect(body.the_open_question).toContain("keeper's call");
   });
 });
