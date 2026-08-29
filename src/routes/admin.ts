@@ -1875,6 +1875,14 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
         )
       : c.json({ error: "no ward round yet" }, 404);
   }
+  /*
+   * WHAT IS SHOWN IS WHAT MAY BE PRESSED. Stashed as the page
+   * renders, so publishInflowWeek publishes the numbers on this
+   * screen rather than a fresh walk nobody has seen. Rule 30 is "he
+   * reads the round first"; this makes that mechanical.
+   */
+  const { stashRenderedReading } = await import("@/services/inflow-pulse");
+  await stashRenderedReading(c.env, census);
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json(census);
   }
@@ -1981,8 +1989,140 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       <h2>What this counts</h2>
       <p>${escapeHtml(census.what_this_counts)}</p>
       <h2>What this is not</h2>
-      <p>${escapeHtml(census.what_this_is_not)}</p>`,
+      <p>${escapeHtml(census.what_this_is_not)}</p>
+
+      <h2>Publish this week</h2>
+      ${
+        c.req.query("refused")
+          ? `<p class="empty"><strong>Refused:</strong> ${escapeHtml(c.req.query("refused") ?? "")}</p>`
+          : ""
+      }
+      ${
+        c.req.query("published")
+          ? `<p><strong>Published week ${escapeHtml(c.req.query("published") ?? "")}</strong>${
+              c.req.query("replaced") === "true" ? " (replaced an earlier press)" : ""
+            } — now live at <a href="/inflows">/inflows</a>.</p>`
+          : ""
+      }
+      <p>Nothing above reaches the public page until this is pressed. The press
+      snapshots the counts as they stand now, and refuses outright if the chains
+      were not walked over the same window or if any address went unread — a
+      reading that does not know its own denominator has no business on a public
+      tally.</p>
+      <form method="post" action="/admin/market/publish-inflows">
+        <button type="submit">Publish week ${escapeHtml(census.week)} to /inflows</button>
+      </form>`,
     ),
+  );
+});
+
+/**
+ * L3c, ENDPOINT SIDE — its own door, like the inflow census, and for
+ * the same reason: it costs did:web resolutions across every issuer
+ * the round saw, which is not a thing that should happen on a
+ * pageview somebody else opens.
+ *
+ * COUNTS ARE THE READING; the named rows below it are the keeper's
+ * own screen. "This door's signature does not verify" is a heavier
+ * claim than anything this store publishes today and needs its own
+ * ruling before it reaches anybody.
+ */
+adminRoutes.get("/admin/market/authenticity", async (c) => {
+  const { readOfferAuthenticityDetail } = await import(
+    "@/services/offer-authenticity"
+  );
+  const walked = await readOfferAuthenticityDetail(c.env);
+  if (!walked) {
+    return wantsHtml(c.req.header("Accept"))
+      ? c.html(
+          (await import("@/pages/admin/layout")).renderAdminShell(
+            "market",
+            "<h1>Offer authenticity</h1><p class='empty'>No ward round yet — there are no stored challenges to verify.</p>",
+          ),
+        )
+      : c.json({ error: "no ward round yet" }, 404);
+  }
+  const { reading, rows } = walked;
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json({ reading, rows });
+  }
+  const { renderAdminShell } = await import("@/pages/admin/layout");
+  const { escapeHtml } = await import("@/lib/sanitize");
+  const verdicts = Object.entries(reading.by_verdict)
+    .map(
+      ([verdict, count]) =>
+        `<li><strong>${escapeHtml(verdict)}</strong>: ${count}</li>`,
+    )
+    .join("");
+  const interesting = rows.filter(
+    (row) => row.verdict === "failed" || row.verdict === "kid_not_in_document",
+  );
+  const flagged = interesting.length
+    ? `<h2>Doors worth a human look — NOT PUBLISHED</h2>
+       <p>A signature that does not verify is a serious claim about a named party. These rows
+       are here for you, and nothing renders them anywhere else.</p>
+       <ul>${interesting
+         .map(
+           (row) =>
+             `<li><strong>${escapeHtml(row.host)}</strong>: ${escapeHtml(row.verdict)} —
+              ${row.offers_failed} of ${row.offers_seen} offers, issuers
+              ${escapeHtml(row.issuers.join(", ") || "none named")}${
+                row.detail ? ` — ${escapeHtml(row.detail)}` : ""
+              }</li>`,
+         )
+         .join("")}</ul>`
+    : `<h2>Doors worth a human look</h2><p>None: no signature failed and no issuer disowned a key this round.</p>`;
+  return c.html(
+    renderAdminShell(
+      "market",
+      `<h1>Offer authenticity — week ${escapeHtml(reading.week)}</h1>
+      <p class="lead"><strong>${reading.hosts_serving_signed} of ${reading.hosts_with_evidence}</strong>
+      doors whose challenge this round stored serve a signed offer at all — that is the entire
+      population this instrument can speak about, and the honest measure of whether it is worth having.</p>
+
+      <h2>What the signatures said</h2>
+      <p><strong>${reading.offers_verified}</strong> of ${reading.offers_seen} signed offers verified
+      against the key their own issuer publishes; <strong>${reading.offers_failed}</strong> did not.
+      ${reading.offers_schema_failed} also failed the offer schema — counted apart, because a signed
+      offer with a sloppy field is not a forgery.</p>
+      <ul>${verdicts}</ul>
+
+      <h2>What it cost</h2>
+      <p>${reading.resolutions_spent} did:web resolutions across ${reading.issuers_seen} distinct issuers
+      (${reading.issuers_resolved} resolved, ${reading.issuers_unreachable} would not)${
+        reading.budget_bound
+          ? ` — <strong>the ${reading.resolution_budget}-resolution budget bound</strong>`
+          : ""
+      }. No door was knocked on for this: every byte verified here was already in the round.</p>
+
+      ${flagged}
+
+      <h2>What this counts</h2>
+      <p>${escapeHtml(reading.what_this_counts)}</p>
+      <h2>What this is not</h2>
+      <p>${escapeHtml(reading.what_this_is_not)}</p>`,
+    ),
+  );
+});
+
+/**
+ * THE INFLOW PRESS (rule 30). The census has been readable since
+ * 2026-08-28 and unpublished the whole time — not by a ruling, but
+ * because nobody had built this. It refuses rather than publishing a
+ * reading whose coverage cannot support a share.
+ */
+adminRoutes.post("/admin/market/publish-inflows", async (c) => {
+  const { publishInflowWeek } = await import("@/services/inflow-pulse");
+  const result = await publishInflowWeek(c.env);
+  if (!result.ok) {
+    return c.redirect(
+      `/admin/market/inflows?refused=${encodeURIComponent(result.refusal.slice(0, 300))}`,
+      303,
+    );
+  }
+  return c.redirect(
+    `/admin/market/inflows?published=${encodeURIComponent(result.entry.week)}&replaced=${result.replaced}`,
+    303,
   );
 });
 

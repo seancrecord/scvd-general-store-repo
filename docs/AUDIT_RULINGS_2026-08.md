@@ -29,7 +29,7 @@ answered and then ruled in the same sitting.
 | 2 | L3c signature verification | **DEFERRED** — "save it for later on down the road." A risk, never observed, unobservable by anything we run; cheap and retroactive whenever it returns. |
 | 3 | L3d burst on paid watches | **RULED YES** — "yes paid." Paid watches only; census unchanged. |
 | 4 | Fold any depth-pass advisory | **HELD, with a revisit** — criteria in 0c. |
-| 5 | NOW-6 restated | **Acknowledged** — stays open, 1–3 first. |
+| 5 | NOW-6 restated | **RULED 2026-08-29 — YES, the sampled lane.** Hard-capped, aggregate-only, private notice on failure. The four inflow rebuilds made the case with numbers: chain data cannot reach intent. |
 | 6 | Registry coverage fields | **RULED YES** — "yes safer better." |
 | 7 | The copy in his voice | **CONFIRMED** — "i think these are fine." Rule 7 flag struck. |
 
@@ -184,7 +184,19 @@ show that most doors fail before money is even possible, the case
 for spending changes shape — and if they show the opposite, that is
 the argument FOR the lane, made with data instead of appetite.
 
-No answer needed today; NOW-6 stays open and stays yours.
+**RULED 2026-08-29: YES, the sampled lane.** The free rungs were
+climbed as recommended, and then some — items 1-3 landed, the inflow
+census was built and rebuilt four times, and L3c came off the shelf.
+What that produced is the argument this section asked for, made with
+data instead of appetite: the chain cannot answer whether anyone
+pays an ask, because a transfer does not carry intent. A median of
+one payer per receiving address, one address holding 44% of every
+transfer, and a narrowest figure one operator with two wallets would
+clear. The consenting-panel variant was declined for the reason that
+matters — a panel that agreed to be measured cannot speak for the
+market.
+
+The ruling authorises the lane to exist, not a clock to spend it.
 
 ---
 

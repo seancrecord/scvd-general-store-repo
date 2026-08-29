@@ -184,12 +184,27 @@ const BASE = "https://scvd.store";
  * storefront line and the guide carries its own "what this is" prose.
  * Absence there is the design, not a second miss.
  *
+ * Re-taken 2026-08-29 in the commit that gave /inflows its section.
+ * The no-orphan-capability guard caught the new public page listed on
+ * no surface an agent reads, so the room joined rooms.ts and the
+ * guide gained a section describing it — and the guide's bytes moved
+ * with the words, as they should. Filed under the corpus area beside
+ * the registry: both are readings off the weekly census.
+ *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work.
+ * Each had correctly re-taken the digest for its own edit, so the
+ * merge produced a third text neither value describes — the recurring
+ * shape this pin has now hit four times. Both notes above are kept
+ * because both edits are in the served bytes: the keeper's priced and
+ * approved lines, and /inflows' section. Verified present together
+ * before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "00a1a203b00e68fcfd530afa1aa1a69b24631dfcdbd0758aac83d368cc6dfa54";
+  "5aef2160e616857efbd40f7a1163b3289a1b7987cac2fb9cd564f03d2b04f647";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

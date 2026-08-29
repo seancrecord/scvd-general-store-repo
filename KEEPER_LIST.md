@@ -342,13 +342,39 @@ Regenerate `providers/scvd/store/openapi.json` from the live
 /openapi.json and /menu.json now that the dual-rail build deployed;
 the Solana directory's two Greptile blockers dissolve.
 
-**6. RULE: the settlement-attempt lane.** The biggest open ruling: a
-parseable 402 says nothing about whether PAYING it gets goods, and
-testing that means real spends at strangers' doors under the wallet
-law ($25/month funding discipline, ask-first above $1, ruled
-2026-08-18). The August field run (1,707 attempts, signed report) was
-this done once by hand; the ruling is whether it becomes a standing
-lane. Yes / no / conditions.
+**6. RULED 2026-08-29 — the settlement-attempt lane: YES, the
+sampled lane.** Open since 2026-08-18; the keeper's word is the
+hard-capped sampled lane, aggregate-only publication, private notice
+to the host when a purchase fails. 20 doors a week, at most $0.05 a
+probe (the August run averaged $0.0005), under the standing wallet
+law: $25/month funding discipline, ask-first above $1.
+
+WHAT MADE THE CASE, and it was not appetite. The inflow census was
+rebuilt four times across 2026-08-28/29 trying to answer "does
+anyone actually PAY these asks" from chain data alone. It cannot,
+and the reason is not that the data ran out: a transfer does not
+carry intent. The instrument's own numbers established the ceiling —
+a median of one distinct payer per receiving address, one address
+holding 44% of every transfer seen, and a narrowest-possible figure
+that one operator with two wallets would clear. `docs/
+INSTRUMENT_AUDIT_2026-08.md` §§10-13 is the whole record.
+
+WHAT THE KEEPER IS BUYING, stated plainly because it is the part
+worth weighing: real money at strangers' doors, consuming a unit of
+something they sell, without them asking us to. The same posture the
+ward round already takes by knocking uninvited — but this one
+spends, and a shop being bought from is a normal act only as long as
+the caps and the notice hold.
+
+STILL HIS HAND, NOT THE CLOCK (rule 30). The ruling authorises the
+lane to EXIST. It does not authorise a cron to spend: the lane is
+pressed, hard-capped, and refuses rather than overruns. Nothing in
+this ruling lets money leave without a person.
+
+Consenting-panel and self-only variants were both on the table and
+were not chosen: a panel that agreed to be measured is a biased
+sample and cannot speak for the market, which is the whole reason
+the lane is worth having.
 
 **7. RULE: the ERC-8183 evaluator key.** The read is DONE and the
 position RULED 2026-08-18 (`docs/ERC8183_EVALUATOR.md`, on /becoming)

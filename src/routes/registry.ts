@@ -295,6 +295,87 @@ function registryDatasetJsonLd(
   return jsonLdScript(dataset);
 }
 
+/**
+ * THE INFLOW TALLY, PUBLIC — /inflows.
+ *
+ * Its own page rather than a block on /registry, because it answers a
+ * different question about a different population. /registry says
+ * what the listings are worth: how many doors work, what they charge.
+ * This says what arrived at the addresses those doors advertised —
+ * which is a fact about money, not about shape, and reads as a
+ * revenue claim the moment it sits under a heading about listings.
+ *
+ * COUNTS ONLY, BY RULING (T1, 2026-08-28): no address, no host, no
+ * sender. And every week here was pressed by a hand — nothing on this
+ * page arrived by a clock.
+ */
+registryRoutes.get("/inflows", async (c) => {
+  const { readInflowPulse } = await import("@/services/inflow-pulse");
+  const pulse = await readInflowPulse(c.env);
+  if (!wantsHtml(c.req.header("Accept"))) {
+    return c.json(pulse);
+  }
+  const latest = pulse.weeks[pulse.weeks.length - 1];
+  const bodyHtml = `<section>
+    <p class="menu-desc">Every week this store files the payment addresses that
+    public x402 doors advertise in their own 402s. This page reads what actually
+    ARRIVED at them, on Base and Polygon, over roughly a day.
+    <strong>It is not sales and not revenue.</strong> A transfer into an
+    advertised address can be treasury movement, a shared or facilitator
+    wallet, or an operator funding itself, and no reading here can tell those
+    apart — so every number below travels with the denominator it was computed
+    over and the coverage the walk actually had.
+    <strong>Counts only, no names</strong>. Published by hand, never by a
+    clock.</p>
+  </section>
+  ${
+    latest
+      ? `<section>
+    <h2>Week ${escapeHtml(latest.week)}</h2>
+    <p><strong>${latest.reading.by_exclusivity.sole.received} of
+    ${latest.reading.by_exclusivity.sole.watched}</strong> addresses that only one
+    door advertised received USDC in the window walked.</p>
+    <p><strong>${latest.reading.narrowest.multi_payer_in_band} of
+    ${latest.reading.narrowest.watched}</strong> of those took transfers inside the
+    USDC range the advertising door itself quoted, from more than one distinct
+    payer — the narrowest figure chain data can produce, and still not proof
+    that anyone bought anything.</p>
+    <p class="menu-meta">Median transfer size $${latest.reading.amounts.median_usdc};
+    the busiest tenth of receiving addresses hold
+    ${latest.reading.distribution.top_decile_share_pct ?? 0}% of every transfer seen;
+    ${latest.reading.senders.single_sender_receivers} addresses took their entire
+    inflow from a single sender.</p>
+    ${latest.reading.windows
+      .map(
+        (window) =>
+          `<p class="menu-meta">${escapeHtml(window.chain)}:
+           ${window.received_advertised} of ${window.advertised_here} addresses whose
+           doors quoted this rail received here, over
+           ${window.blocks.toLocaleString()} blocks.</p>`,
+      )
+      .join("")}
+    <h3>What this counts</h3>
+    <p class="menu-meta">${escapeHtml(latest.reading.what_this_counts)}</p>
+    <h3>What this is not</h3>
+    <p class="menu-meta">${escapeHtml(latest.reading.what_this_is_not)}</p>
+    <p class="menu-meta">Observed ${escapeHtml(latest.observed_at)}; published by
+    hand ${escapeHtml(latest.published_at)}.</p>
+  </section>`
+      : `<section><p class="menu-desc">No week has been published yet. The reading
+    exists and is read by hand; nothing reaches this page until it is
+    pressed.</p></section>`
+  }`;
+  return c.html(
+    renderSimplePage({
+      title: "Inflows",
+      description:
+        "What actually arrived at the payment addresses public x402 doors advertise. Counts only, no names; not sales and not revenue.",
+      path: "/inflows",
+      bodyHtml,
+    }),
+  );
+});
+
 registryRoutes.get("/registry", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const pulse = await readRegistryPulse(c.env);
