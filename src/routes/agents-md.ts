@@ -178,9 +178,25 @@ Both maps render from the same list, so neither can drift from the other: [sitem
 `;
 }
 
-agentsMdRoutes.get("/agents.md", (c) =>
-  c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
-    "content-type": MARKDOWN_MEDIA_TYPE,
-    Vary: VARY_ACCEPT,
-  }),
-);
+/**
+ * BOTH SPELLINGS, BECAUSE AN AGENT ONLY GETS ONE GUESS.
+ *
+ * Vetted 2026-08-29 by probing the live site as an arriving agent:
+ * /agents.md answered and /AGENTS.md returned 404. The convention
+ * that has actually settled is the SHOUTED one — AGENTS.md, the way
+ * README.md and LICENSE are shouted — so the spelling most likely to
+ * be tried was the spelling that failed.
+ *
+ * A 404 on a conventional path is not a small miss. The agent does
+ * not know the file exists under another name; it concludes the
+ * store has no agent guide and stops looking. One route, one
+ * discovery lost.
+ */
+for (const path of ["/agents.md", "/AGENTS.md"] as const) {
+  agentsMdRoutes.get(path, (c) =>
+    c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+    }),
+  );
+}

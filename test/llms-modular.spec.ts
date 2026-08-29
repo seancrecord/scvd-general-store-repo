@@ -199,12 +199,19 @@ const BASE = "https://scvd.store";
  * approved lines, and /inflows' section. Verified present together
  * before this value was taken.
  *
+ * Re-taken 2026-08-29 in the commit that vetted the site's
+ * discoverability for agents. The index's "Evidence and record" line
+ * named the corpus and the coverage file and omitted /registry,
+ * /inflows and /fresh-set — the store's weekly findings, missing
+ * from the one map an agent reads before anything else. Adding them
+ * moved the guide's bytes.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "5aef2160e616857efbd40f7a1163b3289a1b7987cac2fb9cd564f03d2b04f647";
+  "bed8386d61f41d1141b6e846d35032c684b5a5b907abd2fedbb8870477737372";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

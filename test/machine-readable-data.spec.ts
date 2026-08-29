@@ -153,10 +153,12 @@ describe("an agent can find the evidence, not just the shop", () => {
       await SELF.fetch(`${BASE}/.well-known/x402.json`)
     ).json()) as { datasets?: Array<Record<string, string>> };
     expect(doc.datasets, "the discovery document lists no datasets").toBeTruthy();
-    const listed = new Set((doc.datasets ?? []).map((entry) => entry.url));
+    const listed = (doc.datasets ?? [])
+      .map((entry) => entry.url)
+      .filter((url): url is string => typeof url === "string");
     for (const dataset of PUBLISHED_DATASETS) {
       expect(
-        [...listed].some((url) => url.endsWith(dataset.path)),
+        listed.some((url) => url.endsWith(dataset.path)),
         `${dataset.path} is published and an agent cannot discover it`,
       ).toBe(true);
     }

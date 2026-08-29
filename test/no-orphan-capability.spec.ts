@@ -44,6 +44,18 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/support": "redirect to a real room; listing it would double-count the destination",
   "/terms": "redirect to a real room; listing it would double-count the destination",
   "/x402-test": "301 to /try, kept so old links keep working; /try is the listed door",
+  /*
+   * The SHOUTED spelling of a door already listed in lower case.
+   * Vetting the site as an arriving agent (2026-08-29) found
+   * /agents.md answering and /AGENTS.md 404ing, and the convention
+   * that has settled is the shouted one — an agent only gets one
+   * guess, and a 404 on a conventional path reads as "no agent guide
+   * here" rather than "try the other case". Both spellings now
+   * answer; listing both would advertise two doors that are one
+   * door, which is the same reason the redirects above stay quiet.
+   */
+  "/AGENTS.md":
+    "the same document as /agents.md, which every surface already lists; an agent guessing the shouted convention must not get a 404, but listing both would double-count one door",
 
   // ---- web plumbing found by convention, not by reading a list ----
   "/robots.txt": "crawlers find it at its fixed path; that is the entire mechanism",
