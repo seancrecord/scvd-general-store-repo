@@ -106,10 +106,38 @@ export function declaresWebmcp(html) {
  * silence is the reason this is a checked criterion and not a note.
  */
 export function originTrialExpiry(html) {
-  const tag = /<meta[^>]+http-equiv=["']origin-trial["'][^>]+content=["']([^"']+)["']/i.exec(
-    String(html ?? ""),
+  const expiries = originTrialExpiries(html);
+  return expiries.length === 0 ? null : expiries[0];
+}
+
+/**
+ * EVERY token on the page, soonest expiry first.
+ *
+ * ONE TOKEN IS NOT THE STEADY STATE. An origin-trial token is signed
+ * by ONE vendor for ONE origin: Chrome and Edge run separate trial
+ * programmes with separate keys, so a store reachable in both carries
+ * two tags with two independent clocks. A reader that took the first
+ * tag would go quietly blind to the second one expiring — and quietly
+ * blind is the exact failure this battery exists to catch, so it is
+ * not a thing to fix after the second tag lands.
+ *
+ * Soonest first, because the door closes in whichever browser runs out
+ * first, and that is the date worth reporting.
+ */
+export function originTrialExpiries(html) {
+  const tags = String(html ?? "").matchAll(
+    /<meta[^>]+http-equiv=["']origin-trial["'][^>]+content=["']([^"']+)["']/gi,
   );
-  if (!tag) return null;
+  const found = [];
+  for (const tag of tags) {
+    const expiry = readTokenExpiry(tag[1]);
+    if (expiry !== null) found.push(expiry);
+  }
+  return found.sort((a, b) => a - b);
+}
+
+/** One token's expiry in ms, or null when its payload will not parse. */
+function readTokenExpiry(token) {
   let raw;
   try {
     // Token layout: an ed25519 signature and a length prefix, then the
@@ -121,13 +149,17 @@ export function originTrialExpiry(html) {
     // did exactly that and reported the live token as absent, which is
     // the worst thing an instrument can do — accuse confidently while
     // confused. Try each brace and keep the first that actually parses.
-    raw = Buffer.from(tag[1], "base64").toString("utf8");
+    raw = Buffer.from(token, "base64").toString("utf8");
   } catch {
     return null;
   }
   const end = raw.lastIndexOf("}");
   if (end === -1) return null;
-  for (let start = raw.indexOf("{"); start !== -1 && start < end; start = raw.indexOf("{", start + 1)) {
+  for (
+    let start = raw.indexOf("{");
+    start !== -1 && start < end;
+    start = raw.indexOf("{", start + 1)
+  ) {
     try {
       const parsed = JSON.parse(raw.slice(start, end + 1));
       if (typeof parsed?.expiry === "number") return parsed.expiry * 1000;
@@ -159,7 +191,7 @@ export const AS_A_BROWSER = Object.freeze({
 
 /**
  * Sweep every room the sitemap publishes for the browser-door
- * declaration.
+ * declaration, and for an annotated form.
  *
  * The denominator is our own sitemap on purpose: it is the list we
  * tell the world is the store, so it is the list the coverage number
@@ -771,15 +803,25 @@ export const DOORS = [
         read(snap, asOf) {
           const miss = reached(snap, "home");
           if (miss) return miss;
-          const expiry = originTrialExpiry(snap.home.text);
-          if (expiry === null) {
+          // Every token, soonest first: the door closes in whichever
+          // browser runs out first, and a second vendor's tag brings a
+          // second clock rather than replacing the first.
+          const expiries = originTrialExpiries(snap.home.text);
+          if (expiries.length === 0) {
             return unmet("no origin-trial token on the front door");
           }
-          const days = Math.floor((expiry - asOf) / DAY);
-          const on = new Date(expiry).toISOString().slice(0, 10);
-          if (days < 0) return unmet(`origin trial expired ${on}; the door is shut`);
-          if (days < 30) return partial(`origin trial ends ${on}, in ${days} days`);
-          return met(`origin trial valid until ${on} (${days} days)`);
+          const soonest = expiries[0];
+          const days = Math.floor((soonest - asOf) / DAY);
+          const on = new Date(soonest).toISOString().slice(0, 10);
+          const count =
+            expiries.length === 1 ? "" : ` (${expiries.length} tokens, soonest shown)`;
+          if (days < 0) {
+            return unmet(`an origin trial expired ${on}; that door is shut${count}`);
+          }
+          if (days < 30) {
+            return partial(`an origin trial ends ${on}, in ${days} days${count}`);
+          }
+          return met(`origin trials valid to at least ${on} (${days} days)${count}`);
         },
       },
       {

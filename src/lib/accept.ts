@@ -119,3 +119,25 @@ export function prefersMarkdown(
 ): boolean {
   return negotiate(header, [alternative, "text/markdown"]) === "text/markdown";
 }
+
+/**
+ * True only when a caller ranks JSON ABOVE the alternative.
+ *
+ * The same shape as prefersMarkdown and for the same reason. The
+ * blunt test used on data pages — "does Accept mention text/html" —
+ * treats `*​/*` as "not html", which is right for a tally and wrong
+ * for the front door: bare curl, many HTTP libraries and some
+ * crawlers send `*​/*`, and answering the storefront with JSON to all
+ * of them would trade a search listing for a convenience.
+ *
+ * So the apex asks a narrower question, and only a client that named
+ * JSON and did not name HTML gets it. A browser is unaffected. A
+ * crawler is unaffected. An agent that asked in the convention's own
+ * terms stops receiving 84KB of neon it cannot use.
+ */
+export function prefersJson(
+  header: string | undefined | null,
+  alternative = "text/html",
+): boolean {
+  return negotiate(header, [alternative, "application/json"]) === "application/json";
+}

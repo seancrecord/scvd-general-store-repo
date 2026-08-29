@@ -6,6 +6,7 @@ import {
   type MarketRails,
 } from "@/services/market";
 import { escapeHtml } from "@/lib/sanitize";
+import { datasetEnvelope } from "@/lib/dataset-envelope";
 import { renderSimplePage, wantsHtml } from "@/pages/simple-page";
 import {
   readRegistryPulse,
@@ -296,6 +297,24 @@ function registryDatasetJsonLd(
 }
 
 /**
+ * THE ATLAS — /atlas.json, and it is an experiment.
+ *
+ * The keeper's idea, 2026-08-29: "idk if anybody does this so don't
+ * be afraid to try... and just see if agents like it." Every other
+ * surface here answers "what exists". None of them answers the
+ * question a reader actually arrives with, which is "I want to do X —
+ * what do I call, does it cost anything, and what comes back?"
+ *
+ * JSON ONLY, DELIBERATELY. It is a machine surface; a human has the
+ * whole store to read. Counted on the porch like every other door, so
+ * whether agents want this gets a number instead of an argument.
+ */
+registryRoutes.get("/atlas.json", async (c) => {
+  const { buildAtlas } = await import("@/store/atlas");
+  return c.json(buildAtlas(c.env.STORE_BASE_URL));
+});
+
+/**
  * THE INFLOW TALLY, PUBLIC — /inflows.
  *
  * Its own page rather than a block on /registry, because it answers a
@@ -313,7 +332,34 @@ registryRoutes.get("/inflows", async (c) => {
   const { readInflowPulse } = await import("@/services/inflow-pulse");
   const pulse = await readInflowPulse(c.env);
   if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json(pulse);
+    return c.json({
+      ...datasetEnvelope({
+        name: "Inflows to advertised x402 payment addresses",
+        description:
+          "What arrived at the payment addresses public x402 doors advertise in their own 402 challenges, read from Base and Polygon over roughly a day per weekly round. Counts only: no address, host or sender appears here.",
+        url: `${c.env.STORE_BASE_URL}/inflows`,
+        measurementTechnique:
+          "Every distinct EVM address the week's probed doors advertised is watched via eth_getLogs against each chain's canonical USDC contract, over a block window each chain line names. Amounts are compared against the USDC range the advertising door itself quoted. Published only by the keeper's hand, and only for a reading whose chains covered the same window with no address left unread.",
+        whatThisIsNot:
+          "NOT sales and NOT revenue. A transfer into an advertised address can be treasury movement, a shared or facilitator wallet, or an operator funding itself, and nothing here can tell those apart. A zero is not evidence nobody paid: an operator who rotated addresses, settles on a rail we do not read, or opened after the window began is invisible. No figure here is a fact about any named door.",
+        howToRead:
+          "Read narrowest.multi_payer_in_band against narrowest.watched — that is the tightest figure this data supports, and it is still a floor on plausible payments rather than a count of sales. Every ratio has its denominator as a sibling field; do not compute a percentage against any other number. The weeks array is ascending by ISO week.",
+        variableMeasured: [
+          { name: "sole-advertised addresses watched (advertised by exactly one door)", path: "weeks[].reading.by_exclusivity.sole.watched" },
+          { name: "of those, how many received any USDC in the window", path: "weeks[].reading.by_exclusivity.sole.received" },
+          { name: "addresses advertised by more than one door — shared infrastructure by construction", path: "weeks[].reading.by_exclusivity.shared.watched" },
+          { name: "sole-advertised addresses taking in-band transfers from more than one distinct payer — the narrowest figure this data supports", path: "weeks[].reading.narrowest.multi_payer_in_band", notes: "Still not proof of a purchase: one operator with two wallets clears this bar, and nothing here has seen a receipt." },
+          { name: "median transfer size", path: "weeks[].reading.amounts.median_usdc", unitText: "USDC" },
+          { name: "share of all transfers held by the busiest tenth of receiving addresses", path: "weeks[].reading.distribution.top_decile_share_pct", unitText: "PERCENT" },
+          { name: "distinct sending addresses across every transfer seen", path: "weeks[].reading.senders.distinct" },
+          { name: "receiving addresses whose entire inflow came from a single sender", path: "weeks[].reading.senders.single_sender_receivers", notes: "A high share is what dusting and self-funding look like, not a customer base." },
+          { name: "addresses whose doors quoted this rail, per chain — the per-chain denominator", path: "weeks[].reading.windows[].advertised_here" },
+          { name: "blocks actually covered, per chain", path: "weeks[].reading.windows[].blocks", unitText: "BLOCKS" },
+          { name: "true only when every chain reached the same window; when false the union is a floor and no percentage is valid", path: "weeks[].reading.windows_equal" },
+        ],
+      }),
+      ...pulse,
+    });
   }
   const latest = pulse.weeks[pulse.weeks.length - 1];
   const bodyHtml = `<section>
@@ -380,7 +426,38 @@ registryRoutes.get("/registry", async (c) => {
   const base = c.env.STORE_BASE_URL;
   const pulse = await readRegistryPulse(c.env);
   if (!wantsHtml(c.req.header("Accept"))) {
-    return c.json(pulse);
+    /*
+     * THE JSON HALF GETS THE CAVEATS THE HTML HALF ALREADY HAD.
+     * This page has carried careful JSON-LD in its markup since the
+     * corrections that fixed its vocabulary — and served the same
+     * numbers bare to anyone who asked for JSON, which is what an
+     * agent does. The reader least able to see a paragraph was the
+     * one handed the naked ratio.
+     */
+    return c.json({
+      ...datasetEnvelope({
+        name: "State of the public x402 registry",
+        description:
+          "A weekly running tally of the public x402 discovery list: how many listed doors answer a well-formed payment challenge, how many serve structurally valid signed offers, what the market charges, and how concentrated it is. Aggregates only, no names.",
+        url: `${base}/registry`,
+        measurementTechnique:
+          "One signed GET per declared host per week against the published preflight battery, verifiable in the host's own logs. The walk is capped; where a round hit that cap or lost coverage, the week's coverage block says so. Published by the keeper's hand, never by a clock.",
+        whatThisIsNot:
+          "NOT a score, rating or ranking of any operator, and not a claim any door is safe to buy from. A verdict is shape-conformance from one vantage at one moment: the census parses signed offers as JWS and does NOT verify their signatures. A door counted as answering is a door that answered our probe, not a door that delivers goods. Weeks whose coverage block is absent were measured before that layer existed — treat missing as NOT MEASURED, never as full coverage.",
+        howToRead:
+          "Every percentage ships beside the counts it was computed from; use those rather than recomputing against another field. Read each week's coverage block before comparing weeks — a capped round and a quiet week produce the same totals. The weeks array is ascending by ISO week.",
+        variableMeasured: [
+          { name: "listed x402 doors probed this round", path: "weeks[].probed" },
+          { name: "doors answering a well-formed x402 payment challenge (shape only, one vantage)", path: "weeks[].ready", notes: "Not 'working': this is challenge shape, not delivery." },
+          { name: "listed doors serving no valid payment challenge", path: "weeks[].rot.pct", unitText: "PERCENT" },
+          { name: "shape-ready doors serving structurally valid signed offers (JWS parse only, signatures not verified)", path: "weeks[].signed_offers.serving" },
+          { name: "distinct hosts seen this round", path: "weeks[].hosts" },
+          { name: "share of doors held by the five largest operators", path: "weeks[].top5_share_pct", unitText: "PERCENT" },
+          { name: "what the round could not see: cap hit, coverage suspect, coverage drop, population denominator", path: "weeks[].coverage", notes: "Absent on weeks measured before this layer existed. Missing means not recorded, never means coverage was fine." },
+        ],
+      }),
+      ...pulse,
+    });
   }
   const latest = pulse.weeks[pulse.weeks.length - 1];
   const newestFirst = [...pulse.weeks].reverse();

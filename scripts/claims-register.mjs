@@ -129,6 +129,13 @@ export const REGISTER = [
     why: "Expiry, public withdrawal, and key retirement do the work. A registry we served would be the compromised host marking itself honest.",
   },
   {
+    id: "score.no-ranking.doors",
+    file: "src/routes/doors.ts",
+    match: "There is no ranking to get",
+    resolution: "declined",
+    why: "Rule 43, on the room a reader most expects a ranking in — #26 asked for a scoreboard by name. The list is alphabetical and every row is one dated observation; test/door-index.spec.ts fails on a fractional number in any host row, which is what a ranking would have to compute.",
+  },
+  {
     id: "score.no-rating.llms",
     file: "src/routes/llms.ts",
     match: "There is no rating, no ranking, and no",

@@ -123,15 +123,34 @@ That is the short answer. The long one — ${USE_WHEN.length} concrete moments,
 each naming the door that answers it — is under "When you'd use this
 store" further down.
 
+## Start here, by what you came to do
+
+If you want to do one thing and leave, these are the calls. Nothing
+below costs money unless it says so.
+
+- **Check an x402 door before paying it** — \`POST ${base}/api/preflight/v2\`. Free. Shape and whether its payTo can be credited; never a promise the goods arrive.
+- **Check a signed offer or receipt somebody handed you** — \`POST ${base}/api/conformance/v1\`. Free, on anyone's artifacts including our competitors' and our own.
+- **Check something WE signed, without trusting us** — \`GET ${base}/api/verify/{id}\`. Free forever, the exact bytes, verifiable offline.
+- **See what the x402 market actually looks like** — [${base}/registry](${base}/registry) for what the listings are worth, [${base}/inflows](${base}/inflows) for what arrived at the addresses they advertise. Free, JSON on the same URLs.
+- **Learn the payment flow before spending on anything real** — [${base}/try](${base}/try), a live till priced not to matter.
+- **Buy something** — [${base}/menu.json](${base}/menu.json) is the catalogue with prices.
+- **Tell us we got something wrong** — [${base}/corrections](${base}/corrections) is where the ones we know about live.
+
+Everything, arranged by goal and with the cost of each step stated
+before you commit, is one fetch away at
+[${base}/atlas.json](${base}/atlas.json). That file is an experiment —
+we do not know whether agents want it, and we are counting fetches to
+find out.
+
 ## Every door, in one list
 
 Free instruments (the first two are also MCP tools, preflight_endpoint and check_conformance): [preflight v2](${base}/api/preflight/v2) · [preflight v1](${base}/api/preflight/v1) · [conformance desk](${base}/api/conformance/v1) · [verify anything we signed](${base}/api/verify/${SAMPLE_ARTIFACT_ID}) · [Web Bot Auth check](${base}/api/bot-auth/check) · [the practice till](${base}/try)
 
-Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
+Evidence and record: [corpus](${base}/corpus) · [corpus.json](${base}/corpus.json) · [every door we have checked](${base}/doors) · [state of the registry](${base}/registry) · [inflows](${base}/inflows) · [the fresh set](${base}/fresh-set) · [coverage](${base}/coverage.json) · [defect vocabulary](${base}/defects) · [corrections](${base}/corrections) · [the gazette](${base}/gazette) · [the trust list](${base}/trust-list.json) · [the wall](${base}/train)
 
-Catalog and contracts: [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
+Catalog and contracts: [the atlas](${base}/atlas.json) · [menu](${base}/menu.json) · [OpenAPI](${base}/openapi.json) · [developers](${base}/developers) · [pricing charter](${base}/pricing) · [x402 discovery](${base}/.well-known/x402) · [agentic resource discovery](${base}/.well-known/ard.json) · [this store in markdown](${base}/index.md)
 
-Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
+Identity and keys: [signing key](${base}/.well-known/scvd-signing-key) · [key registry](${base}/keys) · [house ledger](${base}/house-ledger.json) · [agent card](${base}/.well-known/a2a.json) · [MCP](${base}/mcp) · [which MCP door to use](${base}/mcp.md) · [attestation spec](${base}/spec/scvd-attestation/v1) · [OKF bundle](${base}/okf/index.md) · [execution-contract skill](${base}/skills/execution-contract.md)
 
 Every one of those is described in its own section below. This list is
 the map; the sections are the territory.
@@ -331,6 +350,9 @@ under "When you'd use this store" below, at a path you can guess.
 x402 discovery: ${base}/.well-known/x402 and ${base}/.well-known/x402.json
 Coverage matrix (class × chain × depth, absence stated as none):
 ${base}/.well-known/coverage.json and ${base}/coverage.json
+Which MCP door to use — remote, local stdio, the browser surface, or
+no MCP at all — with what renders where and what is not built yet:
+${base}/mcp.md
 MCP server: POST ${base}/mcp (streamable HTTP, JSON-RPC). tools/list is
 free; paid tools carry x402 in-band, delivered first and settled after.
 The same door serves readable resources (resources/list, no tool call
@@ -474,6 +496,18 @@ rival is worth only its method. The same code is on npm as
 x402-verify (verification, zero dependencies), with x402-sign beside
 it for issuing your own signed offers and receipts. The desk's
 plain-language landing, with worked examples, is ${base}/conformance.
+
+Fixtures for a fail-closed integration, free:
+${base}/api/conformance/v1/fixtures serves complete artifacts with
+real production signatures — valid, expired, tampered, and
+unknown-signer cases — each carrying the exact canonical string its
+signature covers, the exact desk call to make, and the verdict the
+desk returns. Every fixture is re-verified against the live desk
+before it is served; a fixture the desk disagrees with is refused,
+never served. Pin the set digest, verify the signatures against the
+key registry yourself, and wire the tamper cases into your own test
+suite: building and testing an integration against this store costs
+nothing and asks nobody's permission.
 
 The Tab (scvd-tab), an MCP server for the OTHER side of an agent's
 commerce: the tools its builder signs up for. It keeps a local,
@@ -848,6 +882,21 @@ sha256 at your /.well-known/scvd-note.txt — and your words ride
 beside the observation on every surface that shows it. Beside, never
 instead: no note alters an observation, and no observation silences a
 note.
+
+${base}/doors.json is the LIST of every host the chain has ever
+carried — one entry each, alphabetical, with the most recent dated
+verdict, the week it was taken, how many rounds reached a real
+verdict, and the URL of that host's full history. Filter it with
+\`?verdict=not_ready\` (the four values are ready, not_ready,
+unreachable and not_probed; anything else is a 400 that names them).
+It is free, it needs no key, and it exists because until 2026-08-29
+this store published hundreds of per-host histories and no way to
+find out which hosts it had — ${base}/corpus.json indexes SNAPSHOTS,
+and the per-host read is a template you must already know a hostname
+to use. The human page is at ${base}/doors.
+
+It is not a scoreboard and there is no ranking in it. The list is
+alphabetical and each row is one observation with its date.
 
 Ask about one host at \`${base}/corpus/host/{host}.json.\` It replays that
 host out of the signed chain, and every round we have NO verdict for
@@ -1396,6 +1445,9 @@ const SECTION_AREAS: Record<string, string> = {
   "The corpus": "corpus",
   "The same evidence as an OKF bundle": "corpus",
   "The tab's pooled corpus, taking contributions": "corpus",
+  /* The goal-first opener belongs with the developer material: it is
+   * the first thing somebody building against this store reads. */
+  "Start here, by what you came to do": "developers",
   "State of the registry": "corpus",
   /* The registry says what the listings are worth; this says what
    * arrived at the addresses they advertise. Same evidence area —

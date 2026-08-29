@@ -76,6 +76,14 @@ function fakeSeller(
     padBytes?: number;
     /** Answer the paid knock with a redirect instead of goods. */
     redirectTo?: string;
+    /**
+     * A DOOR THAT WANTS A DIFFERENT SIGNATURE. `extra
+     * .assetTransferMethod` names what the seller expects signed —
+     * permit2 and erc7710 are types this walk cannot build. A
+     * healthy door asking for one of those refuses our EIP-3009
+     * envelope correctly, so the walk must stop before presenting it.
+     */
+    assetTransferMethod?: string;
   } = {},
 ): typeof fetch {
   /** Payments this seller has already settled once. */
@@ -94,7 +102,13 @@ function fakeSeller(
           asset: USDC_BASE,
           payTo: SELLER_PAY_TO,
           maxTimeoutSeconds: opts.maxTimeoutSeconds ?? 300,
-          extra: { name: "USD Coin", version: "2" },
+          extra: {
+            name: "USD Coin",
+            version: "2",
+            ...(opts.assetTransferMethod
+              ? { assetTransferMethod: opts.assetTransferMethod }
+              : {}),
+          },
         },
       ],
     };
@@ -363,6 +377,71 @@ describe("the walk engine, stage by stage", () => {
     const rules = check.stages.find((s) => s.stage === "rules")!;
     expect(rules.detail).toContain(String(FIELD_SPEND_CAP_USD.toFixed(2)));
     expect(rules.detail).toContain("this store's rules");
+  });
+
+  /**
+   * THE FALSE FINDING THIS PREVENTS (2026-08-29). The walk signs
+   * EIP-3009 and nothing else. A door advertising permit2 or erc7710
+   * in extra.assetTransferMethod is asking for a different signature
+   * over different types and will refuse our envelope — CORRECTLY.
+   * Before this guard the walk presented it anyway and recorded the
+   * refusal, so a paid report could read as a finding about the
+   * seller when the truth was a limit of this instrument.
+   */
+  it("a door wanting permit2 stops the walk unpaid, and blames us not them", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log, { assetTransferMethod: "permit2" }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("unpaid_by_rule");
+    expect(check.paid_usd).toBe(0);
+    // The till is knocked once, for the challenge, and never paid.
+    expect(log.requests).toHaveLength(1);
+    expect(log.requests[0]?.payment).toBeNull();
+    const terms = check.stages.find((s) => s.stage === "terms")!;
+    expect(terms.ok).toBe(false);
+    expect(terms.detail).toContain("permit2");
+    // The sentence that keeps this from being a finding about them.
+    expect(terms.detail).toContain("limit of THIS INSTRUMENT");
+    expect(terms.detail).toContain("not a defect in your door");
+  });
+
+  it("erc7710 stops it too — the guard is not a permit2 special case", async () => {
+    const log: SellerLog = { requests: [] };
+    const check = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(log, { assetTransferMethod: "erc7710" }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(check.verdict).toBe("unpaid_by_rule");
+    expect(log.requests[0]?.payment).toBeNull();
+  });
+
+  it("an explicit eip3009, and absence, both walk on", async () => {
+    /*
+     * The field is optional and most doors omit it. Absence must mean
+     * "the ordinary thing" rather than a refusal, or the guard would
+     * silently stop every walk this instrument has ever completed.
+     */
+    const declared: SellerLog = { requests: [] };
+    const explicit = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(declared, { assetTransferMethod: "EIP3009" }),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    // Case-insensitive: a door shouting the method still gets paid.
+    expect(explicit.verdict).not.toBe("unpaid_by_rule");
+    expect(declared.requests.length).toBeGreaterThan(1);
+
+    const silent: SellerLog = { requests: [] };
+    const omitted = await performLaunchCheck(testEnv, TARGET, {
+      fetch: fakeSeller(silent),
+      signer: await fieldSignerFromKey(TEST_FIELD_KEY),
+      screen: clearScreen,
+    });
+    expect(omitted.verdict).not.toBe("unpaid_by_rule");
   });
 
   it("a listed payTo is skipped with the skip recorded — rule 3", async () => {

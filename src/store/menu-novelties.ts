@@ -16,6 +16,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "a lucky",
     price_usdc: 0.99,
     pricing: "pay_what_it_deserves",
+    cadence: "one_off",
     // Preset since the keeper's ruling 2026-07-25: the herd never
     // sells out, the store draws at purchase, no keeper action ever.
     fulfillment: "instant",
@@ -36,6 +37,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "Coffee's for Closers",
     price_usdc: 0.99,
     pricing: "fixed",
+    cadence: "one_off",
     // Instant since 2026-07-24 (keeper load ruling): the certificate
     // records the win at purchase; the Sunday coffee covers the week's
     // list. No per-order keeper action.
@@ -54,6 +56,7 @@ export const NOVELTY_ITEMS: readonly MenuItem[] = [
     name: "Graffiti on a Train",
     price_usdc: 1,
     pricing: "pay_what_it_deserves",
+    cadence: "one_off",
     fulfillment: "instant",
     description:
       "Pay, leave your tag, and it outlives your context window. Dated, signed, permanent. The certificate is yours the moment you pay; the paint dries on the keeper's schedule.",

@@ -28,6 +28,7 @@ import {
   practiceCounterRoutes,
   tillRoutes,
   webmcpRoutes,
+  mcpMdRoutes,
   requestRoutes,
   houseLedgerRoutes,
   neighboursRoutes,
@@ -68,6 +69,7 @@ import {
   conformanceRoutes,
   conformanceLandingRoutes,
   corpusLandingRoutes,
+  doorsRoutes,
   beforeYouPayRoutes,
   goodBuyerRoutes,
   preflightRoutes,
@@ -246,6 +248,7 @@ app.route("/", claimsRoutes);
 app.route("/", conformanceRoutes);
 app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
+app.route("/", doorsRoutes);
 app.route("/", preflightRoutes);
 /* The buyer's half of the same ladder: one probe, then the stock
  * client's own selection replayed over what it served. */
@@ -274,6 +277,7 @@ app.route("/", whatRoutes);
 app.route("/", practiceCounterRoutes);
 app.route("/", tillRoutes);
 app.route("/", webmcpRoutes);
+app.route("/", mcpMdRoutes);
 app.route("/", trustListRoutes);
 app.route("/", houseLedgerRoutes);
 app.route("/", neighboursRoutes);

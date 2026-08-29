@@ -67,6 +67,13 @@ describe("the checks catch the mapped failure moments", () => {
     payTo: "0x1111111111111111111111111111111111111111",
   };
 
+  /*
+   * The body-placement regression is held by test/offer-placement.spec.ts
+   * against a real fixture door (test/fixtures/doors/body-offers.json),
+   * which exercises the whole probe path rather than runChecks alone.
+   * A duplicate lived here briefly on 2026-08-27 and was dropped for it.
+   */
+
   it("a 200 is called what it is: listed but functionally absent", () => {
     const { checks } = runChecks(new Response("ok", { status: 200 }), false);
     const status = checks.find((check) => check.name === "status-402");

@@ -208,12 +208,63 @@ const BASE = "https://scvd.store";
  * a door an agent can see is exactly the kind of fact this document
  * exists to carry.
  *
+ * Re-taken 2026-08-29 for /doors — the list of every host the census
+ * has ever carried (#26). The guide gained two paragraphs in the
+ * corpus area: what the list is, how to filter it, and the sentence
+ * that it is not a scoreboard and never becomes one. That last line
+ * is the one worth having reviewed every time these bytes move.
+ *
+ * Re-taken again 2026-08-29 on the merge with /mcp.md's section —
+ * the FIFTH time this shape has landed. Each branch correctly
+ * re-took the digest for its own edit; the merge is a sixth text
+ * neither value describes. Both edits are in these bytes: /doors'
+ * two paragraphs and the /mcp.md section. Verified present together
+ * before this value was taken.
+ * Re-taken 2026-08-29 in the commit that vetted the site's
+ * discoverability for agents. The index's "Evidence and record" line
+ * named the corpus and the coverage file and omitted /registry,
+ * /inflows and /fresh-set — the store's weekly findings, missing
+ * from the one map an agent reads before anything else. Adding them
+ * moved the guide's bytes.
+ *
+ * Re-taken 2026-08-29 in the commit that gave the guide a goal-first
+ * opener and published the atlas. Vetting the site as an arriving
+ * agent found a map and no route: both entry points open with ten
+ * lines of what the store IS before anything actionable, and a
+ * reader on a tight context budget loses the map when the file
+ * truncates. "Start here, by what you came to do" now leads, filed
+ * under developers, and names the atlas beside it.
+ *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work,
+ * and this resolution needed a hand rather than a script: the two
+ * sides had added notes to this same block AND re-taken the value,
+ * so an automated splice ate part of the second conflict and left
+ * the file with two digest lines. Both notes are kept because both
+ * edits are in the served bytes; the value is the merged text's own.
+ *
+ * Re-taken again 2026-08-29 on the merge of /doors with the
+ * goal-first opener and the atlas — the SIXTH. Both sides' notes are
+ * kept above because both sides' edits are in these bytes: /doors in
+ * the corpus area and on the index's evidence line (which the merge
+ * had to join by hand, each side having rewritten the same list),
+ * and the opener, atlas and registry/inflows/fresh-set links.
+ * Verified present together before this value was taken.
+ *
+ * Re-taken again 2026-08-29 on the merge of the conformance form with
+ * /doors and the /mcp.md section — the SEVENTH time this shape has
+ * landed, and by now the pattern is the finding rather than the
+ * incident. Each branch correctly re-took the digest for its own edit;
+ * a merge is always a text neither value describes. All three edits
+ * are in these bytes and were verified present TOGETHER, against the
+ * served guide, before this value was taken: the desk's form sentence,
+ * /doors' paragraphs, and the /mcp.md section.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "46fc9e894f9f85a51ea5d40e985a0e729ba3703d4284cd099d8f8b21da71e713";
+  "9c5133b6857fe9f836c990b239938ea053a1f4d31ccbadc165ac6d2fa984f32d";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

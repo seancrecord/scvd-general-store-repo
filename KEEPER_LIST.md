@@ -186,11 +186,27 @@ recorded as a dated host observation in §8.5; and WEBMCP IS BUILT
 document.modelContext, derived from the MCP catalog so it cannot
 act and cannot drift (test-pinned), every fetch tagged ?src=webmcp
 as its own channel, and the storefront's first CSP rides along.
-⚑ Keeper's errand if he wants pre-GA Chrome/Edge coverage:
-origin-trial tokens for scvd.store. THE EXPIRY LABEL IS RULED,
-same night: draft A, "observed {date} · stale after {date}" —
-decay named, nothing warranted forward. It lands with the first
-stored-reading card (design doc §12.4).
+~~⚑ Keeper's errand: origin-trial tokens~~ — REGISTERED AND LIVE
+same night (Chrome token in the storefront head, test-pinned on
+binding and expiry). THE EXPIRY LABEL IS RULED, same night: draft
+A, "observed {date} · stale after {date}" — decay named, nothing
+warranted forward. It lands with the first stored-reading card
+(design doc §12.4).
+SECOND BRAINSTORM RULED, 08-28 (design doc §13, the full record):
+build list = check_this_store (renamed off "scam" at his word),
+draft_purpose/cite_mandate, THE WEBMCP CONFORMANCE INSTRUMENT (his
+strongest yes — "sellable to indexers and users alike"),
+is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
+miniature: porch-class writes only — free, publish nothing, touch
+no money; guestbook stays off because it publishes words). The
+co-piloted till is PARKED on his frictionless argument, reasoning
+kept in §13.2. HIS GRAFFITI WALL is speced (§13.3): day's highest
+bidder on the home page, rides graffiti_on_a_train's existing
+pay-what-it-deserves as the auction, labeled paid, his approval
+gates display, empty wall on a no-bid day. THE POP-OFF CANDIDATE
+(§13.4, scvd.store/check/{host} — the shareable endpoint report
+page, the SSL-Labs wedge) is HELD SPECED: worth building on his
+read, not sold on readiness — built on his word, not before.
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host
@@ -376,6 +392,23 @@ were not chosen: a panel that agreed to be measured is a biased
 sample and cannot speak for the market, which is the whole reason
 the lane is worth having.
 
+THE TWO PEOPLE-QUESTIONS, RULED 2026-08-29 the same day the scope
+raised them, both toward the store's existing habits rather than
+away from them:
+
+  NOTICE — notify where a channel exists, record "no channel found"
+  where it does not, and publish the aggregate either way. Holding a
+  finding until its operator can be reached would silently drop the
+  least-reachable operators out of every number, which is a coverage
+  hole that has to be disclosed anyway. Count the gap in public; keep
+  the finding.
+
+  THE GOODS — keep the delivery's shape (status, size, content-type,
+  sha256) and discard the body. The finding is whether goods arrived,
+  never what they were. Holding strangers' paid products with no
+  licence to is an exposure a named LLC does not need, and the hash
+  still proves a specific thing was received if a walk is disputed.
+
 **7. RULE: the ERC-8183 evaluator key.** The read is DONE and the
 position RULED 2026-08-18 (`docs/ERC8183_EVALUATOR.md`, on /becoming)
 — do not re-read it. One ruling remains and alone blocks the
@@ -523,9 +556,25 @@ below serves the first outside dollar.
   claimed. Rule 5 applies hard here: if it wants a retweet it dies, so
   it is a demonstration, not a pitch. Rule 3: no primacy claim. The
   render lives in the keeper's artifacts gallery ("Does This Read As A
-  Score?"). NOT YET BUILT AND NOT SHIPPED — the card is a draft in
-  scratch; a demo of an unshipped card must say so on its face or it
-  is a claim about a thing that does not exist.
+  Score?"). ~~NOT YET BUILT AND NOT SHIPPED~~ — **SHIPPED 2026-08-27
+  and the keeper posted it the same day; Coinbase replied.** The
+  unshipped-card caveat is spent.
+
+  **THE FOLLOW-UP TWEETS ARE SCRAPPED, 2026-08-28, at his word** —
+  filed here rather than deleted so nobody drafts them a third time.
+  Four were queued and none will be posted: the /try practice-counter
+  tweet (three drafts, his pick was A), the cards follow-up ("Update:
+  endpoint evidence cards are live" — his own line, better than any
+  of mine), the token-stance reply, and the Reddit reply to the
+  fixtures post. The token-stance reply is the one worth keeping
+  legible because the ANSWER outlived the tweet: no token, ever, and
+  the reason is that a token turns every verdict we sign into a trade
+  we are on one side of. That belongs in copy somewhere permanent —
+  /credit already says "never a token, never transferable" — rather
+  than in a reply nobody can find next month.
+
+  What this leaves standing: the demo above was posted and is done.
+  Anything new gets drafted when he asks, not kept warm on a list.
 
 - ~~Swap the corpus denominator~~ — STRUCK 2026-08-20 at the
   re-review: the arXiv figure (13,760 / 420) is already what

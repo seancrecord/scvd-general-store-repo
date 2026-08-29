@@ -1463,3 +1463,76 @@ in-protocol and nowhere else.
 - ChatGPT/Goose render rows; the mcp-remote bridge row.
 - Card family (§8.5a) — waits on demand tags, and on the keeper's
   read of the connector render gap (§8.5 last row).
+
+---
+
+## 13. THE SECOND BRAINSTORM — WebMCP use cases, ruled (2026-08-28)
+
+The day after the surface shipped, at the keeper's "no idea is too
+dumb." Five lanes proposed; his rulings inline. Everything here
+queues behind the webmcp channel's arrival data (rule 19) except
+where marked build.
+
+### 13.1 Ruled IN (build when the desk clears)
+
+- **`check_this_store`** (was "is_this_a_scam" — renamed at his word:
+  the word scam never rides a tool name, the protection stays). The
+  /what page's verbatim answer, callable, page-scoped. Condition:
+  reliable without being a headache.
+- **`draft_purpose` / `cite_mandate`** — "this has legs": the agent
+  drafts the purpose line and cites the mandate id; the human reviews
+  what rides their receipt. Sells the mandate product by existing.
+- **The WebMCP conformance instrument** — his strongest yes
+  ("sellable to indexers and users alike"). Visit a page, enumerate
+  getTools(), verify schemas, publish dated observations. A new
+  observable surface with no incumbent observer; the same play as
+  the x402 desk: we speak it, so we can audit it. Adjacent: a
+  WebMCP adoption count in the weekly census, measured correctly
+  from day one (the signed-offers lesson applies from birth).
+- **`is_roger_out`** — the cat's deterministic schedule as a tool.
+- **`ring_bell` from the porch page** — his "equal opportunity
+  shoppers." This is the co-presence ruling in miniature: porch-class
+  writes (free, publish nothing a visitor wrote, touch no money) may
+  register on the browser surface. The guestbook stays off — it
+  publishes visitor words — which is the honest line between them.
+
+### 13.2 Ruled OUT or parked, with the reasoning kept
+
+- **The co-piloted till** ("agent shops, human signs") — PARKED on
+  the keeper's read, and his argument beats the proposal: humans
+  overestimate how much they want to be in the loop; the moment
+  someone ships frictionless, co-pilot commerce loses — "it just
+  is." The implication is the record-worthy part: the store's bet
+  was already placed right. The fully autonomous till with the
+  wallet-safety machinery (idempotency, claims, mandates) IS the
+  frictionless path, built for the human who is not watching. The
+  co-pilot would have been a bridge to a shore we already hold.
+- **Badge/widget embeds (cross-origin exposedTo)** — LATER, gated on
+  adoption. Same for guestbook co-writing.
+- **Passport page tools** — later; the passport surface is live with
+  its summary block, but the /agent/v1 consumable API (4.1) is open,
+  and page tools should ride adoption, not precede it.
+
+### 13.3 The graffiti wall (his idea, speced at his direction)
+
+Not WebMCP — a menu evolution. The day's highest bidder gets the
+wall ON THE HOME PAGE, prominent. Rides graffiti_on_a_train's
+existing pay-what-it-deserves mechanics: the biggest tip of the day
+IS the auction, no new machinery. Renders as actual graffiti but
+legible; LABELED as paid (an unlabeled ad on an honesty store is a
+self-inflicted corrections entry); the keeper's approval gates
+display (rule 30); an empty wall on a no-bid day is an honest wall
+— zero-day risk accepted at his word.
+
+### 13.4 The pop-off candidate, held
+
+The public shareable endpoint report page — scvd.store/check/{host},
+the evidence card as a permalink web page: verdict, ladder with NOT
+CLIMBED at weight, observed date, the ruled "stale after" label's
+first live duty, colophon. The SSL-Labs/HIBP wedge shape: free,
+instant, shareable; sellers link their page, buyers check before
+paying, every view is the colophon in front of a stranger; the paid
+products become its upsells (audit = this page signed and permanent,
+watch = this page kept current). KEEPER'S READ: worth building, not
+sold that people are ready to commit to us specifically for it yet —
+"maybe one day." Held speced, built on his word, not before.

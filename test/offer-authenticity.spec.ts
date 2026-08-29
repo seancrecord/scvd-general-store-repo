@@ -64,9 +64,12 @@ function round(hosts: Array<{ host: string; challenge_bytes: string | null }>): 
       verdict: "ready",
       failed: [],
       advisories: [],
+      /* null = the round stored no capture block at all (a round
+       * older than the capture); "" = captured, and the door served
+       * nothing readable. The instrument must tell those apart. */
       ...(entry.challenge_bytes === null
         ? {}
-        : { evidence: { challenge_bytes: entry.challenge_bytes } }),
+        : { evidence: { challenge_bytes: entry.challenge_bytes || null } }),
     })),
   } as unknown as WardRound;
 }
@@ -301,12 +304,37 @@ describe("what the walk says about a door", () => {
     expect(reading!.what_this_is_not).toContain("has not failed anything");
   });
 
-  it("a door with no stored challenge is not_served, not a zero", async () => {
+  /*
+   * THE DISTINCTION A LIVE READING TAUGHT, 2026-08-29.
+   *
+   * The first real run returned "0 of 0 doors serve a signed offer at
+   * all" across 972 doors. That reads as a finding about the market
+   * and was nothing of the kind — the round on file was sealed before
+   * evidence capture existed, so this instrument had nothing to read.
+   * Our gap wearing their absence, which is the defect this store's
+   * entire audit is about.
+   */
+  it("a round carrying NO evidence is our blindness, not their absence", async () => {
     const reading = await readOfferAuthenticity(testEnv, new Date(), {
       round: round([{ host: "quiet.example", challenge_bytes: null }]),
     });
-    expect(reading!.by_verdict.not_served).toBe(1);
+    expect(reading!.by_verdict.evidence_absent).toBe(1);
+    expect(reading!.by_verdict.not_served).toBe(0);
     expect(reading!.hosts_with_evidence).toBe(0);
+    // And it must SAY so, first, before any number a reader could
+    // mistake for a measurement.
+    expect(reading!.what_this_counts).toContain("COULD NOT LOOK");
+    expect(reading!.what_this_counts).toContain("OUR gap");
+  });
+
+  it("a door that answered but served no challenge IS not_served", async () => {
+    // Evidence captured, challenge_bytes genuinely empty: we looked,
+    // and there was nothing there. A different fact entirely.
+    const reading = await readOfferAuthenticity(testEnv, new Date(), {
+      round: round([{ host: "answered.example", challenge_bytes: "" }]),
+    });
+    expect(reading!.by_verdict.not_served).toBe(1);
+    expect(reading!.by_verdict.evidence_absent).toBe(0);
   });
 
   it("resolves each issuer once however many doors it signs for", async () => {

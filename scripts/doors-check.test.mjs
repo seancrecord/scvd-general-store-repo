@@ -8,6 +8,7 @@ import {
   REVIEW_EVERY_DAYS,
   compare,
   declaresWebmcp,
+  originTrialExpiries,
   originTrialExpiry,
   readDoors,
   reviewsDue,
@@ -551,4 +552,46 @@ test("the declarative-forms criterion reads the whole store, not the front door"
       .criteria.find((c) => c.id === "declarative_forms").verdict,
     "unmet",
   );
+});
+
+test("two vendors' tokens are two clocks, and the soonest is the one reported", () => {
+  /*
+   * Chrome and Edge run separate origin-trial programmes with separate
+   * signing keys, so a store reachable in both carries two tags. A
+   * reader that took the first tag would go quietly blind to the second
+   * expiring — and the door closes in whichever browser runs out first.
+   * Written before the Edge tag exists, because "fix it when it lands"
+   * is how a checker ships blind.
+   */
+  const soon = Math.floor(NOW / 1000) + 10 * 86_400;
+  const later = Math.floor(NOW / 1000) + 200 * 86_400;
+  const html = `<head>
+    <meta http-equiv="origin-trial" content="${originTrialToken(later)}">
+    <meta http-equiv="origin-trial" content="${originTrialToken(soon)}">
+  </head>`;
+  assert.deepEqual(originTrialExpiries(html), [soon * 1000, later * 1000]);
+  // The convenience reader keeps answering the soonest, not the first.
+  assert.equal(originTrialExpiry(html), soon * 1000);
+
+  const snapshot = goodSnapshot();
+  snapshot.home.text = snapshot.home.text.replace(
+    /<meta http-equiv="origin-trial"[^>]*>/,
+    `<meta http-equiv="origin-trial" content="${originTrialToken(later)}">
+     <meta http-equiv="origin-trial" content="${originTrialToken(soon)}">`,
+  );
+  const trial = readDoors(snapshot, NOW)
+    .doors.find((d) => d.id === "webmcp")
+    .criteria.find((c) => c.id === "origin_trial_unexpired");
+  // One healthy token must not mask one about to lapse.
+  assert.equal(trial.verdict, "partial");
+  assert.match(trial.note, /2 tokens/);
+});
+
+test("a token that will not parse is skipped, not counted as valid", () => {
+  const good = Math.floor(NOW / 1000) + 100 * 86_400;
+  const html = `<head>
+    <meta http-equiv="origin-trial" content="not-base64-json">
+    <meta http-equiv="origin-trial" content="${originTrialToken(good)}">
+  </head>`;
+  assert.deepEqual(originTrialExpiries(html), [good * 1000]);
 });

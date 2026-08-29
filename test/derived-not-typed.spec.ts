@@ -44,6 +44,22 @@ const PUBLIC_SURFACES = [
   "/trust-list.json",
   "/house-ledger.json",
   "/.well-known/x402.json",
+  /*
+   * ADDED 2026-08-29, and the reason is worth keeping: the discovery
+   * document failed this guard on a phrase that reached it from the
+   * dataset roster, while /atlas.json carried the SAME phrase and
+   * passed — because it was not on this list. A guard that covers
+   * every public surface except the ones added since it was written
+   * covers the past, which is the half that cannot change.
+   *
+   * The tallies and the atlas are all machine surfaces a stranger
+   * reads without paying, which is exactly this list's own
+   * definition.
+   */
+  "/atlas.json",
+  "/registry",
+  "/inflows",
+  "/agents.md",
 ] as const;
 
 /**
