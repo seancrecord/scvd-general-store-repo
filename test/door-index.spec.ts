@@ -304,6 +304,40 @@ describe("the list is served, at its own door", () => {
     expect(error.valid_verdicts).toContain("not_ready");
   });
 
+  /**
+   * THE SENTENCE THAT CANNOT BE CHECKED FROM PUBLISHED BYTES.
+   *
+   * Everything else on this surface can be recomputed by a stranger
+   * from the signed chain. "We keep nothing about you" cannot: a
+   * reader has to take our word for it, which is precisely the shape
+   * rule 55 exists to refuse. The claims register caught the sentence
+   * unbound and it was right to.
+   *
+   * So the sentence is dated AND this is the standing test it names.
+   * It goes red the day either door sets a cookie or writes a single
+   * key — which is the day the sentence stops being true.
+   */
+  it("keeps nothing about a caller, which is what the page promises", async () => {
+    await seed("2026-W35", [row("alpha.example", "ready")]);
+    const before = (await testEnv.COUNTERS.list()).keys.map((key) => key.name).sort();
+
+    for (const url of [`${BASE}/doors.json`, `${BASE}/doors`, `${BASE}/doors?verdict=ready`]) {
+      const response = await SELF.fetch(url);
+      expect(
+        response.headers.get("set-cookie"),
+        `${url} set a cookie, and the page says it never does`,
+      ).toBeNull();
+    }
+
+    const after = (await testEnv.COUNTERS.list()).keys.map((key) => key.name).sort();
+    expect(
+      after,
+      "reading the door list wrote to the store. The page tells a caller it keeps no log entry keyed to them; a write here is that sentence going false.",
+    ).toEqual(before);
+    // A guard over an empty store is a guard that cannot fail.
+    expect(before.length).toBeGreaterThan(0);
+  });
+
   it("serves an empty chain as a fact, not as a failure", async () => {
     const response = await SELF.fetch(`${BASE}/doors.json`);
     expect(response.status).toBe(200);

@@ -142,8 +142,18 @@ const ERRORS = [
 const SECURITY = {
   what_this_surface_reads:
     "Signed corpus snapshots this store already published. It takes no input but an optional verdict filter, touches no wallet, and performs no network call to any host at request time.",
+  /*
+   * DATED AND GUARDED, because the claims register caught it unbound
+   * (2026-08-29) and it was right to. This is the one sentence on the
+   * page a reader has no way to check for themselves — everything
+   * else here can be recomputed from published bytes, and "we keep
+   * nothing about you" cannot. So it carries the date it was true on,
+   * the store's own method applied to its own copy, and a standing
+   * test that goes red if this door ever sets a cookie or writes a
+   * counter (test/door-index.spec.ts).
+   */
   what_it_stores_about_you:
-    "Nothing. There is no account, no cookie, no body to post, and no log entry keyed to a caller.",
+    "Nothing. There is no account, no cookie, no body to post, and no log entry keyed to a caller — true as of 2026-08-29, and held by a standing test that fails if this door ever sets a cookie or writes anything.",
   what_the_data_is:
     "Observations of PUBLIC endpoints that public discovery feeds listed, taken by one GET each. No authentication was bypassed, no rate limit was evaded, and nothing private was read to produce any row here.",
   integrity:
