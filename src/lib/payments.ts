@@ -250,19 +250,109 @@ export function atomicToUsdc(atomic: string): number {
 }
 
 /**
+ * THE PAGE A HUMAN GETS AT A PAID DOOR, and the reason it is one
+ * function rather than three (#91, 2026-08-28).
+ *
+ * `customPaywallHtml` was set on the buy routes and NOWHERE ELSE, so
+ * the penny pages and the commission rungs fell through to
+ * `@x402/core`'s `FALLBACK_PAYWALL_HTML`. That page is titled
+ * "Payment Required", names neither the store nor the price nor what
+ * is being sold, and carries this line:
+ *
+ *   "Note to developers: install @x402/paywall to enable the
+ *    in-browser wallet connection and payment UI."
+ *
+ * An instruction addressed to the OPERATOR, rendered to the VISITOR,
+ * on our domain, recommending a package we deliberately do not run.
+ * A stranger reads it as a broken site, and they are not wrong to.
+ *
+ * WHERE IT LANDED IS THE WORST PART. The almanac is the only shelf a
+ * stranger has ever bought from — the note above pennyPageRouteConfig
+ * says so in the keeper's own record of the first sale. That is
+ * exactly the door this was serving.
+ *
+ * OBSERVED, NOT INFERRED, and it took two tries to observe honestly:
+ * the library's `isWebBrowser` wants `Accept: text/html` AND a
+ * User-Agent containing "Mozilla". A probe with the header and no
+ * user agent gets JSON on EVERY route, which briefly looked like the
+ * opposite finding — that our own page never rendered anywhere. It
+ * renders; the buy doors were fine all along.
+ *
+ * ONE CHROME, THREE BODIES. The three doors sell genuinely different
+ * things and an honest page cannot be shared wholesale: a shelf item
+ * really is for agents, an almanac page is something a person can
+ * read for a penny, and a commission rung is not a door to wander
+ * into at all. What they share is the frame — and sharing that is
+ * what stops the next paid route from inventing a fourth voice, or
+ * inheriting a stranger's.
+ */
+function humanPaywallPage(title: string, bodyHtml: string): string {
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title></head>
+<body style="font-family: Georgia, serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem;">
+${bodyHtml}
+</body></html>`;
+}
+
+/**
  * Shown when a human wanders into a buy URL with a browser. We don't run a
  * wallet paywall; humans get pointed back to the front porch.
+ *
+ * The words are unchanged from the day they shipped; only the chrome
+ * around them was factored out, so this page's bytes are the same
+ * bytes. A test pins that, because the cheapest way to break published
+ * copy is to "tidy" it while refactoring something else.
  */
 function browserPaywallHtml(item: MenuItem, env: Env): string {
-  return `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>That shelf is for agents</title></head>
-<body style="font-family: Georgia, serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem;">
-<h1>That shelf is for agents, friend.</h1>
+  return humanPaywallPage(
+    "That shelf is for agents",
+    `<h1>That shelf is for agents, friend.</h1>
 <p>&ldquo;${item.name}&rdquo; is bought over the x402 protocol &mdash; your agent
 will know what to do with the 402 this page came with.</p>
 <p>You're welcome to browse the <a href="${env.STORE_BASE_URL}/">front of the store</a>
-like a regular person. The guestbook's free.</p>
-</body></html>`;
+like a regular person. The guestbook's free.</p>`,
+  );
+}
+
+/**
+ * A penny page is the one paid thing here a PERSON is the natural
+ * buyer of — the keeper writes them by hand and a stranger bought one
+ * — so this page does not tell them to go away. It tells them the
+ * price, what they are looking at, and where the free reading is.
+ */
+function pennyPagePaywallHtml(exampleTitle: string, env: Env): string {
+  return humanPaywallPage(
+    "A penny, friend",
+    `<h1>That'll be a penny, friend.</h1>
+<p>&ldquo;${exampleTitle}&rdquo; is a page from the keeper's own writing, and it
+costs <strong>one cent</strong> &mdash; paid over the x402 protocol, which is a
+thing your agent knows how to do and your browser does not.</p>
+<p>If you're reading this yourself: the <a href="${env.STORE_BASE_URL}/almanac">almanac's
+index</a> is free, and so is most of the store. The penny is for the page, and it
+goes to the keeper, who wrote it.</p>
+<p><a href="${env.STORE_BASE_URL}/">The front of the store</a> is open to anyone.</p>`,
+  );
+}
+
+/**
+ * A commission rung is NOT a door to wander into, and the honest page
+ * says so rather than inviting a payment that would buy nothing: the
+ * route refuses without a live quote id, so a human who paid one on
+ * curiosity would have spent real money on a refusal.
+ */
+function commissionRungPaywallHtml(rung: number, env: Env): string {
+  return humanPaywallPage(
+    "That one needs a quote first",
+    `<h1>That's a payment rung, friend, not a shelf.</h1>
+<p>This is the <strong>$${rung}</strong> rung of the commission desk. It only pays a
+quote the keeper has already given you by hand &mdash; without one it sells nothing,
+and paying it on curiosity would buy you a refusal at your own expense.</p>
+<p>If you want something made, asking is free and there is no form to pay for:
+send it to <code>POST ${env.STORE_BASE_URL}/api/request</code> and the keeper answers
+by hand. The work he has <a href="${env.STORE_BASE_URL}/api/commission/declined">turned
+down, with reasons</a>, is published too &mdash; worth a look before you write.</p>
+<p><a href="${env.STORE_BASE_URL}/">The front of the store</a> is open to anyone.</p>`,
+  );
 }
 
 /**
@@ -559,6 +649,7 @@ function pennyPageRouteConfig(
     mimeType: "text/markdown",
     ...storeServiceMetadata(env),
     extensions: pennyPageDiscoveryExtensions(exampleTitle),
+    customPaywallHtml: pennyPagePaywallHtml(exampleTitle, env),
     unpaidResponseBody: async () => ({
       contentType: "application/json",
       body: {
@@ -597,6 +688,7 @@ function pennyPageRouteConfig(
 function commissionRungRouteConfig(rung: number, env: Env): RouteConfig {
   return {
     accepts: railAccepts(env, [rung]),
+    customPaywallHtml: commissionRungPaywallHtml(rung, env),
     description: `Commission Desk, the $${rung} rung. Pays a LIVE KEEPER QUOTE at this exact price — requires ?commission=<id> naming a request quoted at $${rung}. Without a quote this route sells nothing: write in free at POST /api/request and the keeper answers by hand.`,
     mimeType: "application/json",
     resource: `${env.STORE_BASE_URL}/api/commission/pay/${rung}`,
@@ -993,6 +1085,94 @@ export interface PaymentStack {
   initialized: Promise<void>;
 }
 
+/**
+ * EVERY PAID ROUTE THIS STORE SERVES, BUILT IN ONE PLACE AND EXPORTED
+ * SO A TEST CAN COUNT THEM (#91, 2026-08-28).
+ *
+ * The route table was assembled inline inside getPaymentStack, where
+ * nothing but a running Worker could see it. That is how two whole
+ * families of paid doors went a month with no `customPaywallHtml`,
+ * serving a stranger's page: there was no seam at which anyone could
+ * ask "do all of them have one?".
+ *
+ * Extracting it changes no behaviour — getPaymentStack calls this and
+ * hands the result to the same constructor — and buys the one thing
+ * that was missing, which is a place to stand while checking. The
+ * guard in test/human-paywall.spec.ts walks this table and fails on
+ * any route without a human page, so the NEXT paid door inherits the
+ * rule instead of rediscovering the defect.
+ */
+export function buildRoutesConfig(env: Env): RoutesConfig {
+  const routes: RoutesConfig = {};
+  for (const item of MENU_ITEMS) {
+    routes[`GET /api/buy/${item.id}`] = buyRouteConfig(item, env);
+  }
+  for (const entry of ALMANAC_ENTRIES) {
+    routes[`GET /almanac/${entry.slug}`] = pennyPageRouteConfig(
+      env,
+      `Keeper's Almanac, "${entry.title}" (${entry.date}). One journal page, one penny.`,
+      "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
+      entry.title,
+      `${env.STORE_BASE_URL}/almanac/${entry.slug}`,
+    );
+  }
+  /**
+   * ALMANAC PAGES WRITTEN FROM THE OFFICE NEED THE SAME PATTERN THE
+   * GAZETTE ALREADY USES, and this was found the hard way: the
+   * office lever shipped 2026-07-30 letting the keeper write a page
+   * without a deploy, and the loop above only knows the pages
+   * compiled into the bundle. A keeper-written page therefore had NO
+   * ROUTE CONFIG, so the gate answered 402 with no PAYMENT-REQUIRED
+   * header — a page he could write and nobody could buy, which is
+   * worse than no lever at all.
+   *
+   * MY TEST PASSED ON THAT BUG. It asserted the page came back 402
+   * and stopped there, which is exactly the "measured the wrong
+   * thing" failure I had spent the day naming in other people's
+   * code. A 402 is not evidence of a purchasable page; a decodable
+   * PAYMENT-REQUIRED header is, and that is what the test asserts
+   * now.
+   *
+   * The exact per-entry configs above stay, because they carry a
+   * richer per-page description into the challenge. This pattern is
+   * the floor under everything they do not cover.
+   */
+  routes["GET /almanac/:slug"] = pennyPageRouteConfig(
+    env,
+    "Keeper's Almanac. One journal page, dated, written by hand. One penny.",
+    "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
+    "The Keeper's Almanac",
+    `${env.STORE_BASE_URL}/almanac`,
+  );
+  // Gazette issues are published from the back room after deploy, so the
+  // paid route is a prefixed pattern; the free index lists real URLs, and
+  // each request's 402 carries its own exact URL as the resource.
+  routes["GET /gazette/issue-:issue"] = pennyPageRouteConfig(
+    env,
+    "The Gazette, dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
+    "The Gazette is a penny a copy, friend. The contributors get the credit; the press gets the cent.",
+    "The Gazette. Issue no. 1",
+  );
+  // The Systems Almanac archive: past weeks turn into penny pages as
+  // the season advances, so the paid route is a pattern too.
+  routes["GET /zodiac/archive/:sign/week-:week"] = pennyPageRouteConfig(
+    env,
+    "The Systems Almanac archive, one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
+    "That page of the Almanac has turned, friend. A penny opens the archive.",
+    "The Systems Almanac. The Checksum, Season One, Week 1",
+  );
+  // The Commission Desk's ladder: one static route per published
+  // rung, prices computed at boot, never read from storage or a
+  // query — see commissionRungRouteConfig on why that is the law.
+  for (const rung of COMMISSION_RUNGS) {
+    routes[`GET /api/commission/pay/${rung}`] = commissionRungRouteConfig(
+      rung,
+      env,
+    );
+  }
+  return routes;
+}
+
 let cachedStack: PaymentStack | undefined;
 
 /**
@@ -1047,73 +1227,7 @@ export function getPaymentStack(env: Env): PaymentStack {
       );
       return undefined;
     });
-    const routes: RoutesConfig = {};
-    for (const item of MENU_ITEMS) {
-      routes[`GET /api/buy/${item.id}`] = buyRouteConfig(item, env);
-    }
-    for (const entry of ALMANAC_ENTRIES) {
-      routes[`GET /almanac/${entry.slug}`] = pennyPageRouteConfig(
-        env,
-        `Keeper's Almanac, "${entry.title}" (${entry.date}). One journal page, one penny.`,
-        "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
-        entry.title,
-        `${env.STORE_BASE_URL}/almanac/${entry.slug}`,
-      );
-    }
-    /**
-     * ALMANAC PAGES WRITTEN FROM THE OFFICE NEED THE SAME PATTERN THE
-     * GAZETTE ALREADY USES, and this was found the hard way: the
-     * office lever shipped 2026-07-30 letting the keeper write a page
-     * without a deploy, and the loop above only knows the pages
-     * compiled into the bundle. A keeper-written page therefore had NO
-     * ROUTE CONFIG, so the gate answered 402 with no PAYMENT-REQUIRED
-     * header — a page he could write and nobody could buy, which is
-     * worse than no lever at all.
-     *
-     * MY TEST PASSED ON THAT BUG. It asserted the page came back 402
-     * and stopped there, which is exactly the "measured the wrong
-     * thing" failure I had spent the day naming in other people's
-     * code. A 402 is not evidence of a purchasable page; a decodable
-     * PAYMENT-REQUIRED header is, and that is what the test asserts
-     * now.
-     *
-     * The exact per-entry configs above stay, because they carry a
-     * richer per-page description into the challenge. This pattern is
-     * the floor under everything they do not cover.
-     */
-    routes["GET /almanac/:slug"] = pennyPageRouteConfig(
-      env,
-      "Keeper's Almanac. One journal page, dated, written by hand. One penny.",
-      "That page of the Almanac costs a penny, friend. The keeper wrote it by hand; a cent keeps the ink flowing.",
-      "The Keeper's Almanac",
-      `${env.STORE_BASE_URL}/almanac`,
-    );
-    // Gazette issues are published from the back room after deploy, so the
-    // paid route is a prefixed pattern; the free index lists real URLs, and
-    // each request's 402 carries its own exact URL as the resource.
-    routes["GET /gazette/issue-:issue"] = pennyPageRouteConfig(
-      env,
-      "The Gazette, dispatches assembled by the keeper from reviewed Trading Post tips. A penny a copy, contributors credited.",
-      "The Gazette is a penny a copy, friend. The contributors get the credit; the press gets the cent.",
-      "The Gazette. Issue no. 1",
-    );
-    // The Systems Almanac archive: past weeks turn into penny pages as
-    // the season advances, so the paid route is a pattern too.
-    routes["GET /zodiac/archive/:sign/week-:week"] = pennyPageRouteConfig(
-      env,
-      "The Systems Almanac archive, one sign, one past week of Season One, one penny. The current week is free at /zodiac/{address}.",
-      "That page of the Almanac has turned, friend. A penny opens the archive.",
-      "The Systems Almanac. The Checksum, Season One, Week 1",
-    );
-    // The Commission Desk's ladder: one static route per published
-    // rung, prices computed at boot, never read from storage or a
-    // query — see commissionRungRouteConfig on why that is the law.
-    for (const rung of COMMISSION_RUNGS) {
-      routes[`GET /api/commission/pay/${rung}`] = commissionRungRouteConfig(
-        rung,
-        env,
-      );
-    }
+    const routes = buildRoutesConfig(env);
     const httpServer = new x402HTTPResourceServer(resourceServer, routes);
     cachedStack = { httpServer, initialized: httpServer.initialize() };
     // A failed first sync shouldn't poison the isolate forever.
