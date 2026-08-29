@@ -64,7 +64,13 @@ export function auditCriteriaNote(base: string): string {
   return `${AUDIT_CRITERIA_VERSION}: the published check battery documented at ${base}/api/preflight/${PREFLIGHT_VERSION} (GET). The audit runs those checks and no others; the criteria page is the contract.`;
 }
 
-const AUDIT_SCOPE =
+/**
+ * EXPORTED 2026-08-29 so the free sample (#31) can carry the SAME
+ * scope sentence the paid artifact carries, rather than a second copy
+ * of it that starts drifting the day this one improves. The whole
+ * point of a sample is that it shows what a buyer gets.
+ */
+export const AUDIT_SCOPE =
   "One GET at one moment, against the published criteria named above. This reports what the endpoint answered then: it is not an endorsement, not an uptime claim, and says nothing about whether anything is delivered after payment. An unreachable verdict is a fact about the network path between this store and that host at that moment — it does not prove the endpoint is down. Produced automatically; no human looked, and that is the point: a report commissioned by anyone reads the same.";
 
 export interface ServiceAuditObservation {

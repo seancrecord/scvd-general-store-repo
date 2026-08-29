@@ -880,6 +880,16 @@ beside the observation on every surface that shows it. Beside, never
 instead: no note alters an observation, and no observation silences a
 note.
 
+${base}/samples/once-over.json is a free, unsigned specimen of the $5
+Once-Over: every field a buyer receives, run by the same battery, over
+a constructed door that passes the frozen v1 core and fails v2's
+atomic-amount check \u2014 one probe, two verdicts, disagreeing. It is
+NOT signed and does NOT verify; the paid artifact is and does, at
+\`${base}/api/verify/{id}\`. The subject is a .example host that can never
+resolve, so it is an observation about nobody. The room is at
+${base}/samples, and the free way to check your own door before
+buying anything is ${base}/api/preflight/v1.
+
 ${base}/doors.json is the LIST of every host the chain has ever
 carried — one entry each, alphabetical, with the most recent dated
 verdict, the week it was taken, how many rounds reached a real

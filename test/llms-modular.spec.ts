@@ -241,12 +241,20 @@ const BASE = "https://scvd.store";
  * and the opener, atlas and registry/inflows/fresh-set links.
  * Verified present together before this value was taken.
  *
+ * Re-taken 2026-08-29 for /samples — the free specimen of the paid
+ * Once-Over (#31). The guide gained a paragraph in the corpus area,
+ * and the paragraph had a defect on its first draft: it wrote the
+ * verify template as a bare URL, which
+ * test/markdown-discoverability.spec.ts refuses, because a scanner
+ * probes the braces verbatim and files us a dead link. It travels as
+ * code now. This digest is the corrected text.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1d5ac96a73e0e7490415a679141faf2c8f95813eb262873d6538be8a821572b6";
+  "fb7d46b0826e1777b1f82b13fd2ad73f1d13eb3350c6831694e4a5580ed71df2";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

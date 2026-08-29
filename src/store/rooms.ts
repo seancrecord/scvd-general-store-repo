@@ -81,6 +81,12 @@ export const ROOMS: readonly Room[] = [
    */
   { path: "/doors", name: "Every door we have checked" },
   /**
+   * THE SAMPLE (#31, 2026-08-29). The shelf described every paid
+   * artifact and showed nobody one, which asks a buyer to take our
+   * word — the one thing this store tells everybody not to do.
+   */
+  { path: "/samples", name: "What a purchase hands back" },
+  /**
    * The WBA line's room, 2026-08-11: what signed crawler identity is,
    * the free directory check, and the paid card. On the front like the
    * conformance desk it is modeled on — the keeper's call, same day it

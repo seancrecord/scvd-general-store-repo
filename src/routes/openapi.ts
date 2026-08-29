@@ -2685,6 +2685,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
           },
         ),
       },
+      "/samples": {
+        get: freeOp(
+          "What a purchase hands back",
+          "The room showing a free, unsigned sample of a paid artifact, so nobody has to buy a document sight unseen. HTML to a browser, JSON to everything else. Free.",
+        ),
+      },
+      "/samples/once-over.json": {
+        get: freeOp(
+          "A free specimen of the Once-Over",
+          "Every field a buyer of the $5 service_audit receives, produced by the same check battery the paid artifact runs, against a constructed door that passes v1's frozen core and fails v2's atomic-amount check \u2014 so the specimen shows one probe reaching two disagreeing verdicts, which is the property a prose description cannot show. It is NOT signed and does NOT verify, and says so in its own body: the paid artifact carries an ed25519 signature and answers at /api/verify/{id} forever, and this carries neither. The subject is a .example host (RFC 2606) that can never resolve, so nothing here is an observation about any real operator. Frozen, so the bytes are stable. Free.",
+        ),
+      },
       "/doors": {
         get: freeOp(
           "Every door we have checked",

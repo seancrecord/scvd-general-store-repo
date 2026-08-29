@@ -118,6 +118,8 @@ export const UTILITY_ITEMS: readonly MenuItem[] = [
     fulfillment: "instant",
     description:
       "Name an x402 endpoint (the url query parameter) and the store GETs it once, runs the published preflight battery, and signs the whole readout: the frozen v1 verdict this series has always cited, the same probe scored under the current v2 battery beside it (payability folded in — the two can disagree, and the report says when they do), every check, every advisory, dated. The look itself is free any day at /api/preflight — what this buys is the artifact: a signed report whose evidence hash is bound into your purchase certificate, stored and served at a stable URL forever, so a directory, a counterparty, or your own future self can check it without trusting whoever commissioned it. One request, one moment, against published criteria. Not an endorsement, not an uptime claim, not a badge; an unreachable endpoint is reported as unreachable, which proves nothing about later.",
+    /* #31: the free specimen, so nobody buys a document sight unseen. */
+    sample_url: "/samples/once-over.json",
     note_402:
       "Five dollars. The looking is free and always will be — what costs money is the part where somebody else has to believe you.",
     constraints: [
