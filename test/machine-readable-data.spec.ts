@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import { PUBLISHED_DATASETS } from "@/store/datasets";
 
 const BASE = "https://scvd.store";
 const JSON_HEADERS = { Accept: "application/json" };
@@ -29,7 +30,11 @@ const JSON_HEADERS = { Accept: "application/json" };
  * parser has no reason to open.
  */
 
-/** Every public surface that serves numbers to a machine. */
+/**
+ * The two tallies whose JSON envelope this guard holds in detail.
+ * The catalogue below is the roster; these are the ones whose fields
+ * a reader is most likely to quote as a market fact.
+ */
 const DATA_SURFACES = [
   { path: "/registry", mustMention: ["not a score", "shape"] },
   { path: "/inflows", mustMention: ["NOT sales", "facilitator"] },
@@ -128,6 +133,60 @@ describe("a published number carries its caveat to the machine, not just the pag
       expect(html, `${week.week} is in the JSON and not on the page`).toContain(
         week.week,
       );
+    }
+  });
+});
+
+/**
+ * THE CATALOGUE HALF (the keeper's question, second part: can an
+ * agent FIND any of this without being told the URL?).
+ *
+ * It could find the shop instantly and the evidence by luck. So the
+ * x402 discovery document — where an agent already looks — now
+ * carries the dataset roster, and this holds the two ways that can
+ * rot: a dataset listed but not reachable, and a dataset shipped but
+ * never listed.
+ */
+describe("an agent can find the evidence, not just the shop", () => {
+  it("names every published dataset in the x402 discovery document", async () => {
+    const doc = (await (
+      await SELF.fetch(`${BASE}/.well-known/x402.json`)
+    ).json()) as { datasets?: Array<Record<string, string>> };
+    expect(doc.datasets, "the discovery document lists no datasets").toBeTruthy();
+    const listed = new Set((doc.datasets ?? []).map((entry) => entry.url));
+    for (const dataset of PUBLISHED_DATASETS) {
+      expect(
+        [...listed].some((url) => url.endsWith(dataset.path)),
+        `${dataset.path} is published and an agent cannot discover it`,
+      ).toBe(true);
+    }
+  });
+
+  it("tells a reader what each dataset is NOT before it spends a request", async () => {
+    const doc = (await (
+      await SELF.fetch(`${BASE}/.well-known/x402.json`)
+    ).json()) as { datasets?: Array<Record<string, string>> };
+    for (const entry of doc.datasets ?? []) {
+      expect(
+        String(entry.caution ?? "").length,
+        `${entry.url} is catalogued with no caution`,
+      ).toBeGreaterThan(40);
+      expect(String(entry.description ?? "").length).toBeGreaterThan(40);
+      expect(entry.cadence, `${entry.url} never says how often it changes`).toBeTruthy();
+    }
+  });
+
+  it("every catalogued dataset actually answers", async () => {
+    // A catalogue that names a door nobody can open is worse than no
+    // catalogue: it spends a stranger's request to teach them nothing.
+    for (const dataset of PUBLISHED_DATASETS) {
+      const response = await SELF.fetch(`${BASE}${dataset.path}`, {
+        headers: JSON_HEADERS,
+      });
+      expect(
+        response.status,
+        `${dataset.path} is catalogued and does not answer`,
+      ).toBe(200);
     }
   });
 });
