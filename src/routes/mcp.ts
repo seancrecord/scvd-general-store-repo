@@ -694,6 +694,34 @@ async function handleRpc(
       () => undefined,
     );
   }
+  /**
+   * WHO KNOCKED, recorded at the one moment it is offered.
+   *
+   * Every MCP client names itself in the handshake and this door threw
+   * the field away, which left the store guessing whether 12,280
+   * handshakes a month were registry crawlers indexing a tool list or
+   * real agents bouncing off something. Guessing about your own
+   * visitors is the failure this store sells the cure for.
+   *
+   * Never blocks the handshake and never fails it: a census that can
+   * refuse a connection would be a worse trade than not counting.
+   */
+  if (request.method === "initialize") {
+    const params = isRecord(request.params) ? request.params : {};
+    const info = isRecord(params["clientInfo"]) ? params["clientInfo"] : {};
+    const census = import("@/services/mcp-clients").then(({ recordMcpClient }) =>
+      recordMcpClient(
+        c.env,
+        typeof info["name"] === "string" ? info["name"] : undefined,
+        typeof info["version"] === "string" ? info["version"] : undefined,
+      ),
+    );
+    try {
+      c.executionCtx.waitUntil(census.catch(() => undefined));
+    } catch {
+      await census.catch(() => undefined);
+    }
+  }
   switch (request.method) {
     case "initialize": {
       const requested = isRecord(request.params)
@@ -841,6 +869,23 @@ async function handleRpc(
           `No tool by that name on the shelf: ${name}`,
         );
       }
+      /**
+       * EVERY TOOL CALL, NOT THE FIVE THAT HAPPENED TO LOG.
+       *
+       * Five handlers recorded themselves; the other eight — the whole
+       * buy_* shelf, read_store_guide, verify_artifact — left no trace
+       * at this door. So "nobody calls the tools" was never a
+       * measurement: it was five instrumented tools reporting quietly
+       * while the rest were invisible either way.
+       *
+       * Recorded AFTER findMcpTool, which is what makes the key space
+       * safe: an unknown name is refused above and never reaches this
+       * line, so the surfaces are bounded by the catalog rather than
+       * by what a stranger types.
+       */
+      await recordPorchVisit(c.env, `mcp:tool:${tool.name}`, mcpSignals(c)).catch(
+        () => undefined,
+      );
       if (tool.itemId || tool.itemIds) {
         /**
          * A shelf tool carries several items and the buyer names one
