@@ -141,6 +141,11 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
       heading: "Connect over MCP",
       entries: [
         {
+          href: `${base}/mcp.md`,
+          label: "/mcp.md",
+          what: "WHICH DOOR TO USE, and what each one cannot do: remote MCP, local stdio, the browser (WebMCP), or none at all. Carries the rendering gap as a dated observation — which hosts render the evidence cards and which return the same JSON they always did — and an honest list of what is not built. Start here if you are choosing.",
+        },
+        {
           href: `${base}/.well-known/mcp`,
           label: "/.well-known/mcp",
           what: "Where the MCP server is and what it serves.",
@@ -148,7 +153,12 @@ function surfaces(base: string): Array<{ heading: string; entries: Entry[] }> {
         {
           href: `${base}/mcp`,
           label: "POST /mcp",
-          what: `Streamable HTTP MCP. tools/list is free; buy_* tools are x402-paid. ${mcpResourceCatalog().length} resources are readable without payment.`,
+          what: `Streamable HTTP MCP. tools/list is free; buy_* tools are x402-paid. ${mcpResourceCatalog().length} resources are readable without payment. The two free evidence instruments carry _meta.ui.resourceUri, so a host with the MCP Apps extension renders the reading as a card — gaps at the same weight as findings. Nothing paid carries one, by construction and by test.`,
+        },
+        {
+          href: `${base}/webmcp.js`,
+          label: "GET /webmcp.js",
+          what: "The browser door. Loaded by the storefront, it registers the free read-only instruments on document.modelContext for an agent living in the visitor's browser — no connection to configure, no key, no directory: discovery is arrival. The registered set derives from the MCP catalog (free and read-only only), so nothing that writes and nothing that can take money can reach it. A browser without the API loads a no-op.",
         },
       ],
     },

@@ -176,8 +176,10 @@ This list is ordered by our guess, and our guess is worth less than
 your use. If a door is missing, a tool is shaped wrong, or something
 here reads as confident where it should not, write to the mailbox —
 \`POST ${base}/api/letter\`, free, a human reads it — or open an
-issue. Two of the last additions to this store came from someone
-saying what they needed and then using it.
+issue. Outside reports have changed this store before, and the
+record is public rather than a boast: ${base}/corrections names who
+found what — including the time somebody reported a real defect and
+was told he was mistaken.
 `;
 }
 

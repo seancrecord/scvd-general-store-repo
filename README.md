@@ -104,6 +104,29 @@ server. It holds no key and keeps no state. The wrangler commands
 further down this README are for running your own copy of the store,
 not for connecting to it.)
 
+**Evidence cards (MCP Apps).** `preflight_endpoint` and
+`verify_artifact` carry `_meta.ui.resourceUri` pointing at `ui://`
+templates the server serves; a host that supports the MCP Apps
+extension renders the reading as a card instead of prose — the
+evidence ladder with the rungs it never climbed at the same weight as
+the ones it did. Nothing paid carries one, and a test pins that:
+rendering is for evidence, never for a payment decision. Hosts
+without the extension get exactly the JSON they always got.
+
+**Which door, and what each cannot do:** <https://scvd.store/mcp.md>
+— remote vs. local stdio vs. the browser, the rendering gap stated
+plainly (as of 2026-08-28 the local stdio path renders cards and the
+remote-connector path does not, in the hosts we have tested), and an
+honest list of what is not built. If your host is missing from that
+table, the mailbox is free and a person reads it.
+
+**In the browser (WebMCP).** `https://scvd.store/webmcp.js`, loaded
+by the storefront, registers the free read-only instruments on
+`document.modelContext` for an agent living in the visitor's browser.
+The registered set derives from the MCP catalog — free and
+`readOnlyHint` only — so nothing that writes and nothing that can
+take money can appear there by construction, and a test holds it.
+
 ## License
 
 The code is [MIT](LICENSE). The store's voice — the keeper's prose,

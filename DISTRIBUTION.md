@@ -129,9 +129,46 @@ and worth closing quickly for the same reason.
   both want the privacy policy and a remote MCP endpoint — the same
   two gates as Claude's, both now met.
 
+## 6. What to say about the cards and the browser door (2026-08-28)
+
+Two capabilities shipped 2026-08-27 that every future submission
+will be tempted to overclaim. The honest lines, once, so a listing
+never has to invent them:
+
+**Evidence cards (MCP Apps).** SAY: the two free instruments carry
+`_meta.ui.resourceUri`; a host supporting the MCP Apps extension
+renders the reading as a card, and a host without it gets the same
+JSON it always did. DO NOT SAY: "renders in Claude/ChatGPT/etc." as
+a flat claim. Whether a card renders is the HOST's behaviour, we do
+not control it, and the current observation is mixed — local stdio
+renders, the remote-connector path does not, in the hosts tested.
+`https://scvd.store/mcp.md` carries that as a dated table; link it
+instead of asserting. A directory that wants a yes/no gets: the
+server implements the extension, correctly, and the wire is
+verifiable in one `resources/list` call.
+
+**WebMCP.** SAY: the storefront registers the free read-only
+instruments on `document.modelContext`, so a browser-resident agent
+finds them by arriving. Chrome origin-trial token is registered
+through 2026-11-17. DO NOT SAY: any adoption or usage figure — the
+channel is instrumented (`?src=webmcp` in the ledger) and has no
+history worth quoting yet. "The surface exists" is the whole claim
+until the numbers do.
+
+**Neither is a payment surface, and that is the point worth
+submitting.** No `buy_*` tool carries ui metadata; nothing that
+writes or spends reaches the browser surface; both facts are held by
+tests rather than by intention. For directories that ask about agent
+safety, this is the strongest true sentence we have.
+
 ## What was verified tonight
 
 - /mcp speaks streamable HTTP (spec 2025-06-18), stateless.
 - All tools annotated; no secrets in any example.
 - /privacy live as a room; /privacy-policy aliases it.
 - The skills CLI finds and installs the skill from this repo.
+- (2026-08-28) /mcp.md serves the door-chooser with the rendering
+  gap dated; README, /developers, /what's FAQ and the agentic-market
+  submission draft all carry the two new doors. The submission
+  draft's "settles before it mints" line — stale since 2026-08-10 —
+  was corrected the same day it was found.

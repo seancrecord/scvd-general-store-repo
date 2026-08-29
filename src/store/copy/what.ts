@@ -43,7 +43,7 @@ export function whatFaq(base: string): FaqPair[] {
        * llms.txt.
        */
       question: "What does this store actually have today?",
-      answer: `A live x402 v2 till that settles real USDC on Base, Polygon, or Solana, from $${cheapest}. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
+      answer: `A live x402 v2 till that settles real USDC on Base, Polygon, or Solana, from $${cheapest}. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp whose free instruments render as evidence cards in hosts that support them and as plain JSON everywhere else — which door to use, and what each cannot do, is at ${base}/mcp.md. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
     },
     {
       /**
@@ -123,6 +123,21 @@ export function whatFaq(base: string): FaqPair[] {
     {
       question: "Is there a free x402 conformance check?",
       answer: `Yes — the conformance desk at ${base}/api/conformance/v1 takes any issuer's x402 signed offer or receipt and returns a structured verdict: parse, schema, ed25519 signature, liveness. Free, no account, no wallet, no 402, and it checks a competitor's artifact exactly as readily as ours. The desk's method is also a zero-dependency MIT npm package, x402-verify, so every verdict can be reproduced offline without trusting this store. The landing with worked curl examples is ${base}/conformance. Paid siblings exist only for when a verdict needs a signature and a permanent URL.`,
+    },
+    {
+      /**
+       * THE CONNECTION QUESTION, added 2026-08-28 the week the second
+       * and third doors opened. Until then the store had three ways in
+       * — remote MCP, local stdio, the browser — and answered "how do
+       * I connect" nowhere a machine could lift. The answer names the
+       * rendering gap on purpose: a reader choosing a door needs to
+       * know that what renders in one host is prose in another, and
+       * that the difference is the host's, not the reading's.
+       * ⚑ KEEPER REVIEW — question phrasing and answer are new public
+       * copy.
+       */
+      question: "How do I connect my agent to this store?",
+      answer: `Four ways, and ${base}/mcp.md is the page that picks one for you. Remote MCP is the main door: point your client at ${base}/mcp, no install and no API key — tools/list is free and the paid tools carry their x402 terms in-band. Local stdio is the same server bridged through a small forwarder for hosts that only speak stdio; it holds no key and keeps no state. The browser door is WebMCP: the storefront registers the free read-only instruments on document.modelContext, so an agent living in a visitor's browser finds them by arriving — nothing to configure. And plain HTTPS is a first-class fourth answer: every free instrument has an ordinary endpoint, and an agent with fetch needs nothing else. One honest wrinkle, dated 2026-08-28: the free instruments return evidence cards — the reading rendered, with the checks never run shown at the same weight as the ones that passed — and whether you SEE the card depends on your host, not on us. In the hosts tested so far the local stdio path renders and the remote-connector path returns the same JSON it always did. That gap is published, not hidden, and it costs nothing either way: the verdict is identical in both.`,
     },
     {
       /**
