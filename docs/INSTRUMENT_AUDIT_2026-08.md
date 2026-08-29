@@ -617,3 +617,88 @@ be cited.
 HEAD 2114535; line numbers in §§1-7 are that commit's. Fixes landed
 the same day under the keeper's word; §9 is the ledger of which. —
 the instrument audit*
+
+---
+
+## 10. THREE FINDINGS FROM OUTSIDE, 2026-08-28 (the keeper's relay)
+
+Same defect class as the signed-offer undercount, arriving from two
+outside readers on the same afternoon. Recorded, not fixed: the
+sharp one touches a PAID product's verdict and the fix is a
+keeper-copy change, not a code tweak. None of these is a bug in
+what we compute; all three are things we do not look at.
+
+### 10.1 `accepts[].extra.assetTransferMethod` — unread
+
+Public claim (@danbuildss, 2026-08-28) that a client blindly
+defaulting to one facilitator makes "a healthy service return what
+looks like a payment failure." Chased to the actual observable, and
+the honest correction to that framing: the facilitator is generally
+NOT named in the 402. Bankr/Capacitr's own reference documents it as
+a server-side environment variable. What IS in the 402, and what
+actually decides whether a buyer's signature is acceptable, is
+`accepts[].extra.assetTransferMethod` — `eip3009`, `permit2`, or
+`erc7710`. It tells a buyer WHAT TO SIGN.
+
+We do not read it. `runChecks` reads `extra.name` and
+`extra.version` (the EIP-712 domain, `missing-eip712-domain-extra`)
+and nothing else in that object. Two consequences:
+
+- **Preflight `ready` is silent on it.** A buyer who reads our
+  verdict, signs EIP-3009 at a `permit2` door and gets refused has
+  been failed by a door we called ready. This is the exact shape
+  the ladder exists to name.
+- **launch_check ($5, paid) has a false-negative path.** Its own
+  disclaimer says the payment is presented "EIP-3009 authorization
+  on Base," and it handles the v1/v2 HEADER-shape mismatch
+  explicitly — "a seller serving only the v1 X-PAYMENT shape will
+  refuse it, and this report says exactly that rather than
+  guessing." It says nothing about transfer-method mismatch. A
+  door advertising `permit2` or `erc7710` would refuse our envelope
+  CORRECTLY, and the report would record a refusal without naming
+  our own unsupported path as the cause.
+
+  Stated precisely, because the distinction is the whole discipline:
+  this is a false-negative path that EXISTS IN THE CODE. We have no
+  evidence any launch check has met such a door, and the reports
+  already issued are not being called wrong. The fix is to read the
+  field before the paid knock and, on a method we cannot sign,
+  refuse the walk with `unpaid_by_rule` — a statement about our
+  rules, never about the seller, which is the escape hatch that
+  product already has and already explains.
+
+### 10.2 Idempotency, never turned outward (CV)
+
+CV's note, same day: the ecosystem absorbed the double-charge lesson
+at the SDK layer, and the remaining gap shape is hand-rolled header
+paths — repos building their own authorization without `@x402/fetch`
+that do not key dedup to a logical purchase end-to-end. His guidance
+is to hunt those specifically rather than broad SDKs.
+
+The part that lands here: a buyer's hand-rolled retry logic is not
+visible from a 402 probe, but the SELLER-SIDE CORRELATE is, and we
+never look. `idempotenc` appears nowhere in `preflight.ts` and
+nowhere in the defect vocabulary. This store built the strongest
+idempotency machinery it knows how to build for its own till and
+made it a named differentiator — and never once asked whether
+anybody else's door has any. A door with no idempotency support
+turns every hand-rolled buyer retry into a double charge, which is
+precisely the population CV says is left.
+
+### 10.3 The generalization, which is the keeper's
+
+His words on hearing 10.1: "isn't the fix also additional places to
+check?" Yes, and that is the finding above both of them. The
+signed-offer undercount was not "we read the wrong field," it was
+"we read one place where the wire has two." 10.1 is one object we
+half-read. 10.2 is a question we never asked. The pattern is a probe
+that reads a narrow slice of a rich object and then publishes
+confidence about the whole.
+
+Pass 1 of §1 audited every published number against its caption.
+This is the same audit pointed one layer down: every published
+verdict against the FIELDS IT DID NOT READ. That is a real piece of
+work and it is not this document's — recorded here so the next pass
+starts with three known instances instead of a blank page.
+
+**None of this is built. Nothing above changed a served surface.**
