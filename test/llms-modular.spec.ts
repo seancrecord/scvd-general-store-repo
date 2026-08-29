@@ -205,12 +205,19 @@ const BASE = "https://scvd.store";
  * that it is not a scoreboard and never becomes one. That last line
  * is the one worth having reviewed every time these bytes move.
  *
+ * Re-taken again 2026-08-29 on the merge with /mcp.md's section —
+ * the FIFTH time this shape has landed. Each branch correctly
+ * re-took the digest for its own edit; the merge is a sixth text
+ * neither value describes. Both edits are in these bytes: /doors'
+ * two paragraphs and the /mcp.md section. Verified present together
+ * before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "fdfc361cc4831feda9b48d36f6585fd2cd86fa00c128fcf3ac5de69d117f1369";
+  "ab9d6076d37095c8f6ab0ceff36c2fc677970315c1612c0c261419c5b6a4c821";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

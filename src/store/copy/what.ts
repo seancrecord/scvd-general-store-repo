@@ -9,6 +9,55 @@ import { STORE_METADATA } from "@/store/metadata";
  * and their AIs query, and the answer is the trust check — not a
  * product. The route that hangs these up is src/routes/what.ts; the
  * words are all here.
+ *
+ * HONEST IS NOT THE SAME AS MASOCHISTIC (the keeper, 2026-08-28, and
+ * it is a correction to a real drift). This store publishes its gaps
+ * on purpose, and the discipline had started paying itself compound
+ * interest: answers leading with limitations, a caveat given more
+ * words than the capability it qualifies, "one honest wrinkle" as a
+ * throat-clear, and the store congratulating itself for disclosing
+ * — "that gap is published, not hidden" — which is bragging wearing
+ * humility's coat.
+ *
+ * The rule that replaces it, and it costs no honesty at all:
+ *   - State the capability first. It is why the reader is here.
+ *   - A limit gets a CLAUSE, not a paragraph, unless the limit is
+ *     the answer to the question actually asked.
+ *   - Never editorialise about our own transparency. Publishing the
+ *     gap is the disclosure; saying "and look, we published it" is
+ *     an advertisement.
+ *   - Where a neutral true framing and an unflattering true framing
+ *     both exist, neutral wins. Rule 45 asks that words follow
+ *     facts; it never asked them to grovel.
+ * Nothing here licenses hiding anything. Every gap that was
+ * published stays published — shorter, and without the flinch.
+ *
+ * AMENDED SAME DAY, because the symptom kept coming back after
+ * being named, which means the first version described the tic and
+ * missed the cause. The keeper's diagnosis: "it's like we are
+ * scared to sell."
+ *
+ * That is exactly it. The groveling is not humility, it is
+ * INSURANCE — a hedge bought against the fear that saying plainly
+ * what a thing does will be read as overclaiming it. So the copy
+ * pre-apologises, pads the caveat, and points at its own honesty,
+ * all to buy protection against an accusation nobody made.
+ *
+ * The insurance is redundant, and that is the whole argument. This
+ * store's honesty is structural, not tonal. It is carried by the
+ * published gaps, the corrections record, the tests that fail the
+ * build, and artifacts a stranger can verify without asking us. The
+ * PROSE is not what keeps us honest and never was — so prose that
+ * grovels is paying twice for one guarantee, and paying in the only
+ * currency the store is short of: a reader who takes us seriously.
+ *
+ * SELLING IS NOT LYING. Stating what an instrument does, in the
+ * plainest strongest true words available, is not a claim that
+ * needs a hedge attached — it is the reason the instrument was
+ * built. A limitation is published because a reader needs it, never
+ * to prove we are the sort of people who publish limitations. If a
+ * sentence hedges and you cannot name the reader it protects, it is
+ * protecting us from a fear, and it comes out.
  */
 import { KEY_BACKUP_EXISTS } from "@/store/key-continuity";
 
@@ -43,7 +92,7 @@ export function whatFaq(base: string): FaqPair[] {
        * llms.txt.
        */
       question: "What does this store actually have today?",
-      answer: `A live x402 v2 till that settles real USDC on Base, Polygon, or Solana, from $${cheapest}. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
+      answer: `A live x402 v2 till that settles real USDC on Base, Polygon, or Solana, from $${cheapest}. An ed25519 key at ${base}/.well-known/scvd-signing-key that signs every artifact, and ${base}/api/verify/{id}, which serves the exact bytes a signature covers so you can check it with your own library rather than ours — free, no account, forever, whether or not you bought the thing. A published listing spec, validated in CI, at ${base}/schemas/listing-spec-v1.json. A machine catalog at ${base}/menu.json, an OpenAPI contract at ${base}/openapi.json, x402 discovery at ${base}/.well-known/x402.json, and an MCP server at ${base}/mcp whose free instruments render as evidence cards in hosts that support them and as plain JSON everywhere else — which door to use, and what each cannot do, is at ${base}/mcp.md. The books, computed live and with house traffic excluded structurally rather than filtered, at ${base}/stats and ${base}/pulse. A dated record of every claim we got wrong at ${base}/corrections. A weekly public tally of the whole x402 registry — how many listed doors work, aggregates only, no names — at ${base}/registry. A signed declaration of every wallet we control at ${base}/house-ledger.json, and of every service we depend on and do not control at ${base}/stack. Two doors where money moves the other way: a bounty board that pays agents to walk other people's x402 endpoints and report what happened, at ${base}/bounties, and a rebate that banks 5% of every purchase back to the wallet that paid it, at ${base}/credit — readable per wallet at ${base}/api/credit/{wallet} and redeemable in USDC to that same wallet. All of that is running now; none of it is a roadmap.`,
     },
     {
       /**
@@ -121,6 +170,47 @@ export function whatFaq(base: string): FaqPair[] {
     {
       question: "Is there a free x402 conformance check?",
       answer: `Yes — the conformance desk at ${base}/api/conformance/v1 takes any issuer's x402 signed offer or receipt and returns a structured verdict: parse, schema, ed25519 signature, liveness. Free, no account, no wallet, no 402, and it checks a competitor's artifact exactly as readily as ours. The desk's method is also a zero-dependency MIT npm package, x402-verify, so every verdict can be reproduced offline without trusting this store. The landing with worked curl examples is ${base}/conformance. Paid siblings exist only for when a verdict needs a signature and a permanent URL.`,
+    },
+    {
+      /**
+       * THE FOUR PROBLEM-SHAPED QUESTIONS, drafted and KEEPER-APPROVED
+       * 2026-08-28 — "I approve each." These are not questions about
+       * this store; they are the queries somebody types when they
+       * HAVE the problem an instrument here solves, which is the only
+       * kind of question an answer engine can route on. Each names a
+       * live surface, and each leads with the capability: the copy
+       * rule at the top of this file was written the same hour.
+       */
+      question: "How do I test my x402 payment client without a sandbox?",
+      answer: `There is no sandbox here and that is the point — the till is real, so what you test is what ships. ${CHEAPEST_ON_THE_SHELF} buys a real settlement on Base, Polygon, or Solana against a live store: your client gets a real 402, signs a real payment, and walks off with a signed certificate it can verify. The practice counter at ${base}/try lays out the whole flow, cheapest door first, plus the one test worth running deliberately — buy the same item twice with the same idempotency key and assert you were charged once.`,
+    },
+    {
+      question: "My agent's retry loop paid twice — how do I stop that?",
+      answer: `Send an Idempotency-Key header (or \`_meta['x402/idempotency-key']\` over MCP), 16-128 characters, kept private. A repeat of the same key for the same item from the same wallet inside 24 hours returns your original result — no new settlement, no second charge. You do not have to invent one: every 402 this store issues carries a suggested key, derived from the item and the current minute, and echoing it back verbatim is enough. Both mechanisms are free and live on every paid door here. The reason it matters: the chain refuses to settle the same authorization twice, but a retry loop signs a FRESH authorization each pass, so without a key every loop is an honest second charge.`,
+    },
+    {
+      question:
+        "I paid an x402 endpoint and got nothing back — how do I find out what happened?",
+      answer: `The expensive failure is not a rejected signature, it is silence: you signed, you sent, and what came back was an error you cannot place or nothing you can read. settlement_attestation answers one question and nothing else — give it your transaction identifier, a Base or Polygon hash or a Solana signature, and this store reads that chain once and signs what it saw: SETTLED, NOT_FOUND, PENDING_FINALITY, INSUFFICIENT_MATCH, or REVERTED. One read, no polling, and a dated third-party statement you can hand to somebody. It is the check for AFTER your signing, which is exactly what you cannot get from the client that just failed you.`,
+    },
+    {
+      question: "Which x402 endpoints actually work right now?",
+      answer: `${base}/fresh-set lists this week's doors that answered a conformant challenge, with the rails each one takes and the cheapest ask per host — routing data, CC BY 4.0, free, no account. The weekly census behind it publishes as aggregates at ${base}/registry, and the signed record is ${base}/corpus.json. Worth knowing before you rely on any directory: roughly a third of listed x402 doors answer no payment challenge at all, so a raw listing count is always larger than the number of doors that will take your money.`,
+    },
+    {
+      /**
+       * THE CONNECTION QUESTION, added 2026-08-28 the week the second
+       * and third doors opened. Until then the store had three ways in
+       * — remote MCP, local stdio, the browser — and answered "how do
+       * I connect" nowhere a machine could lift. The answer names the
+       * rendering gap on purpose: a reader choosing a door needs to
+       * know that what renders in one host is prose in another, and
+       * that the difference is the host's, not the reading's.
+       * ⚑ KEEPER REVIEW — question phrasing and answer are new public
+       * copy.
+       */
+      question: "How do I connect my agent to this store?",
+      answer: `Four ways, laid out side by side at ${base}/mcp.md. Remote MCP is the main door: point your client at ${base}/mcp, no install and no API key — tools/list is free and the paid tools carry their x402 terms in-band. Local stdio is the same server bridged through a small forwarder for hosts that only speak stdio; it holds no key and keeps no state. The browser door is WebMCP: the storefront registers the free read-only instruments on document.modelContext, so an agent in a visitor's browser finds them by arriving, with nothing to configure. And plain HTTPS is a first-class fourth answer: every free instrument has an ordinary endpoint, so an agent with fetch needs none of the above. The free instruments also return evidence cards — the reading rendered, with the checks that were never run shown at the same weight as the ones that passed. Card rendering is a host feature rather than ours: local stdio renders it today, the remote connector does not yet, and the verdict is identical either way. ${base}/mcp.md carries the current table.`,
     },
     {
       /**

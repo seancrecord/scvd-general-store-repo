@@ -28,19 +28,41 @@ over x402 v2.
 health attestations, blessings, absolution) and human-labor
 fulfillment (phone calls, app reviews, luckies drawn from a real
 herd), priced from fractions of a cent; the live shelf is /menu.json. Every purchase mints an ed25519-signed
-certificate, verifiable free forever. Four doors: HTTP + x402,
-Bazaar-discoverable resources, an MCP server with in-band payment,
-and a ClawHub skill. The store settles before it mints, publishes an
-OpenAPI 3.1 contract, and nothing it hands an agent can act without
-the agent's decision; it never asks for credentials, keys, or wallet
-secrets.
+certificate, verifiable free forever. Five doors: HTTP + x402,
+Bazaar-discoverable resources, an MCP server with in-band payment
+whose free instruments render as evidence cards in hosts that
+support MCP Apps, a WebMCP surface that registers the same free
+read-only instruments in a visitor's own browser, and a ClawHub
+skill. The store DELIVERS FIRST and settles after — the goods are
+produced, then the payment is presented at the last moment before
+the artifact is signed, so a delivery that fails takes no money —
+publishes an OpenAPI 3.1 contract, and nothing it hands an agent can
+act without the agent's decision; it never asks for credentials,
+keys, or wallet secrets.
 
 **Links:** https://scvd.store · https://scvd.store/llms.txt ·
-https://scvd.store/mcp · https://scvd.store/openapi.json
+https://scvd.store/mcp · https://scvd.store/mcp.md ·
+https://scvd.store/openapi.json
 
 ## Claims audit (verify true on submission day)
 
 - Item count and price range — read them off /menu.json on the day; do not type a number into the listing, it goes stale the week the shelf changes.
 - Bazaar-discoverable — confirmed 2026-07-22 (hello route), NOT re-verified since; the keeper could not find the store on any browsable mirror as of 2026-07-26. Re-query the CDP discovery list before this line is submitted anywhere.
 - MCP in-band payment — live, first settle 2026-07-22.
+- Delivery order — CORRECTED 2026-08-28. This draft said "settles
+  before it mints" until today; the store reversed that on
+  2026-08-10 and has delivered first ever since. The claim was
+  stale in a submission draft for eighteen days, which is exactly
+  the shape rule 45 exists to catch: copy that stops following the
+  facts the day the facts move. Nothing was submitted carrying it.
+- Evidence cards (MCP Apps) — live 2026-08-27 on the two free
+  instruments. Do NOT submit this as "renders everywhere": whether a
+  host renders the card is the host's business and the current
+  observation is mixed (local stdio yes, remote connector no, in
+  hosts tested). /mcp.md carries the dated table; cite that rather
+  than a claim.
+- WebMCP browser surface — live 2026-08-27, Chrome origin-trial
+  token registered through 2026-11-17. Adoption is unmeasured; the
+  honest submission line is that the surface exists, not that
+  anyone is arriving through it.
 - ClawHub skill — scvd-general-store@1.0.1.

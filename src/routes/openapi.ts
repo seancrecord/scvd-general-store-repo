@@ -2070,6 +2070,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * reader could learn every paid shelf and never learn the free
        * desk or the corpus existed.
        */
+      "/api/conformance/v1/fixtures": {
+        get: freeOp(
+          "Signed envelope fixtures for fail-closed integrations",
+          "Complete artifacts with real production signatures — valid, expired, tampered, and unknown-signer cases — each with the exact canonical string its signature covers, the exact desk call to make, and the verdict it returns. Every fixture is re-verified against the live desk before serving. Pin the set digest; build and test an integration without paying anything.",
+        ),
+      },
       "/api/conformance/v1": {
         get: returns(
           freeOp(
