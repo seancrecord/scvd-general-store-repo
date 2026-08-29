@@ -1881,8 +1881,20 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
    * screen rather than a fresh walk nobody has seen. Rule 30 is "he
    * reads the round first"; this makes that mechanical.
    */
-  const { stashRenderedReading } = await import("@/services/inflow-pulse");
+  const { stashRenderedReading, readInflowPulse } = await import(
+    "@/services/inflow-pulse"
+  );
   await stashRenderedReading(c.env, census);
+  /*
+   * PUBLISHED IS A STATE THE PAGE SHOWS, NOT A THING TO REMEMBER.
+   * A press button that looks identical before and after is an
+   * invitation to press twice, and the second press silently moves a
+   * number the public has already read. The page reads the tally and
+   * says which it is.
+   */
+  const alreadyPublished = (await readInflowPulse(c.env)).weeks.find(
+    (row) => row.week === census.week,
+  );
   if (!wantsHtml(c.req.header("Accept"))) {
     return c.json(census);
   }
@@ -2009,9 +2021,20 @@ adminRoutes.get("/admin/market/inflows", async (c) => {
       were not walked over the same window or if any address went unread — a
       reading that does not know its own denominator has no business on a public
       tally.</p>
-      <form method="post" action="/admin/market/publish-inflows">
-        <button type="submit">Publish week ${escapeHtml(census.week)} to /inflows</button>
-      </form>`,
+      ${
+        alreadyPublished
+          ? `<p><strong>Week ${escapeHtml(census.week)} is published</strong> —
+             pressed ${escapeHtml(alreadyPublished.published_at)}, live at
+             <a href="/inflows">/inflows</a>. The button returns when the round
+             rolls to a new week; re-pressing the same week would replace it, and
+             a public number should not move because a page was reloaded.</p>
+             <form method="post" action="/admin/market/publish-inflows">
+               <button type="submit" name="replace" value="yes">Replace the published week ${escapeHtml(census.week)}</button>
+             </form>`
+          : `<form method="post" action="/admin/market/publish-inflows">
+               <button type="submit">Publish week ${escapeHtml(census.week)} to /inflows</button>
+             </form>`
+      }`,
     ),
   );
 });
@@ -2076,9 +2099,24 @@ adminRoutes.get("/admin/market/authenticity", async (c) => {
     renderAdminShell(
       "market",
       `<h1>Offer authenticity — week ${escapeHtml(reading.week)}</h1>
-      <p class="lead"><strong>${reading.hosts_serving_signed} of ${reading.hosts_with_evidence}</strong>
-      doors whose challenge this round stored serve a signed offer at all — that is the entire
-      population this instrument can speak about, and the honest measure of whether it is worth having.</p>
+      ${
+        reading.hosts_with_evidence === 0
+          ? `<p class="lead"><strong>This instrument could not look.</strong> All
+             ${reading.by_verdict.evidence_absent} doors in this round carry no stored challenge
+             bytes — the round predates the evidence capture that shipped 2026-08-26, or its doors
+             were never probed. <strong>That is our gap, not a fact about the market.</strong>
+             Nothing below says whether anyone serves signed offers; the first round sealed after
+             the capture is the first this can read.</p>`
+          : `<p class="lead"><strong>${reading.hosts_serving_signed} of ${reading.hosts_with_evidence}</strong>
+             doors whose challenge this round stored serve a signed offer at all — that is the entire
+             population this instrument can speak about, and the honest measure of whether it is worth
+             having.${
+               reading.by_verdict.evidence_absent > 0
+                 ? ` A further ${reading.by_verdict.evidence_absent} doors carry no stored bytes and are
+                    excluded rather than counted as serving nothing.`
+                 : ""
+             }</p>`
+      }
 
       <h2>What the signatures said</h2>
       <p><strong>${reading.offers_verified}</strong> of ${reading.offers_seen} signed offers verified

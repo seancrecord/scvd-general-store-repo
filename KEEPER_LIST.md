@@ -376,6 +376,23 @@ were not chosen: a panel that agreed to be measured is a biased
 sample and cannot speak for the market, which is the whole reason
 the lane is worth having.
 
+THE TWO PEOPLE-QUESTIONS, RULED 2026-08-29 the same day the scope
+raised them, both toward the store's existing habits rather than
+away from them:
+
+  NOTICE — notify where a channel exists, record "no channel found"
+  where it does not, and publish the aggregate either way. Holding a
+  finding until its operator can be reached would silently drop the
+  least-reachable operators out of every number, which is a coverage
+  hole that has to be disclosed anyway. Count the gap in public; keep
+  the finding.
+
+  THE GOODS — keep the delivery's shape (status, size, content-type,
+  sha256) and discard the body. The finding is whether goods arrived,
+  never what they were. Holding strangers' paid products with no
+  licence to is an exposure a named LLC does not need, and the hash
+  still proves a specific thing was received if a walk is disputed.
+
 **7. RULE: the ERC-8183 evaluator key.** The read is DONE and the
 position RULED 2026-08-18 (`docs/ERC8183_EVALUATOR.md`, on /becoming)
 — do not re-read it. One ruling remains and alone blocks the
