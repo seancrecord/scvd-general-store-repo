@@ -858,7 +858,28 @@ sharp one touches a PAID product's verdict and the fix is a
 keeper-copy change, not a code tweak. None of these is a bug in
 what we compute; all three are things we do not look at.
 
-### 10.1 `accepts[].extra.assetTransferMethod` — unread
+### 14.1 `accepts[].extra.assetTransferMethod` — unread → **GUARDED 2026-08-29**
+
+**FIXED, at the keeper's word, the day after it was recorded.** The
+launch check now reads `extra.assetTransferMethod` at the TERMS
+stage, before it signs anything. A method it cannot sign — anything
+but `eip3009`, matched case-insensitively — stops the walk with
+`unpaid_by_rule` and a stage detail that says the limit is THIS
+INSTRUMENT's and "not a defect in your door," naming that a buyer
+whose client signs that method may transact there perfectly well.
+Absence still means the ordinary thing and the walk proceeds: the
+field is optional and most doors omit it, so treating silence as a
+refusal would have stopped every walk this instrument has completed.
+The report's own disclaimer now describes the case, so the document
+and the code agree.
+
+Three tests pin it, and the guard was mutation-checked rather than
+trusted: disabling the condition fails exactly the two refusal tests
+and leaves the two walk-on tests green. The preflight half of this
+finding — `ready` still says nothing about the field — is NOT built
+and stays open below.
+
+The finding as first recorded follows.
 
 Public claim (@danbuildss, 2026-08-28) that a client blindly
 defaulting to one facilitator makes "a healthy service return what
@@ -897,7 +918,7 @@ and nothing else in that object. Two consequences:
   rules, never about the seller, which is the escape hatch that
   product already has and already explains.
 
-### 10.2 Idempotency, never turned outward (CV)
+### 14.2 Idempotency, never turned outward (CV)
 
 CV's note, same day: the ecosystem absorbed the double-charge lesson
 at the SDK layer, and the remaining gap shape is hand-rolled header
@@ -915,7 +936,7 @@ anybody else's door has any. A door with no idempotency support
 turns every hand-rolled buyer retry into a double charge, which is
 precisely the population CV says is left.
 
-### 10.3 The generalization, which is the keeper's
+### 14.3 The generalization, which is the keeper's
 
 His words on hearing 10.1: "isn't the fix also additional places to
 check?" Yes, and that is the finding above both of them. The
@@ -931,4 +952,5 @@ verdict against the FIELDS IT DID NOT READ. That is a real piece of
 work and it is not this document's — recorded here so the next pass
 starts with three known instances instead of a blank page.
 
-**None of this is built. Nothing above changed a served surface.**
+**14.1 is built (above). 14.2 and 14.3 are not, and nothing else
+here changed a served surface.**
