@@ -199,6 +199,15 @@ const BASE = "https://scvd.store";
  * approved lines, and /inflows' section. Verified present together
  * before this value was taken.
  *
+ * Re-taken 2026-08-29 for the conformance desk's form. The desk had
+ * been free and public since it opened and unusable without a
+ * terminal; it now takes a pasted artifact in a browser, declared to
+ * browser agents with WebMCP's `toolname` attributes and deliberately
+ * without `toolautosubmit` — an agent may fill it, a human presses
+ * submit. The guide names that, because a free instrument that gained
+ * a door an agent can see is exactly the kind of fact this document
+ * exists to carry.
+ *
  * Re-taken 2026-08-29 for /doors — the list of every host the census
  * has ever carried (#26). The guide gained two paragraphs in the
  * corpus area: what the list is, how to filter it, and the sentence
@@ -241,12 +250,21 @@ const BASE = "https://scvd.store";
  * and the opener, atlas and registry/inflows/fresh-set links.
  * Verified present together before this value was taken.
  *
+ * Re-taken again 2026-08-29 on the merge of the conformance form with
+ * /doors and the /mcp.md section — the SEVENTH time this shape has
+ * landed, and by now the pattern is the finding rather than the
+ * incident. Each branch correctly re-took the digest for its own edit;
+ * a merge is always a text neither value describes. All three edits
+ * are in these bytes and were verified present TOGETHER, against the
+ * served guide, before this value was taken: the desk's form sentence,
+ * /doors' paragraphs, and the /mcp.md section.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "1d5ac96a73e0e7490415a679141faf2c8f95813eb262873d6538be8a821572b6";
+  "9c5133b6857fe9f836c990b239938ea053a1f4d31ccbadc165ac6d2fa984f32d";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

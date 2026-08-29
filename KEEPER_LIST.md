@@ -450,6 +450,69 @@ four Base hashes in the TASKS archive's NOW block;
   public endpoints today and prefers the secrets the moment they
   exist; this is resilience, not function.
 
+**THE SIX DOORS — the instrument was wrong twice before it was right,
+and two buttons are yours (SIX_DOORS.md; `npm run doors:check`).** The
+lineup is the Chrome/Edge WebMCP framing, adopted because it is
+somebody else's yardstick: raw API, backend MCP, computer use, browser
+automation, WebMCP, the site's own assistant. 26 criteria read weekly
+by a workflow against production, plus a 90-day human re-read of each
+door's `watch` list.
+
+**READ THIS PART FIRST.** The first reading published three findings
+that were the checker's fault, not the store's, and they are withdrawn
+by name in SIX_DOORS.md: the browser door is declared on **28 of 68**
+rooms, not 1 (the sweep sent no `Accept` header and had been reading
+markdown twins); the registry is **not** carrying the pre-reversal
+description (the reader took the oldest search hit — you published
+twice, and it worked); and the front-door hook finding stood, but only
+after the criterion stopped passing on `data-cf-beacon`, an attribute
+Cloudflare injects. All three have tests that were shown to fail
+without their fix. **Production reads 23 of 26 met.**
+
+- **BUTTON 1 — the registry republish, and a secret first.** The live
+  listing (0.2.1) still says "trust layer of the x402 economy" because
+  `server.json` was edited to the observatory sentence AFTER that
+  publish, without a version bump — and a published version is
+  immutable, exactly like npm's. Bumped to 0.2.2 in the tree. Steps:
+  (1) the ed25519 private key behind the store.scvd TXT record →
+  repo secret `MCP_REGISTRY_KEY`; (2) Actions → "Publish MCP registry
+  listing" → dry_run checked, then unchecked. The workflow refuses a
+  version already on the registry, and reads the listing back after to
+  prove it landed. DISTRIBUTION.md §1.
+- **BUTTON 2 — the Edge origin trial, which we never registered.** Our
+  token is Chrome's. Edge 150 runs its own trial with its own
+  registration (developer.microsoft.com/microsoft-edge/origin-trials),
+  so an Edge visitor's agent does not have our browser door at all —
+  and nothing on the page says so. ChatGPT Desktop needs no trial and
+  already works. Five minutes at a portal, yours.
+- **DIARY DATE: 2026-11-17.** The Chrome token expires. The API drops
+  back to feature-detection, the script no-ops gracefully, the door
+  shuts, and nothing anywhere announces it. Now a checked criterion
+  that turns partial 30 days out.
+- **SHIPPED, needs your eye on the copy (rule 7).** The conformance
+  desk has a FORM — the first thing on this store a person in a
+  browser can actually use, and the declarative WebMCP surface at the
+  same time (`toolname` / `tooldescription` / `toolparamdescription`,
+  attribute names read off the spec repo, not the write-up).
+  **`toolautosubmit` is deliberately absent and that is the ruling in
+  one missing attribute:** an agent may fill the form, a person
+  presses the button. Rule 17, enforced by a test.
+- **RULE — does the reading become a public room at `/doors`?** The
+  most on-brand thing imaginable (the observatory publishing its own
+  misses, counted against itself) against rule 44's sweep and the risk
+  that a public self-reading reads as the score rule 43 forbids. NOT
+  BUILT without your word.
+- **SMALL BUILD, still open.** No first-party `data-*` or `id`
+  anywhere on the front door — `<main>` carries no handle, so every
+  hook an automation tool could hold is a style class a redesign
+  moves. Derive them from ids the menu already has.
+- **NOTED, not acted on.** Cloudflare injects `beacon.min.js` into the
+  storefront from `static.cloudflareinsights.com`, under a
+  `script-src 'self'` CSP we set ourselves. Either the fence is not
+  doing what its comment says, or the beacon is being blocked in
+  visitors' browsers and the analytics behind it are thinner than they
+  look. Worth ten minutes with the browser console.
+
 ## NEXT## NEXT
 
 **The frame:** the verification tier is still $0 outside — Assumption

@@ -10,29 +10,74 @@ and third doors. Rule 30 applies throughout: every actual send,
 submission, or account action is the keeper's hand; this file makes
 each one a five-minute job.
 
-## 1. The official MCP Registry — ALREADY LISTED, republish waiting on the keeper
+## 1. The official MCP Registry — PUBLISHED THREE TIMES, ONE POSITIONING BEHIND
 
-The store has been on registry.modelcontextprotocol.io since
-2026-07-30 — under the pre-reversal description ("a general store for
-AI agents. Pay in USDC via x402"), which every aggregator that reads
-the registry (PulseMCP among them) carries forward today. The
-republish manifest has been ready at the repo root since 2026-08-11
-(server.json, version 0.2.0, trust-layer description inside the
-registry's 100-char cap, domain namespace store.scvd).
+**Corrected 2026-08-29.** The paragraph that stood here said the
+republish was still waiting on the keeper and that the live entry
+carried the pre-reversal description. Both were true on 2026-08-21 and
+neither is true now; a read of the registry's own API on 2026-08-29
+found three publishes under `store.scvd/general-store`:
 
-Keeper's steps (DNS auth on the store.scvd namespace):
+| version | published | description |
+|---|---|---|
+| 0.1.0 | 2026-07-30 | "A general store for AI agents. Pay in USDC via x402…" |
+| 0.2.0 | 2026-08-11 | "The trust layer of the x402 economy…" |
+| 0.2.1 | 2026-08-21 | "The trust layer of the x402 economy…" *(isLatest)* |
 
-    mcp-publisher login dns    # per the manifest's namespace; quickstart at modelcontextprotocol.io/registry
+So the keeper did press it, twice. The pre-reversal listing is not
+what the ecosystem reads — it is three versions down the list, and
+nothing points at it.
+
+**The real gap is smaller and easier to miss.** `server.json` was
+edited after the 0.2.1 publish to the current sentence — "Evidence
+observatory for agentic commerce: free x402 conformance checks,
+corpus, agent store" — without a version bump. A PUBLISHED VERSION IS
+IMMUTABLE, exactly as npm's are (§4b learned the same thing about
+READMEs the expensive way), so that edit changed nothing anywhere. The
+registry, PulseMCP, and every aggregator downstream still say "trust
+layer of the x402 economy": one positioning behind, and invisible from
+inside the repo because the file on disk looks right.
+
+`server.json` is bumped to **0.2.2** and carries the observatory
+sentence, 93 characters against the registry's 100-char cap and held
+there by `test/first-pass-positioning.spec.ts`.
+
+Keeper's steps — a button now, not a terminal, and one secret first:
+
+    1. The ed25519 private key whose public half is in the store.scvd
+       TXT record → Repo → Settings → Secrets and variables → Actions →
+       New repository secret, named MCP_REGISTRY_KEY.
+    2. Actions tab → "Publish MCP registry listing" → Run workflow.
+       version: the number in server.json · dry_run: checked (it
+       validates the manifest against the registry's own schema and
+       proves the version is not already taken), then again unchecked.
+
+`.github/workflows/publish-mcp-registry.yml` is workflow_dispatch only
+(rule 30), refuses a version that disagrees with server.json, refuses a
+version the registry already holds — because that publish would be a
+silent no-op — and reads the listing back afterwards to prove the live
+entry now repeats what we publish. The install one-liner and the
+`login dns --domain scvd.store --private-key <key>` form were read off
+`mcp-publisher --help` itself rather than off documentation, because a
+button that fails when somebody presses it is worse than no button.
+
+From a laptop it is still two commands, and they still work:
+
+    mcp-publisher login dns --domain scvd.store --private-key <key>
     mcp-publisher publish
 
-This single action updates what PulseMCP and every registry reader
-says about the store. Highest yield-per-minute item in this file.
+**And it is now watched.** `npm run doors:check` compares the
+registry's `isLatest` entry against `server.json` every week and goes
+red on a mismatch, so the next time the file and the listing part
+company nobody has to notice by hand. The first cut of that check read
+the OLDEST search hit and reported the 0.1.0 listing as current, which
+is how this section came to be wrong in the first place — the reader
+now selects the row the registry itself marks `isLatest`, with a test.
 
-(Recorded for honesty: this session briefly overwrote server.json
-with a fresh GitHub-namespace manifest on 2026-08-21 before finding
-the existing one; reverted same minute. The 2026-08-11 manifest is
-authoritative — newer schema, tested by test/agent-plugins.spec.ts,
-and already namespaced to the domain.)
+(Recorded for honesty, from the older note: this session briefly
+overwrote server.json with a fresh GitHub-namespace manifest on
+2026-08-21 before finding the existing one; reverted same minute. The
+domain-namespaced manifest is authoritative.)
 
 ## 2. Claude Connectors Directory (claude.com/docs/connectors/building/submission)
 
