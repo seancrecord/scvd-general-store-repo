@@ -1460,6 +1460,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
           },
         ),
       },
+      "/corpus/battery-delta.json": {
+        get: freeOp(
+          "What the stricter battery catches that the frozen one misses",
+          "Per signed week and overall: how many door rows both preflight batteries scored, how many they agreed on, and how many doors v1 would have called ready that v2 caught — broken out by which v2-only check did the catching. v2's checks are v1's plus four, so the disagreement runs one way only. Derived at read from the check names each signed row already carries, so it covers the whole history rather than starting a series; the answer names how to recount it yourself from the snapshots. A scorecard for our own instrument, published on the same terms as the gaps we count against ourselves. Free.",
+        ),
+      },
       "/corpus/wallet-facts.json": {
         get: freeOp(
           "Shared receiving addresses, counted",

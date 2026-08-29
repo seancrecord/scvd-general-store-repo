@@ -4,6 +4,8 @@ import {
   listCorpus,
   verifyCorpusChain,
 } from "@/services/corpus";
+import { batteryDeltaSeries } from "@/services/battery-delta";
+import { PREFLIGHT_VERSION } from "@/services/preflight";
 import { deriveWalletFacts } from "@/services/operator-facts";
 import { subjectHistory } from "@/services/subject-history";
 import { deriveDiff, deriveTrajectory } from "@/services/trajectory";
@@ -277,6 +279,44 @@ corpusRoutes.get("/corpus/wallet-facts.json", async (c) => {
     corrections: CORRECTIONS_POINTER,
     how_to_rederive: `Fetch ${base}/corpus/${facts.sequence}.json, digest each row's advertised payment addresses with the documented salt (rows frozen after 2026-08-27 already carry pay_to_digest), cluster by digest, and recount. The snapshot's digest is named above so you know you counted what we counted.`,
     per_host: `Each door's own page at ${base}/corpus/host/{host}.json carries its payment_address block: whether its advertised address also receives at other doors that week, without naming them.`,
+  });
+});
+
+/**
+ * WHAT THE STRICTER BATTERY CATCHES, COUNTED (2026-08-29, the keeper's
+ * "we are monitoring to see if v2 is more effective").
+ *
+ * We were not monitoring. `also_under` said it on every reading and
+ * nothing added it up, so the call he deferred turned on a number
+ * that did not exist. It exists here, over every signed week, derived
+ * from check names the rows have always carried — no row rewritten,
+ * nothing resigned, and the history counted rather than a series
+ * started the day somebody remembered.
+ *
+ * PUBLISHED RATHER THAN KEPT, on the same principle as the coverage
+ * gaps: this is a number about OUR OWN instrument's usefulness, and a
+ * store that publishes the defects it finds in other people's doors
+ * does not get to hold its own instrument's scorecard back until the
+ * figure flatters it.
+ */
+corpusRoutes.get("/corpus/battery-delta.json", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const records = await listCorpus(c.env);
+  const series = batteryDeltaSeries(
+    records.map((record) => ({
+      week: record.snapshot.week,
+      sequence: record.snapshot.sequence,
+      rows: (record.snapshot.round.hosts ?? []) as {
+        verdict: string;
+        failed: string[];
+      }[],
+    })),
+  );
+  return c.json({
+    ...series,
+    corrections: CORRECTIONS_POINTER,
+    how_to_rederive: `Fetch ${base}/corpus/{sequence}.json for any week, take each host row's verdict and failed[], and count the rows whose every failed name is one of v2_only_checks above — those are the doors v1 would have passed. The check names are published at ${base}/api/preflight/checks; nothing here is computed from anything the signed snapshots do not already contain.`,
+    the_open_question: `Whether v2 should become the headline battery on every instrument is the keeper's call, not this number's: the change renames the criteria on every artifact this store has already signed. See ${base}/api/preflight/${PREFLIGHT_VERSION} for what each battery folds.`,
   });
 });
 
