@@ -417,6 +417,40 @@ four Base hashes in the TASKS archive's NOW block;
   public endpoints today and prefers the secrets the moment they
   exist; this is resilience, not function.
 
+**THE SIX DOORS — the reading exists now, and four things want your
+pen (SIX_DOORS.md, opened 2026-08-29; `npm run doors:check`).** The
+lineup is the Chrome/Edge WebMCP framing, adopted precisely because it
+is somebody else's yardstick: raw API, backend MCP, computer use,
+browser automation, WebMCP, the site's own assistant. 26 criteria, read
+weekly by a workflow against production, plus a 90-day human re-read of
+each door's `watch` list — the fast loop catches a door that CLOSED,
+the slow loop catches one that MOVED, and a green battery against stale
+criteria is the most confident way to be wrong. First reading: **22 met,
+1 partial, 3 unmet.**
+- **RULE — does the reading become a public room at `/doors`?** The
+  most on-brand thing imaginable (the observatory publishing its own
+  misses, counted against itself, while every operator is being asked
+  whether they are agent-ready) against rule 44's sweep and the risk
+  that a public self-reading gets read as the score rule 43 forbids.
+  NOT BUILT without his word.
+- **LOOK, then two commands — the MCP registry listing is the single
+  worst-value miss on the board.** It still sells the pre-reversal
+  general store, and PulseMCP and every other reader repeats it, so
+  the most-read sentence about this store is one we retired. Already
+  queued as DISTRIBUTION.md §1; the door battery now goes red about it
+  weekly instead of it sitting quiet.
+- **SMALL BUILDS, both cheap.** (1) `data-*` hooks on the rooms: not
+  one `data-` attribute or `id` on the front door, so every hook an
+  automation tool could hold is a style class and a redesign moves it.
+  Derive them from ids the menu already has. (2) WebMCP is declared on
+  **1 of 68 rooms** — only the front page — and an agent with a next
+  step lands on `/menu` or `/conformance`. The 1/3 coverage target in
+  `scripts/lib/doors.mjs` is a ⚑ DIAL, stated arbitrary, his to set.
+- **DIARY DATE: 2026-11-17.** The WebMCP origin trial expires. The API
+  goes back to feature-detection, the script no-ops gracefully, and the
+  browser door is shut with no error anywhere and nothing on the page
+  saying so. Now a checked criterion that turns partial 30 days out.
+
 ## NEXT## NEXT
 
 **The frame:** the verification tier is still $0 outside — Assumption

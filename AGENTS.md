@@ -32,6 +32,9 @@ on Base or Solana), which is where most of the shelf still lives.
 - Typecheck: `npm run typecheck`
 - Bundle check (catches build-only breakage tests miss): `npm run build:check`
 - Local dev: `npm run dev`
+- The six doors: `npm run doors:check` (reads the live store down
+  all six roads an agent can take — SIX_DOORS.md; read-only, and
+  `--record` is a human's hand)
 
 Run `npm run typecheck && npm test` before committing. `npm run
 build:check` when touching imports, config, or non-`.ts` modules — the

@@ -1,0 +1,119 @@
+# THE SIX DOORS, RE-READ WEEKLY — because a door closes quietly.
+#
+# An agent can reach this store six ways (SIX_DOORS.md). Every one of
+# them can stop working without a deploy, without an error, and without
+# anybody noticing: an origin trial expires on a date nobody diaried, a
+# registry keeps repeating a description we retired, a redesign drops
+# the landmark a generic tool was holding onto. None of those turn a
+# test red. All of them turn a visitor away.
+#
+# So this is the standing re-read. Weekly, against production, on
+# somebody else's machine — which matters, because a checker that only
+# ever runs on the keeper's laptop is a checker that reports the state
+# of the keeper's laptop.
+#
+# IT IS READ-ONLY AND RULE 30 IS INTACT. It fetches our own public
+# pages and one public registry lookup. It buys nothing, signs nothing,
+# publishes nothing, and never writes the baseline — `--record` is a
+# human's hand at a terminal, on purpose, because a baseline a robot
+# can rewrite is a baseline that quietly agrees with whatever happened.
+#
+# WHAT MAKES IT RED. Two things, and both are work rather than crashes:
+# a criterion that was met and is not any more, or a door whose
+# assumptions have gone ninety days without a human re-reading them.
+# What does NOT make it red is a door we could not reach — an
+# unreachable door is an absence of evidence, and an instrument that
+# accuses when it is confused accuses hardest exactly when it has the
+# least right to.
+name: The six doors
+
+on:
+  schedule:
+    # Weekly, Saturdays 08:00 UTC — a day before the Sunday Grind, so
+    # anything it finds is on the desk when the keeper sits down.
+    - cron: "0 8 * * 6"
+  workflow_dispatch:
+  # On any push that touches the battery itself: a criterion is a claim
+  # about the store, and a claim ships with its check run at least once.
+  push:
+    paths:
+      - "scripts/doors-check.mjs"
+      - "scripts/lib/doors.mjs"
+      - "scripts/doors-check.test.mjs"
+      - "docs/six-doors/observation.json"
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      # NO `npm ci`, DELIBERATELY. The checker and its tests use Node
+      # builtins and global fetch and nothing else, so this job installs
+      # no dependencies at all. A weekly job that pulls a thousand
+      # packages to read six web pages is a weekly supply-chain event.
+      #
+      # The battery's own tests run first, offline against synthetic
+      # bytes: a checker nobody checked is an opinion with a cron.
+      - name: The battery's own tests
+        run: npm run doors:test
+      - name: Read the six doors
+        id: doors
+        run: npm run doors:check | tee doors-reading.txt
+      - name: Keep the reading
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: six-doors-reading
+          path: doors-reading.txt
+          retention-days: 90
+
+  # THE RED LIGHT THAT TELLS SOMEBODY — the same mechanism CI's
+  # red-main job uses, for the same reason: an alert nobody receives
+  # is a log line. An open issue IS the state, readable by every
+  # session and agent that opens this repo.
+  #
+  # It does not close itself on the next green. A door that fell and
+  # was fixed leaves a record worth reading; a review that came due and
+  # was done should be struck by the hand that did it.
+  door-moved:
+    needs: read
+    if: failure() && github.event_name != 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const title = "A door has moved (six-door reading)";
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open",
+            });
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `The weekly six-door reading came back non-zero: ${run}`,
+              "",
+              "That means one of two things, and the run's output says which:",
+              "",
+              "1. A criterion that used to be met is not any more. Fix the door, or record the new reading with a reason.",
+              "2. A door's assumptions have gone 90 days without a human re-read. Read the sources in its watch list, change the criteria if the ground moved, then `npm run doors:check -- --review=<door id>`.",
+              "",
+              "Neither is a crash. Both are work. SIX_DOORS.md has the reasoning.",
+            ].join("\n");
+            const existing = open.data.find((issue) => issue.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, body,
+              });
+            }
