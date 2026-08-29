@@ -144,6 +144,27 @@ const PROBES: Probe[] = [
       }),
   },
   {
+    path: "/menu/{item_id}",
+    method: "get",
+    // A wildcard Accept still gets JSON; the page dialect is for browsers.
+    call: () => SELF.fetch(`${BASE}/menu/hello`),
+  },
+  {
+    path: "/api/practice",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/api/practice`),
+  },
+  {
+    path: "/corpus/trajectory.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/corpus/trajectory.json`),
+  },
+  {
+    path: "/corpus/wallet-facts.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/corpus/wallet-facts.json`),
+  },
+  {
     path: "/api/conformance/v1",
     method: "post",
     /*

@@ -796,6 +796,217 @@ const DEPRECATION_SCHEMA: OpenApiObject = {
 };
 
 /**
+ * THE CHAIN READ AS TIME. Counts with denominators, never ratios —
+ * and `nothing_claimed_between_snapshots` is required because it is
+ * the sentence that keeps a series of weekly dots from being read as
+ * a continuous line. A trajectory without that refusal would invite
+ * exactly the inference this store exists to avoid.
+ */
+const TRAJECTORY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "weeks",
+    "what_this_is",
+    "nothing_claimed_between_snapshots",
+    "how_to_rederive",
+  ],
+  properties: {
+    weeks: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "One point per signed week, each naming the snapshot digest it derives from. Empty before the first week.",
+    },
+    what_this_is: { type: "string" },
+    nothing_claimed_between_snapshots: {
+      type: "string",
+      description:
+        "The refusal that makes the series honest: these are dots, not a line, and nothing is asserted about the gaps.",
+    },
+    corrections: { type: "string", format: "uri" },
+    how_to_rederive: {
+      type: "string",
+      description: "How to recompute every number here from the entries.",
+    },
+  },
+};
+
+/**
+ * WALLET FACTS, IN BOTH ITS SHAPES.
+ *
+ * Counts about receiving addresses, with their denominators, and no
+ * names or addresses anywhere. The caveat is required — a shared
+ * wallet is not evidence of a shared operator, and the number is
+ * misleading, or worse, without the sentence saying so.
+ *
+ * Before the first signed week the door answers `{week: null,
+ * explanation}` instead. That is not an error and not zeroed counts:
+ * a count of zero would claim the walk looked and found none. Only
+ * `week` and `corrections` survive both shapes, so only those are
+ * promised, and `week` is null rather than absent so a reader can
+ * branch on one field.
+ */
+const WALLET_FACTS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["week", "corrections"],
+  properties: {
+    week: {
+      type: ["string", "null"],
+      description:
+        "The signed week these counts come from. Null — not absent — before there is one, which is the flag a reader branches on.",
+    },
+    explanation: {
+      type: "string",
+      description:
+        "Present ONLY before the first signed week, saying in words why there is nothing to count. Absent once there is a real reading.",
+    },
+    sequence: {
+      type: "integer",
+      description: "Absent before the first signed week.",
+    },
+    digest: {
+      type: "string",
+      description:
+        "The snapshot these counts derive from, so you can recount exactly what we counted. Absent before the first signed week.",
+    },
+    hosts_probed: {
+      type: "integer",
+      description:
+        "The denominator every count below is read against. Absent before the first signed week.",
+    },
+    hosts_with_offer: {
+      type: "integer",
+      description: "Absent before the first signed week.",
+    },
+    hosts_with_pay_to: {
+      type: "integer",
+      description: "Absent before the first signed week.",
+    },
+    distinct_addresses: {
+      type: "integer",
+      description: "Absent before the first signed week.",
+    },
+    addresses_at_multiple_doors: {
+      type: "integer",
+      description: "Absent before the first signed week.",
+    },
+    largest_cluster_doors: {
+      type: "integer",
+      description: "Absent before the first signed week.",
+    },
+    shared_wallet_caveat: {
+      type: "string",
+      description:
+        "Why a shared receiving address is not an operator claim — custodial and platform wallets put unrelated doors behind one address. Rides with the counts and is absent only when there are none.",
+    },
+    what_this_is: {
+      type: "string",
+      description: "Absent before the first signed week.",
+    },
+    what_this_is_not: {
+      type: "string",
+      description: "Absent before the first signed week.",
+    },
+    corrections: { type: "string", format: "uri" },
+    how_to_rederive: {
+      type: "string",
+      description:
+        "How to recount this yourself from the snapshot. Absent before the first signed week.",
+    },
+  },
+};
+
+/**
+ * ONE ITEM ON THE SHELF. The fields that vary do so honestly: an
+ * item with no input requirements has no `constraints`, an instant
+ * shelf has no queue state. Each says so here rather than leaving a
+ * client to discover it.
+ */
+const MENU_ITEM_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "id",
+    "name",
+    "price_usdc",
+    "pricing",
+    "fulfillment",
+    "description",
+    "buy_url",
+  ],
+  properties: {
+    id: { type: "string" },
+    listed_week: { type: "string", description: "When it joined the shelf." },
+    name: { type: "string" },
+    price_usdc: {
+      type: "number",
+      description:
+        "The price, or the FLOOR where pricing is pay-what-it-deserves — read `pricing` before treating it as a total.",
+    },
+    pricing: { type: "string", enum: ["fixed", "pay_what_it_deserves"] },
+    fulfillment: { type: "string", enum: ["instant", "human_queue"] },
+    description: { type: "string" },
+    note_402: {
+      type: "string",
+      description: "What the 402 says in the keeper's own words.",
+    },
+    constraints: {
+      type: "object",
+      description:
+        "What the item cannot be bought without. Absent on items that need nothing from you.",
+    },
+    buy_url: { type: "string", format: "uri" },
+    task: { type: "string" },
+    price_tiers_usdc: {
+      type: "array",
+      items: { type: "number" },
+      description: "The accepts a wallet may choose between.",
+    },
+    spec: { type: "object", description: "What it returns and when to use it." },
+    guaranteed: { type: "array", items: { type: "string" } },
+    not_guaranteed: {
+      type: "array",
+      items: { type: "string" },
+      description: "Published beside the promise, deliberately.",
+    },
+    fulfillment_state: {
+      type: "object",
+      description:
+        "Queue depth and waitlist for human-queue items. Absent on instant shelves, which have no queue to report.",
+    },
+    markdown_note: {
+      type: "string",
+      description: "Absent unless the item ships a markdown twin.",
+    },
+  },
+};
+
+/**
+ * THE PRACTICE COUNTER: scenarios a client can walk without money
+ * moving. `nothing_here_mints` is required — the whole point is that
+ * this door produces no artifact and takes no payment, and a client
+ * needs that in the contract, not just in prose on a page.
+ */
+const PRACTICE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "how", "scenarios", "nothing_here_mints"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "string" },
+    scenarios: {
+      type: "array",
+      items: { type: "object" },
+      description: "Each rehearsal a client can run, and what it returns.",
+    },
+    nothing_here_mints: {
+      type: "string",
+      description:
+        "No artifact, no payment, no record — stated in the contract because a practice door that quietly did any of those would be the worst surface here.",
+    },
+    when_it_is_your_door: { type: "string" },
+  },
+};
+
+/**
  * THE RETURN SHAPE, DECLARED — the request side's defect facing the
  * other way.
  *
@@ -1443,9 +1654,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/menu/{item_id}": {
         get: {
-          ...freeOp(
-            "One item, up close",
-            "A single menu item as JSON, or markdown when the Accept header prefers text/markdown, or a readable page when it prefers text/html. The HTML dialect carries a browser till: with an EVM wallet present it signs an EIP-3009 authorization and completes the purchase in the page. JSON is what a wildcard Accept and a bare fetch still get, unchanged.",
+          ...returns(
+            freeOp(
+              "One item, up close",
+              "A single menu item as JSON, or markdown when the Accept header prefers text/markdown, or a readable page when it prefers text/html. The HTML dialect carries a browser till: with an EVM wallet present it signs an EIP-3009 authorization and completes the purchase in the page. JSON is what a wildcard Accept and a bare fetch still get, unchanged.",
+            ),
+            MENU_ITEM_SCHEMA,
           ),
           parameters: [pathParam("item_id", "The item id from /menu.json.")],
         },
@@ -1633,9 +1847,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/practice": {
-        get: freeOp(
-          "The obstacle course",
-          "Practice doors that fail in deliberate, named, deterministic ways — malformed 402s, testnet traps, name payTo, wrong-rail payTo, and one perfectly-formed dust offer you should parse but never pay. Each body names the defect, the right client behavior, and the preflight check that catches it. Free; nothing mints; not counted in any metric.",
+        get: returns(
+          freeOp(
+            "The obstacle course",
+            "Practice doors that fail in deliberate, named, deterministic ways — malformed 402s, testnet traps, name payTo, wrong-rail payTo, and one perfectly-formed dust offer you should parse but never pay. Each body names the defect, the right client behavior, and the preflight check that catches it. Free; nothing mints; not counted in any metric.",
+          ),
+          PRACTICE_SCHEMA,
         ),
       },
       "/api/practice/{scenario}": {
@@ -2060,9 +2277,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corpus/trajectory.json": {
-        get: freeOp(
-          "The corpus read as time",
-          "One point per signed weekly snapshot, every count derived at read from the snapshot's own rows: listed/probed denominators, verdict counts with observer-degraded ticks separated from anyone's outage, offers seen, doors per rail, failure classes. No ratios anywhere — counts travel with their denominators. Each point names the digest it derives from. Free.",
+        get: returns(
+          freeOp(
+            "The corpus read as time",
+            "One point per signed weekly snapshot, every count derived at read from the snapshot's own rows: listed/probed denominators, verdict counts with observer-degraded ticks separated from anyone's outage, offers seen, doors per rail, failure classes. No ratios anywhere — counts travel with their denominators. Each point names the digest it derives from. Free.",
+          ),
+          TRAJECTORY_SCHEMA,
         ),
       },
       "/api/standing-note": {
@@ -2094,9 +2314,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corpus/wallet-facts.json": {
-        get: freeOp(
-          "Shared receiving addresses, counted",
-          "Latest signed week: how many receiving addresses the probed doors advertised, how many receive at more than one door, and the largest cluster — counts with denominators, no addresses, no names, no operator claims. The shared-wallet caveat rides inline: custodial and platform wallets make unrelated doors share an address, so the observation is served and the inference is yours. Free.",
+        get: returns(
+          freeOp(
+            "Shared receiving addresses, counted",
+            "Latest signed week: how many receiving addresses the probed doors advertised, how many receive at more than one door, and the largest cluster — counts with denominators, no addresses, no names, no operator claims. The shared-wallet caveat rides inline: custodial and platform wallets make unrelated doors share an address, so the observation is served and the inference is yours. Free.",
+          ),
+          WALLET_FACTS_SCHEMA,
         ),
       },
       "/corpus/diff.json": {
