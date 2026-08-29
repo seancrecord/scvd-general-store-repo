@@ -505,6 +505,172 @@ const CONFORMANCE_SCHEMA: OpenApiObject = {
 };
 
 /**
+ * AN INSTRUMENT DESCRIBING ITSELF, and the reason this is one schema
+ * rather than three.
+ *
+ * The preflight batteries, the on-page reader and the conformance
+ * desk all answer GET with the same kind of document: what the
+ * instrument is, how to call it, what it checks, and — the part this
+ * store cares most about — what it CANNOT check. Three hand-written
+ * schemas would have been three chances for those documents to drift
+ * apart in shape while claiming to be the same kind of thing.
+ *
+ * The refusal fields are required, not optional. An instrument here
+ * publishes its own limits beside its criteria; a self-description
+ * that omitted them would be describing a different store.
+ */
+const INSTRUMENT_DOC_BASE: OpenApiObject = {
+  title: { type: "string" },
+  version: { type: "string" },
+  summary: { type: "string" },
+  method: { type: "string", description: "The verb that runs it." },
+  url: { type: "string", format: "uri" },
+  request: {
+    type: "object",
+    description: "The body shape, stated where a caller is already looking.",
+  },
+  rate_limit: {
+    type: "string",
+    description:
+      "What is metered and what is not, in words — the RateLimit headers say it again on every answer.",
+  },
+  what_it_checks: {
+    type: "array",
+    items: { type: "string" },
+    description: "Every named check, so a verdict can be read against them.",
+  },
+};
+
+/** The preflight batteries, v1 and v2, describing themselves. */
+const PREFLIGHT_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "title",
+    "version",
+    "summary",
+    "method",
+    "url",
+    "what_it_checks",
+    "what_it_cannot_check",
+    "the_ladder",
+  ],
+  properties: {
+    ...INSTRUMENT_DOC_BASE,
+    batteries: {
+      type: "object",
+      description:
+        "Every published battery and what each folds into its verdict, so a dated verdict stays readable after the next battery ships.",
+    },
+    common_failures_this_catches: { type: "object" },
+    what_it_cannot_check: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "The limits, published beside the criteria. One probe is one moment; this list is what that buys and what it does not.",
+    },
+    the_ladder: {
+      type: "object",
+      description:
+        "The assurance rungs, including the ones this instrument never climbs.",
+    },
+    try_it_against_a_live_endpoint: { type: "string" },
+  },
+};
+
+/** The on-page reader, describing itself. */
+const ONPAGE_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "title",
+    "version",
+    "summary",
+    "method",
+    "url",
+    "what_it_checks",
+    "what_it_cannot_check",
+  ],
+  properties: {
+    ...INSTRUMENT_DOC_BASE,
+    what_it_flags_without_failing: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "Observations that ride beside a verdict rather than changing it — the distinction this store refuses to blur.",
+    },
+    what_it_cannot_check: { type: "array", items: { type: "string" } },
+    the_ladder: { type: "object" },
+  },
+};
+
+/** The conformance desk, describing itself. */
+const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "title",
+    "version",
+    "summary",
+    "method",
+    "url",
+    "what_it_checks",
+    "what_it_cannot_tell_you",
+    "our_conflict_of_interest",
+    "run_it_yourself",
+  ],
+  properties: {
+    ...INSTRUMENT_DOC_BASE,
+    contract: { type: "string" },
+    required_fields: {
+      type: "object",
+      description: "What an offer and a receipt must carry to be well-formed.",
+    },
+    what_it_cannot_tell_you: { type: "array", items: { type: "string" } },
+    our_conflict_of_interest: {
+      type: "string",
+      description:
+        "Stated on the desk itself, because the desk checks competitors' artifacts too.",
+    },
+    run_it_yourself: {
+      type: "string",
+      description: "How to reproduce every verdict offline, without us.",
+    },
+    why_it_is_free: { type: "string" },
+    mailbox: { type: "string" },
+  },
+};
+
+/**
+ * THE PULSE: the store's own numbers, signed, about itself. The
+ * verify_url and signing_key are the load-bearing pair — a store
+ * publishing its own traffic figures is exactly the claim a reader
+ * should be able to check without trusting the publisher.
+ */
+const PULSE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
+  properties: {
+    computed_at: {
+      type: "string",
+      description: "When these numbers were read. Every figure here is dated.",
+    },
+    house_flag_policy: {
+      type: "string",
+      description:
+        "How the store's own wallets are excluded — structurally at the till, not filtered afterwards.",
+    },
+    all_time: { type: "object" },
+    months: { type: "array", items: { type: "object" } },
+    latency: { type: "object" },
+    note: { type: "string" },
+    verify_url: {
+      type: "string",
+      format: "uri",
+      description: "Where this document's own signature is checked.",
+    },
+    signing_key: { type: "string" },
+  },
+};
+
+/**
  * THE RETURN SHAPE, DECLARED — the request side's defect facing the
  * other way.
  *
@@ -1190,9 +1356,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/pulse.json": {
-        get: freeOp(
-          "The funnel, denominator included",
-          "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
+        get: returns(
+          freeOp(
+            "The funnel, denominator included",
+            "402s offered, settlements, and re-verifications, organic only — house wallets excluded at the till. An undefined conversion rate is served as null rather than 0. Free. The human twin is /pulse.",
+          ),
+          PULSE_SCHEMA,
         ),
       },
       /**
@@ -1428,9 +1597,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * desk or the corpus existed.
        */
       "/api/conformance/v1": {
-        get: freeOp(
-          "The conformance desk, described",
-          "What the free desk is and the exact request shape, as JSON. The readable landing is /conformance.",
+        get: returns(
+          freeOp(
+            "The conformance desk, described",
+            "What the free desk is and the exact request shape, as JSON. The readable landing is /conformance.",
+          ),
+          CONFORMANCE_DOC_SCHEMA,
         ),
         post: returns(
           postOp(
@@ -1495,9 +1667,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         PREFLIGHT_VERSIONS.map((battery) => [
           `/api/preflight/${battery}`,
           {
-            get: freeOp(
-              `The preflight criteria, ${battery}`,
-              `Every check this battery runs and what falsifies each one, as JSON — the published criteria a ${battery} verdict cites. Free.`,
+            get: returns(
+              freeOp(
+                `The preflight criteria, ${battery}`,
+                `Every check this battery runs and what falsifies each one, as JSON — the published criteria a ${battery} verdict cites. Free.`,
+              ),
+              PREFLIGHT_DOC_SCHEMA,
             ),
             post: withRateLimitHeaders(postOp(
               `Check an x402 endpoint's payment challenge shape (${battery})`,
@@ -1513,9 +1688,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ]),
       ),
       "/api/onpage/v1": {
-        get: freeOp(
-          "The on-page desk, described",
-          "What the free desk checks and the exact request shape, as JSON — also the criteria page the paid onpage_audit names as its contract.",
+        get: returns(
+          freeOp(
+            "The on-page desk, described",
+            "What the free desk checks and the exact request shape, as JSON — also the criteria page the paid onpage_audit names as its contract.",
+          ),
+          ONPAGE_DOC_SCHEMA,
         ),
         post: postOp(
           "Check what a page serves a machine reader",

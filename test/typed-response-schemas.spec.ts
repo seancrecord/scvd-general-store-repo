@@ -90,6 +90,31 @@ const PROBES: Probe[] = [
     },
   },
   {
+    path: "/pulse.json",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/pulse.json`),
+  },
+  {
+    path: "/api/preflight/v1",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/api/preflight/v1`),
+  },
+  {
+    path: "/api/preflight/v2",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/api/preflight/v2`),
+  },
+  {
+    path: "/api/onpage/v1",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/api/onpage/v1`),
+  },
+  {
+    path: "/api/conformance/v1",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/api/conformance/v1`),
+  },
+  {
     path: "/api/conformance/v1",
     method: "post",
     /*
