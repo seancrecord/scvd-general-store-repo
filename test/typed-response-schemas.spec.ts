@@ -164,6 +164,62 @@ const PROBES: Probe[] = [
     method: "get",
     call: () => SELF.fetch(`${BASE}/corpus/wallet-facts.json`),
   },
+  /*
+   * THE KEEPER'S PORCH TABLE, 2026-08-29, is why these are here
+   * rather than the next sixty. Each of these doors shows real
+   * organic reads in the store's own traffic — /what alone had 3,680
+   * this month, the busiest untyped surface on the site — so leaving
+   * them as "some JSON" was costing readers who actually arrive.
+   *
+   * It also corrected a call I got wrong: I had recommended skipping
+   * the per-artifact readers on the grounds that nobody browses to
+   * them. /api/watch/{id} had 262 organic reads and its conformance
+   * sibling 111. People come back to their watches. The data said so
+   * and the guess did not.
+   */
+  {
+    path: "/what",
+    method: "get",
+    call: () =>
+      SELF.fetch(`${BASE}/what`, { headers: { Accept: "application/json" } }),
+  },
+  {
+    path: "/trust",
+    method: "get",
+    call: () =>
+      SELF.fetch(`${BASE}/trust`, { headers: { Accept: "application/json" } }),
+  },
+  {
+    path: "/registry",
+    method: "get",
+    call: () =>
+      SELF.fetch(`${BASE}/registry`, {
+        headers: { Accept: "application/json" },
+      }),
+  },
+  {
+    path: "/passport",
+    method: "get",
+    call: () =>
+      SELF.fetch(`${BASE}/passport`, {
+        headers: { Accept: "application/json" },
+      }),
+  },
+  {
+    path: "/api/guestbook",
+    method: "get",
+    call: () => SELF.fetch(`${BASE}/api/guestbook`),
+  },
+  {
+    path: "/api/bell",
+    method: "post",
+    call: () =>
+      SELF.fetch(`${BASE}/api/bell`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      }),
+  },
   {
     path: "/api/conformance/v1",
     method: "post",

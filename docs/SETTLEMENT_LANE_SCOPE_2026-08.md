@@ -63,21 +63,32 @@ Aggregate only, by the ruling. Something of the shape *"of twenty
 doors walked this week, N delivered, N took payment and delivered
 nothing"* — never a named row.
 
-**OPEN: we have no contact channel for most hosts.** The ruling says
-private notice to the host on failure, and for a door discovered
-through a public feed we may have no address at all. Options: notice
-where a channel exists and record "no channel found" where it does
-not; or hold the finding entirely until a channel is found. This
-needs the keeper's word — it is the difference between a lane that
-tells people first and one that sometimes cannot.
+**RULED 2026-08-29: notify where possible, record the gap.** Private
+notice wherever a channel exists — security.txt, a contact on the
+door's own page, a repository. Where none exists, the reading records
+**"no channel found"** and the aggregate publishes anyway.
+
+The alternative — holding a finding until its operator can be reached
+— was declined for a reason worth keeping: it would silently exclude
+exactly the least-reachable operators from every published number,
+which is a coverage hole that then has to be disclosed anyway. This
+store's habit is to count its gaps in public rather than let them
+quietly bend a denominator. The gap is on the record; the finding
+still counts.
 
 ### 4. What happens to what we buy
 
-We pay for a good and receive it. It is somebody's product, bought
-under an envelope UA that says who we are, and we have no licence to
-redistribute it. Proposal: record the delivery's shape — status,
-size, content-type, a hash — and **discard the body**. The finding is
-*whether* goods arrived, never what they were.
+**RULED 2026-08-29: shape only, discard the body.** Record status,
+size, content-type and a sha256 of the delivery; throw the content
+away.
+
+The finding is *whether* goods arrived, never what they were. Keeping
+strangers' paid products — bought under an envelope UA that says who
+we are, with no licence to hold or redistribute them — is an exposure
+a named LLC does not need, and the hash still proves we received
+something specific if a walk is ever disputed. Retaining only on
+failure was considered and declined: "this looks wrong" is a
+judgement made at capture time, which is exactly when we know least.
 
 ### 5. Money discipline
 
@@ -96,5 +107,6 @@ below it.
 - Publish a named door's failure without its own ruling.
 - Continue when the sanctions screen cannot answer.
 
-*Filed 2026-08-29, after the NOW-6 ruling. §§4 and 3's open question
-need the keeper before the build starts; everything else is settled.*
+*Filed 2026-08-29 after the NOW-6 ruling; both open questions ruled
+the same day. Nothing in this scope now waits on the keeper — the
+build is unblocked.*

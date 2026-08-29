@@ -211,13 +211,42 @@ const BASE = "https://scvd.store";
  * neither value describes. Both edits are in these bytes: /doors'
  * two paragraphs and the /mcp.md section. Verified present together
  * before this value was taken.
+ * Re-taken 2026-08-29 in the commit that vetted the site's
+ * discoverability for agents. The index's "Evidence and record" line
+ * named the corpus and the coverage file and omitted /registry,
+ * /inflows and /fresh-set — the store's weekly findings, missing
+ * from the one map an agent reads before anything else. Adding them
+ * moved the guide's bytes.
+ *
+ * Re-taken 2026-08-29 in the commit that gave the guide a goal-first
+ * opener and published the atlas. Vetting the site as an arriving
+ * agent found a map and no route: both entry points open with ten
+ * lines of what the store IS before anything actionable, and a
+ * reader on a tight context budget loses the map when the file
+ * truncates. "Start here, by what you came to do" now leads, filed
+ * under developers, and names the atlas beside it.
+ *
+ * Re-taken again 2026-08-29 on the merge of those two lines of work,
+ * and this resolution needed a hand rather than a script: the two
+ * sides had added notes to this same block AND re-taken the value,
+ * so an automated splice ate part of the second conflict and left
+ * the file with two digest lines. Both notes are kept because both
+ * edits are in the served bytes; the value is the merged text's own.
+ *
+ * Re-taken again 2026-08-29 on the merge of /doors with the
+ * goal-first opener and the atlas — the SIXTH. Both sides' notes are
+ * kept above because both sides' edits are in these bytes: /doors in
+ * the corpus area and on the index's evidence line (which the merge
+ * had to join by hand, each side having rewritten the same list),
+ * and the opener, atlas and registry/inflows/fresh-set links.
+ * Verified present together before this value was taken.
  *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "ab9d6076d37095c8f6ab0ceff36c2fc677970315c1612c0c261419c5b6a4c821";
+  "1d5ac96a73e0e7490415a679141faf2c8f95813eb262873d6538be8a821572b6";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

@@ -46,6 +46,9 @@ export const PORCH_EXACT = new Map<string, string>([
   ["/corpus.json", "corpus.json"],
   ["/registry", "registry"],
   ["/inflows", "inflows"],
+  /* The atlas is an experiment; counting it is how we learn whether
+   * agents wanted it. */
+  ["/atlas.json", "atlas"],
   ["/fresh-set", "fresh-set"],
   ["/defects", "defects"],
   ["/defects.json", "defects.json"],
