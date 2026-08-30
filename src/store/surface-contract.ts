@@ -10,7 +10,7 @@
  */
 import { getMenuItem } from "@/store";
 import type { MenuItem } from "@/types";
-import { cadenceLine, priceLine } from "@/services/menu-markdown";
+import { priceLine } from "@/services/menu-markdown";
 
 /**
  * THE FIVE ANSWERS RULE 57 REQUIRES, AS A SHAPE THREE DOORS SHARE.
@@ -127,7 +127,8 @@ export function freeInstrumentPrice(
           id: item.id,
           name: item.name,
           instead,
-          price: `${priceLine(item)}, ${cadenceLine(item)}`,
+          // priceLine already joins the cadence; see go-deeper.ts.
+          price: priceLine(item),
           price_usdc: item.price_usdc,
           cadence: item.cadence,
           ...(item.term_days === undefined ? {} : { term_days: item.term_days }),

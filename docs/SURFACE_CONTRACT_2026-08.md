@@ -143,7 +143,43 @@ one room. The honest state of the rest:
   agent to construct the URL of the page that describes it, and a URL
   a reader has to guess is not findable.
 
-  **Still owed:** the reading rooms.
+  **The third leg ran 2026-08-30: the reading rooms**, which closes
+  the sweep. Measured across all 35 first. The structural half of
+  58.1 was already solid — title, description and canonical on 35 of
+  35 — with one exception: `/developers` carried two `<h1>`s, its
+  body writing one under the shared renderer's. Fixed, and now
+  checked on every room, because two h1s splits the outline a search
+  engine builds and `/developers` is the room a readiness audit once
+  reported as absent.
+
+  **58.4 was on one room out of thirty-five** — `/doors`, built the
+  evening the rule was adopted. The note above called it the weakest
+  clause store-wide and it was right.
+
+  The free half of the fix derives completely: all 35 rooms already
+  answer `Accept: application/json` at their own URL — measured, not
+  assumed — so "the machine copy of this page is this page" is true
+  of a room added tomorrow with no bookkeeping at all. That is the
+  line a person hands to their agent.
+
+  The paid half is deliberately sparse. Ten rooms name a rung
+  (`Room.deeper`, menu ids, priced off the shelf); the other
+  twenty-five say **"Nothing on the shelf sells a deeper read of this
+  page. What is here is all of it, free and complete."** That empty
+  case is a sentence rather than a gap on purpose — it is the clause
+  rule 58 closes with. Pointing a reader at an item answering a
+  different question to avoid an empty section is the failure this
+  store files against other people.
+
+  `/doors` opts out and writes its own; `test/rooms-earn-their-page.spec.ts`
+  checks the clause against it directly rather than exempting it,
+  since an opt-out that stopped satisfying the rule would be the
+  quietest possible regression. `/porch` renders outside the shared
+  page and now calls the section explicitly.
+
+  **The sweep is closed.** What remains is judgement no test can make:
+  58.1's other half — whether a description would make anybody click
+  it — and 58.2, whether the finding is really in the first screen.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.
