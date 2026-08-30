@@ -54,14 +54,6 @@ export const KV_KEYS = {
   // front of the train. Every other queue here is newest-first.
   trainTag: (ts: string, id: string): string => `train:${ts}:${id}`,
   trainTagPrefix: "train:",
-  /**
-   * The front page's copy of the train, derived at approval time.
-   * Deliberately NOT under the `train:` prefix and not in the same
-   * namespace as the tags: a listing that walked the wall and found a
-   * derived card sitting among the records would try to read it as a
-   * tag. It lives with the other front-page gauges.
-   */
-  trainFront: "train-front",
   phantomCheck: (checkId: string): string => `phantom:${checkId}`,
   standingWatch: (watchId: string): string => `watch:${watchId}`,
   standingWatchPrefix: "watch:",

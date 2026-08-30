@@ -41,7 +41,7 @@ import {
   openSignForWeek,
   STOREFRONT_COPY as COPY,
 } from "@/store/copy/storefront";
-import type { GuestbookEntry, TrainFront, TrainTagRecord } from "@/types";
+import type { GuestbookEntry } from "@/types";
 
 /**
  * The human storefront at GET /, the one screen a person ever sees or
@@ -78,13 +78,6 @@ export interface StorefrontData {
   ledgerLine?: string;
   /** The empty frame by the register. Null means "It's waiting." */
   firstDollar?: FirstDollar | null;
-  /**
-   * The train, pulled up front (2026-08-29, the keeper's design).
-   * Derived where the keeper's hand already falls and read as ONE key
-   * — null means no card has been derived yet and the section does
-   * not render. An empty train on a day nobody bid is an honest one.
-   */
-  trainFront?: TrainFront | null;
 }
 
 /** Canon 2026-07-24: the frame holds the first organic settlement, forever. */
@@ -184,78 +177,6 @@ function guestbookHtml(entries: GuestbookEntry[]): string {
     )
     .join("\n");
   return `<div class="wall-slips">\n${slips}\n    </div>`;
-}
-
-/**
- * THE TRAIN, AT THE FRONT OF THE STORE (2026-08-29, the keeper's
- * design: "put a train somewhere on the home page and enhance
- * graffiti_on_a_train to be the highest bidder of the day").
- *
- * Two things are load-bearing and neither is decoration.
- *
- * IT SAYS PAID. Every car on this train was bought, the head car
- * because somebody outbid the day, and the line under it says so in
- * the store's own voice. An unlabeled paid placement on a store whose
- * whole product is honest observation is a self-inflicted corrections
- * entry, and it would be the correct one to file.
- *
- * THE TOP CAR CARRIES ITS DATE. It is the highest recorded bid of the
- * day it won on, not a title anybody holds — rule 43 says a dated
- * observation never becomes a score, and a leaderboard is what this
- * would drift into without the date beside it.
- *
- * Every tag is agent-authored untrusted text, escaped here like it is
- * escaped on the wall out back. Only tags the keeper has approved ever
- * reach this card.
- */
-function trainCarHtml(
-  record: TrainTagRecord,
-  options: { top?: boolean; day?: string } = {},
-): string {
-  const label = options.top
-    ? `<span class="train-top-label">${COPY.trainTopLabel}${
-        options.day ? ` \u00B7 ${escapeHtml(options.day)}` : ""
-      }${
-        typeof record.paid_usdc === "number" ? ` \u00B7 $${record.paid_usdc}` : ""
-      }</span>`
-    : "";
-  return `<div class="train-car${options.top ? " train-car-top" : ""}">
-      ${label}
-      <p class="train-tag">${escapeHtml(record.tag)}</p>
-      <p class="train-meta">${escapeHtml(record.date.slice(0, 10))}${
-        record.name ? ` \u00B7 ${escapeHtml(record.name)}` : ""
-      } \u00B7 <a href="/api/verify/${escapeHtml(record.cert_id)}">verify</a></p>
-    </div>`;
-}
-
-function trainHtml(front: TrainFront | null | undefined): string {
-  if (!front || front.recent.length === 0) {
-    return "";
-  }
-  /*
-   * The top car rides the head end and is not repeated further down
-   * the strip. Everything else keeps the wall's own order — oldest
-   * first, because the train fills front to back and a wall is not a
-   * feed.
-   */
-  const cars = front.recent.filter((record) => record.id !== front.top?.id);
-  const carsHtml = [
-    ...(front.top
-      ? [trainCarHtml(front.top, { top: true, ...(front.top_day ? { day: front.top_day } : {}) })]
-      : []),
-    ...cars.map((record) => trainCarHtml(record)),
-  ].join("\n");
-  return `
-    <section class="train">
-      <h2 class="night-head">${COPY.trainHead}</h2>
-      <p class="menu-desc">${COPY.trainLead}</p>
-      <div class="train-strip">
-${carsHtml}
-      </div>
-      <p class="train-paid">${COPY.trainPaidNote}</p>
-      <p class="menu-meta">${COPY.trainMore} <a href="/train">/train</a>.</p>
-    </section>
-`;
 }
 
 /**
@@ -871,7 +792,6 @@ export function renderStorefront(data: StorefrontData): string {
       ${guestbookHtml(data.guestbook)}
       <p class="menu-meta"><a href="/visitors">The whole register's in the doorway.</a> <a href="/train">The train's out back.</a></p>
     </section>
-${trainHtml(data.trainFront)}
 
     <footer class="porch-print">
       <p class="porch-dare"><em>${escapeHtml(dareForDay(new Date().toISOString().slice(0, 10)))}</em></p>

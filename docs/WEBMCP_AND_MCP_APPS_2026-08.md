@@ -1524,35 +1524,52 @@ self-inflicted corrections entry); the keeper's approval gates
 display (rule 30); an empty wall on a no-bid day is an honest wall
 — zero-day risk accepted at his word.
 
-**Built as speced, with three decisions the spec left open.**
+**Built, then SITED DIFFERENTLY on the keeper's second read —
+"I'm wondering if this is such a good idea."** He was right, and the
+argument that moved it is one this document should carry, because it
+will come up again the next time something wants the front page.
 
-The train rides the storefront under the guestbook wall: the last
-five approved tags as boxcars, with the day's biggest recorded bid at
-the head end. Every car carries the buyer's own date and a verify
-link, and the strip is labeled **"Paid placement — every car on this
-train was bought."** That line is not decoration. An unlabeled paid
-placement on a store whose product is honest observation would be a
-self-inflicted corrections entry, and it would be the correct one to
-file.
+THE RISK, NAMED: no-URLs is not no-ads. A tag is 140 characters of
+anything, and blocking links does not block "BUY FROGCOIN" or a
+competitor's name. Out back on the wall that exposure has always
+existed and cost nothing. On the storefront it changes shape — money
+would be buying prominence on the one surface whose whole job is to
+say this store does not sell judgment. Labeled and dated, it is still
+true that a competitor could write one sentence, "the evidence
+observatory sells front-page placement," and every word of it would
+be accurate. Two more stack on it: `graffiti_on_a_train` is filed
+NOVELTY_ONLY with a test pinning that it is not trust infrastructure,
+and a paid slot makes every decline "I bid the most and did not get
+it" — a price attached to the placement half of a split the product
+keeps deliberately clean.
 
-1. **The top car carries its date.** It is the highest recorded bid of
-   the day it won on, not a title anybody holds. Rule 43 says a dated
-   observation never becomes a score, and a head car without a date
-   beside it drifts into a leaderboard within a week.
+SO THE HEAD CAR RIDES THE WALL, at `/train`, where the train already
+is. Marked in place with its date, its amount, and the words *paid,
+and saying so*. The storefront is untouched and keeps its one link
+out back, exactly as before.
+
+What shipped, and it is the whole auction minus the storefront slot:
+
+1. **The head car is derived from what was paid,** and carries the
+   day it won on. Rule 43 — a bid wins a day, never a title, and a
+   head car with no date beside it is a leaderboard inside a week.
 2. **A tie goes to whoever got there first.** Matching a standing bid
-   is not outbidding it, and `/train` now publishes `paid_usdc` and a
-   `front_page_policy` line so a bidder can see the standing bids — an
-   auction whose bidders cannot see the bids is not an auction.
-3. **An unrecorded bid is not a zero bid.** Tags bought before the
+   is not outbidding it.
+3. **The standing bid is published.** `/train` serves `paid_usdc` per
+   tag plus `top_bid` and a `top_bid_policy` that says what the spot
+   buys and — more to the point — what it does not: nothing anywhere
+   else on this store, not the front page, not a verdict, not a place
+   in any instrument's output.
+4. **An unrecorded bid is not a zero bid.** Tags bought before the
    amount was written down ride the train and never enter the ranking,
    in either direction.
+5. **The keeper's counter shows the bid** beside each tag, so the hand
+   that gates display can see what it is gating.
 
-The card is DERIVED at approve/decline, where the keeper's hand
-already falls, and read by the front page as one KV key — the
-storefront never pays for the wall's bookkeeping. It appears the first
-time he approves or declines a tag after this ships; until then the
-section does not render, which is the same honest-empty case as a
-no-bid day.
+Derived on the page from the list it already loads: no cache, no new
+key, no cost anywhere. And nothing here touches a certificate — they
+bought the persistence, not the placement, and now not the head car
+either.
 
 ### 13.4 The pop-off candidate, held
 

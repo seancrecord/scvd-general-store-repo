@@ -469,29 +469,6 @@ export interface TrainTagRecord {
   paid_usdc?: number;
 }
 
-/**
- * THE TRAIN, AS THE FRONT PAGE SEES IT.
- *
- * Derived and cached under one key so the storefront costs ONE KV
- * read rather than a two-hundred-key list and a bulk get on every
- * render. Recomputed where the keeper's hand already falls — the
- * approve and decline actions — because that is the only event that
- * can change what the wall shows.
- *
- * `top` is the day's highest recorded bid among APPROVED tags, and
- * carries the date it was won on. A reader must be able to see that
- * date, because a top tag is a dated observation about one day and
- * never a standing title (rule 43). `recent` is the tail of the
- * train, oldest-first like the wall itself.
- */
-export interface TrainFront {
-  /** UTC day the `top` tag was BOUGHT on. Absent when there is no top. */
-  top_day?: string;
-  top?: TrainTagRecord;
-  recent: TrainTagRecord[];
-  /** When this card was last derived. */
-  computed_at: string;
-}
 
 /**
  * THE MONEY, ADDED 2026-07-31.

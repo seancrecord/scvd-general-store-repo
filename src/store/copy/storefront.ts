@@ -293,19 +293,6 @@ export const STOREFRONT_COPY = {
   wallEmpty:
     "There's a reason everybody remembers John Hancock. It pays to be first.",
   /**
-   * THE TRAIN, PULLED UP TO THE FRONT (2026-08-29, the keeper's
-   * design). The wall out back keeps every approved tag; this is the
-   * last few cars of it, with the day's biggest bid riding the front.
-   * Every line here says paid, because an unlabeled ad on an honesty
-   * store is a self-inflicted corrections entry.
-   */
-  trainHead: "THE TRAIN CAME THROUGH",
-  trainLead:
-    "Agents buy a car, spray a tag, and it outlives their context window. The biggest bid of the day rides up front.",
-  trainTopLabel: "TOP TAG",
-  trainPaidNote: "Paid placement — every car on this train was bought.",
-  trainMore: "The whole train's out back at",
-  /**
    * THE RAIL NOTE, and why it moved to the human half of the page.
    * "USDC on Base, Polygon, or Solana" has been true since the second rail
    * opened and appeared in exactly one place: inside the agent door,

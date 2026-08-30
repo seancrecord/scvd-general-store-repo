@@ -3,7 +3,7 @@ import { newTagId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
-import type { Env, TrainFront, TrainTagRecord, TrainTagStatus } from "@/types";
+import type { Env, TrainTagRecord, TrainTagStatus } from "@/types";
 import { kvPut } from "@/lib/kv-retry";
 
 /**
@@ -148,80 +148,53 @@ export async function setTagStatus(
     found.record.displayed_at = new Date().toISOString();
   }
   await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
-  /*
-   * The front page's copy is re-derived HERE, at the one event that
-   * can change what the wall shows. Fail-soft: a card that could not
-   * be written leaves the last one standing, and the storefront reads
-   * a card or renders no train at all. Neither outcome touches a
-   * certificate.
-   */
-  await refreshTrainFront(env).catch(() => undefined);
   return found.record;
 }
 
-/** How many tags ride the strip on the front page. */
-export const FRONT_TRAIN_CARS = 5;
-
-function utcDay(iso: string): string {
-  return iso.slice(0, 10);
-}
-
 /**
- * THE DAY'S TOP TAG, DERIVED — never declared (rule 46).
+ * THE HEAD OF THE TRAIN — the day's biggest bid, DERIVED (rule 46).
  *
- * Among APPROVED tags bought on the same UTC day as the most recent
- * approved tag that recorded what it paid, the highest bid wins. Ties
- * go to whoever got there first: the second agent to pay the same
- * amount did not outbid anybody.
+ * graffiti_on_a_train is pay-what-it-deserves, so what somebody paid
+ * IS their bid, and the biggest bid of a day takes the head car. The
+ * keeper's design was a slot on the storefront; it lives out here on
+ * the wall instead, on his read of the risk: money buying prominence
+ * on the front page of an evidence observatory is a sentence a
+ * competitor could write about us and be right. Out back, where the
+ * train already is, it costs nothing anybody else can use.
+ *
+ * A DAY, NOT A TITLE. The winner carries the date it won on, because
+ * rule 43 says a dated observation never accumulates into a score,
+ * and a head car with no date beside it is a leaderboard inside a
+ * week. Ties go to whoever got there first: matching a standing bid
+ * is not outbidding it.
  *
  * A tag with no recorded amount is not a zero bid — it is a bid this
  * store did not write down, from before the field existed — so it
  * never enters the ranking and never loses one either.
  */
-export function deriveTrainFront(approved: TrainTagRecord[]): TrainFront {
+export interface TopTag {
+  record: TrainTagRecord;
+  /** The UTC day it won. */
+  day: string;
+}
+
+export function topTagOfDay(approved: TrainTagRecord[]): TopTag | null {
   const bids = approved.filter(
     (record) => typeof record.paid_usdc === "number",
   );
-  const latestBidDay = bids.length > 0 ? utcDay(bids[bids.length - 1]!.date) : undefined;
+  if (bids.length === 0) {
+    return null;
+  }
+  const day = bids[bids.length - 1]!.date.slice(0, 10);
   let top: TrainTagRecord | undefined;
-  if (latestBidDay) {
-    for (const record of bids) {
-      if (utcDay(record.date) !== latestBidDay) {
-        continue;
-      }
-      // Strictly greater: first to the amount holds it.
-      if (!top || (record.paid_usdc ?? 0) > (top.paid_usdc ?? 0)) {
-        top = record;
-      }
+  for (const record of bids) {
+    if (record.date.slice(0, 10) !== day) {
+      continue;
+    }
+    // Strictly greater: first to the amount holds it.
+    if (!top || (record.paid_usdc ?? 0) > (top.paid_usdc ?? 0)) {
+      top = record;
     }
   }
-  return {
-    ...(top ? { top, top_day: latestBidDay } : {}),
-    recent: approved.slice(-FRONT_TRAIN_CARS),
-    computed_at: new Date().toISOString(),
-  };
-}
-
-/** Re-derive the front page's card and store it under its own key. */
-export async function refreshTrainFront(env: Env): Promise<TrainFront> {
-  const front = deriveTrainFront(await listApprovedTags(env));
-  await kvPut(env.COUNTERS, KV_KEYS.trainFront, JSON.stringify(front));
-  return front;
-}
-
-/**
- * What the storefront reads: one key, or nothing. Never a list — the
- * front page does not pay for the wall's bookkeeping.
- */
-export async function readTrainFront(env: Env): Promise<TrainFront | null> {
-  const raw = await env.COUNTERS.get(KV_KEYS.trainFront);
-  if (!raw) {
-    return null;
-  }
-  try {
-    const parsed = JSON.parse(raw) as TrainFront;
-    return Array.isArray(parsed.recent) ? parsed : null;
-  } catch {
-    return null;
-  }
+  return top ? { record: top, day } : null;
 }
