@@ -109,8 +109,68 @@ one room. The honest state of the rest:
   false` and the clause demands the REFUSAL be on the record instead.
   Silence is what 57.3 forbids, not abstinence.
 
-  **Still owed:** the paid doors, the reading rooms, and the MCP tool
-  surface. Same method: add the row, watch it fail, close it.
+  **The second leg ran 2026-08-30: the paid shelf.** Measured first —
+  every one of the 26 items answered ZERO of 57.2, 57.4 and 57.5.
+  Price and cadence had been covered everywhere since the rule was
+  adopted; what an agent gets back, what can go wrong, and what we
+  hold ourselves to were published nowhere per item.
+
+  The answers derive. 104 hand-written paragraphs about a buy path
+  that is ONE code path is 104 chances to describe it wrongly.
+  Expected outcome comes from the item's fulfillment class, term and
+  SLA; the error categories from its input schema and inventory — a
+  `sold_out` branch is published only where stock exists, so a client
+  is never told to handle a branch that cannot fire. They reuse
+  `DoorError` and `securityBlock` rather than growing a second set of
+  names for the same promises.
+
+  **The exception is the lesson.** The first version derived "does
+  this door knock on your endpoint" from the input schema: a `url` or
+  `host` property meant a fetch. It was wrong on its first run —
+  `spot_check` takes a host and deliberately does not knock, reading
+  the books at the counter, which its own description says out loud.
+  A guessed safety claim is worse than an absent one. What a door
+  reads is now a STATED fact (`MenuItem.reads`, required by the type,
+  five classes), established from each fulfillment service's import
+  graph: `@/lib/probe-target` means it fetches a subject you named,
+  `@/lib/base-rpc` or `@/lib/solana-rpc` means it reads public chain
+  state, neither means it reaches nothing. `launch_check` — the one
+  door that makes a real payment against your endpoint — has its own
+  class and says whose money moves.
+
+  `test/paid-doors-answer-rule-57.spec.ts` walks MENU_ITEMS and holds
+  all of it against each item's own facts. menu.json entries gained
+  `listing_url`: the catalogue named a `buy_url` and left an agent to
+  construct the URL of the page describing what it was buying.
+
+  **The third leg ran 2026-08-30: the reading rooms**, against rule
+  58. The structural half of 58.1 was already solid — title,
+  description and canonical on 35 of 35 — with one exception the
+  measurement found: `/developers` carried two `<h1>`s, its body
+  writing one under the shared renderer's. Two h1s splits the outline
+  a search engine builds, and `/developers` is the room a readiness
+  audit once reported as absent.
+
+  **58.4 was on one room out of thirty-five** — `/doors`, built the
+  evening the rule was adopted. The free half of the fix derives
+  completely: all 35 rooms already answer `Accept: application/json`
+  at their own URL, measured rather than assumed, so "the machine
+  copy of this page is this page" is true of a room added tomorrow
+  with no bookkeeping. That is the line a person hands to their agent.
+
+  The paid half is deliberately sparse. Ten rooms name a rung
+  (`Room.deeper`, priced off the shelf); the other twenty-five say
+  **"Nothing on the shelf sells a deeper read of this page. What is
+  here is all of it, free and complete."** That empty case is a
+  sentence rather than a gap on purpose — the same instinct as
+  `paid_rung: false` above. Pointing a reader at an item answering a
+  different question, to avoid an empty section, is the failure this
+  store files against other people.
+
+  **Still owed:** the MCP tool surface. Same method: add the row,
+  watch it fail, close it. What no test can settle is 58.1's other
+  half — whether a description would make anybody click it — and
+  58.2, whether the finding is really in the first screen.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.

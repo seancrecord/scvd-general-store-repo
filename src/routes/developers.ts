@@ -296,8 +296,16 @@ function developersHtml(base: string): string {
         `<h3>${escapeHtml(row.q)}</h3><p>${escapeHtml(row.a)}</p>`,
     )
     .join("");
+  /*
+   * NO <h1> HERE. renderSimplePage already emits one from the title
+   * this route passes it, and this body carried a second — the only
+   * room in the store with two, found 2026-08-30 by measuring rule
+   * 58.1 across all 35. Two h1s is not a style quibble on a page
+   * whose whole job is being found: it splits the document outline a
+   * search engine builds, and this is the room a readiness audit
+   * already reported as missing once.
+   */
   return `
-    <h1>${escapeHtml(STORE_SERVICE_NAME)} — developer documentation</h1>
     <p class="lede">Build against <code>${escapeHtml(base)}</code>. No account,
     no API key, no SDK. Free endpoints are plain HTTPS; paid ones take a signed
     x402 v2 payment in USDC on Base, Polygon or Solana, one payment per request.</p>

@@ -15,6 +15,7 @@ export const RUN1_ITEMS: readonly MenuItem[] = [
     price_usdc: 20,
     pricing: "pay_what_it_deserves",
     cadence: "one_off",
+    reads: "made_here",
     fulfillment: "instant",
     description:
       "For those who wish the store well and want it on paper. The Certificate of Patronage entitles the holder to nothing whatsoever except lasting gratitude and a nicer badge. The purest thing we sell.",

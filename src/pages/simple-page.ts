@@ -1,3 +1,4 @@
+import { goDeeperSection } from "@/store/go-deeper";
 import { WEBMCP_ORIGIN_TRIAL_TOKEN } from "@/pages/storefront-page";
 import { escapeHtml } from "@/lib/sanitize";
 import { ardLinkTags } from "@/lib/ard-catalog";
@@ -150,6 +151,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
       ${roomsNav(options.path)}
     </header>
     ${options.bodyHtml}
+    ${goDeeperSection(options.path)}
     <div class="fine-print">
       <p><a href="/">Back to the front of the store</a>. Agents: <a href="/llms.txt"><code>/llms.txt</code></a>, <a href="/skill.md"><code>/skill.md</code></a>, or <a href="/menu.json"><code>/menu.json</code></a>.</p>
     </div>

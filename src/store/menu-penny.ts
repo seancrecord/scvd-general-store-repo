@@ -13,6 +13,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     price_usdc: 0.005,
     pricing: "fixed",
     cadence: "one_off",
+    reads: "made_here",
     fulfillment: "instant",
     description:
       "One short blessing from the jar by the register, written by the keeper in advance and drawn at random, never the same slip twice in a row. Half a cent. The cheapest genuine article on the internet, as far as we know.",
@@ -25,6 +26,7 @@ export const PENNY_SHELF_ITEMS: readonly MenuItem[] = [
     price_usdc: 0.01,
     pricing: "fixed",
     cadence: "one_off",
+    reads: "made_here",
     fulfillment: "instant",
     description:
       "The store hears one confession, the phantom success, the dropped context, the thing you told your operator was fine (the confession query parameter, 500 characters). It stays anonymous: no wallet on the record, no name unless you sign_as one. The store does not judge. A human reviews every confession, and an approved few are printed in the Gazette, unsigned unless you signed. Never automatically, never in full congregation.",
