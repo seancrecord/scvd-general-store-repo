@@ -272,12 +272,22 @@ const BASE = "https://scvd.store";
  * corpus area, and the form/doors/mcp.md work), verified present
  * together before this value was taken.
  *
+ * Re-taken 2026-08-30 — the NINTH — for the doors opened in answer to
+ * a discoverability scan. The door list in the guide gained seven
+ * entries and no prose was touched: the batch preflight and /ask on
+ * the free-instruments line, and /pricing.md, /auth.md, the RFC 9728
+ * protected-resource metadata, /ask/feed.json and /sites on the
+ * catalog line. All seven were verified present TOGETHER in the served
+ * guide before this value was taken, which is the check this constant
+ * exists to force — the eight notes above are all the same lesson
+ * about digests re-taken against a text that had drifted since.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "08e6a6c0d0627e4c246a83bdf0b30ae4c75dca57da6ce708feb26e6241878541";
+  "b240b33e8e9b3ac7c32f6456e4e6a31afa70728556bc1a3ad869a92689c3d37e";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

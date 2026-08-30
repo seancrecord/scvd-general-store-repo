@@ -67,6 +67,15 @@ const DELIBERATELY_QUIET: Record<string, string> = {
 
   // ---- web plumbing found by convention, not by reading a list ----
   "/robots.txt": "crawlers find it at its fixed path; that is the entire mechanism",
+  /*
+   * The developer area's llms file at the other two names its room
+   * answers to. /developers/llms.txt is listed on the surfaces and is
+   * the canonical one; these two carry a rel="canonical" back to it.
+   */
+  "/docs/llms.txt":
+    "alias of /developers/llms.txt, which the surfaces list; the room has answered to /docs since it shipped and its llms file now does too",
+  "/api/llms.txt":
+    "alias of /developers/llms.txt, which the surfaces list; the room has answered to /api since it shipped and its llms file now does too",
   "/schemamap.xml":
     "robots.txt names it in a Schemamap directive, which IS the NLWeb Schema Feeds discovery mechanism — the same reasoning the Sitemap line has always run on; every feed it indexes is separately listed",
   "/.well-known/mcp/server-card.json":
