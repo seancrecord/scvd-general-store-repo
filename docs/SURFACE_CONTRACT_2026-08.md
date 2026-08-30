@@ -181,3 +181,69 @@ one room. The honest state of the rest:
 None of that is a promise to sweep it this week. It is the list, so
 the rules are not quietly narrower than the sentences that adopted
 them.
+
+## The reading rooms, audited — and the audit overtaken (2026-08-30)
+
+All thirty-six rooms were fetched with a browser's two headers and
+counted, against rule 58. **Two sessions did that on the same day,
+independently, and this is the record of what happened when they
+met.**
+
+### The same defect, found twice, by two sessions that could not see each other
+
+`/developers` served two `<h1>` tags and had since it shipped:
+`renderSimplePage` emits one from the page's own title and the route
+body emitted its own on top. Both headings were correct, sensible and
+in the right place. There were simply two of them, and a document with
+two first-level headings has told every crawler and every screen
+reader that it is two documents.
+
+It survived every hand-read because neither heading looks wrong. You
+only find it by counting the served bytes of all thirty-six rooms at
+once — and **both sessions did exactly that, on the same day, and
+landed on the same room.** #351 merged first; its wording is the one
+that stands, and this branch took it rather than churning a comment
+that was already published and correct.
+
+Two independent readings converging on one defect is the strongest
+evidence available that the finding is real and that the measurement
+is the right one. It is also, precisely, #65: two sessions spending
+the same hours on the same file because nothing coordinates them.
+
+**A correction on my own audit, in the same breath:** its first regex
+matched `<h1>` literally, which scored `/porch` — whose heading
+carries a class and an inline style — as having none. I nearly filed
+a defect against a page that was fine. Match the tag, not the tag with
+no attributes.
+
+### ❌ WITHDRAWN: the 58.4 gap table this file briefly carried
+
+An earlier draft of this section listed five rooms — `/try`,
+`/conformance`, `/bot-auth`, `/profiles`, `/pricing` — as naming a
+paid path with no way to hand it to an agent, and said the fix was
+the keeper's copy to write.
+
+**That was true when it was measured and false by the time it was
+written.** #351 shipped the agent-handoff line, the free-first
+ordering and menu-derived prices across the rooms while this branch
+was in flight. All five carry the line now; verified by fetching them,
+not by reading the diff.
+
+The table is withdrawn rather than quietly deleted, per rule 56, and
+the reason is worth more than the table was: **a stale finding about
+our own surfaces is exactly what this store sells other people
+protection from.** It lasted about forty minutes.
+
+### What is actually held, and by what
+
+`test/rooms-earn-their-page.spec.ts` (from #351) walks `ROOMS` and
+holds 58.1, 58.3 and 58.4 together — including the h1 count, with the
+correct regex. A second guard for the h1 alone was written on this
+branch and **deleted before merge**: two guards over one property are
+two things that must agree with nothing checking that they do, which
+is the defect this store keeps finding elsewhere.
+
+### Still owed
+
+The MCP tool surface. Everything else in the sweep is held by a
+walking guard with a written coverage statement.
