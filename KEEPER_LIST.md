@@ -200,10 +200,16 @@ is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
 miniature: porch-class writes only — free, publish nothing, touch
 no money; guestbook stays off because it publishes words). The
 co-piloted till is PARKED on his frictionless argument, reasoning
-kept in §13.2. HIS GRAFFITI WALL is speced (§13.3): day's highest
-bidder on the home page, rides graffiti_on_a_train's existing
-pay-what-it-deserves as the auction, labeled paid, his approval
-gates display, empty wall on a no-bid day. THE POP-OFF CANDIDATE
+kept in §13.2. HIS GRAFFITI WALL is BUILT (§13.3, 08-29) and SITED
+OUT BACK on his own second read — the storefront slot was dropped
+because no-URLs is not no-ads and money buying prominence on the
+front page of an evidence observatory is a sentence a competitor
+could write and be right. The head car rides /train: biggest
+recorded bid of a day, marked in place with its date, its amount and
+"paid, and saying so"; ties to whoever got there first; /train
+publishes the standing bid and what it does NOT buy (nothing else on
+this store). His approval still gates every car. The storefront is
+untouched. THE POP-OFF CANDIDATE
 (§13.4, scvd.store/check/{host} — the shareable endpoint report
 page, the SSL-Labs wedge) is HELD SPECED: worth building on his
 read, not sold on readiness — built on his word, not before.
@@ -585,19 +591,18 @@ work is in git.)
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
 
-- ⚑ **RULE (five minutes): does a transfer-method reading belong in a
-  VERDICT?** Shipped 08-29 as two advisories, folded by neither
-  battery: `nonstandard-transfer-method` (a door asks for permit2 or
-  erc7710 — legal, and a generic client will be refused there) and
-  `unrecognized-transfer-method` (a method no published client can
-  build, registered as defect class `transfer-method-unrecognized`,
-  vocabulary v5). v1 is frozen and cannot take either. The open
-  question is v2 and only for the second one: an entry naming a
-  method nobody can build is unsignable in the same sense
-  `amount-atomic` is, which is already a v2 fold. Folding it moves
-  ready for doors we have already published rows about; leaving it
-  advisory keeps every row meaning what it meant. No work happens
-  until the ruling — the reading itself is live and free either way.
+- ~~RULE: does a transfer-method reading belong in a VERDICT?~~
+  **RULED 08-30 — YES, and built the same day.** v2 folds
+  `transfer-method-signable`: a door naming an authorization standard
+  no published client can build is unsignable in exactly the sense
+  `amount-atomic` is, so it costs that door its v2 `ready`. The
+  advisory `unrecognized-transfer-method` retired into it (one
+  observation, one voice). v1 frozen and unmoved; rows sealed before
+  08-30 stand as history; defect vocabulary v6 repoints
+  `transfer-method-unrecognized` at the new signal. NOT folded, on
+  purpose: `permit2` and `erc7710` still pass both batteries and draw
+  only the advisory — real standards named where the spec says to name
+  them, and scoring that would charge an operator for honesty.
 
 - ⚑ **THE AGENT WAVE CHANGES THE WEIGHT ON P7 — LOOK, then RULE
   (docs/WEBMCP_AND_MCP_APPS_2026-08.md §10, opened 08-27 on the

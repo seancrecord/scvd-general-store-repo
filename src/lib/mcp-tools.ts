@@ -5,7 +5,12 @@ import {
 } from "@/lib/front-counter";
 import { factBlockText, listingSpec } from "@/lib/listing-spec";
 import type { ListingSpec } from "@/lib/listing-spec";
-import { priceTiersUsdc } from "@/lib/payments";
+import {
+  NEVER_AUTO_RENEWS,
+  amountPhrase,
+  cadencePhrase,
+  priceLine,
+} from "@/services/menu-markdown";
 import { MENU_ITEMS } from "@/store";
 import { GUARANTEE_BLOCK_TEXT, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
@@ -286,12 +291,32 @@ function completionCriteria(item: MenuItem): string {
   return `Completes in one call with an order, not the goods: the result carries order_id and order_url; a human fulfills within ${item.sla_hours ?? 168}h and the completed order carries the deliverable. Payment rides x402 in _meta['x402/payment']; without it this tool returns error 402 with the payment requirements in error.data. ${RETRY_SAFETY_MCP_LINE}`;
 }
 
-function priceLine(item: MenuItem): string {
-  const tiers = priceTiersUsdc(item);
-  return item.pricing === "fixed"
-    ? `$${item.price_usdc} fixed`
-    : `$${item.price_usdc} minimum, pay what it deserves (tiers $${tiers.join(" / $")}; above minimum is a recorded tip)`;
-}
+/**
+ * THE FORK THAT OUTLIVED ITS REASON (found 2026-08-30, the last stop
+ * of the rule-57 sweep). This file carried its own priceLine for
+ * months, and when clause 57.3 arrived on 2026-08-29 — "paid says the
+ * amount, and whether it is one-off or recurring" — the cadence was
+ * added to the OTHER priceLine, in services/menu-markdown.
+ *
+ * So the four items that sell a stretch of time (standing_watch,
+ * conformance_watch, recurring_patronage, trust_profile) went on
+ * telling every MCP client "$3 fixed" with the term buried in English
+ * prose, on the five agent surfaces that read this catalog: the MCP
+ * tools/list, WebMCP, /mcp.md, the ARD catalog and the self module.
+ * Rule 57 was written FOR agents and the agent channel was the one it
+ * did not reach.
+ *
+ * Worse, the guard over 57.3 asserted that priceLine carries the
+ * cadence and its comment named "the MCP tool list" among the
+ * surfaces reading it. Both halves were true of a function this file
+ * never called. A guard that cannot fail argues for the lie (rule
+ * 46), so the guard now reads the SERVED tool descriptions.
+ *
+ * There is no forked phrasing here any more. What this file needs is
+ * the amount and the cadence separately — a cluster lists seventeen
+ * items and cannot repeat the store-wide never-renews sentence
+ * seventeen times — so it takes the two halves of the real one.
+ */
 
 /**
  * Channel-specific purpose lines for the tools whose shelf copy leads
@@ -416,6 +441,27 @@ function clusterOutputSchema(items: MenuItem[]): Schema {
   };
 }
 
+/**
+ * THE HALF OF THE OLD FORK WORTH KEEPING. The retired local priceLine
+ * said "above minimum is a recorded tip" and the shelf's phrasing does
+ * not — it names the tiers and stops. Consolidating onto one function
+ * would have quietly dropped that from the agent channel, which is a
+ * fact about what happens to a buyer's money and belongs where the
+ * money decision is made.
+ *
+ * It rides HERE rather than in the shelf's priceLine because the shelf
+ * copy is the keeper's ink (rule 7) and this is a channel note, not a
+ * change to what the store says about its prices.
+ */
+const TIP_NOTE = "above the minimum is recorded as a tip";
+
+/** The amount as the shelf phrases it, plus this channel's tip note. */
+function mcpAmount(item: MenuItem): string {
+  return item.pricing === "fixed"
+    ? amountPhrase(item)
+    : `${amountPhrase(item)}, ${TIP_NOTE}`;
+}
+
 /** One compact line per item: what it is, what it costs, what returns. */
 function shelfItemLine(item: MenuItem): string {
   const returns = SPEC_RETURNS[item.id] ?? item.description;
@@ -423,7 +469,7 @@ function shelfItemLine(item: MenuItem): string {
     item.fulfillment === "instant"
       ? "instant"
       : `human-fulfilled within ${item.sla_hours ?? 168}h`;
-  return `- ${item.id}: ${item.name}, ${priceLine(item)}, ${timing}. ${returns}`;
+  return `- ${item.id}: ${item.name}, ${mcpAmount(item)}, ${cadencePhrase(item)}, ${timing}. ${returns}`;
 }
 
 function clusterCompletion(items: MenuItem[]): string {
@@ -523,7 +569,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
      * so the escape hatch travels beside the warning: the 402 hands
      * you a key, echoing it makes the retry free.
      */
-    description: `${cluster.purpose} ${clusterPriceRange(items)}${secondDoor}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
+    description: `${cluster.purpose} ${clusterPriceRange(items)}${secondDoor}\n\nItems on this shelf (pass one as item_id):\n${lines}\n\nOn cadence, for all of the above: ${NEVER_AUTO_RENEWS}.\n\n${clusterRequiredFields(items)}\n\n${clusterCompletion(items)} ${GUARANTEE_BLOCK_TEXT} Retrying? A second call is a second charge UNLESS you echo the idempotency.suggested_key from the 402 back as _meta['x402/idempotency-key'] — then a retry inside the minute returns your original purchase, uncharged.`,
     inputSchema: clusterInputSchema(items),
     outputSchema: clusterOutputSchema(items),
     annotations: {
@@ -861,7 +907,10 @@ const FREE_TOOLS: McpTool[] = [
 function frontCounterTool(base: string): McpTool {
   const items = frontCounterItems();
   const lines = items
-    .map((item) => `- ${item.id}: ${item.name}, $${item.price_usdc}`)
+    .map(
+      (item) =>
+        `- ${item.id}: ${item.name}, ${mcpAmount(item)}, ${cadencePhrase(item)}`,
+    )
     .join("\n");
   const specs: Record<string, ListingSpec> = {};
   for (const item of items) {
@@ -878,7 +927,7 @@ function frontCounterTool(base: string): McpTool {
      * possible. The reciprocal sentence rides on each overlapping
      * shelf, derived from the same eligibility predicate.
      */
-    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE} Every item here also sells on its theme shelf (another buy_* tool); this counter is a second door to the same goods, not a different product — same item_id, same price, same signed certificate through either. If unsure which tool to use, use this one.\n\nPass one of these as item_id — nothing else is needed, and none of them take any other field:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. ${RETRY_SAFETY_MCP_LINE}`,
+    description: `Purpose: buy one of the few things that need no reading at all — the front counter. ${FRONT_COUNTER_PROMISE} Every item here also sells on its theme shelf (another buy_* tool); this counter is a second door to the same goods, not a different product — same item_id, same price, same signed certificate through either. If unsure which tool to use, use this one.\n\nPass one of these as item_id — nothing else is needed, and none of them take any other field:\n${lines}\n\nPayment rides x402 in _meta['x402/payment']; without it this returns error 402 with the terms in error.data. Sign one of the offered amounts and call again. On cadence, for all of the above: ${NEVER_AUTO_RENEWS}. ${RETRY_SAFETY_MCP_LINE}`,
     inputSchema: {
       type: "object",
       properties: {
