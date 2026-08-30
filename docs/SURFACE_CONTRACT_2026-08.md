@@ -270,9 +270,26 @@ amount to every agent that reads the tool list:
 | item | price | what it actually buys |
 | --- | --- | --- |
 | `recurring_patronage` | $3 | 30 days |
-| `standing_watch` | $5 | 30 days |
+| `standing_watch` | $5 | 7 days |
 | `conformance_watch` | $5 | 7 days |
 | `trust_profile` | $21 | 30 days |
+
+> **❌ CORRECTED 2026-08-30, within the hour of publishing it.** This
+> table first said `standing_watch` sold **30 days**. It sells seven.
+> The correct figure was already written 200 lines up this same file,
+> so the document contradicted itself the moment it merged.
+>
+> I hand-typed four numbers into a table, in a change whose entire
+> argument is that a price must be derived and never typed. Nothing
+> caught it: the guards read the served bytes, and prose in a doc is
+> not served bytes. It was found by walking the live endpoint after
+> the merge — rule 55, and the only reason this paragraph exists
+> instead of the wrong number.
+>
+> The table is now derived-checked: `test/surface-contract.spec.ts`
+> parses these rows and compares each to `MENU_ITEMS`, so a figure
+> that drifts from the shelf fails the build rather than sitting here
+> being quoted.
 
 The served bytes, before the fix:
 
