@@ -250,6 +250,111 @@ describe("one probe, both verdicts", () => {
     expect(body.also_under?.difference).toContain("did not apply");
   });
 
+  /**
+   * THE KEEPER'S RULING, 2026-08-30, and the test that makes it real.
+   *
+   * Folding transfer-method-signable into v2 was a ruling rather than
+   * a build decision for exactly one reason: it MOVES READY on doors
+   * this battery has already published rows about. So the property
+   * worth pinning is the shape of that move — v2 refuses, v1 does not
+   * budge, and one probe produced both.
+   */
+  it("an unbuildable transfer method costs a door its v2 ready and leaves v1 alone", async () => {
+    const challenge = {
+      x402Version: 2,
+      accepts: [
+        {
+          scheme: "exact",
+          network: "eip155:8453",
+          amount: "5000",
+          asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          payTo: "0x1111111111111111111111111111111111111111",
+          maxTimeoutSeconds: 300,
+          extra: {
+            name: "USD Coin",
+            version: "2",
+            assetTransferMethod: "gokite-aa",
+          },
+        },
+      ],
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response("{}", {
+            status: 402,
+            headers: { "PAYMENT-REQUIRED": btoa(JSON.stringify(challenge)) },
+          }),
+      ),
+    );
+    const { preflightUrl } = await import("@/services/preflight");
+    const { env } = await import("cloudflare:test");
+    const result = await preflightUrl(
+      "https://unbuildable.example/api/x",
+      env as never,
+    );
+    const body = result.body as {
+      verdict: string;
+      also_under?: { verdict: string };
+    };
+    // v1 is served here and is frozen: structurally this door is fine.
+    expect(body.verdict).toBe("ready");
+    // v2 counts the field and refuses.
+    expect(body.also_under?.verdict).toBe("not_ready");
+  });
+
+  it("a door asking for permit2 keeps its ready under BOTH batteries", async () => {
+    // The line the ruling drew: a real standard named in the place the
+    // spec provides is not a defect, and scoring it would charge an
+    // operator for telling the truth about themselves.
+    const challenge = {
+      x402Version: 2,
+      accepts: [
+        {
+          scheme: "exact",
+          network: "eip155:8453",
+          amount: "5000",
+          asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          payTo: "0x1111111111111111111111111111111111111111",
+          maxTimeoutSeconds: 300,
+          extra: {
+            name: "USD Coin",
+            version: "2",
+            assetTransferMethod: "permit2",
+          },
+        },
+      ],
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response("{}", {
+            status: 402,
+            headers: { "PAYMENT-REQUIRED": btoa(JSON.stringify(challenge)) },
+          }),
+      ),
+    );
+    const { preflightUrl } = await import("@/services/preflight");
+    const { env } = await import("cloudflare:test");
+    const result = await preflightUrl(
+      "https://permit2.example/api/x",
+      env as never,
+    );
+    const body = result.body as {
+      verdict: string;
+      also_under?: { verdict: string };
+      advisories?: { name: string }[];
+    };
+    expect(body.verdict).toBe("ready");
+    expect(body.also_under?.verdict).toBe("ready");
+    // Still told to the buyer, just never scored against the door.
+    expect(body.advisories?.map((a) => a.name)).toContain(
+      "nonstandard-transfer-method",
+    );
+  });
+
   it("claims no comparison for a probe that never completed", async () => {
     /*
      * An unreachable door produced no observation, so there is nothing
