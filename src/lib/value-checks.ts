@@ -51,6 +51,50 @@ export const KNOWN_TESTNETS: Record<string, string> = {
   "eip155:80002": "Polygon Amoy",
 };
 
+/**
+ * WHAT A DOOR ASKS THE BUYER TO SIGN.
+ *
+ * `accepts[].extra.assetTransferMethod` names the authorization
+ * standard the seller's facilitator will accept — the field that
+ * decides whether a buyer's signature is acceptable at all.
+ * `eip3009` (TransferWithAuthorization) is what a generic x402
+ * client produces; `permit2` and `erc7710` are different signatures
+ * over different types.
+ *
+ * ONE LAW, EVERY DIRECTION. The launch check signs
+ * DEFAULT_TRANSFER_METHOD and refuses to knock at a door asking for
+ * anything else; the battery reads the same field from the same
+ * place before a buyer spends anything; and since 2026-08-30 the v2
+ * verdict counts it. Three instruments, one constant, no drift.
+ */
+export const DEFAULT_TRANSFER_METHOD = "eip3009";
+
+/** The methods a published x402 client knows how to produce. */
+export const KNOWN_TRANSFER_METHODS: readonly string[] = [
+  "eip3009",
+  "permit2",
+  "erc7710",
+];
+
+/**
+ * The method an entry declares, normalized, or undefined where it
+ * declares none. Absence is the ordinary case: the field is
+ * optional, most doors omit it, and eip3009 is the settled default.
+ */
+export function declaredTransferMethod(
+  entry: Record<string, unknown>,
+): string | undefined {
+  const extra = entry["extra"];
+  if (typeof extra !== "object" || extra === null) {
+    return undefined;
+  }
+  const declared = (extra as Record<string, unknown>)["assetTransferMethod"];
+  if (typeof declared !== "string" || declared.trim() === "") {
+    return undefined;
+  }
+  return declared.trim().toLowerCase();
+}
+
 export interface ValueCheck {
   name: string;
   ok: boolean;
@@ -72,9 +116,16 @@ export function l3bChecks(
   const decimalAmounts: string[] = [];
   const malformedAmounts: string[] = [];
   const testnetNetworks: string[] = [];
+  const unbuildableMethods: string[] = [];
   for (let index = 0; index < accepts.length; index += 1) {
     const entry = accepts[index]!;
     const network = String(entry["network"] ?? "");
+    const method = declaredTransferMethod(entry);
+    if (method !== undefined && !KNOWN_TRANSFER_METHODS.includes(method)) {
+      unbuildableMethods.push(
+        `accepts[${index}].extra.assetTransferMethod "${method}"`,
+      );
+    }
     const verdict = readPayToImpl(String(entry["payTo"] ?? ""), network);
     if (!verdict.payable) {
       payToFailures.push(`accepts[${index}].payTo: ${verdict.detail ?? "not payable"}`);
@@ -141,6 +192,38 @@ export function l3bChecks(
           name: "network-mainnet",
           ok: false,
           detail: `${testnetNetworks.join("; ")}. A testnet offer works against testnet tooling and silently fails for every mainnet buyer.`,
+        },
+    /*
+     * WHAT THE DOOR ASKS THE BUYER TO SIGN, FOLDED (the keeper's
+     * ruling, 2026-08-30). An entry naming a method no published
+     * client can build is unsignable in exactly the sense
+     * `amount-atomic` is unsignable: the buyer who reads the field
+     * has nothing to construct from it, and the buyer who ignores
+     * it signs blind. v2 already refuses to call an unpayable 402
+     * ready; this is the same refusal one field over.
+     *
+     * WHAT IS NOT FOLDED, and the line matters: a door asking for
+     * `permit2` or `erc7710` PASSES. Those are real standards that
+     * real clients build, named in the place the spec provides, and
+     * counting them against a door would be scoring an operator for
+     * telling the truth about themselves. That reading stays an
+     * advisory (`nonstandard-transfer-method`), where a fact a buyer
+     * should read before signing belongs.
+     *
+     * Absence passes too. The field is optional, most doors omit it,
+     * and eip3009 is the settled default.
+     */
+    unbuildableMethods.length === 0
+      ? {
+          name: "transfer-method-signable",
+          ok: true,
+          detail:
+            "every accepts entry that names an authorization standard names one a published client can build",
+        }
+      : {
+          name: "transfer-method-signable",
+          ok: false,
+          detail: `${unbuildableMethods.join("; ")} — none of ${KNOWN_TRANSFER_METHODS.join(", ")}. A buyer who reads the field has nothing to construct from it and a buyer who ignores it signs blind; either way the refusal lands before any payment reaches this door.`,
         },
   ];
 }
