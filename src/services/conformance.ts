@@ -1,4 +1,5 @@
 import { CANONICAL_USDC, isCanonicalUsdc } from "@/lib/value-checks";
+import { securityBlock } from "@/store/surface-contract";
 import {
   parseJws,
   verifyArtifact,
@@ -926,6 +927,46 @@ export function conformanceDoc(base: string) {
     run_it_yourself: RUN_IT_YOURSELF,
     why_it_is_free:
       "Because the useful version of a conformance check is one an agent reaches for without a decision, and a price is a decision. It also keeps us honest: a paid verdict has a customer, and a customer for a verdict is how verdicts start bending.",
+    expected_outcome:
+      "HTTP 200 and a structured verdict: whether the artifact parsed, whether every required field for its kind is present, whether the signature verified against the key named in the kid, and \u2014 reported separately, never folded into the verdict \u2014 whether it is still live and whether it is past its stale_after. An artifact that fails is a successful call. Only the codes below mean the check never ran.",
+    /**
+     * THE FAILURES OF CALLING US (rule 57.4, 2026-08-29). This desk
+     * documented the failure modes of everybody else's artifacts in
+     * detail and never said what it returns when a caller sends
+     * something it cannot read. These are the categories that already
+     * existed in the responses; naming them is what is new.
+     */
+    errors: [
+      {
+        code: "artifact_missing",
+        http: 400,
+        means: "no artifact was supplied, or the body was not JSON",
+        what_to_do:
+          'POST {"artifact": "<compact JWS>"} with Content-Type: application/json. Retrying the same body fails identically.',
+      },
+      {
+        code: "artifact_unparseable",
+        http: 200,
+        means:
+          "the artifact is not three dot-separated base64url segments with JSON header and payload. This answers 200 with a FAILING VERDICT, not an error status \u2014 an unparseable artifact is a finding about the artifact, which is what you asked",
+        what_to_do:
+          "Read the verdict, not the status. Treating this as a transport failure and retrying will get the same answer.",
+      },
+      {
+        code: "key_resolution_budget_exhausted",
+        http: 200,
+        means:
+          "did:web resolution was not attempted or did not finish inside its budget, so the signature is unchecked. Reported as key_resolution: \"budget_exhausted\", never as a failed signature",
+        what_to_do:
+          "Supply public_key_hex and the check runs entirely offline with no budget at all. Never read this as the artifact being invalid \u2014 we did not look.",
+      },
+    ],
+    security: securityBlock(base, {
+      does_in_your_name:
+        "By default, nothing: supply public_key_hex and the whole check is arithmetic on bytes you already had, with no network request made in your name at all. Only did:web resolution (and the optional check_anchor read) dials out, to a host the artifact itself names, budgeted and time-bounded \u2014 and you can refuse it with resolve_key: false.",
+      stores:
+        "Nothing. The artifact you send is checked and discarded; it is not retained, not logged against a caller, and never becomes part of the census or any published surface.",
+    }),
     mailbox: `${base}/api/letter`,
   };
 }
