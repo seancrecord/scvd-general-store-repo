@@ -576,6 +576,41 @@ work is in git.)
   latency value is `not_observed` until the preflight captures it on
   the doors it already walks.
 
+- **RULE 50 ON THE PAID HTTP TILL: one write moved, three await your
+  ruling, and I had one of them on the wrong side of the line.** I
+  told the keeper the settle path had three deferrable courtesy
+  writes in a queue. Reading it properly, only ONE was mine to move:
+  `recordReferralFor(c, "settled", ...)`, whose own sibling on the 402
+  path already rides a Promise.all wave — same function, same door,
+  two treatments, and the difference was nobody looking. Done, with
+  `test/mcp-door-defers-its-bookkeeping.spec.ts` holding it.
+
+  WHAT I WITHDREW AND WHY. I had counted `recordSettlement` as a
+  courtesy. It is the MONEY-IN LEDGER: dropping one undercounts real
+  revenue, and `lib/metrics.ts` publishes a sentence about when it
+  runs relative to the artifact handler that deferral would make
+  imprecise. Recoverable via chain reconciliation is not the same as
+  safe to lose. Rule 53 is explicit that rule 50 does not override
+  money failing closed, so this is the keeper's call, not an agent's.
+
+  STILL AWAITED, ON PURPOSE AND NOT UP FOR DEBATE: `recordSpentNonce`
+  (defer it and the same authorization can spend twice) and
+  `recordSettlementUnknown` (the only note that an ambiguous settle
+  was ever in question).
+
+  ⚑ THREE FOR THE KEEPER TO RULE:
+  1. `recordSettlement` — trade a rare lost settle count for latency
+     on the paid path? Chain reconciliation reads Base rather than our
+     writes, so the loss is findable. Still money.
+  2. `recordSolanaSettle` / `recordPolygonSettle` — these feed the
+     unreconciled-cap meter that raises an alarm past a bound.
+     Deferring a meter that gates a money alarm is a judgment about
+     oversight, not about speed.
+  3. The three `recordPaymentDecline` calls, awaited in front of a
+     refused buyer. Money did not move, so they are diagnostics rather
+     than ledger — but they are the record of WHY we said no, and I
+     did not want to widen the change on my own.
+
 - **64 of ~121 OpenAPI operations are still untyped, and the stopping
   point was evidence, not fatigue.** 57 are typed and bound by live
   probes. The remaining ones are per-artifact readers the keeper's
