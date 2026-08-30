@@ -19,6 +19,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     price_usdc: 0.5,
     pricing: "fixed",
     cadence: "one_off",
+    reads: "made_here",
     fulfillment: "instant",
     description:
       "A warm, signed note from the store, delivered on the spot, with your patron badge. The bottom rung of the trust ladder, and the traditional first purchase.",
@@ -31,6 +32,7 @@ const FOUNDING_ITEMS: readonly MenuItem[] = [
     price_usdc: 300,
     pricing: "pay_what_it_deserves",
     cadence: "one_off",
+    reads: "made_here",
     fulfillment: "human_queue",
     sla_hours: 168,
     /**

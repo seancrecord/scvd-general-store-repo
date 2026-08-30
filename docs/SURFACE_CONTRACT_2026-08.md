@@ -107,7 +107,43 @@ one room. The honest state of the rest:
   the atlas's own FREE_DOORS rather than a list written in the test,
   so an instrument added to the atlas tomorrow is held tomorrow.
 
-  **Still owed:** the paid doors, then the reading rooms.
+  **The second leg ran 2026-08-30: the paid shelf.** Measured first —
+  every one of the 26 items answered ZERO of the four. Price and
+  cadence had been covered everywhere since the rule was adopted (the
+  type system requires them); what an agent gets back, what can go
+  wrong, and what we hold ourselves to were published nowhere per
+  item.
+
+  The answers derive. 104 hand-written paragraphs about a buy path
+  that is ONE code path is 104 chances to describe it wrongly, and a
+  stale safety paragraph is worse than a stale item count. Expected
+  outcome comes from the item's fulfillment class, term and SLA; the
+  error categories from its input schema and inventory — a `sold_out`
+  branch is published only where stock exists, so a client is never
+  told to handle a branch that cannot fire.
+
+  **The exception, and it is the lesson.** The first version derived
+  "does this door knock on your endpoint" from the input schema: a
+  `url` or `host` property meant a fetch. It was wrong on its first
+  run — `spot_check` takes a host and deliberately does not knock,
+  reading the books at the counter, which its own description says
+  out loud. A guessed safety claim is worse than an absent one. What
+  a door reads is now a STATED fact (`MenuItem.reads`, required by
+  the type, five classes), established from each fulfillment
+  service's import graph: `@/lib/probe-target` means it fetches a
+  subject you named, `@/lib/base-rpc` or `@/lib/solana-rpc` means it
+  reads public chain state, neither means it reaches nothing. The
+  method is written into the type so the answers can be re-checked
+  rather than trusted, and `launch_check` — the one door that makes a
+  real payment against your endpoint — says so in its own class.
+
+  `test/paid-doors-answer-rule-57.spec.ts` walks MENU_ITEMS and holds
+  all four against each item's own facts. menu.json entries gained
+  `listing_url`, because the catalogue named a `buy_url` and left an
+  agent to construct the URL of the page that describes it, and a URL
+  a reader has to guess is not findable.
+
+  **Still owed:** the reading rooms.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.
