@@ -4,7 +4,7 @@ import { ARD_WELL_KNOWN_PATH } from "@/lib/ard-catalog";
 import { SCHEMA_MAP_PATH } from "@/routes/ask";
 import { catalogLastUpdated } from "@/lib/freshness";
 import directoryData from "@/store/directory.json";
-import { MENU_ITEMS } from "@/store";
+import { MENU_ITEMS, STORE_SERVICE_NAME } from "@/store";
 import { ROOMS } from "@/store/rooms";
 import { getFoundingEdition } from "@/services/founding";
 import type { HonoEnv } from "@/types";
@@ -266,15 +266,36 @@ siteMetaRoutes.get("/sitemap.md", async (c) => {
     .map((path) => `- [${base}${path}](${base}${path})`)
     .join("\n");
   return c.text(
-    `# Sitemap — Sean-Claude Van Damme's General Store
+    /*
+     * Frontmatter above the heading, like the store's other served
+     * markdown (2026-08-30): an agent gets the title, the canonical
+     * address and the update date without reading the list for them.
+     * `last_updated` is the same derived figure the body prints, not a
+     * second copy of it — one of the two going stale is exactly what
+     * a duplicated date does.
+     */
+    `---
+title: "Sitemap"
+description: "Every public page of ${STORE_SERVICE_NAME}, one line each — the same list sitemap.xml serves, in the format you are already reading."
+canonical: "${base}/sitemap.md"
+url: "${base}/sitemap.md"
+xml_twin: "${base}/sitemap.xml"
+schema_feeds: "${base}${SCHEMA_MAP_PATH}"
+last_updated: "${catalogLastUpdated()}"
+---
 
-Every public page, one line each — the same list [sitemap.xml](${base}/sitemap.xml) serves, in the format you are already reading. Machine maps: [llms.txt](${base}/llms.txt), [menu.json](${base}/menu.json), [openapi.json](${base}/openapi.json).
+# Sitemap — Sean-Claude Van Damme's General Store
+
+Every public page, one line each — the same list [sitemap.xml](${base}/sitemap.xml) serves, in the format you are already reading. Machine maps: [llms.txt](${base}/llms.txt), [menu.json](${base}/menu.json), [openapi.json](${base}/openapi.json). The structured-data feeds, as their own map: [schemamap.xml](${base}${SCHEMA_MAP_PATH}).
 
 Updated: ${catalogLastUpdated()}
 
 ${lines}
 `,
     200,
-    { "Content-Type": "text/markdown; charset=utf-8" },
+    {
+      "Content-Type": "text/markdown; charset=utf-8",
+      Link: `<${base}/sitemap.xml>; rel="alternate"; type="application/xml"`,
+    },
   );
 });

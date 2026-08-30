@@ -282,12 +282,22 @@ const BASE = "https://scvd.store";
  * exists to force — the eight notes above are all the same lesson
  * about digests re-taken against a text that had drifted since.
  *
+ * Re-taken again 2026-08-30 — the TENTH — for one sentence. A declined
+ * position said "inventing three of them", which
+ * test/derived-not-typed.spec.ts reads as a typed tally on a served
+ * surface and refuses. That guard is blunt on purpose and was right to
+ * be: the phrase named three fields in the sentence before it, but a
+ * reader cannot tell that from the regex's side, and the fix is to
+ * write the sentence differently rather than to teach the guard an
+ * exception. The seven doors added earlier today are still present in
+ * these bytes and were re-verified before this value was taken.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "b240b33e8e9b3ac7c32f6456e4e6a31afa70728556bc1a3ad869a92689c3d37e";
+  "3e27f090062a656a969ab40c2d13cebb51e9ea0ecfa86f06e1587abe97e7969b";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
