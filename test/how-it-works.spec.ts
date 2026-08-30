@@ -173,6 +173,25 @@ describe("the five questions an agent arrives with (rule 57)", () => {
     expect(security["reporting"]).toContain("security.txt");
   });
 
+  /**
+   * THE CLAIM REGISTER CAUGHT THIS ONE (2026-08-30, budget 0). The
+   * error catalogue says "There is no body to post and no field to
+   * fill" — claim-shaped, and unbound until something proves it. It
+   * is not a sentence to date, because it is a structural fact about
+   * how the route is registered, so it gets derived and checked: the
+   * door answers GET and refuses everything else.
+   */
+  it("really does refuse a body, on both spellings", async () => {
+    for (const path of ["/how-it-works", "/how-it-works.json"]) {
+      const response = await SELF.fetch(`${BASE}${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ anything: "at all" }),
+      });
+      expect(response.status, `${path} accepted a POST it documents as impossible`).toBe(405);
+    }
+  });
+
   it("keeps its no-writes claim true by never writing", async () => {
     // The one sentence on the page a reader cannot check for themselves,
     // held the way /doors holds its own: a standing test, not a promise.

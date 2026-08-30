@@ -47,6 +47,14 @@
  */
 export const REGISTER = [
   {
+    id: "how-it-works.no-body",
+    file: "src/routes/how-it-works.ts",
+    match: "There is no body to post and no field to fill",
+    resolution: "derived",
+    from: "howItWorksRoutes registers GET handlers only, so Hono answers 405 to every other method",
+    why: "Caught unbound on the room's first gates run (2026-08-30) and it was right to: the sentence is claim-shaped and nothing proved it. It is not a dating case — it is a structural fact about how the route is registered, not an observation that expires. test/how-it-works.spec.ts POSTs a real body at both spellings and requires 405, so the sentence fails the build the day the door starts accepting one.",
+  },
+  {
     id: "limits.preflight.rate",
     file: "src/routes/developers.ts",
     match: "One family of paths is limited and the rest are not",
