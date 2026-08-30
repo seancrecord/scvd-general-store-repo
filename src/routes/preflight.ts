@@ -1,5 +1,10 @@
 import { Hono, type Context } from "hono";
 import {
+  MARKDOWN_MEDIA_TYPE,
+  prefersMarkdown,
+  VARY_ACCEPT,
+} from "@/lib/accept";
+import {
   ACCEPT_REQUIRED_FIELDS,
   BATTERY_ADDS,
   PREFLIGHT_VERSION,
@@ -163,13 +168,28 @@ function withLifecycle(c: Context<HonoEnv>, path: string): Record<string, string
 }
 
 for (const battery of PREFLIGHT_VERSIONS) {
-  preflightRoutes.get(`/api/preflight/${battery}`, (c) =>
-    c.json(
-      doc(c.env.STORE_BASE_URL, battery),
+  preflightRoutes.get(`/api/preflight/${battery}`, (c) => {
+    const base = c.env.STORE_BASE_URL;
+    c.header("Vary", VARY_ACCEPT);
+    /*
+     * JSON stays the default — this is an API door and a caller who
+     * stated no preference wants the machine form. Markdown fires only
+     * when a client ranked it above JSON, which is the same rule every
+     * negotiating surface here follows.
+     */
+    if (prefersMarkdown(c.req.header("Accept"))) {
+      return c.text(docMarkdown(base, battery), 200, {
+        "content-type": MARKDOWN_MEDIA_TYPE,
+        Vary: VARY_ACCEPT,
+        ...withLifecycle(c, `/api/preflight/${battery}`),
+      });
+    }
+    return c.json(
+      doc(base, battery),
       200,
       withLifecycle(c, `/api/preflight/${battery}`),
-    ),
-  );
+    );
+  });
 }
 preflightRoutes.get("/api/preflight", (c) => c.json(doc(c.env.STORE_BASE_URL)));
 
@@ -215,6 +235,100 @@ preflightRoutes.get("/api/preflight/checks", async (c) => {
     note: "Derived from the same registries the battery runs. A criteria page and a verdict can no longer disagree, because both read this.",
   });
 });
+
+/**
+ * THE SAME DOCUMENT, LAID OUT FOR A READER.
+ *
+ * Every sentence here is already in `doc()` — this writes none of its
+ * own. What it does is give the prose a shape a person or an agent can
+ * read straight through, instead of a nested object they have to walk.
+ * The distinction matters and is the reason this is a hand-written
+ * layout rather than a generic JSON-to-markdown printer: a mechanical
+ * dump would publish a document nobody wrote, which is the one thing
+ * this store does not do. The words are the keeper's; only the
+ * headings are new.
+ *
+ * It exists because /api/preflight/v1 answered a reader who wanted to
+ * know what the instrument checks with a JSON blob, and a 2026-08-30
+ * scan sampled exactly this path with a `.md` suffix and found
+ * nothing. The suffix works now too — index.ts's twin fallback asks
+ * this route for markdown and passes the answer through — so one
+ * change serves both mechanisms.
+ */
+function docMarkdown(base: string, battery: PreflightBattery): string {
+  const d = doc(base, battery) as Record<string, unknown>;
+  const list = (value: unknown): string =>
+    Array.isArray(value)
+      ? value.map((line) => `- ${String(line)}`).join("\n")
+      : "";
+  const pairs = (value: unknown): string =>
+    value && typeof value === "object"
+      ? Object.entries(value as Record<string, unknown>)
+          .map(([key, entry]) => `- **\`${key}\`** — ${String(entry)}`)
+          .join("\n")
+      : "";
+
+  return `---
+title: "${String(d["title"])} (${battery})"
+description: "${String(d["summary"]).replace(/"/g, "'")}"
+canonical: "${base}/api/preflight/${battery}"
+url: "${base}/api/preflight/${battery}"
+battery: "${battery}"
+method: "POST"
+price: "free"
+auth: "none"
+defect_vocabulary: "${base}/defects"
+---
+
+# ${String(d["title"])} — ${battery}
+
+${String(d["summary"])}
+
+## How to call it
+
+\`\`\`
+POST ${base}/api/preflight/${battery}
+Content-Type: application/json
+
+{"url": "https://your-endpoint/..."}
+\`\`\`
+
+${pairs(d["request"])}
+
+Free, and no account exists to open. The whole procedure for every door
+in this store is at ${base}/auth.md.
+
+## What it checks
+
+${list(d["what_it_checks"])}
+
+## What it cannot check
+
+${list(d["what_it_cannot_check"])}
+
+## Common failures this catches
+
+${pairs(d["common_failures_this_catches"])}
+
+## Rate limits
+
+${String(d["rate_limit"])}
+
+## What a verdict means
+
+${String(d["expected_outcome"])}
+
+The named defect vocabulary every verdict cites: ${base}/defects.
+The battery manifest, with the stable check ids and a recomputable
+ruleset digest: ${base}/api/preflight/checks.
+
+## Several doors at once
+
+${base}/api/preflight/batch takes up to ten URLs in one call. Each one
+is a real probe and is metered as one — batching saves you connections,
+not outbound requests.
+`;
+}
 
 /**
  * THE MOST A BATCH MAY CARRY, and why there is a ceiling at all.
