@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { OPERATED_BY } from "@/store/copy/position";
 import {
   ALSO_A_STORE,
   POSITION_NOT,
@@ -65,7 +66,37 @@ function spendCapParagraph(): string {
 }
 
 export function agentsMd(base: string): string {
-  return `# ${STORE_METADATA.name}
+  /**
+   * FRONTMATTER, ADDED 2026-08-30, AND WHY IT GOES ABOVE THE HEADING.
+   *
+   * A scan sampled this store's served markdown and found none of it
+   * opened with a metadata block — so an agent that wanted the title,
+   * the canonical URL or the licence had to read the prose for them,
+   * or guess. /skill.md and the OKF concepts have carried frontmatter
+   * since they shipped; the document an arriving agent is most likely
+   * to read first did not.
+   *
+   * The H1 still leads the CONTENT and the store's own tests still
+   * hold it there — a frontmatter block is metadata above the
+   * document, not the document's first line, which is the whole
+   * convention. Nothing here is a new claim: every field is a fact
+   * already stated further down or a URL already published.
+   */
+  return `---
+title: "${STORE_METADATA.name}"
+description: "The operational manual for autonomous agents transacting with this store: the x402 purchase flow over HTTP and MCP, the doors, the prices, and an honest account of what this place cannot do."
+canonical: "${base}/agents.md"
+url: "${base}/agents.md"
+site: "${base}"
+operator: "${OPERATED_BY}"
+protocol: "x402 v2"
+currency: "${STORE_METADATA.currency}"
+auth: "${base}/auth.md"
+pricing: "${base}/pricing.md"
+contract: "${base}/openapi.json"
+---
+
+# ${STORE_METADATA.name}
 
 > ${POSITION_OPENING}
 > ${POSITION_NOT}

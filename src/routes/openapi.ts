@@ -1542,32 +1542,6 @@ function jsonBody(
   };
 }
 
-/**
- * THE RETRY-SAFETY HEADER, DECLARED WHERE AN AGENT READS IT.
- *
- * The store has honoured `Idempotency-Key` since the mechanism shipped
- * — the 402 body even suggests a key to send — and the contract said
- * nothing about it. A 2026-08-30 scan read the spec, found no
- * idempotency parameter on any write operation, and reported no
- * support, which was a fair reading of the document it was given.
- *
- * It is the difference between a retry that is safe and a retry that
- * doubles a charge, and the only place an agent generating a client
- * from this contract will ever see it is here.
- *
- * NOT REQUIRED, and it must not become required: a caller who did not
- * send one still gets served. The header is insurance the buyer
- * chooses, not a toll we charge for correctness.
- */
-const IDEMPOTENCY_KEY_PARAM: OpenApiObject = {
-  name: "Idempotency-Key",
-  in: "header",
-  required: false,
-  schema: { type: "string", maxLength: 255 },
-  description:
-    "Optional. A key of your choosing that makes this write safe to retry: a repeat of the same request with the same key inside the window returns the ORIGINAL result from cache rather than doing the work or taking the payment a second time. On a paid door the 402 body suggests a key in `idempotency.suggested_key` — copying it is free and is what stops a retry loop becoming a second charge. Over MCP the same value rides as `_meta['x402/idempotency-key']`.",
-};
-
 /** A free operation that takes a JSON body. */
 function postOp(
   summary: string,
@@ -1578,15 +1552,6 @@ function postOp(
   return {
     ...freeOp(summary, description),
     ...jsonBody(bodyDescription, schema),
-    /*
-     * Declared once, on the helper the write doors go through, so a
-     * new one cannot ship without it. The exception is deliberate and
-     * worth naming: POST /ask does not use this helper, because it is
-     * a READ expressed as a POST — it writes nothing, stores nothing
-     * about the asker, and is already safe to retry by construction.
-     * An idempotency key there would imply state it does not keep.
-     */
-    parameters: [IDEMPOTENCY_KEY_PARAM],
   };
 }
 
@@ -1869,8 +1834,6 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         `One of: ${items.map((i) => i.id).join(", ")}.`,
         items.map((i) => i.id),
       ),
-      // The door where a doubled retry costs actual money.
-      IDEMPOTENCY_KEY_PARAM,
       {
         name: "agent_name",
         in: "query",

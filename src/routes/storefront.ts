@@ -138,6 +138,41 @@ storefrontRoutes.get("/", async (c) => {
    * only script execution is being fenced, and 'self' is the fence.
    */
   c.header("Content-Security-Policy", FIRST_PARTY_SCRIPT_CSP);
+  /**
+   * THE MAP, IN HEADERS, BEFORE THE 84KB OF NEON PARSES.
+   *
+   * Every one of these documents was already published and already
+   * named in the page's own <link> tags — but a link tag is only
+   * reachable by a client that downloaded the body and parsed the
+   * head, which is the expensive half of the visit and the half an
+   * agent least wants. RFC 8288 puts the same relations where a HEAD
+   * request can read them, so a machine deciding what to fetch next
+   * spends one round trip instead of eighty-four kilobytes.
+   *
+   * A 2026-08-30 scan reported no Link headers on this door and it was
+   * right: the apex sent one on its markdown and JSON dialects and
+   * none at all on the HTML, which is the dialect a crawler actually
+   * lands in.
+   *
+   * ONLY DOORS THAT ANSWER. A Link header pointing at a 404 is the
+   * same defect as a rel=alternate tag pointing at one (finding P17),
+   * one layer down, and harder to notice.
+   */
+  c.header(
+    "Link",
+    [
+      `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
+      `<${c.env.STORE_BASE_URL}/index.md>; rel="alternate"; type="text/markdown"`,
+      `<${c.env.STORE_BASE_URL}/sitemap.xml>; rel="sitemap"; type="application/xml"`,
+      `<${c.env.STORE_BASE_URL}/openapi.json>; rel="service-desc"; type="application/openapi+json"`,
+      `<${c.env.STORE_BASE_URL}/developers>; rel="service-doc"; type="text/html"`,
+      // RFC 9727 §4: from any API-ish resource to the catalog of the
+      // whole surface. /developers already sends this one.
+      `<${c.env.STORE_BASE_URL}/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"`,
+      // RFC 9728 §5.1's companion: the same document the 402s point at.
+      `<${c.env.STORE_BASE_URL}/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json"`,
+    ].join(", "),
+  );
   return c.html(
     renderStorefront({
       base: c.env.STORE_BASE_URL,

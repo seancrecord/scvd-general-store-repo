@@ -1664,3 +1664,30 @@ for (const area of LLMS_AREAS) {
     return c.text(body ?? "", body ? 200 : 404);
   });
 }
+
+/**
+ * THE DEVELOPER AREA'S FILE, AT THE OTHER TWO NAMES ITS ROOM ANSWERS TO
+ * (2026-08-30).
+ *
+ * /developers, /docs and /api have been three paths onto one page since
+ * the room shipped, for the reason developers.ts states: redirecting
+ * would cost a round trip and hide the page from anything that does not
+ * follow 301s. The per-area llms file did not inherit that, so
+ * /docs/llms.txt and /api/llms.txt were 404s — and a scan looking for
+ * modular llms.txt files probed exactly those two, found nothing, and
+ * reported one area where there are five.
+ *
+ * Same document, same function, canonical link back at the one path
+ * that is canonical for the room. Nothing new is written and no sixth
+ * area is invented; this is the room's own alias list, applied to the
+ * file that hangs under it.
+ */
+for (const alias of ["/docs", "/api"] as const) {
+  llmsRoutes.get(`${alias}/llms.txt`, (c) => {
+    const base = c.env.STORE_BASE_URL;
+    const body = llmsForArea(base, "developers");
+    return c.text(body ?? "", body ? 200 : 404, {
+      Link: `<${base}/developers/llms.txt>; rel="canonical"`,
+    });
+  });
+}
