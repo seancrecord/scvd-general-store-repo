@@ -80,7 +80,19 @@ function retirementHeaders(
   return headers;
 }
 
-/** Turns away unknown items (logged as market research) and sold-out shelves. */
+/**
+ * Turns away retired items, unknown items (logged as market research)
+ * and sold-out shelves.
+ *
+ * ALL THREE REFUSE BEFORE ANY MONEY MOVES and all three shipped
+ * without `code` or `charged` — this whole middleware was missed by
+ * the sweep that coded the other forty-two, because not one of its
+ * three sentences contains the words "nothing charged". A boundary
+ * drawn by a grep, not by a decision: a buyer turned away at the
+ * shelf needs the same fact as one turned away at the parameter
+ * check, and 404-with-no-code left a client nothing to branch on but
+ * a status three other things also use.
+ */
 const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const itemId = buyItemId(c);
   const item = getMenuItem(itemId);
@@ -93,6 +105,8 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
       return c.json(
         {
           error: `${retired.name} retired ${retired.retired_on}. ${retired.note}`,
+          code: "retired",
+          charged: false,
           ...(retired.folded_into
             ? {
                 folded_into: retired.folded_into,
@@ -130,6 +144,8 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error: VOICE.unknownItem,
+        code: "unknown_item",
+        charged: false,
         menu_url: `${c.env.STORE_BASE_URL}/menu.json`,
         request_url: `${c.env.STORE_BASE_URL}/api/request`,
       },
@@ -141,6 +157,8 @@ const shelfCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error: VOICE.soldOut,
+        code: "sold_out",
+        charged: false,
         waitlist_url: `${c.env.STORE_BASE_URL}/api/waitlist/${item.id}`,
       },
       409,

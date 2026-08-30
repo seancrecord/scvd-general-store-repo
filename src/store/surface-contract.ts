@@ -196,6 +196,43 @@ export const BUY_REFUSAL_CODES: readonly DoorError[] = [
     what_to_do:
       "Read the existing record rather than buying a second copy of it.",
   },
+  /*
+   * THE SHELF GATE'S THREE (2026-08-30). A buyer can be turned away
+   * before the parameter check ever runs — the item is retired, was
+   * never on the shelf, or the week's stock is spent. All three
+   * refuse before money moves and all three shipped with neither a
+   * code nor `charged`, because the sweep that coded the other
+   * forty-two matched on the words "nothing charged" and none of
+   * these three sentences says them.
+   *
+   * Two of them share a status with something else, which is why a
+   * status alone was never enough to branch on: 409 is also
+   * already_done, and 404 is what a mistyped path returns.
+   */
+  {
+    code: "retired",
+    http: 410,
+    means:
+      "the item existed and was deliberately withdrawn. Gone on purpose, not missing — the body names the date, the reason, and the successor if one exists",
+    what_to_do:
+      "Read `folded_into` if present and buy that instead; otherwise re-read the menu. Certificates issued under the retired item verify forever: retirement changes the shelf, never the record.",
+  },
+  {
+    code: "unknown_item",
+    http: 404,
+    means:
+      "no item by that id is on the shelf and none ever was. Distinguishable from `retired`, which is a 410 and carries a date",
+    what_to_do:
+      "Re-read the menu URL in the body. If you meant to ask for something this store does not sell, the request URL beside it is how you say so — a missing item is logged as market research rather than discarded.",
+  },
+  {
+    code: "sold_out",
+    http: 409,
+    means:
+      "the week's stock is spent. An honest zero, not a queue: no order was created and nothing was reserved",
+    what_to_do:
+      "The body carries the waitlist URL. Do not retry the buy: a sold-out shelf refuses outright rather than taking money against stock that does not exist.",
+  },
 ] as const;
 
 /**
@@ -331,8 +368,17 @@ function whatYouCanUseItFor(task: string | undefined): string {
  * wire: read a pre-payment refusal as a failed purchase and you may
  * retry and double-spend; read it as a completed one and you abandon
  * a sale a corrected parameter would have made.
+ *
+ * THE SET IS THE DOOR'S, NOT THE ITEM'S, and that is deliberate. An
+ * earlier draft filtered it per listing — sold_out only where stock
+ * exists, target_refused only where the door dials out — which reads
+ * tidier and quietly rebuilds the thing this file exists to prevent:
+ * a second, narrower vocabulary that has to be kept in step with the
+ * first. The codes are coarse by design, one set for the whole money
+ * path; a caller branches on the code and then reads the sentence,
+ * which names the specific parameter.
  */
-function doorErrors(facts: PaidDoorFacts): (DoorError & {
+function doorErrors(): (DoorError & {
   charged: boolean;
   code_on_the_wire: boolean;
 })[] {
@@ -341,40 +387,6 @@ function doorErrors(facts: PaidDoorFacts): (DoorError & {
     charged: false,
     code_on_the_wire: true,
   }));
-  /*
-   * TWO REFUSALS CARRY NO CODE YET, and saying so is better than
-   * inventing one or staying silent. Neither sentence promises
-   * "nothing charged", which is what put them outside the sweep that
-   * coded the other forty-two — but both refuse before any money
-   * moves, so a buyer needs the same fact. Published with
-   * code_on_the_wire false rather than described as something a
-   * client can branch on.
-   */
-  const uncoded: (DoorError & { charged: boolean; code_on_the_wire: boolean })[] =
-    [
-      {
-        code: "unknown_item",
-        http: 404,
-        means:
-          "no item by that id is on the shelf, or it was retired. THIS REFUSAL CARRIES NO CODE FIELD ON THE WIRE YET — branch on the 404",
-        what_to_do:
-          "The body carries the menu URL and the request URL. A retired item answers with the date it retired and why, rather than pretending it never existed.",
-        charged: false,
-        code_on_the_wire: false,
-      },
-    ];
-  if (facts.limited) {
-    uncoded.push({
-      code: "sold_out",
-      http: 409,
-      means:
-        "the shelf is empty. An honest zero, not a queue: no order was created. THIS REFUSAL CARRIES NO CODE FIELD ON THE WIRE YET — branch on the 409 and read the waitlist URL beside it",
-      what_to_do:
-        "The body carries the waitlist URL. A sold-out shelf refuses the sale outright rather than taking money against stock that does not exist.",
-      charged: false,
-      code_on_the_wire: false,
-    });
-  }
   return [
     {
       code: "payment_required",
@@ -387,7 +399,6 @@ function doorErrors(facts: PaidDoorFacts): (DoorError & {
       code_on_the_wire: false,
     },
     ...refusals,
-    ...uncoded,
   ];
 }
 
@@ -410,7 +421,7 @@ export function paidDoorContract(
   return {
     what_you_can_use_it_for: whatYouCanUseItFor(task),
     expected_outcome: expectedOutcome(item, facts),
-    errors: doorErrors(facts),
+    errors: doorErrors(),
     security: securityBlock(base, {
       does_in_your_name: `${READS_SENTENCE[facts.reads]} This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.`,
       stores: `The order — what was bought, when, the certificate minted for it, and a sequential patron number — because that record IS the artifact you paid for and the thing your verify URL resolves. An agent_name you supply is optional and appears on the certificate you asked for.${facts.humanQueue ? " A callback_url, if you give one, is used to tell you the work is done and for nothing else. Anything you write in `detail` is recorded exactly as written and read by a human, never treated as instructions to a machine." : ""}`,
