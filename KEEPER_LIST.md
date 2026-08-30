@@ -18,6 +18,20 @@ only the keeper can decide; no work happens until he does.
 
 **Last trued up: 2026-08-20.**
 
+**PARTIAL TRUE-UP 2026-08-30**, and the partial is the honest word.
+Sixty pull requests merged between those dates, so this file was ten
+days behind when the keeper asked what was left. What this pass DID:
+fixed a doubled `## NEXT` heading from a bad merge; re-read NOW-4's
+version numbers off the source files (they were three minors stale);
+verified NOW-8's rail line on the live storefront. What it did NOT
+do: strike anything on the strength of a PR title. An item here is
+struck when its evidence has been walked, and walking sixty is its
+own sitting — the alternative is striking something still open,
+which is the failure this desk exists to prevent.
+
+NOW-1 (the bank walk), NOW-2, NOW-5, the favicon and the alerts
+mailbox need the keeper's own eyes and cannot be trued from here.
+
 ---
 
 ## NOW
@@ -354,10 +368,13 @@ signed-offers gap, the price map). Re-pressing replaces the row.
 
 **4. ClawHub republish — TEST, five minutes.** From a level main:
 `npm run skill:publish`. The ClawHub copy lags the site; the number
-that is never stale is `SKILL_VERSION` in `src/store/spec.ts` (3.4.0
-at this true-up) vs `registry/clawhub/published.json` (3.3.0).
-(Earlier lines said 3.3.0 then 3.3.1 and were each stale on arrival
-— per rule 45, the source files are the count, not this one.)
+that is never stale is `SKILL_VERSION` in `src/store/spec.ts` vs
+`registry/clawhub/published.json`. Read 2026-08-30: **3.7.0 vs
+3.6.0** — the drift is real and one minor wide.
+(Every figure written into this line has been stale within days —
+3.3.0, then 3.3.1, then 3.4.0, now this one. Per rule 45 the source
+files are the count; the number above is a reading with a date on
+it, not a fact this file keeps.)
 
 **5. The directory PR sidecar — keeper follow-through** (08-19).
 Regenerate `providers/scvd/store/openapi.json` from the live
@@ -422,6 +439,12 @@ testnet-run build: yes/no/which key for the no-custody evaluator
 wallet.
 
 **8. The shopfront rail line — LOOK, check don't act** (2026-08-13).
+READ 2026-08-30: the live storefront serves "USDC on Base, Polygon,
+Solana" and names all three rails consistently in its body copy. The
+"8 on Base, 2 on Solana" split described below is NOT what the front
+shows today, so either the split moved or this note outlived the
+copy it was written about. The keeper's eyes decide which; the
+reading is recorded so the next pass starts from a measurement.
 After the next rail-split cron the front should read "8 on Base, 2 on
 Solana," tail gone. If it persists, the unplaced sale is one of the
 four Base hashes in the TASKS archive's NOW block;
@@ -585,7 +608,7 @@ work is in git.)
   were typed. Filed so the stop is a decision with a reason attached
   rather than a thing that quietly restarts.
 
-## NEXT## NEXT
+## NEXT
 
 **The frame:** the verification tier is still $0 outside — Assumption
 0 unproven — while the economy under the position 10×'d. Everything
