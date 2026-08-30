@@ -139,6 +139,65 @@ export function securityBlock(
 }
 
 /**
+ * THE BUY DOORS' PRE-PAYMENT REFUSALS (rule 57.4, 2026-08-30).
+ *
+ * Forty-two places on the money path refuse a purchase before any
+ * money moves, and every one said so in English only: "Nothing
+ * charged." A buying agent that wanted the one fact that matters —
+ * did this cost me anything? — had to parse prose.
+ *
+ * That reads worse here than anywhere else in the store, because both
+ * misreadings cost real money. Take a pre-payment refusal for a
+ * failed purchase and you may retry and double-spend; take it for a
+ * completed one and you abandon a sale a corrected parameter would
+ * have made. This store's own MCP till and browser till are clients
+ * of these doors, so it is not a hypothetical about a stranger.
+ *
+ * Every such refusal now carries `charged: false` and one of these
+ * codes. Both additive: the sentences and the status codes are
+ * exactly what they were.
+ */
+export const BUY_REFUSAL_CODES: readonly DoorError[] = [
+  {
+    code: "target_refused",
+    http: 400,
+    means:
+      "the URL you named is refused by this store's probe-target law (https, default port, no credentials, nothing private or internal) before any money moves",
+    what_to_do:
+      "Name a public https URL on its default port. This is a statement about US, never an observation about that host.",
+  },
+  {
+    code: "passport_refused",
+    http: 403,
+    means: "the door's own gate declined to issue for that subject",
+    what_to_do:
+      "Read the sentence beside it — it names the specific reason — and do not retry unchanged.",
+  },
+  {
+    code: "bad_request",
+    http: 400,
+    means:
+      "a parameter is missing, malformed, or outside its stated bounds. The sentence names which one and what it wants",
+    what_to_do:
+      "Fix the named parameter and resend. Retrying unchanged fails identically and still costs nothing.",
+  },
+  {
+    code: "upstream_unavailable",
+    http: 503,
+    means:
+      "something this purchase depends on did not answer, so the store refused to take money for work it could not do",
+    what_to_do: "Retry later. Nothing was charged and no order was opened.",
+  },
+  {
+    code: "already_done",
+    http: 409,
+    means: "the thing you asked for already exists",
+    what_to_do:
+      "Read the existing record rather than buying a second copy of it.",
+  },
+] as const;
+
+/**
  * The clauses themselves, as data, so the guard and any surface that
  * wants to publish the standard read one list rather than two.
  */
