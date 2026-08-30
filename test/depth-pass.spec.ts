@@ -114,6 +114,112 @@ describe("EIP-712 signability, pointed outward", () => {
   });
 });
 
+describe("what the door asks the buyer to sign", () => {
+  /**
+   * THE PREFLIGHT HALF of the transfer-method finding (2026-08-29).
+   * The paid launch check refuses to sign at a door asking for a
+   * method it cannot build; this is the same reading, free, before
+   * anybody spends. Advisory in both batteries and folded by
+   * neither — the negative cases must not manufacture a defect out
+   * of a door that is telling the truth about itself.
+   */
+  for (const method of ["permit2", "erc7710"]) {
+    it(`a door asking for ${method} draws nonstandard-transfer-method`, () => {
+      const { response, body } = door({
+        x402Version: 2,
+        accepts: [
+          {
+            ...SOUND_ACCEPT,
+            extra: { ...SOUND_ACCEPT.extra, assetTransferMethod: method },
+          },
+        ],
+      });
+      const { checks, advisories } = runChecks(response, false, body);
+      const flagged = advisories.find(
+        (advisory) => advisory.name === "nonstandard-transfer-method",
+      );
+      expect(flagged).toBeDefined();
+      expect(flagged!.detail).toContain(method);
+      // Says nothing against the door: the structural checks stand.
+      expect(checks.every((check) => check.ok)).toBe(true);
+    });
+  }
+
+  it("a method no client can build draws unrecognized-transfer-method", () => {
+    const { response, body } = door({
+      x402Version: 2,
+      accepts: [
+        {
+          ...SOUND_ACCEPT,
+          extra: { ...SOUND_ACCEPT.extra, assetTransferMethod: "gokite-aa" },
+        },
+      ],
+    });
+    const { advisories } = runChecks(response, false, body);
+    const flagged = advisories.find(
+      (advisory) => advisory.name === "unrecognized-transfer-method",
+    );
+    expect(flagged).toBeDefined();
+    expect(flagged!.detail).toContain("gokite-aa");
+    expect(advisoryNames(advisories)).not.toContain(
+      "nonstandard-transfer-method",
+    );
+  });
+
+  it("eip3009, cased however it likes, draws nothing", () => {
+    for (const method of ["eip3009", "EIP3009", " Eip3009 "]) {
+      const { response, body } = door({
+        x402Version: 2,
+        accepts: [
+          {
+            ...SOUND_ACCEPT,
+            extra: { ...SOUND_ACCEPT.extra, assetTransferMethod: method },
+          },
+        ],
+      });
+      const { advisories } = runChecks(response, false, body);
+      expect(advisoryNames(advisories), method).not.toContain(
+        "nonstandard-transfer-method",
+      );
+      expect(advisoryNames(advisories), method).not.toContain(
+        "unrecognized-transfer-method",
+      );
+    }
+  });
+
+  it("a door that omits the field is asked nothing — silence is the ordinary case", () => {
+    const { response, body } = door({
+      x402Version: 2,
+      accepts: [SOUND_ACCEPT],
+    });
+    const { advisories } = runChecks(response, false, body);
+    expect(advisoryNames(advisories)).not.toContain(
+      "nonstandard-transfer-method",
+    );
+    expect(advisoryNames(advisories)).not.toContain(
+      "unrecognized-transfer-method",
+    );
+  });
+
+  it("neither reading moves a verdict", () => {
+    const asked = door({
+      x402Version: 2,
+      accepts: [
+        {
+          ...SOUND_ACCEPT,
+          extra: { ...SOUND_ACCEPT.extra, assetTransferMethod: "permit2" },
+        },
+      ],
+    });
+    const silent = door({ x402Version: 2, accepts: [SOUND_ACCEPT] });
+    const askedChecks = runChecks(asked.response, false, asked.body).checks;
+    const silentChecks = runChecks(silent.response, false, silent.body).checks;
+    expect(askedChecks.map((check) => [check.name, check.ok])).toEqual(
+      silentChecks.map((check) => [check.name, check.ok]),
+    );
+  });
+});
+
 describe("accepts that disagree with each other", () => {
   it("one rail, two prices draws conflicting-amounts", () => {
     const { response, body } = door({

@@ -1,9 +1,3 @@
-import { PUBLISHED_LICENCE } from "@/lib/dataset-envelope";
-import {
-  freeInstrumentPrice,
-  surfaceSecurity,
-  type SurfaceError,
-} from "@/store/surface-contract";
 import { Hono, type Context } from "hono";
 import {
   ACCEPT_REQUIRED_FIELDS,
@@ -21,6 +15,8 @@ import {
   VERDICT_FOLD_CHECK_NAMES,
 } from "@/services/preflight";
 import { lifecycleHeaders } from "@/store/api-lifecycle";
+import { PROBE_DOOR_ERRORS, securityBlock } from "@/store/surface-contract";
+import { ladderRung } from "@/services/menu-markdown";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -29,49 +25,6 @@ import type { HonoEnv } from "@/types";
  * See services/preflight.ts for why it exists and what one probe can
  * and cannot say.
  */
-/**
- * WHAT THIS DOOR ITSELF CAN REFUSE, by name (rule 57.4).
- *
- * `common_failures_this_catches` above is about the door you POINT
- * this at. These are about THIS call — the ones a small model has to
- * be able to branch on without guessing, and the reason a bare
- * "invalid_url" was not enough: a name with no next step is a label,
- * not a category.
- */
-const PREFLIGHT_ERRORS: readonly SurfaceError[] = [
-  {
-    code: "missing_url",
-    http: 400,
-    means: "the request body carried no `url` field, or it was not a string",
-    what_to_do:
-      'POST {"url": "https://your.host/your-paid-endpoint"} as JSON. The URL is the one a buyer would GET expecting a 402 — the buy endpoint, not the homepage.',
-  },
-  {
-    code: "unsupported_url",
-    http: 400,
-    means:
-      "the URL was not https, named a private, loopback or link-local address, or named this store's own hostname",
-    what_to_do:
-      "Give a public https URL on the open internet. We refuse private addresses so this stays a checker rather than a probe somebody points at an internal network, and we refuse our own hostname because a store grading itself is not evidence.",
-  },
-  {
-    code: "rate_limited",
-    http: 429,
-    means:
-      "you passed one of the two ceilings — the per-isolate bucket or the global best-effort cap of 60 probes a minute across all callers",
-    what_to_do:
-      "Wait and retry; the body says which ceiling and the cap is our cost bound, never a fact about your endpoint. Nothing you can buy raises it, so backing off is the whole remedy.",
-  },
-  {
-    code: "unreachable",
-    http: 200,
-    means:
-      "we reached the network and the host did not answer — DNS failure, TLS failure, connection refused or a timeout. This is a VERDICT, not an error status, and it must not be retried as one",
-    what_to_do:
-      "Read `verdict: unreachable` and the reason beside it. It is a dated fact about one moment from one vantage: if you believe the door is up, probe it yourself from your side and tell us — the corrections desk takes it.",
-  },
-] as const;
-
 export const preflightRoutes = new Hono<HonoEnv>();
 
 /**
@@ -140,54 +93,56 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
       "Reliability. One probe is one moment; this is not a monitor and its output is not an uptime claim.",
       "Verify/settle-time failures — wallet state, signatures over a specific payment, on-chain conditions. Those belong to the payment attempt, not the endpoint's shape.",
     ],
+    /**
+     * THE LADDER, PRICED (rule 57.3, 2026-08-29). It named four buy
+     * URLs and not one price or cadence, so an agent reading the free
+     * tool's own documentation had to leave and find the shelf before
+     * it could decide anything. Prices and terms are read off the
+     * menu, never typed here.
+     */
     the_ladder: {
-      artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
-      endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool.`,
-      this_moment_signed: `${base}/api/buy/service_audit — these exact checks, signed and bound into a certificate, served at a permanent report URL: for when you need to hand somebody the readout rather than run it.`,
-      across_a_week: `${base}/api/buy/conformance_watch — these exact checks once a day for seven days, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week.`,
-      behavior: `${base}/api/buy/standing_watch — a paid, signed week of out-of-band hourly probes, for evidence rather than a readout.`,
+      free_first: {
+        artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
+        endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool. Free.`,
+        the_buyer_side: `${base}/api/before-you-pay/v1 — whether YOUR client would actually pay it. Free.`,
+        a_sample_of_the_paid_one: `${base}/samples/once-over.json — every field the $5 artifact carries, unsigned, so you can see it before buying it.`,
+      },
+      paid: [
+        ladderRung(
+          base,
+          "service_audit",
+          "these exact checks, signed and bound into a certificate at a permanent URL: for when you need to hand somebody the readout rather than run it",
+        ),
+        ladderRung(
+          base,
+          "conformance_watch",
+          "these exact checks once a day, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week",
+        ),
+        ladderRung(
+          base,
+          "standing_watch",
+          "out-of-band hourly probes, signed: evidence rather than a readout",
+        ),
+      ].filter(Boolean),
     },
+    expected_outcome:
+      "HTTP 200 and a report naming every check with ok true or false, the advisories, the verdict under this battery, and `also_under` carrying the other battery's verdict on the same probe. A not_ready verdict is a successful call — the tool worked and found something. Only the codes below mean the call itself did not happen.",
+    /**
+     * THE FAILURES OF CALLING US (rule 57.4). This file has always
+     * documented, at length and by name, the failures it finds in
+     * OTHER people's endpoints — and never once said what it returns
+     * when the caller gets it wrong. The codes are new and additive;
+     * the English `error` sentence is unchanged and still served.
+     */
+    errors: PROBE_DOOR_ERRORS,
+    security: securityBlock(base, {
+      does_in_your_name:
+        "Exactly one outbound GET, to the URL you supplied, with no credentials and no body, bounded in time and in response size. Nothing is signed, no wallet is touched, and we never follow a redirect — payment clients refuse them and so do we. Your URL is the only thing we act on.",
+      stores:
+        "Nothing keyed to you. The probe result is returned and not retained; the only thing that persists is an unattributed counter of how many probes ran this minute, which is how the budget below is enforced.",
+    }),
     try_it_against_a_live_endpoint:
       "Any of this store's own buy URLs is a permanent, free, working example of what a passing challenge looks like — GET one and compare. We cannot probe our own hostname from inside the Worker (the platform forbids self-fetch), so CI proves the store passes these exact checks on every build instead, and you are encouraged to probe us from your side rather than take that on faith.",
-
-    /* ---- the five answers rule 57 requires (2026-08-29) ---- */
-
-    what_you_can_use_it_for:
-      `Anything a structural read of somebody's 402 is good for. Some obvious ones: gating a door before your client spends a signature on it, triaging a payment that keeps failing, checking your OWN endpoint before you announce it, screening a directory listing you did not write, or sampling the ecosystem for research. There is no use case we are reserving, and the answer is yours under the same terms as every dataset here (${PUBLISHED_LICENCE}) — if you build something we did not think of, that is the point of publishing it free.`,
-
-    expected_outcome:
-      "HTTP 200 and a JSON object carrying `verdict` (ready | not_ready | unreachable | refused), `checks` — one entry per check named in what_it_checks, each with its own pass and the reason for a fail — `advisories` naming defects from the published vocabulary, and `also_under` with the other battery's verdict on the same probe. A `not_ready` is a successful call: the answer is about the door you named, not about this request. Only a 4xx or 5xx here is a failure of ours.",
-
-    errors: PREFLIGHT_ERRORS,
-
-    price: freeInstrumentPrice(base, [
-      {
-        id: "service_audit",
-        instead:
-          "these exact checks, signed and bound into a certificate at a permanent report URL — for when you need to hand somebody the readout rather than run it",
-      },
-      {
-        id: "conformance_watch",
-        instead:
-          "these exact checks once a day for seven days, each day signed alone, our own missed days counted against us",
-      },
-      {
-        id: "standing_watch",
-        instead:
-          "the same question hour by hour across a week, which catches a door that answers two different ways inside one minute",
-      },
-    ]),
-
-    security: surfaceSecurity({
-      what_this_surface_reads:
-        "One HTTPS GET to the URL you name, from our infrastructure, with no credentials of yours and no payment attached. We read the response's status, headers and body to score the challenge. We refuse private and loopback addresses, refuse redirects, and refuse our own hostname; we never follow a link out of the response, and we never send anything of yours to the host you named.",
-      what_it_stores_about_you:
-        "No account, no cookie, no key. The URL you submit and the verdict are counted for rate limiting and for the store's own published traffic tallies; nothing is keyed to you as a caller, and the body of the probed response is not retained.",
-      what_the_data_is:
-        "One observation of a PUBLIC endpoint, taken by one unauthenticated GET of the kind any buyer would make. No authentication is bypassed, no rate limit is evaded, and nothing private is read to produce a verdict.",
-      integrity:
-        "THIS ANSWER IS NOT SIGNED. It is a live read handed back over TLS and nothing more — you cannot hand it to a third party as evidence, because there is nothing in it they could check. The paid rungs above exist for exactly that: they run these same checks and bind the result into an ed25519-signed certificate at a permanent URL. Do not represent a free preflight as an audit.",
-    }),
   };
 }
 

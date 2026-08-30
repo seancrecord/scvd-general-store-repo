@@ -569,7 +569,7 @@ async function serveMenuItem(c: Context<HonoEnv>) {
      * the listing spec publishes a FROZEN key order as a v1 contract,
      * and a new key in there would break a reader that trusted it.
      */
-    ...paidDoorContract(item, buyInputSchema(item), CAPABILITY_QUERY[item.id]),
+    ...paidDoorContract(item, buyInputSchema(item), CAPABILITY_QUERY[item.id], base),
     guaranteed: GUARANTEED,
     not_guaranteed: NOT_GUARANTEED,
     fulfillment_state: state,

@@ -79,107 +79,98 @@ one room. The honest state of the rest:
 
 - **57.3 is closed shelf-wide** — cadence is required and checked.
 - **57.1 was already held** by test/no-orphan-capability.spec.ts.
-- **57.2, 57.4 and 57.5 were held against /doors and nowhere else.**
-  Most API doors describe themselves in OpenAPI and llms.txt; few
-  publish their error categories BY NAME with what a caller should do
-  about each, and almost none carry a security paragraph.
+- **57.2, 57.4 and 57.5: the sweep has STARTED, three doors deep.**
+  `/api/preflight/v1`, `/api/before-you-pay/v1` and
+  `/api/conformance/v1` are now under the contract and checked by a
+  registry walk in `test/surface-contract.spec.ts`. A door listed
+  there is claimed; a door absent from it is not. Adding a row is how
+  the sweep advances, and the row fails until the door answers.
 
-  **The first leg of the sweep ran 2026-08-29**, in the order named
-  here — the free doors an agent meets before it pays. The preflight,
-  the conformance desk and the buyer's dry run each gained
-  `what_you_can_use_it_for`, `expected_outcome`, `errors` (named
-  categories about THIS call, distinct from the failures each tool
-  reports about its subject), a `price` block that says free with its
-  cadence and prices any paid rung off the menu, and a `security`
-  paragraph. The house-wide safety clauses live once in
-  `src/store/surface-contract.ts`; everything door-specific is
-  required by the type, so an instrument cannot import the shape and
-  leave the substance blank.
+  **What the first three found, and it was the same thing three
+  times.** Every one of them documents, at length and by name, the
+  failures it finds in OTHER people's endpoints. Not one said what IT
+  returns when the caller gets it wrong. The three best-documented
+  files in the repository were generous about everything except their
+  own failure path — the only part a caller is holding when things go
+  wrong. Each also named paid rungs by bare URL with no price and no
+  cadence, and none carried a security paragraph.
 
-  Two things the sweep turned up. `/api/before-you-pay/v1` was absent
-  from the atlas's free-door roster — on llms.txt and in the OpenAPI
-  contract, missing from the one surface arranged by the goal a reader
-  arrives with. And the conformance desk has no paid rung selling the
-  same reading signed; rather than point at an item answering a
-  different question, its price block says the rung is absent and why.
+  Fixed by: stable `code` fields on the wire (additive — the English
+  `error` sentence is unchanged and still served), an
+  `expected_outcome`, a published error catalogue, a `security` block,
+  and ladders priced from the shelf via `ladderRung`.
 
-  `test/free-doors-answer-rule-57.spec.ts` holds all of it, walking
-  the atlas's own FREE_DOORS rather than a list written in the test,
-  so an instrument added to the atlas tomorrow is held tomorrow.
+  **One guard was wrong and the door was right.** The first draft
+  demanded a paid rung on every door. The conformance desk has
+  refused one in writing since it shipped — "a paid verdict has a
+  customer, and a customer for a verdict is how verdicts start
+  bending" — so the guard would have made the store sell the one
+  thing it decided not to. The registry now carries `paid_rung:
+  false` and the clause demands the REFUSAL be on the record instead.
+  Silence is what 57.3 forbids, not abstinence.
 
   **The second leg ran 2026-08-30: the paid shelf.** Measured first —
-  every one of the 26 items answered ZERO of the four. Price and
-  cadence had been covered everywhere since the rule was adopted (the
-  type system requires them); what an agent gets back, what can go
-  wrong, and what we hold ourselves to were published nowhere per
-  item.
+  every one of the 26 items answered ZERO of 57.2, 57.4 and 57.5.
+  Price and cadence had been covered everywhere since the rule was
+  adopted; what an agent gets back, what can go wrong, and what we
+  hold ourselves to were published nowhere per item.
 
   The answers derive. 104 hand-written paragraphs about a buy path
-  that is ONE code path is 104 chances to describe it wrongly, and a
-  stale safety paragraph is worse than a stale item count. Expected
-  outcome comes from the item's fulfillment class, term and SLA; the
-  error categories from its input schema and inventory — a `sold_out`
-  branch is published only where stock exists, so a client is never
-  told to handle a branch that cannot fire.
+  that is ONE code path is 104 chances to describe it wrongly.
+  Expected outcome comes from the item's fulfillment class, term and
+  SLA; the error categories from its input schema and inventory — a
+  `sold_out` branch is published only where stock exists, so a client
+  is never told to handle a branch that cannot fire. They reuse
+  `DoorError` and `securityBlock` rather than growing a second set of
+  names for the same promises.
 
-  **The exception, and it is the lesson.** The first version derived
-  "does this door knock on your endpoint" from the input schema: a
-  `url` or `host` property meant a fetch. It was wrong on its first
-  run — `spot_check` takes a host and deliberately does not knock,
-  reading the books at the counter, which its own description says
-  out loud. A guessed safety claim is worse than an absent one. What
-  a door reads is now a STATED fact (`MenuItem.reads`, required by
-  the type, five classes), established from each fulfillment
-  service's import graph: `@/lib/probe-target` means it fetches a
-  subject you named, `@/lib/base-rpc` or `@/lib/solana-rpc` means it
-  reads public chain state, neither means it reaches nothing. The
-  method is written into the type so the answers can be re-checked
-  rather than trusted, and `launch_check` — the one door that makes a
-  real payment against your endpoint — says so in its own class.
+  **The exception is the lesson.** The first version derived "does
+  this door knock on your endpoint" from the input schema: a `url` or
+  `host` property meant a fetch. It was wrong on its first run —
+  `spot_check` takes a host and deliberately does not knock, reading
+  the books at the counter, which its own description says out loud.
+  A guessed safety claim is worse than an absent one. What a door
+  reads is now a STATED fact (`MenuItem.reads`, required by the type,
+  five classes), established from each fulfillment service's import
+  graph: `@/lib/probe-target` means it fetches a subject you named,
+  `@/lib/base-rpc` or `@/lib/solana-rpc` means it reads public chain
+  state, neither means it reaches nothing. `launch_check` — the one
+  door that makes a real payment against your endpoint — has its own
+  class and says whose money moves.
 
   `test/paid-doors-answer-rule-57.spec.ts` walks MENU_ITEMS and holds
-  all four against each item's own facts. menu.json entries gained
-  `listing_url`, because the catalogue named a `buy_url` and left an
-  agent to construct the URL of the page that describes it, and a URL
-  a reader has to guess is not findable.
+  all of it against each item's own facts. menu.json entries gained
+  `listing_url`: the catalogue named a `buy_url` and left an agent to
+  construct the URL of the page describing what it was buying.
 
-  **The third leg ran 2026-08-30: the reading rooms**, which closes
-  the sweep. Measured across all 35 first. The structural half of
-  58.1 was already solid — title, description and canonical on 35 of
-  35 — with one exception: `/developers` carried two `<h1>`s, its
-  body writing one under the shared renderer's. Fixed, and now
-  checked on every room, because two h1s splits the outline a search
-  engine builds and `/developers` is the room a readiness audit once
-  reported as absent.
+  **The third leg ran 2026-08-30: the reading rooms**, against rule
+  58. The structural half of 58.1 was already solid — title,
+  description and canonical on 35 of 35 — with one exception the
+  measurement found: `/developers` carried two `<h1>`s, its body
+  writing one under the shared renderer's. Two h1s splits the outline
+  a search engine builds, and `/developers` is the room a readiness
+  audit once reported as absent.
 
   **58.4 was on one room out of thirty-five** — `/doors`, built the
-  evening the rule was adopted. The note above called it the weakest
-  clause store-wide and it was right.
-
-  The free half of the fix derives completely: all 35 rooms already
-  answer `Accept: application/json` at their own URL — measured, not
-  assumed — so "the machine copy of this page is this page" is true
-  of a room added tomorrow with no bookkeeping at all. That is the
-  line a person hands to their agent.
+  evening the rule was adopted. The free half of the fix derives
+  completely: all 35 rooms already answer `Accept: application/json`
+  at their own URL, measured rather than assumed, so "the machine
+  copy of this page is this page" is true of a room added tomorrow
+  with no bookkeeping. That is the line a person hands to their agent.
 
   The paid half is deliberately sparse. Ten rooms name a rung
-  (`Room.deeper`, menu ids, priced off the shelf); the other
-  twenty-five say **"Nothing on the shelf sells a deeper read of this
-  page. What is here is all of it, free and complete."** That empty
-  case is a sentence rather than a gap on purpose — it is the clause
-  rule 58 closes with. Pointing a reader at an item answering a
-  different question to avoid an empty section is the failure this
+  (`Room.deeper`, priced off the shelf); the other twenty-five say
+  **"Nothing on the shelf sells a deeper read of this page. What is
+  here is all of it, free and complete."** That empty case is a
+  sentence rather than a gap on purpose — the same instinct as
+  `paid_rung: false` above. Pointing a reader at an item answering a
+  different question, to avoid an empty section, is the failure this
   store files against other people.
 
-  `/doors` opts out and writes its own; `test/rooms-earn-their-page.spec.ts`
-  checks the clause against it directly rather than exempting it,
-  since an opt-out that stopped satisfying the rule would be the
-  quietest possible regression. `/porch` renders outside the shared
-  page and now calls the section explicitly.
-
-  **The sweep is closed.** What remains is judgement no test can make:
-  58.1's other half — whether a description would make anybody click
-  it — and 58.2, whether the finding is really in the first screen.
+  **Still owed:** the MCP tool surface. Same method: add the row,
+  watch it fail, close it. What no test can settle is 58.1's other
+  half — whether a description would make anybody click it — and
+  58.2, whether the finding is really in the first screen.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.

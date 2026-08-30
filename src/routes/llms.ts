@@ -87,8 +87,11 @@ ${ALSO_A_STORE}
 Everything this store signs verifies free, forever, at
 \`${base}/api/verify/{id}\` — no account, no wallet, no rate limit. The
 conformance desk explains itself in plain language at
-${base}/conformance; the corpus, the weekly signed record of the x402
-ecosystem, reads at ${base}/corpus. That order is deliberate: the
+${base}/conformance and now takes a pasted artifact in a form on that
+page — declared to browser agents with WebMCP's \`toolname\` attributes,
+and deliberately without \`toolautosubmit\`, so an agent may fill it and
+a human presses submit; the corpus, the weekly signed record of the
+x402 ecosystem, reads at ${base}/corpus. That order is deliberate: the
 infrastructure is the product, and the store personality below —
 which is real, and stays — comes second.
 
@@ -879,6 +882,16 @@ sha256 at your /.well-known/scvd-note.txt — and your words ride
 beside the observation on every surface that shows it. Beside, never
 instead: no note alters an observation, and no observation silences a
 note.
+
+${base}/samples/once-over.json is a free, unsigned specimen of the $5
+Once-Over: every field a buyer receives, run by the same battery, over
+a constructed door that passes the frozen v1 core and fails v2's
+atomic-amount check \u2014 one probe, two verdicts, disagreeing. It is
+NOT signed and does NOT verify; the paid artifact is and does, at
+\`${base}/api/verify/{id}\`. The subject is a .example host that can never
+resolve, so it is an observation about nobody. The room is at
+${base}/samples, and the free way to check your own door before
+buying anything is ${base}/api/preflight/v1.
 
 ${base}/doors.json is the LIST of every host the chain has ever
 carried — one entry each, alphabetical, with the most recent dated

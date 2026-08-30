@@ -177,6 +177,89 @@ describe("the input contract", () => {
   });
 });
 
+describe("something to key a retry on", () => {
+  /**
+   * CV's reading, 2026-08-28: the double-charge lesson landed at the
+   * SDK layer, and what is left is the hand-rolled authorization
+   * path, whose retry signs a FRESH nonce. The x402 nonce stops a
+   * replay of one authorization and says nothing about two honest
+   * authorizations for one intended purchase. The seller-side
+   * correlate is observable and this battery had never asked.
+   */
+  const withInputs = (queryParams: Record<string, unknown>) =>
+    advisoryNames(
+      challenge([BASE_ACCEPT], {
+        bazaar: { info: { input: { type: "http", method: "GET", queryParams } } },
+      }),
+    );
+
+  for (const field of [
+    "idempotency_key",
+    "idempotencyKey",
+    "order_id",
+    "requestId",
+    "client_ref",
+    "purchase-id",
+  ]) {
+    it(`credits a declared ${field}`, () => {
+      const names = withInputs({ url: "https://x.example/a", [field]: "abc" });
+      expect(names).toContain("retry-key-declared");
+      expect(names).not.toContain("retry-key-not-in-challenge");
+    });
+  }
+
+  it("names the absence where inputs are declared without one", () => {
+    const { advisories } = runChecks(
+      challenge([BASE_ACCEPT], {
+        bazaar: {
+          info: {
+            input: {
+              type: "http",
+              method: "GET",
+              queryParams: { url: "https://x.example/a" },
+            },
+          },
+        },
+      }),
+      false,
+    );
+    const found = advisories.find(
+      (advisory) => advisory.name === "retry-key-not-in-challenge",
+    );
+    expect(found).toBeTruthy();
+    // Says what one absence cannot separate, and how to falsify it —
+    // the discipline signed-offers-not-in-challenge took on 08-28.
+    expect(found!.detail).toContain("does not distinguish");
+    expect(found!.detail).toContain("TO FALSIFY");
+    // Never asserts a fact about the till behind the door.
+    expect(found!.detail).toContain("THAT IS WHAT WAS OBSERVED");
+  });
+
+  it("does not count one silence twice", () => {
+    // A door declaring no input contract at all draws the louder
+    // advisory and nothing from this reading.
+    const names = advisoryNames(challenge([BASE_ACCEPT]));
+    expect(names).toContain("no-input-contract");
+    expect(names).not.toContain("retry-key-not-in-challenge");
+    expect(names).not.toContain("retry-key-declared");
+  });
+
+  it("moves no verdict either way", () => {
+    // Same door, same bazaar block, one field apart: the reading is
+    // advisory in both batteries and must not touch a check.
+    const checksFor = (queryParams: Record<string, unknown>) =>
+      runChecks(
+        challenge([BASE_ACCEPT], {
+          bazaar: { info: { input: { type: "http", method: "GET", queryParams } } },
+        }),
+        false,
+      ).checks.map((check) => [check.name, check.ok]);
+    expect(checksFor({ url: "https://x.example/a", order_id: "abc" })).toEqual(
+      checksFor({ url: "https://x.example/a" }),
+    );
+  });
+});
+
 describe("the paid walk names a payTo defect as the finding", () => {
   it("stops at terms with the real reason, never at the sanctions screen", async () => {
     /**

@@ -1,10 +1,5 @@
-import { PUBLISHED_LICENCE } from "@/lib/dataset-envelope";
-import {
-  freeInstrumentPrice,
-  surfaceSecurity,
-  type SurfaceError,
-} from "@/store/surface-contract";
 import { CANONICAL_USDC, isCanonicalUsdc } from "@/lib/value-checks";
+import { securityBlock } from "@/store/surface-contract";
 import {
   parseJws,
   verifyArtifact,
@@ -884,46 +879,6 @@ export async function checkConformance(
 }
 
 /** The GET: what this desk is, before anybody posts anything to it. */
-/**
- * WHAT THIS DOOR ITSELF CAN REFUSE, by name (rule 57.4).
- *
- * `what_it_cannot_tell_you` is about the limits of the verdict.
- * These are about the call failing before there is a verdict.
- */
-const CONFORMANCE_ERRORS: readonly SurfaceError[] = [
-  {
-    code: "missing_artifact",
-    http: 400,
-    means: "the request body carried no `artifact` field, or it was not a string",
-    what_to_do:
-      'POST {"artifact": "<compact JWS>"} as JSON — three base64url segments, dot-separated. `kind` is optional and inferred from the payload.',
-  },
-  {
-    code: "unparseable_artifact",
-    http: 400,
-    means:
-      "the value was not a compact JWS this desk could split into header, payload and signature",
-    what_to_do:
-      "Check you sent the COMPACT serialization, not the JSON one, and that nothing re-encoded it in transit. A URL-decoded or whitespace-wrapped token is the usual cause.",
-  },
-  {
-    code: "budget_exhausted",
-    http: 200,
-    means:
-      "did:web resolution was asked for and the global resolution budget was spent, so the signature was not checked. This is NOT a refusal and NOT a fault in your artifact",
-    what_to_do:
-      "Read key_resolution: \"budget_exhausted\" — you still have the shape and time checks. To get the signature checked regardless, supply public_key_hex and the whole check runs offline with no budget at all.",
-  },
-  {
-    code: "issuer_unreachable",
-    http: 200,
-    means:
-      "the did:web host named in the artifact's own kid did not answer inside the three-second budget",
-    what_to_do:
-      "This is a fact about that issuer's key hosting at this moment, not about the signature. Retry, or supply public_key_hex if you already hold their key.",
-  },
-] as const;
-
 export function conformanceDoc(base: string) {
   return {
     title: "The conformance desk",
@@ -972,39 +927,46 @@ export function conformanceDoc(base: string) {
     run_it_yourself: RUN_IT_YOURSELF,
     why_it_is_free:
       "Because the useful version of a conformance check is one an agent reaches for without a decision, and a price is a decision. It also keeps us honest: a paid verdict has a customer, and a customer for a verdict is how verdicts start bending.",
-    mailbox: `${base}/api/letter`,
-
-    /* ---- the five answers rule 57 requires (2026-08-29) ---- */
-
-    what_you_can_use_it_for:
-      `Anything a verdict on somebody's signed artifact is good for. Some obvious ones: checking an offer before you pay against it, checking a receipt somebody handed you as proof, validating your OWN issuer implementation against a second reading, running it in CI over fixtures, or comparing a competitor's artifacts to the same bar we hold ourselves to — which we mean literally, this desk takes theirs. There is no use case we are reserving, and the answer is yours under the same terms as every dataset here: ${PUBLISHED_LICENCE}.`,
-
     expected_outcome:
-      "HTTP 200 and a JSON object carrying `verdict`, `checks` — one entry per check named in what_it_checks, each with its own pass and reason — `key_resolution` saying how the key was obtained (or why it was not), and `live` reported SEPARATELY from the verdict, because an expired offer is a valid artifact you simply cannot pay against. A failing verdict is a successful call: the answer is about the artifact you sent. Only a 4xx or 5xx is a failure of ours.",
-
-    errors: CONFORMANCE_ERRORS,
-
-    price: freeInstrumentPrice(
-      base,
-      [
-        {
-          id: "conformance_watch",
-          instead:
-            "a DOOR's artifacts checked once a day for seven days, each day signed alone, our own missed days counted against us",
-        },
-      ],
-      "Nothing on the shelf sells this exact reading — one artifact, one verdict — bound into a signed certificate. Every check here is one you can run yourself offline against published bytes, so what a signature would add is our word, which is the thing this desk exists to make unnecessary. If you need a countersigned verdict on a single artifact, say so at the mailbox rather than buying the watch above, which answers a different question.",
-    ),
-
-    security: surfaceSecurity({
-      what_this_surface_reads:
-        "The artifact you post, and — only when you ask for key resolution and give no public_key_hex — one outbound request to the did:web host named in the artifact's own kid, held open at most three seconds. Supply public_key_hex and the check runs entirely offline: no request is made in your name at all. check_anchor adds one further request to that same issuer's anchor log and nothing else.",
-      what_it_stores_about_you:
-        "No account, no cookie, no key, no wallet. The artifact you post is checked and not retained; the did:web budget is a plain global bucket, so no IP, cookie or identifier is used to enforce it — which bounds our cost rather than allocating fairly between callers, and that trade is stated rather than hidden.",
-      what_the_data_is:
-        "Your own artifact, plus PUBLIC key material published by the issuer at a well-known path for exactly this purpose. Nothing private is read, no authentication is bypassed, and the desk never contacts anybody but the issuer the artifact itself names.",
-      integrity:
-        "THIS ANSWER IS NOT SIGNED, and you should not need it to be: every check here is one you can run yourself offline against published bytes, which is the point of publishing the vectors and the CLI. Trusting this desk's word is the failure mode it exists to remove. If you want a signed artifact of the reading anyway, the rungs above sell that and nothing else.",
+      "HTTP 200 and a structured verdict: whether the artifact parsed, whether every required field for its kind is present, whether the signature verified against the key named in the kid, and \u2014 reported separately, never folded into the verdict \u2014 whether it is still live and whether it is past its stale_after. An artifact that fails is a successful call. Only the codes below mean the check never ran.",
+    /**
+     * THE FAILURES OF CALLING US (rule 57.4, 2026-08-29). This desk
+     * documented the failure modes of everybody else's artifacts in
+     * detail and never said what it returns when a caller sends
+     * something it cannot read. These are the categories that already
+     * existed in the responses; naming them is what is new.
+     */
+    errors: [
+      {
+        code: "artifact_missing",
+        http: 400,
+        means: "no artifact was supplied, or the body was not JSON",
+        what_to_do:
+          'POST {"artifact": "<compact JWS>"} with Content-Type: application/json. Retrying the same body fails identically.',
+      },
+      {
+        code: "artifact_unparseable",
+        http: 200,
+        means:
+          "the artifact is not three dot-separated base64url segments with JSON header and payload. This answers 200 with a FAILING VERDICT, not an error status \u2014 an unparseable artifact is a finding about the artifact, which is what you asked",
+        what_to_do:
+          "Read the verdict, not the status. Treating this as a transport failure and retrying will get the same answer.",
+      },
+      {
+        code: "key_resolution_budget_exhausted",
+        http: 200,
+        means:
+          "did:web resolution was not attempted or did not finish inside its budget, so the signature is unchecked. Reported as key_resolution: \"budget_exhausted\", never as a failed signature",
+        what_to_do:
+          "Supply public_key_hex and the check runs entirely offline with no budget at all. Never read this as the artifact being invalid \u2014 we did not look.",
+      },
+    ],
+    security: securityBlock(base, {
+      does_in_your_name:
+        "By default, nothing: supply public_key_hex and the whole check is arithmetic on bytes you already had, with no network request made in your name at all. Only did:web resolution (and the optional check_anchor read) dials out, to a host the artifact itself names, budgeted and time-bounded \u2014 and you can refuse it with resolve_key: false.",
+      stores:
+        "Nothing. The artifact you send is checked and discarded; it is not retained, not logged against a caller, and never becomes part of the census or any published surface.",
     }),
+    mailbox: `${base}/api/letter`,
   };
 }

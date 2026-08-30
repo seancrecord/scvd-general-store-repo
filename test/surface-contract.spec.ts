@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import houseRulesText from "../HOUSE_RULES.md?raw";
 import { MENU_ITEMS } from "@/store/menu";
 import { NEVER_AUTO_RENEWS, cadenceLine, priceLine } from "@/services/menu-markdown";
+import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 
 /**
  * THE SURFACE CONTRACT (house rules 57 and 58, adopted 2026-08-29).
@@ -125,6 +126,177 @@ describe("every price says what it is buying, and for how long", () => {
     const watch = body.items.find((item) => item.id === "conformance_watch");
     expect(watch?.cadence).toBe("term");
     expect(watch?.term_days).toBe(7);
+  });
+});
+
+/**
+ * THE SWEEP (begun 2026-08-29). /doors was the worked example; these
+ * are the doors an agent meets BEFORE it ever pays us, and the sweep
+ * found the same three holes in all three of them — in the three
+ * best-documented files in the repository.
+ *
+ * Every one of them described, at length and by name, the failures it
+ * finds in OTHER people's endpoints. Not one said what IT returns
+ * when the caller gets it wrong. That is the shape worth naming: the
+ * documentation was generous everywhere except about its own failure
+ * path, which is the only part a caller is holding when things go
+ * wrong.
+ *
+ * THE REGISTRY IS THE COVERAGE STATEMENT. A door listed here is under
+ * the contract and checked; a door absent from it is not claimed to
+ * be. Adding a row is how the sweep advances, and the row fails until
+ * the door answers — which is the opposite of a doc that says
+ * "everything complies".
+ */
+const DOORS_UNDER_CONTRACT = [
+  { path: "/api/preflight/v1", dials_out: true, paid_rung: true },
+  { path: "/api/before-you-pay/v1", dials_out: true, paid_rung: true },
+  /*
+   * THE DESK HAS NO PAID RUNG ON PURPOSE, and the first draft of this
+   * guard was wrong to demand one. It requires every door to point at
+   * an upsell — and the conformance desk has refused one in writing
+   * since it shipped: "a paid verdict has a customer, and a customer
+   * for a verdict is how verdicts start bending." Forcing a rung here
+   * would have made the store sell the one thing it decided not to.
+   *
+   * So the flag is false and the clause below demands the REFUSAL be
+   * on the record instead. A door with no upsell must have declined
+   * one out loud; silence is the thing 57.3 actually forbids.
+   */
+  { path: "/api/conformance/v1", dials_out: false, paid_rung: false },
+] as const;
+
+describe("the doors under the contract answer all five questions", () => {
+  it("covers more than one door, or the sweep has not started", () => {
+    expect(DOORS_UNDER_CONTRACT.length).toBeGreaterThan(2);
+  });
+
+  for (const door of DOORS_UNDER_CONTRACT) {
+    it(`${door.path} — 57.2, what it is and what it is for`, async () => {
+      const doc = (await (
+        await SELF.fetch(`https://scvd.store${door.path}`)
+      ).json()) as Record<string, any>;
+      expect(doc.summary, `${door.path} has no summary`).toBeTruthy();
+      // The honest half: every one of these says what it CANNOT do,
+      // which is the clause's real test — a description that only
+      // sells is a description that narrows by omission.
+      const limits =
+        doc.what_it_cannot_check ?? doc.what_it_cannot_tell_you ?? null;
+      expect(limits, `${door.path} never says what it cannot do`).toBeTruthy();
+    });
+
+    it(`${door.path} — 57.3, free or paid with the cadence`, async () => {
+      const doc = (await (
+        await SELF.fetch(`https://scvd.store${door.path}`)
+      ).json()) as Record<string, any>;
+      const text = JSON.stringify(doc);
+      expect(text, `${door.path} never says it is free`).toMatch(/[Ff]ree/);
+      /*
+       * A LADDER THAT NAMES A BUY URL MUST NAME ITS PRICE. This is the
+       * exact hole the sweep opened on: four buy URLs on the preflight
+       * doc, not one price or cadence between them.
+       */
+      const rungs = (doc.the_ladder?.paid ?? []) as Record<string, unknown>[];
+      for (const rung of rungs) {
+        expect(rung["price_usdc"], `a paid rung on ${door.path} has no amount`).toBeTruthy();
+        expect(["one_off", "term"]).toContain(rung["cadence"]);
+        expect(String(rung["price"])).toContain("charges again by itself");
+        expect(String(rung["buy_url"])).toContain("/api/buy/");
+      }
+      if (door.paid_rung) {
+        expect(
+          rungs.length,
+          `${door.path} names no paid path at all. Either point at one, or set paid_rung false here and say in the door's own body why it refuses to have one.`,
+        ).toBeGreaterThan(0);
+      } else {
+        expect(
+          doc.why_it_is_free,
+          `${door.path} has no paid rung and does not say why. A door that declines to sell an upgrade has made a decision, and 57.3 wants the decision, not the silence.`,
+        ).toBeTruthy();
+        expect(rungs.length, `${door.path} declares no paid rung but serves one`).toBe(0);
+      }
+    });
+
+    it(`${door.path} — 57.4, the outcome and the errors by name`, async () => {
+      const doc = (await (
+        await SELF.fetch(`https://scvd.store${door.path}`)
+      ).json()) as Record<string, any>;
+      expect(doc.expected_outcome, `${door.path} never states its success shape`).toBeTruthy();
+      const errors = (doc.errors ?? []) as Record<string, string>[];
+      expect(errors.length, `${door.path} documents nobody's failures but other people's`).toBeGreaterThan(1);
+      for (const error of errors) {
+        expect(error["code"], "an error with no code is not a category").toBeTruthy();
+        expect(error["means"]).toBeTruthy();
+        expect(
+          error["what_to_do"],
+          `${error["code"]} says what it is and not what to do about it`,
+        ).toBeTruthy();
+      }
+    });
+
+    it(`${door.path} — 57.5, what it does in your name and what we hold to`, async () => {
+      const doc = (await (
+        await SELF.fetch(`https://scvd.store${door.path}`)
+      ).json()) as Record<string, any>;
+      const security = doc.security as Record<string, string> | undefined;
+      expect(security, `${door.path} has no security block at all`).toBeTruthy();
+      expect(security!["what_this_does_in_your_name"]).toBeTruthy();
+      expect(security!["what_it_stores_about_you"]).toBeTruthy();
+      expect(security!["what_we_never_do"]).toContain("No account");
+      expect(security!["standards"]).toContain("private-first");
+      expect(security!["reporting"]).toContain("security.txt");
+      if (door.dials_out) {
+        expect(
+          security!["what_this_does_in_your_name"],
+          "a door that dials a URL you named must say so in its own security block",
+        ).toMatch(/outbound GET/);
+      }
+    });
+  }
+});
+
+/**
+ * THE CODES ARE ON THE WIRE, not only in the documentation. A
+ * published error catalogue that the door does not actually emit is
+ * the same defect as an undocumented one, wearing better clothes.
+ */
+describe("a named error category is what the door really sends", () => {
+  it("names the category on a real refusal", async () => {
+    const response = await SELF.fetch("https://scvd.store/api/preflight/v1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url: "not-a-url" }),
+    });
+    expect(response.status).toBe(400);
+    const body = (await response.json()) as Record<string, string>;
+    expect(body["code"]).toBe("url_unparseable");
+    // The English sentence is unchanged and still served: the codes
+    // are additive, so nothing reading the old shape breaks.
+    expect(body["error"]).toBeTruthy();
+  });
+
+  it("refuses our own hostname by name rather than by prose", async () => {
+    const response = await SELF.fetch("https://scvd.store/api/preflight/v1", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url: "https://scvd.store/api/buy/hello" }),
+    });
+    expect(response.status).toBe(400);
+    const body = (await response.json()) as Record<string, string>;
+    expect(body["code"]).toBe("own_host_refused");
+  });
+
+  it("publishes every code it can emit, and emits nothing it did not publish", async () => {
+    const doc = (await (
+      await SELF.fetch("https://scvd.store/api/preflight/v1")
+    ).json()) as Record<string, any>;
+    const published = new Set(
+      (doc.errors as { code: string }[]).map((error) => error.code),
+    );
+    // The two we just provoked, plus the ones the source declares.
+    for (const code of PROBE_DOOR_ERRORS.map((error) => error.code)) {
+      expect(published.has(code), `${code} is emitted but not published`).toBe(true);
+    }
   });
 });
 

@@ -11,6 +11,7 @@ import type { Env } from "@/types";
 import { readTransferClaim } from "@/services/attestation";
 import type { AttestationQuery, TransferClaimRead } from "@/services/attestation";
 import { evmChainOf } from "@/lib/base-rpc";
+import { DEFAULT_TRANSFER_METHOD } from "@/services/preflight";
 import { kvGetJson, kvPut } from "@/lib/kv-retry";
 
 /**
@@ -507,8 +508,14 @@ interface AcceptEntry {
  * `undefined` is NOT a mismatch: the field is optional, most doors
  * omit it, and EIP-3009 is the settled default for USDC on Base.
  * Absence means "the ordinary thing", and the walk proceeds.
+ *
+ * ONE LAW, BOTH DIRECTIONS (2026-08-29). The constant is the free
+ * preflight's DEFAULT_TRANSFER_METHOD, imported rather than retyped:
+ * the battery that tells a stranger their door asks for something
+ * unusual and the walk that refuses to knock at it must not be able
+ * to drift apart on what "usual" means.
  */
-const ASSET_TRANSFER_METHOD_SIGNED = "eip3009";
+const ASSET_TRANSFER_METHOD_SIGNED = DEFAULT_TRANSFER_METHOD;
 
 function defaultNonce(): string {
   const bytes = new Uint8Array(32);

@@ -117,16 +117,11 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
     const json = await listing(id);
     const security = (json.security ?? {}) as Record<string, string>;
     expect(Object.keys(security).length).toBeGreaterThan(0);
-    expect(String(security.what_this_surface_reads).length).toBeGreaterThan(120);
+    expect(String(security.what_this_does_in_your_name).length).toBeGreaterThan(120);
     expect(String(security.what_it_stores_about_you).length).toBeGreaterThan(80);
-    expect(String(security.what_the_data_is).length).toBeGreaterThan(60);
+    expect(security.what_we_never_do).toContain("No account");
     expect(security.standards).toContain("private-first");
     expect(security.reporting).toContain("security.txt");
-    // The paid shelf's actual difference from the free instruments,
-    // which say NOT SIGNED in the same field.
-    expect(security.integrity).toContain("THIS ONE IS SIGNED");
-    expect(security.integrity).toContain(item.name);
-
     /*
      * The claim that would matter most if it were backwards. A door
      * that reaches nothing must SAY it reaches nothing, and one that
@@ -135,28 +130,26 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
      * its inputs, because the guess was wrong the first time.
      */
     if (FETCHES.has(item.reads)) {
-      expect(security.what_this_surface_reads).toContain("the endpoint you name");
-      expect(security.what_this_surface_reads).not.toContain(
-        "makes no outbound request",
-      );
+      expect(security.what_this_does_in_your_name).toMatch(/outbound GET/);
+      expect(security.what_this_does_in_your_name).not.toContain("Nothing at all");
     } else if (item.reads === "chain_read") {
-      expect(security.what_this_surface_reads).toContain("public chain state");
-      expect(security.what_this_surface_reads).toContain(
+      expect(security.what_this_does_in_your_name).toContain("Public chain state");
+      expect(security.what_this_does_in_your_name).toContain(
         "No request is made to any endpoint of yours",
       );
     } else {
       expect(
-        security.what_this_surface_reads,
+        security.what_this_does_in_your_name,
         `${id} reaches nothing and does not say so`,
-      ).toContain("makes no outbound request at all");
+      ).toMatch(/Nothing, outside this store|Nothing at all/);
     }
     if (item.reads === "subject_purchase") {
       // The strongest thing on the shelf. It must never be described
       // as a mere look, and it must say whose money moves.
-      expect(security.what_this_surface_reads).toContain("real payment");
-      expect(security.what_this_surface_reads).toContain("Your money is not spent");
+      expect(security.what_this_does_in_your_name).toContain("real payment");
+      expect(security.what_this_does_in_your_name).toContain("Your money is not spent");
     }
     // Never, on any door, a request for something that could spend.
-    expect(security.what_this_surface_reads).toContain("never asks for a credential");
+    expect(security.what_this_does_in_your_name).toContain("never asks for a credential");
   });
 });

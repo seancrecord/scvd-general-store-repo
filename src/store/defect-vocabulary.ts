@@ -36,7 +36,7 @@
  */
 
 /** Bumped when a class is added, retired, or its assertion changes. */
-export const DEFECT_VOCABULARY_VERSION = "4";
+export const DEFECT_VOCABULARY_VERSION = "5";
 
 /**
  * WHAT CHANGED AND WHEN, because "open" without this is "ungoverned".
@@ -91,6 +91,14 @@ export const VOCABULARY_CHANGELOG: readonly VocabularyChange[] = [
       "an outside strategic review of the evidence layer, accepted the same day",
     what_changed:
       "Every defect class gains repair_hint: what the operator does, in their own systems, to clear the class. Additive only — no id, assertion, or falsified_by changed; a hint is advice about a door, never a judgment about its operator, and falsified_by remains the only authority on presence.",
+  },
+  {
+    version: "5",
+    date: "2026-08-29",
+    at_the_instigation_of:
+      "this store, from a public thread (@danbuildss, 2026-08-28) chased to the actual observable",
+    what_changed:
+      "Added transfer-method-unrecognized: an accepts entry naming an authorization standard in extra.assetTransferMethod that no published client can build, leaving a buyer with a field they can read and nothing they can sign. Registered with the reading that produced it — this store had been reading extra.name and extra.version out of that object and stepping over the field that decides whether a signature is acceptable at all. ONE CLASS ONLY, DELIBERATELY: a door asking for permit2 or erc7710 gets no class, because naming a recognized method in the place the spec provides is not a defect. That case ships as an advisory (nonstandard-transfer-method), where a fact a buyer should read before signing belongs, and a register that called it a defect would be charging an operator for telling the truth about themselves.",
   },
 ];
 
@@ -247,6 +255,20 @@ export const DEFECT_CLASSES: readonly DefectClass[] = [
       "Every accepts entry carrying the published required fields at the stated moment.",
     repair_hint:
       "Fill every accepts entry with the v2-required fields, as strings, and regenerate the offer from your server's own config rather than hand-editing JSON. The free preflight names the missing field.",
+  },
+  {
+    id: "transfer-method-unrecognized",
+    title: "Asks for a signature nobody can build",
+    asserts:
+      "Where an accepts entry names extra.assetTransferMethod, the value is an authorization standard a published x402 client can produce — eip3009 (TransferWithAuthorization), permit2, or erc7710.",
+    costs:
+      "A buyer who reads the field has nothing to construct from it and a buyer who ignores it signs blind. The refusal lands before any payment reaches the seller, whose logs record it as nobody wanting the goods. Absence of the field is not this class: it is optional, most doors omit it, and eip3009 is the settled default.",
+    detectable: "unpaid",
+    our_signal: "unrecognized-transfer-method",
+    falsified_by:
+      "The same entry naming one of the published methods at the stated moment, or a client implementation that builds an authorization from the named method — the second retires the finding by making the method recognized, and the register is the thing that should move.",
+    repair_hint:
+      "Name the method your facilitator actually verifies — for USDC on an EVM rail that is almost always eip3009 — or omit the field, which reads as eip3009 by default. If the value names a standard your own stack defines, publishing what a client must build for it turns a door only your clients can walk into one anybody can.",
   },
   {
     id: "unpayable-payto",

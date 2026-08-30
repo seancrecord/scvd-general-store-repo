@@ -186,7 +186,7 @@ async function callFreeTool(
       "a-mysterious-stranger";
     const rung = await ringBell(c.env, who);
     // Same porch row an HTTP ring writes; this door used to ring silently.
-    await recordPorchVisit(c.env, "bell", mcpSignals(c)).catch(() => undefined);
+    deferBookkeeping(c, recordPorchVisit(c.env, "bell", mcpSignals(c)));
     return { message: rung.message, count: rung.count };
   }
   if (name === "sign_guestbook") {
@@ -212,8 +212,9 @@ async function callFreeTool(
         ? 'The identity signature does not verify, so nothing was written. Sign the UTF-8 string "scvd-guestbook-v1\\n{name}\\n{message}" with ed25519 (values as stored: trimmed, 80/500 caps), hex-encode both fields, or leave both off.'
         : "A signature needs a name and a message (500 characters, tops).";
     }
-    await recordPorchVisit(c.env, "guestbook:write", mcpSignals(c)).catch(
-      () => undefined,
+    deferBookkeeping(
+      c,
+      recordPorchVisit(c.env, "guestbook:write", mcpSignals(c)),
     );
     return {
       message: "Noted and appreciated. Take a sticker on your way out.",
@@ -241,8 +242,9 @@ async function callFreeTool(
       const body = outcome.body as { error?: string };
       return body.error ?? "The preflight could not run. Try again shortly.";
     }
-    await recordPorchVisit(c.env, "preflight:mcp", mcpSignals(c)).catch(
-      () => undefined,
+    deferBookkeeping(
+      c,
+      recordPorchVisit(c.env, "preflight:mcp", mcpSignals(c)),
     );
     return outcome.body as unknown as Record<string, unknown>;
   }
@@ -267,8 +269,9 @@ async function callFreeTool(
       const body = outcome.body as { error?: string };
       return body.error ?? "The dry run could not complete. Try again shortly.";
     }
-    await recordPorchVisit(c.env, "before-you-pay:mcp", mcpSignals(c)).catch(
-      () => undefined,
+    deferBookkeeping(
+      c,
+      recordPorchVisit(c.env, "before-you-pay:mcp", mcpSignals(c)),
     );
     return outcome.body as unknown as Record<string, unknown>;
   }
@@ -287,8 +290,9 @@ async function callFreeTool(
     if (!outcome.verdict) {
       return outcome.error ?? "The conformance desk could not read that.";
     }
-    await recordPorchVisit(c.env, "conformance:mcp", mcpSignals(c)).catch(
-      () => undefined,
+    deferBookkeeping(
+      c,
+      recordPorchVisit(c.env, "conformance:mcp", mcpSignals(c)),
     );
     return outcome.verdict as unknown as Record<string, unknown>;
   }
@@ -683,6 +687,38 @@ async function callPurchaseTool(
   return rpcResult(id, toolText(flat));
 }
 
+/**
+ * Bookkeeping goes BESIDE the answer, never in front of it (rule 50).
+ *
+ * The agent on the other side of an MCP call is spending its own
+ * budget waiting for us to finish our paperwork, so a counter that
+ * cannot change the reply must not be able to delay it either. Both
+ * counters at this door swallow their own failures for the same
+ * reason: a handshake that fails because a census failed is a worse
+ * trade than not counting.
+ *
+ * The work is already IN FLIGHT when this is called — the promise is
+ * built by the caller — so the only thing waitUntil adds is a
+ * guarantee the runtime keeps the isolate alive until it finishes.
+ * Where there is no executionCtx (test and internal invocations) the
+ * write still goes, unguaranteed; that is the honest description and
+ * it is the right trade for a counter, which is exactly the kind of
+ * thing rule 50 says belongs beside the answer. It would be the
+ * WRONG trade for anything a later request must be able to read as a
+ * fact, so nothing but counters comes through here.
+ */
+function deferBookkeeping(
+  c: Context<HonoEnv>,
+  work: Promise<unknown>,
+): void {
+  const quiet = work.catch(() => undefined);
+  try {
+    c.executionCtx.waitUntil(quiet);
+  } catch {
+    void quiet;
+  }
+}
+
 async function handleRpc(
   c: Context<HonoEnv>,
   request: JsonRpcRequest,
@@ -690,9 +726,34 @@ async function handleRpc(
   const id = request.id ?? null;
   if (request.method === "initialize" || request.method === "tools/list") {
     // Front-porch log for the MCP door's free surfaces.
-    await recordPorchVisit(c.env, `mcp:${request.method}`, mcpSignals(c)).catch(
-      () => undefined,
+    deferBookkeeping(
+      c,
+      recordPorchVisit(c.env, `mcp:${request.method}`, mcpSignals(c)),
     );
+  }
+  /**
+   * WHO KNOCKED, recorded at the one moment it is offered.
+   *
+   * Every MCP client names itself in the handshake and this door threw
+   * the field away, which left the store guessing whether 12,280
+   * handshakes a month were registry crawlers indexing a tool list or
+   * real agents bouncing off something. Guessing about your own
+   * visitors is the failure this store sells the cure for.
+   *
+   * Never blocks the handshake and never fails it: a census that can
+   * refuse a connection would be a worse trade than not counting.
+   */
+  if (request.method === "initialize") {
+    const params = isRecord(request.params) ? request.params : {};
+    const info = isRecord(params["clientInfo"]) ? params["clientInfo"] : {};
+    const census = import("@/services/mcp-clients").then(({ recordMcpClient }) =>
+      recordMcpClient(
+        c.env,
+        typeof info["name"] === "string" ? info["name"] : undefined,
+        typeof info["version"] === "string" ? info["version"] : undefined,
+      ),
+    );
+    deferBookkeeping(c, census);
   }
   switch (request.method) {
     case "initialize": {
@@ -841,6 +902,35 @@ async function handleRpc(
           `No tool by that name on the shelf: ${name}`,
         );
       }
+      /**
+       * EVERY TOOL CALL, NOT THE FIVE THAT HAPPENED TO LOG.
+       *
+       * Five handlers recorded themselves; the other eight — the whole
+       * buy_* shelf, read_store_guide, verify_artifact — left no trace
+       * at this door. So "nobody calls the tools" was never a
+       * measurement: it was five instrumented tools reporting quietly
+       * while the rest were invisible either way.
+       *
+       * Recorded AFTER findMcpTool, which is what makes the key space
+       * safe: an unknown name is refused above and never reaches this
+       * line, so the surfaces are bounded by the catalog rather than
+       * by what a stranger types.
+       *
+       * DEFERRED, and this line shipped awaited on 08-29 before the
+       * mistake was caught. An awaited KV write here sits between the
+       * request and the answer on EVERY tool call — the paid buy_*
+       * shelf included, which is the door rule 50 was written about
+       * after outside monitors clocked it at 977ms and 1424ms. A
+       * census is bookkeeping; it goes beside the answer, never in
+       * front of it. Rule 50 asks for one proof before deferring —
+       * that nothing reads it back before the response — and nothing
+       * does: no handler below reads a porch surface, and the only
+       * reader is the admin desk, on a later request.
+       */
+      deferBookkeeping(
+        c,
+        recordPorchVisit(c.env, `mcp:tool:${tool.name}`, mcpSignals(c)),
+      );
       if (tool.itemId || tool.itemIds) {
         /**
          * A shelf tool carries several items and the buyer names one
@@ -861,10 +951,35 @@ async function handleRpc(
             );
           }
           if (!tool.itemIds.includes(asked)) {
+            /**
+             * POINT AT THE RIGHT SHELF RATHER THAN LISTING THIS ONE.
+             *
+             * This used to say only what the shelf does sell, which
+             * is true and leaves the buyer to go and read six enums.
+             * The worst case was the cheapest thing in the store:
+             * spot_check, the tenth of a cent every surface here
+             * advertises as the floor, sits sixteenth under
+             * buy_observation, so an agent that reached for
+             * buy_simple — the obvious guess, and the one whose name
+             * promises exactly what it wants — was refused and told
+             * nothing about where to go.
+             *
+             * Derived from the catalog, never a typed map: move an
+             * item between shelves and this sentence follows it.
+             *
+             * ⚑ Keeper's pen on the wording under rule 7. What it has
+             * to DO is fixed — name the shelf that sells it — and the
+             * sentence saying so is drafted, not canon.
+             */
+            const sells = mcpToolCatalog(c.env.STORE_BASE_URL).find(
+              (shelf) => shelf.itemId === asked || shelf.itemIds?.includes(asked),
+            );
             return rpcError(
               id,
               -32602,
-              `"${asked}" is not on this shelf. It sells: ${tool.itemIds.join(", ")}. Nothing was charged.`,
+              sells
+                ? `"${asked}" is not on this shelf, but it is on ${sells.name} — call that one with the same item_id. This shelf sells: ${tool.itemIds.join(", ")}. Nothing was charged.`
+                : `"${asked}" is not on this shelf, and no shelf here sells it. This one sells: ${tool.itemIds.join(", ")}. Nothing was charged.`,
             );
           }
           itemId = asked;

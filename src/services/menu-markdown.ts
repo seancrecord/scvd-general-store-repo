@@ -1,5 +1,6 @@
 import { priceTiersUsdc } from "@/lib/payments";
 import { STORE_METADATA } from "@/store/metadata";
+import { getMenuItem } from "@/store/menu";
 import type { MenuItem } from "@/types";
 
 /**
@@ -112,4 +113,32 @@ ${rows}
 One item up close: \`GET ${base}/menu/{item_id}\` (this same document knows JSON too, plain Accept gets JSON).
 Buying: \`GET ${base}/api/buy/{item_id}\` over x402 v2. Full onboarding at ${base}/skill.md; contract at ${base}/openapi.json.
 `;
+}
+
+/**
+ * A PAID RUNG, PRICED AND DATED FROM THE SHELF (57.3).
+ *
+ * Read off the menu item rather than typed, so a ladder can never
+ * quote a price the shelf has moved — the corrections desk's most
+ * frequent customer. `priceLine` is the same function the catalog,
+ * the MCP tool list and the item pages use, and since 2026-08-29 it
+ * carries the cadence in the same breath as the amount.
+ */
+export function ladderRung(
+  base: string,
+  itemId: string,
+  why: string,
+): Record<string, unknown> | null {
+  const item = getMenuItem(itemId);
+  if (!item) return null;
+  return {
+    id: item.id,
+    name: item.name,
+    why,
+    price: priceLine(item),
+    price_usdc: item.price_usdc,
+    cadence: item.cadence,
+    ...(item.term_days !== undefined ? { term_days: item.term_days } : {}),
+    buy_url: `${base}/api/buy/${item.id}`,
+  };
 }
