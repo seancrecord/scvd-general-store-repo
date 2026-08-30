@@ -307,61 +307,88 @@ function whatYouCanUseItFor(task: string | undefined): string {
   return `${built} Nothing about the artifact restricts you to that. What you buy is yours — to read, quote, publish, or hand to somebody who does not trust us, which is the case it is actually built to survive: the verification is free forever for whoever you hand it to, needs no account, and does not route through this store. There is no use case we are reserving.`.trim();
 }
 
-function doorErrors(facts: PaidDoorFacts): DoorError[] {
-  const errors: DoorError[] = [
+/**
+ * WHAT A BUY DOOR CAN SEND, READ OFF THE VOCABULARY IT ACTUALLY USES.
+ *
+ * THIS SHIPPED WRONG AND THE CORRECTION IS THE POINT (2026-08-30). The
+ * first version invented its own catalogue — missing_input,
+ * input_refused, subject_refused, sold_out — and published it on all
+ * 26 listings. Not one was a code the doors emit. A client reading
+ * /menu/service_audit and branching on `subject_refused` would never
+ * match: the door sends `target_refused`. That is precisely the defect
+ * the free doors' guard names one file up — a published error
+ * catalogue the door does not emit is the same defect as an
+ * undocumented one, wearing better clothes — and it was shipped by the
+ * same hand that quoted the rule.
+ *
+ * It derives from BUY_REFUSAL_CODES now: one vocabulary, published
+ * where a buyer reads it and emitted where a client branches on it. A
+ * sixth code added to the money path appears on every listing the day
+ * it lands.
+ *
+ * `charged` rides every refusal, because it is the one fact that
+ * matters on a money path and it is why the buy doors carry it on the
+ * wire: read a pre-payment refusal as a failed purchase and you may
+ * retry and double-spend; read it as a completed one and you abandon
+ * a sale a corrected parameter would have made.
+ */
+function doorErrors(facts: PaidDoorFacts): (DoorError & {
+  charged: boolean;
+  code_on_the_wire: boolean;
+})[] {
+  const refusals = BUY_REFUSAL_CODES.map((refusal) => ({
+    ...refusal,
+    charged: false,
+    code_on_the_wire: true,
+  }));
+  /*
+   * TWO REFUSALS CARRY NO CODE YET, and saying so is better than
+   * inventing one or staying silent. Neither sentence promises
+   * "nothing charged", which is what put them outside the sweep that
+   * coded the other forty-two — but both refuse before any money
+   * moves, so a buyer needs the same fact. Published with
+   * code_on_the_wire false rather than described as something a
+   * client can branch on.
+   */
+  const uncoded: (DoorError & { charged: boolean; code_on_the_wire: boolean })[] =
+    [
+      {
+        code: "unknown_item",
+        http: 404,
+        means:
+          "no item by that id is on the shelf, or it was retired. THIS REFUSAL CARRIES NO CODE FIELD ON THE WIRE YET — branch on the 404",
+        what_to_do:
+          "The body carries the menu URL and the request URL. A retired item answers with the date it retired and why, rather than pretending it never existed.",
+        charged: false,
+        code_on_the_wire: false,
+      },
+    ];
+  if (facts.limited) {
+    uncoded.push({
+      code: "sold_out",
+      http: 409,
+      means:
+        "the shelf is empty. An honest zero, not a queue: no order was created. THIS REFUSAL CARRIES NO CODE FIELD ON THE WIRE YET — branch on the 409 and read the waitlist URL beside it",
+      what_to_do:
+        "The body carries the waitlist URL. A sold-out shelf refuses the sale outright rather than taking money against stock that does not exist.",
+      charged: false,
+      code_on_the_wire: false,
+    });
+  }
+  return [
     {
       code: "payment_required",
       http: 402,
       means:
-        "you have not paid yet. This is the door working: the response carries the x402 challenge with every accept you may sign against",
+        "you have not paid yet. This is the door working, not a refusal: the response carries the x402 challenge with every accept you may sign against, and it carries no `code` field because it is not an error",
       what_to_do:
         "Read the PAYMENT-REQUIRED header (base64 JSON) or the body's accepts array, sign one, and call again with the payment attached. A 402 is never an error to retry unchanged.",
+      charged: false,
+      code_on_the_wire: false,
     },
+    ...refusals,
+    ...uncoded,
   ];
-  if (facts.required.length > 0) {
-    errors.push({
-      code: "missing_input",
-      http: 400,
-      means: `a required parameter was absent or empty — this door needs ${facts.required.join(", ")}`,
-      what_to_do: `Send ${facts.required.join(" and ")} as query parameters. Nothing is charged for a refused call: the check runs before any payment is taken, which is why the message says so.`,
-    });
-    errors.push({
-      code: "input_refused",
-      http: 400,
-      means:
-        "a parameter was present but failed this door's own constraints — the listing's constraints array is the full list, and the message names the one that failed",
-      what_to_do:
-        "Read the sentence; it names the constraint rather than the field. Nothing was charged.",
-    });
-  }
-  if (facts.fetchesSubject) {
-    errors.push({
-      code: "subject_refused",
-      http: 403,
-      means:
-        "the endpoint you named is one this store will not fetch — a private, loopback or link-local address, or our own hostname",
-      what_to_do:
-        "Give a public address on the open internet. We refuse private ranges so a paid door cannot be used to probe somebody's internal network, and we refuse ourselves because a store grading itself is not evidence.",
-    });
-  }
-  if (facts.limited) {
-    errors.push({
-      code: "sold_out",
-      http: 409,
-      means:
-        "the shelf is empty. This is an honest zero, not a queue: nothing was charged and no order was created",
-      what_to_do:
-        "The body carries the waitlist URL. A sold-out shelf refuses the sale outright rather than taking money against stock that does not exist.",
-    });
-  }
-  errors.push({
-    code: "unknown_item",
-    http: 404,
-    means: "no item by that id is on the shelf, or it was retired",
-    what_to_do:
-      "The body carries the menu URL and the request URL. A retired item answers with the date it retired and why, rather than pretending it never existed.",
-  });
-  return errors;
 }
 
 /**
