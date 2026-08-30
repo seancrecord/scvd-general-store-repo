@@ -20,15 +20,30 @@ export function wantsMarkdown(acceptHeader: string | undefined): boolean {
  * pay-what-it-deserves minimum as though it were a fixed price.
  */
 export function priceLine(item: MenuItem): string {
-  const amount =
-    item.pricing === "fixed"
-      ? `$${item.price_usdc} fixed`
-      : `$${item.price_usdc} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
-          item,
-        )
-          .map((tier) => `$${tier}`)
-          .join(" / ")})`;
-  return `${amount}, ${cadenceLine(item)}`;
+  return `${amountPhrase(item)}, ${cadenceLine(item)}`;
+}
+
+/**
+ * THE AMOUNT ON ITS OWN, split out 2026-08-30 when the MCP tool
+ * catalog was brought onto this function. A cluster tool lists up to
+ * seventeen items in one description, and the store-wide
+ * NEVER_AUTO_RENEWS sentence repeated seventeen times would crowd out
+ * the facts a planning model is reading the description FOR. So the
+ * pieces are separable and the cluster says the store-wide half once,
+ * at the bottom, for all of them.
+ *
+ * Splitting rather than forking is the whole point: priceLine below
+ * still composes these two, so the phrasing has exactly one home and
+ * a channel that wants half of it takes half of THIS, not a copy.
+ */
+export function amountPhrase(item: MenuItem): string {
+  return item.pricing === "fixed"
+    ? `$${item.price_usdc} fixed`
+    : `$${item.price_usdc} minimum, pay what it deserves (tiers: ${priceTiersUsdc(
+        item,
+      )
+        .map((tier) => `$${tier}`)
+        .join(" / ")})`;
 }
 
 /**
@@ -45,9 +60,14 @@ export function priceLine(item: MenuItem): string {
  * a second function would be a second thing to remember to call.
  */
 export function cadenceLine(item: MenuItem): string {
+  return `${cadencePhrase(item)}; ${NEVER_AUTO_RENEWS}`;
+}
+
+/** What the payment buys, without the store-wide sentence after it. */
+export function cadencePhrase(item: MenuItem): string {
   return item.cadence === "term"
-    ? `covering a ${item.term_days}-day term, one payment; ${NEVER_AUTO_RENEWS}`
-    : `${ONE_OFF}; ${NEVER_AUTO_RENEWS}`;
+    ? `covering a ${item.term_days}-day term, one payment`
+    : ONE_OFF;
 }
 
 /** What a one-off purchase is, in the words the store uses for it. */
