@@ -45,6 +45,14 @@ const DELIBERATELY_QUIET: Record<string, string> = {
   "/terms": "redirect to a real room; listing it would double-count the destination",
   "/x402-test": "301 to /try, kept so old links keep working; /try is the listed door",
   /*
+   * /agent is not in this map and does not need to be: the walk's
+   * substring probe already accounts for it via /agents.md, which
+   * every surface lists. /agent-mode is the same one-hop redirect and
+   * gets the same reason the eight above it get.
+   */
+  "/agent-mode":
+    "301 to /agents.md, the agent-mode view every surface already lists; listing the guess as well would advertise two doors that are one door",
+  /*
    * The SHOUTED spelling of a door already listed in lower case.
    * Vetting the site as an arriving agent (2026-08-29) found
    * /agents.md answering and /AGENTS.md 404ing, and the convention

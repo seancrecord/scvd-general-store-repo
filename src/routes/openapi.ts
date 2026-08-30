@@ -2374,6 +2374,92 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * in the contract the day it is served rather than the day
        * somebody remembers this file.
        */
+      /**
+       * THE BATCH DOOR. Listed beside the single-URL one because a
+       * caller choosing between them should see both in the same
+       * place, and because the only thing worth saying about it is
+       * the thing a contract can say: same probe, same meter, a
+       * ceiling, and an oversized batch refused whole.
+       */
+      "/api/preflight/batch": {
+        post: withRateLimitHeaders(
+          postOp(
+            "Preflight several x402 doors in one call",
+            "The same probe as /api/preflight, run over up to 10 URLs, sequentially, each metered as its own probe — batching saves you connections, not outbound requests. Each entry carries the status its own probe returned, so a bad URL beside a good one does not fail the call. A batch over the ceiling is refused whole rather than truncated: a report on doors nobody looked at is the exact defect this instrument exists to catch. Free.",
+            "The x402 doors to walk, at most 10.",
+            {
+              type: "object",
+              required: ["urls"],
+              additionalProperties: false,
+              properties: {
+                urls: {
+                  type: "array",
+                  minItems: 1,
+                  maxItems: 10,
+                  items: {
+                    type: "string",
+                    format: "uri",
+                    description:
+                      "An https URL on a public host, same rules as the single-URL door.",
+                  },
+                },
+              },
+            },
+          ),
+        ),
+      },
+      /**
+       * NLWeb. Three doors, and the contract is where a function-calling
+       * client will meet them: the summary has to carry the honest
+       * shape of the thing (an index, not a model) because a tool
+       * description is the only documentation some callers ever read.
+       */
+      "/ask": {
+        get: freeOp(
+          "Ask this store a question about itself",
+          "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+        ),
+        post: freeOp(
+          "Ask this store a question about itself (POST)",
+          "The same door as GET /ask, taking {query, mode, limit, streaming} as a JSON body for callers that would rather not build a query string.",
+        ),
+      },
+      "/ask/feed.json": {
+        get: freeOp(
+          "The askable index, as a schema.org DataFeed",
+          "Every entry /ask can return, in the same order it ranks them — for a reader that would rather hold the index than interrogate it, and for anyone checking that /ask draws on a published list rather than inventing per request. Free.",
+        ),
+      },
+      "/sites": {
+        get: freeOp(
+          "Which sites /ask answers for",
+          "NLWeb's site list. One site: this store. Answered rather than omitted so a client cannot mistake a single-site deployment for a broken one.",
+        ),
+      },
+      /**
+       * HOW YOU GET IN, IN THE CONTRACT. The store's answer is "you do
+       * not have to", and that answer belongs where an integrator
+       * looks for auth rather than only in a document they have to
+       * know to fetch.
+       */
+      "/auth.md": {
+        get: freeOp(
+          "How an agent authenticates here",
+          "Markdown, with frontmatter a parser can read. The answer is that there is no account, no API key, no OAuth and no signup: free doors answer anonymous requests, paid doors take a signed x402 payment at the moment of the call. The machine-readable twin is /.well-known/oauth-protected-resource.",
+        ),
+      },
+      "/.well-known/oauth-protected-resource": {
+        get: freeOp(
+          "Protected-resource metadata (RFC 9728)",
+          "What gates this resource, at the fixed path a client constructs without being told. `authorization_servers` is absent rather than empty: there is no OAuth issuer here, the field is optional, and naming one that does not exist would be a false claim in machine form. Carries an `agent_auth` block and the x402 particulars. Every 402 from this store points here in its WWW-Authenticate header.",
+        ),
+      },
+      "/pricing.md": {
+        get: freeOp(
+          "The pricing charter, in markdown",
+          "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+        ),
+      },
       "/api/preflight/checks": {
         get: returns(
           freeOp(

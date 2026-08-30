@@ -216,6 +216,126 @@ preflightRoutes.get("/api/preflight/checks", async (c) => {
   });
 });
 
+/**
+ * THE MOST A BATCH MAY CARRY, and why there is a ceiling at all.
+ *
+ * Each entry is a real outbound GET to a host the caller chose. Ten is
+ * where a convenience stops being a convenience and starts being a
+ * relay somebody else's infrastructure sees as us — and this door's
+ * whole defence of itself is that it is a checker rather than a relay.
+ * A caller with a hundred doors sends ten batches, and the rate limiter
+ * meters those the same as a hundred single calls, which is the point.
+ */
+const BATCH_MAX = 10;
+
+/**
+ * POST /api/preflight/batch — the same probe, several doors, one call.
+ *
+ * WHY THIS EXISTS. The single-URL door has always been the whole
+ * instrument, and for the reader it was built for — somebody stuck on
+ * one endpoint at two in the morning — it is the right shape. It is
+ * the wrong shape for the other real reader: an agent holding a
+ * directory listing, checking whether thirty advertised x402 doors
+ * actually answer 402. That reader had to open thirty connections and
+ * write the loop, and a 2026-08-30 scan noted the absence.
+ *
+ * WHAT IT IS NOT: cheaper. Ten URLs is ten probes and is metered as
+ * ten, against the same buckets a single call draws on. Nothing here
+ * buys a discount on somebody else's bandwidth, and the response says
+ * so in `not_a_discount` rather than leaving a caller to discover it
+ * from a 429 halfway down their list.
+ *
+ * SEQUENTIAL, DELIBERATELY. Firing ten concurrent GETs from one worker
+ * at hosts we do not run is the behaviour that gets an instrument
+ * blocked, and it would also make the rate limiter's accounting
+ * approximate at exactly the moment it matters. Slower and countable
+ * beats fast and arguable.
+ *
+ * 200 WITH PER-ITEM STATUS, not 207. A batch that half-worked is a
+ * successful batch containing failures — the caller's parse is the
+ * same either way, and 207 is a WebDAV status most HTTP clients treat
+ * as an oddity. Each entry carries the status its own probe returned,
+ * so nothing is flattened.
+ */
+preflightRoutes.post("/api/preflight/batch", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json(
+      {
+        error:
+          'Body must be JSON: {"urls": ["https://one/...", "https://two/..."]}',
+        max_urls: BATCH_MAX,
+      },
+      400,
+    );
+  }
+  const urls =
+    typeof body === "object" && body !== null
+      ? (body as Record<string, unknown>)["urls"]
+      : undefined;
+  if (!Array.isArray(urls) || urls.length === 0) {
+    return c.json(
+      {
+        error:
+          '`urls` must be a non-empty array of the https URLs a buyer would GET expecting a 402.',
+        max_urls: BATCH_MAX,
+        single_door: `${base}/api/preflight`,
+      },
+      400,
+    );
+  }
+  if (urls.length > BATCH_MAX) {
+    /*
+     * REFUSED WHOLE, not silently truncated. Serving the first ten of
+     * thirty and saying nothing would hand a caller a clean-looking
+     * report about twenty doors nobody looked at — which is precisely
+     * the "listed but functionally absent" failure this instrument
+     * exists to catch, committed by the instrument.
+     */
+    return c.json(
+      {
+        error: `A batch carries at most ${BATCH_MAX} URLs; you sent ${urls.length}. Nothing was probed — a truncated batch would report on doors nobody looked at.`,
+        max_urls: BATCH_MAX,
+        sent: urls.length,
+        what_to_do: `Send ${Math.ceil(urls.length / BATCH_MAX)} batches. They are metered exactly as the same number of single calls, so nothing is lost by splitting.`,
+      },
+      400,
+    );
+  }
+
+  const results: Record<string, unknown>[] = [];
+  for (const url of urls) {
+    // One at a time. See the note above the handler.
+    const result = await preflightUrl(url, c.env, PREFLIGHT_VERSION);
+    results.push({
+      url: typeof url === "string" ? url : null,
+      status: result.status,
+      result: result.body,
+    });
+  }
+
+  return c.json(
+    {
+      battery: PREFLIGHT_VERSION,
+      count: results.length,
+      results,
+      not_a_discount: `Each entry was a real probe and was metered as one. ${results.length} URLs cost ${results.length} probes against the same budget a single call draws on; batching saves you connections, not our outbound requests or anyone else's bandwidth.`,
+      one_moment_each:
+        "Every entry is one GET at one moment, exactly like the single-URL door. None of these are uptime claims, and a door that answered here can be down a minute later.",
+      single_door: `${base}/api/preflight`,
+      defect_vocabulary: `${base}/defects`,
+    },
+    200,
+    {
+      "Cache-Control": "no-store",
+      ...withLifecycle(c, "/api/preflight"),
+    },
+  );
+});
+
 async function handle(
   c: Context<HonoEnv>,
   battery: PreflightBattery = PREFLIGHT_VERSION,

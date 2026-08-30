@@ -9,6 +9,7 @@ import {
 } from "@/store/agent-auth";
 import { STORE_METADATA, STORE_SERVICE_NAME } from "@/store/metadata";
 import { OPERATED_BY } from "@/store/copy/position";
+import { OPERATOR } from "@/store/trust-signals";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -119,10 +120,9 @@ instruments are bounded by payment.
 
 ## Who to write to
 
-${base}/api/letter — free, one a day, and a human reads every one.
-There is no support queue, no ticket system and no phone number,
-because there is one person and pretending otherwise would be the
-first false claim on a page about how to trust us.
+${OPERATOR.contact}
+
+The mailbox is at ${base}/api/letter.
 `;
 }
 
