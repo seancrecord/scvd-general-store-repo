@@ -42,7 +42,17 @@ export function mcpMd(base: string): string {
   const cards = uiResourceCatalog().length;
   const shelves = mcpResourceCatalog().length;
 
-  return `# The MCP doors — which one, and what each cannot do
+  return `---
+title: "The MCP doors"
+description: "Which MCP door to point a client at, what each one can do, and what each one deliberately cannot. tools/list is free; the buy_* tools are x402-paid."
+canonical: "${base}/mcp.md"
+url: "${base}/mcp.md"
+server: "${base}/mcp"
+server_card: "${base}/.well-known/mcp/server-card.json"
+auth: "${base}/auth.md"
+---
+
+# The MCP doors — which one, and what each cannot do
 
 There are four ways into this store's instruments. They reach the
 same code and return the same JSON; they differ in what your host
