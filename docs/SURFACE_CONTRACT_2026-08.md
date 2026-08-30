@@ -121,3 +121,65 @@ one room. The honest state of the rest:
 None of that is a promise to sweep it this week. It is the list, so
 the rules are not quietly narrower than the sentences that adopted
 them.
+
+## The reading rooms, audited (2026-08-30)
+
+All thirty-six rooms in `ROOMS` were fetched with a browser's two
+headers and counted. Two findings, and they belong in different piles.
+
+### Structural — fixed in this change
+
+**`/developers` served two `<h1>` tags**, and had since it shipped:
+`renderSimplePage` emits one from the page's own title and the route
+body emitted its own on top. Both headings were correct, sensible and
+in the right place. There were simply two of them, and a document with
+two first-level headings has told every crawler and every screen
+reader that it is two documents. It is the only room in the store with
+this defect.
+
+It survived every hand-read because neither heading looks wrong. You
+find it by counting the served bytes of all thirty-six rooms at once.
+`test/one-h1-per-room.spec.ts` now does that on every build.
+
+**A correction on my own audit, in the same breath:** its first regex
+matched `<h1>` literally, which scored `/porch` — whose heading carries
+a class and an inline style — as having none. I nearly filed a defect
+against a page that was fine. The guard matches the tag, not the tag
+with no attributes.
+
+Everything else was clean: all thirty-six rooms carry a title, a
+description over fifty characters, and a canonical link.
+
+### 58.4 — ⚑ THE KEEPER'S PEN, drafted not shipped
+
+Rule 58.4 asks that a paid path be walkable two ways: a person can buy
+it, and a person can hand the line to their agent and have the agent
+buy it. The second half is the one this store keeps forgetting.
+
+**Eight rooms name a paid product. Three of them give a reader
+something to hand an agent.**
+
+| room | names a paid path | hands it to an agent |
+| --- | --- | --- |
+| `/what` | yes | yes |
+| `/doors` | yes | yes |
+| `/samples` | yes | yes |
+| `/try` | yes | **no** |
+| `/conformance` | yes | **no** |
+| `/bot-auth` | yes | **no** |
+| `/profiles` | yes | **no** |
+| `/pricing` | yes | **no** |
+
+The five gaps are real and the fix is one sentence each. **That
+sentence is selling copy, so it is not written here.** Rule 7 and the
+M5 gate both apply: an agent-handoff line is the store telling a
+reader how to spend money, and machine-drafted lines of that kind are
+exactly what the gate exists to stop.
+
+What the line has to do, if he wants drafts: name the free check
+first, then give a literal instruction a reader can paste at their own
+agent, with the real URL in it. `/doors` and `/samples` carry working
+examples of the shape.
+
+**Not done and not owed until he rules:** the copy. The audit, the
+table, and the structural fix are the deliverable.

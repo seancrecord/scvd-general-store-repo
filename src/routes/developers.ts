@@ -296,8 +296,21 @@ function developersHtml(base: string): string {
         `<h3>${escapeHtml(row.q)}</h3><p>${escapeHtml(row.a)}</p>`,
     )
     .join("");
+  /*
+   * NO <h1> HERE. renderSimplePage already emits one from the page's
+   * own title, and this file emitted a second — so /developers has
+   * been serving TWO first-level headings since it shipped, the one
+   * room in the store that does. Found 2026-08-30 by counting the
+   * served bytes while auditing every room against rule 58.1, and it
+   * is exactly the kind of defect a hand-read never catches: both
+   * headings are correct, sensible, and in the right place. There are
+   * simply two of them, and a document with two h1s has told every
+   * crawler and every screen reader that it is two documents.
+   *
+   * The page shell's heading is the one that survives, because it is
+   * the one every other room uses and the one the title tag matches.
+   */
   return `
-    <h1>${escapeHtml(STORE_SERVICE_NAME)} — developer documentation</h1>
     <p class="lede">Build against <code>${escapeHtml(base)}</code>. No account,
     no API key, no SDK. Free endpoints are plain HTTPS; paid ones take a signed
     x402 v2 payment in USDC on Base, Polygon or Solana, one payment per request.</p>
