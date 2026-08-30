@@ -144,3 +144,45 @@ describe("the paid HTTP till keeps its courtesies beside the answer", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * THE LINE BETWEEN A COUNTER AND A MONEY RECORD, PINNED ON THE SIDE
+ * THE HOUSE HAS ALREADY RULED.
+ *
+ * I proposed deferring the settle ledger, the rail meters and the
+ * decline rows, and the keeper agreed on the condition that the risk
+ * was low. It is not my call to make on that path and it turned out
+ * not to be an open question: test/quote-before-tally.spec.ts carries
+ * the keeper's ruling of 2026-08-27, which says the bare quote's
+ * tally may ride waitUntil and that "a refused payment ATTEMPT keeps
+ * its books (tally and decline row both) ahead of the response,
+ * because those are money-adjacent" — and it names the exact failure
+ * mode, "a refactor that quietly... defers the decline". It caught me
+ * doing precisely that, which is what a guard is for.
+ *
+ * So this pins only what is settled: the writes that must not lose
+ * their await. recordSpentNonce is the replay guard — defer it and
+ * the same signed authorization can spend twice while the first is in
+ * flight. recordSettlementUnknown is the only note that an ambiguous
+ * settle was ever a question, so losing it loses the question rather
+ * than an increment.
+ */
+describe("the money writes on the paid path keep their await", () => {
+  it("never lets the replay guard or the ambiguous-settle note go async", () => {
+    const source = code(Object.values(GATE)[0]!);
+    for (const guard of ["recordSpentNonce", "recordSettlementUnknown"]) {
+      const calls = source
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.includes(`${guard}(`));
+      expect(
+        calls.length,
+        `${guard} is not called here any more; this guard has gone stale`,
+      ).toBeGreaterThan(0);
+      expect(
+        calls.filter((line) => line.startsWith("await ")).length,
+        `${guard} lost its await — money must fail closed, not fast`,
+      ).toBe(calls.length);
+    }
+  });
+});

@@ -388,16 +388,23 @@ function surfaceLabel(surface: string): string {
  * on a loop, or a real spread of agents — is answered by the shape of
  * the top few rows.
  *
- * ⚑ Keeper's pen on the section heading and both sentences below,
- * under rule 7. Drafted, not canon: this went up unflagged on 08-29
- * and the flag is the correction. The empty-state line is the one
- * worth his eye — it refuses to read an empty table as "no traffic",
- * which is the only thing it is actually for.
+ * THE COPY HERE WAS CUT BACK ON THE KEEPER'S CALL, 2026-08-30, and
+ * the reason is a rule rather than a preference. The first draft
+ * opened by confessing that the door used to throw the client name
+ * away and that a month of connections had been anonymous — true,
+ * and rule 4: no preemptive denials, respond rather than announce. A
+ * changelog entry was wearing a label's clothes. The history lives in
+ * git and on the desk file, where history belongs.
+ *
+ * What survived is only what stops the number being misread: the
+ * table counts FORWARD from its own deploy, so an empty one is not a
+ * quiet door, and concurrent handshakes can lose an increment, so it
+ * is a floor rather than a total.
  */
 function mcpClientHtml(clients: Record<string, number> | undefined): string {
   const rows = Object.entries(clients ?? {}).sort((a, b) => b[1] - a[1]);
   if (rows.length === 0) {
-    return `<p>No handshake has named itself yet. That is not zero traffic \u2014 it is a census that has not run long enough to say anything, which is a different claim.</p>`;
+    return `<p>Nothing counted yet. This table counts forward from when it shipped, so an empty one is not a quiet door.</p>`;
   }
   return `
     <table border="1" cellpadding="4">
@@ -688,11 +695,9 @@ export function renderOfficePage(data: OfficePageData): string {
   <section>
     <details>
       <summary>Who knocked at the MCP door</summary>
-      <p>Every MCP client names itself in the handshake. The door used to
-      drop that field, so a month of connections was anonymous and the
-      question "are these crawlers or customers" had no answer here.
-      Counts start from this feature's own deploy. Concurrent handshakes
-      can lose an increment, so read these as a floor.</p>
+      <p>Clients name themselves in the MCP handshake. Counted forward
+      from this table's own deploy; concurrent handshakes can lose one,
+      so read it as a floor.</p>
       ${mcpClientHtml(data.mcpClients)}
     </details>
   </section>
