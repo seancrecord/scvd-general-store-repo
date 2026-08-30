@@ -272,12 +272,22 @@ const BASE = "https://scvd.store";
  * corpus area, and the form/doors/mcp.md work), verified present
  * together before this value was taken.
  *
+ * Re-taken 2026-08-30 for the /how-it-works section — the NINTH, and
+ * the first of the nine that is a plain guide edit rather than a merge
+ * of two branches that each re-took it. The room was built, registered
+ * in ROOMS, and named on no discovery surface at all; the guard in
+ * test/no-orphan-capability.spec.ts caught it before it shipped, which
+ * is that guard doing exactly its job. Verified present in these bytes
+ * before this value was taken: the nav line and the drafted
+ * /how-it-works paragraphs, which carry a ⚑ under rule 7 because the
+ * wording is the keeper's to settle.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "08e6a6c0d0627e4c246a83bdf0b30ae4c75dca57da6ce708feb26e6241878541";
+  "a0eafe29e5f2c9d4e3db8867a26170f81632fe3e130a8e0077d3c108cf8558c8";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;
