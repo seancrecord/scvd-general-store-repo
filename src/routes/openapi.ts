@@ -1542,6 +1542,32 @@ function jsonBody(
   };
 }
 
+/**
+ * THE RETRY-SAFETY HEADER, DECLARED WHERE AN AGENT READS IT.
+ *
+ * The store has honoured `Idempotency-Key` since the mechanism shipped
+ * — the 402 body even suggests a key to send — and the contract said
+ * nothing about it. A 2026-08-30 scan read the spec, found no
+ * idempotency parameter on any write operation, and reported no
+ * support, which was a fair reading of the document it was given.
+ *
+ * It is the difference between a retry that is safe and a retry that
+ * doubles a charge, and the only place an agent generating a client
+ * from this contract will ever see it is here.
+ *
+ * NOT REQUIRED, and it must not become required: a caller who did not
+ * send one still gets served. The header is insurance the buyer
+ * chooses, not a toll we charge for correctness.
+ */
+const IDEMPOTENCY_KEY_PARAM: OpenApiObject = {
+  name: "Idempotency-Key",
+  in: "header",
+  required: false,
+  schema: { type: "string", maxLength: 255 },
+  description:
+    "Optional. A key of your choosing that makes this write safe to retry: a repeat of the same request with the same key inside the window returns the ORIGINAL result from cache rather than doing the work or taking the payment a second time. On a paid door the 402 body suggests a key in `idempotency.suggested_key` — copying it is free and is what stops a retry loop becoming a second charge. Over MCP the same value rides as `_meta['x402/idempotency-key']`.",
+};
+
 /** A free operation that takes a JSON body. */
 function postOp(
   summary: string,
@@ -1552,6 +1578,15 @@ function postOp(
   return {
     ...freeOp(summary, description),
     ...jsonBody(bodyDescription, schema),
+    /*
+     * Declared once, on the helper the write doors go through, so a
+     * new one cannot ship without it. The exception is deliberate and
+     * worth naming: POST /ask does not use this helper, because it is
+     * a READ expressed as a POST — it writes nothing, stores nothing
+     * about the asker, and is already safe to retry by construction.
+     * An idempotency key there would imply state it does not keep.
+     */
+    parameters: [IDEMPOTENCY_KEY_PARAM],
   };
 }
 
@@ -1834,6 +1869,8 @@ function buyOperation(items: readonly MenuItem[]): OpenApiObject {
         `One of: ${items.map((i) => i.id).join(", ")}.`,
         items.map((i) => i.id),
       ),
+      // The door where a doubled retry costs actual money.
+      IDEMPOTENCY_KEY_PARAM,
       {
         name: "agent_name",
         in: "query",
@@ -1953,9 +1990,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * for. One limiter, on one family of paths, reporting itself.
        */
       application_level_limit: true,
-      limited_paths: PREFLIGHT_VERSIONS.map(
-        (battery) => `/api/preflight/${battery}`,
-      ),
+      /*
+       * The batch door joins the versioned ones because it draws on
+       * the SAME buckets and draws harder: ten URLs is ten probes
+       * against the identical ceiling, and its answer carries the
+       * budget left when the last of them finished. A batching door
+       * that did not report the limiter would be the one place a
+       * caller most needs the number and least likely to have it.
+       */
+      limited_paths: [
+        ...PREFLIGHT_VERSIONS.map((battery) => `/api/preflight/${battery}`),
+        "/api/preflight/batch",
+      ],
       headers_returned: Object.keys(RATE_LIMIT_HEADER_SPEC),
       note: NO_APP_RATE_LIMIT,
       policy_url: `${base}/developers`,
@@ -2419,10 +2465,57 @@ openapiRoutes.get("/openapi.json", async (c) => {
           "Ask this store a question about itself",
           "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
         ),
-        post: freeOp(
-          "Ask this store a question about itself (POST)",
-          "The same door as GET /ask, taking {query, mode, limit, streaming} as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too.",
-        ),
+        post: {
+          ...freeOp(
+            "Ask this store a question about itself (POST)",
+            "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
+          ),
+          ...jsonBody("The question, and how you want it answered.", {
+            type: "object",
+            required: ["query"],
+            additionalProperties: false,
+            properties: {
+              query: {
+                type: "string",
+                minLength: 1,
+                description:
+                  "The natural-language question, about this store and what it publishes.",
+              },
+              mode: {
+                type: "string",
+                enum: ["list", "summarize", "generate"],
+                default: "list",
+                description:
+                  "Only `list` is implemented. The other two are real NLWeb modes this store has not built, and asking for one returns 501 naming what to send instead — never a paraphrase assembled from keyword matches.",
+              },
+              limit: {
+                type: "integer",
+                minimum: 1,
+                maximum: 50,
+                default: 10,
+                description: "Maximum results to return.",
+              },
+              streaming: {
+                type: "boolean",
+                default: false,
+                description:
+                  "True for a text/event-stream response instead of JSON.",
+              },
+              prefer: {
+                type: "object",
+                additionalProperties: false,
+                description:
+                  "NLWeb's nested spelling of the same preference. Honoured identically to `streaming` above.",
+                properties: { streaming: { type: "boolean" } },
+              },
+              query_id: {
+                type: "string",
+                description:
+                  "Optional. Echoed back so you can pair a response with its question in a log. Never stored: nothing about a query is kept, here or anywhere.",
+              },
+            },
+          }),
+        },
       },
       "/ask/feed.json": {
         get: freeOp(

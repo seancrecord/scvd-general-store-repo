@@ -67,6 +67,10 @@ const DELIBERATELY_QUIET: Record<string, string> = {
 
   // ---- web plumbing found by convention, not by reading a list ----
   "/robots.txt": "crawlers find it at its fixed path; that is the entire mechanism",
+  "/schemamap.xml":
+    "robots.txt names it in a Schemamap directive, which IS the NLWeb Schema Feeds discovery mechanism — the same reasoning the Sitemap line has always run on; every feed it indexes is separately listed",
+  "/.well-known/mcp/server-card.json":
+    "the third spelling of /.well-known/mcp, which every surface already lists; listing all three would advertise three doors that are one card",
   "/sitemap.xml": "IS one of the six surfaces; a surface need not list itself",
   "/favicon.ico": "browsers request it unprompted; no reader chooses to visit it",
   "/og.png": "unfurlers find it via the og:image tag on every page head",

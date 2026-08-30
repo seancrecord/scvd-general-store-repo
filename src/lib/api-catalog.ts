@@ -38,6 +38,9 @@ import {
  */
 export const LINKSET_MEDIA_TYPE = "application/linkset+json";
 
+/** RFC 9727's fixed path. The catalog anchors its own index here. */
+export const API_CATALOG_PATH = "/.well-known/api-catalog";
+
 interface LinkTarget {
   href: string;
   type?: string;
@@ -135,8 +138,7 @@ function versionedEntries(base: string): LinkContext[] {
 }
 
 export function apiCatalog(base: string): { linkset: LinkContext[] } {
-  return {
-    linkset: [
+  const contexts: LinkContext[] = [
       /**
        * THE WHOLE STORE, ANCHORED AT THE ORIGIN. A catalog whose only
        * entries are sub-APIs makes a reader work out that there is a
@@ -268,8 +270,46 @@ export function apiCatalog(base: string): { linkset: LinkContext[] } {
           },
         ],
       }),
-    ],
+  ];
+
+  /**
+   * THE CATALOG'S OWN CONTEXT, AND THE RELATION THAT MAKES IT A
+   * CATALOG (RFC 9727 §3, added 2026-08-30).
+   *
+   * Every context above describes ONE api — its service-desc, its
+   * service-doc, its lifecycle — which is RFC 8631 doing its job.
+   * What was missing is the sentence those contexts are evidence for:
+   * that this document, at this URL, is the index OF them. RFC 9727
+   * spells that with `item` links anchored at the catalog itself, and
+   * a consumer following the spec reads this context first and the
+   * per-api ones as the things it points at.
+   *
+   * Without it the linkset was a pile of descriptions with no stated
+   * relationship between them. A scan reported "linkset[0] has no item
+   * entries" and it was reading the document correctly — this was a
+   * real gap in our RFC 9727 conformance, not a checklist quibble.
+   *
+   * DERIVED from the same contexts rather than listed by hand, so an
+   * api added tomorrow is an item tomorrow and the index cannot come
+   * to disagree with what it indexes.
+   *
+   * FIRST IN THE ARRAY on purpose: a reader taking only linkset[0]
+   * gets the index rather than whichever api happened to be built
+   * first.
+   */
+  const index: LinkContext = {
+    anchor: `${base}${API_CATALOG_PATH}`,
+    title: `${STORE_SERVICE_NAME} — API catalog`,
+    item: contexts.map((context) => {
+      const title = context["title"];
+      return {
+        href: String(context["anchor"]),
+        ...(typeof title === "string" ? { title } : {}),
+      };
+    }),
   };
+
+  return { linkset: [index, ...contexts] };
 }
 
 /** The paths this catalog names, for the surfaces that link to it. */

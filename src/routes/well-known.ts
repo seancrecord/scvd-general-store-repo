@@ -832,7 +832,21 @@ function mcpManifest(base: string) {
  * server behind three URLs, so it is not possible for these paths to
  * negotiate a different protocol version than /mcp does.
  */
-for (const path of ["/.well-known/mcp", "/.well-known/mcp.json"] as const) {
+/*
+ * THE THIRD SPELLING, ADDED 2026-08-30 FOR THE SAME REASON AS THE
+ * SECOND. A discoverability scan looked for the card at
+ * /.well-known/mcp/server-card.json — the path the SEP's own filename
+ * suggests — and reported this store as having no MCP server card,
+ * which is the identical false negative the `.json` alias was added to
+ * close. One object, three URLs, one server behind all of them; the
+ * cost of a guess being wrong is a 404 that reads as absence, and the
+ * cost of covering the guess is this line.
+ */
+for (const path of [
+  "/.well-known/mcp",
+  "/.well-known/mcp.json",
+  "/.well-known/mcp/server-card.json",
+] as const) {
   wellKnownRoutes.get(path, (c) => c.json(mcpManifest(c.env.STORE_BASE_URL)));
   wellKnownRoutes.post(path, handleMcpPost);
 }

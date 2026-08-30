@@ -1,6 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { askIndex, askRank, scoreEntry } from "@/store/ask-index";
+import { SCHEMA_MAP_PATH } from "@/routes/ask";
 
 const BASE = "https://scvd.store";
 
@@ -63,14 +64,68 @@ describe("the NLWeb surfaces", () => {
     expect(body.why).toContain("Not implemented");
   });
 
-  it("speaks event-stream when a client asks it to", async () => {
-    const response = await SELF.fetch(`${BASE}/ask?query=refund&streaming=true`);
-    expect(response.headers.get("content-type")).toContain("text/event-stream");
+  it("carries the protocol envelope a client checks before parsing", async () => {
+    const response = await SELF.fetch(`${BASE}/ask?query=refund`);
+    const body = (await response.json()) as {
+      _meta: { response_type: string; version: string };
+    };
+    expect(body._meta.response_type).toBe("list");
+    expect(body._meta.version).toBeTruthy();
+  });
+
+  it("speaks event-stream when a client asks it to, in either dialect", async () => {
+    for (const request of [
+      // The query-parameter spelling…
+      () => SELF.fetch(`${BASE}/ask?query=refund&streaming=true`),
+      // …and the nested body field NLWeb clients send.
+      () =>
+        SELF.fetch(`${BASE}/ask`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ query: "refund", prefer: { streaming: true } }),
+        }),
+    ]) {
+      const response = await request();
+      expect(response.headers.get("content-type")).toContain("text/event-stream");
+      const body = await response.text();
+      /*
+       * Both vocabularies on every frame: NLWeb's implementation emits
+       * query_analysis / result_batch / complete, its published event
+       * list names start / result / complete, and clients exist for
+       * both. A client keying on either must see all three phases.
+       */
+      const spec = [...body.matchAll(/"event_type":"([a-z_]+)"/g)].map(
+        (match) => match[1],
+      );
+      expect(spec[0]).toBe("start");
+      expect(spec.at(-1)).toBe("complete");
+      expect(body).toContain('"message_type":"query_analysis"');
+      expect(body).toContain('"message_type":"complete"');
+    }
+  });
+
+  it("publishes a schema map of the feeds, and every feed answers", async () => {
+    const response = await SELF.fetch(`${BASE}${SCHEMA_MAP_PATH}`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("xml");
     const body = await response.text();
-    const types = [...body.matchAll(/"message_type":"([a-z_]+)"/g)].map(
-      (match) => match[1],
+    const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+      (match) => match[1]!,
     );
-    expect(types).toEqual(["query_analysis", "result_batch", "complete"]);
+    expect(locations.length).toBeGreaterThan(1);
+
+    // A map naming a feed that does not answer is worse than no map.
+    const dead: string[] = [];
+    for (const location of locations) {
+      const feed = await SELF.fetch(location);
+      if (feed.status !== 200) dead.push(`${location} → ${feed.status}`);
+    }
+    expect(dead.join("\n"), "the schema map names these and they do not answer").toBe("");
+  });
+
+  it("is named in robots.txt where every crawler already looks", async () => {
+    const robots = await (await SELF.fetch(`${BASE}/robots.txt`)).text();
+    expect(robots).toContain(`Schemamap: ${BASE}${SCHEMA_MAP_PATH}`);
   });
 
   it("names the one site it answers for", async () => {

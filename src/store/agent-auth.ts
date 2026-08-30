@@ -121,6 +121,36 @@ export function challengeHint(base: string): string {
  * way it can lie, so test/agent-auth.spec.ts fetches each and fails
  * on anything that does not answer.
  */
+/**
+ * The `agent_auth` block, in the shape the WorkOS auth.md draft
+ * defines (https://workos.com/auth-md) rather than one of our own.
+ *
+ * WHY SOMEBODY ELSE'S FIELD NAMES. A scan on 2026-08-30 reported this
+ * store as having no agent-auth metadata, and the first version of
+ * this block answered that with fields we invented — which is a
+ * document only a reader who already understood us could use. The
+ * whole point of a discovery block is that a stranger's parser reads
+ * it without being taught, so the names are the spec's.
+ *
+ * WHAT IS HONEST HERE AND WHAT WOULD NOT BE. The spec's
+ * `identity_types_supported` enum has exactly the entry this store
+ * needs: `anonymous`. That is not a gap being papered over — it is the
+ * accurate answer, and the reason it is accurate is the store's whole
+ * shape. `identity_assertion` is absent because no assertion type is
+ * accepted, and listing one (an id-jag, a verified email) that nothing
+ * here would validate would be a door advertised and not built.
+ *
+ * `register_uri` IS ABSENT FOR THE SAME REASON. The spec expects the
+ * URI where an agent registers for credentials; there is no such
+ * endpoint because there are no credentials, and a registration URI
+ * that 404s is the specific failure the spec's own reachability rule
+ * warns about. An absent field costs a checklist point. A fabricated
+ * one costs a reader their integration.
+ *
+ * EVERY URL HERE IS LIVE — that is the field's one way of lying, so
+ * test/agent-auth.spec.ts fetches each and fails on anything that
+ * does not answer.
+ */
 export function agentAuthBlock(base: string) {
   return {
     /**
@@ -130,15 +160,37 @@ export function agentAuthBlock(base: string) {
      */
     summary:
       "No account, no API key, no OAuth, no signup. Free instruments answer anonymous requests; paid instruments are paid for at the moment of the call with a signed x402 payment. There is nothing to apply for and nobody to ask.",
-    registration_required: false,
-    signup_url: null,
+    /** The spec's pointer back at the prose walkthrough. */
+    skill: `${base}${AUTH_DOC_PATH}`,
     /**
-     * Null rather than absent, and null rather than an invented URL:
-     * a scanner distinguishes "declared none" from "forgot to say",
-     * and this store would rather be read as the first.
+     * One type, and it is the true one. The spec's enum entry for "no
+     * identity is asserted and none is required" describes this store
+     * exactly.
      */
-    api_key_url: null,
-    oauth_authorization_server: null,
+    identity_types_supported: ["anonymous"],
+    anonymous: {
+      /**
+       * Two ways in and neither is a credential in the usual sense.
+       * `none` is the free instruments. The x402 entry is namespaced
+       * because it is not in the spec's enum and pretending otherwise
+       * would make a parser trust a shape it should not.
+       */
+      credential_types_supported: ["none"],
+      "x402.credential_types_supported": ["x402_payment_signature"],
+      description:
+        "Free doors take no credential at all. Paid doors take a signed x402 v2 payment, which authenticates nothing about who you are and does not need to: it settles the one call it paid for and is good for that call only.",
+    },
+    /**
+     * Absent by design, and named here so a reader can tell a
+     * deliberate absence from an oversight: there is nothing to
+     * register for, nothing to claim, and nothing to revoke, because
+     * no credential is ever issued to anybody.
+     */
+    register_uri: null,
+    claim_uri: null,
+    revocation_uri: null,
+    why_no_endpoints:
+      "register_uri, claim_uri and revocation_uri are null rather than pointed somewhere plausible. No credential is issued here, so there is nothing to register for, claim, or revoke — and a discovery URI that resolves to nothing is the stale-metadata failure this spec exists to prevent. When there is nothing to advertise, the honest advertisement is nothing.",
     documentation_url: `${base}${AUTH_DOC_PATH}`,
     protected_resource_metadata: `${base}${PROTECTED_RESOURCE_PATH}`,
     payment_protocol: {

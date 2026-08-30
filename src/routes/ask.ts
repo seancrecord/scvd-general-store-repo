@@ -73,6 +73,19 @@ askRoutes.use("/ask", async (c, next) => {
 /** NLWeb's site identifier for this deployment. */
 const SITE = "scvd.store";
 
+/**
+ * The protocol envelope every answer carries. `version` is the NLWeb
+ * revision this door implements, not a version of the store — a
+ * client reads it to decide how to parse, and a number that moved when
+ * our shelf moved would be worse than useless.
+ */
+const RESPONSE_META = {
+  response_type: "list",
+  version: "0.1",
+  protocol: "nlweb",
+  site: SITE,
+} as const;
+
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 
@@ -152,9 +165,32 @@ function parseLimit(raw: string | undefined): number {
   return Math.min(parsed, MAX_LIMIT);
 }
 
-/** NLWeb sends `streaming=true`; anything else is a plain JSON answer. */
+/**
+ * NLWeb clients ask for a stream two ways: a `streaming=true` parameter
+ * and a `prefer.streaming` field in the body. Both are honoured,
+ * because a client that asked in the dialect it knows and got JSON
+ * where it expected a stream generally hangs rather than falls back —
+ * the same reasoning lib/accept.ts applies to Accept headers, one
+ * protocol over.
+ */
 function wantsStream(raw: string | undefined): boolean {
   return (raw ?? "").toLowerCase() === "true";
+}
+
+/**
+ * `prefer: { streaming: true }` — the nested form NLWeb bodies use,
+ * read separately because `pick` only reaches top-level fields and a
+ * client should not have to know which of the two spellings we
+ * happened to implement.
+ */
+function preferStreaming(
+  body: Record<string, unknown> | null,
+): string | undefined {
+  const prefer = body?.["prefer"];
+  if (typeof prefer !== "object" || prefer === null) return undefined;
+  const value = (prefer as Record<string, unknown>)["streaming"];
+  if (value === undefined) return undefined;
+  return String(value);
 }
 
 interface AskRequest {
@@ -181,7 +217,7 @@ function readRequest(
     query: (pick("query") ?? pick("q") ?? "").trim(),
     mode: (mode in MODES ? mode : "list") as keyof typeof MODES,
     limit: parseLimit(pick("limit") ?? pick("num_results")),
-    streaming: wantsStream(pick("streaming")),
+    streaming: wantsStream(pick("streaming") ?? preferStreaming(body)),
     /**
      * Echoed back so a caller can pair a response with its question in
      * a log. Theirs if they sent one; ours if not. Never used as a
@@ -213,19 +249,49 @@ function streamAnswer(base: string, request: AskRequest, hits: AskHit[]): Respon
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
+      /**
+       * TWO SPELLINGS PER EVENT, and it is not indecision.
+       *
+       * NLWeb's own implementation emits `query_analysis` /
+       * `result_batch` / `complete`; the published event vocabulary
+       * names `start` / `result` / `complete`. Clients exist for both
+       * and neither is wrong, so each frame carries `message_type` in
+       * the implementation's spelling and `event_type` in the spec's.
+       * A client keying on either reads the same three events; a
+       * client keying on neither still gets `_meta`.
+       */
       send(controller, {
         message_type: "query_analysis",
+        event_type: "start",
+        _meta: RESPONSE_META,
         query_id: request.queryId,
         item_to_remember: null,
         decontextualized_query: request.query,
       });
+      /*
+       * One frame per hit AND the batch, for the same reason: a client
+       * rendering progress wants them one at a time, and one that
+       * wants the array should not have to accumulate.
+       */
+      hits.forEach((hit, index) => {
+        send(controller, {
+          message_type: "result",
+          event_type: "result",
+          query_id: request.queryId,
+          index,
+          result: resultItem(base, hit),
+        });
+      });
       send(controller, {
         message_type: "result_batch",
+        event_type: "result_batch",
         query_id: request.queryId,
         results: hits.map((hit) => resultItem(base, hit)),
       });
       send(controller, {
         message_type: "complete",
+        event_type: "complete",
+        _meta: RESPONSE_META,
         query_id: request.queryId,
         count: hits.length,
         ...honesty(base),
@@ -295,6 +361,14 @@ async function handleAsk(c: Context<HonoEnv>) {
   }
 
   return c.json({
+    /**
+     * NLWeb's envelope, and it goes first because it is what a client
+     * checks before reading anything else: which shape this response
+     * is and which version of the protocol produced it. The store's
+     * own honesty fields ride below under names of ours, so nothing
+     * here has to guess which half of the document it is reading.
+     */
+    _meta: RESPONSE_META,
     query_id: request.queryId,
     query: request.query,
     site: SITE,
@@ -369,6 +443,82 @@ askRoutes.get("/ask/feed.json", (c) => {
     200,
     {
       "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=3600",
+    },
+  );
+});
+
+
+/**
+ * THE SCHEMA MAP — the sitemap.xml of structured data.
+ *
+ * NLWeb's Schema Feeds convention asks a site to publish an XML index
+ * of its structured-data feeds and to name that index in robots.txt
+ * with a `schemamap:` directive, so an ingesting agent finds the
+ * catalog as data instead of scraping pages for it. This store had the
+ * feeds and no index: /ask/feed.json, /corpus.json, /menu.json and
+ * /doors.json were each discoverable on their own and nowhere
+ * together, in a machine format a feed reader knows.
+ *
+ * DERIVED FROM DOORS THAT ALREADY ANSWER, and every one of them is a
+ * document this store publishes for its own reasons rather than a feed
+ * assembled to fill a map. test/ask.spec.ts fetches each.
+ */
+interface SchemaFeed {
+  path: string;
+  type: string;
+  title: string;
+}
+
+const SCHEMA_FEEDS: readonly SchemaFeed[] = [
+  {
+    path: "/ask/feed.json",
+    type: "application/json",
+    title: "The askable index — rooms, shelf, defect vocabulary, instruments",
+  },
+  {
+    path: "/menu.json",
+    type: "application/json",
+    title: "The shelf: every good, its price, its cadence and what it reads",
+  },
+  {
+    path: "/corpus.json",
+    type: "application/json",
+    title: "The signed evidence corpus, appended weekly and Bitcoin-anchored",
+  },
+  {
+    path: "/doors.json",
+    type: "application/json",
+    title: "Every x402 door this store has checked, with its verdict",
+  },
+  {
+    path: "/defects.json",
+    type: "application/json",
+    title: "The named defect vocabulary",
+  },
+] as const;
+
+/** The path robots.txt names. Exported so the two cannot disagree. */
+export const SCHEMA_MAP_PATH = "/schemamap.xml";
+
+askRoutes.get(SCHEMA_MAP_PATH, (c) => {
+  const base = c.env.STORE_BASE_URL;
+  const entries = SCHEMA_FEEDS.map(
+    (feed) => `  <schema>
+    <loc>${base}${feed.path}</loc>
+    <type>${feed.type}</type>
+    <title>${feed.title}</title>
+  </schema>`,
+  ).join("\n");
+  return c.body(
+    `<?xml version="1.0" encoding="UTF-8"?>
+<schemamap xmlns="https://schema.org/">
+${entries}
+</schemamap>
+`,
+    200,
+    {
+      "Content-Type": "application/xml; charset=utf-8",
       "Cache-Control": "public, max-age=3600",
     },
   );

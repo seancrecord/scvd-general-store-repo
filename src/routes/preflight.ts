@@ -307,9 +307,27 @@ preflightRoutes.post("/api/preflight/batch", async (c) => {
   }
 
   const results: Record<string, unknown>[] = [];
+  /**
+   * THE LIVE BUDGET, CARRIED OUT OF THE LAST PROBE.
+   *
+   * Each entry is metered exactly as a single call is, and each one's
+   * answer carries the IETF RateLimit fields. Discarding them would
+   * have left this door advertising a ceiling in the contract and
+   * returning nothing a caller could pace against — which is the
+   * "documents a ceiling nothing enforces" failure the store's own
+   * guard catches, committed by the door that batches the instrument
+   * whose limiter is the whole reason the fields exist.
+   *
+   * The LAST probe's headers are the ones that ride out, because they
+   * are the only ones still true when the response leaves: they report
+   * what remains AFTER the whole batch, which is what a caller pacing
+   * its next batch needs.
+   */
+  let budgetHeaders: Record<string, string> = {};
   for (const url of urls) {
     // One at a time. See the note above the handler.
     const result = await preflightUrl(url, c.env, PREFLIGHT_VERSION);
+    budgetHeaders = result.headers ?? budgetHeaders;
     results.push({
       url: typeof url === "string" ? url : null,
       status: result.status,
@@ -332,6 +350,8 @@ preflightRoutes.post("/api/preflight/batch", async (c) => {
     {
       "Cache-Control": "no-store",
       ...withLifecycle(c, "/api/preflight"),
+      // What the limiter had left when the last entry finished.
+      ...budgetHeaders,
     },
   );
 });

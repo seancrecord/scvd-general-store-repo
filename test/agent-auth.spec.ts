@@ -56,11 +56,37 @@ describe("the agent-auth surfaces", () => {
     ]) {
       expect(frontmatter, `frontmatter is missing ${key}`).toContain(key);
     }
-    // The structure a reader needs: how to get in, what goes wrong.
-    expect(body).toContain("# Authentication");
-    expect(body).toContain("## Errors you may meet on the way in");
-    expect(body).toContain("## Rate limits");
-    expect(body).toContain("Idempotency-Key");
+    /*
+     * THE CONVENTION'S OWN SECTION ORDER. An agent that has read one
+     * auth.md knows where to look in the next one, which only holds if
+     * the headings are the spec's rather than ours. Four of these
+     * answer "nothing to do" here, and the heading is what makes that
+     * an answer rather than an omission.
+     */
+    for (const heading of [
+      "# Authentication",
+      "## Discover",
+      "## Pick a method",
+      "## Register",
+      "## Claim",
+      "## Use the credential",
+      "## Errors",
+      "## Revocation",
+      "## Rate limits",
+    ]) {
+      expect(body, `auth.md is missing the ${heading} section`).toContain(heading);
+    }
+    // The anchor terms a reader (or a scanner) greps for.
+    for (const keyword of [
+      "agent_auth",
+      "register_uri",
+      "identity_assertion",
+      "id-jag",
+      "WWW-Authenticate",
+      "Idempotency-Key",
+    ]) {
+      expect(body, `auth.md never mentions ${keyword}`).toContain(keyword);
+    }
   });
 
   it("serves RFC 9728 metadata that claims no issuer it does not have", async () => {
@@ -78,7 +104,31 @@ describe("the agent-auth surfaces", () => {
      */
     expect(body).not.toHaveProperty("authorization_servers");
     expect(body.bearer_methods_supported).toEqual([]);
-    expect(body).toHaveProperty("agent_auth");
+
+    /*
+     * The agent_auth block in the shape a stranger's parser expects
+     * (the WorkOS auth.md draft), with the two absences that are the
+     * honest answer rather than an oversight: one identity type, and
+     * no endpoint URIs, because no credential is issued to anybody.
+     */
+    const auth = body["agent_auth"] as {
+      skill: string;
+      identity_types_supported: string[];
+      register_uri: string | null;
+      claim_uri: string | null;
+      revocation_uri: string | null;
+      anonymous: { credential_types_supported: string[] };
+    };
+    expect(auth.identity_types_supported).toEqual(["anonymous"]);
+    expect(auth.anonymous.credential_types_supported).toContain("none");
+    // It round-trips: the block points at the prose, the prose points
+    // back at the block.
+    expect(auth.skill).toBe(`${BASE}${AUTH_DOC_PATH}`);
+    // Null, never a plausible-looking URI. A discovery endpoint that
+    // resolves to nothing is the failure the convention exists to stop.
+    expect(auth.register_uri).toBeNull();
+    expect(auth.claim_uri).toBeNull();
+    expect(auth.revocation_uri).toBeNull();
   });
 
   it("answers on every URL the agent_auth block names", async () => {

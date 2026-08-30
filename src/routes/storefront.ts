@@ -58,6 +58,35 @@ storefrontRoutes.get("/", async (c) => {
    * that ranked JSON above HTML sees it, so browsers and `*​/*`
    * crawlers keep the storefront exactly as it is.
    */
+  /**
+   * ?mode=agent — THE SAME AGENT VIEW, ASKED FOR IN THE OTHER DIALECT.
+   *
+   * The apex has negotiated an agent-shaped front door since the
+   * readiness audit: rank markdown above HTML and you get the
+   * operational manual instead of the neon. That mechanism is the
+   * right one and it is not the only one anybody uses — a 2026-08-30
+   * scan asked for `?mode=agent`, got the storefront, and reported no
+   * dedicated agent view, which was a fair reading of what it saw.
+   *
+   * A QUERY PARAMETER IS A CLIENT STATING A PREFERENCE, exactly as an
+   * Accept header is, so it gets the same answer from the same
+   * function rather than a second document that could drift from the
+   * first. It sits ABOVE the Accept branches deliberately: a caller
+   * who put the request in the URL meant it, and should not be
+   * overruled by whatever their HTTP library puts in Accept by
+   * default.
+   *
+   * The canonical link points at `/` because this is one document at
+   * two addresses, and Vary names both dimensions so a cache cannot
+   * serve one caller's dialect to another.
+   */
+  if (c.req.query("mode") === "agent") {
+    return c.text(agentsMd(c.env.STORE_BASE_URL), 200, {
+      "content-type": MARKDOWN_MEDIA_TYPE,
+      Vary: VARY_ACCEPT,
+      Link: `<${c.env.STORE_BASE_URL}/>; rel="canonical"`,
+    });
+  }
   if (prefersJson(c.req.header("Accept"))) {
     const { buildAtlas } = await import("@/store/atlas");
     return c.json(buildAtlas(c.env.STORE_BASE_URL), 200, {
