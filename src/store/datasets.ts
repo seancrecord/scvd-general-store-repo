@@ -87,4 +87,21 @@ export const PUBLISHED_DATASETS: readonly PublishedDataset[] = [
       "A vocabulary, not a severity ranking. A named defect describes what was observed, not how much it matters to you.",
     cadence: "changes when a class is added or retired",
   },
+  {
+    /*
+     * ADDED 2026-08-29, the day after it shipped, and the gap is the
+     * point: /doors.json was built to close "the census has hundreds
+     * of subjects and no index of them" and was then absent from the
+     * store's own index of datasets. A catalogue that misses the
+     * thing built to fix a catalogue gap is the same failure one
+     * level up.
+     */
+    path: "/doors.json",
+    name: "Every door the census has met",
+    description:
+      "One entry per host the weekly ward round has ever carried, alphabetical, with the most recent dated verdict, the week it was taken, how many rounds carried the host and how many reached a real verdict, and the URL of its full signed history.",
+    caution:
+      "Not a scoreboard and not a ranking. Each entry is ONE observation with the date it was taken; rounds_scored is published as a denominator so you can see the weight behind a row, and the division that would turn it into a score is deliberately not performed.",
+    cadence: "weekly, with the ward round",
+  },
 ] as const;

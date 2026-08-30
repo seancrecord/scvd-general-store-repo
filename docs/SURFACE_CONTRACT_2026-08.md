@@ -109,8 +109,68 @@ one room. The honest state of the rest:
   false` and the clause demands the REFUSAL be on the record instead.
   Silence is what 57.3 forbids, not abstinence.
 
-  **Still owed:** the paid doors, the reading rooms, and the MCP tool
-  surface. Same method: add the row, watch it fail, close it.
+  **The second leg ran 2026-08-30: the paid shelf.** Measured first —
+  every one of the 26 items answered ZERO of 57.2, 57.4 and 57.5.
+  Price and cadence had been covered everywhere since the rule was
+  adopted; what an agent gets back, what can go wrong, and what we
+  hold ourselves to were published nowhere per item.
+
+  The answers derive. 104 hand-written paragraphs about a buy path
+  that is ONE code path is 104 chances to describe it wrongly.
+  Expected outcome comes from the item's fulfillment class, term and
+  SLA; the error categories from its input schema and inventory — a
+  `sold_out` branch is published only where stock exists, so a client
+  is never told to handle a branch that cannot fire. They reuse
+  `DoorError` and `securityBlock` rather than growing a second set of
+  names for the same promises.
+
+  **The exception is the lesson.** The first version derived "does
+  this door knock on your endpoint" from the input schema: a `url` or
+  `host` property meant a fetch. It was wrong on its first run —
+  `spot_check` takes a host and deliberately does not knock, reading
+  the books at the counter, which its own description says out loud.
+  A guessed safety claim is worse than an absent one. What a door
+  reads is now a STATED fact (`MenuItem.reads`, required by the type,
+  five classes), established from each fulfillment service's import
+  graph: `@/lib/probe-target` means it fetches a subject you named,
+  `@/lib/base-rpc` or `@/lib/solana-rpc` means it reads public chain
+  state, neither means it reaches nothing. `launch_check` — the one
+  door that makes a real payment against your endpoint — has its own
+  class and says whose money moves.
+
+  `test/paid-doors-answer-rule-57.spec.ts` walks MENU_ITEMS and holds
+  all of it against each item's own facts. menu.json entries gained
+  `listing_url`: the catalogue named a `buy_url` and left an agent to
+  construct the URL of the page describing what it was buying.
+
+  **The third leg ran 2026-08-30: the reading rooms**, against rule
+  58. The structural half of 58.1 was already solid — title,
+  description and canonical on 35 of 35 — with one exception the
+  measurement found: `/developers` carried two `<h1>`s, its body
+  writing one under the shared renderer's. Two h1s splits the outline
+  a search engine builds, and `/developers` is the room a readiness
+  audit once reported as absent.
+
+  **58.4 was on one room out of thirty-five** — `/doors`, built the
+  evening the rule was adopted. The free half of the fix derives
+  completely: all 35 rooms already answer `Accept: application/json`
+  at their own URL, measured rather than assumed, so "the machine
+  copy of this page is this page" is true of a room added tomorrow
+  with no bookkeeping. That is the line a person hands to their agent.
+
+  The paid half is deliberately sparse. Ten rooms name a rung
+  (`Room.deeper`, priced off the shelf); the other twenty-five say
+  **"Nothing on the shelf sells a deeper read of this page. What is
+  here is all of it, free and complete."** That empty case is a
+  sentence rather than a gap on purpose — the same instinct as
+  `paid_rung: false` above. Pointing a reader at an item answering a
+  different question, to avoid an empty section, is the failure this
+  store files against other people.
+
+  **Still owed:** the MCP tool surface. Same method: add the row,
+  watch it fail, close it. What no test can settle is 58.1's other
+  half — whether a description would make anybody click it — and
+  58.2, whether the finding is really in the first screen.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.
@@ -122,64 +182,68 @@ None of that is a promise to sweep it this week. It is the list, so
 the rules are not quietly narrower than the sentences that adopted
 them.
 
-## The reading rooms, audited (2026-08-30)
+## The reading rooms, audited — and the audit overtaken (2026-08-30)
 
-All thirty-six rooms in `ROOMS` were fetched with a browser's two
-headers and counted. Two findings, and they belong in different piles.
+All thirty-six rooms were fetched with a browser's two headers and
+counted, against rule 58. **Two sessions did that on the same day,
+independently, and this is the record of what happened when they
+met.**
 
-### Structural — fixed in this change
+### The same defect, found twice, by two sessions that could not see each other
 
-**`/developers` served two `<h1>` tags**, and had since it shipped:
+`/developers` served two `<h1>` tags and had since it shipped:
 `renderSimplePage` emits one from the page's own title and the route
 body emitted its own on top. Both headings were correct, sensible and
 in the right place. There were simply two of them, and a document with
 two first-level headings has told every crawler and every screen
-reader that it is two documents. It is the only room in the store with
-this defect.
+reader that it is two documents.
 
 It survived every hand-read because neither heading looks wrong. You
-find it by counting the served bytes of all thirty-six rooms at once.
-`test/one-h1-per-room.spec.ts` now does that on every build.
+only find it by counting the served bytes of all thirty-six rooms at
+once — and **both sessions did exactly that, on the same day, and
+landed on the same room.** #351 merged first; its wording is the one
+that stands, and this branch took it rather than churning a comment
+that was already published and correct.
+
+Two independent readings converging on one defect is the strongest
+evidence available that the finding is real and that the measurement
+is the right one. It is also, precisely, #65: two sessions spending
+the same hours on the same file because nothing coordinates them.
 
 **A correction on my own audit, in the same breath:** its first regex
-matched `<h1>` literally, which scored `/porch` — whose heading carries
-a class and an inline style — as having none. I nearly filed a defect
-against a page that was fine. The guard matches the tag, not the tag
-with no attributes.
+matched `<h1>` literally, which scored `/porch` — whose heading
+carries a class and an inline style — as having none. I nearly filed
+a defect against a page that was fine. Match the tag, not the tag with
+no attributes.
 
-Everything else was clean: all thirty-six rooms carry a title, a
-description over fifty characters, and a canonical link.
+### ❌ WITHDRAWN: the 58.4 gap table this file briefly carried
 
-### 58.4 — ⚑ THE KEEPER'S PEN, drafted not shipped
+An earlier draft of this section listed five rooms — `/try`,
+`/conformance`, `/bot-auth`, `/profiles`, `/pricing` — as naming a
+paid path with no way to hand it to an agent, and said the fix was
+the keeper's copy to write.
 
-Rule 58.4 asks that a paid path be walkable two ways: a person can buy
-it, and a person can hand the line to their agent and have the agent
-buy it. The second half is the one this store keeps forgetting.
+**That was true when it was measured and false by the time it was
+written.** #351 shipped the agent-handoff line, the free-first
+ordering and menu-derived prices across the rooms while this branch
+was in flight. All five carry the line now; verified by fetching them,
+not by reading the diff.
 
-**Eight rooms name a paid product. Three of them give a reader
-something to hand an agent.**
+The table is withdrawn rather than quietly deleted, per rule 56, and
+the reason is worth more than the table was: **a stale finding about
+our own surfaces is exactly what this store sells other people
+protection from.** It lasted about forty minutes.
 
-| room | names a paid path | hands it to an agent |
-| --- | --- | --- |
-| `/what` | yes | yes |
-| `/doors` | yes | yes |
-| `/samples` | yes | yes |
-| `/try` | yes | **no** |
-| `/conformance` | yes | **no** |
-| `/bot-auth` | yes | **no** |
-| `/profiles` | yes | **no** |
-| `/pricing` | yes | **no** |
+### What is actually held, and by what
 
-The five gaps are real and the fix is one sentence each. **That
-sentence is selling copy, so it is not written here.** Rule 7 and the
-M5 gate both apply: an agent-handoff line is the store telling a
-reader how to spend money, and machine-drafted lines of that kind are
-exactly what the gate exists to stop.
+`test/rooms-earn-their-page.spec.ts` (from #351) walks `ROOMS` and
+holds 58.1, 58.3 and 58.4 together — including the h1 count, with the
+correct regex. A second guard for the h1 alone was written on this
+branch and **deleted before merge**: two guards over one property are
+two things that must agree with nothing checking that they do, which
+is the defect this store keeps finding elsewhere.
 
-What the line has to do, if he wants drafts: name the free check
-first, then give a literal instruction a reader can paste at their own
-agent, with the real URL in it. `/doors` and `/samples` carry working
-examples of the shape.
+### Still owed
 
-**Not done and not owed until he rules:** the copy. The audit, the
-table, and the structural fix are the deliverable.
+The MCP tool surface. Everything else in the sweep is held by a
+walking guard with a written coverage statement.

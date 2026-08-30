@@ -37,6 +37,15 @@
  * already parsing `weeks` keeps working. The envelope is additive.
  */
 
+/**
+ * The terms on everything this store publishes free — the datasets
+ * and the free instruments' answers alike. Exported because the free
+ * doors quote it too: "no licence" was nearly written on three of
+ * them while every dataset here carried CC-BY, and a store whose
+ * terms depend on which door you came through has no terms.
+ */
+export const PUBLISHED_LICENCE = "https://creativecommons.org/licenses/by/4.0/";
+
 export interface DatasetVariable {
   /** What the field is, in words a stranger can read. */
   name: string;
@@ -71,7 +80,7 @@ export function datasetEnvelope(
     name: input.name,
     description: input.description,
     url: input.url,
-    license: "https://creativecommons.org/licenses/by/4.0/",
+    license: PUBLISHED_LICENCE,
     creator: {
       "@type": "Organization",
       name: "scvd.store",
@@ -79,6 +88,19 @@ export function datasetEnvelope(
     },
     isAccessibleForFree: true,
     conditionsOfAccess: "Free to read. No account, no key, no rate limit.",
+    /*
+     * THE POINTER, ON THE ENVELOPE RATHER THAN ON EACH SURFACE
+     * (2026-08-29). The house rule is that every evidence surface is
+     * one hop from the record of what this store later got wrong —
+     * because signed history is never retro-edited, so the correction
+     * has to be reachable FROM the stale claim. /registry and
+     * /inflows were serving numbers to machines with no such hop:
+     * the pointer was in their HTML and not in their JSON, which is
+     * the same inversion this envelope was built to fix one field
+     * over. Derived from the dataset's own url, so a surface cannot
+     * carry the envelope and miss the pointer.
+     */
+    corrections_url: `${new URL(input.url).origin}/corrections`,
     measurementTechnique: input.measurementTechnique,
     variableMeasured: input.variableMeasured.map((variable) => ({
       "@type": "PropertyValue",

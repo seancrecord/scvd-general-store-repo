@@ -41,6 +41,27 @@ export interface Room {
    * caught by his guard rather than by me.
    */
   on_storefront?: false;
+  /**
+   * WHAT THE SHELF SELLS THAT GOES DEEPER ON THIS ROOM'S SUBJECT, by
+   * menu id. Rule 58.4, and it is deliberately CONSERVATIVE: most
+   * rooms carry nothing here, because most rooms are a policy, a
+   * record or an explanation and there is no honest deeper read to
+   * sell. Those rooms say so on the page, which is the sentence rule
+   * 58 ends with — selling deeper is not withholding the evidence,
+   * and a page with nothing above it should say that plainly rather
+   * than point a reader at something answering a different question.
+   *
+   * An id the menu does not carry is dropped rather than rendered as
+   * a broken promise, and a test fails if one goes stale.
+   */
+  deeper?: readonly string[];
+  /**
+   * Set where the page writes its own go-deeper section and the
+   * derived one would be a second copy. /doors is the worked example
+   * rule 58 was adopted alongside; it says all of this in its own
+   * voice and better.
+   */
+  writes_its_own_deeper?: true;
 }
 
 /**
@@ -69,8 +90,12 @@ export const ROOMS: readonly Room[] = [
    * neither. The rooms carry the prose; the instruments stay where
    * they were.
    */
-  { path: "/conformance", name: "The conformance desk" },
-  { path: "/corpus", name: "The corpus" },
+  {
+    path: "/conformance",
+    name: "The conformance desk",
+    deeper: ["conformance_watch"],
+  },
+  { path: "/corpus", name: "The corpus", deeper: ["spot_check"] },
   /**
    * THE LIST THE CORPUS NEVER HAD (#26, 2026-08-29). /corpus.json
    * indexes snapshots and /corpus/host/{host}.json needs a hostname
@@ -79,7 +104,11 @@ export const ROOMS: readonly Room[] = [
    * the store because it is the most legible free thing here: one
    * page, every endpoint, no ranking.
    */
-  { path: "/doors", name: "Every door we have checked" },
+  {
+    path: "/doors",
+    name: "Every door we have checked",
+    writes_its_own_deeper: true,
+  },
   /**
    * THE SAMPLE (#31, 2026-08-29). The shelf described every paid
    * artifact and showed nobody one, which asks a buyer to take our
@@ -94,7 +123,11 @@ export const ROOMS: readonly Room[] = [
    * own description names /api/bot-auth/check, so the string reaches
    * the storefront through the shelf either way.)
    */
-  { path: "/bot-auth", name: "The Web Bot Auth desk" },
+  {
+    path: "/bot-auth",
+    name: "The Web Bot Auth desk",
+    deeper: ["signature_agent_card"],
+  },
   /**
    * OFF THE FRONT OF THE STORE 2026-08-06, the keeper's call: the
    * footer stopped linking the Gazette. The rack is still open, still
@@ -121,7 +154,12 @@ export const ROOMS: readonly Room[] = [
    * he rules on giving it a front slot; every agent-read surface
    * carries it from day one.
    */
-  { path: "/registry", name: "State of the registry", on_storefront: false },
+  {
+    path: "/registry",
+    name: "State of the registry",
+    on_storefront: false,
+    deeper: ["spot_check", "service_audit"],
+  },
   /**
    * The inflow tally, 2026-08-29. The registry says what the listings
    * are WORTH — how many doors work, what they charge. This says what
@@ -131,34 +169,63 @@ export const ROOMS: readonly Room[] = [
    * no names, and pressed by hand like the tally beside it. Off the
    * storefront on the same terms as /registry and /pulse.
    */
-  { path: "/inflows", name: "Inflows", on_storefront: false },
+  {
+    path: "/inflows",
+    name: "Inflows",
+    on_storefront: false,
+    deeper: ["the_statement"],
+  },
   /**
    * The other half of the registry bargain, 2026-08-20: the tally
    * publishes failures without names, the set publishes names only on
    * the ready side. Built the day the keeper hand-ran the first full
    * walk; held off the storefront the same way the tally is.
    */
-  { path: "/fresh-set", name: "The fresh set", on_storefront: false },
+  {
+    path: "/fresh-set",
+    name: "The fresh set",
+    on_storefront: false,
+    deeper: ["spot_check", "service_audit"],
+  },
   /**
    * The trust panel, 2026-08-20 — the outside-reads batch: every
    * trust surface aggregated with links, the assurance ladder named,
    * the gallery of house-bought verifiable artifacts. Held off the
    * storefront pending the keeper's slot ruling, same as its kin.
    */
-  { path: "/trust", name: "The trust panel", on_storefront: false },
+  {
+    path: "/trust",
+    name: "The trust panel",
+    on_storefront: false,
+    deeper: ["trust_profile"],
+  },
   /**
    * The Endpoint Passport's landing, 2026-08-21 — P2 of the ROI
    * order: one signed, expiring object per ready-side host, our own
    * self-passport as the public example.
    */
-  { path: "/passport", name: "Endpoint passports", on_storefront: false },
+  {
+    path: "/passport",
+    name: "Endpoint passports",
+    on_storefront: false,
+    deeper: ["passport_refresh"],
+  },
   /**
    * The hosted profiles' index, 2026-08-21 — the keeper's ruled
    * recurring door. Off the storefront pending his slot ruling, same
    * as its passport kin; the machine surfaces carry it either way.
    */
-  { path: "/profiles", name: "Hosted trust profiles", on_storefront: false },
-  { path: "/attestation", name: "What we sign" },
+  {
+    path: "/profiles",
+    name: "Hosted trust profiles",
+    on_storefront: false,
+    deeper: ["trust_profile"],
+  },
+  {
+    path: "/attestation",
+    name: "What we sign",
+    deeper: ["settlement_attestation", "attestation_bundle"],
+  },
   /**
    * Rule 43's gate, opened 2026-08-10 on the keeper's badge ruling.
    * Held off the storefront pending his nod on giving it a slot — the
