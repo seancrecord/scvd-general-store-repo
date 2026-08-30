@@ -79,14 +79,38 @@ one room. The honest state of the rest:
 
 - **57.3 is closed shelf-wide** — cadence is required and checked.
 - **57.1 was already held** by test/no-orphan-capability.spec.ts.
-- **57.2, 57.4 and 57.5 are held against /doors and nowhere else.**
-  Most API doors describe themselves in OpenAPI and llms.txt; few
-  publish their error categories BY NAME with what a caller should do
-  about each, and almost none carry a security paragraph. A sweep
-  is owed. Suggested order, cheapest evidence first: the free doors an
-  agent meets before it pays (`/api/preflight/v1`,
-  `/api/before-you-pay/v1`, `/api/conformance/v1`), then the paid
-  doors, then the reading rooms.
+- **57.2, 57.4 and 57.5: the sweep has STARTED, three doors deep.**
+  `/api/preflight/v1`, `/api/before-you-pay/v1` and
+  `/api/conformance/v1` are now under the contract and checked by a
+  registry walk in `test/surface-contract.spec.ts`. A door listed
+  there is claimed; a door absent from it is not. Adding a row is how
+  the sweep advances, and the row fails until the door answers.
+
+  **What the first three found, and it was the same thing three
+  times.** Every one of them documents, at length and by name, the
+  failures it finds in OTHER people's endpoints. Not one said what IT
+  returns when the caller gets it wrong. The three best-documented
+  files in the repository were generous about everything except their
+  own failure path — the only part a caller is holding when things go
+  wrong. Each also named paid rungs by bare URL with no price and no
+  cadence, and none carried a security paragraph.
+
+  Fixed by: stable `code` fields on the wire (additive — the English
+  `error` sentence is unchanged and still served), an
+  `expected_outcome`, a published error catalogue, a `security` block,
+  and ladders priced from the shelf via `ladderRung`.
+
+  **One guard was wrong and the door was right.** The first draft
+  demanded a paid rung on every door. The conformance desk has
+  refused one in writing since it shipped — "a paid verdict has a
+  customer, and a customer for a verdict is how verdicts start
+  bending" — so the guard would have made the store sell the one
+  thing it decided not to. The registry now carries `paid_rung:
+  false` and the clause demands the REFUSAL be on the record instead.
+  Silence is what 57.3 forbids, not abstinence.
+
+  **Still owed:** the paid doors, the reading rooms, and the MCP tool
+  surface. Same method: add the row, watch it fail, close it.
 - **58.1 is partly structural** — every room gets a title, description,
   canonical and JSON-LD from `renderSimplePage`. What no check holds is
   whether the description would make anybody click it.

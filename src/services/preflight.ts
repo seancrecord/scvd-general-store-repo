@@ -1403,7 +1403,7 @@ export async function preflightUrl(
   battery: PreflightBattery = PREFLIGHT_VERSION,
 ): Promise<{
   status: number;
-  body: PreflightReport | { error: string };
+  body: PreflightReport | { error: string; code?: string };
   /**
    * Set on every answer the limiter actually metered: the RFC
    * RateLimit fields, plus Retry-After on the 429. The 400s above
@@ -1434,6 +1434,7 @@ export async function preflightUrl(
       body: {
         error:
           'Send {"url": "https://your-endpoint/..."} — the URL a buyer would GET, expecting your 402.',
+        code: "url_missing",
       },
     };
   }
@@ -1441,7 +1442,10 @@ export async function preflightUrl(
   try {
     url = new URL(rawUrl.trim());
   } catch {
-    return { status: 400, body: { error: "That is not a parseable URL." } };
+    return {
+      status: 400,
+      body: { error: "That is not a parseable URL.", code: "url_unparseable" },
+    };
   }
   /**
    * ONE LAW, from lib/probe-target: https, default port, no
@@ -1451,7 +1455,10 @@ export async function preflightUrl(
    */
   const target = checkProbeTarget(url, "");
   if (!target.ok) {
-    return { status: 400, body: { error: target.reason! } };
+    return {
+      status: 400,
+      body: { error: target.reason!, code: "target_refused" },
+    };
   }
   /**
    * OUR OWN HOST IS REFUSED WITH THE REASON, not probed. Cloudflare
@@ -1469,6 +1476,7 @@ export async function preflightUrl(
       body: {
         error:
           "That is this store's own hostname, which a Cloudflare Worker cannot fetch (the platform kills self-requests). Our own 402s pass these exact checks in CI on every build — and you should not take our word for that: GET any /api/buy/{item} yourself and look. The checks this tool runs are published, so your own probe is as good as ours.",
+        code: "own_host_refused",
       },
     };
   }
@@ -1516,6 +1524,7 @@ export async function preflightUrl(
       body: {
         error:
           "The probe budget for this minute is spent — a cost bound on our side, not a fact about your endpoint. Retry next minute.",
+        code: "budget_spent",
       },
     };
   }

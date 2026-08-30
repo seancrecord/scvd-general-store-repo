@@ -15,6 +15,8 @@ import {
   VERDICT_FOLD_CHECK_NAMES,
 } from "@/services/preflight";
 import { lifecycleHeaders } from "@/store/api-lifecycle";
+import { PROBE_DOOR_ERRORS, securityBlock } from "@/store/surface-contract";
+import { ladderRung } from "@/services/menu-markdown";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -91,13 +93,54 @@ function doc(base: string, battery: PreflightBattery = PREFLIGHT_VERSION) {
       "Reliability. One probe is one moment; this is not a monitor and its output is not an uptime claim.",
       "Verify/settle-time failures — wallet state, signatures over a specific payment, on-chain conditions. Those belong to the payment attempt, not the endpoint's shape.",
     ],
+    /**
+     * THE LADDER, PRICED (rule 57.3, 2026-08-29). It named four buy
+     * URLs and not one price or cadence, so an agent reading the free
+     * tool's own documentation had to leave and find the shelf before
+     * it could decide anything. Prices and terms are read off the
+     * menu, never typed here.
+     */
     the_ladder: {
-      artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
-      endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool.`,
-      this_moment_signed: `${base}/api/buy/service_audit — these exact checks, signed and bound into a certificate, served at a permanent report URL: for when you need to hand somebody the readout rather than run it.`,
-      across_a_week: `${base}/api/buy/conformance_watch — these exact checks once a day for seven days, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week.`,
-      behavior: `${base}/api/buy/standing_watch — a paid, signed week of out-of-band hourly probes, for evidence rather than a readout.`,
+      free_first: {
+        artifact: `${base}/api/conformance/v1 — any issuer's signed offer or receipt, verified free.`,
+        endpoint: `${base}/api/preflight/${PREFLIGHT_VERSION} — this tool. Free.`,
+        the_buyer_side: `${base}/api/before-you-pay/v1 — whether YOUR client would actually pay it. Free.`,
+        a_sample_of_the_paid_one: `${base}/samples/once-over.json — every field the $5 artifact carries, unsigned, so you can see it before buying it.`,
+      },
+      paid: [
+        ladderRung(
+          base,
+          "service_audit",
+          "these exact checks, signed and bound into a certificate at a permanent URL: for when you need to hand somebody the readout rather than run it",
+        ),
+        ladderRung(
+          base,
+          "conformance_watch",
+          "these exact checks once a day, each day signed alone: for catching a deploy that quietly breaks the challenge mid-week",
+        ),
+        ladderRung(
+          base,
+          "standing_watch",
+          "out-of-band hourly probes, signed: evidence rather than a readout",
+        ),
+      ].filter(Boolean),
     },
+    expected_outcome:
+      "HTTP 200 and a report naming every check with ok true or false, the advisories, the verdict under this battery, and `also_under` carrying the other battery's verdict on the same probe. A not_ready verdict is a successful call — the tool worked and found something. Only the codes below mean the call itself did not happen.",
+    /**
+     * THE FAILURES OF CALLING US (rule 57.4). This file has always
+     * documented, at length and by name, the failures it finds in
+     * OTHER people's endpoints — and never once said what it returns
+     * when the caller gets it wrong. The codes are new and additive;
+     * the English `error` sentence is unchanged and still served.
+     */
+    errors: PROBE_DOOR_ERRORS,
+    security: securityBlock(base, {
+      does_in_your_name:
+        "Exactly one outbound GET, to the URL you supplied, with no credentials and no body, bounded in time and in response size. Nothing is signed, no wallet is touched, and we never follow a redirect — payment clients refuse them and so do we. Your URL is the only thing we act on.",
+      stores:
+        "Nothing keyed to you. The probe result is returned and not retained; the only thing that persists is an unattributed counter of how many probes ran this minute, which is how the budget below is enforced.",
+    }),
     try_it_against_a_live_endpoint:
       "Any of this store's own buy URLs is a permanent, free, working example of what a passing challenge looks like — GET one and compare. We cannot probe our own hostname from inside the Worker (the platform forbids self-fetch), so CI proves the store passes these exact checks on every build instead, and you are encouraged to probe us from your side rather than take that on faith.",
   };

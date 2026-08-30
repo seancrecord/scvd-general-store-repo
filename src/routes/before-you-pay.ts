@@ -7,6 +7,8 @@ import {
 import { SIMULATED_CAP_LABEL } from "@/lib/client-simulator";
 import { PREFLIGHT_VERSION } from "@/services/preflight";
 import { lifecycleHeaders } from "@/store/api-lifecycle";
+import { PROBE_DOOR_ERRORS, securityBlock } from "@/store/surface-contract";
+import { ladderRung } from "@/services/menu-markdown";
 import type { HonoEnv } from "@/types";
 
 /**
@@ -62,11 +64,29 @@ function doc(base: string) {
       "Whether the door delivers after payment. No probe or simulation can; that is a fact about the world.",
     ],
     the_ladder: {
-      the_door: `${base}/api/preflight/${PREFLIGHT_VERSION} — is their challenge well-formed. Free.`,
-      the_artifact: `${base}/api/conformance/v1 — does their signed offer or receipt verify. Free, any issuer.`,
-      the_buyer: `${base}/api/before-you-pay/${BEFORE_YOU_PAY_VERSION} — will your client pay it. Free. This tool.`,
-      signed: `${base}/api/buy/good_buyer — this exact reading, signed and served forever at its own URL, for the human who asks why their agent spent the money.`,
+      free_first: {
+        the_door: `${base}/api/preflight/${PREFLIGHT_VERSION} — is their challenge well-formed. Free.`,
+        the_artifact: `${base}/api/conformance/v1 — does their signed offer or receipt verify. Free, any issuer.`,
+        the_buyer: `${base}/api/before-you-pay/${BEFORE_YOU_PAY_VERSION} — will your client pay it. Free. This tool.`,
+      },
+      /* Priced from the shelf, never typed here (rule 57.3). */
+      paid: [
+        ladderRung(
+          base,
+          "good_buyer",
+          "this exact reading, signed and served forever at its own URL, for the human who asks why their agent spent the money",
+        ),
+      ].filter(Boolean),
     },
+    expected_outcome:
+      "HTTP 200 and a reading naming which accept your client would select, or that it would refuse before signing and which stage refused it. A refusal is a successful call: the tool worked and found the thing you came for. Only the codes below mean the call itself did not happen.",
+    errors: PROBE_DOOR_ERRORS,
+    security: securityBlock(base, {
+      does_in_your_name:
+        "One outbound GET to the URL you supplied, and then arithmetic on what came back. NOTHING IS SIGNED, no wallet is touched, no payment is presented and no key of yours is asked for — the whole point of this door is that it answers before any of that. An optional client_profile you send is used for the one calculation and then discarded.",
+      stores:
+        "Nothing keyed to you, and in particular nothing about the client_profile you describe. The reading is returned and not retained; the only persistence is the same unattributed per-minute probe counter the preflight uses.",
+    }),
     our_conflict_of_interest:
       "This store sells x402 goods, so it has an interest in agents being able to pay for things. That cuts against alarmism, not for it: every refusal this tool reports is a sale we did not make. It also runs against our own doors — the reading that named thirteen unpayable listings here is the reading that produced this tool.",
   };
