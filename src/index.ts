@@ -70,6 +70,7 @@ import {
   conformanceLandingRoutes,
   corpusLandingRoutes,
   doorsRoutes,
+  howItWorksRoutes,
   samplesRoutes,
   beforeYouPayRoutes,
   goodBuyerRoutes,
@@ -260,6 +261,7 @@ app.route("/", conformanceRoutes);
 app.route("/", conformanceLandingRoutes);
 app.route("/", corpusLandingRoutes);
 app.route("/", doorsRoutes);
+app.route("/", howItWorksRoutes);
 app.route("/", samplesRoutes);
 app.route("/", preflightRoutes);
 /* The buyer's half of the same ladder: one probe, then the stock
