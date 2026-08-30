@@ -26,6 +26,47 @@ import type { HonoEnv } from "@/types";
  */
 export const askRoutes = new Hono<HonoEnv>();
 
+/**
+ * CORS ON THIS DOOR, SET HERE RATHER THAN INHERITED, and the reason is
+ * that the app-wide derivation cannot see two of the three ways this
+ * door answers.
+ *
+ * lib/cors.ts decides the allowance from what came back — a GET that
+ * answered 200 with a JSON, markdown, plain-text or XML body outside
+ * /admin. That doctrine's own sentence is "public, read-only, and
+ * byte-identical for every caller", and every response from /ask
+ * satisfies it. Two of them fall outside the check anyway: an
+ * event-stream is not one of the document types the regex knows, and a
+ * POST is not a GET. A browser-resident NLWeb client uses both — SSE is
+ * the transport it reaches for first — so without this it would fail
+ * at the fetch with nothing in our logs to show for it.
+ *
+ * The OPTIONS handler is what makes the POST usable at all: a
+ * cross-origin JSON POST is preflighted, and an unanswered preflight
+ * is a door that is open and cannot be opened.
+ *
+ * NOTHING IS WIDENED BY THIS. The allowance covers exactly the paths
+ * in this file, all of which are free, unauthenticated, read-only, and
+ * identical for every caller.
+ */
+askRoutes.use("/ask", async (c, next) => {
+  if (c.req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers":
+          c.req.header("Access-Control-Request-Headers") ?? "Content-Type",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
+  await next();
+  c.res.headers.set("Access-Control-Allow-Origin", "*");
+  c.res.headers.set("Access-Control-Expose-Headers", "Content-Type");
+});
+
 /** NLWeb's site identifier for this deployment. */
 const SITE = "scvd.store";
 

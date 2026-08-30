@@ -21,6 +21,7 @@ import {
   SPEC_SCHEMA_PATH,
 } from "@/lib/listing-spec";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
+import { agentAuthBlock } from "@/store/agent-auth";
 import { freshness } from "@/lib/freshness";
 import {
   manifestAccepts,
@@ -112,6 +113,18 @@ wellKnownRoutes.get("/.well-known/trust.json", (c) => {
      * happy path a demo needs.
      */
     wallet_safety: WALLET_SAFETY,
+    /**
+     * HOW A READER GETS IN, IN THE DOCUMENT THEY ALREADY HAVE OPEN.
+     *
+     * "Is there an account? a key? an approval queue?" is the question
+     * immediately after "is this real", and a diligence pass that had
+     * to fetch a second document to learn the answer would often
+     * simply not. The same block the RFC 9728 document carries, from
+     * the same constants, so this can no more disagree with
+     * /.well-known/oauth-protected-resource than either can disagree
+     * with /auth.md.
+     */
+    agent_auth: agentAuthBlock(base),
     /**
      * Absolute, so a reader following this document never has to
      * resolve a relative path against a base it had to guess.

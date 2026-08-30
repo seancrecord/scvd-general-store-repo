@@ -2421,7 +2421,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
         post: freeOp(
           "Ask this store a question about itself (POST)",
-          "The same door as GET /ask, taking {query, mode, limit, streaming} as a JSON body for callers that would rather not build a query string.",
+          "The same door as GET /ask, taking {query, mode, limit, streaming} as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too.",
         ),
       },
       "/ask/feed.json": {

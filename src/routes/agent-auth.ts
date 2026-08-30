@@ -137,8 +137,12 @@ agentAuthRoutes.get(AUTH_DOC_PATH, (c) =>
 /**
  * RFC 9728 §3: the metadata document lives at this exact path, and the
  * path IS the discovery mechanism — a client constructs it from the
- * resource identifier without being told. Served with CORS open
- * because the spec expects browser-resident clients to fetch it.
+ * resource identifier without being told.
+ *
+ * The spec expects browser-resident clients to fetch this, and they
+ * can: lib/cors.ts opens every /.well-known/ path to any origin and
+ * answers the preflight at the boundary, so nothing here has to
+ * remember to. Noted rather than re-implemented.
  */
 agentAuthRoutes.get(PROTECTED_RESOURCE_PATH, (c) =>
   c.json(protectedResourceMetadata(c.env.STORE_BASE_URL), 200, {

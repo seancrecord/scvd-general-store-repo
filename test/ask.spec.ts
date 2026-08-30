@@ -93,6 +93,34 @@ describe("the NLWeb surfaces", () => {
     expect(body.dataFeedElement).toHaveLength(askIndex().length);
   });
 
+  /**
+   * A browser-resident NLWeb client reaches for SSE first and POSTs
+   * when it does not. Neither is a shape lib/cors.ts can derive an
+   * allowance from — an event-stream is not one of its document types
+   * and a POST is not a GET — so the door sets its own, and this holds
+   * it. A cross-origin fetch that fails here fails in the browser with
+   * nothing in our logs to show for it.
+   */
+  it("is reachable from a browser on every one of its three answers", async () => {
+    const stream = await SELF.fetch(`${BASE}/ask?query=refund&streaming=true`);
+    expect(stream.headers.get("access-control-allow-origin")).toBe("*");
+
+    const preflight = await SELF.fetch(`${BASE}/ask`, {
+      method: "OPTIONS",
+      headers: { "Access-Control-Request-Headers": "content-type" },
+    });
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get("access-control-allow-methods")).toContain("POST");
+
+    const posted = await SELF.fetch(`${BASE}/ask`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "refund" }),
+    });
+    expect(posted.status).toBe(200);
+    expect(posted.headers.get("access-control-allow-origin")).toBe("*");
+  });
+
   it("sends nobody to a door that is not there", async () => {
     const dead: string[] = [];
     for (const entry of askIndex()) {
