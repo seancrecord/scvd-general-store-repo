@@ -495,7 +495,17 @@ export interface TrainTagRecord {
   patron_number: number;
   /** Optional name the buyer signed with. */
   name?: string;
+  /**
+   * WHAT THEY PAID, recorded 2026-08-29 so the day's top tag can be
+   * derived rather than declared. This shelf is pay-what-it-deserves
+   * and the biggest tip of a day IS the auction — but only for tags
+   * bought after this field existed. A record without it is not a
+   * zero bid, it is an unrecorded one, and it never enters the
+   * ranking.
+   */
+  paid_usdc?: number;
 }
+
 
 /**
  * THE MONEY, ADDED 2026-07-31.

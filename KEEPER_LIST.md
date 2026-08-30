@@ -200,10 +200,16 @@ is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
 miniature: porch-class writes only — free, publish nothing, touch
 no money; guestbook stays off because it publishes words). The
 co-piloted till is PARKED on his frictionless argument, reasoning
-kept in §13.2. HIS GRAFFITI WALL is speced (§13.3): day's highest
-bidder on the home page, rides graffiti_on_a_train's existing
-pay-what-it-deserves as the auction, labeled paid, his approval
-gates display, empty wall on a no-bid day. THE POP-OFF CANDIDATE
+kept in §13.2. HIS GRAFFITI WALL is BUILT (§13.3, 08-29) and SITED
+OUT BACK on his own second read — the storefront slot was dropped
+because no-URLs is not no-ads and money buying prominence on the
+front page of an evidence observatory is a sentence a competitor
+could write and be right. The head car rides /train: biggest
+recorded bid of a day, marked in place with its date, its amount and
+"paid, and saying so"; ties to whoever got there first; /train
+publishes the standing bid and what it does NOT buy (nothing else on
+this store). His approval still gates every car. The storefront is
+untouched. THE POP-OFF CANDIDATE
 (§13.4, scvd.store/check/{host} — the shareable endpoint report
 page, the SSL-Labs wedge) is HELD SPECED: worth building on his
 read, not sold on readiness — built on his word, not before.

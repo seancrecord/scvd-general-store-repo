@@ -253,6 +253,7 @@ function trainHtml(tags: TrainTagRecord[]): string {
       <strong>${escapeHtml(tag.id)}</strong> [${tag.status}]
       ${tag.name ? `· ${escapeHtml(tag.name)}` : "· unsigned"}
       · bought ${escapeHtml(tag.date.slice(0, 10))}
+      ${typeof tag.paid_usdc === "number" ? `· paid $${tag.paid_usdc}` : ""}
       ${tag.displayed_at ? `· up since ${escapeHtml(tag.displayed_at.slice(0, 10))}` : ""}
       <p><em>Tag (buyer-written, verbatim):</em> ${escapeHtml(tag.tag)}</p>
       <p><a href="/api/verify/${escapeHtml(tag.cert_id)}">${escapeHtml(tag.cert_id)}</a></p>
