@@ -1513,7 +1513,7 @@ where marked build.
   its summary block, but the /agent/v1 consumable API (4.1) is open,
   and page tools should ride adoption, not precede it.
 
-### 13.3 The graffiti wall (his idea, speced at his direction)
+### 13.3 The graffiti wall (his idea) — **BUILT 2026-08-29**
 
 Not WebMCP — a menu evolution. The day's highest bidder gets the
 wall ON THE HOME PAGE, prominent. Rides graffiti_on_a_train's
@@ -1523,6 +1523,36 @@ legible; LABELED as paid (an unlabeled ad on an honesty store is a
 self-inflicted corrections entry); the keeper's approval gates
 display (rule 30); an empty wall on a no-bid day is an honest wall
 — zero-day risk accepted at his word.
+
+**Built as speced, with three decisions the spec left open.**
+
+The train rides the storefront under the guestbook wall: the last
+five approved tags as boxcars, with the day's biggest recorded bid at
+the head end. Every car carries the buyer's own date and a verify
+link, and the strip is labeled **"Paid placement — every car on this
+train was bought."** That line is not decoration. An unlabeled paid
+placement on a store whose product is honest observation would be a
+self-inflicted corrections entry, and it would be the correct one to
+file.
+
+1. **The top car carries its date.** It is the highest recorded bid of
+   the day it won on, not a title anybody holds. Rule 43 says a dated
+   observation never becomes a score, and a head car without a date
+   beside it drifts into a leaderboard within a week.
+2. **A tie goes to whoever got there first.** Matching a standing bid
+   is not outbidding it, and `/train` now publishes `paid_usdc` and a
+   `front_page_policy` line so a bidder can see the standing bids — an
+   auction whose bidders cannot see the bids is not an auction.
+3. **An unrecorded bid is not a zero bid.** Tags bought before the
+   amount was written down ride the train and never enter the ranking,
+   in either direction.
+
+The card is DERIVED at approve/decline, where the keeper's hand
+already falls, and read by the front page as one KV key — the
+storefront never pays for the wall's bookkeeping. It appears the first
+time he approves or declines a tag after this ships; until then the
+section does not render, which is the same honest-empty case as a
+no-bid day.
 
 ### 13.4 The pop-off candidate, held
 

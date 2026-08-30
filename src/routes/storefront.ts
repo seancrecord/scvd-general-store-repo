@@ -11,6 +11,7 @@ import { KV_KEYS } from "@/lib/kv-keys";
 import { getFirstDollar } from "@/lib/metrics";
 import { renderStorefront } from "@/pages/storefront-page";
 import { listGuestbook } from "@/services/guestbook";
+import { readTrainFront } from "@/services/train";
 import { listKeys } from "@/lib/kv-list";
 import { computeStats, storefrontLedgerLine } from "@/services/stats";
 import { DEFAULT_WEEK_NOTE } from "@/store";
@@ -80,6 +81,7 @@ storefrontRoutes.get("/", async (c) => {
     patronRaw,
     stats,
     firstDollar,
+    trainFront,
   ] = await Promise.all([
     kvGet(c.env.COUNTERS, KV_KEYS.weekNote),
     kvGet(c.env.COUNTERS, KV_KEYS.bellCount),
@@ -100,6 +102,13 @@ storefrontRoutes.get("/", async (c) => {
     kvGet(c.env.COUNTERS, KV_KEYS.patronNumber),
     computeStats(c.env).catch(() => null),
     getFirstDollar(c.env).catch(() => null),
+    /*
+     * The train, as ONE key. The card is derived where the keeper's
+     * hand already falls (approve/decline), so the front page never
+     * pays for the wall's bookkeeping. Fail-soft like every other
+     * gauge here: no card, no train section, never a broken page.
+     */
+    readTrainFront(c.env).catch(() => null),
   ]);
   /*
    * A CSP arrives with the storefront's first first-party script
@@ -121,6 +130,7 @@ storefrontRoutes.get("/", async (c) => {
       stats,
       ledgerLine: stats ? storefrontLedgerLine(stats) : undefined,
       firstDollar,
+      trainFront,
     }),
   );
 });

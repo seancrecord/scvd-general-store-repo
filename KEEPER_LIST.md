@@ -200,10 +200,15 @@ is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
 miniature: porch-class writes only — free, publish nothing, touch
 no money; guestbook stays off because it publishes words). The
 co-piloted till is PARKED on his frictionless argument, reasoning
-kept in §13.2. HIS GRAFFITI WALL is speced (§13.3): day's highest
-bidder on the home page, rides graffiti_on_a_train's existing
-pay-what-it-deserves as the auction, labeled paid, his approval
-gates display, empty wall on a no-bid day. THE POP-OFF CANDIDATE
+kept in §13.2. HIS GRAFFITI WALL is BUILT (§13.3, 08-29): the train
+rides the storefront under the guestbook wall, five approved cars
+with the day's biggest recorded bid at the head end, labeled "Paid
+placement", top car dated (rule 43 — a bid wins a day, never a
+title), ties to whoever got there first, and /train publishes the
+standing bids so a bidder can see what they are bidding against. His
+approval still gates every car; the front card derives at
+approve/decline, so it appears the first time he walks past a tag
+after the deploy. THE POP-OFF CANDIDATE
 (§13.4, scvd.store/check/{host} — the shareable endpoint report
 page, the SSL-Labs wedge) is HELD SPECED: worth building on his
 read, not sold on readiness — built on his word, not before.

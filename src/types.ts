@@ -458,6 +458,39 @@ export interface TrainTagRecord {
   patron_number: number;
   /** Optional name the buyer signed with. */
   name?: string;
+  /**
+   * WHAT THEY PAID, recorded 2026-08-29 so the day's top tag can be
+   * derived rather than declared. This shelf is pay-what-it-deserves
+   * and the biggest tip of a day IS the auction — but only for tags
+   * bought after this field existed. A record without it is not a
+   * zero bid, it is an unrecorded one, and it never enters the
+   * ranking.
+   */
+  paid_usdc?: number;
+}
+
+/**
+ * THE TRAIN, AS THE FRONT PAGE SEES IT.
+ *
+ * Derived and cached under one key so the storefront costs ONE KV
+ * read rather than a two-hundred-key list and a bulk get on every
+ * render. Recomputed where the keeper's hand already falls — the
+ * approve and decline actions — because that is the only event that
+ * can change what the wall shows.
+ *
+ * `top` is the day's highest recorded bid among APPROVED tags, and
+ * carries the date it was won on. A reader must be able to see that
+ * date, because a top tag is a dated observation about one day and
+ * never a standing title (rule 43). `recent` is the tail of the
+ * train, oldest-first like the wall itself.
+ */
+export interface TrainFront {
+  /** UTC day the `top` tag was BOUGHT on. Absent when there is no top. */
+  top_day?: string;
+  top?: TrainTagRecord;
+  recent: TrainTagRecord[];
+  /** When this card was last derived. */
+  computed_at: string;
 }
 
 /**

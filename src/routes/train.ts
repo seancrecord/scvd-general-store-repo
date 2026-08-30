@@ -65,11 +65,23 @@ trainRoutes.get("/train", async (c) => {
       cert_id: tag.cert_id,
       verify_url: `${base}/api/verify/${tag.cert_id}`,
       ...(tag.name ? { name: tag.name } : {}),
+      /*
+       * WHAT IT COST, so the auction is legible to the people bidding
+       * in it (2026-08-29). The day's biggest bid rides the front
+       * page; a bidder who cannot see the standing bids is not in an
+       * auction, they are guessing. Absent on tags bought before this
+       * was recorded — an unrecorded bid, never a zero one.
+       */
+      ...(typeof tag.paid_usdc === "number"
+        ? { paid_usdc: tag.paid_usdc }
+        : {}),
     })),
     count: tags.length,
     order: "oldest first; the train fills front to back",
     buy_url: `${base}/api/buy/graffiti_on_a_train`,
     constraints: `${TAG_CAP} characters, no URLs, recorded verbatim.`,
+    front_page_policy:
+      "The highest recorded bid of a day rides the store's front page, labeled as paid and dated. Matching a standing bid does not take the spot — ties go to whoever got there first.",
     display_policy:
       "Only tags the keeper has walked past and approved appear here. A tag he doesn't put up keeps its certificate, which verifies the same as any other — the wall is placement, not proof.",
     content_note:

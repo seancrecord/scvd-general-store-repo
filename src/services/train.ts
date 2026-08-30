@@ -3,7 +3,7 @@ import { newTagId } from "@/lib/ids";
 import { bulkGetJson } from "@/lib/kv-bulk";
 import { KV_KEYS } from "@/lib/kv-keys";
 import { sanitizeText } from "@/lib/sanitize";
-import type { Env, TrainTagRecord, TrainTagStatus } from "@/types";
+import type { Env, TrainFront, TrainTagRecord, TrainTagStatus } from "@/types";
 import { kvPut } from "@/lib/kv-retry";
 
 /**
@@ -55,6 +55,13 @@ export async function paintTag(
     certId: string;
     patronNumber: number;
     name?: string;
+    /**
+     * What they actually paid. This shelf is pay-what-it-deserves, so
+     * the number is the bid — recorded here from 2026-08-29 so the
+     * front page can DERIVE the day's top tag instead of anybody
+     * declaring one.
+     */
+    paidUsdc?: number;
   },
 ): Promise<PaintedTag> {
   const record: TrainTagRecord = {
@@ -65,6 +72,9 @@ export async function paintTag(
     cert_id: input.certId,
     patron_number: input.patronNumber,
   };
+  if (typeof input.paidUsdc === "number" && Number.isFinite(input.paidUsdc)) {
+    record.paid_usdc = input.paidUsdc;
+  }
   const name = sanitizeText(input.name, 80);
   if (name) {
     record.name = name;
@@ -138,5 +148,80 @@ export async function setTagStatus(
     found.record.displayed_at = new Date().toISOString();
   }
   await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
+  /*
+   * The front page's copy is re-derived HERE, at the one event that
+   * can change what the wall shows. Fail-soft: a card that could not
+   * be written leaves the last one standing, and the storefront reads
+   * a card or renders no train at all. Neither outcome touches a
+   * certificate.
+   */
+  await refreshTrainFront(env).catch(() => undefined);
   return found.record;
+}
+
+/** How many tags ride the strip on the front page. */
+export const FRONT_TRAIN_CARS = 5;
+
+function utcDay(iso: string): string {
+  return iso.slice(0, 10);
+}
+
+/**
+ * THE DAY'S TOP TAG, DERIVED — never declared (rule 46).
+ *
+ * Among APPROVED tags bought on the same UTC day as the most recent
+ * approved tag that recorded what it paid, the highest bid wins. Ties
+ * go to whoever got there first: the second agent to pay the same
+ * amount did not outbid anybody.
+ *
+ * A tag with no recorded amount is not a zero bid — it is a bid this
+ * store did not write down, from before the field existed — so it
+ * never enters the ranking and never loses one either.
+ */
+export function deriveTrainFront(approved: TrainTagRecord[]): TrainFront {
+  const bids = approved.filter(
+    (record) => typeof record.paid_usdc === "number",
+  );
+  const latestBidDay = bids.length > 0 ? utcDay(bids[bids.length - 1]!.date) : undefined;
+  let top: TrainTagRecord | undefined;
+  if (latestBidDay) {
+    for (const record of bids) {
+      if (utcDay(record.date) !== latestBidDay) {
+        continue;
+      }
+      // Strictly greater: first to the amount holds it.
+      if (!top || (record.paid_usdc ?? 0) > (top.paid_usdc ?? 0)) {
+        top = record;
+      }
+    }
+  }
+  return {
+    ...(top ? { top, top_day: latestBidDay } : {}),
+    recent: approved.slice(-FRONT_TRAIN_CARS),
+    computed_at: new Date().toISOString(),
+  };
+}
+
+/** Re-derive the front page's card and store it under its own key. */
+export async function refreshTrainFront(env: Env): Promise<TrainFront> {
+  const front = deriveTrainFront(await listApprovedTags(env));
+  await kvPut(env.COUNTERS, KV_KEYS.trainFront, JSON.stringify(front));
+  return front;
+}
+
+/**
+ * What the storefront reads: one key, or nothing. Never a list — the
+ * front page does not pay for the wall's bookkeeping.
+ */
+export async function readTrainFront(env: Env): Promise<TrainFront | null> {
+  const raw = await env.COUNTERS.get(KV_KEYS.trainFront);
+  if (!raw) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(raw) as TrainFront;
+    return Array.isArray(parsed.recent) ? parsed : null;
+  } catch {
+    return null;
+  }
 }
