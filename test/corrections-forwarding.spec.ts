@@ -120,7 +120,7 @@ describe("every evidence surface is one hop from the corrections desk", () => {
       escaped,
       `a corpus read hands a machine a claim with no hop to the corrections desk:\n${escaped.join("\n")}`,
     ).toEqual([]);
-  });
+  }, 120_000);
 
   it("every named exception is still a live door", async () => {
     // An exception whose route is gone is a reason nobody re-read.
@@ -134,7 +134,7 @@ describe("every evidence surface is one hop from the corrections desk", () => {
     expect(dead, `a named exception no longer answers:\n${dead.join("\n")}`).toEqual(
       [],
     );
-  });
+  }, 120_000);
 
   it("the per-host history carries the pointer too", async () => {
     // Any host answers — the shape is what is under test, and the

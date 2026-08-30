@@ -6,6 +6,18 @@ import { app } from "@/index";
 const BASE = "https://scvd.store";
 
 /**
+ * A WHOLE-ROUTER WALK NEEDS MORE THAN THE DEFAULT FIVE SECONDS.
+ *
+ * These tests fetch every static GET door the app registers — about
+ * 145 of them — and hash the body of each. That is comfortably over a
+ * second on a warm machine and it went past vitest's 5s default on a
+ * CI runner, which is not a flake and must not be re-run as one: the
+ * work is real and the default was simply wrong for it. Every guard
+ * in this repo that walks the router carries this.
+ */
+const WALK_TIMEOUT_MS = 120_000;
+
+/**
  * CONDITIONAL GET ON THE PUBLISHED DOCUMENTS.
  *
  * This store's readers are pollers. The datasets change weekly,
@@ -123,7 +135,7 @@ describe("the money paths never carry one", () => {
       tagged,
       `a no-store response carries an ETag — a client may revalidate it:\n${tagged.join("\n")}`,
     ).toEqual([]);
-  });
+  }, WALK_TIMEOUT_MS);
 });
 
 describe("the boundary holds", () => {
@@ -167,5 +179,5 @@ describe("the boundary holds", () => {
       untagged,
       `a published document a poller must re-download whole every time:\n${untagged.join("\n")}`,
     ).toEqual([]);
-  });
+  }, WALK_TIMEOUT_MS);
 });

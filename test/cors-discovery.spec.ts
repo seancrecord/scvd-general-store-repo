@@ -4,6 +4,9 @@ import { app } from "@/index";
 
 const BASE = "https://scvd.store";
 
+/** A whole-router walk needs more than vitest's 5s default. */
+const WALK_TIMEOUT_MS = 120_000;
+
 /**
  * CORS ON THE DISCOVERY SURFACE (scanner finding C1, 2026-08-27; house
  * rule 53's browser buyer, one door earlier).
@@ -91,7 +94,7 @@ describe("every published document is readable from a browser, not just the ones
       unreadable,
       `a published document a browser-based agent cannot read — the fetch dies in the browser whatever we answered:\n${unreadable.join("\n")}`,
     ).toEqual([]);
-  });
+  }, WALK_TIMEOUT_MS);
 
   it("covers the doors the typed list never reached", async () => {
     // Named because they are the concrete cost of the typed list, not
@@ -102,7 +105,7 @@ describe("every published document is readable from a browser, not just the ones
         "*",
       );
     }
-  });
+  }, WALK_TIMEOUT_MS);
 
   it("does not leak past the boundary: HTML rooms stay same-origin", async () => {
     const leaked = (await probes())
@@ -113,7 +116,7 @@ describe("every published document is readable from a browser, not just the ones
       leaked,
       `an HTML room answered any origin — the allowance is for published documents, not rooms:\n${leaked.join("\n")}`,
     ).toEqual([]);
-  });
+  }, WALK_TIMEOUT_MS);
 });
 
 describe("the discovery surface answers browsers from any origin", () => {

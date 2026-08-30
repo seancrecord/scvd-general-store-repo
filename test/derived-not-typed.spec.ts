@@ -6,6 +6,9 @@ import { app } from "@/index";
 
 const BASE = "https://scvd.store";
 
+/** A whole-router walk needs more than vitest's 5s default. */
+const WALK_TIMEOUT_MS = 120_000;
+
 /**
  * DERIVED, NOT TYPED — the standing guard for the defect that bit three
  * times in one week and would have kept biting.
@@ -161,7 +164,7 @@ describe("the roster is the router, and it reaches further than the hand did", (
       missing,
       `the derived roster dropped surfaces a person had already listed — a guard that reads nothing passes for the wrong reason:\n${missing.join("\n")}`,
     ).toEqual([]);
-  });
+  }, WALK_TIMEOUT_MS);
 
   it("covers the doors added after the list stopped being widened", async () => {
     /*
@@ -174,7 +177,7 @@ describe("the roster is the router, and it reaches further than the hand did", (
     expect(reached.has("/doors")).toBe(true);
     expect(reached.has("/doors.json")).toBe(true);
     expect(reached.size).toBeGreaterThan(ONCE_TYPED_BY_HAND.length * 4);
-  });
+  }, WALK_TIMEOUT_MS);
 });
 
 describe("nothing served carries a tally nobody recomputes", () => {
@@ -189,7 +192,7 @@ describe("nothing served carries a tally nobody recomputes", () => {
       offences,
       `a count is typed rather than derived — that is a lie with a timer on it:\n${offences.join("\n")}`,
     ).toEqual([]);
-  });
+  }, WALK_TIMEOUT_MS);
 
   it("holds in the published skill bundle, which is not served by us", async () => {
     // The bundle lives on a registry and drifts out of sight, which is
@@ -231,5 +234,5 @@ describe("no surface quotes a price the menu does not charge", () => {
     expect(wrong, `a price is typed rather than derived:\n${wrong.join("\n")}`).toEqual(
       [],
     );
-  });
+  }, WALK_TIMEOUT_MS);
 });
