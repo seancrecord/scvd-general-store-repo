@@ -9,6 +9,7 @@ export { catalogRoutes } from "@/routes/catalog";
 export { openapiRoutes } from "@/routes/openapi";
 export { wellKnownRoutes } from "@/routes/well-known";
 export { coverageRoutes } from "@/routes/coverage";
+export { agentAuthRoutes } from "@/routes/agent-auth";
 export { botAuthRoutes } from "@/routes/bot-auth";
 export { botAuthLandingRoutes } from "@/routes/bot-auth-landing";
 export { whatRoutes } from "@/routes/what";

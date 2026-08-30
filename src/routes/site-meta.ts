@@ -50,6 +50,74 @@ export const HUMAN_SURFACES: readonly string[] = [
 export const CONTENT_SIGNAL = "search=yes, ai-train=yes, ai-input=yes";
 
 /**
+ * THE NAMED AI CRAWLERS, ALLOWED OUT LOUD.
+ *
+ * `User-agent: *` with `Allow: /` already permits every one of these,
+ * so this list adds no permission the file did not grant. It adds
+ * something else, and a 2026-08-30 discoverability scan is what
+ * showed the difference: the scan read a wildcard and reported "no AI
+ * crawler policy", because a wildcard is what a site that has never
+ * thought about the question also serves. Silence and consent are
+ * byte-identical at the top of this file.
+ *
+ * So the position gets stated in the vocabulary the question is asked
+ * in. Each of these is a real, documented, currently-operating agent
+ * with a published user-agent token — no invented names, and none
+ * kept here after its operator retires it, because a stanza for a
+ * crawler that does not exist is the same class of false claim as a
+ * `sameAs` pointing at a page nobody wrote.
+ *
+ * WHY YES TO ALL OF THEM. The store's product is being the reference
+ * an agent reaches for on x402 conformance. A model that learned this
+ * corpus and can answer from it is distribution, and the argument is
+ * the same one CONTENT_SIGNAL makes above — printed twice because the
+ * two mechanisms are read by different readers, from one list, so
+ * they cannot come to disagree.
+ *
+ * TRAINING AND FETCHING ARE SEPARATE PERMISSIONS and both are yes
+ * here, which is worth saying because they are not the same question:
+ * `ClaudeBot` and `GPTBot` gather for training, `Claude-User` and
+ * `ChatGPT-User` fetch a page because a person asked about it this
+ * second, and `OAI-SearchBot` and `PerplexityBot` index for citation.
+ * A site can sensibly say yes to one and no to another. This one says
+ * yes to all three, and the third is the one it most wants: being
+ * CITED is the whole business.
+ */
+export const NAMED_AI_CRAWLERS: readonly string[] = [
+  // Anthropic: training, user-initiated fetch, search indexing.
+  "ClaudeBot",
+  "Claude-User",
+  "Claude-SearchBot",
+  "anthropic-ai",
+  // OpenAI: training, user-initiated fetch, search indexing.
+  "GPTBot",
+  "ChatGPT-User",
+  "OAI-SearchBot",
+  // Google's AI-training opt-out token (Googlebot proper is covered
+  // by the wildcard and has never been an AI-policy question).
+  "Google-Extended",
+  // Answer engines that cite their sources, which is the traffic this
+  // store is actually built to receive.
+  "PerplexityBot",
+  "Perplexity-User",
+  // Apple's AI-training token, same shape as Google-Extended.
+  "Applebot-Extended",
+  // Meta, Amazon, ByteDance, Mistral, Cohere, Common Crawl — the
+  // corpora that end up inside models we will never be told about.
+  "Meta-ExternalAgent",
+  "meta-externalagent",
+  "Amazonbot",
+  "Bytespider",
+  "MistralAI-User",
+  "cohere-ai",
+  "CCBot",
+  // Diffbot and Timpi build structured indexes that other agents buy
+  // from; a store that sells evidence wants to be inside those.
+  "Diffbot",
+  "Timpibot",
+];
+
+/**
  * The social card: the keeper's dino, pixel-drawn by
  * scripts/generate-og-image.mjs into a committed module — the same
  * bytes forever, no asset pipeline, cacheable hard.
@@ -80,6 +148,16 @@ Allow: /
 # Everything here is already free to fetch, most of it CC BY 4.0, and
 # a policy we would not enforce is one we should not print.
 Content-Signal: ${CONTENT_SIGNAL}
+
+# NAMED, BECAUSE A WILDCARD AND AN UNANSWERED QUESTION LOOK THE SAME.
+# Every agent below is already allowed by the wildcard above. Saying
+# so by name is the difference between a shop that permits AI crawling
+# and a shop that never considered it, and only one of those is true
+# here. Gathering for training, fetching because a person just asked,
+# and indexing for citation are three different permissions; all three
+# are yes. Being cited is the entire business.
+${NAMED_AI_CRAWLERS.map((agent) => `User-agent: ${agent}`).join("\n")}
+Allow: /
 
 Sitemap: ${base}/sitemap.xml
 # The Agentmap directive: ARD's robots.txt entry-source mechanism
