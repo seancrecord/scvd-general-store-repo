@@ -56,6 +56,7 @@ import {
   standingNoteRoutes,
   trustRoutes,
   agentAuthRoutes,
+  askRoutes,
   passportRoutes,
   profilesRoutes,
   receiptVerifyRoutes,
@@ -247,6 +248,7 @@ app.route("/", noticeRoutes);
 app.route("/", standingNoteRoutes);
 app.route("/", trustRoutes);
 app.route("/", agentAuthRoutes);
+app.route("/", askRoutes);
 app.route("/", passportRoutes);
 app.route("/", profilesRoutes);
 app.route("/", receiptVerifyRoutes);
