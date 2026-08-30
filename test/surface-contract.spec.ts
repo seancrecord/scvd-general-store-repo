@@ -10,6 +10,7 @@ import {
   priceLine,
 } from "@/services/menu-markdown";
 import { mcpToolCatalog } from "@/lib/mcp-tools";
+import surfaceContractDoc from "../docs/SURFACE_CONTRACT_2026-08.md?raw";
 import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 
 /**
@@ -274,6 +275,71 @@ describe("every price says what it is buying, and for how long", () => {
     const watch = body.items.find((item) => item.id === "conformance_watch");
     expect(watch?.cadence).toBe("term");
     expect(watch?.term_days).toBe(7);
+  });
+});
+
+/**
+ * THE DOCUMENT'S OWN NUMBERS, DERIVED (added 2026-08-30, an hour after
+ * the section it checks went out wrong).
+ *
+ * The coverage statement carried a table of the four term items and
+ * what each one's payment buys. I typed the four numbers by hand, in
+ * a change whose entire argument is that a price must be derived and
+ * never typed, and got one wrong: standing_watch sells seven days and
+ * the table said thirty. The correct figure was already written two
+ * hundred lines up the same file.
+ *
+ * No guard could have caught it. They all read served bytes, and
+ * prose in a doc is not served bytes — it was found by walking the
+ * live endpoint after the merge. So the table is parsed and compared
+ * to the shelf here: a doc figure that drifts from MENU_ITEMS now
+ * fails the build instead of sitting in a document being quoted.
+ *
+ * This checks the DOCUMENT, which is the thing that was wrong. It is
+ * deliberately narrow — one table, matched by its own header — rather
+ * than an attempt to verify English prose, which a test cannot do.
+ */
+describe("the coverage statement's term table matches the shelf", () => {
+  /** Rows look like: | `standing_watch` | $5 | 7 days | */
+  const ROW = /^\|\s*`(\w+)`\s*\|\s*\$([\d.]+)\s*\|\s*(\d+) days\s*\|/gm;
+
+  function tableRows(): { id: string; price: string; days: number }[] {
+    const rows: { id: string; price: string; days: number }[] = [];
+    for (const match of surfaceContractDoc.matchAll(ROW)) {
+      rows.push({ id: match[1]!, price: match[2]!, days: Number(match[3]) });
+    }
+    return rows;
+  }
+
+  it("finds the table at all, or this guard is checking nothing", () => {
+    // The failure mode a regex guard has: the document is reformatted,
+    // the pattern stops matching, and the check passes vacuously.
+    expect(
+      tableRows().length,
+      "the term table is gone or reshaped — update this pattern rather than deleting the check",
+    ).toBe(4);
+  });
+
+  it("names every term item the shelf sells, and no others", () => {
+    const inTable = tableRows().map((row) => row.id).sort();
+    const onShelf = MENU_ITEMS.filter((item) => item.cadence === "term")
+      .map((item) => item.id)
+      .sort();
+    expect(inTable).toEqual(onShelf);
+  });
+
+  it("quotes each one's price and term as the shelf has them", () => {
+    for (const row of tableRows()) {
+      const item = MENU_ITEMS.find((candidate) => candidate.id === row.id)!;
+      expect(
+        row.price,
+        `the doc prices ${row.id} at $${row.price}; the shelf charges $${item.price_usdc}`,
+      ).toBe(String(item.price_usdc));
+      expect(
+        row.days,
+        `the doc says ${row.id} buys ${row.days} days; the shelf sells ${item.term_days}`,
+      ).toBe(item.term_days);
+    }
   });
 });
 
