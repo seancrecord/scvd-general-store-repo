@@ -81,6 +81,66 @@ describe("the MCP door keeps its counters beside the answer", () => {
     expect(
       deferred.length,
       "the door has fewer deferred counters than the two it was given",
-    ).toBeGreaterThanOrEqual(8); // the definition, plus every call site
+    ).toBeGreaterThanOrEqual(7); // every call site at this door
+  });
+});
+
+/**
+ * THE SAME RULE AT THE TILL AN AGENT ACTUALLY PAYS AT.
+ *
+ * The MCP door above was the loud case. The paid HTTP door is the one
+ * rule 50 was MEASURED on — /api/buy/hello at 1.14s warm while
+ * /openapi.json, eighty times the payload, answered in 0.19s.
+ *
+ * The referral tally is the clean test of the rule here because the
+ * SAME function is called twice on the same door: once when a buyer
+ * arrives at the 402, once when they settle. The arrival call already
+ * rides a Promise.all wave beside the answer. The settle call was
+ * awaited in front of it. One writer, one door, two treatments — and
+ * the difference was nobody looking, not a decision.
+ *
+ * WHAT THIS GUARD DELIBERATELY DOES NOT ASSERT. Not every awaited
+ * write here is a defect, and a guard that swept them all would be
+ * arguing for a change this store has not agreed to make:
+ *
+ *   recordSpentNonce is the replay guard. Deferring it opens a window
+ *   where the same authorization spends twice. Money fails closed.
+ *
+ *   recordSettlementUnknown records an ambiguous settle — the case
+ *   where we cannot say whether money moved. Losing it loses the only
+ *   note that the question was ever open.
+ *
+ *   recordSettlement is the money-in ledger, and lives on the
+ *   keeper's side of this line rather than an agent's: dropping one
+ *   undercounts real revenue, and lib/metrics.ts publishes a sentence
+ *   about WHEN it runs relative to the artifact handler.
+ *
+ * So this pins the one write whose own sibling already proves the
+ * safe treatment, and leaves the money records alone.
+ */
+const GATE = import.meta.glob("/src/lib/payment-gate.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+
+describe("the paid HTTP till keeps its courtesies beside the answer", () => {
+  it("treats the settle-side referral like the arrival-side one", () => {
+    const source = code(Object.values(GATE)[0]!);
+    expect(
+      source,
+      "src/lib/payment-gate.ts was not read; the glob has gone stale",
+    ).toContain("recordReferralFor");
+    const awaited = source
+      .split("\n")
+      .map((line, index) => ({ line: line.trim(), number: index + 1 }))
+      .filter(
+        ({ line }) =>
+          line.startsWith("await ") && line.includes("recordReferralFor("),
+      );
+    expect(
+      awaited.map((entry) => `line ${entry.number}: ${entry.line}`),
+      "a referral tally is awaited in front of a paying buyer's answer",
+    ).toEqual([]);
   });
 });
