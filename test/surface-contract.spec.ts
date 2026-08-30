@@ -2,7 +2,14 @@ import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import houseRulesText from "../HOUSE_RULES.md?raw";
 import { MENU_ITEMS } from "@/store/menu";
-import { NEVER_AUTO_RENEWS, cadenceLine, priceLine } from "@/services/menu-markdown";
+import {
+  NEVER_AUTO_RENEWS,
+  amountPhrase,
+  cadenceLine,
+  cadencePhrase,
+  priceLine,
+} from "@/services/menu-markdown";
+import { mcpToolCatalog } from "@/lib/mcp-tools";
 import { PROBE_DOOR_ERRORS } from "@/store/surface-contract";
 
 /**
@@ -95,8 +102,21 @@ describe("every price says what it is buying, and for how long", () => {
   /**
    * THE ANSWER TO "IS THIS RECURRING" TRAVELS WITH THE PRICE, on
    * every surface that quotes one — because priceLine is the single
-   * place a price is phrased, and the MCP tool list, the catalog, the
-   * markdown menu and the item pages all read it.
+   * place a price is phrased, and the catalog, the markdown menu and
+   * the item pages all read it.
+   *
+   * ❌ CORRECTED 2026-08-30. This comment used to name "the MCP tool
+   * list" first among those readers. It was not one. src/lib/mcp-tools
+   * carried its own priceLine, written months earlier, and clause
+   * 57.3 was added to the other one — so the store's PRIMARY AGENT
+   * SURFACE went on saying "$3 fixed" about a thirty-day pass while
+   * this test passed, because this test checks the function and the
+   * MCP catalog did not call the function.
+   *
+   * That is rule 46 in its purest form: a guard that cannot fail
+   * argues for the lie, and this one argued in a code comment. The
+   * fork is gone and the claim is now checked where it is made — on
+   * the served tool descriptions, below.
    */
   it("puts the cadence in the same breath as the amount, everywhere", () => {
     for (const item of MENU_ITEMS) {
@@ -114,6 +134,134 @@ describe("every price says what it is buying, and for how long", () => {
         expect(line).toContain("one-off");
       }
     }
+  });
+
+  /**
+   * CLAUSE 57.3 ON THE STORE'S PRIMARY AGENT SURFACE — the sweep's
+   * last stop, and the one that had been silently exempt.
+   *
+   * This reads the tool descriptions THE MCP SERVER ACTUALLY SENDS,
+   * not the function that builds them, because the defect it exists
+   * to catch was precisely a second builder nobody was checking. A
+   * guard over a helper can be satisfied by a channel that calls a
+   * different helper; a guard over the wire cannot.
+   *
+   * Five surfaces read this one catalog — MCP tools/list, WebMCP,
+   * /mcp.md, the ARD catalog and the self module — so the wire is
+   * also the cheapest place to hold all five at once.
+   */
+  describe("the MCP tool catalog prices the same way the shelf does", () => {
+    async function servedTools(): Promise<{ name: string; description: string }[]> {
+      const response = await SELF.fetch("https://scvd.store/mcp", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+      });
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        result: { tools: { name: string; description: string }[] };
+      };
+      return body.result.tools;
+    }
+
+    /**
+     * The paid tools are the ones the catalog says sell something, so
+     * a tool added tomorrow is covered without anyone editing a list.
+     */
+    const PAID = mcpToolCatalog("https://scvd.store").filter(
+      (tool) => tool.itemId !== undefined || (tool.itemIds ?? []).length > 0,
+    );
+
+    it("has paid tools to check, or this guard is decoration", () => {
+      expect(PAID.length).toBeGreaterThan(3);
+      // Every menu item is reachable through one of them; a shelf
+      // item nothing sells would be exempt by accident.
+      const sold = new Set(PAID.flatMap((tool) => tool.itemIds ?? [tool.itemId!]));
+      const unreachable = MENU_ITEMS.filter((item) => !sold.has(item.id)).map(
+        (item) => item.id,
+      );
+      expect(unreachable).toEqual([]);
+    });
+
+    it("answers \"is this recurring\" on every tool that takes money", async () => {
+      const served = await servedTools();
+      for (const tool of PAID) {
+        const description = served.find((candidate) => candidate.name === tool.name)
+          ?.description;
+        expect(description, `${tool.name} is built but not served`).toBeTruthy();
+        expect(
+          description,
+          `${tool.name} quotes prices and never answers whether they recur`,
+        ).toContain(NEVER_AUTO_RENEWS);
+      }
+    });
+
+    it("gives every item its own cadence beside its own amount", async () => {
+      const served = await servedTools();
+      for (const tool of PAID) {
+        const description = served.find((candidate) => candidate.name === tool.name)!
+          .description;
+        for (const id of tool.itemIds ?? [tool.itemId!]) {
+          const item = MENU_ITEMS.find((candidate) => candidate.id === id)!;
+          /*
+           * The item's line, located by its id rather than by index,
+           * so a reordered shelf does not quietly stop being checked.
+           */
+          const line = description
+            .split("\n")
+            .find((candidate) => candidate.startsWith(`- ${id}: `));
+          expect(line, `${tool.name} sells ${id} without listing it`).toBeTruthy();
+          expect(line, `${tool.name}'s ${id} line does not carry the shelf's amount`).toContain(
+            amountPhrase(item),
+          );
+          expect(
+            line,
+            `${tool.name}'s ${id} line says how much and not for how long`,
+          ).toContain(cadencePhrase(item));
+        }
+      }
+    });
+
+    /**
+     * WHAT CONSOLIDATION NEARLY COST. The forked priceLine this change
+     * deleted carried one fact the shelf's phrasing does not: that
+     * paying above a pay-what-it-deserves minimum is recorded as a
+     * tip. Merging onto one function would have dropped it from the
+     * agent channel silently — a small loss, and exactly the kind a
+     * refactor takes without anyone noticing. It is kept as a channel
+     * note and held here so the next consolidation cannot take it.
+     */
+    it("still tells a paying agent what happens above the minimum", async () => {
+      const served = await servedTools();
+      const everything = served.map((tool) => tool.description).join("\n");
+      const variable = MENU_ITEMS.filter((item) => item.pricing !== "fixed");
+      expect(variable.length, "no pay-what-you-want item to check").toBeGreaterThan(0);
+      for (const item of variable) {
+        const line = everything
+          .split("\n")
+          .find((candidate) => candidate.startsWith(`- ${item.id}: `));
+        expect(
+          line,
+          `${item.id} takes more than its minimum and never says the extra is a tip`,
+        ).toContain("above the minimum is recorded as a tip");
+      }
+    });
+
+    /**
+     * THE FOUR THAT SELL TIME, checked by name on the wire. The
+     * clause-level guards above would pass if cadencePhrase started
+     * returning the empty string for everything; these will not.
+     */
+    it("tells an agent how many days a term item's payment covers", async () => {
+      const served = await servedTools();
+      const everything = served.map((tool) => tool.description).join("\n");
+      for (const item of MENU_ITEMS.filter((candidate) => candidate.cadence === "term")) {
+        expect(
+          everything,
+          `${item.id} sells ${item.term_days} days and the tool list never says so`,
+        ).toContain(`covering a ${item.term_days}-day term, one payment`);
+      }
+    });
   });
 
   it("serves the cadence to an agent reading the catalog, not only to a page", async () => {
