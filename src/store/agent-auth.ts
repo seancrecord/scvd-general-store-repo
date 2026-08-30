@@ -157,9 +157,15 @@ export function agentAuthBlock(base: string) {
       id: tier.id,
       credential: tier.credential,
       summary: tier.heading,
-      example_urls: tier.examples.map((path) =>
-        path.includes("{") ? `${base}${path}` : `${base}${path}`,
-      ),
+      /**
+       * Absolute, so a reader following this block never resolves a
+       * relative path against a base it had to guess. One of them is a
+       * TEMPLATE rather than an address (/api/buy/{item_id}); it stays
+       * in the list because the shape is the useful part, and
+       * test/agent-auth.spec.ts skips the braces rather than knocking
+       * on them.
+       */
+      example_urls: tier.examples.map((path) => `${base}${path}`),
     })),
     contact: `${base}/api/letter`,
   };

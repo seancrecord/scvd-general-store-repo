@@ -14,7 +14,7 @@ import type { HonoEnv } from "@/types";
  * WHAT THIS IS, SAID BEFORE ANYTHING ELSE: a ranked index of what this
  * store already publishes, not a model. Every result is an entry that
  * exists at a URL you can open, with a score you can recompute from
- * the rule printed in store/ask-index.ts. Nothing is generated, and
+ * the rule printed in the answer itself. Nothing is generated, and
  * `mode=generate` is refused by name rather than answered with a
  * paraphrase — a sentence assembled by a keyword match and served as
  * an answer would be the first thing on this site nobody could check,
@@ -45,9 +45,12 @@ export const askRoutes = new Hono<HonoEnv>();
  * cross-origin JSON POST is preflighted, and an unanswered preflight
  * is a door that is open and cannot be opened.
  *
- * NOTHING IS WIDENED BY THIS. The allowance covers exactly the paths
- * in this file, all of which are free, unauthenticated, read-only, and
- * identical for every caller.
+ * NOTHING IS WIDENED BY THIS. The middleware is bound to /ask alone —
+ * /sites and /ask/feed.json are ordinary JSON GETs and take their
+ * allowance from the app-wide derivation like every other published
+ * document. /ask is free, unauthenticated, read-only, sets no cookie,
+ * and answers identically for every caller, which is the whole of what
+ * lib/cors.ts asks of a surface before opening it.
  */
 askRoutes.use("/ask", async (c, next) => {
   if (c.req.method === "OPTIONS") {
