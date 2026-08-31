@@ -2127,6 +2127,109 @@ const ONPAGE_VERDICT_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE SIGNED CARD, AS A FACTORY. The phantom check, the lucky and the
+ * bitcoin anchor all serve a payload with the signature beside it and
+ * a free verify URL — a shape a holder can check without a certificate
+ * and without asking us.
+ */
+function signedCardSchema(options: {
+  payloadKey: string;
+  payloadDescription: string;
+  extras?: Record<string, OpenApiObject>;
+}): OpenApiObject {
+  return {
+    type: "object",
+    required: [options.payloadKey, "signature", "public_key", "verify_url"],
+    properties: {
+      [options.payloadKey]: {
+        type: "object",
+        description: options.payloadDescription,
+      },
+      signature: { type: "string" },
+      public_key: { type: "string" },
+      algorithm: { type: "string" },
+      verify_url: {
+        type: "string",
+        format: "uri",
+        description: "Free, forever, no account — and checkable offline against the published key.",
+      },
+      note: { type: "string" },
+      ...(options.extras ?? {}),
+    },
+  };
+}
+
+/**
+ * THE CITED RECORDS — the mandate and the wallet statement.
+ *
+ * Both open with `what_this_is`, and on these two doors that field is
+ * the whole product's boundary rather than a summary: the mandate is
+ * "chain-of-custody, not truth-of-intent" (it proves a claim was made,
+ * never that the principal said it), and the statement is "a statement,
+ * never a judgment" (no comparison to anyone's ledger was made). It is
+ * required here because a reader who lost it would take both documents
+ * to establish considerably more than they do.
+ */
+function citedRecordSchema(options: {
+  payloadKey: string;
+  payloadDescription: string;
+  extras?: Record<string, OpenApiObject>;
+}): OpenApiObject {
+  return {
+    type: "object",
+    required: ["what_this_is", options.payloadKey, "certificate"],
+    properties: {
+      what_this_is: {
+        type: "string",
+        description:
+          "What the record establishes AND what it does not. On these doors that boundary is the product.",
+      },
+      [options.payloadKey]: {
+        type: "object",
+        description: options.payloadDescription,
+      },
+      certificate: {
+        type: "string",
+        format: "uri",
+        description: "The certificate this record was minted under; verifies free, forever.",
+      },
+      how_to_verify: { type: "array", items: { type: "string" } },
+      ...(options.extras ?? {}),
+    },
+  };
+}
+
+/**
+ * A refund, in whatever state it is actually in.
+ *
+ * `status` and `note` are required together and the reason is rule 10:
+ * refunds here are created pending and paid BY HAND. The note says
+ * which of those two is true right now, and a schema that made it
+ * optional would allow a document that reads as settled when it is not.
+ */
+const REFUND_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["refund_id", "item", "amount_usdc", "status", "created_at", "note"],
+  properties: {
+    refund_id: { type: "string" },
+    item: { type: "string" },
+    amount_usdc: { type: "number" },
+    status: { type: "string" },
+    created_at: { type: "string", format: "date-time" },
+    tx_hash: {
+      type: "string",
+      description: "Present once paid — the hash that proves it, on a door that would otherwise be our word.",
+    },
+    paid_at: { type: "string", format: "date-time" },
+    note: {
+      type: "string",
+      description:
+        "Paid, or pending and honest about it. Nothing here is automatic and this store does not claim it is.",
+    },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3692,9 +3795,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/lucky/{lucky_id}": {
         get: {
-          ...freeOp(
-              "A lucky charm's signed record, served forever",
-              "The charm as drawn, odds and herd authorship disclosed at /luckies/house.",
+          ...returns(
+  freeOp(
+                "A lucky charm's signed record, served forever",
+                "The charm as drawn, odds and herd authorship disclosed at /luckies/house.",
+            ),
+            signedCardSchema({
+              payloadKey: "lucky",
+              payloadDescription: "The drawn card, as minted.",
+              extras: { card_url: { type: "string", format: "uri" } },
+            }),
           ),
           parameters: [pathParam("lucky_id", "From the purchase response; starts lucky_.")],
         },
@@ -4251,9 +4361,17 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/mandate/{mandate_id}": {
         get: {
-          ...freeOp(
-            "A purchased mandate record",
-            "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, and how later certificates cite it. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased mandate record",
+              "The signed claimed-authorization a the_mandate purchase recorded — chain-of-custody, not truth-of-intent — with its cert binding, its honest limits, and how later certificates cite it. Served free, forever.",
+            ),
+            citedRecordSchema({
+              payloadKey: "mandate",
+              payloadDescription:
+                "The submitted mandate text, signed and dated as received. Proof the claim was made, never that the principal made it.",
+              extras: { cited_by: { type: "string" } },
+            }),
           ),
           parameters: [
             pathParam("mandate_id", "From the purchase response; starts m_."),
@@ -4262,9 +4380,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/statement/{statement_id}": {
         get: {
-          ...freeOp(
-            "A purchased wallet statement",
-            "The signed transfer record a the_statement purchase produced — every USDC transfer in and out of one Base wallet over the stated window — with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased wallet statement",
+              "The signed transfer record a the_statement purchase produced — every USDC transfer in and out of one Base wallet over the stated window — with its cert binding and verification steps. Served free, forever.",
+            ),
+            citedRecordSchema({
+              payloadKey: "statement",
+              payloadDescription:
+                "Every USDC transfer in and out of the named wallet over exactly the block window stated. No comparison to anyone's ledger was made — the holder does the comparing.",
+            }),
           ),
           parameters: [
             pathParam(
@@ -4792,9 +4917,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/phantom/{check_id}": {
         get: {
-          ...freeOp(
-            "Pick up a phantom_check attestation",
-            "Scheduled until the store walks past (~6h after purchase); then the signed observation.",
+          ...returns(
+  freeOp(
+              "Pick up a phantom_check attestation",
+              "Scheduled until the store walks past (~6h after purchase); then the signed observation.",
+            ),
+            signedCardSchema({
+              payloadKey: "observation",
+              payloadDescription: "What the watched door answered, at the moment stated.",
+              extras: {
+                check_id: { type: "string" },
+                status: { type: "string" },
+                target: { type: "string" },
+                due_at: { type: "string", format: "date-time" },
+              },
+            }),
           ),
           parameters: [pathParam("check_id", "From the phantom_check purchase.")],
         },
@@ -4813,9 +4950,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/anchor/{anchor_id}": {
         get: {
-          ...freeOp(
-            "Read a context anchor",
-            "A signed agent memory restore point, verified on every read.",
+          ...returns(
+  freeOp(
+              "Read a context anchor",
+              "A signed agent memory restore point, verified on every read.",
+            ),
+            signedCardSchema({
+              payloadKey: "anchor",
+              payloadDescription: "The anchored digest and what it commits to.",
+              extras: {
+                held_at: { type: "string" },
+                signed_payload: { type: "object" },
+                how_to_verify: { type: "array", items: { type: "string" } },
+                label_note: { type: "string" },
+              },
+            }),
           ),
           parameters: [pathParam("anchor_id", "From the context_anchor purchase.")],
         },
@@ -4837,9 +4986,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/refund/{refund_id}": {
         get: {
-          ...freeOp(
-              "Refund status",
-              "The honest status of a refund on the ledger: pending until the keeper pays it by hand, then paid with the transaction hash.",
+          ...returns(
+  freeOp(
+                "Refund status",
+                "The honest status of a refund on the ledger: pending until the keeper pays it by hand, then paid with the transaction hash.",
+            ),
+            REFUND_SCHEMA,
           ),
           parameters: [pathParam("refund_id", "From the refund record; starts refund_.")],
         },

@@ -49,7 +49,6 @@ const BASE = "https://scvd.store";
  */
 const UNTYPED_YET = new Set<string>([
   "get /api/bitcoin-anchor/{anchor_id}",
-  "get /api/lucky/{lucky_id}",
   "post /api/tab/delta",
   "post /api/claims/challenge",
   "post /api/claims",
@@ -60,8 +59,6 @@ const UNTYPED_YET = new Set<string>([
   "get /api/onpage-audit/{audit_id}",
   "get /api/credit/{wallet}",
   "post /api/bounties",
-  "get /api/mandate/{mandate_id}",
-  "get /api/statement/{statement_id}",
   "post /api/bot-auth/check",
   "get /api/bot-auth-card/{card_id}",
   "post /api/standing-note",
@@ -74,14 +71,11 @@ const UNTYPED_YET = new Set<string>([
   "get /zodiac/archive",
   "post /api/tip",
   "get /api/letter/{letter_id}",
-  "get /api/phantom/{check_id}",
-  "get /api/anchor/{anchor_id}",
   "get /api/patronage/{pass_id}",
-  "get /api/refund/{refund_id}",
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 30;
+const UNTYPED_CEILING = 24;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 
