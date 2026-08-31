@@ -92,11 +92,7 @@ const UNTYPED_YET = new Set<string>([
   "get /zodiac/archive",
   "get /almanac",
   "get /gazette",
-  "post /api/guestbook",
-  "post /api/stamp",
   "post /api/tip",
-  "post /api/request",
-  "post /api/letter",
   "get /api/letter/{letter_id}",
   "get /api/phantom/{check_id}",
   "get /api/anchor/{anchor_id}",
@@ -107,7 +103,7 @@ const UNTYPED_YET = new Set<string>([
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 56;
+const UNTYPED_CEILING = 52;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 
@@ -135,10 +131,15 @@ function operations(document: Record<string, unknown>): Operation[] {
  * TRUE WHEN A GENERATED CLIENT LEARNS SOMETHING. A `$ref`, named
  * properties, an array with items, or a scalar all describe a value.
  * A bare `{"type":"object"}` describes the fact that JSON is JSON.
+ *
+ * 201 is read alongside 200 and 202 because the intake doors answer
+ * Created — which the contract did not say until 2026-08-31, and this
+ * guard would have scored a correctly-typed 201 door as bare if it
+ * only knew about the two.
  */
 function describesItsShape(operation: Record<string, unknown>): boolean {
   const responses = (operation["responses"] ?? {}) as Record<string, unknown>;
-  for (const status of ["200", "202"]) {
+  for (const status of ["200", "201", "202"]) {
     const response = responses[status] as Record<string, unknown> | undefined;
     const content = (response?.["content"] ?? {}) as Record<
       string,

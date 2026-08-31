@@ -1229,6 +1229,160 @@ const SIGNATURES_DIRECTORY_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE INTAKE DOORS ANSWER 201, AND THE CONTRACT SAID 200.
+ *
+ * Found by the typing sweep rather than by a scanner: /api/guestbook,
+ * /api/stamp, /api/letter, /api/request and the waitlist all return
+ * `201 Created` — correctly, they each create something — and every
+ * one of them inherited `freeOp`'s 200. That is the same class of
+ * defect as the two markdown doors that declared application/json: not
+ * a vague schema but a wrong one, and a generated client keyed on the
+ * declared status handles a response the contract said would not
+ * arrive.
+ *
+ * `created` replaces the 200 rather than sitting beside it, because
+ * these doors never send a 200 and a contract listing both would be
+ * describing a door that does not exist.
+ */
+function created(
+  operation: OpenApiObject,
+  schema: OpenApiObject,
+): OpenApiObject {
+  const responses = { ...(operation["responses"] as OpenApiObject) };
+  delete responses["200"];
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "201": {
+        description: "Created.",
+        content: { "application/json": { schema } },
+      },
+    },
+  };
+}
+
+/**
+ * WHEN THE KEEPER GETS TO IT, on every door that puts something in
+ * front of a human. One shape, because the promise is one promise: a
+ * named day, and the assurance that nothing waits unread.
+ */
+const CADENCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  description:
+    "When a human next reads this pile. Published on the intake rather than left to be wondered about.",
+  properties: {
+    every: { type: "string" },
+    next_at: { type: "string", format: "date-time" },
+    note: { type: "string" },
+    nothing_is_lost: {
+      type: "boolean",
+      description:
+        "That the queue is read in full rather than sampled — the thing a sender actually wants to know.",
+    },
+  },
+};
+
+const GUESTBOOK_ENTRY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "entry"],
+  properties: {
+    message: { type: "string" },
+    entry: {
+      type: "object",
+      required: ["id", "name", "message", "date"],
+      properties: {
+        id: { type: "string" },
+        name: { type: "string" },
+        message: { type: "string" },
+        date: { type: "string" },
+      },
+    },
+    sticker_url: {
+      type: "string",
+      format: "uri",
+      description: "A rendered sticker for the entry, free to read forever.",
+    },
+    cadence: CADENCE_SCHEMA,
+  },
+};
+
+const STAMP_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "stamp", "signature", "public_key"],
+  properties: {
+    message: { type: "string" },
+    stamp: {
+      type: "object",
+      required: ["stamp_id", "week", "date"],
+      properties: {
+        stamp_id: { type: "string" },
+        week: { type: "string", description: "The ISO week this stamp's design belongs to." },
+        date: { type: "string" },
+        variant: { type: "string" },
+        card: { type: "string" },
+        condition: { type: "string" },
+        consecutive: {
+          type: "integer",
+          description: "How many consecutive weeks this visitor has stamped.",
+        },
+      },
+    },
+    signature: { type: "string", description: "ed25519 over the stamp above." },
+    public_key: { type: "string" },
+    verification_code: { type: "string" },
+    verify_url: { type: "string", format: "uri" },
+    svg_url: { type: "string", format: "uri" },
+    note: { type: "string" },
+    cadence: CADENCE_SCHEMA,
+  },
+};
+
+const LETTER_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "letter_id"],
+  properties: {
+    message: { type: "string" },
+    letter_id: { type: "string" },
+    pickup_url: {
+      type: "string",
+      format: "uri",
+      description: "Where the keeper's reply appears, if he writes one.",
+    },
+    privacy: {
+      type: "string",
+      description: "What happens to the letter's contents, said on the intake rather than in a policy nobody opens.",
+    },
+    cadence: CADENCE_SCHEMA,
+  },
+};
+
+const REQUEST_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "request"],
+  properties: {
+    message: { type: "string" },
+    request: {
+      type: "object",
+      required: ["id", "description", "offer_usdc", "contact", "date"],
+      properties: {
+        id: { type: "string" },
+        description: { type: "string" },
+        offer_usdc: { type: "number" },
+        contact: { type: "string" },
+        date: { type: "string" },
+      },
+    },
+    status_url: { type: "string", format: "uri" },
+    how_the_desk_answers: {
+      type: "string",
+      description:
+        "What happens next and what will not — a commission desk that quotes rather than a promise to build.",
+    },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3697,28 +3851,31 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           GUESTBOOK_SCHEMA,
         ),
-        post: postOp(
-          "Sign the guestbook",
-          "Free; every signer gets the visitor sticker. Visitor-written text: stored as written, escaped everywhere it renders, never interpreted.",
-          "Who you are and what you want on the wall.",
-          {
-            type: "object",
-            required: ["name", "message"],
-            properties: {
-              name: { type: "string", maxLength: 80 },
-              message: { type: "string", maxLength: 500 },
-              verified_identity: VERIFIED_IDENTITY,
-              identity_public_key: {
-                type: "string",
-                description:
-                  "Optional. Hex ed25519 public key, if you want the entry signed.",
-              },
-              identity_signature: {
-                type: "string",
-                description: "Optional. Signature over the entry by that key.",
+        post: created(
+  postOp(
+            "Sign the guestbook",
+            "Free; every signer gets the visitor sticker. Visitor-written text: stored as written, escaped everywhere it renders, never interpreted.",
+            "Who you are and what you want on the wall.",
+            {
+              type: "object",
+              required: ["name", "message"],
+              properties: {
+                name: { type: "string", maxLength: 80 },
+                message: { type: "string", maxLength: 500 },
+                verified_identity: VERIFIED_IDENTITY,
+                identity_public_key: {
+                  type: "string",
+                  description:
+                    "Optional. Hex ed25519 public key, if you want the entry signed.",
+                },
+                identity_signature: {
+                  type: "string",
+                  description: "Optional. Signature over the entry by that key.",
+                },
               },
             },
-          },
+          ),
+          GUESTBOOK_ENTRY_SCHEMA,
         ),
       },
       "/api/bell": {
@@ -3737,15 +3894,18 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/stamp": {
-        post: postOp(
-          "Free visit stamp",
-          "A dated, ed25519-signed stamp for the current week. Design rotates weekly.",
-          "Optional. A name to print on the stamp.",
-          {
-            type: "object",
-            additionalProperties: false,
-            properties: { name: { type: "string", maxLength: 80 } },
-          },
+        post: created(
+  postOp(
+            "Free visit stamp",
+            "A dated, ed25519-signed stamp for the current week. Design rotates weekly.",
+            "Optional. A name to print on the stamp.",
+            {
+              type: "object",
+              additionalProperties: false,
+              properties: { name: { type: "string", maxLength: 80 } },
+            },
+          ),
+          STAMP_SCHEMA,
         ),
       },
       "/api/tip": {
@@ -3765,50 +3925,56 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/request": {
-        post: postOp(
-          "Commission request",
-          "Ask the keeper for something that is not on the shelf. A human reads it.",
-          "What you want, what you would pay, and where to reach you.",
-          {
-            type: "object",
-            required: ["description", "offer_usdc", "contact"],
-            properties: {
-              description: {
-                type: "string",
-                description: "What you want made.",
-              },
-              offer_usdc: {
-                oneOf: [{ type: "number" }, { type: "string" }],
-                description: "What you would pay, in USDC.",
-              },
-              contact: {
-                type: "string",
-                description: "Where the keeper answers you.",
-              },
-              verified_identity: VERIFIED_IDENTITY,
-              suggest_listing: {
-                type: "boolean",
-                description:
-                  "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+        post: created(
+  postOp(
+            "Commission request",
+            "Ask the keeper for something that is not on the shelf. A human reads it.",
+            "What you want, what you would pay, and where to reach you.",
+            {
+              type: "object",
+              required: ["description", "offer_usdc", "contact"],
+              properties: {
+                description: {
+                  type: "string",
+                  description: "What you want made.",
+                },
+                offer_usdc: {
+                  oneOf: [{ type: "number" }, { type: "string" }],
+                  description: "What you would pay, in USDC.",
+                },
+                contact: {
+                  type: "string",
+                  description: "Where the keeper answers you.",
+                },
+                verified_identity: VERIFIED_IDENTITY,
+                suggest_listing: {
+                  type: "boolean",
+                  description:
+                    "Optional. True if you think this belongs on the shelf for everyone, not only for you.",
+                },
               },
             },
-          },
+          ),
+          REQUEST_RECEIPT_SCHEMA,
         ),
       },
       "/api/letter": {
-        post: postOp(
-          "Post a letter to the Mailbox",
-          "Free, one per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published.",
-          "The letter. A name is optional and nothing else is asked for.",
-          {
-            type: "object",
-            required: ["letter"],
-            properties: {
-              letter: { type: "string", maxLength: 2000 },
-              from_name: { type: "string", maxLength: 80 },
-              verified_identity: VERIFIED_IDENTITY,
+        post: created(
+  postOp(
+            "Post a letter to the Mailbox",
+            "Free, one per visitor per day. Private: read by the keeper on Sundays, replied to when he has something to say, never published.",
+            "The letter. A name is optional and nothing else is asked for.",
+            {
+              type: "object",
+              required: ["letter"],
+              properties: {
+                letter: { type: "string", maxLength: 2000 },
+                from_name: { type: "string", maxLength: 80 },
+                verified_identity: VERIFIED_IDENTITY,
+              },
             },
-          },
+          ),
+          LETTER_RECEIPT_SCHEMA,
         ),
       },
       "/api/letter/{letter_id}": {
