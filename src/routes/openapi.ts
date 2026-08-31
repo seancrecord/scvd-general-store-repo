@@ -1914,6 +1914,219 @@ const TAB_POOL_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE PRICING CHARTER, SIGNED. The signature block is required and so
+ * is `canonical_form`: a signed promise whose exact signed bytes are
+ * not served beside it is a promise you have to take the server's word
+ * about, which is the opposite of why it is signed.
+ */
+const PRICING_CHARTER_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "version", "effective", "clauses", "current_floor_usd"],
+  properties: {
+    what_this_is: { type: "string" },
+    version: { type: "string" },
+    effective: { type: "string" },
+    current_floor_usd: {
+      type: "number",
+      description: "Counted off the live shelf as the page rendered, never typed.",
+    },
+    clauses: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "rule", "check"],
+        properties: {
+          id: { type: "string" },
+          rule: { type: "string" },
+          check: {
+            type: "string",
+            description: "How a stranger tests the clause without asking us — every clause ships with one.",
+          },
+        },
+      },
+    },
+    signature: {
+      type: "object",
+      description: "Present when a signing key is configured; absent, with a stated reason, rather than faked.",
+      properties: {
+        algorithm: { type: "string" },
+        discipline: { type: "string", description: "JCS (RFC 8785) over signed_payload." },
+        signed_payload: { type: "object" },
+        canonical_form: {
+          type: "string",
+          description: "The exact bytes the signature covers, served beside it so verification needs nothing from us.",
+        },
+        signature: { type: "string" },
+        public_key: { type: "string", format: "uri" },
+        how_to_verify: { type: "string" },
+      },
+    },
+    signature_absent: { type: "string" },
+    a_ceiling_that_is_not_ours: {
+      type: "object",
+      description:
+        "The stock x402 client's default per-payment cap — a fact about the BUYER's client, deliberately outside the signed charter because signing someone else's constant would be a promise we have no standing to make.",
+      properties: {
+        what: { type: "string" },
+        doors_above_it: { type: "integer" },
+        priced_doors: { type: "integer" },
+        what_to_do: { type: "string" },
+        why_we_mention_it: { type: "string" },
+        not_part_of_the_charter: { type: "string" },
+      },
+    },
+    the_shelf: { type: "string", format: "uri" },
+    the_promise_if_we_miss: { type: "string", format: "uri" },
+  },
+};
+
+/** The developer index: every surface someone building against this store needs. */
+const DEVELOPERS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "description", "authentication", "openapi", "sections"],
+  properties: {
+    name: { type: "string" },
+    description: { type: "string" },
+    authentication: {
+      type: "string",
+      description: "None. No account or API key exists to obtain — stated here rather than left to be discovered by trying.",
+    },
+    openapi: { type: "string", format: "uri" },
+    guide: { type: "string", format: "uri" },
+    manual: { type: "string", format: "uri" },
+    mcp: { type: "string", format: "uri" },
+    api_catalog: { type: "string", format: "uri" },
+    deprecation_policy: { type: "string", format: "uri" },
+    cli: {
+      type: "object",
+      properties: {
+        npm: { type: "string" },
+        published: {
+          type: "boolean",
+          description:
+            "Whether the package actually installs today. A boolean rather than a link, because an agent reading this decides whether to try.",
+        },
+        install: { type: "string" },
+        install_available: { type: "boolean" },
+        source: { type: "string", format: "uri" },
+        run_from_source: { type: "string" },
+        bin: { type: "string" },
+        license: { type: "string" },
+        registry: { type: "string" },
+        commands: { type: "array", items: { type: "object" } },
+        note: { type: "string" },
+      },
+    },
+    sections: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          heading: { type: "string" },
+          entries: { type: "array", items: { type: "object" } },
+        },
+      },
+    },
+    conventions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { q: { type: "string" }, a: { type: "string" } },
+      },
+    },
+    declined_on_purpose: {
+      type: "array",
+      description:
+        "Scanner recommendations this store refuses, with reasons. A point chosen not to score is a decision, and decisions get published.",
+      items: {
+        type: "object",
+        properties: { heading: { type: "string" }, body: { type: "string" } },
+      },
+    },
+  },
+};
+
+/** Store credit: the terms, and the ceilings that bound them. */
+const CREDIT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "rate_pct"],
+  properties: {
+    what_this_is: { type: "string" },
+    rate_pct: { type: "number" },
+    balance_cap_usd: { type: "number" },
+    cash_out: { type: "string" },
+    cash_out_floor_usd: { type: "number" },
+    idle_expiry_days: {
+      type: "integer",
+      description: "When an untouched balance expires — a term a holder must be able to read before they hold one.",
+    },
+    outstanding_all_wallets_usd: {
+      type: "number",
+      description: "What the store owes in credit across every wallet, published rather than kept.",
+    },
+    read_a_balance: { type: "string" },
+  },
+};
+
+/** The Gazette rack. */
+const GAZETTE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["issues", "price_usdc"],
+  properties: {
+    gazette: { type: "string" },
+    district: { type: "string" },
+    issues: { type: "array", items: { type: "object" } },
+    price_usdc: { type: "number" },
+    leave_a_tip: { type: "string" },
+  },
+};
+
+/**
+ * The on-page desk's verdict. Same honesty fields as the preflight,
+ * for the same reason: they are what stop a passing verdict being
+ * quoted as a broader claim than one GET can support.
+ */
+const ONPAGE_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "version",
+    "verdict",
+    "checks",
+    "single_probe_note",
+    "what_this_cannot_tell_you",
+    "our_conflict_of_interest",
+  ],
+  properties: {
+    version: { type: "string" },
+    verdict: { type: "string" },
+    checks: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["name", "ok"],
+        properties: {
+          name: { type: "string" },
+          ok: { type: "boolean" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    advisories: { type: "array", items: { type: "object" } },
+    single_probe_note: {
+      type: "string",
+      description: "One GET at one moment, with scripts never run — the blind spot named on the report itself.",
+    },
+    what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
+    our_conflict_of_interest: {
+      type: "string",
+      description: "This store sells the signed version of this same check, and says so on the free answer.",
+    },
+    store_identity: { type: "object" },
+    next_steps: { type: "object" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3936,11 +4149,14 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           ONPAGE_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Check what a page serves a machine reader",
-          "One GET, one moment: title, meta description, canonical, robots, headings, JSON-LD, link shape — read from the HTML as served, scripts never run, and the report names that blind spot on itself. Free. The signed version is /api/buy/onpage_audit.",
-          "The page to read, as served.",
-          URL_BODY,
+        post: returns(
+  postOp(
+            "Check what a page serves a machine reader",
+            "One GET, one moment: title, meta description, canonical, robots, headings, JSON-LD, link shape — read from the HTML as served, scripts never run, and the report names that blind spot on itself. Free. The signed version is /api/buy/onpage_audit.",
+            "The page to read, as served.",
+            URL_BODY,
+          ),
+          ONPAGE_VERDICT_SCHEMA,
         ),
       },
       "/api/onpage-audit/{audit_id}": {
@@ -3955,9 +4171,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/pricing": {
-        get: freeOp(
-          "The pricing charter",
-          "How prices are set here, as a versioned, ed25519-signed commitment: same price for every wallet, sub-penny floor, verification free forever, dated changes, scarcity only where a human fulfils. Each clause names the check a stranger can run. HTML for browsers, JSON (with the signature and its canonical form) otherwise. Free.",
+        get: returns(
+  freeOp(
+            "The pricing charter",
+            "How prices are set here, as a versioned, ed25519-signed commitment: same price for every wallet, sub-penny floor, verification free forever, dated changes, scarcity only where a human fulfils. Each clause names the check a stranger can run. HTML for browsers, JSON (with the signature and its canonical form) otherwise. Free.",
+          ),
+          PRICING_CHARTER_SCHEMA,
         ),
       },
       "/bounties": {
@@ -3970,9 +4189,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/credit": {
-        get: freeOp(
-          "Regulars' credit",
-          "The rebate scheme in one page: the rate, the cash-out floor, the per-wallet cap, the idle expiry, and what it deliberately is NOT — a closed-loop IOU, never transferable, not a token. HTML for browsers, JSON otherwise; a single wallet's balance is /api/credit/{wallet}. Free.",
+        get: returns(
+  freeOp(
+            "Regulars' credit",
+            "The rebate scheme in one page: the rate, the cash-out floor, the per-wallet cap, the idle expiry, and what it deliberately is NOT — a closed-loop IOU, never transferable, not a token. HTML for browsers, JSON otherwise; a single wallet's balance is /api/credit/{wallet}. Free.",
+          ),
+          CREDIT_SCHEMA,
         ),
       },
       "/api/credit/{wallet}": {
@@ -4412,7 +4634,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         })),
       ),
       "/gazette": {
-        get: freeOp("Gazette index", "Free index of published issues."),
+        get: returns(
+  freeOp("Gazette index", "Free index of published issues."),
+          GAZETTE_SCHEMA,
+        ),
       },
       ...pennyPagePaths(
         issues.map((issue) => ({
@@ -4644,9 +4869,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * the store rather than doing anything to it.
        */
       "/developers": {
-        get: freeOp(
-          "Developer documentation",
-          "One index of everything needed to build against this store: the OpenAPI contract, the free preflight and conformance endpoints, the MCP server, the CLI, and the conventions — authentication (there is none, and no account or API key exists), the RFC 9457 error model, the rate-limit headers, and the versioning and deprecation policy. HTML for browsers, JSON otherwise, markdown when the Accept header prefers it. Also served at /docs and /api, which carry a canonical link back here.",
+        get: returns(
+  freeOp(
+            "Developer documentation",
+            "One index of everything needed to build against this store: the OpenAPI contract, the free preflight and conformance endpoints, the MCP server, the CLI, and the conventions — authentication (there is none, and no account or API key exists), the RFC 9457 error model, the rate-limit headers, and the versioning and deprecation policy. HTML for browsers, JSON otherwise, markdown when the Accept header prefers it. Also served at /docs and /api, which carry a canonical link back here.",
+          ),
+          DEVELOPERS_SCHEMA,
         ),
       },
       "/.well-known/mcp": {
