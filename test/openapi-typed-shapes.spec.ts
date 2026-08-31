@@ -15,7 +15,14 @@ const BASE = "https://scvd.store";
  * a description of its contents. A client generating from it learns
  * that JSON comes back, which it could have guessed.
  *
- * THE FIX IS NOT ONE COMMIT, and pretending otherwise is how a list
+ * THE LIST IS NOW EMPTY (2026-08-31). Every operation describes what
+ * it returns, so rules 2 and 3 have nothing left to prune and this
+ * file is a pure floor: the only thing it can catch from here is a NEW
+ * door shipping bare. That is the state it was built to reach, and the
+ * ratchet is what got it there — it named every door as it was typed
+ * and refused to let the register go stale in between.
+ *
+ * THE FIX WAS NOT ONE COMMIT, and pretending otherwise is how a list
  * like this rots. Writing 76 response shapes means deriving each from
  * its route, and a schema that is confidently wrong is worse than a
  * bare one: it is a false claim in machine form, on the surface this
@@ -34,13 +41,24 @@ const BASE = "https://scvd.store";
  *   3. The list never grows. The number below is a high-water mark,
  *      and it only ever goes down.
  *
- * Eight of the original entries were added by the same pass that found
- * the problem (the /ask family, /auth.md, the protected-resource
- * metadata, /pricing.md, the batch preflight). Those are typed: 76 → 68.
- * Two of them were worse than bare — /auth.md and /pricing.md serve
- * text/markdown and the contract said application/json, so a generated
- * client would have parsed a markdown body as JSON and failed on the
- * first byte. `returnsMarkdown` says what those doors actually send.
+ * WHAT THE SWEEP FOUND, beyond the bare schemas themselves. Three
+ * classes of contract that was not vague but WRONG, each of which
+ * would have broken a generated client rather than merely underserved
+ * it:
+ *
+ *   /auth.md and /pricing.md declared application/json for bodies that
+ *   are text/markdown. A generated client would have parsed markdown
+ *   as JSON and failed on the first byte.
+ *
+ *   Five intake doors — guestbook, stamp, letter, request, tip —
+ *   answer 201 Created and every one of them declared 200, inherited
+ *   from freeOp. `created()` replaces it rather than listing both.
+ *
+ *   /api/practice/{scenario} answers 402 ALWAYS, on purpose, and
+ *   declaring a 200 for it would have described a success that door
+ *   never produces. `returnsOn402` puts the schema where the answer
+ *   actually is — and this guard learned 402 rather than pressuring
+ *   that door toward a 2xx it does not have.
  */
 
 /**
@@ -48,20 +66,10 @@ const BASE = "https://scvd.store";
  * that types it — rule 2 makes that mandatory rather than polite.
  */
 const UNTYPED_YET = new Set<string>([
-  "get /api/bitcoin-anchor/{anchor_id}",
-  "get /api/onpage-audit/{audit_id}",
-  "get /api/credit/{wallet}",
-  "post /api/bounties",
-  "get /api/bot-auth-card/{card_id}",
-  "post /api/standing-note",
-  "get /corpus/diff.json",
-  "post /mcp",
-  "get /api/letter/{letter_id}",
-  "get /api/patronage/{pass_id}",
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 10;
+const UNTYPED_CEILING = 0;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 

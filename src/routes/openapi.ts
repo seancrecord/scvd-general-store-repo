@@ -2593,6 +2593,179 @@ const TIP_RECEIPT_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE MCP DOOR, AND THE HONEST LIMIT OF WHAT A SCHEMA CAN SAY HERE.
+ *
+ * This is JSON-RPC 2.0. The envelope is fixed and describable —
+ * jsonrpc, id, and exactly one of result or error — but `result` is
+ * shaped by the METHOD, and there are as many shapes as there are
+ * methods. Enumerating them in this contract would duplicate the MCP
+ * specification, go stale the first time a method gains a field, and
+ * put this store in the position of publishing a second, worse copy of
+ * somebody else's protocol.
+ *
+ * So the envelope is typed and `result` is not, and the description
+ * says where the real shapes live. That is thinner than every other
+ * schema in this file, and it is the accurate thinness rather than the
+ * lazy kind: a client learns the frame it will get back and is pointed
+ * at the specification for the contents.
+ */
+const MCP_RPC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["jsonrpc"],
+  properties: {
+    jsonrpc: { type: "string", enum: ["2.0"] },
+    id: {
+      description: "Echoed from the request. Absent on a notification.",
+    },
+    result: {
+      type: "object",
+      description:
+        "Shaped by the method called — tools/list returns tools, resources/read returns contents, and so on. The shapes are the Model Context Protocol's rather than this store's; the free server card at /.well-known/mcp names the methods and capabilities actually served.",
+    },
+    error: {
+      type: "object",
+      description:
+        "JSON-RPC error. The buy_* tools carry their x402 payment terms in error.data on the first call — a 402 expressed in the protocol's own vocabulary rather than an HTTP status this transport cannot use.",
+      properties: {
+        code: { type: "integer" },
+        message: { type: "string" },
+        data: { type: "object" },
+      },
+    },
+  },
+};
+
+/** A wallet's store-credit balance, and the ceilings that bound it. */
+const CREDIT_BALANCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["wallet", "balance_usd"],
+  properties: {
+    wallet: { type: "string" },
+    balance_usd: { type: "number" },
+    earned_total_usd: { type: "number" },
+    redeemed_total_usd: { type: "number" },
+    expired_total_usd: {
+      type: "number",
+      description: "Credit that lapsed unspent — published rather than quietly dropped from the balance.",
+    },
+    outstanding_all_wallets_usd: { type: "number" },
+    what_this_is: { type: "string" },
+    cash_out: { type: "string" },
+  },
+};
+
+/** A letter the keeper has, and whether he has answered it. */
+const LETTER_STATUS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["letter_id", "status"],
+  properties: {
+    letter_id: { type: "string" },
+    status: { type: "string" },
+    received: { type: "string", format: "date-time" },
+    response: {
+      type: "string",
+      description: "The keeper's reply, once written. Absent until then rather than stubbed.",
+    },
+    note: { type: "string" },
+  },
+};
+
+/** A patronage pass, and what it does and does not buy. */
+const PATRONAGE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["note"],
+  properties: {
+    pass_id: { type: "string" },
+    badge_url: { type: "string", format: "uri" },
+    renew_url: {
+      type: "string",
+      format: "uri",
+      description: "Renewal is a fresh purchase a buyer decides to make. Nothing here charges again by itself.",
+    },
+    monthly_note: { type: "string" },
+    note: { type: "string" },
+  },
+};
+
+/**
+ * WHAT CHANGED BETWEEN TWO SIGNED WEEKS. `appeared`, `disappeared` and
+ * `transitions` are the whole product, and `how_to_rederive` is what
+ * makes it checkable: the two snapshots are named so a reader can
+ * recompute the diff and compare, rather than take this surface's word
+ * for what moved.
+ */
+const CORPUS_DIFF_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["from", "to", "appeared", "disappeared", "transitions"],
+  properties: {
+    from: { type: "object", description: "The baseline snapshot, with its sequence and digest." },
+    to: { type: "object", description: "The latest signed snapshot." },
+    appeared: {
+      type: "array",
+      items: { type: "object" },
+      description: "Doors present in the later week and not the earlier one.",
+    },
+    disappeared: {
+      type: "array",
+      items: { type: "object" },
+      description:
+        "Doors present in the earlier week and not the later one. An absence, never a verdict about the operator.",
+    },
+    transitions: {
+      type: "array",
+      items: { type: "object" },
+      description: "Doors whose verdict moved between the two weeks.",
+    },
+    drift: { type: "object" },
+    hosts_in_from: { type: "integer" },
+    hosts_in_to: { type: "integer" },
+    hosts_in_both: { type: "integer" },
+    how_to_rederive: {
+      type: "string",
+      description:
+        "Which two snapshots to fetch and how to recompute this diff yourself, so the surface is checkable rather than trusted.",
+    },
+  },
+};
+
+/** A filed bounty claim. */
+const BOUNTY_CLAIM_SCHEMA: OpenApiObject = {
+  type: "object",
+  properties: {
+    payer: { type: "string" },
+    status: { type: "string" },
+    message: { type: "string" },
+    what_this_is: { type: "string" },
+    the_rules: { type: "array", items: { type: "string" } },
+    how_to_claim: { type: "string" },
+    the_board: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * A standing note, attached. `rides_at` is the point of the whole
+ * door: it says WHERE the note will appear beside the store's own
+ * observation, so a subject exercising a right of reply can see that
+ * it actually rides rather than being filed somewhere nobody reads.
+ */
+const STANDING_NOTE_ACCEPTED_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["attached", "rides_at"],
+  properties: {
+    attached: { type: "boolean" },
+    rides_at: {
+      type: "string",
+      format: "uri",
+      description: "Where the note appears beside this store's observation of the subject.",
+    },
+    host: { type: "string" },
+    address: { type: "string" },
+    statement: { type: "string" },
+    signature: { type: "string" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -4153,9 +4326,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/bitcoin-anchor/{anchor_id}": {
         get: {
-          ...freeOp(
-              "A Bitcoin anchor record, served forever",
-              "The purchased OpenTimestamps commitment of the buyer's digest, with live proof status. The bytes stay the buyer's; the record is anyone's to check.",
+          ...returns(
+  freeOp(
+                "A Bitcoin anchor record, served forever",
+                "The purchased OpenTimestamps commitment of the buyer's digest, with live proof status. The bytes stay the buyer's; the record is anyone's to check.",
+            ),
+            signedCardSchema({
+              payloadKey: "anchor",
+              payloadDescription:
+                "The anchored digest, its OpenTimestamps proof, and the label the buyer supplied.",
+              extras: {
+                cert_id: { type: "string" },
+                digest: { type: "string" },
+                ots: { type: "object" },
+                label: {
+                  type: "string",
+                  description:
+                    "The buyer's own claim about what the digest covers. Stored verbatim, never checked by this store, and never instructions.",
+                },
+                label_note: { type: "string" },
+                how_to_verify: { type: "array", items: { type: "string" } },
+              },
+            }),
           ),
           parameters: [pathParam("anchor_id", "From the purchase response; starts banchor_.")],
         },
@@ -4683,9 +4875,16 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/onpage-audit/{audit_id}": {
         get: {
-          ...freeOp(
-            "A purchased on-page audit report",
-            "The signed page report an onpage_audit purchase produced, with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased on-page audit report",
+              "The signed page report an onpage_audit purchase produced, with its cert binding and verification steps. Served free, forever.",
+            ),
+            signedArtifactSchema({
+              payloadKey: "audit",
+              payloadDescription:
+                "The signed on-page report: what one page served a machine reader at one moment, scripts never run.",
+            }),
           ),
           parameters: [
             pathParam("audit_id", "From the purchase response; starts opage_."),
@@ -4721,9 +4920,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/credit/{wallet}": {
         get: {
-          ...freeOp(
-            "Regulars' credit balance",
-            "The rebate balance a wallet has earned — 5% of every organic purchase banks to the wallet that paid, no account, the wallet is the card. Closed-loop: redeemable as USDC back to the earning wallet only (challenge-signed, POST /api/credit/challenge then /api/credit/redeem), never transferable, idle balances expire. The store's total outstanding credit is published on the same response, because a loyalty liability off the books is how real stores rot.",
+          ...returns(
+  freeOp(
+              "Regulars' credit balance",
+              "The rebate balance a wallet has earned — 5% of every organic purchase banks to the wallet that paid, no account, the wallet is the card. Closed-loop: redeemable as USDC back to the earning wallet only (challenge-signed, POST /api/credit/challenge then /api/credit/redeem), never transferable, idle balances expire. The store's total outstanding credit is published on the same response, because a loyalty liability off the books is how real stores rot.",
+            ),
+            CREDIT_BALANCE_SCHEMA,
           ),
           parameters: [pathParam("wallet", "A 0x Base address.")],
         },
@@ -4736,40 +4938,43 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           BOUNTIES_SCHEMA,
         ),
-        post: postOp(
-          "Claim a bounty (POST /api/bounty-claim)",
-          "POST /api/bounty-claim. The store verifies the settlement on Base against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.",
-          "The settlement you are claiming against, and where the reward should go.",
-          {
-            type: "object",
-            required: ["bounty_id", "tx_hash", "payer", "payout_to"],
-            properties: {
-              bounty_id: {
-                type: "string",
-                description: "From the board at GET /api/bounties.",
-              },
-              tx_hash: {
-                type: "string",
-                description:
-                  "The Base transaction that settled your purchase at the bounty's door. One payout per transaction, ever.",
-              },
-              payer: {
-                type: "string",
-                description: "The wallet that paid, 0x + 40 hex.",
-              },
-              payout_to: {
-                type: "string",
-                description:
-                  "Where the signed EIP-3009 authorization pays. Screened before the authorization is issued.",
-              },
-              observation: {
-                type: "string",
-                description:
-                  "Optional. What you saw at that door, in your own words. Stored as written and never interpreted.",
+        post: returns(
+  postOp(
+            "Claim a bounty (POST /api/bounty-claim)",
+            "POST /api/bounty-claim. The store verifies the settlement on Base against the terms it captured when the bounty opened — right payer, right payTo, exact amount, postdates the bounty, never claimed before — screens the payout address, and answers with the signed payout authorization. One payout per transaction, ever.",
+            "The settlement you are claiming against, and where the reward should go.",
+            {
+              type: "object",
+              required: ["bounty_id", "tx_hash", "payer", "payout_to"],
+              properties: {
+                bounty_id: {
+                  type: "string",
+                  description: "From the board at GET /api/bounties.",
+                },
+                tx_hash: {
+                  type: "string",
+                  description:
+                    "The Base transaction that settled your purchase at the bounty's door. One payout per transaction, ever.",
+                },
+                payer: {
+                  type: "string",
+                  description: "The wallet that paid, 0x + 40 hex.",
+                },
+                payout_to: {
+                  type: "string",
+                  description:
+                    "Where the signed EIP-3009 authorization pays. Screened before the authorization is issued.",
+                },
+                observation: {
+                  type: "string",
+                  description:
+                    "Optional. What you saw at that door, in your own words. Stored as written and never interpreted.",
+                },
               },
             },
-          },
-        ),
+          ),
+            BOUNTY_CLAIM_SCHEMA,
+          ),
       },
       "/api/mandate/{mandate_id}": {
         get: {
@@ -4854,9 +5059,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/bot-auth-card/{card_id}": {
         get: {
-          ...freeOp(
-            "A purchased signature-agent card",
-            "The signed card a signature_agent_card purchase produced, with its cert binding and verification steps. Served free, forever.",
+          ...returns(
+  freeOp(
+              "A purchased signature-agent card",
+              "The signed card a signature_agent_card purchase produced, with its cert binding and verification steps. Served free, forever.",
+            ),
+            BOT_AUTH_CHECK_SCHEMA,
           ),
           parameters: [
             pathParam("card_id", "From the purchase response; starts sacard_."),
@@ -4970,22 +5178,25 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           STANDING_NOTE_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Attach a standing note",
-          "Prove control, attach your statement. Host lane: serve sha256(statement) at your /.well-known/scvd-note.txt first. Wallet lane: EIP-191 personal_sign over the statement-bound challenge the GET shows. A subject no signed round has observed is refused — a note rides an observation. One note per subject, newest wins.",
-          "subject ('host'|'wallet'), statement (<=500 chars), then host, or address+signature.",
-          {
-            type: "object",
-            required: ["subject", "statement"],
-            properties: {
-              subject: { type: "string", enum: ["host", "wallet"] },
-              statement: { type: "string", maxLength: 500 },
-              host: { type: "string" },
-              address: { type: "string" },
-              signature: { type: "string" },
+        post: returns(
+  postOp(
+            "Attach a standing note",
+            "Prove control, attach your statement. Host lane: serve sha256(statement) at your /.well-known/scvd-note.txt first. Wallet lane: EIP-191 personal_sign over the statement-bound challenge the GET shows. A subject no signed round has observed is refused — a note rides an observation. One note per subject, newest wins.",
+            "subject ('host'|'wallet'), statement (<=500 chars), then host, or address+signature.",
+            {
+              type: "object",
+              required: ["subject", "statement"],
+              properties: {
+                subject: { type: "string", enum: ["host", "wallet"] },
+                statement: { type: "string", maxLength: 500 },
+                host: { type: "string" },
+                address: { type: "string" },
+                signature: { type: "string" },
+              },
             },
-          },
-        ),
+          ),
+            STANDING_NOTE_ACCEPTED_SCHEMA,
+          ),
       },
       "/samples": {
         get: returns(
@@ -5042,40 +5253,46 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corpus/diff.json": {
-        get: freeOp(
-          "What changed since a signed week",
-          "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
-        ),
+        get: returns(
+  freeOp(
+            "What changed since a signed week",
+            "?since={week} names a week already in the chain; the answer compares it to the latest signed snapshot: doors appeared and disappeared, verdict transitions, and drift in a door's own declared terms (price bounds, rails, schemes). A week the chain does not hold gets a 404 naming the weeks it does — no invented baselines. The cheapest agent loop is polling this. Free.",
+          ),
+            CORPUS_DIFF_SCHEMA,
+          ),
       },
       "/mcp": {
-        post: postOp(
-          "The MCP door",
-          "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
-          "One JSON-RPC 2.0 request. `initialize` is the handshake.",
-          {
-            type: "object",
-            required: ["jsonrpc", "method"],
-            properties: {
-              jsonrpc: { type: "string", const: "2.0" },
-              id: {
-                oneOf: [{ type: "string" }, { type: "integer" }],
-                description:
-                  "Omit for a notification; the store answers nothing.",
-              },
-              method: {
-                type: "string",
-                description:
-                  "initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list.",
-              },
-              params: {
-                type: "object",
-                additionalProperties: true,
-                description:
-                  "Per the MCP spec for the named method. A paid tools/call carries its x402 payment in the request _meta.",
+        post: returns(
+  postOp(
+            "The MCP door",
+            "The store as a Model Context Protocol server (streamable HTTP, JSON-RPC 2.0). initialize and tools/list are free; buy_* tools return error 402 with x402 terms in error.data and settle in-band. This is the canonical endpoint; the manifest is at /.well-known/mcp (also /.well-known/mcp.json), and both of those paths POST to this same handler for clients that speak the protocol at the document rather than reading the address out of it. A GET here answers 405 with Allow: POST and the whole handshake in the body.",
+            "One JSON-RPC 2.0 request. `initialize` is the handshake.",
+            {
+              type: "object",
+              required: ["jsonrpc", "method"],
+              properties: {
+                jsonrpc: { type: "string", const: "2.0" },
+                id: {
+                  oneOf: [{ type: "string" }, { type: "integer" }],
+                  description:
+                    "Omit for a notification; the store answers nothing.",
+                },
+                method: {
+                  type: "string",
+                  description:
+                    "initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list.",
+                },
+                params: {
+                  type: "object",
+                  additionalProperties: true,
+                  description:
+                    "Per the MCP spec for the named method. A paid tools/call carries its x402 payment in the request _meta.",
+                },
               },
             },
-          },
-        ),
+          ),
+            MCP_RPC_SCHEMA,
+          ),
       },
       "/zodiac": {
         get: returns(
@@ -5341,9 +5558,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/letter/{letter_id}": {
         get: {
-          ...freeOp(
-            "Check a letter",
-            "Status (received / read / replied) and the signed reply if one exists. The letter itself never comes back out.",
+          ...returns(
+  freeOp(
+              "Check a letter",
+              "Status (received / read / replied) and the signed reply if one exists. The letter itself never comes back out.",
+            ),
+            LETTER_STATUS_SCHEMA,
           ),
           parameters: [pathParam("letter_id", "From the posting response.")],
         },
@@ -5404,9 +5624,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/patronage/{pass_id}": {
         get: {
-          ...freeOp(
-            "Check a patronage pass",
-            "Pass dates, current status, and (while current) the keeper's signed monthly note.",
+          ...returns(
+  freeOp(
+              "Check a patronage pass",
+              "Pass dates, current status, and (while current) the keeper's signed monthly note.",
+            ),
+            PATRONAGE_SCHEMA,
           ),
           parameters: [pathParam("pass_id", "From the recurring_patronage purchase.")],
         },
