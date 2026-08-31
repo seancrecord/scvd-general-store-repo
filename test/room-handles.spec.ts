@@ -36,11 +36,42 @@ describe("every room hands an automation tool something to hold", () => {
     expect(mainTag(await html("/"))).toContain('data-room="storefront"');
   });
 
-  it("each room's main landmark names the room, not the copy", async () => {
-    for (const path of ["/conformance", "/corpus", "/what", "/criteria", "/menu"]) {
-      const tag = mainTag(await html(path));
-      const room = path.slice(1);
-      expect(tag, `${path} landmark`).toContain(`data-room="${room}"`);
+  it("EVERY published HTML room hooks its landmark, derived from the sitemap", async () => {
+    /*
+     * The list comes off /sitemap.xml rather than being typed here, and
+     * that is the whole point: a hand-written list only covers the
+     * rooms somebody remembered. /porch renders its own HTML outside
+     * both page helpers, so a hand-listed test passed while it shipped
+     * bare — the sitemap-derived one fails until it is fixed, and will
+     * do the same for the next room that renders its own markup.
+     *
+     * Markdown twins are skipped, not failed: a document with no
+     * <main> has no landmark to hook, and asking it about one is a
+     * category error rather than a finding.
+     */
+    const sitemap = await (await SELF.fetch(`${BASE}/sitemap.xml`)).text();
+    const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
+      .map((match) => match[1]!.replace(BASE, ""))
+      .filter((path) => path.startsWith("/"));
+    expect(paths.length, "the sitemap should list rooms").toBeGreaterThan(20);
+
+    const bare: string[] = [];
+    let htmlRooms = 0;
+    for (const path of paths) {
+      const page = await html(path);
+      if (!/<!doctype html|<html[\s>]/i.test(page)) continue;
+      htmlRooms += 1;
+      if (!/\sid="|\sdata-(?!cf-)[a-z-]+=/.test(mainTag(page))) bare.push(path);
+    }
+    expect(htmlRooms, "most rooms are HTML").toBeGreaterThan(20);
+    expect(bare, `rooms with no handle on <main>: ${bare.join(", ")}`).toEqual([]);
+  });
+
+  it("the room name is the path, not the copy", async () => {
+    for (const path of ["/conformance", "/corpus", "/criteria"]) {
+      expect(mainTag(await html(path)), `${path}`).toContain(
+        `data-room="${path.slice(1)}"`,
+      );
     }
   });
 
