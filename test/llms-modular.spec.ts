@@ -292,12 +292,23 @@ const BASE = "https://scvd.store";
  * exception. The seven doors added earlier today are still present in
  * these bytes and were re-verified before this value was taken.
  *
+ * Re-taken 2026-08-31 — the ELEVENTH — on the declined-positions
+ * section, and this one is worth reading because the guard next to it
+ * is what forced the edit. Three new refusals went in and the
+ * developers area file crossed the llmstxt.org 30,000-character
+ * budget: 31,803. The fix was not to raise the budget or to exempt the
+ * area; it was that the new entries were written at 820 characters
+ * where the store's own average is 590. They are tighter now, two
+ * that argued the same thing are one, and the area sits at 29,484 with
+ * 516 characters of headroom. Whoever crosses it next should tighten
+ * their own prose the same way rather than move the line.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "3e27f090062a656a969ab40c2d13cebb51e9ea0ecfa86f06e1587abe97e7969b";
+  "a666ea01af11c568fa0caf83e137004bc80c3b25a6efcf990488024d4cc91e93";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

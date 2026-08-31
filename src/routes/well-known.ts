@@ -1,5 +1,5 @@
 import { mcpResourceCatalog } from "@/lib/mcp-resources";
-import { apiCatalog, LINKSET_MEDIA_TYPE } from "@/lib/api-catalog";
+import { apiCatalog, API_CATALOG_MEDIA_TYPE } from "@/lib/api-catalog";
 import {
   ARD_LINK_REL,
   ARD_PREDECESSOR_PATH,
@@ -895,7 +895,7 @@ for (const path of [ARD_WELL_KNOWN_PATH, ARD_PREDECESSOR_PATH] as const) {
  */
 wellKnownRoutes.get("/.well-known/api-catalog", (c) =>
   c.body(JSON.stringify(apiCatalog(c.env.STORE_BASE_URL), null, 2), 200, {
-    "Content-Type": `${LINKSET_MEDIA_TYPE}; charset=utf-8`,
+    "Content-Type": `${API_CATALOG_MEDIA_TYPE}; charset=utf-8`,
   }),
 );
 

@@ -38,6 +38,15 @@ import {
  */
 export const LINKSET_MEDIA_TYPE = "application/linkset+json";
 
+/**
+ * RFC 9727 §4: a catalog SHOULD be served with the profile parameter
+ * naming the RFC, so a client can tell an API catalog from any other
+ * linkset without parsing the body first. We served the bare media
+ * type until 2026-08-31, which is correct as far as it goes and stops
+ * one step short of the thing that makes the document self-describing.
+ */
+export const API_CATALOG_MEDIA_TYPE = `${LINKSET_MEDIA_TYPE}; profile="https://www.rfc-editor.org/info/rfc9727"`;
+
 /** RFC 9727's fixed path. The catalog anchors its own index here. */
 export const API_CATALOG_PATH = "/.well-known/api-catalog";
 
