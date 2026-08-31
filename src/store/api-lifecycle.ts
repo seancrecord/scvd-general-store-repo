@@ -150,7 +150,41 @@ export function lifecycleHeaders(
   base: string,
 ): Record<string, string> {
   const row = API_VERSIONS.find((entry) => entry.path === path);
-  return row ? headersForRow(row, base) : {};
+  if (!row) return {};
+  const retiring = headersForRow(row, base);
+
+  /**
+   * THE POLICY, ADVERTISED ON THE WIRE EVEN WHEN NOTHING IS RETIRING
+   * (2026-08-31).
+   *
+   * RFC 8594's Sunset and Deprecation headers say "this version is
+   * going away, here is when". They are correctly absent today,
+   * because nothing is going away — inventing one to be detectable
+   * would announce a retirement that is not happening, which is a
+   * worse lie than silence.
+   *
+   * But the QUESTION an integrating agent asks is not "is this
+   * version dying"; it is "what happens to me if one ever does". That
+   * has an answer, published at /deprecation and rendered from the
+   * same table these headers read, and until now it lived only in
+   * places a reader had to already be looking: a room, a vendor
+   * extension in a 900KB spec, and a linkset. A readiness scan found
+   * URL versioning and reported no policy at all, which is what a
+   * reader sees who fetches a versioned door and reads its headers.
+   *
+   * `service-doc` (RFC 8631) is the accurate relation and a
+   * registered one: the policy IS documentation of this service. It
+   * rides every versioned response, retiring or not, and merges with
+   * the sunset links rather than replacing them — a version on its way
+   * out needs both, and a Link header is a comma-separated list for
+   * exactly this reason.
+   */
+  const policyLink = `<${base}/deprecation>; rel="service-doc"; title="API versioning and deprecation policy"`;
+  const existing = retiring["Link"];
+  return {
+    ...retiring,
+    Link: existing ? `${existing}, ${policyLink}` : policyLink,
+  };
 }
 
 /**

@@ -601,6 +601,11 @@ export async function deliverInstantGoods(
         certId: input.certId ?? "",
         patronNumber: input.patronNumber,
         ...(input.agentName ? { name: input.agentName } : {}),
+        // The bid. This shelf is pay-what-it-deserves and the front
+        // page derives the day's top tag from what was actually paid.
+        ...(typeof input.paidUsdc === "number"
+          ? { paidUsdc: input.paidUsdc }
+          : {}),
       });
       return {
         deliverable: graffitiNote(tag),

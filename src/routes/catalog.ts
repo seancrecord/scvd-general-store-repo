@@ -1,5 +1,6 @@
 import { Hono, type Context } from "hono";
 import { listingSpec, SPEC_SCHEMA_PATH } from "@/lib/listing-spec";
+import { paidDoorContract } from "@/store/surface-contract";
 import { freshness } from "@/lib/freshness";
 import { BASE_NETWORK, priceTiersUsdc } from "@/lib/payments";
 import {
@@ -123,6 +124,14 @@ catalogRoutes.get("/menu.json", async (c) => {
       buy_url: `${base}/api/buy/${item.id}`,
       ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
       price_tiers_usdc: priceTiersUsdc(item),
+      /*
+       * ADDED 2026-08-30. The catalogue named a buy_url and no way to
+       * read ABOUT the item — an agent holding menu.json had to build
+       * this URL itself to reach the door's expected outcome, error
+       * categories and safety answers. Rule 57.1 asks for findable,
+       * and a URL a reader has to guess is not.
+       */
+      listing_url: `${base}/menu/${item.id}`,
       spec: listingSpec(item, base),
       guaranteed: GUARANTEED,
       not_guaranteed: NOT_GUARANTEED,
@@ -553,6 +562,14 @@ async function serveMenuItem(c: Context<HonoEnv>) {
     ...(CAPABILITY_QUERY[item.id] ? { task: CAPABILITY_QUERY[item.id] } : {}),
     price_tiers_usdc: priceTiersUsdc(item),
     spec: listingSpec(item, base),
+    /*
+     * Rule 57's remaining four answers, derived from this item's own
+     * input schema, fulfillment class and inventory rather than
+     * written out per item. Sibling of `spec` and never inside it:
+     * the listing spec publishes a FROZEN key order as a v1 contract,
+     * and a new key in there would break a reader that trusted it.
+     */
+    ...paidDoorContract(item, buyInputSchema(item), CAPABILITY_QUERY[item.id], base),
     guaranteed: GUARANTEED,
     not_guaranteed: NOT_GUARANTEED,
     fulfillment_state: state,

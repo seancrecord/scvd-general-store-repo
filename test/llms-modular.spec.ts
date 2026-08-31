@@ -272,9 +272,61 @@ const BASE = "https://scvd.store";
  * corpus area, and the form/doors/mcp.md work), verified present
  * together before this value was taken.
  *
- * Re-taken 2026-08-30 by the THIRD RAIL REACHING THE COPY — the
- * ninth, and another worked example of the guard doing its job rather
- * than being worked around. The Polygon flag is lit, and
+ * Re-taken 2026-08-30 — the NINTH — for the doors opened in answer to
+ * a discoverability scan. The door list in the guide gained seven
+ * entries and no prose was touched: the batch preflight and /ask on
+ * the free-instruments line, and /pricing.md, /auth.md, the RFC 9728
+ * protected-resource metadata, /ask/feed.json and /sites on the
+ * catalog line. All seven were verified present TOGETHER in the served
+ * guide before this value was taken, which is the check this constant
+ * exists to force — the eight notes above are all the same lesson
+ * about digests re-taken against a text that had drifted since.
+ *
+ * Re-taken again 2026-08-30 — the TENTH — for one sentence. A declined
+ * position said "inventing three of them", which
+ * test/derived-not-typed.spec.ts reads as a typed tally on a served
+ * surface and refuses. That guard is blunt on purpose and was right to
+ * be: the phrase named three fields in the sentence before it, but a
+ * reader cannot tell that from the regex's side, and the fix is to
+ * write the sentence differently rather than to teach the guard an
+ * exception. The seven doors added earlier today are still present in
+ * these bytes and were re-verified before this value was taken.
+ *
+ * Re-taken 2026-08-31 — the ELEVENTH — on the declined-positions
+ * section, and this one is worth reading because the guard next to it
+ * is what forced the edit. Three new refusals went in and the
+ * developers area file crossed the llmstxt.org 30,000-character
+ * budget: 31,803. The fix was not to raise the budget or to exempt the
+ * area; it was that the new entries were written at 820 characters
+ * where the store's own average is 590. They are tighter now, two
+ * that argued the same thing are one, and the area sits at 29,484 with
+ * 516 characters of headroom. Whoever crosses it next should tighten
+ * their own prose the same way rather than move the line.
+ * Re-taken 2026-08-30 for the /how-it-works section — the NINTH, and
+ * the first of the nine that is a plain guide edit rather than a merge
+ * of two branches that each re-took it. The room was built, registered
+ * in ROOMS, and named on no discovery surface at all; the guard in
+ * test/no-orphan-capability.spec.ts caught it before it shipped, which
+ * is that guard doing exactly its job. Verified present in these bytes
+ * before this value was taken: the nav line and the drafted
+ * /how-it-works paragraphs, which carry a ⚑ under rule 7 because the
+ * wording is the keeper's to settle.
+ *
+ * Re-taken 2026-08-31 — the TWELFTH — and this one is a MERGE, which
+ * is the case the eight notes above keep describing and the one this
+ * constant is worst at. Two branches each re-took it correctly for
+ * their own edit: main for the /how-it-works section, this branch for
+ * the discoverability doors and the declined positions. Neither value
+ * described the text that exists once both landed, exactly as the
+ * older notes predicted. Both sides' notes are kept above rather than
+ * one being dropped, and the value below was taken from the merged
+ * guide with BOTH sides' work verified present in it together — the
+ * /how-it-works nav line and paragraphs, and the seven new doors and
+ * the tightened refusals.
+ *
+ * Re-taken 2026-08-31 by the THIRD RAIL REACHING THE COPY — the
+ * THIRTEENTH, and a MERGE again, which the note above had just
+ * finished calling the case this constant is worst at. The Polygon flag is lit, and
  * settlement_attestation's shelf description still said "on Base or
  * on Solana ... a 0x hash reads Base" while observeSettlement has
  * asked Base AND Polygon of every 0x hash since 2026-08-21. The guide
@@ -287,12 +339,20 @@ const BASE = "https://scvd.store";
  * retired phrasings anywhere, and still carries the idempotency and
  * scvd-tab paragraphs the earlier re-takes pinned.
  *
+ * The merge half, stated separately from the edit half because they
+ * fail differently: main's twelfth value describes a guide without the
+ * rail correction, and this branch's described one without main's
+ * /how-it-works room, the seven discoverability doors, or the tightened
+ * refusals. Neither parent's value describes the merged text. The value
+ * below was taken from the merged guide with BOTH sides verified
+ * present in it together.
+ *
  * When the keeper genuinely edits the guide, this fails, and the fix
  * is to re-take the digest in the same commit as the edit — which is
  * the review moment this exists to force.
  */
 const GUIDE_DIGEST_BEFORE_THE_SPLIT =
-  "6f8b11b01bfadf905be8f4ab4cce083a3d0efe466c2006278e512acadfa4f3ba";
+  "24193baf328be4fa35ed48e7b6c3625872b8639f3fa091df29cab7770a2e3f00";
 
 /** The llmstxt.org recommendation the index is being held to. */
 const INDEX_CHARACTER_BUDGET = 30_000;

@@ -55,6 +55,13 @@ export async function paintTag(
     certId: string;
     patronNumber: number;
     name?: string;
+    /**
+     * What they actually paid. This shelf is pay-what-it-deserves, so
+     * the number is the bid — recorded here from 2026-08-29 so the
+     * front page can DERIVE the day's top tag instead of anybody
+     * declaring one.
+     */
+    paidUsdc?: number;
   },
 ): Promise<PaintedTag> {
   const record: TrainTagRecord = {
@@ -65,6 +72,9 @@ export async function paintTag(
     cert_id: input.certId,
     patron_number: input.patronNumber,
   };
+  if (typeof input.paidUsdc === "number" && Number.isFinite(input.paidUsdc)) {
+    record.paid_usdc = input.paidUsdc;
+  }
   const name = sanitizeText(input.name, 80);
   if (name) {
     record.name = name;
@@ -139,4 +149,52 @@ export async function setTagStatus(
   }
   await kvPut(env.ORDERS, found.kvKey, JSON.stringify(found.record));
   return found.record;
+}
+
+/**
+ * THE HEAD OF THE TRAIN — the day's biggest bid, DERIVED (rule 46).
+ *
+ * graffiti_on_a_train is pay-what-it-deserves, so what somebody paid
+ * IS their bid, and the biggest bid of a day takes the head car. The
+ * keeper's design was a slot on the storefront; it lives out here on
+ * the wall instead, on his read of the risk: money buying prominence
+ * on the front page of an evidence observatory is a sentence a
+ * competitor could write about us and be right. Out back, where the
+ * train already is, it costs nothing anybody else can use.
+ *
+ * A DAY, NOT A TITLE. The winner carries the date it won on, because
+ * rule 43 says a dated observation never accumulates into a score,
+ * and a head car with no date beside it is a leaderboard inside a
+ * week. Ties go to whoever got there first: matching a standing bid
+ * is not outbidding it.
+ *
+ * A tag with no recorded amount is not a zero bid — it is a bid this
+ * store did not write down, from before the field existed — so it
+ * never enters the ranking and never loses one either.
+ */
+export interface TopTag {
+  record: TrainTagRecord;
+  /** The UTC day it won. */
+  day: string;
+}
+
+export function topTagOfDay(approved: TrainTagRecord[]): TopTag | null {
+  const bids = approved.filter(
+    (record) => typeof record.paid_usdc === "number",
+  );
+  if (bids.length === 0) {
+    return null;
+  }
+  const day = bids[bids.length - 1]!.date.slice(0, 10);
+  let top: TrainTagRecord | undefined;
+  for (const record of bids) {
+    if (record.date.slice(0, 10) !== day) {
+      continue;
+    }
+    // Strictly greater: first to the amount holds it.
+    if (!top || (record.paid_usdc ?? 0) > (top.paid_usdc ?? 0)) {
+      top = record;
+    }
+  }
+  return top ? { record: top, day } : null;
 }

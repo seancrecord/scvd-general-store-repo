@@ -8,8 +8,9 @@ import {
   setTagStatus,
   TAG_CAP,
   tagHasUrl,
+  topTagOfDay,
 } from "@/services/train";
-import type { Env } from "@/types";
+import type { Env, TrainTagRecord } from "@/types";
 import { isRecord } from "@/types";
 
 const BASE = "https://scvd.store";
@@ -282,5 +283,110 @@ describe("the counter's train queue is reversible", () => {
     expect(html).toContain("Put it up on the wall");
     expect(html).toContain("Keep it off the wall (cert untouched)");
     expect(html).not.toContain(">Signed and held<");
+  });
+});
+
+/**
+ * THE HEAD OF THE TRAIN (2026-08-29, the keeper's design, sited on
+ * his own second read). The biggest bid of a day takes the head car
+ * ON THE WALL — not the storefront: money buying prominence on the
+ * front page of an evidence observatory is a sentence a competitor
+ * could write about us and be right. Two properties carry it. The
+ * winner is DERIVED from what was actually paid, and it carries the
+ * date it won on, because a bid wins a day and never a title.
+ */
+describe("the day's top bid, derived", () => {
+  const tag = (
+    id: string,
+    date: string,
+    paid?: number,
+  ): TrainTagRecord => ({
+    id,
+    tag: `tag ${id}`,
+    status: "approved",
+    date,
+    cert_id: `cert-${id}`,
+    patron_number: 1,
+    ...(paid === undefined ? {} : { paid_usdc: paid }),
+  });
+
+  it("hands the head car to the biggest bid of the day", () => {
+    const top = topTagOfDay([
+      tag("a", "2026-08-29T01:00:00.000Z", 1),
+      tag("b", "2026-08-29T02:00:00.000Z", 9),
+      tag("c", "2026-08-29T03:00:00.000Z", 3),
+    ]);
+    expect(top?.record.id).toBe("b");
+    expect(top?.day).toBe("2026-08-29");
+  });
+
+  it("gives a tie to whoever got there first — matching is not outbidding", () => {
+    const top = topTagOfDay([
+      tag("first", "2026-08-29T01:00:00.000Z", 5),
+      tag("second", "2026-08-29T02:00:00.000Z", 5),
+    ]);
+    expect(top?.record.id).toBe("first");
+  });
+
+  it("never ranks a tag whose bid was not recorded, and never loses one either", () => {
+    // Tags bought before the amount was written down are not zero
+    // bids. They ride the train; they do not enter the auction.
+    const top = topTagOfDay([
+      tag("unrecorded", "2026-08-29T01:00:00.000Z"),
+      tag("recorded", "2026-08-29T02:00:00.000Z", 1),
+    ]);
+    expect(top?.record.id).toBe("recorded");
+  });
+
+  it("reads one day, not a running leaderboard", () => {
+    // A bigger bid from an earlier day does not hold the head car:
+    // a bid wins a day, never a title (rule 43).
+    const top = topTagOfDay([
+      tag("old-whale", "2026-08-20T01:00:00.000Z", 100),
+      tag("today", "2026-08-29T01:00:00.000Z", 2),
+    ]);
+    expect(top?.record.id).toBe("today");
+    expect(top?.day).toBe("2026-08-29");
+  });
+
+  it("says nothing at all when nobody bid", () => {
+    expect(topTagOfDay([])).toBeNull();
+  });
+});
+
+describe("the wall prints the head car as bought", () => {
+  it("marks it with its day and its amount, and escapes the tag", async () => {
+    const painted = await paintTag(testEnv, {
+      tag: '<script>alert(1)</script> BIG MIKE',
+      certId: "cert-top-bid",
+      patronNumber: 42,
+      paidUsdc: 25,
+    });
+    expect(painted.record.paid_usdc).toBe(25);
+    await setTagStatus(testEnv, painted.record.id, "approved");
+    const html = await (
+      await SELF.fetch(`${BASE}/train`, {
+        headers: { Accept: "text/html" },
+      })
+    ).text();
+    expect(html).toContain("TOP BID");
+    // Bought, and saying so.
+    expect(html).toContain("paid, and saying so");
+    // A dated observation, never a standing title (rule 43).
+    expect(html).toContain(painted.record.date.slice(0, 10));
+    // Agent-authored untrusted text, escaped like everywhere else.
+    expect(html).toContain("BIG MIKE");
+    expect(html).not.toContain("<script>alert(1)</script>");
+  });
+
+  it("publishes the standing bid so a bidder is not guessing", async () => {
+    const body = (await (await SELF.fetch(`${BASE}/train`)).json()) as {
+      top_bid?: { day: string; paid_usdc: number };
+      top_bid_policy: string;
+    };
+    expect(body.top_bid?.paid_usdc).toBeGreaterThan(0);
+    expect(body.top_bid_policy).toContain("ties go to whoever got there first");
+    // It buys the head car and nothing else on this store.
+    expect(body.top_bid_policy).toContain("never a standing title");
   });
 });

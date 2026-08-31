@@ -18,6 +18,20 @@ only the keeper can decide; no work happens until he does.
 
 **Last trued up: 2026-08-20.**
 
+**PARTIAL TRUE-UP 2026-08-30**, and the partial is the honest word.
+Sixty pull requests merged between those dates, so this file was ten
+days behind when the keeper asked what was left. What this pass DID:
+fixed a doubled `## NEXT` heading from a bad merge; re-read NOW-4's
+version numbers off the source files (they were three minors stale);
+verified NOW-8's rail line on the live storefront. What it did NOT
+do: strike anything on the strength of a PR title. An item here is
+struck when its evidence has been walked, and walking sixty is its
+own sitting — the alternative is striking something still open,
+which is the failure this desk exists to prevent.
+
+NOW-1 (the bank walk), NOW-2, NOW-5, the favicon and the alerts
+mailbox need the keeper's own eyes and cannot be trued from here.
+
 ---
 
 ## NOW
@@ -200,10 +214,16 @@ is_roger_out, ring_bell-from-the-porch (the co-presence ruling in
 miniature: porch-class writes only — free, publish nothing, touch
 no money; guestbook stays off because it publishes words). The
 co-piloted till is PARKED on his frictionless argument, reasoning
-kept in §13.2. HIS GRAFFITI WALL is speced (§13.3): day's highest
-bidder on the home page, rides graffiti_on_a_train's existing
-pay-what-it-deserves as the auction, labeled paid, his approval
-gates display, empty wall on a no-bid day. THE POP-OFF CANDIDATE
+kept in §13.2. HIS GRAFFITI WALL is BUILT (§13.3, 08-29) and SITED
+OUT BACK on his own second read — the storefront slot was dropped
+because no-URLs is not no-ads and money buying prominence on the
+front page of an evidence observatory is a sentence a competitor
+could write and be right. The head car rides /train: biggest
+recorded bid of a day, marked in place with its date, its amount and
+"paid, and saying so"; ties to whoever got there first; /train
+publishes the standing bid and what it does NOT buy (nothing else on
+this store). His approval still gates every car. The storefront is
+untouched. THE POP-OFF CANDIDATE
 (§13.4, scvd.store/check/{host} — the shareable endpoint report
 page, the SSL-Labs wedge) is HELD SPECED: worth building on his
 read, not sold on readiness — built on his word, not before.
@@ -348,10 +368,13 @@ signed-offers gap, the price map). Re-pressing replaces the row.
 
 **4. ClawHub republish — TEST, five minutes.** From a level main:
 `npm run skill:publish`. The ClawHub copy lags the site; the number
-that is never stale is `SKILL_VERSION` in `src/store/spec.ts` (3.4.0
-at this true-up) vs `registry/clawhub/published.json` (3.3.0).
-(Earlier lines said 3.3.0 then 3.3.1 and were each stale on arrival
-— per rule 45, the source files are the count, not this one.)
+that is never stale is `SKILL_VERSION` in `src/store/spec.ts` vs
+`registry/clawhub/published.json`. Read 2026-08-30: **3.7.0 vs
+3.6.0** — the drift is real and one minor wide.
+(Every figure written into this line has been stale within days —
+3.3.0, then 3.3.1, then 3.4.0, now this one. Per rule 45 the source
+files are the count; the number above is a reading with a date on
+it, not a fact this file keeps.)
 
 **5. The directory PR sidecar — keeper follow-through** (08-19).
 Regenerate `providers/scvd/store/openapi.json` from the live
@@ -416,6 +439,12 @@ testnet-run build: yes/no/which key for the no-custody evaluator
 wallet.
 
 **8. The shopfront rail line — LOOK, check don't act** (2026-08-13).
+READ 2026-08-30: the live storefront serves "USDC on Base, Polygon,
+Solana" and names all three rails consistently in its body copy. The
+"8 on Base, 2 on Solana" split described below is NOT what the front
+shows today, so either the split moved or this note outlived the
+copy it was written about. The keeper's eyes decide which; the
+reading is recorded so the next pass starts from a measurement.
 After the next rail-split cron the front should read "8 on Base, 2 on
 Solana," tail gone. If it persists, the unplaced sale is one of the
 four Base hashes in the TASKS archive's NOW block;
@@ -570,6 +599,41 @@ work is in git.)
   latency value is `not_observed` until the preflight captures it on
   the doors it already walks.
 
+- **RULE 50 ON THE PAID HTTP TILL: one write moved, three await your
+  ruling, and I had one of them on the wrong side of the line.** I
+  told the keeper the settle path had three deferrable courtesy
+  writes in a queue. Reading it properly, only ONE was mine to move:
+  `recordReferralFor(c, "settled", ...)`, whose own sibling on the 402
+  path already rides a Promise.all wave — same function, same door,
+  two treatments, and the difference was nobody looking. Done, with
+  `test/mcp-door-defers-its-bookkeeping.spec.ts` holding it.
+
+  WHAT I WITHDREW AND WHY. I had counted `recordSettlement` as a
+  courtesy. It is the MONEY-IN LEDGER: dropping one undercounts real
+  revenue, and `lib/metrics.ts` publishes a sentence about when it
+  runs relative to the artifact handler that deferral would make
+  imprecise. Recoverable via chain reconciliation is not the same as
+  safe to lose. Rule 53 is explicit that rule 50 does not override
+  money failing closed, so this is the keeper's call, not an agent's.
+
+  STILL AWAITED, ON PURPOSE AND NOT UP FOR DEBATE: `recordSpentNonce`
+  (defer it and the same authorization can spend twice) and
+  `recordSettlementUnknown` (the only note that an ambiguous settle
+  was ever in question).
+
+  ⚑ THREE FOR THE KEEPER TO RULE:
+  1. `recordSettlement` — trade a rare lost settle count for latency
+     on the paid path? Chain reconciliation reads Base rather than our
+     writes, so the loss is findable. Still money.
+  2. `recordSolanaSettle` / `recordPolygonSettle` — these feed the
+     unreconciled-cap meter that raises an alarm past a bound.
+     Deferring a meter that gates a money alarm is a judgment about
+     oversight, not about speed.
+  3. The three `recordPaymentDecline` calls, awaited in front of a
+     refused buyer. Money did not move, so they are diagnostics rather
+     than ledger — but they are the record of WHY we said no, and I
+     did not want to widen the change on my own.
+
 - **64 of ~121 OpenAPI operations are still untyped, and the stopping
   point was evidence, not fatigue.** 57 are typed and bound by live
   probes. The remaining ones are per-artifact readers the keeper's
@@ -579,25 +643,24 @@ work is in git.)
   were typed. Filed so the stop is a decision with a reason attached
   rather than a thing that quietly restarts.
 
-## NEXT## NEXT
+## NEXT
 
 **The frame:** the verification tier is still $0 outside — Assumption
 0 unproven — while the economy under the position 10×'d. Everything
 below serves the first outside dollar.
 
-- ⚑ **RULE (five minutes): does a transfer-method reading belong in a
-  VERDICT?** Shipped 08-29 as two advisories, folded by neither
-  battery: `nonstandard-transfer-method` (a door asks for permit2 or
-  erc7710 — legal, and a generic client will be refused there) and
-  `unrecognized-transfer-method` (a method no published client can
-  build, registered as defect class `transfer-method-unrecognized`,
-  vocabulary v5). v1 is frozen and cannot take either. The open
-  question is v2 and only for the second one: an entry naming a
-  method nobody can build is unsignable in the same sense
-  `amount-atomic` is, which is already a v2 fold. Folding it moves
-  ready for doors we have already published rows about; leaving it
-  advisory keeps every row meaning what it meant. No work happens
-  until the ruling — the reading itself is live and free either way.
+- ~~RULE: does a transfer-method reading belong in a VERDICT?~~
+  **RULED 08-30 — YES, and built the same day.** v2 folds
+  `transfer-method-signable`: a door naming an authorization standard
+  no published client can build is unsignable in exactly the sense
+  `amount-atomic` is, so it costs that door its v2 `ready`. The
+  advisory `unrecognized-transfer-method` retired into it (one
+  observation, one voice). v1 frozen and unmoved; rows sealed before
+  08-30 stand as history; defect vocabulary v6 repoints
+  `transfer-method-unrecognized` at the new signal. NOT folded, on
+  purpose: `permit2` and `erc7710` still pass both batteries and draw
+  only the advisory — real standards named where the spec says to name
+  them, and scoring that would charge an operator for honesty.
 
 - ⚑ **THE AGENT WAVE CHANGES THE WEIGHT ON P7 — LOOK, then RULE
   (docs/WEBMCP_AND_MCP_APPS_2026-08.md §10, opened 08-27 on the

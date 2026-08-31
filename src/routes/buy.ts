@@ -190,6 +190,9 @@ const anchorCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!summary || summary.trim().length === 0) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "An anchor needs a summary query parameter, the state you want remembered. No summary, no charge.",
         // The one moment a buyer is actually composing the field, so
@@ -227,6 +230,9 @@ const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isValidHttpUrl(raw)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "A standing watch needs a url query parameter — YOUR x402 endpoint, https. No target, no charge.",
       },
@@ -242,7 +248,15 @@ const standingWatchCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
    */
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
   }
   if (url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()) {
     return c.json(
@@ -292,6 +306,9 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isValidHttpUrl(raw)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This needs a url query parameter — the https endpoint a buyer would GET expecting a 402. No target, no charge. A single unsigned look is free at POST /api/preflight.",
       },
@@ -301,7 +318,15 @@ const serviceAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const url = new URL(raw);
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
   }
   if (
     url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
@@ -334,6 +359,9 @@ const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isValidHttpUrl(raw)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This needs a url query parameter — your endpoint, https, on the public internet. No target, no charge. The free evidence for any ready-side host is already at /passport/{host}.",
       },
@@ -343,7 +371,15 @@ const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const url = new URL(raw);
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
   }
   if (
     url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
@@ -358,7 +394,15 @@ const trustProfileCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   const gate = await issuePassport(c.env, url.host.toLowerCase());
   if (!gate.issued) {
-    return c.json({ error: `${gate.detail} Nothing charged.` }, 403);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "passport_refused",
+        error: `${gate.detail} Nothing charged.`,
+      },
+      403,
+    );
   }
   await next();
 };
@@ -377,6 +421,9 @@ const signatureCardCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isValidHttpUrl(raw)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This needs a url query parameter — your origin, or your key directory's full URL (/.well-known/http-message-signatures-directory). No target, no charge. A single unsigned look is free at POST /api/bot-auth/check.",
       },
@@ -386,7 +433,15 @@ const signatureCardCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const url = new URL(raw);
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
   }
   if (
     url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
@@ -416,6 +471,9 @@ const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isValidHttpUrl(raw)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This needs a url query parameter — the https page to read. No target, no charge. A single unsigned look is free at POST /api/onpage/v1.",
       },
@@ -425,7 +483,15 @@ const onpageAuditCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const url = new URL(raw);
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
   }
   if (
     url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
@@ -457,6 +523,9 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!c.env.FIELD_WALLET_KEY) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "upstream_unavailable",
         error:
           "The Launch Check door is closed right now: the field wallet is not provisioned on this deployment, so no payment could be presented — and a check that cannot pay is not sold as one. No charge to you. The free preflight at POST /api/preflight/v1 reads your 402 challenge without paying it.",
       },
@@ -467,6 +536,9 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!isValidHttpUrl(raw)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This needs a url query parameter — the https endpoint a buyer would pay. No target, no charge. A free unpaid read of your challenge is POST /api/preflight/v1.",
       },
@@ -476,7 +548,15 @@ const launchCheckCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   const url = new URL(raw);
   const verdict = checkProbeTarget(url, "");
   if (!verdict.ok) {
-    return c.json({ error: `${verdict.reason} Nothing charged.` }, 400);
+    return c.json(
+      {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "target_refused",
+        error: `${verdict.reason} Nothing charged.`,
+      },
+      400,
+    );
   }
   if (
     url.host.toLowerCase() === new URL(c.env.STORE_BASE_URL).host.toLowerCase()
@@ -505,6 +585,9 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This needs a wallet query parameter — a 0x EVM address, 40 hex characters. This statement reads USDC on Base by default, or Polygon with network=eip155:137 (a Solana address has no history on either). No wallet, no charge.",
       },
@@ -515,6 +598,9 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (statementChain(c.req.query("network")) === null) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           'network must be "eip155:8453" (or "base", the default) or "eip155:137" (or "polygon"). An unrecognized network is refused rather than silently read as Base — the statement must be about the chain you asked about. Nothing charged.',
       },
@@ -527,6 +613,9 @@ const statementCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (!Number.isFinite(hours) || hours < 1 || hours > 11) {
       return c.json(
         {
+          /* 57.4: the fact an agent needs first, machine-readable. */
+          charged: false,
+          code: "bad_request",
           error:
             "hours must be a whole number from 1 to 11 (default 6). The window ceiling keeps the read bounded; a longer history is several statements. Nothing charged.",
         },
@@ -550,6 +639,9 @@ const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!text) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "Nothing to record, no charge. Put the claimed instructions in the mandate query parameter — up to 2000 characters, recorded verbatim: what this agent is authorized to do, as the submitter claims it.",
       },
@@ -559,6 +651,9 @@ const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (text.length > 2000) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "The mandate text caps at 2000 characters — a mandate is instructions, not a contract's appendix. Nothing charged.",
       },
@@ -569,6 +664,9 @@ const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (as !== undefined && as !== "agent" && as !== "principal") {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           'submitted_as must be "agent" (the agent submitting its own claimed instructions — the default) or "principal" (the human\'s own client submitting them). It is recorded as a claim either way. Nothing charged.',
       },
@@ -581,6 +679,9 @@ const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (!Number.isFinite(cap) || cap <= 0) {
       return c.json(
         {
+          /* 57.4: the fact an agent needs first, machine-readable. */
+          charged: false,
+          code: "bad_request",
           error:
             "declared_cap_usdc must be a positive number — the claimed spending ceiling in USDC. Declared, never enforced by us, and the record says so. Nothing charged.",
         },
@@ -592,6 +693,9 @@ const mandateCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (expiresRaw !== undefined && Number.isNaN(Date.parse(expiresRaw))) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "expires_at must be an ISO 8601 date (e.g. 2026-09-01T00:00:00Z) — the claimed expiry of the authorization. Declared, never enforced by us. Nothing charged.",
       },
@@ -623,6 +727,9 @@ const mandateRefCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   ) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "That mandate_id resolves to no mandate this store holds, so it cannot ride a certificate — a signed authorization link that points at nothing would be worse than none. Record the mandate first at /api/buy/the_mandate, then cite the id it returns. Nothing charged.",
       },
@@ -642,6 +749,9 @@ const confessionCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!confession || confession.trim().length === 0) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "A confession needs a confession query parameter, the thing itself, 500 characters. Nothing to hear, no charge.",
       },
@@ -670,6 +780,9 @@ const spotCheckGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!validSpotCheckHost(c.req.query("host"))) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "Give a bare hostname in the host query parameter — example.com, not a URL. We read our own books about it; no host, no charge.",
       },
@@ -689,6 +802,9 @@ const closerCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!win || win.trim().length === 0) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "This coffee needs a win query parameter, the thing you closed. No win, no charge.",
       },
@@ -719,6 +835,9 @@ const shutterCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (state.closed) {
       return c.json(
         {
+          /* 57.4: the fact an agent needs first, machine-readable. */
+          charged: false,
+          code: "upstream_unavailable",
           error:
             "The human-labor shelf is shuttered, the keeper is away from the counter. No charge taken; the promise stays honest. The machine shelves never close.",
           machine_shelves: `${c.env.STORE_BASE_URL}/menu.json`,
@@ -776,6 +895,9 @@ const stockCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (count === 0) {
       return c.json(
         {
+          /* 57.4: the fact an agent needs first, machine-readable. */
+          charged: false,
+          code: "already_done",
           error: `Sold out, honestly. Every unit of "${item.name}" is keeper-made ahead of time, and the shelf is bare until he stocks it again. No charge, no waitlist theater.`,
           fulfillment_class: "stocked",
           stock: 0,
@@ -801,6 +923,9 @@ const tagCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!tag || tag.trim().length === 0) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "Nothing to spray. Put your mark in the tag query parameter, up to 140 characters. No tag, no charge.",
       },
@@ -854,6 +979,9 @@ const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!raw) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error: `Nothing to look up. Give tx_hashes — ${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} Base transaction hashes, comma-separated — and we read each once and sign what is there. No hashes, no charge. One hash wants the single attestation at /api/buy/settlement_attestation.`,
       },
       400,
@@ -863,6 +991,9 @@ const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (hashes.length < BUNDLE_MIN_HASHES || hashes.length > BUNDLE_MAX_HASHES) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error: `The sheaf takes ${BUNDLE_MIN_HASHES} to ${BUNDLE_MAX_HASHES} hashes; you sent ${hashes.length}. ${hashes.length < BUNDLE_MIN_HASHES ? "One hash wants the single attestation at /api/buy/settlement_attestation, four tenths of a cent." : "Split it into two purchases."} Nothing charged.`,
       },
       400,
@@ -872,6 +1003,9 @@ const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (bad) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error: `"${bad.slice(0, 80)}" is not a transaction hash. Base wants 0x followed by 64 hex characters, for every hash in the sheaf. Nothing charged; fix it and resend.`,
       },
       400,
@@ -880,6 +1014,9 @@ const bundleCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (new Set(hashes.map((hash) => hash.toLowerCase())).size !== hashes.length) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "The sheaf has a duplicate hash in it. Refused rather than quietly deduplicated — you would be paying for observations you already had. Nothing charged; send each hash once.",
       },
@@ -900,6 +1037,9 @@ const anchorDigestCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!digest) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "Nothing to anchor. Give a digest query parameter — 64 hex characters, a sha256 you computed over bytes you keep — and it goes to a Bitcoin-anchored timestamp. No digest, no charge. If you want the store to hash something FOR you, that is not this item: we deliberately never see your bytes.",
       },
@@ -909,6 +1049,9 @@ const anchorDigestCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!SHA256_HEX.test(digest)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "That is not a sha256 digest. 64 hex characters, no 0x prefix. Nothing charged; hash your bytes and send the digest itself.",
       },
@@ -933,6 +1076,9 @@ const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!txHash || !TX_HASH.test(txHash)) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "Give a tx_hash query parameter — 0x followed by 64 hex characters. We read that Base receipt once and sign what moved against what ceiling was in force. No hash, no charge.",
       },
@@ -952,6 +1098,9 @@ const reconciliationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     if (!Number.isFinite(cap) || cap <= 0 || cap > 1_000_000_000) {
       return c.json(
         {
+          /* 57.4: the fact an agent needs first, machine-readable. */
+          charged: false,
+          code: "bad_request",
           error:
             "declared_cap_usdc has to be a positive number of USDC below a billion. Leave it off entirely if you have no ceiling to declare — an unparseable one would otherwise read as 'no cap declared', which is a different answer. Nothing charged.",
         },
@@ -970,6 +1119,9 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!txHash) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "Nothing to look up. Give a tx_hash query parameter — a Base transaction hash (0x + 64 hex) or a Solana transaction signature (base58) — and we will read that chain once and sign what is there. No hash, no charge.",
       },
@@ -981,6 +1133,9 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!TX_HASH.test(txHash) && !solana) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "That is not a transaction identifier we can read. Base wants 0x followed by 64 hex characters; Solana wants the base58 transaction signature. Nothing charged; send the real one.",
       },
@@ -997,6 +1152,9 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (solana && c.req.query("nonce")) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "nonce is an EIP-3009 facility and exists on the EVM rails only — a Solana observation cannot check one, and we will not sign an artifact that silently skipped a check you asked for. Drop the nonce, or send the EVM transaction hash instead. Nothing charged.",
       },
@@ -1040,6 +1198,9 @@ const judgmentCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   if (!detail) {
     return c.json(
       {
+        /* 57.4: the fact an agent needs first, machine-readable. */
+        charged: false,
+        code: "bad_request",
         error:
           "No dilemma, no charge. Put the question itself in the detail query parameter — 600 characters tops, one question in, one verdict out.",
       },

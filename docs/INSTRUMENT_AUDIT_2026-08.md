@@ -888,13 +888,33 @@ seller's failure — and `unrecognized-transfer-method` when the value
 is outside every method a published client can build. Silence is
 still the ordinary case and draws nothing.
 
-NO VERDICT MOVED. Both are advisories, neither battery folds them,
-and a test pins that a door asking for `permit2` produces
-byte-identical checks to one that says nothing — so every `ready`
-recorded before this date means exactly what it meant. Whether v2
-should fold the unrecognized case, which is unsignable in the same
-sense `amount-atomic` already is, is a battery decision and sits on
-the keeper's list as a RULE.
+NO VERDICT MOVED ON 08-29. Both shipped as advisories, and a test
+pins that a door asking for `permit2` produces byte-identical checks
+to one that says nothing.
+
+**THE KEEPER RULED ON 08-30: v2 FOLDS THE UNRECOGNIZED CASE.** It is
+now the check `transfer-method-signable`, counted in the v2 verdict
+beside `payto-payable`, `amount-atomic` and `network-mainnet` — a
+door naming an authorization standard no published client can build
+is unsignable in exactly the sense an unsignable amount is. The
+advisory `unrecognized-transfer-method` is retired the same day: one
+observation gets one voice, and carrying both would double-count it.
+
+This MOVES READY under v2 on doors already carrying published rows,
+which is why it was a ruling and not a build decision. Rows sealed
+before 08-30 were scored under the battery as it stood and stand as
+history; v1 is frozen and did not move; the battery changelog carries
+the date and the reasoning. A test pins the shape of the move — an
+unbuildable method costs a door its v2 ready and leaves v1's alone —
+and the emission was mutation-checked: disabling the read fails
+exactly the three tests that assert it.
+
+**The line the ruling drew, and it is the interesting half:** a door
+asking for `permit2` or `erc7710` still passes both batteries. Those
+are real standards that real clients build, named in the place the
+spec provides. That reading stays the advisory
+`nonstandard-transfer-method`, because counting it against a door
+would be scoring an operator for telling the truth about themselves.
 
 `ASSET_TRANSFER_METHOD_SIGNED` in the launch check is now the
 preflight's exported `DEFAULT_TRANSFER_METHOD`, imported rather than

@@ -181,6 +181,37 @@ export type ItemPricing = "fixed" | "pay_what_it_deserves";
 export type ItemCadence = "one_off" | "term";
 export type ItemFulfillment = "instant" | "human_queue";
 
+/**
+ * WHAT A SHELF ITEM ACTUALLY READS TO PRODUCE THE GOODS.
+ *
+ * Added 2026-08-30 for rule 57.5, which asks every surface to say
+ * what it holds and what it never holds. That answer was published
+ * nowhere per item, and the first attempt DERIVED it from the input
+ * schema — "takes a url, therefore fetches it" — which was wrong on
+ * its first run: spot_check takes a host and explicitly does not
+ * knock on it, reading the books at the counter instead. A guessed
+ * safety claim is worse than an absent one, so this is a stated fact
+ * with a required field, not a heuristic.
+ *
+ * ESTABLISHED BY THE IMPORT GRAPH, and re-runnable: a shelf item's
+ * fulfillment service that imports @/lib/probe-target fetches a
+ * subject the buyer named; one that imports @/lib/base-rpc or
+ * @/lib/solana-rpc reads public chain state; one that imports neither
+ * reaches nothing outside this store. The method is written down so
+ * the next person can check the answers rather than trust them.
+ */
+export type ItemReads =
+  /** One unauthenticated GET to an endpoint the buyer named. */
+  | "subject_fetch"
+  /** A real purchase attempt against the buyer's endpoint, from the field wallet. */
+  | "subject_purchase"
+  /** Public chain state for an identifier the buyer gave. */
+  | "chain_read"
+  /** Only what this store already recorded. No outbound request. */
+  | "our_books"
+  /** Made here from the buyer's own input. Nothing is read at all. */
+  | "made_here";
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -213,6 +244,12 @@ export interface MenuItem {
    * mechanism that could charge a second time.
    */
   cadence: ItemCadence;
+  /**
+   * REQUIRED, so nothing can be listed without saying what it reads.
+   * Rule 57.5's answer, and the one field on a listing whose wrongness
+   * would be a safety claim rather than an untidiness.
+   */
+  reads: ItemReads;
   /**
    * How many days one purchase of a term item covers. Required when
    * cadence is "term" (held by test/shelf-cadence.spec.ts, since the
@@ -458,7 +495,17 @@ export interface TrainTagRecord {
   patron_number: number;
   /** Optional name the buyer signed with. */
   name?: string;
+  /**
+   * WHAT THEY PAID, recorded 2026-08-29 so the day's top tag can be
+   * derived rather than declared. This shelf is pay-what-it-deserves
+   * and the biggest tip of a day IS the auction — but only for tags
+   * bought after this field existed. A record without it is not a
+   * zero bid, it is an unrecorded one, and it never enters the
+   * ranking.
+   */
+  paid_usdc?: number;
 }
+
 
 /**
  * THE MONEY, ADDED 2026-07-31.

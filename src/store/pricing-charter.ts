@@ -33,7 +33,7 @@ export const PRICING_CHARTER: readonly CharterClause[] = [
     id: "one_price",
     rule: "Every wallet sees the same price. The 402 terms for an item are generated from one public menu, identical for every buyer: no pricing by identity, wallet history, or origin, no surge, no A/B tests on a price, ever.",
     check:
-      "Fetch any /api/buy/{item} from two wallets, two networks, two days — the quoted terms match the public menu.json, byte for byte on the amount, both times.",
+      "Fetch any /api/buy/{item} from a different wallet, on a different network, on a different day — the quoted terms match the public menu.json, byte for byte on the amount, every time.",
   },
   {
     id: "floor_stays_low",

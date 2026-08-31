@@ -1,3 +1,4 @@
+import type { MenuItem } from "@/types";
 
 /**
  * THE SURFACE CONTRACT, AS SHARED PARTS (house rule 57, sweep begun
@@ -139,6 +140,65 @@ export function securityBlock(
 }
 
 /**
+ * THE BUY DOORS' PRE-PAYMENT REFUSALS (rule 57.4, 2026-08-30).
+ *
+ * Forty-two places on the money path refuse a purchase before any
+ * money moves, and every one said so in English only: "Nothing
+ * charged." A buying agent that wanted the one fact that matters —
+ * did this cost me anything? — had to parse prose.
+ *
+ * That reads worse here than anywhere else in the store, because both
+ * misreadings cost real money. Take a pre-payment refusal for a
+ * failed purchase and you may retry and double-spend; take it for a
+ * completed one and you abandon a sale a corrected parameter would
+ * have made. This store's own MCP till and browser till are clients
+ * of these doors, so it is not a hypothetical about a stranger.
+ *
+ * Every such refusal now carries `charged: false` and one of these
+ * codes. Both additive: the sentences and the status codes are
+ * exactly what they were.
+ */
+export const BUY_REFUSAL_CODES: readonly DoorError[] = [
+  {
+    code: "target_refused",
+    http: 400,
+    means:
+      "the URL you named is refused by this store's probe-target law (https, default port, no credentials, nothing private or internal) before any money moves",
+    what_to_do:
+      "Name a public https URL on its default port. This is a statement about US, never an observation about that host.",
+  },
+  {
+    code: "passport_refused",
+    http: 403,
+    means: "the door's own gate declined to issue for that subject",
+    what_to_do:
+      "Read the sentence beside it — it names the specific reason — and do not retry unchanged.",
+  },
+  {
+    code: "bad_request",
+    http: 400,
+    means:
+      "a parameter is missing, malformed, or outside its stated bounds. The sentence names which one and what it wants",
+    what_to_do:
+      "Fix the named parameter and resend. Retrying unchanged fails identically and still costs nothing.",
+  },
+  {
+    code: "upstream_unavailable",
+    http: 503,
+    means:
+      "something this purchase depends on did not answer, so the store refused to take money for work it could not do",
+    what_to_do: "Retry later. Nothing was charged and no order was opened.",
+  },
+  {
+    code: "already_done",
+    http: 409,
+    means: "the thing you asked for already exists",
+    what_to_do:
+      "Read the existing record rather than buying a second copy of it.",
+  },
+] as const;
+
+/**
  * The clauses themselves, as data, so the guard and any surface that
  * wants to publish the standard read one list rather than two.
  */
@@ -149,3 +209,211 @@ export const CONTRACT_CLAUSES = [
   { clause: "57.4", asks: "the call, the expected outcome, and the errors by name with what to do" },
   { clause: "57.5", asks: "what it does in your name, what it stores, and what we hold ourselves to" },
 ] as const;
+
+/* ------------------------------------------------------------------ */
+/* THE PAID SHELF'S HALF OF THE SAME CONTRACT (2026-08-30).            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * WHY THIS DERIVES, AND WHY IT SPEAKS THE VOCABULARY ABOVE.
+ *
+ * Measured 2026-08-30: every one of the 26 shelf items answered ZERO
+ * of 57.2, 57.4 and 57.5. Price and cadence were covered everywhere —
+ * the type system has required them since the rule was adopted — and
+ * what an agent gets back, what can go wrong, and what we hold
+ * ourselves to were published nowhere per item.
+ *
+ * The obvious fix is four paragraphs per item. That is 104 sentences
+ * about code paths, each able to go stale alone, on a shelf where the
+ * buy path is ONE code path with per-item inputs — the shape AT_SCALE
+ * rule 1 exists for. So every sentence here is computed from facts
+ * the item already carries: its input schema, its fulfillment class,
+ * its inventory, its term, and what it reads.
+ *
+ * It reuses DoorError and securityBlock rather than growing a second
+ * set of names for the same promises. A store whose paid shelf and
+ * free instruments describe safety in two different schemas has
+ * two copies of one promise, which is how one of them goes stale
+ * arguing with the other.
+ *
+ * WHAT THAT COSTS, stated: a derived sentence is general. It cannot
+ * say the one interesting thing about a particular door the way a
+ * hand-written one can. The per-item colour already exists elsewhere
+ * — description, note_402, constraints, spec.why_use — and this does
+ * not replace it. It answers the questions none of those did.
+ */
+
+interface PaidDoorFacts {
+  required: string[];
+  reads: MenuItem["reads"];
+  fetchesSubject: boolean;
+  humanQueue: boolean;
+  limited: boolean;
+}
+
+function doorFacts(
+  schema: { properties?: Record<string, unknown>; required?: string[] },
+  item: MenuItem,
+): PaidDoorFacts {
+  return {
+    required: [...(schema.required ?? [])],
+    reads: item.reads,
+    fetchesSubject:
+      item.reads === "subject_fetch" || item.reads === "subject_purchase",
+    humanQueue: item.fulfillment === "human_queue",
+    limited: item.weekly_inventory !== undefined || item.stocked === true,
+  };
+}
+
+/**
+ * What each class actually reaches, in one sentence a buyer can act
+ * on — the paid shelf's answer to `what_this_does_in_your_name`.
+ *
+ * THE FIRST VERSION DERIVED THIS FROM THE INPUT SCHEMA and was wrong
+ * on its first run: a url or host property was taken to mean a knock,
+ * and spot_check takes a host and deliberately does NOT knock, which
+ * its own description says out loud. A guessed safety claim is worse
+ * than an absent one, so MenuItem.reads is a stated fact, required by
+ * the type, established from each fulfillment service's import graph.
+ */
+const READS_SENTENCE: Record<MenuItem["reads"], string> = {
+  subject_fetch:
+    "One unauthenticated outbound GET from our infrastructure to the endpoint you name — no credentials of yours, nothing of yours forwarded to it, and never a private, loopback or link-local address, nor our own hostname.",
+  subject_purchase:
+    "One unauthenticated outbound GET to the endpoint you name, and a real payment against it from this store's own field wallet — the strongest thing anything here does. Your money is not spent: the field wallet is ours, the cap is ours, and what you buy is the signed record of what happened when we walked your door for real.",
+  chain_read:
+    "Public chain state for the identifier you give — a transaction, an address window — read from a public RPC. No request is made to any endpoint of yours and nothing of yours is sent anywhere.",
+  our_books:
+    "Nothing, outside this store. It reads our own signed records at the counter, so the answer is as fresh as our last round and no fresher, and it says exactly when that was.",
+  made_here:
+    "Nothing at all. The good is produced here from what you sent, and no request leaves this store to make it.",
+};
+
+function expectedOutcome(item: MenuItem, facts: PaidDoorFacts): string {
+  const delivery = facts.humanQueue
+    ? `HTTP 200 and a queue ticket with an order id and the URL that reports its status. A human does the work inside ${String(item.sla_hours ?? 168)} hours; miss that window and the keeper refunds you himself.`
+    : "HTTP 200, the goods themselves, and an ed25519 certificate in the same response — no second call, no polling.";
+  const term =
+    item.term_days === undefined
+      ? ""
+      : ` The purchase covers a ${String(item.term_days)}-day term as one payment; nothing renews it by itself, because there is no mechanism here that could.`;
+  return `${delivery}${term} Every delivery carries a signed certificate, a sequential patron number, a badge URL and a verify URL that is free to call forever, by anyone, without asking us. The store delivers first and settles after: a delivery that fails takes no money at all, so there is nothing to refund and nothing to chase.`;
+}
+
+function whatYouCanUseItFor(task: string | undefined): string {
+  const built = task
+    ? `The case it was built for: ${task.charAt(0).toLowerCase()}${task.slice(1)}.`
+    : "";
+  return `${built} Nothing about the artifact restricts you to that. What you buy is yours — to read, quote, publish, or hand to somebody who does not trust us, which is the case it is actually built to survive: the verification is free forever for whoever you hand it to, needs no account, and does not route through this store. There is no use case we are reserving.`.trim();
+}
+
+/**
+ * WHAT A BUY DOOR CAN SEND, READ OFF THE VOCABULARY IT ACTUALLY USES.
+ *
+ * THIS SHIPPED WRONG AND THE CORRECTION IS THE POINT (2026-08-30). The
+ * first version invented its own catalogue — missing_input,
+ * input_refused, subject_refused, sold_out — and published it on all
+ * 26 listings. Not one was a code the doors emit. A client reading
+ * /menu/service_audit and branching on `subject_refused` would never
+ * match: the door sends `target_refused`. That is precisely the defect
+ * the free doors' guard names one file up — a published error
+ * catalogue the door does not emit is the same defect as an
+ * undocumented one, wearing better clothes — and it was shipped by the
+ * same hand that quoted the rule.
+ *
+ * It derives from BUY_REFUSAL_CODES now: one vocabulary, published
+ * where a buyer reads it and emitted where a client branches on it. A
+ * sixth code added to the money path appears on every listing the day
+ * it lands.
+ *
+ * `charged` rides every refusal, because it is the one fact that
+ * matters on a money path and it is why the buy doors carry it on the
+ * wire: read a pre-payment refusal as a failed purchase and you may
+ * retry and double-spend; read it as a completed one and you abandon
+ * a sale a corrected parameter would have made.
+ */
+function doorErrors(facts: PaidDoorFacts): (DoorError & {
+  charged: boolean;
+  code_on_the_wire: boolean;
+})[] {
+  const refusals = BUY_REFUSAL_CODES.map((refusal) => ({
+    ...refusal,
+    charged: false,
+    code_on_the_wire: true,
+  }));
+  /*
+   * TWO REFUSALS CARRY NO CODE YET, and saying so is better than
+   * inventing one or staying silent. Neither sentence promises
+   * "nothing charged", which is what put them outside the sweep that
+   * coded the other forty-two — but both refuse before any money
+   * moves, so a buyer needs the same fact. Published with
+   * code_on_the_wire false rather than described as something a
+   * client can branch on.
+   */
+  const uncoded: (DoorError & { charged: boolean; code_on_the_wire: boolean })[] =
+    [
+      {
+        code: "unknown_item",
+        http: 404,
+        means:
+          "no item by that id is on the shelf, or it was retired. THIS REFUSAL CARRIES NO CODE FIELD ON THE WIRE YET — branch on the 404",
+        what_to_do:
+          "The body carries the menu URL and the request URL. A retired item answers with the date it retired and why, rather than pretending it never existed.",
+        charged: false,
+        code_on_the_wire: false,
+      },
+    ];
+  if (facts.limited) {
+    uncoded.push({
+      code: "sold_out",
+      http: 409,
+      means:
+        "the shelf is empty. An honest zero, not a queue: no order was created. THIS REFUSAL CARRIES NO CODE FIELD ON THE WIRE YET — branch on the 409 and read the waitlist URL beside it",
+      what_to_do:
+        "The body carries the waitlist URL. A sold-out shelf refuses the sale outright rather than taking money against stock that does not exist.",
+      charged: false,
+      code_on_the_wire: false,
+    });
+  }
+  return [
+    {
+      code: "payment_required",
+      http: 402,
+      means:
+        "you have not paid yet. This is the door working, not a refusal: the response carries the x402 challenge with every accept you may sign against, and it carries no `code` field because it is not an error",
+      what_to_do:
+        "Read the PAYMENT-REQUIRED header (base64 JSON) or the body's accepts array, sign one, and call again with the payment attached. A 402 is never an error to retry unchanged.",
+      charged: false,
+      code_on_the_wire: false,
+    },
+    ...refusals,
+    ...uncoded,
+  ];
+}
+
+/**
+ * Rule 57's remaining answers for one shelf item, computed.
+ *
+ * Served on the item's own page rather than in menu.json: the
+ * catalogue is already 130KB and this would grow it by a third to say
+ * the same thing 26 times. menu.json carries listing_url on every
+ * entry so the deeper contract is one hop from the shelf, which is
+ * what 57.1 asks for.
+ */
+export function paidDoorContract(
+  item: MenuItem,
+  schema: { properties?: Record<string, unknown>; required?: string[] },
+  task: string | undefined,
+  base: string,
+): Record<string, unknown> {
+  const facts = doorFacts(schema, item);
+  return {
+    what_you_can_use_it_for: whatYouCanUseItFor(task),
+    expected_outcome: expectedOutcome(item, facts),
+    errors: doorErrors(facts),
+    security: securityBlock(base, {
+      does_in_your_name: `${READS_SENTENCE[facts.reads]} This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.`,
+      stores: `The order — what was bought, when, the certificate minted for it, and a sequential patron number — because that record IS the artifact you paid for and the thing your verify URL resolves. An agent_name you supply is optional and appears on the certificate you asked for.${facts.humanQueue ? " A callback_url, if you give one, is used to tell you the work is done and for nothing else. Anything you write in `detail` is recorded exactly as written and read by a human, never treated as instructions to a machine." : ""}`,
+    }),
+  };
+}

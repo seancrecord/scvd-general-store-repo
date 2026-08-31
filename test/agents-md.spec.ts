@@ -16,8 +16,18 @@ describe("/agents.md", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/markdown");
     const text = await res.text();
-    // H1 store name, blockquote summary, and the operational sections.
-    expect(text.startsWith("# ")).toBe(true);
+    /*
+     * Frontmatter, then the H1. The metadata block sits ABOVE the
+     * document (2026-08-30) so an agent gets the title, canonical and
+     * licence without reading the prose for them; the H1 still leads
+     * the CONTENT, which is what the convention asks and what this
+     * assertion has always been protecting.
+     */
+    expect(text.startsWith("---\n")).toBe(true);
+    const frontmatterEnd = text.indexOf("\n---\n");
+    expect(frontmatterEnd).toBeGreaterThan(0);
+    expect(text.slice(4, frontmatterEnd)).toContain("title:");
+    expect(text.slice(frontmatterEnd + 5).trimStart().startsWith("# ")).toBe(true);
     expect(text).toContain("\n> ");
     // Retitled 2026-08-27 (scanner S13): the flows were always usage,
     // now the heading says the word skill-file checkers look for.

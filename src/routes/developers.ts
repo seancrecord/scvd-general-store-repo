@@ -216,7 +216,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
   return [
     {
       q: "Authentication",
-      a: "There is none, and there is nothing to sign up for. Free shelves are open to anyone. Paid endpoints answer HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON); you sign one of the offered accepts and retry with the payment. Payment is per request and settles wallet-to-wallet — this store never holds your funds, issues a key, or keeps an account.",
+      a: `There is none, and there is nothing to sign up for. Free shelves are open to anyone. Paid endpoints answer HTTP 402 with x402 v2 terms in the PAYMENT-REQUIRED header (base64 JSON); you sign one of the offered accepts and retry with the payment. Payment is per request and settles wallet-to-wallet — this store never holds your funds, issues a key, or keeps an account. Written out with the worked procedure at ${base}/auth.md; the machine-readable form is ${base}/.well-known/oauth-protected-resource (RFC 9728), which every 402 from this store points at in its WWW-Authenticate header. That document names no authorization server because there is none, which is the honest shape of "no OAuth here" rather than an omission.`,
     },
     {
       q: "Errors",
@@ -232,7 +232,7 @@ function conventions(base: string): Array<{ q: string; a: string }> {
     },
     {
       q: "Content negotiation",
-      a: `Send Accept: text/markdown and the agent-facing surfaces answer in markdown, including ${base}/ itself. Responses carry Vary: Accept so a cache keeps the variants apart. Accept is parsed by q-value, not substring-matched.`,
+      a: `Send Accept: text/markdown and the agent-facing surfaces answer in markdown, including ${base}/ itself. Responses carry Vary: Accept so a cache keeps the variants apart. Accept is parsed by q-value, not substring-matched. For callers that would rather guess a path than send a header, ${base}/index.md and ${base}/pricing.md serve the same bytes their negotiated originals do, with a canonical link back. What this store does NOT do is decide the dialect from your user-agent — see the declined positions below.`,
     },
   ];
 }
@@ -296,8 +296,16 @@ function developersHtml(base: string): string {
         `<h3>${escapeHtml(row.q)}</h3><p>${escapeHtml(row.a)}</p>`,
     )
     .join("");
+  /*
+   * NO <h1> HERE. renderSimplePage already emits one from the title
+   * this route passes it, and this body carried a second — the only
+   * room in the store with two, found 2026-08-30 by measuring rule
+   * 58.1 across all 35. Two h1s is not a style quibble on a page
+   * whose whole job is being found: it splits the document outline a
+   * search engine builds, and this is the room a readiness audit
+   * already reported as missing once.
+   */
   return `
-    <h1>${escapeHtml(STORE_SERVICE_NAME)} — developer documentation</h1>
     <p class="lede">Build against <code>${escapeHtml(base)}</code>. No account,
     no API key, no SDK. Free endpoints are plain HTTPS; paid ones take a signed
     x402 v2 payment in USDC on Base, Polygon or Solana, one payment per request.</p>

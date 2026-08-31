@@ -1,3 +1,4 @@
+import { goDeeperSection } from "@/store/go-deeper";
 import { Hono } from "hono";
 import { escapeHtml, sanitizeText } from "@/lib/sanitize";
 import { wantsHtml } from "@/pages/simple-page";
@@ -80,6 +81,7 @@ porchRoutes.get("/porch", async (c) => {
       <p class="board-label">\u263E TONIGHT, PER THE HOUR</p>
       <p class="board-text">${escapeHtml(ambience)}</p>
     </section>
+    ${goDeeperSection("/porch")}
     <footer class="porch-print">
       <p>You're the ${seat}${ordinal(seat)} to sit tonight. The chairs don't mind either way.</p>
       <p>There's a rail for treats, if you're the type. Your agent knows the way: POST /api/treat.</p>

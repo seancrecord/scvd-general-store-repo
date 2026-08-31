@@ -1,5 +1,10 @@
 import { Hono, type Context } from "hono";
 import {
+  MARKDOWN_MEDIA_TYPE,
+  prefersMarkdown,
+  VARY_ACCEPT,
+} from "@/lib/accept";
+import {
   ACCEPT_REQUIRED_FIELDS,
   BATTERY_ADDS,
   PREFLIGHT_VERSION,
@@ -163,13 +168,28 @@ function withLifecycle(c: Context<HonoEnv>, path: string): Record<string, string
 }
 
 for (const battery of PREFLIGHT_VERSIONS) {
-  preflightRoutes.get(`/api/preflight/${battery}`, (c) =>
-    c.json(
-      doc(c.env.STORE_BASE_URL, battery),
+  preflightRoutes.get(`/api/preflight/${battery}`, (c) => {
+    const base = c.env.STORE_BASE_URL;
+    c.header("Vary", VARY_ACCEPT);
+    /*
+     * JSON stays the default — this is an API door and a caller who
+     * stated no preference wants the machine form. Markdown fires only
+     * when a client ranked it above JSON, which is the same rule every
+     * negotiating surface here follows.
+     */
+    if (prefersMarkdown(c.req.header("Accept"))) {
+      return c.text(docMarkdown(base, battery), 200, {
+        "content-type": MARKDOWN_MEDIA_TYPE,
+        Vary: VARY_ACCEPT,
+        ...withLifecycle(c, `/api/preflight/${battery}`),
+      });
+    }
+    return c.json(
+      doc(base, battery),
       200,
       withLifecycle(c, `/api/preflight/${battery}`),
-    ),
-  );
+    );
+  });
 }
 preflightRoutes.get("/api/preflight", (c) => c.json(doc(c.env.STORE_BASE_URL)));
 
@@ -214,6 +234,240 @@ preflightRoutes.get("/api/preflight/checks", async (c) => {
       "JSON.stringify an object holding the fields ruleset_digest_covers names, in that order, exactly as served; SHA-256 the UTF-8 bytes; hex-encode. No canonicalizer beyond field order — the served bytes are the canonical form.",
     note: "Derived from the same registries the battery runs. A criteria page and a verdict can no longer disagree, because both read this.",
   });
+});
+
+/**
+ * THE SAME DOCUMENT, LAID OUT FOR A READER.
+ *
+ * Every sentence here is already in `doc()` — this writes none of its
+ * own. What it does is give the prose a shape a person or an agent can
+ * read straight through, instead of a nested object they have to walk.
+ * The distinction matters and is the reason this is a hand-written
+ * layout rather than a generic JSON-to-markdown printer: a mechanical
+ * dump would publish a document nobody wrote, which is the one thing
+ * this store does not do. The words are the keeper's; only the
+ * headings are new.
+ *
+ * It exists because /api/preflight/v1 answered a reader who wanted to
+ * know what the instrument checks with a JSON blob, and a 2026-08-30
+ * scan sampled exactly this path with a `.md` suffix and found
+ * nothing. The suffix works now too — index.ts's twin fallback asks
+ * this route for markdown and passes the answer through — so one
+ * change serves both mechanisms.
+ */
+function docMarkdown(base: string, battery: PreflightBattery): string {
+  const d = doc(base, battery) as Record<string, unknown>;
+  const list = (value: unknown): string =>
+    Array.isArray(value)
+      ? value.map((line) => `- ${String(line)}`).join("\n")
+      : "";
+  const pairs = (value: unknown): string =>
+    value && typeof value === "object"
+      ? Object.entries(value as Record<string, unknown>)
+          .map(([key, entry]) => `- **\`${key}\`** — ${String(entry)}`)
+          .join("\n")
+      : "";
+
+  return `---
+title: "${String(d["title"])} (${battery})"
+description: "${String(d["summary"]).replace(/"/g, "'")}"
+canonical: "${base}/api/preflight/${battery}"
+url: "${base}/api/preflight/${battery}"
+battery: "${battery}"
+method: "POST"
+price: "free"
+auth: "none"
+defect_vocabulary: "${base}/defects"
+---
+
+# ${String(d["title"])} — ${battery}
+
+${String(d["summary"])}
+
+## How to call it
+
+\`\`\`
+POST ${base}/api/preflight/${battery}
+Content-Type: application/json
+
+{"url": "https://your-endpoint/..."}
+\`\`\`
+
+${pairs(d["request"])}
+
+Free, and no account exists to open. The whole procedure for every door
+in this store is at ${base}/auth.md.
+
+## What it checks
+
+${list(d["what_it_checks"])}
+
+## What it cannot check
+
+${list(d["what_it_cannot_check"])}
+
+## Common failures this catches
+
+${pairs(d["common_failures_this_catches"])}
+
+## Rate limits
+
+${String(d["rate_limit"])}
+
+## What a verdict means
+
+${String(d["expected_outcome"])}
+
+The named defect vocabulary every verdict cites: ${base}/defects.
+The battery manifest, with the stable check ids and a recomputable
+ruleset digest: ${base}/api/preflight/checks.
+
+## Several doors at once
+
+${base}/api/preflight/batch takes up to ten URLs in one call. Each one
+is a real probe and is metered as one — batching saves you connections,
+not outbound requests.
+`;
+}
+
+/**
+ * THE MOST A BATCH MAY CARRY, and why there is a ceiling at all.
+ *
+ * Each entry is a real outbound GET to a host the caller chose. Ten is
+ * where a convenience stops being a convenience and starts being a
+ * relay somebody else's infrastructure sees as us — and this door's
+ * whole defence of itself is that it is a checker rather than a relay.
+ * A caller with a hundred doors sends ten batches, and the rate limiter
+ * meters those the same as a hundred single calls, which is the point.
+ */
+const BATCH_MAX = 10;
+
+/**
+ * POST /api/preflight/batch — the same probe, several doors, one call.
+ *
+ * WHY THIS EXISTS. The single-URL door has always been the whole
+ * instrument, and for the reader it was built for — somebody stuck on
+ * one endpoint at two in the morning — it is the right shape. It is
+ * the wrong shape for the other real reader: an agent holding a
+ * directory listing, checking whether thirty advertised x402 doors
+ * actually answer 402. That reader had to open thirty connections and
+ * write the loop, and a 2026-08-30 scan noted the absence.
+ *
+ * WHAT IT IS NOT: cheaper. Ten URLs is ten probes and is metered as
+ * ten, against the same buckets a single call draws on. Nothing here
+ * buys a discount on somebody else's bandwidth, and the response says
+ * so in `not_a_discount` rather than leaving a caller to discover it
+ * from a 429 halfway down their list.
+ *
+ * SEQUENTIAL, DELIBERATELY. Firing ten concurrent GETs from one worker
+ * at hosts we do not run is the behaviour that gets an instrument
+ * blocked, and it would also make the rate limiter's accounting
+ * approximate at exactly the moment it matters. Slower and countable
+ * beats fast and arguable.
+ *
+ * 200 WITH PER-ITEM STATUS, not 207. A batch that half-worked is a
+ * successful batch containing failures — the caller's parse is the
+ * same either way, and 207 is a WebDAV status most HTTP clients treat
+ * as an oddity. Each entry carries the status its own probe returned,
+ * so nothing is flattened.
+ */
+preflightRoutes.post("/api/preflight/batch", async (c) => {
+  const base = c.env.STORE_BASE_URL;
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json(
+      {
+        error:
+          'Body must be JSON: {"urls": ["https://one/...", "https://two/..."]}',
+        max_urls: BATCH_MAX,
+      },
+      400,
+    );
+  }
+  const urls =
+    typeof body === "object" && body !== null
+      ? (body as Record<string, unknown>)["urls"]
+      : undefined;
+  if (!Array.isArray(urls) || urls.length === 0) {
+    return c.json(
+      {
+        error:
+          '`urls` must be a non-empty array of the https URLs a buyer would GET expecting a 402.',
+        max_urls: BATCH_MAX,
+        single_door: `${base}/api/preflight`,
+      },
+      400,
+    );
+  }
+  if (urls.length > BATCH_MAX) {
+    /*
+     * REFUSED WHOLE, not silently truncated. Serving the first ten of
+     * thirty and saying nothing would hand a caller a clean-looking
+     * report about twenty doors nobody looked at — which is precisely
+     * the "listed but functionally absent" failure this instrument
+     * exists to catch, committed by the instrument.
+     */
+    return c.json(
+      {
+        error: `A batch carries at most ${BATCH_MAX} URLs; you sent ${urls.length}. Nothing was probed — a truncated batch would report on doors nobody looked at.`,
+        max_urls: BATCH_MAX,
+        sent: urls.length,
+        what_to_do: `Send ${Math.ceil(urls.length / BATCH_MAX)} batches. They are metered exactly as the same number of single calls, so nothing is lost by splitting.`,
+      },
+      400,
+    );
+  }
+
+  const results: Record<string, unknown>[] = [];
+  /**
+   * THE LIVE BUDGET, CARRIED OUT OF THE LAST PROBE.
+   *
+   * Each entry is metered exactly as a single call is, and each one's
+   * answer carries the IETF RateLimit fields. Discarding them would
+   * have left this door advertising a ceiling in the contract and
+   * returning nothing a caller could pace against — which is the
+   * "documents a ceiling nothing enforces" failure the store's own
+   * guard catches, committed by the door that batches the instrument
+   * whose limiter is the whole reason the fields exist.
+   *
+   * The LAST probe's headers are the ones that ride out, because they
+   * are the only ones still true when the response leaves: they report
+   * what remains AFTER the whole batch, which is what a caller pacing
+   * its next batch needs.
+   */
+  let budgetHeaders: Record<string, string> = {};
+  for (const url of urls) {
+    // One at a time. See the note above the handler.
+    const result = await preflightUrl(url, c.env, PREFLIGHT_VERSION);
+    budgetHeaders = result.headers ?? budgetHeaders;
+    results.push({
+      url: typeof url === "string" ? url : null,
+      status: result.status,
+      result: result.body,
+    });
+  }
+
+  return c.json(
+    {
+      battery: PREFLIGHT_VERSION,
+      count: results.length,
+      results,
+      not_a_discount: `Each entry was a real probe and was metered as one. ${results.length} URLs cost ${results.length} probes against the same budget a single call draws on; batching saves you connections, not our outbound requests or anyone else's bandwidth.`,
+      one_moment_each:
+        "Every entry is one GET at one moment, exactly like the single-URL door. None of these are uptime claims, and a door that answered here can be down a minute later.",
+      single_door: `${base}/api/preflight`,
+      defect_vocabulary: `${base}/defects`,
+    },
+    200,
+    {
+      "Cache-Control": "no-store",
+      ...withLifecycle(c, "/api/preflight"),
+      // What the limiter had left when the last entry finished.
+      ...budgetHeaders,
+    },
+  );
 });
 
 async function handle(
