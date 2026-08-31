@@ -22,14 +22,53 @@ import {
 import { STOREFRONT_ROOMS } from "@/store/rooms";
 
 /**
- * Chrome/Edge origin-trial token for WebMCP (feature "WebMCP",
- * origin https://scvd.store:443, expires 2026-11-17). Registered by
- * the keeper, 2026-08-27. Origin-bound and inert elsewhere, so it is
- * public data, not a secret; when the trial ends the API goes back
- * to feature-detection and /webmcp.js keeps no-opping gracefully.
+ * ORIGIN-TRIAL TOKENS FOR WEBMCP — ONE PER BROWSER VENDOR, and that is
+ * the shape rather than a temporary annoyance.
+ *
+ * An origin trial is not a feature flag we set; it is a signed grant
+ * from a vendor saying THIS origin may use an unfinished API, and each
+ * vendor signs with its own key. Chrome and Edge run separate
+ * programmes, so a store reachable in both carries two tags. Neither
+ * token does anything in the other's browser.
+ *
+ * Every token here is origin-bound and inert anywhere else, so these
+ * are PUBLIC DATA, not secrets — the same class of thing as the DNS
+ * record that proves we own the domain. Neither was registered for
+ * subdomains or third-party injection: the narrowest grant that does
+ * the job, and it matches what the store actually serves.
+ *
+ * WHEN A TRIAL ENDS the API goes back to feature-detection and
+ * /webmcp.js keeps no-opping gracefully — no error, no broken page,
+ * and nothing on the page that says the door has shut. That silence
+ * is why `npm run doors:check` reads EVERY token here and reports the
+ * soonest expiry rather than the first one it finds.
  */
-export const WEBMCP_ORIGIN_TRIAL_TOKEN =
-  "AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=";
+export const WEBMCP_ORIGIN_TRIAL_TOKENS: readonly {
+  readonly browser: string;
+  readonly token: string;
+}[] = [
+  {
+    // Chrome 149+. Registered by the keeper 2026-08-27; expires 2026-11-17.
+    browser: "chrome",
+    token:
+      "AnY9gFUhvYlqmiw6Hxg8e8ZrnXjv32OUI6c4+jD1i1cRhvnw+rUYUGSaGiLFQZgwBbatEz6ZcGm1OL/Qm51ZDgkAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5NDg3MzYwMH0=",
+  },
+  {
+    // Edge 150+. Registered by the keeper 2026-08-31; expires 2026-10-15
+    // — THIRTY-TWO DAYS BEFORE CHROME'S, which is exactly why the door
+    // battery reports the soonest of the two and not the first.
+    browser: "edge",
+    token:
+      "A0e2lG+XKqhdeqtHOL7IqB0ohyilsql6Id8blCwWJH5ptWLTQTqt5Dy75GQrQemRMYjUUbv0zt0G44WDSRUns9EAAABKeyJvcmlnaW4iOiJodHRwczovL3NjdmQuc3RvcmU6NDQzIiwiZmVhdHVyZSI6IldlYk1DUCIsImV4cGlyeSI6MTc5MjA2OTkwN30=",
+  },
+];
+
+/** The tags, one per vendor. Derived, so a third trial is one entry. */
+export function webmcpOriginTrialTags(indent = "  "): string {
+  return WEBMCP_ORIGIN_TRIAL_TOKENS.map(
+    (entry) => `${indent}<meta http-equiv="origin-trial" content="${entry.token}">`,
+  ).join("\n");
+}
 import { EXTERNAL_RECORDS, KEEPER_SOCIAL, OPERATOR } from "@/store/trust-signals";
 import { ardInPageEntries, ardLinkTags } from "@/lib/ard-catalog";
 import type { StoreStats } from "@/services/stats";
@@ -786,7 +825,7 @@ export function renderStorefront(data: StorefrontData): string {
     anywhere else. Browsers outside the trial ignore it and the
     script still no-ops gracefully.
   -->
-  <meta http-equiv="origin-trial" content="${WEBMCP_ORIGIN_TRIAL_TOKEN}">
+${webmcpOriginTrialTags()}
   <script src="/webmcp.js" defer></script>
 </head>
 <body class="night">
