@@ -1583,3 +1583,80 @@ products become its upsells (audit = this page signed and permanent,
 watch = this page kept current). KEEPER'S READ: worth building, not
 sold that people are ready to commit to us specifically for it yet —
 "maybe one day." Held speced, built on his word, not before.
+
+**THE SCOPING PASS, 2026-08-30** (his question: what is involved, and
+what are the positives and negatives). Read against the code rather
+than against this spec, and the first finding changes the cost.
+
+**MOST OF IT IS ALREADY BUILT.** `preflightUrl` produces the whole
+reading free — the ladder with NOT CLIMBED at weight, both battery
+verdicts, the advisories, the date — one outbound GET, rate-limited
+two ways, results deliberately not retained. And a per-host page
+ALREADY EXISTS: `/passport/{host}` is free, signed, dated, carries
+freshness and an expiry, publishes what was NOT checked, and links
+the full signed history. That is most of this section, live today,
+for any host the census has observed; the MCP Apps cards settle the
+visual vocabulary on top. So `/check/{host}` is not a new instrument.
+It is a front door on readings that already have a public page, and
+the honest question is presentation and reach, not measurement.
+
+**WHAT IS GENUINELY NEW, and where the work hides.** The route itself
+is an afternoon. The hard part is the on-demand probe the SSL-Labs
+shape implies, and it carries three problems:
+
+1. **A bare host is not an endpoint.** Preflight needs the exact paid
+   URL. Either demand a full URL — which kills the clean
+   `scvd.store/check/vendor.com` people would paste — or resolve host
+   to endpoint from the census, which only works for hosts already
+   observed. That is the passport's existing limit, arrived at
+   honestly.
+2. **A GET that fires an outbound request at a caller-named host is a
+   reflected-probe surface.** Every crawler, prefetcher and link
+   unfurler (Slack, Twitter, iMessage) hits it on sight, each one
+   launching a probe at a third party from our IP. The moment the page
+   works as a shareable link is the moment it is unfurled at scale,
+   and a GET is meant to be safe and idempotent. Needs a
+   POST-then-permalink flow, or cached-only rendering.
+3. **A permalink implies persistence.** Today a preflight retains
+   nothing. A page that shows the same reading tomorrow means storing
+   third-party readings by host — a new policy line, though the census
+   already stores exactly that for observed hosts.
+
+Plus the rule 44 sweep (six discovery surfaces, sitemap, llms.txt, the
+no-orphan guard) and the copy, which is where rule 43 is most exposed:
+this is a page built to be screenshotted by strangers who will not
+read the caption.
+
+**THE TWO VERSIONS.** CHEAP AND SAFE: render the census reading for
+hosts we have observed, never probe on demand, and give an unobserved
+host an honest "not observed — here is the free instrument" page. No
+reflected probe, no unfurl amplification, no new persistence; small
+build, reuses everything. EXPENSIVE AND RISKY: type any host, probe
+live — the real SSL-Labs shape, and the one needing the flow, the
+cache and the abuse thinking.
+
+**POSITIVE.** The only item on the list with a path to people who are
+not already looking for us. Sellers link their own page as proof;
+buyers check before paying; every view puts the colophon in front of a
+stranger. It makes the paid tier legible instead of abstract (the
+audit is this page signed and permanent, the watch is this page kept
+current), it uses inventory we already produce and mostly discard, and
+a URL is the cheapest distribution there is.
+
+**NEGATIVE.** We would be publishing dated verdicts about other
+people's businesses on pages designed to be shared. Today that lives
+where you have to know to visit. Make it shareable and somebody
+eventually screenshots a `not_ready` — rule 43 says every verdict is
+one dated observation, and a screenshot strips the date. That is the
+real cost, and it is reputational rather than technical. Second: it is
+the SSL-Labs shape without SSL-Labs' precondition, which was a decade
+of authority before the page mattered; a checker nobody trusts yet is
+just a page. Third: it invites support load from operators whose doors
+we call not ready, at a moment with no revenue to fund answering them.
+
+**THE READ.** The cheap version is worth building whenever he wants
+it — low risk, mostly wiring. The expensive version should wait for a
+reason, and the reason to watch for is SOMEBODY ELSE LINKING A
+SCVD.STORE READING UNPROMPTED. That is the signal the authority
+precondition is met. Until then it is distribution built for an
+audience that has not arrived.

@@ -213,6 +213,16 @@ untouched. THE POP-OFF CANDIDATE
 (§13.4, scvd.store/check/{host} — the shareable endpoint report
 page, the SSL-Labs wedge) is HELD SPECED: worth building on his
 read, not sold on readiness — built on his word, not before.
+SCOPED 08-30 against the code (§13.4): most of it EXISTS —
+/passport/{host} is already a free, signed, dated per-host page for
+any observed host, and preflightUrl already produces the whole
+reading. Two versions: CHEAP (render census evidence for observed
+hosts, never probe on demand — small, low risk) and EXPENSIVE (type
+any host, probe live — a GET that fires an outbound request at a
+caller-named host is a reflected-probe surface every link unfurler
+will hit, and a permalink implies persistence we deliberately do not
+keep). The trigger to watch for on the expensive one: somebody else
+linking a scvd.store reading unprompted.
 
 THE COLOPHON IS SETTLED as of 08-27: the mark reads SCVD / STORE (the
 name and the address at once, so a card screenshotted out of its host
