@@ -1367,9 +1367,33 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
      * than our writes; a buyer 500'd after paying is only findable by
      * the buyer.
      */
-    await recordSettlement(c.env, c.req.path, settlementSignals).catch(
-      (error) => console.error("settle count lost:", String(error)),
-    );
+    /*
+     * ONE WAVE, NOT A QUEUE (rule 50), finishing a job metrics.ts
+     * started. recordSettlement was twenty serial round trips until it
+     * was folded into a single Promise.all; the rail meter was left
+     * awaiting its own trip behind it, on a different key, which is
+     * the same defect one layer out. Both are money counters and BOTH
+     * STAY AWAITED — the fix is the queue, never the await. The
+     * keeper's 08-27 ruling on money-adjacent books is untouched by
+     * this: nothing here reaches the response before it has landed.
+     *
+     * The rail meter is the unreconciled-cap meter (PAYMENT_RAILS.md):
+     * counted at the seam where money moved, alarmed past the bound,
+     * never a refusal. It reads no key this wave writes, so it has no
+     * reason to queue.
+     */
+    const railMeter =
+      till.settled.network === SOLANA_NETWORK
+        ? recordSolanaSettle(c.env, paidUsdc)
+        : till.settled.network === POLYGON_NETWORK
+          ? recordPolygonSettle(c.env, paidUsdc)
+          : Promise.resolve();
+    await Promise.all([
+      recordSettlement(c.env, c.req.path, settlementSignals).catch(
+        (error) => console.error("settle count lost:", String(error)),
+      ),
+      railMeter.catch(() => undefined),
+    ]);
     /*
      * Beside the answer, like its own sibling. The SAME function runs
      * on arrival at the 402, where it already rides a Promise.all wave
@@ -1390,15 +1414,6 @@ const runPaymentGate: MiddlewareHandler<HonoEnv> = async (c, next) => {
     }
     if (till.settled.payer) {
       payment.payer = till.settled.payer;
-    }
-    if (payment.network === SOLANA_NETWORK) {
-      // The unreconciled-cap meter (PAYMENT_RAILS.md ruling): counted at
-      // the seam where money moved, alarmed past the bound, never a refusal.
-      await recordSolanaSettle(c.env, paidUsdc).catch(() => undefined);
-    }
-    if (payment.network === POLYGON_NETWORK) {
-      // Third rail, same ruling: bounded, named, alarmed — never refused.
-      await recordPolygonSettle(c.env, paidUsdc).catch(() => undefined);
     }
     c.set("payment", payment);
     till.payment = payment;
