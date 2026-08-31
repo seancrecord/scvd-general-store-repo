@@ -1753,6 +1753,167 @@ const BATTERY_DELTA_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE CONFORMANCE FIXTURE SET — the vectors any issuer can run their
+ * own implementation against, ours included.
+ *
+ * `fixture_set_digest` and `digest_rule` are required together: a
+ * fixture set whose digest cannot be recomputed by the person holding
+ * it is a fixture set they have to trust us about, which defeats the
+ * purpose of publishing one. `how_to_integrate_fail_closed` stays
+ * required for the same reason it exists — a conformance check wired
+ * to pass when it errors is worse than no check.
+ */
+const CONFORMANCE_FIXTURES_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "version", "fixtures", "fixture_set_digest", "digest_rule"],
+  properties: {
+    what_this_is: { type: "string" },
+    version: { type: "string" },
+    fixture_set_digest: { type: "string" },
+    digest_rule: {
+      type: "string",
+      description: "How to recompute the digest above from the fixtures below, without asking us.",
+    },
+    fixtures: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "artifact", "expect"],
+        properties: {
+          id: { type: "string" },
+          artifact: { type: "string" },
+          canonical_signed_input: { type: "string" },
+          payload: { type: "object" },
+          call: { type: "object" },
+          expect: {
+            type: "object",
+            description: "What a conformant implementation must answer for this vector.",
+          },
+          note: { type: "string" },
+        },
+      },
+    },
+    how_to_integrate_fail_closed: {
+      type: "array",
+      items: { type: "string" },
+      description: "A conformance check wired to pass when it errors is worse than no check.",
+    },
+    signer_registry: {
+      type: "object",
+      properties: {
+        did: { type: "string" },
+        signing_key_url: { type: "string", format: "uri" },
+        did_json_url: { type: "string", format: "uri" },
+        public_key_hex: { type: "string" },
+      },
+    },
+  },
+};
+
+/** The bounty board: what is on offer, and the budget that bounds it. */
+const BOUNTIES_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "bounties", "the_rules"],
+  properties: {
+    what_this_is: { type: "string" },
+    board: { type: "string" },
+    bounties: { type: "array", items: { type: "object" } },
+    the_rules: { type: "array", items: { type: "string" } },
+    how_to_claim: { type: "string" },
+    method: { type: "string" },
+    week: { type: "string" },
+    weekly_budget_usd: { type: "number" },
+    spent_this_week_usd: { type: "number" },
+    payouts_enabled: {
+      type: "boolean",
+      description:
+        "Whether the board can actually pay right now. Published rather than implied, so a claimant learns it before doing the work.",
+    },
+    the_board: { type: "string", format: "uri" },
+    the_room: { type: "string", format: "uri" },
+  },
+};
+
+/** The wallet-claim desk: how to prove a wallet is yours, and its limits. */
+const CLAIMS_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "how", "free"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "array", items: { type: "string" } },
+    free: { type: "boolean" },
+    why_a_challenge: {
+      type: "string",
+      description: "Why a signature over a nonce rather than a claim we take on trust.",
+    },
+    limits: { type: "string" },
+  },
+};
+
+/** The standing note: one statement a subject may attach to its own record. */
+const STANDING_NOTE_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "limits"],
+  properties: {
+    what_this_is: { type: "string" },
+    who_would_use_it: { type: "string" },
+    where_it_rides: { type: "string" },
+    host_lane: { type: "object", properties: { how: { type: "string" }, proof: { type: "string" } } },
+    wallet_lane: {
+      type: "object",
+      properties: {
+        how: { type: "string" },
+        challenge_template: { type: "string" },
+        proof: { type: "string" },
+        not_yet: { type: "string" },
+      },
+    },
+    limits: {
+      type: "object",
+      properties: {
+        statement_max_chars: { type: "integer" },
+        one_note_per_subject: { type: "boolean" },
+        subject_must_be_observed: {
+          type: "boolean",
+          description:
+            "A note can only be attached to a subject this store has actually observed — it is a right of reply, not a listing mechanism.",
+        },
+      },
+    },
+    disputes: { type: "string" },
+  },
+};
+
+/** The Tab pool: what the shared reads are, and what they are not. */
+const TAB_POOL_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "trust_model"],
+  properties: {
+    what_this_is: { type: "string" },
+    pooled_reads: { type: "string" },
+    what_a_delta_carries: { type: "string" },
+    sample_sizes: {
+      type: "object",
+      properties: {
+        opened_deltas: { type: "integer" },
+        outcome_deltas: { type: "integer" },
+        by_category: { type: "object" },
+      },
+    },
+    trust_model: {
+      type: "string",
+      description: "What these pooled numbers can and cannot support, since nobody's submission is verified.",
+    },
+    gaming: {
+      type: "string",
+      description: "How this surface could be gamed, published by the surface itself.",
+    },
+    daily_intake_cap: { type: "integer" },
+    contribute: { type: "string" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3339,9 +3500,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/tab/pool": {
-        get: freeOp(
-          "The pooled tab corpus's sample sizes",
-          "What the pool holds so far, counted. Pooled reads are not built yet and this endpoint says so honestly.",
+        get: returns(
+  freeOp(
+            "The pooled tab corpus's sample sizes",
+            "What the pool holds so far, counted. Pooled reads are not built yet and this endpoint says so honestly.",
+          ),
+          TAB_POOL_SCHEMA,
         ),
       },
       "/api/claims/challenge": {
@@ -3364,9 +3528,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/claims": {
-        get: freeOp(
-          "How purchase recovery works",
-          "The claims door, described: challenge-response, every rail the store settles on, what a valid claim returns.",
+        get: returns(
+  freeOp(
+            "How purchase recovery works",
+            "The claims door, described: challenge-response, every rail the store settles on, what a valid claim returns.",
+          ),
+          CLAIMS_DOC_SCHEMA,
         ),
         post: postOp(
           "Recover everything a wallet paid for",
@@ -3507,9 +3674,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * desk or the corpus existed.
        */
       "/api/conformance/v1/fixtures": {
-        get: freeOp(
-          "Signed envelope fixtures for fail-closed integrations",
-          "Complete artifacts with real production signatures — valid, expired, tampered, and unknown-signer cases — each with the exact canonical string its signature covers, the exact desk call to make, and the verdict it returns. Every fixture is re-verified against the live desk before serving. Pin the set digest; build and test an integration without paying anything.",
+        get: returns(
+  freeOp(
+            "Signed envelope fixtures for fail-closed integrations",
+            "Complete artifacts with real production signatures — valid, expired, tampered, and unknown-signer cases — each with the exact canonical string its signature covers, the exact desk call to make, and the verdict it returns. Every fixture is re-verified against the live desk before serving. Pin the set digest; build and test an integration without paying anything.",
+          ),
+          CONFORMANCE_FIXTURES_SCHEMA,
         ),
       },
       "/api/conformance/v1": {
@@ -3791,9 +3961,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/bounties": {
-        get: freeOp(
-          "The Bounty Board",
-          "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
+        get: returns(
+  freeOp(
+            "The Bounty Board",
+            "The crawlable room the board lives in: open bounties with the door's captured price and your reward side by side, the three-step walk, and the rules in full. HTML for browsers, JSON otherwise; the raw board for polling is /api/bounties. Free.",
+          ),
+          BOUNTIES_SCHEMA,
         ),
       },
       "/credit": {
@@ -3812,9 +3985,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/api/bounties": {
-        get: freeOp(
-          "The bounty board — get paid to shop",
-          "Open mystery-shopping bounties: walk a listed x402 door with your own wallet, submit the settlement transaction at POST /api/bounty-claim, and the reward comes back as a signed EIP-3009 authorization you redeem on chain yourself. Rules, budget, and claim shape are on the board itself. Free to read.",
+        get: returns(
+  freeOp(
+            "The bounty board — get paid to shop",
+            "Open mystery-shopping bounties: walk a listed x402 door with your own wallet, submit the settlement transaction at POST /api/bounty-claim, and the reward comes back as a signed EIP-3009 authorization you redeem on chain yourself. Rules, budget, and claim shape are on the board itself. Free to read.",
+          ),
+          BOUNTIES_SCHEMA,
         ),
         post: postOp(
           "Claim a bounty (POST /api/bounty-claim)",
@@ -4025,9 +4201,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/standing-note": {
-        get: freeOp(
-          "The standing-note lane, explained",
-          "How to attach your own dated statement to a subject this store has observed — your door, or a wallet your doors advertise. Self-serve and evidence-gated: prove control (EIP-191 wallet signature, or serve the statement's sha256 at /.well-known/scvd-note.txt) and the note rides beside the observation on every surface that shows it, never replacing it. Free.",
+        get: returns(
+  freeOp(
+            "The standing-note lane, explained",
+            "How to attach your own dated statement to a subject this store has observed — your door, or a wallet your doors advertise. Self-serve and evidence-gated: prove control (EIP-191 wallet signature, or serve the statement's sha256 at /.well-known/scvd-note.txt) and the note rides beside the observation on every surface that shows it, never replacing it. Free.",
+          ),
+          STANDING_NOTE_DOC_SCHEMA,
         ),
         post: postOp(
           "Attach a standing note",
