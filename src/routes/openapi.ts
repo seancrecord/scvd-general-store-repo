@@ -2486,6 +2486,113 @@ const HOST_PROFILE_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * A PRACTICE SCENARIO. This door answers 402 ALWAYS and on purpose —
+ * it is an obstacle course of deliberately broken challenges, so a
+ * client can meet each named failure once, safely, before meeting it
+ * in production. There is no 200 to describe, and inventing one would
+ * describe a door that does not exist.
+ */
+const PRACTICE_SCENARIO_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["practice", "scenario", "what_is_wrong", "what_a_good_client_does"],
+  properties: {
+    practice: {
+      type: "boolean",
+      description: "Always true. Nothing here mints, charges, or counts toward any metric.",
+    },
+    scenario: { type: "string" },
+    what_is_wrong: { type: "string" },
+    what_a_good_client_does: { type: "string" },
+    preflight_names_this: {
+      type: "string",
+      description: "The named check in the free battery that catches this defect on a real door.",
+    },
+    the_course: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * A signed receipt verdict. `not_checked` rides beside `checks` and
+ * `assurance_level` says how far the verdict reaches — a verifier that
+ * published only what it checked would be read as having checked
+ * everything.
+ */
+const RECEIPT_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["payload", "signature", "public_key"],
+  properties: {
+    payload: {
+      type: "object",
+      required: ["verdict", "checks", "not_checked", "assurance_level"],
+      properties: {
+        artifact: { type: "string" },
+        verified_at: { type: "string", format: "date-time" },
+        verdict: { type: "string" },
+        receipt_sha256: { type: "string" },
+        issuer: { type: "object" },
+        checks: { type: "array", items: { type: "object" } },
+        not_checked: {
+          type: "array",
+          items: { type: "object" },
+          description: "What this verdict did NOT establish, beside what it did.",
+        },
+        assurance_level: {
+          type: "string",
+          description: "How far the verdict reaches, so it is not quoted past its own scope.",
+        },
+        stateless: { type: "string", description: "Nothing submitted here is stored." },
+      },
+    },
+    signature: { type: "string" },
+    signature_jcs: { type: "string" },
+    signed_payload: {
+      type: "string",
+      description: "The exact bytes the signature covers, served beside it.",
+    },
+    public_key: { type: "string" },
+    verify_hint: { type: "string" },
+  },
+};
+
+/** A wallet's sign for the week. Fortune, plainly labelled as such. */
+const ZODIAC_READING_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["address", "sign", "week"],
+  properties: {
+    address: { type: "string" },
+    sign: { type: "string" },
+    sign_id: { type: "string" },
+    week: { type: "string" },
+    season: { type: "integer" },
+    season_week: { type: "integer" },
+    essence: { type: "string" },
+    penalty: { type: "string" },
+    forecast: { type: "string" },
+    auspicious: { type: "string" },
+    avoid: { type: "string" },
+    compatible: { type: "string" },
+    conditions: { type: "string" },
+    page: { type: "string", format: "uri" },
+  },
+};
+
+/** A filed tip on a door somebody found. */
+const TIP_RECEIPT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message", "tip_id", "status"],
+  properties: {
+    message: { type: "string" },
+    tip_id: { type: "string" },
+    status: {
+      type: "string",
+      description: "Filed for the keeper's review. A human reads every one; nothing publishes automatically.",
+    },
+    counter_sign: { type: "string" },
+    gazette_url: { type: "string", format: "uri" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3231,6 +3338,34 @@ function returnsMarkdown(operation: OpenApiObject): OpenApiObject {
       "200": {
         description: "OK",
         ...MARKDOWN_RESPONSE,
+      },
+    },
+  };
+}
+
+/**
+ * A DOOR WHOSE ONLY ANSWER IS 402, DESCRIBED ON THE 402.
+ *
+ * The practice course answers 402 always and on purpose. There is no
+ * 200 to describe and no 200 to declare, so the schema rides the
+ * status the door actually sends. `returns` would have added a success
+ * this door never produces — the same defect as the intake doors'
+ * missing 201, facing the other way.
+ */
+function returnsOn402(
+  operation: OpenApiObject,
+  schema: OpenApiObject,
+): OpenApiObject {
+  const responses = { ...(operation["responses"] as OpenApiObject) };
+  delete responses["200"];
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "402": {
+        description:
+          "Payment Required — the scenario's deliberately broken challenge. This is the success case for this door.",
+        content: { "application/json": { schema } },
       },
     },
   };
@@ -4165,9 +4300,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/api/practice/{scenario}": {
         get: {
-          ...freeOp(
-              "One practice scenario",
-              "Answers 402 (or a broken imitation) with the named defect and the lesson in the body. Deterministic forever, safe to hit from CI.",
+          ...returnsOn402(
+  freeOp(
+                "One practice scenario",
+                "Answers 402 (or a broken imitation) with the named defect and the lesson in the body. Deterministic forever, safe to hit from CI.",
+            ),
+            PRACTICE_SCENARIO_SCHEMA,
           ),
           parameters: [pathParam("scenario", "The scenario name, from GET /api/practice.")],
         },
@@ -4180,17 +4318,20 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           VERIFY_RECEIPT_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Verify any receipt",
-          "POST any receipt or signed artifact (this store's or any issuer's, JSON, max 32KB) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate — every check named, everything unchecked stated. Stateless: the document is verified and forgotten, bound to the verdict only by sha256. Free, one document per call.",
-          "The receipt itself, as JSON, whoever issued it. Max 32KB.",
-          {
-            type: "object",
-            description:
-              "ANY receipt or signed artifact — no field list, and that is the contract rather than an omission: the desk exists to read OTHER issuers' documents, and a property list here would describe this store's own shape and quietly refuse everybody else's. What the desk could not read, it names in the verdict.",
-            additionalProperties: true,
-          },
-        ),
+        post: returns(
+  postOp(
+            "Verify any receipt",
+            "POST any receipt or signed artifact (this store's or any issuer's, JSON, max 32KB) and receive a SIGNED verdict: valid | invalid | expired | insufficient_evidence | unsupported | indeterminate — every check named, everything unchecked stated. Stateless: the document is verified and forgotten, bound to the verdict only by sha256. Free, one document per call.",
+            "The receipt itself, as JSON, whoever issued it. Max 32KB.",
+            {
+              type: "object",
+              description:
+                "ANY receipt or signed artifact — no field list, and that is the contract rather than an omission: the desk exists to read OTHER issuers' documents, and a property list here would describe this store's own shape and quietly refuse everybody else's. What the desk could not read, it names in the verdict.",
+              additionalProperties: true,
+            },
+          ),
+            RECEIPT_VERDICT_SCHEMA,
+          ),
       },
       "/passport": {
         get: returns(
@@ -4944,9 +5085,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/zodiac/{address}": {
         get: {
-          ...freeOp(
-            "A wallet's sign and the current week's page",
-            "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
+          ...returns(
+  freeOp(
+              "A wallet's sign and the current week's page",
+              "Signs are assigned by wallet address, for life. The page turns with the ISO week; the current week is free and byte-stable on repeat reads.",
+            ),
+            ZODIAC_READING_SCHEMA,
           ),
           parameters: [
             pathParam(
@@ -5124,20 +5268,23 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/tip": {
-        post: postOp(
-          "Leave a Trading Post tip",
-          "Reviewed by a human, never auto-published; published tips are credited and sold for a penny.",
-          "The tip, and optionally who to credit.",
-          {
-            type: "object",
-            required: ["tip"],
-            properties: {
-              tip: { type: "string", maxLength: 1000 },
-              contributor_name: { type: "string", maxLength: 80 },
-              verified_identity: VERIFIED_IDENTITY,
+        post: created(
+  postOp(
+            "Leave a Trading Post tip",
+            "Reviewed by a human, never auto-published; published tips are credited and sold for a penny.",
+            "The tip, and optionally who to credit.",
+            {
+              type: "object",
+              required: ["tip"],
+              properties: {
+                tip: { type: "string", maxLength: 1000 },
+                contributor_name: { type: "string", maxLength: 80 },
+                verified_identity: VERIFIED_IDENTITY,
+              },
             },
-          },
-        ),
+          ),
+            TIP_RECEIPT_SCHEMA,
+          ),
       },
       "/api/request": {
         post: created(

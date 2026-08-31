@@ -49,8 +49,6 @@ const BASE = "https://scvd.store";
  */
 const UNTYPED_YET = new Set<string>([
   "get /api/bitcoin-anchor/{anchor_id}",
-  "get /api/practice/{scenario}",
-  "post /api/verify-receipt",
   "get /api/onpage-audit/{audit_id}",
   "get /api/credit/{wallet}",
   "post /api/bounties",
@@ -58,14 +56,12 @@ const UNTYPED_YET = new Set<string>([
   "post /api/standing-note",
   "get /corpus/diff.json",
   "post /mcp",
-  "get /zodiac/{address}",
-  "post /api/tip",
   "get /api/letter/{letter_id}",
   "get /api/patronage/{pass_id}",
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 14;
+const UNTYPED_CEILING = 10;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 
@@ -98,10 +94,16 @@ function operations(document: Record<string, unknown>): Operation[] {
  * Created — which the contract did not say until 2026-08-31, and this
  * guard would have scored a correctly-typed 201 door as bare if it
  * only knew about the two.
+ *
+ * 402 joins them for the practice course, whose ONLY answer is a
+ * deliberately broken challenge. That door has no 200 to describe, so
+ * its schema rides the status it actually sends, and a guard that
+ * insisted on a 2xx would have pushed it toward declaring a success it
+ * never produces.
  */
 function describesItsShape(operation: Record<string, unknown>): boolean {
   const responses = (operation["responses"] ?? {}) as Record<string, unknown>;
-  for (const status of ["200", "201", "202"]) {
+  for (const status of ["200", "201", "202", "402"]) {
     const response = responses[status] as Record<string, unknown> | undefined;
     const content = (response?.["content"] ?? {}) as Record<
       string,
