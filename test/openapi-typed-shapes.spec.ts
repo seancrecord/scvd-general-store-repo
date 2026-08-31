@@ -1,0 +1,225 @@
+import { SELF } from "cloudflare:test";
+import { describe, expect, it } from "vitest";
+
+const BASE = "https://scvd.store";
+
+/**
+ * EVERY DOOR SAYS WHAT COMES BACK, OR IS ON A LIST THAT ONLY SHRINKS.
+ *
+ * A 2026-08-30 readiness scan reported this store's contract as only
+ * partly usable for function calling, and the count it gave was worse
+ * than it looked. Every operation HAS a 200 schema — so a naive check
+ * says 134 of 134 are typed — but 76 of them were `{"type":"object"}`
+ * and nothing else. That is a schema in the sense that a sealed box is
+ * a description of its contents. A client generating from it learns
+ * that JSON comes back, which it could have guessed.
+ *
+ * THE FIX IS NOT ONE COMMIT, and pretending otherwise is how a list
+ * like this rots. Writing 76 response shapes means deriving each from
+ * its route, and a schema that is confidently wrong is worse than a
+ * bare one: it is a false claim in machine form, on the surface this
+ * store's whole argument depends on. So this guard is a RATCHET rather
+ * than a deadline.
+ *
+ * THREE RULES, AND THE SECOND IS THE ONE THAT MATTERS:
+ *
+ *   1. A door not on the list must declare its shape. A NEW door
+ *      cannot ship bare — that is the leak this closes.
+ *   2. A door ON the list must still BE bare. The moment one is typed,
+ *      its entry has to go, or this fails by name. An allowlist nobody
+ *      is forced to prune is a list that silently stops meaning
+ *      anything, which is the failure mode of every "we'll fix it
+ *      later" register ever written.
+ *   3. The list never grows. The number below is a high-water mark,
+ *      and it only ever goes down.
+ *
+ * Eight of the original entries were added by the same pass that found
+ * the problem (the /ask family, /auth.md, the protected-resource
+ * metadata, /pricing.md, the batch preflight). Those are typed: 76 → 68.
+ * Two of them were worse than bare — /auth.md and /pricing.md serve
+ * text/markdown and the contract said application/json, so a generated
+ * client would have parsed a markdown body as JSON and failed on the
+ * first byte. `returnsMarkdown` says what those doors actually send.
+ */
+
+/**
+ * Still bare, by method and path. Remove an entry in the same commit
+ * that types it — rule 2 makes that mandatory rather than polite.
+ */
+const UNTYPED_YET = new Set<string>([
+  "get /porch",
+  "get /attestation",
+  "get /rights",
+  "get /wind-down",
+  "get /api/good-buyer/{reading_id}",
+  "get /api/service-audit/{audit_id}",
+  "get /api/bitcoin-anchor/{anchor_id}",
+  "get /api/reconciliation/{reconciliation_id}",
+  "get /api/lucky/{lucky_id}",
+  "post /api/tab/delta",
+  "get /api/tab/pool",
+  "post /api/claims/challenge",
+  "get /api/claims",
+  "post /api/claims",
+  "get /api/practice/{scenario}",
+  "get /api/verify-receipt",
+  "post /api/verify-receipt",
+  "get /profiles",
+  "get /profiles/{host}",
+  "get /corrections",
+  "get /api/conformance/v1/fixtures",
+  "post /api/preflight/v1",
+  "post /api/preflight/v2",
+  "post /api/onpage/v1",
+  "get /api/onpage-audit/{audit_id}",
+  "get /pricing",
+  "get /bounties",
+  "get /credit",
+  "get /api/credit/{wallet}",
+  "get /api/bounties",
+  "post /api/bounties",
+  "get /api/mandate/{mandate_id}",
+  "get /api/statement/{statement_id}",
+  "get /api/launch-check/{check_id}",
+  "post /api/bot-auth/check",
+  "get /api/bot-auth-card/{card_id}",
+  "get /.well-known/http-message-signatures-directory",
+  "get /api/standing-note",
+  "post /api/standing-note",
+  "get /samples",
+  "get /samples/once-over.json",
+  "get /doors",
+  "get /doors.json",
+  "get /corpus/battery-delta.json",
+  "get /corpus/diff.json",
+  "post /mcp",
+  "get /zodiac",
+  "get /zodiac/{address}",
+  "get /zodiac/archive",
+  "get /almanac",
+  "get /gazette",
+  "post /api/guestbook",
+  "post /api/stamp",
+  "post /api/tip",
+  "post /api/request",
+  "post /api/letter",
+  "get /api/letter/{letter_id}",
+  "get /api/phantom/{check_id}",
+  "get /api/anchor/{anchor_id}",
+  "get /api/patronage/{pass_id}",
+  "get /directory",
+  "get /api/refund/{refund_id}",
+  "get /.well-known/x402",
+  "get /.well-known/x402.json",
+  "get /developers",
+  "get /.well-known/mcp",
+  "get /.well-known/agent-instructions",
+  "get /.well-known/scvd-signing-key",
+]);
+
+/** The high-water mark. It only ever goes down. */
+const UNTYPED_CEILING = 68;
+
+const METHODS = ["get", "post", "put", "patch", "delete"] as const;
+
+interface Operation {
+  key: string;
+  operation: Record<string, unknown>;
+}
+
+function operations(document: Record<string, unknown>): Operation[] {
+  const paths = document["paths"] as Record<
+    string,
+    Record<string, Record<string, unknown>>
+  >;
+  const found: Operation[] = [];
+  for (const [path, item] of Object.entries(paths)) {
+    for (const [method, operation] of Object.entries(item)) {
+      if (!(METHODS as readonly string[]).includes(method)) continue;
+      found.push({ key: `${method} ${path}`, operation });
+    }
+  }
+  return found;
+}
+
+/**
+ * TRUE WHEN A GENERATED CLIENT LEARNS SOMETHING. A `$ref`, named
+ * properties, an array with items, or a scalar all describe a value.
+ * A bare `{"type":"object"}` describes the fact that JSON is JSON.
+ */
+function describesItsShape(operation: Record<string, unknown>): boolean {
+  const responses = (operation["responses"] ?? {}) as Record<string, unknown>;
+  for (const status of ["200", "202"]) {
+    const response = responses[status] as Record<string, unknown> | undefined;
+    const content = (response?.["content"] ?? {}) as Record<
+      string,
+      { schema?: Record<string, unknown> }
+    >;
+    for (const media of Object.values(content)) {
+      const schema = media.schema;
+      if (!schema) continue;
+      if (schema["$ref"]) return true;
+      if (schema["type"] === "array" && schema["items"]) return true;
+      if (typeof schema["type"] === "string" && schema["type"] !== "object") {
+        return true;
+      }
+      const properties = schema["properties"] as
+        | Record<string, unknown>
+        | undefined;
+      if (properties && Object.keys(properties).length > 0) return true;
+    }
+  }
+  return false;
+}
+
+async function spec(): Promise<Record<string, unknown>> {
+  const response = await SELF.fetch(`${BASE}/openapi.json`);
+  expect(response.status).toBe(200);
+  return (await response.json()) as Record<string, unknown>;
+}
+
+describe("every operation says what comes back", () => {
+  it("lets no new door ship without a shape", async () => {
+    const bare = operations(await spec())
+      .filter((entry) => !describesItsShape(entry.operation))
+      .map((entry) => entry.key)
+      .filter((key) => !UNTYPED_YET.has(key))
+      .sort();
+
+    expect(
+      bare.join("\n"),
+      "these operations return a bare {\"type\":\"object\"} and are not on the shrinking list — describe what comes back, or a generated client learns only that JSON is JSON",
+    ).toBe("");
+  });
+
+  it("forces the list to shrink when a door is typed", async () => {
+    /*
+     * Rule 2, and the reason this file is a ratchet rather than a
+     * register. An entry whose door now HAS a shape is a line nobody
+     * pruned, and a list nobody prunes stops meaning anything long
+     * before anyone notices.
+     */
+    const document = await spec();
+    const live = new Map(
+      operations(document).map((entry) => [entry.key, entry.operation]),
+    );
+
+    const stale: string[] = [];
+    for (const key of UNTYPED_YET) {
+      const operation = live.get(key);
+      if (!operation) {
+        stale.push(`${key} — no such operation; remove the entry`);
+      } else if (describesItsShape(operation)) {
+        stale.push(`${key} — now declares its shape; remove the entry`);
+      }
+    }
+    expect(stale.sort().join("\n")).toBe("");
+  });
+
+  it("keeps the count going one way", () => {
+    expect(
+      UNTYPED_YET.size,
+      "the untyped list grew; it is a high-water mark, not a budget",
+    ).toBeLessThanOrEqual(UNTYPED_CEILING);
+  });
+});

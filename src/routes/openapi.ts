@@ -644,6 +644,215 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
  * publishing its own traffic figures is exactly the claim a reader
  * should be able to check without trusting the publisher.
  */
+/**
+ * THE NLWEB ANSWER. Field names are the protocol's; the honesty block
+ * beside them is ours, and it is in the schema for the same reason it
+ * is in the response — a client that generates from this contract
+ * should know the score is recomputable before it trusts the ranking.
+ */
+const ASK_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["_meta", "query_id", "query", "site", "mode", "count", "results"],
+  properties: {
+    _meta: {
+      type: "object",
+      required: ["response_type", "version"],
+      description:
+        "NLWeb's envelope: which shape this response is and which revision of the protocol produced it.",
+      properties: {
+        response_type: { type: "string", enum: ["list"] },
+        version: { type: "string" },
+        protocol: { type: "string" },
+        site: { type: "string" },
+      },
+    },
+    query_id: {
+      type: "string",
+      description:
+        "Yours if you sent one, ours if not. Echoed so you can pair a response with its question; never stored.",
+    },
+    query: { type: "string" },
+    site: { type: "string" },
+    mode: { type: "string", enum: ["list"] },
+    count: { type: "integer" },
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["url", "name", "site", "score", "description", "schema_object"],
+        properties: {
+          url: { type: "string", format: "uri" },
+          name: { type: "string" },
+          site: { type: "string" },
+          score: {
+            type: "number",
+            description:
+              "Recomputable from scoring_rule and the entry returned. Not a rating of anything.",
+          },
+          description: { type: "string" },
+          schema_object: {
+            type: "object",
+            description: "The entry as a schema.org object.",
+            properties: {
+              "@context": { type: "string" },
+              "@type": { type: "string" },
+              name: { type: "string" },
+              description: { type: "string" },
+              url: { type: "string", format: "uri" },
+            },
+          },
+        },
+      },
+    },
+    this_is_an_index_not_a_model: { type: "string" },
+    scoring_rule: {
+      type: "string",
+      description:
+        "The rule itself rather than a link to it, so any score above can be recomputed by the reader holding it.",
+    },
+    the_whole_index: { type: "string", format: "uri" },
+    every_result_is_a_live_url: { type: "boolean" },
+    nothing_matched: {
+      type: "string",
+      description: "Present only when the index matched nothing.",
+    },
+  },
+};
+
+/** The askable index as a schema.org DataFeed. */
+const ASK_FEED_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["@context", "@type", "name", "url", "dataFeedElement"],
+  properties: {
+    "@context": { type: "string" },
+    "@type": { type: "string", enum: ["DataFeed"] },
+    name: { type: "string" },
+    description: { type: "string" },
+    url: { type: "string", format: "uri" },
+    isAccessibleForFree: { type: "boolean" },
+    license: { type: "string", format: "uri" },
+    publisher: { type: "object", properties: { "@type": { type: "string" }, name: { type: "string" }, url: { type: "string" } } },
+    dataFeedElement: {
+      type: "array",
+      description: "Every entry /ask can return, in the order it ranks them.",
+      items: {
+        type: "object",
+        properties: {
+          "@type": { type: "string", enum: ["DataFeedItem"] },
+          item: { type: "object" },
+        },
+      },
+    },
+  },
+};
+
+/** NLWeb's site list. One site: this store. */
+const SITES_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["message-type", "sites"],
+  properties: {
+    "message-type": { type: "string", enum: ["sites"] },
+    sites: { type: "array", items: { type: "string" } },
+    note: { type: "string" },
+  },
+};
+
+/**
+ * RFC 9728 protected-resource metadata. The absences are in the schema
+ * as prose rather than as empty fields: a generated client should
+ * learn that no authorization server exists here, not that we forgot
+ * to list one.
+ */
+const PROTECTED_RESOURCE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["resource", "resource_documentation", "bearer_methods_supported"],
+  properties: {
+    resource: { type: "string", format: "uri" },
+    resource_name: { type: "string" },
+    resource_documentation: { type: "string", format: "uri" },
+    resource_policy_uri: { type: "string", format: "uri" },
+    resource_tos_uri: { type: "string", format: "uri" },
+    bearer_methods_supported: {
+      type: "array",
+      items: { type: "string" },
+      description:
+        "Empty, and that is the answer: this store issues no bearer tokens, so it supports no way of presenting one. `authorization_servers` is absent entirely for the same reason — there is no OAuth issuer, the field is optional, and naming one that does not exist would be a false claim in machine form.",
+    },
+    scopes_supported: { type: "array", items: { type: "string" } },
+    x402: {
+      type: "object",
+      description: "What actually gates the paid doors.",
+      properties: {
+        supported: { type: "boolean" },
+        version: { type: "integer" },
+        request_header: { type: "string" },
+        challenge_header: { type: "string" },
+        discovery: { type: "string", format: "uri" },
+      },
+    },
+    agent_auth: {
+      type: "object",
+      description:
+        "The WorkOS auth.md block. register_uri, claim_uri and revocation_uri are null because no credential is ever issued here.",
+      properties: {
+        summary: { type: "string" },
+        skill: { type: "string", format: "uri" },
+        identity_types_supported: {
+          type: "array",
+          items: { type: "string", enum: ["anonymous"] },
+        },
+        anonymous: { type: "object", properties: { credential_types_supported: { type: "array", items: { type: "string" } } } },
+        register_uri: { type: "string", nullable: true },
+        claim_uri: { type: "string", nullable: true },
+        revocation_uri: { type: "string", nullable: true },
+        why_no_endpoints: { type: "string" },
+        documentation_url: { type: "string", format: "uri" },
+        protected_resource_metadata: { type: "string", format: "uri" },
+        contact: { type: "string", format: "uri" },
+      },
+    },
+  },
+};
+
+/**
+ * The batch preflight. Each entry keeps the status its own probe
+ * returned, so a bad URL beside a good one does not flatten the call.
+ */
+const PREFLIGHT_BATCH_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["battery", "count", "results"],
+  properties: {
+    battery: { type: "string" },
+    count: { type: "integer" },
+    results: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["url", "status", "result"],
+        properties: {
+          url: { type: "string", nullable: true },
+          status: {
+            type: "integer",
+            description: "The status this entry's own probe returned.",
+          },
+          result: {
+            type: "object",
+            description: "The same verdict body a single-URL probe returns.",
+          },
+        },
+      },
+    },
+    not_a_discount: {
+      type: "string",
+      description:
+        "Says plainly that each entry was metered as its own probe, so a caller learns it here rather than from a 429 halfway down their list.",
+    },
+    one_moment_each: { type: "string" },
+    single_door: { type: "string", format: "uri" },
+    defect_vocabulary: { type: "string", format: "uri" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -1371,6 +1580,29 @@ const CONFORMANCE_WATCH_SCHEMA: OpenApiObject = {
  * being a second copy of the handler that drifts (rule 46) — they
  * cannot describe a store that does not exist without failing.
  */
+/**
+ * A door that serves MARKDOWN, said correctly.
+ *
+ * `freeOp` declares a JSON 200, which is right for most of this
+ * contract and was wrong for /auth.md and /pricing.md the day they
+ * shipped: both serve `text/markdown` and the spec claimed otherwise.
+ * That is worse than a vague schema — a generated client would have
+ * parsed a markdown body as JSON and failed on the first byte.
+ */
+function returnsMarkdown(operation: OpenApiObject): OpenApiObject {
+  const responses = operation["responses"] as OpenApiObject;
+  return {
+    ...operation,
+    responses: {
+      ...responses,
+      "200": {
+        description: "OK",
+        ...MARKDOWN_RESPONSE,
+      },
+    },
+  };
+}
+
 function returns(
   operation: OpenApiObject,
   schema: OpenApiObject,
@@ -2392,28 +2624,31 @@ openapiRoutes.get("/openapi.json", async (c) => {
        */
       "/api/preflight/batch": {
         post: withRateLimitHeaders(
-          postOp(
+          returns(
+            postOp(
             "Preflight several x402 doors in one call",
             "The same probe as /api/preflight, run over up to 10 URLs, sequentially, each metered as its own probe — batching saves you connections, not outbound requests. Each entry carries the status its own probe returned, so a bad URL beside a good one does not fail the call. A batch over the ceiling is refused whole rather than truncated: a report on doors nobody looked at is the exact defect this instrument exists to catch. Free.",
             "The x402 doors to walk, at most 10.",
-            {
-              type: "object",
-              required: ["urls"],
-              additionalProperties: false,
-              properties: {
-                urls: {
-                  type: "array",
-                  minItems: 1,
-                  maxItems: 10,
-                  items: {
-                    type: "string",
-                    format: "uri",
-                    description:
-                      "An https URL on a public host, same rules as the single-URL door.",
+              {
+                type: "object",
+                required: ["urls"],
+                additionalProperties: false,
+                properties: {
+                  urls: {
+                    type: "array",
+                    minItems: 1,
+                    maxItems: 10,
+                    items: {
+                      type: "string",
+                      format: "uri",
+                      description:
+                        "An https URL on a public host, same rules as the single-URL door.",
+                    },
                   },
                 },
               },
-            },
+            ),
+            PREFLIGHT_BATCH_SCHEMA,
           ),
         ),
       },
@@ -2424,14 +2659,20 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * description is the only documentation some callers ever read.
        */
       "/ask": {
-        get: freeOp(
+        get: returns(
+          freeOp(
           "Ask this store a question about itself",
-          "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+            "NLWeb. Ranks what this store publishes — the rooms, the shelf, the defect vocabulary, the free instruments — against your words and returns schema.org objects with recomputable scores. An INDEX, not a model: nothing is generated, and mode=summarize / mode=generate return 501 rather than a paraphrase. Send streaming=true for text/event-stream. Free, no account.",
+          ),
+          ASK_SCHEMA,
         ),
         post: {
-          ...freeOp(
-            "Ask this store a question about itself (POST)",
-            "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
+          ...returns(
+            freeOp(
+              "Ask this store a question about itself (POST)",
+              "The same door as GET /ask, taking the query as a JSON body for callers that would rather not build a query string. Cross-origin browser callers are served: the preflight is answered and the allowance covers the event-stream too. No Idempotency-Key: this is a READ expressed as a POST — it writes nothing and stores nothing about the asker, so it is safe to retry by construction.",
+            ),
+            ASK_SCHEMA,
           ),
           ...jsonBody("The question, and how you want it answered.", {
             type: "object",
@@ -2481,15 +2722,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/ask/feed.json": {
-        get: freeOp(
-          "The askable index, as a schema.org DataFeed",
-          "Every entry /ask can return, in the same order it ranks them — for a reader that would rather hold the index than interrogate it, and for anyone checking that /ask draws on a published list rather than inventing per request. Free.",
+        get: returns(
+          freeOp(
+            "The askable index, as a schema.org DataFeed",
+            "Every entry /ask can return, in the same order it ranks them — for a reader that would rather hold the index than interrogate it, and for anyone checking that /ask draws on a published list rather than inventing per request. Free.",
+          ),
+          ASK_FEED_SCHEMA,
         ),
       },
       "/sites": {
-        get: freeOp(
-          "Which sites /ask answers for",
-          "NLWeb's site list. One site: this store. Answered rather than omitted so a client cannot mistake a single-site deployment for a broken one.",
+        get: returns(
+          freeOp(
+            "Which sites /ask answers for",
+            "NLWeb's site list. One site: this store. Answered rather than omitted so a client cannot mistake a single-site deployment for a broken one.",
+          ),
+          SITES_SCHEMA,
         ),
       },
       /**
@@ -2499,21 +2746,28 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * know to fetch.
        */
       "/auth.md": {
-        get: freeOp(
-          "How an agent authenticates here",
-          "Markdown, with frontmatter a parser can read. The answer is that there is no account, no API key, no OAuth and no signup: free doors answer anonymous requests, paid doors take a signed x402 payment at the moment of the call. The machine-readable twin is /.well-known/oauth-protected-resource.",
+        get: returnsMarkdown(
+          freeOp(
+            "How an agent authenticates here",
+            "Markdown, with frontmatter a parser can read. The answer is that there is no account, no API key, no OAuth and no signup: free doors answer anonymous requests, paid doors take a signed x402 payment at the moment of the call. The machine-readable twin is /.well-known/oauth-protected-resource.",
+          ),
         ),
       },
       "/.well-known/oauth-protected-resource": {
-        get: freeOp(
+        get: returns(
+          freeOp(
           "Protected-resource metadata (RFC 9728)",
-          "What gates this resource, at the fixed path a client constructs without being told. `authorization_servers` is absent rather than empty: there is no OAuth issuer here, the field is optional, and naming one that does not exist would be a false claim in machine form. Carries an `agent_auth` block and the x402 particulars. Every 402 from this store points here in its WWW-Authenticate header.",
+            "What gates this resource, at the fixed path a client constructs without being told. `authorization_servers` is absent rather than empty: there is no OAuth issuer here, the field is optional, and naming one that does not exist would be a false claim in machine form. Carries an `agent_auth` block and the x402 particulars. Every 402 from this store points here in its WWW-Authenticate header.",
+          ),
+          PROTECTED_RESOURCE_SCHEMA,
         ),
       },
       "/pricing.md": {
-        get: freeOp(
-          "The pricing charter, in markdown",
-          "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+        get: returnsMarkdown(
+          freeOp(
+            "The pricing charter, in markdown",
+            "The same signed charter /pricing serves, rendered from the same clauses, at the address a checklist guesses. The canonical link points back at /pricing: one document, two addresses.",
+          ),
         ),
       },
       "/api/preflight/checks": {
