@@ -35,10 +35,11 @@ import { kvGetJson, kvPut } from "@/lib/kv-retry";
  *
  * THE WINDOW IS THE WHOLE COVERAGE CLAIM. Two indexed eth_getLogs
  * reads (in, out), each bounded to the block range printed on the
- * artifact. Nothing outside it was read; USDC on Base is the only
- * asset and chain seen; both limits ride the scope. A window the RPC
- * refuses becomes a signed "window_unreadable" — a dated fact about
- * the read, never a silent shrink.
+ * artifact. Nothing outside it was read; USDC on the one chain the
+ * statement names is the only asset and chain seen; both limits ride
+ * the scope. A window the RPC refuses becomes a signed
+ * "window_unreadable" — a dated fact about the read, never a silent
+ * shrink.
  */
 
 /** Base's ~2s cadence: blocks per hour of chain. */

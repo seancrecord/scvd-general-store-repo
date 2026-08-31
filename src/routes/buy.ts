@@ -989,7 +989,7 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
   }
   /**
    * A NONCE BESIDE A SOLANA SIGNATURE IS REFUSED AT THE DOOR
-   * (2026-08-19). EIP-3009 nonces are a Base facility; a Solana
+   * (2026-08-19). EIP-3009 nonces are an EVM facility; a Solana
    * observation cannot check one. Signing an artifact that silently
    * skipped a requested check would be the certificates defect in a
    * new coat, so the door says no before any money moves.
@@ -998,7 +998,7 @@ const attestationCheck: MiddlewareHandler<HonoEnv> = async (c, next) => {
     return c.json(
       {
         error:
-          "nonce is an EIP-3009 facility and exists on Base only — a Solana observation cannot check one, and we will not sign an artifact that silently skipped a check you asked for. Drop the nonce, or send the Base transaction hash instead. Nothing charged.",
+          "nonce is an EIP-3009 facility and exists on the EVM rails only — a Solana observation cannot check one, and we will not sign an artifact that silently skipped a check you asked for. Drop the nonce, or send the EVM transaction hash instead. Nothing charged.",
       },
       400,
     );

@@ -304,7 +304,7 @@ export function buyInputSchema(item: MenuItem): QuerySchema {
     properties["nonce"] = {
       type: "string",
       description:
-        "Optional, Base only. Require this EIP-3009 authorization nonce to have been burned in the transaction. Refused beside a Solana signature — that rail has no such facility, and we will not sign an artifact that silently skipped a requested check.",
+        "Optional, EVM rails only. Require this EIP-3009 authorization nonce to have been burned in the transaction, checked against whichever EVM chain holds the receipt. Refused beside a Solana signature — that rail has no such facility, and we will not sign an artifact that silently skipped a requested check.",
     };
     properties["amount_usdc"] = {
       type: "number",
