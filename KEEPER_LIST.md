@@ -376,11 +376,32 @@ list.
 `/admin/market` → Publish 2026-W34 to /registry (31% rot, the
 signed-offers gap, the price map). Re-pressing replaces the row.
 
-**4. ClawHub republish — TEST, five minutes.** From a level main:
-`npm run skill:publish`. The ClawHub copy lags the site; the number
-that is never stale is `SKILL_VERSION` in `src/store/spec.ts` vs
-`registry/clawhub/published.json`. Read 2026-08-30: **3.7.0 vs
-3.6.0** — the drift is real and one minor wide.
+**4. ClawHub republish — TEST, five minutes, and it now matters more
+than it did.** From a level main: `npm run skill:publish`. The
+ClawHub copy lags the site; the number that is never stale is
+`SKILL_VERSION` in `src/store/spec.ts` vs
+`registry/clawhub/published.json`. Read 2026-08-31: **3.8.0 vs
+3.6.0** — two minors wide now, not one.
+
+WHY THE URGENCY CHANGED. The overhaul of 2026-08-31 found the
+published bundle quoting `service_audit` at $0.10 against a $5 shelf
+— wrong since that document's first commit — and `trust_profile` at
+$19 after your 2026-08-29 repricing. A wrong price in the copy people
+INSTALL fails silently and in the worst direction: an agent budgets a
+tenth of what the 402 asks, declines the purchase it meant to make,
+and concludes we are unaffordable. We never hear about it, and we
+cannot edit a copy already installed. The tree is right and guarded
+now (`test/skill-prices.spec.ts`, and the class is written up at
+/corrections); the published copy stays wrong until you press this.
+
+⚑ **The copy is drafted, not canon.** The overhaul rewrote roughly a
+third of the bundle — a "six ways in" opener, a browser-door section,
+the free desks as a table beside the paid twin each one is the
+battery for, four shelf items and five corpus rooms that had never
+been named anywhere in it. Every fact was walked against production
+and every guard is green, but the VOICE is yours under rule 7 and no
+test can hold that. Read it before you publish it; start with the two
+new sections, `## Six ways in` and `## The browser door`.
 (Every figure written into this line has been stale within days —
 3.3.0, then 3.3.1, then 3.4.0, now this one. Per rule 45 the source
 files are the count; the number above is a reading with a date on
