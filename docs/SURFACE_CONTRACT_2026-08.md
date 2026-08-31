@@ -167,7 +167,54 @@ one room. The honest state of the rest:
   different question, to avoid an empty section, is the failure this
   store files against other people.
 
-  **Still owed:** the MCP tool surface. Same method: add the row,
+  **The MCP tool surface ran 2026-08-30, and the sweep is closed.**
+  `POST /mcp` is a third front door beside the HTTP API and the rooms.
+  Measured first: all thirteen served tools carried an `outputSchema`
+  and `annotations`, and not one carried an error catalogue or a
+  security block.
+
+  The wire told the same story twice. `error.data` was null on every
+  refusal, so "nothing was charged" lived only in the English message
+  — the defect the buy doors carried until this sweep's second stop,
+  unfixed here, and sharper because that commit named this store's own
+  MCP till as a client of those doors. And `-32602` was doing four
+  jobs at once: a caller could not tell "you asked the wrong shelf,
+  here is the right one" from "your URL was not a URL" without parsing
+  prose.
+
+  Every refusal now carries `{code, charged: false}` in `error.data`,
+  additive — the JSON-RPC code and the message are byte-for-byte what
+  they were. The string codes are shared with the money path wherever
+  the refusal is the same; only the genuinely MCP-shaped ones are new
+  (`wrong_shelf`, `shelf_closed`, `unknown_tool`, `no_such_resource`),
+  because a third vocabulary for the same refusals is what
+  `store/surface-contract.ts` exists to prevent.
+
+  **Two things this leg got wrong first, both caught before merge.**
+  The composed security sentence concatenated one clause per class,
+  so a mixed shelf read "No request is made to any endpoint of yours"
+  directly followed by "One unauthenticated outbound GET to the
+  endpoint you name" — each true of some item, together a
+  contradiction aimed at the reader clause 57.4 exists for. Each
+  sentence now names the `item_id`s it covers, and the money warning
+  is derived from whether the shelf actually sells a walk rather than
+  asserted on every mixed shelf.
+
+  And the first guard proved itself by removing one of the two sites
+  that emit `bad_request` — and passed, because the other site still
+  emitted it and the wire test happened to exercise that one. A guard
+  that cannot see a refusal go bare is guarding the vocabulary, not
+  the refusals. It walks the source now: every `rpcError` call site is
+  either the refusal helper's or one of four named non-refusals with
+  its reason.
+
+  ---
+
+  **The sweep is closed.** Free doors, paid shelf, reading rooms,
+  money-path refusals, shelf gate, MCP tools. What remains is
+  judgement no test can make: whether a description would make
+  anybody click it (58.1's other half), and whether the finding is
+  really in the first screen (58.2). Same method: add the row,
   watch it fail, close it. What no test can settle is 58.1's other
   half — whether a description would make anybody click it — and
   58.2, whether the finding is really in the first screen.

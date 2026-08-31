@@ -158,12 +158,18 @@ describe.each(MENU_ITEMS.map((item) => item.id))("/menu/%s", (id) => {
         `${error.code} on ${id} says what it is and not what to do`,
       ).toBeGreaterThan(40);
     }
-    // A published error category that cannot happen is as misleading
-    // as a missing one — it tells a client to handle a branch that
-    // never fires.
-    expect(codes.includes("sold_out")).toBe(
-      item.weekly_inventory !== undefined || item.stocked === true,
-    );
+    /*
+     * The set is the DOOR's, not the item's — one vocabulary for the
+     * whole money path, coarse by design. So every listing carries
+     * every code, and what a per-item check can still hold is that
+     * the door's own refusals are all there.
+     */
+    for (const shelfGate of ["retired", "unknown_item", "sold_out"]) {
+      expect(
+        codes,
+        `${id} does not publish ${shelfGate}, which the shelf gate can send before the parameter check ever runs`,
+      ).toContain(shelfGate);
+    }
     // Every refusal says whether it cost anything. On a money path
     // that is the one fact a client must not have to infer.
     for (const error of errors) {

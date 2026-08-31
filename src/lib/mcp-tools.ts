@@ -1,3 +1,11 @@
+import {
+  MCP_REFUSAL_CODES,
+  READS_SENTENCE,
+  securityBlock,
+  type RpcRefusal,
+  type SecurityBlock,
+} from "@/store/surface-contract";
+import type { ItemReads } from "@/types";
 import { buyInputSchema } from "@/lib/bazaar-discovery";
 import {
   frontCounterItems,
@@ -11,7 +19,7 @@ import {
   cadencePhrase,
   priceLine,
 } from "@/services/menu-markdown";
-import { MENU_ITEMS } from "@/store";
+import { MENU_ITEMS, getMenuItem } from "@/store";
 import { GUARANTEE_BLOCK_TEXT, SPEC_RETURNS } from "@/store/spec";
 import { RETRY_SAFETY_MCP_LINE } from "@/store/wallet-safety";
 import type { MenuItem } from "@/types";
@@ -45,6 +53,19 @@ export interface McpTool {
   spec?: ListingSpec;
   /** Listing specs per item for a cluster tool, keyed by item_id. */
   specs?: Record<string, ListingSpec>;
+  /**
+   * WHAT THIS TOOL READS, stated rather than inferred (rule 57.5).
+   * Required on every free tool by the guard, and derived from the
+   * shelf for a paid one. The HTTP side learned this the hard way:
+   * deriving "does it dial out" from the input schema published the
+   * claim backwards on a door that takes a host and deliberately does
+   * not knock.
+   */
+  reads?: ItemReads;
+  /** Rule 57.4, filled by the catalogue: what this tool can refuse. */
+  errors?: readonly RpcRefusal[];
+  /** Rule 57.5, filled by the catalogue: what it does in your name. */
+  security?: SecurityBlock;
   /** Menu item behind a paid tool; absent means free. */
   itemId?: string;
   /** The items a cluster tool can sell, selected by the item_id input. */
@@ -587,6 +608,7 @@ function clusterTool(cluster: ShelfCluster, base: string): McpTool {
 const FREE_TOOLS: McpTool[] = [
   {
     name: "read_store_guide",
+    reads: "made_here",
     description:
       "The store's front door as text: the full menu with prices, how x402 payment works here, the free shelf, and the house promises. Free. Completes when the guide text returns. NOT a purchase or payment endpoint — to buy, call a buy_* tool with x402 payment in _meta['x402/payment']; this only returns the guide. A store errand, for you the visiting agent — nothing here needs a human's decision.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
@@ -605,6 +627,7 @@ const FREE_TOOLS: McpTool[] = [
   },
   {
     name: "ring_bell",
+    reads: "made_here",
     description:
       "Ring the store bell. Free, once per visitor per day; the count is public. Completes when the result carries the bell's message and count. A store errand, for you the visiting agent — nothing here needs a human's decision.",
     inputSchema: {
@@ -631,6 +654,7 @@ const FREE_TOOLS: McpTool[] = [
   },
   {
     name: "sign_guestbook",
+    reads: "made_here",
     description:
       "Sign the guestbook. Free; every signer gets the visitor sticker. Entries are public. Completes when the result carries your entry and the sticker URL. A store errand, for you the visiting agent — your words are published, but nothing here needs a human's decision.",
     inputSchema: {
@@ -684,6 +708,7 @@ const FREE_TOOLS: McpTool[] = [
      * and the MCP door cannot be used to walk around the rate limit.
      */
     name: "preflight_endpoint",
+    reads: "subject_fetch",
     description:
       "Check any x402 endpoint's door before paying it, free: one unpaid probe answering whether the URL serves a well-formed x402 v2 payment challenge right now — 402 status, parseable PAYMENT-REQUIRED, signable accepts, testnet catch. Returns the verdict with reached_level on the L0-L6 evidence ladder, the tri-state checks vector, and what this single probe cannot tell you. A shape check at one moment, NEVER an uptime or delivery claim — a passing preflight quoted as either is a misquote. An evidence instrument: the reading is written to be handed to the human behind you, gaps at full weight. Rate limited; the result carries the stated ceiling. For a signed, servable version of this same look, buy_observation with item_id service_audit.",
     inputSchema: {
@@ -733,6 +758,7 @@ const FREE_TOOLS: McpTool[] = [
      * already is rather than somewhere it would have to know to look.
      */
     name: "check_before_you_pay",
+    reads: "subject_fetch",
     description:
       "Before paying any x402 door, find out what YOUR client will actually do with it, free: one unpaid probe, then the stock @x402/core selection logic replayed over the accepts that came back. Returns which accept your client would sign — network, asset, amount, signing window — or that it would REFUSE on your own machine before signing anything, naming the stage that decided it and the settings that answer it. Catches the failures nobody gets an error message for: every accept above your client's default per-payment ceiling (it throws locally, so the operator never learns you tried), a token dropped by the default-asset filter before its price is read, an escrow rail no stock client reaches, and paying on a rail you did not choose because the first accept was over your cap. Nothing is signed, no wallet is touched, no payment is made. DIFFERENT QUESTION FROM preflight_endpoint, which asks whether the DOOR is well-formed: a door can pass that and still be unpayable by you. Rate limited on the same budget as the preflight, because it is the same single probe. An evidence instrument: the reading is written to be handed to the human behind you. For a signed, servable version, buy_observation with item_id good_buyer.",
     inputSchema: {
@@ -798,6 +824,7 @@ const FREE_TOOLS: McpTool[] = [
      * this tool adds nothing but reach.
      */
     name: "check_conformance",
+    reads: "subject_fetch",
     description:
       "Check any issuer's x402 signed offer or receipt, free — including this store's own and its competitors'. Send the compact JWS (three base64url segments separated by dots); the desk checks structure, signature against the issuer's did:web key, and liveness, and returns a verdict with every check named. Supply public_key_hex for a fully offline check (no network request is made in your name unless you leave the key off). NOT for artifact ids this store issued — that is verify_artifact. An evidence instrument: the verdict is written to be handed to the human behind you. The method is MIT-licensed and identical to the published verifier, so a verdict that matters should be reproduced offline rather than trusted.",
     inputSchema: {
@@ -842,6 +869,7 @@ const FREE_TOOLS: McpTool[] = [
   },
   {
     name: "verify_artifact",
+    reads: "our_books",
     description:
       "Verify anything scvd.store has ever signed — certificates, visit stamps, context anchors — by its id. Free, unlimited. Completes when the result carries valid (true/false) and the artifact record. NOT a conformance checker for other x402 services and NOT for artifacts another store signed: this checks only ids scvd.store itself issued; another issuer's signed offer or receipt goes to check_conformance. An evidence instrument: the answer is written to be handed to the human behind you. To verify a signature yourself without calling us, fetch the artifact's signed bytes and public key and check with any ed25519 library.",
     inputSchema: {
@@ -986,6 +1014,88 @@ function frontCounterTool(base: string): McpTool {
   };
 }
 
+/**
+ * Codes a free instrument can refuse with. It sells nothing, so the
+ * shelf refusals cannot arise on it — publishing them would tell a
+ * client to handle a branch that never fires, which is as misleading
+ * as omitting one it will meet.
+ */
+const FREE_TOOL_CODES = new Set(["bad_request", "unknown_tool"]);
+
+/**
+ * WHAT A TOOL DOES IN YOUR NAME, composed from stated facts.
+ *
+ * A free tool carries its own `reads`. A paid one derives from the
+ * items its shelf sells — and a cluster sells items in DIFFERENT
+ * classes, which the first draft handled by concatenating every
+ * sentence. That produced a paragraph reading "No request is made to
+ * any endpoint of yours" immediately followed by "One unauthenticated
+ * outbound GET to the endpoint you name": each true of some item,
+ * together a contradiction. Clause 57.4 exists for the reader least
+ * able to resolve that, so each sentence names the item_ids it covers
+ * and the paragraph says up front that it varies.
+ */
+function doesInYourName(tool: McpTool): string {
+  const trailer =
+    "This store never asks for a credential, a key, or a wallet secret, and has no field that could hold one: payment is an x402 signature you produce, and we never see anything that could spend on your behalf.";
+  if (tool.reads) {
+    return `${READS_SENTENCE[tool.reads]} ${trailer}`;
+  }
+  const ids = tool.itemIds ?? (tool.itemId ? [tool.itemId] : []);
+  const byClass = new Map<ItemReads, string[]>();
+  for (const id of ids) {
+    const reads = getMenuItem(id)?.reads;
+    if (!reads) continue;
+    byClass.set(reads, [...(byClass.get(reads) ?? []), id]);
+  }
+  const groups = [...byClass.entries()];
+  if (groups.length === 1) {
+    return `${READS_SENTENCE[groups[0]![0]]} ${trailer}`;
+  }
+  const attributed = groups
+    .map(([reads, members]) => `${members.join(", ")} — ${READS_SENTENCE[reads]}`)
+    .join(" ");
+  /*
+   * Derived, not typed. The first draft opened every mixed shelf with
+   * "one of these classes spends real money", which is a sentence
+   * that goes false the moment a shelf mixes classes without selling
+   * a walk — the exact shape of typed claim this repository keeps
+   * catching in itself.
+   */
+  const walks = byClass.get("subject_purchase") ?? [];
+  const warning =
+    walks.length > 0
+      ? ` The difference is not cosmetic: ${walks.join(", ")} spends real money against a door you name.`
+      : "";
+  return `IT DEPENDS ON THE item_id YOU BUY.${warning} ${attributed} ${trailer}`;
+}
+
+/**
+ * RULE 57.4 AND 57.5 ON EVERY TOOL, AT THE ONE CHOKEPOINT.
+ *
+ * Measured 2026-08-30 before building: all 13 served tools carried an
+ * outputSchema and annotations, and not one carried an error
+ * catalogue or a security block. Filled here rather than on each
+ * definition so a tool added tomorrow answers both the day it ships,
+ * and so the vocabulary stays the one in store/surface-contract.ts
+ * rather than becoming a third dialect for the same refusals.
+ */
+function underContract(tool: McpTool, base: string): McpTool {
+  const paid = tool.itemId !== undefined || (tool.itemIds ?? []).length > 0;
+  return {
+    ...tool,
+    errors: MCP_REFUSAL_CODES.filter(
+      (refusal) => paid || FREE_TOOL_CODES.has(refusal.code),
+    ),
+    security: securityBlock(base, {
+      does_in_your_name: doesInYourName(tool),
+      stores: paid
+        ? "The order — what was bought, when, the certificate minted for it, and a sequential patron number — because that record IS the artifact you paid for and the thing your verify URL resolves. No account, no cookie, no password; an agent_name you supply is optional and appears on the certificate you asked for."
+        : "Nothing keyed to you. The call is counted for rate limiting and for the store's own published traffic tallies, and there is no account, no cookie and no caller identifier to key it to.",
+    }),
+  };
+}
+
 export function mcpToolCatalog(base: string): McpTool[] {
   return [
     ...FREE_TOOLS,
@@ -996,7 +1106,7 @@ export function mcpToolCatalog(base: string): McpTool[] {
      */
     frontCounterTool(base),
     ...SHELF_CLUSTERS.map((cluster) => clusterTool(cluster, base)),
-  ];
+  ].map((tool) => underContract(tool, base));
 }
 
 /** Menu items no shelf sells. Must be empty; a test enforces it. */
