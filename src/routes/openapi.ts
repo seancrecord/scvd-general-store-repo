@@ -2361,6 +2361,131 @@ const ZODIAC_ARCHIVE_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE WALLET CHALLENGE. `single_use` and `expires_in_seconds` are
+ * required: they are the two properties that make a captured signature
+ * replay nothing, and a client that could not see them would have no
+ * way to know the challenge is not a bearer token.
+ */
+const CLAIMS_CHALLENGE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["challenge", "expires_in_seconds", "single_use"],
+  properties: {
+    challenge: {
+      type: "string",
+      description: "The exact UTF-8 string to sign, with the same key that signs your payments.",
+    },
+    expires_in_seconds: { type: "integer" },
+    single_use: {
+      type: "boolean",
+      description: "Spent on first use, so a captured signature replays nothing.",
+    },
+    format: { type: "string" },
+    sign_how: { type: "string" },
+  },
+};
+
+/** What a wallet's proof returns: every record this store holds for it. */
+const CLAIMS_RESULT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["wallet", "certificates"],
+  properties: {
+    wallet: { type: "string" },
+    address: { type: "string" },
+    rails: { type: "array", items: { type: "string" } },
+    certificates: {
+      type: "array",
+      description: "Signed certificates from instant purchases, each with its permanent URL.",
+      items: { type: "object" },
+    },
+    record: { type: "object" },
+    verify_url: { type: "string", format: "uri" },
+    what: { type: "string" },
+    how: { type: "array", items: { type: "string" } },
+    sensitive: {
+      type: "string",
+      description: "What this response contains that a holder would not want logged.",
+    },
+  },
+};
+
+/**
+ * The Web Bot Auth battery. `what_this_is_not` is required for the
+ * same reason it is on every other verdict here: a passing check on a
+ * key directory says the directory is well-formed, not that whoever
+ * publishes it is trustworthy.
+ */
+const BOT_AUTH_CHECK_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["subject", "verdict", "checks", "criteria", "what_this_is_not"],
+  properties: {
+    subject: { type: "string" },
+    verdict: { type: "string" },
+    criteria: { type: "string", description: "The criteria version this verdict was rendered under." },
+    checks: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["name", "ok"],
+        properties: {
+          name: { type: "string" },
+          ok: { type: "boolean" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    directory_url: { type: "string", format: "uri" },
+    expected_content_type: { type: "string" },
+    signed_version: {
+      type: "string",
+      description: "Where to buy the signed, certificate-bound version of this same battery.",
+    },
+    what_this_is_not: {
+      type: "string",
+      description:
+        "A well-formed key directory is not a trustworthy operator. This checks the shape, never the party.",
+    },
+  },
+};
+
+/**
+ * A Tab delta submission. `accepted` is required and is a boolean
+ * rather than an implied 2xx: a delta can be received and refused, and
+ * `problems` says why. A client reading only the status would think
+ * everything landed.
+ */
+const TAB_DELTA_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["accepted"],
+  properties: {
+    accepted: { type: "boolean" },
+    problems: {
+      type: "array",
+      items: { type: "string" },
+      description: "Why a delta was refused, named rather than swallowed.",
+    },
+    what_a_delta_carries: { type: "string" },
+  },
+};
+
+/** A commissioned host profile, or the honest absence of one. */
+const HOST_PROFILE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["profile"],
+  properties: {
+    profile: {
+      type: "object",
+      nullable: true,
+      description: "Null when no profile has been commissioned for this host — an absence, never an adverse finding.",
+    },
+    in_term: { type: "boolean" },
+    freshness: { type: "object" },
+    latest_verdict: { type: "string" },
+    last_observed: { type: "string", format: "date-time" },
+    detail: { type: "string" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3946,12 +4071,15 @@ openapiRoutes.get("/openapi.json", async (c) => {
        * one door whose entire value is other agents finding it.
        */
       "/api/tab/delta": {
-        post: postOp(
-          "Contribute an anonymized tab delta to the pooled corpus",
-          "The scvd-tab package's pool intake (npm: scvd-tab, MIT). Contribution is what earns pooled reads when they open; sample sizes are public at /api/tab/pool.",
-          "One delta. Two shapes, selected by `kind`; an undeclared field is refused by name.",
-          tabDeltaSchema(),
-        ),
+        post: returns(
+  postOp(
+            "Contribute an anonymized tab delta to the pooled corpus",
+            "The scvd-tab package's pool intake (npm: scvd-tab, MIT). Contribution is what earns pooled reads when they open; sample sizes are public at /api/tab/pool.",
+            "One delta. Two shapes, selected by `kind`; an undeclared field is refused by name.",
+            tabDeltaSchema(),
+          ),
+            TAB_DELTA_SCHEMA,
+          ),
       },
       "/api/tab/pool": {
         get: returns(
@@ -3963,23 +4091,26 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/api/claims/challenge": {
-        post: postOp(
-          "Start a purchase-recovery claim",
-          "Send { address } — the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
-          "The wallet that paid. Nothing else, and nothing about you.",
-          {
-            type: "object",
-            required: ["address"],
-            additionalProperties: false,
-            properties: {
-              address: {
-                type: "string",
-                description:
-                  "0x + 40 hex for the EVM rails (Base and Polygon share addresses), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+        post: returns(
+  postOp(
+            "Start a purchase-recovery claim",
+            "Send { address } — the wallet that paid — and get back a single-use challenge string to sign with that same key. Five-minute expiry. Built for the agent whose context reset between paying and reading the response.",
+            "The wallet that paid. Nothing else, and nothing about you.",
+            {
+              type: "object",
+              required: ["address"],
+              additionalProperties: false,
+              properties: {
+                address: {
+                  type: "string",
+                  description:
+                    "0x + 40 hex for the EVM rails (Base and Polygon share addresses), or a base58 Solana address sent exactly — base58 is case-sensitive and never folded.",
+                },
               },
             },
-          },
-        ),
+          ),
+            CLAIMS_CHALLENGE_SCHEMA,
+          ),
       },
       "/api/claims": {
         get: returns(
@@ -3989,27 +4120,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
           ),
           CLAIMS_DOC_SCHEMA,
         ),
-        post: postOp(
-          "Recover everything a wallet paid for",
-          "A valid signature returns the wallet's open orders (order URLs included) AND the signed certificates from instant purchases, newest first, each with its permanent verify URL. A bare address gets nothing — possession of the key is the whole test. Free.",
-          "The address and its signature over the challenge string from POST /api/claims/challenge.",
-          {
-            type: "object",
-            required: ["address", "signature"],
-            additionalProperties: false,
-            properties: {
-              address: {
-                type: "string",
-                description: "The same address the challenge was issued for.",
-              },
-              signature: {
-                type: "string",
-                description:
-                  "The challenge string signed by that address's key. Possession of the key is the whole test; a bare address returns nothing.",
+        post: returns(
+  postOp(
+            "Recover everything a wallet paid for",
+            "A valid signature returns the wallet's open orders (order URLs included) AND the signed certificates from instant purchases, newest first, each with its permanent verify URL. A bare address gets nothing — possession of the key is the whole test. Free.",
+            "The address and its signature over the challenge string from POST /api/claims/challenge.",
+            {
+              type: "object",
+              required: ["address", "signature"],
+              additionalProperties: false,
+              properties: {
+                address: {
+                  type: "string",
+                  description: "The same address the challenge was issued for.",
+                },
+                signature: {
+                  type: "string",
+                  description:
+                    "The challenge string signed by that address's key. Possession of the key is the whole test; a bare address returns nothing.",
+                },
               },
             },
-          },
-        ),
+          ),
+            CLAIMS_RESULT_SCHEMA,
+          ),
       },
       "/registry": {
         get: returns(
@@ -4090,9 +4224,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
       },
       "/profiles/{host}": {
         get: {
-          ...freeOp(
-              "One host's hosted profile",
-              "The commissioned standing page for one endpoint: the signed commission record plus live-derived freshness and latest verdict. Serves honestly in both directions — a broken host shows broken, an expired term says so. 404 when nobody has commissioned one. Free to read.",
+          ...returns(
+  freeOp(
+                "One host's hosted profile",
+                "The commissioned standing page for one endpoint: the signed commission record plus live-derived freshness and latest verdict. Serves honestly in both directions — a broken host shows broken, an expired term says so. 404 when nobody has commissioned one. Free to read.",
+            ),
+            HOST_PROFILE_SCHEMA,
           ),
           parameters: [pathParam("host", "A hostname, no scheme and no path — e.g. example.com.")],
         },
@@ -4552,24 +4689,27 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/api/bot-auth/check": {
-        post: postOp(
-          "Check a Web Bot Auth key directory",
-          "One fetch, every check named: status, media type, JWK Set shape, Ed25519 keys, and the proof-of-possession signature verified against the listed keys. Free. The signed version is /api/buy/signature_agent_card; the readable landing is /bot-auth.",
-          "Your origin, or the directory's full URL.",
-          {
-            type: "object",
-            required: ["url"],
-            additionalProperties: false,
-            properties: {
-              url: {
-                type: "string",
-                format: "uri",
-                description:
-                  "A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given.",
+        post: returns(
+  postOp(
+            "Check a Web Bot Auth key directory",
+            "One fetch, every check named: status, media type, JWK Set shape, Ed25519 keys, and the proof-of-possession signature verified against the listed keys. Free. The signed version is /api/buy/signature_agent_card; the readable landing is /bot-auth.",
+            "Your origin, or the directory's full URL.",
+            {
+              type: "object",
+              required: ["url"],
+              additionalProperties: false,
+              properties: {
+                url: {
+                  type: "string",
+                  format: "uri",
+                  description:
+                    "A bare origin is checked at /.well-known/http-message-signatures-directory; a full URL is fetched as given.",
+                },
               },
             },
-          },
-        ),
+          ),
+            BOT_AUTH_CHECK_SCHEMA,
+          ),
       },
       "/api/bot-auth-card/{card_id}": {
         get: {
