@@ -48,10 +48,6 @@ const BASE = "https://scvd.store";
  * that types it — rule 2 makes that mandatory rather than polite.
  */
 const UNTYPED_YET = new Set<string>([
-  "get /porch",
-  "get /attestation",
-  "get /rights",
-  "get /wind-down",
   "get /api/bitcoin-anchor/{anchor_id}",
   "get /api/lucky/{lucky_id}",
   "post /api/tab/delta",
@@ -62,9 +58,7 @@ const UNTYPED_YET = new Set<string>([
   "get /api/practice/{scenario}",
   "get /api/verify-receipt",
   "post /api/verify-receipt",
-  "get /profiles",
   "get /profiles/{host}",
-  "get /corrections",
   "get /api/conformance/v1/fixtures",
   "post /api/onpage/v1",
   "get /api/onpage-audit/{audit_id}",
@@ -103,7 +97,7 @@ const UNTYPED_YET = new Set<string>([
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 52;
+const UNTYPED_CEILING = 46;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 

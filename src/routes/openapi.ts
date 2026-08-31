@@ -1383,6 +1383,193 @@ const REQUEST_RECEIPT_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE ROOMS, IN JSON. Each of these pages serves prose to a browser
+ * and a structured twin to anything that asks in JSON, and the twin is
+ * what an agent deciding whether to trust this store actually reads.
+ *
+ * `honest_limit` appears on three of them and is not boilerplate: it
+ * is the sentence naming what the page does NOT establish. A schema
+ * that dropped it would describe a more confident document than the
+ * store publishes.
+ */
+const RIGHTS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["standfirst", "clauses", "honest_limit"],
+  properties: {
+    standfirst: { type: "string" },
+    summary: { type: "string" },
+    clauses: {
+      type: "array",
+      description: "What you are owed, as question and answer, with what it means in practice.",
+      items: {
+        type: "object",
+        required: ["question", "answer"],
+        properties: {
+          question: { type: "string" },
+          answer: { type: "string" },
+          in_practice: {
+            type: "string",
+            description: "The clause turned into what actually happens, so it can be checked rather than believed.",
+          },
+        },
+      },
+    },
+    refund_policy: { type: "string" },
+    decided_on: { type: "string", description: "The date this position was settled." },
+    honest_limit: {
+      type: "string",
+      description: "What this page does NOT establish, stated on the page rather than left to be discovered.",
+    },
+  },
+};
+
+const WIND_DOWN_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["promise", "classes", "honest_limit"],
+  properties: {
+    promise: {
+      type: "string",
+      description: "What happens to what you bought if this store closes.",
+    },
+    standfirst: { type: "string" },
+    classes: {
+      type: "array",
+      description: "One row per class of thing the store holds, and what happens to it.",
+      items: {
+        type: "object",
+        required: ["holds", "line"],
+        properties: {
+          holds: { type: "string" },
+          line: { type: "string" },
+          because: { type: "string" },
+        },
+      },
+    },
+    note: { type: "string" },
+    decided_on: { type: "string" },
+    honest_limit: { type: "string" },
+  },
+};
+
+const ATTESTATION_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["standfirst", "artifact_classes", "honest_limit"],
+  properties: {
+    standfirst: { type: "string" },
+    key_architecture: { type: "object" },
+    why_signed_payload: { type: "string" },
+    key_continuity: { type: "object" },
+    trust_models: {
+      type: "object",
+      description: "The named models an artifact class can be rendered under.",
+    },
+    artifact_classes: {
+      type: "array",
+      description:
+        "Per class: what a signature from this store signs, and — the load-bearing half — what it does NOT prove.",
+      items: {
+        type: "object",
+        required: ["id", "name", "signs", "does_not_prove"],
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          trust_model: { type: "string" },
+          trust_model_name: { type: "string" },
+          signs: { type: "string" },
+          does_not_prove: {
+            type: "string",
+            description:
+              "Published beside what it does prove, because a signature whose limits are unstated is read as proving more than it does.",
+          },
+          verify_url: { type: "string", format: "uri" },
+        },
+      },
+    },
+    money_path: { type: "object" },
+    maker_marks: { type: "object" },
+    maker_mark_policy: { type: "object" },
+    marked_items: { type: "object" },
+    not_built: {
+      type: "string",
+      description: "What this store has not built, named rather than implied by absence.",
+    },
+    held_against_us: { type: "string" },
+    criteria_page: { type: "string", format: "uri" },
+    honest_limit: { type: "string" },
+  },
+};
+
+const CORRECTIONS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["title", "corrections", "count"],
+  properties: {
+    title: { type: "string" },
+    summary: { type: "string" },
+    how_things_get_caught: { type: "string" },
+    what_we_cannot_do_ourselves: {
+      type: "string",
+      description:
+        "The store's own blind spots — a record of corrections that only listed what we found ourselves would be the less plausible document.",
+    },
+    scope: { type: "string" },
+    what_this_record_cannot_show_you: { type: "string" },
+    corrections: {
+      type: "array",
+      description: "Every claim this store made that turned out not to be true, dated.",
+      items: {
+        type: "object",
+        required: ["date", "what_was_wrong", "what_changed"],
+        properties: {
+          date: { type: "string" },
+          what_was_wrong: { type: "string" },
+          how_long: {
+            type: "string",
+            description: "How long the wrong thing stood, which is the figure a reader most wants and the one most tempting to omit.",
+          },
+          found_by: { type: "string" },
+          what_changed: {
+            type: "string",
+            description: "The structural change that stops it recurring quietly — not an apology.",
+          },
+        },
+      },
+    },
+    count: { type: "integer" },
+    corrections_url: { type: "string", format: "uri" },
+    mailbox: { type: "string", format: "uri" },
+    invitation: { type: "string" },
+  },
+};
+
+const PORCH_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["porch"],
+  properties: {
+    porch: { type: "object", description: "Who has been by, and when." },
+    tonight: { type: "object" },
+    cat: { type: "object" },
+    seat_tonight: { type: "object" },
+    treat_rail: { type: "object" },
+    note: { type: "string" },
+    back_inside: { type: "string", format: "uri" },
+  },
+};
+
+const PROFILES_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "profiles"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "string" },
+    profiles: {
+      type: "array",
+      description: "One entry per host this store holds observations about.",
+      items: { type: "object" },
+    },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -2796,27 +2983,39 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/porch": {
-        get: freeOp(
-          "The porch",
-          "Out front. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+        get: returns(
+  freeOp(
+            "The porch",
+            "Out front. One line of tonight per hour, the seat count, and nothing for sale. Free.",
+          ),
+          PORCH_SCHEMA,
         ),
       },
       "/attestation": {
-        get: freeOp(
-          "What this store signs",
-          "The trust model per artifact class: what bytes each signature covers, who holds the key, and the one thing a valid signature does not prove. Names the classes that sit on the weakest available trust model, and lists what this store has not built. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "What this store signs",
+            "The trust model per artifact class: what bytes each signature covers, who holds the key, and the one thing a valid signature does not prove. Names the classes that sit on the weakest available trust model, and lists what this store has not built. HTML for browsers, JSON otherwise. Free.",
+          ),
+          ATTESTATION_SCHEMA,
         ),
       },
       "/rights": {
-        get: freeOp(
-          "What you own once you buy it",
-          "Who owns an artifact bought here, whether it transfers, and what may be done with it. You own it completely from settlement; the store has custody only. It is immutable after signing and the signature makes that checkable. It transfers, because these are bearer artifacts and no register of owners is kept. Redistribution is permitted including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee. Carries the rulings as booleans beside the prose. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "What you own once you buy it",
+            "Who owns an artifact bought here, whether it transfers, and what may be done with it. You own it completely from settlement; the store has custody only. It is immutable after signing and the signature makes that checkable. It transfers, because these are bearer artifacts and no register of owners is kept. Redistribution is permitted including the keeper's own words, with no attribution requirement, no commercial clause and no additional licence or fee. Carries the rulings as booleans beside the prose. HTML for browsers, JSON otherwise. Free.",
+          ),
+          RIGHTS_SCHEMA,
         ),
       },
       "/wind-down": {
-        get: freeOp(
-          "If the lights go off",
-          "What happens to anything this store holds for you if it closes for good, decided in advance and dated: signed artifacts, private confessions, held grudges and the public wall each get a different ending. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "If the lights go off",
+            "What happens to anything this store holds for you if it closes for good, decided in advance and dated: signed artifacts, private confessions, held grudges and the public wall each get a different ending. HTML for browsers, JSON otherwise. Free.",
+          ),
+          WIND_DOWN_SCHEMA,
         ),
       },
       "/pulse.json": {
@@ -3074,9 +3273,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/profiles": {
-        get: freeOp(
-          "Hosted trust profiles",
-          "What a hosted profile is, plus every in-term profile whose latest evidence is on the ready side. A profile is a standing page an operator commissions about their own endpoint (the trust_profile item, 30 days per purchase, renewable) aggregating the live passport, chip and signed history. Reading is free forever.",
+        get: returns(
+  freeOp(
+            "Hosted trust profiles",
+            "What a hosted profile is, plus every in-term profile whose latest evidence is on the ready side. A profile is a standing page an operator commissions about their own endpoint (the trust_profile item, 30 days per purchase, renewable) aggregating the live passport, chip and signed history. Reading is free forever.",
+          ),
+          PROFILES_INDEX_SCHEMA,
         ),
       },
       "/profiles/{host}": {
@@ -3107,9 +3309,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/corrections": {
-        get: freeOp(
-          "Corrections",
-          "Every claim this store has made that turned out not to be true, dated, with what found it and what check now catches that class. HTML for browsers, JSON otherwise. Free.",
+        get: returns(
+  freeOp(
+            "Corrections",
+            "Every claim this store has made that turned out not to be true, dated, with what found it and what check now catches that class. HTML for browsers, JSON otherwise. Free.",
+          ),
+          CORRECTIONS_SCHEMA,
         ),
       },
       /**
