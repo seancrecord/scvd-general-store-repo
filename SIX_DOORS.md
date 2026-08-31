@@ -260,6 +260,41 @@ multiply, and nothing is checking any of them.**
 
 ---
 
+## The browser question, and why it is a watch entry rather than an answer
+
+Asked 2026-08-31: what about ChatGPT Atlas, Perplexity Comet, Grok,
+Opera, Arc, Dia? The honest state, dated, with its sources named:
+
+**ATLAS IS DISCONTINUED — the question dissolved rather than being
+answered.** OpenAI announced it 2026-07-09; the standalone browser
+stopped working 2026-08-09 and folded into the ChatGPT desktop app,
+which IS on the spec's supported list and needs no origin trial. A dead
+product and an unsupported one look identical from outside and call for
+opposite responses, which is why "is it discontinued" is now its own
+watch entry.
+
+**THE OTHER FIVE ARE ABSENT FROM THE PRIMARY SOURCE.** The spec repo's
+`implementation-status.md`, re-read 2026-08-31, lists exactly six:
+Brave Leo, ChatGPT Desktop, Chrome, Edge, Firefox, Safari. Comet,
+Opera Neon, Arc, Dia and Grok appear in none of them. That is absence
+of documentation, not evidence of absence.
+
+**WHETHER A CHROMIUM FORK INHERITS CHROME'S TOKEN IS UNVERIFIED**, and
+labelled as such (rule 55) rather than assumed. Four of the five are
+Chromium-based, which makes inheritance tempting to assume; tokens are
+validated against a vendor key baked into the build, and no primary
+source consulted confirmed or denied it. Assuming it would have us
+believing a door is open in four browsers on no evidence at all.
+
+**ONE SOURCE COULD NOT BE REACHED:** a third-party ecosystem tracker at
+webmcp.com covering these products was denied by the sandbox's egress
+policy. Stated as a limit rather than worked around.
+
+All of this rots. An answer given today is stale in a month, so it is
+recorded where it will be re-read on a schedule — the WebMCP door's
+`watch` list — rather than as prose somebody wrote once and nobody
+revisits. That is the whole distinction between the two loops.
+
 ## Standing rules for this file
 
 - The reading is re-taken, never edited. Numbers in the prose above

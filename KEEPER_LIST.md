@@ -519,11 +519,35 @@ publishing its own misses, counted against itself — against rule 44's
 sweep and the risk that a public self-reading reads as the score rule
 43 forbids. NOT BUILT without your word.
 
-**LOOK, ten minutes, still open.** Cloudflare injects `beacon.min.js`
-from `static.cloudflareinsights.com` into the storefront under a
-`script-src 'self'` CSP we set ourselves. Either the fence is not
-doing what its comment says, or the beacon is blocked in visitors'
-browsers and the analytics behind it are thinner than they look.
+**~~LOOK~~ CHECKED 2026-08-31, AND IT IS THE SECOND THING: RULE.**
+Cloudflare Web Analytics is BLOCKED on exactly the rooms that carry
+our own script, which today is 29 of 71 including the front door and
+the conformance desk — the two busiest pages on the store.
+
+Verified rather than reasoned: production's exact beacon tag and our
+exact `script-src 'self'` header, loaded in a real Chromium. With the
+header the browser does not merely fail the request, **it never makes
+it**; without the header it does. So the rooms with the CSP (`/`,
+`/conformance`, every till page) report nothing, and the 42 rooms
+without it report normally. The numbers in the Cloudflare dashboard
+are real but partial, and partial in the least convenient direction.
+
+This is decoration failing CLOSED and silently, which is the inverse
+of AT_SCALE rule 7. Three ways out, and the choice is yours because
+two of them are not ours to make from code:
+
+  (a) ADD `static.cloudflareinsights.com` TO `script-src`. Ours to do,
+      one constant. It widens the first-party fence to one named third
+      party — and a fence with an exception is a fence that grows
+      exceptions, which is why this is not the recommendation.
+  (b) TURN CLOUDFLARE ANALYTICS OFF (your dashboard, not our code —
+      the beacon is injected at the edge, so nothing in this repo can
+      remove it). The store already runs its own counters at /visitors
+      and /stats, which are the load-bearing ones. RECOMMENDED: the
+      thing being blocked is redundant with what we already publish.
+  (c) ACCEPT IT and write down that the dashboard undercounts by the
+      busiest 29 rooms, so nobody reasons off it later believing it
+      is complete.
 
 **HYGIENE, no rush.** Two `v=MCPv1` TXT records sit on the apex; both
 work, and the registry tries both. Delete the stale one only after a
