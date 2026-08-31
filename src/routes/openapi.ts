@@ -645,6 +645,135 @@ const CONFORMANCE_DOC_SCHEMA: OpenApiObject = {
  * should be able to check without trusting the publisher.
  */
 /**
+ * THE PREFLIGHT VERDICT — the flagship free instrument's answer, and
+ * the one response in this contract most likely to be parsed by
+ * something that will act on it.
+ *
+ * DERIVED FROM `PreflightReport` in services/preflight.ts, field for
+ * field, including the two that are conditionally present. That type
+ * is the authority; this is its contract-side twin, and the enums
+ * below are the type's unions rather than a list somebody typed.
+ *
+ * The honesty fields are here for the same reason they are in the
+ * response: `single_probe_note`, `what_this_cannot_tell_you` and
+ * `our_conflict_of_interest` are what stop a caller quoting a passing
+ * verdict as an uptime claim, and a generated client that dropped them
+ * would be a client that had lost the only part a buyer needs.
+ */
+const PREFLIGHT_VERDICT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: [
+    "version",
+    "verdict",
+    "reached_level",
+    "checks_vector",
+    "checks",
+    "advisories",
+    "single_probe_note",
+    "what_this_cannot_tell_you",
+    "our_conflict_of_interest",
+  ],
+  properties: {
+    version: {
+      type: "string",
+      description: "The battery that scored this probe.",
+    },
+    verdict: {
+      type: "string",
+      enum: ["ready", "not_ready", "unreachable"],
+      description:
+        "ready = every structural check passed. not_ready = reachable but failed at least one. unreachable = the probe itself could not complete, which says nothing about their code — the detail says whose side the failure was on.",
+    },
+    reached_level: {
+      type: "string",
+      enum: ["none", "L1", "L2", "L3a"],
+      description: "The rung this probe reached before it stopped.",
+    },
+    reached_level_meaning: { type: "string" },
+    network_failure: {
+      type: "string",
+      enum: ["unlocalized"],
+      description: 'Present only when reached_level is "none".',
+    },
+    checks_vector: {
+      type: "array",
+      description:
+        "The tri-state view: a check that never ran is not a check that passed, and blocked_by names what stopped it.",
+      items: {
+        type: "object",
+        required: ["name", "state", "detail"],
+        properties: {
+          name: { type: "string" },
+          state: { type: "string", enum: ["pass", "fail", "not_reached"] },
+          blocked_by: {
+            type: "string",
+            description: "Set only on not_reached.",
+          },
+          detail: { type: "string" },
+        },
+      },
+    },
+    checks: {
+      type: "array",
+      description: "The legacy two-state list, unchanged, for consumers that read the old shape.",
+      items: {
+        type: "object",
+        required: ["name", "ok", "detail"],
+        properties: {
+          name: { type: "string" },
+          ok: { type: "boolean" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    advisories: {
+      type: "array",
+      description: "True and worth knowing, never folded into the verdict.",
+      items: {
+        type: "object",
+        required: ["name", "detail"],
+        properties: {
+          name: { type: "string" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    also_under: {
+      type: "object",
+      description:
+        "The SAME probe scored under the other battery, so a reader comparing verdicts never has to guess whether the doors differed or the rules did.",
+      properties: {
+        version: { type: "string" },
+        verdict: { type: "string", enum: ["ready", "not_ready", "unreachable"] },
+        difference: { type: "string" },
+      },
+    },
+    single_probe_note: {
+      type: "string",
+      description:
+        "One request, one moment. A passing preflight quoted as an uptime claim is a misquote, and this field is where the response says so.",
+    },
+    what_this_cannot_tell_you: { type: "array", items: { type: "string" } },
+    our_conflict_of_interest: {
+      type: "string",
+      description: "Published in the verdict itself rather than in a policy nobody fetches.",
+    },
+    rate_limit: { type: "object" },
+    store_identity: { type: "object" },
+    next_steps: {
+      type: "object",
+      description: "Where to go for what one probe deliberately cannot answer.",
+      properties: {
+        conformance_desk: { type: "string" },
+        signed_report: { type: "string" },
+        across_a_week: { type: "string" },
+        behavioral_check: { type: "string" },
+      },
+    },
+  },
+};
+
+/**
  * THE NLWEB ANSWER. Field names are the protocol's; the honesty block
  * beside them is ours, and it is in the schema for the same reason it
  * is in the response — a client that generates from this contract
@@ -836,7 +965,7 @@ const PREFLIGHT_BATCH_SCHEMA: OpenApiObject = {
             description: "The status this entry's own probe returned.",
           },
           result: {
-            type: "object",
+            ...PREFLIGHT_VERDICT_SCHEMA,
             description: "The same verdict body a single-URL probe returns.",
           },
         },
@@ -2952,7 +3081,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               ),
               PREFLIGHT_DOC_SCHEMA,
             ),
-            post: withRateLimitHeaders(postOp(
+            post: withRateLimitHeaders(returns(postOp(
               `Check an x402 endpoint's payment challenge shape (${battery})`,
               `One probe, one moment: 402 status, parseable PAYMENT-REQUIRED header, signable accepts, testnet networks flagged. A shape check, never an uptime claim. Free, and metered — the RFC RateLimit fields ride every answer. ${
                 battery === PREFLIGHT_VERSION_NEXT
@@ -2961,7 +3090,7 @@ openapiRoutes.get("/openapi.json", async (c) => {
               }`,
               "The x402 door to walk.",
               URL_BODY,
-            )),
+            ), PREFLIGHT_VERDICT_SCHEMA)),
           },
         ]),
       ),

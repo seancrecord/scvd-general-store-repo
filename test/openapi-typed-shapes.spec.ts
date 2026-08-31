@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
+import type { PreflightReport } from "@/services/preflight";
 
 const BASE = "https://scvd.store";
 
@@ -68,8 +69,6 @@ const UNTYPED_YET = new Set<string>([
   "get /profiles/{host}",
   "get /corrections",
   "get /api/conformance/v1/fixtures",
-  "post /api/preflight/v1",
-  "post /api/preflight/v2",
   "post /api/onpage/v1",
   "get /api/onpage-audit/{audit_id}",
   "get /pricing",
@@ -112,7 +111,7 @@ const UNTYPED_YET = new Set<string>([
 ]);
 
 /** The high-water mark. It only ever goes down. */
-const UNTYPED_CEILING = 62;
+const UNTYPED_CEILING = 60;
 
 const METHODS = ["get", "post", "put", "patch", "delete"] as const;
 
@@ -215,5 +214,89 @@ describe("every operation says what comes back", () => {
       UNTYPED_YET.size,
       "the untyped list grew; it is a high-water mark, not a budget",
     ).toBeLessThanOrEqual(UNTYPED_CEILING);
+  });
+});
+
+
+/**
+ * THE FLAGSHIP VERDICT, BOUND TO ITS TYPE IN BOTH DIRECTIONS.
+ *
+ * PREFLIGHT_VERDICT_SCHEMA is the contract-side twin of
+ * `PreflightReport`, and a twin that can drift is worse than no twin:
+ * a generated client would trust a shape the instrument stopped
+ * returning. So the binding is mechanical rather than remembered.
+ *
+ * The map below is typed `Record<keyof PreflightReport, true>`, which
+ * means TypeScript refuses to compile this file if the interface gains
+ * a field and nobody adds it here. The assertion then refuses to pass
+ * if the schema does not name it. Add a field to the report and you
+ * are walked from a compile error to a test failure to the contract —
+ * which is the only route that ends with the spec telling the truth.
+ */
+const REPORT_FIELDS: Record<keyof PreflightReport, true> = {
+  version: true,
+  verdict: true,
+  reached_level: true,
+  reached_level_meaning: true,
+  network_failure: true,
+  checks_vector: true,
+  checks: true,
+  advisories: true,
+  single_probe_note: true,
+  what_this_cannot_tell_you: true,
+  our_conflict_of_interest: true,
+  rate_limit: true,
+  store_identity: true,
+  also_under: true,
+  next_steps: true,
+};
+
+describe("the preflight verdict schema cannot drift from its type", () => {
+  it("names every field the report can carry", async () => {
+    const document = await spec();
+    const schema = (
+      (
+        (
+          (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
+            "/api/preflight/v1"
+          ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
+        )["200"]!["content"] as Record<string, { schema: Record<string, unknown> }>
+      )["application/json"]!.schema
+    );
+    const described = Object.keys(
+      schema["properties"] as Record<string, unknown>,
+    );
+
+    const missing = Object.keys(REPORT_FIELDS)
+      .filter((field) => !described.includes(field))
+      .sort();
+    expect(
+      missing.join(", "),
+      "PreflightReport carries these fields and the contract does not describe them",
+    ).toBe("");
+  });
+
+  it("marks nothing required that the report leaves optional", async () => {
+    /*
+     * The other direction. `network_failure` and `also_under` are
+     * conditional — present only when the probe stopped at level none,
+     * or while more than one battery is served. A contract that called
+     * either one required would generate clients that reject a
+     * perfectly good verdict.
+     */
+    const document = await spec();
+    const schema = (
+      (
+        (
+          (document["paths"] as Record<string, Record<string, Record<string, unknown>>>)[
+            "/api/preflight/v1"
+          ]!["post"]!["responses"] as Record<string, Record<string, unknown>>
+        )["200"]!["content"] as Record<string, { schema: Record<string, unknown> }>
+      )["application/json"]!.schema
+    );
+    const required = (schema["required"] ?? []) as string[];
+    for (const conditional of ["network_failure", "also_under"]) {
+      expect(required, `${conditional} is conditional`).not.toContain(conditional);
+    }
   });
 });
