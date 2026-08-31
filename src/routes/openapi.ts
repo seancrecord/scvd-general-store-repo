@@ -853,6 +853,168 @@ const PREFLIGHT_BATCH_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE WELL-KNOWN DISCOVERY DOCUMENTS, DESCRIBED FROM WHAT THEY SERVE.
+ *
+ * Each of these shapes was read off the live response rather than
+ * inferred from the handler, because a schema derived from a hopeful
+ * reading of code is exactly the confidently-wrong kind this store
+ * refuses to publish. None sets `additionalProperties: false`: they
+ * name the load-bearing fields accurately and do not claim to be an
+ * exhaustive census of documents that gain a pointer whenever the
+ * store gains a surface. `required` is reserved for fields the handler
+ * cannot omit.
+ */
+const X402_DISCOVERY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "description", "resources"],
+  properties: {
+    version: { type: "integer" },
+    name: { type: "string" },
+    description: { type: "string" },
+    tags: { type: "array", items: { type: "string" } },
+    network: {
+      type: "string",
+      description:
+        "The single-rail field, kept for readers that learned it before the second rail existed.",
+    },
+    networks: {
+      type: "array",
+      items: { type: "string" },
+      description: "Every rail a 402 from this store offers. The truth since the second rail shipped.",
+    },
+    resources: {
+      type: "array",
+      description: "Every paid door, with its price and terms.",
+      items: { type: "object" },
+    },
+    when_to_use: { type: "object" },
+    openapi: { type: "string", format: "uri" },
+    catalog: { type: "string", format: "uri" },
+    stats: { type: "string", format: "uri" },
+    practice_counter: { type: "string", format: "uri" },
+    listing_spec_schema: { type: "string", format: "uri" },
+    signing_key: { type: "string", format: "uri" },
+    attestation: { type: "string", format: "uri" },
+    rights: { type: "string", format: "uri" },
+    trust: { type: "string", format: "uri" },
+    did: { type: "string", format: "uri" },
+    liveness: { type: "string", format: "uri" },
+    anchor_log: { type: "string", format: "uri" },
+    a2a: { type: "string", format: "uri" },
+    conformance: { type: "string", format: "uri" },
+    conformance_landing: { type: "string", format: "uri" },
+    corpus: { type: "string", format: "uri" },
+  },
+};
+
+/** When to reach for this store, shaped for a scheduler rather than a reader. */
+const AGENT_INSTRUCTIONS_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["name", "what_this_is", "when_to_use", "how_to_call"],
+  properties: {
+    name: { type: "string" },
+    what_this_is: { type: "string" },
+    when_to_use: {
+      type: "array",
+      description: "One entry per situation, with the items that answer it and a worked request.",
+      items: {
+        type: "object",
+        properties: {
+          situation: { type: "string" },
+          items: { type: "array", items: { type: "string" } },
+          example_request: { type: "string" },
+        },
+      },
+    },
+    when_not_to_use: {
+      type: "string",
+      description:
+        "Named rather than left to be discovered, because the cheapest call is the one nobody had to make.",
+    },
+    how_to_call: {
+      type: "object",
+      properties: {
+        free: { type: "string" },
+        paid: { type: "string" },
+        rails: { type: "array", items: { type: "string" } },
+      },
+    },
+    full_briefing: { type: "string", format: "uri" },
+    transaction_manual: { type: "string", format: "uri" },
+    documentation: { type: "string", format: "uri" },
+    contract: { type: "string", format: "uri" },
+    catalog: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * The public key, its history, and what a signature from it does and
+ * does not prove. The continuity block is the load-bearing half.
+ */
+const SIGNING_KEY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["algorithm", "encoding", "public_key"],
+  properties: {
+    algorithm: { type: "string" },
+    encoding: { type: "string" },
+    public_key: { type: "string" },
+    note: { type: "string" },
+    identity_policy: { type: "string" },
+    sample_artifact_id: { type: "string" },
+    sample_verify_url: {
+      type: "string",
+      format: "uri",
+      description: "A real artifact to check the key against, so the document is testable rather than assertable.",
+    },
+    did: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        document: { type: "string", format: "uri" },
+        note: { type: "string" },
+      },
+    },
+    key_history: {
+      type: "object",
+      properties: {
+        current: { type: "object" },
+        retired: { type: "array", items: { type: "object" } },
+        rotations_performed: { type: "integer" },
+      },
+    },
+    continuity: {
+      type: "object",
+      description:
+        "Whether this key has ever changed, whether a successor exists, and where the externally anchored history lives. It proves WHEN a key state was committed, never WHO SHOULD HAVE held it.",
+      properties: {
+        key_count: { type: "integer" },
+        rotations_performed: { type: "integer" },
+        successor_key_exists: { type: "boolean" },
+        if_this_key_ever_changes: { type: "string" },
+        externally_anchored_history: { type: "string" },
+        full_policy: { type: "string" },
+      },
+    },
+  },
+};
+
+/**
+ * The Web Bot Auth key directory. One field, and the media type is the
+ * rest of the contract.
+ */
+const SIGNATURES_DIRECTORY_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["keys"],
+  properties: {
+    keys: {
+      type: "array",
+      description: "JWK entries for the key this store signs its outbound census requests with.",
+      items: { type: "object" },
+    },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3014,9 +3176,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/.well-known/http-message-signatures-directory": {
-        get: freeOp(
-          "This store's own Web Bot Auth key directory",
-          "The ed25519 key the store signs its outbound probes with, as a JWK Set with the directory draft's proof-of-possession signature over its own authority. Answers 404 rather than an empty key set when no egress key is configured — those are different statements.",
+        get: returns(
+  freeOp(
+            "This store's own Web Bot Auth key directory",
+            "The ed25519 key the store signs its outbound probes with, as a JWK Set with the directory draft's proof-of-possession signature over its own authority. Answers 404 rather than an empty key set when no egress key is configured — those are different statements.",
+          ),
+          SIGNATURES_DIRECTORY_SCHEMA,
         ),
       },
       /**
@@ -3449,15 +3614,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/.well-known/x402": {
-        get: freeOp(
-          "x402 discovery (minimal)",
-          "The de-facto indexer entry point. Serves the same structured, priced resources as the full catalog — one builder renders both.",
+        get: returns(
+  freeOp(
+            "x402 discovery (minimal)",
+            "The de-facto indexer entry point. Serves the same structured, priced resources as the full catalog — one builder renders both.",
+          ),
+          X402_DISCOVERY_SCHEMA,
         ),
       },
       "/.well-known/x402.json": {
-        get: freeOp(
-          "x402 discovery (full)",
-          "The richer origin-hosted catalog of payable resources.",
+        get: returns(
+  freeOp(
+            "x402 discovery (full)",
+            "The richer origin-hosted catalog of payable resources.",
+          ),
+          X402_DISCOVERY_SCHEMA,
         ),
       },
       /**
@@ -3473,21 +3644,30 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/.well-known/mcp": {
-        get: freeOp(
-          "Where the MCP server is",
-          "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
+        get: returns(
+  freeOp(
+            "Where the MCP server is",
+            "A pointer, not a second transport: the endpoint (POST /mcp, streamable HTTP), the protocol versions it negotiates, the methods that answer without payment, the capabilities actually served, the readable resources on the shelf, and the exact initialize body that completes a handshake. Also served at /.well-known/mcp.json, because half of what probes a well-known path appends the extension. A POST here completes the handshake too, against the same server /mcp answers from — scanners POST their initialize at the manifest path, and a 405 they never read the body of reads to them as no MCP server at all. /mcp remains the canonical endpoint and the one this document names.",
+          ),
+          MCP_CARD_SCHEMA,
         ),
       },
       "/.well-known/agent-instructions": {
-        get: freeOp(
-          "When to reach for this store",
-          "The situations this store is the right call for, each with the items that answer it and the exact request to make — plus the half nobody publishes: when you do not need us. Derived from the same list /llms.txt renders, so the two cannot disagree.",
+        get: returns(
+  freeOp(
+            "When to reach for this store",
+            "The situations this store is the right call for, each with the items that answer it and the exact request to make — plus the half nobody publishes: when you do not need us. Derived from the same list /llms.txt renders, so the two cannot disagree.",
+          ),
+          AGENT_INSTRUCTIONS_SCHEMA,
         ),
       },
       "/.well-known/scvd-signing-key": {
-        get: freeOp(
-          "The store's public key",
-          "ed25519, hex. Anything we sign, this key verifies.",
+        get: returns(
+  freeOp(
+            "The store's public key",
+            "ed25519, hex. Anything we sign, this key verifies.",
+          ),
+          SIGNING_KEY_SCHEMA,
         ),
       },
     },
