@@ -93,6 +93,19 @@ export function declaresFormTool(html) {
   return /<form[^>]+toolname=/.test(String(html ?? ""));
 }
 
+/**
+ * A first-party handle on the page's own main landmark.
+ *
+ * THIRD-PARTY PREFIXES ARE EXCLUDED because the first cut of this read
+ * `met` off `data-cf-beacon`, on a script Cloudflare injects, while the
+ * store shipped no handle at all. A guard that passes on somebody
+ * else's analytics tag is a guard arguing for the lie.
+ */
+export function mainCarriesHandle(html) {
+  const main = /<main[^>]*>/.exec(String(html ?? ""))?.[0] ?? "";
+  return /\sid="|\sdata-(?!cf-)[a-z-]+=/.test(main);
+}
+
 /** Read a served page's script tags for the browser door's declaration. */
 export function declaresWebmcp(html) {
   return /<script[^>]+src=["']\/webmcp\.js["']/.test(String(html ?? ""));
@@ -204,6 +217,7 @@ export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
   if (urls.length === 0) return { total: 0, declaring: 0, unreachable: 0, missing: [] };
   const missing = [];
   const annotatedForms = [];
+  const unhooked = [];
   let declaring = 0;
   let unreachable = 0;
   const queue = [...urls];
@@ -217,6 +231,7 @@ export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
       if (declaresWebmcp(row.text)) declaring += 1;
       else missing.push(url.slice(base.length) || "/");
       if (declaresFormTool(row.text)) annotatedForms.push(url.slice(base.length) || "/");
+      if (!mainCarriesHandle(row.text)) unhooked.push(url.slice(base.length) || "/");
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
@@ -226,6 +241,7 @@ export async function sweepRooms(sitemapXml, base, get, concurrency = 6) {
     unreachable,
     missing: missing.sort(),
     annotatedForms: annotatedForms.sort(),
+    unhooked: unhooked.sort(),
   };
 }
 
@@ -626,48 +642,37 @@ export const DOORS = [
       },
       {
         id: "stable_hooks",
-        asks: "Is there anything on the page a script can hold that is not a style class?",
-        how: "curl -s https://scvd.store/ | grep -o 'data-[a-z-]*=\\|id=\"[^\"]*\"' | sort -u",
+        asks: "Is there anything on the rooms a script can hold that is not a style class?",
+        how: "fetch every URL in /sitemap.xml as a browser and check each page's <main> for a first-party data-* or id",
         /**
-         * FIRST-PARTY HOOKS ONLY, AND THE LANDMARK HAS TO CARRY ONE.
+         * ASKED OF EVERY ROOM, not the front door — the second time
+         * this battery has had to learn that lesson. `declarative_forms`
+         * looked only at `/`, where there is no form and never will be,
+         * so it would have reported `unmet` forever after the fix
+         * shipped on the room that had the verb. A hook criterion
+         * reading only the storefront has the mirror-image bug: it goes
+         * green the moment ONE page is fixed, while an automation tool
+         * arriving at any other room still finds nothing to hold.
          *
-         * The first cut counted every `data-` attribute on the page and
-         * read `met` off a single one — which turned out to be
-         * `data-cf-beacon`, on a script Cloudflare injects. The store
-         * had shipped no hook at all and the criterion said it had. A
-         * guard that passes on somebody else's analytics tag is a guard
-         * arguing for the lie (rule 46).
-         *
-         * So: third-party attributes are excluded by prefix, and the
-         * question is asked about the element automation actually
-         * reaches for first — the page's own main landmark. A hook
-         * somewhere in the markup is not a handle on the content.
+         * Third-party attributes stay excluded — the first cut read
+         * `met` off `data-cf-beacon`, injected by Cloudflare, while the
+         * store shipped no handle at all.
          */
         read(snap) {
-          const miss = reached(snap, "home");
-          if (miss) return miss;
-          const html = snap.home.text ?? "";
-          const data = new Set(
-            (html.match(/\sdata-[a-z-]+=/g) ?? [])
-              .map((match) => match.trim())
-              // Injected by the edge, not by us; it is not ours to hold.
-              .filter((attribute) => !attribute.startsWith("data-cf-")),
-          );
-          const ids = new Set(html.match(/\sid="[^"]+"/g) ?? []);
-          const main = /<main[^>]*>/.exec(html)?.[0] ?? "";
-          const landmarkHooked = /\sid="|\sdata-(?!cf-)[a-z-]+=/.test(main);
-          if (data.size === 0 && ids.size === 0) {
+          const rooms = snap.rooms;
+          if (!rooms || rooms.total === 0) return unknown("rooms were not swept");
+          const unhooked = rooms.unhooked ?? [];
+          const hooked = rooms.total - unhooked.length;
+          if (unhooked.length === 0) {
+            return met(`every one of ${rooms.total} rooms hooks its <main>`);
+          }
+          if (hooked === 0) {
             return unmet(
-              "no first-party data-* attributes and no ids: every hook is a style class, which redesigns move",
+              `no room hooks its <main>: every handle is a style class, which redesigns move`,
             );
           }
-          if (!landmarkHooked) {
-            return partial(
-              `${data.size} first-party data-* kinds and ${ids.size} ids, but <main> carries none — the element a script reaches for first has no handle`,
-            );
-          }
-          return met(
-            `<main> is hooked; ${data.size} first-party data-* kinds, ${ids.size} ids`,
+          return partial(
+            `${hooked} of ${rooms.total} rooms hook their <main>; ${unhooked.length} do not (${unhooked.slice(0, 5).join(", ")}${unhooked.length > 5 ? ", …" : ""})`,
           );
         },
       },

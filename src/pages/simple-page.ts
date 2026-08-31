@@ -100,6 +100,37 @@ function roomsNav(current?: string): string {
   return `<nav class="rooms"><a class="nav-home" href="/">Front of the store</a>${entries.join("")}</nav>`;
 }
 
+/**
+ * THE HANDLES A SCRIPT CAN HOLD — derived from the URL, which is the
+ * one part of a page that is a contract.
+ *
+ * The six-door reading found this store shipping the very failure the
+ * lineup describes: an automation tool arriving here had nothing to
+ * anchor on but style classes, and a style class is exactly what a
+ * redesign moves. `class="paper"` is a decision about ink, not about
+ * what the room IS.
+ *
+ * So every room's main landmark carries `data-room`, and instance
+ * pages carry `data-item` beside it. Both come off `options.path`
+ * rather than off the title, deliberately: titles are copy and copy is
+ * rewritten, while a URL that changes is a redirect somebody had to
+ * think about. `/menu/hello` gives room "menu" and item "hello" — the
+ * ROOM is the template a script targets, the ITEM is which one it
+ * landed on, and a script written against `[data-room="menu"]` keeps
+ * working when the shelf gains an item or the copy above it changes.
+ *
+ * A page with no path gets no attribute rather than a guessed one. An
+ * unstable handle is worse than an absent one: absent fails loudly at
+ * the selector, invented fails silently at the wrong element.
+ */
+export function roomHandles(path: string | undefined): string {
+  if (!path) return "";
+  const [room, item] = path.replace(/^\//, "").split("/");
+  if (!room) return ' data-room="storefront"';
+  const roomAttribute = ` data-room="${escapeHtml(room)}"`;
+  return item ? `${roomAttribute} data-item="${escapeHtml(item)}"` : roomAttribute;
+}
+
 export function renderSimplePage(options: SimplePageOptions): string {
   // Suffix shortened 2026-08-20 for SERP truncation; the full name stays on the page header and homepage.
   const title = `${escapeHtml(options.title)}, scvd.store`;
@@ -147,7 +178,7 @@ export function renderSimplePage(options: SimplePageOptions): string {
   <style>${PAPER_CSS}${options.extraCss ?? ""}</style>
 </head>
 <body${options.bodyClass ? ` class="${escapeHtml(options.bodyClass)}"` : ""}>
-  <main class="paper">
+  <main class="paper"${roomHandles(options.path)}>
     <header>
       <p class="est">${escapeHtml(STORE_METADATA.name)} \u2022 ${escapeHtml(STORE_METADATA.location)}</p>
       <h1>${escapeHtml(options.title)}</h1>

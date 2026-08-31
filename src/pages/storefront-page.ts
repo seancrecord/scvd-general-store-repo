@@ -831,7 +831,7 @@ ${webmcpOriginTrialTags()}
 <body class="night">
   <div class="stars"></div>
   <div class="dusk"></div>
-  <main class="road">
+  <main class="road" data-room="storefront">
 
     <header class="signfront">
       <p class="tube-line">${COPY.tubeLine}</p>
