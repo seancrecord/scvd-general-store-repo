@@ -759,8 +759,19 @@ export const DOORS = [
       },
       {
         what: "Which other agents in the browser read document.modelContext",
-        where: "ChatGPT Desktop, Brave Leo, Edge Copilot release notes",
-        why: "The door's value is the number of resident agents that walk through it, and we do not control that number.",
+        where:
+          "webmachinelearning/webmcp implementation-status.md FIRST (it is the primary source and listed exactly six entries on 2026-08-31: Brave Leo, ChatGPT Desktop, Chrome, Edge, Firefox, Safari), then release notes for the products that keep coming up and are NOT in it: Perplexity Comet, Opera Neon, Arc, Dia, Grok. The webmcp.com ecosystem tracker covers the same ground as a secondary source.",
+        why: "The door's value is the number of resident agents that walk through it, and we do not control that number. This is the question that rots fastest — an answer given today is stale in a month, which is why it is a scheduled re-read against named sources rather than a note somebody wrote once.",
+      },
+      {
+        what: "Whether a product on that list is discontinued, not just unsupported",
+        where: "the vendor's own announcement, not coverage of it",
+        why: "ChatGPT ATLAS was asked about repeatedly and turned out to have been discontinued on 2026-07-09, stopping work 2026-08-09 and folding into the ChatGPT desktop app — which IS on the supported list and needs no origin trial. A dead product looks identical to an unsupported one from the outside, and the two call for opposite responses: one is a gap to close, the other is a question that no longer exists.",
+      },
+      {
+        what: "Whether a Chromium fork honours another vendor's origin-trial token",
+        where: "each fork's own documentation; treat cross-vendor inheritance as UNVERIFIED until one of them says so",
+        why: "Comet, Opera, Arc and Dia are Chromium-based, so it is tempting to assume they inherit Chrome's trial. Tokens are validated against a vendor key baked into the build, and no primary source consulted on 2026-08-31 confirmed or denied inheritance. Labelled rather than asserted (rule 55), because a wrong assumption here would have us believing a door is open in four browsers on no evidence at all.",
       },
     ],
     criteria: [
