@@ -2230,6 +2230,137 @@ const REFUND_SCHEMA: OpenApiObject = {
   },
 };
 
+/**
+ * THE FREE SPECIMEN. A real artifact of the paid kind, marked as a
+ * specimen and NOT signed — so nobody can pass it off as a verdict
+ * about anyone.
+ *
+ * `specimen`, `not_signed` and `not_about_anyone` are all required.
+ * They are what keep a sample from being usable as evidence, and a
+ * schema that let any of them go missing would describe a document
+ * this store would not publish.
+ */
+const SAMPLE_ARTIFACT_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "specimen", "not_signed", "not_about_anyone", "sample"],
+  properties: {
+    what_this_is: { type: "string" },
+    of_item: { type: "string" },
+    specimen: { type: "boolean" },
+    not_signed: {
+      type: "string",
+      description: "Why this carries no signature: a signed specimen would be indistinguishable from a real verdict.",
+    },
+    not_about_anyone: {
+      type: "string",
+      description: "The subject is fictional or the store's own, so nothing here is a finding about a third party.",
+    },
+    mark: { type: "string" },
+    sample: { type: "object", description: "The artifact itself, in the shape the paid door returns." },
+    price_of_the_real_thing: { type: "string" },
+    buy_url: { type: "string", format: "uri" },
+  },
+};
+
+/** The specimen rack. */
+const SAMPLES_INDEX_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what_this_is", "samples", "free"],
+  properties: {
+    what_this_is: { type: "string" },
+    samples: { type: "array", items: { type: "string", format: "uri" } },
+    free: { type: "string" },
+    the_real_thing: { type: "string" },
+    check_your_own_door_free: { type: "string", format: "uri" },
+  },
+};
+
+/**
+ * The receipt verifier, described. `what_it_never_checks` is required
+ * beside `what_it_checks`, and `verdicts` enumerates every answer the
+ * desk can give — including `indeterminate` and
+ * `insufficient_evidence`, which are the two a checker that wanted to
+ * look decisive would quietly drop.
+ */
+const VERIFY_RECEIPT_DOC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["what", "how", "what_it_checks", "what_it_never_checks", "verdicts"],
+  properties: {
+    what: { type: "string" },
+    how: { type: "string" },
+    what_it_checks: { type: "string" },
+    what_it_never_checks: {
+      type: "string",
+      description: "Named beside what it does check, because a verifier's silence about its limits gets read as coverage.",
+    },
+    verdicts: {
+      type: "object",
+      description:
+        "Every answer this desk can return, including the two that admit it could not decide.",
+      properties: {
+        valid: { type: "string" },
+        invalid: { type: "string" },
+        expired: { type: "string" },
+        insufficient_evidence: { type: "string" },
+        unsupported: { type: "string" },
+        indeterminate: { type: "string" },
+      },
+    },
+    stateless: {
+      type: "string",
+      description: "Nothing submitted here is stored.",
+    },
+    our_own_artifacts_by_id: { type: "string" },
+  },
+};
+
+/** This week's zodiac, and the archive behind it. */
+const ZODIAC_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["week", "signs"],
+  properties: {
+    week: { type: "string" },
+    season_week: { type: "integer" },
+    signs: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["id", "name"],
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          essence: { type: "string" },
+          penalty: { type: "string" },
+        },
+      },
+    },
+    your_sign: { type: "string" },
+    almanac: { type: "string", format: "uri" },
+    archive: { type: "string", format: "uri" },
+  },
+};
+
+const ZODIAC_ARCHIVE_SCHEMA: OpenApiObject = {
+  type: "object",
+  required: ["pages"],
+  properties: {
+    archive: { type: "string" },
+    pages: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          sign: { type: "string" },
+          week: { type: "string" },
+          url: { type: "string", format: "uri" },
+        },
+      },
+    },
+    price_usdc: { type: "number" },
+    season_weeks_elapsed: { type: "integer" },
+  },
+};
+
 const PULSE_SCHEMA: OpenApiObject = {
   type: "object",
   required: ["computed_at", "all_time", "months", "verify_url", "signing_key"],
@@ -3908,9 +4039,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/api/verify-receipt": {
-        get: freeOp(
-          "Receipt verification — the doc",
-          "How the receipt-verification desk works: what it checks (structure, ed25519 signatures over every derivable form, claimed RFC 8785 twins, expiry, key attribution) and what it never checks, stated plainly. Free.",
+        get: returns(
+  freeOp(
+            "Receipt verification — the doc",
+            "How the receipt-verification desk works: what it checks (structure, ed25519 signatures over every derivable form, claimed RFC 8785 twins, expiry, key attribution) and what it never checks, stated plainly. Free.",
+          ),
+          VERIFY_RECEIPT_DOC_SCHEMA,
         ),
         post: postOp(
           "Verify any receipt",
@@ -4573,15 +4707,21 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/samples": {
-        get: freeOp(
-          "What a purchase hands back",
-          "The room showing a free, unsigned sample of a paid artifact, so nobody has to buy a document sight unseen. HTML to a browser, JSON to everything else. Free.",
+        get: returns(
+  freeOp(
+            "What a purchase hands back",
+            "The room showing a free, unsigned sample of a paid artifact, so nobody has to buy a document sight unseen. HTML to a browser, JSON to everything else. Free.",
+          ),
+          SAMPLES_INDEX_SCHEMA,
         ),
       },
       "/samples/once-over.json": {
-        get: freeOp(
-          "A free specimen of the Once-Over",
-          "Every field a buyer of the $5 service_audit receives, produced by the same check battery the paid artifact runs, against a constructed door that passes v1's frozen core and fails v2's atomic-amount check \u2014 so the specimen shows one probe reaching two disagreeing verdicts, which is the property a prose description cannot show. It is NOT signed and does NOT verify, and says so in its own body: the paid artifact carries an ed25519 signature and answers at /api/verify/{id} forever, and this carries neither. The subject is a .example host (RFC 2606) that can never resolve, so nothing here is an observation about any real operator. Frozen, so the bytes are stable. Free.",
+        get: returns(
+  freeOp(
+            "A free specimen of the Once-Over",
+            "Every field a buyer of the $5 service_audit receives, produced by the same check battery the paid artifact runs, against a constructed door that passes v1's frozen core and fails v2's atomic-amount check \u2014 so the specimen shows one probe reaching two disagreeing verdicts, which is the property a prose description cannot show. It is NOT signed and does NOT verify, and says so in its own body: the paid artifact carries an ed25519 signature and answers at /api/verify/{id} forever, and this carries neither. The subject is a .example host (RFC 2606) that can never resolve, so nothing here is an observation about any real operator. Frozen, so the bytes are stable. Free.",
+          ),
+          SAMPLE_ARTIFACT_SCHEMA,
         ),
       },
       "/doors": {
@@ -4657,7 +4797,10 @@ openapiRoutes.get("/openapi.json", async (c) => {
         ),
       },
       "/zodiac": {
-        get: freeOp("The Systems Almanac", "The twelve signs, free."),
+        get: returns(
+  freeOp("The Systems Almanac", "The twelve signs, free."),
+          ZODIAC_SCHEMA,
+        ),
       },
       "/zodiac/{address}": {
         get: {
@@ -4674,9 +4817,12 @@ openapiRoutes.get("/openapi.json", async (c) => {
         },
       },
       "/zodiac/archive": {
-        get: freeOp(
-          "The Almanac archive index",
-          "Past season weeks, listed free, with the URL of every page that exists. Each page is a penny over x402 at /zodiac/archive/{sign}/week-{week}, and they are listed here rather than in this contract because the set grows every week the calendar turns.",
+        get: returns(
+  freeOp(
+            "The Almanac archive index",
+            "Past season weeks, listed free, with the URL of every page that exists. Each page is a penny over x402 at /zodiac/archive/{sign}/week-{week}, and they are listed here rather than in this contract because the set grows every week the calendar turns.",
+          ),
+          ZODIAC_ARCHIVE_SCHEMA,
         ),
       },
       ...buyPaths(MENU_ITEMS),
