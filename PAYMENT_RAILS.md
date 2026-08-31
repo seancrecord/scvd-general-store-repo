@@ -226,3 +226,53 @@ advertise a door that does not exist. When the keeper sets
 POLYGON_PAY_TO, the machine surfaces that derive from
 acceptedNetworks() follow instantly; the hand copy is a ⚑ pass filed
 in TASKS.md.
+
+
+## Part E — the cross-protocol re-read, 2026-08-30. THE PART B GATE IS RE-POSED, NOT RE-RULED.
+
+Part B ruled MPP to WAIT-AND-SEE on 2026-08-04 and named its own two
+reopening conditions: a named counterparty asking to pay that way, OR
+the scheme showing up as ecosystem-adopted in drift data. A full read
+of the surrounding surface — every protocol an agent can pay over, not
+just MPP — is filed at `docs/PROTOCOL_EXPANSION_2026-08.md`. Three
+things from it belong in this file, because they change the sizing
+this file did:
+
+**1. Gate 1's finding stands; its cost estimate does not.** `evm.charge`
+is still not an `accepts[]` entry and MPP is still a second
+challenge/credential protocol — that read was correct and is unchanged.
+What changed is that the encoding and verification are now a
+dependency rather than a build: `mppx` ships Hono middleware and a
+manual Fetch-API server mode, and Cloudflare documents accepting MPP on
+a Worker route AND on an MCP tool (read from the cloudflare-docs repo
+itself, not from a summary). What remains ours — and remains the real
+cost — is coupled idempotency across two protocols, a second decline
+surface, a third class of key material, and the certificate semantics.
+
+**2. The reopening condition appears to be met, on the second limb.**
+Not by a buyer at our door — none has asked, and that is still the
+stronger limb. By implementation: AWS Bedrock AgentCore (x402 and MPP
+through one ProcessPayment API, with an explicit x402 fallback),
+Cloudflare Agents, Arbitrum, Abstract, MultiversX and http4k have all
+shipped MPP support, observed in their own repositories. **Whether
+implementation-by-the-ecosystem counts as adoption, or adoption means a
+buyer, is the keeper's ruling, and this file does not pre-empt it.**
+
+**3. A cheaper door was found beside it, and it IS the `accepts[]`
+shape.** Circle Gateway nanopayments plug a `GatewayEvmScheme` and a
+`BatchFacilitatorClient` into the same `x402ResourceServer` this store
+already runs, offering both rails in one `accepts` array, gas-free,
+down to $0.000001, on the EIP-3009 signature we already verify. Under
+the door-cost lens that opened Solana and Polygon, this sizes BELOW
+both. Its one genuinely new cost is reconciliation: Gateway credits an
+off-chain balance and batch-settles later, so the chain walk — the one
+check independent of our own writes — arrives late and in aggregate.
+The bound is the same bound Solana and Polygon got: a cap, alarmed,
+never a refusal mid-purchase, and the gap published rather than
+smoothed.
+
+Ordering, sizing, per-product impact, the latency and regulation
+scoring the keeper asked for, and the six rulings only he can make are
+all in the linked file. Nothing in this Part changes an accepted
+scheme; the intake rule at the top of this file still governs, and no
+rail moves without it.
