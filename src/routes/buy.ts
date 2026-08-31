@@ -1448,62 +1448,12 @@ buyRoutes.get("/api/buy/:item_id", async (c) => {
    * where we still know what happened.
    */
   try {
-    const result = await fulfillPurchase(c.env, item, pending, input);
-    const queued = queuedJobHeaders(result);
-    return queued ? c.json(result, 202, queued) : c.json(result);
+    return c.json(await fulfillPurchase(c.env, item, pending, input));
   } catch (error) {
     if (error instanceof SettlementDeclined) return error.response;
     throw error;
   }
 });
-
-/**
- * THE LONG-RUNNING HALF OF THE SHELF, SHAPED LIKE THE JOB IT IS.
- *
- * Most of this store delivers in the response: you pay, the artifact
- * is signed, it comes back. The human-labor items cannot — a person
- * has to do the thing, and the promise is a window measured in hours
- * or days. The store has always handled that correctly in substance:
- * the purchase hands back an order id, a status of "queued", the SLA,
- * and the URL to poll. What it never did was SAY so in the two places
- * a generic HTTP client looks — the status line and the Location
- * header — so a 2026-08-30 scan read the paid doors and reported no
- * async-job pattern at all. It was reading the wire, and the wire said
- * "here is your finished thing, 200 OK", about work nobody had started.
- *
- * 202 IS THE ACCURATE CODE and this is a deliberate change to what a
- * paid door returns, so it is fenced as tightly as it can be:
- *
- *   - ONLY when the fulfilment actually queued. A stocked item that
- *     completed itself in the same request returns 200, because it
- *     really is finished. The `status` field the body already carries
- *     is what decides — one source, so the code and the body cannot
- *     come to disagree about whether the work is done.
- *   - The money is UNAFFECTED. Settlement happened before this line;
- *     202 is still a success, `response.ok` is still true, and no
- *     client that reads the body sees anything different.
- *   - Location points at the poll door, per the convention, and
- *     Retry-After is the SLA rather than a number somebody picked:
- *     polling sooner than the promise cannot learn anything new.
- */
-function queuedJobHeaders(result: unknown): Record<string, string> | null {
-  const record = result as Record<string, unknown> | null;
-  if (!record || record["status"] !== "queued") return null;
-  const orderUrl = record["order_url"];
-  if (typeof orderUrl !== "string") return null;
-  const slaHours = Number(record["sla_hours"]);
-  const headers: Record<string, string> = { Location: orderUrl };
-  if (Number.isFinite(slaHours) && slaHours > 0) {
-    /*
-     * The promise, in seconds. A buyer who polls before their own
-     * window closes is asking a question whose answer cannot have
-     * changed, and this is the one number that says so without
-     * anybody typing a guess.
-     */
-    headers["Retry-After"] = String(Math.round(slaHours * 3600));
-  }
-  return headers;
-}
 
 buyRoutes.get("/api/order/:order_id", async (c) => {
   const order = await getOrder(c.env, c.req.param("order_id"));

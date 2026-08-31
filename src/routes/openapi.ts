@@ -1688,39 +1688,6 @@ function paidOp(
         description: "Paid and delivered.",
         ...(markdown ? MARKDOWN_RESPONSE : JSON_RESPONSE),
       },
-      /**
-       * THE ASYNC HALF, DECLARED (2026-08-31). Most of this shelf
-       * delivers inside the response. The human-labor items cannot —
-       * a person has to do the thing — and the store has always handed
-       * back an order id, a queued status and a poll URL for those.
-       * What it never said was 202, so a generated client had no way
-       * to know from the contract that a purchase might come back
-       * unfinished, and a readiness scan reading the wire found no
-       * async-job pattern at all.
-       *
-       * Declared on every paid operation because the shape is the
-       * item's, not the path's: whether a given purchase queues
-       * depends on its fulfilment class, which /menu.json publishes
-       * per item. A client that handles both codes handles the whole
-       * shelf, which is the point of saying so here.
-       */
-      "202": {
-        description:
-          "Paid and ACCEPTED, not yet delivered — a human-labor item. The body carries order_id, status \"queued\", sla_hours and order_url; Location repeats the poll URL and Retry-After is the promised window in seconds, because polling sooner than the promise cannot learn anything new. Poll order_url until status reaches a terminal state, which then carries the deliverable. The payment settled before this response: 202 is a success, and nothing about the money is pending.",
-        headers: {
-          Location: {
-            description:
-              "The order's poll URL — the same value as order_url in the body.",
-            schema: { type: "string", format: "uri" },
-          },
-          "Retry-After": {
-            description:
-              "The promised delivery window in seconds, derived from the item's own SLA.",
-            schema: { type: "integer" },
-          },
-        },
-        ...(markdown ? MARKDOWN_RESPONSE : JSON_RESPONSE),
-      },
       "402": {
         description:
           "Payment required. Requirements ride in the PAYMENT-REQUIRED response header (base64 JSON, x402 v2); retrying with a signed PAYMENT-SIGNATURE header completes the purchase.",
