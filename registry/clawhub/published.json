@@ -1,7 +1,7 @@
 {
-  "version": "3.6.0",
-  "bundle_sha256": "e441c4affb56e21ebc84d1cc767219f9749ee5886495a3adc658608cc5ee8c8f",
-  "published_at": "2026-08-21T16:58:22.581Z",
-  "commit": "02c69a407a99808515804c8e29adb8b57d3b8a69",
-  "changelog": "The evidence layer: passport refresh on the shelf, /trust and /passport/{host} with the embeddable chip, free receipt verification (POST /api/verify-receipt), the SIWX claims challenge, and /api/practice."
+  "version": "3.8.0",
+  "bundle_sha256": "9a4fc57d3d8bced606dea6d9511b6fbdba83afba861def542d737c2173b60380",
+  "published_at": "2026-08-31T20:53:55.717Z",
+  "commit": "297500f1a6e3008394cfe63ac13fa6db68b8c277",
+  "changelog": "The browser door, the free desks as a table, and four price corrections. Adds WebMCP browser tools, both origin trials, the conformance desk's annotated form; names spot_check, good_buyer, onpage_audit and certificate_of_patronage, and the corpus rooms /doors, /fresh-set, /defects, /criteria, /inflows. Corrects service_audit ($0.10 to $5), trust_profile ($19 to $21), the shelf range and the entry price — all now guarded."
 }
